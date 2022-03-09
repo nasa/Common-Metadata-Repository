@@ -71,6 +71,9 @@
     :horizontal-data-resolution-range
     (v2h/prioritized-range-facet context (get (facets-v2-params->elastic-fields concept-type) facet-field))
 
+    :latency
+     (v2h/terms-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)
+
     ;; else
     (v2h/prioritized-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)))
 

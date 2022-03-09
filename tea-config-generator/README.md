@@ -9,12 +9,14 @@ See: [Cumulus thin egress app][tea]
 ## Usage
 
 The [run.sh](run.sh) command will execute many of the stages of the software needed
-get the application started. To see the options supported, run `./run.sh -h`. To start the application, run in one terminal window: `./run.sh -o`. This will install the lambda functions and start the offline server. In another terminal window try
+get the application started. To see the options supported, run `./run.sh -h`. To
+start the application, run in one terminal window: `./run.sh -o`. This will install
+the lambda functions and start the offline server. In another terminal window try
 the following commands:
 
     curl 'http://localhost:3000/dev/configuration/tea/capabilities'
     curl -I 'http://localhost:3000/dev/configuration/tea/status'
-    curl -H 'Cmr-Token: uat-token-value' 'http://localhost:3000/dev/configuration/tea/provider/POCLOUD'
+    curl -H 'Authorization: Bearer uat-token-value' 'http://localhost:3000/dev/configuration/tea/provider/POCLOUD'
 
 | Action       | URL                                       | Description |
 | ------------ | ----------------------------------------- | ----------- |
@@ -34,14 +36,18 @@ the following commands:
 5. Install locally: `serverless offline`
 6. Run some example URLS: `./run.sh -e`
 
+### Docker
+
+The Dockerfile defines a node image which includes python3 and serverless for
+use as a build and deployment environment when running under a CI/CD system.
+
 ## Deploying to AWS
 
-1. Create a role with a title like `tea-config-<env>-<location>-lambda-role`
-	* env is sit, uat, prod
-	* location is east-1 or the like
-2. Include polities to allow for Full access to API Gateway
-3. Use the `NGAPShRoleBoundry`
-
+The [serverless.yml](serverless.yml) file will create an IAM role for the lambda
+functions. It will use the following Role name:
+`tea-config-generator-role-${self:custom.env}-${self:provider.region}` and will
+use `arn:aws:iam::${aws:accountId}:policy/NGAPShRoleBoundary` for a Permissions
+Boundary.
 
 ## Testing
 Read the details in the ./run.sh script. There are functions which have all the

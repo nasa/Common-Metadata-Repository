@@ -3,7 +3,6 @@
   (:require
    [cmr.common.cache :as c]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-   [cmr.common.jobs :refer [def-stateful-job]]
    [cmr.transmit.humanizer :as humanizer]))
 
 (def humanizer-cache-key

@@ -2,15 +2,11 @@
   "Functions related to indexing access control data in Elasticsearch."
   (:require
    [cmr.access-control.data.access-control-index :as access-control-index]
-   [cmr.access-control.data.acls :as acls]
    [cmr.access-control.data.bulk :as cmr-bulk]
-   [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common.concepts :as cs]
-   [cmr.common.log :refer [info debug error]]
+   [cmr.common.log :refer [info error]]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util :refer [defn-timed]]
-   [cmr.elastic-utils.es-helper :as es-helper]
-   [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]))
+   [cmr.elastic-utils.es-helper :as es-helper]))
 
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
@@ -73,6 +69,7 @@
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
   [context docs]
+  (info (format "Bulk indexing [%d] documents" (count docs)))
   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
           conn (get-in context [:system :db :conn]) ;; Why db?

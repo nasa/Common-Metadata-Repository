@@ -63,14 +63,16 @@ def read_file(file_name):
 
 def load_version():
     """ Load version information from a file. This file is written by CI/CD """
-    if ver := read_file('ver.txt'):
+    ver = read_file('ver.txt')
+    if ver is not None:
         return json.loads(ver)
     return None
 
 def append_version(data:dict=None):
     """ Append CI/CD version information to a dictionary if it exists. """
     if data is not None:
-        if ver := load_version():
+        ver = load_version()
+        if ver is not None:
             data['application'] = ver
 
 def aws_return_message(event, status, body, headers=None, start=None):
@@ -161,7 +163,7 @@ def generate_tea_config(event, context):
     the following:
     * CMR must be configured with an env variable
     * Path Parameter named 'id' with CMR provider name
-    * HTTP Header named 'Cmr-Token' with a CMR compatible token
+    * HTTP Header named 'Authorization' with a CMR compatible token
     """
     logger = init_logging()
     logger.debug("generate tea config started")

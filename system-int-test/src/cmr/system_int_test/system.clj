@@ -58,6 +58,7 @@
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
   ([]
+   (transmit-config/set-urs-relative-root-url! "/urs")
    (start (create-system (get-component-type-map))))
   ([system]
    (let [started-system (reduce (fn [system component-name]

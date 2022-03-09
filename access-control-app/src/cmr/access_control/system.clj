@@ -13,12 +13,13 @@
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.log :as log :refer [info]]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
@@ -102,7 +103,8 @@
              :scheduler (jobs/create-scheduler
                          `system-holder
                          [(af/refresh-acl-cache-job "access-control-acl-cache-refresh")
-                          jvm-info/log-jvm-statistics-job])}]
+                          jvm-info/log-jvm-statistics-job
+                          (cache-info/create-log-cache-info-job "access-control")])}]
     (transmit-config/system-with-connections sys [:access-control :echo-rest :metadata-db :urs])))
 
 (defn start

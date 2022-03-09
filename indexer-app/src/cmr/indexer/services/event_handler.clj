@@ -6,6 +6,7 @@
    [cmr.indexer.config :as config]
    [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
    [cmr.indexer.data.concepts.deleted-granule :as deleted-granule]
+   [cmr.indexer.services.autocomplete :as autocomplete]
    [cmr.indexer.services.index-service :as indexer]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]))
 
@@ -28,7 +29,11 @@
 
 (defmethod handle-provider-event :provider-autocomplete-suggestion-reindexing
   [context {:keys [provider-id]}]
-  (indexer/reindex-autocomplete-suggestions-for-provider context provider-id))
+  (autocomplete/reindex-autocomplete-suggestions-for-provider context provider-id))
+
+(defmethod handle-provider-event :autocomplete-suggestion-prune
+  [context _]
+  (autocomplete/prune-stale-autocomplete-suggestions context))
 
 (defmethod handle-provider-event :refresh-collection-granule-aggregation-cache
   [context {:keys [granules-updated-in-last-n]}]
@@ -114,4 +119,3 @@
       (queue-protocol/subscribe queue-broker
                                 (config/deleted-granule-index-queue-name)
                                 #(handle-ingest-event context true %)))))
-

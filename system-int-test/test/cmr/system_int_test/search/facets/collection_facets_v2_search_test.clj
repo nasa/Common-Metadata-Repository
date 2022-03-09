@@ -3,6 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
+   [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.services.query-execution.facets.collection-v2-facets :as frf2]
    [cmr.system-int-test.data2.core :as d]
@@ -37,6 +38,10 @@
                           "DIADEM"
                           "DIADEM-1D"
                           "Dee Iee Aee Dee Eee Mee Dash One Dee"])
+   :diadem-lower (platform-map ["Space-based Platforms"
+                                "Earth Observation Satellites"
+                                "DIADEM"
+                                "diadem-1D"])
    :dmsp (platform-map ["Space-based Platforms"
                         "Earth Observation Satellites"
                         "Defense Meteorological Satellite Program(DMSP)"
@@ -46,7 +51,11 @@
                         "Earth Observation Satellites"
                         "SMAP-like"
                         "SMAP"
-                        "Soil Moisture Active and Passive Observatory"])})
+                        "Soil Moisture Active and Passive Observatory"])
+   :non-existent (platform-map ["Space-based Platforms"
+                                "Earth Observation Satellites"
+                                "DIADEM"
+                                "Non-Exist"])})
 
 (defn- sample-platform-full
   "Build a platform map which can be used in search queries for the platforms-s
@@ -176,14 +185,14 @@
   (testing "Facets size applied for facets, with selecting facet that exists, but outside of the facets size range."
     (is (= fr/expected-v2-facets-apply-links-with-selecting-facet-outside-of-facets-size
            (search-and-return-v2-facets {:facets-size {:platforms 1}
-                                         :platforms-h {:0 {:short-name "diadem-1D"}}}))))
+                                         :platforms-h {:0 (sample-platform-full :diadem-lower)}}))))
   (testing "Facets size applied for facets, with selecting facet that exists, without specifying facets size."
     (is (= fr/expected-v2-facets-apply-links-with-selecting-facet-without-facets-size
-           (search-and-return-v2-facets {:platforms {:0 {:short-name "diadem-1D"}}}))))
+           (search-and-return-v2-facets {:platforms-h {:0 (sample-platform-full :diadem-lower)}}))))
   (testing "Facets size applied for facets, with selecting facet that doesn't exist."
     (is (= fr/expected-v2-facets-apply-links-with-facets-size-and-non-existing-selecting-facet
            (search-and-return-v2-facets {:facets-size {:platforms 1}
-                                         :platforms-h {:0 {:short-name "Non-Exist"}}}))))
+                                         :platforms-h {:0 (sample-platform-full :non-existent)}}))))
   (testing "Empty facets size applied for facets"
     (is (= [(str facets-size-error-msg " but was [{:instrument \"\"}].")]
            (search-and-return-v2-facets-errors {:facets-size {:instrument ""}}))))
@@ -200,7 +209,7 @@
                                                 :variable-level-2 "Level1-2"
                                                 :variable-level-3 "Level1-3"}}
                        :project-h ["proj1"]
-                       :platforms-h {:0 {:short-name "DIADEM-1D"}}
+                       :platforms-h {:0 (sample-platform-full :diadem)}
                        :instrument-h ["ATM"]
                        :processing-level-id-h ["PL1"]
                        :data-center-h "DOI/USGS/CMG/WHSC"
@@ -286,6 +295,12 @@
                 {:Platforms [{:Instruments []
                               :ShortName "DMSP 5B/F3"
                               :LongName "Defense Meteorological Satellite Program-F3"}]})
+  (fu/make-coll 1
+                "PROV1"
+                (fu/science-keywords sk1)
+                {:Platforms [{:Instruments []
+                              :ShortName "Aqua"
+                              :LongName "Earth Observing System, Aqua"}]})
   (testing (str "When searching against faceted fields which do not match any matching collections,"
                 " a link should be provided so that the user can remove the term from their search"
                 " for all fields except for science keywords category.")
@@ -316,7 +331,21 @@
                                                            :category "Earth Observation Satellites"
                                                            :sub-category "SMAP-like"
                                                            :short-name "SMAP"}}
-                                         :keyword "DMSP 5B/F3"})))))
+                                         :keyword "DMSP 5B/F3"}))))
+  (testing "Facets with multiple facets applied, some with matching collections, some without part 2"
+    (is (= fr/expected-facets-when-aqua-search-results-found
+           (search-and-return-v2-facets {:platforms-h {:0 {:basis "Space-based Platforms"
+                                                           :category "Earth Observation Satellites"
+                                                           :sub-category "fake"
+                                                           :short-name "moDIS-p0"}
+                                                       :1 {:basis "Space-based Platforms"
+                                                           :category "Earth Observation Satellites"
+                                                           :sub-category "SMAP-like"
+                                                           :short-name "SMAP"}
+                                                       :2 {:basis "Space-based Platforms"
+                                                           :category "Earth Observation Satellites"
+                                                           :short-name "Aqua"}}
+                                         :keyword "Aqua"})))))
 
 (deftest appropriate-hierarchical-depth
   (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2))
@@ -334,7 +363,7 @@
     {:variable-level-2 "Level1-2" :term "Term1" :category "Earth Science" :topic "Topic1"
      :variable-level-1 "Level1-1"} 5
     {:variable-level-3 "Level1-3" :variable-level-2 "Level1-2" :term "Term1"
-     :category "Earth Science" :topic "Topic1" :variable-level-1 "Level1-1"} 5))
+     :category "Earth Science" :topic "Topic1" :variable-level-1 "Level1-1"} 6))
 
 (def empty-v2-facets
   "The facets returned when there are no matching facets for the search."
@@ -486,10 +515,35 @@
 
 (defn- assert-facet-field
   "Assert the given facet field with name and count matches the facets result"
-  [facets-result field value count]
+  [facets-result field value facet-count]
   (let [field-match-value (get-facet-field facets-result field value)]
     (testing value
-     (is (= count (:count field-match-value))))))
+     (is (= facet-count (:count field-match-value))))))
+
+(defn- assert-latency-facet-field
+   "Assert the latency facet field with count and link match the facets result"
+   [facets-result value facet-count link]
+   (let [field-match-value (get-facet-field facets-result "Latency" value)]
+     (testing value
+      (is (= facet-count (:count field-match-value)))
+      (is (= link (:links field-match-value))))))
+
+(defn- assert-field-in-hierarchy
+  [facets field value facet-count]
+  (for [facet facets]
+    (let [finding (when (= value (:title facet)) facet)]
+      (if finding
+        finding
+        (when (:children facet)
+          (assert-field-in-hierarchy (:children facet) field value facet-count))))))
+
+(defn- assert-facet-field-in-hierarchy
+  [facets-result field value facet-count]
+  (let [field-facet (first (get (group-by :title (:children facets-result)) field))]
+    (first
+      (flatten
+        (assert-field-in-hierarchy (:children field-facet) field value facet-count)))))
+
 
 (deftest platform-facets-v2-test
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
@@ -529,7 +583,6 @@
         (is (tester (get-in sample-platforms [:smap :category]) 4))
         (is (tester (get-in sample-platforms [:smap :sub-category]) 1))
         (is (tester (get-in sample-platforms [:smap :short-name]) 1))
-        (is (tester (get-in sample-platforms [:smap :long-name]) 1))
         (is (tester (get-in sample-platforms [:dmsp :sub-category]) 2))
         (is (tester (get-in sample-platforms [:diadem :sub-category]) 2))
         (assert-facet-field facets-result "Instruments" "I4" 1)
@@ -539,7 +592,7 @@
 
     (testing "search by multiple platforms"
       (let [facets-result (search-and-return-v2-facets {:platforms-h {:0 (sample-platform-full :smap)
-                                                                     :1 (sample-platform-full :dmsp)}})
+                                                                      :1 (sample-platform-full :dmsp)}})
             tester (partial find-facet-field facets-result)]
         (is (tester (get-in sample-platforms [:diadem :sub-category]) 2))
         (is (tester (get-in sample-platforms [:dmsp :short-name]) 2))
@@ -582,6 +635,138 @@
         (is (not (tester (get-in sample-platforms [:dmsp :short-name]))))
         (assert-facet-field-not-exist facets-result "Instruments" "I3")
         (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
+
+(deftest science-keywords-facets-v2-test-simple
+  "Tests for keys that are missing in the hierarchy. If science keywords are used, DetailedVariable
+  can exist after Term, VariableLevel1, VariableLevel2, or VariableLevel3.  For Platform keywords
+  short-name can exist after category or sub-category."
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll1"
+                                                      :ShortName "S1"
+                                                      :VersionId "V1"
+                                                      :ScienceKeywords [(umm-spec-common/science-keyword
+                                                                          {:Category "Earth Science"
+                                                                           :Topic "Topic1"
+                                                                           :Term "Term1"
+                                                                           :VariableLevel1 "Level1-1"
+                                                                           :VariableLevel2 "Level1-2"
+                                                                           :VariableLevel3 "Level1-3"
+                                                                           :DetailedVariable "Detail1"})]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll2"
+                                                      :ShortName "S2"
+                                                      :VersionId "V1"
+                                                      :ScienceKeywords [(umm-spec-common/science-keyword
+                                                                                {:Category "Earth Science"
+                                                                                 :Topic "Topic2"
+                                                                                 :Term "Term2"
+                                                                                 :VariableLevel1 "Level2-1"
+                                                                                 :VariableLevel2 "Level2-2"
+                                                                                 :DetailedVariable "Detail2"})]}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll3"
+                                                      :ShortName "S3"
+                                                      :VersionId "V1"
+                                                      :ScienceKeywords [(umm-spec-common/science-keyword
+                                                                                {:Category "Earth Science"
+                                                                                 :Topic "Topic3"
+                                                                                 :Term "Term3"
+                                                                                 :VariableLevel1 "Level3-1"
+                                                                                 :DetailedVariable "Detail3"})]}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll4"
+                                                      :ShortName "S4"
+                                                      :VersionId "V1"
+                                                      :ScienceKeywords [(umm-spec-common/science-keyword
+                                                                                {:Category "Earth Science"
+                                                                                 :Topic "Topic4"
+                                                                                 :Term "Term4"
+                                                                                 :DetailedVariable "Detail4"})]}))]
+    (are3
+     [query detailed-variable]
+     (let [facets-result (search-and-return-v2-facets query)]
+       (assert-facet-field-in-hierarchy facets-result "Keywords" detailed-variable 1))
+
+     "Test that a full hierarchy can be found."
+     {:science-keywords-h {:0 {:topic "Topic1"
+                               :term "Term1"
+                               :variable-level-1 "Level1-1"
+                               :variable-level-2 "Level1-2"
+                               :variable-level-3 "Level1-3"
+                               :detailed-variable "Detail1"}}}
+     "Detail1"
+
+     "Test that the last facet is missing, but detailed-variable can be found."
+     {:science-keywords-h {:0 {:topic "Topic2"
+                               :term "Term2"
+                               :variable-level-1 "Level2-1"
+                               :variable-level-2 "Level2-2"
+                               :detailed-variable "Detail2"}}}
+     "Detail2"
+
+     "Test that the last 2 facets are missing, but detailed-variable can be found."
+     {:science-keywords-h {:0 {:topic "Topic3"
+                               :term "Term3"
+                               :variable-level-1 "Level3-1"
+                               :detailed-variable "Detail3"}}}
+     "Detail3"
+
+     "Test that the last 3 facets are missing, but detailed-variable can be found."
+     {:science-keywords-h {:0 {:topic "Topic4"
+                               :term "Term4"
+                               :detailed-variable "Detail4"}}}
+     "Detail4")))
+
+(deftest platforms2-facets-v2-test-simple
+  "Tests for keys that are missing in the hierarchy. For Platform keywords
+  short-name can exist after category or sub-category."
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll1"
+                                                      :ShortName "S1"
+                                                      :VersionId "V1"
+                                                      :Platforms [(umm-spec-common/platform
+                                                                   {:ShortName "NASA S-3B VIKING"
+                                                                    :LongName "NASA S-3B VIKING"
+                                                                    :Type "Jet"})]}))
+        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll2"
+                                                      :ShortName "S2"
+                                                      :VersionId "V1"
+                                                      :Platforms [(umm-spec-common/platform
+                                                                   {:ShortName "AEROS-1"
+                                                                    :LongName "AEROS-1"
+                                                                    :Type "Earth Observation Satellites"})]}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll3"
+                                                      :ShortName "S3"
+                                                      :VersionId "V1"
+                                                      :Platforms [(umm-spec-common/platform
+                                                                   {:ShortName "Aqua"
+                                                                    :LongName "Earth Observing System, Aqua"
+                                                                    :Type "Earth Observation Satellites"})]}))]
+    (are3
+     [query short-name]
+     (let [facets-result (search-and-return-v2-facets query)]
+       (assert-facet-field-in-hierarchy facets-result "Platforms" short-name 1))
+
+     "Test that a full hierarchy can be found where sub-category doesn't exist."
+     {:platforms-h {:0 {:basis "Air-based Platforms"
+                        :category "Jet"
+                        :short-name "NASA S-3B VIKING"}}}
+     "NASA S-3B VIKING"
+
+     "Test that the full hierarchy can be found."
+     {:platforms-h {:0 {:basis "Space-based Platforms"
+                        :category "Earth Observation Satellites"
+                        :sub-category "Aeros"
+                        :short-name "AEROS-1"}}}
+     "AEROS-1"
+
+     "Test that the sub-category is missing, but short-name can be found."
+     {:platforms-h {:0 {:basis "Space-based Platforms"
+                        :category "Earth Observation Satellites"
+                        :short-name "Aqua"}}}
+     "Aqua")))
 
 (deftest science-keywords-facets-v2-test
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
@@ -875,6 +1060,95 @@
                                   :YDimension 0.008
                                   :Unit "Statute Miles"}]}}}})
 
+(deftest latency-facet-v2-test
+   "Test the latency facets ingest, indexing, and search."
+   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll1"
+                                                       :ShortName "S1"
+                                                       :SpatialExtent spatial
+                                                       :CollectionDataType "NEAR_REAL_TIME"
+                                                       :Projects [{:ShortName "Proj1"
+                                                                   :LongName "Proj1 Long Name"}]}))
+         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll2"
+                                                       :ShortName "S2"
+                                                       :CollectionDataType "LOW_LATENCY"
+                                                       :Projects [{:ShortName "Proj2"
+                                                                   :LongName "Proj2 Long Name"}]}))
+         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll3"
+                                                       :ShortName "S3"
+                                                       :CollectionDataType "EXPEDITED"
+                                                       :Projects [{:ShortName "Proj3"
+                                                                   :LongName "Proj3 Long Name"}]}))]
+
+     (testing "Latency v2 facets"
+       (let [;; search for collections without latency parameter.
+             facets-result1 (search-and-return-v2-facets {})
+             ;; search for collections with one of the valid latency values.
+             facets-result2 (search-and-return-v2-facets {:latency "1 to 4 days"})
+             ;; search for collections with an invalid latency value.
+             facets-result3 (search-and-return-v2-facets {:latency "1 to 5 days"})
+             ;; search for collections with all three valid latency values
+             facets-result4 (search-and-return-v2-facets {:latency ["1 to 4 days" "3 to 24 hours" "1 to 3 hours"]})]
+         ;; Verify all 3 latency facets show up with the right links.
+         (assert-latency-facet-field facets-result1
+          "1 to 3 hours"
+          1
+          {:apply "http://localhost:3003/collections.json?page_size=0&include_facets=v2&latency%5B%5D=1+to+3+hours"})
+         (assert-latency-facet-field facets-result1
+          "3 to 24 hours"
+          1
+          {:apply "http://localhost:3003/collections.json?page_size=0&include_facets=v2&latency%5B%5D=3+to+24+hours"})
+         (assert-latency-facet-field facets-result1
+          "1 to 4 days"
+          1
+          {:apply "http://localhost:3003/collections.json?page_size=0&include_facets=v2&latency%5B%5D=1+to+4+days"})
+
+         ;; Verify all 3 latency facets show up with "1 to 4 days" links being marked as "remove". And the other two links
+         ;; have the "1 to 4 days" appended to the query.
+         (assert-latency-facet-field facets-result2
+          "1 to 3 hours"
+          1
+          {:apply "http://localhost:3003/collections.json?latency=1+to+4+days&page_size=0&include_facets=v2&latency%5B%5D=1+to+3+hours"})
+         (assert-latency-facet-field facets-result2
+          "3 to 24 hours"
+          1
+          {:apply "http://localhost:3003/collections.json?latency=1+to+4+days&page_size=0&include_facets=v2&latency%5B%5D=3+to+24+hours"})
+         (assert-latency-facet-field facets-result2
+          "1 to 4 days"
+          1
+          {:remove "http://localhost:3003/collections.json?page_size=0&include_facets=v2"})
+
+
+          ;; Verify all 3 latency facets show up and all have the "1 to 5 days" appended to their queries.
+          (assert-latency-facet-field facets-result3
+          "1 to 3 hours"
+          1
+          {:apply "http://localhost:3003/collections.json?latency=1+to+5+days&page_size=0&include_facets=v2&latency%5B%5D=1+to+3+hours"})
+         (assert-latency-facet-field facets-result3
+          "3 to 24 hours"
+          1
+          {:apply "http://localhost:3003/collections.json?latency=1+to+5+days&page_size=0&include_facets=v2&latency%5B%5D=3+to+24+hours"})
+         (assert-latency-facet-field facets-result3
+          "1 to 4 days"
+          1
+          {:apply "http://localhost:3003/collections.json?latency=1+to+5+days&page_size=0&include_facets=v2&latency%5B%5D=1+to+4+days"})
+
+         ;; Verify all 3 latency facets show up with the links marked as "remove".
+         (assert-latency-facet-field facets-result4
+          "1 to 3 hours"
+          1
+          {:remove "http://localhost:3003/collections.json?latency=1+to+4+days&latency=3+to+24+hours&page_size=0&include_facets=v2"})
+         (assert-latency-facet-field facets-result4
+          "3 to 24 hours"
+          1
+          {:remove "http://localhost:3003/collections.json?latency=1+to+4+days&latency=1+to+3+hours&page_size=0&include_facets=v2"})
+         (assert-latency-facet-field facets-result4
+          "1 to 4 days"
+          1
+          {:remove "http://localhost:3003/collections.json?latency=3+to+24+hours&latency=1+to+3+hours&page_size=0&include_facets=v2"})))))
+
 (deftest horizontal-data-resolution-range-facet-v2-test
   "Test the horizontal data resolution facets ingest, indexing, and search."
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
@@ -900,7 +1174,7 @@
         (assert-facet-field facets-result "Horizontal Data Resolution" "30 to 100 meters" 0)
         (assert-facet-field facets-result "Horizontal Data Resolution" "100 to 250 meters" 0)
         (assert-facet-field facets-result "Horizontal Data Resolution" "250 to 500 meters" 0)
-        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 meters" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 meters" 0)
         (assert-facet-field facets-result "Horizontal Data Resolution" "1 to 10 km" 1)
         (assert-facet-field facets-result "Horizontal Data Resolution" "10 to 50 km" 1)
         (assert-facet-field facets-result "Horizontal Data Resolution" "50 to 100 km" 0)
@@ -918,7 +1192,7 @@
         (assert-facet-field facets-result "Horizontal Data Resolution" "30 to 100 meters" 0)
         (assert-facet-field facets-result "Horizontal Data Resolution" "100 to 250 meters" 0)
         (assert-facet-field facets-result "Horizontal Data Resolution" "250 to 500 meters" 0)
-        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 meters" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 meters" 0)
         (assert-facet-field facets-result "Horizontal Data Resolution" "1 to 10 km" 1)
         (assert-facet-field facets-result "Horizontal Data Resolution" "10 to 50 km" 1)
         (assert-facet-field facets-result "Horizontal Data Resolution" "50 to 100 km" 0)
@@ -943,7 +1217,7 @@
         (assert-facet-field facets-result "Horizontal Data Resolution" "30 to 100 meters" 0)
         (assert-facet-field facets-result "Horizontal Data Resolution" "100 to 250 meters" 0)
         (assert-facet-field facets-result "Horizontal Data Resolution" "250 to 500 meters" 0)
-        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 meters" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 meters" 0)
         (assert-facet-field facets-result "Horizontal Data Resolution" "1 to 10 km" 1)
         (assert-facet-field facets-result "Horizontal Data Resolution" "10 to 50 km" 1)
         (assert-facet-field facets-result "Horizontal Data Resolution" "50 to 100 km" 0)
@@ -962,7 +1236,7 @@
         (assert-facet-field facets-result "Horizontal Data Resolution" "30 to 100 meters" 0)
         (assert-facet-field facets-result "Horizontal Data Resolution" "100 to 250 meters" 0)
         (assert-facet-field facets-result "Horizontal Data Resolution" "250 to 500 meters" 0)
-        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 meters" 1)
+        (assert-facet-field facets-result "Horizontal Data Resolution" "500 to 1000 meters" 0)
         (assert-facet-field facets-result "Horizontal Data Resolution" "1 to 10 km" 1)
         (assert-facet-field facets-result "Horizontal Data Resolution" "10 to 50 km" 1)
         (assert-facet-field facets-result "Horizontal Data Resolution" "50 to 100 km" 0)

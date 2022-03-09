@@ -451,4 +451,4 @@ applications, as well as several libraries and support applications.
 
 ## License
 
-Copyright © 2014-2021 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
+Copyright © 2014-2022 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.

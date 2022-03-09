@@ -59,6 +59,11 @@
   {:default 25
    :type Long})
 
+(defconfig subscriptions-limit
+  "The subscription limit for a single non-admin subscriber id."
+  {:default 100
+   :type Long})
+
 (defconfig mail-sender
   "The email sender's email address."
   {:default ""

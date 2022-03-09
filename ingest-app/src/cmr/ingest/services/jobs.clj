@@ -42,6 +42,10 @@
   "The number of seconds between jobs to cleanup expired collections"
   3600)
 
+(def EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
+  "Quartz job key for EmailSubscriptionProcessing job."
+  "EmailSubscriptionProcessing.job")
+
 (defn acls->provider-id-hashes
   "Converts acls to a map of provider-ids to hashes of the ACLs."
   [acls]
@@ -214,13 +218,18 @@
    (ingest-events/granule-bulk-update-task-cleanup-event)))
 
 (defn trigger-autocomplete-suggestions-reindex
+  "Triggers an autocomplete reindex for all providers followed by a prune to remove stale suggestions."
   [context]
   (let [providers (map :provider-id (mdb/get-providers context))]
-    (info "Sending events to reindex autocomplete suggestions in all providers:" (pr-str providers))
+    (info "Sending events to reindex autocomplete suggestions in providers:" (pr-str providers))
     (doseq [provider providers]
       (ingest-events/publish-provider-event
        context
-       (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))))
+       (ingest-events/provider-autocomplete-suggestion-reindexing-event provider)))
+    (info "Sending event to prune autocomplete suggestions.")
+    (ingest-events/publish-provider-event
+     context
+     (ingest-events/autocomplete-suggestion-prune-event))))
 
 (def-stateful-job BulkUpdateStatusTableCleanup
   [_ system]
@@ -258,6 +267,7 @@
     :interval (bulk-update-status-table-cleanup-interval)}
 
    {:job-type EmailSubscriptionProcessing
+    :job-key EMAIL_SUBSCRIPTION_PROCESSING_JOB_KEY
     :interval (subscription/email-subscription-processing-interval)}
 
    {:job-type TriggerPartialRefreshCollectionGranuleAggregationCacheJob

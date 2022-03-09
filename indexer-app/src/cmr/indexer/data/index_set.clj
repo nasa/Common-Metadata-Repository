@@ -371,6 +371,8 @@
           :processing-level-id-lowercase  m/string-field-mapping
           :processing-level-id-lowercase-humanized m/string-field-mapping
           :processing-level-id-humanized prioritized-humanizer-mapping
+          :latency                        m/string-field-mapping
+          :latency-lowercase              m/string-field-mapping
           :collection-data-type           m/string-field-mapping
           :collection-data-type-lowercase m/string-field-mapping
 

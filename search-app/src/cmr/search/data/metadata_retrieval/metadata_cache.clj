@@ -15,7 +15,7 @@
    [cmr.common.cache :as c]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob]]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer [debug info]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
    [cmr.common.xml :as cx]
@@ -23,9 +23,7 @@
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
    [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
    [cmr.search.services.acl-service :as acl-service]
-   [cmr.search.services.result-format-helper :as rfh]
    [cmr.umm-spec.acl-matchers :as acl-match]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.versioning :as umm-version]))
 
 (def cache-key
@@ -76,7 +74,11 @@
 
   (set-value
     [this key value]
-    (swap! cache-atom assoc key value)))
+    (swap! cache-atom assoc key value))
+  
+  (cache-size
+   [_]
+   (reduce + 0 (map :size (vals @cache-atom)))))
 
 (defn create-cache
   "Creates an instance of the cache."
@@ -105,11 +107,6 @@
   [cache]
   (let [cache-map @(:cache-atom cache)]
     (u/map-values rfm/prettify cache-map)))
-
-(defn- cache-size
-  "Returns the combined size of all the metadata in the cache."
-  [metadata-cache]
-  (reduce + (map :size (vals @(:cache-atom metadata-cache)))))
 
 (comment
  (refresh-cache {:system (get-in user/system [:apps :search])})
@@ -154,8 +151,7 @@
                                 (partition-all 1000 concepts-tuples))
         cache (c/context->cache context cache-key)]
     (reset! (:cache-atom cache) new-cache-value)
-    (info "Metadata cache refresh complete. Cache Size:" (cache-size cache))
-    nil))
+    (info "Metadata cache refresh complete. Cache Size:" (c/cache-size cache))))
 
 (defn all-cached-revision-format-maps
   "Returns a sequence of all revision format maps in the cache sorted by concept id"
@@ -186,7 +182,7 @@
         compressed-maps (u/fast-map rfm/compress revision-format-maps)]
     (swap! cache #(reduce rfm/merge-into-cache-map % compressed-maps))
     (info "Cache updated with revision format maps. Cache Size:"
-          (cache-size (c/context->cache context cache-key)))))
+          (c/cache-size (c/context->cache context cache-key)))))
 
 (defn- transform-and-cache
   "Takes existing revision format maps missing the target format, generates the format XML, and returns

@@ -1,13 +1,10 @@
 (ns cmr.access-control.data.bulk-index
   "Performs bulk indexing of access control data."
   (:require
-   [clj-time.core :as t]
    [clj-time.format :as f]
    [cmr.access-control.data.elasticsearch :as es]
    [cmr.common.concepts :as cs]
-   [cmr.common.date-time-parser :as date]
-   [cmr.common.log :refer [info debug]]
-   [cmr.common.time-keeper :as tk]
+   [cmr.common.log :refer [info]]
    [cmr.common.util :as util]))
 
 (defmulti prepare-batch
@@ -47,6 +44,8 @@
   ([context concept-batches]
    (bulk-index-with-revision-date context concept-batches nil))
   ([context concept-batches options]
+   (info (format "Bulk indexing [%d] batches of concepts with revision date"
+                 (count concept-batches)))
    (reduce (fn [{:keys [num-indexed max-revision-date]} batch]
              (let [max-revision-date (get-max-revision-date batch max-revision-date)
                    batch (prepare-batch context batch options)]

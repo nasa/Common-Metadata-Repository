@@ -3,7 +3,7 @@
 ## General
 Calls can be made with curl as such:
 
-    curl -is -H 'Cmr-Token abcd1234' http://localhost:3000/dev/configuration/tea/provider/POCLOUD
+    curl -is -H 'Authorization: Bearer abcd1234' http://localhost:3000/dev/configuration/tea/provider/POCLOUD
 
 ## Capabilities
 To get a programatic output of the supported urls with descriptions, call the capabilities end point which is availible as either the root of the service or named:
@@ -55,7 +55,7 @@ Generate a TEA configuration file based on the supplied CMR provider id and [Lan
 
 * Request
 	* GET /configuration/tea/provider<provider-id>
-	* Headers: `Cmr-Token`: [CMR token]
+	* Headers: `Authorization`: [CMR token]
 * Response
 	* Content: Tea configuration file on success, 400 on error
 	* Headers: `cmr-took` - number of seconds of execution
@@ -74,6 +74,10 @@ Return a simple response indicating that the service is running
 	* Content: `I'm a teapot` 
 	* Headers: `cmr-took` - number of seconds of execution
 	* Status Codes: 418 - active
+
+## License
+Copyright © 2022-2022 United States Government as represented by the Administrator
+of the National Aeronautics and Space Administration. All Rights Reserved.
 
 [lpad]: https://launchpad.nasa.gov/ "NASA LaunchPad"
 [edl]: https://urs.earthdata.nasa.gov/ "EarthData Login"

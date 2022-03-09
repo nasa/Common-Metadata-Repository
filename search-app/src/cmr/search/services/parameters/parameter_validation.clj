@@ -40,7 +40,7 @@
                       :processing-level-id-h :sensor :data-center-h :measurement :variable-name
                       :variable-concept-id :variable-native-id :author :service-name :service-type
                       :service-concept-id :tool-name :tool-type :tool-concept-id :granule-data-format
-                      :granule-data-format-h :horizontal-data-resolution-range}
+                      :granule-data-format-h :horizontal-data-resolution-range :latency}
     :always-case-sensitive #{:echo-collection-id}
     :disallow-pattern #{:echo-collection-id}}))
 
@@ -153,6 +153,7 @@
    :project cpv/string-plus-and-options
    :project-h cpv/string-plus-and-options
    :consortium cpv/string-plus-and-options
+   :latency cpv/string-param-options
    :provider cpv/string-param-options
    :revision-date cpv/and-option
    :science-keywords cpv/string-plus-or-options

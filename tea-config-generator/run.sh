@@ -106,13 +106,13 @@ help_doc()
   printf "${format}" '-I' '' 'Install' 'Install dependent libraries'
 }
 
-while getopts 'hcCuUlLjt:oreIxD' opt; do
+while getopts 'hcCdDuUlLjt:orSeIx' opt; do
   case ${opt} in
     h) help_doc ;;
     c) color_mode='yes';;
     C) color_mode='no' ;;
     d) documentation ;;
-    D) deploy ;;
+    D) deploy ; exit $? ;;
     u) python3 -m unittest discover -s ./ -p '*test.py' ;;
     U) python3 -m unittest discover -s ./ -p '*test.py' &> test.results.txt ;;
     l) lint ;;
@@ -121,62 +121,19 @@ while getopts 'hcCuUlLjt:oreIxD' opt; do
     t) token=${OPTARG} ;;
     o) serverless offline ; exit ;;
     r) report_code_coverage ;;
+    S) serverless doctor &> doctor.txt ;;
     
     x) rm -rf build script.log ;;
-
-    e)
-      baseEndPoint='http://localhost:3000/dev'
-      cprintf $YELLOW 'Example calls'
-      
-      echo
-      cprintf $GREEN "Calling /tea"
-      curl -s -H 'Cmr-Pretty: true' "${baseEndPoint}/configuration/tea"
-      echo
-      cprintf $GREEN '----'
-      read
-      
-      echo
-      cprintf $GREEN 'Calling /tea/capabilities'
-      curl -s "${baseEndPoint}/configuration/tea/capabilities" | head
-      echo
-      cprintf $GREEN '----'
-      read
-      
-      echo
-      cprintf $GREEN 'Calling /tea/status'
-      curl -i "${baseEndPoint}/configuration/tea/status"
-      echo
-      cprintf $GREEN '----'
-      
-      echo
-      cprintf $GREEN 'Calling /tea/provider/POCLOUD, may take 7 seconds'
-      curl -H "Cmr-Token: ${token}" "${baseEndPoint}/configuration/tea/provider/POCLOUD"
-      echo
-      cprintf $GREEN '----'
-
-      echo
-      cprintf $GREEN 'Calling /tea/provider/POCLOUD again with just headers, may take 7 seconds'
-      curl -I -H "Cmr-Token: ${token}" "${baseEndPoint}/configuration/tea/provider/POCLOUD"
-      echo
-
-      #curl -s http://localhost:7000/local-bucket/index.html
-      #curl -H 'Cmr-Token: token-value-here' '${baseEndPoint}/configuration/tea/debug'
-      ;;
+    e) curl -H "Authorization: ${token}" "${baseEndPoint}/configuration/tea/provider/POCLOUD" ;;
     I)
+      #alternet ways to install serverless, enable as needed
       #npm install -g serverless
       #curl --silent -o- --location https://slss.io/install | bash
       pip3 install -r requirements.txt 
+      serverless plugin install -n serverless-offline
       serverless plugin install -n serverless-python-requirements
       serverless plugin install -n serverless-s3-local
       ;;
-    *) cprintf $RED "option required"
+    *) cprintf $RED "option required" ; exit 42 ;;
   esac
 done
-
-# docker network create localstack
-# docker-compose up -d
-# curl -i http://localhost:4566/health
-# awslocal s3 ls
-# serverless plugin install -n serverless-python-requirements
-# serverless --config serverless-local.yml deploy --stage local
-# serverless deploy --config serverless-local.yml --stage local

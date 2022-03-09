@@ -121,7 +121,6 @@
      "expected a nil"
      nil "")))
 
-
 (deftest keyword-scheme->kms-resource-test
   (testing "Schema overrides change the gcmd resource"
     (cmr.transmit.config/set-kms-scheme-override-json!
@@ -134,3 +133,23 @@
       (is (= "extra?format=csv" result-extra) "extra property injected"))
     ;; reset for future tests
     (cmr.transmit.config/set-kms-scheme-override-json! "")))
+
+(def spatial-keywords-3-subregions
+  (str "\"Keyword Version: 8.6\",\"Revision: 2018-10-24 08:20:28\",\"Timestamp: 2018-11-05 09:03:32\",\"Terms Of Use: http://gcmd.nasa.gov/r/l/TermsOfUse\",\"The most up to date XML representations can be found here: https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/locations/?format=xml\"\"Case native\"\n"
+       "Location_Category,Location_Type,Location_Subregion1,Location_Subregion2,Location_Subregion3,UUID\n"
+       "\"CONTINENT\",\"\",\"\",\"\",\"\",\"0a672f19-dad5-4114-819a-2eb55bdbb56a\"\n"
+       "\"CONTINENT\",\"AFRICA\",\"\",\"\",\"\",\"2ca1b865-5555-4375-aa81-72811335b695\"\n"
+       "\"OCEAN\",\"ATLANTIC OCEAN\",\"NORTH ATLANTIC OCEAN\",\"MEDITERRANEAN SEA\",\"ADRIATIC SEA\",\"7b93c892-2fc4-417b-a4da-5c8a2fca361b\"\n"))
+
+(def spatial-keywords-4-subregions
+  (str "\"Keyword Version: 8.6\",\"Revision: 2018-10-24 08:20:28\",\"Timestamp: 2018-11-05 09:03:32\",\"Terms Of Use: http://gcmd.nasa.gov/r/l/TermsOfUse\",\"The most up to date XML representations can be found here: https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/locations/?format=xml\"\"Case native\"\n"
+       "Location_Category,Location_Type,Location_Subregion1,Location_Subregion2,Location_Subregion3,Location_Subregion4,UUID\n"
+       "\"CONTINENT\",\"\",\"\",\"\",\"\",\"\",\"0a672f19-dad5-4114-819a-2eb55bdbb56a\"\n"
+       "\"CONTINENT\",\"AFRICA\",\"\",\"\",\"\",\"\",\"2ca1b865-5555-4375-aa81-72811335b695\"\n"
+       "\"OCEAN\",\"ATLANTIC OCEAN\",\"NORTH ATLANTIC OCEAN\",\"MEDITERRANEAN SEA\",\"ADRIATIC SEA\",\"GULF OF TRIESTE\",\"7b93c892-2fc4-417b-a4da-5c8a2fca361b\"\n"))
+
+(deftest keyword-scheme->kms-resource-test
+  (testing "Using the 3 subregion and the 4 subregion KMS values to read in spatial-keywords
+           (location). The end parsing should be the same until the CMR supports only subregion-4.)."
+    (is (= (#'kms/parse-entries-from-csv :spatial-keywords spatial-keywords-3-subregions)
+           (#'kms/parse-entries-from-csv :spatial-keywords spatial-keywords-4-subregions)))))

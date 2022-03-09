@@ -218,6 +218,7 @@
    :variable-native-id "variable-native-ids-lowercase"
    :measurement "measurements-lowercase"
    :author "authors-lowercase"
+   :latency "latency-lowercase"
    :consortium "consortiums-lowercase"
    :service-name "service-names-lowercase"
    :service-type "service-types-lowercase"
