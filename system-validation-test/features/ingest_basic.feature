@@ -3,7 +3,7 @@ Feature: Basic Ingest API calls
 
   Background:
     Given I use the authorization token from environment variable "CMR_TOKEN"
-    And the provider "PROV1" exists
+    And the provider from environment variable "CMR_TEST_PROV" exists
     And set body to the following XML "<Collection><ShortName>TestColl1</ShortName><VersionId>Version01</VersionId><InsertTime>1999-12-31T19:00:00-05:00</InsertTime><LastUpdate>1999-12-31T19:00:00-05:00</LastUpdate><LongName>CMR8021COLLECTION</LongName><DataSetId>LarcDatasetId</DataSetId><Description>A minimal valid collection</Description><Orderable>true</Orderable><Visible>true</Visible></Collection>"
 
   @ingest

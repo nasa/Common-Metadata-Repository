@@ -124,8 +124,9 @@ Given(/^I am ingesting (a )?"([\w\d\-_ ]+)"$/) do |_, ingest_type|
   @ingest_type = ingest_type
 end
 
-Given(/^the provider "([\w\d\-_ ]+)" exists$/) do |provider_name|
-  pending("Need to create Provider #{provider_name}.") unless check_provider(provider_name, cmr_root)
+Given(/^the provider from environment variable "([\w\d\-_ ]+)" exists$/) do |provider_name|
+  pending("Need to set #{provider_name} in environment or cucumber profile") unless ENV[provider_name]
+  pending("Need to create Provider #{provider_name}.") unless check_provider(ENV[provider_name], cmr_root)
 end
 
 Given(/^I am deleting on "([\w\d\-_ ]+)"$/) do |concept_type|
@@ -250,7 +251,7 @@ Then(/^the response (status( code)?) is (\d+)$/) do |_, status_code|
 end
 
 Then(/^the response (status( code)?) is in "((\d+,?(\d+)?))+"$/) do |_, status_codes|
-  values = status_codes.split(",")
+  values = status_codes.split(',')
   expect((values.include? @response.code))
 end
 
