@@ -634,6 +634,53 @@
         (assert-facet-field-not-exist facets-result "Instruments" "I3")
         (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
 
+(deftest hierarchy-facets-v2-test-more-complex-test
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll1"
+                                                      :ShortName "S1"
+                                                      :VersionId "V1"
+                                                      :Platforms [(data-umm-spec/platform
+                                                                  {:ShortName "AEROS-1"})
+                                                                 (data-umm-spec/platform
+                                                                  {:ShortName "Aqua"})
+                                                                 (data-umm-spec/platform
+                                                                  {:ShortName "AM-1"})]
+                                                      :ScienceKeywords [(umm-spec-common/science-keyword
+                                                                         {:Category "Earth Science"
+                                                                          :Topic "Topic1"
+                                                                          :Term "Term1"
+                                                                          :DetailedVariable "Detail1"})
+                                                                        (umm-spec-common/science-keyword
+                                                                          {:Category "Earth Science"
+                                                                           :Topic "Topic1"
+                                                                           :Term "Term1"
+                                                                           :DetailedVariable "Detail2"})
+                                                                         (umm-spec-common/science-keyword
+                                                                          {:Category "Earth Science"
+                                                                           :Topic "Topic1"
+                                                                           :Term "Term1"
+                                                                           :VariableLevel1 "Level3-1"
+                                                                           :DetailedVariable "Detail3"})]}))]
+
+    (testing "Testing that a sub-category and two short name platform facets exist"
+      (let [facets-result (search-and-return-v2-facets {:platforms-h
+                                                        {:0
+                                                         {:basis "Space-based Platforms"
+                                                          :category "Earth Observation Satellites"}}})]
+        (assert-facet-field-in-hierarchy facets-result "Platforms" "Terra" 1)
+        (assert-facet-field-in-hierarchy facets-result "Platforms" "Aqua" 1)
+        (assert-facet-field-in-hierarchy facets-result "Platforms" "Aeros" 1)))
+
+    (testing "Testing that a sub-category and two short name platform facets exist"
+      (let [facets-result (search-and-return-v2-facets {:science-keywords-h
+                                                        {:0
+                                                         {:topic "Topic1"
+                                                          :term "Term1"}}})]
+        (assert-facet-field-in-hierarchy facets-result "Keywords" "Detail1" 1)
+        (assert-facet-field-in-hierarchy facets-result "Keywords" "Detail2" 1)
+        (assert-facet-field-in-hierarchy facets-result "Keywords" "Level3-1" 1)))))
+
+
 (deftest science-keywords-facets-v2-test-simple
   "Tests for keys that are missing in the hierarchy. If science keywords are used, DetailedVariable
   can exist after Term, VariableLevel1, VariableLevel2, or VariableLevel3.  For Platform keywords
