@@ -22,7 +22,7 @@ And then execute:
 
 To run all tests invoke cucumber with the following
 
-    $ cucumber CMR_ROOT=https://cmr.my-instance.com CMR_TOKEN=$MY_CMR_EDL_TOKEN CMR_USER=$MY_EDL_USERNAME
+    $ cucumber CMR_ROOT=https://cmr.my-instance.com CMR_TOKEN=$MY_CMR_EDL_TOKEN CMR_USER=$MY_EDL_USERNAME CMR_TEST_PROV=$MY_CMR_TEST_PROV
 
 
 To perform a limited test use the `@quick` tag as shown below
@@ -31,6 +31,9 @@ To perform a limited test use the `@quick` tag as shown below
 
 
 When running the suite against a newly instantiated instance of CMR, use the `@quick` tag as other tests may make assumptions about data being present.
+
+When running @ingest tests, it's required to configure $MY_CMR_EDL_TOKEN in environment or cucumber profile to a
+provider that exists in the test environment.
 
 ### Tags
 
