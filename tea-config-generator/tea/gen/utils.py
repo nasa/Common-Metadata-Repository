@@ -36,13 +36,14 @@ def add_to_dict(all_s3_prefix_groups_dict, s3_prefixes_set, group_names_set):
 
 def create_tea_config(all_s3_prefix_groups_dict):
     """ For given S3 prefixes groups dicionary creates the result string"""
-    result_string = ''
+    result_string = 'PRIVATE_BUCKETS:\n'
     for key, value in all_s3_prefix_groups_dict.items():
-        result_string += key
+        result_string += '  '
+        result_string += key.strip()
         result_string += ':\n'
         for group in value:
-            result_string += '  - ' # space space dash space
-            result_string += group
+            result_string += '    - '# 4xspace dash space
+            result_string += group.strip()
             result_string += '\n'
     return result_string
 
