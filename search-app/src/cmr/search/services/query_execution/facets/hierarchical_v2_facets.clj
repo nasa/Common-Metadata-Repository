@@ -290,7 +290,10 @@
                       bucket)]
               (if-let [siblings (and sf
                                      (filter-out-accounted-for-facets v2-node subfield sf))]
-                (update v2-node :children #(concat % siblings))
+                (update v2-node :children #(sort-by :title
+                                                    util/compare-natural-strings
+                                                    (concat % siblings)))
+
                 v2-node)))
           v2-node))
 

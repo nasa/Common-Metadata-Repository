@@ -938,7 +938,16 @@
             "http://localhost:3003/collections.json?include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere&science_keywords_h%5B0%5D%5Bterm%5D=Snow%2FIce"},
            :has_children true,
            :children
-           [{:title "Snow Water Equivalent",
+           [{:title "Rain",
+             :type :filter,
+             :applied false,
+             :count 1,
+             :links
+             {:apply
+              "http://localhost:3003/collections.json?include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere&science_keywords_h%5B0%5D%5Bterm%5D=Snow%2FIce&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Snow+Water+Equivalent&science_keywords_h%5B0%5D%5Bdetailed_variable%5D=Rain"},
+             :has_children false,
+             :field :detailed-variable}
+            {:title "Snow Water Equivalent",
              :type :filter,
              :applied false,
              :count 1,
@@ -946,16 +955,7 @@
              {:apply
               "http://localhost:3003/collections.json?include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere&science_keywords_h%5B0%5D%5Bterm%5D=Snow%2FIce&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Snow+Water+Equivalent&science_keywords_h%5B0%5D%5Bvariable_level_2%5D=Snow+Water+Equivalent"},
              :has_children false,
-             :field :variable-level-2}
-            {:title "Rain",
-              :type :filter,
-              :applied false,
-              :count 1,
-              :links
-              {:apply
-               "http://localhost:3003/collections.json?include_facets=v2&science_keywords_h%5B0%5D%5Btopic%5D=Terrestrial+Hydrosphere&science_keywords_h%5B0%5D%5Bterm%5D=Snow%2FIce&science_keywords_h%5B0%5D%5Bvariable_level_1%5D=Snow+Water+Equivalent&science_keywords_h%5B0%5D%5Bdetailed_variable%5D=Rain"},
-              :has_children false,
-              :field :detailed-variable}]
+             :field :variable-level-2}]
            :field :variable-level-1}],
          :field :term}],
        :field :topic}],
