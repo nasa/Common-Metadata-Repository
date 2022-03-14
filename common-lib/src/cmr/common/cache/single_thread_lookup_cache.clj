@@ -103,6 +103,10 @@
             ;; We throw these back to the caller so they can deal with them.
             (throw result)
             result)))))
+  
+  (cache-size
+   [_]
+   (c/cache-size delegate-cache))
 
   (reset
     [this]
@@ -182,5 +186,3 @@
 
   ;; Stop the cache
   (l/stop slc nil))
-
-

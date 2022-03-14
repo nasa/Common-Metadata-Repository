@@ -34,6 +34,7 @@
    :projects :short-name
    :temporal-keywords :temporal-resolution-range
    :spatial-keywords :uuid
+   :spatial-keywords-old :uuid
    :science-keywords :uuid
    :measurement-name :object
    :concepts :short-name
@@ -79,12 +80,13 @@
    :projects "projects?format=csv"
    :temporal-keywords "temporalresolutionrange?format=csv"
    :spatial-keywords "locations?format=csv"
+   :spatial-keywords-old "locations?format=csv"
    :science-keywords "sciencekeywords?format=csv"
    :measurement-name "measurementname?format=csv"
    :concepts "idnnode?format=csv"
    :iso-topic-categories "isotopiccategory?format=csv"
    :related-urls "rucontenttype?format=csv"
-   :granule-data-format "granuledataformat?format=csv"
+   :granule-data-format "dataformat?format=csv"
    :mime-type "mimetype?format=csv"})
 
 (defn- keyword-scheme->kms-resource
@@ -103,7 +105,8 @@
    :instruments [:category :class :type :subtype :short-name :long-name :uuid]
    :projects [:bucket :short-name :long-name :uuid]
    :temporal-keywords [:temporal-resolution-range :uuid]
-   :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3 :uuid]
+   :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3 :subregion-4 :uuid]
+   :spatial-keywords-old [:category :type :subregion-1 :subregion-2 :subregion-3 :uuid]
    :science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3
                       :detailed-variable :uuid]
    :measurement-name [:context-medium :object :quantity :uuid]
@@ -120,6 +123,8 @@
          {:providers [:bucket-level-0 :bucket-level-1 :bucket-level-2 :bucket-level-3 :short-name
                       :long-name :data-center-url :uuid]
           :spatial-keywords [:location-category :location-type :location-subregion-1
+                             :location-subregion-2 :location-subregion-3 :location-subregion-4 :uuid]
+          :spatial-keywords-old [:location-category :location-type :location-subregion-1
                              :location-subregion-2 :location-subregion-3 :uuid]}))
 
 (def keyword-scheme->required-field
@@ -127,6 +132,7 @@
   (merge keyword-scheme->leaf-field-name
          {:science-keywords :term
           :spatial-keywords :category
+          :spatial-keywords-old :category
           :granule-data-format :uuid}))
 
 (def cmr-to-gcmd-keyword-scheme-aliases
@@ -171,12 +177,20 @@
   "Number of lines which contain header information in csv files (not the actual keyword values)."
   2)
 
+(defn- get-spatial-scheme-to-use
+  "Figures out if the KMS is returning the subregion-3 or subregion-4 data for spatial-keywords."
+  [subfield-names]
+  (if (= (:spatial-keywords keyword-scheme->expected-field-names) subfield-names)
+    :spatial-keywords
+    :spatial-keywords-old))
+
 (defn- subfield-names-valid?
   "Validates that the provided subfield names match the expected subfield names for the given
   keyword scheme. Returns true if they match, false otherwise."
   [keyword-scheme subfield-names]
   (let [expected-subfield-names (keyword-scheme keyword-scheme->expected-field-names)
         names-match-result (= expected-subfield-names subfield-names)]
+        ;; allow spatial-keywords that contain either 3 or 4 subregions.
     (when-not names-match-result
       (error (format "Expected subfield names for %s to be %s, but were %s."
                      (name keyword-scheme)
@@ -184,19 +198,32 @@
                      (pr-str subfield-names))))
     names-match-result))
 
+(defn- remove-not-yet-supported-fields
+  "Removes the spatial-keywords subregion-4 keyword if it exists. The CMR is not ready to use
+   subregion-4, but KMS has already implemented it. This allows the CMR to use either the subregion-3
+   or subregion-4 KMS output."
+  [keyword-scheme keyword-entries]
+  (def keyword-entries keyword-entries)
+  (if (= keyword-scheme :spatial-keywords)
+    (map #(dissoc % :subregion-4) keyword-entries)
+    keyword-entries))
+
 (defn- parse-entries-from-csv
   "Parses the CSV returned by the GCMD KMS. It is expected that the CSV will be returned in a
   specific format with the first line providing metadata information, the second line providing
   a breakdown of the subfields for the keyword scheme, and from the third line on are the actual
   values.
 
-  keyword-schede shoud be something like :platforms
+  keyword-scheme shoud be something like :platforms
   csv-content is the raw text of the CSV file to parse
   Returns a sequence of full hierarchy maps or nil if subfield names do not match expected."
   [keyword-scheme csv-content]
   (let [all-lines (csv/read-csv csv-content)
         ;; Line 2 contains the subfield names
-        kms-subfield-names (map csk/->kebab-case-keyword (second all-lines))]
+        kms-subfield-names (map csk/->kebab-case-keyword (second all-lines))
+        keyword-scheme (if (= keyword-scheme :spatial-keywords)
+                         (get-spatial-scheme-to-use kms-subfield-names)
+                         keyword-scheme)]
     (when (subfield-names-valid? keyword-scheme kms-subfield-names)
       (let [keyword-entries (->> all-lines
                                  (drop NUM_HEADER_LINES)
@@ -204,7 +231,8 @@
                                  (map #(zipmap (keyword-scheme keyword-scheme->field-names) %))
                                  (map remove-blank-keys)
                                  ;; Only keep entries which map to full valid keywords
-                                 (filter (keyword-scheme->required-field keyword-scheme)))
+                                 (filter (keyword-scheme->required-field keyword-scheme))
+                                 (remove-not-yet-supported-fields keyword-scheme))
             leaf-field-name (keyword-scheme keyword-scheme->leaf-field-name)
             invalid-entries (find-invalid-entries keyword-entries leaf-field-name)]
         ;; Print out warnings for any duplicate keywords so that we can create a Splunk alert.
@@ -271,10 +299,11 @@
    :category \"Earth Observation Satellites\" :basis \"Space-based Platforms\"} ..."
   [context keyword-scheme]
   {:pre (some? (keyword-scheme keyword-scheme->field-names))}
-  (let [keywords
-         (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
-    (info (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))
-    keywords))
+  (when-not (= keyword-scheme :spatial-keywords-old)
+    (let [keywords
+           (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
+      (info (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))
+      keywords)))
 
 (comment
   (def get-keywords-from-system

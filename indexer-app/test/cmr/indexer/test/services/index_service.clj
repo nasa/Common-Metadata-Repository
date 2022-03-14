@@ -2,6 +2,7 @@
   "Tests for index service"
   (:require
    [clojure.test :refer :all]
+   [cmr.common.util :refer [are3]]
    [cmr.indexer.services.index-service :as index-svc]))
 
 (deftest index-concept-invalid-input-test
@@ -16,18 +17,13 @@
          nil 1
          nil nil)))
 
-(deftest anti-value-test
-  (are [doc result]
-       (is (= result (index-svc/anti-value-suggestion? doc)))
+(deftest determine-reindex-batch-size-test
+  (testing "determining the reindexing batch size based on the given provider."
+    (are3 [expected-size provider]
+      (is (= expected-size (index-svc/determine-reindex-batch-size provider)))
 
-       {:value "not"} false
-       {:value "Nothofagus"} false
-       {:value "Notothenioids"} false
+      "Testing a provider that has normal sized collections."
+      (index-svc/collection-reindex-batch-size) "NSIDC"
 
-       {:value "none"} true
-       {:value "not applicable"} true
-       {:value "not provided"} true
-       {:value ""} true
-       {:value "      "} true
-       {:value "\n\t"} true
-       {:value nil} true))
+      "Testing a provider that has large sized collections."
+      (index-svc/collection-large-file-providers-reindex-batch-size) "GHRSSTCWIC")))

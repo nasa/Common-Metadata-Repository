@@ -33,11 +33,12 @@
           concept-with-user-id (api-core/set-user-id concept request-context headers)
           ;; Log the ingest attempt
           _ (info (format "Ingesting tool %s from client %s"
-                          (api-core/concept->loggable-string concept-with-user-id) 
+                          (api-core/concept->loggable-string concept-with-user-id)
                           (:client-id request-context)))
-          save-tool-result (ingest/save-tool request-context concept-with-user-id)]
-      ;; Log the successful ingest, with the metadata size in bytes. 
-      (api-core/log-concept-with-metadata-size concept-with-user-id request-context)
+          save-tool-result (ingest/save-tool request-context concept-with-user-id)
+          concept-to-log (api-core/concept-with-revision-id concept-with-user-id save-tool-result)]
+      ;; Log the successful ingest, with the metadata size in bytes.
+      (api-core/log-concept-with-metadata-size concept-to-log request-context)
       (api-core/generate-ingest-response headers save-tool-result))))
 
 (defn delete-tool

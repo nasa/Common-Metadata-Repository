@@ -12,3 +12,5 @@ Basis,Category,Sub_Category,Short_Name,Long_Name,UUID
 "Space-based Platforms","Earth Observation Satellites","Defense Meteorological Satellite Program(DMSP)","DMSP 5B/F3","Defense Meteorological Satellite Program-F3","7ed12e98-95b1-406c-a58a-f4bbfa405269"
 "Space-based Platforms","Earth Observation Satellites","SMAP-like","SMAP","Soil Moisture Active and Passive Observatory","7ee03239-24ff-433e-ab7e-8be8b9b2636b"
 "Space-based Platforms","Earth Observation Satellites","","Aqua","Earth Observing System, Aqua","ea7fd15d-190d-43f3-bdd3-75f5d88dc3f8"
+"Space-based Platforms","Earth Observation Satellites","","Terra","Earth Observing System, Terra (AM-1)","80eca755-c564-4616-b910-a4c4387b7c54"
+"Space-based Platforms","Space Stations/Crewed Spacecraft","Space Station","ISS","International Space Station","93c5d18c-be62-46c4-9545-42f73a854d85"

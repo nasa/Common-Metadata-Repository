@@ -49,7 +49,6 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.services.errors :as errors]
-   [cmr.common.time-keeper :as time-keeper]
    [cmr.redis-utils.redis-cache :as redis-cache])
   (:import
    (cmr.common.cache.in_memory_cache InMemoryCache)))
@@ -112,7 +111,13 @@
   (set-value
     [this key value]
     (c/set-value memory-cache key value)
-    (c/set-value hash-cache (key->hash-cache-key key) (hash value))))
+    (c/set-value hash-cache (key->hash-cache-key key) (hash value)))
+  
+  (cache-size
+   [_]
+   (+ (c/cache-size memory-cache)
+      (c/cache-size hash-cache))))
+
 (record-pretty-printer/enable-record-pretty-printing ConsistentMemoryCache)
 
 (defn fallback-with-timeout

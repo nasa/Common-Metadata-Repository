@@ -70,9 +70,10 @@
           _ (info (format "Ingesting granule %s from client %s"
                           (api-core/concept->loggable-string concept)
                           (:client-id request-context)))
-          save-granule-result (ingest/save-granule request-context concept)]
+          save-granule-result (ingest/save-granule request-context concept)
+          concept-to-log (api-core/concept-with-revision-id concept save-granule-result)]
       ;; Log the successful ingest, with the metadata size in bytes.
-      (api-core/log-concept-with-metadata-size concept request-context)
+      (api-core/log-concept-with-metadata-size concept-to-log request-context)
       (api-core/generate-ingest-response headers save-granule-result))))
 
 (defn delete-granule

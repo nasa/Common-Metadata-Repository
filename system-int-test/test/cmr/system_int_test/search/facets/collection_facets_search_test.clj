@@ -102,7 +102,6 @@
                                                                                    :VariableLevel2 "CARBON DIOXIDE"
                                                                                    :DetailedVariable "CO2"})))
         actual-facets (get-facet-results :hierarchical)]
-    (println coll1)
     (:json-facets actual-facets)))
 
 (deftest all-hierarchical-fields-test
@@ -139,7 +138,6 @@
                                                 (data-umm-spec/location-keyword {:Category "OTHER",
                                                                                  :Type "NOT IN KMS"})]})
         actual-facets (get-facet-results :hierarchical)]
-    ; (is (= fr/expected-all-hierarchical-facets (:xml-facets actual-facets)))
     (is (= fr/expected-all-hierarchical-facets (:json-facets actual-facets)))))
 
 ;; The purpose of the test is to make sure when the same topic "Popular" is used under two different

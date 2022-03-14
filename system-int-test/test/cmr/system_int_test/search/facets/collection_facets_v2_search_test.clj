@@ -515,26 +515,34 @@
 
 (defn- assert-facet-field
   "Assert the given facet field with name and count matches the facets result"
-  [facets-result field value count]
+  [facets-result field value facet-count]
   (let [field-match-value (get-facet-field facets-result field value)]
     (testing value
-     (is (= count (:count field-match-value))))))
+     (is (= facet-count (:count field-match-value))))))
+
+(defn- assert-latency-facet-field
+   "Assert the latency facet field with count and link match the facets result"
+   [facets-result value facet-count link]
+   (let [field-match-value (get-facet-field facets-result "Latency" value)]
+     (testing value
+      (is (= facet-count (:count field-match-value)))
+      (is (= link (:links field-match-value))))))
 
 (defn- assert-field-in-hierarchy
-  [facets field value count]
+  [facets field value facet-count]
   (for [facet facets]
     (let [finding (when (= value (:title facet)) facet)]
       (if finding
         finding
         (when (:children facet)
-          (assert-field-in-hierarchy (:children facet) field value count))))))
+          (assert-field-in-hierarchy (:children facet) field value facet-count))))))
 
 (defn- assert-facet-field-in-hierarchy
-  [facets-result field value count]
+  [facets-result field value facet-count]
   (let [field-facet (first (get (group-by :title (:children facets-result)) field))]
     (first
       (flatten
-        (assert-field-in-hierarchy (:children field-facet) field value count)))))
+        (assert-field-in-hierarchy (:children field-facet) field value facet-count)))))
 
 
 (deftest platform-facets-v2-test
@@ -589,8 +597,6 @@
         (is (tester (get-in sample-platforms [:diadem :sub-category]) 2))
         (is (tester (get-in sample-platforms [:dmsp :short-name]) 2))
         (is (tester (get-in sample-platforms [:smap :short-name]) 1))
-        ;(assert-facet-field facets-result "Instruments" "I3" 1)
-        ;(assert-facet-field facets-result "Projects" "proj3" 1)
         (assert-facet-field-not-exist facets-result "Instruments" "I4")
         (assert-facet-field-not-exist facets-result "Projects" "proj4")))
 
@@ -627,6 +633,53 @@
         (is (not (tester (get-in sample-platforms [:dmsp :short-name]))))
         (assert-facet-field-not-exist facets-result "Instruments" "I3")
         (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
+
+(deftest hierarchy-facets-v2-test-more-complex-test
+  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll1"
+                                                      :ShortName "S1"
+                                                      :VersionId "V1"
+                                                      :Platforms [(data-umm-spec/platform
+                                                                  {:ShortName "AEROS-1"})
+                                                                 (data-umm-spec/platform
+                                                                  {:ShortName "Aqua"})
+                                                                 (data-umm-spec/platform
+                                                                  {:ShortName "AM-1"})]
+                                                      :ScienceKeywords [(umm-spec-common/science-keyword
+                                                                         {:Category "Earth Science"
+                                                                          :Topic "Topic1"
+                                                                          :Term "Term1"
+                                                                          :DetailedVariable "Detail1"})
+                                                                        (umm-spec-common/science-keyword
+                                                                          {:Category "Earth Science"
+                                                                           :Topic "Topic1"
+                                                                           :Term "Term1"
+                                                                           :DetailedVariable "Detail2"})
+                                                                         (umm-spec-common/science-keyword
+                                                                          {:Category "Earth Science"
+                                                                           :Topic "Topic1"
+                                                                           :Term "Term1"
+                                                                           :VariableLevel1 "Level3-1"
+                                                                           :DetailedVariable "Detail3"})]}))]
+
+    (testing "Testing that a sub-category and two short name platform facets exist"
+      (let [facets-result (search-and-return-v2-facets {:platforms-h
+                                                        {:0
+                                                         {:basis "Space-based Platforms"
+                                                          :category "Earth Observation Satellites"}}})]
+        (assert-facet-field-in-hierarchy facets-result "Platforms" "Terra" 1)
+        (assert-facet-field-in-hierarchy facets-result "Platforms" "Aqua" 1)
+        (assert-facet-field-in-hierarchy facets-result "Platforms" "Aeros" 1)))
+
+    (testing "Testing that a sub-category and two short name platform facets exist"
+      (let [facets-result (search-and-return-v2-facets {:science-keywords-h
+                                                        {:0
+                                                         {:topic "Topic1"
+                                                          :term "Term1"}}})]
+        (assert-facet-field-in-hierarchy facets-result "Keywords" "Detail1" 1)
+        (assert-facet-field-in-hierarchy facets-result "Keywords" "Detail2" 1)
+        (assert-facet-field-in-hierarchy facets-result "Keywords" "Level3-1" 1)))))
+
 
 (deftest science-keywords-facets-v2-test-simple
   "Tests for keys that are missing in the hierarchy. If science keywords are used, DetailedVariable
@@ -735,7 +788,16 @@
                                                       :Platforms [(umm-spec-common/platform
                                                                    {:ShortName "Aqua"
                                                                     :LongName "Earth Observing System, Aqua"
-                                                                    :Type "Earth Observation Satellites"})]}))]
+                                                                    :Type "Earth Observation Satellites"})]}))
+        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                     {:EntryTitle "coll4"
+                                                      :ShortName "S4"
+                                                      :VersionId "V1"
+                                                      :Platforms [(umm-spec-common/platform
+                                                                   {:ShortName "ISS"
+                                                                    :LongName "International Space Station"
+                                                                    :Type "Space Stations/Crewed Spacecraft"})]}))]
+
     (are3
      [query short-name]
      (let [facets-result (search-and-return-v2-facets query)]
@@ -758,7 +820,13 @@
      {:platforms-h {:0 {:basis "Space-based Platforms"
                         :category "Earth Observation Satellites"
                         :short-name "Aqua"}}}
-     "Aqua")))
+     "Aqua"
+
+     "Test that the hierarchy can be found when humanized value is not in KMS but the original is."
+     {:platforms-h {:0 {:basis "Space-based Platforms"
+                        :category "Space Stations/Crewed Spacecraft"
+                        :short-name "International Space Station"}}}
+     "International Space Station")))
 
 (deftest science-keywords-facets-v2-test
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
@@ -1051,6 +1119,95 @@
                                  {:XDimension 0.007
                                   :YDimension 0.008
                                   :Unit "Statute Miles"}]}}}})
+
+(deftest latency-facet-v2-test
+   "Test the latency facets ingest, indexing, and search."
+   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll1"
+                                                       :ShortName "S1"
+                                                       :SpatialExtent spatial
+                                                       :CollectionDataType "NEAR_REAL_TIME"
+                                                       :Projects [{:ShortName "Proj1"
+                                                                   :LongName "Proj1 Long Name"}]}))
+         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll2"
+                                                       :ShortName "S2"
+                                                       :CollectionDataType "LOW_LATENCY"
+                                                       :Projects [{:ShortName "Proj2"
+                                                                   :LongName "Proj2 Long Name"}]}))
+         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+                                                      {:EntryTitle "coll3"
+                                                       :ShortName "S3"
+                                                       :CollectionDataType "EXPEDITED"
+                                                       :Projects [{:ShortName "Proj3"
+                                                                   :LongName "Proj3 Long Name"}]}))]
+
+     (testing "Latency v2 facets"
+       (let [;; search for collections without latency parameter.
+             facets-result1 (search-and-return-v2-facets {})
+             ;; search for collections with one of the valid latency values.
+             facets-result2 (search-and-return-v2-facets {:latency "1 to 4 days"})
+             ;; search for collections with an invalid latency value.
+             facets-result3 (search-and-return-v2-facets {:latency "1 to 5 days"})
+             ;; search for collections with all three valid latency values
+             facets-result4 (search-and-return-v2-facets {:latency ["1 to 4 days" "3 to 24 hours" "1 to 3 hours"]})]
+         ;; Verify all 3 latency facets show up with the right links.
+         (assert-latency-facet-field facets-result1
+          "1 to 3 hours"
+          1
+          {:apply "http://localhost:3003/collections.json?page_size=0&include_facets=v2&latency%5B%5D=1+to+3+hours"})
+         (assert-latency-facet-field facets-result1
+          "3 to 24 hours"
+          1
+          {:apply "http://localhost:3003/collections.json?page_size=0&include_facets=v2&latency%5B%5D=3+to+24+hours"})
+         (assert-latency-facet-field facets-result1
+          "1 to 4 days"
+          1
+          {:apply "http://localhost:3003/collections.json?page_size=0&include_facets=v2&latency%5B%5D=1+to+4+days"})
+
+         ;; Verify all 3 latency facets show up with "1 to 4 days" links being marked as "remove". And the other two links
+         ;; have the "1 to 4 days" appended to the query.
+         (assert-latency-facet-field facets-result2
+          "1 to 3 hours"
+          1
+          {:apply "http://localhost:3003/collections.json?latency=1+to+4+days&page_size=0&include_facets=v2&latency%5B%5D=1+to+3+hours"})
+         (assert-latency-facet-field facets-result2
+          "3 to 24 hours"
+          1
+          {:apply "http://localhost:3003/collections.json?latency=1+to+4+days&page_size=0&include_facets=v2&latency%5B%5D=3+to+24+hours"})
+         (assert-latency-facet-field facets-result2
+          "1 to 4 days"
+          1
+          {:remove "http://localhost:3003/collections.json?page_size=0&include_facets=v2"})
+
+
+          ;; Verify all 3 latency facets show up and all have the "1 to 5 days" appended to their queries.
+          (assert-latency-facet-field facets-result3
+          "1 to 3 hours"
+          1
+          {:apply "http://localhost:3003/collections.json?latency=1+to+5+days&page_size=0&include_facets=v2&latency%5B%5D=1+to+3+hours"})
+         (assert-latency-facet-field facets-result3
+          "3 to 24 hours"
+          1
+          {:apply "http://localhost:3003/collections.json?latency=1+to+5+days&page_size=0&include_facets=v2&latency%5B%5D=3+to+24+hours"})
+         (assert-latency-facet-field facets-result3
+          "1 to 4 days"
+          1
+          {:apply "http://localhost:3003/collections.json?latency=1+to+5+days&page_size=0&include_facets=v2&latency%5B%5D=1+to+4+days"})
+
+         ;; Verify all 3 latency facets show up with the links marked as "remove".
+         (assert-latency-facet-field facets-result4
+          "1 to 3 hours"
+          1
+          {:remove "http://localhost:3003/collections.json?latency=1+to+4+days&latency=3+to+24+hours&page_size=0&include_facets=v2"})
+         (assert-latency-facet-field facets-result4
+          "3 to 24 hours"
+          1
+          {:remove "http://localhost:3003/collections.json?latency=1+to+4+days&latency=1+to+3+hours&page_size=0&include_facets=v2"})
+         (assert-latency-facet-field facets-result4
+          "1 to 4 days"
+          1
+          {:remove "http://localhost:3003/collections.json?latency=3+to+24+hours&latency=1+to+3+hours&page_size=0&include_facets=v2"})))))
 
 (deftest horizontal-data-resolution-range-facet-v2-test
   "Test the horizontal data resolution facets ingest, indexing, and search."

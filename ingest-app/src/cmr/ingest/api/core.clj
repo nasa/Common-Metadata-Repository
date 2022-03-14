@@ -102,11 +102,11 @@
         (update :warnings
                 (fn [warnings]
                   (when (not-empty warnings)
-                    [(str warning-context (string/join ". " warnings))])))
+                    [(str warning-context (string/join ";; " warnings))])))
         (update :existing-errors
                 (fn [existing-errors]
                   (when (not-empty existing-errors)
-                    [(str err-context (string/join ". " existing-errors))]))))))
+                    [(str err-context (string/join ";; " existing-errors))]))))))
 
 (defmulti generate-ingest-response
   "Convert a result to a proper response format"
@@ -246,6 +246,11 @@
   ([concept-type provider-id native-id body content-type headers]
    (assoc (body->concept! concept-type native-id body content-type headers)
           :provider-id provider-id)))
+
+(defn concept-with-revision-id
+  "Returns a concept with concept-id and revision-id added for logging purpose."
+  [concept result]
+  (merge concept (select-keys result [:concept-id :revision-id])))
 
 (defn concept->loggable-string
   "Returns a string with information about the concept as a loggable string."

@@ -41,17 +41,51 @@ module CmrRestfulHelper
   # Send the query
   def submit_query(method, url, options)
     resource_uri = URI(url)
-
     case method.upcase
     when 'GET'
       response = HTTParty.get(resource_uri, options)
+    when 'PUT'
+      response = HTTParty.put(url, options)
+    when 'DELETE'
+      response = HTTParty.delete(resource_uri, options)
     else
       raise "#{method} is not supported yet"
     end
 
     response
   end
+
+  def check_provider(provider_name, cmr_root)
+    url = "#{get_url('ingest', cmr_root)}providers"
+    response = HTTParty.get(url)
+    response.body.include? provider_name
+  end
 end
+
+# Module to help build correct cmr_root urls
+module CmrUrlHelper
+  # Get correct URL for current environment
+  def get_url(concept_type, cmr_root)
+    case concept_type.downcase
+    when /^acls?$/
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3011/#{concept_type}" : "#{cmr_root}/access-control/acls"
+    when /^groups?$/
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3011/#{concept_type}" : "#{cmr_root}/access-control/groups"
+    when /^permissions?$/
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3011/#{concept_type}" : "#{cmr_root}/access-control/permissions"
+    when /^s3-buckets?$/
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3011/#{concept_type}" : "#{cmr_root}/access-control/s3-buckets"
+    when /^(concept|collection|granule|service|tool|variable)s?$/
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3003/#{concept_type}" : "#{cmr_root}/search/#{concept_type}"
+    when /^(ingest)s?$/
+      cmr_root == 'http://localhost' ? "#{cmr_root}:3002/" : "#{cmr_root}/ingest/"
+    else
+      raise "#{concept_type} searching is not available in CMR"
+    end
+  end
+end
+
+World CmrUrlHelper
 World CmrRestfulHelper
 
 Given('I use/set the authorization token from/with/using environment variable/value {string}') do |variable|
@@ -81,21 +115,26 @@ Given('I am not logged in') do
   @headers.delete('Authorization')
 end
 
+Given(/^set body to the following XML "(.+)"$/) do |xml|
+  @body = xml
+end
+
+Given(/^I am ingesting (a )?"([\w\d\-_ ]+)"$/) do |_, ingest_type|
+  @resource_url = get_url('ingest', cmr_root)
+  @ingest_type = ingest_type
+end
+
+Given(/^the provider from environment variable "([\w\d\-_ ]+)" exists$/) do |provider_name|
+  pending("Need to set #{provider_name} in environment or cucumber profile") unless ENV[provider_name]
+  pending("Need to create Provider #{provider_name}.") unless check_provider(ENV[provider_name], cmr_root)
+end
+
+Given(/^I am deleting on "([\w\d\-_ ]+)"$/) do |concept_type|
+  @resource_url = get_url(concept_type, cmr_root)
+end
+
 Given(/^I am (searching|querying|looking) for (an? )?"([\w\d\-_ ]+)"$/) do |_, _, concept_type|
-  @resource_url = case concept_type.downcase
-                  when /^acls?$/
-                    "#{cmr_root}/access-control/acls"
-                  when /^groups?$/
-                    "#{cmr_root}/access-control/groups"
-                  when /^permissions?$/
-                    "#{cmr_root}/access-control/permissions"
-                  when /^s3-buckets?$/
-                    "#{cmr_root}/access-control/s3-buckets"
-                  when /^(concept|collection|granule|service|tool|variable)s?$/
-                    "#{cmr_root}/search/#{concept_type}"
-                  else
-                    raise "#{concept_type} searching is not available in CMR"
-                  end
+  @resource_url = get_url(concept_type, cmr_root)
 end
 
 Given('I clear/reset/remove/delete the extension') do
@@ -109,11 +148,14 @@ end
 Given(/^I (want|ask for|request) (an? )?"(\w+)"( (response|returned))?$/) do |_, _, format, _|
   @url_extension = case format.downcase
                    when 'json', 'xml', 'dif', 'dif10', 'echo10', 'atom', 'native', 'iso', 'iso19115'
+                     @response_type = format.downcase
                      ".#{format}"
                    when 'umm_json', 'umm'
+                     @response_type = format.downcase
                      # modern umm
                      '.umm_json'
                    when 'umm-json', 'legacy-umm-json', 'legacy-umm'
+                     @response_type = format.downcase
                      # legacy umm
                      '.umm-json'
                    else
@@ -124,6 +166,14 @@ end
 Given(/^I (set|add) header "([\w\d\-_+]+)=(.*)"$/) do |_, header, value|
   @headers ||= {}
   @headers[header] = value
+end
+
+Given(/^I wait "(\d+.?\d+?)" second(s)?(.*)$/) do |time, _, _|
+  sleep(time.to_i)
+end
+
+Given(/^I clear headers$/) do
+  @headers = {}
 end
 
 Given(/^I (set|add) header "([\w\d\-_+]+)" using environment ((variable|value) )?"(.*)"$/) do |_, header, _, env_key|
@@ -190,6 +240,7 @@ end
 When(/^I (submit|send) (a|another) "(\w+)" request$/) do |_, _, method|
   url = "#{@resource_url}#{@url_extension}"
   options = { query: @query,
+              body: @body,
               headers: @headers }
 
   @response = submit_query(method, url, options)
@@ -197,6 +248,11 @@ end
 
 Then(/^the response (status( code)?) is (\d+)$/) do |_, status_code|
   expect(@response.code).to eq(status_code)
+end
+
+Then(/^the response (status( code)?) is in "((\d+,?(\d+)?))+"$/) do |_, status_codes|
+  values = status_codes.split(',')
+  expect((values.include? @response.code))
 end
 
 Then('the response Content-Type is {string}') do |content_type|

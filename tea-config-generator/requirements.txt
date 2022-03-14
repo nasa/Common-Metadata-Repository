@@ -1,0 +1,5 @@
+# pip3 install -r requirements.txt
+
+boto3
+requests
+pytest
