@@ -119,10 +119,6 @@ Given(/^set body to the following XML "(.+)"$/) do |xml|
   @body = xml
 end
 
-Given(/^I clear the body$/) do
-  @body = ''
-end
-
 Given(/^I am ingesting (a )?"([\w\d\-_ ]+)"$/) do |_, ingest_type|
   @resource_url = get_url('ingest', cmr_root)
   @ingest_type = ingest_type
