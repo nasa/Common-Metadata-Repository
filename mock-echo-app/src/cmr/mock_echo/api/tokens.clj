@@ -43,7 +43,6 @@
 (defn- get-token-or-error
   "Helper for getting the token if it exists or thowing an error"
   [context token-id]
-  (println token-id)
   (let [token-id (strip-bearer-if-exists token-id)]
     (if-let [token (token-db/fetch context token-id)]
       token
