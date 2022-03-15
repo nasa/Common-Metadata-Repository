@@ -120,7 +120,7 @@ Given(/^set body to the following XML "(.+)"$/) do |xml|
 end
 
 Given(/^I clear the body$/) do
-  @body = ''
+  @body = nil
 end
 
 Given(/^I am ingesting (a )?"([\w\d\-_ ]+)"$/) do |_, ingest_type|
@@ -145,8 +145,16 @@ Given('I clear/reset/remove/delete the extension') do
   @url_extension = nil
 end
 
+Given('I clear/reset/remove/delete the url path') do
+  @url_path = nil
+end
+
 Given('I use/add extension {string}') do |extension|
   @url_extension = extension
+end
+
+Given('I use/add url path {string}') do |path|
+  @url_path = path
 end
 
 Given(/^I (want|ask for|request) (an? )?"(\w+)"( (response|returned))?$/) do |_, _, format, _|
@@ -235,14 +243,15 @@ Given(/^I (set|add) (a )?(search|query) (param(eter)?|term) "([\w\d\-_+\[\]]+)" 
 end
 
 When(/^I (submit|send) (a|another) "(\w+)" request to "(.*)"$/) do |_, _, method, url|
-  url = "#{cmr_root}#{url}#{@url_extension}"
+  url = "#{cmr_root}#{url}#{@url_extension}#{@url_path}"
   options = { query: @query,
               headers: @headers }
   @response = submit_query(method, url, options)
 end
 
 When(/^I (submit|send) (a|another) "(\w+)" request$/) do |_, _, method|
-  url = "#{@resource_url}#{@url_extension}"
+  url = "#{@resource_url}#{@url_extension}#{@url_path}"
+  # puts url
   options = { query: @query,
               body: @body,
               headers: @headers }
