@@ -70,62 +70,152 @@
                            :Version "1.1"}})
 
 ;; when migrate from 1.1 to 1.1.1 RelatedURL-1_1-1 is converted to RelatedURLs-1_1_1-1
-(def RelatedURLs-1_1-1
-  [{:URLContentType "VisualizationURL"
-    :Type "BROWSE"}
-   {:URLContentType "PublicationURL"
-    :Type "VIEW RELATED INFORMATION"}])
-
 (def RelatedURLs-1_1_1-1
-  [{:URLContentType "VisualizationURL"
+  [{:URLContentType "CollectionURL"
+    :Type "DATA SET LANDING PAGE"}
+   {:URLContentType "CollectionURL"
+    :Type "EXTENDED METADATA"}
+   {:URLContentType "CollectionURL"
+    :Type "PROFESSIONAL HOME PAGE"}
+   {:URLContentType "CollectionURL"
+    :Type "PROJECT HOME PAGE"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"}
+   {:URLContentType "VisualizationURL"
+    :Type "GET RELATED VISUALIZATION"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"}
+   {:URLContentType "VisualizationURL"
+    :Type "GET RELATED VISUALIZATION"
+    :SubType "MAP"}])
+
+(def RelatedURLs-1_1-1
+  [{:URLContentType "CollectionURL"
+    :Type "DATA SET LANDING PAGE"
+    :Subtype "any valid 1.1 subtype"}
+   {:URLContentType "CollectionURL"
+    :Type "EXTENDED METADATA"
+    :Subtype "any valid 1.1 subtype"}
+   {:URLContentType "CollectionURL"
+    :Type "PROFESSIONAL HOME PAGE"
+    :Subtype "any valid 1.1 subtype"}
+   {:URLContentType "CollectionURL"
+    :Type "PROJECT HOME PAGE"
+    :Subtype "any valid 1.1 subtype"}
+   {:URLContentType "CollectionURL"
+    :Type "VIEW RELATED INFORMATION"
+    :Subtype "any valid 1.1 subtype"}
+   {:URLContentType "CollectionURL"
+    :Type "GET RELATED VISUALIZATION"
+    :Subtype "any valid 1.1 subtype"}
+   {:URLContentType "CollectionURL"
+    :Type "BROWSE"
+    :Subtype "any valid 1.1 subtype"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"
+    :Subtype "GIOVANNI"}
+   {:URLContentType "PublicationURL"
+    :Type "other valid type"
+    :Subtype "any valid 1.1 subtype"}
+   {:URLContentType "VisualizationURL"
+    :Type "GET RELATED VISUALIZATION"
+    :Subtype "other subtype"}
+   {:URLContentType "VisualizationURL"
+    :Type "other valid type"
+    :Subtype "any valid 1.1 subtype"}
+   {:URLContentType "VisualizationURL"
+    :Type "GET RELATED VISUALIZATION"
+    :SubType "MAP"}])
+
+;; when migrate from 1.1.1 to 1.1 RelatedURLs-1_1_1-2 is converted to RelatedURLs-1_1-2
+(def RelatedURLs-1_1_1-2
+  [{:URLContentType "CollectionURL"
+    :Type "EXTENDED METADATA"
+    :Subtype "DMR++"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"
+    :Subtype "DATA PRODUCT SPECIFICATION"}
+   {:URLContentType "VisualizationURL"
+    :Type "GET RELATED VISUALIZATION"
+    :Subtype "SOTO"}
+   {:URLContentType "VisualizationURL"
+    :Type "Color Map"
+    :Subtype "any valid 1.1.1 Subtype"}
+   {:URLContentType "NotPublicationCollectionVisualizationURL"
+    :Type "any valid 1.1.1 Type"
+    :Subtype "any valid 1.1.1 Subtype"}])
+
+(def RelatedURLs-1_1-2
+  [{:URLContentType "CollectionURL"
+    :Type "EXTENDED METADATA"}
+   {:URLContentType "PublicationURL"
+    :Type "VIEW RELATED INFORMATION"}
+   {:URLContentType "VisualizationURL"
+    :Type "GET RELATED VISUALIZATION"}
+   {:URLContentType "VisualizationURL"
     :Type "GET RELATED VISUALIZATION"}
    {:URLContentType "PublicationURL"
     :Type "VIEW RELATED INFORMATION"}])
 
-;; when migrate from 1.1.1 to 1.1 RelatedURLs-1_1_1-2 is converted to RelatedURLs-1_1-2
-(def RelatedURLs-1_1_1-2
-  [{:URLContentType "PublicationURL"
-    :Type "VIEW RELATED INFORMATION"
-    :Subtype "ALGORITHM DOCUMENTATION"}
-   {:URLContentType "PublicationURL"
-    :Type "VIEW RELATED INFORMATION"
-    :Subtype "invalid"}
-   {:URLContentType "CollectionURL"
-    :Type "invalid"
-    :Subtype "invalid"}
-   {:URLContentType "DataCenterURL"
-    :Type "HOME PAGE"}])
+;; when migrate from 1.1 to 1.1.1,
+;; URL-1_1-1-up is converted to URL-1_1_1-1-up
+;; URL-1_1-2-up is converted to URL-1_1_1-2-up
+;; URL-1_1-3-up is converted to URL-1_1_1-3-up
+(def URL-1_1-1-up
+  {:URLContentType "DistributionURL"
+   :Type "GOTO WEB TOOL"
+   :Subtype "MOBILE APP"})
 
-(def RelatedURLs-1_1-2
-  [{:URLContentType "PublicationURL"
-    :Type "VIEW RELATED INFORMATION"
-    :Subtype "ALGORITHM DOCUMENTATION"}
-   {:URLContentType "PublicationURL"
-    :Type "VIEW RELATED INFORMATION"}
-   {:URLContentType "CollectionURL"
-    :Type "DATA SET LANDING PAGE"}
-   {:URLContentType "PublicationURL"
-    :Type "VIEW RELATED INFORMATION"
-    :Subtype "ALGORITHM DOCUMENTATION"}])
+(def URL-1_1_1-1-up
+  {:URLContentType "DistributionURL"
+   :Type "GOTO WEB TOOL"})
 
-;; when migrate from 1.1.1 to 1.1, URL-1_1_1-1 is converted to URL-1_1-1
-;; and URL-1_1_1-2 is converted to URL-1_1-2
-(def URL-1_1_1-1
+(def URL-1_1-2-up
+  {:URLContentType "DistributionURL"
+   :Type "DOWNLOAD SOFTWARE"
+   :Subtype "LIVE ACCESS SERVER (LAS)"})
+
+(def URL-1_1_1-2-up
+  {:URLContentType "DistributionURL"
+   :Type "DOWNLOAD SOFTWARE"})
+ 
+(def URL-1_1-3-up
+  {:URLContentType "DistributionURL"
+   :Type "DOWNLOAD SOFTWARE"
+   :Subtype "valid subtype in kms"})
+
+(def URL-1_1_1-3-up
+  {:URLContentType "DistributionURL"
+   :Type "DOWNLOAD SOFTWARE"
+   :Subtype "valid subtype in kms"})
+    
+;; when migrate from 1.1.1 to 1.1,
+;; URL-1_1_1-1-down is converted to URL-1_1-1-down
+;; URL-1_1_1-2-down is converted to URL-1_1-2-down
+(def URL-1_1_1-1-down
   {:URLContentType "DistributionURL"
    :Type "DOWNLOAD SOFTWARE"
    :SubType "MOBILE APP"})
 
-(def URL-1_1-1
+(def URL-1_1-1-down
   {:URLContentType "DistributionURL"
    :Type "DOWNLOAD SOFTWARE"
    :SubType "MOBILE APP"}) 
 
-(def URL-1_1_1-2
+(def URL-1_1_1-2-down
   {:URLContentType "PublicationURL"
    :Type "VIEW RELATED INFORMATION"
    :Subtype "ALGORITHM DOCUMENTATION"})
 
-(def URL-1_1-2
+(def URL-1_1-2-down
   {:URLContentType "DistributionURL"
    :Type "GOTO WEB TOOL"})
 
@@ -154,29 +244,47 @@
            tool-concept-1-1))))
 
 (deftest migrate-1_1-up-to-1_1_1
-  ;; RelatedURLs and MetadataSpecificationare migrated.
+  ;; RelatedURLs, URL and MetadataSpecificationare are migrated.
   (is (= {:RelatedURLs RelatedURLs-1_1_1-1
+          :URL URL-1_1_1-1-up
           :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.1.1",
                                   :Name "UMM-T",
                                   :Version "1.1.1"}}
          (vm/migrate-umm {} :tool "1.1" "1.1.1"
-           {:RelatedURLs RelatedURLs-1_1-1}))))
+           {:RelatedURLs RelatedURLs-1_1-1
+            :URL URL-1_1-1-up})))
+  (is (= {:RelatedURLs RelatedURLs-1_1_1-1
+          :URL URL-1_1_1-2-up
+          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.1.1",
+                                  :Name "UMM-T",
+                                  :Version "1.1.1"}}
+         (vm/migrate-umm {} :tool "1.1" "1.1.1"
+           {:RelatedURLs RelatedURLs-1_1-1
+            :URL URL-1_1-2-up})))
+  (is (= {:RelatedURLs RelatedURLs-1_1_1-1
+          :URL URL-1_1_1-3-up
+          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.1.1",
+                                  :Name "UMM-T",
+                                  :Version "1.1.1"}}
+         (vm/migrate-umm {} :tool "1.1" "1.1.1"
+           {:RelatedURLs RelatedURLs-1_1-1
+            :URL URL-1_1-3-up}))))
 
 (deftest migrate-1_1_1-down-to-1_1
   ;; RelatedURLs, URL and MetadataSpecification are migrated.
   (is (= {:RelatedURLs RelatedURLs-1_1-2
-          :URL URL-1_1-1
+          :URL URL-1_1-1-down
           :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.1",
                                   :Name "UMM-T",
                                   :Version "1.1"}} 
          (vm/migrate-umm {} :tool "1.1.1" "1.1"
            {:RelatedURLs RelatedURLs-1_1_1-2
-            :URL URL-1_1_1-1})))
+            :URL URL-1_1_1-1-down})))
   (is (= {:RelatedURLs RelatedURLs-1_1-2
-          :URL URL-1_1-2
+          :URL URL-1_1-2-down
           :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.1",
                                   :Name "UMM-T",
                                   :Version "1.1"}}
          (vm/migrate-umm {} :tool "1.1.1" "1.1"
            {:RelatedURLs RelatedURLs-1_1_1-2
-            :URL URL-1_1_1-2}))))
+            :URL URL-1_1_1-2-down}))))
