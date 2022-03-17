@@ -44,8 +44,6 @@
   ([context concept-batches]
    (bulk-index-with-revision-date context concept-batches nil))
   ([context concept-batches options]
-   (info (format "Bulk indexing [%d] batches of concepts with revision date"
-                 (count concept-batches)))
    (reduce (fn [{:keys [num-indexed max-revision-date]} batch]
              (let [max-revision-date (get-max-revision-date batch max-revision-date)
                    batch (prepare-batch context batch options)]
