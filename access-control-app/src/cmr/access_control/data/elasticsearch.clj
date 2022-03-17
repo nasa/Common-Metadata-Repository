@@ -69,7 +69,6 @@
 (defn bulk-index-documents
   "Save a batch of documents in Elasticsearch."
   [context docs]
-  (info (format "Bulk indexing [%d] documents" (count docs)))
   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch)
           conn (get-in context [:system :db :conn]) ;; Why db?
