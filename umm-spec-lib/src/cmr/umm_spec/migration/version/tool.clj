@@ -8,89 +8,97 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; tool Migration Implementations
 
-(def valid-urlcontenttype-type-subType-combo-in-relatedurl-1_1
-  "Valid RelatedURL fields combo in version 1.1"
-  ["CollectionURL,DATA SET LANDING PAGE"
-   "CollectionURL,EXTENDED METADATA"
-   "CollectionURL,PROFESSIONAL HOME PAGE"
-   "CollectionURL,PROJECT HOME PAGE"
-   "PublicationURL,VIEW RELATED INFORMATION,ALGORITHM DOCUMENTATION"
-   "PublicationURL,VIEW RELATED INFORMATION,ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
-   "PublicationURL,VIEW RELATED INFORMATION,ANOMALIES"
-   "PublicationURL,VIEW RELATED INFORMATION,CASE STUDY"
-   "PublicationURL,VIEW RELATED INFORMATION,DATA CITATION POLICY"
-   "PublicationURL,VIEW RELATED INFORMATION,DATA QUALITY"
-   "PublicationURL,VIEW RELATED INFORMATION,DATA RECIPE"
-   "PublicationURL,VIEW RELATED INFORMATION,DELIVERABLES CHECKLIST"
-   "PublicationURL,VIEW RELATED INFORMATION,GENERAL DOCUMENTATION"
-   "PublicationURL,VIEW RELATED INFORMATION,HOW-TO"
-   "PublicationURL,VIEW RELATED INFORMATION,IMPORTANT NOTICE"
-   "PublicationURL,VIEW RELATED INFORMATION,INSTRUMENT/SENSOR CALIBRATION DOCUMENTATION"
-   "PublicationURL,VIEW RELATED INFORMATION,MICRO ARTICLE"
-   "PublicationURL,VIEW RELATED INFORMATION,PI DOCUMENTATION"
-   "PublicationURL,VIEW RELATED INFORMATION,PROCESSING HISTORY"
-   "PublicationURL,VIEW RELATED INFORMATION,PRODUCT HISTORY"
-   "PublicationURL,VIEW RELATED INFORMATION,PRODUCT QUALITY ASSESSMENT"
-   "PublicationURL,VIEW RELATED INFORMATION,PRODUCT USAGE"
-   "PublicationURL,VIEW RELATED INFORMATION,PRODUCTION HISTORY"
-   "PublicationURL,VIEW RELATED INFORMATION,PUBLICATIONS"
-   "PublicationURL,VIEW RELATED INFORMATION,READ-ME"
-   "PublicationURL,VIEW RELATED INFORMATION,REQUIREMENTS AND DESIGN"
-   "PublicationURL,VIEW RELATED INFORMATION,SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION"
-   "PublicationURL,VIEW RELATED INFORMATION,SCIENCE DATA PRODUCT VALIDATION"
-   "PublicationURL,VIEW RELATED INFORMATION,USER FEEDBACK PAGE"
-   "PublicationURL,VIEW RELATED INFORMATION,USER'S GUIDE"
-   "PublicationURL,VIEW RELATED INFORMATION"
-   "VisualizationURL,GET RELATED VISUALIZATION,GIOVANNI"
-   "VisualizationURL,GET RELATED VISUALIZATION,MAP"
-   "VisualizationURL,GET RELATED VISUALIZATION,WORLDVIEW"
-   "VisualizationURL,GET RELATED VISUALIZATION"
-   "VisualizationURL,BROWSE,GIOVANNI"
-   "VisualizationURL,BROWSE,MAP"
-   "VisualizationURL,BROWSE,WORLDVIEW"
-   "VisualizationURL,BROWSE"])
- 
+(defn- convert-related-url-1_1->1_1_1
+  "Convert RelatedURL from 1.1 to 1.1.1"
+  [related-url]
+  ;;The following values are migrated without Subtype
+  ;;because they don't exist in 1.1.1(kms)
+  ;;"CollectionURL" "DATA SET LANDING PAGE" 
+  ;;"CollectionURL" "EXTENDED METADATA"
+  ;;"CollectionURL" "PROFESSIONAL HOME PAGE"
+  ;;"CollectionURL" "PROJECT HOME PAGE"
+  ;;"PublicationURL" "VIEW RELATED INFORMATION" ["GIOVANNI" "MAP" "WORLDVIEW"] 
+  ;;"VisualizationURL" "GET RELATED VISUALIZATION" [other than "GIOVANNI" "MAP" "WORLDVIEW"]
+
+  ;;The following values are migrated to "PublicationURL" "VIEW RELATED INFORMATION"
+  ;;because Type don't exist in 1.1.1(kms)
+  ;;"CollectionURL" "VIEW RELATED INFORMATION"
+  ;;"CollectionURL" "GET RELATED VISUALIZATION"
+  ;;"CollectionURL" "BROWSE"
+  ;;"PublicationURL" [other than "VIEW RELATED INFORMATION"]
+  ;;"VisualizationURL" [other than "GET RELATED VISUALIZATION"]
+
+  (let [uct (:URLContentType related-url) 
+        t (:Type related-url) 
+        st (:Subtype related-url)]
+    (if (or (and (= "CollectionURL" uct)
+                 (some #(= t %)
+                  ["DATA SET LANDING PAGE" "EXTENDED METADATA" "PROFESSIONAL HOME PAGE" "PROJECT HOME PAGE"])) 
+            (and (= "PublicationURL" uct)
+                 (= "VIEW RELATED INFORMATION" t)
+                 (some #(= st %) ["GIOVANNI" "MAP" "WORLDVIEW"]))
+            (and (= "VisualizationURL" uct)
+                 (= "GET RELATED VISUALIZATION" t)
+                 (not (some #(= st %) ["GIOVANNI" "MAP" "WORLDVIEW"]))))
+      (dissoc related-url :Subtype)
+      (if (or (and (= "CollectionURL" uct)
+                   (some #(= t %)
+                    ["VIEW RELATED INFORMATION" "GET RELATED VISUALIZATION" "BROWSE"]))
+              (and (= "PublicationURL" uct)
+                   (not= "VIEW RELATED INFORMATION" t))
+              (and (= "VisualizationURL" uct)
+                   (not= "GET RELATED VISUALIZATION" t)))
+        (-> related-url
+            (assoc :URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION")
+            (dissoc :Subtype))
+        related-url)))) 
+
+(defn- convert-related-url-1_1_1->1_1
+  "Convert RelatedURL from v1.1.1 to v1.1."
+  [related-url]
+  ;;The following values are migrated without Subtype
+  ;;because they don't exist in 1.1
+  ;;"CollectionURL" "EXTENDED METADATA" ["DMR++ MISSING DATA" "DMR++"]
+  ;;"PublicationURL" "VIEW RELATED INFORMATION" "DATA PRODUCT SPECIFICATION"
+  ;;"VisualizationURL" "GET RELATED VISUALIZATION" "SOTO"
+  
+  ;; The following values are migrated to "VisualizationURL" "GET RELATED VISUALIZATION"
+  ;; because Type doesn't exist in 1.1
+  ;;"VisualizationURL" "Color Map" [any valid 1.1.1 Subtype]
+
+  ;; The following values are migrated to "PublicationURL" "VIEW RELATED INFORMATION" 
+  ;;[other than "CollectionURL" "PublicationURL" "VisualizationURL"]
+
+  (let [uct (:URLContentType related-url)
+        t (:Type related-url)
+        st (:Subtype related-url)]
+    (if (or (and (= "CollectionURL" uct)
+                 (= "EXTENDED METADATA" t)
+                 (some #(= st %) ["DMR++ MISSING DATA" "DMR++"]))
+            (and (= "PublicationURL" uct)
+                 (= "VIEW RELATED INFORMATION" t)
+                 (= "DATA PRODUCT SPECIFICATION" st))
+            (and (= "VisualizationURL" uct)
+                 (= "GET RELATED VISUALIZATION" t)
+                 (= "SOTO" st)))
+      (dissoc related-url :Subtype)
+      (if (and (= "VisualizationURL" uct)
+               (= "Color Map" t))
+        (-> related-url
+            (assoc :URLContentType "VisualizationURL" :Type "GET RELATED VISUALIZATION")
+            (dissoc :Subtype))
+        (if (not (some #(= uct %) ["CollectionURL" "PublicationURL" "VisualizationURL"]))
+          (-> related-url
+            (assoc :URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION")
+            (dissoc :Subtype))
+          related-url)))))
+
 (defn- migrate-related-urls-1_1->1_1_1
   "Migrate RelatedURLs from 1.1 to 1.1.1"
   [tool]
-  ;; "BROWSE" doesn't exist in kms, change it to
-  ;; "GET RELATED VISUALIZATION"
   (if (:RelatedURLs tool)
-    (assoc tool :RelatedURLs (map #(if (= "BROWSE" (:Type %))
-                                     (assoc % :Type "GET RELATED VISUALIZATION")
-                                     %)
-                                  (:RelatedURLs tool)))
+    (assoc tool :RelatedURLs (map convert-related-url-1_1->1_1_1 (:RelatedURLs tool)))
     tool))
-
-(defn- convert-related-url-1_1_1->1_1
-  "Convert related url from v1.1.1 to v1.1."
-  [related-url]
-  (let [uctype (:URLContentType related-url)
-        type (:Type related-url)
-        stype (:Subtype related-url)
-        u-t-s-combo (if stype
-                      (str uctype "," type "," stype)
-                      (str uctype "," type))
-        u-t-combo (str uctype "," type)]
-    (if (some #(= u-t-s-combo %) valid-urlcontenttype-type-subType-combo-in-relatedurl-1_1)
-      related-url
-      (if (some #(= u-t-combo %) valid-urlcontenttype-type-subType-combo-in-relatedurl-1_1) 
-        (dissoc related-url :Subtype)
-        (let [valid-combo (some #(when (or (string/includes? % uctype)
-                                           (string/includes? % "PublicationURL"))
-                                   %)
-                                valid-urlcontenttype-type-subType-combo-in-relatedurl-1_1)
-              u-t-s (string/split valid-combo #",")]
-          ;;if uctype is CollectionURL, u-t-s doesn't contain Subtype.
-          (if (= uctype "CollectionURL")
-            (-> related-url
-                (assoc :URLContentType (first u-t-s))
-                (assoc :Type (second u-t-s))
-                (dissoc :Subtype))
-            (-> related-url
-                (assoc :URLContentType (first u-t-s))
-                (assoc :Type (second u-t-s))
-                (assoc :Subtype (last u-t-s)))))))))
 
 (defn- migrate-related-urls-1_1_1->1_1
   "Migrate RelatedURLs from 1.1.1 to 1.1"
@@ -98,6 +106,21 @@
   (if (:RelatedURLs tool)
     (assoc tool :RelatedURLs (map convert-related-url-1_1_1->1_1 (:RelatedURLs tool)))
     tool))
+
+(defn- migrate-url-1_1->1_1_1
+  "migrate URL from 1.1 to 1.1.1"
+  [tool]
+  ;;"DistributionURL" "GOTO WEB TOOL" "MOBILE APP" -> "DistributionURL" "GOTO WEB TOOL" 
+  ;;"DistributionURL" "DOWNLOAD SOFTWARE" ["LIVE ACCESS SERVER (LAS)" "MAP VIEWER" "SIMPLE SUBSET WIZARD (SSW)" "SUBSETTER"]
+  ;;-> "DistributionURL" "DOWNLOAD SOFTWARE" 
+  (let [subtype-list ["LIVE ACCESS SERVER (LAS)" "MAP VIEWER" "SIMPLE SUBSET WIZARD (SSW)" "SUBSETTER"]
+        uct (get-in tool [:URL :URLContentType])
+        t (get-in tool [:URL :Type])
+        st (get-in tool [:URL :Subtype])]
+    (if (or (and (= "DistributionURL" uct) (= "GOTO WEB TOOL" t) (= "MOBILE APP" st))
+            (and (= "DistributionURL" uct) (= "DOWNLOAD SOFTWARE" t) (some #(= st %) subtype-list)))
+      (update-in tool [:URL] dissoc :Subtype)
+      tool))) 
 
 (defn- migrate-url-1_1_1->1_1
   "Migrate URL from 1.1.1 to 1.1"
@@ -137,6 +160,7 @@
   [context t & _]
   (-> t
       (migrate-related-urls-1_1->1_1_1)
+      (migrate-url-1_1->1_1_1)
       (m-spec/update-version :tool "1.1.1")))
 
 (defmethod interface/migrate-umm-version [:tool "1.1.1" "1.1"]
