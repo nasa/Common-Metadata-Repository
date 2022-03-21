@@ -10,6 +10,19 @@
   "UseConstraints": {
     "LicenseURL": "http://www.someurl.com",
     "LicenseText": "None" },
+  "RelatedURLs": [{
+    "Description": "OPeNDAP Service for AIRX3STD.006",
+    "URLContentType": "CollectionURL",
+    "Type": "Anything valid in kms",
+    "Subtype": "Anything valid in kms",
+    "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+  }, {
+    "Description": "OPeNDAP Service for AIRX3STD.006",
+    "URLContentType": "DistributionURL",
+    "Type": "Anything valid in kms",
+    "Subtype": "Anything valid in kms",
+    "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+  }],
   "URL": {
     "Description": "OPeNDAP Service for AIRX3STD.006",
     "URLValue": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"

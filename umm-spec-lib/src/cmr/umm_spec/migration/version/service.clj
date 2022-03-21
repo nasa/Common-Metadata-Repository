@@ -308,6 +308,70 @@
   [contacts]
   (map #(update % :ContactInformation update-contact-info-1_3_2->1_3_1) contacts))
 
+(def kms-related-url-entries
+  "RelatedURL entries in kms relevant for migration."
+  {"CollectionURL" {"DATA SET LANDING PAGE" []
+                    "EXTENDED METADATA" ["DMR++ MISSING DATA" "DMR++"]}
+   "PublicationURL" {"VIEW RELATED INFORMATION"
+                     ["ANOMALIES" "CASE STUDY" "DATA CITATION POLICY" "DATA PRODUCT SPECIFICATION"
+                      "DATA QUALITY" "DATA RECIPE" "DELIVERABLES CHECKLIST" "GENERAL DOCUMENTATION"
+                      "HOW-TO" "IMPORTANT NOTICE" "INSTRUMENT/SENSOR CALIBRATION DOCUMENTATION"
+                      "MICRO ARTICLE" "PI DOCUMENTATION" "PROCESSING HISTORY" "PRODUCT HISTORY"
+                      "PRODUCT QUALITY ASSESSMENT" "PRODUCT USAGE" "PRODUCTION HISTORY" "PUBLICATIONS"
+                      "READ-ME" "REQUIREMENTS AND DESIGN" "SCIENCE DATA PRODUCT SOFTWARE DOCUMENTATION"
+                      "SCIENCE DATA PRODUCT VALIDATION" "USER FEEDBACK PAGE" "USER'S GUIDE"]}
+   "VisualizationURL" {"Color Map" ["GITC" "Giovanni" "Harmony GDAL"]
+                       "GET RELATED VISUALIZATION" ["GIOVANNI" "MAP" "SOTO" "WORLDVIEW"]}})
+
+(defn- convert-related-url-1_4->1_4_1
+  "Convert RelatedURL from 1.4 to 1.4.1"
+  [related-url]
+  ;; v1.4 RelatedURL: URLContentType is enum ["CollectionURL", "PublicationURL", "VisualizationURL"],
+  ;; Type is string, Subtype is string.
+
+  ;; The following are migrated to "PublicationURL" "VIEW RELATED INFORMATION"
+  ;; [URLContentType in 1.4] [Type not in kms for the URLContentType]
+
+  ;; The following values are migrated without Subtype
+  ;; [URLContentType in 1.4] [Type in kms for the URLContentType]
+  ;; [Subtype not in kms for the URLContentType and Type]
+  (let [uct (:URLContentType related-url)
+        t (:Type related-url)
+        st (:Subtype related-url)]
+    (if (not (some #(= t %) (keys (get kms-related-url-entries uct))))
+      (-> related-url
+          (assoc :URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION")
+          (dissoc :Subtype))
+      (if (and (some #(= t %) (keys (get kms-related-url-entries uct)))
+               (not (some #(= st %) (get-in kms-related-url-entries [uct t]))))
+        (dissoc related-url :Subtype)
+        related-url))))
+
+(defn- convert-related-url-1_4_1->1_4
+  "Convert RelatedURL from 1.4.1 to 1.4"
+  [related-url]
+  ;; The following are migrated to "PublicationURL" "VIEW RELATED INFORMATION"
+  ;; [URLContentType not in 1.4]
+  (if (not (some #(= (:URLContentType related-url) %)
+                 ["CollectionURL" "PublicationURL" "VisualizationURL"]))
+    (-> related-url
+        (assoc :URLContentType "PublicationURL" :Type "VIEW RELATED INFORMATION")
+        (dissoc :Subtype))
+    related-url))
+
+(defn- migrate-related-urls-1_4->1_4_1
+  "Migrate RelatedURLs from 1.4 to 1.4.1"
+  [service]
+  (if (:RelatedURLs service)
+    (assoc service :RelatedURLs (map convert-related-url-1_4->1_4_1 (:RelatedURLs service)))
+    service))
+
+(defn- migrate-related-urls-1_4_1->1_4
+  "Migrate RelatedURLs from 1.4.1 to 1.4"
+  [service]
+  (if (:RelatedURLs service)
+    (assoc service :RelatedURLs (map convert-related-url-1_4_1->1_4 (:RelatedURLs service)))
+    service))
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Service Migration Implementations
 
@@ -462,9 +526,11 @@
 (defmethod interface/migrate-umm-version [:service "1.4" "1.4.1"]
   [context umm-s & _]
   (-> umm-s
+      (migrate-related-urls-1_4->1_4_1)
       (m-spec/update-version :service "1.4.1")))
 
 (defmethod interface/migrate-umm-version [:service "1.4.1" "1.4"]
   [context umm-s & _]
   (-> umm-s
+      (migrate-related-urls-1_4_1->1_4)
       (m-spec/update-version :service "1.4")))
