@@ -54,6 +54,7 @@
     "snyk": "^1.782.0"
   },
   "resolutions": {
-    "ansi-regex": "^5.0.1"
+    "ansi-regex": "^5.0.1",
+    "simple-git": "^3.3.0"
   }
 }
