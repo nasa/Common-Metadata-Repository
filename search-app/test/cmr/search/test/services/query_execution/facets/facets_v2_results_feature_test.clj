@@ -113,36 +113,36 @@
      {:range
       {:field :horizontal-data-resolutions.value,
        :ranges
-       [{:key "0 to 1 meter", :from 0.0, :to 1.0000000001}
-        {:key "1 to 30 meters", :from 1.0, :to 30.0000000001}
+       [{:key "0 to 1 meter", :from 0.0, :to 1.0001}
+        {:key "1 to 30 meters", :from 1.0, :to 30.0001}
         {:key "30 to 100 meters",
          :from 30.0,
-         :to 100.0000000001}
+         :to 100.0001}
         {:key "100 to 250 meters",
          :from 100.0,
-         :to 250.0000000001}
+         :to 250.0001}
         {:key "250 to 500 meters",
          :from 250.0,
-         :to 500.0000000001}
+         :to 500.0001}
         {:key "500 to 1000 meters",
          :from 500.0,
-         :to 1000.0000000001}
-        {:key "1 to 10 km", :from 1000.0, :to 10000.0000000001}
+         :to 1000.0001}
+        {:key "1 to 10 km", :from 1000.0, :to 10000.0001}
         {:key "10 to 50 km",
          :from 10000.0,
-         :to 50000.0000000001}
+         :to 50000.0001}
         {:key "50 to 100 km",
          :from 50000.0,
-         :to 100000.0000000001}
+         :to 100000.0001}
         {:key "100 to 250 km",
          :from 100000.0,
-         :to 250000.0000000001}
+         :to 250000.0001}
         {:key "250 to 500 km",
          :from 250000.0,
-         :to 500000.0000000001}
+         :to 500000.0001}
         {:key "500 to 1000 km",
          :from 500000.0,
-         :to 1000000.0000000001}
+         :to 1000000.0001}
         {:key "1000 km & beyond",
          :from 1000000.0,
          :to 3.4028234663852886E38}]},
