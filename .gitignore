@@ -15,7 +15,10 @@ browse-scaler/src/node_modules
 .lsp
 .cider-repl-history
 **/ignore.*
+**/.gitignore
 .calva*
+*.clj-kondo
+*.ruby-version
 
 ###############################
 ### Test Files
