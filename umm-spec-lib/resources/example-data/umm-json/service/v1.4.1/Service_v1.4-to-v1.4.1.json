@@ -7,14 +7,10 @@
   "VersionDescription": "This is a description of version 1.9.",
   "LastUpdatedDate": "2020-05-10T00:00:00Z",
   "AccessConstraints": "None",
-  "UseConstraints": {
-    "LicenseURL": "http://www.someurl.com",
-    "LicenseText": "None" },
   "RelatedURLs": [{
     "Description": "OPeNDAP Service for AIRX3STD.006",
     "URLContentType": "CollectionURL",
-    "Type": "Anything valid in kms",
-    "Subtype": "Anything valid in kms",
+    "Type": "EXTENDED METADATA",
     "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
   }, {
     "Description": "OPeNDAP Service for AIRX3STD.006",
@@ -22,6 +18,9 @@
     "Type": "VIEW RELATED INFORMATION",
     "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
   }],
+  "UseConstraints": {
+    "LicenseURL": "http://www.someurl.com",
+    "LicenseText": "None" },
   "URL": {
     "Description": "OPeNDAP Service for AIRX3STD.006",
     "URLValue": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
@@ -246,8 +245,8 @@
     }
   }],
   "MetadataSpecification": {
-    "URL": "https://cdn.earthdata.nasa.gov/umm/service/v1.4",
+    "URL": "https://cdn.earthdata.nasa.gov/umm/service/v1.4.1",
     "Name": "UMM-S",
-    "Version": "1.4"
+    "Version": "1.4.1"
   }
 }

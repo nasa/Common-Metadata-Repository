@@ -7,21 +7,22 @@
   "VersionDescription": "This is a description of version 1.9.",
   "LastUpdatedDate": "2020-05-10T00:00:00Z",
   "AccessConstraints": "None",
-  "UseConstraints": {
-    "LicenseURL": "http://www.someurl.com",
-    "LicenseText": "None" },
   "RelatedURLs": [{
     "Description": "OPeNDAP Service for AIRX3STD.006",
     "URLContentType": "CollectionURL",
-    "Type": "Anything valid in kms",
-    "Subtype": "Anything valid in kms",
+    "Type": "EXTENDED METADATA",
+    "Subtype": "Anything not in kms",
     "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
   }, {
     "Description": "OPeNDAP Service for AIRX3STD.006",
     "URLContentType": "PublicationURL",
-    "Type": "VIEW RELATED INFORMATION",
+    "Type": "Anything not in kms",
+    "Subtype": "Anything",
     "URL": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
   }],
+  "UseConstraints": {
+    "LicenseURL": "http://www.someurl.com",
+    "LicenseText": "None" },
   "URL": {
     "Description": "OPeNDAP Service for AIRX3STD.006",
     "URLValue": "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
