@@ -170,7 +170,16 @@ def generate_tea_config(event, context):
 
     start = datetime.datetime.now()
 
-    provider = event['pathParameters'].get('id')
+    provider = None
+    if 'pathParameters' in event:
+        provider = event['pathParameters'].get('id')
+    elif 'path' in event:
+        parts = event['path'].split('/', -1)
+        if 1<len(parts) and parts[-2] == 'provider':
+            provider = parts[-1]
+    if provider is None:
+        provider = event['queryStringParameters'].get('id')
+
     if provider is None or len(provider)<1:
         return aws_return_message(event,
             400,
@@ -202,6 +211,7 @@ def generate_tea_config(event, context):
     result['headers'] = {'cmr-took': finish_timer(start),
         'content-type': 'text/yaml',
         'cmr-url': env['cmr-url'],
-        'cmr-auth': token}
+        'cmr-auth': f'{token[0:12]}...',
+        'cmr-provider': provider}
 
     return result

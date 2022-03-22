@@ -24,29 +24,16 @@ functions:
   capabilities:
     handler: capabilities.capabilities
     events:
-      - alb:
-          listenerArn: ${self:custom.loadBalancer}
-          priority: 52
-          conditions:
-            path:
-              - ${self:custom.endPoint}/capabilities
-              - ${self:custom.endPoint}/
+      - http: GET ${self:custom.endPoint}/
+      - http: GET ${self:custom.endPoint}/capabilities
   status:
     handler: handler.health
     events:
-      - alb:
-          listenerArn: ${self:custom.loadBalancer}
-          priority: 51
-          conditions:
-            path: ${self:custom.endPoint}/status
+      - http: GET ${self:custom.endPoint}/status
   provider:
     handler: handler.generate_tea_config
     events:
-      - alb:
-          listenerArn: ${self:custom.loadBalancer}
-          priority: 50
-          conditions:
-            path: ${self:custom.endPoint}/provider*
+      - http: GET ${self:custom.endPoint}/provider/{id}
 
 resources:
   Resources:
@@ -74,7 +61,7 @@ plugins:
   - serverless-offline
   - serverless-s3-local
 custom:
-  loadBalancer: ${env:AWS_TEA_CONFIG_LOADBALANCER, 'arn:aws:elasticloadbalancing:us-east-1:832706493240:listener/app/cmr-services-sit/9bae549c0224bffd/e2610cc0267bd95e'}
+  loadBalancer: ${env:AWS_TEA_CONFIG_LOADBALANCER, ''}
   env: ${env:AWS_TEA_CONFIG_ENV, 'sit'}
   endPoint: /configuration/tea
   pythonRequirements:
