@@ -44,7 +44,7 @@
   "Range aggregation does not include the :to number in the facets so we add a very small number
    in meters so that the :to value is included, but doesn't affect the outcome of the result
    besides that."
-  0.0000000001)
+  0.0001)
 
 (defn create-facet-range
   "This function parses a humanizer range facet map that contains range facet values of
