@@ -23,27 +23,32 @@ package:
 functions:
   capabilities:
     handler: capabilities.capabilities
+    events:
+      - http: GET ${self:custom.endPoint}/
+      - http: GET ${self:custom.endPoint}/capabilities
       - alb:
         listenerArn: ${self:custom.loadBalancer}
-        priority: 100
+        priority: 101
         conditions:
           path: ${self:custom.endPoint}/capabilities
-          path: ${self:custom.endPoint}/
-      #- http: GET ${self:custom.endPoint}/
-      #- http: GET ${self:custom.endPoint}/capabilities
   status:
     handler: handler.health
     events:
+      - http: GET ${self:custom.endPoint}/status
       - alb:
         listenerArn: ${self:custom.loadBalancer}
         priority: 100
         conditions:
           path: ${self:custom.endPoint}/status
-      # http: GET ${self:custom.endPoint}/status
   provider:
     handler: handler.generate_tea_config
     events:
       - http: GET ${self:custom.endPoint}/provider/{id}
+      - alb:
+        listenerArn: ${self:custom.loadBalancer}
+        priority: 100
+        conditions:
+          path: ${self:custom.endPoint}/provider/*
 
 resources:
   Resources:
