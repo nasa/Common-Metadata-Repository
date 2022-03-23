@@ -75,7 +75,7 @@ deploy()
       cp ./credentials ~/.aws/.
     fi
   fi
-  serverless deploy
+  serverless deploy --stage "${deploy_env}"
 }
 
 help_doc()
@@ -106,12 +106,13 @@ help_doc()
   printf "${format}" '-I' '' 'Install' 'Install dependent libraries'
 }
 
-while getopts 'hcCdDuUlLjt:orSeIx' opt; do
+while getopts 'hcCdDe:uUlLjt:orSeIx' opt; do
   case ${opt} in
     h) help_doc ;;
     c) color_mode='yes';;
     C) color_mode='no' ;;
     d) documentation ;;
+    e) deploy_env=${OPTARG} ;;
     D) deploy ; exit $? ;;
     u) python3 -m unittest discover -s ./ -p '*test.py' ;;
     U) python3 -m unittest discover -s ./ -p '*test.py' &> test.results.txt ;;
