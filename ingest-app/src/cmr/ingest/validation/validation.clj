@@ -399,7 +399,7 @@
 
 (defn- variable-keyword-validations-unignorable
   "Creates validations that check various collection fields to see if they match
-  KMS keywords. These validatios must always pass regardless of the warn? flag."
+  KMS keywords. These validations must always pass regardless of the warn? flag."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
     {:RelatedURLs [(match-related-url-kms-keywords-validations kms-index)]}))

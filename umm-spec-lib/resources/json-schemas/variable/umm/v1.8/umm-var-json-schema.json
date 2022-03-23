@@ -473,13 +473,13 @@
           "maxLength": 1024
         },
         "Format": {
-          "description": "The format of the data. The controlled vocabulary for formats is maintained in the Keyword Management System (KMS)",
+          "description": "Describes the organization of the data content so that users and applications know how to read and use the content. The controlled vocabulary for formats is maintained in the Keyword Management System (KMS): https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/DataFormat?gtm_scheme=DataFormat",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
         },
         "MimeType": {
-          "description": "The mime type of the resource.",
+          "description": "The multi-purpose internet mail extensions indicates the nature and format of the data that is accessed through the URL. The controlled vocabulary for MimeTypes is maintained in the Keyword Management System (KMS): https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/MimeType?gtm_scheme=MimeType",
           "type": "string",
           "minLength": 1,
           "maxLength": 80

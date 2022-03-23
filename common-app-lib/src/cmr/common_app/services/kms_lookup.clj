@@ -25,8 +25,8 @@
    [cmr.common.util :as util]))
 
 (def kms-scheme->fields-for-umm-c-lookup
-  "Maps the KMS keyword scheme to the list of fields that should be matched when comparing fields
-  between UMM-C and KMS."
+  "Maps the KMS keyword scheme to the list of fields that should be matched when
+  comparing fields between KMS and UMM-C, UMM-G, UMM-S, UMM-T, or UMM-Var."
   {:science-keywords [:category :topic :term :variable-level-1 :variable-level-2 :variable-level-3]
    :platforms [:category :short-name :long-name] ;; :basis and :sub-category are not in metadata
    :instruments [:short-name :long-name]
@@ -173,8 +173,8 @@
       [(dissoc k :long-name) v])))
 
 (defmulti lookup-by-umm-c-keyword
-  "Takes a keyword as represented in UMM-C and returns the KMS keyword. Comparison is made case
-  insensitively."
+  "Takes a keyword as represented in UMM-C, UMM-G, UMM-S, UMM-T, or UMM-Var and
+  returns the KMS keyword. Comparison is made case insensitively."
   (fn [kms-index keyword-scheme umm-c-keyword]
     keyword-scheme))
 
