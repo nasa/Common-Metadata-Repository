@@ -75,7 +75,6 @@ plugins:
   - serverless-offline
   - serverless-s3-local
 custom:
-  env: ${env:AWS_TEA_CONFIG_ENV, 'sit'}
   endPoint: /configuration/tea
   pythonRequirements:
     pythonBin: /usr/bin/python3
