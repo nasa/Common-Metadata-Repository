@@ -11,6 +11,7 @@ provider:
   timeout: 15  # 7 seconds is the average run time currently
   region: us-east-1
   role: IamRoleTeaLambdaExecution
+  stage: ${opt:stage, self:provider.stage}
   environment:
     AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.uat.earthdata.nasa.gov'}
     AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_LOG, 'INFO'}
@@ -25,7 +26,7 @@ functions:
     handler: capabilities.capabilities
     events:
       - alb:
-          listenerArn: ${self:custom.loadBalancer}
+          listenerArn: ${cf:${opt:stage}.servicesLbListenerArn}
           priority: 52
           conditions:
             path:
@@ -74,7 +75,6 @@ plugins:
   - serverless-offline
   - serverless-s3-local
 custom:
-  loadBalancer: ${env:AWS_TEA_CONFIG_LOADBALANCER, 'arn:aws:elasticloadbalancing:us-east-1:832706493240:listener/app/cmr-services-sit/9bae549c0224bffd/e2610cc0267bd95e'}
   env: ${env:AWS_TEA_CONFIG_ENV, 'sit'}
   endPoint: /configuration/tea
   pythonRequirements:
