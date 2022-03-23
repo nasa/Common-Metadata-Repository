@@ -11,7 +11,6 @@ provider:
   timeout: 15  # 7 seconds is the average run time currently
   region: us-east-1
   role: IamRoleTeaLambdaExecution
-  stage: ${opt:stage, self:provider.stage}
   environment:
     AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.uat.earthdata.nasa.gov'}
     AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_LOG, 'INFO'}
