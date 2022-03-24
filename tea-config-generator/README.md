@@ -43,11 +43,39 @@ use as a build and deployment environment when running under a CI/CD system.
 
 ## Deploying to AWS
 
+Several methods are provided to publish this application to specific CMR AWS
+environments. These processes can be reused for other similar environments based
+on need.
+
+### Deployment
+
 The [serverless.yml](serverless.yml) file will create an IAM role for the lambda
-functions. It will use the following Role name:
+functions and install them under an Application Load Balancer. The ARN is to be
+provided. The IAM role will use the following Role name:
 `tea-config-generator-role-${self:custom.env}-${self:provider.region}` and will
 use `arn:aws:iam::${aws:accountId}:policy/NGAPShRoleBoundary` for a Permissions
-Boundary.
+Boundary. This setup is suitable for situations where a public URL is applied at
+the Loadbalancer level. 
+
+* **NOTE**: This is the file used for deployment to SIT, UAT, and OPS
+
+
+### Sandbox
+The [serverless-sandbox.yml](serverless-sandbox.yml) file will also create an IAM
+role and be bound to the same Permissions Boundary, however it will use an API 
+Gateway to publish the lambda functions. The URL for the API Gateway can be used
+for internal testing or for use within an AWS account. 
+
+* **NOTE**: This is the file used for testing on AWS but not SIT, UAT, or OPS.
+
+
+### Local Use
+The [serverless-local.yml](serverless-local.yml) file is meant for use locally by
+developers of the application. It will locally publish an API Gateway and allow
+access to the lambda functions through that. It also includes an S3 bucket for
+displaying the HTML API documentation. 
+
+* **NOTE**: for localhost use only.
 
 ## Testing
 Read the details in the ./run.sh script. There are functions which have all the

@@ -12,9 +12,8 @@ provider:
   region: us-east-1
   role: IamRoleTeaLambdaExecution
   environment:
-    AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.earthdata.nasa.gov'}
+    AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.uat.earthdata.nasa.gov'}
     AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_LOG, 'INFO'}
-  stage: ${opt:stage, 'prod'}
 
 package:
 #  individually: true
@@ -25,29 +24,16 @@ functions:
   capabilities:
     handler: capabilities.capabilities
     events:
-      - alb:
-          listenerArn: ${cf:${self:provider.stage}.servicesLbListenerArn}
-          priority: 52
-          conditions:
-            path:
-              - ${self:custom.endPoint}/capabilities
-              - ${self:custom.endPoint}/
+      - http: GET ${self:custom.endPoint}/
+      - http: GET ${self:custom.endPoint}/capabilities
   status:
     handler: handler.health
     events:
-      - alb:
-          listenerArn: ${cf:${self:provider.stage}.servicesLbListenerArn}
-          priority: 51
-          conditions:
-            path: ${self:custom.endPoint}/status
+      - http: GET ${self:custom.endPoint}/status
   provider:
     handler: handler.generate_tea_config
     events:
-      - alb:
-          listenerArn: ${cf:${self:provider.stage}.servicesLbListenerArn}
-          priority: 50
-          conditions:
-            path: ${self:custom.endPoint}/provider*
+      - http: GET ${self:custom.endPoint}/provider/{id}
 
 resources:
   Resources:
@@ -56,7 +42,7 @@ resources:
     IamRoleTeaLambdaExecution:
       Type: AWS::IAM::Role
       Properties:
-        RoleName: tea-config-generator-role-${self:provider.stage}-${self:provider.region}
+        RoleName: tea-config-generator-role-${self:custom.env}-${self:provider.region}
         PermissionsBoundary: arn:aws:iam::${aws:accountId}:policy/NGAPShRoleBoundary
         ManagedPolicyArns:
           - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
@@ -75,6 +61,8 @@ plugins:
   - serverless-offline
   - serverless-s3-local
 custom:
+  loadBalancer: ${env:AWS_TEA_CONFIG_LOADBALANCER, ''}
+  env: ${env:AWS_TEA_CONFIG_ENV, 'sit'}
   endPoint: /configuration/tea
   pythonRequirements:
     pythonBin: /usr/bin/python3
