@@ -49,6 +49,9 @@
 
 (defn stac-request-url
   "Returns the request url for granule search in STAC format"
+  ([context]
+   (format "%sgranules.stac"
+           (tconfig/application-public-root-url context)))
   ([context coll-concept-id]
    (format "%sgranules.stac?collection_concept_id=%s"
            (tconfig/application-public-root-url context)
