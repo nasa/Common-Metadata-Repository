@@ -82,4 +82,3 @@
   (if (:provider-short-name params)
     (do-replace-provider-short-names context params)
     params))
-
