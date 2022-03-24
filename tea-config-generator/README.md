@@ -70,7 +70,7 @@ for internal testing or for use within an AWS account.
 
 
 ### Local Use
-The [serverless-local.yml](serverless-local.yml) file is ment for use locally by
+The [serverless-local.yml](serverless-local.yml) file is meant for use locally by
 developers of the application. It will locally publish an API Gateway and allow
 access to the lambda functions through that. It also includes an S3 bucket for
 displaying the HTML API documentation. 
