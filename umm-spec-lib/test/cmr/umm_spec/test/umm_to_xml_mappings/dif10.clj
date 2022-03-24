@@ -5,7 +5,7 @@
     [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
     [cmr.common.xml.parse :refer :all]
     [cmr.common.xml.simple-xpath :refer [select]]
-    [cmr.umm-spec.umm-json :as umm-json]))
+    [cmr.common.date-time-parser :as dtp]))
 
 (deftest dif10-direct-distribution-information-test
   "Testing the dif10 direct distribution information translation from umm-c to dif10."
@@ -31,18 +31,22 @@
 
 (deftest dif10-metadata-dates-test
   "Testing the dif10 metadata dates translation from umm-c to dif10"
-  (let [json-input1 "{\"MetadataDates\":
-                     [{\"Date\":\"2021-01-01T00:00:00.000Z\",\"Type\":\"CREATE\"},
-                     {\"Date\":\"2021-03-01T00:00:00.000Z\",\"Type\":\"UPDATE\"},
-                     {\"Date\":\"2024-01-01T00:00:00.000Z\",\"Type\":\"DELETE\"},
-                     {\"Date\":\"2022-01-01T00:00:00.000Z\",\"Type\":\"REVIEW\"}]}"
-        result1 (dif10/umm-c-to-dif10-xml (umm-json/json->umm {} :collection json-input1))
+  (let [result1 (dif10/umm-c-to-dif10-xml 
+                 {:MetadataDates [{:Date (dtp/parse-datetime "2021-01-01T00:00:00.000Z")
+                                   :Type "CREATE"}
+                                  {:Date (dtp/parse-datetime "2021-03-01T00:00:00.000Z")
+                                   :Type "UPDATE"}
+                                  {:Date (dtp/parse-datetime "2024-01-01T00:00:00.000Z")
+                                   :Type "DELETE"}
+                                  {:Date (dtp/parse-datetime "2022-01-01T00:00:00.000Z")
+                                   :Type "REVIEW"}]})
         result1-dates (first (select result1 "/DIF/Metadata_Dates"))
         
-        json-input2 "{\"MetadataDates\": 
-                     [{\"Date\" : \"1992-01-01T00:00:00.000Z\",\"Type\" : \"CREATE\"},
-                     {\"Date\" : \"2016-08-03T00:00:00.000Z\",\"Type\" : \"UPDATE\"}]}"
-        result2 (dif10/umm-c-to-dif10-xml (umm-json/json->umm {} :collection json-input2))
+        result2 (dif10/umm-c-to-dif10-xml 
+                 {:MetadataDates [{:Date (dtp/parse-datetime "1992-01-01T00:00:00.000Z")
+                                   :Type "CREATE"}
+                                  {:Date (dtp/parse-datetime "2016-08-03T00:00:00.000Z")
+                                   :Type "UPDATE"}]})
         result2-dates (first (select result2 "/DIF/Metadata_Dates"))
 
         result3 (dif10/umm-c-to-dif10-xml nil)
