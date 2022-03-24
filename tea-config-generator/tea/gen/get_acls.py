@@ -14,7 +14,8 @@ def get_acls(env,provider,token):
     headers = util.standard_headers({'Authorization': token, 'Content-Type': 'application/json'})
     url = (f'{cmr_url}/access-control/acls'
             f'?provider={provider}'
-            f'&identity_type=catalog_item')
+            '&identity_type=catalog_item'
+            '&page_size=2000')
     try:
         response = requests.get(url, headers=headers)
         json_data = response.json()
