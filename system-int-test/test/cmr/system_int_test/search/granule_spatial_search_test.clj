@@ -36,6 +36,18 @@
   [& ords]
   (codec/url-encode (umm-s/set-coordinate-system :geodetic (apply polygon ords))))
 
+(defn make-excessive-points
+  "Returns a list of n-ish distinct points. Duplicates are removed so it may yield a lower amount."
+  [n]
+  (flatten
+   (distinct
+    (partition 2
+               (interleave
+                (repeatedly n
+                            #(first (shuffle (range -180 180))))
+                (repeatedly n
+                            #(first (shuffle (range -90 90)))))))))
+
 ;; Tests search failure conditions
 (deftest spatial-search-validation-test
   (testing "All granules spatial"
@@ -111,17 +123,27 @@
   (testing "invalid lines"
     (is (= {:errors [(smsg/duplicate-points [[1 (p/point 1 1)] [3 (p/point 1 1)]])] :status 400}
            (search/find-refs :granule
-                             {:line "0,0,1,1,2,2,1,1" :provider "PROV1"})))))
+                             {:line "0,0,1,1,2,2,1,1" :provider "PROV1"}))))
+
+  (testing "invalid lines - excessive amount of points"
+    (is (= {:errors [(smsg/duplicate-points [[1 (p/point 1 1)] [3 (p/point 1 1)]])] :status 400}
+           (search/find-refs :granule
+                             {:line (codec/url-encode (l/ords->line-string :geodetic ords))
+                              :provider "PROV1"})))))
 
 (deftest spatial-search-test
-  (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
-                                                                :EntryTitle "E1"
-                                                                :ShortName "S1"
-                                                                :Version "V1"}))
-        cartesian-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "CARTESIAN"})
-                                                                 :EntryTitle "E2"
-                                                                 :ShortName "S2"
-                                                                 :Version "V2"}))
+  (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                                             {:SpatialExtent (data-umm-c/spatial
+                                                                              {:gsr "GEODETIC"})
+                                                              :EntryTitle "E1"
+                                                              :ShortName "S1"
+                                                              :Version "V1"}))
+        cartesian-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                                              {:SpatialExtent (data-umm-c/spatial
+                                                                               {:gsr "CARTESIAN"})
+                                                               :EntryTitle "E2"
+                                                               :ShortName "S2"
+                                                               :Version "V2"}))
         geodetic-coll-cid (get-in geodetic-coll [:concept-id])
         cartesian-coll-cid (get-in cartesian-coll [:concept-id])
         make-gran (fn [ur & shapes]
@@ -179,13 +201,13 @@
         south-pole (make-gran "south-pole" (p/point 0 -90))
         normal-point (make-gran "normal-point" (p/point 10 22))
         am-point (make-gran "am-point" (p/point 180 22))
+        excessive-amount-of-points (make-excessive-points 2000)
         all-grans [whole-world touches-np touches-sp across-am-br normal-brs
                    wide-north wide-south across-am-poly on-sp on-np normal-poly
                    polygon-with-holes north-pole south-pole normal-point am-point
                    very-wide-cart very-tall-cart wide-north-cart wide-south-cart
                    normal-poly-cart polygon-with-holes-cart normal-line normal-line-cart]]
     (index/wait-until-indexed)
-
     (testing "line searches"
       (are [ords items]
         (let [found (search/find-refs
@@ -219,7 +241,11 @@
         [0 -85, 180 -85] [whole-world south-pole on-sp]
 
         ;; across north pole where cartesian polygon touches it
-        [-155 -85, 25 -85] [whole-world south-pole on-sp touches-sp very-tall-cart]))
+        [-155 -85, 25 -85] [whole-world south-pole on-sp touches-sp very-tall-cart]
+
+        ;; excessive amount of points
+        excessive-amount-of-points
+        []))
 
     (testing "point searches"
       (are [lon_lat items]
@@ -421,40 +447,40 @@
         ["0,89,100" "0,89,1000000"] [whole-world on-np]
         ["0,0,1000" "0,89,1000" "0,89,1000000"] [whole-world]))
 
-  (testing "ORed spatial search"
-     (let [poly-coordinates ["-16.79,-12.71,-6.32,-10.95,-5.74,-6.11,-15.18,-7.63,-16.79,-12.71"
-                             "0.53,39.23,21.57,59.8,-112.21,84.48,-13.37,40.91,0.53,39.23"]
-           poly-refs (search/find-refs
-                      :granule
-                      {:provider "PROV1"
-                       :polygon poly-coordinates
-                       "options[spatial][or]" "true"})
-           bbox-refs (search/find-refs
-                             :granule
-                             {:provider "PROV1"
-                              :bounding-box ["166.11,-19.14,-166.52,53.04"
-                                             "23.59,-15.47,25.56,-4"]
-                                             "options[spatial][or]" "true"})
-           combined-refs (search/find-refs
-                          :granule
-                          {:provider "PROV1"
-                           :circle "179.8,41,100000"
-                           :bounding-box "166.11,-19.14,-166.52,53.04"
-                           "options[spatial][or]" "true"})
-           anded-refs (search/find-refs
-                       :granule
-                       {:provider "PROV1"
-                        :circle "179.8,41,100000"
-                        :bounding-box "166.11,-19.14,-166.52,53.04"
-                        "options[spatial][or]" "false"})]
-      (is (d/refs-match? [across-am-poly whole-world across-am-br am-point very-wide-cart]
-                         combined-refs))
-      (is (d/refs-match? [wide-north on-np normal-poly very-wide-cart whole-world normal-brs]
-                         poly-refs))
-      (is (d/refs-match? [across-am-poly very-wide-cart am-point normal-line-cart whole-world across-am-br]
-                         bbox-refs))
-      (is (d/refs-match? [across-am-poly whole-world]
-                         anded-refs))))
+    (testing "ORed spatial search"
+       (let [poly-coordinates ["-16.79,-12.71,-6.32,-10.95,-5.74,-6.11,-15.18,-7.63,-16.79,-12.71"
+                               "0.53,39.23,21.57,59.8,-112.21,84.48,-13.37,40.91,0.53,39.23"]
+             poly-refs (search/find-refs
+                        :granule
+                        {:provider "PROV1"
+                         :polygon poly-coordinates
+                         "options[spatial][or]" "true"})
+             bbox-refs (search/find-refs
+                        :granule
+                        {:provider "PROV1"
+                         :bounding-box ["166.11,-19.14,-166.52,53.04"
+                                        "23.59,-15.47,25.56,-4"]
+                         "options[spatial][or]" "true"})
+             combined-refs (search/find-refs
+                            :granule
+                            {:provider "PROV1"
+                             :circle "179.8,41,100000"
+                             :bounding-box "166.11,-19.14,-166.52,53.04"
+                             "options[spatial][or]" "true"})
+             anded-refs (search/find-refs
+                         :granule
+                         {:provider "PROV1"
+                          :circle "179.8,41,100000"
+                          :bounding-box "166.11,-19.14,-166.52,53.04"
+                          "options[spatial][or]" "false"})]
+        (is (d/refs-match? [across-am-poly whole-world across-am-br am-point very-wide-cart]
+                           combined-refs))
+        (is (d/refs-match? [wide-north on-np normal-poly very-wide-cart whole-world normal-brs]
+                           poly-refs))
+        (is (d/refs-match? [across-am-poly very-wide-cart am-point normal-line-cart whole-world across-am-br]
+                           bbox-refs))
+        (is (d/refs-match? [across-am-poly whole-world]
+                           anded-refs))))
 
     (testing "ORed spatial search with other search params"
       (is (d/refs-match? [am-point]
@@ -513,19 +539,19 @@
       [-179.9998 0, -179.9998 -89.9999, 0 -89.9999, 0 0, -179.9998 0]
       [no-lr])
 
-     (are3 [ords items]
-        (let [response (search/find-refs :granule {:polygon (apply search-poly ords)
-                                                   :provider "PROV1"})]
-          (is (= 0 (:hits response))
-              (pr-str response)))
+    (are3 [ords items]
+       (let [response (search/find-refs :granule {:polygon (apply search-poly ords)
+                                                  :provider "PROV1"})]
+         (is (= 0 (:hits response))
+             (pr-str response)))
 
-       "search against the box that does not intersect with the polygon unmatching case"
-       [1 1, 2 1, 2 2, 1 2, 1 1]
-       [no-lr]
+      "search against the box that does not intersect with the polygon unmatching case"
+      [1 1, 2 1, 2 2, 1 2, 1 1]
+      [no-lr]
 
-       "search against the box that does not intersect with the polygon but intersect with the mbr of the polygon unmatching case"
-       [-179 0, -179 -1, -178 -1, -178 0, -179 0]
-       [no-lr])))
+      "search against the box that does not intersect with the polygon but intersect with the mbr of the polygon unmatching case"
+      [-179 0, -179 -1, -178 -1, -178 0, -179 0]
+      [no-lr])))
 
 (deftest circle-parameter-validation
   (testing "invalid circle parameters"

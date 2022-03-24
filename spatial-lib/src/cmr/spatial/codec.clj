@@ -60,7 +60,6 @@
     [{:keys [west north east south]}]
     (join-ordinates west south east north)))
 
-
 (defmulti url-decode
   "Decodes a url encoded spatial shape back into the spatial shape. If there is an error decoding
   It returns a map with :errors key"
@@ -120,10 +119,26 @@
 
 (defmethod url-decode :line
   [type s]
-  (if-let [match (re-matches line-regex s)]
-    (let [ordinates (map #(Double. ^String %) (string/split s #","))]
-      (l/ords->line-string :geodetic ordinates))
-    {:errors [(smsg/shape-decode-msg :line s)]}))
+  ;; If the line string is too large, we will experience a StackOverflowError in the java Regex code.
+  ;; To avoid this, when the string is large enough we just split the string verify each token is a number
+  ;; And that here is an even amount. Through testing we've determined about 660ish points is the limit,
+  ;; which is the equivalent to about a 5000 characters long string, so to branch the logic away from
+  ;; the Regex validation, we will count 4500 char strings or above as too large.
+  (if (> (count s) 4500)
+    (let [split-line-str (string/split s #",")]
+      (if (or (some #(not (util/numeric-string? %)) split-line-str)
+              (odd? (count split-line-str)))
+        {:errors [(smsg/shape-decode-msg :line s)]}
+        ;; The maximum shape file size by default is around 5000, we are mirroring that configuration
+        ;; for the too-many-points validation.
+        (if (> (count split-line-str) (smsg/max-line-points))
+          {:errors [(smsg/line-too-many-points-msg :line s)]}
+          (let [ordinates (map #(Double. ^String %) split-line-str)]
+            (l/ords->line-string :geodetic ordinates)))))
+    (if-let [match (re-matches line-regex s)]
+      (let [ordinates (map #(Double. ^String %) (string/split s #","))]
+        (l/ords->line-string :geodetic ordinates))
+      {:errors [(smsg/shape-decode-msg :line s)]})))
 
 (defmethod url-decode :circle
   [type s]

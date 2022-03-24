@@ -237,6 +237,7 @@
                         cached-search-params
                         (lp/process-legacy-psa params))
         _ (handle-granule-search-params headers concept-type search-params short-scroll-id)
+
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
     (if (:scroll-id results)
       (core-api/search-response ctx results search-params)

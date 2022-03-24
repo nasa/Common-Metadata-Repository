@@ -3,8 +3,17 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [clojure.string :as str]
+   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.util :as u]
    [pjstadig.assertions :as pj]))
+
+(defconfig max-line-points
+  "The maximum number of points a line parameter can have"
+  {:default 5000 :type Long})
+
+(defn line-too-many-points-msg
+  [type s]
+  (format "[%s] has too many points for type %s" s (csk/->snake_case_string type)))
 
 (defn shape-decode-msg
   [type s]
