@@ -86,7 +86,7 @@ class GetAclsTest(TestCase):
 
         acl_url = 'XXX'
         token = 'EDL-XXX'
-        response = get_acl(acl_url, token)
+        response = get_acl({}, acl_url, token)
 
         self.assertEqual(response['group_permissions'][3]['group_id'], 'AG1236456866-CMR')
         self.assertEqual(response['group_permissions'][5]['group_id'], 'AG1216375422-SCIOPS')
