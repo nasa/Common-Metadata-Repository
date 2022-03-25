@@ -78,7 +78,7 @@ resources:
                   - 'lambda.amazonaws.com'
               Action:
                 - 'sts:AssumeRole'
-  plugins:
+plugins:
   - serverless-python-requirements
   - serverless-offline
   - serverless-s3-local
