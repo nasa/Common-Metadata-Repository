@@ -25,6 +25,20 @@
                                         <Data_Creation>2014-05-01T02:30:24</Data_Creation>
                                       </Metadata_Dates>
                                     </DIF>"))))
+  
+  (testing "all four metadata dates types are translated"
+   (let [result (parse/parse-dif10-xml "<DIF><Metadata_Dates>
+                                   <Metadata_Creation>2013-03-28</Metadata_Creation>
+                                   <Metadata_Last_Revision>2016-05-11</Metadata_Last_Revision>
+                                   <Metadata_Delete>2017-04-04</Metadata_Delete>
+                                   <Metadata_Future_Review>2016-12-01</Metadata_Future_Review>
+                                   </Metadata_Dates></DIF>" options)
+         md-dates (:MetadataDates result)] 
+     (is (= (list ["CREATE" (t/date-time 2013 3 28)] 
+                  ["UPDATE" (t/date-time 2016 5 11)] 
+                  ["DELETE" (t/date-time 2017 4 4)] 
+                  ["REVIEW" (t/date-time 2016 12 1)])
+         (map #(vector (:Type %) (:Date %)) md-dates)))))
 
   (testing "default date is skipped"
     (is (= []

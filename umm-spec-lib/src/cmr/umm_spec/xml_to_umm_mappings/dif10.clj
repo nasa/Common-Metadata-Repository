@@ -103,7 +103,9 @@
   "Returns a list of metadata dates"
   [doc]
   (seq (remove nil? [(date/parse-date-type-from-xml doc "DIF/Metadata_Dates/Metadata_Creation" "CREATE")
-                     (date/parse-date-type-from-xml doc "DIF/Metadata_Dates/Metadata_Last_Revision" "UPDATE")])))
+                     (date/parse-date-type-from-xml doc "DIF/Metadata_Dates/Metadata_Last_Revision" "UPDATE")
+                     (date/parse-date-type-from-xml doc "DIF/Metadata_Dates/Metadata_Delete" "DELETE")
+                     (date/parse-date-type-from-xml doc "DIF/Metadata_Dates/Metadata_Future_Review" "REVIEW")])))
 
 (defn- parse-range-date-times
   "Returns a list of range date times"
