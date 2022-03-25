@@ -48,7 +48,7 @@ functions:
   provider:
     handler: handler.generate_tea_config
     description: Generate a TEA Config YAML file
-    timeout: 20
+    timeout: 30
     events:
       - alb:
           listenerArn: ${cf:${self:provider.stage}.servicesLbListenerArn}
