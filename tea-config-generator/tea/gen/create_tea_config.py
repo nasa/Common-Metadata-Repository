@@ -29,7 +29,7 @@ class CreateTeaConfig:
             acl_url = acl['location']
             self.logger.debug('---------------------')
             self.logger.info('Found ACL %s', acl_url)
-            acl_json = get_acl(acl_url, token)
+            acl_json = get_acl(env, acl_url, token)
             catalog_item_identity = acl_json['catalog_item_identity']
             if 'collection_identifier' in catalog_item_identity:
                 self.logger.info('Getting group names for ACL')
