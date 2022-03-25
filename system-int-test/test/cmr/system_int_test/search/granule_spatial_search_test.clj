@@ -1,5 +1,7 @@
 (ns cmr.system-int-test.search.granule-spatial-search-test
   (:require
+   [clojure.java.io :as io]
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
    [cmr.spatial.codec :as codec]
@@ -37,16 +39,14 @@
   (codec/url-encode (umm-s/set-coordinate-system :geodetic (apply polygon ords))))
 
 (defn make-excessive-points
-  "Returns a list of n-ish distinct points. Duplicates are removed so it may yield a lower amount."
+  "Returns a list of n points"
   [n]
-  (flatten
-   (distinct
-    (partition 2
+  (string/join ","
                (interleave
                 (repeatedly n
                             #(first (shuffle (range -180 180))))
                 (repeatedly n
-                            #(first (shuffle (range -90 90)))))))))
+                            #(first (shuffle (range -90 90)))))))
 
 ;; Tests search failure conditions
 (deftest spatial-search-validation-test
@@ -123,13 +123,46 @@
   (testing "invalid lines"
     (is (= {:errors [(smsg/duplicate-points [[1 (p/point 1 1)] [3 (p/point 1 1)]])] :status 400}
            (search/find-refs :granule
-                             {:line "0,0,1,1,2,2,1,1" :provider "PROV1"}))))
+                             {:line "0,0,1,1,2,2,1,1" :provider "PROV1"})))))
 
-  (testing "invalid lines - excessive amount of points"
-    (is (= {:errors [(smsg/duplicate-points [[1 (p/point 1 1)] [3 (p/point 1 1)]])] :status 400}
-           (search/find-refs :granule
-                             {:line (codec/url-encode (l/ords->line-string :geodetic ords))
-                              :provider "PROV1"})))))
+(deftest excessive-points-line-spatial-search-test
+  (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                                             {:SpatialExtent (data-umm-c/spatial
+                                                                              {:gsr "GEODETIC"})
+                                                              :EntryTitle "E1"
+                                                              :ShortName "S1"
+                                                              :Version "V1"}))
+        geodetic-coll-cid (get-in geodetic-coll [:concept-id])
+        make-gran (fn [ur & shapes]
+                    (let [shapes (map (partial umm-s/set-coordinate-system :geodetic) shapes)]
+                      (d/ingest "PROV1" (dg/granule-with-umm-spec-collection geodetic-coll geodetic-coll-cid
+                                                    {:granule-ur ur
+                                                     :spatial-coverage (apply dg/spatial shapes)}))))
+        whole-world (make-gran "whole-world" (m/mbr -180 90 180 -90))
+        too-many-points (slurp (io/resource "too-many-points-line-param.txt")) ; File with 5001 points
+        excessive-amount-of-points (slurp (io/resource "large-line-param.txt"))]
+    (index/wait-until-indexed)
+    (testing "Excessive amount of points"
+      (testing "line search"
+        (let [found (search/find-refs
+                     :granule
+                     {:line excessive-amount-of-points
+                      :provider "PROV1"
+                      :page-size 50})]
+          (is (d/refs-match? [whole-world] found))))
+      (testing "invalid lines"
+        (is (= {:errors [(smsg/duplicate-points [[0 (p/point 162 84)] [1 (p/point 162 84)]])] :status 400}
+               (search/find-refs :granule
+                                 {:line (str "162,84," excessive-amount-of-points) :provider "PROV1"}))))
+      (testing "invalid encoding"
+        (is (= {:errors [(smsg/shape-decode-msg :line (str "foo," excessive-amount-of-points ",bar"))]
+                :status 400}
+               (search/find-refs :granule
+                                 {:line (str "foo," excessive-amount-of-points ",bar") :provider "PROV1"}))))
+      (testing "too many points"
+        (is (= {:errors [(smsg/line-too-many-points-msg :line too-many-points)]
+                :status 400}
+               (search/find-refs :granule {:line too-many-points :provider "PROV1"})))))))
 
 (deftest spatial-search-test
   (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
@@ -201,12 +234,12 @@
         south-pole (make-gran "south-pole" (p/point 0 -90))
         normal-point (make-gran "normal-point" (p/point 10 22))
         am-point (make-gran "am-point" (p/point 180 22))
-        excessive-amount-of-points (make-excessive-points 2000)
         all-grans [whole-world touches-np touches-sp across-am-br normal-brs
                    wide-north wide-south across-am-poly on-sp on-np normal-poly
                    polygon-with-holes north-pole south-pole normal-point am-point
                    very-wide-cart very-tall-cart wide-north-cart wide-south-cart
                    normal-poly-cart polygon-with-holes-cart normal-line normal-line-cart]]
+
     (index/wait-until-indexed)
     (testing "line searches"
       (are [ords items]
@@ -241,11 +274,7 @@
         [0 -85, 180 -85] [whole-world south-pole on-sp]
 
         ;; across north pole where cartesian polygon touches it
-        [-155 -85, 25 -85] [whole-world south-pole on-sp touches-sp very-tall-cart]
-
-        ;; excessive amount of points
-        excessive-amount-of-points
-        []))
+        [-155 -85, 25 -85] [whole-world south-pole on-sp touches-sp very-tall-cart]))
 
     (testing "point searches"
       (are [lon_lat items]

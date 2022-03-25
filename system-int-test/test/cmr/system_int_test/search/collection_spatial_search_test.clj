@@ -1,10 +1,12 @@
 (ns cmr.system-int-test.search.collection-spatial-search-test
   (:require
+   [clojure.java.io :as io]
    [clojure.test :refer :all]
    [cmr.common.util :as u :refer [are3]]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
+   [cmr.spatial.messages :as smsg]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
    [cmr.system-int-test.data2.collection :as dc]
@@ -36,6 +38,33 @@
                  :spatial-coverage (dc/spatial {:gsr coord-sys
                                                 :sr coord-sys
                                                 :geometries shapes})}))))
+
+(deftest excessive-points-line-spatial-search-test
+  (let [whole-world (make-coll :geodetic "whole-world" (m/mbr -180 90 180 -90))
+        too-many-points (slurp (io/resource "too-many-points-line-param.txt")) ; File with 5001 points
+        excessive-amount-of-points (slurp (io/resource "large-line-param.txt"))]
+    (index/wait-until-indexed)
+    (testing "Excessive amount of points"
+      (testing "line search"
+        (let [found (search/find-refs
+                     :collection
+                     {:line excessive-amount-of-points
+                      :provider "PROV1"
+                      :page-size 50})]
+          (is (d/refs-match? [whole-world] found))))
+      (testing "invalid lines"
+        (is (= {:errors [(smsg/duplicate-points [[0 (p/point 162 84)] [1 (p/point 162 84)]])] :status 400}
+               (search/find-refs :collection
+                                 {:line (str "162,84," excessive-amount-of-points) :provider "PROV1"}))))
+      (testing "invalid encoding"
+        (is (= {:errors [(smsg/shape-decode-msg :line (str "foo," excessive-amount-of-points ",bar"))]
+                :status 400}
+               (search/find-refs :collection
+                                 {:line (str "foo," excessive-amount-of-points ",bar") :provider "PROV1"}))))
+      (testing "too many points"
+        (is (= {:errors [(smsg/line-too-many-points-msg :line too-many-points)]
+                :status 400}
+               (search/find-refs :collection {:line too-many-points :provider "PROV1"})))))))
 
 (deftest spatial-search-test
   (let [;; Lines
