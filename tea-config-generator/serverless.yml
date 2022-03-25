@@ -12,18 +12,19 @@ provider:
   region: us-east-1
   role: IamRoleTeaLambdaExecution
   environment:
-    AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.earthdata.nasa.gov'}
-    AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_LOG, 'INFO'}
+    AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.sit.earthdata.nasa.gov'}
+    AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_LOG, 'DEBUG'}
   stage: ${opt:stage, 'prod'}
 
 package:
-#  individually: true
   exclude:
     - node_modules/**
 
 functions:
   capabilities:
     handler: capabilities.capabilities
+    description: Return a summery of the calls that can be made to this application
+    timeout: 5
     events:
       - alb:
           listenerArn: ${cf:${self:provider.stage}.servicesLbListenerArn}
@@ -32,22 +33,30 @@ functions:
             path:
               - ${self:custom.endPoint}/capabilities
               - ${self:custom.endPoint}/
+    vpc: ~
   status:
     handler: handler.health
+    description: Return a nominal response for confirming the status of this app
+    timeout: 1
     events:
       - alb:
           listenerArn: ${cf:${self:provider.stage}.servicesLbListenerArn}
           priority: 51
           conditions:
             path: ${self:custom.endPoint}/status
+    vpc: ~
   provider:
     handler: handler.generate_tea_config
+    description: Generate a TEA Config YAML file
+    timeout: 20
     events:
       - alb:
           listenerArn: ${cf:${self:provider.stage}.servicesLbListenerArn}
           priority: 50
           conditions:
             path: ${self:custom.endPoint}/provider*
+    vpc:
+      ${self:custom.vpcrule.${opt:stage}, '~'}
 
 resources:
   Resources:
@@ -69,8 +78,7 @@ resources:
                   - 'lambda.amazonaws.com'
               Action:
                 - 'sts:AssumeRole'
-
-plugins:
+  plugins:
   - serverless-python-requirements
   - serverless-offline
   - serverless-s3-local
@@ -78,3 +86,10 @@ custom:
   endPoint: /configuration/tea
   pythonRequirements:
     pythonBin: /usr/bin/python3
+  vpcrule:
+    sit:
+      securityGroupIds:
+        - ${cf:${self:provider.stage}.servicesSecurityGroupId}
+      subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
+    uat: ~
+    prod: ~

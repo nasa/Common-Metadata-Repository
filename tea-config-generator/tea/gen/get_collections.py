@@ -51,7 +51,7 @@ def get_collections(env:dict, token, provider, page_num, page_size):
         if response.status_code == 200:
             return json_data
     except requests.exceptions.RequestException as error:
-        logger.error('Error occurred in get_collections: %s', error)
+        logger.error('Error occurred in get_collections from calling %s:\n%s', url, error)
     return {}
 
 def get_collection(env:dict, token, concept_id):
@@ -61,7 +61,7 @@ def get_collection(env:dict, token, concept_id):
     cmr_base = util.get_env(env)
     url = f'{cmr_base}/search/concepts/{concept_id}.umm_json'
     try:
-        response = requests.get(url, headers=headers)
+        response = requests.get(env, url, headers=headers)
         json_data = response.json()
         logger.debug('get_collection: response=%s', json_data)
         if response.status_code == 200:
