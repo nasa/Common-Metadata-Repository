@@ -113,11 +113,13 @@
                             (map :doc_count)
                             (some #(< 0 %)))]
       (if some-values?
-        (frf/buckets->value-count-pairs
-          (get-in aggregations [field-name :values]))
+        ;; Removes value pairs where the doc count is zero to be more in line with other facets
+        (filter #(< 0 (get % 1))
+         (frf/buckets->value-count-pairs
+          (get-in aggregations [field-name :values])))
         (sequence nil)))
     (frf/buckets->value-count-pairs
-      (get-in aggregations [field-name :values]))))
+     (get-in aggregations [field-name :values]))))
 
 (defn create-prioritized-v2-facets
   "Parses the elastic aggregations and generates the v2 facets for all flat fields."

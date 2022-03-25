@@ -113,36 +113,36 @@
      {:range
       {:field :horizontal-data-resolutions.value,
        :ranges
-       [{:key "0 to 1 meter", :from 0.0, :to 1.0000000001}
-        {:key "1 to 30 meters", :from 1.0, :to 30.0000000001}
+       [{:key "0 to 1 meter", :from 0.0, :to 1.0001}
+        {:key "1 to 30 meters", :from 1.0, :to 30.0001}
         {:key "30 to 100 meters",
          :from 30.0,
-         :to 100.0000000001}
+         :to 100.0001}
         {:key "100 to 250 meters",
          :from 100.0,
-         :to 250.0000000001}
+         :to 250.0001}
         {:key "250 to 500 meters",
          :from 250.0,
-         :to 500.0000000001}
+         :to 500.0001}
         {:key "500 to 1000 meters",
          :from 500.0,
-         :to 1000.0000000001}
-        {:key "1 to 10 km", :from 1000.0, :to 10000.0000000001}
+         :to 1000.0001}
+        {:key "1 to 10 km", :from 1000.0, :to 10000.0001}
         {:key "10 to 50 km",
          :from 10000.0,
-         :to 50000.0000000001}
+         :to 50000.0001}
         {:key "50 to 100 km",
          :from 50000.0,
-         :to 100000.0000000001}
+         :to 100000.0001}
         {:key "100 to 250 km",
          :from 100000.0,
-         :to 250000.0000000001}
+         :to 250000.0001}
         {:key "250 to 500 km",
          :from 250000.0,
-         :to 500000.0000000001}
+         :to 500000.0001}
         {:key "500 to 1000 km",
          :from 500000.0,
-         :to 1000000.0000000001}
+         :to 1000000.0001}
         {:key "1000 km & beyond",
          :from 1000000.0,
          :to 3.4028234663852886E38}]},
@@ -426,38 +426,6 @@
                   {:apply
                    "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=1+to+30+meters"},
                   :has_children false}
-                 {:title "30 to 100 meters",
-                  :type :filter,
-                  :applied false,
-                  :count 0,
-                  :links
-                  {:apply
-                   "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=30+to+100+meters"},
-                  :has_children false}
-                 {:title "100 to 250 meters",
-                  :type :filter,
-                  :applied false,
-                  :count 0,
-                  :links
-                  {:apply
-                   "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=100+to+250+meters"},
-                  :has_children false}
-                 {:title "250 to 500 meters",
-                  :type :filter,
-                  :applied false,
-                  :count 0,
-                  :links
-                  {:apply
-                   "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=250+to+500+meters"},
-                  :has_children false}
-                 {:title "500 to 1000 meters",
-                  :type :filter,
-                  :applied false,
-                  :count 0,
-                  :links
-                  {:apply
-                   "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=500+to+1000+meters"},
-                  :has_children false}
                  {:title "1 to 10 km",
                   :type :filter,
                   :applied false,
@@ -489,30 +457,6 @@
                   :links
                   {:apply
                    "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=100+to+250+km"},
-                  :has_children false}
-                 {:title "250 to 500 km",
-                  :type :filter,
-                  :applied false,
-                  :count 0,
-                  :links
-                  {:apply
-                   "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=250+to+500+km"},
-                  :has_children false}
-                 {:title "500 to 1000 km",
-                  :type :filter,
-                  :applied false,
-                  :count 0,
-                  :links
-                  {:apply
-                   "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=500+to+1000+km"},
-                  :has_children false}
-                 {:title "1000 km & beyond",
-                  :type :filter,
-                  :applied false,
-                  :count 0,
-                  :links
-                  {:apply
-                   "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=1000+km+%26+beyond"},
                   :has_children false}]}]}
              (:facets (query-execution/post-process-query-result-feature context query elastic-results query-results :facets-v2))))))
 
@@ -589,14 +533,6 @@
                      {:apply
                       "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=1+to+30+meters&horizontal_data_resolution_range%5B%5D=0+to+1+meter"},
                      :has_children false}
-                    {:title "30 to 100 meters",
-                     :type :filter,
-                     :applied false,
-                     :count 0,
-                     :links
-                     {:apply
-                      "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=30+to+100+meters&horizontal_data_resolution_range%5B%5D=0+to+1+meter"},
-                     :has_children false}
                     {:title "1 to 10 km",
                      :type :filter,
                      :applied false,
@@ -604,14 +540,6 @@
                      :links
                      {:apply
                       "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=1+to+10+km&horizontal_data_resolution_range%5B%5D=0+to+1+meter"},
-                     :has_children false}
-                    {:title "1000 km & beyond",
-                     :type :filter,
-                     :applied false,
-                     :count 0,
-                     :links
-                     {:apply
-                      "http://localhost:3003/collections.json?keyword=*&include_facets=v2&pretty=true&horizontal_data_resolution_range%5B%5D=1000+km+%26+beyond&horizontal_data_resolution_range%5B%5D=0+to+1+meter"},
                      :has_children false}]}]}
              (:facets (query-execution/post-process-query-result-feature
                         context query elastic-results query-results :facets-v2)))))))

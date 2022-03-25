@@ -12,8 +12,8 @@ provider:
   region: us-east-1
   role: IamRoleTeaLambdaExecution
   environment:
-    AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.sit.earthdata.nasa.gov'}
-    AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_LOG, 'DEBUG'}
+    AWS_TEA_CONFIG_CMR: ${env:AWS_TEA_CONFIG_CMR, 'https://cmr.earthdata.nasa.gov'}
+    AWS_TEA_CONFIG_LOG_LEVEL: ${env:AWS_TEA_CONFIG_LOG, 'INFO'}
   stage: ${opt:stage, 'prod'}
 
 package:
