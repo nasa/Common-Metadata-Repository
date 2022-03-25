@@ -173,6 +173,24 @@
                                     :granule-data-format
                                     msg/getdata-format-not-matches-kms-keywords)}})]}))
 
+(defn- keyword-validation-warnings
+  "Optional validations whose errors will be returned as warnings."
+  [context]
+  (let [kms-index (kms-fetcher/get-kms-index context)]
+    {:Platforms [(match-kms-keywords-validation
+                  kms-index :platforms msg/platform-not-matches-kms-keywords)
+                 (v/every {:Instruments (match-kms-keywords-validation
+                                         kms-index :instruments
+                                         msg/instrument-not-matches-kms-keywords)})]
+     :ScienceKeywords (match-kms-keywords-validation
+                       kms-index :science-keywords msg/science-keyword-not-matches-kms-keywords)
+     :Projects (match-kms-keywords-validation
+                kms-index :projects msg/project-not-matches-kms-keywords)
+     :LocationKeywords (match-kms-keywords-validation
+                        kms-index :spatial-keywords msg/location-keyword-not-matches-kms-keywords)
+     :DataCenters (match-kms-keywords-validation
+                   kms-index :providers msg/data-center-not-matches-kms-keywords)}))
+
 (defn bulk-granule-keyword-validations
     "These are the keyword validation rules needed for bulk granule metadata.
      Remember these granules are in the schema format."
@@ -281,6 +299,14 @@
      (expanded-keyword-validations context)
      (minimum-keyword-validations context))])
 
+(defn keyword-validation-warning-rules
+  "Keyword validation warning rules: When Cmr-Validate-keywords header is not set to true
+  optional validations defined in keyword-validation-warnings are done with errors returned
+  as warnings."
+  [context validation-options]
+  [(when-not (:validate-keywords? validation-options)
+     (keyword-validation-warnings context))])
+
 (defn umm-spec-validate-collection
   "Validate collection through umm-spec validation functions. If warn? flag is
   true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
@@ -329,7 +355,8 @@
   to report but we do not want to fail ingest."
   [collection validation-options context]
   (when-let [err-messages (seq (umm-spec-validation/validate-collection-warnings
-                                collection))]
+                                collection
+                                (keyword-validation-warning-rules context validation-options)))]
     (if (or (:validate-umm? validation-options)
             (config/return-umm-spec-validation-errors))
       (errors/throw-service-errors :invalid-data err-messages)
