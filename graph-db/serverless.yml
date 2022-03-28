@@ -138,7 +138,7 @@ resources:
 custom:
   variables:
     # Default values for environment variables
-    CMR_ROOT: ${env:CMR_ROOT, 'https://cmr.sit.earthdata.nasa.gov'}
+    CMR_ROOT: ${env:CMR_ROOT, 'http://${cf:${opt:stage}.servicesDnsName}'}
     ENVIRONMENT: ${self:provider.stage}
     GREMLIN_URL: ${env:GREMLIN_URL, 'wss://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'}
     PAGE_SIZE: ${env:PAGE_SIZE, '1000'}
