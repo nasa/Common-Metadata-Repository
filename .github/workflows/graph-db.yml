@@ -23,7 +23,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [12.16.3]
+        node-version: [14.19.1]
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     services:
