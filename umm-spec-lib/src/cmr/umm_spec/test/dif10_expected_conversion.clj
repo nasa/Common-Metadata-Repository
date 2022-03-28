@@ -260,10 +260,14 @@
   "When converting, the creation date and last revision date will be persisted. Both dates are
   required in DIF10, so use a default date if not present."
   [umm-coll]
-  [(conversion-util/create-date-type
-    (date/with-default-date (date/metadata-create-date umm-coll)) "CREATE")
-   (conversion-util/create-date-type
-    (date/with-default-date (date/metadata-update-date umm-coll)) "UPDATE")])
+  (remove nil? [(conversion-util/create-date-type
+     (date/with-default-date (date/metadata-create-date umm-coll)) "CREATE")
+    (conversion-util/create-date-type
+     (date/with-default-date (date/metadata-update-date umm-coll)) "UPDATE")
+    (when (date/metadata-delete-date umm-coll)
+      (conversion-util/create-date-type (date/metadata-delete-date umm-coll) "DELETE"))
+    (when (date/metadata-review-date umm-coll)
+      (conversion-util/create-date-type (date/metadata-review-date umm-coll) "REVIEW"))]))
 
 (defn- expected-related-url-get-service
   "Returns related-url with the expected values in GetService"
