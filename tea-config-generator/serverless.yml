@@ -8,7 +8,6 @@ provider:
   name: aws
   runtime: python3.8
   memorySize: 128 # default was 1024, 512 would also be accepted
-  timeout: 15  # 7 seconds is the average run time currently
   region: us-east-1
   role: IamRoleTeaLambdaExecution
   environment:
@@ -23,12 +22,12 @@ package:
 functions:
   capabilities:
     handler: capabilities.capabilities
-    description: Return a summery of the calls that can be made to this application
+    description: Return a summary of the calls that can be made to this application
     timeout: 5
     events:
       - alb:
           listenerArn: ${cf:${self:provider.stage}.servicesLbListenerArn}
-          priority: 52
+          priority: 999
           conditions:
             path:
               - ${self:custom.endPoint}/capabilities
@@ -37,11 +36,11 @@ functions:
   status:
     handler: handler.health
     description: Return a nominal response for confirming the status of this app
-    timeout: 1
+    timeout: 5
     events:
       - alb:
           listenerArn: ${cf:${self:provider.stage}.servicesLbListenerArn}
-          priority: 51
+          priority: 998
           conditions:
             path: ${self:custom.endPoint}/status
     vpc: ~
@@ -52,11 +51,13 @@ functions:
     events:
       - alb:
           listenerArn: ${cf:${self:provider.stage}.servicesLbListenerArn}
-          priority: 50
+          priority: 997
           conditions:
             path: ${self:custom.endPoint}/provider*
     vpc:
-      ${self:custom.vpcrule.${opt:stage}, '~'}
+      securityGroupIds:
+        - ${cf:${self:provider.stage}.servicesSecurityGroupId}
+      subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
 
 resources:
   Resources:
@@ -86,10 +87,3 @@ custom:
   endPoint: /configuration/tea
   pythonRequirements:
     pythonBin: /usr/bin/python3
-  vpcrule:
-    sit:
-      securityGroupIds:
-        - ${cf:${self:provider.stage}.servicesSecurityGroupId}
-      subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
-    uat: ~
-    prod: ~

@@ -55,10 +55,15 @@ provided. The IAM role will use the following Role name:
 `tea-config-generator-role-${self:custom.env}-${self:provider.region}` and will
 use `arn:aws:iam::${aws:accountId}:policy/NGAPShRoleBoundary` for a Permissions
 Boundary. This setup is suitable for situations where a public URL is applied at
-the Loadbalancer level. 
+the Loadbalancer level. The CMR URL must be set if production CMR is not to be used. See example below.
 
 * **NOTE**: This is the file used for deployment to SIT, UAT, and OPS
 
+Example usage for UAT:
+
+	AWS_PROFILE=<your-profile-name-here> \
+	    AWS_TEA_CONFIG_CMR='https://cmr.uat.earthdata.nasa.gov' \
+	    serverless deploy --stage uat
 
 ### Sandbox
 The [serverless-sandbox.yml](serverless-sandbox.yml) file will also create an IAM
