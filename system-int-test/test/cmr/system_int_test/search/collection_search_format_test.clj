@@ -115,6 +115,7 @@
                                exp-conv/example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
+        c10-umm-json (dissoc c10-umm-json :warnings)
         ;; An item ingested with and XML preprocessing line to ensure this is tested
         item (assoc (dc/collection {:entry-title "c11-echo"})
                     :provider-id "PROV1")
@@ -224,6 +225,7 @@
                                exp-conv/example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
+        c10-umm-json (dissoc c10-umm-json :warnings)
         latest-umm-format {:format :umm-json :version umm-version/current-collection-version}]
     (index/wait-until-indexed)
 
@@ -305,6 +307,7 @@
                                exp-conv/example-collection-record
                                {:format :umm-json
                                 :accept-format :json})
+        c10-umm-json (dissoc c10-umm-json :warnings)
 
         all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10 c10-umm-json]]
     (index/wait-until-indexed)
