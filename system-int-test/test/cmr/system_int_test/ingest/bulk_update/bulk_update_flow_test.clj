@@ -148,19 +148,20 @@
      (testing "Provider task status response"
        (are3 [accept-format]
          (let [response (ingest/bulk-update-task-status "PROV1" task-id-1
-                         {:accept-format accept-format})]
+                         {:accept-format accept-format})
+               status "Collection was updated successfully, but translating the collection to UMM-C had the following issues: [:ScienceKeywords 1] Science keyword Category [EARTH SCIENCE], Topic [HUMAN DIMENSIONS], Term [ENVIRONMENTAL IMPACTS], and Variable Level 1 [HEAVY METALS CONCENTRATION] was not a valid keyword combination."]
            (is (= {:status-message "All collection updates completed successfully.",
                    :status 200,
                    :name "TEST NAME 1"
                    :task-status "COMPLETE",
                    :request-json-body json-body1
-                   :collection-statuses [{:status-message nil,
+                   :collection-statuses [{:status-message status,
                                           :status "UPDATED",
                                           :concept-id "C1200000000-PROV1"}
-                                         {:status-message nil,
+                                         {:status-message status,
                                           :status "UPDATED",
                                           :concept-id "C1200000001-PROV1"}
-                                         {:status-message nil,
+                                         {:status-message status,
                                           :status "UPDATED",
                                           :concept-id "C1200000002-PROV1"}]}
                   (dissoc response :created-at))))
