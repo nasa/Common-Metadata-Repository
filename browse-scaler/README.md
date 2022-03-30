@@ -16,16 +16,21 @@ automatically so you do not have to worry about manual builds.
 We use the `Jest` framework and tests can be run by going into the `src/__test__` directory and running `jest <filename>`.
 For example `jest cmr.test.js` will run that test file. Test output is produced in the junit format because it cooperates better with our CI/CD environment
 
-# Testing locally using lambci
+# Testing locally
 
-The lambda can be executed locally using Docker and the lambci/lambda image. The `local_test.sh` script will do this. Run it after the building step.
+The lambda can be executed locally using Docker and the amazon/aws-lambda-nodejs:14 image. Run the following in `browse-scaler root directory` to start the lambda in docker and listening on host port 9000.
 
 ```
-./local_test.sh <event json file>
+docker run --rm -p 9000:8080 -e REDIS_URL=docker.for.mac.host.internal -e CMR_ROOT=cmr.sit.earthdata.nasa.gov -e CMR_ENVIRONMENT=sit -e CMR_ECHO_TOKEN=$sit_token -v $PWD/src:/var/task amazon/aws-lambda-nodejs:14 index.handler
 ```
 
-`event_C1000001740-NSIDC_ECS.json` and `event_C1597928934-NOAA_NCEI.json` are example event JSON files that return the "Not Found" image
+`event_C1000001740-NSIDC_ECS.json` and `event_C1200382534-CMR_ONLY.json` are example event JSON files that return the "Not Found" image
 and a valid image, respectively.
+
+To test browse-scaler processing `event_C1000001740-NSIDC_ECS.json`, run the following:
+```
+curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @./event_C1000001740-NSIDC_ECS.json
+```
 
 # Invoking
 
