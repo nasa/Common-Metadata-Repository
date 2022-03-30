@@ -152,6 +152,8 @@ The following fields are validated:
 * [Data Format](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/dataformat?format=csv) - Archival and Distribution File Format, and GetData Format
 
 **Note**: that when multiple fields are present the combination of keywords are validated to match a known combination.
+**Note**: Among the validation fields above, [Platforms], [Instruments], [Projects], [Science Keywords], [Location Keywords] and [Data Centers] are also validated when the `Cmr-Validate-Keywords` header is not set to `true` except that  validation errors will be returned to users as warnings.
+
 
 **Note**: the following fields are always checked:
 

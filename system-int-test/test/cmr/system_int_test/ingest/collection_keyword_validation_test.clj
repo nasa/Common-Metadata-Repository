@@ -66,6 +66,19 @@
                                       "keyword.")]}]}
              response))))
 
+  (testing "Keyword validation warnings using validation endpoint"
+    (let [concept (data-umm-c/collection-concept
+                       {:Platforms [(data-umm-cmn/platform {:ShortName "foo"
+                                                            :LongName "Airbus A340-600"
+                                                            :Type "Jet"})]
+                        :DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"]
+                                                                 :ShortName "SomeCenter"})]})
+
+          response (ingest/validate-concept concept {:validate-keywords false})]
+      (is (= {:status 200
+              :warnings "After translating item to UMM-C the metadata had the following issue(s): [:Platforms 0] Platform short name [foo], long name [Airbus A340-600], and type [Jet] was not a valid keyword combination.;; [:DataCenters 0] Data center short name [SomeCenter] was not a valid keyword."}
+             response))))
+
  (testing "ArchiveAndDistributionInformation and RelatedUrls keyword validation"
     (let [format (data-umm-c/collection-concept
                    {:ArchiveAndDistributionInformation

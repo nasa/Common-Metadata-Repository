@@ -24,13 +24,17 @@
 
 (deftest successful-validation-with-accept-header-test
   (testing "successful validation requests do not get an xml or json response body"
-    (are [accept]
+    (are [accept warnings]
          (let [collection (data-umm-c/collection {})
                concept (data-umm-c/collection-concept collection :dif10)
                response-map (select-keys (ingest/validate-concept concept {:accept-format accept :raw? true})
                                          [:status :body])]
-           (= {:status 200 :body ""} response-map))
-         :json :xml)))
+           (= {:status 200 :body warnings} response-map))
+         :json
+         "{\"warnings\":[\"After translating item to UMM-C the metadata had the following issue(s): [:Platforms 0] Platform short name [A340-600], long name [Airbus A340-600], and type [null] was not a valid keyword combination.;; [:Platforms 0 :Instruments 0] Instrument short name [Not provided] and long name [null] was not a valid keyword combination.;; [:Projects 0] Project short name [Not provided] and long name [null] was not a valid keyword combination.\"]}"
+
+         :xml
+         "<?xml version=\"1.0\" encoding=\"UTF-8\"?><result><warnings>After translating item to UMM-C the metadata had the following issue(s): [:Platforms 0] Platform short name [A340-600], long name [Airbus A340-600], and type [null] was not a valid keyword combination.;; [:Platforms 0 :Instruments 0] Instrument short name [Not provided] and long name [null] was not a valid keyword combination.;; [:Projects 0] Project short name [Not provided] and long name [null] was not a valid keyword combination.</warnings></result>")))
 
 (deftest failed-validation-without-headers-returns-xml
   (testing "failed validations with no accept or content-type header return xml"

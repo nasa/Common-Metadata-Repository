@@ -764,7 +764,7 @@
             collection-status (first (:collection-statuses collection-response))]
         (is (= "COMPLETE" (:task-status collection-response)))
         (is (= "UPDATED" (:status collection-status)))
-        (is (= "Collection was updated successfully, but translating the collection to UMM-C had the following issues: [:MetadataDates] latest UPDATE date value: [2017-01-01T00:00:00.000Z] should be in the past." (:status-message collection-status))))
+        (is (= "Collection was updated successfully, but translating the collection to UMM-C had the following issues: [:MetadataDates] latest UPDATE date value: [2017-01-01T00:00:00.000Z] should be in the past.; [:Platforms 0] Platform short name [a340-600-1], long name [airbus a340-600-1], and type [Aircraft] was not a valid keyword combination.; [:Platforms 1] Platform short name [a340-600-2], long name [airbus a340-600], and type [Aircraft] was not a valid keyword combination.; [:Platforms 2] Platform short name [a340-600-3], long name [airbus a340-600], and type [Aircraft] was not a valid keyword combination." (:status-message collection-status))))
 
       ;; Check that each concept was updated.
       (doseq [concept-id concept-ids
