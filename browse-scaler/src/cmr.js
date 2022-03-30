@@ -12,7 +12,7 @@ const { setValue, getValue } = require ('./in-memory-cache')
 const getAuthorizationToken = async () => {
   console.log('Fetching Echo-Token [' + config.CMR_ENVIRONMENT + '] from store');
   let authorizationToken = getValue('CMR_ECHO_SYSTEM_TOKEN')
-  
+
   if (!authorizationToken) {
     authorizationToken = await getSecureParam(
       `/${config.CMR_ENVIRONMENT}/browse-scaler/CMR_ECHO_SYSTEM_TOKEN`
@@ -24,7 +24,7 @@ const getAuthorizationToken = async () => {
 
     setValue('CMR_ECHO_SYSTEM_TOKEN', authorizationToken);
   }
-  
+
   return authorizationToken;
 };
 
@@ -107,7 +107,6 @@ exports.getGranuleLevelBrowseImage = async conceptId => {
  */
 exports.getCollectionLevelBrowseImage = async collectionId => {
   const collectionConcept = await fetchConceptFromCMR(collectionId, config.CMR_COLLECTION_URL);
-  console.log (collectionConcept);
   const collectionImagery = await this.getBrowseImageFromConcept(collectionConcept);
   if (collectionImagery) {
     return collectionImagery;

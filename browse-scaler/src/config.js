@@ -13,7 +13,7 @@ function strToInt (strVal, radix = 10) {
 
 exports.TIMEOUT_INTERVAL =  strToInt (process.env.EXTERNAL_REQUEST_TIMEOUT) || 1000;
 
-const CMR_ROOT = process.env.CMR_ROOT
+const CMR_ROOT = process.env.CMR_ROOT;
 const CMR_ROOT_URL = `http://${CMR_ROOT}`;
 
 /* CMR ENVIRONMENT VARIABLES */
@@ -25,7 +25,7 @@ exports.CMR_GRANULE_URL = `${CMR_ROOT_URL}/search/granules.json?concept_id=`;
 exports.CMR_ECHO_TOKEN = process.env.CMR_ECHO_TOKEN;
 
 /* AWS Config */
-exports.AWS_REGION = process.env.AWS_REGION || 'us-east-1'
+exports.AWS_REGION = process.env.AWS_REGION || 'us-east-1';
 
 /* REDIS config */
 // URL is incorrect and should be changed to HOST
