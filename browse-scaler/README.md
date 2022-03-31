@@ -23,6 +23,7 @@ The lambda can be executed locally using Docker and the amazon/aws-lambda-nodejs
 ```
 docker run --rm -p 9000:8080 -e REDIS_URL=docker.for.mac.host.internal -e CMR_ROOT=cmr.sit.earthdata.nasa.gov -e CMR_ENVIRONMENT=sit -e CMR_ECHO_TOKEN=$sit_token -v $PWD/src:/var/task amazon/aws-lambda-nodejs:14 index.handler
 ```
+Note: this docker container does not auto refresh code changes. You need to restart the container to pick up any code changes.
 
 `event_C1000001740-NSIDC_ECS.json` and `event_C1200382534-CMR_ONLY.json` are example event JSON files that return the "Not Found" image
 and a valid image, respectively.

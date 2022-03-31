@@ -14,6 +14,7 @@ function strToInt (strVal, radix = 10) {
 exports.TIMEOUT_INTERVAL =  strToInt (process.env.EXTERNAL_REQUEST_TIMEOUT) || 1000;
 
 const CMR_ROOT = process.env.CMR_ROOT;
+// CMR operational envirionments uses internal LB as CMR root, so we use http, not https
 const CMR_ROOT_URL = `http://${CMR_ROOT}`;
 
 /* CMR ENVIRONMENT VARIABLES */
