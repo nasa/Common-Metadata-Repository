@@ -455,10 +455,15 @@
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                      {:EntryTitle "parent-collection2"
                                                       :Projects (data-umm-cmn/projects "p4")}))
+        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                                     {:EntryTitle "parent-collection3"
+                                                      :ShortName "S3"
+                                                      :Projects (data-umm-cmn/projects "USGS_SOFIA")}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p1"]}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p2" "p3"]}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:project-refs ["p3"]}))
-        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:project-refs ["p4"]}))]
+        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:project-refs ["p4"]}))
+        _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1" {:project-refs ["USGS_SOFIA"]}))]
 
     (index/wait-until-indexed)
 
@@ -493,7 +498,22 @@
 
         "Removing a project that is referenced by a granule is invalid."
         ["p1" "p2" "p4"]
-        ["Collection Project [p3] is referenced by existing granules, cannot be removed. Found 2 granules."]))))
+        ["Collection Project [p3] is referenced by existing granules, cannot be removed. Found 2 granules."]))
+
+    (testing "Update collection where granule has old value the collection has humanized new value."
+      (are3
+        [projects]
+        (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+                                                              {:EntryTitle "parent-collection3"
+                                                               :ShortName "S3"
+                                                               :Projects (apply data-umm-cmn/projects projects)})
+                                 {:allow-failure? true})
+              {:keys [status errors]} response]
+          (is (= [200 nil] [status errors])))
+
+        "Changing a project that is referenced by a granule is valid because of the humanizer."
+        ["USGS SOFIA"]))))
+
 
 (deftest collection-update-granule-spatial-representation-test
   (let [make-coll (fn [entry-title spatial-params]
