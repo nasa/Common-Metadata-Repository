@@ -3,7 +3,7 @@
   (:require [clojure.data.xml :as x]
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
-            [cmr.umm.umm-granule :as g]
+            [cmr.umm.umm-granule :as g]    
             [cmr.umm.umm-collection :as umm-c]
             [cmr.umm.echo10.echo10-collection :as c]
             [cmr.umm.echo10.spatial :as s]
@@ -72,6 +72,17 @@
                  (x/element :DayNightFlag {} day-night)
                  (x/element :ProductionDateTime {} (str production-date-time))))))
 
+(defn generate-pge-version-class
+  "Generates the PGEVersionClass element of an ECHO10 XML from a UMM Granule pge-version-class entry."
+  [pge-version-class]
+  (when pge-version-class
+    (let [{:keys [pge-name pge-version]} pge-version-class]
+      (x/element :PGEVersionClass {}
+                 (when pge-name
+                   (x/element :PGEName {} pge-name))
+                 (when pge-version
+                   (x/element :PGEVersion {} pge-version))))))
+
 (defn- xml-elem->CollectionRef
   "Returns a UMM ref element from a parsed Granule XML structure"
   [granule-content-node]
@@ -113,6 +124,13 @@
                            :day-night (if day-night day-night "UNSPECIFIED")
                            :production-date-time production-date-time}))))
 
+(defn- xml-elem->PGEVersionClass
+  "Returns a UMM pge-version-class element from a parsed Granule XML structure"
+  [granule-element]
+  (when-let [pge-version-class-element (cx/element-at-path granule-element [:PGEVersionClass])]
+    (g/map->PGEVersionClass {:pge-name (cx/string-at-path pge-version-class-element [:PGEName])
+                             :pge-version (cx/string-at-path pge-version-class-element [:PGEVersion])})))
+
 (defn- xml-elem->SpatialCoverage
   [granule-content-node]
   (let [geom-elem (cx/element-at-path granule-content-node [:Spatial :HorizontalSpatialDomain :Geometry])
@@ -147,6 +165,7 @@
                         :data-provider-timestamps data-provider-timestamps
                         :collection-ref coll-ref
                         :data-granule (xml-elem->DataGranule xml-struct)
+                        :pge-version-class (xml-elem->PGEVersionClass xml-struct)
                         :access-value (cx/double-at-path xml-struct [:RestrictionFlag])
                         :temporal (gt/xml-elem->Temporal xml-struct)
                         :orbit-calculated-spatial-domains (ocsd/xml-elem->orbit-calculated-spatial-domains xml-struct)
@@ -181,6 +200,19 @@
   (when-let [value (util/extract-between-strings xml "<RestrictionFlag>" "</RestrictionFlag>" false)]
     (Double/parseDouble value)))
 
+(comment
+
+  (cmr.umm.echo10.echo10-core/umm->echo10-xml pge-gran)
+
+  
+                        ;;(def my-pvc pge-version-class)
+                      ;;(x/element :PGEVersionClass {} pge-version-class)
+
+  ;;my-pvc from :keys below
+  ;; #cmr.umm.umm_granule.PGEVersionClass {:pge-name "Ak|", :pge-version "iC2&t"}
+
+  )
+
 (extend-protocol cmr.umm.echo10.echo10-core/UmmToEcho10Xml
   UmmGranule
   (umm->echo10-xml
@@ -189,7 +221,8 @@
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains
                    platform-refs project-refs cloud-cover related-urls product-specific-attributes
-                   spatial-coverage orbit two-d-coordinate-system measured-parameters]} granule]
+                   spatial-coverage orbit two-d-coordinate-system measured-parameters pge-version-class]} granule]
+       (def my-pvc pge-version-class)
        (x/emit-str
          (x/element :Granule {}
                     (x/element :GranuleUR {} granule-ur)
@@ -209,6 +242,8 @@
                     (when access-value
                       (x/element :RestrictionFlag {} access-value))
                     (generate-data-granule data-granule)
+                    (when pge-version-class
+                      (generate-pge-version-class pge-version-class))
                     (gt/generate-temporal temporal)
                     (generate-spatial spatial-coverage)
                     (ocsd/generate-orbit-calculated-spatial-domains orbit-calculated-spatial-domains)
