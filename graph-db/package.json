@@ -55,6 +55,6 @@
   },
   "resolutions": {
     "ansi-regex": "^5.0.1",
-    "simple-git": "^3.3.0"
+    "simple-git": "^3.5.0"
   }
 }
