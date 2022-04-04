@@ -64,12 +64,14 @@
    Return value is the KMS schema override map as configured in AWS as
    CMR_KMS_SCHEMA_OVERRIDE_JSON."
   []
-  (try
-    (json/parse-string (config/kms-scheme-override-json) true)
-    (catch com.fasterxml.jackson.core.JsonParseException e
-      (error "Failed to parse Scheme Override JSON while loading KMS resource [%s]: %s",
-             (config/kms-scheme-override-json)
-             (.getMessage e)))))
+  (let [overrides (config/kms-scheme-override-json)]
+    (debug (format "Requested KMS schema overrides: %s." overrides))
+    (try
+      (json/parse-string overrides true)
+      (catch com.fasterxml.jackson.core.JsonParseException e
+        (error "Failed to parse Scheme Override JSON while loading KMS resource [%s]: %s",
+               (config/kms-scheme-override-json)
+               (.getMessage e))))))
 
 ;; These are the default locations in KMS for all supported schemes
 (def keyword-scheme->gcmd-resource-name
