@@ -67,7 +67,7 @@
   "Error message when relatedurl-mimetype is
   not in the KMS."
   [relatedurl-mime-type]
-  (format "Mime Type [%s] was not a valid keyword."
+  (format "MimeType [%s] was not a valid keyword."
           relatedurl-mime-type))
 
 (defn directory-name-not-matches-kms-keywords
