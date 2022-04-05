@@ -23,7 +23,7 @@
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
                  [com.fasterxml.jackson.core/jackson-core "2.13.2"]
                  [com.fasterxml.jackson.core/jackson-annotations "2.13.2"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.13.2"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
