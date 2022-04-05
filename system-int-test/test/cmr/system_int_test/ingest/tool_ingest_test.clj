@@ -328,14 +328,21 @@
           errors3 (:errors concept-result3)
           status4 (:status concept-result4)
           errors4 (:errors concept-result4)]
+      ;; The first RelatedURLs contains a valid Format and MimeType so no errors.
       (is (= 201 status1))
       (is (= 0 (count errors1)))
+
+      ;; The second RelatedURLs contains an invalid Format, so the result contains one error.
       (is (= 400 status2))
       (is (= 1 (count errors2)))
       (is (= [{:path ["RelatedUrLs" 0 "Format"], :errors ["Format [invalid] was not a valid keyword."]}] errors2))
+     
+      ;; The third RelatedURLs contains an invalid MimeType, so the result contains one error. 
       (is (= 400 status3))
       (is (= 1 (count errors3)))
       (is (= [{:path ["RelatedUrLs" 0 "MimeType"], :errors ["MimeType [invalid] was not a valid keyword."]}] errors3))
+     
+      ;; The last RelatedURLs contains an invalid Format and an invalid MimeType, so the result contains two errors. 
       (is (= 400 status4))
       (is (= 2 (count errors4)))
       (is (= [{:path ["RelatedUrLs" 0 "Format"], :errors ["Format [invalid] was not a valid keyword."]}
