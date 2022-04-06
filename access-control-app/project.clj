@@ -38,6 +38,7 @@
   :dependencies ~(concat '[[cheshire "5.10.0"]
                            [clj-time "0.15.1"]
                            [com.fasterxml.jackson.core/jackson-core "2.13.2"]
+                           [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]
                            [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                            [commons-codec/commons-codec "1.11"]
                            [commons-io "2.6"]

@@ -19,6 +19,7 @@
                  [clojusc/ltest "0.3.0"]
                  [com.dadrox/quiet-slf4j "0.1"]
                  [com.fasterxml.jackson.core/jackson-core "2.13.2"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [com.gfredericks/test.chuck "0.2.9"]
                  [com.taoensso/timbre "5.1.0"]
