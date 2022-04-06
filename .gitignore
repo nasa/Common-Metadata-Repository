@@ -19,6 +19,7 @@ browse-scaler/src/node_modules
 .calva*
 *.clj-kondo
 *.ruby-version
+.cljfmt.edn
 
 ###############################
 ### Test Files

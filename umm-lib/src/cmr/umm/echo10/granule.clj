@@ -3,7 +3,7 @@
   (:require [clojure.data.xml :as x]
             [clojure.java.io :as io]
             [cmr.common.xml :as cx]
-            [cmr.umm.umm-granule :as g]    
+            [cmr.umm.umm-granule :as g]
             [cmr.umm.umm-collection :as umm-c]
             [cmr.umm.echo10.echo10-collection :as c]
             [cmr.umm.echo10.spatial :as s]
@@ -200,19 +200,6 @@
   (when-let [value (util/extract-between-strings xml "<RestrictionFlag>" "</RestrictionFlag>" false)]
     (Double/parseDouble value)))
 
-(comment
-
-  (cmr.umm.echo10.echo10-core/umm->echo10-xml pge-gran)
-
-  
-                        ;;(def my-pvc pge-version-class)
-                      ;;(x/element :PGEVersionClass {} pge-version-class)
-
-  ;;my-pvc from :keys below
-  ;; #cmr.umm.umm_granule.PGEVersionClass {:pge-name "Ak|", :pge-version "iC2&t"}
-
-  )
-
 (extend-protocol cmr.umm.echo10.echo10-core/UmmToEcho10Xml
   UmmGranule
   (umm->echo10-xml
@@ -222,7 +209,6 @@
             :keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains
                    platform-refs project-refs cloud-cover related-urls product-specific-attributes
                    spatial-coverage orbit two-d-coordinate-system measured-parameters pge-version-class]} granule]
-       (def my-pvc pge-version-class)
        (x/emit-str
          (x/element :Granule {}
                     (x/element :GranuleUR {} granule-ur)
