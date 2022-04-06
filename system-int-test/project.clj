@@ -21,6 +21,7 @@
                  [clj-time "0.15.1"]
                  [clj-xml-validation "1.0.2"]
                  [com.fasterxml.jackson.core/jackson-core "2.13.2"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [com.google.code.findbugs/jsr305 "3.0.2"]
                  [commons-codec/commons-codec "1.11"]
