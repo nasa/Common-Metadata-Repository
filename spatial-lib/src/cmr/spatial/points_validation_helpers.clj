@@ -15,7 +15,7 @@
               (map (partial msg/shape-point-invalid i) errors)))
           (map-indexed vector points)))
 
-(defn- points->rounded-point-map
+(defn points->rounded-point-map
   "Combines together points that round to the same value. Takes a sequence of points and returns a
   map of rounded points to list of index, point pairs."
   [points]
