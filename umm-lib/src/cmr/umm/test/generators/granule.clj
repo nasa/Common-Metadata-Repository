@@ -44,6 +44,12 @@
                   :production-date-time ext-gen/date-time
                   :size (ext-gen/choose-double 0 1024))))
 
+(def pge-version-classes
+  (ext-gen/model-gen
+   g/map->PGEVersionClass
+   (gen/hash-map :pge-name (ext-gen/string-ascii 1 10)
+                 :pge-version (ext-gen/string-ascii 1 10))))
+
 (def cloud-cover-values
   (gen/fmap double gen/ratio))
 
@@ -149,6 +155,7 @@
       :data-provider-timestamps data-provider-timestamps
       :collection-ref coll-refs
       :data-granule (ext-gen/optional data-granules)
+      :pge-version-class (ext-gen/optional pge-version-classes)
       :access-value (ext-gen/optional (ext-gen/choose-double -10 10))
       :temporal gt/temporal
       :orbit-calculated-spatial-domains (ext-gen/nil-if-empty

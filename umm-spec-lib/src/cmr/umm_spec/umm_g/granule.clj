@@ -62,6 +62,19 @@
        {:range-date-time range-date-time
         :single-date-time single-date-time}))))
 
+(defn umm-g->PGEVersionClass
+  "Returns a UMM PGEVersionClass from a parsed UMM-G JSON's PGEVersionClass"
+  [pge-version-class]
+  (when-let [{:keys [PGEName PGEVersion]} pge-version-class]
+    (g/map->PGEVersionClass {:pge-name PGEName
+                             :pge-version PGEVersion})))
+
+(defn PGEVersionClass->umm-g-pge-version-class
+  [pge-version-class]
+  (when-let [{:keys [pge-name pge-version]} pge-version-class]
+    {:PGEName pge-name
+     :PGEVersion pge-version}))
+
 (defn umm-g->Granule
   "Returns a UMM Granule from a parsed UMM-G JSON"
   [umm-g-json]
@@ -71,6 +84,7 @@
       :data-provider-timestamps (umm-g->DataProviderTimestamps umm-g-json)
       :collection-ref coll-ref
       :data-granule (data-granule/umm-g-data-granule->DataGranule (:DataGranule umm-g-json))
+      :pge-version-class (umm-g->PGEVersionClass (:PGEVersionClass umm-g-json))
       :temporal (umm-g->Temporal umm-g-json)
       :orbit-calculated-spatial-domains (ocsd/umm-g-orbit-calculated-spatial-domains->OrbitCalculatedSpatialDomains
                                          (:OrbitCalculatedSpatialDomains umm-g-json))
@@ -90,7 +104,7 @@
 (defn Granule->umm-g
   "Returns UMM-G JSON from a umm-lib Granule"
   [granule]
-  (let [{:keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains
+  (let [{:keys [granule-ur data-granule pge-version-class access-value temporal orbit-calculated-spatial-domains
                 platform-refs project-refs cloud-cover related-urls product-specific-attributes
                 spatial-coverage orbit two-d-coordinate-system measured-parameters
                 collection-ref data-provider-timestamps]} granule
@@ -126,6 +140,7 @@
      :AccessConstraints (when access-value {:Value access-value})
      :Projects (projects/ProjectRefs->umm-g-projects project-refs)
      :DataGranule (data-granule/DataGranule->umm-g-data-granule data-granule)
+     :PGEVersionClass (PGEVersionClass->umm-g-pge-version-class pge-version-class)
      :TilingIdentificationSystem (tiling-system/TwoDCoordinateSystem->umm-g-tiling-identification-system
                                    two-d-coordinate-system)
      :AdditionalAttributes (aa/ProductSpecificAttributeRefs->umm-g-additional-attributes

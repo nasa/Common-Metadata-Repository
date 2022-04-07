@@ -76,6 +76,8 @@
       (dissoc :two-d-coordinate-system)
       ;; SMAP ISO does not support measured-parameters
       (dissoc :measured-parameters)
+      ;; SMAP ISO does not support pge-version-class
+      (dissoc :pge-version-class)
       ;; trim :orbital-model-name in each :orbit-calculated-spatial-domains
       (util/update-in-each [:orbit-calculated-spatial-domains]
                            #(assoc % :orbital-model-name (string/trim (:orbital-model-name %))))

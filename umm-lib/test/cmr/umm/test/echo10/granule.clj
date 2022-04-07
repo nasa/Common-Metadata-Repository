@@ -56,6 +56,28 @@
           expected-parsed (update-in expected-parsed [:data-granule] dissoc :size-unit)]
       (= parsed expected-parsed))))
 
+(comment
+
+  (def genned (gen/sample gran-gen/granules))
+  (def my-gran (first genned))
+
+  ;; this is to compare umm->echo10->umm and umm.
+  ;; from echo10 to umm, size-unit becomes "MB" regardless of what it is originally.
+  ;; Need to strip off the size-unit from both the expected and the actual.
+  (let [xml (echo10/umm->echo10-xml my-gran)
+        parsed (g/parse-granule xml)
+        parsed (update-in parsed [:data-granule] dissoc :size-unit)
+        expected-parsed (umm->expected-parsed-echo10 my-gran)
+        expected-parsed (update-in expected-parsed [:data-granule] dissoc :size-unit)]
+    (= parsed expected-parsed))
+
+  (let [xml (echo10/umm->echo10-xml my-gran)]
+    (and
+     (> (count xml) 0)
+     (= 0 (count (g/validate-xml xml)))))
+
+  )
+
 (def all-fields-granule-xml
   "<Granule>
     <GranuleUR>GranuleUR100</GranuleUR>
@@ -76,6 +98,10 @@
       <ProducerGranuleId>0000000.0000001.hdf</ProducerGranuleId>
       <DayNightFlag>NIGHT</DayNightFlag>
     </DataGranule>
+    <PGEVersionClass>
+      <PGEName>Sentinel</PGEName>
+      <PGEVersion>1.4.1</PGEVersion>
+    </PGEVersionClass>
     <Orderable>true</Orderable>
     <Temporal>
       <RangeDateTime>
@@ -264,6 +290,9 @@
                                    :algorithm "Fletcher-32"})
                       :producer-gran-id "0000000.0000001.hdf"
                       :day-night "NIGHT"})
+     :pge-version-class (umm-g/map->PGEVersionClass
+                         {:pge-name "Sentinel"
+                          :pge-version "1.4.1"})
      :project-refs ["Short Name-240" "Short Name-241"]
      :cloud-cover 0.8
      :temporal expected-temporal

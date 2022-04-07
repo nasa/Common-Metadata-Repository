@@ -111,6 +111,9 @@
                               :format "ASCII"
                               :mime-type "text/plain"
                               :format-type "NA"})]})
+    :pge-version-class (umm-lib-g/map->PGEVersionClass
+                        {:pge-name "A PGE Name"
+                         :pge-version "6.0.27"})
     :temporal (umm-lib-g/map->GranuleTemporal
                {:range-date-time (umm-c/map->RangeDateTime
                                   {:beginning-date-time (dtp/parse-datetime "2018-07-17T00:00:00.000Z")

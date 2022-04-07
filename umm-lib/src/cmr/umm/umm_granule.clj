@@ -67,6 +67,13 @@
    feature-ids
    ])
 
+(defrecord PGEVersionClass
+  [
+   pge-name
+
+   pge-version
+  ])
+
 (defrecord GranuleTemporal
   [
    range-date-time
@@ -212,6 +219,8 @@
 
    data-granule
 
+   pge-version-class
+
    ;; A decimal number. Restriction flag in echo10
    access-value
 
@@ -243,6 +252,7 @@
 (record-pretty-printer/enable-record-pretty-printing
   CollectionRef
   DataGranule
+  PGEVersionClass
   GranuleTemporal
   OrbitCalculatedSpatialDomain
   Orbit
