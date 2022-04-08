@@ -216,7 +216,7 @@
         scroll-id (:scroll-id scroll-id-and-search-params)
         cached-search-params (:search-params scroll-id-and-search-params)
         search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
-        ctx (assoc ctx :query-string body :scroll-id scroll-id)
+        ctx (assoc ctx :query-string body :scroll-id scroll-id :query-params params)
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (block-excessive-queries ctx concept-type result-format params)
@@ -369,11 +369,11 @@
     (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}
-      (find-concepts (merge ctx {:method "GET"}) path-w-extension params headers query-string))
+      (find-concepts (merge ctx {:method :get}) path-w-extension params headers query-string))
     ;; Find concepts - form encoded or JSON
     (POST "/"
       {params :params headers :headers ctx :request-context body :body-copy}
-      (find-concepts (merge ctx {:method "POST"}) path-w-extension params headers body))))
+      (find-concepts (merge ctx {:method :post}) path-w-extension params headers body))))
 
 (def granule-timeline-routes
   "Routes for /search/granules/timeline."
