@@ -257,3 +257,84 @@
         "Very Closed Search"
         2
         (second errors)))))
+
+(deftest related-url-format-mimetype-check
+  (testing "Check valid and invalid Format and MimeType in RelatedURLs at ingest."
+    (let [related-urls-valid [{"URL" "https://example.gov/good"
+                               "URLContentType" "PublicationURL"
+                               "Type" "VIEW RELATED INFORMATION"
+                               "Subtype" "HOW-TO"
+                               "Format" "ASCII"
+                               "MimeType" "application/xml"}]
+          related-urls-invalid1 [{"URL" "https://example.gov/one-error"
+                                  "URLContentType" "PublicationURL"
+                                  "Type" "VIEW RELATED INFORMATION"
+                                  "Subtype" "HOW-TO"
+                                  "Format" "invalid"
+                                  "MimeType" "application/xml"}]
+          related-urls-invalid2 [{"URL" "https://example.gov/one-error"
+                                  "URLContentType" "PublicationURL"
+                                  "Type" "VIEW RELATED INFORMATION"
+                                  "Subtype" "HOW-TO"
+                                  "Format" "ASCII"
+                                  "MimeType" "invalid"}]
+          related-urls-invalid3 [{"URL" "https://example.gov/two-errors"
+                                  "URLContentType" "PublicationURL"
+                                  "Type" "VIEW RELATED INFORMATION"
+                                  "Subtype" "HOW-TO"
+                                  "Format" "invalid"
+                                  "MimeType" "invalid"}]
+          concept-src1 (service-util/make-service-concept)
+          concept-result1 (as-> concept-src1 intermediate
+                                (json/parse-string (:metadata intermediate))
+                                (assoc intermediate "RelatedURLs" related-urls-valid)
+                                (json/generate-string intermediate)
+                                (assoc concept-src1 :metadata intermediate)
+                                (ingest/ingest-concept intermediate))
+          concept-src2 (service-util/make-service-concept)
+          concept-result2 (as-> concept-src2 intermediate
+                                (json/parse-string (:metadata intermediate))
+                                (assoc intermediate "RelatedURLs" related-urls-invalid1)
+                                (json/generate-string intermediate)
+                                (assoc concept-src2 :metadata intermediate)
+                                (ingest/ingest-concept intermediate))
+          concept-src3 (service-util/make-service-concept)
+          concept-result3 (as-> concept-src3 intermediate
+                                (json/parse-string (:metadata intermediate))
+                                (assoc intermediate "RelatedURLs" related-urls-invalid2)
+                                (json/generate-string intermediate)
+                                (assoc concept-src3 :metadata intermediate)
+                                (ingest/ingest-concept intermediate))
+          concept-src4 (service-util/make-service-concept)
+          concept-result4 (as-> concept-src4 intermediate
+                                (json/parse-string (:metadata intermediate))
+                                (assoc intermediate "RelatedURLs" related-urls-invalid3)
+                                (json/generate-string intermediate)
+                                (assoc concept-src4 :metadata intermediate)
+                                (ingest/ingest-concept intermediate))
+          status1 (:status concept-result1)
+          errors1 (:errors concept-result1)
+          status2 (:status concept-result2)
+          errors2 (:errors concept-result2)
+          status3 (:status concept-result3)
+          errors3 (:errors concept-result3)
+          status4 (:status concept-result4)
+          errors4 (:errors concept-result4)]
+      ;; The first RelatedURLs contains a valid Format and MimeType so no errors.
+      (is (= 201 status1))
+      (is (= 0 (count errors1)))
+
+      ;; The second RelatedURLs contains an invalid Format, so the result contains one error.
+      (is (= 400 status2))
+      (is (= 1 (count errors2)))
+      (is (= [{:path ["RelatedUrLs" 0 "Format"], :errors ["Format [invalid] was not a valid keyword."]}] errors2))
+
+      ;; The third RelatedURLs contains an invalid MimeType, so the result contains one error.
+      (is (= 400 status3))
+      (is (= 1 (count errors3)))
+      (is (= [{:path ["RelatedUrLs" 0 "MimeType"], :errors ["MimeType [invalid] was not a valid keyword."]}] errors3))
+
+      ;; The last RelatedURLs contains an invalid Format and an invalid MimeType, so the result contains two errors. 
+      (is (= 400 status4))
+      (is (= 2 (count errors4)))
+      (is (= [{:path ["RelatedUrLs" 0 "Format"], :errors ["Format [invalid] was not a valid keyword."]} {:path ["RelatedUrLs" 0 "MimeType"], :errors ["MimeType [invalid] was not a valid keyword."]}] errors4)))))
