@@ -3,7 +3,8 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.search.results-handlers.stac-results-handler :as stac-results-handler]))
+   [cmr.search.results-handlers.stac-results-handler :as stac-results-handler]
+   [ring.util.codec :as codec]))
 
 (def ^:private metadata-link
   "example metadata-link for test"
@@ -175,31 +176,37 @@
   "Returns the prev-link with the given page-num"
   [query-string page-num]
   (when page-num
-    (merge
-     (stac-results-handler/stac-post-body query-string)
-     {:rel "prev",
-      :method "POST",
-      :merge true,
-      :href "http://localhost:3003/granules.stac"})))
+    {:rel "prev"
+     :method "POST"
+     :merge true
+     :body (as-> query-string query-string
+                 (stac-results-handler/stac-post-body query-string)
+                 (util/map-keys->snake_case query-string)
+                 (assoc query-string :page_num (str page-num))
+                 (into (sorted-map) query-string))
+     :href "http://localhost:3003/granules.stac"}))
 
 (defn- next-link-post
   "Returns the next-link with the given page-num"
   [query-string page-num]
   (when page-num
-    (merge
-     (stac-results-handler/stac-post-body query-string)
-     {:rel "next",
-      :method "POST",
-      :merge true,
-      :href "http://localhost:3003/granules.stac"})))
+    {:rel "next"
+     :method "POST"
+     :merge true
+     :body (as-> query-string query-string
+                 (stac-results-handler/stac-post-body query-string)
+                 (util/map-keys->snake_case query-string)
+                 (assoc query-string :page_num (str page-num))
+                 (into (sorted-map) query-string))
+     :href "http://localhost:3003/granules.stac"}))
 
 (deftest get-fc-links
-  (testing "GET feature colection links"
+  (testing "GET feature collection links"
     (are3 [query-string page-size page-num base-string expected-nav]
       (let [context (merge {:system {:public-conf {:protocol "http"
                                                    :host "localhost"
                                                    :port "3003"}}
-                            :method "GET"}
+                            :method :get}
                            {:query-string query-string})
              query {:page-size page-size
                     :offset (* (dec page-num) page-size)}
@@ -276,12 +283,12 @@
       "collection_concept_id=C111-PROV&page_size=30"
       [1 nil nil]))
 
-  (testing "POST feature colection links"
+  (testing "POST feature collection links"
     (are3 [query-string page-size page-num base-string expected-nav]
       (let [context (merge {:system {:public-conf {:protocol "http"
                                                    :host "localhost"
                                                    :port "3003"}}
-                            :method "POST"}
+                            :method :post}
                            {:query-string query-string})
              query {:page-size page-size
                     :offset (* (dec page-num) page-size)}

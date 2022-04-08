@@ -759,7 +759,6 @@
                                                  [10.0 30.0]
                                                  [10.0 0.0]]]}
                                     :bbox [10.0 0.0 20.0 30.0]})]
-
         (is (search/mime-type-matches-response? response mt/stac))
         (is (= 200 (:status response)))
         (is (= (stac/result-map->expected-stac full-result-map)
@@ -814,6 +813,39 @@
        :query-string (format "page_size=2&collection_concept_id=%s" coll-concept-id)
        :page-num 2
        :prev-num 1})
+
+    (testing "stac parameter and query string mix"
+      (let [post-response (client/post (format (str (url/search-url :granule) "?provider=PROV1"))
+                                       {:accept "application/json; profile=stac-catalogue"
+                                        :content-type mt/form-url-encoded
+                                        :body (codec/form-encode {:page-size 1 :page-num 2
+                                                                  :collection-concept-id coll-concept-id})
+                                        :throw-exceptions false
+                                        :connection-manager (s/conn-mgr)})
+            full-result-map {:coll-concept-id coll-concept-id
+                             :granules [gran2]
+                             :query-string (format "page_size=1&collection_concept_id=%s" coll-concept-id)
+                             :page-num 2
+                             :prev-num 1
+                             :next-num 3
+                             :matched 3
+                             :geometry {:type "Polygon"
+                                        :coordinates
+                                        [[[10.0 0.0]
+                                          [20.0 0.0]
+                                          [20.0 30.0]
+                                          [10.0 30.0]
+                                          [10.0 0.0]]]}
+                             :bbox [10.0 0.0 20.0 30.0]}]
+        (is (search/mime-type-matches-response? post-response mt/stac))
+        (is (= 200 (:status post-response)))
+        (is (= (stac/result-map->expected-stac (merge
+                                                full-result-map
+                                                {:body {:collection_concept_id coll-concept-id
+                                                        :page_size "1"
+                                                        :provider "PROV1"}})
+                                               "POST")
+               (json/decode (:body post-response) true)))))
 
     (testing "stac as extension"
       (let [params {:collection-concept-id coll-concept-id}

@@ -227,7 +227,7 @@
                         {:rel "items"
                          :title "Granules in this collection"
                          :type "application/json"
-                         :href (url/stac-request-url context id)}
+                         :href (url/stac-request-url context (str "collection_concept_id=" id))}
                         {:rel "about"
                          :title "HTML metadata for collection"
                          :type "text/html"
@@ -298,12 +298,11 @@
     [context query results]
     (single-result->response context query results)))
 
-
 (defn stac-post-body
   "Builds :body map to be merged into the link for POST requests."
   [base-query-string]
   (let [body (codec/form-decode base-query-string)]
-    (if (map? body) {:body body} {})))
+    (if (map? body) body {})))
 
 (defn stac-prev-next
   "Returns link values for prev and next rels depending on the method in the context.
@@ -312,16 +311,21 @@
       :cmr_search_param \"value\"
    }"
   [context base-query-string rel value]
-  (if (= (:method context) "GET")
+  (if (= (:method context) :get)
     {:rel rel
      :method "GET"
      :href (url/stac-request-url context base-query-string value)}
-    (merge
-     (stac-post-body base-query-string)
-     {:rel rel
-      :method "POST"
-      :merge true
-      :href (url/stac-request-url context)})))
+    (let [body
+          (into (sorted-map)
+                (util/map-keys->snake_case
+                 (merge (dissoc (:query-params context) :path-w-extension :page_num)
+                        (assoc (stac-post-body base-query-string) :page_num (str value)))))]
+
+      {:rel rel
+       :body body
+       :method "POST"
+       :merge true
+       :href (url/stac-request-url context)})))
 
 (defn- get-fc-links
   "Returns the links for feature collection"
@@ -334,8 +338,8 @@
                      (+ offset page-size)
                      page-size)
         allowed-hits (min hits MAX_RESULT_WINDOW)
-        match-1 (str "page_num=" page-num)
-        match-2 (str "page-num=" page-num)
+        match-1 "page_num=\\d+"
+        match-2 "page-num=\\d+"
         page-num-pattern (re-pattern (format "%s&|&%s|%s&|&%s" match-1 match-1 match-2 match-2))
         base-query-string (-> context
                               :query-string

@@ -2,12 +2,15 @@
   "Contains helper functions for converting granules into the expected map of parsed stac results."
   (:require
    [cmr.common.util :as util]
-   [cmr.system-int-test.utils.url-helper :as url]))
+   [cmr.system-int-test.utils.url-helper :as url]
+   [ring.util.codec :as codec]))
 
 (defn- href
   "Returns the link href"
   ([]
    (format "%sgranules.stac" (url/search-root)))
+  ([query-string]
+   (format "%sgranules.stac?%s" (url/search-root) query-string))
   ([query-string page-num]
    (format "%sgranules.stac?%s&page_num=%s" (url/search-root) query-string page-num)))
 
@@ -30,7 +33,7 @@
                 (when prev-num
                   {:rel "prev"
                    :method "POST"
-                   :body body
+                   :body (into (sorted-map) (assoc body :page_num (str prev-num)))
                    :merge true
                    :href (href)}))
               (if (= method "GET")
@@ -41,7 +44,7 @@
                 (when next-num
                   {:rel "next"
                    :method "POST"
-                   :body body
+                   :body (into (sorted-map) (assoc body :page_num (str next-num)))
                    :merge true
                    :href (href)}))]))))
 

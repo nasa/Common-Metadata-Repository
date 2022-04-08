@@ -52,10 +52,10 @@
   ([context]
    (format "%sgranules.stac"
            (tconfig/application-public-root-url context)))
-  ([context coll-concept-id]
-   (format "%sgranules.stac?collection_concept_id=%s"
+  ([context query-string]
+   (format "%sgranules.stac?%s"
            (tconfig/application-public-root-url context)
-           coll-concept-id))
+           query-string))
   ([context query-string page-num]
    (format "%sgranules.stac?%s&page_num=%s"
            (tconfig/application-public-root-url context)

@@ -1201,7 +1201,7 @@ The STAC (SpatioTemporal Asset Catalog) result format is a specification for des
 
 CMR supports STAC result format for collection/granule retrieval and granule searches. Because STAC search is based on paging by page number, parameters `offset`, `scroll`, and `CMR-Scroll-Id` and `CMR-Search-After` headers are not supported with STAC format. The maximum number of results returned in STAC result format is 1 million.
 
-__Granule Retrieval in STAC Format Response Example__
+__Granule Retrieval in STAC Format Response Example via GET__
 
 ```json
 {
@@ -1295,6 +1295,96 @@ __Granule Retrieval in STAC Format Response Example__
     "limit": 1000000,
     "returned": 1,
     "matched": 3
+  }
+}
+```
+
+__Granule Retrieval in STAC Format Response Example via POST__
+
+```json
+{
+  "type" : "FeatureCollection",
+  "stac_version" : "1.0.0",
+  "numberMatched" : 3,
+  "numberReturned" : 1,
+  "features" : [ {
+    "properties" : {
+      "datetime" : "2011-02-01T12:00:00.000Z",
+      "start_datetime" : "2011-02-01T12:00:00.000Z",
+      "end_datetime" : "2011-02-11T12:00:00.000Z",
+      "eo:cloud_cover" : 20.0
+    },
+    "stac_extensions" : [ "https://stac-extensions.github.io/eo/v1.0.0/schema.json" ],
+    "collection" : "C1200000009-PROV1",
+    "id" : "G1200000011-PROV1",
+    "geometry" : {
+      "type" : "Polygon",
+      "coordinates" : [ [ [ 10.0, 0.0 ], [ 20.0, 0.0 ], [ 20.0, 30.0 ], [ 10.0, 30.0 ], [ 10.0, 0.0 ] ] ]
+    },
+    "bbox" : [ 10.0, 0.0, 20.0, 30.0 ],
+    "links" : [ {
+      "rel" : "self",
+      "href" : "http://localhost:3003/concepts/G1200000011-PROV1.stac"
+    }, {
+      "rel" : "parent",
+      "href" : "http://localhost:3003/concepts/C1200000009-PROV1.stac"
+    }, {
+      "rel" : "collection",
+      "href" : "http://localhost:3003/concepts/C1200000009-PROV1.stac"
+    }, {
+      "rel" : "root",
+      "href" : "http://localhost:3003/"
+    }, {
+      "rel" : "via",
+      "href" : "http://localhost:3003/concepts/G1200000011-PROV1.json"
+    }, {
+      "rel" : "via",
+      "href" : "http://localhost:3003/concepts/G1200000011-PROV1.umm_json"
+    } ],
+    "stac_version" : "1.0.0",
+    "type" : "Feature",
+    "assets" : {
+      "metadata" : {
+        "href" : "http://localhost:3003/concepts/G1200000011-PROV1.xml",
+        "type" : "application/xml"
+      }
+    }
+  } ],
+  "links" : [ {
+    "rel" : "self",
+    "href" : "http://localhost:3003/granules.stac?collection_concept_id=C1200000009-PROV1&pretty=true&page_num=2"
+  }, {
+    "rel" : "root",
+    "href" : "http://localhost:3003/"
+  }, {
+    "rel" : "prev",
+    "body" : {
+      "collection_concept_id" : "C1200000009-PROV1",
+      "page_num" : "1",
+      "page_size" : "1",
+      "pretty" : "true",
+      "provider" : "PROV1"
+    },
+    "method" : "POST",
+    "merge" : true,
+    "href" : "http://localhost:3003/granules.stac"
+  }, {
+    "rel" : "next",
+    "body" : {
+      "collection_concept_id" : "C1200000009-PROV1",
+      "page_num" : "3",
+      "page_size" : "1",
+      "pretty" : "true",
+      "provider" : "PROV1"
+    },
+    "method" : "POST",
+    "merge" : true,
+    "href" : "http://localhost:3003/granules.stac"
+  } ],
+  "context" : {
+    "returned" : 1,
+    "limit" : 1000000,
+    "matched" : 3
   }
 }
 ```
