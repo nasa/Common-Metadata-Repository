@@ -24,9 +24,9 @@
    hosts-col - the index of the Hosts in each CSV line"
   [csv-header]
   (let [csv-header (mapv str/trim csv-header)]
-   {:product-col (.indexOf csv-header "Product")
-    :version-col (.indexOf csv-header "Version")
-    :hosts-col (.indexOf csv-header "Hosts")}))
+    {:product-col (.indexOf csv-header "Product")
+     :version-col (.indexOf csv-header "Version")
+     :hosts-col (.indexOf csv-header "Hosts")}))
 
 (defn- read-csv-column
   "Read a column from the csv, if the column is exists. Otherwise, return nil."
@@ -41,8 +41,8 @@
   [context product-id]
   (when (seq product-id)
     (when-let [parsed-product-id (as-> (re-find #"(^.+):|(^.+)" product-id) matches
-                                       (remove nil? matches)
-                                       (last matches))]
+                                   (remove nil? matches)
+                                   (last matches))]
       (let [condition (gc/or (qm/string-condition :entry-title parsed-product-id false false)
                              (qm/string-condition :short-name parsed-product-id false false)
                              (qm/string-condition :short-name product-id false false))
@@ -60,6 +60,7 @@
    in short-name, which breaks usage metrics.  This is a short term solution to this problem,
    the long term solution is correcting the EMS data which may take a long time to happen."
   [context short-name]
+  ;; (println "comprehensive-collection-short-name-search")
   (get-collection-by-product-id context short-name))
 
 (defn- efficient-collection-short-name-search
@@ -74,39 +75,44 @@
 (defn- csv-entry->community-usage-metric
   "Convert a line in the csv file to a community usage metric. Only storing short-name (product),
    version (can be 'N/A' or a version number), and access-count (hosts)"
-  [context csv-line product-col version-col hosts-col comprehensive current-metrics]
+  [context csv-line product-col version-col hosts-col comprehensive current-metrics cache]
   (when (seq (remove empty? csv-line)) ; Don't process empty lines
-    (let [short-name (read-csv-column csv-line product-col)]
-      (when-not (seq short-name)
+    (let [product (read-csv-column csv-line product-col)
+          ;; _ (println (.keySet cache))
+          ;; _ (println cache)
+          ]
+      (when-not (seq product)
         (errors/throw-service-error :invalid-data
-          "Error parsing 'Product' CSV Data. Product may not be empty."))
+                                    "Error parsing 'Product' CSV Data. Product may not be empty."))
       (let [version (read-csv-column csv-line version-col)
-            searched-short-name (if (= "true" comprehensive)
-                                  (comprehensive-collection-short-name-search context short-name)
-                                  (efficient-collection-short-name-search context short-name current-metrics))]
+            searched-short-name (if (.containsKey cache product)
+                                  (.get cache product)
+                                  (let
+                                   [short-name (comprehensive-collection-short-name-search context product)]
+                                    (.put cache product short-name)
+                                    short-name))]
         {:short-name (if (seq searched-short-name)
                        searched-short-name
                        (do
                          (warn (format (str "While constructing community metrics humanizer, "
                                             "could not find corresponding collection when searching for the term %s. "
                                             "Csv line entry: %s")
-                                       short-name
+                                       product
                                        csv-line))
-                         short-name))
-         :version version
+                         product))
          :access-count (let [access-count (read-csv-column csv-line hosts-col)]
                          (if (seq access-count)
                            (try
                              (Integer/parseInt (str/replace access-count "," "")) ; Remove commas in large ints
                              (catch java.lang.NumberFormatException e
                                (errors/throw-service-error :invalid-data
-                                 (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
-                                              "[%s]. Hosts must be an integer.")
-                                   short-name version))))
-                          (errors/throw-service-error :invalid-data
-                            (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
-                                          "[%s]. Hosts may not be empty.")
-                              short-name version))))}))))
+                                                           (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
+                                                                        "[%s]. Hosts must be an integer.")
+                                                                   product version))))
+                           (errors/throw-service-error :invalid-data
+                                                       (format (str "Error parsing 'Hosts' CSV Data for collection [%s], version "
+                                                                    "[%s]. Hosts may not be empty.")
+                                                               product version))))}))))
 
 (defn- validate-and-read-csv
   "Validate the ingested community usage metrics csv and if valid, return the data lines read
@@ -139,8 +145,11 @@
   [context community-usage-csv comprehensive]
   (let [{:keys [csv-lines product-col version-col hosts-col]} (validate-and-read-csv community-usage-csv)
         current-metrics (when (= "false" comprehensive)
-                          (get-community-usage-metrics context))]
-    (map #(csv-entry->community-usage-metric context % product-col version-col hosts-col comprehensive current-metrics)
+                          (do
+                            (println "getting community usage metrics from metadatadb")
+                            (get-community-usage-metrics context)))
+        short-name-cache (new java.util.HashMap)]
+    (map #(csv-entry->community-usage-metric context % product-col version-col hosts-col comprehensive current-metrics short-name-cache)
          csv-lines)))
 
 (defn- aggregate-usage-metrics
@@ -167,6 +176,34 @@
    params
    [(partial cpv/validate-boolean-param :comprehensive)]))
 
+;; (defn myfunc
+;;   [metrics item]
+;;   (let [short-name (:short-name item)
+;;         version (if (nil? (:version item))
+;;                   ""
+;;                   (:version item))
+;;         access-count (if (nil? (:access-count item))
+;;                        0
+;;                        (:access-count item))]
+;;     (update metrics short-name #(+ access-count (if (nil? %) 0 %)))))
+
+;; (defn my-agg
+;;   [metrics]
+;;   (let [metrics-count-map (reduce myfunc {} metrics)]
+;;     (map (fn [[key value]] {:short-name key :access-count value}) metrics-count-map)))
+
+(defn mutate-my-agg
+  [metrics]
+  (let [java-map (new java.util.HashMap)]
+    (doseq [metric metrics]
+      (let [short-name (:short-name metric)
+            access-count (:access-count metric)]
+        (.put java-map short-name (+ access-count (.getOrDefault java-map short-name 0)))))
+    (for [item java-map]
+      {:short-name (.getKey item) :access-count (.getValue item)})))
+
+;; (map (fn [[key value]] {:short-name key :access-count value}) (into {} java-map))
+
 (defn update-community-usage
   "Create/update the community usage metrics saving them with the humanizers in metadata db. Do not
   Do not overwrite the humanizers, just the community usage metrics. Increment the revision id
@@ -175,6 +212,20 @@
   [context params community-usage-csv]
   (validate-update-community-usage-params params)
   (let [metrics (community-usage-csv->community-usage-metrics context community-usage-csv (:comprehensive params))
-        metrics (seq (aggregate-usage-metrics metrics))] ; Combine access-counts for entries with the same version/short-name
-    (validate-metrics metrics)
-    (humanizer-service/update-humanizers-metadata context :community-usage-metrics metrics)))
+        ;; _ (println (str "BEFORE AGG:" (type metrics)))
+
+        ;; my-metrics-vec (time (vec (my-agg metrics)))
+        _ (print "mutate-my-agg: ")
+        metric_agg (time (mutate-my-agg metrics))
+        ;; _ (print "aggregate-usage-metrics")
+        ;; metric_agg  (seq (aggregate-usage-metrics metrics))
+
+        ;; _ (println (str "AFTER AGG orig:" metrics))
+        ;; _ (println (str "AFTER AGG my:" my-metrics))
+        ]
+    ; Combine access-counts for entries with the same version/short-name
+    (validate-metrics metric_agg)
+    ;; (println (type my-metrics-seq))
+    ;; (println (type my-metrics-vec))
+    ;; (println metrics)
+    (humanizer-service/update-humanizers-metadata context :community-usage-metrics metric_agg)))
