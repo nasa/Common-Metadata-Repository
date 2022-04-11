@@ -43,7 +43,6 @@
     (when-let [parsed-product-id (as-> (re-find #"(^.+):|(^.+)" product-id) matches
                                    (remove nil? matches)
                                    (last matches))]
-      ;; (println "querying elastic")
       (let [condition (gc/or (qm/string-condition :entry-title parsed-product-id false false)
                              (qm/string-condition :short-name parsed-product-id false false)
                              (qm/string-condition :short-name product-id false false))
@@ -173,7 +172,7 @@
    [(partial cpv/validate-boolean-param :comprehensive)]))
 
 (defn- aggregate-usage-metrics
-  "Combine access counts for entries with the same short-name."
+  "Combine access-counts for entries with the same short-name."
   [metrics]
   (let [java-map (new java.util.HashMap)]
     (doseq [metric metrics]
