@@ -189,7 +189,7 @@
   Returns the concept id and revision id of the saved humanizer."
   [context params community-usage-csv]
   (validate-update-community-usage-params params)
-  (let [comprehensive (or (:comprehensive params) "true") ;; set default
+  (let [comprehensive (or (:comprehensive params) "false") ;; set default
         current-metrics (if (= "false" comprehensive)
                           (get-community-usage-metrics context)
                           #{})
