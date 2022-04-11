@@ -65,7 +65,7 @@
    CMR_KMS_SCHEMA_OVERRIDE_JSON."
   []
   (let [overrides (config/kms-scheme-override-json)]
-    (debug (format "Requested KMS schema overrides: %s." overrides))
+    (info (format "Requested KMS schema overrides: %s." overrides))
     (try
       (json/parse-string overrides true)
       (catch com.fasterxml.jackson.core.JsonParseException e
