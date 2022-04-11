@@ -144,14 +144,6 @@
             (update-in t [:URL] dissoc :Subtype)
             t)))) 
 
-(defn migrate-related-urls-1_2_0->1_1_1
-  "Migrate RelatedURLs from 1.2.0 to 1.1.1"
-  [tool]
-  ;; Remove Format and MimeType from each entry in RelatedURLs.
-  (if-let [related-urls (:RelatedURLs tool)]
-    (assoc tool :RelatedURLs (map #(dissoc % :Format :MimeType) related-urls))
-    tool)) 
- 
 (defmethod interface/migrate-umm-version [:tool "1.0" "1.1"]
   [context t & _]
   (-> t
@@ -177,13 +169,3 @@
       (migrate-related-urls-1_1_1->1_1)
       (migrate-url-1_1_1->1_1)
       (m-spec/update-version :tool "1.1")))
-
-(defmethod interface/migrate-umm-version [:tool "1.1.1" "1.2.0"]
-  [context t & _]
-  (m-spec/update-version t :tool "1.2.0"))
-
-(defmethod interface/migrate-umm-version [:tool "1.2.0" "1.1.1"]
-  [context t & _]
-  (-> t
-      (migrate-related-urls-1_2_0->1_1_1) 
-      (m-spec/update-version :tool "1.1.1")))

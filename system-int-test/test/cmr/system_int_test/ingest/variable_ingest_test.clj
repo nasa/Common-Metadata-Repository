@@ -590,7 +590,7 @@
         {:MimeType "application/x-hdf42"}
         [422]
         [{:path ["RelatedUrLs" 0 "MimeType"]
-          :errors ["MimeType [application/x-hdf42] was not a valid keyword."]}])
+          :errors ["Mime Type [application/x-hdf42] was not a valid keyword."]}])
 
       (side/eval-form `(ingest-config/set-validate-umm-var-keywords! false))))
 

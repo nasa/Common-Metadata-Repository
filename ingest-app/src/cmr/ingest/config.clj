@@ -43,12 +43,12 @@
 (defconfig service-umm-version
   "Defines the latest service umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.5.0"})
+  {:default "1.4.1"})
 
 (defconfig tool-umm-version
   "Defines the latest tool umm version accepted by ingest - it's the latest official version.
    This environment variable needs to be manually set when newer UMM version becomes official"
-  {:default "1.2.0"})
+  {:default "1.1.1"})
 
 (defconfig subscription-umm-version
   "Defines the latest subscription umm version accepted by ingest - it's the latest official version.

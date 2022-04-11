@@ -40,9 +40,9 @@
                                    :ValueType "https://schema.org/startDate"}
                                   {:ValueName "bbox"
                                    :ValueType "https://schema.org/box"}]}
-   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.2.0"
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.1.1"
                            :Name "UMM-T"
-                           :Version "1.2.0"}})
+                           :Version "1.1.1"}})
 
 (defn- tool
   "Returns a UMM-T record from the given attribute map."

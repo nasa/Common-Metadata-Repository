@@ -215,16 +215,11 @@
    ;; the URL of the colormap server, etc.).
    URL
 
-   ;; Describes the organization of the data content so that users and applications know how to read
-   ;; and use the content. The controlled vocabulary for formats is maintained in the Keyword
-   ;; Management System (KMS):
-   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/DataFormat?gtm_scheme=DataFormat
+   ;; The format of the data. The controlled vocabulary for formats is maintained in the Keyword
+   ;; Management System (KMS)
    Format
 
-   ;; The multi-purpose internet mail extensions indicates the nature and format of the data that is
-   ;; accessed through the URL. The controlled vocabulary for MimeTypes is maintained in the Keyword
-   ;; Management System (KMS):
-   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/MimeType?gtm_scheme=MimeType
+   ;; The mime type of the resource.
    MimeType
   ])
 (record-pretty-printer/enable-record-pretty-printing RelatedURLType)

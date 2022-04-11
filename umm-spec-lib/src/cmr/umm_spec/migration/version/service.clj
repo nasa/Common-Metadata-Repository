@@ -372,14 +372,6 @@
   (if (:RelatedURLs service)
     (assoc service :RelatedURLs (map convert-related-url-1_4_1->1_4 (:RelatedURLs service)))
     service))
-
-(defn- migrate-related-urls-1_5_0->1_4_1
-  "Migrate RelatedURLs from 1.5.0 to 1.4.1"
-  [service]
-  ;; Remove Format and MimeType from each entry in RelatedURLs.
-  (if-let [related-urls (:RelatedURLs service)]
-    (assoc service :RelatedURLs (map #(dissoc % :Format :MimeType) related-urls))
-    service))   
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Service Migration Implementations
 
@@ -542,13 +534,3 @@
   (-> umm-s
       (migrate-related-urls-1_4_1->1_4)
       (m-spec/update-version :service "1.4")))
-
-(defmethod interface/migrate-umm-version [:service "1.4.1" "1.5.0"]
-  [context umm-s & _]
-  (m-spec/update-version umm-s :service "1.5.0"))
-
-(defmethod interface/migrate-umm-version [:service "1.5.0" "1.4.1"]
-  [context umm-s & _]
-  (-> umm-s
-      (migrate-related-urls-1_5_0->1_4_1)
-      (m-spec/update-version :service "1.4.1")))

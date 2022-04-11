@@ -3,7 +3,6 @@
    [cmr.common.util :refer [defn-timed]]
    [cmr.common.services.errors :as errors]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
-   [cmr.common.validations.core :as cm-validation]
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.validation.validation :as validation]
    [cmr.transmit.metadata-db2 :as mdb2]
@@ -27,19 +26,10 @@
   "Create a kms match validator for use by validation-tool"
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
-    [{:RelatedURLs [(validation/match-kms-keywords-validation
-                     kms-index
-                     :related-urls
-                     msg/related-url-content-type-type-subtype-not-matching-kms-keywords)
-                    (cm-validation/every [{:Format (validation/match-kms-keywords-validation-single
-                                                    kms-index
-                                                    :granule-data-format
-                                                    msg/getdata-format-not-matches-kms-keywords)}
-                                          {:MimeType (validation/match-kms-keywords-validation-single
-                                                      kms-index
-                                                      :mime-type
-                                                      msg/mime-type-not-matches-kms-keywords)}])]
-
+    [{:RelatedURLs (validation/match-kms-keywords-validation
+                    kms-index
+                    :related-urls
+                    msg/related-url-content-type-type-subtype-not-matching-kms-keywords)
       :URL (validation/match-kms-keywords-validation-single
             kms-index
             :related-urls

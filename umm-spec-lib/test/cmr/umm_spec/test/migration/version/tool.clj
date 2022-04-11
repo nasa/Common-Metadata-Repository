@@ -219,35 +219,6 @@
   {:URLContentType "DistributionURL"
    :Type "GOTO WEB TOOL"})
 
-;; when migrate from 1.2.0 to 1.1.1,
-;; RelatedURLs-1_2_0-1 is converted to RelatedURLs-1_1_1-2
-(def RelatedURLs-1_2_0-1
-  [{:URLContentType "CollectionURL"
-    :Type "EXTENDED METADATA"
-    :Subtype "DMR++"
-    :Format "format1"
-    :MimeType "mimetype1"}
-   {:URLContentType "PublicationURL"
-    :Type "VIEW RELATED INFORMATION"
-    :Subtype "DATA PRODUCT SPECIFICATION"
-    :Format "format1"
-    :MimeType "mimetype1"}
-   {:URLContentType "VisualizationURL"
-    :Type "GET RELATED VISUALIZATION"
-    :Subtype "SOTO"
-    :Format "format1"
-    :MimeType "mimetype1"}
-   {:URLContentType "VisualizationURL"
-    :Type "Color Map"
-    :Subtype "any valid 1.1.1 Subtype"
-    :Format "format1"
-    :MimeType "mimetype1"}
-   {:URLContentType "NotPublicationCollectionVisualizationURL"
-    :Type "any valid 1.1.1 Type"
-    :Subtype "any valid 1.1.1 Subtype"
-    :Format "format1"
-    :MimeType "mimetype1"}])
-
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions {:tool ["1.0" "1.1"]}}
     (is (= [] (#'vm/version-steps :tool "1.1" "1.1")))
@@ -317,21 +288,3 @@
          (vm/migrate-umm {} :tool "1.1.1" "1.1"
            {:RelatedURLs RelatedURLs-1_1_1-2
             :URL URL-1_1_1-2-down}))))
-
-(deftest migrate-1_1_1-up-to-1_2_0
-  ;; MetadataSpecificationare is migrated.
-  (is (= {:RelatedURLs RelatedURLs-1_1_1-2
-          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.2.0",
-                                  :Name "UMM-T",
-                                  :Version "1.2.0"}}
-         (vm/migrate-umm {} :tool "1.1.1" "1.2.0"
-           {:RelatedURLs RelatedURLs-1_1_1-2}))))
-
-(deftest migrate-1_2_0-down-to-1_1_1
-  ;; RelatedURLs and MetadataSpecificationare are migrated.
-  (is (= {:RelatedURLs RelatedURLs-1_1_1-2
-          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/tool/v1.1.1",
-                                  :Name "UMM-T",
-                                  :Version "1.1.1"}}
-         (vm/migrate-umm {} :tool "1.2.0" "1.1.1"
-           {:RelatedURLs RelatedURLs-1_2_0-1}))))
