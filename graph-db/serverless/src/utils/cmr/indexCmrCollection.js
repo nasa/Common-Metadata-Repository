@@ -26,7 +26,8 @@ export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
       },
       Projects: projects,
       Platforms: platforms,
-      RelatedUrls: relatedUrls
+      RelatedUrls: relatedUrls,
+      ShortName: shortName
     }
   } = collectionObj
 
@@ -37,6 +38,7 @@ export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
   const addVCommand = gremlinConnection.addV('collection')
     .property('title', entryTitle)
     .property('id', conceptId)
+    .property('shortName', shortName)
 
   if (doiDescription) {
     addVCommand.property('doi', doiDescription)
