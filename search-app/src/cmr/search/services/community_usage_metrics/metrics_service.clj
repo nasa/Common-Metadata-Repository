@@ -158,12 +158,6 @@
     (map #(csv-entry->community-usage-metric context % product-col hosts-col current-metrics short-name-cache)
          csv-lines)))
 
-(defn- validate-metrics
-  "Validate metrics against the JSON schema validation"
-  [metrics]
-  (let [json (json/generate-string metrics)]
-    (metrics-json/validate-metrics-json json)))
-
 (defn- aggregate-usage-metrics
   "Combine access counts for entries with the same short-name."
   [metrics]
@@ -173,6 +167,12 @@
     ;; in the rest and add that to the first entry to make the access-counts right
     (map #(util/remove-nil-keys (assoc (first %) :access-count (reduce + (map :access-count %))))
          (vals name-groups))))
+
+(defn- validate-metrics
+  "Validate metrics against the JSON schema validation"
+  [metrics]
+  (let [json (json/generate-string metrics)]
+    (metrics-json/validate-metrics-json json)))
 
 (defn- validate-update-community-usage-params
   "Currently only validates the parameter comprehensive as a boolean."
