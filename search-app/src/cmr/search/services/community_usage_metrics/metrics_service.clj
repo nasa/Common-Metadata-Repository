@@ -200,5 +200,5 @@
                           #{})
         metrics (community-usage-csv->community-usage-metrics context community-usage-csv current-metrics)
         metrics-agg (aggregate-usage-metrics metrics)]
-    (validate-metrics metric-aggs)
-    (humanizer-service/update-humanizers-metadata context :community-usage-metrics metric-aggs)))
+    (validate-metrics metrics-agg)
+    (humanizer-service/update-humanizers-metadata context :community-usage-metrics metrics-agg)))
