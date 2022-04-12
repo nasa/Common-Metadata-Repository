@@ -70,7 +70,8 @@
         short-name)))) ;; return queried short-name
 
 (defn- get-short-name
-  "Parse short-name from given csv-line and verify it exists in CMR.  
+  "Parse the short-name from the given csv-line and verify it exists in CMR.  
+   If it doesn't exist in CMR, use the `product` value as-is.
    Throws a service error if the product column is empty."
   [context cache csv-line product-col current-metrics]
   (let [product (read-csv-column csv-line product-col)
@@ -146,8 +147,8 @@
 (defn- community-usage-metrics-list->set
   "Convert list of {:short-name :access-count} maps into a set of short-names."
   [metrics-list]
-  (into #{} (for [metric-map metrics-list]
-              (:short-name metric-map))))
+  (set (for [metric-map metrics-list]
+         (:short-name metric-map))))
 
 (defn- community-usage-csv->community-usage-metrics
   "Validate the community usage csv and convert to a list of community usage metrics."
@@ -172,15 +173,14 @@
    [(partial cpv/validate-boolean-param :comprehensive)]))
 
 (defn- aggregate-usage-metrics
-  "Combine access-counts for entries with the same short-name."
+  "Combine access counts for entries with the same short-name."
   [metrics]
-  (let [java-map (new java.util.HashMap)]
-    (doseq [metric metrics]
-      (let [short-name (:short-name metric)
-            access-count (:access-count metric)]
-        (.put java-map short-name (+ access-count (.getOrDefault java-map short-name 0)))))
-    (for [item java-map]
-      {:short-name (.getKey item) :access-count (.getValue item)})))
+  ;; name-groups is map of short-names [entries that match short-name]
+  (let [name-groups (group-by (juxt :short-name) metrics)] ; Group by short-name and version
+    ;; The first entry in each list has the short-name and version we want so just add up the access-counts
+    ;; in the rest and add that to the first entry to make the access-counts right
+    (map #(util/remove-nil-keys (assoc (first %) :access-count (reduce + (map :access-count %))))
+         (vals name-groups))))
 
 (defn update-community-usage
   "Create/update the community usage metrics saving them with the humanizers in metadata db. Do not
