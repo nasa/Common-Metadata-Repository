@@ -131,7 +131,7 @@
         {:errors [(smsg/shape-decode-msg :line s)]}
         ;; The maximum shape file size by default is around 5000, we are mirroring that configuration
         ;; for the too-many-points validation.
-        (if (> (count split-line-str) (smsg/max-line-points))
+        (if (> (/ (count split-line-str) 2) (smsg/max-line-points))
           {:errors [(smsg/line-too-many-points-msg :line s)]}
           (let [ordinates (map #(Double. ^String %) split-line-str)]
             (l/ords->line-string :geodetic ordinates)))))

@@ -9,7 +9,7 @@
 
 (defconfig max-line-points
   "The maximum number of points a line parameter can have"
-  {:default 5000 :type Long})
+  {:default 500 :type Long})
 
 (defn line-too-many-points-msg
   [type s]

@@ -19,6 +19,8 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.points-validation-helpers :as pv]
    [cmr.system-int-test.data2.aql :as aql]
    [cmr.system-int-test.data2.aql-additional-attribute]
    [cmr.system-int-test.data2.atom :as da]
@@ -854,3 +856,37 @@
                  :body (json/generate-string {:scroll_id scroll-id})
                  :throw-exceptions true
                  :connection-manager (s/conn-mgr)})))
+
+(defn remove-duplicate-points
+  [{:keys [points]}]
+  (->> (pv/points->rounded-point-map points)
+       vals
+       (remove #(> (count %) 1))
+       (map reverse)))
+
+(defn- depointify
+  [point]
+  [(.lon point) (.lat point)])
+
+(defn make-excessive-points-without-dups
+  "Returns a list of n-ish unique points."
+  [n]
+  (str/join ","
+            (flatten
+             (map #(depointify (get (first %) 1))
+                  (let [points {:points (map #(p/point %1 %2)
+                                             (repeatedly n
+                                                         #(first (shuffle (range -180 180))))
+                                             (repeatedly n
+                                                         #(first (shuffle (range -90 90)))))}]
+                    (remove-duplicate-points points))))))
+
+(defn make-excessive-points
+  "Returns a list of n points."
+  [n]
+  (str/join ","
+             (interleave
+               (repeatedly n
+                           #(first (shuffle (range -180 180))))
+               (repeatedly n
+                           #(first (shuffle (range -90 90)))))))

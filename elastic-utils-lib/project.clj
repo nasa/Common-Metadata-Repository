@@ -15,7 +15,8 @@
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [com.fasterxml.jackson.core/jackson-core "2.13.2"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
+                  :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.apache.logging.log4j/log4j-api "2.15.0"]
                  [org.clojure/clojure "1.10.0"]

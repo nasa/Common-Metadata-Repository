@@ -730,8 +730,24 @@
     (index/wait-until-indexed)
 
     (util/are3 [params result-map]
-      (let [response (search/find-concepts-stac :granule
-                                                (merge params {:collection-concept-id coll-concept-id}))
+      (let [response (search/find-concepts-stac
+                      :granule
+                      (merge params {:collection-concept-id coll-concept-id}))
+            post-response (client/post (url/search-url :granule)
+                                       {:accept "application/json; profile=stac-catalogue"
+                                        :content-type mt/form-url-encoded
+                                        :body (codec/form-encode (merge
+                                                                  params
+                                                                  {:collection-concept-id coll-concept-id}))
+                                        :throw-exceptions false
+                                        :connection-manager (s/conn-mgr)})
+            post-ext-response (client/post (format "%s.stac" (url/search-url :granule))
+                                           {:content-type mt/form-url-encoded
+                                            :body (codec/form-encode (merge
+                                                                      params
+                                                                      {:collection-concept-id coll-concept-id}))
+                                            :throw-exceptions false
+                                            :connection-manager (s/conn-mgr)})
             full-result-map (merge result-map
                                    {:coll-concept-id coll-concept-id
                                     :matched 3
@@ -746,7 +762,29 @@
         (is (search/mime-type-matches-response? response mt/stac))
         (is (= 200 (:status response)))
         (is (= (stac/result-map->expected-stac full-result-map)
-               (:results response))))
+               (:results response)))
+        (is (search/mime-type-matches-response? post-response mt/stac))
+        (is (= 200 (:status post-response)))
+        (is (= (stac/result-map->expected-stac (merge
+                                                full-result-map
+                                                {:body (merge {:collection_concept_id coll-concept-id}
+                                                              (-> params
+                                                                  util/map-keys->snake_case
+                                                                  (dissoc :page_num)
+                                                                  (update :page_size str)))})
+                                               "POST")
+               (json/decode (:body post-response) true)))
+        (is (search/mime-type-matches-response? post-ext-response mt/stac))
+        (is (= 200 (:status post-ext-response)))
+        (is (= (stac/result-map->expected-stac (merge
+                                                full-result-map
+                                                {:body (merge {:collection_concept_id coll-concept-id}
+                                                              (-> params
+                                                                  util/map-keys->snake_case
+                                                                  (dissoc :page_num)
+                                                                  (update :page_size str)))})
+                                               "POST")
+               (json/decode (:body post-ext-response) true))))
 
       "default page-size and page-num"
       nil
@@ -775,6 +813,39 @@
        :query-string (format "page_size=2&collection_concept_id=%s" coll-concept-id)
        :page-num 2
        :prev-num 1})
+
+    (testing "stac parameter and query string mix"
+      (let [post-response (client/post (format (str (url/search-url :granule) "?provider=PROV1"))
+                                       {:accept "application/json; profile=stac-catalogue"
+                                        :content-type mt/form-url-encoded
+                                        :body (codec/form-encode {:page-size 1 :page-num 2
+                                                                  :collection-concept-id coll-concept-id})
+                                        :throw-exceptions false
+                                        :connection-manager (s/conn-mgr)})
+            full-result-map {:coll-concept-id coll-concept-id
+                             :granules [gran2]
+                             :query-string (format "page_size=1&collection_concept_id=%s" coll-concept-id)
+                             :page-num 2
+                             :prev-num 1
+                             :next-num 3
+                             :matched 3
+                             :geometry {:type "Polygon"
+                                        :coordinates
+                                        [[[10.0 0.0]
+                                          [20.0 0.0]
+                                          [20.0 30.0]
+                                          [10.0 30.0]
+                                          [10.0 0.0]]]}
+                             :bbox [10.0 0.0 20.0 30.0]}]
+        (is (search/mime-type-matches-response? post-response mt/stac))
+        (is (= 200 (:status post-response)))
+        (is (= (stac/result-map->expected-stac (merge
+                                                full-result-map
+                                                {:body {:collection_concept_id coll-concept-id
+                                                        :page_size "1"
+                                                        :provider "PROV1"}})
+                                               "POST")
+               (json/decode (:body post-response) true)))))
 
     (testing "stac as extension"
       (let [params {:collection-concept-id coll-concept-id}
@@ -812,25 +883,6 @@
           (is (= ["STAC result format is only supported for granule searches"]
                  (:errors response)
                  (:errors ext-response)))))
-
-      (testing "stac search with POST"
-        (let [response (client/post (url/search-url :granule)
-                                    {:accept "application/json; profile=stac-catalogue"
-                                     :content-type mt/form-url-encoded
-                                     :body (codec/form-encode {:collection-concept-id coll-concept-id})
-                                     :throw-exceptions false
-                                     :connection-manager (s/conn-mgr)})
-              ext-response (client/post (format "%s.stac" (url/search-url :granule))
-                                        {:content-type mt/form-url-encoded
-                                         :body (codec/form-encode {:collection-concept-id coll-concept-id})
-                                         :throw-exceptions false
-                                         :connection-manager (s/conn-mgr)})]
-          (is (= 400
-                 (:status response)
-                 (:status ext-response)))
-          (is (= ["STAC result format is only supported for parameter searches"]
-                 (:errors (json/decode (:body response) true))
-                 (:errors (json/decode (:body ext-response) true))))))
 
       (testing "stac search with JSON query"
         (let [response (client/post

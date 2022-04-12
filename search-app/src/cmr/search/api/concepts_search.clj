@@ -77,25 +77,21 @@
     (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))
           {:keys [scroll-id search-after query-string]} context
           {:keys [offset scroll]} params]
-      (if (and content-type-header query-string)
+      (when-not (:collection-concept-id (util/map-keys->kebab-case params))
         (svc-errors/throw-service-error
-         :bad-request "STAC result format is only supported for parameter searches")
-        (do
-          (when-not (:collection-concept-id (util/map-keys->kebab-case params))
-            (svc-errors/throw-service-error
-             :bad-request "collection_concept_id is required for searching in STAC result format"))
-          (when scroll
-            (svc-errors/throw-service-error
-             :bad-request "scroll is not allowed with STAC result format"))
-          (when offset
-            (svc-errors/throw-service-error
-             :bad-request "offset is not allowed with STAC result format"))
-          (when scroll-id
-            (svc-errors/throw-service-error
-             :bad-request "CMR-Scroll-Id header is not allowed with STAC result format"))
-          (when search-after
-            (svc-errors/throw-service-error
-             :bad-request "CMR-Search-After header is not allowed with STAC result format")))))))
+         :bad-request "collection_concept_id is required for searching in STAC result format"))
+      (when scroll
+        (svc-errors/throw-service-error
+         :bad-request "scroll is not allowed with STAC result format"))
+      (when offset
+        (svc-errors/throw-service-error
+         :bad-request "offset is not allowed with STAC result format"))
+      (when scroll-id
+        (svc-errors/throw-service-error
+         :bad-request "CMR-Scroll-Id header is not allowed with STAC result format"))
+      (when search-after
+        (svc-errors/throw-service-error
+         :bad-request "CMR-Search-After header is not allowed with STAC result format")))))
 
 (defn- find-concepts-by-json-query
   "Invokes query service to parse the JSON query, find results and return
@@ -220,7 +216,7 @@
         scroll-id (:scroll-id scroll-id-and-search-params)
         cached-search-params (:search-params scroll-id-and-search-params)
         search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
-        ctx (assoc ctx :query-string body :scroll-id scroll-id)
+        ctx (assoc ctx :query-string body :scroll-id scroll-id :query-params params)
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (block-excessive-queries ctx concept-type result-format params)
@@ -373,11 +369,11 @@
     (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}
-      (find-concepts ctx path-w-extension params headers query-string))
+      (find-concepts (merge ctx {:method :get}) path-w-extension params headers query-string))
     ;; Find concepts - form encoded or JSON
     (POST "/"
       {params :params headers :headers ctx :request-context body :body-copy}
-      (find-concepts ctx path-w-extension params headers body))))
+      (find-concepts (merge ctx {:method :post}) path-w-extension params headers body))))
 
 (def granule-timeline-routes
   "Routes for /search/granules/timeline."

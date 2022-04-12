@@ -2,30 +2,51 @@
   "Contains helper functions for converting granules into the expected map of parsed stac results."
   (:require
    [cmr.common.util :as util]
-   [cmr.system-int-test.utils.url-helper :as url]))
+   [cmr.system-int-test.utils.url-helper :as url]
+   [ring.util.codec :as codec]))
 
 (defn- href
   "Returns the link href"
-  [query-string page-num]
-  (format "%sgranules.stac?%s&page_num=%s" (url/search-root) query-string page-num))
+  ([]
+   (format "%sgranules.stac" (url/search-root)))
+  ([query-string]
+   (format "%sgranules.stac?%s" (url/search-root) query-string))
+  ([query-string page-num]
+   (format "%sgranules.stac?%s&page_num=%s" (url/search-root) query-string page-num)))
 
 (defn- result-map->expected-links
   "Returns the stac links for the given result map"
-  [result-map]
-  (let [{:keys [query-string page-num prev-num next-num]} result-map]
-    (remove nil?
-            [{:rel "self"
-              :href (href query-string page-num)}
-             {:rel "root"
-              :href (url/search-root)}
-             (when prev-num
-               {:rel "prev"
-                :method "GET"
-                :href (href query-string prev-num)})
-             (when next-num
-               {:rel "next"
-                :method "GET"
-                :href (href query-string next-num)})])))
+  ([result-map]
+   (result-map->expected-links result-map "GET"))
+  ([result-map method]
+   (let [{:keys [query-string page-num prev-num next-num body]} result-map]
+     (remove nil?
+             [{:rel "self"
+               :href (href query-string page-num)}
+              {:rel "root"
+               :href (url/search-root)}
+              (if (= method "GET")
+                (when prev-num
+                  {:rel "prev"
+                   :method "GET"
+                   :href (href query-string prev-num)})
+                (when prev-num
+                  {:rel "prev"
+                   :method "POST"
+                   :body (into (sorted-map) (assoc body :page_num (str prev-num)))
+                   :merge true
+                   :href (href)}))
+              (if (= method "GET")
+                (when next-num
+                  {:rel "next"
+                   :method "GET"
+                   :href (href query-string next-num)})
+                (when next-num
+                  {:rel "next"
+                   :method "POST"
+                   :body (into (sorted-map) (assoc body :page_num (str next-num)))
+                   :merge true
+                   :href (href)}))]))))
 
 (defn- granule->expected-stac
   "Returns the stac map of the granule.
@@ -77,15 +98,17 @@
   - geometry: stac geometry info. Since the different geometry test cases has been covered
               in unit tests. We use the same geometry for all granules in this test.
   - bbox: stac bbox info. Simplified similar to geometry."
-  [result-map]
-  (let [{:keys [matched granules]} result-map]
-    (util/remove-nil-keys
-     {:type "FeatureCollection"
-      :stac_version "1.0.0"
-      :numberMatched matched
-      :numberReturned (count granules)
-      :features (seq (map (partial granule->expected-stac result-map) granules))
-      :links (result-map->expected-links result-map)
-      :context {:returned (count granules)
-                :limit 1000000
-                :matched matched}})))
+  ([result-map]
+   (result-map->expected-stac result-map "GET"))
+  ([result-map method]
+   (let [{:keys [matched granules]} result-map]
+     (util/remove-nil-keys
+      {:type "FeatureCollection"
+       :stac_version "1.0.0"
+       :numberMatched matched
+       :numberReturned (count granules)
+       :features (seq (map (partial granule->expected-stac result-map) granules))
+       :links (result-map->expected-links result-map method)
+       :context {:returned (count granules)
+                 :limit 1000000
+                 :matched matched}}))))
