@@ -3,7 +3,8 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.search.results-handlers.stac-results-handler :as stac-results-handler]))
+   [cmr.search.results-handlers.stac-results-handler :as stac-results-handler]
+   [ring.util.codec :as codec]))
 
 (def ^:private metadata-link
   "example metadata-link for test"
@@ -155,7 +156,7 @@
   {:rel "root"
    :href "http://localhost:3003/"})
 
-(defn- prev-link
+(defn- prev-link-get
   "Returns the prev-link with the given page-num"
   [base-string page-num]
   (when page-num
@@ -163,20 +164,49 @@
      :method "GET"
      :href (href base-string page-num)}))
 
-(defn- next-link
+(defn- next-link-get
   "Returns the next-link with the given page-num"
   [base-string page-num]
  (when page-num
    {:rel "next"
-   :method "GET"
-   :href (href base-string page-num)}))
+    :method "GET"
+    :href (href base-string page-num)}))
+
+(defn- prev-link-post
+  "Returns the prev-link with the given page-num"
+  [query-string page-num]
+  (when page-num
+    {:rel "prev"
+     :method "POST"
+     :merge true
+     :body (as-> query-string query-string
+                 (stac-results-handler/stac-post-body query-string)
+                 (util/map-keys->snake_case query-string)
+                 (assoc query-string :page_num (str page-num))
+                 (into (sorted-map) query-string))
+     :href "http://localhost:3003/granules.stac"}))
+
+(defn- next-link-post
+  "Returns the next-link with the given page-num"
+  [query-string page-num]
+  (when page-num
+    {:rel "next"
+     :method "POST"
+     :merge true
+     :body (as-> query-string query-string
+                 (stac-results-handler/stac-post-body query-string)
+                 (util/map-keys->snake_case query-string)
+                 (assoc query-string :page_num (str page-num))
+                 (into (sorted-map) query-string))
+     :href "http://localhost:3003/granules.stac"}))
 
 (deftest get-fc-links
-  (testing "Get feature colection links"
+  (testing "GET feature collection links"
     (are3 [query-string page-size page-num base-string expected-nav]
       (let [context (merge {:system {:public-conf {:protocol "http"
                                                    :host "localhost"
-                                                   :port "3003"}}}
+                                                   :port "3003"}}
+                            :method :get}
                            {:query-string query-string})
              query {:page-size page-size
                     :offset (* (dec page-num) page-size)}
@@ -185,8 +215,90 @@
              expected-links (remove nil?
                                     [(self-link base-string self-num)
                                      root-link
-                                     (prev-link base-string prev-num)
-                                     (next-link base-string next-num)])]
+                                     (prev-link-get base-string prev-num)
+                                     (next-link-get base-string next-num)])]
+        (is (= expected-links
+               (#'stac-results-handler/get-fc-links context query hits))))
+
+      "default query string with no page-size or page-num"
+      "collection_concept_id=C111-PROV"
+      10
+      1
+      "collection_concept_id=C111-PROV"
+      [1 nil 2]
+
+      "query string with explicit page-num at the front of query string"
+      "page-num=1&collection_concept_id=C111-PROV"
+      10
+      1
+      "collection_concept_id=C111-PROV"
+      [1 nil 2]
+
+      "query string with explicit page_num at the front of query string"
+      "page_num=1&collection_concept_id=C111-PROV"
+      10
+      1
+      "collection_concept_id=C111-PROV"
+      [1 nil 2]
+
+      "query string with explicit page-num not at the front of query string"
+      "collection_concept_id=C111-PROV&page-num=1"
+      10
+      1
+      "collection_concept_id=C111-PROV"
+      [1 nil 2]
+
+      "query string with explicit page_num not at the front of query string"
+      "collection_concept_id=C111-PROV&page_num=1"
+      10
+      1
+      "collection_concept_id=C111-PROV"
+      [1 nil 2]
+
+      "query string with explicit page-size in query string"
+      "page_size=20&collection_concept_id=C111-PROV"
+      20
+      1
+      "page_size=20&collection_concept_id=C111-PROV"
+      [1 nil 2]
+
+      "query with both previous and next pages"
+      "page_size=2&page_num=5&collection_concept_id=C111-PROV"
+      2
+      5
+      "page_size=2&collection_concept_id=C111-PROV"
+      [5 4 6]
+
+      "query with no next page"
+      "page_size=10&page_num=3&collection_concept_id=C111-PROV"
+      10
+      3
+      "page_size=10&collection_concept_id=C111-PROV"
+      [3 2 nil]
+
+      "query with neither previous page nor next page"
+      "page_num=1&collection_concept_id=C111-PROV&page_size=30"
+      30
+      1
+      "collection_concept_id=C111-PROV&page_size=30"
+      [1 nil nil]))
+
+  (testing "POST feature collection links"
+    (are3 [query-string page-size page-num base-string expected-nav]
+      (let [context (merge {:system {:public-conf {:protocol "http"
+                                                   :host "localhost"
+                                                   :port "3003"}}
+                            :method :post}
+                           {:query-string query-string})
+             query {:page-size page-size
+                    :offset (* (dec page-num) page-size)}
+             hits 30
+             [self-num prev-num next-num] expected-nav
+             expected-links (remove nil?
+                                    [(self-link base-string self-num)
+                                     root-link
+                                     (prev-link-post base-string prev-num)
+                                     (next-link-post base-string next-num)])]
         (is (= expected-links
                (#'stac-results-handler/get-fc-links context query hits))))
 

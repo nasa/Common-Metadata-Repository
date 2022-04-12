@@ -14,7 +14,8 @@
    [cmr.search.results-handlers.stac-spatial-results-handler :as ssrh]
    [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.url-helper :as url]
-   [cmr.spatial.serialize :as srl]))
+   [cmr.spatial.serialize :as srl]
+   [ring.util.codec :as codec]))
 
 (def ^:private STAC_VERSION
   "Version of STAC specification supported by CMR"
@@ -26,32 +27,32 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :stac]
  [concept-type query]
-  (let [stac-fields ["summary"
-                     "entry-title"
-                     "start-date"
-                     "end-date"
-                     "ords-info"
-                     "ords"]]
-   (distinct (concat stac-fields acl-rhh/collection-elastic-fields))))
+ (let [stac-fields ["summary"
+                    "entry-title"
+                    "start-date"
+                    "end-date"
+                    "ords-info"
+                    "ords"]]
+  (distinct (concat stac-fields acl-rhh/collection-elastic-fields))))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :stac]
  [concept-type query]
-  (let [stac-fields ["granule-ur"
-                     "concept-id"
-                     "collection-concept-id"
-                     "provider-id"
-                     "start-date"
-                     "end-date"
-                     "atom-links"
-                     "orbit-asc-crossing-lon"
-                     "start-lat"
-                     "start-direction"
-                     "end-lat"
-                     "end-direction"
-                     "orbit-calculated-spatial-domains-json"
-                     "cloud-cover"
-                     "ords-info"
-                     "ords"]]
+ (let [stac-fields ["granule-ur"
+                    "concept-id"
+                    "collection-concept-id"
+                    "provider-id"
+                    "start-date"
+                    "end-date"
+                    "atom-links"
+                    "orbit-asc-crossing-lon"
+                    "start-lat"
+                    "start-direction"
+                    "end-lat"
+                    "end-direction"
+                    "orbit-calculated-spatial-domains-json"
+                    "cloud-cover"
+                    "ords-info"
+                    "ords"]]
    (distinct (concat stac-fields acl-rhh/granule-elastic-fields))))
 
 (defn- collection-elastic-result->query-result-item
@@ -226,7 +227,7 @@
                         {:rel "items"
                          :title "Granules in this collection"
                          :type "application/json"
-                         :href (url/stac-request-url context id)}
+                         :href (url/stac-request-url context (str "collection_concept_id=" id))}
                         {:rel "about"
                          :title "HTML metadata for collection"
                          :type "text/html"
@@ -297,6 +298,35 @@
     [context query results]
     (single-result->response context query results)))
 
+(defn stac-post-body
+  "Builds :body map to be merged into the link for POST requests."
+  [base-query-string]
+  (let [body (codec/form-decode base-query-string)]
+    (if (map? body) body {})))
+
+(defn stac-prev-next
+  "Returns link values for prev and next rels depending on the method in the context.
+   For POSTs, a :body is built from the query parameters.
+   :body {
+      :cmr_search_param \"value\"
+   }"
+  [context base-query-string rel value]
+  (if (= (:method context) :get)
+    {:rel rel
+     :method "GET"
+     :href (url/stac-request-url context base-query-string value)}
+    (let [body
+          (into (sorted-map)
+                (util/map-keys->snake_case
+                 (merge (dissoc (:query-params context) :path-w-extension :page_num)
+                        (assoc (stac-post-body base-query-string) :page_num (str value)))))]
+
+      {:rel rel
+       :body body
+       :method "POST"
+       :merge true
+       :href (url/stac-request-url context)})))
+
 (defn- get-fc-links
   "Returns the links for feature collection"
   [context query hits]
@@ -308,11 +338,14 @@
                      (+ offset page-size)
                      page-size)
         allowed-hits (min hits MAX_RESULT_WINDOW)
-        match-1 (str "page_num=" page-num)
-        match-2 (str "page-num=" page-num)
+        match-1 "page_num=\\d+"
+        match-2 "page-num=\\d+"
         page-num-pattern (re-pattern (format "%s&|&%s|%s&|&%s" match-1 match-1 match-2 match-2))
         base-query-string (-> context
                               :query-string
+                              (codec/form-decode)
+                              util/map-keys->snake_case
+                              (codec/form-encode)
                               (string/replace page-num-pattern ""))
         prev-num (when (> page-num 1)
                    (dec page-num))
@@ -324,13 +357,9 @@
              {:rel "root"
               :href (url/search-root context)}
              (when prev-num
-               {:rel "prev"
-                :method "GET"
-                :href (url/stac-request-url context base-query-string prev-num)})
+               (stac-prev-next context base-query-string "prev" prev-num))
              (when next-num
-               {:rel "next"
-                :method "GET"
-                :href (url/stac-request-url context base-query-string next-num)})])))
+               (stac-prev-next context base-query-string "next" next-num))])))
 
 (defn- results->json
   [context query results]

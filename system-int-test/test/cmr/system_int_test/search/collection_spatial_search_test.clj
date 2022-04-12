@@ -41,30 +41,30 @@
 
 (deftest excessive-points-line-spatial-search-test
   (let [whole-world (make-coll :geodetic "whole-world" (m/mbr -180 90 180 -90))
-        too-many-points (slurp (io/resource "too-many-points-line-param.txt")) ; File with 5001 points
         excessive-amount-of-points (slurp (io/resource "large-line-param.txt"))]
     (index/wait-until-indexed)
     (testing "Excessive amount of points"
       (testing "line search"
-        (let [found (search/find-refs
-                     :collection
-                     {:line excessive-amount-of-points
-                      :provider "PROV1"
-                      :page-size 50})]
+        (let [found (search/find-refs :collection
+                                      {:line excessive-amount-of-points
+                                       :provider "PROV1"
+                                       :page-size 50})]
           (is (d/refs-match? [whole-world] found))))
       (testing "invalid lines"
-        (is (= {:errors [(smsg/duplicate-points [[0 (p/point 162 84)] [1 (p/point 162 84)]])] :status 400}
+        (is (= {:errors [(smsg/duplicate-points [[0 (p/point -17 -34)] [1 (p/point -17 -34)]])] :status 400}
                (search/find-refs :collection
-                                 {:line (str "162,84," excessive-amount-of-points) :provider "PROV1"}))))
+                                 {:line (str "-17.0,-34.0," excessive-amount-of-points) :provider "PROV1"}))))
       (testing "invalid encoding"
-        (is (= {:errors [(smsg/shape-decode-msg :line (str "foo," excessive-amount-of-points ",bar"))]
-                :status 400}
-               (search/find-refs :collection
-                                 {:line (str "foo," excessive-amount-of-points ",bar") :provider "PROV1"}))))
+        (let [points (search/make-excessive-points-without-dups 498)]
+          (is (= {:errors [(smsg/shape-decode-msg :line (str "foo," points ",bar"))]
+                  :status 400}
+                 (search/find-refs :collection
+                                   {:line (str "foo," points ",bar") :provider "PROV1"})))))
       (testing "too many points"
-        (is (= {:errors [(smsg/line-too-many-points-msg :line too-many-points)]
-                :status 400}
-               (search/find-refs :collection {:line too-many-points :provider "PROV1"})))))))
+        (let [points (search/make-excessive-points-without-dups 520)]
+          (is (= {:errors [(smsg/line-too-many-points-msg :line points)]
+                  :status 400}
+                 (search/find-refs :collection {:line points :provider "PROV1"}))))))))
 
 (deftest spatial-search-test
   (let [;; Lines
