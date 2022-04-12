@@ -16,9 +16,9 @@ project.
 
 ### Manually installing the Oracle JDBC Jars
 
-Download oracle Jars from Oracle's website. You can usually google for each of the jar files with a search term such as "ojdbc7.jar 12.1.0.2 download" to find the location of each jar file. In each case, be sure you get the version matching the versions specified in the `project.clj`. You need to download the following:
+Download oracle Jars from Oracle's website. You can usually google for each of the jar files with a search term such as "ojdbc8.jar 19c download" to find the location of each jar file. In each case, be sure you get the version matching the versions specified in the `project.clj`. You need to download the following:
 
-  * `ojdbc7.jar` - Orcale JDBC Driver
+  * `ojdbc8.jar` - Orcale JDBC Driver
   * `ucp.jar` - Universal Connection Pool (not bundled with the JDBC driver)
   * `ons.jar` - Oracle Notification Services (should be on the same page as
     the JDBC driver)
