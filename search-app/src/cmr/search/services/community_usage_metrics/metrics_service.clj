@@ -164,14 +164,6 @@
   (let [json (json/generate-string metrics)]
     (metrics-json/validate-metrics-json json)))
 
-(defn- validate-update-community-usage-params
-  "Currently only validates the parameter comprehensive as a boolean."
-  [params]
-  (cpv/validate-parameters
-   nil
-   params
-   [(partial cpv/validate-boolean-param :comprehensive)]))
-
 (defn- aggregate-usage-metrics
   "Combine access counts for entries with the same short-name."
   [metrics]
@@ -181,6 +173,14 @@
     ;; in the rest and add that to the first entry to make the access-counts right
     (map #(util/remove-nil-keys (assoc (first %) :access-count (reduce + (map :access-count %))))
          (vals name-groups))))
+
+(defn- validate-update-community-usage-params
+  "Currently only validates the parameter comprehensive as a boolean."
+  [params]
+  (cpv/validate-parameters
+   nil
+   params
+   [(partial cpv/validate-boolean-param :comprehensive)]))
 
 (defn update-community-usage
   "Create/update the community usage metrics saving them with the humanizers in metadata db. Do not
