@@ -139,15 +139,18 @@
     (errors/throw-service-error :invalid-data "You posted empty content")))
 
 (defn get-community-usage-metrics
-  "Retrieves the current community usage metrics from metadata-db and returns
-   a set of short-names."
+  "Retrieves the current community usage metrics from metadata-db."
   [context]
   (let [metrics-list (:community-usage-metrics
                       (json/decode
                        (:metadata (humanizer-service/fetch-humanizer-concept context))
-                       true))]
-    (into #{} (for [metric-map metrics-list]
-                (:short-name metric-map)))))
+                       true))]))
+
+(defn- community-usage-metrics-list->set
+  "Convert list of {:short-name :access-count} maps into a set of short-names."
+  [metrics-list]
+  (into #{} (for [metric-map metrics-list]
+              (:short-name metric-map))))
 
 (defn- community-usage-csv->community-usage-metrics
   "Validate the community usage csv and convert to a list of community usage metrics."
@@ -191,7 +194,9 @@
   (validate-update-community-usage-params params)
   (let [comprehensive (or (:comprehensive params) "false") ;; set default
         current-metrics (if (= "false" comprehensive)
-                          (get-community-usage-metrics context)
+                          (-> context
+                              (get-community-usage-metrics)
+                              (community-usage-metrics-list->set))
                           #{})
         metrics (community-usage-csv->community-usage-metrics context community-usage-csv current-metrics)
         metrics-agg (aggregate-usage-metrics metrics)]
