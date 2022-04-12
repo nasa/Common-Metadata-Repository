@@ -141,10 +141,7 @@
 (defn get-community-usage-metrics
   "Retrieves the current community usage metrics from metadata-db."
   [context]
-  (let [metrics-list (:community-usage-metrics
-                      (json/decode
-                       (:metadata (humanizer-service/fetch-humanizer-concept context))
-                       true))]))
+  (:community-usage-metrics (json/decode (:metadata (humanizer-service/fetch-humanizer-concept context)) true)))
 
 (defn- community-usage-metrics-list->set
   "Convert list of {:short-name :access-count} maps into a set of short-names."
