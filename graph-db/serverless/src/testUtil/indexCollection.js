@@ -34,7 +34,8 @@ const relatedUrlObj = (relatedUrl) => ({
   URLContentType: 'PublicationURL',
   Type: 'VIEW RELATED INFORMATION',
   Subtype: 'GENERAL DOCUMENTATION',
-  URL: relatedUrl
+  URL: relatedUrl,
+  Description: `Description for ${relatedUrl}`
 })
 
 /**
