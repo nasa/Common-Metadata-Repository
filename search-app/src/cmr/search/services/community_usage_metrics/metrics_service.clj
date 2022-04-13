@@ -147,8 +147,7 @@
 (defn- community-usage-metrics-list->set
   "Convert list of {:short-name :access-count} maps into a set of short-names."
   [metrics-list]
-  (set (for [metric-map metrics-list]
-         (:short-name metric-map))))
+  (set (map :short-name  metrics-list)))
 
 (defn- community-usage-csv->community-usage-metrics
   "Validate the community usage csv and convert to a list of community usage metrics."
@@ -159,14 +158,13 @@
          csv-lines)))
 
 (defn- aggregate-usage-metrics
-  "Combine access counts for entries with the same short-name."
+  "Combine access-counts for entries with the same short-name."
   [metrics]
-  ;; name-groups is map of short-names [entries that match short-name]
-  (let [name-groups (group-by (juxt :short-name) metrics)] ; Group by short-name and version
-    ;; The first entry in each list has the short-name and version we want so just add up the access-counts
-    ;; in the rest and add that to the first entry to make the access-counts right
-    (map #(util/remove-nil-keys (assoc (first %) :access-count (reduce + (map :access-count %))))
-         (vals name-groups))))
+  (let [count-map (reduce (fn [m {:keys [short-name access-count]}]
+                            (update m short-name (fnil + 0) access-count))
+                          {}
+                          metrics)]
+    (map (fn [[k v]] {:short-name k :access-count v}) count-map)))
 
 (defn- validate-metrics
   "Validate metrics against the JSON schema validation"
