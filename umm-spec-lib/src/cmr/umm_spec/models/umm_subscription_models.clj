@@ -8,6 +8,9 @@
    ;; The name of a subscription.
    Name
 
+  ;;  The type of a subscription.
+   Type
+
    ;; The userid of the subscriber.
    SubscriberId
 
@@ -19,5 +22,10 @@
 
    ;; The search query for the granules that matches the subscription.
    Query
+
+   ;; Requires the user to add in schema information into every service record. It includes the
+   ;; schema's name, version, and URL location. The information is controlled through enumerations
+   ;; at the end of this schema.
+   MetadataSpecification
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-Sub)
