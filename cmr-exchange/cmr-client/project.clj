@@ -42,7 +42,7 @@
                     :plugins [[jonase/eastwood "0.2.5"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.1"]
-                              [lein-kibit "0.1.6"]]}
+                              [lein-kibit "0.1.8"]]}
              :cljs {:source-paths ^:replace ["src/cljs" "src/cljc"]}
              :docs {:dependencies [[clojang/codox-theme "0.2.0-SNAPSHOT"]]
                     :plugins [[lein-codox "0.10.3"]
