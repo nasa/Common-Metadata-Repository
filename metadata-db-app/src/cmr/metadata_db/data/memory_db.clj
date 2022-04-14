@@ -13,6 +13,7 @@
    [cmr.metadata-db.data.oracle.concepts.tag :as tag]
    [cmr.metadata-db.data.oracle.concepts]
    [cmr.metadata-db.data.providers :as providers]
+   [cmr.metadata-db.data.generic-docs :as generic-docs]
    [cmr.metadata-db.data.util :refer [INITIAL_CONCEPT_NUM]]
    [cmr.metadata-db.services.provider-validation :as pv])
   (:import
@@ -579,6 +580,21 @@
 (extend MemoryStore
         providers/ProvidersStore
         provider-store-behaviour)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Metadata DB GenericDocsStore Implementation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn save-document
+  [db {:keys [document-id] :as document}]
+  (swap! (:documents-atom db) assoc document-id document))
+
+(def generic-doc-store-behaviour
+  {:save-document save-document})
+
+(extend MemoryStore
+  generic-docs/GenericDocsStore
+  generic-doc-store-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MemoryStore Constructor
