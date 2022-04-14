@@ -397,7 +397,7 @@
    :NumberOfOrbits 5})
 
 ;; SwathWidth doesn't exist, convert the largest Footprint to SwathWidth.
-(def OrbitParameters_1_17_0-2-Down
+(def OrbitParameters_1_17_0-3-Down
   {:OrbitPeriod 2
    :OrbitPeriodUnit "Decimal Minute"
    :InclinationAngle 3
@@ -408,7 +408,7 @@
    :Footprints [{:Footprint 6 :FootprintUnit "Kilometer"}
                 {:Footprint 5000 :FootprintUnit "Meter"}]})
 
-(def OrbitParameters_1_16_7-2-Down
+(def OrbitParameters_1_16_7-3-Down
   {:SwathWidth 6
    :Period 2
    :InclinationAngle 3
