@@ -2982,18 +2982,18 @@
       (is (= expected result)))
 
     "Migrating without StartCircularLatitude"
-    {:OrbitParameters OrbitParameters_1_17_0-1-Up
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-1-Up}
      :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
                              :Name "UMM-C",
                              :Version "1.17.0"}}
-    {:OrbitParameters OrbitParameters_1_16_7-1-Up}
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-1-Up}}
 
     "Migrating with StartCircularLatitude"
-    {:OrbitParameters OrbitParameters_1_17_0-2-Up
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-2-Up}
      :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
                              :Name "UMM-C",
                              :Version "1.17.0"}}     
-    {:OrbitParameters OrbitParameters_1_16_7-2-Up}))
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-2-Up}}))
 
 (deftest migrate-1-17-0-to-1-16-7
   "Test the migration of collections from 1.17.0 to 1.16.7."
@@ -3003,23 +3003,23 @@
       (is (= expected result)))
 
     "Migrating with SwathWidth in same unit"
-    {:OrbitParameters OrbitParameters_1_16_7-1-Down} 
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-1-Down}}
     {:StandardProduct true
-     :OrbitParameters OrbitParameters_1_17_0-1-Down
+     :SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-1-Down}
      :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
                              :Name "UMM-C",
                              :Version "1.17.0"}}
 
     "Migrating with SwathWidth in different unit"
-    {:OrbitParameters OrbitParameters_1_16_7-2-Down}
-    {:OrbitParameters OrbitParameters_1_17_0-2-Down
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-2-Down}}
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-2-Down}
      :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
                              :Name "UMM-C",
                              :Version "1.17.0"}}
 
     "Migrating with SwathWidth being the largest Footprint"
-    {:OrbitParameters OrbitParameters_1_16_7-3-Down}
-    {:OrbitParameters OrbitParameters_1_17_0-3-Down
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-3-Down}}
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-3-Down}
      :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
                              :Name "UMM-C",
                              :Version "1.17.0"}}))
