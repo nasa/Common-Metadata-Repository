@@ -14,9 +14,9 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/oracle-lib"
   ;; Dynamically include extra repositories in the project definition if configured.
   :repositories [["releases" ~extra-repository]]
-  :dependencies [[com.oracle/ojdbc8 "19.13.0.0"]
-                 [com.oracle/ons "19.13.0.0"]
-                 [com.oracle/ucp "19.13.0.0"]
+  :dependencies [[com.oracle/ojdbc8 "19.14.0.0"]
+                 [com.oracle/ons "19.14.0.0"]
+                 [com.oracle/ucp "19.14.0.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/java.jdbc "0.4.2"]
