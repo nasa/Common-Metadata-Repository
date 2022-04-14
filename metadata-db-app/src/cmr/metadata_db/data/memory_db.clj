@@ -13,7 +13,7 @@
    [cmr.metadata-db.data.oracle.concepts.tag :as tag]
    [cmr.metadata-db.data.oracle.concepts]
    [cmr.metadata-db.data.providers :as providers]
-   [cmr.metadata-db.data.generic-docs :as generic-docs]
+   [cmr.metadata-db.data.generic-documents :as gdoc]
    [cmr.metadata-db.data.util :refer [INITIAL_CONCEPT_NUM]]
    [cmr.metadata-db.services.provider-validation :as pv])
   (:import
@@ -585,15 +585,44 @@
 ;; Metadata DB GenericDocsStore Implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; CMR-8181
+;; TO-DO: really the below is just stubs, bc we need to decide
+;; are we going to make a new :documents-atom or use the 
+;; :concepts-atom that the others use
+
 (defn save-document
   [db {:keys [document-id] :as document}]
   (swap! (:documents-atom db) assoc document-id document))
 
+(defn get-documents
+  [db]
+  (vals @(:documents-atom db)))
+
+(defn get-document
+  [db document-id]
+  (@(:documents-atom db) document-id))
+
+(defn update-document
+  [db {:keys [document-id] :as document}]
+  (swap! (:documents-atom db) assoc document-id document))
+
+(defn delete-document
+  [db document])
+
+(defn reset-documents
+  [db]
+  (reset! (:documents-atom db) {}))
+
 (def generic-doc-store-behaviour
-  {:save-document save-document})
+  {:save-document save-document
+   :get-documents get-documents
+   :get-document get-document
+   :update-document update-document
+   :delete-document delete-document
+   :reset-documents reset-documents})
 
 (extend MemoryStore
-  generic-docs/GenericDocsStore
+  gdoc/GenericDocsStore
   generic-doc-store-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

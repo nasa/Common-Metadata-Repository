@@ -22,12 +22,14 @@
    "Updates an existing document in the database based on the
     document map's document-id value.")
   
+  ;; CMR-8181
   ;; TO-DO -- not sure about 'document instances' language below
   (delete-document
    [db document]
    "Remove a document from the database completely, including all of its
    document instances.")
   
+  ;; CMR-8181
   ;; TO-DO -- not sure about 'document instances' language below
   (reset-documents
    [db]
