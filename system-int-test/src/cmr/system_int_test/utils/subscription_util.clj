@@ -22,10 +22,13 @@
    [cmr.umm.echo10.echo10-core :as echo10]
    [cmr.umm-spec.versioning :as versioning]))
 
-(def versioned-content-type
-  "A versioned default content type used in the tests."
+(def ^:private latest-umm-sub-verison versioning/current-subscription-version)
+
+(defn- versioned-content-type
+  "A versioned content type used in the tests."
+  [umm-sub-version]
   (mime-types/with-version
-    mime-types/umm-json versioning/current-subscription-version))
+    mime-types/umm-json umm-sub-version))
 
 (def default-ingest-opts
   "Default HTTP client options for use when ingesting subscriptions using the functions below."
@@ -76,10 +79,24 @@
   ([metadata-attrs attrs]
    (make-subscription-concept metadata-attrs attrs 0))
   ([metadata-attrs attrs idx]
-   (-> (merge {:provider-id "PROV1"} metadata-attrs)
-       (data-umm-sub/subscription-concept idx)
-       (assoc :format versioned-content-type)
+   (make-subscription-concept metadata-attrs attrs 0 latest-umm-sub-verison))
+  ([metadata-attrs attrs idx umm-sub-version]
+   (-> (merge {:provider-id "PROV1" :Name (str "Name " idx)} metadata-attrs)
+       (data-umm-sub/subscription-concept umm-sub-version)
+       (assoc :format (versioned-content-type umm-sub-version))
        (merge attrs))))
+
+(defn make-subscription-concept-with-umm-version
+  "Convenience function for creating a subscription concept with 
+   a previous UMM-Sub version."
+  ([version]
+   (make-subscription-concept {} {} 0 version))
+  ([version metadata-attrs]
+   (make-subscription-concept metadata-attrs {} 0 version))
+  ([version metadata-attrs attrs]
+   (make-subscription-concept metadata-attrs attrs 0 version))
+  ([version metadata-attrs attrs idx]
+   (make-subscription-concept metadata-attrs attrs idx version)))
 
 (defn ingest-subscription
   "A convenience function for ingesting a subscription during tests."

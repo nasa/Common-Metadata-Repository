@@ -8,7 +8,7 @@
    ;; The name of a subscription.
    Name
 
-  ;;  The type of a subscription.
+   ;;  The type of a subscription.
    Type
 
    ;; The userid of the subscriber.
@@ -29,3 +29,18 @@
    MetadataSpecification
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-Sub)
+
+;; This object requires any metadata record that is validated by this schema to provide information
+;; about the schema.
+(defrecord MetadataSpecificationType
+  [
+   ;; This element represents the URL where the schema lives. The schema can be downloaded.
+   URL
+
+   ;; This element represents the name of the schema.
+   Name
+
+   ;; This element represents the version of the schema.
+   Version
+  ])
+(record-pretty-printer/enable-record-pretty-printing MetadataSpecificationType)
