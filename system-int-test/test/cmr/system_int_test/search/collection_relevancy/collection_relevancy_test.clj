@@ -25,7 +25,7 @@
                        hu/save-sample-humanizers-fixture]))
 
 (def sample-usage-csv
-  (str "Product,Version,Hosts\n"
+  (str "Product,ProductVersion,Hosts\n"
        "Usage-10,3,10\n"
        "Usage-100,1,100\n"
        "Usage-30,2,30\n"
