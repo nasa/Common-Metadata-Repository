@@ -187,7 +187,11 @@
   (checking "collection round tripping" 100
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
-    (let [umm-record (js/parse-umm-c
+    (let [;; CMR-8128 Before we translate v1.17.0, remove OrbitParameters and StandardProduct
+          umm-record (-> umm-record
+                         (update-in [:SpatialExtent] dissoc :OrbitParameters)
+                         (dissoc :StandardProduct))
+          umm-record (js/parse-umm-c
                         (assoc umm-record
                                :DataDates [{:Date (t/date-time 2012)
                                             :Type "CREATE"}
@@ -197,14 +201,7 @@
           actual (xml-round-trip :collection metadata-format umm-record)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
-          actual (convert-to-sets actual)
-          ;; CMR-8128 Before we translate v1.17.0, remove OrbitParameters and StandardProduct
-          expected (-> expected
-                       (update-in [:SpatialExtent] dissoc :OrbitParameters)
-                       (dissoc :StandardProduct))
-          actual (-> actual
-                     (update-in [:SpatialExtent] dissoc :OrbitParameters)
-                     (dissoc :StandardProduct))]
+          actual (convert-to-sets actual)]
       (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
 
@@ -222,7 +219,11 @@
   (checking-with-seed "collection round tripping seed" 100 1496683985472
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
-    (let [umm-record (js/parse-umm-c
+    (let [;; CMR-8128 Before we translate v1.17.0, remove OrbitParameters and StandardProduct
+          umm-record (-> umm-record
+                         (update-in [:SpatialExtent] dissoc :OrbitParameters)
+                         (dissoc :StandardProduct))
+          umm-record (js/parse-umm-c
                       (assoc umm-record
                              :DataDates [{:Date (t/date-time 2012)
                                           :Type "CREATE"}
@@ -232,14 +233,7 @@
           actual (xml-round-trip :collection metadata-format umm-record)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
-          actual (convert-to-sets actual)
-          ;; CMR-8128 Before we translate v1.17.0, remove OrbitParameters and StandardProduct
-          expected (-> expected
-                       (update-in [:SpatialExtent] dissoc :OrbitParameters)
-                       (dissoc :StandardProduct))
-          actual (-> actual
-                     (update-in [:SpatialExtent] dissoc :OrbitParameters)
-                     (dissoc :StandardProduct))]
+          actual (convert-to-sets actual)]
       (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
 
@@ -255,7 +249,9 @@
 (deftest iso19115-projects-keywords
   (checking "Converting iso19115 project keywords" 100
     [umm-record umm-gen/umm-c-generator]
-    (let [metadata-xml (core/generate-metadata test-context umm-record :iso19115)
+    (let [;; CMR-8128 Before OrbitParameters translation for 1.17.0, remove it from umm-record
+          umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
+          metadata-xml (core/generate-metadata test-context umm-record :iso19115)
           projects (:Projects (core/parse-metadata test-context :collection :iso19115 metadata-xml))
           expected-projects-keywords (seq (map iu/generate-title projects))]
       (is (= expected-projects-keywords
