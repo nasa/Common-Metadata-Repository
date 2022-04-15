@@ -99,7 +99,9 @@
                           :DataDates [{:Date (t/date-time 2012)
                                        :Type "CREATE"}
                                       {:Date (t/date-time 2013)
-                                       :Type "UPDATE"}]))]]
+                                       :Type "UPDATE"}]))
+                  ;;CMR-8128 Before we translate v1.17.0 OrbitParameters, remove it from the umm-c-record
+                  umm (update-in umm [:SpatialExtent] dissoc :OrbitParameters)]]
       ;; input file is valid
       (check-failure
        (is (empty? (core/validate-xml :collection metadata-format metadata))
@@ -137,7 +139,14 @@
                                                 expected))
                     actual (convert-to-sets (if (= :dif target-format)
                                               (remove-vertical-spatial-domains actual)
-                                              actual))]]
+                                              actual))
+                    ;;CMR-8128 Before we translate v1.17.0 OrbitParameters, remove it from the umm-c-record
+                    expected (-> expected
+                                 (update-in [:SpatialExtent] dissoc :OrbitParameters)
+                                 (dissoc :StandardProduct))
+                    actual (-> actual
+                               (update-in [:SpatialExtent] dissoc :OrbitParameters)
+                               (dissoc :StandardProduct))]]
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
@@ -149,13 +158,22 @@
   (doseq [metadata-format tested-collection-formats]
     (testing (str metadata-format)
       (let [expected (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
-            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)]
+            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)
+            ;;CMR-8128 Before we translate v1.17.0 OrbitParameters, remove it from the umm-c-record
+            expected (-> expected
+                         (update-in [:SpatialExtent] dissoc :OrbitParameters)
+                         (dissoc :StandardProduct))
+            actual (-> actual
+                       (update-in [:SpatialExtent] dissoc :OrbitParameters)
+                       (dissoc :StandardProduct))]
         (is (= (convert-to-sets expected) (convert-to-sets actual)))))))
 
 (deftest validate-umm-json-example-record
   ;; Test that going from any format to UMM generates valid UMM.
   (doseq [[format filename] collection-format-examples
-          :let [umm-c-record (xml-round-trip :collection format expected-conversion/example-collection-record)]]
+          :let [umm-c-record (xml-round-trip :collection format expected-conversion/example-collection-record)
+                ;;CMR-8128 Before we translate v1.17.0 OrbitParameters, remove it from the umm-c-record
+                umm-c-record (update-in umm-c-record [:SpatialExtent] dissoc :OrbitParameters)]]
     (testing (str format " to :umm-json")
       (is (empty? (generate-and-validate-xml :collection :umm-json umm-c-record))))))
 
@@ -179,7 +197,14 @@
           actual (xml-round-trip :collection metadata-format umm-record)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
-          actual (convert-to-sets actual)]
+          actual (convert-to-sets actual)
+          ;; CMR-8128 Before we translate v1.17.0, remove OrbitParameters and StandardProduct
+          expected (-> expected
+                       (update-in [:SpatialExtent] dissoc :OrbitParameters)
+                       (dissoc :StandardProduct))
+          actual (-> actual
+                     (update-in [:SpatialExtent] dissoc :OrbitParameters)
+                     (dissoc :StandardProduct))]
       (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
 
@@ -207,7 +232,14 @@
           actual (xml-round-trip :collection metadata-format umm-record)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
-          actual (convert-to-sets actual)]
+          actual (convert-to-sets actual)
+          ;; CMR-8128 Before we translate v1.17.0, remove OrbitParameters and StandardProduct
+          expected (-> expected
+                       (update-in [:SpatialExtent] dissoc :OrbitParameters)
+                       (dissoc :StandardProduct))
+          actual (-> actual
+                     (update-in [:SpatialExtent] dissoc :OrbitParameters)
+                     (dissoc :StandardProduct))]
       (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
 

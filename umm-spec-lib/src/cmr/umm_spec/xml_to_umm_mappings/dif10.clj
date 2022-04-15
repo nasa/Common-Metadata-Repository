@@ -10,6 +10,7 @@
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [without-default-value-of]]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
@@ -20,6 +21,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
    [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
+   [cmr.umm-spec.versioning :as umm-spec-versioning]
    [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
 (def coll-progress-mapping
@@ -363,7 +365,12 @@
                                      :S3CredentialsAPIEndpoint
                                        (value-of ddi "S3CredentialsAPIEndpoint")
                                      :S3CredentialsAPIDocumentationURL
-                                       (value-of ddi "S3CredentialsAPIDocumentationURL")})})
+                                       (value-of ddi "S3CredentialsAPIDocumentationURL")})
+    :MetadataSpecification (umm-c/map->MetadataSpecificationType
+                            {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                        umm-spec-versioning/current-collection-version),
+                             :Name "UMM-C"
+                             :Version umm-spec-versioning/current-collection-version})}) 
 
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document. The :sanitize? option

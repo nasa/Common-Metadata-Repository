@@ -9,13 +9,15 @@
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.related-url :as ru]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.spatial :as spatial]
-   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element])
+   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
+   [cmr.umm-spec.versioning :as umm-spec-versioning])
   (:import
    (clojure.data.xml Element)))
 
@@ -293,7 +295,12 @@
                                      :S3CredentialsAPIEndpoint
                                        (value-of ddi "S3CredentialsAPIEndpoint")
                                      :S3CredentialsAPIDocumentationURL
-                                       (value-of ddi "S3CredentialsAPIDocumentationURL")})})
+                                       (value-of ddi "S3CredentialsAPIDocumentationURL")})
+   :MetadataSpecification (umm-c/map->MetadataSpecificationType
+                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                        umm-spec-versioning/current-collection-version),
+                              :Name "UMM-C"
+                              :Version umm-spec-versioning/current-collection-version})})
 
 (defn echo10-xml-to-umm-c
   "Returns UMM-C collection record from ECHO10 collection XML document. The :sanitize? option

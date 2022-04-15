@@ -627,7 +627,12 @@
                           :OtherCitationDetails "Other Citation Details"
                           :OnlineResource {:Linkage "http://www.foo.com"
                                            :Name "Data Set Citation"
-                                           :Description "Data Set Citation"}}]})
+                                           :Description "Data Set Citation"}}]
+   :MetadataSpecification (umm-coll-models/map->MetadataSpecificationType
+                           {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                       vers/current-collection-version),
+                            :Name "UMM-C"
+                            :Version vers/current-collection-version})})
 
 (def example-collection-record
   "An example record with fields supported by most formats."
