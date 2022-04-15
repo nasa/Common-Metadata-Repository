@@ -81,8 +81,34 @@
                              " WHERE id = ?")
                         id]))))
 
+;; untested -- will probably have same issues as above.
 (defn update-document
-  [db document])
+  [db {:keys [id concept_id native_id provider_id document_name schema format
+              mime_type metadata revision_id revision_date created_at deleted
+              user_id transaction_id]}]
+  (j/update! db
+             :cmr_generic_documents
+             {:id id
+              :concept_id concept_id
+              :native_id native_id
+              :provider-id provider_id
+              :document_name document_name
+              :schema schema
+              :format format ;; concepts convert this to mimetype in the get, but we already have mimetype
+              :mime_type mime_type
+              :metadata (when metadata (cutil/gzip-blob->string metadata))
+              :revision_id (int revision_id)
+                          ;; these cause this error:
+                          ;; ; Error printing return value at cmr.common.services.errors/internal-error! (errors.clj:61).
+                          ;; ; Called db->oracle-conn with connection that was not within a db transaction. It must be called from within call j/with-db-transaction
+                          ;; however, if you try to wrap them with j/with-db-transaction the repl BLOWS UP -- if you try it, wait for it after first error
+              :revision_date (oracle/oracle-timestamp->str-time db revision_date)
+              :created_at (when created_at
+                            (oracle/oracle-timestamp->str-time db created_at))
+              :deleted (not= (int deleted) 0)
+              :user_id user_id
+              :transaction_id transaction_id}
+             ["id = ?" id]))
 
 (defn delete-document
   [db document])
