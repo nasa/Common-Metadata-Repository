@@ -11,9 +11,23 @@
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc
                                         delete as]]
    [clj-time.coerce :as cr]
-   [cmr.common.date-time-parser :as p])
+   [cmr.common.date-time-parser :as p]
+   [clojure.java.io :as io])
   (:import
    (cmr.oracle.connection OracleStore)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Utilities -- Prototype
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; for inserting into BLOB field
+(defn file->bytes [file]
+  (with-open [xin (io/input-stream file)
+              xout (java.io.ByteArrayOutputStream.)]
+    (io/copy xin xout)
+    (.toByteArray xout)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn save-document
   [db document]
@@ -53,17 +67,19 @@
 
   (def db (get-in user/system [:apps :metadata-db :db]))
 
-  ;; save-document
-  ; Execution error (BatchUpdateException) at oracle.jdbc.driver.OraclePreparedStatement/executeLargeBatch (OraclePreparedStatement.java:9723).
-  ; ORA-00926: missing VALUES keyword
-  (j/insert! db
-    :cmr-generic-documents
-    ["id" "concept_id" "native_id" "provider_id" "document_name" "schema" "format" 
-     "mime_type" "metadata" "revision_id" "revision_date" "created_at" "deleted" 
-     "user_id" "transaction_id"]
-    [1 "conceptid" "nativeid" "PROV1" "docname" "myschema" "myformat" 
-     "application/json" "mymetadata" 1 (cr/to-sql-time (p/parse-datetime "2020")) 
-     (cr/to-sql-time (p/parse-datetime "2020")) 1 "userid" 1])
-  
+  ;; io starts looking from the dev-system/ directory bc that's where the REPL starts
+  (def my-file (io/file "../metadata-db-app/resources" "sample_tool.json"))
+  (def bytes-blob (file->bytes my-file))
 
-)
+  ;; save-document
+  (j/insert! db
+             :cmr_generic_documents
+             ["id" "concept_id" "native_id" "provider_id" "document_name" "schema" "format"
+              "mime_type" "metadata" "revision_id" "revision_date" "created_at" "deleted"
+              "user_id" "transaction_id"]
+             [1 "myconceptid" "mynativeid" "PROV1" "mydocname" "myschema" "myformat"
+              "application/json" bytes-blob 1 (cr/to-sql-time (p/parse-datetime "2020"))
+              (cr/to-sql-time (p/parse-datetime "2020")) 1 "myuserid" 1])
+
+
+  )
