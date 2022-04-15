@@ -102,12 +102,12 @@
           (errors/throw-service-error :invalid-data
                                       (format (str "Error parsing 'Hosts' CSV Data. "
                                                    "Hosts must be an integer. "
-                                                   "Csv line entry: [%s]")
+                                                   "Csv line entry: %s")
                                               csv-line))))
       (errors/throw-service-error :invalid-data
                                   (format (str "Error parsing 'Hosts' CSV Data. "
                                                "Hosts may not be empty. "
-                                               "Csv line entry: [%s]")
+                                               "Csv line entry: %s")
                                           csv-line)))))
 
 (defn- csv-entry->community-usage-metric
@@ -140,9 +140,12 @@
     (errors/throw-service-error :invalid-data "You posted empty content")))
 
 (defn get-community-usage-metrics
-  "Retrieves the current community usage metrics from metadata-db."
+  "Retrieves the current community usage metrics from metadata-db.
+   Returns an empty set if unable to retrieve metrics."
   [context]
-  (:community-usage-metrics (json/decode (:metadata (humanizer-service/fetch-humanizer-concept context)) true)))
+  (try
+    (:community-usage-metrics (json/decode (:metadata (humanizer-service/fetch-humanizer-concept context)) true))
+    (catch Exception e #{})))
 
 (defn- community-usage-metrics-list->set
   "Convert list of {:short-name :access-count} maps into a set of short-names."
@@ -154,8 +157,9 @@
   [context community-usage-csv current-metrics]
   (let [{:keys [csv-lines product-col hosts-col]} (validate-and-read-csv community-usage-csv)
         short-name-cache (new java.util.HashMap)]
-    (map #(csv-entry->community-usage-metric context % product-col hosts-col current-metrics short-name-cache)
-         csv-lines)))
+    (remove nil?
+            (map #(csv-entry->community-usage-metric context % product-col hosts-col current-metrics short-name-cache)
+                 csv-lines))))
 
 (defn- aggregate-usage-metrics
   "Combine access-counts for entries with the same short-name."

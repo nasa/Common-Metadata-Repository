@@ -20,13 +20,10 @@
 
 (def sample-usage-data
   [{:short-name "AMSR-L1A"
-    :version "3"
     :access-count 4}
    {:short-name "AG_VIRTUAL"
-    :version "3.2"
     :access-count 6}
    {:short-name "MAPSS_MOD04_L2"
-    :version "N/A"
     :access-count 87}])
 
 (deftest update-community-metrics-test
@@ -67,7 +64,7 @@
         (is (= existing-concept-id concept-id))
         (is (= 2 revision-id))
         (humanizer-util/assert-humanizers-saved
-         {:community-usage-metrics [{:short-name "AST_09XT" :version "3" :access-count 156}]}
+         {:community-usage-metrics [{:short-name "AST_09XT" :access-count 156}]}
          "admin"
          concept-id
          revision-id)))))
@@ -241,7 +238,7 @@
                 "Product,Version,Hosts\n,4,64"))))
       (testing "Empty Hosts"
         (is (= {:status 422
-                :errors ["Error parsing 'Hosts' CSV Data for collection [AMSR-L1A], version [4]. Hosts may not be empty."]}
+                :errors ["Error parsing 'Hosts' CSV Data. Hosts may not be empty. Csv line entry: [\"AMSR-L1A\" \"4\" \"\"]"]}
                (humanizer-util/update-community-usage-metrics
                 admin-update-token
                 "Product,Version,Hosts\nAMSR-L1A,4,")))))
@@ -254,17 +251,17 @@
                 admin-update-token
                 (format "Product,Version,Hosts\n%s,3,4" long-value))))))
 
-    (testing "Maximum version length validations"
-      (let [long-value (apply str (repeat 21 "x"))]
-        (is (= {:status 400
-                :errors ["#/0/version: expected maxLength: 20, actual: 21"]}
-               (humanizer-util/update-community-usage-metrics
-                admin-update-token
-                (format "Product,Version,Hosts\nAST_09XT,%s,4" long-value))))))
+    ;; (testing "Maximum version length validations"
+    ;;   (let [long-value (apply str (repeat 21 "x"))]
+    ;;     (is (= {:status 400
+    ;;             :errors ["#/0/version: expected maxLength: 20, actual: 21"]}
+    ;;            (humanizer-util/update-community-usage-metrics
+    ;;             admin-update-token
+    ;;             (format "Product,Version,Hosts\nAST_09XT,%s,4" long-value))))))
 
     (testing "Non-integer value for hosts (access-count)"
       (is (= {:status 422
-              :errors ["Error parsing 'Hosts' CSV Data for collection [AMSR-L1A], version [3]. Hosts must be an integer."]}
+              :errors ["Error parsing 'Hosts' CSV Data. Hosts must be an integer. Csv line entry: [\"AMSR-L1A\" \"3\" \"x\"]"]}
              (humanizer-util/update-community-usage-metrics
               admin-update-token
               "Product,Version,Hosts\nAMSR-L1A,3,x"))))))
@@ -274,37 +271,36 @@
    and version"
   "Product,Version,Hosts\nAMSR-L1A,3,4\nAMSR-L1A,3,6\nAMSR-L1A,N/A,87\nAMSR-L1A,N/A,10\nMAPSS_MOD04_L2,4,12")
 
-(def sample-aggregation-data
- "Expected sample aggregated data from sample-aggregation-csv"
- [{:short-name "AMSR-L1A"
-   :version "3"
-   :access-count 10}
-  {:short-name "AMSR-L1A"
-   :version "N/A"
-   :access-count 97}
-  {:short-name "MAPSS_MOD04_L2"
-   :version "4"
-   :access-count 12}])
+;; (def sample-aggregation-data
+;;  "Expected sample aggregated data from sample-aggregation-csv"
+;;  [{:short-name "AMSR-L1A"
+;;    :version "3"
+;;    :access-count 10}
+;;   {:short-name "AMSR-L1A"
+;;    :version "N/A"
+;;    :access-count 97}
+;;   {:short-name "MAPSS_MOD04_L2"
+;;    :version "4"
+;;    :access-count 12}])
 
-;; Test that metrics are combined appropriately when short-name and version match for different
-;; CSV entries.
-(deftest aggregate-community-metrics-test
-
-  (testing "Successful community usage aggregation")
-  (let [admin-update-group-concept-id (echo-util/get-or-create-group (system/context) "admin-update-group")
-        _  (echo-util/grant-group-admin (system/context) admin-update-group-concept-id :update)
-        admin-update-token (echo-util/login (system/context) "admin" [admin-update-group-concept-id])
-        {:keys [status concept-id revision-id]} (humanizer-util/update-community-usage-metrics
-                                                 admin-update-token
-                                                 sample-aggregation-csv)]
-    (is (= 201 status))
-    (is concept-id)
-    (is (= 1 revision-id))
-    (humanizer-util/assert-humanizers-saved
-     {:community-usage-metrics sample-aggregation-data}
-     "admin"
-     concept-id
-     revision-id)))
+;; ;; Test that metrics are combined appropriately when short-name and version match for different
+;; ;; CSV entries.
+;; (deftest aggregate-community-metrics-test
+;;   (testing "Successful community usage aggregation")
+;;   (let [admin-update-group-concept-id (echo-util/get-or-create-group (system/context) "admin-update-group")
+;;         _  (echo-util/grant-group-admin (system/context) admin-update-group-concept-id :update)
+;;         admin-update-token (echo-util/login (system/context) "admin" [admin-update-group-concept-id])
+;;         {:keys [status concept-id revision-id]} (humanizer-util/update-community-usage-metrics
+;;                                                  admin-update-token
+;;                                                  sample-aggregation-csv)]
+;;     (is (= 201 status))
+;;     (is concept-id)
+;;     (is (= 1 revision-id))
+;;     (humanizer-util/assert-humanizers-saved
+;;      {:community-usage-metrics sample-aggregation-data}
+;;      "admin"
+;;      concept-id
+;;      revision-id)))
 
 (deftest commas-in-access-count-test
   (testing "Successful community usage aggregation")

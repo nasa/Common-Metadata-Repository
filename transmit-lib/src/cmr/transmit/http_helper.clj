@@ -93,6 +93,7 @@
         ;; Validate that a connection manager is always present. This can cause poor performance if not.
         _ (when-not (:connection-manager connection-params)
             (errors/internal-error! (format "No connection manager created for [%s] in current application" app-name)))
+        _ (println (url-fn conn) method use-system-token? http-options)
 
         response (http-response->raw-response
                    (client/request
@@ -102,7 +103,8 @@
                              :throw-exceptions false}
                             (when use-system-token?
                               {:headers {config/token-header (config/echo-system-token)}})
-                            http-options)))]
+                            http-options)))
+        _ (println response)]
     (response-handler request response)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
