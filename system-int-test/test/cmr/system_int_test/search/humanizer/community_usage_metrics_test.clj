@@ -254,13 +254,14 @@
                 admin-update-token
                 (format "Product,ProductVersion,Hosts\n%s,3,4" long-value))))))
 
-    ;; (testing "Maximum version length validations"
-    ;;   (let [long-value (apply str (repeat 21 "x"))]
-    ;;     (is (= {:status 400
-    ;;             :errors ["#/0/version: expected maxLength: 20, actual: 21"]}
-    ;;            (humanizer-util/update-community-usage-metrics
-    ;;             admin-update-token
-    ;;             (format "Product,Version,Hosts\nAST_09XT,%s,4" long-value))))))
+    (testing "Version is removed if length exceeds 20 characters"
+      (let [long-value (apply str (repeat 21 "x"))
+            {:keys [status concept-id revision-id]} (humanizer-util/update-community-usage-metrics
+                                                     admin-update-token
+                                                     (format "Product,ProductVersion,Hosts\nAST_09XT,%s,4" long-value))
+            {:keys [status body]} (humanizer-util/get-community-usage-metrics)]
+        (is (= status 200))
+        (is (= body [{:short-name "AST_09XT" :access-count 4}]))))
 
     (testing "Non-integer value for hosts (access-count)"
       (is (= {:status 422
