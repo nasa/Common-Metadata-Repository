@@ -20,7 +20,7 @@
    [cmr.umm.collection.entry-id :as eid]))
 
 (def usage-csv
-  (str "Product,Version,Hosts\n"
+  (str "Product,ProductVersion,Hosts\n"
        "alpha,1,10\n"
        "alpha,2,10\n"
        "alpha,3,30\n"

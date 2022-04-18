@@ -25,7 +25,7 @@
   [csv-header]
   (let [csv-header (mapv str/trim csv-header)]
     {:product-col (.indexOf csv-header "Product")
-     :version-col (.indexOf csv-header "Version")
+     :version-col (.indexOf csv-header "ProductVersion")
      :hosts-col (.indexOf csv-header "Hosts")}))
 
 (defn- read-csv-column
@@ -85,7 +85,7 @@
       (do
         (warn (format (str "While constructing community metrics humanizer, "
                            "could not find corresponding collection when searching for the term %s. "
-                           "Csv line entry: %s")
+                           "CSV line entry: %s")
                       product
                       csv-line))
         product))))
@@ -102,20 +102,28 @@
           (errors/throw-service-error :invalid-data
                                       (format (str "Error parsing 'Hosts' CSV Data. "
                                                    "Hosts must be an integer. "
-                                                   "Csv line entry: [%s]")
+                                                   "CSV line entry: %s")
                                               csv-line))))
       (errors/throw-service-error :invalid-data
                                   (format (str "Error parsing 'Hosts' CSV Data. "
                                                "Hosts may not be empty. "
-                                               "Csv line entry: [%s]")
+                                               "CSV line entry: %s")
                                           csv-line)))))
+
+(defn- get-version
+  "Version must be 20 characters or less."
+  [csv-line version-col]
+  (let [reported-version (read-csv-column csv-line version-col)]
+    (when (<= (count reported-version) 20)
+      reported-version)))
 
 (defn- csv-entry->community-usage-metric
   "Convert a line in the csv file to a community usage metric. Only storing short-name (product)
    and access-count (hosts)."
-  [context csv-line product-col hosts-col current-metrics cache]
+  [context csv-line product-col hosts-col version-col current-metrics cache]
   (when (seq (remove empty? csv-line)) ; Don't process empty lines
     {:short-name (get-short-name context cache csv-line product-col current-metrics)
+     :version (get-version csv-line version-col)
      :access-count (get-access-count csv-line hosts-col)}))
 
 (defn- validate-and-read-csv
@@ -135,14 +143,25 @@
           (errors/throw-service-error :invalid-data "A 'Product' column is required in community usage CSV data"))
         (when (< (:hosts-col csv-columns) 0)
           (errors/throw-service-error :invalid-data "A 'Hosts' column is required in community usage CSV data"))
+        (when (< (:version-col csv-columns) 0)
+          (errors/throw-service-error :invalid-data "A 'ProductVersion' column is required in community usage CSV data"))
         (merge {:csv-lines (rest csv-lines)} csv-columns))
       (errors/throw-service-error :invalid-data "You posted empty content"))
     (errors/throw-service-error :invalid-data "You posted empty content")))
 
 (defn get-community-usage-metrics
-  "Retrieves the current community usage metrics from metadata-db."
+  "Retrieves the current community usage metrics from metadata-db.
+   Returns an empty set if unable to retrieve metrics."
   [context]
   (:community-usage-metrics (json/decode (:metadata (humanizer-service/fetch-humanizer-concept context)) true)))
+
+(defn- get-community-usage-metrics-or-empty-list
+  [context]
+  (try
+    (get-community-usage-metrics context)
+    (catch Exception e 
+      (warn e)
+      [])))
 
 (defn- community-usage-metrics-list->set
   "Convert list of {:short-name :access-count} maps into a set of short-names."
@@ -152,19 +171,21 @@
 (defn- community-usage-csv->community-usage-metrics
   "Validate the community usage csv and convert to a list of community usage metrics."
   [context community-usage-csv current-metrics]
-  (let [{:keys [csv-lines product-col hosts-col]} (validate-and-read-csv community-usage-csv)
+  (let [{:keys [csv-lines product-col hosts-col version-col]} (validate-and-read-csv community-usage-csv)
         short-name-cache (new java.util.HashMap)]
-    (map #(csv-entry->community-usage-metric context % product-col hosts-col current-metrics short-name-cache)
-         csv-lines)))
+    (remove nil?
+            (map #(csv-entry->community-usage-metric context % product-col hosts-col version-col current-metrics short-name-cache)
+                 csv-lines))))
 
 (defn- aggregate-usage-metrics
   "Combine access-counts for entries with the same short-name."
   [metrics]
-  (let [count-map (reduce (fn [m {:keys [short-name access-count]}]
-                            (update m short-name (fnil + 0) access-count))
-                          {}
-                          metrics)]
-    (map (fn [[k v]] {:short-name k :access-count v}) count-map)))
+  ;; name-version-groups is map of [short-name, version] [entries that match short-name/version]
+  (let [name-version-groups (group-by (juxt :short-name :version) metrics)] ; Group by short-name and version
+    ;; The first entry in each list has the short-name and version we want so just add up the access-counts
+    ;; in the rest and add that to the first entry to make the access-counts right
+    (map #(util/remove-nil-keys (assoc (first %) :access-count (reduce + (map :access-count %))))
+         (vals name-version-groups))))
 
 (defn- validate-metrics
   "Validate metrics against the JSON schema validation"
@@ -190,7 +211,7 @@
   (let [comprehensive (or (:comprehensive params) "false") ;; set default
         current-metrics (if (= "false" comprehensive)
                           (-> context
-                              (get-community-usage-metrics)
+                              (get-community-usage-metrics-or-empty-list)
                               (community-usage-metrics-list->set))
                           #{})
         metrics (community-usage-csv->community-usage-metrics context community-usage-csv current-metrics)
