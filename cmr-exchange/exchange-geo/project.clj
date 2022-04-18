@@ -29,7 +29,8 @@
                  [org.clojure/clojure "1.9.0"]
                  [org.geotools/gt-geometry "24.6"]
                  [org.geotools/gt-referencing "24.6"]]
-  :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]]
+  :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]
+                 ["geo" "https://repo.osgeo.org/repository/release"]]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
              :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
