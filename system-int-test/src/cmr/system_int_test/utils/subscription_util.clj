@@ -79,7 +79,7 @@
   ([metadata-attrs attrs]
    (make-subscription-concept metadata-attrs attrs 0))
   ([metadata-attrs attrs idx]
-   (make-subscription-concept metadata-attrs attrs 0 latest-umm-sub-verison))
+   (make-subscription-concept metadata-attrs attrs idx latest-umm-sub-verison))
   ([metadata-attrs attrs idx umm-sub-version]
    (-> (merge {:provider-id "PROV1" :Name (str "Name " idx)} metadata-attrs)
        (data-umm-sub/subscription-concept umm-sub-version)

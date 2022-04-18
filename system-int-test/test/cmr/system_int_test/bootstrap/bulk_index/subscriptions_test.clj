@@ -156,7 +156,8 @@
        (testing "Subscription concepts are indexed."
          (let [{:keys [hits refs] :as response} (search/find-refs :subscription {})]
            (is (= 6 hits))
-           (is (= 6 (count refs)))))))))
+           (is (= 6 (count refs)))
+           ))))))
 
 (deftest ^:oracle bulk-index-all-subscriptions
   (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
