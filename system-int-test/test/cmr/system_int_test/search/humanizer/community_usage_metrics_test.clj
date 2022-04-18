@@ -241,7 +241,7 @@
                 "Product,ProductVersion,Hosts\n,4,64"))))
       (testing "Empty Hosts"
         (is (= {:status 422
-                :errors ["Error parsing 'Hosts' CSV Data. Hosts may not be empty. Csv line entry: [\"AMSR-L1A\" \"4\" \"\"]"]}
+                :errors ["Error parsing 'Hosts' CSV Data. Hosts may not be empty. CSV line entry: [\"AMSR-L1A\" \"4\" \"\"]"]}
                (humanizer-util/update-community-usage-metrics
                 admin-update-token
                 "Product,ProductVersion,Hosts\nAMSR-L1A,4,")))))
@@ -265,7 +265,7 @@
 
     (testing "Non-integer value for hosts (access-count)"
       (is (= {:status 422
-              :errors ["Error parsing 'Hosts' CSV Data. Hosts must be an integer. Csv line entry: [\"AMSR-L1A\" \"3\" \"x\"]"]}
+              :errors ["Error parsing 'Hosts' CSV Data. Hosts must be an integer. CSV line entry: [\"AMSR-L1A\" \"3\" \"x\"]"]}
              (humanizer-util/update-community-usage-metrics
               admin-update-token
               "Product,ProductVersion,Hosts\nAMSR-L1A,3,x"))))))
