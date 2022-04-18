@@ -50,14 +50,14 @@
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
-                 [org.geotools/gt-geometry "24.6"]
-                 [org.geotools/gt-referencing "24.6"]
+                 [org.geotools/gt-geometry "26.4"]
+                 [org.geotools/gt-referencing "26.4"]
                  [ring/ring-core "1.7.1"]
                  [ring/ring-codec "1.1.2"]
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.12.12"]
                  [tolitius/xml-in "0.1.0"]]
-  :repositories [["osgeo" "https://repo.osgeo.org/repository/release/"]]
+  :repositories [["geo" "https://repo.osgeo.org/repository/release/"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]
