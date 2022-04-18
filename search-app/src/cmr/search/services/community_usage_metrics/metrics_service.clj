@@ -85,7 +85,7 @@
       (do
         (warn (format (str "While constructing community metrics humanizer, "
                            "could not find corresponding collection when searching for the term %s. "
-                           "Csv line entry: %s")
+                           "CSV line entry: %s")
                       product
                       csv-line))
         product))))
@@ -102,21 +102,20 @@
           (errors/throw-service-error :invalid-data
                                       (format (str "Error parsing 'Hosts' CSV Data. "
                                                    "Hosts must be an integer. "
-                                                   "Csv line entry: %s")
+                                                   "CSV line entry: %s")
                                               csv-line))))
       (errors/throw-service-error :invalid-data
                                   (format (str "Error parsing 'Hosts' CSV Data. "
                                                "Hosts may not be empty. "
-                                               "Csv line entry: %s")
+                                               "CSV line entry: %s")
                                           csv-line)))))
 
 (defn- get-version
   "Version must be 20 characters or less."
   [csv-line version-col]
   (let [reported-version (read-csv-column csv-line version-col)]
-    (if (<= (count reported-version) 20)
-      reported-version
-      nil)))
+    (when (<= (count reported-version) 20)
+      reported-version)))
 
 (defn- csv-entry->community-usage-metric
   "Convert a line in the csv file to a community usage metric. Only storing short-name (product)
@@ -160,7 +159,9 @@
   [context]
   (try
     (get-community-usage-metrics context)
-    (catch Exception e [])))
+    (catch Exception e 
+      (warn e)
+      [])))
 
 (defn- community-usage-metrics-list->set
   "Convert list of {:short-name :access-count} maps into a set of short-names."
