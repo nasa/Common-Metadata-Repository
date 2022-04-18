@@ -151,10 +151,14 @@
                                             {:Type "Maximum Depth"
                                              :Value "Some kind of value2"}]
                    :OrbitParameters {:SwathWidth 2.0
-                                     :Period 96.7
+                                     :SwathWidthUnit "Kilometer"
+                                     :OrbitPeriod 96.7
+                                     :OrbitPeriodUnit "Decimal Minute"
                                      :InclinationAngle 94.0
+                                     :InclinationAngleUnit "Degree"
                                      :NumberOfOrbits 2.0
-                                     :StartCircularLatitude 50.0}
+                                     :StartCircularLatitude 50.0
+                                     :StartCircularLatitudeUnit "Degree"}
                    :GranuleSpatialRepresentation "GEODETIC"}
    :AdditionalAttributes [{:Group "Accuracy"
                            :ParameterUnitsOfMeasure "Percent"
@@ -329,10 +333,14 @@
                                             {:Type "Maximum Depth"
                                              :Value "Some kind of value2"}]
                    :OrbitParameters {:SwathWidth 2.0
-                                     :Period 96.7
+                                     :SwathWidthUnit "Kilometer"
+                                     :OrbitPeriod 96.7
+                                     :OrbitPeriodUnit "Decimal Minute"
                                      :InclinationAngle 94.0
+                                     :InclinationAngleUnit "Degree"
                                      :NumberOfOrbits 2.0
-                                     :StartCircularLatitude 50.0}}
+                                     :StartCircularLatitude 50.0
+                                     :StartCircularLatitudeUnit "Degree"}}
    :TilingIdentificationSystems [{:TilingIdentificationSystemName "MISR"
                                    :Coordinate1 {:MinimumValue 1.0
                                                  :MaximumValue 10.0}
