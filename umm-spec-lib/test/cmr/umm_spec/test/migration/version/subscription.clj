@@ -37,3 +37,6 @@
 (deftest migrate-1_0->1_1
   (is (= granule-subscription-concept-1_1
          (migrate-subscription "1.0" "1.1" granule-subscription-concept-1_0))))
+
+(deftest migrate-1_1->1_0
+  (is (thrown? clojure.lang.ExceptionInfo (migrate-subscription "1.1" "1.0" granule-subscription-concept-1_1))))
