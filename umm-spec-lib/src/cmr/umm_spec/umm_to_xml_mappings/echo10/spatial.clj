@@ -96,7 +96,8 @@
 (defn spatial-element
   "Returns ECHO10 Spatial element from given UMM-C record."
   [c]
-  (let [sp (:SpatialExtent c)]
+  (let [sp (:SpatialExtent c)
+        op (:OrbitParameters sp)]
     [:Spatial
      (elements-from sp :SpatialCoverageType)
      (let [horiz (:HorizontalSpatialDomain sp)]
@@ -114,7 +115,7 @@
        [:VerticalSpatialDomain
         (elements-from vert :Type :Value)])
      [:OrbitParameters
-      (elements-from (:OrbitParameters sp)
+      (elements-from (assoc op :Period (:OrbitPeriod op))
                      :SwathWidth :Period :InclinationAngle
                      :NumberOfOrbits :StartCircularLatitude)]
      [:GranuleSpatialRepresentation (or (:GranuleSpatialRepresentation sp)

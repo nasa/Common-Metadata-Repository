@@ -134,7 +134,7 @@
                                     (select spatial "Vertical_Spatial_Info"))
      :OrbitParameters             (let [[o] (select spatial "Orbit_Parameters")]
                                      {:SwathWidth (value-of o "Swath_Width")
-                                      :Period (value-of o "Period")
+                                      :OrbitPeriod (value-of o "Period")
                                       :InclinationAngle (value-of o "Inclination_Angle")
                                       :NumberOfOrbits (value-of o "Number_Of_Orbits")
                                       :StartCircularLatitude (value-of o "Start_Circular_Latitude")})}))

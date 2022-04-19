@@ -110,7 +110,7 @@
   [doc]
   (when-let [orbit-string (value-of doc orbit-string-xpath)]
     (into {} (for [[k ^String v] (partition 2 (string/split orbit-string #":? "))]
-               [(keyword k) (Double/parseDouble v)]))))
+               [(if (= "Period" k) :OrbitPeriod (keyword k)) (Double/parseDouble v)]))))
 
 (defn parse-vertical-domains
   "Parse the vertical domain from the ISO XML document. Vertical domains are encoded in an ISO XML

@@ -108,11 +108,13 @@
      :HorizontalSpatialDomain      (parse-horizontal-spatial-domain doc)
      :VerticalSpatialDomains       (spatial-conversion/convert-vertical-spatial-domains-from-xml
                                     (select spatial "VerticalSpatialDomain"))
-     :OrbitParameters              (fields-from (first (select spatial "OrbitParameters"))
-                                                :SwathWidth
-                                                :Period
-                                                :InclinationAngle
-                                                :NumberOfOrbits
-                                                :StartCircularLatitude)}
+     :OrbitParameters              (as-> (fields-from (first (select spatial "OrbitParameters"))
+                                                      :SwathWidth
+                                                      :Period
+                                                      :InclinationAngle
+                                                      :NumberOfOrbits
+                                                      :StartCircularLatitude) OP
+                                         (assoc OP :OrbitPeriod (:Period OP))
+                                         (dissoc OP :Period))}
     (when sanitize?
       u/not-provided-spatial-extent)))

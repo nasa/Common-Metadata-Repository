@@ -130,7 +130,7 @@
      (let [o (:OrbitParameters sp)]
        [:Orbit_Parameters
         [:Swath_Width (:SwathWidth o)]
-        [:Period (:Period o)]
+        [:Period (:OrbitPeriod o)]
         [:Inclination_Angle (:InclinationAngle o)]
         [:Number_Of_Orbits (:NumberOfOrbits o)]
         [:Start_Circular_Latitude (:StartCircularLatitude o)]])

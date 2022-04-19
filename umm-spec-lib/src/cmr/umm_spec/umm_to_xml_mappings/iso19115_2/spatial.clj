@@ -107,10 +107,10 @@
 
 (defn- orbit-parameters->encoded-str
   "Encodes the orbit parameters as a string."
-  [{:keys [SwathWidth Period InclinationAngle NumberOfOrbits StartCircularLatitude]}]
+  [{:keys [SwathWidth OrbitPeriod InclinationAngle NumberOfOrbits StartCircularLatitude]}]
   (let [main-string (format "SwathWidth: %s Period: %s InclinationAngle: %s NumberOfOrbits: %s"
                             (util/double->string SwathWidth)
-                            (util/double->string Period)
+                            (util/double->string OrbitPeriod)
                             (util/double->string InclinationAngle)
                             (util/double->string NumberOfOrbits))]
     ;; StartCircularLatitude is the only optional element
