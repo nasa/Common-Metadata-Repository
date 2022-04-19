@@ -22,7 +22,7 @@
    [cmr.system-int-test.utils.search-util :as search]))
 
 (def sample-usage-csv
-  (str "Product,Version,Hosts\n"
+  (str "Product,ProductVersion,Hosts\n"
        "AMSR-L1A,3,10\n"
        "AG_VIRTUAL,1,100\n"
        "AG_MAPSS,2,30\n"
@@ -142,7 +142,7 @@
   (index/wait-until-indexed)
 
   ;; Ingest new community usage metrics and check that results change
-  (hu/ingest-community-usage-metrics (str "Product,Version,Hosts\n"
+  (hu/ingest-community-usage-metrics (str "Product,ProductVersion,Hosts\n"
                                           "AMSR-L1A,3,40\n"
                                           "AG_VIRTUAL,1,12\n"
                                           "AG_MAPSS,2,58\n"))
@@ -179,7 +179,7 @@
 ;; More complicated example/test with entries with version N/A - N/A version entries are
 ;; applied to all collections that match the short name
 (def sample-csv-not-provided-versions
-  (str "Product,Version,Hosts\n"
+  (str "Product,ProductVersion,Hosts\n"
        "AMSR-L1A,3,10\n"
        "AMSR-L1A,N/A,50\n"
        "AG_VIRTUAL,1,100\n"
@@ -214,7 +214,7 @@
            (map :name results)))))
 
 (deftest community-usage-version-formatting
-  (hu/ingest-community-usage-metrics (str "Product,Version,Hosts\n"
+  (hu/ingest-community-usage-metrics (str "Product,ProductVersion,Hosts\n"
                                           "AMSR-L1A,1,10\n"
                                           "AMSR-L1A,3,100\n"
                                           "AMSR-L1A,002,50\n"))
