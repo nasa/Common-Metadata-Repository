@@ -1,8 +1,12 @@
 (ns cmr.http.kit.request
   (:require
    [org.httpkit.client :as httpc]
+   [org.httpkit.sni-client :as sni-client]
    [taoensso.timbre :as log])
   (:refer-clojure :exclude [get]))
+
+  ;; Change default client for your whole application. This adds support to https requests.
+  (alter-var-root #'org.httpkit.client/*default-client* (fn [_] sni-client/default-client))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Header Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
