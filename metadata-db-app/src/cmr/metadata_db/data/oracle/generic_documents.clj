@@ -1,9 +1,11 @@
 (ns cmr.metadata-db.data.oracle.generic-documents
   "Functions for saving, retrieving, deleting generic documents."
   (:require
+   [cheshire.core :as json]
    [clojure.java.jdbc :as jdbc]
    [clojure.pprint :refer [pprint pp]]
    [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.time-keeper :as tkeep]
    [cmr.common.util :as cutil]
    [cmr.metadata-db.data.oracle.concepts :as concepts]
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
@@ -12,9 +14,10 @@
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc
                                         delete as]]
    [cmr.oracle.connection :as oracle]
-   [clj-time.coerce :as cr]
-   [cmr.common.date-time-parser :as p]
-   [clojure.java.io :as io])
+   [clj-time.coerce :as coerce]
+   [cmr.common.date-time-parser :as dtp]
+   ;[clojure.java.io :as io]
+   )
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -50,10 +53,70 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn save-document
-  [db document]
-  ;; see comment at bottom for example with super-dumb data
-  ;; probably going to need to pull from concepts method
-  )
+  "Create the document in the database, try to pull as many values out of the
+   document as can be found. All documents must have at least a :Name and a
+   :MetadataSpecification field."
+  [db document provider-id user-id]
+
+  (let [
+        id-seq (-> db
+                   (jdbc/query ["SELECT METADATA_DB.cmr_generic_documents_seq.NEXTVAL FROM dual"])
+                   first
+                   :nextval
+                   long)
+        transaction-id (-> db
+                           (jdbc/query ["SELECT GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL FROM dual"])
+                           first
+                           :nextval
+                           long)
+        raw-count (-> db
+                      (jdbc/query ["SELECT count(DISTINCT concept_id) AS last FROM CMR_GENERIC_DOCUMENTS"])
+                      first
+                      :last)
+        next (+ 1200000001 raw-count)
+        concept-id (format "X%s-%s" next provider-id)
+        parsed (json/parse-string document true)
+        document-name (:Name parsed)
+        scheme (clojure.string/lower-case (get-in parsed [:MetadataSpecification :Name]))
+        format-name scheme
+        version (get-in parsed [:MetadataSpecification :Version])
+        mime-type (format "application/%s;version=%s" scheme version)
+        encoded-document (cutil/string->gzip-bytes document)
+        now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
+    (jdbc/insert!
+     db
+     :cmr_generic_documents
+     ["id"
+      "concept_id"
+      "provider_id"
+      "document_name"
+      "schema"
+      "format"
+      "mime_type"
+      "metadata"
+      "revision_id"
+      "revision_date"
+      "created_at"
+      "deleted"
+      "user_id"
+      "transaction_id"]
+     [id-seq
+      concept-id
+      provider-id
+      document-name
+      scheme
+      format-name
+      mime-type
+      encoded-document
+      1
+      now
+      now
+      0
+      user-id
+      transaction-id])
+      id-seq))
+
+;(save-document db test-file "testprov" "some-edl-user")
 
 ;; not working -- connection is closed
 (defn get-documents
@@ -80,13 +143,12 @@
               user_id transaction_id]}]
   (jdbc/update! db
              :cmr_generic_documents
-             {:id id
-              :concept_id concept_id
-              :native_id ""
-              :provider-id provider_id
+             {;:id id
+              ;:concept_id concept_id
+              ;:provider-id provider_id
               :document_name document_name
-              :schema schema
-              :format format ;; concepts convert this to mimetype in the get, but we already have mimetype
+              ;:schema schema
+              ;:format format ;; concepts convert this to mimetype in the get, but we already have mimetype
               :mime_type mime_type
               :metadata (when metadata (cutil/string->gzip-bytes metadata))
               :revision_id (int revision_id)
@@ -95,8 +157,8 @@
                           ;; ; Called db->oracle-conn with connection that was not within a db transaction. It must be called from within call jdbc/with-db-transaction
                           ;; however, if you try to wrap them with jdbc/with-db-transaction the repl BLOWS UP -- if you try it, wait for it after first error
               :revision_date (oracle/oracle-timestamp->str-time db revision_date)
-              :created_at (when created_at
-                            (oracle/oracle-timestamp->str-time db created_at))
+              ;:created_at (when created_at
+              ;              (oracle/oracle-timestamp->str-time db created_at))
               :deleted (not= (int deleted) 0)
               :user_id user_id
               :transaction_id transaction_id}
@@ -129,6 +191,8 @@
   ;; io starts looking from the dev-system/ directory bc that's where the REPL starts
   (def test-file (slurp (clojure.java.io/resource "sample_tool.json")))
   (def gzip-blob (cutil/string->gzip-bytes test-file))
+
+  (save-document db test-file "TESTPROV" "some-edl-user")
 
   ;; save-document
   (jdbc/insert! db
