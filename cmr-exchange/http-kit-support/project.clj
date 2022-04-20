@@ -25,7 +25,7 @@
                  [clojusc/twig "0.4.0"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.0-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
-                 [http-kit "2.3.0"]
+                 [http-kit "2.5.3"]
                  [metosin/ring-http-response "0.9.1"]
                  [org.clojure/clojure "1.9.0"]
                  [org.clojure/data.xml "0.2.0-alpha5"]

@@ -9,7 +9,7 @@
                  [com.stuartsierra/component "0.3.2"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
                  [gov.nasa.earthdata/cmr-http-kit "0.1.5"]
-                 [http-kit "2.3.0"]
+                 [http-kit "2.5.3"]
                  [metosin/reitit-ring "0.2.7"]
                  [org.clojure/clojure "1.9.0"]
                  [org.clojure/core.cache "0.7.1"]
