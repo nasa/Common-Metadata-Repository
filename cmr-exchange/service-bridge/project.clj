@@ -88,6 +88,7 @@
              :dev {:dependencies [[debugger "0.2.1"]]
                    :repl-options {:init-ns cmr.opendap.dev
                                   :prompt ~get-prompt
+                                  :timeout 120000
                                   :init ~(println (get-banner))}}
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
