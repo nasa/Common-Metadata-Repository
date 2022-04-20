@@ -133,11 +133,24 @@
      :VerticalSpatialDomains       (spatial-conversion/convert-vertical-spatial-domains-from-xml
                                     (select spatial "Vertical_Spatial_Info"))
      :OrbitParameters             (let [[o] (select spatial "Orbit_Parameters")]
-                                     {:SwathWidth (value-of o "Swath_Width")
-                                      :OrbitPeriod (value-of o "Period")
-                                      :InclinationAngle (value-of o "Inclination_Angle")
-                                      :NumberOfOrbits (value-of o "Number_Of_Orbits")
-                                      :StartCircularLatitude (value-of o "Start_Circular_Latitude")})}))
+                                     (as->{:SwathWidth (value-of o "Swath_Width")
+                                           :OrbitPeriod (value-of o "Period")
+                                           :InclinationAngle (value-of o "Inclination_Angle")
+                                           :NumberOfOrbits (value-of o "Number_Of_Orbits")
+                                           :StartCircularLatitude (value-of o "Start_Circular_Latitude")} op
+                                           ;; Add assumed units for the corresponding fields.
+                                           (if (:SwathWidth op)
+                                             (assoc op :SwathWidthUnit "Kilometer")
+                                             op)
+                                           (if (:OrbitPeriod op)
+                                             (assoc op :OrbitPeriodUnit "Decimal Minute")
+                                             op)
+                                           (if (:InclinationAngle op)
+                                             (assoc op :InclinationAngleUnit "Degree")
+                                             op)
+                                           (if (:StartCircularLatitude op)
+                                             (assoc op :StartCircularLatitudeUnit "Degree")
+                                             op)))}))
 
 (def tiling-system-xpath
   "/DIF/Spatial_Coverage/Spatial_Info/TwoD_Coordinate_System")

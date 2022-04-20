@@ -51,14 +51,10 @@
       }},
       "OrbitParameters": {
         "SwathWidth": 22,
-        "SwathWidthUnit": "Kilometer",
-        "OrbitPeriod": 1,
-        "OrbitPeriodUnit": "Decimal Minute",
+        "Period": 1,
         "InclinationAngle": 4,
-        "InclinationAngleUnit": "Degree",
         "NumberOfOrbits": 1,
-        "StartCircularLatitude": 1,
-        "StartCircularLatitudeUnit": "Degree"
+        "StartCircularLatitude": 1
       },
       "GranuleSpatialRepresentation": "CARTESIAN"
     },

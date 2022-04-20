@@ -31,6 +31,12 @@
          "[" id-xpath "/gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.orbitparameters']"
          "/" id-xpath "/gmd:code/gco:CharacterString")))
 
+(def orbit-foot-prints-xpath
+  (let [id-xpath "gmd:EX_GeographicDescription/gmd:geographicIdentifier/gmd:MD_Identifier"]
+    (str geographic-element-xpath
+         "[" id-xpath "/gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.orbitparameters_footprint']"
+         "/" id-xpath "/gmd:code/gco:CharacterString")))
+
 (def zone-identifier-xpath
   (str "/gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:extent/gmd:EX_Extent/gmd:geographicElement/gmd:EX_GeographicDescription[@id='ZoneIdentifier']/gmd:geographicIdentifier/gmd:MD_Identifier/gmd:code/gco:CharacterString"))
 
@@ -106,11 +112,30 @@
 (defn- parse-orbit-parameters
   "Parses orbit parameters from the ISO XML document. Orbit parameters are encoded in an ISO XML
   document as a single string like this:
-  \"SwathWidth: 2.0 Period: 96.7 InclinationAngle: 94.0 NumberOfOrbits: 2.0 StartCircularLatitude: 50.0\""
+  \"SwathWidth: 390 SwathWidthUnit: Kilometer OrbitPeriod: 98 OrbitPeriodUnit: Decimal Minute
+  InclinationAngle: 98 InclinationAngleUnit: Degree NumberOfOrbits: 1 StartCircularLatitude: 0
+  StartCircularLatitudeUnit: Degree\"
+  Note: The string could either constain Period or OrbitPeriod."
   [doc]
   (when-let [orbit-string (value-of doc orbit-string-xpath)]
-    (into {} (for [[k ^String v] (partition 2 (string/split orbit-string #":? "))]
-               [(if (= "Period" k) :OrbitPeriod (keyword k)) (Double/parseDouble v)]))))
+    (iso-xml-parsing-util/convert-iso-description-string-to-map
+     orbit-string
+     (re-pattern
+      "SwathWidth:|SwathWidthUnit:|Period:|OrbitPeriod:|OrbitPeriodUnit:|InclinationAngle:|InclinationAngleUnit:|StartCircularLatitude:|StartCircularLatitudeUnit:|NumberOfOrbits:"))))
+
+(defn- parse-orbit-parameters-foot-prints
+  "Parse orbit parameter foot prints from the ISO XML document. Foot prints are encoded in an ISO
+  XML document as a single string like this:
+  \"Footprint: 100 FootprintUnit: Kilometer Description: The leading footprint\""
+  [doc]
+  (when-let [orbit-foot-prints (select doc orbit-foot-prints-xpath)]
+    (for [orbit-foot-print orbit-foot-prints
+          :let [ofp-string (value-of (clojure.data.xml/emit-str orbit-foot-print) "CharacterString")
+                ofp-map (iso-xml-parsing-util/convert-iso-description-string-to-map
+                          ofp-string
+                          (re-pattern "Footprint:|FootprintUnit:|Description:"))]
+          :when (not-empty ofp-map)]
+      ofp-map)))
 
 (defn parse-vertical-domains
   "Parse the vertical domain from the ISO XML document. Vertical domains are encoded in an ISO XML
@@ -353,4 +378,23 @@
      :HorizontalSpatialDomain (parse-horizontal-spatial-domain doc extent-info sanitize?)
      :VerticalSpatialDomains (spatial-conversion/drop-invalid-vertical-spatial-domains
                               (parse-vertical-domains doc))
-     :OrbitParameters (parse-orbit-parameters doc)}))
+     :OrbitParameters (as->(parse-orbit-parameters doc) op
+                           ;; OrbitPeriod could be either in :Period or OrbitPeriod
+                           (if (:Period op)
+                             (assoc op :OrbitPeriod (:Period op))
+                             op)
+                           ;; add the assumed units if the corresponding fields exist but the corresponding units don't.
+                           (if (and (:SwathWidth op) (not (:SwathWidthUnit op)))
+                             (assoc op :SwathWidthUnit "Kilometer")
+                             op)
+                           (if (and (:OrbitPeriod op) (not (:OrbitPeriodUnit op)))
+                             (assoc op :OrbitPeriodUnit "Decimal Minute")
+                             op)
+                           (if (:InclinationAngle op)
+                             (assoc op :InclinationAngleUnit "Degree")
+                             op)
+                           (if (:StartCircularLatitude op)
+                             (assoc op :StartCircularLatitudeUnit "Degree")
+                             op)
+                           (dissoc op :Period)
+                           (assoc op :Footprints (parse-orbit-parameters-foot-prints doc)))}))

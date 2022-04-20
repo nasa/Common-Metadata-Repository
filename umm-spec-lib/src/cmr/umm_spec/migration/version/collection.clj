@@ -145,7 +145,7 @@
     (when (seq foot-prints)
       (apply max foot-prints-in-kilometer))))
 
-(defn- get-swath-width
+(defn get-swath-width
   "Get the correct value for collection's SwathWidth in v1.16.7 from v1.17.0.
   If SwathWidth exists in v1.17.0, convert it to the value in Kilometer.
   Otherwise, convert all Footprints to Kilometer, get the largest value and use it

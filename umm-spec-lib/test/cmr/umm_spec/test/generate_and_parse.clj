@@ -99,9 +99,7 @@
                           :DataDates [{:Date (t/date-time 2012)
                                        :Type "CREATE"}
                                       {:Date (t/date-time 2013)
-                                       :Type "UPDATE"}]))
-                  ;;CMR-8128 Before we translate v1.17.0 OrbitParameters, remove it from the umm-c-record
-                  umm (update-in umm [:SpatialExtent] dissoc :OrbitParameters)]]
+                                       :Type "UPDATE"}]))]]
       ;; input file is valid
       (check-failure
        (is (empty? (core/validate-xml :collection metadata-format metadata))
@@ -136,17 +134,22 @@
                     ;;  Remove them from the comparison.
                     expected (convert-to-sets (if (= :dif target-format)
                                                 (remove-vertical-spatial-domains expected)
-                                                expected))
+                                                ;; Footprints don't exist in dif10 and echo10
+                                                ;; it needs to be removed for round-trip comparison.
+                                                (if (or (= :dif10 target-format)
+                                                        (= :echo10 target-format)
+                                                        (not (get-in expected
+                                                              [:SpatialExtent :OrbitParameters :Footprints])))
+                                                  (update-in expected [:SpatialExtent :OrbitParameters]
+                                                             dissoc :Footprints)
+                                                    expected)))
                     actual (convert-to-sets (if (= :dif target-format)
                                               (remove-vertical-spatial-domains actual)
-                                              actual))
-                    ;;CMR-8128 Before we translate v1.17.0 OrbitParameters, remove it from the umm-c-record
-                    expected (-> expected
-                                 (update-in [:SpatialExtent] dissoc :OrbitParameters)
-                                 (dissoc :StandardProduct))
-                    actual (-> actual
-                               (update-in [:SpatialExtent] dissoc :OrbitParameters)
-                               (dissoc :StandardProduct))]]
+                                              ;; remove Footprints is it's nil
+                                              (if (get-in actual [:SpatialExtent :OrbitParameters :Footprints])
+                                                actual
+                                                (update-in expected [:SpatialExtent :OrbitParameters]
+                                                                    dissoc :Footprints))))]]
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
@@ -158,22 +161,13 @@
   (doseq [metadata-format tested-collection-formats]
     (testing (str metadata-format)
       (let [expected (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
-            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)
-            ;;CMR-8128 Before we translate v1.17.0 OrbitParameters, remove it from the umm-c-record
-            expected (-> expected
-                         (update-in [:SpatialExtent] dissoc :OrbitParameters)
-                         (dissoc :StandardProduct))
-            actual (-> actual
-                       (update-in [:SpatialExtent] dissoc :OrbitParameters)
-                       (dissoc :StandardProduct))]
+            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)]
         (is (= (convert-to-sets expected) (convert-to-sets actual)))))))
 
 (deftest validate-umm-json-example-record
   ;; Test that going from any format to UMM generates valid UMM.
   (doseq [[format filename] collection-format-examples
-          :let [umm-c-record (xml-round-trip :collection format expected-conversion/example-collection-record)
-                ;;CMR-8128 Before we translate v1.17.0 OrbitParameters, remove it from the umm-c-record
-                umm-c-record (update-in umm-c-record [:SpatialExtent] dissoc :OrbitParameters)]]
+          :let [umm-c-record (xml-round-trip :collection format expected-conversion/example-collection-record)]]
     (testing (str format " to :umm-json")
       (is (empty? (generate-and-validate-xml :collection :umm-json umm-c-record))))))
 
@@ -187,7 +181,19 @@
   (checking "collection round tripping" 100
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
-    (let [;; CMR-8128 Before we translate v1.17.0, remove OrbitParameters and StandardProduct
+    (let [;; CMR-8128 Before we translate v1.17.0, remove StandardProduct
+          ;; As for OrbitParameters which have been translated,
+          ;; there are many situations when a parameter is not
+          ;; preserved after the roundtrip. It's not worth it to make so many special cases
+          ;; to do the comparison. Since they have been tested in other tests, we will
+          ;; just remove them from the roundtrip.
+          ;; The following lists a few issues with roundtrip on OrbitParameters for dif10 and echo10:
+          ;; 1. Footprints in umm doesn't exist and doesn't get translated so it can't be preserved
+          ;; 2. StartCircularLatitudeUnit in umm can't be preserved when StartCircularLatitude doesn't exist.
+          ;;    Assumed unit is used for translation only when StartCircularLatitude exists. This applies to iso1195 too.
+          ;; 3. SwathWidthUnit doesn't exist in dif10 and echo10. Assumed unit is Kilometer
+          ;;    so we have to convert the value and unit in umm-record to kilometer before round-trip comparison.
+          ;; 4. SwathWidth can be 1.0E-1 in umm, translating to iso19115 it could be changed to 0.1
           umm-record (-> umm-record
                          (update-in [:SpatialExtent] dissoc :OrbitParameters)
                          (dissoc :StandardProduct))
@@ -249,9 +255,7 @@
 (deftest iso19115-projects-keywords
   (checking "Converting iso19115 project keywords" 100
     [umm-record umm-gen/umm-c-generator]
-    (let [;; CMR-8128 Before OrbitParameters translation for 1.17.0, remove it from umm-record
-          umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
-          metadata-xml (core/generate-metadata test-context umm-record :iso19115)
+    (let [metadata-xml (core/generate-metadata test-context umm-record :iso19115)
           projects (:Projects (core/parse-metadata test-context :collection :iso19115 metadata-xml))
           expected-projects-keywords (seq (map iu/generate-title projects))]
       (is (= expected-projects-keywords
