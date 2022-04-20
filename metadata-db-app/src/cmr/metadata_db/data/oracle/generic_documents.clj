@@ -58,8 +58,7 @@
    :MetadataSpecification field."
   [db document provider-id user-id]
 
-  (let [
-        id-seq (-> db
+  (let [id-seq (-> db
                    (jdbc/query ["SELECT METADATA_DB.cmr_generic_documents_seq.NEXTVAL FROM dual"])
                    first
                    :nextval
@@ -114,55 +113,57 @@
       0
       user-id
       transaction-id])
-      id-seq))
+    id-seq))
 
-;(save-document db test-file "testprov" "some-edl-user")
-
-;; not working -- connection is closed
 (defn get-documents
   [db format]
   (map #(dbresult->genericdoc % db)
        (jdbc/query db ["SELECT * FROM cmr_generic_documents WHERE format = ?" format])))
 
-;(jdbc/with-db-transaction [conn db] (get-documents conn "myformat"))
-
-;; not working -- see function above for reason why
 (defn get-document
   [db id]
   (first (map #(dbresult->genericdoc % db)
               (jdbc/query db
-                       [(str "SELECT *"
-                             " FROM cmr_generic_documents"
-                             " WHERE id = ?")
-                        id]))))
+                          [(str "SELECT *"
+                                " FROM cmr_generic_documents"
+                                " WHERE id = ?")
+                           id]))))
 
-;; untested -- will probably have same issues as above.
 (defn update-document
-  [db {:keys [id concept_id native_id provider_id document_name schema format
-              mime_type metadata revision_id revision_date created_at deleted
-              user_id transaction_id]}]
-  (jdbc/update! db
-             :cmr_generic_documents
-             {;:id id
-              ;:concept_id concept_id
-              ;:provider-id provider_id
-              :document_name document_name
-              ;:schema schema
-              ;:format format ;; concepts convert this to mimetype in the get, but we already have mimetype
-              :mime_type mime_type
-              :metadata (when metadata (cutil/string->gzip-bytes metadata))
-              :revision_id (int revision_id)
-                          ;; these cause this error:
-                          ;; ; Error printing return value at cmr.common.services.errors/internal-error! (errors.clj:61).
-                          ;; ; Called db->oracle-conn with connection that was not within a db transaction. It must be called from within call jdbc/with-db-transaction
-                          ;; however, if you try to wrap them with jdbc/with-db-transaction the repl BLOWS UP -- if you try it, wait for it after first error
-              :revision_date (oracle/oracle-timestamp->str-time db revision_date)
-              ;:created_at (when created_at
-              ;              (oracle/oracle-timestamp->str-time db created_at))
-              :deleted (not= (int deleted) 0)
-              :user_id user_id
-              :transaction_id transaction_id}
-             ["id = ?" id]))
+  "Update the document in the database, try to pull as many values out of the
+   document as can be found. All documents must have at least a :Name and a
+   :MetadataSpecification field."
+  [db document provider-id doc-name schema]
+  (let [transaction-id (-> db
+                           (jdbc/query ["SELECT GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL FROM dual"])
+                           first
+                           :nextval
+                           long)
+        parsed (json/parse-string document true)
+        format-name schema
+        version (get-in parsed [:MetadataSpecification :Version])
+        mime-type (format "application/%s;version=%s" schema version)
+        encoded-document (cutil/string->gzip-bytes document)
+        revision-id (-> db
+                        (jdbc/query ["SELECT revision_id FROM cmr_generic_documents WHERE document_name = ?" doc-name])
+                        first
+                        :revision_id
+                        int
+                        inc)
+        now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
+    (jdbc/update! db
+                  :cmr_generic_documents
+                  {:provider_id provider-id
+                   :schema schema
+                   :format format-name
+                   :mime_type mime-type
+                   :metadata encoded-document
+                   :revision_id revision-id
+                   :revision_date now
+                   :transaction_id transaction-id}
+                  ["document_name = ?" doc-name])
+    ;; without below line, usually update! returns the number of rows affected, should we keep that?
+    doc-name))
 
 (defn delete-document
   [db document])
@@ -191,6 +192,7 @@
   ;; io starts looking from the dev-system/ directory bc that's where the REPL starts
   (def test-file (slurp (clojure.java.io/resource "sample_tool.json")))
   (def gzip-blob (cutil/string->gzip-bytes test-file))
+  (def test-file2 (slurp (clojure.java.io/resource "AllElements-V1.16.6.json")))
 
   (save-document db test-file "TESTPROV" "some-edl-user")
 
@@ -210,8 +212,8 @@
 
   ;; get documents
   (jdbc/with-db-transaction
-   [conn db]
-   (jdbc/query db ["SELECT * FROM cmr_generic_documents"]))
+    [conn db]
+    (jdbc/query db ["SELECT * FROM cmr_generic_documents"]))
 
   ;(concepts/db-result->concept-map "generic" db nil get-all-result)
   (jdbc/with-db-transaction [conn db] (get-documents conn "myformat"))
@@ -219,6 +221,7 @@
   ;; get document -- still needs work (see code above)
   (jdbc/with-db-transaction [conn db] (get-document conn 1))
 
-  (jdbc/delete! db "cmr_generic_documents" ["id=?" 1])
+  ;; update document
+  (update-document db test-file2 "PROV2" "USGS_TOOLS_LATLONG" "umm-c")
 
-  )
+  (jdbc/delete! db "cmr_generic_documents" ["id=?" 1]))

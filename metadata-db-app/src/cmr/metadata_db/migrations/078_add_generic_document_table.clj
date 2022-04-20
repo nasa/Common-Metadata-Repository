@@ -50,14 +50,14 @@
   (h/sql "CREATE SEQUENCE cmr_generic_documents_seq"))
 
 (defn up
-  "Magrate the database up to version 78"
+  "Migrate the database up to version 78"
   []
   (println "cmr.metadata-db.migration.078_add_generic_document_table up...")
   (create-generic-documents-table)
   (create-generic-document-indices)
   (create-generic-document-sequence))
 
-(defn down "Migrate the database dow to version 78"
+(defn down "Migrate the database down from version 78"
   []
   (println "cmr.metadata-db.migration.078_add_generic_document_table down...")
   (h/sql "DROP SEQUENCE METADATA_DB.cmr_generic_documents_seq")

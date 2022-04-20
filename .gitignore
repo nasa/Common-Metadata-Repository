@@ -100,3 +100,6 @@ flycheck_*.el
 
 # directory configuration
 .dir-locals.el
+
+# local external oracle db
+cmr-oracle-db/
