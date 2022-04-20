@@ -133,10 +133,10 @@
   ;; save-document
   (jdbc/insert! db
                 :cmr_generic_documents
-                ["id" "concept_id" "native_id" "provider_id" "document_name" "schema" "format"
+                ["id" "concept_id" "provider_id" "document_name" "schema" "format"
                  "mime_type" "metadata" "revision_id" "revision_date" "created_at" "deleted"
                  "user_id" "transaction_id"]
-                [1 "myconceptid" "mynativeid" "PROV1" "mydocname" "myschema" "myformat"
+                [1 "myconceptid" "PROV1" "mydocname" "myschema" "myformat"
                  "application/json" gzip-blob 1 (cr/to-sql-time (p/parse-datetime "2020"))
                  (cr/to-sql-time (p/parse-datetime "2020")) 1 "myuserid" 1])
 

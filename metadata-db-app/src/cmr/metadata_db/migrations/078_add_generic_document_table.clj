@@ -9,7 +9,6 @@
     (str "CREATE TABLE METADATA_DB.cmr_generic_documents (
           id NUMBER,
           concept_id VARCHAR(255) NOT NULL,
-          native_id VARCHAR(1030) NOT NULL,
           provider_id VARCHAR(10) NOT NULL,
           document_name VARCHAR(20) NOT NULL,
           schema VARCHAR(255) NOT NULL,
@@ -24,10 +23,6 @@
           transaction_id INTEGER DEFAULT 0 NOT NULL,
 
           CONSTRAINT generic_doc_pk PRIMARY KEY (id),
-
-          CONSTRAINT gen_doc_con_rev UNIQUE (native_id, revision_id)
-          USING INDEX (create unique index generic_ucr_i
-          ON cmr_generic_documents (native_id, revision_id)),
 
           CONSTRAINT gen_doc_cid_rev UNIQUE (concept_id, revision_id)
           USING INDEX (create unique index generic_cri
@@ -65,5 +60,5 @@
 (defn down "Migrate the database dow to version 78"
   []
   (println "cmr.metadata-db.migration.078_add_generic_document_table down...")
-  ;;(h/sql "DROP SEQUENCE METADATA_DB.cmr_generic_documents_seq")
+  (h/sql "DROP SEQUENCE METADATA_DB.cmr_generic_documents_seq")
   (h/sql "DROP TABLE METADATA_DB.cmr_generic_documents"))
