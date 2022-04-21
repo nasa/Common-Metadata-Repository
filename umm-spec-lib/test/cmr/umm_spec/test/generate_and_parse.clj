@@ -184,16 +184,16 @@
     (let [;; CMR-8128 Before we translate v1.17.0, remove StandardProduct
           ;; As for OrbitParameters which have been translated,
           ;; there are many situations when a parameter is not
-          ;; preserved after the roundtrip. It's not worth it to make so many special cases
-          ;; to do the comparison. Since they have been tested in other tests, we will
-          ;; just remove them from the roundtrip.
+          ;; preserved after the roundtrip. We will have to make many special cases
+          ;; in order to do the comparison. Since they have been tested in other tests, we will
+          ;; just remove them from the generated roundtrip.
           ;; The following lists a few issues with roundtrip on OrbitParameters for dif10 and echo10:
           ;; 1. Footprints in umm doesn't exist and doesn't get translated so it can't be preserved
           ;; 2. StartCircularLatitudeUnit in umm can't be preserved when StartCircularLatitude doesn't exist.
           ;;    Assumed unit is used for translation only when StartCircularLatitude exists. This applies to iso1195 too.
           ;; 3. SwathWidthUnit doesn't exist in dif10 and echo10. Assumed unit is Kilometer
           ;;    so we have to convert the value and unit in umm-record to kilometer before round-trip comparison.
-          ;; 4. SwathWidth can be 1.0E-1 in umm, translating to iso19115 it could be changed to 0.1
+          ;; 4. SwathWidth can be 1.0E-1 in umm, translating to other formats it could be changed to 0.1
           umm-record (-> umm-record
                          (update-in [:SpatialExtent] dissoc :OrbitParameters)
                          (dissoc :StandardProduct))
