@@ -69,53 +69,56 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-opendap-urls
-  [component user-token raw-params]
-  (log/trace "Got params:" raw-params)
-  (let [start (util/now)
-        search-endpoint (config/get-search-url component)
-        ;; Stage 1
-        [params bounding-box grans-promise coll-promise s1-errs]
-        (common/stage1 component
-                       {:endpoint search-endpoint
-                        :token user-token
-                        :params raw-params})
-        ;; Stage 2
-        [params coll granule-links service-ids vars tag-data s2-errs]
-        (stage2 component
-                coll-promise
-                grans-promise
-                {:endpoint search-endpoint
-                 :token user-token
-                 :params params})
-        ;; Stage 3
-        [services vars params bounding-info s3-errs s3-warns]
-        (stage3 component
-                service-ids
-                vars
-                bounding-box
-                {:endpoint search-endpoint
-                 :token user-token
-                 :params params})
-        ;; Stage 4
-        [query s4-errs]
-        (common/stage4 component
-                       services
-                       bounding-box
-                       bounding-info
-                       {:endpoint search-endpoint
-                        :token user-token
-                        :params params})
-        ;; Warnings for all stages
-        warns (warnings/collect s3-warns)
-        ;; Error handling for all stages
-        errs (errors/collect
-              start params bounding-box grans-promise coll-promise s1-errs
-              granule-links service-ids vars s2-errs
-              services bounding-info s3-errs
-              query s4-errs
-              {:errors (errors/check
-                        [not granule-links metadata-errors/empty-gnl-data-files])})]
-    (common/process-results {:params params
-                             :granule-links granule-links
-                             :tag-data tag-data
-                             :query query} start errs warns)))
+  ([component user-token raw-params]
+   (get-opendap-urls component user-token "2" raw-params))
+  ([component user-token dap-version raw-params]
+   (log/trace "Got params:" raw-params)
+   (let [start (util/now)
+         search-endpoint (config/get-search-url component)
+         ;; Stage 1
+         [params bounding-box grans-promise coll-promise s1-errs]
+         (common/stage1 component
+                        {:endpoint search-endpoint
+                         :token user-token
+                         :params raw-params})
+         ;; Stage 2
+         [params coll granule-links service-ids vars tag-data s2-errs]
+         (stage2 component
+                 coll-promise
+                 grans-promise
+                 {:endpoint search-endpoint
+                  :token user-token
+                  :params params})
+         ;; Stage 3
+         [services vars params bounding-info s3-errs s3-warns]
+         (stage3 component
+                 service-ids
+                 vars
+                 bounding-box
+                 {:endpoint search-endpoint
+                  :token user-token
+                  :params params})
+         ;; Stage 4
+         [query s4-errs]
+         (common/stage4 component
+                        services
+                        bounding-box
+                        bounding-info
+                        {:endpoint search-endpoint
+                         :token user-token
+                         :dap-version dap-version
+                         :params params})
+         ;; Warnings for all stages
+         warns (warnings/collect s3-warns)
+         ;; Error handling for all stages
+         errs (errors/collect
+               start params bounding-box grans-promise coll-promise s1-errs
+               granule-links service-ids vars s2-errs
+               services bounding-info s3-errs
+               query s4-errs
+               {:errors (errors/check
+                         [not granule-links metadata-errors/empty-gnl-data-files])})]
+     (common/process-results {:params params
+                              :granule-links granule-links
+                              :tag-data tag-data
+                              :query query} start errs warns))))

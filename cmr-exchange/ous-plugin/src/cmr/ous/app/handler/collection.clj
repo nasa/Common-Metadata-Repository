@@ -8,6 +8,7 @@
    [cmr.authz.token :as token]
    [cmr.exchange.common.results.errors :as base-errors]
    [cmr.exchange.query.core :as base-query]
+   [cmr.exchange.query.util :as util]
    [cmr.http.kit.request :as base-request]
    [cmr.ous.components.config :as config]
    [cmr.ous.core :as ous]
@@ -30,11 +31,12 @@
   (log/debug "Generating URLs based on HTTP GET ...")
   (log/trace "Got request:" (logger/pprint (into {} req)))
   (log/debug "Got request-id: " (base-request/extract-request-id req))
-  (let [api-version (request/accept-api-version component req)]
+  (let [api-version (request/accept-api-version component req)
+        dap-version (:dap-version (util/normalize-params (:params req)))]
     (->> data
          (merge {:collection-id concept-id
                  :request-id (base-request/extract-request-id req)})
-         (ous/get-opendap-urls component api-version user-token)
+         (ous/get-opendap-urls component api-version user-token dap-version)
          (response/json req))))
 
 (defn- generate-via-get

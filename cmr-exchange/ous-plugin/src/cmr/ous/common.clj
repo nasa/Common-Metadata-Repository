@@ -25,23 +25,34 @@
 ;;;   Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn format-opendap-lat-lon
-  [bounding-infos bounding-box]
+(defn- format-opendap-lat-lon
+  [bounding-infos bounding-box delimiter]
   (when-let [bounding-info (first bounding-infos)]
-    (geog/format-opendap-lat-lon bounding-info)))
+    (geog/format-opendap-lat-lon bounding-info geog/default-lat-lon-stride delimiter)))
+
+(defn- bounding-infos->opendap-query*
+  "Returns the opendap query string for the given bounding infos and delimiter"
+  [bounding-infos bounding-box delimiter]
+  (str
+   (->> bounding-infos
+        (map geog/format-opendap-bounds)
+        (string/join ",")
+        (str "?"))
+   delimiter
+   (format-opendap-lat-lon bounding-infos bounding-box delimiter)))
 
 (defn bounding-infos->opendap-query
   ([bounding-infos]
    (bounding-infos->opendap-query bounding-infos nil))
   ([bounding-infos bounding-box]
+   (bounding-infos->opendap-query bounding-infos bounding-box false))
+  ([bounding-infos bounding-box dap4?]
    (when (seq bounding-infos)
-     (str
-      (->> bounding-infos
-           (map geog/format-opendap-bounds)
-           (string/join ",")
-           (str "?"))
-      ","
-      (format-opendap-lat-lon bounding-infos bounding-box)))))
+     (if dap4?
+       ;; DAP4 format
+       (bounding-infos->opendap-query* bounding-infos bounding-box ";")
+       ;; DAP2 format
+       (bounding-infos->opendap-query* bounding-infos bounding-box ",")))))
 
 (defn lat-dim?
   [dim]
@@ -303,11 +314,16 @@
     (log/debug "Finishing stage 3 ...")
     [services-promise bounding-infos errs]))
 
+(defn- is-dap4?
+  "Returns true if the given options is DAP4 version"
+  [{:keys [dap-version]}]
+  (= "4" dap-version))
+
 (defn stage4
-  [_component services-promise bounding-box bounding-infos _options]
+  [_component services-promise bounding-box bounding-infos options]
   (log/debug "Starting stage 4 ...")
   (let [services (service/extract-metadata services-promise)
-        query (bounding-infos->opendap-query bounding-infos bounding-box)
+        query (bounding-infos->opendap-query bounding-infos bounding-box (is-dap4? options))
         errs (errors/collect services)]
     (when errs
       (log/error "Stage 4 errors:" errs))
