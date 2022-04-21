@@ -598,6 +598,6 @@
             <NumberOfOrbits>14.0</NumberOfOrbits>
             <StartCircularLatitude>50.0</StartCircularLatitude>
         </OrbitParameters>
-        <GranuleSpatialRepresentation>NO_SPATIAL</GranuleSpatialRepresentation>
+        <GranuleSpatialRepresentation>ORBIT</GranuleSpatialRepresentation>
     </Spatial>
 </Collection>
