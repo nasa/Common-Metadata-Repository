@@ -202,7 +202,7 @@ Cmr-Took: 0.541
 Cmr-Hits: 1
 Content-Type: application/json
 Cmr-Request-Id: 23713cac-5225-c29c-ca5a-f59d0982de8b
-Cmr-Media-Type: cmr-service-bridge.v2.1; format=*
+Cmr-Media-Type: cmr-service-bridge.v3.1; format=*
 Access-Control-Allow-Origin: *
 Content-Length: 170
 Server: http-kit
@@ -717,9 +717,9 @@ Two parameters are required in a query string to this resource:
 
 * `granules` which is comma-separated for two or more granules, or `granules[]`,
   which is repeated for each granule in the query string
-* `variables(or variable_aliases)`  which is comma-separated for two or more variables(or variable-aliases), 
+* `variables(or variable_aliases)`  which is comma-separated for two or more variables(or variable-aliases),
 or `variables[](or variable_aliases[]`, which is repeated for each variable(or variable_alias) in the query string.
-Note: values for variable_aliases could be aliases or the group nodes of the aliases. Both `alias=<alias>` 
+Note: values for variable_aliases could be aliases or the group nodes of the aliases. Both `alias=<alias>`
 and `alias=<alias>/*` are searched in cmr variable search to take both alias and group nodes into account.
 
 A `service_id` parameter is optional; if not provided, the service type of `opendap` is assumed.

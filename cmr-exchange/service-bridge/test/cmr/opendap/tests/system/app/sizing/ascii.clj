@@ -34,7 +34,7 @@
                            variable-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 2 
              :mb 0.0
@@ -54,7 +54,7 @@
                            variable2-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 23039998 
              :mb 21.97 
@@ -75,7 +75,7 @@
                            variable3-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 25920000 
              :mb 24.72 
@@ -96,7 +96,7 @@
                            variable3-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 48959996 
              :mb 46.69 
@@ -119,7 +119,7 @@
                            variable2-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 46080000 
              :mb 43.95 
@@ -142,7 +142,7 @@
                            variable-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 7775998 
              :mb 7.42 

@@ -247,9 +247,12 @@
 
 (defn -format-opendap-lat-lon
   ([lookup-record [lon-name lat-name] stride]
-    (format "%s%s,%s%s"
+   (-format-opendap-lat-lon lookup-record [lon-name lat-name] stride ","))
+  ([lookup-record [lon-name lat-name] stride delimiter]
+    (format "%s%s%s%s%s"
             lat-name
             (format-opendap-dim-lat lookup-record stride)
+            delimiter
             lon-name
             (format-opendap-dim-lon lookup-record stride))))
 
@@ -450,9 +453,12 @@
   ([bounding-info]
    (format-opendap-lat-lon bounding-info default-lat-lon-stride))
   ([bounding-info stride]
+   (format-opendap-lat-lon bounding-info stride ","))
+  ([bounding-info stride delimiter]
    (-format-opendap-lat-lon (:opendap bounding-info)
                             (get-lat-lon-names bounding-info)
-                            stride)))
+                            stride
+                            delimiter)))
 
 (defn format-opendap-bounds
   ([bounding-info]

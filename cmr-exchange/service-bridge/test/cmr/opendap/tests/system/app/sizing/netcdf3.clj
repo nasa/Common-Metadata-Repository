@@ -34,7 +34,7 @@
                            variable-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 8159
              :gb 0.0
@@ -55,7 +55,7 @@
                            variable-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 8159
              :gb 0.0
@@ -76,7 +76,7 @@
                            variable-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 8159
              :gb 0.0
@@ -96,7 +96,7 @@
                            variable2-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 11527615
              :gb 0.01
@@ -117,7 +117,7 @@
                            variable3-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 11528159 
              :gb 0.01
@@ -138,7 +138,7 @@
                            variable3-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 23047615 
              :gb 0.02
@@ -160,7 +160,7 @@
                              variable2-id)
                      options)]
       (is (= 200 (:status response)))
-      (is (= "cmr-service-bridge.v2.1; format=json"
+      (is (= "cmr-service-bridge.v3.1; format=json"
              (get-in response [:headers :cmr-media-type])))
       (is (= [{:bytes 23056318
                :mb 21.99
@@ -182,7 +182,7 @@
                            variable-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 6231034
              :mb 5.94
@@ -205,7 +205,7 @@
                            variable-id)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3.1; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 6231034
              :mb 5.94
