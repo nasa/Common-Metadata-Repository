@@ -16,7 +16,7 @@
    :variable ["1.0" "1.1" "1.2" "1.3" "1.4" "1.5" "1.6" "1.7" "1.8" "1.8.1"]
    :service ["1.0" "1.1" "1.2" "1.3" "1.3.1" "1.3.2" "1.3.3" "1.3.4" "1.4" "1.4.1" "1.5.0"]
    :tool ["1.0" "1.1" "1.1.1" "1.2.0"]
-   :subscription ["1.0"]})
+   :subscription ["1.0" "1.1"]})
 
 (def current-collection-version
   "The current version of the collection UMM schema."
