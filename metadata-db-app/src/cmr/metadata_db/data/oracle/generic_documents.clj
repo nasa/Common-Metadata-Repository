@@ -85,34 +85,11 @@
     (jdbc/insert!
      db
      :cmr_generic_documents
-     ["id"
-      "concept_id"
-      "provider_id"
-      "document_name"
-      "schema"
-      "format"
-      "mime_type"
-      "metadata"
-      "revision_id"
-      "revision_date"
-      "created_at"
-      "deleted"
-      "user_id"
+     ["id" "concept_id" "provider_id" "document_name" "schema" "format" "mime_type"
+      "metadata" "revision_id" "revision_date" "created_at" "deleted" "user_id"
       "transaction_id"]
-     [id-seq
-      concept-id
-      provider-id
-      document-name
-      scheme
-      format-name
-      mime-type
-      encoded-document
-      1
-      now
-      now
-      0
-      user-id
-      transaction-id])
+     [id-seq concept-id provider-id document-name scheme format-name mime-type
+      encoded-document 1 now now 0 user-id transaction-id]) 
     id-seq))
 
 (defn get-documents
