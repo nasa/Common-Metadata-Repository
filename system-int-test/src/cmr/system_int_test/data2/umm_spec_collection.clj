@@ -189,7 +189,12 @@
    :EntryTitle "The entry title V5"
    :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                        :Type "CREATE"})]
-   :Abstract "A very abstract collection"})
+   :Abstract "A very abstract collection"
+   :MetadataSpecification (umm-c/map->MetadataSpecificationType
+                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                        umm-spec-versioning/current-collection-version),
+                              :Name "UMM-C"
+                              :Version umm-spec-versioning/current-collection-version})})
 
 (def umm-c-missing-properties-dif
   "This is the minimal valid UMM-C."
@@ -206,7 +211,12 @@
    :EntryTitle "The entry title V5"
    :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                        :Type "CREATE"})]
-   :Abstract "A very abstract collection"})
+   :Abstract "A very abstract collection"
+   :MetadataSpecification (umm-c/map->MetadataSpecificationType
+                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                        umm-spec-versioning/current-collection-version),
+                              :Name "UMM-C"
+                              :Version umm-spec-versioning/current-collection-version})})
 
 (def umm-c-missing-properties-dif10
   "This is the minimal valid UMM-C."
@@ -227,7 +237,12 @@
    :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                        :Type "CREATE"})]
    :Abstract "A very abstract collection"
-   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]})
+   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]
+   :MetadataSpecification (umm-c/map->MetadataSpecificationType
+                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                        umm-spec-versioning/current-collection-version),
+                              :Name "UMM-C"
+                              :Version umm-spec-versioning/current-collection-version})})
 
 (def minimal-umm-c
   "This is the minimal valid UMM-C."

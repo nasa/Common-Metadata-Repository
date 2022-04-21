@@ -151,14 +151,10 @@
                                             {:Type "Maximum Depth"
                                              :Value "Some kind of value2"}]
                    :OrbitParameters {:SwathWidth 2.0
-                                     :SwathWidthUnit "Kilometer"
-                                     :OrbitPeriod 96.7
-                                     :OrbitPeriodUnit "Decimal Minute"
+                                     :Period 96.7
                                      :InclinationAngle 94.0
-                                     :InclinationAngleUnit "Degree"
                                      :NumberOfOrbits 2.0
-                                     :StartCircularLatitude 50.0
-                                     :StartCircularLatitudeUnit "Degree"}
+                                     :StartCircularLatitude 50.0}
                    :GranuleSpatialRepresentation "GEODETIC"}
    :AdditionalAttributes [{:Group "Accuracy"
                            :ParameterUnitsOfMeasure "Percent"
