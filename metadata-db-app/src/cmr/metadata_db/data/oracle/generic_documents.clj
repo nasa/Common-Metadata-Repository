@@ -133,36 +133,59 @@
   "Update the document in the database, try to pull as many values out of the
    document as can be found. All documents must have at least a :Name and a
    :MetadataSpecification field."
-  [db document provider-id doc-name schema]
-  (let [transaction-id (-> db
+  [db document provider-id user-id doc-name schema]
+  (let [id-seq (-> db
+                   (jdbc/query ["SELECT METADATA_DB.cmr_generic_documents_seq.NEXTVAL FROM dual"])
+                   first
+                   :nextval
+                   long)
+        transaction-id (-> db
                            (jdbc/query ["SELECT GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL FROM dual"])
                            first
                            :nextval
                            long)
+        raw-count (-> db
+                      (jdbc/query ["SELECT count(DISTINCT concept_id) AS last FROM CMR_GENERIC_DOCUMENTS"])
+                      first
+                      :last)
+        next (+ 1200000001 raw-count)
+        concept-id (format "X%s-%s" next provider-id)
         parsed (json/parse-string document true)
         format-name schema
         version (get-in parsed [:MetadataSpecification :Version])
         mime-type (format "application/%s;version=%s" schema version)
         encoded-document (cutil/string->gzip-bytes document)
         revision-id (-> db
-                        (jdbc/query ["SELECT revision_id FROM cmr_generic_documents WHERE document_name = ?" doc-name])
-                        first
+                        (jdbc/query ["SELECT revision_id FROM cmr_generic_documents 
+                                      WHERE document_name = ? AND provider_id = ? 
+                                      ORDER BY revision_id ASC" doc-name provider-id])
+                        last
                         :revision_id
                         int
                         inc)
+        created-at (-> db
+                       (jdbc/query ["SELECT created_at FROM cmr_generic_documents 
+                    WHERE document_name = ? AND provider_id = ?
+                    ORDER BY revision_id ASC" doc-name provider-id])
+                       first
+                       :created_at)
         now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
-    (jdbc/update! db
+    (jdbc/insert! db
                   :cmr_generic_documents
-                  {:provider_id provider-id
+                  {:id id-seq
+                   :concept_id concept-id
+                   :provider_id provider-id
+                   :document_name doc-name
                    :schema schema
                    :format format-name
                    :mime_type mime-type
                    :metadata encoded-document
                    :revision_id revision-id
                    :revision_date now
-                   :transaction_id transaction-id}
-                  ["document_name = ?" doc-name])
-    ;; without below line, usually update! returns the number of rows affected, should we keep that?
+                   :created_at created-at
+                   :deleted 0
+                   :user_id user-id
+                   :transaction_id transaction-id})
     doc-name))
 
 (defn delete-document
@@ -222,6 +245,21 @@
   (jdbc/with-db-transaction [conn db] (get-document conn 1))
 
   ;; update document
-  (update-document db test-file2 "PROV2" "USGS_TOOLS_LATLONG" "umm-c")
+  (update-document db test-file2 "PROV2" "someotheruser" "USGS_TOOLS_LATLONG" "umm-t")
+  (-> db
+      (jdbc/query ["SELECT revision_id FROM cmr_generic_documents 
+                    WHERE document_name = ? AND provider_id = ?
+                    ORDER BY revision_id ASC" "USGS_TOOLS_LATLONG" "PROV2"])
+      last
+      :revision_id
+      int
+      inc)
+  (-> db
+      (jdbc/query ["SELECT created_at FROM cmr_generic_documents 
+                    WHERE document_name = ? AND provider_id = ?
+                    ORDER BY revision_id ASC" "USGS_TOOLS_LATLONG" "PROV2"])
+      first
+      :created_at)
+  
 
   (jdbc/delete! db "cmr_generic_documents" ["id=?" 1]))
