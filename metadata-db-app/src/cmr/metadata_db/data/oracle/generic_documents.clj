@@ -50,6 +50,40 @@
                           :user_id user_id
                           :transaction_id transaction_id}))
 
+(defn find-record
+  "Look up latest revision of record in the db table and return a map of the row"
+  [db provider-id doc-name]
+  (-> db
+      (jdbc/query ["SELECT * 
+                    FROM cmr_generic_documents 
+                    WHERE document_name = ? AND provider_id = ? 
+                    ORDER BY revision_id ASC" doc-name provider-id])
+      last)
+  )
+
+(defn get-next-id-seq
+  "Get next ID for inserting new rows"
+  [db]
+  (-> db
+      (jdbc/query ["SELECT METADATA_DB.cmr_generic_documents_seq.NEXTVAL FROM dual"])
+      first
+      :nextval
+      long))
+
+(defn get-next-transaction-id
+  "Get next transaction ID for inserting new rows"
+  [db]
+  (-> db
+      (jdbc/query ["SELECT GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL FROM dual"])
+      first
+      :nextval
+      long))
+
+(defn insert-record
+  "Insert a row in the dn table"
+  [db]
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn save-document
@@ -129,64 +163,35 @@
                                 " WHERE id = ?")
                            id]))))
 
+;; still needs to implement this requirement: All documents must have at least a :Name and a
+;; :MetadataSpecification field.
 (defn update-document
-  "Update the document in the database, try to pull as many values out of the
-   document as can be found. All documents must have at least a :Name and a
-   :MetadataSpecification field."
+  "Add a new revision of the document in the database, only if at least one previous
+   revision is found."
   [db document provider-id user-id doc-name schema]
-  (let [id-seq (-> db
-                   (jdbc/query ["SELECT METADATA_DB.cmr_generic_documents_seq.NEXTVAL FROM dual"])
-                   first
-                   :nextval
-                   long)
-        transaction-id (-> db
-                           (jdbc/query ["SELECT GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL FROM dual"])
-                           first
-                           :nextval
-                           long)
-        raw-count (-> db
-                      (jdbc/query ["SELECT count(DISTINCT concept_id) AS last FROM CMR_GENERIC_DOCUMENTS"])
-                      first
-                      :last)
-        next (+ 1200000001 raw-count)
-        concept-id (format "X%s-%s" next provider-id)
-        parsed (json/parse-string document true)
-        format-name schema
-        version (get-in parsed [:MetadataSpecification :Version])
-        mime-type (format "application/%s;version=%s" schema version)
-        encoded-document (cutil/string->gzip-bytes document)
-        revision-id (-> db
-                        (jdbc/query ["SELECT revision_id FROM cmr_generic_documents 
-                                      WHERE document_name = ? AND provider_id = ? 
-                                      ORDER BY revision_id ASC" doc-name provider-id])
-                        last
-                        :revision_id
-                        int
-                        inc)
-        created-at (-> db
-                       (jdbc/query ["SELECT created_at FROM cmr_generic_documents 
-                    WHERE document_name = ? AND provider_id = ?
-                    ORDER BY revision_id ASC" doc-name provider-id])
-                       first
-                       :created_at)
-        now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
-    (jdbc/insert! db
-                  :cmr_generic_documents
-                  {:id id-seq
-                   :concept_id concept-id
-                   :provider_id provider-id
-                   :document_name doc-name
-                   :schema schema
-                   :format format-name
-                   :mime_type mime-type
-                   :metadata encoded-document
-                   :revision_id revision-id
-                   :revision_date now
-                   :created_at created-at
-                   :deleted 0
-                   :user_id user-id
-                   :transaction_id transaction-id})
-    doc-name))
+  (when-let [last-revision (find-record db provider-id doc-name)]
+    (let [parsed (json/parse-string document true)
+          version (get-in parsed [:MetadataSpecification :Version])
+          now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
+      (jdbc/insert! db 
+                    :cmr_generic_documents
+                    {:id (get-next-id-seq db)
+                     :concept_id (:concept_id last-revision)
+                     :provider_id provider-id
+                     :document_name doc-name
+                     :schema schema
+                     :format (identity schema)
+                     :mime_type (format "application/%s;version=%s" schema version)
+                     :metadata (cutil/string->gzip-bytes document)
+                     :revision_id (-> (:revision_id last-revision)
+                                      int
+                                      inc)
+                     :revision_date now
+                     :created_at (:created_at last-revision)
+                     :deleted 0
+                     :user_id user-id
+                     :transaction_id (get-next-transaction-id db)})
+      doc-name)))
 
 (defn delete-document
   [db document])
@@ -215,7 +220,7 @@
   ;; io starts looking from the dev-system/ directory bc that's where the REPL starts
   (def test-file (slurp (clojure.java.io/resource "sample_tool.json")))
   (def gzip-blob (cutil/string->gzip-bytes test-file))
-  (def test-file2 (slurp (clojure.java.io/resource "AllElements-V1.16.6.json")))
+  (def test-file2 (slurp (clojure.java.io/resource "AllElements-V1.16.6.json"))) ;; invalid test -- lacks MetadataSpecification
 
   (save-document db test-file "TESTPROV" "some-edl-user")
 
@@ -245,21 +250,11 @@
   (jdbc/with-db-transaction [conn db] (get-document conn 1))
 
   ;; update document
-  (update-document db test-file2 "PROV2" "someotheruser" "USGS_TOOLS_LATLONG" "umm-t")
-  (-> db
-      (jdbc/query ["SELECT revision_id FROM cmr_generic_documents 
-                    WHERE document_name = ? AND provider_id = ?
-                    ORDER BY revision_id ASC" "USGS_TOOLS_LATLONG" "PROV2"])
-      last
-      :revision_id
-      int
-      inc)
-  (-> db
-      (jdbc/query ["SELECT created_at FROM cmr_generic_documents 
-                    WHERE document_name = ? AND provider_id = ?
-                    ORDER BY revision_id ASC" "USGS_TOOLS_LATLONG" "PROV2"])
-      first
-      :created_at)
-  
+  (update-document db test-file "TESTPROV" "someotheruser" "USGS_TOOLS_LATLONG" "umm-t")
+  (def my-last-rev (last (jdbc/query db ["SELECT * 
+                    FROM cmr_generic_documents 
+                    WHERE document_name = ? AND provider_id = ? 
+                    ORDER BY revision_id ASC" "USGS_TOOLS_LATLONG" "TESTPROV"])))
 
+  ;; delete document
   (jdbc/delete! db "cmr_generic_documents" ["id=?" 1]))
