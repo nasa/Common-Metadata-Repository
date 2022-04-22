@@ -44,7 +44,7 @@
                  [org.eclipse.jetty/jetty-util "9.4.39.v20210325"]
                  ;; load jts core lib first to make sure it is available for shapefile integration,
                  ;; otherwise ES referenced 1.15.0 version will be mistakenly picked for shapefile
-                 [org.locationtech.jts/jts-core "1.16.1"]
+                 [org.locationtech.jts/jts-core "1.18.2"]
                  [org.ow2.asm/asm "7.0"]
                  [potemkin "0.4.5"]
                  [ring/ring-core "1.9.2"]
