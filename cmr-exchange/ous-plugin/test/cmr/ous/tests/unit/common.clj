@@ -15,16 +15,37 @@
   (let [dims (array-map :Latitude {:Size 180 :Name :Latitude}
                         :Longitude {:Size 360 :Name :Longitude})]
     (testing "No bounds, Latitude & Longitude ..."
-     (is (= "?MyVar,Latitude,Longitude"
-            (common/bounding-infos->opendap-query
-             [{:name "MyVar"
-               :dimensions dims}])))
-     (is (= "?MyVar1,MyVar2,Latitude,Longitude"
-            (common/bounding-infos->opendap-query
-             [{:name "MyVar1"
-               :dimensions dims}
-              {:name "MyVar2"
-               :dimensions dims}]))))
+      ;; DAP2
+      (is (= "?MyVar,Latitude,Longitude"
+             (common/bounding-infos->opendap-query
+              [{:name "MyVar"
+                :dimensions dims}])))
+      ;; DAP4
+      (is (= "?dap4.ce=/MyVar;/Latitude;/Longitude"
+             (common/bounding-infos->opendap-query
+              [{:name "MyVar"
+                :dimensions dims}]
+              true)))
+      ;; DAP2
+      (is (= "?MyVar1,some/parent/MyVar2,/some/parent/MyVar3,Latitude,Longitude"
+             (common/bounding-infos->opendap-query
+              [{:name "MyVar1"
+                :dimensions dims}
+               {:name "some/parent/MyVar2"
+                :dimensions dims}
+               {:name "/some/parent/MyVar3"
+                :dimensions dims}])))
+      ;; DAP4
+      (is (= "?dap4.ce=/MyVar1;/some/parent/MyVar2;/some/parent/MyVar3;/Latitude;/Longitude"
+             (common/bounding-infos->opendap-query
+              [{:name "MyVar1"
+                :dimensions dims}
+               {:name "some/parent/MyVar2"
+                :dimensions dims}
+               {:name "/some/parent/MyVar3"
+                :dimensions dims}]
+              true))))
+
     (testing "With bounds, Latitude & Longitude ..."
       (let [bounds [-27.421875 53.296875 18.5625 69.75]
             bounding-info [{:name "MyVar"
@@ -32,21 +53,43 @@
                             :dimensions dims
                             :opendap (geog/create-opendap-bounds
                                       dims bounds {:reversed? true})}]]
-       (is (= "?MyVar[20:1:37][152:1:199],Latitude[20:1:37],Longitude[152:1:199]"
-              (common/bounding-infos->opendap-query bounding-info bounds))))))
+        ;; DAP2
+        (is (= "?MyVar[20:1:37][152:1:199],Latitude[20:1:37],Longitude[152:1:199]"
+               (common/bounding-infos->opendap-query bounding-info)))
+        ;; DAP4
+        (is (= "?dap4.ce=/MyVar[20:1:37][152:1:199];/Latitude[20:1:37];/Longitude[152:1:199]"
+               (common/bounding-infos->opendap-query bounding-info true))))))
+
   (let [dims (array-map :Latitude {:Size 180 :Name :lat}
                         :Longitude {:Size 360 :Name :lon})]
     (testing "No bounds, lat & lon ..."
-     (is (= "?MyVar,lat,lon"
-            (common/bounding-infos->opendap-query
-             [{:name "MyVar"
-               :dimensions dims}])))
-     (is (= "?MyVar1,MyVar2,lat,lon"
-            (common/bounding-infos->opendap-query
-             [{:name "MyVar1"
-               :dimensions dims}
-              {:name "MyVar2"
-               :dimensions dims}]))))
+      ;; DAP2
+      (is (= "?MyVar,lat,lon"
+             (common/bounding-infos->opendap-query
+              [{:name "MyVar"
+                :dimensions dims}])))
+      ;; DAP4
+      (is (= "?dap4.ce=/MyVar;/lat;/lon"
+             (common/bounding-infos->opendap-query
+              [{:name "MyVar"
+                :dimensions dims}]
+              true)))
+      ;; DAP2
+      (is (= "?MyVar1,some/parent/MyVar2,lat,lon"
+             (common/bounding-infos->opendap-query
+              [{:name "MyVar1"
+                :dimensions dims}
+               {:name "some/parent/MyVar2"
+                :dimensions dims}])))
+      ;; DAP4
+      (is (= "?dap4.ce=/MyVar1;/some/parent/MyVar2;/lat;/lon"
+             (common/bounding-infos->opendap-query
+              [{:name "MyVar1"
+                :dimensions dims}
+               {:name "some/parent/MyVar2"
+                :dimensions dims}]
+              true))))
+
     (testing "With bounds, lat & lon ..."
       (let [bounds [-27.421875 53.296875 18.5625 69.75]
             bounding-info [{:name "MyVar"
@@ -54,8 +97,12 @@
                             :dimensions dims
                             :opendap (geog/create-opendap-bounds
                                       dims bounds {:reversed? true})}]]
-       (is (= "?MyVar[20:1:37][152:1:199],lat[20:1:37],lon[152:1:199]"
-              (common/bounding-infos->opendap-query bounding-info bounds)))))))
+        ;; DAP2
+        (is (= "?MyVar[20:1:37][152:1:199],lat[20:1:37],lon[152:1:199]"
+               (common/bounding-infos->opendap-query bounding-info)))
+        ;; DAP4
+        (is (= "?dap4.ce=/MyVar[20:1:37][152:1:199];/lat[20:1:37];/lon[152:1:199]"
+               (common/bounding-infos->opendap-query bounding-info true)))))))
 
 ;;; UMM-Var Test data
 

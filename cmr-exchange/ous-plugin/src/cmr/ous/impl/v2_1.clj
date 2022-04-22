@@ -119,6 +119,7 @@
                {:errors (errors/check
                          [not granule-links metadata-errors/empty-gnl-data-files])})]
      (common/process-results {:params params
+                              :dap-version dap-version
                               :granule-links granule-links
                               :tag-data tag-data
                               :query query} start errs warns))))

@@ -1,5 +1,6 @@
 (ns cmr.ous.util.geog
   (:require
+   [clojure.string :as string]
    [cmr.metadata.proxy.results.errors :as metadata-errors]
    [cmr.ous.const :as const]
    [taoensso.timbre :as log]))
@@ -245,15 +246,31 @@
                        stride
                        (get-in lookup-record [:high :lon]))))
 
+(defn get-delimiter
+  "Returns the delimiter of ; for DAP4 if is-dap4? parameter is true; otherwise returns , for DAP2."
+  [is-dap4?]
+  (if is-dap4?
+    ";"
+    ","))
+
+(defn- normalized-name
+  "Returns the normalized name. For DAP4 format, the name must start with /."
+  [is-dap4? field]
+  (if is-dap4?
+    (if (string/starts-with? field "/")
+      field
+      (str "/" field))
+    field))
+
 (defn -format-opendap-lat-lon
   ([lookup-record [lon-name lat-name] stride]
-   (-format-opendap-lat-lon lookup-record [lon-name lat-name] stride ","))
-  ([lookup-record [lon-name lat-name] stride delimiter]
+   (-format-opendap-lat-lon lookup-record [lon-name lat-name] stride false))
+  ([lookup-record [lon-name lat-name] stride is-dap4?]
     (format "%s%s%s%s%s"
-            lat-name
+            (normalized-name is-dap4? lat-name)
             (format-opendap-dim-lat lookup-record stride)
-            delimiter
-            lon-name
+            (get-delimiter is-dap4?)
+            (normalized-name is-dap4? lon-name)
             (format-opendap-dim-lon lookup-record stride))))
 
 (def lat-type :LATITUDE_DIMENSION)
@@ -453,20 +470,22 @@
   ([bounding-info]
    (format-opendap-lat-lon bounding-info default-lat-lon-stride))
   ([bounding-info stride]
-   (format-opendap-lat-lon bounding-info stride ","))
-  ([bounding-info stride delimiter]
+   (format-opendap-lat-lon bounding-info stride false))
+  ([bounding-info stride is-dap4?]
    (-format-opendap-lat-lon (:opendap bounding-info)
                             (get-lat-lon-names bounding-info)
                             stride
-                            delimiter)))
+                            is-dap4?)))
 
 (defn format-opendap-bounds
   ([bounding-info]
    (format-opendap-bounds bounding-info default-lat-lon-stride))
   ([{bound-name :name :as bounding-info} stride]
+   (format-opendap-bounds bounding-info stride false))
+  ([{bound-name :name :as bounding-info} stride is-dap4?]
    (log/trace "Bounding info:" bounding-info)
    (format "%s%s"
-           bound-name
+           (normalized-name is-dap4? bound-name)
            (format-opendap-dims bounding-info stride))))
 
 (defn extract-dimensions
