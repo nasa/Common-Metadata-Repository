@@ -314,6 +314,107 @@
                   :ShortName "Processing Center"
                   :LongName "processor.processor"}]})
 
+;; when migrate up, from 1.16.7 to 1.17.0, OrbitParameters_1_16_7-1-Up is converted to OrbitParameters_1_17_0-1-Up,
+;; OrbitParameters_1_16_7-2-Up is converted to OrbitParameters_1_17_0-2-Up
+
+(def OrbitParameters_1_16_7-1-Up
+  {:SwathWidth 1 
+   :Period 2
+   :InclinationAngle 3
+   :NumberOfOrbits 4})
+
+(def OrbitParameters_1_17_0-1-Up
+  {:SwathWidth 1
+   :SwathWidthUnit "Kilometer"
+   :OrbitPeriod 2
+   :OrbitPeriodUnit "Decimal Minute"
+   :InclinationAngle 3 
+   :InclinationAngleUnit "Degree"
+   :NumberOfOrbits 4})
+
+(def OrbitParameters_1_16_7-2-Up
+  {:SwathWidth 1
+   :Period 2 
+   :InclinationAngle 3 
+   :StartCircularLatitude 4
+   :NumberOfOrbits 5})
+
+(def OrbitParameters_1_17_0-2-Up
+  {:SwathWidth 1
+   :SwathWidthUnit "Kilometer"
+   :OrbitPeriod 2
+   :OrbitPeriodUnit "Decimal Minute"
+   :InclinationAngle 3
+   :InclinationAngleUnit "Degree"
+   :StartCircularLatitude 4
+   :StartCircularLatitudeUnit "Degree" 
+   :NumberOfOrbits 5})
+
+;; when migrate down, from 1.17.0 to 1.16.7, OrbitParameters_1_17_0-1-Down is converted to OrbitParameters_1_16_7-1-Down,
+;; OrbitParameters_1_17_0-2-Down is converted to OrbitParameters_1_16_7-2-Down, OrbitParameters_1_17_0-3-Down is converted
+;; to OrbitParameters_1_16_7-3-Down.
+
+;; SwathWidth exists, with the same unit as the assumed one
+(def OrbitParameters_1_17_0-1-Down
+  {:SwathWidth 1
+   :SwathWidthUnit "Kilometer"
+   :OrbitPeriod 2
+   :OrbitPeriodUnit "Decimal Minute"
+   :InclinationAngle 3
+   :InclinationAngleUnit "Degree"
+   :StartCircularLatitude 4
+   :StartCircularLatitudeUnit "Degree"
+   :NumberOfOrbits 5
+   :Footprints [{:Footprint 6 :FootprintUnit "Kilometer"}
+                {:Footprint 5000 :FootprintUnit "Meter"}]})
+
+(def OrbitParameters_1_16_7-1-Down
+  {:SwathWidth 1
+   :Period 2
+   :InclinationAngle 3
+   :StartCircularLatitude 4
+   :NumberOfOrbits 5})
+
+;; SwathWidth exists, with different unit as the assumed one
+(def OrbitParameters_1_17_0-2-Down
+  {:SwathWidth 1000
+   :SwathWidthUnit "Meter"
+   :OrbitPeriod 2
+   :OrbitPeriodUnit "Decimal Minute"
+   :InclinationAngle 3
+   :InclinationAngleUnit "Degree"
+   :StartCircularLatitude 4
+   :StartCircularLatitudeUnit "Degree"
+   :NumberOfOrbits 5
+   :Footprints [{:Footprint 6 :FootprintUnit "Kilometer"} 
+                {:Footprint 5000 :FootprintUnit "Meter"}]})
+
+(def OrbitParameters_1_16_7-2-Down
+  {:SwathWidth 1
+   :Period 2
+   :InclinationAngle 3
+   :StartCircularLatitude 4
+   :NumberOfOrbits 5})
+
+;; SwathWidth doesn't exist, convert the largest Footprint to SwathWidth.
+(def OrbitParameters_1_17_0-3-Down
+  {:OrbitPeriod 2
+   :OrbitPeriodUnit "Decimal Minute"
+   :InclinationAngle 3
+   :InclinationAngleUnit "Degree"
+   :StartCircularLatitude 4
+   :StartCircularLatitudeUnit "Degree"
+   :NumberOfOrbits 5
+   :Footprints [{:Footprint 6 :FootprintUnit "Kilometer"}
+                {:Footprint 5000 :FootprintUnit "Meter"}]})
+
+(def OrbitParameters_1_16_7-3-Down
+  {:SwathWidth 6
+   :Period 2
+   :InclinationAngle 3
+   :StartCircularLatitude 4
+   :NumberOfOrbits 5})
+
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions {:collection ["1.0" "1.1" "1.2" "1.3" "1.9" "1.10"]}}
     (is (= [] (#'vm/version-steps :collection "1.2" "1.2")))
@@ -2872,3 +2973,53 @@
     "Migrating CollectionDataType"
     "NEAR_REAL_TIME"
     {:CollectionDataType "EXPEDITED"}))
+
+(deftest migrate-1-16-7-to-1-17-0
+  "Test the migration of collections from 1.16.7 to 1.17.0."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.7" "1.17.0" sample-collection)]
+      (is (= expected result)))
+
+    "Migrating without StartCircularLatitude"
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-1-Up}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-1-Up}}
+
+    "Migrating with StartCircularLatitude"
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-2-Up}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}     
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-2-Up}}))
+
+(deftest migrate-1-17-0-to-1-16-7
+  "Test the migration of collections from 1.17.0 to 1.16.7."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.17.0" "1.16.7" sample-collection)]
+      (is (= expected result)))
+
+    "Migrating with SwathWidth in same unit"
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-1-Down}}
+    {:StandardProduct true
+     :SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-1-Down}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}
+
+    "Migrating with SwathWidth in different unit"
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-2-Down}}
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-2-Down}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}
+
+    "Migrating with SwathWidth being the largest Footprint"
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-3-Down}}
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-3-Down}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}))

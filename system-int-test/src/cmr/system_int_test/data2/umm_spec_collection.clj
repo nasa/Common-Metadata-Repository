@@ -9,7 +9,8 @@
     [cmr.umm-spec.additional-attribute :as aa]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-    [cmr.umm-spec.util :as u]))
+    [cmr.umm-spec.util :as u]
+    [cmr.umm-spec.versioning :as umm-spec-versioning]))
 
 (defn archive-and-distrution-information
   "Returns an ArchiveAndDistributionInformation based on given attributes"
@@ -188,7 +189,12 @@
    :EntryTitle "The entry title V5"
    :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                        :Type "CREATE"})]
-   :Abstract "A very abstract collection"})
+   :Abstract "A very abstract collection"
+   :MetadataSpecification (umm-c/map->MetadataSpecificationType
+                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                        umm-spec-versioning/current-collection-version),
+                              :Name "UMM-C"
+                              :Version umm-spec-versioning/current-collection-version})})
 
 (def umm-c-missing-properties-dif
   "This is the minimal valid UMM-C."
@@ -205,7 +211,12 @@
    :EntryTitle "The entry title V5"
    :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                        :Type "CREATE"})]
-   :Abstract "A very abstract collection"})
+   :Abstract "A very abstract collection"
+   :MetadataSpecification (umm-c/map->MetadataSpecificationType
+                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                        umm-spec-versioning/current-collection-version),
+                              :Name "UMM-C"
+                              :Version umm-spec-versioning/current-collection-version})})
 
 (def umm-c-missing-properties-dif10
   "This is the minimal valid UMM-C."
@@ -226,7 +237,12 @@
    :DataDates [(umm-cmn/map->DateType {:Date (t/date-time 2012)
                                        :Type "CREATE"})]
    :Abstract "A very abstract collection"
-   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]})
+   :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]
+   :MetadataSpecification (umm-c/map->MetadataSpecificationType
+                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                        umm-spec-versioning/current-collection-version),
+                              :Name "UMM-C"
+                              :Version umm-spec-versioning/current-collection-version})})
 
 (def minimal-umm-c
   "This is the minimal valid UMM-C."
@@ -250,7 +266,12 @@
                                        :Type "CREATE"})]
    :Abstract "A very abstract collection"
    :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(t/date-time 2012)]})]
-   :DOI {:DOI "10.5678/TestDOI"}})
+   :DOI {:DOI "10.5678/TestDOI"}
+   :MetadataSpecification (umm-c/map->MetadataSpecificationType
+                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                        umm-spec-versioning/current-collection-version),
+                              :Name "UMM-C"
+                              :Version umm-spec-versioning/current-collection-version})})
 
 
 (defn collection-missing-properties

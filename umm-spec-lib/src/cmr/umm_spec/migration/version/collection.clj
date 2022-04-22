@@ -6,6 +6,7 @@
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.metadata-specification :as m-spec]
    [cmr.umm-spec.migration.collection-progress-migration :as coll-progress-migration]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.distance-units-migration :as distance-units-migration]
@@ -115,6 +116,62 @@
                                   (string/lower-case %)
                                   "Not provided"))
     getdata))
+
+(defn- migrate-OrbitParameters-up
+  "Add in the assumed units. The Period element needs to be changed to OrbitPeriod.
+  There are four units added in 1.17.0. Three of them are associated with the required
+  fields in 1.16.7. StartCircularLatitudeUnit is added only if StartCircularLatitude
+  exists."
+  [collection]
+  (let [orbit-period (get-in collection [:SpatialExtent :OrbitParameters :Period])
+        StartCircularLatitude (get-in collection [:SpatialExtent :OrbitParameters :StartCircularLatitude])
+        collection (-> collection
+                       (update-in [:SpatialExtent :OrbitParameters] dissoc :Period)
+                       (update-in [:SpatialExtent :OrbitParameters] assoc :SwathWidthUnit "Kilometer"
+                                                                          :OrbitPeriodUnit "Decimal Minute"
+                                                                          :InclinationAngleUnit "Degree"
+                                                                          :OrbitPeriod orbit-period))]
+    (if StartCircularLatitude
+      (assoc-in collection [:SpatialExtent :OrbitParameters :StartCircularLatitudeUnit] "Degree")
+      collection)))
+
+(defn- get-largest-footprint-in-kilometer
+  "Convert all foot-prints to Kilometer, return the largest value."
+  [foot-prints]
+  (let [foot-prints-in-kilometer (map #(if (= "Meter" (:FootprintUnit %))
+                                         (/ (:Footprint %) 1000)
+                                         (:Footprint %))
+                                      foot-prints)]
+    (when (seq foot-prints)
+      (apply max foot-prints-in-kilometer))))
+
+(defn get-swath-width
+  "Get the correct value for collection's SwathWidth in v1.16.7 from v1.17.0.
+  If SwathWidth exists in v1.17.0, convert it to the value in Kilometer.
+  Otherwise, convert all Footprints to Kilometer, get the largest value and use it
+  for SwathWidth."
+  [collection]
+  (let [swath-width-unit (get-in collection [:SpatialExtent :OrbitParameters :SwathWidthUnit])
+        swath-width (get-in collection [:SpatialExtent :OrbitParameters :SwathWidth]) 
+        swath-width (if (and swath-width (= "Meter" swath-width-unit))
+                      (/ swath-width 1000)
+                      swath-width)]
+    (if swath-width
+      swath-width
+      ;; if SwathWidth doesn't exist, Footprints is required.
+      (get-largest-footprint-in-kilometer (get-in collection [:SpatialExtent :OrbitParameters :Footprints])))))
+        
+(defn- migrate-OrbitParameters-down
+  "Remove Footprints element; rename OrbitPeriod to Period; remove all the units;
+  convert SwathWidth to the value in assumed unit; If SwathWidth doesn't exist,
+  convert largest Footprint to SwathWidth."
+  [collection]
+  (let [swath-width (get-swath-width collection)
+        period (get-in collection [:SpatialExtent :OrbitParameters :OrbitPeriod])]
+    (-> collection
+        (update-in [:SpatialExtent :OrbitParameters] dissoc :Footprints :OrbitPeriod :SwathWidthUnit :OrbitPeriodUnit
+                :InclinationAngleUnit :StartCircularLatitudeUnit)
+        (update-in [:SpatialExtent :OrbitParameters] assoc :SwathWidth swath-width :Period period))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collection Migration Implementations
@@ -488,3 +545,21 @@
     (if (or (= "LOW_LATENCY" CollectionDataType) (= "EXPEDITED" CollectionDataType))
       (assoc collection :CollectionDataType "NEAR_REAL_TIME")
       collection)))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.7" "1.17.0"]
+  [context collection & _]
+  ;; MetadataSpecification - add in the field and the proper enumeration values.
+  ;; OrbitParameters - add in the assumed units. The Period element needs to be changed to OrbitPeriod.
+  (-> collection
+      (m-spec/update-version :collection "1.17.0")
+      (migrate-OrbitParameters-up)))
+      
+(defmethod interface/migrate-umm-version [:collection "1.17.0" "1.16.7"]
+  [context collection & _]
+  ;; Remove MetadataSpecification and StandardProduct.
+  ;; OrbitParameters - remove Footprints element; rename OrbitPeriod to Period;
+  ;;                   remove all the units; convert SwathWidth to the value in assumed unit;
+  ;;                   if SwathWidth doesn't exist, convert largest Footprint to SwathWidth.
+  (-> collection
+      (dissoc :MetadataSpecification :StandardProduct)
+      (migrate-OrbitParameters-down)))

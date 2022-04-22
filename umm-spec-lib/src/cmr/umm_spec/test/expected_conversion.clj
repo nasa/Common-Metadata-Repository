@@ -329,10 +329,14 @@
                                             {:Type "Maximum Depth"
                                              :Value "Some kind of value2"}]
                    :OrbitParameters {:SwathWidth 2.0
-                                     :Period 96.7
+                                     :SwathWidthUnit "Kilometer"
+                                     :OrbitPeriod 96.7
+                                     :OrbitPeriodUnit "Decimal Minute"
                                      :InclinationAngle 94.0
+                                     :InclinationAngleUnit "Degree"
                                      :NumberOfOrbits 2.0
-                                     :StartCircularLatitude 50.0}}
+                                     :StartCircularLatitude 50.0
+                                     :StartCircularLatitudeUnit "Degree"}}
    :TilingIdentificationSystems [{:TilingIdentificationSystemName "MISR"
                                    :Coordinate1 {:MinimumValue 1.0
                                                  :MaximumValue 10.0}
@@ -627,7 +631,12 @@
                           :OtherCitationDetails "Other Citation Details"
                           :OnlineResource {:Linkage "http://www.foo.com"
                                            :Name "Data Set Citation"
-                                           :Description "Data Set Citation"}}]})
+                                           :Description "Data Set Citation"}}]
+   :MetadataSpecification (umm-coll-models/map->MetadataSpecificationType
+                           {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                       vers/current-collection-version),
+                            :Name "UMM-C"
+                            :Version vers/current-collection-version})})
 
 (def example-collection-record
   "An example record with fields supported by most formats."

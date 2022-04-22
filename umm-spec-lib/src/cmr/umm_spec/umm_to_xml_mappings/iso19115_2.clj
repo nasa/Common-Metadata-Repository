@@ -331,6 +331,7 @@
             (spatial/generate-resolution-and-coordinate-system-horizontal-data-resolutions c)
             (spatial/generate-vertical-domain c)
             (spatial/generate-orbit-parameters c)
+            (spatial/generate-orbit-parameters-foot-prints c)
             (for [temporal (:TemporalExtents c)
                   rdt (:RangeDateTimes temporal)]
               [:gmd:temporalElement
