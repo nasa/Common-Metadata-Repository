@@ -4,11 +4,11 @@
    [cheshire.core :as json]
    [clojure.java.jdbc :as jdbc]
    [clojure.pprint :refer [pprint pp]]
-   [cmr.common.log :refer [debug info warn error]]
+   ;[cmr.common.log :refer [debug info warn error]]
    [cmr.common.time-keeper :as tkeep]
    [cmr.common.util :as cutil]
-   [cmr.metadata-db.data.oracle.concepts :as concepts]
-   [cmr.metadata-db.data.oracle.concept-tables :as ct]
+   ;[cmr.metadata-db.data.oracle.concepts :as concepts]
+   ;[cmr.metadata-db.data.oracle.concept-tables :as ct]
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.metadata-db.data.generic-documents :as gdoc]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc
@@ -58,8 +58,7 @@
                     FROM cmr_generic_documents 
                     WHERE document_name = ? AND provider_id = ? 
                     ORDER BY revision_id ASC" doc-name provider-id])
-      last)
-  )
+      last))
 
 (defn get-next-id-seq
   "Get next ID for inserting new rows"
@@ -80,9 +79,10 @@
       long))
 
 (defn insert-record
-  "Insert a row in the dn table"
-  [db]
-  )
+  "Insert a row in the db table. This function expects the map form, not vector."
+  [db row]
+  (jdbc/insert! db :cmr_generic_documents row)
+  (str (:concept_id row) ", revision #" (:revision_id row)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -91,63 +91,31 @@
    document as can be found. All documents must have at least a :Name and a
    :MetadataSpecification field."
   [db document provider-id user-id]
-
-  (let [id-seq (-> db
-                   (jdbc/query ["SELECT METADATA_DB.cmr_generic_documents_seq.NEXTVAL FROM dual"])
-                   first
-                   :nextval
-                   long)
-        transaction-id (-> db
-                           (jdbc/query ["SELECT GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL FROM dual"])
-                           first
-                           :nextval
-                           long)
-        raw-count (-> db
+  (let [raw-count (-> db
                       (jdbc/query ["SELECT count(DISTINCT concept_id) AS last FROM CMR_GENERIC_DOCUMENTS"])
                       first
                       :last)
         next (+ 1200000001 raw-count)
         concept-id (format "X%s-%s" next provider-id)
         parsed (json/parse-string document true)
-        document-name (:Name parsed)
-        scheme (clojure.string/lower-case (get-in parsed [:MetadataSpecification :Name]))
-        format-name scheme
+        schema (clojure.string/lower-case (get-in parsed [:MetadataSpecification :Name]))
         version (get-in parsed [:MetadataSpecification :Version])
-        mime-type (format "application/%s;version=%s" scheme version)
-        encoded-document (cutil/string->gzip-bytes document)
         now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
-    (jdbc/insert!
-     db
-     :cmr_generic_documents
-     ["id"
-      "concept_id"
-      "provider_id"
-      "document_name"
-      "schema"
-      "format"
-      "mime_type"
-      "metadata"
-      "revision_id"
-      "revision_date"
-      "created_at"
-      "deleted"
-      "user_id"
-      "transaction_id"]
-     [id-seq
-      concept-id
-      provider-id
-      document-name
-      scheme
-      format-name
-      mime-type
-      encoded-document
-      1
-      now
-      now
-      0
-      user-id
-      transaction-id])
-    id-seq))
+    (insert-record db
+                   {:id (get-next-id-seq db)
+                    :concept_id concept-id
+                    :provider_id provider-id
+                    :document_name (:Name parsed)
+                    :schema schema
+                    :format (identity schema)
+                    :mime_type (format "application/%s;version=%s" schema version)
+                    :metadata (cutil/string->gzip-bytes document)
+                    :revision_id 1
+                    :revision_date now
+                    :created_at now
+                    :deleted 0
+                    :user_id user-id
+                    :transaction_id (get-next-transaction-id db)})))
 
 (defn get-documents
   [db format]
@@ -173,8 +141,7 @@
     (let [parsed (json/parse-string document true)
           version (get-in parsed [:MetadataSpecification :Version])
           now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
-      (jdbc/insert! db 
-                    :cmr_generic_documents
+      (insert-record db 
                     {:id (get-next-id-seq db)
                      :concept_id (:concept_id last-revision)
                      :provider_id provider-id
@@ -190,8 +157,7 @@
                      :created_at (:created_at last-revision)
                      :deleted 0
                      :user_id user-id
-                     :transaction_id (get-next-transaction-id db)})
-      doc-name)))
+                     :transaction_id (get-next-transaction-id db)}))))
 
 (defn delete-document
   [db document])
@@ -222,7 +188,7 @@
   (def gzip-blob (cutil/string->gzip-bytes test-file))
   (def test-file2 (slurp (clojure.java.io/resource "AllElements-V1.16.6.json"))) ;; invalid test -- lacks MetadataSpecification
 
-  (save-document db test-file "TESTPROV" "some-edl-user")
+  (save-document db test-file "PROV1" "some-edl-user")
 
   ;; save-document
   (jdbc/insert! db
@@ -246,11 +212,11 @@
   ;(concepts/db-result->concept-map "generic" db nil get-all-result)
   (jdbc/with-db-transaction [conn db] (get-documents conn "myformat"))
 
-  ;; get document -- still needs work (see code above)
+  ;; get document 
   (jdbc/with-db-transaction [conn db] (get-document conn 1))
 
   ;; update document
-  (update-document db test-file "TESTPROV" "someotheruser" "USGS_TOOLS_LATLONG" "umm-t")
+  (update-document db test-file "PROV1" "someotheruser2" "USGS_TOOLS_LATLONG" "umm-c")
   (def my-last-rev (last (jdbc/query db ["SELECT * 
                     FROM cmr_generic_documents 
                     WHERE document_name = ? AND provider_id = ? 
