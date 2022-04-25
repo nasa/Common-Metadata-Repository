@@ -7,7 +7,7 @@
    (org.geotools.geometry.jts JTS)
    (org.geotools.referencing CRS)
    (org.geotools.referencing.crs DefaultGeocentricCRS DefaultGeographicCRS)
-   (com.vividsolutions.jts.geom Coordinate GeometryFactory PrecisionModel))
+   (org.locationtech.jts.geom Coordinate GeometryFactory PrecisionModel))
   (:refer-clojure :exclude [empty? intersection reverse]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

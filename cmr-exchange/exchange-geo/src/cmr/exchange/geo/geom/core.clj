@@ -5,7 +5,7 @@
     [cmr.exchange.geo.geom.impl.jts :as jts])
   (:import
     (com.esri.core.geometry.Polygon)
-    (com.vividsolutions.jts.geom.Polygon)
+    (org.locationtech.jts.geom.Polygon)
     (cmr.exchange.geo.geom.impl.geographiclib GeographiclibPolygon))
   (:refer-clojure :exclude [empty? intersection reverse]))
 
@@ -23,7 +23,7 @@
   (cartesian->wgs84 [this])
   (wgs84->cartesian [this]))
 
-(extend com.vividsolutions.jts.geom.Polygon
+(extend org.locationtech.jts.geom.Polygon
         PolygonAPI
         jts/behaviour)
 
