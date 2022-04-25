@@ -23,7 +23,7 @@ The REST API for CMR Service-Bridge aims to accomplish a few core goals:
 
 The REST API is currently focused on the following:
 * generating OPeNDAP data access URLs, and
-* providing size esimates for subsetted GIS data
+* providing size estimates for subsetted GIS data
 
 The first allows users to easily download subsetted files from OPeNDAP servers
 based on metadata stored in the CMR and presented to end users by EDSC.
@@ -36,7 +36,7 @@ right.
 # About the Docs
 
 This API documentation provides prose in the central column, using
-the left collumn to highlight usage and code.
+the left column to highlight usage and code.
 
 Note that, due to some of the long URLs and query examples, the lines
 in the examples are broken up -- this is done for the sake of visiability
@@ -66,13 +66,14 @@ and the API versions supported in each.
 
 Release             | REST API Versions | Status
 ------------------- | ----------------- | --------------
-1.6.0-SNAPSHOT      | v1, v2, v2.1      | In development
+1.6.0-SNAPSHOT      | v1, v2, v2.1, v3  | In development
 1.1.0 through 1.5.0 | v1, v2, v2.1      | Released
 1.0.0               | v1, v2            | Released
 0.1.0               | v1                | Released
 
 Summary of changes in REST API:
 
+* v3: Changed default format to DAP4; Added dap-version parameter
 * v2.1: Use of UMM-Var 1.2 new dimensional metadata to remove old hacks
 * v2: Breaking change to cache management admin resource
 * v1: First version of API (including admin resources)
@@ -81,8 +82,8 @@ Summary of changes in REST API:
 # Versioned API
 
 The CMR Service-Bridge REST API is versioned. By default, the most recent version of
-the API is accessed when a request is submitted without specificing the
-desired version. Currently, this is `v2.1`.
+the API is accessed when a request is submitted without specifying the
+desired version. Currently, this is `v3`.
 
 To request a specific version of the REST API, you must send an additional
 header in your request to CMR Service-Bridge.
@@ -134,8 +135,7 @@ Cmr-Media-Type: cmr-service-bridge.v2; format=json
 <aside class="info">
   We recommend explicitly "pinning" your client requests to the latest
   release of the API so that you are always using exactly what you expect
-  to be using. Then your use of new versions of the API will be an
-  intentional decision.
+  to be using. Then your use of new versions of the API will be an intentional decision.
 </aside>
 
 
@@ -144,8 +144,7 @@ Cmr-Media-Type: cmr-service-bridge.v2; format=json
 CMR Service-Bridge requires the use of tokens in order to provide access to
 potentially protected collections, services, variables, and/or granules.
 
-> A token needs to be included in each request, and this is done by sending
-a special header:
+> A token needs to be included in each request, and this is done by sending a special header:
 
 ```
 "Echo-Token: <YOUR_TOKEN>"
@@ -163,15 +162,14 @@ a special header:
 
 Both ECHO as well as URS/Earthdata Login tokens are supported.
 
-Many of the examples in the documentation below show usage of the
-Echo token.
+Many of the examples in the documentation below show usage of the ECHO token.
 
 
 # Responses
 
 ## Success
 
-CMR Service-Bridge responses have pareticular formats, inherited from CMR response
+CMR Service-Bridge responses have particular formats, inherited from CMR response
 data. A successful request will provide the results, the number of results
 and, the time taken to process the request.
 
@@ -190,7 +188,7 @@ and, the time taken to process the request.
 ## Request IDs
 
 Each request is given a random UUID to allow for better debugging and
-correlation of events. In addition to being povided in the response body
+correlation of events. In addition to being provided in the response body
 for a successful query, the request ID is also sent in the response headers.
 In the headers, the request ID has the field name `Cmr-Request-Id`.
 
@@ -268,7 +266,7 @@ that name has carried through here.
 
 ## Tag Associations
 
-Currenly, OUS depends upon CMR tag associations in order to map from a source file
+Currently, OUS depends upon CMR tag associations in order to map from a source file
 (e.g., an HDF granule file) to a URL that represents an OPeNDAP service which supports
 subsetting on that file. In other words, this allows OUS to convert a granule's archive
 location to an OPeNDAP location.
@@ -286,7 +284,7 @@ curl --silent \
 ```
 
 > Then, we can associate the tag with the collection. We do this by using a regex that
-replaces the achive location with the OPeNDAP location:
+replaces the archive location with the OPeNDAP location:
 
 ```shell
 curl --silent \
@@ -299,7 +297,7 @@ curl --silent \
 ```
 
 > Then, for any future OUS queries made to that collection and it's granules, OUS will
-perform the substituion behind the scenes. This is demonstrated by the following query
+perform the substitution behind the scenes. This is demonstrated by the following query
 to our tagged collection:
 
 ```shell
@@ -322,8 +320,7 @@ curl \
 
 The CMR Service-Bridge REST API supports two different means of creating a subsetted
 OPeNDAP URL for granules and/or variables in a collection: one returns a
-standard JSON document; the other, more effectial means returns a JSON
-document via HTTP streaming.
+standard JSON document; the other, more effectual means returns a JSON document via HTTP streaming.
 
 The resources are as follows:
 
@@ -369,9 +366,9 @@ that your HTTP client supports streaming.
 
 ## Interaction of Parameters
 
-In each sections below, the various parameters one can pass to the ous resource
+In each sections below, the various parameters one can pass to the OUS resource
 are described. Each parameter is discussed in isolation, simply addressing it
-in its own context. However, common usage will involve more than on parameter
+in its own context. However, common usage will involve more than one parameter
 acting at the same time. As such, here are some points to note:
 
 * Currently CMR Service-Bridge supports only queries with one collection; as such,
@@ -382,7 +379,7 @@ acting at the same time. As such, here are some points to note:
   at a time).
 * Similarly, multiple granules are queried at once with a single query to CMR
   Search.
-* In the granule query to CMR Search, and spatial and temporal parameters that
+* In the granule query to CMR Search, spatial and temporal parameters that
   were passed to CMR Service-Bridge will be used to limit the granule results from
   CMR Search to just those in which the user is interested.
 
@@ -396,6 +393,7 @@ are various parameters supported:
 * `bounding-box`
 * `exclude-granules`
 * `format`
+* `dap-version`
 * `granules`
 * `temporal`
 * `variables`
@@ -403,7 +401,7 @@ are various parameters supported:
 These may be used alone or in any combination. Details for usage are provided
 below in separate sections.
 
-Note that both hypens and underscores are supported in parameters that have
+Note that both hyphens and underscores are supported in parameters that have
 them; you may use either, per your preference.
 
 
@@ -481,6 +479,22 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?format=nc"
 ```
 
+### `dap-version`
+
+This allows the client to request OPeNDAP links in [DAP4](https://docs.opendap.org/index.php/DAP4:_Specification_Volume_1) or [DAP2](https://earthdata.nasa.gov/esdis/esco/standards-and-references/data-access-protocol-2) format. The valid values of dap-version parameter is either 4 or 2.
+
+If not provided, the default of `4` (DAP4) is used.
+
+The following is an example of accepted `dap-version` parameter usage:
+
+* `dap-version=2`
+
+> Use of `dap-version` in a query:
+
+```shell
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?dap-version=2"
+```
 
 ### `granules`
 
@@ -514,7 +528,7 @@ This provides clients with the ability to select a temporal subset of data to
 include in the granule data extracted by the OPeNDAP query, only providing data
 for the time of interest.
 
-If not provided, the entire temproal extent of the granule will be used.
+If not provided, the entire temporal extent of the granule will be used.
 
 The following are examples of accepted `temporal` parameter usage:
 
@@ -535,7 +549,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 
 ### `variables`
 
-This proivdes clients with the ability to limit the granule data extracted
+This provides clients with the ability to limit the granule data extracted
 by the OPeNDAP query to just the variables in which you are interested.
 
 If not provided, all variables associated in the collection metadata will
@@ -621,7 +635,7 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 
 ### `rangesubset`
 
-This proivdes clients with the ability to limit the granule data extracted
+This provides clients with the ability to limit the granule data extracted
 by the OPeNDAP query to just the variables in which you are interested.
 
 If not provided, all variables associated in the collection metadata will
@@ -676,7 +690,7 @@ This provides clients with the ability to select a temporal subset of data to
 include in the granule data extracted by the OPeNDAP query, only providing data
 for the time of interest.
 
-If not provided, the entire temproal extent of the granule will be used.
+If not provided, the entire temporal extent of the granule will be used.
 
 The following is an example of accepted `timeposition` parameter usage:
 
@@ -704,7 +718,7 @@ The following are coming soon:
 
 ## Collection Resources
 
-The Size Estimation Service offers a REST API for esimating the download sizes of subsetted
+The Size Estimation Service offers a REST API for estimating the download sizes of subsetted
 collection-based granule queries. The usage is almost identical to the OUS resources, the
 primary different being the path segment:
 
@@ -720,10 +734,10 @@ Two parameters are required in a query string to this resource:
 * `variables(or variable_aliases)`  which is comma-separated for two or more variables(or variable-aliases),
 or `variables[](or variable_aliases[]`, which is repeated for each variable(or variable_alias) in the query string.
 Note: values for variable_aliases could be aliases or the group nodes of the aliases. Both `alias=<alias>`
-and `alias=<alias>/*` are searched in cmr variable search to take both alias and group nodes into account.
+and `alias=<alias>/*` are searched in CMR variable search to take both alias and group nodes into account.
 
 A `service_id` parameter is optional; if not provided, the service type of `opendap` is assumed.
-otherwise, the service type will be retrieved using the service_id through ous call to CMR.
+otherwise, the service type will be retrieved using the service_id through OUS call to CMR.
 
 A `format` parameter is optional; if not provided, the format of `nc` (NetCDF3) is assumed for
 `opendap` service type and the format of `native` is assumed for `esi` service type.
@@ -750,7 +764,7 @@ All parameters behave as documented above in the OUS sections on `granules`, `va
 
 A final parameter that is unique to the size estimation service is `total-granule-input-bytes`:
 this is required when passing `nc4` or `ascii` as the format values. This parameter represents
-the size of the granules when no subsetting operation is being peformed.
+the size of the granules when no subsetting operation is being performed.
 
 ## Examples
 
@@ -940,7 +954,7 @@ listed below, but will be appended to the array of errors in the response body.
 
 ## CMR Service-Bridge Warnings
 
-Warning messages will generally be included in a successful reponse, and thus
+Warning messages will generally be included in a successful response, and thus
 will usually have an HTTP status of 200.
 
 ### Gridded Data
@@ -966,12 +980,12 @@ HTTP Status | Error Message
 
 HTTP Status | Error Message
 ----------- |----------------------------------------------------
-400         | The requst includes a dataset whose processing level is not supported.
+400         | The request includes a dataset whose processing level is not supported.
 400         | Problematic processing level ___ for collection ___.
 400         | The service pattern computed was empty. Is there a service associated with the given collection? Does the UMM-S record in question have values for the pattern fields?
 400         | One or more of the parameters provided were invalid.
-400         | The values provided for latitude are not within the valid range of -90 degrees through 90 degress.
-400         | The values provided for longitude are not within the valid range of -180 degrees through 180 degress.
+400         | The values provided for latitude are not within the valid range of -90 degrees through 90 degrees.
+400         | The values provided for longitude are not within the valid range of -180 degrees through 180 degrees.
 
 #### Server-Side
 
