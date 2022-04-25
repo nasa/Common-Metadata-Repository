@@ -583,50 +583,6 @@
         provider-store-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Metadata DB GenericDocsStore Implementation - PROTOTYPE
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-;; CMR-8181
-;; TO-DO: really the below is just stubs, bc we need to decide
-;; are we going to make a new :documents-atom or use the 
-;; :concepts-atom that the others use
-
-(defn save-document
-  [db {:keys [document-id] :as document}]
-  (swap! (:documents-atom db) assoc document-id document))
-
-(defn get-documents
-  [db]
-  (vals @(:documents-atom db)))
-
-(defn get-document
-  [db document-id]
-  (@(:documents-atom db) document-id))
-
-(defn update-document
-  [db {:keys [document-id] :as document}]
-  (swap! (:documents-atom db) assoc document-id document))
-
-(defn delete-document
-  [db document])
-
-(defn reset-documents
-  [db]
-  (reset! (:documents-atom db) {}))
-
-(def generic-doc-store-behaviour
-  {:save-document save-document
-   :get-documents get-documents
-   :get-document get-document
-   :update-document update-document
-   :delete-document delete-document
-   :reset-documents reset-documents})
-
-(extend MemoryStore
-  gdoc/GenericDocsStore
-  generic-doc-store-behaviour)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MemoryStore Constructor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -653,4 +609,6 @@
   (def my-concept {:concept-type :generic :provider-id "PROV6" :metadata parsed :revision-id 1})
   (def my-concept (assoc my-concept :concept-id (generate-concept-id db my-concept)))
   (save-concept db "PROV6" my-concept)
+  ;; to view most recently saved concept
+  (first @(:concepts-atom db))
   )

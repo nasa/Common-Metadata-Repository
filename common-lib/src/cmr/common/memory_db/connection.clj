@@ -35,13 +35,6 @@
   [opts]
   (or (:providers-atom opts) {}))
 
-;; PROTOTYPE
-(defn init-documents
-  "Initialize the in-memory generic documents lookup table to the given hash map
-   or set it to a default of an empty hash map."
-  [opts]
-  (or (:documents-atom opts) {}))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; A stoage record for use in parity with cmr.oracle.connection
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -62,10 +55,7 @@
    next-transaction-id-atom
 
    ;; A map of provider ids to providers that exist
-   providers-atom
-   
-   ;; PROTOTYPE - A map of generic documents stored in metadata db
-   documents-atom])
+   providers-atom])
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CMR Component Implementation
@@ -94,7 +84,7 @@
 (defn create-db
   "Creates and returns an in-memory database.
 
-  Note that this constructor sets all attributes as atoms, a requirement when
+  Note that this construtor sets all attributes as atoms, a requiremet when
   using the MemoryStore record."
   ([]
    (create-db []))
@@ -103,6 +93,4 @@
     {:concepts-atom (atom (init-concepts opts))
      :next-id-atom (atom (init-next-id opts))
      :next-transaction-id-atom (atom (init-next-transaction-id opts))
-     :providers-atom (atom (init-providers opts))
-     ;; PROTOTYPE
-     :documents-atom (atom (init-documents opts))})))
+     :providers-atom (atom (init-providers opts))})))
