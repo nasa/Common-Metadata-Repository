@@ -60,7 +60,8 @@
       :current-format
 
       ;; Use XSLT
-      (types->xsl [(mt/mime-type->format concept-mime-type) target-format])
+      (and (= :granule (:concept-type concept))
+           (types->xsl [(mt/mime-type->format concept-mime-type) target-format]))
       :xslt
 
       (= :html target-format)
