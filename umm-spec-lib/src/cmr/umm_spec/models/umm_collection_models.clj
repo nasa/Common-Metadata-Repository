@@ -160,13 +160,6 @@
    ;; earlier than yyyy-mm-dd = 0001-01-01.
    PaleoTemporalCoverages
 
-   ;; This element is reserved for NASA records only. A Standard Product is a product that has been
-   ;; vetted to ensure that they are complete, consistent, maintain integrity, and satifies the
-   ;; goals of the Earth Observing System mission. The NASA product owners have also commmitted to
-   ;; archiving and maintaining the data products. More information can be found here:
-   ;; https://earthdata.nasa.gov/eosdis/science-system-description/eosdis-standard-products.
-   StandardProduct
-
    ;; The reference frame or system in which altitudes (elevations) are given. The information
    ;; contains the datum name, distance units and encoding method, which provide the definition for
    ;; the system. This field also stores the characteristics of the reference frame or system from
@@ -235,11 +228,6 @@
    ;; element described elsewhere in this document where it contains an ID and Version.
    MetadataAssociations
 
-   ;; Requires the client, or user, to add in schema information into every collection record. It
-   ;; includes the schema's name, version, and URL location. The information is controlled through
-   ;; enumerations at the end of this schema.
-   MetadataSpecification
-
    ;; Describes the language used in the preparation, storage, and description of the collection. It
    ;; is the language of the collection data themselves. It does not refer to the language used in
    ;; the metadata record (although this may be the same language).
@@ -299,41 +287,6 @@
    Boundaries
   ])
 (record-pretty-printer/enable-record-pretty-printing ExclusiveZoneType)
-
-;; The largest width of an instrument's footprint as measured on the Earths surface. The largest
-;; Footprint takes the place of SwathWidth in the Orbit Backtrack Algorithm if SwathWidth does not
-;; exist. The optional description element allows the user of the record to be able to distinguish
-;; between the different footprints of an instrument if it has more than 1.
-(defrecord FootprintType
-  [
-   ;; The largest width of an instrument's footprint as measured on the Earths surface. The largest
-   ;; Footprint takes the place of SwathWidth in the Orbit Backtrack Algorithm if SwathWidth does
-   ;; not exist.
-   Footprint
-
-   ;; The Footprint value's unit.
-   FootprintUnit
-
-   ;; The description element allows the user of the record to be able to distinguish between the
-   ;; different footprints of an instrument if it has more than 1.
-   Description
-  ])
-(record-pretty-printer/enable-record-pretty-printing FootprintType)
-
-;; This object requires any metadata record that is validated by this schema to provide information
-;; about the schema.
-(defrecord MetadataSpecificationType
-  [
-   ;; This element represents the URL where the schema lives. The schema can be downloaded.
-   URL
-
-   ;; This element represents the name of the schema.
-   Name
-
-   ;; This element represents the version of the schema.
-   Version
-  ])
-(record-pretty-printer/enable-record-pretty-printing MetadataSpecificationType)
 
 ;; Information about a two-dimensional tiling system related to this collection.
 (defrecord TilingIdentificationSystemType
@@ -832,42 +785,23 @@
 ;; Orbit parameters for the collection used by the Orbital Backtrack Algorithm.
 (defrecord OrbitParametersType
   [
-   ;; The SwathWidth value's unit.
-   SwathWidthUnit
-
-   ;; The time in decimal minutes the satellite takes to make one full orbit.
-   OrbitPeriod
-
-   ;; The Orbit Period value's unit.
-   OrbitPeriodUnit
-
-   ;; Total observable width of the satellite sensor nominally measured at the equator.
+   ;; Width of the swath at the equator in Kilometers.
    SwathWidth
 
-   ;; The StartCircularLatitude value's unit.
-   StartCircularLatitudeUnit
+   ;; Orbital period in decimal minutes.
+   Period
 
-   ;; A list of instrument footprints or field of views. A footprint holds the largest width of the
-   ;; described footprint as measured on the earths surface along with the width's unit. An optional
-   ;; description element exists to be able to distinguish between the footprints, if that is
-   ;; desired. This element is optional. If this element is used at least 1 footprint must exist in
-   ;; the list.
-   Footprints
+   ;; Inclination of the orbit. This is the same as (180-declination) and also the same as the
+   ;; highest latitude achieved by the satellite. Data Unit: Degree.
+   InclinationAngle
 
-   ;; The number of full orbits composing each granule. This may be a fraction of an orbit.
+   ;; Indicates the number of orbits.
    NumberOfOrbits
 
    ;; The latitude start of the orbit relative to the equator. This is used by the backtrack search
    ;; algorithm to treat the orbit as if it starts from the specified latitude. This is optional and
    ;; will default to 0 if not specified.
    StartCircularLatitude
-
-   ;; The heading of the satellite as it crosses the equator on the ascending pass. This is the same
-   ;; as (180-declination) and also the same as the highest latitude achieved by the satellite.
-   InclinationAngle
-
-   ;; The InclinationAngle value's unit.
-   InclinationAngleUnit
   ])
 (record-pretty-printer/enable-record-pretty-printing OrbitParametersType)
 

@@ -45,12 +45,9 @@
     "SpatialCoverageType" : "HORIZONTAL",
     "OrbitParameters" : {
       "SwathWidth" : 1450.0,
-      "SwathWidthUnit" : "Kilometer",
-      "OrbitPeriod" : 100.0,
-      "OrbitPeriodUnit" : "Decimal Minute",
+      "Period" : 100.0,
       "NumberOfOrbits" : 1,
-      "InclinationAngle" : 98.19,
-      "InclinationAngleUnit" : "Degree"
+      "InclinationAngle" : 98.19
     },
     "HorizontalSpatialDomain" : {
       "Geometry" : {
@@ -284,10 +281,5 @@
       "Format" : "NETCDF",
       "FormatType" : "Native"
     } ]
-  },
-  "MetadataSpecification": {
-    "URL": "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
-    "Name": "UMM-C",
-    "Version": "1.17.0"
   }
 }

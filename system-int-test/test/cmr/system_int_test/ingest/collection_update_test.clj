@@ -536,14 +536,10 @@
         gran2 (make-gran coll-cartesian-with-grans (p/point 10 22))
         ;; Orbit test collections
         orbit-params {:SwathWidth 1450
-                      :SwathWidthUnit "Kilometer"
-                      :OrbitPeriod 98.88
-                      :OrbitPeriodUnit "Decimal Minute" 
+                      :Period 98.88
                       :InclinationAngle 98.15
-                      :InclinationAngleUnit "Degree" 
                       :NumberOfOrbits 0.5
-                      :StartCircularLatitude -90
-                      :StartCircularLatitudeUnit "Degree"}
+                      :StartCircularLatitude -90}
         coll-orbit-no-grans (make-coll "coll-orbit-no-grans" {:gsr "ORBIT" :orbit orbit-params})
         coll-orbit-with-grans (make-coll "coll-orbit-with-grans" {:gsr "ORBIT" :orbit orbit-params})
         gran3 (make-gran coll-orbit-with-grans (dg/orbit -158.1 81.8 :desc  -81.8 :desc))

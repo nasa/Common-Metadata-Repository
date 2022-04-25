@@ -14,7 +14,6 @@
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-    [cmr.umm-spec.versioning :as umm-spec-versioning]
     [cmr.umm.umm-spatial :as umm-s]))
 
 ;; Used for testing invalid data date ranges.
@@ -54,12 +53,7 @@
                                        :Type "REVIEW"})]
    :Abstract "A very abstract collection"
    :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(time/date-time 2012)]})]
-   :DOI (umm-cmn/map->DoiType {:DOI "10.5678/TestDOI1"})
-   :MetadataSpecification (umm-c/map->MetadataSpecificationType
-                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
-                                        umm-spec-versioning/current-collection-version),
-                              :Name "UMM-C"
-                              :Version umm-spec-versioning/current-collection-version})})
+   :DOI (umm-cmn/map->DoiType {:DOI "10.5678/TestDOI1"})})
 
 (defn collection-invalid-data-date-ranges
   "Returns a UmmCollection with invalid data date ranges"

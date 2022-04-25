@@ -134,22 +134,10 @@
                     ;;  Remove them from the comparison.
                     expected (convert-to-sets (if (= :dif target-format)
                                                 (remove-vertical-spatial-domains expected)
-                                                ;; Footprints don't exist in dif10 and echo10
-                                                ;; it needs to be removed for round-trip comparison.
-                                                (if (or (= :dif10 target-format)
-                                                        (= :echo10 target-format)
-                                                        (not (get-in expected
-                                                              [:SpatialExtent :OrbitParameters :Footprints])))
-                                                  (update-in expected [:SpatialExtent :OrbitParameters]
-                                                             dissoc :Footprints)
-                                                    expected)))
+                                                expected))
                     actual (convert-to-sets (if (= :dif target-format)
                                               (remove-vertical-spatial-domains actual)
-                                              ;; remove Footprints is it's nil
-                                              (if (get-in actual [:SpatialExtent :OrbitParameters :Footprints])
-                                                actual
-                                                (update-in expected [:SpatialExtent :OrbitParameters]
-                                                                    dissoc :Footprints))))]]
+                                              actual))]]
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
@@ -181,23 +169,7 @@
   (checking "collection round tripping" 100
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
-    (let [;; CMR-8128 Before we translate v1.17.0, remove StandardProduct
-          ;; As for OrbitParameters which have been translated,
-          ;; there are many situations when a parameter is not
-          ;; preserved after the roundtrip. We will have to make many special cases
-          ;; in order to do the comparison. Since they have been tested in other tests, we will
-          ;; just remove them from the generated roundtrip.
-          ;; The following lists a few issues with roundtrip on OrbitParameters for dif10 and echo10:
-          ;; 1. Footprints in umm doesn't exist and doesn't get translated so it can't be preserved
-          ;; 2. StartCircularLatitudeUnit in umm can't be preserved when StartCircularLatitude doesn't exist.
-          ;;    Assumed unit is used for translation only when StartCircularLatitude exists. This applies to iso1195 too.
-          ;; 3. SwathWidthUnit doesn't exist in dif10 and echo10. Assumed unit is Kilometer
-          ;;    so we have to convert the value and unit in umm-record to kilometer before round-trip comparison.
-          ;; 4. SwathWidth can be 1.0E-1 in umm, translating to other formats it could be changed to 0.1
-          umm-record (-> umm-record
-                         (update-in [:SpatialExtent] dissoc :OrbitParameters)
-                         (dissoc :StandardProduct))
-          umm-record (js/parse-umm-c
+    (let [umm-record (js/parse-umm-c
                         (assoc umm-record
                                :DataDates [{:Date (t/date-time 2012)
                                             :Type "CREATE"}
@@ -225,11 +197,7 @@
   (checking-with-seed "collection round tripping seed" 100 1496683985472
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
-    (let [;; CMR-8128 Before we translate v1.17.0, remove OrbitParameters and StandardProduct
-          umm-record (-> umm-record
-                         (update-in [:SpatialExtent] dissoc :OrbitParameters)
-                         (dissoc :StandardProduct))
-          umm-record (js/parse-umm-c
+    (let [umm-record (js/parse-umm-c
                       (assoc umm-record
                              :DataDates [{:Date (t/date-time 2012)
                                           :Type "CREATE"}

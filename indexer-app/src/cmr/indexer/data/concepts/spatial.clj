@@ -7,7 +7,6 @@
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.ring-relations :as rr]
    [cmr.spatial.serialize :as srl]
-   [cmr.umm-spec.migration.version.collection :as version-collection]
    [cmr.umm-spec.spatial-conversion :as sc]
    [cmr.umm.umm-spatial :as umm-s])
   ;; Must be required for derived calculations
@@ -121,8 +120,8 @@
   "Converts the orbit parameters of the given collection to the elastic documents"
   [collection]
   (when-let [orbit-params (get-in collection [:SpatialExtent :OrbitParameters])]
-    {:swath-width (version-collection/get-swath-width collection) 
-     :period (:OrbitPeriod orbit-params)
+    {:swath-width (:SwathWidth orbit-params)
+     :period (:Period orbit-params)
      :inclination-angle (:InclinationAngle orbit-params)
      :number-of-orbits (:NumberOfOrbits orbit-params)
      :start-circular-latitude (:StartCircularLatitude orbit-params)}))

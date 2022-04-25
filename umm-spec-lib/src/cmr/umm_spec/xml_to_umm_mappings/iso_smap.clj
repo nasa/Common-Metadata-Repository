@@ -8,7 +8,6 @@
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]
    [cmr.umm-spec.json-schema :as js]
-   [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
@@ -22,8 +21,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact :as data-contact]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial :as spatial]
-   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
-   [cmr.umm-spec.versioning :as umm-spec-versioning]))
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
 
 (def coll-progress-mapping
   "Mapping from values supported for ISO-SMAP ProgressCode to UMM CollectionProgress."
@@ -191,9 +189,4 @@
                                                                                          archive-info-xpath
                                                                                          dist-info-xpath)
        :DirectDistributionInformation (archive-and-dist-info/parse-direct-dist-info doc
-                                                                                    dist-info-xpath)
-       :MetadataSpecification (umm-c/map->MetadataSpecificationType
-                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
-                                        umm-spec-versioning/current-collection-version),
-                              :Name "UMM-C"
-                              :Version umm-spec-versioning/current-collection-version})}))))
+                                                                                    dist-info-xpath)}))))

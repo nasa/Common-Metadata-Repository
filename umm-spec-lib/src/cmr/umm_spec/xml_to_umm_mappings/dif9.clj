@@ -20,7 +20,6 @@
     [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
     [cmr.umm-spec.xml-to-umm-mappings.dif9.spatial-extent :as spatial]
     [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
-    [cmr.umm-spec.versioning :as umm-spec-versioning]
     [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
 (def coll-progress-mapping
@@ -232,12 +231,7 @@
                              {:EntryId parent-dif})
      :ContactPersons (contact/parse-contact-persons (select doc "/DIF/Personnel"))
      :DataCenters (concat (center/parse-data-centers doc sanitize?)
-                          (center/parse-processing-centers doc))
-     :MetadataSpecification (umm-coll-models/map->MetadataSpecificationType
-                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
-                                        umm-spec-versioning/current-collection-version),
-                              :Name "UMM-C"
-                              :Version umm-spec-versioning/current-collection-version})}))
+                          (center/parse-processing-centers doc))}))
 
 (defn dif9-xml-to-umm-c
   "Returns UMM-C collection record from DIF9 collection XML document. The :sanitize? option

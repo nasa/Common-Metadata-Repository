@@ -11,7 +11,7 @@
    [cmr.umm-spec.test.umm-generators :as umm-gen]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.util :as umm-spec-util]
-   [cmr.umm-spec.versioning :as umm-spec-versioning]))
+   [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
 (def minimal-example-umm-c-record
   "This is the minimum valid UMM-C."
@@ -35,12 +35,7 @@
                                          :Type "CREATE"})]
      :Abstract "A very abstract collection"
      :TemporalExtents [(umm-cmn/map->TemporalExtentType {:SingleDateTimes [(time/date-time 2012)]})]
-     :DOI (umm-cmn/map->DoiType {:DOI "10.5678/TestDOI"})
-     :MetadataSpecification (umm-c/map->MetadataSpecificationType
-                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
-                                        umm-spec-versioning/current-collection-version),
-                              :Name "UMM-C"
-                              :Version umm-spec-versioning/current-collection-version})}))
+     :DOI (umm-cmn/map->DoiType {:DOI "10.5678/TestDOI"})}))
 
 (def contact-group-example-umm-c-record
   "This is the minimum valid UMM-C with contact groups."
@@ -66,12 +61,7 @@
      :DOI (umm-cmn/map->DoiType {:DOI "10.5678/TestDOI"})
      :DataCenters [umm-spec-util/not-provided-data-center]
      :ContactGroups [(umm-cmn/map->ContactGroupType {:Roles ["Investigator"]
-                                                     :GroupName "ABC"})]
-     :MetadataSpecification (umm-c/map->MetadataSpecificationType
-                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
-                                        umm-spec-versioning/current-collection-version),
-                              :Name "UMM-C"
-                              :Version umm-spec-versioning/current-collection-version})}))
+                                                     :GroupName "ABC"})]}))
 
 (defn- remove-get-service-and-get-data-nils
   "Removes nil values in GetService and GetData added by json->umm to RelatedUrls,

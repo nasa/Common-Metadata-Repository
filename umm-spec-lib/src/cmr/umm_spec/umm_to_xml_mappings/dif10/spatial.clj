@@ -2,7 +2,6 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cmr.common.xml.gen :refer :all]
-   [cmr.umm-spec.migration.version.collection :as version-collection]
    [cmr.umm-spec.util :as u]))
 
 ;; CMR-1990 - We need to consolidate the SpatialCoverageTypeEnum between UMM JSON and DIF10
@@ -130,9 +129,8 @@
           (map point-element (:Points geom)))])
      (let [o (:OrbitParameters sp)]
        [:Orbit_Parameters
-        ;; convert the SwathWidth value or get the largest Footprint in assumed unit.
-        [:Swath_Width (version-collection/get-swath-width c)]
-        [:Period (:OrbitPeriod o)]
+        [:Swath_Width (:SwathWidth o)]
+        [:Period (:Period o)]
         [:Inclination_Angle (:InclinationAngle o)]
         [:Number_Of_Orbits (:NumberOfOrbits o)]
         [:Start_Circular_Latitude (:StartCircularLatitude o)]])
