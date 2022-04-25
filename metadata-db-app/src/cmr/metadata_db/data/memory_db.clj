@@ -402,7 +402,7 @@
                             #(or % (p/clj-time->date-time-str (tk/now))))
          ;; Set the created-at time to the current timekeeper time for concepts which have
          ;; the created-at field and do not already have a :created-at time set.
-         concept (if (some #{concept-type} [:collection :granule :service :tool :variable :subscription])
+         concept (if (some #{concept-type} [:collection :granule :service :tool :variable :subscription :generic])
                    (update-in concept
                               [:created-at]
                               #(or % (p/clj-time->date-time-str (tk/now))))
@@ -517,6 +517,7 @@
 
 (defn save-provider
   [db {:keys [provider-id] :as provider}]
+  (def system-db db)
   (swap! (:providers-atom db) assoc provider-id provider))
 
 (defn get-providers
@@ -640,3 +641,16 @@
    (connection/create-db
     {:concepts-atom concepts
      :next-id-atom INITIAL_CONCEPT_NUM})))
+
+
+
+(comment
+  ;; Handy utility for future dev work
+  (def db (get-in user/system [:apps :metadata-db :db]))
+
+  (def test-file (slurp (clojure.java.io/resource "sample_tool.json")))
+  (def parsed (cheshire.core/parse-string test-file true))
+  (def my-concept {:concept-type :generic :provider-id "PROV6" :metadata parsed :revision-id 1})
+  (def my-concept (assoc my-concept :concept-id (generate-concept-id db my-concept)))
+  (save-concept db "PROV6" my-concept)
+  )
