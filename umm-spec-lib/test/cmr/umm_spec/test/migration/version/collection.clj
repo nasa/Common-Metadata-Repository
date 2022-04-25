@@ -6,6 +6,7 @@
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
    [cmr.common.util :as util :refer [remove-empty-maps are3]]
    [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.migration.version.collection :as coll-mig]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
@@ -318,7 +319,7 @@
 ;; OrbitParameters_1_16_7-2-Up is converted to OrbitParameters_1_17_0-2-Up
 
 (def OrbitParameters_1_16_7-1-Up
-  {:SwathWidth 1 
+  {:SwathWidth 1
    :Period 2
    :InclinationAngle 3
    :NumberOfOrbits 4})
@@ -328,14 +329,14 @@
    :SwathWidthUnit "Kilometer"
    :OrbitPeriod 2
    :OrbitPeriodUnit "Decimal Minute"
-   :InclinationAngle 3 
+   :InclinationAngle 3
    :InclinationAngleUnit "Degree"
    :NumberOfOrbits 4})
 
 (def OrbitParameters_1_16_7-2-Up
   {:SwathWidth 1
-   :Period 2 
-   :InclinationAngle 3 
+   :Period 2
+   :InclinationAngle 3
    :StartCircularLatitude 4
    :NumberOfOrbits 5})
 
@@ -347,7 +348,7 @@
    :InclinationAngle 3
    :InclinationAngleUnit "Degree"
    :StartCircularLatitude 4
-   :StartCircularLatitudeUnit "Degree" 
+   :StartCircularLatitudeUnit "Degree"
    :NumberOfOrbits 5})
 
 ;; when migrate down, from 1.17.0 to 1.16.7, OrbitParameters_1_17_0-1-Down is converted to OrbitParameters_1_16_7-1-Down,
@@ -386,7 +387,7 @@
    :StartCircularLatitude 4
    :StartCircularLatitudeUnit "Degree"
    :NumberOfOrbits 5
-   :Footprints [{:Footprint 6 :FootprintUnit "Kilometer"} 
+   :Footprints [{:Footprint 6 :FootprintUnit "Kilometer"}
                 {:Footprint 5000 :FootprintUnit "Meter"}]})
 
 (def OrbitParameters_1_16_7-2-Down
@@ -414,6 +415,10 @@
    :InclinationAngle 3
    :StartCircularLatitude 4
    :NumberOfOrbits 5})
+
+(deftest get-swath-width-test
+  (is (= 0.022 (coll-mig/get-swath-width {:SpatialExtent {:OrbitParameters {:SwathWidth 22
+                                                                            :SwathWidthUnit "Meter"}}}))))
 
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions {:collection ["1.0" "1.1" "1.2" "1.3" "1.9" "1.10"]}}
@@ -2956,7 +2961,7 @@
       (is (= expected (:CollectionDataType result))))
 
     "Migrating CollectionDataType-nothing to migrate"
-    "OTHER" 
+    "OTHER"
     {:CollectionDataType "OTHER"}))
 
 (deftest migrate-1-16-7-to-1-16-6
@@ -2992,7 +2997,7 @@
     {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-2-Up}
      :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
                              :Name "UMM-C",
-                             :Version "1.17.0"}}     
+                             :Version "1.17.0"}}
     {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-2-Up}}))
 
 (deftest migrate-1-17-0-to-1-16-7
