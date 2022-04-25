@@ -29,6 +29,10 @@
   "Seq of formats to use in round-trip conversion and XML validation tests."
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
 
+(def tested-collection-formats-non-iso19115
+  "Seq of formats to use in round-trip conversion and XML validation tests."
+  [:dif :dif10 :echo10 :iso-smap])
+
 (def test-context (lkt/setup-context-for-test))
 
 (def collection-destination-formats
@@ -157,12 +161,18 @@
              (format "Parsing example file %s and converting to %s and then parsing again did not result in expected umm."
                      example-file target-format)))))))
 
-(deftest roundtrip-example-collection-record
-  (doseq [metadata-format tested-collection-formats]
+(deftest roundtrip-example-collection-record-non-iso19115
+  (doseq [metadata-format tested-collection-formats-non-iso19115]
     (testing (str metadata-format)
       (let [expected (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
             actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)]
         (is (= (convert-to-sets expected) (convert-to-sets actual)))))))
+
+(deftest roundtrip-example-collection-record-iso19115
+  (testing (str :iso19115)
+    (let [expected (expected-conversion/convert expected-conversion/example-collection-record-iso19115 :iso19115)
+          actual (xml-round-trip :collection :iso19115 expected-conversion/example-collection-record-iso19115)]
+      (is (= (convert-to-sets expected) (convert-to-sets actual))))))
 
 (deftest validate-umm-json-example-record
   ;; Test that going from any format to UMM generates valid UMM.
