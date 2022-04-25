@@ -582,7 +582,7 @@
         provider-store-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Metadata DB GenericDocsStore Implementation
+;; Metadata DB GenericDocsStore Implementation - PROTOTYPE
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; CMR-8181
@@ -633,7 +633,7 @@
   "Creates and returns an in-memory database.
 
   Note that a wrapper is used here in order to support default initial values
-  that are only available in cmr.metaata-db.*."
+  that are only available in cmr.metadata-db.*."
   ([]
    (create-db []))
   ([concepts]
