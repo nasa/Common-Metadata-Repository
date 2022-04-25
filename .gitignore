@@ -101,5 +101,6 @@ flycheck_*.el
 # directory configuration
 .dir-locals.el
 
-# local external oracle db
+# docker volume mount point created with default config from CMR wiki,
+# corresponds to opt/oracle/oradata
 cmr-oracle-db/
