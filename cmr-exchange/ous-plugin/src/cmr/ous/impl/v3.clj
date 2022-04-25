@@ -9,4 +9,7 @@
 
 (defn get-opendap-urls
   [component user-token dap-version raw-params]
-  (v2-1/get-opendap-urls component user-token (or dap-version "4") raw-params))
+  (let [dap-version (or dap-version "4")]
+    (if (some #{dap-version} ["2" "4"])
+      (v2-1/get-opendap-urls component user-token dap-version raw-params)
+      {:errors [(format "Parameter dap-version can only be either 2 or 4, but was %s." dap-version)]})))

@@ -200,3 +200,31 @@
     (is (= 200 (:status response)))
     (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/DEMO/MUR-JPL-L4-GLOB-v4_1.001/2018.05.23/20180523090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc.dap.nc4?dap4.ce=/analysed_sst[0:1:0][13161:1:17071][10630:1:11419];/lat[13161:1:17071];/lon[10630:1:11419]"]
            (util/parse-response response)))))
+
+(deftest dap-version-parameter-test
+  (let [collection-id "C1200267318-HMR_TME"
+        base-url (format (str "http://localhost:%s"
+                              "/service-bridge/ous/collection/%s"
+                              "?coverage=G1200267320-HMR_TME,G1200267319-HMR_TME,"
+                              collection-id
+                              "&rangesubset=V1200267322-HMR_TME,V1200267323-HMR_TME")
+                         (test-system/http-port)
+                         collection-id)]
+    (testing "valid dap-version"
+      (let [dap4-response @(httpc/get (str base-url "&dap-version=4") options)
+            dap2-response @(httpc/get (str base-url "&dap-version=2") options)]
+        (is (= 200 (:status dap4-response)))
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.dap.nc4?dap4.ce=/CH4_VMR_A;/CH4_VMR_A_ct;/Latitude;/Longitude"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.dap.nc4?dap4.ce=/CH4_VMR_A;/CH4_VMR_A_ct;/Latitude;/Longitude"]
+               (util/parse-response dap4-response)))
+
+        (is (= 200 (:status dap2-response)))
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc?CH4_VMR_A,CH4_VMR_A_ct,Latitude,Longitude"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc?CH4_VMR_A,CH4_VMR_A_ct,Latitude,Longitude"]
+               (util/parse-response dap2-response)))))
+
+    (testing "invalid dap-version"
+      (let [response @(httpc/get (str base-url "&dap-version=3") options)]
+        (is (= 400 (:status response)))
+        (is (= {:errors ["Parameter dap-version can only be either 2 or 4, but was 3."]}
+               (util/parse-response response)))))))
