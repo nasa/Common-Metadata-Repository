@@ -109,22 +109,22 @@
   "Encodes the orbit parameters as a string."
   [{:keys [SwathWidth SwathWidthUnit OrbitPeriod OrbitPeriodUnit InclinationAngle InclinationAngleUnit
            NumberOfOrbits StartCircularLatitude StartCircularLatitudeUnit]}]
-  (let [main-string (format "SwathWidth: %s SwathWidthUnit: %s OrbitPeriod: %s OrbitPeriodUnit: %s
-                             InclinationAngle: %s InclinationAngleUnit: %s NumberOfOrbits: %s"
-                            (util/double->string SwathWidth)
-                            SwathWidthUnit
+  (let [main-string (format "OrbitPeriod: %s OrbitPeriodUnit: %s
+                             InclinationAngle: %s InclinationAngleUnit: %s NumberOfOrbits: %s "
                             (util/double->string OrbitPeriod)
                             OrbitPeriodUnit
                             (util/double->string InclinationAngle)
                             InclinationAngleUnit
-                            (util/double->string NumberOfOrbits))]
-    ;; StartCircularLatitude is the only optional element
-    (if StartCircularLatitude
-      (let [scl-string (format "StartCircularLatitude: %s StartCircularLatitudeUnit: %s"
-                               (util/double->string StartCircularLatitude)
-                               StartCircularLatitudeUnit)]
-        (str main-string " " scl-string)) 
-      main-string)))
+                            (util/double->string NumberOfOrbits))
+        sw-string (when SwathWidth
+                    (format "SwathWidth: %s SwathWidthUnit: %s "
+                            (util/double->string SwathWidth)
+                            SwathWidthUnit))
+        scl-string (when StartCircularLatitude
+                     (format "StartCircularLatitude: %s StartCircularLatitudeUnit: %s"
+                             (util/double->string StartCircularLatitude)
+                             StartCircularLatitudeUnit))]
+    (str sw-string main-string scl-string)))
 
 (defn- generate-iso-geographic-description
   "This is a generic function that creates an iso geographic desciption
