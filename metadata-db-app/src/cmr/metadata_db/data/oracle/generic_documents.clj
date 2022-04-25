@@ -2,7 +2,7 @@
   "Functions for saving, retrieving, deleting generic documents."
   (:require
    [cheshire.core :as json]
-[clojure.java.jdbc :as jdbc]
+   [clojure.java.jdbc :as jdbc]
    [clojure.pprint :refer [pprint pp]]
    ;[cmr.common.log :refer [debug info warn error]]
    [cmr.common.time-keeper :as tkeep]
