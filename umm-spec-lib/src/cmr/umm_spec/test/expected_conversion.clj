@@ -642,6 +642,23 @@
   "An example record with fields supported by most formats."
   (js/parse-umm-c example-collection-record-edn))
 
+(def example-collection-record-no-swath
+  "An example record with missing SwathWidth fields."
+  (update-in example-collection-record [:SpatialExtent]
+             assoc :OrbitParameters {:OrbitPeriod 96.7
+                                     :OrbitPeriodUnit "Decimal Minute"
+                                     :InclinationAngle 94.0
+                                     :InclinationAngleUnit "Degree"
+                                     :NumberOfOrbits 2.0
+                                     :StartCircularLatitude 50.0
+                                     :StartCircularLatitudeUnit "Degree"
+                                     :Footprints [{:Footprint 2.0
+                                                   :FootprintUnit "Kilometer"
+                                                   :Description "footprint"}
+                                                  {:Footprint 3.0
+                                                   :FootprintUnit "Meter"
+                                                   :Description "footprint"}]}))
+
 (def curr-ingest-ver-example-collection-record
   (core/migrate-umm nil :collection
                     vers/current-collection-version

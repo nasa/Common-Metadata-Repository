@@ -12,6 +12,7 @@
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iu]
    [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.migration.version.collection :as version-collection]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.test.expected-conversion :as expected-conversion]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
@@ -162,6 +163,20 @@
     (testing (str metadata-format)
       (let [expected (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
             actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)]
+        (is (= (convert-to-sets expected) (convert-to-sets actual)))))
+    (testing (str metadata-format " UMM-C contains Footprints instead of SwathWidth.")
+      ;; example-collection-record-no-swath contains Footprints instead of SwathWidth and SwatWidthUnit
+      (let [expected (expected-conversion/convert expected-conversion/example-collection-record-no-swath metadata-format)
+            expected (if (or (= :dif10 metadata-format) (= :echo10 metadata-format))
+                       (as-> expected exp
+                             (update-in exp [:SpatialExtent :OrbitParameters]
+                                        assoc :SwathWidth (version-collection/get-swath-width exp) :SwathWidthUnit "Kilometer")
+                             (update-in exp [:SpatialExtent :OrbitParameters] dissoc :Footprints))
+                       expected)
+            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record-no-swath)
+            actual (if (or (= :dif10 metadata-format) (= :echo10 metadata-format))
+                     (update-in actual [:SpatialExtent :OrbitParameters] dissoc :Footprints)
+                     actual)]
         (is (= (convert-to-sets expected) (convert-to-sets actual)))))))
 
 (deftest validate-umm-json-example-record
