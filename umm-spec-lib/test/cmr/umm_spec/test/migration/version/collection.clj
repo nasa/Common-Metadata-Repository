@@ -416,6 +416,10 @@
    :StartCircularLatitude 4
    :NumberOfOrbits 5})
 
+(deftest get-largest-footprint-in-kilometer-test
+  (is (= 0.022 (#'coll-mig/get-largest-footprint-in-kilometer [{:Footprint 22
+                                                                :FootprintUnit "Meter"}]))))
+
 (deftest get-swath-width-test
   (is (= 0.022 (coll-mig/get-swath-width {:SpatialExtent {:OrbitParameters {:SwathWidth 22
                                                                             :SwathWidthUnit "Meter"}}}))))

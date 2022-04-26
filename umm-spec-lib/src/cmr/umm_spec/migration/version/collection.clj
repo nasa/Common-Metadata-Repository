@@ -139,7 +139,7 @@
   "Convert all foot-prints to Kilometer, return the largest value."
   [foot-prints]
   (let [foot-prints-in-kilometer (map #(if (= "Meter" (:FootprintUnit %))
-                                         (/ (:Footprint %) 1000)
+                                         (double (/ (:Footprint %) 1000))
                                          (:Footprint %))
                                       foot-prints)]
     (when (seq foot-prints)
