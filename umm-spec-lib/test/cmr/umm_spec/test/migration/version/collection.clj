@@ -391,7 +391,7 @@
                 {:Footprint 5000 :FootprintUnit "Meter"}]})
 
 (def OrbitParameters_1_16_7-2-Down
-  {:SwathWidth 1
+  {:SwathWidth 1.0
    :Period 2
    :InclinationAngle 3
    :StartCircularLatitude 4
