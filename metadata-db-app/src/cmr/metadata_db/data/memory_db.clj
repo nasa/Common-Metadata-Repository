@@ -598,8 +598,6 @@
     {:concepts-atom concepts
      :next-id-atom INITIAL_CONCEPT_NUM})))
 
-
-
 (comment
   ;; Handy utility for future dev work
   (def db (get-in user/system [:apps :metadata-db :db]))
