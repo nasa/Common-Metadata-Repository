@@ -642,8 +642,8 @@
   "An example record with fields supported by most formats."
   (js/parse-umm-c example-collection-record-edn))
 
-(def example-collection-record-iso19115
-  "An example record with missing SwathWidth fields, used by roundtrip for iso19115 format."
+(def example-collection-record-no-swath
+  "An example record with missing SwathWidth fields."
   (update-in example-collection-record [:SpatialExtent]
              assoc :OrbitParameters {:OrbitPeriod 96.7
                                      :OrbitPeriodUnit "Decimal Minute"
