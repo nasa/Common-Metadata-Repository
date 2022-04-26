@@ -139,7 +139,7 @@
   "Convert all foot-prints to Kilometer, return the largest value."
   [foot-prints]
   (let [foot-prints-in-kilometer (map #(if (= "Meter" (:FootprintUnit %))
-                                         (/ (:Footprint %) 1000)
+                                         (double (/ (:Footprint %) 1000))
                                          (:Footprint %))
                                       foot-prints)]
     (when (seq foot-prints)
@@ -152,15 +152,15 @@
   for SwathWidth."
   [collection]
   (let [swath-width-unit (get-in collection [:SpatialExtent :OrbitParameters :SwathWidthUnit])
-        swath-width (get-in collection [:SpatialExtent :OrbitParameters :SwathWidth]) 
+        swath-width (get-in collection [:SpatialExtent :OrbitParameters :SwathWidth])
         swath-width (if (and swath-width (= "Meter" swath-width-unit))
-                      (/ swath-width 1000)
+                      (double (/ swath-width 1000))
                       swath-width)]
     (if swath-width
       swath-width
       ;; if SwathWidth doesn't exist, Footprints is required.
       (get-largest-footprint-in-kilometer (get-in collection [:SpatialExtent :OrbitParameters :Footprints])))))
-        
+
 (defn- migrate-OrbitParameters-down
   "Remove Footprints element; rename OrbitPeriod to Period; remove all the units;
   convert SwathWidth to the value in assumed unit; If SwathWidth doesn't exist,
@@ -553,7 +553,7 @@
   (-> collection
       (m-spec/update-version :collection "1.17.0")
       (migrate-OrbitParameters-up)))
-      
+
 (defmethod interface/migrate-umm-version [:collection "1.17.0" "1.16.7"]
   [context collection & _]
   ;; Remove MetadataSpecification and StandardProduct.
