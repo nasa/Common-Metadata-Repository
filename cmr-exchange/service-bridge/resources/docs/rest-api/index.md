@@ -583,6 +583,7 @@ As such, the following parameters are also available, as an alternative to the
 
 * `coverage`
 * `format`
+* `dap-version`
 * `rangesubset`
 * `subset`
 * `timeposition`
@@ -630,6 +631,24 @@ The following is an example of accepted `format` parameter usage:
 ```shell
 curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?format=nc"
+```
+
+
+### `dap-version`
+
+This allows the client to request OPeNDAP links in [DAP4](https://docs.opendap.org/index.php/DAP4:_Specification_Volume_1) or [DAP2](https://earthdata.nasa.gov/esdis/esco/standards-and-references/data-access-protocol-2) format. The valid values of dap-version parameter is either 4 or 2.
+
+If not provided, the default of `4` (DAP4) is used.
+
+The following is an example of accepted `dap-version` parameter usage:
+
+* `dap-version=2`
+
+> Use of `dap-version` in a query:
+
+```shell
+curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
+     "%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?dap-version=2"
 ```
 
 
