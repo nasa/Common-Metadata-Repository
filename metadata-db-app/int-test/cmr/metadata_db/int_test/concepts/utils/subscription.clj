@@ -23,6 +23,7 @@
         extra-fields (merge {:subscription-name (str "subname" uniq-num)
                              :subscriber-id (str "subid" uniq-num)
                              :collection-concept-id "C12345-PROV1"
+                             :subscription-type "granule"
                              :normalized-query (str "instrument=" uniq-num "B")}
                             (:extra-fields attributes))
         attributes (merge {:user-id (str "user" uniq-num)

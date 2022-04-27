@@ -12,6 +12,7 @@
                  {:subscription-name (:Name subscription)
                   :collection-concept-id (:CollectionConceptId subscription)
                   :subscriber-id (:SubscriberId subscription)
+                  :subscription-type (:Type subscription)
                   :normalized-query (:normalized-query concept)}))
 
 (defn-timed save-subscription

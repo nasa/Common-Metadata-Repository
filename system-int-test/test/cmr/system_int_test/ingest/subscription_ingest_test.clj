@@ -37,14 +37,6 @@
                                                       [:read]
                                                       [:read :update])]))
 
-(defn- process-subscriptions
-  "Sets up process-subscriptions arguments. Calls process-subscriptions, returns granule concept-ids."
-  []
-  (let [subscriptions (->> (mdb2/find-concepts (system/context) {:latest true} :subscription)
-                           (remove :deleted)
-                           (map #(select-keys % [:concept-id :extra-fields :metadata])))]
-    (#'jobsub/process-subscriptions (system/context) subscriptions)))
-
 (deftest subscription-count-exceeds-limit-test
   (side/eval-form `(jobsub/set-subscriptions-limit! 1))
   (let [coll1 (data-core/ingest-umm-spec-collection
@@ -198,15 +190,28 @@
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})]
     (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
-    (testing "ingest of a new subscription concept"
+    (testing "ingest of a new granule subscription concept"
       (let [concept (subscription-util/make-subscription-concept
                      {:CollectionConceptId (:concept-id coll1)})
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= 1 revision-id))))
-    (testing "ingest of a subscription concept with a revision id"
+    (testing "ingest of a subscription granule concept with a revision id"
       (let [concept (subscription-util/make-subscription-concept
                      {:CollectionConceptId (:concept-id coll1)}
+                     {:revision-id 5})
+            {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+        (is (= 5 revision-id))
+        (is (mdb/concept-exists-in-mdb? concept-id 5))))
+    (testing "ingest of a new collection subscription concept"
+      (let [concept (subscription-util/make-subscription-concept
+                     {:Type "collection"})
+            {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+        (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+        (is (= 1 revision-id))))
+    (testing "ingest of a subscription collection concept with a revision id"
+      (let [concept (subscription-util/make-subscription-concept
+                     {:Type "collection"}
                      {:revision-id 5})
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (is (= 5 revision-id))
@@ -248,7 +253,7 @@
 
 (deftest subscription-ingest-with-bad-query-error-test
   (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
-  (testing "ingest of a new subscription concept"
+  (testing "ingest of a new granule subscription concept with invalid query"
     (let [coll1 (data-core/ingest-umm-spec-collection
                  "PROV1"
                  (data-umm-c/collection
@@ -265,7 +270,38 @@
           {:keys [errors]} (ingest/parse-ingest-body :json response)
           error (first errors)]
       (is (re-find #"Subscription query validation failed with the following error" error))
-      (is (re-find #"Parameter \[options%_5_bspatial%_5_d%_5_bor%_5_d\] was not recognized." error)))))
+      (is (re-find #"Parameter \[options%_5_bspatial%_5_d%_5_bor%_5_d\] was not recognized." error))))
+  (testing "ingest of a new collection subscription concept with invalid query"
+    (let [metadata {:Query "producer_granule_id[]=DummyID"
+                    :Type "collection"}
+          concept (subscription-util/make-subscription-concept metadata)
+          response (ingest/ingest-concept
+                    concept
+                    {:accept-format :json
+                     :raw? true})
+          {:keys [errors]} (ingest/parse-ingest-body :json response)
+          error (first errors)]
+      (is (re-find #"Subscription query validation failed with the following error" error))
+      (is (re-find #"Parameter \[producer_granule_id\] was not recognized." error)))))
+
+(deftest subcription-ingest-collection-subscription-duplicate-error-test
+  (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
+  (testing "ingest of a new collection subscription concept with invalid query"
+    (let [metadata {:Query " "
+                    :Type "collection"}
+          concept1 (subscription-util/make-subscription-concept metadata)
+          concept2 (subscription-util/make-subscription-concept (assoc  metadata :Name "Duplicate"))
+          _ (ingest/ingest-concept
+             concept1
+             {:accept-format :json
+              :raw? true})
+          response (ingest/ingest-concept
+                    concept2
+                    {:accept-format :json
+                     :raw? true})
+          {:keys [errors]} (ingest/parse-ingest-body :json response)
+          error (first errors)]
+      (is (re-find #"The subscriber-id \[someSubId\] has already subscribed to the using the query \[.*\]. Subscribers must use unique queries for each collection subscription" error)))))
 
 ;; Verify that the accept header works with returned errors
 (deftest subscription-ingest-with-errors-accept-header-test
