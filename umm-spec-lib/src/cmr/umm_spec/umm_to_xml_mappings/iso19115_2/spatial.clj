@@ -110,7 +110,7 @@
   [{:keys [SwathWidth SwathWidthUnit OrbitPeriod OrbitPeriodUnit InclinationAngle InclinationAngleUnit
            NumberOfOrbits StartCircularLatitude StartCircularLatitudeUnit]}]
   (let [main-string (format "OrbitPeriod: %s OrbitPeriodUnit: %s
-                             InclinationAngle: %s InclinationAngleUnit: %s NumberOfOrbits: %s "
+                             InclinationAngle: %s InclinationAngleUnit: %s NumberOfOrbits: %s"
                             (util/double->string OrbitPeriod)
                             OrbitPeriodUnit
                             (util/double->string InclinationAngle)
@@ -121,7 +121,7 @@
                             (util/double->string SwathWidth)
                             SwathWidthUnit))
         scl-string (when StartCircularLatitude
-                     (format "StartCircularLatitude: %s StartCircularLatitudeUnit: %s"
+                     (format " StartCircularLatitude: %s StartCircularLatitudeUnit: %s"
                              (util/double->string StartCircularLatitude)
                              StartCircularLatitudeUnit))]
     (str sw-string main-string scl-string)))
