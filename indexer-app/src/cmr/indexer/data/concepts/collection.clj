@@ -181,10 +181,12 @@
       (tag/has-cloud-s3-tag? tags)))
 
 (defn- standard-product?
-  "Test if the collection meets the criteria for being standard-product"
+  "Test if the collection meets the criteria for being standard-product.
+  1. StandardProduct is true
+  2. StandardProduct is not set, standard-product tag exists."
   [collection tags]
   (or (= true (:StandardProduct collection))
-      (and (not (:StandardProduct collection))
+      (and (nil? (:StandardProduct collection))
            (tag/has-standard-product-tag? tags))))
 
 (def geoss-url-list
