@@ -16,6 +16,7 @@
     [cmr.ingest.services.messages :as msg]
     [cmr.ingest.validation.business-rule-validation :as bv]
     [cmr.transmit.config :as transmit-config]
+    [cmr.transmit.metadata-db :as mdb]
     [cmr.transmit.search :as transmit-search]
     [cmr.umm-spec.json-schema :as json-schema]
     [cmr.umm-spec.umm-json :as umm-json]
@@ -385,6 +386,30 @@
                                    context collection false)
                                   granule
                                   (granule-keyword-validations context))))
+
+(defn validate-standard-product
+  "Validates the collection against standard product rule:
+  If StandardProduct is true and any one of the two conditions below is true, throws error.
+  1. CollectionDataType is NEAR_REAL_TIME,LOW_LATENCY or EXPEDITED,
+  2. Provider consortium is NOT EOSDIS."
+  [provider-id collection context]
+  (let [collection-data-type (:CollectionDataType collection)
+        standard-product (:StandardProduct collection)
+        consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
+                              (mdb/get-providers context))
+        consortiums (when consortiums-str
+                      (remove empty? (str/split (str/upper-case consortiums-str) #" ")))]
+    (when (and (= true standard-product)
+               (or (some #(= collection-data-type %) ["NEAR_REAL_TIME" "LOW_LATENCY" "EXPEDITED"])
+                   (not (some #(= "EOSDIS" %) consortiums))))
+      (errors/throw-service-error :invalid-data
+       (format (str "Standard product validation failed: "
+                    "with CollectionDataType being [%s], and "
+                    "consortiums being [%s]. "
+                    "CollectionDataType can not be NEAR_REAL_TIME,LOW_LATENCY or EXPEDITED,"
+                    "and consortiums needs to contain EOSDIS.")
+               collection-data-type
+               consortiums-str)))))
 
 (defn-timed validate-business-rules
   "Validates the concept against CMR ingest rules."

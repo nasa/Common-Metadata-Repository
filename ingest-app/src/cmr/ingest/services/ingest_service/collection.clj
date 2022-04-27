@@ -85,7 +85,8 @@
         ;; Add extra fields for the collection
         coll-concept (assoc (add-extra-fields-for-collection context concept collection)
                             :umm-concept collection)]
-    ;; progressive update doesn't apply to business rules.
+    ;; progressive update doesn't apply to business rules and new starndard product validations.
+    (v/validate-standard-product provider-id collection context)
     (v/validate-business-rules context coll-concept prev-concept)
     {:concept coll-concept
      :warnings warnings
