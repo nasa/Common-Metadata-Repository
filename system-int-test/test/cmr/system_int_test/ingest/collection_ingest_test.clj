@@ -40,6 +40,26 @@
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Verify a new concept fails ingest when StandardProduct validation fails. 
+(deftest standard-validation-test
+  (ingest/create-provider {:provider-guid "provguid_consortium3" :provider-id "PROV3" :consortiums "geoss"})
+  (ingest/create-provider {:provider-guid "provguid_consortium4" :provider-id "PROV4" :consortiums "eosdis geoss"})
+  (let [coll3-non-eosdis-consortium (ingest/ingest-concept
+                                     (data-umm-c/collection-concept 
+                                      {:provider-id "PROV3"
+                                       :StandardProduct true}
+                                      :umm-json))
+        coll4-wrong-collection-data-type (ingest/ingest-concept
+                                          (data-umm-c/collection-concept
+                                           {:provider-id "PROV4"
+                                            :StandardProduct true
+                                            :CollectionDataType "NEAR_REAL_TIME"}
+                                           :umm-json))]
+     (is (= ["Standard product validation failed: with CollectionDataType being [null], and consortiums being [geoss]. CollectionDataType can not be NEAR_REAL_TIME,LOW_LATENCY or EXPEDITED,and consortiums needs to contain EOSDIS."]
+            (:errors coll3-non-eosdis-consortium)))
+     (is (= ["Standard product validation failed: with CollectionDataType being [NEAR_REAL_TIME], and consortiums being [eosdis geoss]. CollectionDataType can not be NEAR_REAL_TIME,LOW_LATENCY or EXPEDITED,and consortiums needs to contain EOSDIS."]
+            (:errors coll4-wrong-collection-data-type)))))
+    
 ;; Verify a new concept is ingested successfully.
 (deftest collection-ingest-test
   (testing "ingest of a new concept"

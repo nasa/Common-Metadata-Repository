@@ -399,6 +399,7 @@
           :has-temporal-subsetting m/bool-field-mapping
           :has-opendap-url m/bool-field-mapping
           :cloud-hosted m/bool-field-mapping
+          :standard-product m/bool-field-mapping
 
           :platform-sn                    m/string-field-mapping
           :platform-sn-lowercase          m/string-field-mapping

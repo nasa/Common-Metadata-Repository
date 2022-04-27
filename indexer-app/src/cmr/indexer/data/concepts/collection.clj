@@ -180,6 +180,13 @@
   (or (not (empty? (:DirectDistributionInformation collection)))
       (tag/has-cloud-s3-tag? tags)))
 
+(defn- standard-product?
+  "Test if the collection meets the criteria for being standard-product"
+  [collection tags]
+  (or (= true (:StandardProduct collection))
+      (and (not (:StandardProduct collection))
+           (tag/has-standard-product-tag? tags))))
+
 (def geoss-url-list
   ["https://creativecommons.org/licenses/by/4.0/legalcode"
    "http://creativecommons.org/licenses/by/4.0/"
@@ -464,6 +471,7 @@
             :related-urls (map json/generate-string opendata-related-urls)
             :has-opendap-url (not (empty? (filter opendap-util/opendap-url? related-urls)))
             :cloud-hosted (cloud-hosted? collection tags)
+            :standard-product (standard-product? collection tags)
             :publication-references opendata-references
             :collection-citations (map json/generate-string opendata-citations)
             :update-time update-time
