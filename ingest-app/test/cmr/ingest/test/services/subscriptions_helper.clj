@@ -70,9 +70,9 @@
                    :start-time "2020-05-04T12:51:36Z"
                    :end-time "2020-05-05T12:51:36Z"})]
       (is (= "someone@gmail.com" (:to actual)))
-      (is (= "New Collections Match Your Subscription" (:subject actual)))
+      (is (= "Email Subscription Notification" (:subject actual)))
       (is (= "text/html" (:type (first (:body actual)))))
-      (is (= (str "<p>You have subscribed to receive notifications when new collections are added match the following search query:</p>"
+      (is (= (str "<p>You have subscribed to receive notifications when new collections are added that match the following search query:</p>"
                   "<p><code>updated&#95;since&#91;&#93;=2020-05-04T12:51:36Z</code></p>"
                   "<p>Running the query with a time window from 2020-05-04T12:51:36Z to 2020-05-05T12:51:36Z, the following collections have been "
                   "added or updated:</p>"

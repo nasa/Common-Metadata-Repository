@@ -5,27 +5,10 @@
    [cmr.common-app.services.ingest.subscription-common :as sub-common]
    [config.mdb-migrate-helper :as helper]))
 
-(defn result->type
-  "From a Database result, extract out the query and convert it to a usable string."
-  [result]
-  (let [metadata (-> (:metadata result)
-                     util/gzip-blob->string
-                     (as-> % (json/parse-string %, true)))
-        collection-concept-id (:CollectionConceptId metadata)
-        subscription-type (:Type metadata)]
-    (or subscription-type
-        (when collection-concept-id
-          "granule")
-        "collection")))
-
 (defn populate-new-column
-  "Pull out the Type from the matadata, then populate the new 'subscription_type' column."
+  "Updates new subscription_type column with default granule value"
   []
-  (doseq [result (helper/query "SELECT id, concept_id, metadata FROM cmr_subscriptions")]
-    (let [id (:id result)
-          subscription-type (result->type result)
-          sql-statment (format "UPDATE cmr_subscriptions SET subscription_type='%s' WHERE id=%s" subscription-type id)]
-      (helper/sql sql-statment))))
+  (helper/sql (format "UPDATE cmr_subscriptions SET subscription_type='granule'")))
 
 (defn- recreate-subscription-index
   []

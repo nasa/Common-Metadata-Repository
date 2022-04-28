@@ -122,7 +122,7 @@
 (defn- search-gran-refs-by-collection-id
   [context params sub-id]
   (try
-    (search/find-granule-references context params)
+    (search/find-concept-references context params :granule)
     (catch Exception e
       (error "Exception caught processing subscription" sub-id " searching with params "
              (dissoc params :token) "\n\n" (.getMessage e) "\n\n" e)
@@ -131,7 +131,7 @@
 (defn- search-collection-refs
   [context params sub-id]
   (try
-    (search/find-collection-references context params)
+    (search/find-concept-references context params :collection)
     (catch Exception e
       (error "Exception caught processing subscription" sub-id " searching with params "
              (dissoc params :token) "\n\n" (.getMessage e) "\n\n" e)
@@ -158,7 +158,7 @@
               coll-id (get-in subscription [:extra-fields :collection-concept-id])
               query-params (create-query-params query-string)
               search-by-revision (merge {:revision-date time-constraint}
-                                        (when (= sub-type :granule)
+                                        (when coll-id
                                           {:collection-concept-id coll-id})
                                         {:token (config/echo-system-token)}
                                         query-params)
@@ -209,10 +209,10 @@
         sub-end-time (:end-time subscription)]
     {:from from-email-address
      :to to-email-address
-     :subject "New Collections Match Your Subscription"
+     :subject "Email Subscription Notification"
      :body [{:type "text/html"
              :content (markdown/md-to-html-string
-                       (str "You have subscribed to receive notifications when new collections are added match the following search query:\n\n"
+                       (str "You have subscribed to receive notifications when new collections are added that match the following search query:\n\n"
                             "`" meta-query "`\n\n"
                             "Running the query with a time window from " sub-start-time " to " sub-end-time
                             ", the following collections have been added or updated:\n\n"

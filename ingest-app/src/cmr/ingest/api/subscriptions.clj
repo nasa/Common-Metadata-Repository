@@ -156,7 +156,7 @@
                  subscriber-id collection-id normalized-query))
         (errors/throw-service-error
          :conflict
-         (format (str "The subscriber-id [%s] has already subscribed to the "
+         (format (str "The subscriber-id [%s] has already subscribed "
                       "using the query [%s]. "
                       "Subscribers must use unique queries for each collection subscription")
                  subscriber-id normalized-query))))))
@@ -291,10 +291,12 @@
   can focus on insertion logic. Also adds normalized-query to the concept."
   [context subscription]
   (let [metadata (json/parse-string (:metadata subscription) true)
+        subscription-type (or (:Type metadata) "granule")
         new-metadata (add-id-to-metadata-if-missing context metadata)
         normalized (sub-common/normalize-parameters (:Query metadata))]
     (assoc subscription
            :metadata (json/generate-string new-metadata)
+           :subscription-type subscription-type
            :normalized-query normalized)))
 
 (defn create-subscription

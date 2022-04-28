@@ -77,12 +77,12 @@
              :name (cx/string-at-path % [:name])
              :location (cx/string-at-path % [:location])}) ref-elems)))
 
-(defn-timed find-granule-references
+(defn-timed find-concept-references
   "Find granules by parameters in a post request. The function returns an array of granule
   references, each reference being a map having concept-id and granule-ur as the fields"
-  [context params]
+  [context params concept-type]
   (let [conn (config/context->app-connection context :search)
-        request-url (str (conn/root-url conn) "/granules.xml")
+        request-url (str (conn/root-url conn) (format "/%ss.xml" (name concept-type)))
         request-body (dissoc params :token)
         token (:token params)
         header (ch/context->http-headers context)
@@ -98,28 +98,6 @@
       (parse-granule-response body)
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s" status body)))))
-
-(defn-timed find-collection-references
-  "Find collections by parameters in a post request. The function returns an array ofcollection
-  references, each reference being a map having concept-id and name as the fields"
-  [context params]
-  (let [conn (config/context->app-connection context :search)
-        request-url (str (conn/root-url conn) "/collections.xml")
-        request-body (dissoc params :token)
-        token (:token params)
-        header (ch/context->http-headers context)
-        response (client/post request-url
-                              (merge
-                                (config/conn-params conn)
-                                {:body (codec/form-encode request-body)
-                                 :content-type mt/form-url-encoded
-                                 :throw-exceptions false
-                                 :headers (if token (assoc header config/token-header token) header)}))
-        {:keys [status body]} response]
-    (if (= status 200)
-      (parse-collection-response body)
-      (errors/internal-error!
-        (format "Collection search failed. status: %s body: %s" status body)))))
 
 (defn-timed validate-search-params
   "Attempts to search granules using given params via a POST request. If the response contains a

@@ -146,15 +146,15 @@
 
 (deftest subscription-delete-on-prov3-test
   (let [coll1 (data-core/ingest-umm-spec-collection
-               "PROV1"
-               (data-umm-c/collection
-                {:ShortName "coll1"
-                 :EntryTitle "entry-title1"})
-               {:token "mock-echo-system-token"})]
+                "PROV1"
+                 (data-umm-c/collection
+                  {:ShortName "coll1"
+                   :EntryTitle "entry-title1"})
+                 {:token "mock-echo-system-token"})]
     (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
     (testing "delete on PROV3, guest is not granted update permission for SUBSCRIPTION_MANAGEMENT ACL"
       (let [concept (subscription-util/make-subscription-concept {:provider-id "PROV3"
-                                                                  :CollectionConceptId (:concept-id coll1)})
+                                                                                                                                                      :CollectionConceptId (:concept-id coll1)})
             guest-token (echo-util/login-guest (system/context))
             response (ingest/delete-concept concept {:token guest-token})]
         (is (= ["You do not have permission to perform that action."] (:errors response)))))
@@ -196,7 +196,7 @@
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= 1 revision-id))))
-    (testing "ingest of a subscription granule concept with a revision id"
+    (testing "ingest of a granule subscription concept with a revision id"
       (let [concept (subscription-util/make-subscription-concept
                      {:CollectionConceptId (:concept-id coll1)}
                      {:revision-id 5})
@@ -211,7 +211,7 @@
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= 1 revision-id))))
-    (testing "ingest of a subscription collection concept with a revision id"
+    (testing "ingest of a collection subscription concept with a revision id"
       (let [concept (subscription-util/make-subscription-concept
                      {:Type "collection"}
                      {:revision-id 5}
@@ -304,7 +304,7 @@
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)
           error (first errors)]
-      (is (re-find #"The subscriber-id \[someSubId\] has already subscribed to the using the query \[.*\]. Subscribers must use unique queries for each collection subscription" error)))))
+      (is (re-find #"The subscriber-id \[someSubId\] has already subscribed using the query \[.*\]. Subscribers must use unique queries for each collection subscription" error)))))
 
 ;; Verify that the accept header works with returned errors
 (deftest subscription-ingest-with-errors-accept-header-test
