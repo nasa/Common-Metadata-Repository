@@ -205,14 +205,17 @@
         (is (mdb/concept-exists-in-mdb? concept-id 5))))
     (testing "ingest of a new collection subscription concept"
       (let [concept (subscription-util/make-subscription-concept
-                     {:Type "collection"})
+                     {:Type "collection"}
+                     {}
+                     "coll-sub")
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
         (is (= 1 revision-id))))
     (testing "ingest of a subscription collection concept with a revision id"
       (let [concept (subscription-util/make-subscription-concept
                      {:Type "collection"}
-                     {:revision-id 5})
+                     {:revision-id 5}
+                     "coll-sub")
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (is (= 5 revision-id))
         (is (mdb/concept-exists-in-mdb? concept-id 5))))))

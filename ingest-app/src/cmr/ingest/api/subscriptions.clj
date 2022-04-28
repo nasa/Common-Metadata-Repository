@@ -78,7 +78,7 @@
         collection-id (:CollectionConceptId metadata)
         query-string (:Query metadata)
         query-params (jobs/create-query-params query-string)
-        subscription-type (keyword (:Type metadata))
+        subscription-type (or (keyword (:Type metadata)) :granule)
         search-params (merge
                        (when (= :granule subscription-type)
                          {:collection-concept-id collection-id})
