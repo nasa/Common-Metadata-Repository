@@ -4,20 +4,41 @@
    [cmr.common.concepts :as common-concepts]
    [cmr.common.services.errors :as errors]
    [cmr.metadata-db.services.messages :as msg]
-   [cmr.metadata-db.services.util :as mdb-util]))
-
+   [cmr.metadata-db.services.util :as mdb-util]
+   [cmr.metadata-db.data.generic-documents :as data]))
 
 (defn insert-generic-document
-  [context params provider-id]
-  {})
+  [context params provider-id document]
+  (let [db (mdb-util/context->db context)
+        document (-> document
+                     (assoc :provider-id provider-id)
+                     (assoc :concept-type :generic)
+                     (assoc :revision-id 1))
+        concept-id (data/generate-concept-id db document)
+        document (-> document
+                     (assoc :native-id concept-id)
+                     (assoc :concept-id concept-id))
+        result (data/save-concept db provider-id document)]
+
+    result))
 
 (defn read-generic-document
   [context params provider-id concept-id]
-  {})
+  (let [db (mdb-util/context->db context)
+        concept-type :generic
+        doc (data/get-concept db concept-type {:provider-id provider-id} concept-id)]
+    doc))
 
 (defn update-generic-document
   [context params provider-id concept-id]
-  {})
+  (let [db (mdb-util/context->db context)
+        document (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))
+        latest-rev-id (:revision-id document)
+        document (-> document
+                     (assoc :revision-id (+ latest-rev-id 1)))
+        _ (data/save-concept db provider-id document)
+        result (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id])]
+    result))
 
 (defn delete-generic-document
   [context params provider-id concept-id]

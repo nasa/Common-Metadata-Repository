@@ -3,35 +3,42 @@
 
 (defprotocol GenericDocsStore
   "Functions for saving and retrieving generic documents"
-  
-  (save-document
-   [db document]
-   "Saves a document and returns the document id. If the document already
+
+  (generate-concept-id [db document] "")
+
+  (save-concept
+    [db provider concept]
+    "Saves a document and returns the document id. If the document already
     exists then an exception is thrown.")
-  
-  (get-documents
-   [db]
-   "Get a sequence of all the documents.")
-  
-  (get-document
-   [db document-id]
-   "Get the document with given id.")
-  
+
+  (get-concept
+   ;[db concept-type provider concept-id revision-id]
+    [db concept-type provider concept-id]
+    "Get a sequence of all the documents.")
+
+  (get-concepts
+    [db concept-type provider concept-id-revision-id-tuples]
+    "Get the document with given id.")
+
+  (get-latest-concepts
+   [db concept-type provider concept-ids]
+   "Get the most recent documents")
+
   (update-document
-   [db document]
-   "Updates an existing document in the database based on the
+    [db provider concept]
+    "Updates an existing document in the database based on the
     document map's document-id value.")
-  
+
   ;; CMR-8181
   ;; TO-DO -- not sure about 'document instances' language below
-  (delete-document
-   [db document]
-   "Remove a document from the database completely, including all of its
+  (force-delete
+    [db concept-type provider concept-id revision-id]
+    "Remove a document from the database completely, including all of its
    document instances.")
-  
+
   ;; CMR-8181
   ;; TO-DO -- not sure about 'document instances' language below
-  (reset-documents
-   [db]
-   "Delete all documents from the database including their document instances. 
+  (reset
+    [db]
+    "Delete all documents from the database including their document instances. 
     USE WITH CAUTION."))

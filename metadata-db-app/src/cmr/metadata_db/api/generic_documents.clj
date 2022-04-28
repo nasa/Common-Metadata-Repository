@@ -6,15 +6,15 @@
 
 (defn- insert-generic-document
   "Create a Generic Document"
-  [context params provider-id]
-  (let [result (gen-doc/insert-generic-document context params provider-id)]
+  [context params provider-id body]
+  (let [result (gen-doc/insert-generic-document context params provider-id body)]
     {:status 204}))
 
 (defn- read-generic-document
   "Read a Generic Document"
   [context params provider-id concept-id]
   (let [result (gen-doc/read-generic-document context params provider-id concept-id)]
-    {:status 200}))
+    {:status 200 :body result}))
 
 (defn- update-generic-document
   "Update a Generic Document"
@@ -28,24 +28,24 @@
   (let [result (gen-doc/delete-generic-document context params provider-id concept-id)]
     {:status 204}))
 
-(def generic-document-api-routs
+(def generic-document-api-routes
   (context "/generics" []
     
+    ;{:keys [provider-id body] :as params} :params
     (POST "/:provider-id" {{:keys [provider-id] :as params} :params
+                           body :body
                            request-context :request-context}
-      (insert-generic-document request-context params provider-id))
+      (insert-generic-document request-context params provider-id body))
 
     (GET "/:provider-id/:concept-id" {{:keys [provider-id concept-id] :as params} :params
                                       request-context :request-context}
       (read-generic-document request-context params provider-id concept-id))
 
-    (UPDATE "/:provider-id/:concept-id" {{:keys [provider-id concept-id] :as params} :params
+    (PUT "/:provider-id/:concept-id" {{:keys [provider-id concept-id] :as params} :params
                                       request-context :request-context}
       (update-generic-document request-context params provider-id concept-id))
     
     (DELETE "/:provider-id/:concept-id" {{:keys [provider-id concept-id] :as params} :params
                                       request-context :request-context}
       (delete-generic-document request-context params provider-id concept-id))
-
-    
     ))

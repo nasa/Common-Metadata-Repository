@@ -583,6 +583,40 @@
         provider-store-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Metadata DB GenDocsStore Implementation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(comment def concept-store-behaviour
+  {:generate-concept-id generate-concept-id
+   :get-concept-id get-concept-id
+   :get-granule-concept-ids get-granule-concept-ids
+   :get-concept get-concept
+   :get-concepts get-concepts
+   :get-latest-concepts get-latest-concepts
+   :get-transactions-for-concept get-transactions-for-concept
+   :save-concept save-concept
+   :force-delete force-delete
+   :force-delete-concepts force-delete-concepts
+   :get-concept-type-counts-by-collection get-concept-type-counts-by-collection
+   :reset reset
+   :get-expired-concepts get-expired-concepts
+   :get-tombstoned-concept-revisions get-tombstoned-concept-revisions
+   :get-old-concept-revisions get-old-concept-revisions})
+
+
+(def generic-doc-store-behaviour
+  {:generate-concept-id generate-concept-id
+   :get-concept get-concept
+   :get-concepts get-concepts
+   :get-latest-concepts get-latest-concepts
+   :save-concept save-concept
+   :reset reset})
+
+(extend MemoryStore
+  gdoc/GenericDocsStore
+  generic-doc-store-behaviour)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MemoryStore Constructor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 

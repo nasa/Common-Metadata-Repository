@@ -86,11 +86,11 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn save-document
+(defn save-concept
   "Create the document in the database, try to pull as many values out of the
    document as can be found. All documents must have at least a :Name and a
    :MetadataSpecification field."
-  [db document provider-id user-id]
+  [db provider-id document]
   (let [raw-count (-> db
                       (jdbc/query ["SELECT count(DISTINCT concept_id) AS last FROM CMR_GENERIC_DOCUMENTS"])
                       first
@@ -114,22 +114,22 @@
                     :revision_date now
                     :created_at now
                     :deleted 0
-                    :user_id user-id
+                    :user_id 'place-holder'
                     :transaction_id (get-next-transaction-id db)})))
 
-(defn get-documents
-  [db format]
+(defn get-concepts
+  [db concept-type provider concept-id-revision-id-tuples]
   (map #(dbresult->genericdoc % db)
-       (jdbc/query db ["SELECT * FROM cmr_generic_documents WHERE format = ?" format])))
+       (jdbc/query db ["SELECT * FROM cmr_generic_documents WHERE format = ?" concept-type])))
 
-(defn get-document
-  [db id]
+(defn get-concept
+  [db concept-type provider concept-id]
   (first (map #(dbresult->genericdoc % db)
               (jdbc/query db
                           [(str "SELECT *"
                                 " FROM cmr_generic_documents"
-                                " WHERE id = ?")
-                           id]))))
+                                " WHERE concept-id = ?")
+                           concept-id]))))
 
 ;; still needs to implement this requirement: All documents must have at least a :Name and a
 ;; :MetadataSpecification field.
@@ -159,19 +159,19 @@
                      :user_id user-id
                      :transaction_id (get-next-transaction-id db)}))))
 
-(defn delete-document
-  [db document])
+(defn force-delete
+  [db concept-type provider concept-id revision-id])
 
-(defn reset-documents
+(defn reset-all
   [db])
 
 (def behaviour
-  {:save-document save-document
-   :get-documents get-documents
-   :get-document get-document
+  {:save-concept save-concept
+   :get-concept get-concept
+   :get-concepts get-concepts
    :update-document update-document
-   :delete-document delete-document
-   :reset-documents reset-documents})
+   :force-delete force-delete
+   :reset reset-all})
 
 (extend OracleStore
   gdoc/GenericDocsStore
