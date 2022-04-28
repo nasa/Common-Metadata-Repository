@@ -23,7 +23,7 @@
                                      [com.google.javascript/closure-compiler-unshaded]]}
              :dev {:dependencies [[clojusc/system-manager "0.3.0"]
                                   [clojusc/trifl "0.4.2"]
-                                  [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
+                                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]]
                    :plugins [[lein-shell "0.5.0"]
                              [venantius/ultra "0.5.2"]]

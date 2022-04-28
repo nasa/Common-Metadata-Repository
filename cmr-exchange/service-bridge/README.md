@@ -44,7 +44,7 @@ ECHO, ESI/EGI, etc.
 
 ## Documentation [&#x219F;](#contents)
 
-Documentation for CMR Service-Bridge is availble
+Documentation for CMR Service-Bridge is available
 [here](https://cmr.sit.earthdata.nasa.gov/service-bridge/docs). The content there
 is broken down by category; some of that is offered below as a convenience:
 
@@ -55,6 +55,16 @@ is broken down by category; some of that is offered below as a convenience:
 * [REST API Usage](https://cmr.sit.earthdata.nasa.gov/service-bridge/docs/current/rest-api)
 * [Source Code API Reference](https://cmr.sit.earthdata.nasa.gov/service-bridge/docs/current/reference/index.html)
 * [Source Code Annotation](https://cmr.sit.earthdata.nasa.gov/service-bridge/docs/current/marginalia/index.html)
+
+
+## Development Notes [&#x219F;](#contents)
+
+See above Documentation section for links on instructions to build, start repl and run tests locally.
+
+A couple of gotchas:
+
+* API documents needs to be manually built via `lein docs` and checked into source code.
+* Any code changes in internal plugins/libraries requires a version bump and publication to clojars. Otherwise, the code changes will not be picked up by the application. Once CMR-8225 is fixed. This won't be necessary.
 
 
 ## License [&#x219F;](#contents)

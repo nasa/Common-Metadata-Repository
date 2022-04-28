@@ -25,7 +25,7 @@
                  [clojure-opennlp "0.5.0"]
                  [com.neovisionaries/nv-i18n "1.23"]
                  [com.stuartsierra/component "0.3.2"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.3.1-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
                  [org.apache.commons/commons-csv "1.6"]
                  [org.clojure/clojure "1.10.0"]
