@@ -64,7 +64,7 @@ See above Documentation section for links on instructions to build, start repl a
 A couple of gotchas:
 
 * API documents needs to be manually built via `lein docs` and checked into source code.
-* Any code changes in internal plugins/libraries requires a version bump and publication to clojars. Otherwise, the code changes will not be picked up by the application. Once CMR-8225 is fixed. This won't be necessary.
+* Any code changes in internal plugins/libraries requires a version bump and publication to clojars. Otherwise, the code changes will not be picked up by the application. Once CMR-8225 is fixed, this won't be necessary.
 
 
 ## License [&#x219F;](#contents)
