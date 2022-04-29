@@ -10,13 +10,14 @@
 (defn insert-generic-document
   [context params provider-id document]
   (let [db (mdb-util/context->db context)
+        doc_name (:Name document) 
         document (-> document
                      (assoc :provider-id provider-id)
                      (assoc :concept-type :generic)
                      (assoc :revision-id 1))
         concept-id (data/generate-concept-id db document)
         document (-> document
-                     (assoc :native-id concept-id)
+                     (assoc :native-id doc_name)
                      (assoc :concept-id concept-id))
         result (data/save-concept db provider-id document)]
 
