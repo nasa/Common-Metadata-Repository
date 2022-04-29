@@ -18,8 +18,8 @@
 
 (defn- update-generic-document
   "Update a Generic Document"
-  [context params provider-id concept-id]
-  (let [result (gen-doc/update-generic-document context params provider-id concept-id)]
+  [context params provider-id concept-id body]
+  (let [result (gen-doc/update-generic-document context params provider-id concept-id body)]
     {:status 204}))
 
 (defn- delete-generic-document
@@ -42,8 +42,9 @@
       (read-generic-document request-context params provider-id concept-id))
 
     (PUT "/:provider-id/:concept-id" {{:keys [provider-id concept-id] :as params} :params
+                                      body :body
                                       request-context :request-context}
-      (update-generic-document request-context params provider-id concept-id))
+      (update-generic-document request-context params provider-id concept-id body))
     
     (DELETE "/:provider-id/:concept-id" {{:keys [provider-id concept-id] :as params} :params
                                       request-context :request-context}

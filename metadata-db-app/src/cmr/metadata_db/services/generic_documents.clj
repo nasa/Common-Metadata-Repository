@@ -10,14 +10,13 @@
 (defn insert-generic-document
   [context params provider-id document]
   (let [db (mdb-util/context->db context)
-        doc_name (:Name document) 
         document (-> document
                      (assoc :provider-id provider-id)
                      (assoc :concept-type :generic)
                      (assoc :revision-id 1))
         concept-id (data/generate-concept-id db document)
         document (-> document
-                     (assoc :native-id doc_name)
+                     (assoc :native-id (.toString (java.util.UUID/randomUUID)))
                      (assoc :concept-id concept-id))
         result (data/save-concept db provider-id document)]
 
@@ -31,14 +30,27 @@
     doc))
 
 (defn update-generic-document
-  [context params provider-id concept-id]
+  [context params provider-id concept-id document]
   (let [db (mdb-util/context->db context)
-        document (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))
-        latest-rev-id (:revision-id document)
-        document (-> document
-                     (assoc :revision-id (+ latest-rev-id 1)))
-        _ (data/save-concept db provider-id document)
+        latest-document (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))
+        latest-rev-id (:revision-id latest-document)
+        orig-native-id (:native-id latest-document)
+        orig-concept-id (:concept-id latest-document)
+        metadata (-> document
+                     (assoc :provider-id provider-id)
+                     (assoc :concept-type :generic)
+                     (assoc :revision-id (+ latest-rev-id 1))
+                     (assoc :native-id orig-native-id)
+                     (assoc :concept-id orig-concept-id))
+        save-result (data/save-concept db provider-id metadata)
         result (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id])]
+    (clojure.pprint/pprint save-result)
+
+    (println (data/get-concepts db :generic {:provider-id provider-id} ["X1200000008-PROV1"]))
+
+
+    ;(println (:concepts-atom db))
+
     result))
 
 (defn delete-generic-document
