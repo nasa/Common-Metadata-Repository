@@ -296,10 +296,6 @@
             "description": "The bounding box consists of west bounding, south bounding, east bounding and north bounding coordinates and the CRS identifier.",
             "additionalProperties":false,
             "properties": {
-                "O_360_DegreeProjection": {
-                    "description": "Describes whether the grid's bounding box geographic coverage is a -180 longitude by 180 longitude or 0 longitude by 360 longitude Degree Projection.",
-                    "type": "boolean"
-                },
                 "BoundingRectangle": {
                     "description": "Describes the grid's bounding box geographic coverage.",
                     "$ref": "#/definitions/BoundingRectangleType"
@@ -319,9 +315,12 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
+                "0_360_DegreeProjection": {
+                    "description": "Describes whether the grid's bounding box geographic coverage is a -180 longitude by 180 longitude or 0 longitude by 360 longitude Degree Projection.",
+                    "type": "boolean"},
                 "WestBoundingCoordinate": {
                     "description": "The west bounding coordinate of the bounding box.",
-                    "$ref": "#/definitions/BoundingCoordinateType"
+                    "type": "number",
                 },
                 "SouthBoundingCoordinate": {
                     "description": "The south bounding coordinate of the bounding box.",
@@ -331,7 +330,7 @@
                 },
                 "EastBoundingCoordinate": {
                     "description": "The east bounding coordinate of the bounding box.",
-                    "$ref": "#/definitions/BoundingCoordinateType"
+                    "type": "number",
                 },
                 "NorthBoundingCoordinate": {
                     "description": "The north bounding coordinate of the bounding box.",
@@ -340,6 +339,17 @@
                     "maximum": 90
                 }
             },
+
+            "if": {"properties": {"0_360_DegreeProjection": {"const": true}}},
+            "then": {
+              "properties": {
+                "WestBoundingCoordinate": {"minimum": 0, "maximum": 360},
+                "EastBoundingCoordinate": {"minimum": 0, "maximum": 360}}},
+            "else": {
+              "properties": {
+                "WestBoundingCoordinate": {"minimum": -180, "maximum": 180},
+                "EastBoundingCoordinate": {"minimum": -180, "maximum": 180}}},
+
             "required" :["WestBoundingCoordinate",
                 "SouthBoundingCoordinate",
                 "EastBoundingCoordinate",
@@ -348,7 +358,7 @@
 
         "BoundingCoordinateType": {
             "type": "number",
-            "if": {"properties" : {"O_360_DegreeProjection": true}},
+            "if": {"properties" : {"0_360_DegreeProjection": {"const": true}}},
             "then": {"minimum": 0, "maximum": 360},
             "else": {"minimum": -180, "maximum": 180}
         },
@@ -364,15 +374,23 @@
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
+                            "0_360_DegreeProjection": {
+                                "description": "Describes whether the grid's bounding box geographic coverage is a -180 longitude by 180 longitude or 0 longitude by 360 longitude Degree Projection.",
+                                "type": "boolean"},
                             "LatitudePoint": {
                                 "description": "The latitude values of a spatially referenced point.",
                                 "$ref": "#/definitions/LatitudeType"
                             },
                             "LongitudePoint": {
                                 "description": "The Longitude values of a spatially referenced point.",
-                                "$ref": "#/definitions/LongitudeType"
+                                "type": "number",
                             }
                         },
+
+                        "if": {"properties": {"0_360_DegreeProjection": {"const": true}}},
+                        "then": {"properties": {"LongitudePoint": {"minimum": 0, "maximum": 360}}},
+                        "else": {"properties": {"LongitudePoint": {"minimum": -180, "maximum": 180}}},
+
                         "required": ["LatitudePoint", "LongitudePoint"]
                     },
                     "MidpointBoundingCoordinate": {
@@ -380,15 +398,23 @@
                         "type": "object",
                         "additionalProperties": false,
                         "properties": {
+                            "0_360_DegreeProjection": {
+                                "description": "Describes whether the grid's bounding box geographic coverage is a -180 longitude by 180 longitude or 0 longitude by 360 longitude Degree Projection.",
+                                "type": "boolean"},
                             "LatitudePoint": {
                                 "description": "The latitude values of a spatially referenced point.",
                                 "$ref": "#/definitions/LatitudeType"
                             },
                             "LongitudePoint": {
                                 "description": "The Longitude values of a spatially referenced point.",
-                                "$ref": "#/definitions/LongitudeType"
+                                "type": "number",
                             }
                         },
+
+                        "if": {"properties": {"0_360_DegreeProjection": {"const": true}}},
+                        "then": {"properties": {"LongitudePoint": {"minimum": 0, "maximum": 360}}},
+                        "else": {"properties": {"LongitudePoint": {"minimum": -180, "maximum": 180}}},
+
                         "required": ["LatitudePoint", "LongitudePoint"]
                     }
                 },
@@ -397,15 +423,10 @@
         },
 
         "LatitudeType": {
-            "description": "The latitude value of a spatially referenced point, in degrees.  Latitude values range from -90 to 90.",
+            "description": "The latitude value of a spatially referenced point, in degrees. Latitude values range from -90 to 90.",
             "type": "number",
             "minimum": -90,
             "maximum": 90
-        },
-
-        "LongitudeType": {
-            "description": "The longitude value of a spatially referenced point, in degrees.  Longitude values range from -180 to 180.",
-            "$ref": "#/definitions/BoundingCoordinateType"
         },
 
         "RelatedURLType": {

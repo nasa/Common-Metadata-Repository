@@ -28,18 +28,19 @@
             "LatitudeResolution": 32
         },
         "SpatialExtent": {
-            "O_360_DegreeProjection": true,
             "BoundingRectangle": {
+                "0_360_DegreeProjection": false,
                 "NorthBoundingCoordinate": -90.0,
-                "EastBoundingCoordinate": 0.0,
+                "EastBoundingCoordinate": 180.0,
                 "SouthBoundingCoordinate": 90.0,
-                "WestBoundingCoordinate": 360.0
+                "WestBoundingCoordinate": -180.0
             },
             "ScaleExtent": [
                 {
                     "CornerBoundingCoordinate": {
+                        "0_360_DegreeProjection": false,
                         "LatitudePoint": 30.98,
-                        "LongitudePoint": 168.35,
+                        "LongitudePoint": -168.35,
                     },
                     "MidpointBoundingCoordinate": {
                         "LatitudePoint": 39.43,
@@ -65,6 +66,7 @@
                     }
                 },{
                     "CornerBoundingCoordinate": {
+                        "0_360_DegreeProjection": true,
                         "LatitudePoint": 33.92,
                         "LongitudePoint": 279.26
                     },
