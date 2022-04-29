@@ -2,7 +2,9 @@
  "Buisness logic for Generic Documents"
   (:require
    [cmr.common.concepts :as common-concepts]
+   [cmr.common.date-time-parser :as dtp]
    [cmr.common.services.errors :as errors]
+   [cmr.common.time-keeper :as tkeeper]
    [cmr.metadata-db.services.messages :as msg]
    [cmr.metadata-db.services.util :as mdb-util]
    [cmr.metadata-db.data.generic-documents :as data]))
@@ -36,21 +38,18 @@
         latest-rev-id (:revision-id latest-document)
         orig-native-id (:native-id latest-document)
         orig-concept-id (:concept-id latest-document)
+        orig-create-date (:created-at latest-document)
         metadata (-> document
                      (assoc :provider-id provider-id)
                      (assoc :concept-type :generic)
                      (assoc :revision-id (+ latest-rev-id 1))
                      (assoc :native-id orig-native-id)
-                     (assoc :concept-id orig-concept-id))
-        save-result (data/save-concept db provider-id metadata)
+                     (assoc :concept-id orig-concept-id)
+                     (assoc :revision-date (dtp/clj-time->date-time-str (tkeeper/now)))
+                     (assoc :created-at orig-create-date))
+        _ (data/save-concept db provider-id metadata)
         result (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id])]
-    (clojure.pprint/pprint save-result)
-
-    (println (data/get-concepts db :generic {:provider-id provider-id} ["X1200000008-PROV1"]))
-
-
-    ;(println (:concepts-atom db))
-
+    (println result)
     result))
 
 (defn delete-generic-document
