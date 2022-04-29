@@ -19,6 +19,7 @@
    [cmr.umm-spec.migration.version.granule]
    [cmr.umm-spec.migration.version.interface :as interface]
    [cmr.umm-spec.migration.version.service]
+   [cmr.umm-spec.migration.version.subscription]
    [cmr.umm-spec.migration.version.tool]
    [cmr.umm-spec.migration.version.variable]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
