@@ -28,7 +28,34 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; new version , not working, gives: Called db->oracle-conn with connection that was not within a db transaction. 
+;; It must be called from within call j/with-db-transaction
 (defn dbresult->genericdoc
+  "Converts a map result from the database to a generic doc map"
+  [{:keys [id concept_id native_id provider_id document_name schema format
+           mime_type metadata revision_id revision_date created_at deleted
+           user_id transaction_id]} db]
+  (jdbc/with-db-transaction [conn db]
+                            (let [revision-date (oracle/oracle-timestamp->str-time db revision_date)
+                                  created-at (when created_at
+                                               (oracle/oracle-timestamp->str-time db created_at))]
+                              (cutil/remove-nil-keys {:id id
+                                                      :concept_id concept_id
+                                                      :native_id native_id
+                                                      :provider-id provider_id
+                                                      :document_name document_name
+                                                      :schema schema
+                                                      :format format ;; concepts convert this to mimetype in the get, but we already have mimetype
+                                                      :mime_type mime_type
+                                                      :metadata (when metadata (cutil/gzip-blob->string metadata))
+                                                      :revision_id (int revision_id)
+                                                      :revision_date revision-date
+                                                      :created_at created-at
+                                                      :deleted (not= (int deleted) 0)
+                                                      :user_id user_id
+                                                      :transaction_id transaction_id}))))
+
+(defn dbresult->genericdoc-old
   "Converts a map result from the database to a generic doc map"
   [{:keys [id concept_id native_id provider_id document_name schema format
            mime_type metadata revision_id revision_date created_at deleted
@@ -86,7 +113,44 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defn generate-concept-id
+  [db document]
+  (let [{:keys [concept-type provider-id]} document
+        raw-count (-> db
+                      (jdbc/query ["SELECT count(DISTINCT concept_id) AS last FROM CMR_GENERIC_DOCUMENTS"])
+                      first
+                      :last)
+        next (+ 1200000001 raw-count)]
+    (format "X%s-%s" next provider-id)))
+
+;; WORKS 
 (defn save-concept
+  "Create the document in the database, try to pull as many values out of the
+   document as can be found. All documents must have at least a :Name and a
+   :MetadataSpecification field."
+  [db provider-id document]
+  (let [metadata (json/generate-string document)
+        metadata-spec (get document "MetadataSpecification")
+        schema (get metadata-spec "Name")
+        version (get metadata-spec "Version")
+        now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
+    (insert-record db
+                   {:id (get-next-id-seq db)
+                    :concept_id (:concept-id document)
+                    :provider_id provider-id
+                    :document_name (get document "Name") ;;change me
+                    :schema (get metadata-spec "Name") 
+                    :format (get metadata-spec "Name")
+                    :mime_type (format "application/%s;version=%s" schema version)
+                    :metadata (cutil/string->gzip-bytes metadata)
+                    :revision_id (:revision-id document)
+                    :revision_date now
+                    :created_at now
+                    :deleted 0
+                    :user_id "place-holder"
+                    :transaction_id (get-next-transaction-id db)})))
+
+(defn save-concept-old
   "Create the document in the database, try to pull as many values out of the
    document as can be found. All documents must have at least a :Name and a
    :MetadataSpecification field."
@@ -114,7 +178,7 @@
                     :revision_date now
                     :created_at now
                     :deleted 0
-                    :user_id 'place-holder'
+                    :user_id "place-holder"
                     :transaction_id (get-next-transaction-id db)})))
 
 (defn get-concepts
@@ -122,15 +186,45 @@
   (map #(dbresult->genericdoc % db)
        (jdbc/query db ["SELECT * FROM cmr_generic_documents WHERE format = ?" concept-type])))
 
+;; not working
+;; why is it called "concept-id-revision-id-tuples" - seems to be vector of just concept-ids?
+(defn get-latest-concepts
+  [db concept-type provider concept-id-revision-id-tuples]
+  (jdbc/with-db-transaction [conn db]
+    (jdbc/query db
+                ["SELECT * FROM cmr_generic_documents WHERE concept_id = ?"
+                 (first concept-id-revision-id-tuples)]))
+  )
+
+;; not working
 (defn get-concept
+  [db concept-type provider concept-id]
+  (jdbc/with-db-transaction [conn db]
+                            (let [rows (jdbc/query db
+                                                   [(str "SELECT *"
+                                                         " FROM cmr_generic_documents"
+                                                         " WHERE concept_id = ?")
+                                                    concept-id])]
+                              ;;this simple println with nothing else DOES work
+                              ;;(println rows)
+
+                              ;; BUT then neither of the two options below work - meaning
+                              ;; the problem is with dbresult->genericdoc
+                              (dbresult->genericdoc (first rows) db)
+                              ;; (first (map #(dbresult->genericdoc % db)
+                              ;;             rows))
+                              )))
+
+(defn get-concept-old
   [db concept-type provider concept-id]
   (first (map #(dbresult->genericdoc % db)
               (jdbc/query db
                           [(str "SELECT *"
                                 " FROM cmr_generic_documents"
-                                " WHERE concept-id = ?")
+                                " WHERE concept_id = ?")
                            concept-id]))))
 
+;; Remove this??
 ;; still needs to implement this requirement: All documents must have at least a :Name and a
 ;; :MetadataSpecification field.
 (defn update-document
@@ -166,9 +260,11 @@
   [db])
 
 (def behaviour
-  {:save-concept save-concept
+  {:generate-concept-id generate-concept-id
+   :save-concept save-concept
    :get-concept get-concept
    :get-concepts get-concepts
+   :get-latest-concepts get-latest-concepts
    :update-document update-document
    :force-delete force-delete
    :reset reset-all})
@@ -187,6 +283,16 @@
   (def test-file (slurp (clojure.java.io/resource "sample_tool.json")))
   (def gzip-blob (cutil/string->gzip-bytes test-file))
   (def test-file2 (slurp (clojure.java.io/resource "AllElements-V1.16.6.json"))) ;; invalid test -- lacks MetadataSpecification
+  ;; here for your convenience - i didn't actually test with this, bc the transaction errors only show thru the api
+  (def test-grid (slurp (clojure.java.io/resource "sample_grid.json")))
+  ;;;;;;;; NEW
+
+  ;; these work but using that first comment (def db) up there
+  (jdbc/with-db-transaction [conn db] (get-concept conn :generic "PROV1" "X1200000002-PROV1"))
+  (jdbc/with-db-transaction [conn db] (get-concept-old conn :generic "PROV1" "X1200000004-PROV1"))
+
+
+  ;;;;;;;; OLD
 
   (save-document db test-file "PROV1" "some-edl-user")
 
@@ -223,4 +329,5 @@
                     ORDER BY revision_id ASC" "USGS_TOOLS_LATLONG" "TESTPROV"])))
 
   ;; delete document
-  (jdbc/delete! db "cmr_generic_documents" ["id=?" 1]))
+  (jdbc/delete! db "cmr_generic_documents" ["id=?" 1])
+  )
