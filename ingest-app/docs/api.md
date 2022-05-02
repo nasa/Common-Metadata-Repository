@@ -235,12 +235,12 @@ When there are existing errors allowed for progressive update, the response look
      "existing-errors" : [ "After translating item to UMM-C the metadata had the following existing error(s): [:TilingIdentificationSystems] Tiling Identification Systems must be unique. This contains duplicates named [MODIS Tile EASE, MISR].;; [:AdditionalAttributes 2] Value [6] is not a valid value for type [DATETIME].;; [:AdditionalAttributes 3] Value [GHRSST Level 2P Global Subskin Sea Surface Temperature from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite] is not a valid value for type [DATETIME]." ]}
 
 Note: The delimiter for different warnings and existing-errors is ";; ".
- 
+
 #### <a name="error-response"></a> Error Responses
 
 Requests could fail for several reasons when communicating with the CMR as described in the [HTTP Status Codes](#http-status-codes).
 
-Ingest validation errors can take one of two forms in the following: 
+Ingest validation errors can take one of two forms in the following:
 
 ##### <a name="general-errors"></a> General Errors
 
@@ -808,6 +808,8 @@ Query values should not be URL encoded. Instead, the query should consist of sta
     instrument=MODIS&sensor=1B&polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78
 
 If the query provided is invalid for granule searching, subscription creation will fail with HTTP status response of 400, and an error message detailing which query parameters were invalid.
+
+Subscriptions can be assigned a type of collection or granule by specifying it in the subscription metadata field `Type`. Subscriptions of type granule need to supply a requisite CollectionConceptId.
 
 ### <a name="update-subscription"></a> Update a Subscription
 

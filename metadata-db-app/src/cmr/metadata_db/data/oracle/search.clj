@@ -36,7 +36,7 @@
    :subscription (into common-columns
                        [:provider_id :subscription_name :subscriber_id
                         :collection_concept_id :user_id
-                        :normalized_query])
+                        :normalized_query :subscription_type])
    :variable (into common-columns [:provider_id :variable_name :measurement :user_id :fingerprint])
    :variable-association (into common-columns
                                [:associated_concept_id :associated_revision_id

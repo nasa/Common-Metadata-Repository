@@ -50,7 +50,7 @@
 (defn- mock-send-email
   "This function is used along with with-redefs to avoid sending emails in
    integration tests. If send-subscription-emails is called in tests without send-email being mocked,
-   errors will be returned when attempting to connect to the mail server in 
+   errors will be returned when attempting to connect to the mail server in
    postal-core/send-message."
   [email-settings email-content])
 
@@ -62,7 +62,7 @@
    granules in a given time window."
   (system/only-with-real-database
    (with-redefs
-    [jobs/send-email mock-send-email]
+     [jobs/send-email mock-send-email]
      (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
            _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
            _ (echo-util/ungrant (system/context)
@@ -129,13 +129,13 @@
            (is (= (:concept-id coll1_granule3) (:concept-id (second result))))))))))
 
 (deftest ^:oracle subscription-job-manual-test
-  "When calling the subscription admin endpoint, we do not want to update 
+  "When calling the subscription admin endpoint, we do not want to update
    the subscriptions last-notified-at field.  Setting last-notified-at to
    a time that has already passed would result in duplicate emails when
    the next subscription job runs."
   (system/only-with-real-database
    (with-redefs
-    [jobs/send-email mock-send-email]
+     [jobs/send-email mock-send-email]
      (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
            _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
            _ (echo-util/ungrant (system/context)
@@ -178,7 +178,7 @@
 (deftest ^:oracle subscription-email-processing-time-constraint-test
   (system/only-with-real-database
    (with-redefs
-    [jobs/send-email mock-send-email]
+     [jobs/send-email mock-send-email]
      (let [user2-group-id (echo-util/get-or-create-group (system/context) "group2")
            _user2-token (echo-util/login (system/context) "user2" [user2-group-id])
            _ (echo-util/ungrant (system/context)
@@ -252,7 +252,7 @@
 (deftest ^:oracle subscription-email-processing-filtering
   (system/only-with-real-database
    (with-redefs
-    [jobs/send-email mock-send-email]
+     [jobs/send-email mock-send-email]
      (testing "Tests subscriber-id filtering in subscription email processing job"
        (let [user1-group-id (echo-util/get-or-create-group (system/context) "group1")
            ;; User 1 is in group1
@@ -283,7 +283,10 @@
                                               :granule_applicable    true
                                               :granule_identifier    {:access_value {:include_undefined_value true
                                                                                      :min_value               1
-                                                                                     :max_value               50}}})
+                                                                                     :max_value               50}}
+                                              :collection_identifier    {:access_value {:include_undefined_value true
+                                                                                        :min_value               1
+                                                                                        :max_value               50}}})
              _              (echo-util/grant (system/context)
                                              [{:user_type   :registered
                                                :permissions [:read]}]
@@ -296,6 +299,15 @@
                                                                                      :min_value               100
                                                                                      :max_value               200}}})
              _              (ac-util/wait-until-indexed)
+             _              (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
+                                                                    {:provider-id         "PROV1"
+                                                                     :Name                "test_coll_sub_prov1"
+                                                                     :SubscriberId        "user1"
+                                                                     :Type                "collection"
+                                                                     :EmailAddress        "user1@nasa.gov"
+                                                                     :Query               "doi=10.5678/TestDOI"})
+                                                                   {:token "mock-echo-system-token"})
+             _              (index/wait-until-indexed)
            ;; Setup collections
              coll1          (data-core/ingest-umm-spec-collection "PROV1"
                                                                   (data-umm-c/collection {:ShortName  "coll1"
@@ -305,6 +317,19 @@
                                                                   (data-umm-c/collection {:ShortName  "coll2"
                                                                                           :EntryTitle "entry-title2"})
                                                                   {:token "mock-echo-system-token"})
+             coll3          (data-core/ingest-umm-spec-collection "PROV1"
+                                                                  (data-umm-c/collection
+                                                                   {:ShortName  "coll3"
+                                                                    :EntryTitle "entry-title3"
+                                                                    :AccessConstraints (data-umm-c/access-constraints
+                                                                                        {:Value 51 :Description "Those files are for British eyes only."})})
+                                                                  {:token "mock-echo-system-token"})
+             coll4          (data-core/ingest-umm-spec-collection "PROV1"
+                                                                  (data-umm-c/collection
+                                                                   {:ShortName  "coll4"
+                                                                    :EntryTitle "entry-title4"
+                                                                    :DOI {:DOI "10.5679/TestDOI2"}})
+                                                                  {:token "mock-echo-system-token"})
              _              (index/wait-until-indexed)
            ;; Setup subscriptions for each collection, for user1
              _              (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
@@ -312,12 +337,14 @@
                                                                      :SubscriberId        "user1"
                                                                      :EmailAddress        "user1@nasa.gov"
                                                                      :CollectionConceptId (:concept-id coll1)
+                                                                     :Type                "granule"
                                                                      :Query               " "})
                                                                    {:token "mock-echo-system-token"})
              _              (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
                                                                     {:provider-id         "PROV2"
                                                                      :Name                "test_sub_prov1"
                                                                      :SubscriberId        "user1"
+                                                                     :Type                "granule"
                                                                      :EmailAddress        "user1@nasa.gov"
                                                                      :CollectionConceptId (:concept-id coll2)
                                                                      :Query               " "})
@@ -344,7 +371,7 @@
                                                                                               :access-value 133})
                                               {:token "mock-echo-system-token"})
              _              (index/wait-until-indexed)
-             expected       (set [(:concept-id gran1) (:concept-id gran3)])
+             expected       (set [(:concept-id gran1) (:concept-id gran3) (:concept-id coll1) (:concept-id coll2)])
              actual         (->> (system/context)
                                  (jobs/email-subscription-processing)
                                  (map #(nth % 1))
