@@ -40,7 +40,7 @@
                     "CornerBoundingCoordinate": {
                         "0_360_DegreeProjection": false,
                         "LatitudePoint": 30.98,
-                        "LongitudePoint": -168.35,
+                        "LongitudePoint": -168.35
                     },
                     "MidpointBoundingCoordinate": {
                         "LatitudePoint": 39.43,
@@ -58,7 +58,7 @@
                 },{
                     "CornerBoundingCoordinate": {
                         "LatitudePoint": 34.35,
-                        "LongitudePoint": 350.03,
+                        "LongitudePoint": 350.03
                     },
                     "MidpointBoundingCoordinate": {
                         "LatitudePoint": 43.28,
@@ -98,7 +98,7 @@
                 "Value": "who@example.gov"
             },{
                 "Type": "Email",
-                "Value": "you@example.gov",
+                "Value": "you@example.gov"
             }
         ]
     },

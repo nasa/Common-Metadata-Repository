@@ -116,7 +116,7 @@
                     "type": "string"
                 }
             },
-            "required": ["Create"],
+            "required": ["Create"]
         },
 
         "GridDefinitionType": {
@@ -308,7 +308,7 @@
             "anyOf": [
                 {"required": ["BoundingRectangle"]},
                 {"required": ["ScaleExtent"]}
-            ],
+            ]
         },
 
         "BoundingRectangleType": {
@@ -320,7 +320,7 @@
                     "type": "boolean"},
                 "WestBoundingCoordinate": {
                     "description": "The west bounding coordinate of the bounding box.",
-                    "type": "number",
+                    "type": "number"
                 },
                 "SouthBoundingCoordinate": {
                     "description": "The south bounding coordinate of the bounding box.",
@@ -330,7 +330,7 @@
                 },
                 "EastBoundingCoordinate": {
                     "description": "The east bounding coordinate of the bounding box.",
-                    "type": "number",
+                    "type": "number"
                 },
                 "NorthBoundingCoordinate": {
                     "description": "The north bounding coordinate of the bounding box.",
@@ -383,7 +383,7 @@
                             },
                             "LongitudePoint": {
                                 "description": "The Longitude values of a spatially referenced point.",
-                                "type": "number",
+                                "type": "number"
                             }
                         },
 
@@ -407,7 +407,7 @@
                             },
                             "LongitudePoint": {
                                 "description": "The Longitude values of a spatially referenced point.",
-                                "type": "number",
+                                "type": "number"
                             }
                         },
 
@@ -484,7 +484,7 @@
                     "maxItems": 1
                 }
             },
-            "required":["URL", "URLContentType", "Type"],
+            "required":["URL", "URLContentType", "Type"]
         },
 
         "AdditionalAttributeType": {
