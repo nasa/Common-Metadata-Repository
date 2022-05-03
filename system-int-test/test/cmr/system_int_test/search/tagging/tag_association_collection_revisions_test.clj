@@ -74,7 +74,7 @@
                                      token tag-key
                                      [{:concept-id (:concept-id coll1-1)
                                        :revision-id "1"}])
-            expected-msg "#/0/revision_id: expected type: Number, found: String"]
+            expected-msg "#/0/revision_id: expected type: Integer, found: String"]
         (is (= [400 [expected-msg]] [status errors]))))
 
     (testing "tag a non-existent collection revision"
@@ -217,7 +217,7 @@
                                      token tag-key
                                      [{:concept-id (:concept-id coll1-1)
                                        :revision-id "1"}])
-            expected-msg "#/0/revision_id: expected type: Number, found: String"]
+            expected-msg "#/0/revision_id: expected type: Integer, found: String"]
         (is (= [400 [expected-msg]] [status errors]))))
 
     (testing "dissociate tag of a non-existent collection revision"

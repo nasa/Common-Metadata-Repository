@@ -721,7 +721,7 @@
         "OrbitNumber not Integer"
         {:orbital-model-name "Orbit1"
          :orbit-number 1.0}
-        ["#/OrbitCalculatedSpatialDomains/0/OrbitNumber: expected type: Integer, found: Double"]
+        ["#/OrbitCalculatedSpatialDomains/0/OrbitNumber: expected type: Integer, found: BigDecimal"]
 
         "both OrbitNumber and BeginOrbitNumber"
         {:orbital-model-name "Orbit1"
