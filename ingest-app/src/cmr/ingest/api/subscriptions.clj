@@ -47,6 +47,7 @@
                      (json/decode true))
         concept-id (:CollectionConceptId metadata)
         subscriber-id (:SubscriberId metadata)]
+    (when (= :granule (keyword (:Type metadata)))
       (try
         (let [permissions (-> (access-control/get-permissions request-context
                                                               {:concept_id concept-id
@@ -60,27 +61,30 @@
         (catch Exception e
           (subscriber-collection-permission-error
            subscriber-id
-           concept-id)))))
+           concept-id))))))
 
-(defn- search-gran-refs-with-sub-params
-  "Performs a granule search using the provided query parameters. If the query is no good,
+(defn- search-concept-refs-with-sub-params
+  "Performs a search using the provided query parameters. If the query is no good,
    we throw a service error."
-  [context params]
-  (when-let [errors (search/validate-granule-search-params context params)]
+  [context params concept-type]
+  (when-let [errors (search/validate-search-params context params concept-type)]
     (errors/throw-service-error :bad-request
       (str "Subscription query validation failed with the following error(s): " errors))))
 
 (defn- validate-query
-  "Performs a granule search using subscription query parameters for purposes of validation"
+  "Performs a search using subscription query parameters for purposes of validation"
   [request-context subscription]
   (let [metadata (json/decode (:metadata subscription) true)
         collection-id (:CollectionConceptId metadata)
         query-string (:Query metadata)
         query-params (jobs/create-query-params query-string)
-        search-params (merge {:collection-concept-id collection-id
-                              :token (config/echo-system-token)}
-                             query-params)
-        gran-refs (search-gran-refs-with-sub-params request-context search-params)]))
+        subscription-type (or (keyword (:Type metadata)) :granule)
+        search-params (merge
+                       (when (= :granule subscription-type)
+                         {:collection-concept-id collection-id})
+                       {:token (config/echo-system-token)}
+                       query-params)]
+    (search-concept-refs-with-sub-params request-context search-params subscription-type)))
 
 (defn is-subscription-revision?
   "True if the subscription is a revision, otherwise false."
@@ -115,7 +119,7 @@
   "The query used by a subscriber for a collection should be unique to prevent
    redundent emails from being sent to them. This function will check that a
    subscription is unique for the following conditions: native-id, collection-id,
-   subscriber-id, normalized-query."
+   subscriber-id, normalized-query, subscription-type."
   [request-context subscription]
   (let [native-id (:native-id subscription)
         provider-id (:provider-id subscription)
@@ -123,27 +127,39 @@
         normalized-query (:normalized-query subscription)
         collection-id (:CollectionConceptId metadata)
         subscriber-id (:SubscriberId metadata)
-        ;; Find concepts with matching collection-concept-id, normalized-query, and subscriber-id
+        subscription-type (:Type metadata)
+        ;; Find concepts with matching collection-concept-id, normalized-query, subscription-type
+        ;; and subscriber-id
         duplicate-queries (mdb/find-concepts
                            request-context
-                           {:collection-concept-id collection-id
-                            :normalized-query normalized-query
-                            :subscriber-id subscriber-id
-                            :exclude-metadata true
-                            :latest true}
+                           (merge
+                            (when (not= :collection (keyword (:Type metadata)))
+                              {:collection-concept-id collection-id})
+                            {:normalized-query normalized-query
+                             :subscriber-id subscriber-id
+                             :subscription-type subscription-type
+                             :exclude-metadata true
+                             :latest true})
                            :subscription)
         ;;we only want to look at non-deleted subscriptions
         active-duplicate-queries (remove :deleted duplicate-queries)]
-     ;;If there is at least one duplicate subscription,
-     ;;We need to make sure it has the same native-id, or else reject the ingest
-     (when (and (> (count active-duplicate-queries) 0)
-                (every? #(not= native-id (:native-id %)) active-duplicate-queries))
-       (errors/throw-service-error
-        :conflict
-        (format (str "The subscriber-id [%s] has already subscribed to the "
-                     "collection with concept-id [%s] using the query [%s]. "
-                     "Subscribers must use unique queries for each Collection.")
-                subscriber-id collection-id  normalized-query)))))
+    ;;If there is at least one duplicate subscription,
+    ;;We need to make sure it has the same native-id, or else reject the ingest
+    (when (and (> (count active-duplicate-queries) 0)
+               (every? #(not= native-id (:native-id %)) active-duplicate-queries))
+      (if (= (keyword subscription-type) :granule)
+        (errors/throw-service-error
+         :conflict
+         (format (str "The subscriber-id [%s] has already subscribed to the "
+                      "collection with concept-id [%s] using the query [%s]. "
+                      "Subscribers must use unique queries for each Collection.")
+                 subscriber-id collection-id normalized-query))
+        (errors/throw-service-error
+         :conflict
+         (format (str "The subscriber-id [%s] has already subscribed "
+                      "using the query [%s]. "
+                      "Subscribers must use unique queries for each collection subscription")
+                 subscriber-id normalized-query))))))
 
 (defn- get-subscriber-id
   "Returns the subscriber id of the given subscription concept by parsing its metadata."
@@ -262,18 +278,25 @@
   (let [subscriber-id (:SubscriberId metadata)
         subscriber (if-not subscriber-id
                      (api-core/get-user-id-from-token context)
-                     subscriber-id)]
-    (assoc metadata :SubscriberId subscriber)))
+                     subscriber-id)
+        subscription-type (keyword (:Type metadata))
+        metadata (assoc metadata :SubscriberId subscriber)
+        metadata (if (= :collection subscription-type)
+                   (dissoc metadata :CollectionConceptId)
+                   metadata)]
+    metadata))
 
 (defn- add-fields-if-missing
   "Parses and generates the metadata, such that add-id-to-metadata-if-missing
   can focus on insertion logic. Also adds normalized-query to the concept."
   [context subscription]
   (let [metadata (json/parse-string (:metadata subscription) true)
+        subscription-type (or (:Type metadata) "granule")
         new-metadata (add-id-to-metadata-if-missing context metadata)
         normalized (sub-common/normalize-parameters (:Query metadata))]
     (assoc subscription
            :metadata (json/generate-string new-metadata)
+           :subscription-type subscription-type
            :normalized-query normalized)))
 
 (defn create-subscription

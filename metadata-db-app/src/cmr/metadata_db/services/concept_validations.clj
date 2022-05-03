@@ -47,7 +47,7 @@
    :tool {true #{}
           false #{:tool-name}}
    :subscription {true #{}
-                  false #{:subscription-name :subscriber-id :collection-concept-id :normalized-query}}
+                  false #{:subscription-name :subscriber-id :normalized-query :subscription-type}}
    :tag-association {true #{}
                      false #{:associated-concept-id :associated-revision-id}}
    :variable {true #{}
@@ -97,7 +97,7 @@
   can sometimes be nil."
   [concept]
   (nil-fields-validation (apply dissoc (:extra-fields concept)
-                                [:delete-time :version-id :associated-revision-id :target-provider-id])))
+                                [:delete-time :version-id :associated-revision-id :target-provider-id :collection-concept-id])))
 
 (defn concept-id-validation
   [concept]
