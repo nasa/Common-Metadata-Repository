@@ -3,6 +3,7 @@
   For subscription permissions tests, see `provider-ingest-permissions-test`."
   (:require
    [cheshire.core :as json]
+   [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
@@ -453,11 +454,27 @@
       (is (= 400 status))
       (is (= ["Subscription creation failed - No ID was provided. Please provide a SubscriberId or pass in a valid token."]
              errors))))
+
   (testing "ingest of subscription concept JSON schema validation invalid field"
     (let [concept (subscription-util/make-subscription-concept {:InvalidField "xxx"})
           {:keys [status errors]} (ingest/ingest-concept concept)]
       (is (= 400 status))
       (is (= ["#: extraneous key [InvalidField] is not permitted"]
+             errors))))
+
+  (testing "ingest of granule subscription concept without the CollectionConceptId field"
+    (let [sub-metadata (slurp (io/resource "CMR-8226/granule_subscription_wo_coll_concept_id.json"))
+          {:keys [status errors]} (ingest/ingest-concept
+                            (ingest/concept :subscription "PROV1" "foo" :umm-json sub-metadata))]
+      (is (= 400 status))
+      (is (= ["Granule subscription must specify CollectionConceptId."] errors))))
+
+  (testing "ingest of collection subscription concept with the CollectionConceptId field"
+    (let [sub-metadata (slurp (io/resource "CMR-8226/coll_subscription_w_coll_concept_id.json"))
+          {:keys [status errors]} (ingest/ingest-concept
+                            (ingest/concept :subscription "PROV1" "foo" :umm-json sub-metadata))]
+      (is (= 400 status))
+      (is (= ["Collection subscription cannot specify CollectionConceptId, but was C1200000018-PROV1."]
              errors)))))
 
 (deftest subscription-update-error-test
