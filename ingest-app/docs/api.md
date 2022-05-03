@@ -790,6 +790,8 @@ Tool metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT
 
 Subscription concepts can be created by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) ,the [revision id](#revision-id), and a [native-id](#native-id).
 
+`Type` is a required field in subscription request body. The valid values of `Type` are: `"collection"` or `"granule"`. It indicates if the subscription is a collection subscription or granule subscription. Subscriptions of type granule must supply a requisite CollectionConceptId, and subscriptions of type collection cannot have a CollectionConceptId field.
+
 If a native-id is not provided it will be generated. This is only supported for POST requests.
 POST requests may only be used for creating subscriptions.
 
@@ -808,8 +810,6 @@ Query values should not be URL encoded. Instead, the query should consist of sta
     instrument=MODIS&sensor=1B&polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78
 
 If the query provided is invalid for granule searching, subscription creation will fail with HTTP status response of 400, and an error message detailing which query parameters were invalid.
-
-Subscriptions can be assigned a type of collection or granule by specifying it in the subscription metadata field `Type`. Subscriptions of type granule need to supply a requisite CollectionConceptId.
 
 ### <a name="update-subscription"></a> Update a Subscription
 
