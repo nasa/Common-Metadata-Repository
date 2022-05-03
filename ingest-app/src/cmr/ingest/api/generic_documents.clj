@@ -28,6 +28,11 @@
 
 (def approved-generics {:grid ["0.0.1"]})
 
+(defn- approved-generic?
+  "Check to see if a requested generic is on the approved list"
+  [schema version]
+  true)
+
 (defn- validate-json-against-schema
   "validate a document, returns an array of errors if there are problems
    Parameters:
@@ -55,8 +60,8 @@
          specification (:MetadataSpecification document)
          spec-name (string/lower-case (:Name specification))
          spec-version (:Version specification)
-         validation-errors (validate-json-against-schema spec-name spec-version raw-document)]
-     (if-some validation-errors
+         ]
+     (if-some [validation-errors (validate-json-against-schema spec-name spec-version raw-document)]
        validation-errors
        (let [something-of-importance false]
          ; need to call DB layer to send the document down stream
