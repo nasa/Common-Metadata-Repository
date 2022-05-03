@@ -10,6 +10,7 @@
    [cmr.ingest.api.bulk :as bulk]
    [cmr.ingest.api.collections :as collections]
    [cmr.ingest.api.core :as api-core]
+   [cmr.ingest.api.generic-documents :as gen-doc]
    [cmr.ingest.api.granules :as granules]
    [cmr.ingest.api.provider :as provider-api]
    [cmr.ingest.api.services :as services]
@@ -231,6 +232,14 @@
            request
            (bulk/get-provider-tasks :granule provider-id request)))))))
 
+(def generic-document-routes
+  (context "/generics/provider/:provider-id" [provider-id]
+
+    (POST "/" request (gen-doc/create-generic-document request))
+    (GET "/:concept-id" [concept-id :as request] (gen-doc/read-generic-document request))
+    (PUT "/:concept-id" [concept-id :as request] (gen-doc/update-generic-document request))
+    (DELETE "/:concept-id" [concept-id :as request] (gen-doc/delete-generic-document request))))
+
 (defn build-routes [system]
   (routes
     (context (get-in system [:public-conf :relative-root-url]) []
@@ -241,6 +250,8 @@
 
       ;; Add routes to create, update, delete, & validate concepts
       ingest-routes
+
+      generic-document-routes
 
       ;; db migration route
       db-migration-routes
