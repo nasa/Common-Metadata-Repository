@@ -202,6 +202,72 @@
             (search/find-concepts-in-format
              nil :subscription {} {:url-extension "atom"}))))))
 
+(deftest search-for-subscription-by-type-test
+  (let [_ (mock-urs/create-users (system/context) [{:username "SubId1" :password "Password"}
+                                                   {:username "SubId2" :password "Password"}])
+        coll1 (data2-core/ingest-umm-spec-collection
+               "PROV4"
+               (data-umm-c/collection
+                {:ShortName "coll1"
+                 :EntryTitle "entry-title1"})
+               {:token "mock-echo-system-token"})
+        coll2 (data2-core/ingest-umm-spec-collection
+               "PROV4"
+               (data-umm-c/collection
+                {:ShortName "coll2"
+                 :EntryTitle "entry-title2"})
+               {:token "mock-echo-system-token"})
+        subscription1 (subscriptions/ingest-subscription-with-attrs {:native-id "sub1"
+                                                                     :Name "Subscription1"
+                                                                     :SubscriberId "SubId1"
+                                                                     :Query "platform=NOAA-6"
+                                                                     :CollectionConceptId (:concept-id coll1)
+                                                                     :provider-id "PROV1"})
+        subscription2 (subscriptions/ingest-subscription-with-attrs {:native-id "sub2"
+                                                                     :Name "Subscription2"
+                                                                     :SubscriberId "SubId2"
+                                                                     :Query "platform=NOAA-7"
+                                                                     :CollectionConceptId (:concept-id coll2)
+                                                                     :provider-id "PROV2"})
+        subscription3 (subscriptions/ingest-subscription-with-attrs {:native-id "sub3"
+                                                                     :Name "Subscription3"
+                                                                     :SubscriberId "SubId1"
+                                                                     :Type "collection"
+                                                                     :Query "platform=NOAA-10"
+                                                                     :CollectionConceptId (:concept-id coll1)
+                                                                     :provider-id "PROV1"})
+        subscription4 (subscriptions/ingest-subscription-with-attrs {:native-id "sub4"
+                                                                     :Name "Subscription4"
+                                                                     :SubscriberId "SubId2"
+                                                                     :Type "collection"
+                                                                     :Query "platform=NOAA-11"
+                                                                     :CollectionConceptId (:concept-id coll2)
+                                                                     :provider-id "PROV2"})
+        granule-subscriptions [subscription1 subscription2]
+        collection-subscriptions [subscription3 subscription4]
+        all-subscriptions (concat granule-subscriptions collection-subscriptions)]
+    (index/wait-until-indexed)
+
+    (are3 [expected-subscriptions query]
+      (do
+        (testing "XML references format"
+          (data2-core/assert-refs-match expected-subscriptions (subscriptions/search-refs query)))
+        (testing "JSON format"
+          (subscriptions/assert-subscription-search expected-subscriptions (subscriptions/search-json query))))
+
+      "Find all"
+      all-subscriptions {}
+
+      "By type, collection"
+      collection-subscriptions {:type "collection"}
+
+      "By type, granule"
+      granule-subscriptions {:type "granule"}
+
+      "Combination of params"
+      [subscription4]
+      {:type "collection" :provider "*2" "options[provider][pattern]" true})))
+
 (deftest search-for-subscriptions-test
   (let [_ (mock-urs/create-users (system/context) [{:username "SubId1" :password "Password"}
                                                    {:username "SubId2" :password "Password"}

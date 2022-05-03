@@ -832,6 +832,8 @@
    :collection-concept-id-lowercase (m/doc-values m/string-field-mapping)
    :subscriber-id (m/doc-values m/string-field-mapping)
    :subscriber-id-lowercase (m/doc-values m/string-field-mapping)
+   :subscription-type (m/doc-values m/string-field-mapping)
+   :subscription-type-lowercase (m/doc-values m/string-field-mapping)
    :deleted (m/doc-values m/bool-field-mapping)
    :user-id (m/doc-values m/string-field-mapping)
    :revision-date (m/doc-values m/date-field-mapping)

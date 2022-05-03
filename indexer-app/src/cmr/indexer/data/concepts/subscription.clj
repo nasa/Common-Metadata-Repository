@@ -10,6 +10,7 @@
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
                 revision-date format extra-fields]} concept
         {:keys [subscription-name subscriber-id collection-concept-id]} extra-fields
+        type (:Type parsed-concept)
         doc-for-deleted
          {:concept-id concept-id
           :revision-id revision-id
@@ -25,6 +26,8 @@
           :native-id native-id
           :native-id-lowercase (string/lower-case native-id)
           :user-id user-id
+          :subscription-type type
+          :subscription-type-lowercase (string/lower-case type)
           :revision-date revision-date}]
     (if deleted
       doc-for-deleted

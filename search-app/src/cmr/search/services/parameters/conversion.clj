@@ -188,6 +188,7 @@
   [_]
   {:subscription-name :string
    :name :string
+   :type :string
    :subscriber-id :string
    :collection-concept-id :string
    :provider :string
