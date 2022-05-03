@@ -718,7 +718,7 @@
           (is (= 400 status))
           (is (= expected-errors errors)))
 
-        "OrbitNumber not integer"
+        "OrbitNumber not Integer"
         {:orbital-model-name "Orbit1"
          :orbit-number 1.0}
         ["#/OrbitCalculatedSpatialDomains/0/OrbitNumber: expected type: Integer, found: Double"]

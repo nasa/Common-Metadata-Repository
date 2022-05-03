@@ -67,7 +67,7 @@
 
          {"foo" true "bar" true}
          ["#/foo: expected type: String, found: Boolean"
-          "#/foo: expected type: Number, found: Boolean"]
+          "#/foo: expected type: Integer, found: Boolean"]
 
          {"bad-property" "bad-value" "bar" true}
          ["#: extraneous key [bad-property] is not permitted"]))
