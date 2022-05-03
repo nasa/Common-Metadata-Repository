@@ -4,6 +4,7 @@
   the incompatibility between UMM JSON schema and schemas of the various metadata formats making the
   generated metadata xml invalid without some kind of sanitization."
   (:require
+   [clojure.string :as string]
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as test]
    [cmr.common.util :as util :refer [update-in-each]]
@@ -329,7 +330,14 @@
 (defn sanitized-umm-sub-record
   "Place holder for the sanitizers needed for a given umm-sub record."
   [record]
-  record)
+  ;; sanitize the CollectionConceptId in the generated umm-sub record
+  (let [{sub-type :Type coll-concept-id :CollectionConceptId} record]
+    (if (= "collection" sub-type)
+      (assoc record :CollectionConceptId nil)
+      (if (and (= "granule" sub-type)
+               (string/blank? coll-concept-id))
+        (assoc record :CollectionConceptId "C1-PROV1")
+        record))))
 
 (defn sanitized-umm-var-record
   "Include only the sanitizers needed for a given umm-var record."
