@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.services.generic-documents
  "Buisness logic for Generic Documents"
   (:require
+   [clj-time.coerce :as coerce]
    [cmr.common.concepts :as common-concepts]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.services.errors :as errors]
@@ -15,13 +16,15 @@
         document (-> document
                      (assoc :provider-id provider-id)
                      (assoc :concept-type :generic)
-                     (assoc :revision-id 1))
+                     (assoc :revision-id 1)
+                     (assoc :created-at (str (tkeeper/now))) ;; make sure i dont break in-mem side
+                     (assoc :revision-date (dtp/clj-time->date-time-str (tkeeper/now)))) ;; make sure i dont break in-mem side
         concept-id (data/generate-concept-id db document)
         document (-> document
                      (assoc :native-id (.toString (java.util.UUID/randomUUID)))
                      (assoc :concept-id concept-id))
-        result (data/save-concept db provider-id document)]
-
+        _ (data/save-concept db provider-id document)
+        result (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))]
     result))
 
 (defn read-generic-document
@@ -48,7 +51,8 @@
                      (assoc :revision-date (dtp/clj-time->date-time-str (tkeeper/now)))
                      (assoc :created-at orig-create-date))
         _ (data/save-concept db provider-id metadata)
-        result (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id])]
+        result (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))
+        ]
     (println result)
     result))
 

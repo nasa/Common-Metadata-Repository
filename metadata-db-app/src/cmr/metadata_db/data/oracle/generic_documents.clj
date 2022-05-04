@@ -28,56 +28,29 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; new version , not working, gives: Called db->oracle-conn with connection that was not within a db transaction. 
-;; It must be called from within call j/with-db-transaction
-(defn dbresult->genericdoc
-  "Converts a map result from the database to a generic doc map"
-  [{:keys [id concept_id native_id provider_id document_name schema format
-           mime_type metadata revision_id revision_date created_at deleted
-           user_id transaction_id]} db]
-  (jdbc/with-db-transaction [conn db]
-                            (let [revision-date (oracle/oracle-timestamp->str-time db revision_date)
-                                  created-at (when created_at
-                                               (oracle/oracle-timestamp->str-time db created_at))]
-                              (cutil/remove-nil-keys {:id id
-                                                      :concept_id concept_id
-                                                      :native_id native_id
-                                                      :provider-id provider_id
-                                                      :document_name document_name
-                                                      :schema schema
-                                                      :format format ;; concepts convert this to mimetype in the get, but we already have mimetype
-                                                      :mime_type mime_type
-                                                      :metadata (when metadata (cutil/gzip-blob->string metadata))
-                                                      :revision_id (int revision_id)
-                                                      :revision_date revision-date
-                                                      :created_at created-at
-                                                      :deleted (not= (int deleted) 0)
-                                                      :user_id user_id
-                                                      :transaction_id transaction_id}))))
-
-(defn dbresult->genericdoc-old
+(defn- dbresult->genericdoc
   "Converts a map result from the database to a generic doc map"
   [{:keys [id concept_id native_id provider_id document_name schema format
            mime_type metadata revision_id revision_date created_at deleted
            user_id transaction_id]} db]
   (cutil/remove-nil-keys {:id id
-                          :concept_id concept_id
-                          :native_id native_id
+                          :concept-id concept_id
+                          :native-id native_id
                           :provider-id provider_id
-                          :document_name document_name
+                          :document-name document_name
                           :schema schema
                           :format format ;; concepts convert this to mimetype in the get, but we already have mimetype
-                          :mime_type mime_type
+                          :mime-type mime_type
                           :metadata (when metadata (cutil/gzip-blob->string metadata))
-                          :revision_id (int revision_id)
-                          :revision_date (oracle/oracle-timestamp->str-time db revision_date)
-                          :created_at (when created_at
+                          :revision-id (int revision_id)
+                          :revision-date (oracle/oracle-timestamp->str-time db revision_date)
+                          :created-at (when created_at
                                         (oracle/oracle-timestamp->str-time db created_at))
                           :deleted (not= (int deleted) 0)
-                          :user_id user_id
-                          :transaction_id transaction_id}))
+                          :user-id user_id
+                          :transaction-id transaction_id}))
 
-(defn find-record
+(defn- find-record
   "Look up latest revision of record in the db table and return a map of the row"
   [db provider-id doc-name]
   (-> db
@@ -87,7 +60,7 @@
                     ORDER BY revision_id ASC" doc-name provider-id])
       last))
 
-(defn get-next-id-seq
+(defn- get-next-id-seq
   "Get next ID for inserting new rows"
   [db]
   (-> db
@@ -96,7 +69,7 @@
       :nextval
       long))
 
-(defn get-next-transaction-id
+(defn- get-next-transaction-id
   "Get next transaction ID for inserting new rows"
   [db]
   (-> db
@@ -105,7 +78,7 @@
       :nextval
       long))
 
-(defn insert-record
+(defn- insert-record
   "Insert a row in the db table. This function expects the map form, not vector."
   [db row]
   (jdbc/insert! db :cmr_generic_documents row)
@@ -133,50 +106,21 @@
         metadata-spec (get document "MetadataSpecification")
         schema (get metadata-spec "Name")
         version (get metadata-spec "Version")
-        now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
+        now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))
+        created-at (coerce/to-sql-time (dtp/parse-datetime (:created-at document)))
+        revision-date (coerce/to-sql-time (dtp/parse-datetime (:revision-date document)))]
     (insert-record db
                    {:id (get-next-id-seq db)
                     :concept_id (:concept-id document)
                     :provider_id provider-id
-                    :document_name (get document "Name") ;;change me
-                    :schema (get metadata-spec "Name") 
+                    :document_name (get document "Name")
+                    :schema (get metadata-spec "Name")
                     :format (get metadata-spec "Name")
                     :mime_type (format "application/%s;version=%s" schema version)
                     :metadata (cutil/string->gzip-bytes metadata)
                     :revision_id (:revision-id document)
-                    :revision_date now
-                    :created_at now
-                    :deleted 0
-                    :user_id "place-holder"
-                    :transaction_id (get-next-transaction-id db)})))
-
-(defn save-concept-old
-  "Create the document in the database, try to pull as many values out of the
-   document as can be found. All documents must have at least a :Name and a
-   :MetadataSpecification field."
-  [db provider-id document]
-  (let [raw-count (-> db
-                      (jdbc/query ["SELECT count(DISTINCT concept_id) AS last FROM CMR_GENERIC_DOCUMENTS"])
-                      first
-                      :last)
-        next (+ 1200000001 raw-count)
-        concept-id (format "X%s-%s" next provider-id)
-        parsed (json/parse-string document true)
-        schema (clojure.string/lower-case (get-in parsed [:MetadataSpecification :Name]))
-        version (get-in parsed [:MetadataSpecification :Version])
-        now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
-    (insert-record db
-                   {:id (get-next-id-seq db)
-                    :concept_id concept-id
-                    :provider_id provider-id
-                    :document_name (:Name parsed)
-                    :schema schema
-                    :format (identity schema)
-                    :mime_type (format "application/%s;version=%s" schema version)
-                    :metadata (cutil/string->gzip-bytes document)
-                    :revision_id 1
-                    :revision_date now
-                    :created_at now
+                    :revision_date revision-date
+                    :created_at created-at
                     :deleted 0
                     :user_id "place-holder"
                     :transaction_id (get-next-transaction-id db)})))
@@ -186,47 +130,33 @@
   (map #(dbresult->genericdoc % db)
        (jdbc/query db ["SELECT * FROM cmr_generic_documents WHERE format = ?" concept-type])))
 
-;; not working
-;; why is it called "concept-id-revision-id-tuples" - seems to be vector of just concept-ids?
+;; WORKS
+;; 1. this uses DESC in the sql, bc the update service uses 'first' (not 'last'), and i assumed that couldn't be chamged without breaking the in-memory side 
+;; 2. is this supposed to be able to receive/return more than one concept id??
+;; 3. why is it called "concept-id-revision-id-tuples" - seems to be vector of just concept-ids??
 (defn get-latest-concepts
   [db concept-type provider concept-id-revision-id-tuples]
-  (jdbc/with-db-transaction [conn db]
-    (jdbc/query db
-                ["SELECT * FROM cmr_generic_documents WHERE concept_id = ?"
-                 (first concept-id-revision-id-tuples)]))
-  )
+  (jdbc/with-db-transaction [transaction db]
+                            (let [rows (jdbc/query transaction
+                                              ["SELECT * FROM cmr_generic_documents 
+                                                WHERE concept_id = ? 
+                                                ORDER BY revision_id DESC" 
+                                               (first concept-id-revision-id-tuples)])]
+                              (map #(dbresult->genericdoc % transaction) rows)))) 
 
-;; not working
+;; WORKS
 (defn get-concept
   [db concept-type provider concept-id]
-  (jdbc/with-db-transaction [conn db]
-                            (let [rows (jdbc/query db
-                                                   [(str "SELECT *"
-                                                         " FROM cmr_generic_documents"
-                                                         " WHERE concept_id = ?")
+  (jdbc/with-db-transaction [transaction db]
+                            (let [rows (jdbc/query transaction
+                                                   ["SELECT * 
+                                                     FROM cmr_generic_documents 
+                                                     WHERE concept_id = ?
+                                                     ORDER BY revision_id DESC"
                                                     concept-id])]
-                              ;;this simple println with nothing else DOES work
-                              ;;(println rows)
-
-                              ;; BUT then neither of the two options below work - meaning
-                              ;; the problem is with dbresult->genericdoc
-                              (dbresult->genericdoc (first rows) db)
-                              ;; (first (map #(dbresult->genericdoc % db)
-                              ;;             rows))
-                              )))
-
-(defn get-concept-old
-  [db concept-type provider concept-id]
-  (first (map #(dbresult->genericdoc % db)
-              (jdbc/query db
-                          [(str "SELECT *"
-                                " FROM cmr_generic_documents"
-                                " WHERE concept_id = ?")
-                           concept-id]))))
+                              (dbresult->genericdoc (first rows) transaction))))
 
 ;; Remove this??
-;; still needs to implement this requirement: All documents must have at least a :Name and a
-;; :MetadataSpecification field.
 (defn update-document
   "Add a new revision of the document in the database, only if at least one previous
    revision is found."
