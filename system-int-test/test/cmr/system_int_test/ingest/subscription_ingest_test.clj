@@ -530,6 +530,23 @@
 
 (deftest delete-collection-subscription-ingest-test
   (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
+  (testing "delete a collection subscription without valid permissions"
+    (let [coll1 (data-core/ingest-umm-spec-collection
+                  "PROV1"
+                   (data-umm-c/collection
+                    {:ShortName "coll1"
+                     :EntryTitle "entry-title1"})
+                   {:token "mock-echo-system-token"})]
+      (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
+      (testing "delete on PROV3, guest is not granted update permission for SUBSCRIPTION_MANAGEMENT ACL"
+        (let [concept (subscription-util/make-subscription-concept {:Type "collection"}
+                                                                   {:provider-id "PROV3"
+                                                                    :CollectionConceptId (:concept-id coll1)})
+
+              guest-token (echo-util/login-guest (system/context))
+              response (ingest/delete-concept concept
+                                              {:token guest-token})]
+          (is (= ["You do not have permission to perform that action."] (:errors response)))))))
   (testing "delete a collection subscription"
     (let [coll1 (data-core/ingest-umm-spec-collection
                  "PROV1"
