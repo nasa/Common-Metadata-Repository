@@ -17,9 +17,9 @@
           :revision-id revision-id
           :deleted deleted
           :subscription-name subscription-name
-          :subscription-name-lowercase (util/safe-lowercase subscription-name)
+          :subscription-name-lowercase (string/lower-case subscription-name)
           :subscriber-id subscriber-id
-          :subscriber-id-lowercase (util/safe-lowercase subscriber-id)
+          :subscriber-id-lowercase (string/lower-case subscriber-id)
           :collection-concept-id collection-concept-id
           :collection-concept-id-lowercase (util/safe-lowercase collection-concept-id)
           :provider-id provider-id
