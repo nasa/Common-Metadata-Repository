@@ -13,9 +13,12 @@
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.tag-util :as tags]))
 
-(use-fixtures :each tags/grant-all-tag-fixture)
+(use-fixtures :each (join-fixtures
+                      [(ingest/reset-fixture {"provguid1" "PROV1"})
+                       tags/grant-all-tag-fixture]))
 
 (deftest search-collections-that-are-standard-products
+  (ingest/delete-provider "PROV1")  
   (ingest/create-provider {:provider-guid "provguid_consortium1" :provider-id "PROV1" :consortiums "eosdis"})
 
   (let [coll1 (data2/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {}))
