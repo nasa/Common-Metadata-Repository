@@ -4948,6 +4948,7 @@ These parameters will match fields within a subscription. They are case insensit
   * concept_id
   * subscriber_id
   * collection_concept_id
+  * type
 ##### <a name="subscription-search-response"></a> Subscription Search Response
 
 ##### XML Reference
