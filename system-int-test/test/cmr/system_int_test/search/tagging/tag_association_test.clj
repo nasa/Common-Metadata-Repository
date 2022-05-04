@@ -611,7 +611,8 @@
                                                                :http-options {:body "{{{{"}})
             error (-> body :errors first)]
         (is (= 400 status))
-        (is (re-find #"Invalid JSON: A JSONObject text must end with \'}\' at \d \[character \d line \d\]" error))))
+        (is (re-find #"Invalid JSON: A JSON Object can not directly nest another JSON Object"
+                     error))))
 
     (testing "Associate tag with collections with data exceed 32KB"
       (let [too-much-data {"a" (tags/string-of-length 32768)}

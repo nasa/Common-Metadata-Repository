@@ -35,17 +35,19 @@
       (is (= {:status 400,
               :errors
               ["The mime types specified in the content-type header [application/xml] are not supported."]}
-             (test-util/create-group valid-user-token valid-group
+             (test-util/create-group valid-user-token
+                                     valid-group
                                      {:http-options {:content-type :xml}
                                       :allow-failure? true}))))
 
     (testing "Create group with invalid JSON"
-      (is (= {:status 400,
-              :errors
-              ["Invalid JSON: A JSONObject text must end with '}' at 3 [character 4 line 1]"]}
-             (test-util/create-group valid-user-token valid-group
-                                     {:http-options {:body "{{{"}
-                                      :allow-failure? true}))))
+      (let [{:keys [status errors]} (test-util/create-group valid-user-token
+                                                            valid-group
+                                                            {:http-options {:body "{{{"}
+                                                             :allow-failure? true})]
+        (is (= 400 status))
+        (is (re-find #"Invalid JSON: A JSON Object can not directly nest another JSON Object"
+                     (first errors)))))
 
     (testing "Missing field validations"
       (are [field]

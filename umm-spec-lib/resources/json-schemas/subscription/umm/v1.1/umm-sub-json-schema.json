@@ -1,17 +1,17 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "UMM-Sub",
   "type": "object",
   "additionalProperties": false,
   "properties": {
     "Name": {
-      "description": "The name of a subscription.",
+      "description": "The name of the subscription.",
       "type": "string",
       "minLength": 1,
       "maxLength": 80
     },
     "Type": {
-      "description": "The type of a subscription.",
+      "description": "The type of the subscription.",
       "type": "string",
       "enum": [
         "collection",
@@ -43,7 +43,7 @@
       "maxLength": 40000
     },
     "MetadataSpecification": {
-      "description": "Requires the client, or user, to add in schema information into every variable record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "description": "Requires the client, or user, to add in schema information into every subscription record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
       "$ref": "#/definitions/MetadataSpecificationType"
     }
   },
@@ -53,6 +53,28 @@
     "Type",
     "MetadataSpecification"
   ],
+  "if": {
+    "properties": {
+      "Type": {
+        "const": "granule"
+      }
+    },
+    "required": [
+      "Type"
+    ]
+  },
+  "then": {
+    "required": [
+      "CollectionConceptId"
+    ]
+  },
+  "else": {
+    "not": {
+      "required": [
+        "CollectionConceptId"
+      ]
+    }
+  },
   "definitions": {
     "MetadataSpecificationType": {
       "type": "object",

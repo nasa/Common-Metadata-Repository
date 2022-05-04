@@ -272,16 +272,16 @@
 
           "invalid recurring_start_day, type string"
           {:temporal {:recurring_start_day "40"}}
-          :recurring_start_day "String" "Number"
+          :recurring_start_day "String" "Integer"
 
           "invalid recurring_start_day, type number"
           {:temporal {:recurring_start_day 4.0}}
-          :recurring_start_day "Double" "Integer"
+          :recurring_start_day "BigDecimal" "Integer"
 
           "invalid recurring_end_day, type string"
           {:temporal {:recurring_start_day  5 :recurring_end_day "40"}}
-          :recurring_end_day "String" "Number"
+          :recurring_end_day "String" "Integer"
 
           "invalid recurring_end_day, type number"
           {:temporal {:recurring_start_day  5 :recurring_end_day 4.0}}
-          :recurring_end_day "Double" "Integer")))
+          :recurring_end_day "BigDecimal" "Integer")))

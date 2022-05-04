@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
+   [clojure.set :as set]
    [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mime-types]
@@ -128,6 +129,20 @@
   ([params options]
    (search/find-refs :subscription params options)))
 
+(defn- validate-subscription-response-format
+  [subscription]
+  ;; verifying schema keys are included
+  (is (set/subset? (set (keys subscription))
+                   #{:collection_concept_id
+                   :concept_id
+                   :name
+                   :native_id
+                   :provider_id
+                   :revision_id
+                   :subscriber_id}))
+  ;; verifying no dash in keys
+  (is (not-any? #(string/includes? % "-") (map name (keys subscription)))))
+
 (defn search-json
   "Searches for subscription using the given parameters and requesting the JSON format."
   ([]
@@ -139,6 +154,8 @@
                    (s/context) params (merge options
                                              {:raw? true
                                               :http-options {:accept :json}}))]
+     (when-let [first-subscription (-> response :body :items first)]
+       (validate-subscription-response-format first-subscription))
      (search/process-response response))))
 
 (defn subscription-result->xml-result

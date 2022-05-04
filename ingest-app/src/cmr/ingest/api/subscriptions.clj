@@ -27,10 +27,9 @@
   "Validate subscription concept, set the concept format and returns the concept;
   throws error if the metadata is not a valid against the UMM subscription JSON schema."
   [concept]
-  (let [concept (update-in concept [:format] (partial ingest/fix-ingest-concept-format :subscription))]
-    (v/validate-concept-request concept)
-    (v/validate-concept-metadata concept)
-    concept))
+  (v/validate-concept-request concept)
+  (v/validate-concept-metadata concept)
+  concept)
 
 (defn- subscriber-collection-permission-error
   [subscriber-id concept-id]
@@ -299,18 +298,42 @@
            :subscription-type subscription-type
            :normalized-query normalized)))
 
+(defn- body->subscription
+  "Returns the subscription concept for the given request body, etc.
+  This is the raw subscritpion that is ready for metadata validation,
+  but still needs some sanitization to be saved to database."
+  [provider-id native-id body content-type headers]
+  (let [sub-concept (api-core/body->concept!
+                     :subscription provider-id native-id body content-type headers)]
+    (update-in sub-concept [:format] (partial ingest/fix-ingest-concept-format :subscription))))
+
+(defn- validate-business-rules
+  "Raise error if the subscription concept does not pass business rule validations."
+  [sub-concept]
+  (let [parsed (json/parse-string (:metadata sub-concept) true)
+        {sub-type :Type coll-concept-id :CollectionConceptId} parsed]
+    ;; even though the JSON schema validation will catch these errors,
+    ;; we do the validation here to get a better error message.
+    (when (and (= "granule" sub-type)
+               (string/blank? coll-concept-id))
+      (errors/throw-service-error
+       :bad-request
+       "Granule subscription must specify CollectionConceptId."))
+    (when (and (= "collection" sub-type)
+               (some? coll-concept-id))
+      (errors/throw-service-error
+       :bad-request
+       (format "Collection subscription cannot specify CollectionConceptId, but was %s."
+               coll-concept-id)))))
+
 (defn create-subscription
   "Processes a request to create a subscription. A native id will be generated."
   [provider-id request]
   (let [{:keys [body content-type headers request-context]} request]
     (common-ingest-checks request-context provider-id)
-    (let [tmp-subscription (api-core/body->concept!
-                            :subscription
-                            provider-id
-                            (str (UUID/randomUUID))
-                            body
-                            content-type
-                            headers)
+    (let [tmp-subscription (body->subscription
+                            provider-id (str (UUID/randomUUID)) body content-type headers)
+          _ (validate-business-rules tmp-subscription)
           native-id (get-unique-native-id request-context tmp-subscription)
           sub-with-native-id (assoc tmp-subscription :native-id native-id)
           final-sub (add-fields-if-missing request-context sub-with-native-id)
@@ -333,13 +356,8 @@
        (format "Subscription with provider-id [%s] and native-id [%s] already exists."
                provider-id
                native-id)))
-    (let [tmp-subscription (api-core/body->concept!
-                            :subscription
-                            provider-id
-                            native-id
-                            body
-                            content-type
-                            headers)
+    (let [tmp-subscription (body->subscription provider-id native-id body content-type headers)
+          _ (validate-business-rules tmp-subscription)
           final-sub (add-fields-if-missing request-context tmp-subscription)
           subscriber-id (get-subscriber-id final-sub)]
       (check-valid-user request-context subscriber-id)
@@ -356,12 +374,8 @@
   [provider-id native-id request]
   (let [{:keys [body content-type headers request-context]} request
         _ (common-ingest-checks request-context provider-id)
-        tmp-subscription (api-core/body->concept! :subscription
-                                                  provider-id
-                                                  native-id
-                                                  body
-                                                  content-type
-                                                  headers)
+        tmp-subscription (body->subscription provider-id native-id body content-type headers)
+        _ (validate-business-rules tmp-subscription)
         old-subscriber (when-let [original-subscription
                                   (first (mdb/find-concepts
                                           request-context
