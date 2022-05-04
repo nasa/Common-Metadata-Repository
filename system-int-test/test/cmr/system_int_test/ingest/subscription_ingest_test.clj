@@ -528,6 +528,33 @@
           (is (= 200 status))
           (is (= 3 revision-id)))))))
 
+(deftest delete-collection-subscription-ingest-test
+  (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
+  (testing "delete a collection subscription"
+    (let [coll1 (data-core/ingest-umm-spec-collection
+                 "PROV1"
+                 (data-umm-c/collection
+                  {:ShortName "coll1"
+                   :EntryTitle "entry-title1"})
+                 {:token "mock-echo-system-token"})
+          concept (subscription-util/make-subscription-concept
+                   {:Type "collection"}
+                   {}
+                   "coll-sub")
+          _ (subscription-util/ingest-subscription concept)
+          {:keys [status concept-id revision-id]}  (ingest/delete-concept concept)
+          fetched (mdb/get-concept concept-id revision-id)]
+      (is (= 200 status))
+      (is (= 2 revision-id))
+      (is (= (:native-id concept)
+             (:native-id fetched)))
+      (is (:deleted fetched))
+      (testing "delete a deleted collection subscription"
+        (let [{:keys [status errors]} (ingest/delete-concept concept)]
+          (is (= [status errors]
+                 [404 [(format "Concept with native-id [%s] and concept-id [%s] is already deleted."
+                               (:native-id concept) concept-id)]])))))))
+
 (deftest roll-your-own-subscription-tests
   ;; Use cases coming from EarthData Search wanting to allow their users to create
   ;; subscriptions without the need to have any acls
