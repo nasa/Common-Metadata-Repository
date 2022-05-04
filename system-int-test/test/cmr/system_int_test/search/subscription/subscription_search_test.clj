@@ -234,14 +234,12 @@
                                                                      :SubscriberId "SubId1"
                                                                      :Type "collection"
                                                                      :Query "platform=NOAA-10"
-                                                                     :CollectionConceptId (:concept-id coll1)
                                                                      :provider-id "PROV1"})
         subscription4 (subscriptions/ingest-subscription-with-attrs {:native-id "sub4"
                                                                      :Name "Subscription4"
                                                                      :SubscriberId "SubId2"
                                                                      :Type "collection"
                                                                      :Query "platform=NOAA-11"
-                                                                     :CollectionConceptId (:concept-id coll2)
                                                                      :provider-id "PROV2"})
         granule-subscriptions [subscription1 subscription2]
         collection-subscriptions [subscription3 subscription4]

@@ -38,7 +38,11 @@
   ([attribs]
    (subscription attribs latest-umm-sub-verison))
   ([attribs version]
-   (umm-sub/map->UMM-Sub (merge (sample-umm-subscription version) attribs))))
+   (let [sample-subscription (merge (sample-umm-subscription version) attribs)
+         subscription (if (and (contains? attribs :Type) (= (:Type attribs) "collection"))
+             (dissoc sample-subscription :CollectionConceptId)
+             sample-subscription)]
+     (umm-sub/map->UMM-Sub subscription))))
 
 (defn- umm-sub->concept
   "Returns a concept map from a UMM subscription item or tombstone."
