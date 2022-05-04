@@ -257,6 +257,7 @@
   {:name cpv/string-param-options
    :subscription-name cpv/string-param-options
    :subscriber-id cpv/string-param-options
+   :type cpv/string-param-options
    :collection-concept-id cpv/string-param-options
    :native-id cpv/string-param-options
    :provider cpv/string-param-options})

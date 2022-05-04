@@ -151,7 +151,8 @@
 (defmethod q2e/concept-type->field-mappings :subscription
   [_]
   {:provider :provider-id
-   :name :subscription-name})
+   :name :subscription-name
+   :type :subscription-type})
 
 (defmethod q2e/elastic-field->query-field-mappings :autocomplete
   [_]
@@ -245,7 +246,8 @@
 (defmethod q2e/field->lowercase-field-mappings :subscription
   [_]
   {:provider "provider-id-lowercase"
-   :name "subscription-name-lowercase"})
+   :name "subscription-name-lowercase"
+   :type "subscription-type-lowercase"})
 
 (defn- doc-values-lowercase-field-name
   "Returns the doc-values field-name for the given field."

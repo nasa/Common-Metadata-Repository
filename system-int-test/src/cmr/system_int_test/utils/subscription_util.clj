@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
+   [clojure.set :as set]
    [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mime-types]
@@ -131,14 +132,14 @@
 (defn- validate-subscription-response-format
   [subscription]
   ;; verifying schema keys are included
-  (is (= #{:collection_concept_id
-           :concept_id
-           :name
-           :native_id
-           :provider_id
-           :revision_id
-           :subscriber_id}
-         (set (keys subscription))))
+  (is (set/subset? (set (keys subscription))
+                   #{:collection_concept_id
+                   :concept_id
+                   :name
+                   :native_id
+                   :provider_id
+                   :revision_id
+                   :subscriber_id}))
   ;; verifying no dash in keys
   (is (not-any? #(string/includes? % "-") (map name (keys subscription)))))
 
@@ -192,16 +193,21 @@
   [subscription]
   (:CollectionConceptId (json/parse-string (:metadata subscription) true)))
 
+(defn extract-type-from-metadata
+  "Pulls the collection-concept-id out of the metadata field in the provided subscription concept."
+  [subscription]
+  (:Type (json/parse-string (:metadata subscription) true)))
+
 (defn get-expected-subscription-json
   "For the given subscription return the expected subscription JSON."
   [subscription]
-  (let [sub-json-fields (select-keys
-                         (assoc subscription
-                                :name (extract-name-from-metadata subscription)
-                                :subscriber-id (extract-subscriber-id-from-metadata subscription)
-                                :collection-concept-id (extract-collection-concept-id-from-metadata subscription))
-                         json-field-names)]
-    sub-json-fields))
+  (let [subscription-type (extract-type-from-metadata subscription)]
+    (select-keys
+     (merge subscription
+            {:name (extract-name-from-metadata subscription)
+             :subscriber-id (extract-subscriber-id-from-metadata subscription)}
+            (when (not (= subscription-type "collection")) {:collection-concept-id (extract-collection-concept-id-from-metadata subscription)}))
+     json-field-names)))
 
 (defn assert-subscription-search
   "Verifies the subscription search results. The response must be provided in JSON format."
