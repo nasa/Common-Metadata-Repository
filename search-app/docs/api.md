@@ -93,6 +93,7 @@ CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens 
     * [With/without granules Or OpenSearch](#c-has-granules-or-opensearch)
     * [OPeNDAP service URL](#c-has-opendap-url)
     * [Cloud Hosted](#c-cloud-hosted)
+    * [Standard Product](#c-standard-product)
   * [Sorting Collection Results](#sorting-collection-results)
   * [Retrieving all Revisions of a Collection](#retrieving-all-revisions-of-a-collection)
   * [Granule Search By Parameters](#granule-search-by-parameters)
@@ -2286,6 +2287,12 @@ The `has_granules_or_opensearch` parameter can be set to "true" or "false". When
 The `cloud_hosted` parameter can be set to "true" or "false". When true, the results will be restricted to collections that have a `DirectDistributionInformation` element or have been tagged with `gov.nasa.earthdatacloud.s3`.
 
     curl "%CMR-ENDPOINT%/collections?cloud_hosted=true"
+
+#### <a name="c-standard-product"></a> Find collections that are standard products.
+
+The `standard_product` parameter can be set to "true" or "false". When true, the results will be restricted to collections that have `StandardProduct` element being true or collections that don't have `StandardProduct` element set and have been tagged with `gov.nasa.eosdis.standardproduct`.
+
+    curl "%CMR-ENDPOINT%/collections?standard_product=true"
 
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 

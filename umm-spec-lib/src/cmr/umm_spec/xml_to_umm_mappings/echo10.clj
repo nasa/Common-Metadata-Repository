@@ -247,6 +247,7 @@
    :MetadataDates (parse-metadata-dates doc)
    :Abstract   (u/truncate (value-of doc "/Collection/Description") u/ABSTRACT_MAX sanitize?)
    :CollectionDataType (value-of doc "/Collection/CollectionDataType")
+   :StandardProduct (value-of doc "/Collection/StandardProduct") 
    :Purpose    (u/truncate (value-of doc "/Collection/SuggestedUsage") u/PURPOSE_MAX sanitize?)
    :CollectionProgress (get-umm-element/get-collection-progress
                          coll-progress-mapping
