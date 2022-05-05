@@ -223,12 +223,11 @@
   [body]
   (string/trim (slurp body)))
 
-(defn metadata->concept
+(defn- metadata->concept
   "Create a metadata concept from the given metadata"
   [concept-type metadata content-type headers]
   (-> {:metadata metadata
        :format (mt/keep-version content-type)
-       :native-id (:name metadata)
        :concept-type concept-type}
       (set-concept-id headers)
       (set-revision-id headers)))

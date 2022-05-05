@@ -317,7 +317,7 @@
                     {:accept-format :json
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :json response)]
-      (is (= "Subscription creation failed - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first errors)))))
+      (is (= ["Request content is too short."] errors))))
   (testing "xml response"
     (let [concept-no-metadata (assoc (subscription-util/make-subscription-concept)
                                      :metadata "")
@@ -326,7 +326,7 @@
                     {:accept-format :xml
                      :raw? true})
           {:keys [errors]} (ingest/parse-ingest-body :xml response)]
-      (is (= "Subscription creation failed - No ID was provided. Please provide a SubscriberId or pass in a valid token." (first errors))))))
+      (is (= ["Request content is too short."] errors)))))
 
 ;; Verify that user-id is saved from User-Id or token header
 (deftest subscription-ingest-user-id-test
@@ -452,7 +452,7 @@
     (let [concept (subscription-util/make-subscription-concept {:SubscriberId ""})
           {:keys [status errors]} (ingest/ingest-concept concept)]
       (is (= 400 status))
-      (is (= ["Subscription creation failed - No ID was provided. Please provide a SubscriberId or pass in a valid token."]
+      (is (= ["#/SubscriberId: expected minLength: 1, actual: 0"]
              errors))))
 
   (testing "ingest of subscription concept JSON schema validation invalid field"
@@ -871,7 +871,7 @@
 
         (is (not (nil? (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)})))))))))))
 
-(deftest create-subscription-by-put
+(deftest create-update-granule-subscription-by-put
   (let [token (echo-util/login (system/context) "put-user")
         coll (data-core/ingest-umm-spec-collection
               "PROV1"
@@ -914,6 +914,47 @@
                              :Name "a different subscription with native-id"
                              :CollectionConceptId (:concept-id coll)})
                            :native-id "another-native-id")
+            {:keys [status revision-id]} (ingest/ingest-concept concept {:token token})]
+        (is (= 200 status))
+        (is (= 2 revision-id))
+
+        (index/wait-until-indexed)
+
+        (is (= (:native-id concept)
+               (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))))
+
+(deftest create-update-collection-subscription-by-put
+  (let [token (echo-util/login (system/context) "put-user")
+        coll-sub-concept (subscription-util/make-subscription-concept
+                          {:Type "collection"
+                           :SubscriberId "post-user"
+                           :Name "a collection subscription"})]
+    (mock-urs/create-users (system/context) [{:username "post-user" :password "Password"}])
+    (testing "without native-id returns an error"
+      (let [concept (dissoc coll-sub-concept :native-id)
+            {:keys [status]} (ingest/ingest-concept concept
+                                                    {:token token
+                                                     :method :put
+                                                     :raw? true})]
+        ;; There is no PUT handler for subscriptions without a native-id
+        (is (= 404 status))))
+
+    (testing "collection subscription creation using PUT"
+      (let [concept (assoc coll-sub-concept :native-id "my-native-id")
+            {:keys [status concept-id native-id]} (ingest/ingest-concept concept
+                                                                         {:token token
+                                                                          :method :put})]
+        (is (= 201 status))
+        (is (not (nil? concept-id)))
+        (is (= "my-native-id" native-id))
+
+        (index/wait-until-indexed)
+
+        (is (= (:native-id concept)
+               (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))
+
+    (testing "collection subscription update using PUT"
+      (let [concept (assoc coll-sub-concept :native-id "my-native-id")
             {:keys [status revision-id]} (ingest/ingest-concept concept {:token token})]
         (is (= 200 status))
         (is (= 2 revision-id))

@@ -88,7 +88,7 @@
        (merge attrs))))
 
 (defn make-subscription-concept-with-umm-version
-  "Convenience function for creating a subscription concept with 
+  "Convenience function for creating a subscription concept with
    a previous UMM-Sub version."
   ([version]
    (make-subscription-concept {} {} 0 version))
@@ -240,7 +240,7 @@
     result))
 
 (defn save-umm-granule
-  "Saves a umm-granule concept.  If provided, attributes are merged with the concept 
+  "Saves a umm-granule concept.  If provided, attributes are merged with the concept
    and passed to metadata-db/concepts endpoint."
   ([provider-id umm-granule]
    (save-umm-granule provider-id umm-granule {}))
