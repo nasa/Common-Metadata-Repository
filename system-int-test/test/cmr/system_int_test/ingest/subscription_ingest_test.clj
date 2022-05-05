@@ -537,7 +537,6 @@
                     {:ShortName "coll1"
                      :EntryTitle "entry-title1"})
                    {:token "mock-echo-system-token"})]
-      (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
       (testing "delete on PROV3, guest is not granted update permission for SUBSCRIPTION_MANAGEMENT ACL"
         (let [concept (subscription-util/make-subscription-concept {:Type "collection"}
                                                                    {:provider-id "PROV3"
