@@ -84,6 +84,11 @@
   (jdbc/insert! db :cmr_generic_documents row)
   (str (:concept_id row) ", revision #" (:revision_id row)))
 
+(defn- strip-fields
+  "Remove specified fields from map, in order to prepare for inserting into BLOB metadata field in database"
+  [document fields-vec]
+  (apply dissoc document fields-vec))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn generate-concept-id
@@ -102,7 +107,8 @@
    document as can be found. All documents must have at least a :Name and a
    :MetadataSpecification field."
   [db provider-id document]
-  (let [metadata (json/generate-string document)
+  (let [rm-fields [:concept-id :concept-type :created-at :native-id :provider-id :revision-date :revision-id]
+        metadata (json/generate-string (strip-fields document rm-fields))
         metadata-spec (get document "MetadataSpecification")
         schema (get metadata-spec "Name")
         version (get metadata-spec "Version")
@@ -138,10 +144,10 @@
   [db concept-type provider concept-id-revision-id-tuples]
   (jdbc/with-db-transaction [transaction db]
                             (let [rows (jdbc/query transaction
-                                              ["SELECT * FROM cmr_generic_documents 
+                                                   ["SELECT * FROM cmr_generic_documents 
                                                 WHERE concept_id = ? 
-                                                ORDER BY revision_id DESC" 
-                                               (first concept-id-revision-id-tuples)])]
+                                                ORDER BY revision_id DESC"
+                                                    (first concept-id-revision-id-tuples)])]
                               (map #(dbresult->genericdoc % transaction) rows)))) 
 
 ;; WORKS
@@ -217,10 +223,12 @@
   (def test-grid (slurp (clojure.java.io/resource "sample_grid.json")))
   ;;;;;;;; NEW
 
+  (def my-rm-fields [:concept-id :concept-type :created-at :native-id :provider-id :revision-date :revision-id])
+  (apply dissoc my-save my-rm-fields)
+
+
   ;; these work but using that first comment (def db) up there
   (jdbc/with-db-transaction [conn db] (get-concept conn :generic "PROV1" "X1200000002-PROV1"))
-  (jdbc/with-db-transaction [conn db] (get-concept-old conn :generic "PROV1" "X1200000004-PROV1"))
-
 
   ;;;;;;;; OLD
 

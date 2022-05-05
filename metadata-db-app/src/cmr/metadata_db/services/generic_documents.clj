@@ -51,8 +51,7 @@
                      (assoc :revision-date (dtp/clj-time->date-time-str (tkeeper/now)))
                      (assoc :created-at orig-create-date))
         _ (data/save-concept db provider-id metadata)
-        result (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))
-        ]
+        result (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))]
     (println result)
     result))
 
