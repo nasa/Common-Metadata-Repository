@@ -546,31 +546,25 @@
               guest-token (echo-util/login-guest (system/context))
               response (ingest/delete-concept concept
                                               {:token guest-token})]
-          (is (= ["You do not have permission to perform that action."] (:errors response)))))))
-  (testing "delete a collection subscription"
-    (let [coll1 (data-core/ingest-umm-spec-collection
-                 "PROV1"
-                 (data-umm-c/collection
-                  {:ShortName "coll1"
-                   :EntryTitle "entry-title1"})
-                 {:token "mock-echo-system-token"})
-          concept (subscription-util/make-subscription-concept
-                   {:Type "collection"}
-                   {}
-                   "coll-sub")
-          _ (subscription-util/ingest-subscription concept)
-          {:keys [status concept-id revision-id]}  (ingest/delete-concept concept)
-          fetched (mdb/get-concept concept-id revision-id)]
-      (is (= 200 status))
-      (is (= 2 revision-id))
-      (is (= (:native-id concept)
-             (:native-id fetched)))
-      (is (:deleted fetched))
-      (testing "delete a deleted collection subscription"
-        (let [{:keys [status errors]} (ingest/delete-concept concept)]
-          (is (= [status errors]
-                 [404 [(format "Concept with native-id [%s] and concept-id [%s] is already deleted."
-                               (:native-id concept) concept-id)]])))))))
+          (is (= ["You do not have permission to perform that action."] (:errors response)))))
+      (testing "delete a collection subscription"
+        (let [concept (subscription-util/make-subscription-concept
+                       {:Type "collection"}
+                       {}
+                       "coll-sub")
+              _ (subscription-util/ingest-subscription concept)
+              {:keys [status concept-id revision-id]}  (ingest/delete-concept concept)
+              fetched (mdb/get-concept concept-id revision-id)]
+          (is (= 200 status))
+          (is (= 2 revision-id))
+          (is (= (:native-id concept)
+                 (:native-id fetched)))
+          (is (:deleted fetched))
+          (testing "delete a deleted collection subscription"
+            (let [{:keys [status errors]} (ingest/delete-concept concept)]
+              (is (= [status errors]
+                     [404 [(format "Concept with native-id [%s] and concept-id [%s] is already deleted."
+                                   (:native-id concept) concept-id)]])))))))))
 
 (deftest roll-your-own-subscription-tests
   ;; Use cases coming from EarthData Search wanting to allow their users to create
