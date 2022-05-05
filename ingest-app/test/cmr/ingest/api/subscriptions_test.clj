@@ -13,7 +13,7 @@
                  :native-id nil
                  :concept-type :subscription
                  :provider-id "PROV1"}
-        native-id (subscriptions/generate-native-id concept)]
+        native-id (#'subscriptions/generate-native-id concept)]
     (is (string? native-id))
 
     (testing "name is used as the prefix"
