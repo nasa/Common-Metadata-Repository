@@ -83,9 +83,8 @@
     (boolean (seq (filter pred active-subscriptions)))))
 
 (defn- check-subscription-limit
-  "Given the  configuration for subscription limit, this valdiates that the
-  user has no more than the limit before we allow more subscriptions to be
-  ingested by that user."
+  "Given the configuration for subscription limit, this valdiates that the user has no more than
+  the limit before we allow more subscriptions to be ingested by that user."
   [request-context subscription parsed]
   (let [subscriber-id (:SubscriberId parsed)
         subscriptions (mdb/find-concepts
@@ -264,38 +263,28 @@
                      :subscription provider-id native-id body content-type headers)]
     (update-in sub-concept [:format] (partial ingest/fix-ingest-concept-format :subscription))))
 
-(defn- validate-business-rules
-  "Raise error if the subscription concept does not pass business rule validations."
-  [parsed]
-  (let [{sub-type :Type coll-concept-id :CollectionConceptId} parsed]
-    ;; even though the JSON schema validation will catch these errors,
-    ;; we do the validation here to get a better error message.
-    (when (and (= "granule" sub-type)
-               (string/blank? coll-concept-id))
+(defn- perform-basic-validations
+  "Perform some basic and schema related validations. Throws error if the metadata is invalid."
+  [sub-concept]
+  (v/validate-concept-request sub-concept)
+  (let [schema-errs (v/validate-concept-metadata sub-concept false)]
+    (when (some (set schema-errs) ["#: subject must not be valid against schema {\"required\":[\"CollectionConceptId\"]}"])
+      (errors/throw-service-error
+       :bad-request
+       "Collection subscription cannot specify CollectionConceptId."))
+    (when (some (set schema-errs) ["#: required key [CollectionConceptId] not found"])
       (errors/throw-service-error
        :bad-request
        "Granule subscription must specify CollectionConceptId."))
-    (when (and (= "collection" sub-type)
-               (some? coll-concept-id))
-      (errors/throw-service-error
-       :bad-request
-       (format "Collection subscription cannot specify CollectionConceptId, but was %s."
-               coll-concept-id)))))
-
-(defn- perform-basic-validations
-  "Perform some basic and schema related validations. Throws error if the metadata is invalid."
-  [parsed sub-concept]
-  (validate-business-rules parsed)
-  (v/validate-concept-request sub-concept)
-  (v/validate-concept-metadata sub-concept))
+    (v/if-errors-throw :bad-request schema-errs)))
 
 (defn- validate-and-prepare-subscription-concept
-  "Perform the validations of the subscription request fields.
-  Returns a map with :concept value of the new subscription concept with its metadata added with
-  SubscriberId if applicable; and :parsed value of the parsed metadata."
+  "Perform validations of the subscription concept.
+  Returns a map of :concept with value of the new subscription concept with its metadata
+  patched with SubscriberId if applicable; and :parsed with value of the parsed metadata."
   [context provider-id sub-concept]
+  (perform-basic-validations sub-concept)
   (let [parsed (json/parse-string (:metadata sub-concept) true)
-        _ (perform-basic-validations parsed sub-concept)
         subscriber-id (get-subscriber-id context parsed)]
     (validate-user-id context subscriber-id)
     (validate-query context parsed)
