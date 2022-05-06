@@ -791,9 +791,11 @@ depend upon the target OPeNDAP server.</p>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
      <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?format=nc"</span>
 </code></pre><h3 id='dap-version'><code>dap-version</code></h3>
-<p>This allows the client to request OPeNDAP links in <a href="https://docs.opendap.org/index.php/DAP4:_Specification_Volume_1">DAP4</a> or <a href="https://earthdata.nasa.gov/esdis/esco/standards-and-references/data-access-protocol-2">DAP2</a> format. The valid values of dap-version parameter is either 4 or 2.</p>
+<p>This allows the client to request OPeNDAP links in <a href="https://docs.opendap.org/index.php/DAP4:_Specification_Volume_1">DAP4</a> or <a href="https://earthdata.nasa.gov/esdis/esco/standards-and-references/data-access-protocol-2">DAP2</a> format.</p>
 
-<p>If not provided, the default of <code>4</code> (DAP4) is used.</p>
+<p><code>dap-version</code> is supported since API v3. It will be ignored when used with API versions before v3.</p>
+
+<p>The valid values of <code>dap-version</code> parameter is either 4 or 2. If not provided, the default value of <code>4</code> (DAP4) is used.</p>
 
 <p>The following is an example of accepted <code>dap-version</code> parameter usage:</p>
 
@@ -933,9 +935,11 @@ depend upon the target OPeNDAP server.</p>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
      <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?format=nc"</span>
 </code></pre><h3 id='dap-version-2'><code>dap-version</code></h3>
-<p>This allows the client to request OPeNDAP links in <a href="https://docs.opendap.org/index.php/DAP4:_Specification_Volume_1">DAP4</a> or <a href="https://earthdata.nasa.gov/esdis/esco/standards-and-references/data-access-protocol-2">DAP2</a> format. The valid values of dap-version parameter is either 4 or 2.</p>
+<p>This allows the client to request OPeNDAP links in <a href="https://docs.opendap.org/index.php/DAP4:_Specification_Volume_1">DAP4</a> or <a href="https://earthdata.nasa.gov/esdis/esco/standards-and-references/data-access-protocol-2">DAP2</a> format.</p>
 
-<p>If not provided, the default of <code>4</code> (DAP4) is used.</p>
+<p><code>dap-version</code> is supported since API v3. It will be ignored when used with API versions before v3.</p>
+
+<p>The valid values of <code>dap-version</code> parameter is either 4 or 2. If not provided, the default value of <code>4</code> (DAP4) is used.</p>
 
 <p>The following is an example of accepted <code>dap-version</code> parameter usage:</p>
 
