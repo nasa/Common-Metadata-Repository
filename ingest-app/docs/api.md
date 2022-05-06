@@ -788,6 +788,13 @@ Tool metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT
 
 ### <a name="create-subscription"></a> Create a Subscription
 
+Subscription allows a user to register some query conditions in CMR and be notified via email when collections/granules matching the conditions are created or updated in CMR. There are two types of subscriptions (identified by the `Type` field of the subscription):
+
+- collection subscription for users to be notified when collections are created/updated.
+- granule subscription for users to be notified when granules are created/updated.
+
+Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription). There is a background job that processes the subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
+
 Subscription concepts can be created by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) ,the [revision id](#revision-id), and a [native-id](#native-id).
 
 `Type` is a required field in subscription request body. The valid values of `Type` are: `"collection"` or `"granule"`. It indicates if the subscription is a collection subscription or granule subscription. Subscriptions of type granule must supply a requisite CollectionConceptId, and subscriptions of type collection cannot have a CollectionConceptId field.
