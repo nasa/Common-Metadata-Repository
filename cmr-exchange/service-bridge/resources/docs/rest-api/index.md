@@ -481,9 +481,11 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 
 ### `dap-version`
 
-This allows the client to request OPeNDAP links in [DAP4](https://docs.opendap.org/index.php/DAP4:_Specification_Volume_1) or [DAP2](https://earthdata.nasa.gov/esdis/esco/standards-and-references/data-access-protocol-2) format. The valid values of dap-version parameter is either 4 or 2.
+This allows the client to request OPeNDAP links in [DAP4](https://docs.opendap.org/index.php/DAP4:_Specification_Volume_1) or [DAP2](https://earthdata.nasa.gov/esdis/esco/standards-and-references/data-access-protocol-2) format.
 
-If not provided, the default of `4` (DAP4) is used.
+`dap-version` is supported since API v3. It will be ignored when used with API versions before v3.
+
+The valid values of `dap-version` parameter is either 4 or 2. If not provided, the default value of `4` (DAP4) is used.
 
 The following is an example of accepted `dap-version` parameter usage:
 
@@ -636,9 +638,11 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
 
 ### `dap-version`
 
-This allows the client to request OPeNDAP links in [DAP4](https://docs.opendap.org/index.php/DAP4:_Specification_Volume_1) or [DAP2](https://earthdata.nasa.gov/esdis/esco/standards-and-references/data-access-protocol-2) format. The valid values of dap-version parameter is either 4 or 2.
+This allows the client to request OPeNDAP links in [DAP4](https://docs.opendap.org/index.php/DAP4:_Specification_Volume_1) or [DAP2](https://earthdata.nasa.gov/esdis/esco/standards-and-references/data-access-protocol-2) format.
 
-If not provided, the default of `4` (DAP4) is used.
+`dap-version` is supported since API v3. It will be ignored when used with API versions before v3.
+
+The valid values of `dap-version` parameter is either 4 or 2. If not provided, the default value of `4` (DAP4) is used.
 
 The following is an example of accepted `dap-version` parameter usage:
 
