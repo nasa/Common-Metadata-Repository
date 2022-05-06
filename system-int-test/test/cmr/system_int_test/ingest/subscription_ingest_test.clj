@@ -474,7 +474,7 @@
           {:keys [status errors]} (ingest/ingest-concept
                             (ingest/concept :subscription "PROV1" "foo" :umm-json sub-metadata))]
       (is (= 400 status))
-      (is (= ["Collection subscription cannot specify CollectionConceptId, but was C1200000018-PROV1."]
+      (is (= ["Collection subscription cannot specify CollectionConceptId."]
              errors)))))
 
 (deftest subscription-update-error-test
