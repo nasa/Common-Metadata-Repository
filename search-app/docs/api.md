@@ -4924,7 +4924,12 @@ On occasions when tool dissociation cannot be processed at all due to invalid in
 
 ### <a name="subscription"></a> Subscription
 
-Email subscription is used to inform the users through emails when the granules that match the query in the subscription are created/updated. These granules can only belong to one collection, which is defined by the collection-concept-id in the subscription. There is a background job that processes the subscriptions periodically(configurable), to see if there are any granules that are created/updated between the time it's processed and the time it was last processed.  A subscription enables data to be accessed via a universal resource locator, Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription).
+Subscription allows a user to register some query conditions in CMR and be notified via email when collections/granules matching the conditions are created or updated in CMR. There are two types of subscriptions (identified by the `Type` field of the subscription):
+
+- collection subscription for users to be notified when collections are created/updated.
+- granule subscription for users to be notified when granules are created/updated.
+
+Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription).  Subscriptions of type `granule` must supply a requisite CollectionConceptId, and subscriptions of type `collection` cannot have a CollectionConceptId field. There is a background job that processes the subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
 
 #### <a name="searching-for-subscriptions"></a> Searching for Subscriptions
 

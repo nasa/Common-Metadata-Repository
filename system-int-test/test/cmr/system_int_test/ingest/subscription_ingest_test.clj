@@ -462,6 +462,13 @@
       (is (= ["#: extraneous key [InvalidField] is not permitted"]
              errors))))
 
+  (testing "ingest of subscription concept with invalid JSON"
+    (let [sub-metadata (slurp (io/resource "CMR-8226/subscription_invalid_json.json"))
+          {:keys [status errors]} (ingest/ingest-concept
+                            (ingest/concept :subscription "PROV1" "foo" :umm-json sub-metadata))]
+      (is (= 400 status))
+      (is (= ["Invalid JSON: Expected a ',' or '}' at 151 [character 3 line 6]"] errors))))
+
   (testing "ingest of granule subscription concept without the CollectionConceptId field"
     (let [sub-metadata (slurp (io/resource "CMR-8226/granule_subscription_wo_coll_concept_id.json"))
           {:keys [status errors]} (ingest/ingest-concept
@@ -962,10 +969,12 @@
 
 (deftest create-update-collection-subscription-by-put
   (let [token (echo-util/login (system/context) "put-user")
+        sub-name "a collection subscription"
+        input-native-id "my-native-id"
         coll-sub-concept (subscription-util/make-subscription-concept
                           {:Type "collection"
                            :SubscriberId "post-user"
-                           :Name "a collection subscription"})]
+                           :Name sub-name})]
     (mock-urs/create-users (system/context) [{:username "post-user" :password "Password"}])
     (testing "without native-id returns an error"
       (let [concept (dissoc coll-sub-concept :native-id)
@@ -977,29 +986,41 @@
         (is (= 404 status))))
 
     (testing "collection subscription creation using PUT"
-      (let [concept (assoc coll-sub-concept :native-id "my-native-id")
-            {:keys [status concept-id native-id]} (ingest/ingest-concept concept
-                                                                         {:token token
-                                                                          :method :put})]
+      (let [concept (assoc coll-sub-concept :native-id input-native-id)
+            {:keys [status concept-id revision-id native-id]} (ingest/ingest-concept concept
+                                                                                     {:token token
+                                                                                      :method :put})]
         (is (= 201 status))
         (is (not (nil? concept-id)))
-        (is (= "my-native-id" native-id))
+        (is (= 1 revision-id))
+        (is (= input-native-id native-id))
 
         (index/wait-until-indexed)
+        (let [found (first (:items (subscription-util/search-json {:name sub-name})))]
+          (is (= native-id (:native-id found)))
+          (is (= concept-id (:concept-id found))))
 
-        (is (= (:native-id concept)
-               (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))
+        (testing "collection subscription update using PUT"
+          (let [new-sub-name "another subscription"
+                new-concept (-> (subscription-util/make-subscription-concept
+                                 {:Type "collection"
+                                  :SubscriberId "post-user"
+                                  :Name new-sub-name})
+                                (assoc :native-id input-native-id))
+                {update-status :status
+                 update-concept-id :concept-id
+                 update-revision-id :revision-id
+                 update-native-id :native-id}
+                (ingest/ingest-concept new-concept {:token token})]
+            (is (= 200 update-status))
+            (is (= concept-id update-concept-id))
+            (is (= 2 update-revision-id))
+            (is (= input-native-id update-native-id))
 
-    (testing "collection subscription update using PUT"
-      (let [concept (assoc coll-sub-concept :native-id "my-native-id")
-            {:keys [status revision-id]} (ingest/ingest-concept concept {:token token})]
-        (is (= 200 status))
-        (is (= 2 revision-id))
-
-        (index/wait-until-indexed)
-
-        (is (= (:native-id concept)
-               (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))))
+            (index/wait-until-indexed)
+            (let [found (first (:items (subscription-util/search-json {:name new-sub-name})))]
+              (is (= input-native-id (:native-id found)))
+              (is (= concept-id (:concept-id found))))))))))
 
 (deftest query-uniqueness-test
   (let [sub-user-group-id (echo-util/get-or-create-group (system/context) "sub-group")
