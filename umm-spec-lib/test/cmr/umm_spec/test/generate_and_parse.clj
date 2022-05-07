@@ -120,10 +120,7 @@
 
       (doseq [target-format tested-collection-formats
               :when (not @failed-atom)
-              :let [umm (if (some #(= target-format %) [:dif :dif10 :iso-smap])
-                          (dissoc umm :StandardProduct)
-                          umm)
-                    expected (expected-conversion/convert umm target-format)
+              :let [expected (expected-conversion/convert umm target-format)
                     expected (update-in-each expected [:Platforms] update-in-each [:Instruments]
                                #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
                                                                 (when (> ct 0) ct))))
@@ -153,7 +150,13 @@
                                               (if (get-in actual [:SpatialExtent :OrbitParameters :Footprints])
                                                 actual
                                                 (update-in actual [:SpatialExtent :OrbitParameters]
-                                                           dissoc :Footprints))))]]
+                                                           dissoc :Footprints))))
+                    expected (if (some #(= target-format %) [:dif :dif10 :iso-smap])
+                               (dissoc expected :StandardProduct)
+                               expected)
+                    actual (if (some #(= target-format %) [:dif :dif10 :iso-smap])
+                               (dissoc actual :StandardProduct)
+                               actual)]]
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
