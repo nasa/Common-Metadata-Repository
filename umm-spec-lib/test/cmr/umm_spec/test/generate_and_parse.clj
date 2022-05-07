@@ -120,7 +120,10 @@
 
       (doseq [target-format tested-collection-formats
               :when (not @failed-atom)
-              :let [expected (expected-conversion/convert umm target-format)
+              :let [umm (if (some #(= target-format %) [:dif :dif10 :iso-smap])
+                          (dissoc umm :StandardProduct)
+                          umm)
+                    expected (expected-conversion/convert umm target-format)
                     expected (update-in-each expected [:Platforms] update-in-each [:Instruments]
                                #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
                                                                 (when (> ct 0) ct))))
