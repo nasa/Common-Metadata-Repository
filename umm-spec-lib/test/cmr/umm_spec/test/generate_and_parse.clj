@@ -146,11 +146,11 @@
                                                     expected)))
                     actual (convert-to-sets (if (= :dif target-format)
                                               (remove-vertical-spatial-domains actual)
-                                              ;; remove Footprints is it's nil
+                                              ;; remove Footprints if it's nil
                                               (if (get-in actual [:SpatialExtent :OrbitParameters :Footprints])
                                                 actual
-                                                (update-in expected [:SpatialExtent :OrbitParameters]
-                                                                    dissoc :Footprints))))]]
+                                                (update-in actual [:SpatialExtent :OrbitParameters]
+                                                           dissoc :Footprints))))]]
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure

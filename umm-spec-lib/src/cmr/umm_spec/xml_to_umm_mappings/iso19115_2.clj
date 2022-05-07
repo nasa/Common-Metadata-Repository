@@ -95,7 +95,13 @@
        "/gmd:extendedElementInformation/gmd:MD_ExtendedElementInformation"))
 
 (def collection-data-type-xpath
-  (str identifier-base-xpath "[gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.collectiondatatype']"
+  (str identifier-base-xpath
+       "[gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.collectiondatatype']"
+       "/gmd:code/gco:CharacterString"))
+
+(def standard-product-xpath
+  (str identifier-base-xpath
+       "[gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.standardproduct']"
        "/gmd:code/gco:CharacterString"))
 
 (def platform-alternative-xpath
@@ -258,6 +264,7 @@
       :TemporalExtents (or (seq (parse-temporal-extents doc md-data-id-el))
                            (when sanitize? su/not-provided-temporal-extents))
       :CollectionDataType (value-of (select doc collection-data-type-xpath) ".")
+      :StandardProduct (value-of (select doc standard-product-xpath) ".")
       :ProcessingLevel {:Id
                         (su/with-default
                          (char-string-value
