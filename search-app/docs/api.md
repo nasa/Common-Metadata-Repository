@@ -464,6 +464,7 @@ Important to note, dataCenter corresponds to the provider id while organizations
 | echo:hasTransforms (collections only)      | true if there are transformations (subset, interpolation or projection) in any of its associated services            |
 | echo:hasSpatialSubsetting (collections only)| true if any of its associated services support spatial subsetting            |
 | echo:hasTemporalSubsetting (collections only)| true if any of its associated services support temporal subsetting            |
+| echo:cloudHosted (collections only)        | true if the collection is hosted in the cloud            |
 | relevance:score (collections only)         | relevance score of the collection to search parameters                                                               |
 | echo:tag (collections only)                | tags associated with the collection. It includes sub-elements of tagKey and optional data which is in embedded JSON. |
 | echo:dayNightFlag (granules only)          | day night flag of the granule                                                                                        |
@@ -501,6 +502,7 @@ __Example__
       <echo:hasVariables>true</echo:hasVariables>
       <echo:hasFormats>false</echo:hasFormats>
       <echo:hasTransforms>false</echo:hasTransforms>
+      <echo:cloudHosted>true</echo:cloudHosted>
       <echo:tag>
         <echo:tagKey>tag1</echo:tagKey>
         <echo:data>{"status":"Reviewed","score":85}</echo:data>
@@ -922,6 +924,7 @@ __Example__
       "has_transforms": false,
       "has_spatial_subsetting": false,
       "has_temporal_subsetting": false,
+      "cloud_hosted": true,
       "online_access_flag": false,
       "platforms": ["Platform1"],
       "consortiums" : [ "ESA", "FEDEO" ],
