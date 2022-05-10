@@ -183,6 +183,19 @@
                             </gmd:description>
                         </gmd:MD_Identifier>
                     </gmd:identifier>
+                    <gmd:identifier>
+                        <gmd:MD_Identifier>
+                            <gmd:code>
+                                <gco:CharacterString>false</gco:CharacterString>
+                            </gmd:code>
+                            <gmd:codeSpace>
+                                <gco:CharacterString>gov.nasa.esdis.umm.standardproduct</gco:CharacterString>
+                            </gmd:codeSpace>
+                            <gmd:description>
+                                <gco:CharacterString>Standard Product</gco:CharacterString>
+                            </gmd:description>
+                        </gmd:MD_Identifier>
+                    </gmd:identifier>
                     <gmd:citedResponsibleParty>
                         <gmd:CI_ResponsibleParty>
                             <gmd:individualName>

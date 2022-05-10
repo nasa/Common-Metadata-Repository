@@ -277,6 +277,13 @@
                   [:gmd:code [:gco:CharacterString collection-data-type]]
                   [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
                   [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])
+            (let [standard-product (:StandardProduct c)]
+              (when (not (nil? standard-product))
+                [:gmd:identifier
+                  [:gmd:MD_Identifier
+                    [:gmd:code [:gco:CharacterString standard-product]]
+                    [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.standardproduct"]]
+                    [:gmd:description [:gco:CharacterString "Standard Product"]]]]))
             (collection-citation/convert-creator c)
             (collection-citation/convert-editor c)
             (collection-citation/convert-publisher c)
