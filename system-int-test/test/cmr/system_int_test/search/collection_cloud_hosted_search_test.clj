@@ -25,17 +25,27 @@
                                    :S3CredentialsAPIDocumentationURL "https://example.org"}})
 
 (deftest search-collections-that-are-cloud-hosted
-  (let [coll1 (data2/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {}))
+  (let [coll1 (data2/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:EntryTitle "Dataset1"}))
         coll2 (data2/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {}))
         coll3 (data2/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 (create-direct-dist-info)))]
     (index/wait-until-indexed)
 
     (testing "Search by the cloud_hosted flag only"
       (util/are3
-       [expected items]
-       (data2/refs-match? items (search/find-refs :collection {:cloud-hosted expected}))
-       "Found using metadata" true [coll3]
-       "Not found" false [coll1 coll2]))
+        [expected items]
+        (data2/refs-match? items (search/find-refs :collection {:cloud-hosted expected}))
+        "Found using metadata" true [coll3]
+        "Not found" false [coll1 coll2]))
+
+    (testing "coll1 cloud_hosted is false in ATOM and JSON formats before tagging"
+      (let [{atom-status :status atom-results :results} (search/find-concepts-atom
+                                                         :collection {:dataset-id "Dataset1"})
+            {json-status :status json-results :results} (search/find-concepts-json
+                                                         :collection {:dataset-id "Dataset1"})
+            atom-cloud-hosted (-> atom-results :entries first :cloud-hosted)
+            json-cloud-hosted (-> json-results :entries first :cloud-hosted)]
+        (is (= 200 atom-status json-status))
+        (is (= false atom-cloud-hosted json-cloud-hosted))))
 
     (testing "Search for collections tagged as cloud hosted"
       (let [user1-token (echo/login (system/context) "user1")
@@ -44,7 +54,17 @@
         (index/wait-until-indexed)
 
         (util/are3
-         [expected items]
-         (is (data2/refs-match? items (search/find-refs :collection {:cloud-hosted expected})))
-         "Found using metadata or tags" true [coll1 coll3]
-         "Not found" false [coll2])))))
+          [expected items]
+          (is (data2/refs-match? items (search/find-refs :collection {:cloud-hosted expected})))
+          "Found using metadata or tags" true [coll1 coll3]
+          "Not found" false [coll2])))
+
+    (testing "coll1 cloud_hosted is true in ATOM and JSON formats after tagging"
+      (let [{atom-status :status atom-results :results} (search/find-concepts-atom
+                                                         :collection {:dataset-id "Dataset1"})
+            {json-status :status json-results :results} (search/find-concepts-json
+                                                         :collection {:dataset-id "Dataset1"})
+            atom-cloud-hosted (-> atom-results :entries first :cloud-hosted)
+            json-cloud-hosted (-> json-results :entries first :cloud-hosted)]
+        (is (= 200 atom-status json-status))
+        (is (= true atom-cloud-hosted json-cloud-hosted))))))
