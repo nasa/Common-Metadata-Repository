@@ -76,8 +76,11 @@
    [request]
    "Read a document from it's Concept-Id and return it"
    (let [{:keys [route-params request-context]} request
+         provider-id (:provider-id route-params)
          concept-id (:concept-id route-params)
-         document (tgen/read-generic request-context concept-id)]
+         ; TODO: update request to take provider
+         response (tgen/read-generic request-context concept-id)
+         document (:body response)]
      {:status 200 :body document}))
 
  (defn update-generic-document [request]

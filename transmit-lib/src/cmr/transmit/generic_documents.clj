@@ -50,6 +50,8 @@
                                                  :accept :json}
                                                 http-options)}))))
 
+; TODO: create a Read function
+
 (defn update-generic
   "Sends a request to update the item. Valid options are
   * token - the user token to use when creating the group. If not set the token in the context will be used.
@@ -82,16 +84,14 @@
 
 
 
-(comment 
+(comment
 
-(let [context {:system (cmr.indexer.system/create-system)}
-      conn (config/context->app-connection context :metadata-db)]
-  (println (concept-ingest-url conn "PROV1"))
-  (println (concept-ingest-url conn "PROV1" "X12000000001-PROV1"))
+  (let [context {:system (cmr.indexer.system/create-system)}
+        conn (config/context->app-connection context :metadata-db)]
+    (println (concept-ingest-url conn "PROV1"))
+    (println (concept-ingest-url conn "PROV1" "X12000000001-PROV1"))
 
   ;(read-generic context "X12000001-PROV")
 
   ;(clojure.repl/source cmr.transmit.generic-documents/read-generic)
-  )
-
-)
+    ))
