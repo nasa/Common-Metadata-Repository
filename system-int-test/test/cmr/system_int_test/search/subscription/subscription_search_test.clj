@@ -4,6 +4,7 @@
    [clojure.test :refer :all]
    [clojure.string :as string]
    [cmr.access-control.test.util :as ac-util]
+   [cmr.common.date-time-parser :as dt-parser]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -533,6 +534,29 @@
       "Combination of params"
       [subscription3]
       {:native-id "sub*" :provider "PROV2" "options[native-id][pattern]" true})))
+
+(deftest subscription-umm-json-search-results
+  (let [_ (mock-urs/create-users (system/context) [{:username "SubId1" :password "Password"}])
+        coll1 (data2-core/ingest-umm-spec-collection
+               "PROV4"
+               (data-umm-c/collection
+                {:ShortName "coll1"
+                 :EntryTitle "entry-title1"})
+               {:token "mock-echo-system-token"})
+        _sub1 (subscriptions/ingest-subscription-with-attrs {:native-id "Sub1"
+                                                                     :Name "Subscription1"
+                                                                     :SubscriberId "SubId1"
+                                                                     :Query "platform=NOAA-6"
+                                                                     :CollectionConceptId (:concept-id coll1)
+                                                                     :provider-id "PROV1"})]
+    (index/wait-until-indexed)
+    (testing "subscription-umm-json-results contains valid creation-date"
+      (let [{json-umm-status :status json-umm-results :results} (search/find-concepts-umm-json
+                                                         :subscription {})
+            creation-date (-> json-umm-results :items first :meta :creation-date)
+            parsed-creation-date (dt-parser/parse-datetime creation-date)]
+        (is (= 200 json-umm-status))
+        (is (some? parsed-creation-date))))))
 
 (deftest subscription-search-sort
   (let [_ (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])

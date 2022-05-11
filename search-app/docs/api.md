@@ -5068,6 +5068,7 @@ Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.0; charset=utf
       "provider-id" : "PROV1",
       "concept-type" : "subscription",
       "concept-id" : "SUB1200000005-PROV1",
+      "creation-date" : "2020-04-01T19:52:44Z",
       "revision-date" : "2020-04-01T19:52:44Z",
       "user-id" : "ECHO_SYS",
       "deleted" : false,

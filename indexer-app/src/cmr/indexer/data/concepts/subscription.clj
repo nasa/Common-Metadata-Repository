@@ -9,7 +9,7 @@
 (defmethod es/parsed-concept->elastic-doc :subscription
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
-                revision-date format extra-fields]} concept
+                revision-date format extra-fields created-at]} concept
         {:keys [subscription-name subscriber-id collection-concept-id]} extra-fields
         type (:Type parsed-concept)
         doc-for-deleted
@@ -29,6 +29,7 @@
           :user-id user-id
           :subscription-type type
           :subscription-type-lowercase (util/safe-lowercase type)
+          :creation-date created-at
           :revision-date revision-date}]
     (if deleted
       doc-for-deleted

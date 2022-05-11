@@ -42,6 +42,11 @@
           "minLength": 4,
           "pattern": "[A-Z]+\\d+-[A-Z0-9_]+"
         },
+        "creation-date": {
+          "description": "The date this concept was created. This would be the creation date of the item in the CMR.",
+          "format": "date-time",
+          "type": "string"
+        },
         "revision-id": {
           "description": "A number >= 1 that indicates which revision of the item.",
           "type": "number"
@@ -66,7 +71,7 @@
           "minLength": 1
         }
       },
-      "required": ["provider-id", "concept-type", "native-id", "concept-id", "revision-id", "revision-date"]
+      "required": ["provider-id", "concept-type", "creation-date", "native-id", "concept-id", "revision-id", "revision-date"]
     }
   },
   "title": "UMM Search Results",
