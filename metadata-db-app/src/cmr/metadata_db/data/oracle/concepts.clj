@@ -421,14 +421,8 @@
          nil)))
     (catch Exception e
       (let [error-message (.getMessage e)
-            error-code (cond
-                         (re-find #"unique constraint.*_CID_REV" error-message)
+            error-code (if (re-find #"unique constraint.* violated" error-message)
                          :revision-id-conflict
-
-                         (re-find #"unique constraint.*_CON_REV" error-message)
-                         :revision-id-conflict
-
-                         :else
                          :unknown-error)]
         {:error error-code :error-message error-message :throwable e}))))
 
