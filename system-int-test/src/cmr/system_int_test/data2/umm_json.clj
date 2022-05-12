@@ -175,7 +175,7 @@
     {:meta (merge {:user-id "ECHO_SYS"} (variable->umm-json-meta variable))
      :associations {:collections #{}}}
     (let [;; use the original metadata for now, add version migration when Variable versioning is added
-           {:keys [metadata associated-collections associated-item]} variable]
+          {:keys [metadata associated-collections associated-item]} variable]
       {:meta (merge {:user-id "ECHO_SYS"} (variable->umm-json-meta variable))
        :umm (json/decode metadata true)
        :associations (if (seq associated-collections)
@@ -226,7 +226,7 @@
   (if (:deleted service)
     {:meta (service->umm-json-meta service)}
     (let [;; use the original metadata for now, add version migration when service versioning is added
-           {:keys [metadata]} service]
+          {:keys [metadata]} service]
       {:meta (service->umm-json-meta service)
        :umm (json/decode metadata true)})))
 
@@ -236,7 +236,7 @@
   (if (:deleted tool)
     {:meta (tool->umm-json-meta tool)}
     (let [;; use the original metadata for now, add version migration when tool versioning is added
-           {:keys [metadata]} tool]
+          {:keys [metadata]} tool]
       {:meta (tool->umm-json-meta tool)
        :umm (json/decode metadata true)})))
 
@@ -246,7 +246,7 @@
   (if (:deleted subscription)
     {:meta (subscription->umm-json-meta subscription)}
     (let [;; use the original metadata for now, add version migration when subscription versioning is added
-           {:keys [metadata]} subscription]
+          {:keys [metadata]} subscription]
       {:meta (subscription->umm-json-meta subscription)
        :umm (json/decode metadata true)})))
 
@@ -292,8 +292,9 @@
                             (:body search-result) version)))
           "UMM search result JSON was invalid")
       (is (= (set (map #(subscription->umm-json version %) subscriptions))
-             (set (map #(util/dissoc-in % [:meta :revision-date])
-                       (get-in search-result [:results :items]))))))))
+             (set (->> (get-in search-result [:results :items])
+                       (map #(util/dissoc-in % [:meta :revision-date]))
+                       (map #(util/dissoc-in % [:meta :creation-date])))))))))
 
 (defn minimum-umm-spec-fields
   "the minimum valid fields for a UMM lib collection to be valid with UMM Spec"

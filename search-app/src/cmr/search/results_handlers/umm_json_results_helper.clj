@@ -17,6 +17,7 @@
    "user-id"
    "provider-id"
    "metadata-format"
+   "creation-date"
    "revision-date"
    "deleted"
    "has-variables"
@@ -31,9 +32,10 @@
   "Takes an elasticsearch result and returns a map of the meta fields for the response."
   [concept-type elastic-result]
   (let [{:keys [concept-id revision-id native-id user-id provider-id metadata-format
-                revision-date deleted has-variables has-formats has-transforms
+                creation-date revision-date deleted has-variables has-formats has-transforms
                 has-spatial-subsetting has-temporal-subsetting
                 associations-gzip-b64 s3-bucket-and-object-prefix-names]} (:_source elastic-result)
+        creation-date (when creation-date (string/replace (str creation-date) #"\+0000" "Z"))
         revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))]
     (util/remove-nil-keys
      {:concept-type concept-type
@@ -43,6 +45,7 @@
       :user-id user-id
       :provider-id provider-id
       :format (mt/format->mime-type (keyword metadata-format))
+      :creation-date creation-date
       :revision-date revision-date
       :deleted deleted
       :has-variables has-variables

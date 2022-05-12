@@ -836,6 +836,7 @@
    :subscription-type-lowercase (m/doc-values m/string-field-mapping)
    :deleted (m/doc-values m/bool-field-mapping)
    :user-id (m/doc-values m/string-field-mapping)
+   :creation-date (m/doc-values m/date-field-mapping)
    :revision-date (m/doc-values m/date-field-mapping)
    :metadata-format (m/doc-values m/string-field-mapping)})
 
