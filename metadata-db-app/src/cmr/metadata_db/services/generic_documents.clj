@@ -11,6 +11,21 @@
    [cmr.metadata-db.services.util :as mdb-util]
    [cmr.metadata-db.data.generic-documents :as data]))
 
+(defn- raw-generic->response
+  "Take the raw database object returned from either SQL or In-Memory and shape
+   it into the expected response"
+  [raw-doc]
+  (let [concept-id (:concept-id raw-doc)
+        provider-id (:provider-id raw-doc)
+        revision-id (:revision-id raw-doc)
+        metadata (-> raw-doc
+                     (dissoc :concept-id)
+                     (dissoc :concept-type)
+                     (dissoc :native-id)
+                     (dissoc :provider-id)
+                     (dissoc :revision-id))]
+    {:concept-id concept-id :provider-id provider-id :revision-id revision-id :metadata metadata}))
+
 (defn insert-generic-document
   "Insert a document under the provided provider-id. Generate a concept ID for the new record,
    At this time, nothing prevents multiple copies of a record from being inserted, users must
@@ -29,21 +44,14 @@
         metadata (assoc document-add :concept-id concept-id)
         _ (data/save-concept db provider-id metadata)
         saved (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))]
-    saved))
+    (raw-generic->response saved)))
 
 (defn read-generic-document
   "Return the lattest record using the concept-id under the given provider"
   [context params provider-id concept-id]
   (let [db (mdb-util/context->db context)
-        raw-doc (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))
-        rev-id (:revision-id raw-doc)
-        metadata (-> raw-doc
-                     (dissoc :provider-id)
-                     (dissoc :concept-type)
-                     (dissoc :revision-id)
-                     (dissoc :native-id))
-        doc {:provider-id provider-id :revision-id rev-id :metadata metadata}]
-    doc))
+        raw-doc (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))]
+    (raw-generic->response raw-doc)))
 
 (defn update-generic-document
   "Update a record which has already been inserted. Revision id and revision date

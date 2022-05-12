@@ -78,8 +78,9 @@
    (let [{:keys [route-params request-context]} request
          provider-id (:provider-id route-params)
          concept-id (:concept-id route-params)
-         ; TODO: update request to take provider
-         response (tgen/read-generic request-context concept-id)
+       ;; The update-generic is a macro which allows for a list of URL parameters to be
+       ;; passed in to be resolved by a function.
+        response (tgen/read-generic request-context [provider-id concept-id])
          document (:body response)]
      {:status 200 :body document}))
 
@@ -95,8 +96,9 @@
          spec-version (:Version specification)]
      (if-some [validation-errors (validate-json-against-schema spec-key spec-version raw-document)]
        validation-errors
-       (let [result (tgen/update-generic request-context provider-id concept-id raw-document)]
-         (println "result: " result)
+       ;; The update-generic is a macro which allows for a list of URL parameters to be
+       ;; passed in to be resolved by a function.
+       (let [result (tgen/update-generic request-context [provider-id concept-id] raw-document)]
          {:status 204}))))
 
  (defn delete-generic-document [request]

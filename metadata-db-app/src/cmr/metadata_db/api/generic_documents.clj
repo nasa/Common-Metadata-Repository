@@ -37,9 +37,9 @@
                            request-context :request-context}
       (create-generic-document request-context params provider-id body))
 
-    (GET "/:concept-id" {{:keys [concept-id] :as params} :params
+    (GET "/:provider-id/:concept-id" {{:keys [provider-id concept-id] :as params} :params
                                       request-context :request-context}
-      (read-generic-document request-context params "PROV1" concept-id))
+      (read-generic-document request-context params provider-id concept-id))
 
     (PUT "/:provider-id/:concept-id" {{:keys [provider-id concept-id] :as params} :params
                                       body :body
