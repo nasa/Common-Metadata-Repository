@@ -2,11 +2,10 @@
   "Provides functions to validate the ingest business rules"
   (:require
     [clj-time.core :as t]
+    [clojure.string :as string]
     [cmr.common.date-time-parser :as p]
     [cmr.common.time-keeper :as tk]
-    [cmr.ingest.services.helper :as h]
     [cmr.ingest.validation.additional-attribute-validation :as aa]
-    [cmr.ingest.validation.collection-unique-ids-validation :as cui]
     [cmr.ingest.validation.instrument-validation :as instrument-validation]
     [cmr.ingest.validation.platform-validation :as platform-validation]
     [cmr.ingest.validation.project-validation :as pv]
@@ -50,12 +49,7 @@
    previous UMM concept, and return search maps used to validate that a collection was not updated
    in a way that invalidates granules. Each search map contains a :params key of the parameters to
    use to execute the search and an :error-msg to return if the search finds any hits."
-  [
-   ;; For CMR-2403 we decided to disable these validations. We will re-enable them after
-   ;; implementing CMR-2485.
-   ;;  cui/entry-title-searches
-   ;;  cui/short-name-version-id-searches
-   aa/additional-attribute-searches
+  [aa/additional-attribute-searches
    pv/deleted-project-searches
    instrument-validation/deleted-parent-instrument-searches
    instrument-validation/deleted-child-instrument-searches
@@ -76,8 +70,7 @@
 (defn- collection-update-validation
   "Validate collection update does not invalidate any existing granules."
   [context concept prev-concept]
-  (let [{:keys [extra-fields umm-concept]} concept
-        {:keys [entry-title]} extra-fields]
+  (let [{:keys [umm-concept]} concept]
     (when prev-concept
       (let [prev-umm-concept (spec/parse-metadata context prev-concept)
             has-granule-searches (mapcat
@@ -89,11 +82,47 @@
         (when (seq search-errors)
           search-errors)))))
 
+(defn standard-product-is-nasa-provider-validation
+  "Validate if the standard product is true then the provider must be a NASA provider - meaning 
+  that the provider's consortium values must include EOSDIS. If validation fails an error is thrown."
+  [context concept _]
+  (let [provider-id (:provider-id concept)
+        collection (:umm-concept concept)
+        standard-product (:StandardProduct collection)
+        consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
+                              (mdb/get-providers context))
+        consortiums (when consortiums-str
+                      (remove empty? (string/split (string/upper-case consortiums-str) #" ")))]
+    (when (and (= true standard-product)
+               (not (some #(= "EOSDIS" %) consortiums)))
+      [(format (str "Standard product validation failed: "
+                    "Standard Product designation is only allowed for NASA data products. This collection is "
+                    "being ingested using a non-NASA provider which means the record is not a NASA record. "
+                    "Please remove the StandardProduct element from the record. "
+                    "The consortium designations include the following [%s] and EOSDIS is not one of them.")
+               consortiums-str)])))
+
+(defn standard-product-not-real-time-validation
+  "Validate if the standard product is true then the CollectionDataType is not NEAR_REAL_TIME, LOW_LATENCY, 
+  or EXPEDITED. If validation fails an error is thrown."
+  [_ concept _]
+  (let [collection (:umm-concept concept)
+        standard-product (:StandardProduct collection)
+        collection-data-type (:CollectionDataType collection)]
+    (when (and (= true standard-product)
+               (some #(= collection-data-type %) ["NEAR_REAL_TIME" "LOW_LATENCY" "EXPEDITED"]))
+     [(format (str "Standard product validation failed: "
+                   "Standard Product cannot be true with the CollectionDataType being one of the following values: "
+                   "NEAR_REAL_TIME, LOW_LATENCY, or EXPEDITED. The CollectionDataType is [%s].")
+              collection-data-type)])))
+
 (def business-rule-validations
   "A map of concept-type to the list of the functions that validates concept ingest business rules."
   {:collection [delete-time-validation
                 concept-id-validation
                 version-is-not-nil-validation
-                collection-update-validation]
+                collection-update-validation
+                standard-product-is-nasa-provider-validation
+                standard-product-not-real-time-validation]
    :granule [delete-time-validation]
    :variable []})

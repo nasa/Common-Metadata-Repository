@@ -4,7 +4,6 @@
    [cmr.common.api.context :as common-context]
    [cmr.common.log :as log :refer (warn)]
    [cmr.common.util :refer [defn-timed]]
-   [cmr.ingest.config :as config]
    [cmr.ingest.services.helper :as ingest-helper]
    [cmr.ingest.services.ingest-service.util :as util]
    [cmr.ingest.validation.validation :as v]
@@ -15,7 +14,7 @@
 (defn add-extra-fields-for-collection
   "Returns collection concept with fields necessary for ingest into metadata db
   under :extra-fields."
-  [context concept collection]
+  [_ concept collection]
   (let [{short-name :ShortName
          version-id :Version
          entry-title :EntryTitle} collection
@@ -85,8 +84,7 @@
         ;; Add extra fields for the collection
         coll-concept (assoc (add-extra-fields-for-collection context concept collection)
                             :umm-concept collection)]
-    ;; progressive update doesn't apply to business rules and new starndard product validations.
-    (v/validate-standard-product provider-id collection context)
+    ;; progressive update doesn't apply to business rules validation.
     (v/validate-business-rules context coll-concept prev-concept)
     {:concept coll-concept
      :warnings warnings
