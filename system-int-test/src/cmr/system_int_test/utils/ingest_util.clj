@@ -388,6 +388,56 @@
          params (merge params (when accept-format {:accept accept-format}))]
      (parse-ingest-response (client/request params) options))))
 
+;; Temporary function, will be removed in CMR-8270
+(defn ingest-subscription-concept
+  "Ingest a concept and return a map with status, concept-id, and revision-id"
+  ([concept]
+   (ingest-subscription-concept concept {}))
+  ([concept options]
+   (let [{:keys [metadata format concept-type concept-id revision-id native-id]} concept
+         {:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id test-existing-errors]} options
+         accept-format (:accept-format options)
+         method (get options :method :put)
+         headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
+                                        "Cmr-Revision-id" revision-id
+                                        "Cmr-Validate-Keywords" validate-keywords
+                                        "Cmr-Validate-Umm-C" validate-umm-c
+                                        "Cmr-Test-Existing-Errors" test-existing-errors
+                                        "Authorization" token
+                                        "User-Id" user-id
+                                        "Client-Id" client-id
+                                        "CMR-Request-Id" cmr-request-id
+                                        "X-Request-Id" x-request-id})
+         params {:method method
+                 :url (url/ingest-subscription-url native-id)
+                 :body  metadata
+                 :content-type format
+                 :headers headers
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}
+         params (merge params (when accept-format {:accept accept-format}))]
+     (parse-ingest-response (client/request params) options))))
+
+(defn delete-subscription-concept
+  "Delete a given concept."
+  ([concept]
+   (delete-subscription-concept concept {}))
+  ([concept options]
+   (let [{:keys [concept-type native-id]} concept
+         {:keys [token client-id accept-format revision-id user-id]} options
+         headers (util/remove-nil-keys {"Authorization" token
+                                        "Client-Id" client-id
+                                        "User-Id" user-id
+                                        "Cmr-Revision-id" revision-id})
+         params {:method :delete
+                 :url (url/ingest-subscription-url native-id)
+                 :headers headers
+                 :accept accept-format
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}
+         params (merge params (when accept-format {:accept accept-format}))]
+     (parse-ingest-response (client/request params) options))))
+
 (defn delete-concept
   "Delete a given concept."
   ([concept]

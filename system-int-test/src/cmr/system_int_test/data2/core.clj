@@ -149,8 +149,9 @@
    (ingest-umm-spec-collection provider-id item nil))
   ([provider-id item options]
    (let [format-key (get options :format :echo10)
+         umm-concept (umm-c-collection->concept (assoc item :provider-id provider-id) format-key)
          response (ingest/ingest-concept
-                    (umm-c-collection->concept (assoc item :provider-id provider-id) format-key)
+                    (assoc umm-concept :provider-id provider-id)
                     (select-keys options [:token
                                           :client-id
                                           :user-id

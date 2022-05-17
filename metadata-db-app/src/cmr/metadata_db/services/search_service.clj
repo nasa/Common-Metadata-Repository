@@ -86,7 +86,10 @@
   (if-let [provider-id (:provider-id params)]
     (when-let [provider (provider-service/get-provider-by-id context provider-id)]
       [provider])
-    (provider-service/get-providers context)))
+    (let [providers (provider-service/get-providers context)]
+      (if (= :subscription (:concept-type params))
+        (concat [{:provider-id "CMR"}] providers)
+        providers))))
 
 (defn- find-cmr-concepts
   "Find tags or tag associations with specific parameters"

@@ -21,3 +21,9 @@
         esm-acls (filter #(= "SUBSCRIPTION_MANAGEMENT" (get-in % [:provider-identity :target])) acls)
         sids (util/lazy-get context :sids)]
     (filter (partial acl/acl-matches-sids-and-permission? sids :read) esm-acls)))
+
+(defn has-system-read-permission?
+  "Returns true if the current user has system Ingest Management read permission
+  which is needed to see all collection subscriptions."
+  [context]
+  (acl/has-ingest-management-permission? context :read :system-object nil))

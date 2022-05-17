@@ -108,15 +108,32 @@
      (context "/collections/:coll-concept-id" [coll-concept-id]
        (context "/:coll-revision-id" [coll-revision-id]
          (context "/variables/:native-id" [native-id]
-          (PUT "/"
-           request
-           (variables/ingest-variable
-             nil native-id request coll-concept-id coll-revision-id))))
+           (PUT "/"
+             request
+             (variables/ingest-variable
+              nil native-id request coll-concept-id coll-revision-id))))
        (context "/variables/:native-id" [native-id]
          (PUT "/"
            request
            (variables/ingest-variable
-             nil native-id request coll-concept-id nil)))))
+            nil native-id request coll-concept-id nil)))))
+    ;; Subscriptions
+    (api-core/set-default-error-format
+     :xml
+     (context ["/subscriptions"] []
+       (POST "/"
+         request
+         (subscriptions/create-subscription request))
+       (context ["/:native-id" :native-id #".*$"] [native-id]
+         (POST "/"
+           request
+           (subscriptions/create-subscription-with-native-id native-id request))
+         (PUT "/"
+           request
+           (subscriptions/create-or-update-subscription-with-native-id native-id request))
+         (DELETE "/"
+           request
+           (subscriptions/delete-subscription native-id request)))))
     ;; granule bulk update status route
     (api-core/set-default-error-format
      :json
