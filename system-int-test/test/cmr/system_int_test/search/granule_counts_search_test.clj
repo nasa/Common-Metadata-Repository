@@ -767,9 +767,9 @@
     ;;   (is (> (transmit-search/find-granule-hits s/context {:collection-concept-id coll1}) Integer/MAX_VALUE)))
     (testing "test that the granule-count field returns over Integer/MAX_VALUE successfully"
         (are3 [result-format results]
-              (let [expected-granule-count (util/map-keys :concept-id {coll1 Integer/MAX_VALUE})
+              (let [expected-granule-count (util/map-keys :concept-id {coll1 (+ 10 (Long/parseLong Integer/MAX_VALUE))})
                     actual-granule-count (gran-counts/results->actual-granule-count result-format results)]
-                (is (< expected-granule-count actual-granule-count)))
+                (is (= expected-granule-count actual-granule-count)))
               "granule count in xml format"
               :xml (search/find-refs :collection {:include-granule-counts true})
 
