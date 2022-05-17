@@ -26,7 +26,9 @@
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
                  [com.fasterxml.jackson.core/jackson-core "2.12.1"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"
+                  :exclusions [com.fasterxml.jackson.core/jackson-databind]]
+                 [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]
                  [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-authz "0.1.3"]
