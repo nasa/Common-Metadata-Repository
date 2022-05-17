@@ -760,16 +760,16 @@
       (make-gran coll1 (p/point 90 0) nil)
       (when (= 0 (mod count 1000000))
         (print count))
-      (when (< (+ 2 Integer/MAX_VALUE) count)
+      (when (< (+ 10 Integer/MAX_VALUE) count)
         (recur (+ count 1))))
     (index/wait-until-indexed)
     ;; (testing "testing hits over integer max_value"
     ;;   (is (> (transmit-search/find-granule-hits s/context {:collection-concept-id coll1}) Integer/MAX_VALUE)))
     (testing "test that the granule-count field returns over Integer/MAX_VALUE successfully"
         (are3 [result-format results]
-              (let [expected-granule-count (util/map-keys :concept-id {coll1 (+ 2 Integer/MAX_VALUE)})
+              (let [expected-granule-count (util/map-keys :concept-id {coll1 Integer/MAX_VALUE})
                     actual-granule-count (gran-counts/results->actual-granule-count result-format results)]
-                (is (= expected-granule-count actual-granule-count)))
+                (is (< expected-granule-count actual-granule-count)))
               "granule count in xml format"
               :xml (search/find-refs :collection {:include-granule-counts true})
 
