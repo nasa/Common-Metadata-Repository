@@ -51,7 +51,7 @@
         {:keys [headers body]} response
         status (int (:status response))]
     (case status
-      200 (get headers "CMR-Hits")
+      200 (Long/parseLong (get headers "CMR-Hits"))
       ;; default
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s"

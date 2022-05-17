@@ -371,7 +371,7 @@
        (dj/parse-echo-json-result body)
        (if (= status 200)
          {:status status
-          :hits (get headers "CMR-Hits")
+          :hits (Long/parseLong (get headers "CMR-Hits"))
           :results (dj/parse-json-result concept-type body)}
          response)))))
 

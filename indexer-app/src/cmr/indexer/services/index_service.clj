@@ -557,7 +557,7 @@
                            revision-id
                            all-revisions-index?)]
     (if (= concept-type :collection)
-      (format "%s. Removing %s granules."
+      (format "%s. Removing %d granules."
               log-string
               (search/find-granule-hits context {:collection-concept-id concept-id}))
       log-string)))

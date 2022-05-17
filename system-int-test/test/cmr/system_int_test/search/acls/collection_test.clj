@@ -304,7 +304,7 @@
                                       :collection {:token guest-token
                                                    :page-size 100
                                                    :concept-id concept-ids})]
-          (is (= (bigint hits) (count (:entries results))))
+          (is (= hits (count (:entries results))))
           (is (= coll-json results)))))
 
     (testing "opendata ACL enforcement"
@@ -360,7 +360,7 @@
                                     :collection {:token guest-token
                                                  :page-size 100
                                                  :concept-id (:concept-id coll5)})]
-        (is (= (bigint hits) (count (:entries results))))
+        (is (= hits (count (:entries results))))
         (is (= coll-json results))))))
 
 ;; This tests that when acls change after collections have been indexed that collections will be

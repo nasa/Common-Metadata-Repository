@@ -70,8 +70,8 @@
   [context search-map]
   (let [{:keys [params error-msg]} search-map
         hits (search/find-granule-hits context params)]
-    (when (pos? (bigint hits))
-      (str error-msg (format " Found %s granules." hits)))))
+    (when (pos? hits)
+      (str error-msg (format " Found %d granules." hits)))))
 
 (defn- collection-update-validation
   "Validate collection update does not invalidate any existing granules."
