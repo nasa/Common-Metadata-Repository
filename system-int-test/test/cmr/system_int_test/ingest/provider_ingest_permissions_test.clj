@@ -27,7 +27,7 @@
                                     (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV1"}
                                                                   [:read :update]
                                                                   [:read :update])
-                                    (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV2"}
+                                    (subscription-util/grant-all-subscription-fixture {"provguid2" "PROV2"}
                                                                   [:read]
                                                                   [:read])
                                     (dev-system/freeze-resume-time-fixture)]))
@@ -286,7 +286,7 @@
             "another-prov-admin-token can't ingest"
             another-prov-admin-token
             "provider-admin-read-token can't ingest"
-            provider-admin-read-token)
+            provider-admin-read-token))
 
      ;; Ingest and delete of subscriptions are controlled by both INGEST_MANAGEMENT_ACL and SUBSCRIPTION+MANAGEMENT ACLs.
      ;; subscriptoin-np is ingested on PROV2, which has no SUBSCRIPTION_MANAGEMENT permission to ingest. so, even though
@@ -312,7 +312,7 @@
             "provider-admin-read-update token can not delete"
             provider-admin-read-update-token
             "provider-admin-update-delete token can not delete"
-            provider-admin-update-delete-token)))
+            provider-admin-update-delete-token))
 
     ;; The assert-ingest-succeeded tests below are identical to the tests above,
     ;; except that the subscription is on PROV1, which has both the INGEST and SUBSCRIPTION ACL permissions.

@@ -212,15 +212,24 @@
   [db provider concept]
   (let [{:keys [concept-type provider-id concept-id native-id]} concept
         table (tables/get-table-name provider concept-type)
-        {:keys [concept_id native_id]} (or (su/find-one
-                                             db (select [:concept-id :native-id]
-                                                  (from table)
-                                                  (where (by-provider
-                                                           concept-type provider `(= :native-id
-                                                                                     ~native-id)))))
-                                           (su/find-one db (select [:concept-id :native-id]
-                                                             (from table)
-                                                             (where `(= :concept-id ~concept-id)))))]
+        {:keys [concept_id native_id]} (if (= :subscription concept-type)
+                                         (or (su/find-one
+                                              db (select [:concept-id :native-id]
+                                                         (from table)
+                                                         (where `(= :native-id ~native-id))))
+                                             (su/find-one db (select [:concept-id :native-id]
+                                                                     (from table)
+                                                                     (where `(= :concept-id ~concept-id)))))
+                                         ;; concepts other than subscription
+                                         (or (su/find-one
+                                              db (select [:concept-id :native-id]
+                                                         (from table)
+                                                         (where (by-provider
+                                                                 concept-type provider `(= :native-id
+                                                                                           ~native-id)))))
+                                             (su/find-one db (select [:concept-id :native-id]
+                                                                     (from table)
+                                                                     (where `(= :concept-id ~concept-id))))))]
     (when (and (and concept_id native_id)
                (or (not= concept_id concept-id) (not= native_id native-id)))
       {:error :concept-id-concept-conflict

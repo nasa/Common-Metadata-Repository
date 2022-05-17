@@ -201,10 +201,24 @@
   ([provider-id concept-type]
    (ingest-url provider-id concept-type nil))
   ([provider-id concept-type native-id]
-   (let [url (format "http://localhost:%s/providers/%s/%ss"
+   (let [url (if (and (nil? provider-id)
+                      (= :subscription concept-type))
+               (format "http://localhost:%s/subscriptions"
+                     (transmit-config/ingest-port))
+               (format "http://localhost:%s/providers/%s/%ss"
                      (transmit-config/ingest-port)
                      (codec/url-encode provider-id)
-                     (name concept-type))]
+                     (name concept-type)))]
+     (if native-id
+       (str url "/" (codec/url-encode native-id))
+       url))))
+
+(defn ingest-subscription-url
+  ([]
+   (ingest-subscription-url nil))
+  ([native-id]
+   (let [url (format "http://localhost:%s/subscriptions"
+                     (transmit-config/ingest-port))]
      (if native-id
        (str url "/" (codec/url-encode native-id))
        url))))

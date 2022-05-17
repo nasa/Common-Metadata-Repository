@@ -47,7 +47,7 @@
   [providers guest-permissions registered-permissions]
   (fn [f]
     ;; grant INGEST_MANAGEMENT_ACL permission.
-    (echo-util/grant-all-subscription-ima (s/context))
+    (echo-util/grant-system-ingest-management (s/context) guest-permissions registered-permissions)
     (let [providers (for [[provider-guid provider-id] providers]
                       {:provider-guid provider-guid
                        :provider-id provider-id})]
