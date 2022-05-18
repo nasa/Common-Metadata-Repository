@@ -52,7 +52,7 @@
                                             :StandardProduct true
                                             :CollectionDataType "NEAR_REAL_TIME"}
                                            :umm-json))]
-     (is (= ["Standard product validation failed: Standard Product designation is only allowed for NASA data products. This collection is being ingested using a non-NASA provider which means the record is not a NASA record. Please remove the StandardProduct element from the record. The consortium designations include the following [geoss] and EOSDIS is not one of them."]
+     (is (= ["Standard product validation failed: Standard Product designation is only allowed for NASA data products. This collection is being ingested using a non-NASA provider which means the record is not a NASA record. Please remove the StandardProduct element from the record."]
             (:errors coll3-non-eosdis-consortium)))
      (is (= ["Standard product validation failed: Standard Product cannot be true with the CollectionDataType being one of the following values: NEAR_REAL_TIME, LOW_LATENCY, or EXPEDITED. The CollectionDataType is [NEAR_REAL_TIME]."]
             (:errors coll4-wrong-collection-data-type)))))
