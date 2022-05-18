@@ -145,8 +145,6 @@
   (cons [this _o] nil)
   (empty [this] nil)
 
-  (iterator [this] nil)
-
   clojure.lang.Seqable
   (seq
     [_]
@@ -171,7 +169,14 @@
            :lat-rad lat-rad
            :options options
            :geodetic-equality geodetic-equality
-           not-found)))
+           not-found))
+  
+  java.lang.Iterable
+  (iterator [this]
+            (reify java.util.Iterator
+              (hasNext [this] false)
+              (next [this] nil)
+              (remove [this] nil))))
 
 (defn print-point
   "Prints the point in a way that it can be copy and pasted for testing"
