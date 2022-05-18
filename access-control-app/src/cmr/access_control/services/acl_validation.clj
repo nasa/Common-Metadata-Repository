@@ -1,16 +1,17 @@
 (ns cmr.access-control.services.acl-validation
   (:require
-    [clj-time.core :as t]
-    [cmr.access-control.data.acls :as acls]
-    [cmr.access-control.services.group-service :as group-service]
-    [cmr.access-control.services.messages :as msg]
-    [cmr.acl.core :as acl]
-    [cmr.common.config :as cfg :refer [defconfig]]
-    [cmr.common.date-time-parser :as dtp]
-    [cmr.common.validations.core :as v]
-    [cmr.common.concepts :as concepts]
-    [cmr.transmit.metadata-db :as mdb1]
-    [cmr.transmit.metadata-db2 :as mdb]))
+   [clj-time.core :as t]
+   [cmr.access-control.config :as access-control-config]
+   [cmr.access-control.data.acls :as acls]
+   [cmr.access-control.services.group-service :as group-service]
+   [cmr.access-control.services.messages :as msg]
+   [cmr.acl.core :as acl]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.validations.core :as v]
+   [cmr.transmit.metadata-db :as mdb1]
+   [cmr.transmit.metadata-db2 :as mdb]))
 
 (def ^:private c "create")
 (def ^:private r "read")
@@ -86,10 +87,6 @@
       (println "|" target "|" (clojure.string/join ", " permissions) "|"))
     (println)))
 
-(defconfig allow-edl-groups
-  "Flag that indicates if we accept EDL Group Names as group_id identifiers."
-  {:default false :type Boolean})
-
 (defn- get-identity-type
   [acl]
   (cond
@@ -102,7 +99,7 @@
   "Validates if group-ids are valid CMR concept-ids"
   [key-path group-id]
   (let [regex #"^AG\d+-\S+$"]
-    (when-not (or (allow-edl-groups) (re-matches regex group-id))
+    (when-not (or (access-control-config/enable-edl-groups) (re-matches regex group-id))
       {key-path [(format "[%s] is not a valid group concept-id" group-id)]})))
 
 (defn- make-group-permissions-validation

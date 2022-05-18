@@ -1,5 +1,6 @@
 (ns cmr.access-control.services.auth-util
   (:require
+   [cmr.access-control.config :as access-control-config]
    [cmr.acl.core :as acl]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
@@ -7,7 +8,8 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.echo.tokens :as echo-tokens]))
+   [cmr.transmit.echo.tokens :as echo-tokens]
+   [cmr.transmit.urs :as urs]))
 
 (defn get-sids
   "Returns a seq of sids for the given username string or user type keyword
@@ -21,19 +23,22 @@
   ([context username-or-type]
    (if (contains? #{"guest" "registered"} (name username-or-type))
      [(keyword username-or-type)]
-     (let [query (qm/query {:concept-type :access-group
-                            :condition (qm/string-condition :member username-or-type)
-                            :skip-acls? true
-                            :page-size :unlimited
-                            :result-format :query-specified
-                            :result-fields [:concept-id :legacy-guid]})
-           groups (:items (qe/execute-query context query))]
-       (distinct
-        (concat [:registered]
-                ;; ACLs may be from ECHO or CMR, and may reference ECHO GUIDs as well as CMR concept IDs,
-                ;; depending on the context, so we will return both types of IDs here.
-                (keep :legacy-guid groups)
-                (keep :concept-id groups)))))))
+     (concat
+       (when (access-control-config/enable-edl-groups)
+         (urs/get-edl-groups-by-username context username-or-type))
+       (let [query (qm/query {:concept-type :access-group
+                              :condition (qm/string-condition :member username-or-type)
+                              :skip-acls? true
+                              :page-size :unlimited
+                              :result-format :query-specified
+                              :result-fields [:concept-id :legacy-guid]})
+             groups (:items (qe/execute-query context query))]
+         (distinct
+          (concat [:registered]
+                  ;; ACLs may be from ECHO or CMR, and may reference ECHO GUIDs as well as CMR concept IDs,
+                  ;; depending on the context, so we will return both types of IDs here.
+                  (keep :legacy-guid groups)
+                  (keep :concept-id groups))))))))
 
 (defn- put-sids-in-context
   "Gets the current SIDs of the user in the context from the Access control application."

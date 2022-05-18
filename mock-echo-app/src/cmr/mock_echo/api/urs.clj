@@ -60,6 +60,33 @@
                           </body>
                         </html>"}))
 
+(defn get-groups
+  "Returns mock URS groups for a user"
+  [context user-id]
+  (if-not (= "null" user-id)
+    (if (= "user1" user-id)
+      {:status 200 :body [{:description "cmr test group",
+                           :name "cmr_test_group",
+                           :shared_user_group false,
+                           :app_uid "mock_test_application",
+                           :client_id "cmr",
+                           :tag nil,
+                           :created_by "mock_test_application"}
+                          {:description "cmr test group",
+                           :name "cmr_test_group2",
+                           :shared_user_group false,
+                           :app_uid "mock_test_application",
+                           :client_id "cmr",
+                           :tag nil,
+                           :created_by "mock_test_application"}]}
+
+      {:status 200 :body []})
+    {:status 500 :body "<!DOCTYPE html>
+                          <body>
+                            <p> There has been an error processing your request. </p>
+                          </body>
+                        </html>"}))
+
 (defn parse-create-user-xml
   "Parses a create user request into a map of user fields"
   [body]
@@ -162,6 +189,11 @@
         ;; we only need the email address to fill in for the subscription concept.
         (GET "/:user-id" {{:keys [user-id]} :params}
           (get-user-info user-id)))
+
+      (context "/api/user_groups" []
+        (GET "/search" {:keys [request-context params] :as request}
+          (assert-bearer-token request)
+          (get-groups request-context (:user_ids params))))
 
       (context "/users" []
         ;; Create a bunch of users all at once
