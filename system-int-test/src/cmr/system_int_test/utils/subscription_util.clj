@@ -206,7 +206,9 @@
      (merge subscription
             {:name (extract-name-from-metadata subscription)
              :subscriber-id (extract-subscriber-id-from-metadata subscription)}
-            (when (not (= subscription-type "collection")) {:collection-concept-id (extract-collection-concept-id-from-metadata subscription)}))
+            (if (= subscription-type "collection")
+              {:provider-id "CMR"}
+              {:collection-concept-id (extract-collection-concept-id-from-metadata subscription)}))
      json-field-names)))
 
 (defn assert-subscription-search

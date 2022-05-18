@@ -30,6 +30,12 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})
+        coll2 (d/ingest-umm-spec-collection
+               "PROV2"
+               (data-umm-c/collection
+                {:ShortName "coll2"
+                 :EntryTitle "entry-title2"})
+               {:token "mock-echo-system-token"})
         subscription1 {:native-id "SUB1"
                        :Name "Sub1"
                        :Query "platform=NOAA-7"
@@ -37,7 +43,7 @@
                        :provider-id "PROV1"}
         subscription2 {:native-id "SUB2"
                        :Query "platform=NOAA-9"
-                       :CollectionConceptId (:concept-id coll1)
+                       :CollectionConceptId (:concept-id coll2)
                        :Name "Sub2"
                        :provider-id "PROV2"}
         subscription1s (doall (for [n (range 2)]
@@ -72,6 +78,12 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})
+        coll2 (d/ingest-umm-spec-collection
+               "PROV2"
+               (data-umm-c/collection
+                {:ShortName "coll2"
+                 :EntryTitle "entry-title2"})
+               {:token "mock-echo-system-token"})
         sub1-concept (subscription/make-subscription-concept {:native-id "SUB1"
                                                               :Query "platform=NOAA-7"
                                                               :CollectionConceptId (:concept-id coll1)
@@ -89,7 +101,7 @@
                                                                 :provider-id "PROV1"})
         sub3-concept (subscription/make-subscription-concept {:native-id "SUB3"
                                                               :Query "platform=NOAA-11"
-                                                              :CollectionConceptId (:concept-id coll1)
+                                                              :CollectionConceptId (:concept-id coll2)
                                                               :Name "Subscription1"
                                                               :provider-id "PROV2"})
         sub1-1 (subscription/ingest-subscription sub1-concept)

@@ -42,9 +42,9 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
         * [PUT - Create or update a tool.](#create-update-tool)
         * [DELETE - Delete a tool.](#delete-tool)
 * Subscriptions
-    * /providers/\<provider-id>/subscriptions
+    * /subscriptions
         *  [POST - Create a subscription without specifying a native-id.](#create-subscription)
-      * /providers/\<provider-id>/subscriptions/\<native-id>
+    * /subscriptions/\<native-id>
         * [POST - Create a subscription with a provided native-id.](#create-subscription)
         * [PUT - Create or Update a subscription.](#update-subscription)
         * [DELETE - Delete a subscription.](#delete-subscription)
@@ -788,6 +788,8 @@ Tool metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT
 
 ### <a name="create-subscription"></a> Create a Subscription
 
+NOTE: The `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions` API routes for subscription ingest are deprecated. Please switch to the new `%CMR-ENDPOINT%/subscriptions` API routes. All the examples below are using the new routes.
+
 Subscription allows a user to register some query conditions in CMR and be notified via email when collections/granules matching the conditions are created or updated in CMR. There are two types of subscriptions (identified by the `Type` field of the subscription):
 
 - collection subscription for users to be notified when collections are created/updated.
@@ -795,7 +797,7 @@ Subscription allows a user to register some query conditions in CMR and be notif
 
 Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription). There is a background job that processes the subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
 
-Subscription concepts can be created by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) ,the [revision id](#revision-id), and a [native-id](#native-id).
+Subscription concepts can be created by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) ,the [revision id](#revision-id), and a [native-id](#native-id).
 
 `Type` is a required field in subscription request body. The valid values of `Type` are: `"collection"` or `"granule"`. It indicates if the subscription is a collection subscription or granule subscription. Subscriptions of type granule must supply a requisite CollectionConceptId, and subscriptions of type collection cannot have a CollectionConceptId field.
 
@@ -807,10 +809,10 @@ If a SubscriberId is not provided, then the user ID associated with the token us
 EmailAddress was previously a required field, but this field is now deprecated. Instead, the email address associated with the SubscriberId's EarthData Login (URS) account will be used as the EmailAddress. If an EmailAddress is specified at subscription creation it will be ignored.
 
 POST only may be used without a native-id at the following URL.
-`%CMR-ENDPOINT%/providers/<provider-id>/subscriptions`
+`%CMR-ENDPOINT%/subscriptions`
 
 POST or PUT may be used with the following URL.
-`%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`
+`%CMR-ENDPOINT%/subscriptions/<native-id>`
 
 Query values should not be URL encoded. Instead, the query should consist of standard granule search parameters, separated by '&'. For example, a valid query string might look like:
 
@@ -820,7 +822,7 @@ If the query provided is invalid for granule searching, subscription creation wi
 
 ### <a name="update-subscription"></a> Update a Subscription
 
-Subscription concept can be updated by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
+Subscription concept can be updated by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
 If a native-id is provided in a POST, and a subscription already exists for that provider with the given native-id, the request will be rejected.
 
@@ -830,7 +832,7 @@ PUT requests should be used for updating subscriptions. Creation of subscription
 curl -i -XPUT \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
   -H "Echo-Token: XXXX" \
-  %CMR-ENDPOINT%/providers/PROV1/subscriptions/subscription123 \
+  %CMR-ENDPOINT%/subscriptions/subscription123 \
   -d \
 "{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
 ```
@@ -839,7 +841,7 @@ curl -i -XPUT \
 curl -i -XPOST \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
   -H "Echo-Token: XXXX" \
-  %CMR-ENDPOINT%/providers/PROV1/subscriptions \
+  %CMR-ENDPOINT%/subscriptions \
   -d \
 "{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
 ```
@@ -863,12 +865,12 @@ get a JSON response:
 
 ### <a name="delete-subscription"></a> Delete a Subscription
 
-Subscription metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+Subscription metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
 ```
 curl -i -X DELETE \
   -H "Echo-Token: XXXX" \
-  %CMR-ENDPOINT%/providers/PROV1/subscriptions/subscription123
+  %CMR-ENDPOINT%/subscriptions/subscription123
 ```
 
 #### Successful Response in XML
@@ -887,7 +889,9 @@ curl -i -X DELETE \
 
 ### <a name="subscription-access-control"></a> Subscription Access Control
 
-Ingest permissions for subscriptions are granted through the provider via the INGEST_MANAGEMENT_ACL and SUBSCRIPTION_MANAGEMENT. In order to ingest/update/delete a subscription for a given provider, update permission has to be granted to the user through both INGEST_MANAGEMENT_ACL and SUBSCRIPTION_MANAGEMENT ACLs for the provider.
+Ingest permissions for granule subscriptions are granted through the provider via the INGEST_MANAGEMENT_ACL and SUBSCRIPTION_MANAGEMENT. In order to ingest/update/delete a subscription for a given provider, update permission has to be granted to the user through both INGEST_MANAGEMENT_ACL and SUBSCRIPTION_MANAGEMENT ACLs for the provider.
+
+For lack of a better ACL, ingest permissions for collection subscription are granted through the SYSTEM OBJECT TAG_GROUP ACL update permission.
 
 ## <a name="translate-collection"></a> Translate Collection Metadata
 
