@@ -342,7 +342,7 @@
                                                                    {:token "mock-echo-system-token"})
              _              (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
                                                                     {:provider-id         "PROV2"
-                                                                     :Name                "test_sub_prov1"
+                                                                     :Name                "test_sub_prov2"
                                                                      :SubscriberId        "user1"
                                                                      :Type                "granule"
                                                                      :EmailAddress        "user1@nasa.gov"

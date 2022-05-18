@@ -388,7 +388,7 @@
          params (merge params (when accept-format {:accept accept-format}))]
      (parse-ingest-response (client/request params) options))))
 
-;; Temporary function, will be removed in CMR-8270
+;; Temporary function, this calls the subscription routes under the ingest root url, will be removed in CMR-8270
 (defn ingest-subscription-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
   ([concept]

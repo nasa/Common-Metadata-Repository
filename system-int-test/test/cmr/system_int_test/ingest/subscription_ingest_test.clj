@@ -7,12 +7,12 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
-   [cmr.common.util :refer [are3]]
    [cmr.common-app.test.side-api :as side]
+   [cmr.common.util :refer [are3]]
    [cmr.ingest.services.subscriptions-helper :as jobsub]
    [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.mock-echo.client.mock-urs-client :as mock-urs]
    [cmr.system-int-test.data2.core :as data-core]
-   [cmr.system-int-test.data2.granule :as data-granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
@@ -20,23 +20,22 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
-   [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.metadata-db :as mdb2]
-   [cmr.mock-echo.client.mock-urs-client :as mock-urs]))
+   [cmr.system-int-test.utils.tag-util :as tags]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
-  (join-fixtures
-   [(ingest/reset-fixture
-     {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"})
-    (subscription-util/grant-all-subscription-fixture
-     {"provguid1" "PROV1" "provguid2" "PROV2"}
-     [:read :update]
-     [:read :update])
-    (dev-sys-util/freeze-resume-time-fixture)
-    (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV3"}
-                                                      [:read]
-                                                      [:read :update])]))
+              (join-fixtures
+               [(ingest/reset-fixture
+                 {"provguid1" "PROV1" "provguid2" "PROV2" "provguid3" "PROV3"})
+                (subscription-util/grant-all-subscription-fixture
+                 {"provguid1" "PROV1" "provguid2" "PROV2"}
+                 [:read :update]
+                 [:read :update])
+                (dev-sys-util/freeze-resume-time-fixture)
+                (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV3"}
+                                                                  [:read]
+                                                                  [:read :update])
+                tags/grant-all-tag-fixture]))
 
 (deftest subscription-count-exceeds-limit-test
   (side/eval-form `(jobsub/set-subscriptions-limit! 1))
@@ -154,9 +153,11 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})
-        concept (subscription-util/make-subscription-concept {:CollectionConceptId (:concept-id coll1)})
+        concept (subscription-util/make-subscription-concept {:CollectionConceptId (:concept-id coll1)
+                                                              :provider-id "PROV3"})
         user1-token (echo-util/login (system/context) "user1")]
     (ingest/ingest-concept concept {:token user1-token})
+    (index/wait-until-indexed)
 
     (testing "delete on PROV3, guest is not granted update permission for SUBSCRIPTION_MANAGEMENT ACL"
       (let [guest-token (echo-util/login-guest (system/context))

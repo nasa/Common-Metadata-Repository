@@ -172,6 +172,16 @@
   (common-enabled/validate-write-enabled context "ingest")
   (lt-validation/validate-launchpad-token context))
 
+(defn- verify-coll-modification-permission
+  "Verifies the current user has been granted permission to modify collection subscription.
+  There is no good ACLs to handle this permission, so we use TAG_GROUP UPDATE permission for now."
+  [context]
+  (when-not (or (config/echo-system-token? context)
+                (seq (acl/get-permitting-acls context :system-object "TAG_GROUP" :update)))
+    (errors/throw-service-error
+     :unauthorized
+     "You do not have permission to perform that action.")))
+
 (defn- check-provider-ingest-permission
   "Perform the provider level subscription ingest permission check"
   [context provider-id]
@@ -206,7 +216,7 @@
                          new-subscriber)))
 
          (if (= CMR_PROVIDER provider-id)
-           (acl/verify-ingest-management-permission context)
+           (verify-coll-modification-permission context)
            (check-provider-ingest-permission context provider-id)))))))
 
 (defn- validate-user-id

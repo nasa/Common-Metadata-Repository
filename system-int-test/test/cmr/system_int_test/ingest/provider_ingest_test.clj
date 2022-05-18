@@ -102,7 +102,7 @@
 
             "- two consortiums with an underscore"
             "PROV11" "S11" true true "Group2_1 Group2_3"
-            
+
             "- consortiums with only spaces"
             "PROV12" nil nil nil "    "
 
@@ -292,7 +292,7 @@
                                                               :Name "sub2"
                                                               :SubscriberId "user1"
                                                               :Query "platform=NOAA-9"
-                                                              :CollectionConceptId (:concept-id coll1)
+                                                              :CollectionConceptId (:concept-id coll3)
                                                               :provider-id "PROV2"})
           _ (index/wait-until-indexed)
           svc-association1 (au/make-service-association
