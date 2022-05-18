@@ -69,7 +69,7 @@ A couple of gotchas:
 
 ## License [&#x219F;](#contents)
 
-Copyright © 2018 NASA
+Copyright © 2022 NASA
 
 Distributed under the Apache License, Version 2.0.
 
