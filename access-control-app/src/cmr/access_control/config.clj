@@ -33,6 +33,11 @@
   {:default 100
    :type Long})
 
+(defconfig enable-edl-groups
+  "Flag that indicates if we accept EDL Group Names as group_id identifiers and that they will be used.
+   when determining SIDs."
+  {:default false :type Boolean})
+
 (defn queue-config
   "Returns the queue configuration for the application."
   []
