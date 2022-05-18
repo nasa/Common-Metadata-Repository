@@ -98,9 +98,7 @@
       [(format (str "Standard product validation failed: "
                     "Standard Product designation is only allowed for NASA data products. This collection is "
                     "being ingested using a non-NASA provider which means the record is not a NASA record. "
-                    "Please remove the StandardProduct element from the record. "
-                    "The consortium designations include the following [%s] and EOSDIS is not one of them.")
-               consortiums-str)])))
+                    "Please remove the StandardProduct element from the record."))])))
 
 (defn standard-product-not-real-time-validation
   "Validate if the standard product is true then the CollectionDataType is not NEAR_REAL_TIME, LOW_LATENCY, 
