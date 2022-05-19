@@ -761,7 +761,6 @@
       (make-gran coll1 (p/point 90 0) nil)
       (when (< (+ 10 Integer/MAX_VALUE) count)
         (recur (+ count 1))))
-    (index/wait-until-indexed)
     (testing "testing hits over integer max_value"
       (is (> (transmit-search/find-granule-hits (s/context) {:collection-concept-id coll1}) Integer/MAX_VALUE)))))
     ;; (testing "test that the granule-count field returns over Integer/MAX_VALUE successfully"
