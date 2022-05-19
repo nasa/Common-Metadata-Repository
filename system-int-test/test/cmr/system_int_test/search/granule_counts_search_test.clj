@@ -18,7 +18,6 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.transmit.search :as transmit-search]
    [cmr.umm.umm-spatial :as umm-spatial]))
 
 (use-fixtures :each (ingest/reset-fixture
@@ -753,38 +752,3 @@
 
               "granule count in json format"
               :atom (search/find-concepts-json :collection {:include-granule-counts false})))))
-
-
-(deftest over-max-int-granule-hits-test
-  (let [coll1 (make-coll 1 m/whole-world nil)]
-    (loop [count 1]
-      (make-gran coll1 (p/point 90 0) nil)
-      (when (< (+ 10 Integer/MAX_VALUE) count)
-        (recur (+ count 1))))
-    (testing "testing hits over integer max_value"
-      (is (> (transmit-search/find-granule-hits (s/context) {:collection-concept-id coll1}) Integer/MAX_VALUE)))))
-    ;; (testing "test that the granule-count field returns over Integer/MAX_VALUE successfully"
-    ;;     (are3 [result-format results]
-    ;;           (let [expected-granule-count (util/map-keys :concept-id {coll1 (+ 10 (Long/parseLong Integer/MAX_VALUE))})
-    ;;                 actual-granule-count (gran-counts/results->actual-granule-count result-format results)]
-    ;;             (is (= expected-granule-count actual-granule-count)))
-    ;;           "granule count in xml format"
-    ;;           :xml (search/find-refs :collection {:include-granule-counts true})
-
-    ;;           "granule count in echo10 format"
-    ;;           :echo10 (search/find-metadata :collection :echo10 {:include-granule-counts true})
-
-    ;;           "granule count in iso format"
-    ;;           :iso19115 (search/find-metadata :collection :iso19115 {:include-granule-counts true})
-
-    ;;           "granule count in umm_json format"
-    ;;           :umm_json (search/find-concepts-umm-json :collection {:include-granule-counts true})
-
-    ;;           "granule count in legacy-umm-json format"
-    ;;           :legacy-umm-json (search/find-concepts-legacy-umm-json :collection {:include-granule-counts true})
-
-    ;;           "granule count in atom format"
-    ;;           :atom (search/find-concepts-atom :collection {::include-granule-counts true})
-
-    ;;           "granule count in json format"
-    ;;           :atom (search/find-concepts-json :collection {:include-granule-counts true})))))
