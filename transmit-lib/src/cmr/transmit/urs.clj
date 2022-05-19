@@ -75,7 +75,7 @@
                                                           :method :get
                                                           :raw? true})]
     (when-not (= 200 status)
-      (info (format "Cannot get info for username [%s] in URS. Failed with status code [%d].
+      (error (format "Cannot get info for username [%s] in URS. Failed with status code [%d].
         EDL error message: [%s]" user status (pr-str body)))
       (errors/throw-service-error
         :unauthorized
@@ -98,11 +98,8 @@
                                                           :http-options {:query-params
                                                                          {:user_ids
                                                                           user-id}}})]
-    (info "DEBUGz1" status)
-    (info "DEBUGz2" (pr-str body))
-    (info "DEBUGz3" user-id)
     (when-not (= 200 status)
-      (info (format "Cannot get group info for username [%s] in URS. Failed with status code [%d].
+      (error (format "Cannot get group info for username [%s] in URS. Failed with status code [%d].
         EDL error message: [%s]" user-id status (pr-str body)))
       (errors/throw-service-error
         :unauthorized
