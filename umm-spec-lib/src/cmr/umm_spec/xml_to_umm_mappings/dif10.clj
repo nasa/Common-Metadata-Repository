@@ -317,6 +317,10 @@
    :TilingIdentificationSystems (spatial/parse-tiling doc)
    :ProcessingLevel {:Id (su/with-default (value-of doc "/DIF/Product_Level_Id") sanitize?)}
    :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc sanitize?)
+   :StandardProduct (last (for [metadata (select doc "/DIF/Extended_Metadata/Metadata")
+                                :let [name (value-of metadata "Name")]
+                                :when (= name "StandardProduct")]
+                            (value-of metadata "Value")))
    :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                             (into {} (map (fn [x]
                                             (if (keyword? x)

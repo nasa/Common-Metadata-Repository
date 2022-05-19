@@ -139,5 +139,19 @@
       <Name>metadata.keyword_version</Name>
       <Value>8.4</Value>
     </Metadata>
-  </Extended_Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd.standardproduct</Group>
+      <Name>StandardProduct</Name>
+      <Value>true</Value>
+    </Metadata>
+    </Extended_Metadata>
+    <Extended_Metadata>
+    <Metadata>
+      <Group>gov.nasa.gsfc.gcmd.standardproduct</Group>
+      <Name>StandardProduct</Name>
+      <Value>false</Value>
+    </Metadata>
+    </Extended_Metadata>
    </DIF>

@@ -417,4 +417,11 @@
       [:Extended_Metadata
        [:Metadata
         [:Name "Restriction"]
-        [:Value access-value]]])]))
+        [:Value access-value]]])
+    (let [standard-product (:StandardProduct c)]
+      (when-not (nil? (:StandardProduct c))
+        [:Extended_Metadata
+         [:Metadata
+          [:Group "gov.nasa.gsfc.gcmd.standardproduct"]
+          [:Name "StandardProduct"]
+          [:Value standard-product]]]))]))
