@@ -1,26 +1,28 @@
-import AWS from 'aws-sdk'
+import { mockClient } from 'aws-sdk-client-mock'
+
+import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm'
 
 import { getSecureParam } from '../getSecureParam'
+
+const ssmClientMock = mockClient(SSMClient)
 
 beforeEach(() => {
   jest.clearAllMocks()
 })
 
 describe('getSecureParam', () => {
-  test('fetches urs credentials from AWS', async () => {
-    const secretsManagerData = {
-      promise: jest.fn().mockResolvedValue({
-        Parameter: { Value: 'SUPER-SECRET-TOKEN' }
-      })
-    }
+  beforeEach(() => {
+    ssmClientMock.reset()
+  })
 
-    AWS.SSM = jest.fn(() => ({
-      getParameter: jest.fn().mockImplementationOnce(() => (secretsManagerData))
-    }))
+  test('fetches urs credentials from AWS', async () => {
+    ssmClientMock.on(GetParameterCommand).resolves({
+      Parameter: { Value: 'SUPER-SECRET-TOKEN' }
+    })
 
     const response = await getSecureParam(`/${process.env.ENVIRONMENT}/graph-db/CMR_ECHO_SYSTEM_TOKEN`)
 
     expect(response).toEqual('SUPER-SECRET-TOKEN')
-    expect(secretsManagerData.promise).toBeCalledTimes(1)
+    expect(ssmClientMock.calls()).toHaveLength(1)
   })
 })

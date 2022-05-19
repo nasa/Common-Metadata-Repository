@@ -1,8 +1,8 @@
-import AWS from 'aws-sdk'
-
 import 'array-foreach-async'
 
 import axios from 'axios'
+
+import { SQSClient, SendMessageBatchCommand } from '@aws-sdk/client-sqs'
 
 import { chunkArray } from '../chunkArray'
 
@@ -45,7 +45,7 @@ export const fetchPageFromCMR = async ({
 
   try {
     if (sqs == null) {
-      sqs = new AWS.SQS({ apiVersion: '2012-11-05' })
+      sqs = new SQSClient()
     }
 
     const cmrCollections = await axios({
@@ -78,10 +78,12 @@ export const fetchPageFromCMR = async ({
           })
         })
 
-        await sqs.sendMessageBatch({
+        const command = new SendMessageBatchCommand({
           QueueUrl: process.env.COLLECTION_INDEXING_QUEUE_URL,
           Entries: sqsEntries
-        }).promise()
+        })
+
+        await sqs.send(command)
       })
     }
 

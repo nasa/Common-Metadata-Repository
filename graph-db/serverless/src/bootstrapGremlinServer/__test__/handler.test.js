@@ -1,6 +1,7 @@
 import nock from 'nock'
 
-import AWS from 'aws-sdk'
+import { mockClient } from 'aws-sdk-client-mock'
+import { SQSClient, SendMessageBatchCommand } from '@aws-sdk/client-sqs'
 
 import bootstrapGremlinServer from '../handler'
 
@@ -8,7 +9,17 @@ import * as getEchoToken from '../../utils/cmr/getEchoToken'
 
 const event = { Records: [{ body: '{}' }] }
 
+beforeEach(() => {
+  jest.clearAllMocks()
+})
+
+const sqsClientMock = mockClient(SQSClient)
+
 describe('bootstrapGremlinServer handler', () => {
+  beforeEach(() => {
+    sqsClientMock.reset()
+  })
+
   describe('When the response from CMR is an error', () => {
     test('throws an exception', async () => {
       nock(/local-cmr/)
@@ -24,15 +35,6 @@ describe('bootstrapGremlinServer handler', () => {
         .reply(204)
 
       jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => undefined)
-
-      const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
-        promise: jest.fn().mockResolvedValue()
-      })
-
-      AWS.SQS = jest.fn()
-        .mockImplementationOnce(() => ({
-          sendMessageBatch: sqsCollectionIndexingQueue
-        }))
 
       const response = await bootstrapGremlinServer(event)
 
@@ -94,15 +96,6 @@ describe('bootstrapGremlinServer handler', () => {
         .reply(204)
 
       jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => null)
-
-      const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
-        promise: jest.fn().mockResolvedValue()
-      })
-
-      AWS.SQS = jest.fn()
-        .mockImplementationOnce(() => ({
-          sendMessageBatch: sqsCollectionIndexingQueue
-        }))
 
       const response = await bootstrapGremlinServer(event)
 
@@ -233,15 +226,6 @@ describe('bootstrapGremlinServer handler', () => {
         .reply(204)
 
       jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => null)
-
-      const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
-        promise: jest.fn().mockResolvedValue()
-      })
-
-      AWS.SQS = jest.fn()
-        .mockImplementationOnce(() => ({
-          sendMessageBatch: sqsCollectionIndexingQueue
-        }))
 
       const response = await bootstrapGremlinServer(event)
 
