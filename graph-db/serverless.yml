@@ -1,11 +1,20 @@
 service: graphdb-indexer
+
 provider:
   name: aws
   runtime: nodejs14.x
   region: us-east-1
   role: IamRoleGraphLambdaExecution
+  runtime: nodejs16.x
   stage: ${opt:stage, 'dev'}
-  deploymentBucket: graphdb-driver-deployment-bucket-${opt:stage}
+  region: us-east-1
+
+  iam:
+    role: IamRoleGraphLambdaExecution
+
+  deploymentBucket:
+   name: graphdb-driver-deployment-bucket-${self:provider.stage}
+   skipPolicySetup: true
   vpc:
     securityGroupIds:
       - ${cf:${self:provider.stage}.servicesSecurityGroupId}
@@ -19,6 +28,7 @@ provider:
     GREMLIN_URL: ${self:custom.variables.GREMLIN_URL}
     PAGE_SIZE: ${self:custom.variables.PAGE_SIZE}
 
+configValidationMode: error
 plugins:
   - serverless-offline
   - serverless-pseudo-parameters
@@ -60,7 +70,7 @@ resources:
         PolicyDocument:
           Version: '2012-10-17'
           Statement:
-            - Sid: topic-subscription-${env:CMR_CONCEPT_SNS_TOPIC}
+            - Sid: topic-subscription-${self:custom.variables.CMR_CONCEPT_SNS_TOPIC}
               Effect: Allow
               Principal:
                 AWS: "*"
@@ -69,7 +79,7 @@ resources:
               Resource: !GetAtt CollectionIndexingQueue.Arn
               Condition:
                 ArnEquals:
-                  aws:SourceArn: ${env:CMR_CONCEPT_SNS_TOPIC}
+                  aws:SourceArn: ${self:custom.variables.CMR_CONCEPT_SNS_TOPIC}
         Queues:
           - !Ref CollectionIndexingQueue
 
@@ -82,7 +92,7 @@ resources:
     cmrSnsSubscription:
       Type: 'AWS::SNS::Subscription'
       Properties:
-        TopicArn: ${env:CMR_CONCEPT_SNS_TOPIC}
+        TopicArn: ${self:custom.variables.CMR_CONCEPT_SNS_TOPIC}
         Endpoint: !GetAtt
           - CollectionIndexingQueue
           - Arn
@@ -96,6 +106,16 @@ resources:
         PermissionsBoundary: arn:aws:iam::#{AWS::AccountId}:policy/NGAPShRoleBoundary
         ManagedPolicyArns:
           - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+        PermissionsBoundary:
+          Fn::Join: [
+            "", [
+              "arn:aws:iam::",
+              {
+                "Ref": "AWS::AccountId"
+              },
+              ":policy/NGAPShRoleBoundary"
+            ]
+          ]
         AssumeRolePolicyDocument:
           Version: '2012-10-17'
           Statement:
@@ -132,13 +152,15 @@ resources:
               Effect: 'Allow'
               Resource:
                 - 'arn:aws:ssm:*:*:parameter/${opt:stage}/graph-db/*'
-        PolicyName: cmrParamStorePolicy-${opt:stage}
+                - 'arn:aws:ssm:*:*:parameter/${self:provider.stage}/graph-db/*'
+        PolicyName: cmrParamStorePolicy-${self:provider.stage}
         Roles:
           - Ref: IamRoleGraphLambdaExecution
 custom:
   variables:
     # Default values for environment variables
-    CMR_ROOT: ${env:CMR_ROOT, 'http://${cf:${opt:stage}.servicesDnsName}'}
+    CMR_ROOT: ${env:CMR_ROOT, 'http://${cf:${self:provider.stage}.servicesDnsName}'}
     ENVIRONMENT: ${self:provider.stage}
     GREMLIN_URL: ${env:GREMLIN_URL, 'wss://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'}
     PAGE_SIZE: ${env:PAGE_SIZE, '1000'}
+    GREMLIN_URL: ${env:GREMLIN_URL, 'wss://${cf:neptune-${self:provider.stage}.DBClusterEndpoint}:8182/gremlin'}

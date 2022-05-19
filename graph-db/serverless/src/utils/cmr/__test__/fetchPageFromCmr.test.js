@@ -1,6 +1,7 @@
 import nock from 'nock'
 
-import AWS from 'aws-sdk'
+import { mockClient } from 'aws-sdk-client-mock'
+import { SQSClient, SendMessageBatchCommand } from '@aws-sdk/client-sqs'
 
 import * as chunkArray from '../../chunkArray'
 
@@ -10,16 +11,13 @@ beforeEach(() => {
   jest.clearAllMocks()
 })
 
-const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
-  promise: jest.fn().mockResolvedValue()
-})
-
-AWS.SQS = jest.fn()
-  .mockImplementationOnce(() => ({
-    sendMessageBatch: sqsCollectionIndexingQueue
-  }))
+const sqsClientMock = mockClient(SQSClient)
 
 describe('fetchPageFromCMR', () => {
+  beforeEach(() => {
+    sqsClientMock.reset()
+  })
+
   test('Empty page', async () => {
     const mockedBody = {
       feed: {
@@ -37,7 +35,7 @@ describe('fetchPageFromCMR', () => {
       providerId: 'PROV1'
     })
 
-    expect(sqsCollectionIndexingQueue).toBeCalledTimes(0)
+    expect(sqsClientMock.calls()).toHaveLength(0)
   })
 
   test('Single result', async () => {
@@ -88,8 +86,11 @@ describe('fetchPageFromCMR', () => {
       providerId: null
     })
 
-    expect(sqsCollectionIndexingQueue).toBeCalledTimes(1)
-    expect(sqsCollectionIndexingQueue.mock.calls[0]).toEqual([{
+    const sendMessageBatchMock = sqsClientMock.commandCalls(SendMessageBatchCommand)
+
+    expect(sqsClientMock.calls()).toHaveLength(1)
+
+    expect(sendMessageBatchMock[0].args[0].input).toEqual({
       QueueUrl: 'http://example.com/collectionIndexQueue',
       Entries: [{
         Id: 'C1216257563-LPDAAC_TS1',
@@ -98,7 +99,7 @@ describe('fetchPageFromCMR', () => {
           'concept-id': 'C1216257563-LPDAAC_TS1'
         })
       }]
-    }])
+    })
   })
 
   test('Single result with mocked ECHO token', async () => {
@@ -149,8 +150,11 @@ describe('fetchPageFromCMR', () => {
       providerId: null
     })
 
-    expect(sqsCollectionIndexingQueue).toBeCalledTimes(1)
-    expect(sqsCollectionIndexingQueue.mock.calls[0]).toEqual([{
+    const sendMessageBatchMock = sqsClientMock.commandCalls(SendMessageBatchCommand)
+
+    expect(sqsClientMock.calls()).toHaveLength(1)
+
+    expect(sendMessageBatchMock[0].args[0].input).toEqual({
       QueueUrl: 'http://example.com/collectionIndexQueue',
       Entries: [{
         Id: 'C1216257563-LPDAAC_TS1',
@@ -159,7 +163,7 @@ describe('fetchPageFromCMR', () => {
           'concept-id': 'C1216257563-LPDAAC_TS1'
         })
       }]
-    }])
+    })
   })
 
   test('Invalid concept-id', async () => {
@@ -176,7 +180,7 @@ describe('fetchPageFromCMR', () => {
       providerId: null
     })
 
-    expect(sqsCollectionIndexingQueue).toBeCalledTimes(0)
+    expect(sqsClientMock.calls()).toHaveLength(0)
   })
 
   test('Function catches and handles errors', async () => {

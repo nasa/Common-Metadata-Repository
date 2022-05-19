@@ -63,11 +63,11 @@ describe('indexRelatedUrl', () => {
       // Provide `null` for the gremlin connection to throw an error
       await expect(
         indexRelatedUrl(relatedUrl, null, {}, conceptId)
-      ).rejects.toThrow('Cannot read property \'addV\' of null')
+      ).rejects.toThrow('Cannot read properties of null (reading \'addV\')')
 
       expect(consoleMock).toBeCalledTimes(2)
       expect(consoleMock.mock.calls[0][0]).toEqual(`Failed to index RelatedUrl for concept [${conceptId}] ${JSON.stringify(relatedUrl)}`)
-      expect(consoleMock.mock.calls[1][0]).toEqual(Error('Cannot read property \'addV\' of null'))
+      expect(consoleMock.mock.calls[1][0]).toEqual(Error('Cannot read properties of null (reading \'addV\')'))
     })
   })
 })
