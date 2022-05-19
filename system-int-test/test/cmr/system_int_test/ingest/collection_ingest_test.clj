@@ -3,7 +3,6 @@
 
   For collection permissions tests, see `provider-ingest-permissions-test`."
   (:require
-   [clj-http.client :as client]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
@@ -11,7 +10,6 @@
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.date-time-parser :as date-time-parser]
-   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -20,7 +18,6 @@
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as system]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -55,9 +52,9 @@
                                             :StandardProduct true
                                             :CollectionDataType "NEAR_REAL_TIME"}
                                            :umm-json))]
-     (is (= ["Standard product validation failed: with CollectionDataType being [null], and consortiums being [geoss]. CollectionDataType can not be NEAR_REAL_TIME,LOW_LATENCY or EXPEDITED,and consortiums needs to contain EOSDIS."]
+     (is (= ["Standard product validation failed: Standard Product designation is only allowed for NASA data products. This collection is being ingested using a non-NASA provider which means the record is not a NASA record. Please remove the StandardProduct element from the record."]
             (:errors coll3-non-eosdis-consortium)))
-     (is (= ["Standard product validation failed: with CollectionDataType being [NEAR_REAL_TIME], and consortiums being [eosdis geoss]. CollectionDataType can not be NEAR_REAL_TIME,LOW_LATENCY or EXPEDITED,and consortiums needs to contain EOSDIS."]
+     (is (= ["Standard product validation failed: Standard Product cannot be true with the CollectionDataType being one of the following values: NEAR_REAL_TIME, LOW_LATENCY, or EXPEDITED. The CollectionDataType is [NEAR_REAL_TIME]."]
             (:errors coll4-wrong-collection-data-type)))))
     
 ;; Verify a new concept is ingested successfully.

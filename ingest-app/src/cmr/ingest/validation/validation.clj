@@ -3,7 +3,7 @@
   (:require
     [cheshire.core :as json]
     [clojure.data :as data]
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.common.util :as util :refer [defn-timed]]
     [cmr.common-app.services.kms-fetcher :as kms-fetcher]
     [cmr.common-app.services.kms-lookup :as kms-lookup]
@@ -16,14 +16,12 @@
     [cmr.ingest.services.messages :as msg]
     [cmr.ingest.validation.business-rule-validation :as bv]
     [cmr.transmit.config :as transmit-config]
-    [cmr.transmit.metadata-db :as mdb]
     [cmr.transmit.search :as transmit-search]
     [cmr.umm-spec.json-schema :as json-schema]
     [cmr.umm-spec.umm-json :as umm-json]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]
-    [cmr.umm-spec.versioning :as umm-versioning]
-    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]))
+    [cmr.umm-spec.versioning :as umm-versioning]))
 
 (def ^:private
   valid-concept-mime-types
@@ -47,7 +45,7 @@
     (when-not (contains? valid-types content-type)
       (errors/throw-service-error :invalid-content-type
                                   (format "Invalid content-type: %s. Valid content-types: %s."
-                                          content-type (str/join ", " valid-types))))))
+                                          content-type (string/join ", " valid-types))))))
 (defn- validate-metadata-length
   "Validates the metadata length is not unreasonable."
   [concept]
@@ -239,8 +237,8 @@
 (defn- pad-zeros-to-version
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
   [version]
-  (let [version-splitted (str/split version #"\.")]
-    (str/join "." (map #(if (> 10 (Integer. %)) (str "0" %) %) version-splitted))))
+  (let [version-splitted (string/split version #"\.")]
+    (string/join "." (map #(if (> 10 (Integer. %)) (str "0" %) %) version-splitted))))
 
 (defn- compare-versions-with-padded-zeros
   "Compare the umm-version and accepted umm-version
@@ -394,30 +392,6 @@
                                    context collection false)
                                   granule
                                   (granule-keyword-validations context))))
-
-(defn validate-standard-product
-  "Validates the collection against standard product rule:
-  If StandardProduct is true and any one of the two conditions below is true, throws error.
-  1. CollectionDataType is NEAR_REAL_TIME,LOW_LATENCY or EXPEDITED,
-  2. Provider consortium is NOT EOSDIS."
-  [provider-id collection context]
-  (let [collection-data-type (:CollectionDataType collection)
-        standard-product (:StandardProduct collection)
-        consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
-                              (mdb/get-providers context))
-        consortiums (when consortiums-str
-                      (remove empty? (str/split (str/upper-case consortiums-str) #" ")))]
-    (when (and (= true standard-product)
-               (or (some #(= collection-data-type %) ["NEAR_REAL_TIME" "LOW_LATENCY" "EXPEDITED"])
-                   (not (some #(= "EOSDIS" %) consortiums))))
-      (errors/throw-service-error :invalid-data
-       (format (str "Standard product validation failed: "
-                    "with CollectionDataType being [%s], and "
-                    "consortiums being [%s]. "
-                    "CollectionDataType can not be NEAR_REAL_TIME,LOW_LATENCY or EXPEDITED,"
-                    "and consortiums needs to contain EOSDIS.")
-               collection-data-type
-               consortiums-str)))))
 
 (defn-timed validate-business-rules
   "Validates the concept against CMR ingest rules."
