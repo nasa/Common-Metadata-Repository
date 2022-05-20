@@ -632,6 +632,7 @@
                           :OnlineResource {:Linkage "http://www.foo.com"
                                            :Name "Data Set Citation"
                                            :Description "Data Set Citation"}}]
+   :StandardProduct false
    :MetadataSpecification (umm-coll-models/map->MetadataSpecificationType
                            {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
                                        vers/current-collection-version),

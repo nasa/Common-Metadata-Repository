@@ -78,6 +78,15 @@
       (parse-instruments-impl platform-el))
     (parse-instruments-impl platform-el)))
 
+(defn parse-standard-product
+  "Returns UMM-C StandardProduct from DIF10 XML document.
+  if multiple standard product values are present, pick the last one."
+  [doc]
+  (last (for [metadata (select doc "/DIF/Extended_Metadata/Metadata")
+              :let [name (value-of metadata "Name")]
+              :when (= name "StandardProduct")]
+          (value-of metadata "Value"))))
+
 (defn parse-data-dates
   "Returns seq of UMM-C DataDates parsed from DIF 10 XML document."
   [doc]
@@ -317,6 +326,7 @@
    :TilingIdentificationSystems (spatial/parse-tiling doc)
    :ProcessingLevel {:Id (su/with-default (value-of doc "/DIF/Product_Level_Id") sanitize?)}
    :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc sanitize?)
+   :StandardProduct (parse-standard-product doc)
    :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                             (into {} (map (fn [x]
                                             (if (keyword? x)

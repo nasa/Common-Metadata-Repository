@@ -278,7 +278,7 @@
                   [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
                   [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])
             (let [standard-product (:StandardProduct c)]
-              (when (not (nil? standard-product))
+              (when (some? standard-product)
                 [:gmd:identifier
                   [:gmd:MD_Identifier
                     [:gmd:code [:gco:CharacterString standard-product]]

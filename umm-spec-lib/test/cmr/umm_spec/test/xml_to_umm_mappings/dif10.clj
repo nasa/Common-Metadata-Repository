@@ -6,6 +6,77 @@
 
 (def options {:sanitize? true})
 
+(deftest dif10-standard-product-test
+  ;; Note: At this unit test level, all the values returned are strings.
+  ;; Eventually, parse-umm-c in cmr.umm-spec.json-schema converts them to proper boolean values.
+  ;; This test only verifies the last StandardProduct is chosen if more than one are present.
+  (testing "multiple standard product in one Extended_Metadata"
+    (is (= "true"
+           (parse/parse-standard-product "<DIF>
+                                           <Extended_Metadata>
+                                             <Metadata>
+                                               <Group>gov.nasa.gsfc.gcmd.standardproduct</Group>
+                                               <Name>StandardProduct</Name>
+                                               <Value>false</Value>
+                                             </Metadata>
+                                             <Metadata>
+                                               <Group>gov.nasa.gsfc.gcmd.standardproduct</Group>
+                                               <Name>StandardProduct</Name>
+                                               <Value>true</Value>
+                                             </Metadata>
+                                           </Extended_Metadata>
+                                         </DIF>"))))
+
+  (testing "multiple standard product in multiple Extended_Metadata"
+    (is (= "false"
+           (parse/parse-standard-product "<DIF>
+                                           <Extended_Metadata>
+                                             <Metadata>
+                                               <Group>gov.nasa.gsfc.gcmd.standardproduct</Group>
+                                               <Name>StandardProduct</Name>
+                                               <Value>true</Value>
+                                             </Metadata>
+                                           </Extended_Metadata>
+                                           <Extended_Metadata>
+                                             <Metadata>
+                                               <Group>gov.nasa.gsfc.gcmd.standardproduct</Group>
+                                               <Name>StandardProduct</Name>
+                                               <Value>false</Value>
+                                             </Metadata>
+                                           </Extended_Metadata>
+                                         </DIF>"))))
+
+  (testing "multiple standard product in a mix of one and multiple Extended_Metadata"
+    (is (= nil
+           (parse/parse-standard-product "<DIF>
+                                           <Extended_Metadata>
+                                             <Metadata>
+                                               <Group>gov.nasa.gsfc.gcmd.standardproduct</Group>
+                                               <Name>StandardProduct</Name>
+                                               <Value>true</Value>
+                                             </Metadata>
+                                             <Metadata>
+                                               <Group>gov.nasa.gsfc.gcmd.standardproduct</Group>
+                                               <Name>StandardProduct</Name>
+                                               <Value>true</Value>
+                                             </Metadata>
+                                           </Extended_Metadata>
+                                           <Extended_Metadata>
+                                             <Metadata>
+                                               <Group>gov.nasa.gsfc.gcmd.standardproduct</Group>
+                                               <Name>StandardProduct</Name>
+                                               <Value>true</Value>
+                                             </Metadata>
+                                           </Extended_Metadata>
+                                           <Extended_Metadata>
+                                             <Metadata>
+                                               <Group>gov.nasa.gsfc.gcmd.standardproduct</Group>
+                                               <Name>StandardProduct</Name>
+                                               <Value></Value>
+                                             </Metadata>
+                                           </Extended_Metadata>
+                                         </DIF>")))))
+
 (deftest dif10-metadata-dates-test
 
   (testing "date elements with non-date values are skipped"

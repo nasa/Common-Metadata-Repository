@@ -317,4 +317,5 @@
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       (update :DOI iso-shared/expected-doi)
-      (update :ArchiveAndDistributionInformation iso-shared/expected-archive-dist-info)))
+      (update :ArchiveAndDistributionInformation iso-shared/expected-archive-dist-info)
+      (dissoc :StandardProduct)))
