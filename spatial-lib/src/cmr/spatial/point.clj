@@ -169,14 +169,7 @@
            :lat-rad lat-rad
            :options options
            :geodetic-equality geodetic-equality
-           not-found))
-  
-  java.lang.Iterable
-  (iterator [this]
-            (reify java.util.Iterator
-              (hasNext [this] false)
-              (next [this] nil)
-              (remove [this] nil))))
+           not-found)))
 
 (defn print-point
   "Prints the point in a way that it can be copy and pasted for testing"
