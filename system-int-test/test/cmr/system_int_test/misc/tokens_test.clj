@@ -26,6 +26,6 @@
   (testing "matching tokens attempt to be authenticated"
     (let [response (client/get (str (url/search-root) "collections")
                                {:headers {"Authorization" "Bearer mock-bearer-token"}
-                                :query-params {"token" "Bearer mock-beaer-token"}
+                                :query-params {"token" "Bearer mock-bearer-token"}
                                 :throw-exceptions? false})]
       (is (= 401 (:status response))))))
