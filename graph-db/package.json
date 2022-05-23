@@ -38,7 +38,7 @@
     "axios": "^0.24.0",
     "gremlin": "^3.4.10",
     "lodash": "^4.17.21",
-    "serverless": "^3.17.0",
+    "serverless": "^3.18.0",
     "serverless-webpack": "^5.6.1",
     "webpack": "^5.39.0"
   },
@@ -54,10 +54,5 @@
     "serverless-offline": "^8.7.0",
     "snyk": "^1.782.0",
     "webpack-node-externals": "^3.0.0"
-  },
-  "resolutions": {
-    "ansi-regex": "^5.0.1",
-    "async": "^3.2.2",
-    "simple-git": "^3.5.0"
   }
 }
