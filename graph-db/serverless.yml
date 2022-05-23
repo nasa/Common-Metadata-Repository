@@ -1,13 +1,10 @@
 service: graphdb-indexer
-
+frameworkVersion: '3'
 provider:
   name: aws
-  runtime: nodejs14.x
   region: us-east-1
-  role: IamRoleGraphLambdaExecution
   runtime: nodejs16.x
   stage: ${opt:stage, 'dev'}
-  region: us-east-1
 
   iam:
     role: IamRoleGraphLambdaExecution
@@ -15,6 +12,7 @@ provider:
   deploymentBucket:
    name: graphdb-driver-deployment-bucket-${self:provider.stage}
    skipPolicySetup: true
+
   vpc:
     securityGroupIds:
       - ${cf:${self:provider.stage}.servicesSecurityGroupId}
@@ -31,7 +29,6 @@ provider:
 configValidationMode: error
 plugins:
   - serverless-offline
-  - serverless-pseudo-parameters
   - serverless-webpack
 
 functions:
@@ -103,7 +100,6 @@ resources:
       Type: AWS::IAM::Role
       Properties:
         RoleName: cmrGraphRole-${self:provider.stage}
-        PermissionsBoundary: arn:aws:iam::#{AWS::AccountId}:policy/NGAPShRoleBoundary
         ManagedPolicyArns:
           - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
         PermissionsBoundary:
@@ -151,7 +147,7 @@ resources:
                 - 'secretsmanager:GetSecretValue'
               Effect: 'Allow'
               Resource:
-                - 'arn:aws:ssm:*:*:parameter/${opt:stage}/graph-db/*'
+                - 'arn:aws:ssm:*:*:parameter/${self:provider.stage}/graph-db/*'
                 - 'arn:aws:ssm:*:*:parameter/${self:provider.stage}/graph-db/*'
         PolicyName: cmrParamStorePolicy-${self:provider.stage}
         Roles:
@@ -159,8 +155,8 @@ resources:
 custom:
   variables:
     # Default values for environment variables
+    CMR_CONCEPT_SNS_TOPIC: ${env:CMR_CONCEPT_SNS_TOPIC, ''}
     CMR_ROOT: ${env:CMR_ROOT, 'http://${cf:${self:provider.stage}.servicesDnsName}'}
     ENVIRONMENT: ${self:provider.stage}
     GREMLIN_URL: ${env:GREMLIN_URL, 'wss://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'}
     PAGE_SIZE: ${env:PAGE_SIZE, '1000'}
-    GREMLIN_URL: ${env:GREMLIN_URL, 'wss://${cf:neptune-${self:provider.stage}.DBClusterEndpoint}:8182/gremlin'}
