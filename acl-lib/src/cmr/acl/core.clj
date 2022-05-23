@@ -28,11 +28,18 @@
 (defn get-token
   "Returns the token the user passed in the headers or parameters"
   [params headers]
-  (let [non-empty-string #(when-not (str/blank? %) %)]
-    (or (non-empty-string (get headers tc/token-header))
-        (non-empty-string (:token params))
-        (when (allow-echo-token) 
-          (non-empty-string (get headers tc/echo-token-header))))))
+  (let [non-empty-string #(when-not (str/blank? %) %)
+        header-token (non-empty-string (get headers tc/token-header))
+        param-token (non-empty-string (:token params))]
+    (if (and header-token param-token (not= header-token param-token))
+      (errors/throw-service-error
+       :bad-request
+       "Multiple authorization tokens found. Tokens may only be set as Authorization header or token query parameter.")
+      (or
+       header-token
+       param-token
+       (when (allow-echo-token)
+         (non-empty-string (get headers tc/echo-token-header)))))))
 
 (defn- get-client-id
   "Gets the client id passed by the client or tries to determine it from other headers"
