@@ -246,9 +246,9 @@
   (let [query {:native-id native-id
                :exclude-metadata true
                :latest true}]
-    (-> context
-        (mdb/find-concepts query :subscription)
-        seq)))
+    (->> (mdb/find-concepts context query :subscription)
+         (remove :deleted)
+         seq)))
 
 (defn- get-unique-native-id
   "Get a native-id that is unique by testing against the database."

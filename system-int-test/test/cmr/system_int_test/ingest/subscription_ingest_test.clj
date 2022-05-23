@@ -850,20 +850,24 @@
 
         (index/wait-until-indexed)
 
-        (is (not (nil? (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)})))))))))
+        (is (some? (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))
 
     (testing "with native-id provided"
-      (let [concept (subscription-util/make-subscription-concept
+      (let [input-native-id "another-native-id"
+            concept (subscription-util/make-subscription-concept
                      {:SubscriberId "post-user"
                       :Name "a different subscription with native-id"
-                      :native-id "another-native-id"
+                      :native-id input-native-id
                       :Query "instrument=POSEIDON-2"
                       :CollectionConceptId (:concept-id coll)})
-            {:keys [native-id concept-id status]} (ingest/ingest-concept concept {:token token
-                                                                                  :method :post})]
+            {:keys [status native-id concept-id revision-id]} (ingest/ingest-concept
+                                                               concept {:token token
+                                                                        :method :post})
+            expected-concept-id concept-id]
         (is (= 201 status))
         (is (not (nil? concept-id)))
-        (is (= "another-native-id" native-id))
+        (is (= input-native-id native-id))
+        (is (= 1 revision-id))
 
         (index/wait-until-indexed)
 
@@ -875,7 +879,16 @@
                                                                         :method :post})]
             (is (= 409 status))
             (is (= ["Subscription with native-id [another-native-id] already exists."]
-                   errors))))))
+                   errors))))
+        (testing "once the existing subscription is deleted, POST with the same native-id is allowed"
+          (ingest/delete-concept concept)
+          (let [{:keys [status native-id concept-id revision-id]} (ingest/ingest-concept
+                                                                   concept {:token token
+                                                                            :method :post})]
+            (is (= 200 status))
+            (is (= input-native-id native-id))
+            (is (= expected-concept-id concept-id))
+            (is (= 3 revision-id))))))
 
     (testing "without native-id provided with unicode in the name"
       (let [concept (dissoc (subscription-util/make-subscription-concept
@@ -895,7 +908,7 @@
 
         (index/wait-until-indexed)
 
-        (is (not (nil? (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)})))))))))))
+        (is (some? (:native-id (first (:items (subscription-util/search-json {:name (:Name concept)}))))))))))
 
 (deftest create-update-granule-subscription-by-put
   (let [token (echo-util/login (system/context) "put-user")
