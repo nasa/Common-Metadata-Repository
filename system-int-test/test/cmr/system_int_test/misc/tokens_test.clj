@@ -1,6 +1,5 @@
 (ns cmr.system-int-test.misc.tokens-test
   (:require
-   [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.test :refer :all]
    [cmr.system-int-test.data2.collection :as dc]
@@ -22,4 +21,11 @@
                                 :query-params {"token" "EDL-iamnotarealtoken"}
                                 :throw-exceptions? false})]
       (is (= 400 (:status response)))
-      (is (some? (re-find #"Multiple authorization tokens found" (:body response)))))))
+      (is (some? (re-find #"Multiple authorization tokens found" (:body response))))))
+
+  (testing "matching tokens attempt to be authenticated"
+    (let [response (client/get (str (url/search-root) "collections")
+                               {:headers {"Authorization" "Bearer mock-bearer-token"}
+                                :query-params {"token" "Bearer mock-beaer-token"}
+                                :throw-exceptions? false})]
+      (is (= 401 (:status response))))))
