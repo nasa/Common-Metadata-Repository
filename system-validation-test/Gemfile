@@ -6,6 +6,6 @@ group :test do
   gem 'cucumber', '~> 7.0.0'
   gem 'httparty', '~> 0.20.0'
   gem 'jsonpath', '~> 1.1'
-  gem 'nokogiri', '~> 1.12.5'
+  gem 'nokogiri', '~> 1.13.6'
   gem 'rspec', '~> 3.10.0'
 end
