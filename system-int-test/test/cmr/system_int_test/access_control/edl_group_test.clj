@@ -5,16 +5,16 @@
    [clojure.test :refer :all]
    [cmr.access-control.config :as access-control-config]
    [cmr.access-control.test.util :as u]
+   [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as data-core]
+   [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
-                                           "provguid2" "PROV2"
-                                           "provguid3" "PROV3"}
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}
                                           {:grant-all-search? false
                                            :grant-all-ingest? false
                                            :grant-all-access-control? true}))
@@ -54,36 +54,34 @@
                {:user_id user})))))
 
 (deftest collection-simple-catalog-item-identity-permission-check-test
-  (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
-        save-prov1-collection #(u/save-collection {:provider-id "PROV1"
+  (let [save-prov1-collection #(u/save-collection {:provider-id "PROV1"
                                                    :entry-title (str % " entry title")
                                                    :native-id %
                                                    :short-name %})
         coll1 (save-prov1-collection "coll1")
         get-collection-permissions #(get-permissions %1 coll1)
-        fixture-acls (:items (u/search-for-acls (transmit-config/echo-system-token) {:target "INGEST_MANAGEMENT_ACL"}))
-        _ (doseq [fixture-acl fixture-acls]
-            (e/ungrant (u/conn-context) (:concept_id fixture-acl)))]
+        fixture-acls (:items (u/search-for-acls (transmit-config/echo-system-token) {:target "INGEST_MANAGEMENT_ACL"}))]
+    (doseq [fixture-acl fixture-acls]
+      (e/ungrant (u/conn-context) (:concept_id fixture-acl)))
 
-      (testing "acls granting collection catalog-item-identity access to edl groups"
-        (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
-        (create-acl {:group_permissions [{:permissions [:read :order]
-                                          :group_id "cmr_test_group"}]
-                     :catalog_item_identity {:name "coll1 read and order"
-                                             :collection_applicable true
-                                             :provider_id "PROV1"}})
+    (testing "acls granting collection catalog-item-identity access to edl groups"
+      (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
+      (create-acl {:group_permissions [{:permissions [:read :order]
+                                        :group_id "cmr_test_group"}]
+                   :catalog_item_identity {:name "coll1 read and order"
+                                           :collection_applicable true
+                                           :provider_id "PROV1"}})
 
-        (are [user permissions]
-          (= {coll1 permissions}
-             (get-collection-permissions user))
-          :guest []
-          :registered []
-          "user1" ["read" "order"]
-          "user2" []))))
+      (are [user permissions]
+        (= {coll1 permissions}
+           (get-collection-permissions user))
+        :guest []
+        :registered []
+        "edl-group-user1" ["read" "order"]
+        "user2" []))))
 
 (deftest granule-permissions-test
-  (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
-        save-prov1-collection #(u/save-collection {:provider-id "PROV1"
+  (let [save-prov1-collection #(u/save-collection {:provider-id "PROV1"
                                                    :entry-title (str % " entry title")
                                                    :native-id %
                                                    :short-name %})
@@ -102,11 +100,10 @@
            (get-permissions user gran1))
         :guest []
         :registered []
-        "user1" ["read"]))))
+        "edl-group-user1" ["read"]))))
 
 (deftest collection-provider-level-permission-check-test
-  (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
-        coll1 (u/save-collection {:provider-id "PROV1"
+  (let [coll1 (u/save-collection {:provider-id "PROV1"
                                   :entry-title "coll1"
                                   :native-id "coll1"
                                   :short-name "coll1"})
@@ -127,12 +124,11 @@
            (get-coll1-permissions user))
         :guest []
         :registered []
-        "user1" ["update" "delete"]
+        "edl-group-user1" ["update" "delete"]
         "user2" []))))
 
 (deftest system-provider-object-permission-check
-  (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
-        get-system-permissions (fn [user system-object]
+  (let [get-system-permissions (fn [user system-object]
                                  (json/parse-string
                                   (ac/get-permissions
                                    (u/conn-context)
@@ -162,7 +158,7 @@
            (update (get-provider-permissions user "PROV1" "PROVIDER_OBJECT_ACL") "PROVIDER_OBJECT_ACL" set))
         :guest []
         :registered []
-        "user1" ["create" "read" "update" "delete"]
+        "edl-group-user1" ["create" "read" "update" "delete"]
         "user2" []))
 
     (testing "system permissions granted to edl groups"
@@ -184,5 +180,111 @@
            (get-system-permissions user "GROUP"))
         :guest []
         :registered []
-        "user1" ["read"]
+        "edl-group-user1" ["read"]
         "user2" []))))
+
+(deftest search-acls-by-edl-group-test
+  (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
+  (e/login (system/context) "edl-group-user1")
+  (e/login (system/context) "user1")
+  (let [test-context (assoc (u/conn-context) :token (transmit-config/echo-system-token))
+        fixture-acl-names ["Provider - PROV1 - GROUP" "System - GROUP"]]
+    (testing "initial search find fixture ACLs"
+      ;; search by permitted group
+      (let [{:keys [hits items]} (ac/search-for-acls
+                                  test-context {:permitted-group ["cmr_test_group"]})]
+        (is (= 0 hits))
+        (is (= [] (map :name items))))
+
+      ; search by group permission
+      (let [{:keys [hits items]} (ac/search-for-acls
+                                  test-context
+                                  {:group-permission {:0 {:permitted-group ["cmr_test_group"]}}})]
+        (is (= 0 hits))
+        (is (= [] (map :name items))))
+
+      ;; search by permitted user
+      (let [{:keys [hits items]} (ac/search-for-acls
+                                  test-context {:permitted-user ["edl-group-user1"]})]
+        (is (= 2 hits))
+        (is (= (set fixture-acl-names) (set (map :name items))))))
+
+    (testing "search ACLs with EDL group"
+      (create-acl {:group_permissions [{:permissions [:read :order]
+                                        :group_id "cmr_test_group"}]
+                   :catalog_item_identity {:name "group1 read and order"
+                                           :collection_applicable true
+                                           :provider_id "PROV1"}})
+      (create-acl {:group_permissions [{:permissions [:update]
+                                        :group_id "cmr_test_group2"}]
+                   :provider_identity {:provider_id "PROV1"
+                                       :target "INGEST_MANAGEMENT_ACL"}})
+      (create-acl {:group_permissions [{:permissions [:read :order]
+                                        :group_id "cmr_test_group3"}]
+                   :catalog_item_identity {:name "group3 read and order"
+                                           :collection_applicable true
+                                           :provider_id "PROV1"}})
+      (u/wait-until-indexed)
+      ;; search by permitted group
+      (are3 [permitted-groups expected-hits expected-names]
+        (let [{:keys [hits items]} (ac/search-for-acls
+                                    test-context {:permitted-group permitted-groups})]
+          (is (= expected-hits hits))
+          (is (= expected-names (map :name items))))
+
+        "search by EDL group, found"
+        ["cmr_test_group"]
+        1
+        ["group1 read and order"]
+
+        "search by EDL group, not found"
+        ["non_existent_group"]
+        0
+        []
+
+        "search by multiple EDL groups"
+        ["cmr_test_group" "non_existent_group" "cmr_test_group2"]
+        2
+        ["group1 read and order" "Provider - PROV1 - INGEST_MANAGEMENT_ACL"])
+
+      ; search by group permission
+      (are3 [permitted-groups expected-hits expected-names]
+        (let [{:keys [hits items]} (ac/search-for-acls
+                                    test-context
+                                    {:group-permission {:0 {:permitted-group permitted-groups}}})]
+          (is (= expected-hits hits))
+          (is (= (set expected-names) (set (map :name items)))))
+
+        "search by EDL group, found"
+        ["cmr_test_group"]
+        1
+        ["group1 read and order"]
+
+        "search by EDL group, not found"
+        ["non_existent_group"]
+        0
+        []
+
+        "search by multiple EDL groups"
+        ["cmr_test_group" "non_existent_group" "cmr_test_group2"]
+        2
+        ["group1 read and order" "Provider - PROV1 - INGEST_MANAGEMENT_ACL"])
+
+      ;; search by permitted user find both EDL group ACLs
+      (are3 [permitted-user expected-hits expected-names]
+        (let [{:keys [hits items]} (ac/search-for-acls
+                                    test-context {:permitted-user permitted-user})]
+          (is (= expected-hits hits))
+          (is (= (set expected-names) (set (map :name items)))))
+
+        "search by EDL group via user, found"
+        "edl-group-user1"
+        4
+        (concat fixture-acl-names
+                ["group1 read and order"
+                 "Provider - PROV1 - INGEST_MANAGEMENT_ACL"])
+
+        "search by EDL group via user, not found"
+        "user1"
+        2
+        fixture-acl-names))))

@@ -329,17 +329,6 @@
            ["GUEST"] {"options[permitted_group][ignore_case]" true} guest-acls
            ["GUEST"] {"options[permitted_group][ignore_case]" false} []))
 
-    (testing "Search ACLs by permitted group with invalid values"
-      (are [permitted-groups invalid-msg]
-        (= {:status 400
-            :body {:errors [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
-                                    invalid-msg)]}
-            :content-type :json}
-           (ac/search-for-acls (u/conn-context) {:permitted-group permitted-groups} {:raw? true}))
-
-        ["gust"] "gust"
-        ["GUST" "registered" "AG10000-PROV" "G10000-PROV"] "GUST, G10000-PROV"))
-
     (testing "Search ACLs by group permission"
       (are3 [group-permissions acls]
            (let [query-map (generate-query-map-for-group-permissions group-permissions)
@@ -415,13 +404,6 @@
       (let [query {:group-permission {:0 {:allowed-group "guest" :permission "read"}}}]
         (is (= {:status 400
                 :body {:errors ["Parameter group_permission has invalid subfield [allowed_group]. Only 'permitted_group' and 'permission' are allowed."]}
-                :content-type :json}
-               (ac/search-for-acls (u/conn-context) query {:raw? true})))))
-
-    (testing "Search ACLS by group permission with invalid permitted_group"
-      (let [query {:group-permission {:0 {:permitted_group "foo" :permission "read"}}}]
-        (is (= {:status 400
-                :body {:errors ["Sub-parameter permitted_group of parameter group_permissions has invalid values [foo]. Only 'guest', 'registered' or a group concept id may be specified."]}
                 :content-type :json}
                (ac/search-for-acls (u/conn-context) query {:raw? true})))))
 
