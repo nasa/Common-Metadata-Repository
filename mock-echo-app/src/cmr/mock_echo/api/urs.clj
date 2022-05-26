@@ -64,7 +64,8 @@
   "Returns mock URS groups for a user"
   [context user-id]
   (if-not (= "null" user-id)
-    (if (= "user1" user-id)
+    (case user-id
+      "edl-group-user1"
       {:status 200 :body [{:description "cmr test group",
                            :name "cmr_test_group",
                            :shared_user_group false,
@@ -74,6 +75,15 @@
                            :created_by "mock_test_application"}
                           {:description "cmr test group",
                            :name "cmr_test_group2",
+                           :shared_user_group false,
+                           :app_uid "mock_test_application",
+                           :client_id "cmr",
+                           :tag nil,
+                           :created_by "mock_test_application"}]}
+
+      "edl-group-user3"
+      {:status 200 :body [{:description "cmr test group",
+                           :name "cmr_test_group3",
                            :shared_user_group false,
                            :app_uid "mock_test_application",
                            :client_id "cmr",
