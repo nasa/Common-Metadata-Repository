@@ -232,6 +232,14 @@
      (format "Subscription creation failed - The user-id [%s] must correspond to a valid EDL account."
              user-id))))
 
+(defn- validate-native-id-not-blank
+  "Valiate the given native-id is not blank. Raise error if it is."
+  [native-id]
+  (when (string/blank? native-id)
+    (errors/throw-service-error
+     :bad-request
+     "Subscription native-id provided is blank.")))
+
 (defn- generate-native-id
   "Generate a native-id for a subscription based on the name."
   [parsed]
@@ -342,6 +350,7 @@
   ([native-id request]
    (create-subscription-with-native-id nil native-id request))
   ([provider-id native-id request]
+   (validate-native-id-not-blank native-id)
    (let [{:keys [body content-type headers request-context]} request]
      (common-ingest-checks request-context)
      (let [tmp-subscription (body->subscription native-id body content-type headers)
@@ -363,6 +372,7 @@
   ([native-id request]
    (create-or-update-subscription-with-native-id nil native-id request))
   ([provider-id native-id request]
+   (validate-native-id-not-blank native-id)
    (let [{:keys [body content-type headers request-context]} request
          _ (common-ingest-checks request-context)
          tmp-subscription (body->subscription native-id body content-type headers)

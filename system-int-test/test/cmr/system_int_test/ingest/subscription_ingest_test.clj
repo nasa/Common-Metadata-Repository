@@ -833,6 +833,18 @@
               (data-umm-c/collection)
               {:token "mock-echo-system-token"})]
 
+    (testing "with blank native-id returns an error"
+      (let [concept (assoc (subscription-util/make-subscription-concept
+                            {:SubscriberId "post-user"
+                             :Name "blank native-id"
+                             :CollectionConceptId (:concept-id coll)})
+                           :native-id " ")
+            {:keys [status errors]} (ingest/ingest-concept concept
+                                                           {:token token
+                                                            :method :post})]
+        (is (= 400 status))
+        (is (= ["Subscription native-id provided is blank."] errors))))
+
     (testing "without native-id provided"
       (let [concept (dissoc (subscription-util/make-subscription-concept
                              {:SubscriberId "post-user"

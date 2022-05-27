@@ -833,6 +833,18 @@
               "PROV1"
               (data-umm-c/collection)
               {:token "mock-echo-system-token"})]
+    
+    (testing "with blank native-id returns an error"
+      (let [concept (assoc (subscription-util/make-subscription-concept
+                            {:SubscriberId "post-user"
+                             :Name "blank native-id"
+                             :CollectionConceptId (:concept-id coll)})
+                           :native-id " ")
+            {:keys [status errors]} (ingest/ingest-subscription-concept concept
+                                                                        {:token token
+                                                                         :method :post})]
+        (is (= 400 status))
+        (is (= ["Subscription native-id provided is blank."] errors))))
 
     (testing "without native-id provided"
       (let [concept (dissoc (subscription-util/make-subscription-concept
@@ -918,14 +930,27 @@
               (data-umm-c/collection)
               {:token "mock-echo-system-token"})]
     (mock-urs/create-users (system/context) [{:username "post-user" :password "Password"}])
+    (testing "without native-id returns an error"
+      (let [concept (dissoc (subscription-util/make-subscription-concept
+                             {:SubscriberId "post-user"
+                              :Name "no native-id"
+                              :CollectionConceptId (:concept-id coll)})
+                            :native-id)
+            {:keys [status errors]} (ingest/ingest-subscription-concept concept
+                                                                        {:token token
+                                                                         :method :put})]
+        (is (= 400 status))
+        (is (= ["Subscription native-id provided is blank."] errors))))
+
     (testing "subscription creation using PUT"
       (let [concept (assoc (subscription-util/make-subscription-concept
                             {:SubscriberId "post-user"
                              :Name "a different subscription with native-id"
                              :CollectionConceptId (:concept-id coll)})
                            :native-id "another-native-id")
-            {:keys [native-id concept-id status]} (ingest/ingest-subscription-concept concept {:token token
-                                                                                  :method :put})]
+            {:keys [native-id concept-id status]} (ingest/ingest-subscription-concept
+                                                   concept {:token token
+                                                            :method :put})]
         (is (= 201 status))
         (is (not (nil? concept-id)))
         (is (= "another-native-id" native-id))
@@ -960,6 +985,13 @@
                       :Name sub-name})
                     (assoc :native-id input-native-id))]
     (mock-urs/create-users (system/context) [{:username "post-user" :password "Password"}])
+    (testing "without native-id returns an error"
+      (let [concept (dissoc concept :native-id)
+            {:keys [status errors]} (ingest/ingest-subscription-concept concept
+                                                                        {:token token
+                                                                         :method :put})]
+        (is (= 400 status))
+        (is (= ["Subscription native-id provided is blank."] errors))))
 
     (testing "collection subscription creation using PUT"
       (let [{:keys [status concept-id revision-id native-id]} (ingest/ingest-subscription-concept
