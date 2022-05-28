@@ -219,12 +219,8 @@
                               context permission-type object-identity-type provider-id))
         has-permission? (if-let [cache (cache/context->cache context cache-key)]
                           ;; Read using cache. Cache key is combo of token and permission type
-                          (if (= permission-fn has-subscription-management-permission?)
-                            ;; add provider-id to the lookup key for subscription acl cache.
-                            (cache/get-value
-                              cache [(:token context) permission-type provider-id] has-permission-fn)
-                            (cache/get-value
-                              cache [(:token context) permission-type] has-permission-fn))
+                          (cache/get-value
+                            cache [(:token context) permission-type provider-id] has-permission-fn)
                           ;; No token cache so directly check permission.
                           (has-permission-fn))]
     (when-not has-permission?

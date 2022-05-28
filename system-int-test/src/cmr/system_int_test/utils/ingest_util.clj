@@ -876,6 +876,32 @@
           :grant-all-ingest? grant-all-ingest?
           :grant-all-access-control? grant-all-access-control?})))))
 
+(defn setup-providers-with-customized-options
+  "Creates the given providers in CMR. Providers can be passed in
+  two ways:
+  1) a map of provider-guids to provider-ids
+     {'provider-guid1' 'PROV1' 'provider-guid2' 'PROV2'}, or
+  2) a list of provider attributes maps:
+     [{:provider-guid 'provider-guid1' :provider-id 'PROV1'
+       :short-name 'provider short name'}...]
+  options are customized to individual providers:
+  {'PROV1' {:grant-all-search? false :grant-all-ingest? false}
+   'PROV2' {:grant-all-search? false :grant-all-ingest? true}}"
+  ([providers options]
+   (let [providers (if (sequential? providers)
+                       providers
+                       (for [[provider-guid provider-id consortiums] providers]
+                         {:provider-guid provider-guid
+                          :provider-id provider-id
+                          :consortiums consortiums}))]
+      (doseq [provider-map providers]
+        (let [provider-options (merge reset-fixture-default-options (get options (:provider-id provider-map)))]
+        (create-provider
+         provider-map
+         {:grant-all-search? (:grant-all-search? provider-options)
+          :grant-all-ingest? (:grant-all-ingest? provider-options)
+          :grant-all-access-control? (:grant-all-access-control? provider-options)}))))))
+
 (defn reset-fixture
   "Resets all the CMR systems then uses the `set-ingest-umm-version-to-current`
   function to set the accepted umm versions for ingest to the the latest UMM version defined in
@@ -893,6 +919,25 @@
      (set-ingest-umm-version-to-current)
      (when-not (empty? providers)
       (setup-providers providers options))
+     (f))))
+
+(defn reset-fixture-with-customized-options
+  "Resets all the CMR systems then uses the `set-ingest-umm-version-to-current`
+  function to set the accepted umm versions for ingest to the the latest UMM version defined in
+  umm-spec-lib, so that all the ingest tests are testing against the latest umm version.
+  and uses the `setup-providers` function to create a testing fixture.
+
+  For the format of the providers data structure, see `setup-providers`."
+  ([]
+   (reset-fixture {}))
+  ([providers]
+   (reset-fixture providers nil))
+  ([providers options]
+   (fn [f]
+     (dev-sys-util/reset)
+     (set-ingest-umm-version-to-current)
+     (when-not (empty? providers)
+      (setup-providers-with-customized-options providers options))
      (f))))
 
 (defn grant-all-search

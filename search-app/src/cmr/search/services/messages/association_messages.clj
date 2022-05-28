@@ -38,6 +38,10 @@
   (format "Collection with concept id [%s] revision id [%s] does not exist or is not visible."
           concept-id revision-id))
 
+(defn no-permission-collection
+  [concept-id]
+  (format "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [%s] to make the association." concept-id))
+
 (defn delete-association-not-found
   [assoc-type native-id]
   (let [[identifier concept-id revision-id] (string/split native-id #"/")]

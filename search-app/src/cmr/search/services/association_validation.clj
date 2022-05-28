@@ -5,6 +5,8 @@
    [cheshire.core :as json]
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.acl.core :as acl]
+   [cmr.common.concepts :as concepts]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common.services.errors :as errors]
@@ -268,12 +270,14 @@
   "Validates the association concept-id and revision-id (if given) satisfy association rules,
   i.e. collection specified exist and are viewable by the token,
   collection specified are not tombstones."
-  [context assoc-type inaccessible-concept-ids tombstone-coll-revisions
-    inaccessible-coll-revisions association]
-  (if (:revision-id association)
-    (validate-collection-revision
-      assoc-type tombstone-coll-revisions inaccessible-coll-revisions association)
-    (validate-collection-concept-id inaccessible-concept-ids association)))
+  [context assoc-type no-permission-concept-ids inaccessible-concept-ids tombstone-coll-revisions
+   inaccessible-coll-revisions association]
+  (if (contains? no-permission-concept-ids (:concept-id association))
+    (append-error association (assoc-msg/no-permission-collection (:concept-id association)))
+    (if (:revision-id association)
+      (validate-collection-revision
+        assoc-type tombstone-coll-revisions inaccessible-coll-revisions association)
+      (validate-collection-concept-id inaccessible-concept-ids association))))
 
 (defn- validate-association-data
   "Validates the association data are within the maximum length requirement after written in JSON."
@@ -305,6 +309,31 @@
         {concept-id-only-assocs false revision-assocs true} (group-by has-revision-id? associations)]
     [concept-id-only-assocs revision-assocs]))
 
+(defn- found-id?
+  "Returns true if id is found in ids."
+  [ids id]
+  (some #(= id %) ids))
+
+(defn- no-ingest-management-permission?
+  "Return true if the user doesn't have update permission on INGEST_MANAGEMENT_ACL for
+  provider."
+  [context provider-id]
+  (try
+    (acl/verify-ingest-management-permission
+     context :update :provider-object provider-id)
+    false
+    (catch Exception e
+      true)))
+
+(defn- get-no-permission-concept-ids
+  "Return all the collection concept ids that the user doesn't have update permission on
+  INGEST_MANAGEMENT_ACL for their providers."
+  [context concept-ids]
+  (for [concept-id concept-ids
+        :let [provider-id (concepts/concept-id->provider-id concept-id)]
+        :when (no-ingest-management-permission? context provider-id)]
+    concept-id))
+
 (defmulti validate-associations
   "Validates the associations for the given association type (:tag or :variable) based on the
   operation type, which is either :insert or :delete. Id is the identifier value of the tag or
@@ -319,12 +348,31 @@
   (validate-empty-associations assoc-type associations)
   (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
         _ (validate-conflicts-within-request assoc-type concept-id-only-assocs revision-assocs)
+        ;; The user can make an association if the user has update Ingest Management permission
+        ;; for the collection's provider.
+        ;; find all the collections in the associations that the user doesn't have
+        ;; update Ingest Management permission for their providers.
+        no-permission-concept-ids (get-no-permission-concept-ids
+                                   context (map :concept-id associations))
         inaccessible-concept-ids (get-inaccessible-concept-ids
-                                   context (map :concept-id concept-id-only-assocs))
-        {:keys [tombstones inaccessibles]} (get-bad-collection-revisions context associations)]
+                                  context (map :concept-id concept-id-only-assocs))
+        {:keys [tombstones inaccessibles]} (get-bad-collection-revisions context associations)
+        ;;remove any no permission concept-ids from inaccessible-concept-ids, tombstones
+        ;;and inaccessibles because we don't want multiple errors for the same collection concept.
+        inaccessible-concept-ids (remove #(found-id? no-permission-concept-ids %)
+                                         inaccessible-concept-ids)
+        tombstones (remove #(found-id? no-permission-concept-ids (:concept-id %))
+                           tombstones)
+        inaccessibles (remove #(found-id? no-permission-concept-ids (:concept-id %))
+                              inaccessibles)]
     (->> associations
          (map #(validate-collection-identifier
-                 context assoc-type inaccessible-concept-ids tombstones inaccessibles %))
+                context
+                assoc-type
+                (set no-permission-concept-ids)
+                (set inaccessible-concept-ids)
+                (set tombstones)
+                (set inaccessibles) %))
          (map #(validate-association-data assoc-type %))
          (map #(validate-association-conflict context assoc-type assoc-id %)))))
 
@@ -332,9 +380,33 @@
   [context assoc-type assoc-id associations operation-type]
   (validate-empty-associations assoc-type associations)
   (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
+        ;; The user can delete an association if the user has update permission on
+        ;; INGEST_MANAGEMENT_ACL for the provider of the assoc-id, or the collection
+        ;; concept-id in the associations.
+        ;; so we only need to find no-permission-concept-ids if the user does NOT
+        ;; have the update Ingest Management permission on the assoc-id's provider.
+        no-permission-concept-ids (when (no-ingest-management-permission?
+                                         context
+                                         (concepts/concept-id->provider-id assoc-id))
+                                    (get-inaccessible-concept-ids
+                                     context (map :concept-id associations)))
+
         inaccessible-concept-ids (get-inaccessible-concept-ids
                                    context (map :concept-id concept-id-only-assocs))
-        {:keys [tombstones inaccessibles]} (get-bad-collection-revisions context associations)]
+        {:keys [tombstones inaccessibles]} (get-bad-collection-revisions context associations)
+        ;;remove any no permission concept-ids from inaccessible-concept-ids, tombstones
+        ;;and inaccessibles because we don't want multiple errors for the same collection concept.
+        inaccessible-concept-ids (remove #(found-id? no-permission-concept-ids %)
+                                         inaccessible-concept-ids)
+        tombstones (remove #(found-id? no-permission-concept-ids (:concept-id %))
+                           tombstones)
+        inaccessibles (remove #(found-id? no-permission-concept-ids (:concept-id %))
+                              inaccessibles)]
     (->> associations
          (map #(validate-collection-identifier
-                 context assoc-type inaccessible-concept-ids tombstones inaccessibles %)))))
+                context
+                assoc-type
+                (set no-permission-concept-ids)
+                (set inaccessible-concept-ids)
+                (set tombstones)
+                (set inaccessibles) %)))))
