@@ -139,7 +139,7 @@
                                                                      [{:concept-id coll1-concept-id}
                                                                       {:concept-id coll2-concept-id
                                                                        :revision-id coll2-revision-id}])]
-   (is (= {:status 200, :body [{:tool-association {:concept-id (first tla1-concept-ids), :revision-id 2}, :associated-item {:concept-id coll1-concept-id}} {:tool-association {:concept-id (last tla1-concept-ids), :revision-id 2}, :associated-item {:concept-id coll2-concept-id, :revision-id 1}}]}
+   (is (= {:status 400, :body [{:errors [(str "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [" coll1-concept-id "] or provider of service/tool to delete the association.")], :associated-item {:concept-id coll1-concept-id}} {:tool-association {:concept-id (last tla1-concept-ids), :revision-id 2}, :associated-item {:concept-id coll2-concept-id, :revision-id 1}}]}
           dissoc-response1))
 
    (is (= {:status 200, :body [{:tool-association {:concept-id (first tla2-concept-ids), :revision-id 2}, :associated-item {:concept-id coll1-concept-id}} {:tool-association {:concept-id (last tla2-concept-ids), :revision-id 2}, :associated-item {:concept-id coll2-concept-id, :revision-id 1}}]}

@@ -271,9 +271,11 @@
   i.e. collection specified exist and are viewable by the token,
   collection specified are not tombstones."
   [context assoc-type no-permission-concept-ids inaccessible-concept-ids tombstone-coll-revisions
-   inaccessible-coll-revisions association]
+   inaccessible-coll-revisions association association?]
   (if (contains? no-permission-concept-ids (:concept-id association))
-    (append-error association (assoc-msg/no-permission-collection (:concept-id association)))
+    (if association?
+      (append-error association (assoc-msg/no-permission-collection-assoc (:concept-id association)))
+      (append-error association (assoc-msg/no-permission-collection-dissoc (:concept-id association))))
     (if (:revision-id association)
       (validate-collection-revision
         assoc-type tombstone-coll-revisions inaccessible-coll-revisions association)
@@ -348,8 +350,8 @@
   (validate-empty-associations assoc-type associations)
   (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
         _ (validate-conflicts-within-request assoc-type concept-id-only-assocs revision-assocs)
-        ;; The user can make an association if the user has update Ingest Management permission
-        ;; for the collection's provider.
+        ;; A user can make an association if the user has update permission on
+        ;; INGEST_MANAGEMENT_ACL for the provider of the collection.
         ;; find all the collections in the associations that the user doesn't have
         ;; update Ingest Management permission for their providers.
         no-permission-concept-ids (get-no-permission-concept-ids
@@ -372,7 +374,9 @@
                 (set no-permission-concept-ids)
                 (set inaccessible-concept-ids)
                 (set tombstones)
-                (set inaccessibles) %))
+                (set inaccessibles)
+                %
+                true))
          (map #(validate-association-data assoc-type %))
          (map #(validate-association-conflict context assoc-type assoc-id %)))))
 
@@ -380,15 +384,15 @@
   [context assoc-type assoc-id associations operation-type]
   (validate-empty-associations assoc-type associations)
   (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
-        ;; The user can delete an association if the user has update permission on
-        ;; INGEST_MANAGEMENT_ACL for the provider of the assoc-id, or the collection
-        ;; concept-id in the associations.
+        ;; A user can delete an association if the user has update permission on
+        ;; INGEST_MANAGEMENT_ACL for the provider of the associated service/tool, or the collection
+        ;; in the associations.
         ;; so we only need to find no-permission-concept-ids if the user does NOT
         ;; have the update Ingest Management permission on the assoc-id's provider.
         no-permission-concept-ids (when (no-ingest-management-permission?
                                          context
                                          (concepts/concept-id->provider-id assoc-id))
-                                    (get-inaccessible-concept-ids
+                                    (get-no-permission-concept-ids
                                      context (map :concept-id associations)))
 
         inaccessible-concept-ids (get-inaccessible-concept-ids
@@ -409,4 +413,6 @@
                 (set no-permission-concept-ids)
                 (set inaccessible-concept-ids)
                 (set tombstones)
-                (set inaccessibles) %)))))
+                (set inaccessibles)
+                %
+                false)))))
