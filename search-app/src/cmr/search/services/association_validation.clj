@@ -321,7 +321,7 @@
   provider."
   [context provider-id]
   (try
-    (acl/verify-ingest-management-permission
+    (acl/verify-ingest-management-permission-new
      context :update :provider-object provider-id)
     false
     (catch Exception e
