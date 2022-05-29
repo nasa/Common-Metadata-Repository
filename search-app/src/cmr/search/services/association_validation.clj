@@ -318,10 +318,10 @@
 
 (defn- no-ingest-management-permission?
   "Return true if the user doesn't have update permission on INGEST_MANAGEMENT_ACL for
-  provider."
+  a provider."
   [context provider-id]
   (try
-    (acl/verify-ingest-management-permission-new
+    (acl/verify-ingest-management-permission-for-provider
      context :update :provider-object provider-id)
     false
     (catch Exception e

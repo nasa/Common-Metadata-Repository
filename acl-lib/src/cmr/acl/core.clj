@@ -232,20 +232,14 @@
         :unauthorized
         "You do not have permission to perform that action."))))
 
-(defn- verify-management-permission-new
-  "Verifies the current user has been granted the permission in permission-fn in ECHO ACLs"
+(defn- verify-management-permission-for-provider
+  "Verifies the current user has been granted the permission in permission-fn in ECHO ACLs for a provider."
   [context permission-type object-identity-type provider-id cache-key permission-fn]
   (let [has-permission-fn (fn []
                             (permission-fn
                               context permission-type object-identity-type provider-id))
         has-permission? (if-let [cache (cache/context->cache context cache-key)]
-                          ;; Read using cache.
-                          ;; I think Cache key needs to be combo of token,permission type and provider-id.
-                          ;; rather than just the combo of token and permission, as in verify-management-permission,
-                          ;; in which case when you check on permission for PROV2, if permission for PROV1 is in the cache,
-                          ;; it would return it as if the user has permission for PROV2, which is obviously wrong.
-                          ;; However, if I change the original verify-management-permission function
-                          ;; it would cause many test failures, which I don't think is the scope of CMR-8260 to fix.
+                          ;; Read using cache. Cache key is combo of token, permission type and provider id.
                           (cache/get-value
                             cache [(:token context) permission-type provider-id] has-permission-fn)
                           ;; No token cache so directly check permission.
@@ -283,18 +277,14 @@
      token-imp-cache-key
      has-ingest-management-permission?)))
 
-(defn verify-ingest-management-permission-new
+(defn verify-ingest-management-permission-for-provider
   "Verifies the current user has been granted INGEST_MANAGEMENT_ACLS
-  permission in ECHO ACLs."
-  ([context]
-   (verify-ingest-management-permission context :update :system-object nil))
-  ([context permission-type]
-   (verify-ingest-management-permission context permission-type :system-object nil))
-  ([context permission-type object-identity-type provider-id]
-   (verify-management-permission-new
-     context
-     permission-type
-     object-identity-type
-     provider-id
-     token-imp-cache-key
-     has-ingest-management-permission?)))
+  permission in ECHO ACLs for a provider."
+  [context permission-type object-identity-type provider-id]
+  (verify-management-permission-for-provider
+    context
+    permission-type
+    object-identity-type
+    provider-id
+    token-imp-cache-key
+    has-ingest-management-permission?))
