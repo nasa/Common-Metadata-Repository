@@ -390,12 +390,12 @@
         ;; in the associations.
         ;; so we only need to find no-permission-concept-ids if the user does NOT
         ;; have the update Ingest Management permission on the assoc-id's provider.
-        no-permission-concept-ids (when (or (= :tool assoc-type) (= :service assoc-type))
-                                    (when (no-ingest-management-permission?
-                                           context
-                                           (concepts/concept-id->provider-id assoc-id))
-                                      (get-no-permission-concept-ids
-                                       context (map :concept-id associations))))
+        no-permission-concept-ids (when (and (or (= :tool assoc-type) (= :service assoc-type))
+                                             (no-ingest-management-permission?
+                                              context
+                                              (concepts/concept-id->provider-id assoc-id)))
+                                    (get-no-permission-concept-ids
+                                     context (map :concept-id associations)))
 
         inaccessible-concept-ids (get-inaccessible-concept-ids
                                    context (map :concept-id concept-id-only-assocs))
