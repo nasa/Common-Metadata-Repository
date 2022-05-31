@@ -233,7 +233,7 @@
              user-id))))
 
 (defn- validate-native-id-not-blank
-  "Valiate the given native-id is not blank. Raise error if it is."
+  "Validate the given native-id is not blank. Raise error if it is."
   [native-id]
   (when (string/blank? native-id)
     (errors/throw-service-error
