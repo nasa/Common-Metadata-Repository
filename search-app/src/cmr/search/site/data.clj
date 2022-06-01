@@ -291,3 +291,13 @@
    #(string/includes?
      (str %)
      (util/get-app-url context))))
+
+(defn csw-page
+  [context]
+  (let [base-page (common-data/base-page context "CSW Retirement Page")
+        base-url (:base-url base-page)
+        {:keys [stac-url]} (app-url->stac-urls base-url)
+        opensearch-url (string/replace stac-url #"/stac" "/opensearch")]
+    (assoc base-page
+           :stac-url stac-url
+           :opensearch-url opensearch-url)))

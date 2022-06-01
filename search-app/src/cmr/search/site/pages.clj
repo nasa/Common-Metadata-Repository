@@ -2,7 +2,6 @@
   "The functions of this namespace are specifically responsible for returning
   ready-to-serve pages."
   (:require
-   [cmr.common-app.site.data :as common-data]
    [cmr.common-app.site.pages :as common-pages]
    [cmr.search.site.data :as data]))
 
@@ -114,4 +113,4 @@
   (common-pages/render-html
    context
    "templates/csw-retirement.html"
-   (common-data/base-page context "CSW Retirement Page")))
+   (data/csw-page context)))
