@@ -59,9 +59,9 @@
 
 (defn associate-concept-to-collections
   "Associate the given concept by concept type and concept id to a list of
-  collections in the request body."
+  collections in the request body. User has to have update permission on INGEST_MANAGEMENT_ACL for the
+  provider(s) of the collection(s) in order for the association(s) to be successful."
   [context headers body concept-type concept-id]
-  (verify-association-permission context concept-id :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-association-content-type headers)
   (info (format "Associate %s [%s] on collections: %s by client: %s."
@@ -79,7 +79,6 @@
   "Dissociate the given concept by concept type and concept id from a list of
   collections in the request body."
   [context headers body concept-type concept-id]
-  (verify-association-permission context concept-id :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-association-content-type headers)
   (info (format "Dissociating %s [%s] from collections: %s by client: %s."

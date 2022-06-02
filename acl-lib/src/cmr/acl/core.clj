@@ -232,6 +232,23 @@
         :unauthorized
         "You do not have permission to perform that action."))))
 
+(defn- verify-management-permission-for-provider
+  "Verifies the current user has been granted the permission in permission-fn in ECHO ACLs for a provider."
+  [context permission-type object-identity-type provider-id cache-key permission-fn]
+  (let [has-permission-fn (fn []
+                            (permission-fn
+                              context permission-type object-identity-type provider-id))
+        has-permission? (if-let [cache (cache/context->cache context cache-key)]
+                          ;; Read using cache. Cache key is combo of token, permission type and provider id.
+                          (cache/get-value
+                            cache [(:token context) permission-type provider-id] has-permission-fn)
+                          ;; No token cache so directly check permission.
+                          (has-permission-fn))]
+    (when-not has-permission?
+      (errors/throw-service-error
+        :unauthorized
+        "You do not have permission to perform that action."))))
+
 (defn verify-subscription-management-permission
   "Verifies the current user has been granted SUBSCRIPTION_MANAGEMENT
   permission in ECHO ACLs"
@@ -259,3 +276,15 @@
      provider-id
      token-imp-cache-key
      has-ingest-management-permission?)))
+
+(defn verify-ingest-management-permission-for-provider
+  "Verifies the current user has been granted INGEST_MANAGEMENT_ACLS
+  permission in ECHO ACLs for a provider."
+  [context permission-type object-identity-type provider-id]
+  (verify-management-permission-for-provider
+    context
+    permission-type
+    object-identity-type
+    provider-id
+    token-imp-cache-key
+    has-ingest-management-permission?))

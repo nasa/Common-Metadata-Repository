@@ -4478,7 +4478,7 @@ Access to service and service association is granted through the provider via th
 
 #### <a name="service-association"></a> Service Association
 
-A service identified by its concept id can be associated with collections through a list of collection concept revisions. The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create. Each individual service association response has an `associated_item` field and either a `service_association` field with the service association concept id and revision id when the service association succeeded or an `errors` field with detailed error message when the service association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during service association. Here is a sample service association request and its response:
+A service identified by its concept id can be associated with collections through a list of collection concept revisions. The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create. Each individual service association response has an `associated_item` field and either a `service_association` field with the service association concept id and revision id when the service association succeeded or an `errors` field with detailed error message when the service association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during service association. Service association requires that user has update permission on INGEST_MANAGEMENT_ACL for the collection's provider. Here is a sample service association request and its response:
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
@@ -4506,6 +4506,14 @@ Content-Length: 168
     "associated_item":{
       "concept_id":"C1200000006-PROV1"
     }
+  },
+  {
+    "errors":[
+      "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C1200000007-PROV2] to make the association."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000007-PROV2"
+    }
   }
 ]
 ```
@@ -4515,6 +4523,7 @@ On occassions when service association cannot be processed at all due to invalid
 #### <a name="service-dissociation"></a> Service Dissociation
 
 A service identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to service association requests.
+Service dissociation requires that user has update permission on INGEST_MANAGEMENT_ACL for either the collection's provider, or the service's provider.
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
@@ -4550,6 +4559,14 @@ Content-Length: 168
     ],
     "associated_item":{
       "concept_id":"C1200000007-PROV1"
+    }
+  },
+  {
+    "errors":[
+      "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C1200000008-PROV2] or provider of service/tool to delete the association."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000008-PROV2"
     }
   }
 ]
@@ -4846,7 +4863,7 @@ Access to tool is granted through the provider via the INGEST_MANAGEMENT_ACL.
 
 #### <a name="tool-association"></a> Tool Association
 
-A tool identified by its concept id can be associated with collections through a list of collection concept revisions. The tool association request normally returns status code 200 with a response that consists of a list of individual tool association responses, one for each tool association attempted to create. Each individual tool association response has an `associated_item` field and either a `tool_association` field with the tool association concept id and revision id when the tool association succeeded or an `errors` field with detailed error message when the tool association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tool association. Here is a sample tool association request and its response:
+A tool identified by its concept id can be associated with collections through a list of collection concept revisions. The tool association request normally returns status code 200 with a response that consists of a list of individual tool association responses, one for each tool association attempted to create. Each individual tool association response has an `associated_item` field and either a `tool_association` field with the tool association concept id and revision id when the tool association succeeded or an `errors` field with detailed error message when the tool association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tool association. Tool association requires that user has update permission on INGEST_MANAGEMENT_ACL for the collection's provider. Here is a sample tool association request and its response:
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
@@ -4874,7 +4891,16 @@ Content-Length: 168
     "associated_item":{
       "concept_id":"C1200000006-PROV1"
     }
+  },
+  {
+    "errors":[
+      "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C1200000007-PROV2] to make the association."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000007-PROV2"
+    }
   }
+
 ]
 ```
 
@@ -4883,6 +4909,7 @@ On occassions when tool association cannot be processed at all due to invalid in
 #### <a name="tool-dissociation"></a> Tool Dissociation
 
 A tool identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to tool association requests.
+Tool dissociation requires that user has update permission on INGEST_MANAGEMENT_ACL for either the collection's provider, or the service's provider.
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
@@ -4918,6 +4945,14 @@ Content-Length: 168
     ],
     "associated_item":{
       "concept_id":"C1200000007-PROV1"
+    }
+  },
+  {
+    "errors":[
+      "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C1200000008-PROV2] or provider of service/tool to delete the association."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000008-PROV2"
     }
   }
 ]
