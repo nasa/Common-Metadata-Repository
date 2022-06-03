@@ -11,7 +11,7 @@
 (defmethod elastic-search-index/concept-type+result-format->fields [:subscription :json]
   [concept-type query]
   ["concept-id" "revision-id" "deleted" "provider-id" "native-id" "subscription-name"
-   "subscriber-id" "collection-concept-id"  "subscription-type"])
+   "subscriber-id" "collection-concept-id" "subscription-type"])
 
 (defmethod elastic-results/elastic-result->query-result-item [:subscription :json]
   [context query elastic-result]
