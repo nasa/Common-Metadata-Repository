@@ -21,7 +21,7 @@
           deleted :deleted
           provider-id :provider-id
           native-id :native-id
-          subscription-type :subscription-type
+          type :type
           concept-id :concept-id} :_source} elastic-result
         revision-id (elastic-results/get-revision-id-from-elastic-result :service elastic-result)
         result-item (util/remove-nil-keys
@@ -29,7 +29,7 @@
                       :revision_id revision-id
                       :provider_id provider-id
                       :native_id native-id
-                      :subscription-type subscription-type
+                      :type type
                       :name subscription-name
                       :subscriber_id subscriber-id
                       :collection_concept_id collection-concept-id})]
