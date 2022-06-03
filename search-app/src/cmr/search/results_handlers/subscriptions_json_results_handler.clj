@@ -11,7 +11,7 @@
 (defmethod elastic-search-index/concept-type+result-format->fields [:subscription :json]
   [concept-type query]
   ["concept-id" "revision-id" "deleted" "provider-id" "native-id" "subscription-name"
-   "subscriber-id" "collection-concept-id" "subscription-type"])
+   "subscriber-id" "collection-concept-id" "type"])
 
 (defmethod elastic-results/elastic-result->query-result-item [:subscription :json]
   [context query elastic-result]
@@ -21,7 +21,7 @@
           deleted :deleted
           provider-id :provider-id
           native-id :native-id
-          type :type
+          type :subscription-type
           concept-id :concept-id} :_source} elastic-result
         revision-id (elastic-results/get-revision-id-from-elastic-result :service elastic-result)
         result-item (util/remove-nil-keys
