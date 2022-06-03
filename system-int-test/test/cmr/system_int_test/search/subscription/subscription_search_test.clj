@@ -227,9 +227,9 @@
     (index/wait-until-indexed)
     (testing "JSON response contains Type field"
       (testing "collection subscription type"
-        (is (= 1 (:hits (subscriptions/search-refs {:type "collection"})))))
+        (is (string/includes? (:body (search/find-concepts-in-format :json :subscription {:type "collection"})) "type\":\"collection")))
       (testing "granule subscription type"
-        (is (= 1 (:hits (subscriptions/search-refs {:type "granule"}))))))))
+        (is (string/includes? (:body (search/find-concepts-in-format :json :subscription {:type "granule"})) "type\":\"granule"))))))
 
 (deftest search-for-subscription-by-type-test
   (let [_ (mock-urs/create-users (system/context) [{:username "SubId1" :password "Password"}
