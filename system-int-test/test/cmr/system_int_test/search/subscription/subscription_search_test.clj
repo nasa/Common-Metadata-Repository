@@ -205,32 +205,6 @@
             (search/find-concepts-in-format
              nil :subscription {} {:url-extension "atom"}))))))
 
-(deftest search-for-subscription-type-field
-  (let [_ (mock-urs/create-users (system/context) [{:username "SubId" :password "Password"}])
-        coll1 (data2-core/ingest-umm-spec-collection
-               "PROV1"
-               (data-umm-c/collection
-                {:ShortName "coll1"
-                 :EntryTitle "entry-title1"})
-               {:token "mock-echo-system-token"})
-        subscription1 (subscriptions/ingest-subscription-with-attrs {:native-id "sub1"
-                                                                     :Name "Subscription1"
-                                                                     :SubscriberId "SubId"
-                                                                     :Query "platform=NOAA-6"
-                                                                     :CollectionConceptId (:concept-id coll1)
-                                                                     :provider-id "PROV1"})
-        subscription2 (subscriptions/ingest-subscription-with-attrs {:native-id "sub2"
-                                                                     :Name "Subscription2"
-                                                                     :SubscriberId "SubId"
-                                                                     :Type "collection"
-                                                                     :provider-id "PROV1"})]
-    (index/wait-until-indexed)
-    (testing "JSON response contains Type field"
-      (testing "collection subscription type"
-        (is (string/includes? (:body (search/find-concepts-in-format :json :subscription {:type "collection"})) "type\":\"collection")))
-      (testing "granule subscription type"
-        (is (string/includes? (:body (search/find-concepts-in-format :json :subscription {:type "granule"})) "type\":\"granule"))))))
-
 (deftest search-for-subscription-by-type-test
   (let [_ (mock-urs/create-users (system/context) [{:username "SubId1" :password "Password"}
                                                    {:username "SubId2" :password "Password"}])

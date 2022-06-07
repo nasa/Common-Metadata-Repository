@@ -134,6 +134,7 @@
   ;; verifying schema keys are included
   (is (set/subset? (set (keys subscription))
                    #{:collection_concept_id
+                   :type
                    :concept_id
                    :name
                    :native_id
@@ -176,7 +177,7 @@
 
 (def ^:private json-field-names
   "List of fields expected in a subscription JSON response."
-  [:concept-id :revision-id :provider-id :native-id :deleted :name :subscriber-id :collection-concept-id])
+  [:concept-id :revision-id :provider-id :native-id :deleted :name :subscriber-id :collection-concept-id :type])
 
 (defn extract-name-from-metadata
   "Pulls the name out of the metadata field in the provided subscription concept."
@@ -204,7 +205,8 @@
   (let [subscription-type (extract-type-from-metadata subscription)]
     (select-keys
      (merge subscription
-            {:name (extract-name-from-metadata subscription)
+            {:type (extract-type-from-metadata subscription)
+             :name (extract-name-from-metadata subscription)
              :subscriber-id (extract-subscriber-id-from-metadata subscription)}
             (if (= subscription-type "collection")
               {:provider-id "CMR"}
