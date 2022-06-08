@@ -11,7 +11,9 @@
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
                 revision-date format extra-fields created-at]} concept
         {:keys [subscription-name subscriber-id collection-concept-id]} extra-fields
-        type (:Type parsed-concept)
+        type (if deleted
+               (:subscription-type parsed-concept)
+               (:Type parsed-concept))
         doc-for-deleted
          {:concept-id concept-id
           :revision-id revision-id
