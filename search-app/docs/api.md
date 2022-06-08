@@ -5052,6 +5052,7 @@ The JSON response includes the following fields.
   * revision_id
   * provider_id
   * native_id
+  * type
   * name
   * subscriber_id
   * collection_concept_id
@@ -5073,6 +5074,7 @@ Content-Length: 944
     "revision_id" : 1,
     "provider_id" : "PROV1",
     "native_id" : "subscription-1",
+    "type" : "granule",
     "name" : "someSub1",
     "subscriber-id" : "someSubId1",
     "collection-concept-id" : "C1200000001-PROV1"
@@ -5081,9 +5083,9 @@ Content-Length: 944
     "revision_id" : 1,
     "provider_id" : "PROV1",
     "native_id" : "subscription-2",
+    "type" : "collection",
     "name" : "someSub2",
     "subscriber-id" : "someSubId2",
-    "collection-concept-id" : "C1200000001-PROV1"
   } ]
 }
 ```
