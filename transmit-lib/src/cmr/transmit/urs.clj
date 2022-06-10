@@ -105,8 +105,12 @@
         :unauthorized
         (format "Cannot get group info for username [%s] in URS. Failed with status code [%d]."
                 user-id status)))
-    (map #(get % :name) body)))
-
+    (map  (fn [group]
+            (str (get group :name)
+                 ":"
+                 (when-let [tag (get group :tag)]
+                   tag)))
+         body)))
 
 (comment
  ;; Use this code to test with URS. Replace XXXX with real values
