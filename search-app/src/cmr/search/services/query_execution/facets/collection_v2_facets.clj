@@ -106,18 +106,19 @@
                                    aggs base-url query-params :science-keywords-h))
 
         platform-facets (when (facet-fields-set :platforms)
-                                  (hv2/create-hierarchical-v2-facets
-                                   aggs base-url query-params :platforms-h))
+                          (hv2/create-hierarchical-v2-facets
+                           aggs base-url query-params :platforms-h))
+        ;; _ (println "---- platform-facets" platform-facets)
 
         variables-facets (when (and (facet-fields-set :variables) (include-variable-facets))
                            (hv2/create-hierarchical-v2-facets
                             aggs base-url query-params :variables-h))
         two-d-facets (when (facet-fields-set :two-d-coordinate-system-name)
                        (create-terms-v2-facets
-                         aggs base-url query-params :two-d-coordinate-system-name-h))
+                        aggs base-url query-params :two-d-coordinate-system-name-h))
         latency-facets (when (facet-fields-set :latency)
                          (create-terms-v2-facets
-                           aggs base-url query-params :latency-h))
+                          aggs base-url query-params :latency-h))
         range-facets (when (facet-fields-set :horizontal-data-resolution-range)
                        (v2-facets/create-prioritized-v2-facets
                         :collection aggs [:horizontal-data-resolution-range] base-url query-params false))

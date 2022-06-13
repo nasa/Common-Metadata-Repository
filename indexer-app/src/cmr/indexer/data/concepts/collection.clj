@@ -276,6 +276,8 @@
         kms-index (kf/get-kms-index context)
         platforms2-nested (map #(platform/platform2-nested-fields->elastic-doc kms-index %)
                                (map :short-name platforms))
+        ;; _ (Thread/sleep (rand-int 5000))
+        ;; _ (println "---- platforms2-nested" platforms2-nested)
         platform-short-names (->> (map :short-name platforms2-nested)
                                   (map str/trim))
         platform-long-names (->> platforms2-nested

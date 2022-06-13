@@ -175,7 +175,9 @@
   (let [base-url (get-base-url context concept-type)
         query-params (parse-params (:query-string context) "UTF-8")
         v2-facets (create-v2-facets-by-concept-type concept-type
-                   base-url query-params aggs facet-fields)]
+                                                    base-url query-params aggs facet-fields)
+        ;; _ (println "---- v2_facets" v2-facets)
+        ]
     (if (seq v2-facets)
       (assoc (v2-facets-root concept-type) :has_children true :children v2-facets)
       (assoc (v2-facets-root concept-type) :has_children false))))

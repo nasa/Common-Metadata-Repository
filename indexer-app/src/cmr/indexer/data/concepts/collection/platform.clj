@@ -22,8 +22,13 @@
    present in the KMS hierarchy, we use a dummy value to indicate the field was
    not present."
   [kms-index short-name]
+  ;; (Thread/sleep (rand-int 5000))
+  ;; (println "---- platform2-nested-fields->elastic-doc")
+  ;; (println "---- kms-index" kms-index)
+  ;; (println "---- short-name" short-name)
   (let [full-platform
         (kms-lookup/lookup-by-short-name kms-index :platforms short-name)
+        ;; _ (println "---- full-platform" full-platform)
         {:keys [basis category sub-category short-name long-name uuid]
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-platform]
@@ -48,11 +53,18 @@
   the original short name with the humanized one.  If it doesn't then just return the humanized
   platform."
   [kms-index platform]
+  ;; (println "---- humanized-platform2-nested-fields->elastic-doc")
+  ;; (println "---- kms-index" kms-index)
+  ;; (Thread/sleep (rand-int 5000))
+  ;; (println "---- platform" platform)
   (let [humanized-fields (filter #(-> % key namespace (= "cmr-humanized")) platform)
         humanized-fields-with-raw-values (util/map-values :value humanized-fields)
         ns-stripped-fields (util/map-keys->kebab-case humanized-fields-with-raw-values)
+        ;; _ (println "----  ns-stripped-fields" ns-stripped-fields)
         humanized-platform (platform2-nested-fields->elastic-doc kms-index
-                                                                 (:short-name ns-stripped-fields))]
+                                                                 (:short-name ns-stripped-fields))
+        ;; _ (println "----  humanized-platform" ns-stripped-fields)
+        ]
     (if (:basis humanized-platform)
       humanized-platform
       (let [original-field (:ShortName platform)

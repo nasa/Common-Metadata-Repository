@@ -5,6 +5,7 @@
   specified with field[index][subfield] such as science_keyword[0][category]."
   (:require
    [camel-snake-kebab.core :as csk]
+   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common.util :as util]
@@ -102,8 +103,8 @@
    (nested-facet field size nil))
   ([field size depth]
    (let [subfields (if depth
-                       (take depth (nested-fields-mappings field))
-                       (nested-fields-mappings field))]
+                     (take depth (nested-fields-mappings field))
+                     (nested-fields-mappings field))]
      {:nested {:path field}
       :aggs (hierarchical-aggregation-builder field subfields size)})))
 
@@ -161,22 +162,22 @@
   value - the value for the provided parameter"
   [query-params base-field parent-subfield parent-value subfield value]
   (some?
-    (when (and parent-value value)
-      (let [parent-value-lowercase (string/lower-case parent-value)
-            value-lowercase (string/lower-case value)
-            query-params-lowercase (util/map-values string/lower-case query-params)
-            subfield-regex (re-pattern (str base-field "\\[(\\d+)\\]\\[" subfield "\\]"))
+   (when (and parent-value value)
+     (let [parent-value-lowercase (string/lower-case parent-value)
+           value-lowercase (string/lower-case value)
+           query-params-lowercase (util/map-values string/lower-case query-params)
+           subfield-regex (re-pattern (str base-field "\\[(\\d+)\\]\\[" subfield "\\]"))
             ;; Find the indexes for all the query parameters that are at the same level in the
             ;; hierarchy as the provided parameter.
-            same-level-indexes (for [[k v] query-params-lowercase
-                                     :when (not= value-lowercase (string/lower-case v))]
-                                 (second (re-matches subfield-regex k)))]
+           same-level-indexes (for [[k v] query-params-lowercase
+                                    :when (not= value-lowercase (string/lower-case v))]
+                                (second (re-matches subfield-regex k)))]
         ;; Filter the query-params to just those with the same index, parent-subfield, and
         ;; parent-value when compared case insensitively
-        (seq (for [idx same-level-indexes
-                   :let [query-param (str base-field "[" idx "][" parent-subfield "]")]
-                   :when (= parent-value-lowercase (get query-params-lowercase query-param))]
-               query-param))))))
+       (seq (for [idx same-level-indexes
+                  :let [query-param (str base-field "[" idx "][" parent-subfield "]")]
+                  :when (= parent-value-lowercase (get query-params-lowercase query-param))]
+              query-param))))))
 
 (defn- extract-value-from-bucket
   "Returns the value from a bucket. The value could be from either :key or :key_as_string."
@@ -218,7 +219,7 @@
   [sub-facets subfield title]
   (if (:children sub-facets)
     (some true?
-      (map #(last-facet-accounted-for? % subfield title) (:children sub-facets)))
+          (map #(last-facet-accounted-for? % subfield title) (:children sub-facets)))
     (and (= (:field sub-facets) subfield)
          (= (:title sub-facets) title))))
 
@@ -335,7 +336,7 @@
                       (get elastic-aggregations :buckets))]
       (map (fn [bucket]
              (process-bucket-for-hierarchical-field
-               bucket field field-hierarchy recursive-parse-fn has-siblings-fn generate-links-fn function-params))
+              bucket field field-hierarchy recursive-parse-fn has-siblings-fn generate-links-fn function-params))
            buckets))))
 
 (defn- parse-hierarchical-bucket-v2
@@ -359,7 +360,7 @@
                  field."
   ([base-field field-hierarchy base-url query-params elastic-aggs]
    (parse-hierarchical-bucket-v2
-     base-field nil base-url query-params nil field-hierarchy nil elastic-aggs))
+    base-field nil base-url query-params nil field-hierarchy nil elastic-aggs))
   ([base-field parent-subfield base-url query-params ancestors-map field-hierarchy parent-value
     elastic-aggs]
    (when-let [subfield (first field-hierarchy)]
@@ -413,14 +414,23 @@
                                     parent-value
                                     snake-subfield)
            children (generate-hierarchical-children
-                      recursive-parse-fn
-                      has-siblings-fn
-                      generate-links-fn
-                      subfield
-                      field-hierarchy
-                      elastic-aggs
-                      function-params)]
+                     recursive-parse-fn
+                     has-siblings-fn
+                     generate-links-fn
+                     subfield
+                     field-hierarchy
+                     elastic-aggs
+                     function-params)]
        (when (seq children)
+        ;;  (println "---- type v2h/generate-group-node" (type (v2h/generate-group-node (string/capitalize (csk/->snake_case_string subfield))
+        ;;                                                                              true
+        ;;                                                                              children)))
+        ;;  (println "---- value v2h/generate-group-node"  (v2h/generate-group-node (string/capitalize (csk/->snake_case_string subfield))
+        ;;                                                                          true
+        ;;                                                                          children))
+        ;;  (println "---- children" children)
+        ;;  (println "---- type children" (type children))
+
          (v2h/generate-group-node (string/capitalize (csk/->snake_case_string subfield))
                                   true
                                   children))))))
@@ -460,9 +470,12 @@
   [hierarchical-facet subfield]
   (let [facet-depth (-> (for [facet (:children hierarchical-facet)]
                           (get-depth-of-field facet subfield 0))
+                        ;; ((fn [item] (println "---- item" item) item))
                         (cmr.common.util/remove-nils-empty-maps-seqs)
                         (flatten)
-                        (first))]
+                        ((fn [flat-seq] (apply max flat-seq))))
+        ;; _ (println "---- facet-depth" facet-depth)
+        ]
     ;; If a facet-depth doesn't exist it is because the facet has been pruned out.
     (when facet-depth
       (get-terms-at-depth hierarchical-facet facet-depth []))))
@@ -473,8 +486,8 @@
   (cond
     (map? x)
     (let [clean-map (dissoc
-                      (zipmap (keys x) (map #(remove-key-from-maps-seqs k %) (vals x)))
-                      k)]
+                     (zipmap (keys x) (map #(remove-key-from-maps-seqs k %) (vals x)))
+                     k)]
       (when (seq clean-map)
         clean-map))
 
@@ -487,6 +500,72 @@
       (keep #(remove-key-from-maps-seqs k %) x))
     :else x))
 
+(defn- get-facet-terms-for-subfield
+  [hierarchical-facet-list]
+  (loop [not-parsed hierarchical-facet-list ;; [{} {} {}] add children to end
+         parsed {}] ;; {:basis #{} :category #{}}
+    ;; (println "---- not-parsed" not-parsed)
+    ;; (println "---- parsed" parsed)
+    (if (seq not-parsed)
+      (let [new-items (for [node not-parsed
+                            :when (seq node)]
+                        {:field (:field node) :title (:title node)})
+            new-not-parsed (for [node not-parsed
+                                 :when (:children node)]
+                             (:children node))]
+        (recur (reduce into new-not-parsed)
+               (concat parsed new-items)))
+      parsed)))
+
+(defn- search-terms-facets-diff
+  [fields search-terms-grouped-by-field facets-grouped-by-field]
+  ;; (println "---- fields" fields)
+  ;; (println "---- search-terms-grouped-by-field" search-terms-grouped-by-field)
+  ;; (println "---- facets-grouped-by-field" facets-grouped-by-field)
+  (let [fields-to-field-value-pairs (fn [result field]
+                                      (let [search-term-set (get search-terms-grouped-by-field field)
+                                            ;; _ (println "---- search-term-set" search-term-set)
+                                            facet-set (get facets-grouped-by-field field)
+                                            ;; _ (println "---- facet-set" facet-set)
+                                            diff (set/difference search-term-set facet-set)
+                                            ;; _ (println "---- diff" diff)
+                                            diff-pairs (for [search-term diff] [field search-term])
+                                            ;; _ (println "---- diff-pairs" diff-pairs)
+                                            ]
+                                        (when (seq diff)
+                                          (into result diff-pairs))))]
+    (reduce fields-to-field-value-pairs '() fields)))
+
+(defn- get-missing-subfield-term-tuples-v2
+  [field ;; platform-h
+   field-hierarchy ;; (:basis :category :sub-category :short-name)
+   hierarchical-facet ;; facet object
+   query-params]
+  ;; (println "---- get-missing-subfield-term-tuples-v2")
+  (let [field-hierarchy (if (= :science-keywords-h field)
+                          ;; Special case for science keywords to ignore the first field (category)
+                          ;; since we do not actually return categories in the v2 facet response
+                          (rest field-hierarchy)
+                          field-hierarchy)
+    ;; 1 - for each field+field-hierarchy, get search-terms from query-params
+        search-terms (for [subfield field-hierarchy]
+                       {subfield (into #{} (get-search-terms-for-hierarchical-field field subfield query-params))})
+        ;; _ (println "---- search-terms" search-terms)
+        search-terms-grouped-by-field (into {} search-terms)
+        ;; _ (println "---- search-terms-grouped-by-field" search-terms-grouped-by-field)
+    ;; 2 - get {:basis #{items} :category #{items} ...} from hierarchical-facets
+        facet-terms (get-facet-terms-for-subfield (:children hierarchical-facet))
+        ;; _ (println "---- facet-terms" facet-terms)
+        facets-grouped-by-field (reduce (fn [result next] (assoc result (:field next) (conj (get result (:field next) #{}) (:title next)))) {} facet-terms)
+        ;; _ (println "---- facets-grouped-by-field" facets-grouped-by-field)
+        ]
+    ;; compare 1 and 2
+  ;; return items in 1 that are not in 2
+  ;; -> ([:short-name EXAMPLE-NAME]) ([:field-hierarchy-level name-from-query])
+  ;; ([:short-name BOB] [:short-name MERRA-2])
+    (search-terms-facets-diff field-hierarchy search-terms-grouped-by-field facets-grouped-by-field)))
+
+
 (defn- get-missing-subfield-term-tuples
   "Compares the query-params to the hierarchical-facet response to look for any search terms in
   the query-params which are not present in the hierarchical facet response. Returns a sequence of
@@ -497,17 +576,24 @@
                           ;; since we do not actually return categories in the v2 facet response
                           (rest field-hierarchy)
                           field-hierarchy)]
+    ;; (println "---- field" field)
+    ;; (println "---- field-hierarchy" field-hierarchy)
+    ;; (println "---- hierarchical-facet" hierarchical-facet)
+    ;; (println "---- query-params" query-params)
     (remove nil?
-      (apply concat
-        (for [subfield field-hierarchy
-              :let [search-terms (get-search-terms-for-hierarchical-field field subfield
-                                                                          query-params)]
-              :when (seq search-terms)]
-          (let [terms-in-facets (map string/lower-case
-                                     (get-terms-for-subfield hierarchical-facet subfield))]
-            (for [term search-terms
-                  :when (not-any? #{(string/lower-case term)} terms-in-facets)]
-              [subfield term])))))))
+            (apply concat
+                   (for [subfield field-hierarchy
+                         :let [search-terms (get-search-terms-for-hierarchical-field field subfield
+                                                                                     query-params)]
+                         :when (seq search-terms)]
+                     (let [terms-in-facets (map string/lower-case
+                                                (get-terms-for-subfield hierarchical-facet subfield))]
+                      ;;  (println "---- subfield" subfield)
+                      ;;  (println "---- search-terms" search-terms)
+                      ;;  (println "---- terms-in-facets" terms-in-facets)
+                       (for [term search-terms
+                             :when (not-any? #{(string/lower-case term)} terms-in-facets)]
+                         [subfield term])))))))
 
 (defn- prune-hierarchical-facet
   "Limits a hierarchical facet to a single level below the lowest applied facet. If
@@ -533,15 +619,20 @@
   "Helper function to create v2 facets for terms which are included in the search query, but have
   zero matching collections. This allows the user to easily remove an applied facet."
   [base-url query-params field subfield-term-tuples]
+  ;; (println "---- create-facets-with-zero-matches")
+  ;; (println "---- base-url" base-url)
+  ;; (println "---- query-params" query-params)
+  ;; (println "---- field" field)
+  ;; (println "---- subfield-term-tuples" subfield-term-tuples)
   (remove-key-from-maps-seqs
    :field
    (for [[subfield search-term] subfield-term-tuples
          :let [param-name (format "%s[0][%s]"
                                   (csk/->snake_case_string field)
                                   (csk/->snake_case_string subfield))
-                link (hlh/create-link-for-hierarchical-field base-url query-params param-name
-                                                             search-term)]]
-      (v2h/generate-hierarchical-filter-node search-term 0 link nil subfield))))
+               link (hlh/create-link-for-hierarchical-field base-url query-params param-name
+                                                            search-term)]]
+     (v2h/generate-hierarchical-filter-node search-term 0 link nil subfield))))
 
 (def earth-science-category-string
   "Constant for the string used for the Earth Science category within humanized science keywords."
@@ -586,27 +677,39 @@
   [field bucket-map base-url query-params]
   (let [field-hierarchy (get-field-hierarchy field query-params)
         v2-buckets (parse-hierarchical-bucket-v2
-                                 field
-                                 field-hierarchy
-                                 base-url
-                                 query-params
-                                 bucket-map)
+                    field
+                    field-hierarchy
+                    base-url
+                    query-params
+                    bucket-map)
+        ;; _ (println "---- v2-buckets" v2-buckets)
         hierarchical-facet (-> v2-buckets
-                             (prune-hierarchical-facet field true)
-                             (remove-non-earth-science-keywords field))
-        subfield-term-tuples (get-missing-subfield-term-tuples
-                               field
-                               field-hierarchy
-                               hierarchical-facet
-                               query-params)
+                               (prune-hierarchical-facet field true)
+                               (remove-non-earth-science-keywords field))
+        ;; _ (println "---- get-missing-subfield-term-tuples")
+        ;; _ (println "---- field"  field)
+        ;; _ (println "---- field-hierarchy"  field-hierarchy)
+        ;; _ (println "---- hierarchical-facet 1"  hierarchical-facet)
+        ;; _ (println "---- query-params"  query-params)
+        subfield-term-tuples (get-missing-subfield-term-tuples-v2
+                              field
+                              field-hierarchy
+                              hierarchical-facet
+                              query-params)
+        ;; _ (println "---- subfield-term-tuples" subfield-term-tuples)
         ;; a field is inserted into the v2 facets to determine the subfield-term-tuples
         ;; once complete the field should be removed as it is no longer needed.
         hierarchical-facet (remove-key-from-maps-seqs :field hierarchical-facet)
+        ;; _ (println "---- hierarchical-facet 2" hierarchical-facet)
         facets-with-zero-matches (create-facets-with-zero-matches
-                                   base-url
-                                   query-params
-                                   field
-                                   subfield-term-tuples)]
+                                  base-url
+                                  query-params
+                                  field
+                                  subfield-term-tuples)
+        ;; _ (println "---- facets-with-zero-matches " facets-with-zero-matches)
+        ;; hierarchical-facet (update hierarchical-facet :children #(concat % '(nil)))
+        ;; _ (println "---- hierarchical-facet 3" hierarchical-facet)
+        ]
     (if (seq facets-with-zero-matches)
       ;; Add in links to remove any hierarchical fields that have been applied to the query-params
       ;; but do not have any matching collections.
@@ -617,7 +720,9 @@
   "Parses the elastic aggregations and generates the v2 facets for the given hierarchical field."
   [elastic-aggregations base-url query-params field]
   (let [sub-facets (hierarchical-bucket-map->facets-v2
-                    field (field elastic-aggregations) base-url query-params)]
+                    field (field elastic-aggregations) base-url query-params)
+        ;; _ (println "---- sub-facets" sub-facets)
+        ]
     (when (seq sub-facets)
       (let [field-reg-ex (re-pattern (str (csk/->snake_case_string field) ".*"))
             applied? (->> query-params
