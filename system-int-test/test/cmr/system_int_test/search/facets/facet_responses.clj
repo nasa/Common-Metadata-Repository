@@ -599,22 +599,6 @@
        {:remove
         "http://localhost:3003/collections.json?platforms_h%5B1%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bsub_category%5D=fake&keyword=DMSP+5B%2FF3&page_size=0&platforms_h%5B1%5D%5Bsub_category%5D=SMAP-like&platforms_h%5B1%5D%5Bshort_name%5D=SMAP&include_facets=v2&platforms_h%5B0%5D%5Bshort_name%5D=moDIS-p0"},
        :has_children false}
-      {:title "Space-based Platforms",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?platforms_h%5B1%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bsub_category%5D=fake&keyword=DMSP+5B%2FF3&page_size=0&platforms_h%5B1%5D%5Bsub_category%5D=SMAP-like&platforms_h%5B1%5D%5Bshort_name%5D=SMAP&include_facets=v2&platforms_h%5B0%5D%5Bshort_name%5D=moDIS-p0"},
-       :has_children false}
-      {:title "Earth Observation Satellites",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?platforms_h%5B1%5D%5Bbasis%5D=Space-based+Platforms&platforms_h%5B0%5D%5Bsub_category%5D=fake&keyword=DMSP+5B%2FF3&page_size=0&platforms_h%5B1%5D%5Bsub_category%5D=SMAP-like&platforms_h%5B1%5D%5Bshort_name%5D=SMAP&include_facets=v2&platforms_h%5B0%5D%5Bshort_name%5D=moDIS-p0&platforms_h%5B0%5D%5Bbasis%5D=Space-based+Platforms"},
-       :has_children false}
       {:title "Earth Observation Satellites",
        :type "filter",
        :applied true,
@@ -639,6 +623,14 @@
        {:remove
         "http://localhost:3003/collections.json?platforms_h%5B1%5D%5Bbasis%5D=Space-based+Platforms&platforms_h%5B1%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bsub_category%5D=fake&keyword=DMSP+5B%2FF3&page_size=0&platforms_h%5B1%5D%5Bshort_name%5D=SMAP&include_facets=v2&platforms_h%5B0%5D%5Bshort_name%5D=moDIS-p0&platforms_h%5B0%5D%5Bbasis%5D=Space-based+Platforms"},
        :has_children false}
+      {:title "moDIS-p0",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?platforms_h%5B1%5D%5Bbasis%5D=Space-based+Platforms&platforms_h%5B1%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bsub_category%5D=fake&keyword=DMSP+5B%2FF3&page_size=0&platforms_h%5B1%5D%5Bsub_category%5D=SMAP-like&platforms_h%5B1%5D%5Bshort_name%5D=SMAP&include_facets=v2&platforms_h%5B0%5D%5Bbasis%5D=Space-based+Platforms"},
+       :has_children false}
       {:title "SMAP",
        :type "filter",
        :applied true,
@@ -647,14 +639,7 @@
        {:remove
         "http://localhost:3003/collections.json?platforms_h%5B1%5D%5Bbasis%5D=Space-based+Platforms&platforms_h%5B1%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bsub_category%5D=fake&keyword=DMSP+5B%2FF3&page_size=0&platforms_h%5B1%5D%5Bsub_category%5D=SMAP-like&include_facets=v2&platforms_h%5B0%5D%5Bshort_name%5D=moDIS-p0&platforms_h%5B0%5D%5Bbasis%5D=Space-based+Platforms"},
        :has_children false}
-      {:title "moDIS-p0",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?platforms_h%5B1%5D%5Bbasis%5D=Space-based+Platforms&platforms_h%5B1%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bsub_category%5D=fake&keyword=DMSP+5B%2FF3&page_size=0&platforms_h%5B1%5D%5Bsub_category%5D=SMAP-like&platforms_h%5B1%5D%5Bshort_name%5D=SMAP&include_facets=v2&platforms_h%5B0%5D%5Bbasis%5D=Space-based+Platforms"},
-       :has_children false}]}]})
+]}]})
 
 (def expected-facets-when-aqua-search-results-found
   "Expected facet response when searching for Aqua keyword and some collections are found.
@@ -711,14 +696,6 @@
        {:remove
         "http://localhost:3003/collections.json?platforms_h%5B2%5D%5Bshort_name%5D=Aqua&platforms_h%5B1%5D%5Bbasis%5D=Space-based+Platforms&platforms_h%5B1%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bsub_category%5D=fake&keyword=Aqua&platforms_h%5B2%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B2%5D%5Bbasis%5D=Space-based+Platforms&page_size=0&platforms_h%5B1%5D%5Bshort_name%5D=SMAP&include_facets=v2&platforms_h%5B0%5D%5Bshort_name%5D=moDIS-p0&platforms_h%5B0%5D%5Bbasis%5D=Space-based+Platforms"},
        :has_children false}
-      {:title "SMAP",
-       :type "filter",
-       :applied true,
-       :count 0,
-       :links
-       {:remove
-        "http://localhost:3003/collections.json?platforms_h%5B2%5D%5Bshort_name%5D=Aqua&platforms_h%5B1%5D%5Bbasis%5D=Space-based+Platforms&platforms_h%5B1%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bsub_category%5D=fake&keyword=Aqua&platforms_h%5B2%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B2%5D%5Bbasis%5D=Space-based+Platforms&page_size=0&platforms_h%5B1%5D%5Bsub_category%5D=SMAP-like&include_facets=v2&platforms_h%5B0%5D%5Bshort_name%5D=moDIS-p0&platforms_h%5B0%5D%5Bbasis%5D=Space-based+Platforms"},
-       :has_children false}
       {:title "moDIS-p0",
        :type "filter",
        :applied true,
@@ -726,6 +703,14 @@
        :links
        {:remove
         "http://localhost:3003/collections.json?platforms_h%5B2%5D%5Bshort_name%5D=Aqua&platforms_h%5B1%5D%5Bbasis%5D=Space-based+Platforms&platforms_h%5B1%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bsub_category%5D=fake&keyword=Aqua&platforms_h%5B2%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B2%5D%5Bbasis%5D=Space-based+Platforms&page_size=0&platforms_h%5B1%5D%5Bsub_category%5D=SMAP-like&platforms_h%5B1%5D%5Bshort_name%5D=SMAP&include_facets=v2&platforms_h%5B0%5D%5Bbasis%5D=Space-based+Platforms"},
+       :has_children false}
+      {:title "SMAP",
+       :type "filter",
+       :applied true,
+       :count 0,
+       :links
+       {:remove
+        "http://localhost:3003/collections.json?platforms_h%5B2%5D%5Bshort_name%5D=Aqua&platforms_h%5B1%5D%5Bbasis%5D=Space-based+Platforms&platforms_h%5B1%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B0%5D%5Bsub_category%5D=fake&keyword=Aqua&platforms_h%5B2%5D%5Bcategory%5D=Earth+Observation+Satellites&platforms_h%5B2%5D%5Bbasis%5D=Space-based+Platforms&page_size=0&platforms_h%5B1%5D%5Bsub_category%5D=SMAP-like&include_facets=v2&platforms_h%5B0%5D%5Bshort_name%5D=moDIS-p0&platforms_h%5B0%5D%5Bbasis%5D=Space-based+Platforms"},
        :has_children false}]}]})
 
 (def expected-all-hierarchical-facets

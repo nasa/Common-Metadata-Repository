@@ -473,9 +473,9 @@
                         ;; ((fn [item] (println "---- item" item) item))
                         (cmr.common.util/remove-nils-empty-maps-seqs)
                         (flatten)
-                        ((fn [flat-seq] (apply max flat-seq))))
+                        ((fn [flat-seq] (apply max flat-seq))))]
         ;; _ (println "---- facet-depth" facet-depth)
-        ]
+
     ;; If a facet-depth doesn't exist it is because the facet has been pruned out.
     (when facet-depth
       (get-terms-at-depth hierarchical-facet facet-depth []))))
@@ -526,15 +526,18 @@
                                       (let [search-term-set (get search-terms-grouped-by-field field)
                                             ;; _ (println "---- search-term-set" search-term-set)
                                             facet-set (get facets-grouped-by-field field)
+                                            facet-set-lower (set (map string/lower-case facet-set))
                                             ;; _ (println "---- facet-set" facet-set)
-                                            diff (set/difference search-term-set facet-set)
+                                            diff-pairs (for [term search-term-set
+                                                  :when (not-any? #{(string/lower-case term)} facet-set-lower)]
+                                              [field term])
+                                            ;; diff (set/difference search-term-set-lower facet-set-lower)
                                             ;; _ (println "---- diff" diff)
-                                            diff-pairs (for [search-term diff] [field search-term])
-                                            ;; _ (println "---- diff-pairs" diff-pairs)
+                                            ;; diff-pairs (for [search-term diff] [field search-term])
+                                            _ (println "---- diff-pairs" diff-pairs)
                                             ]
-                                        (when (seq diff)
-                                          (into result diff-pairs))))]
-    (reduce fields-to-field-value-pairs '() fields)))
+                                          (into result diff-pairs)))]
+    (reduce fields-to-field-value-pairs '() (reverse fields))))
 
 (defn- get-missing-subfield-term-tuples-v2
   [field ;; platform-h
@@ -550,15 +553,15 @@
     ;; 1 - for each field+field-hierarchy, get search-terms from query-params
         search-terms (for [subfield field-hierarchy]
                        {subfield (into #{} (get-search-terms-for-hierarchical-field field subfield query-params))})
-        ;; _ (println "---- search-terms" search-terms)
+        _ (println "---- search-terms" search-terms)
         search-terms-grouped-by-field (into {} search-terms)
-        ;; _ (println "---- search-terms-grouped-by-field" search-terms-grouped-by-field)
+        _ (println "---- search-terms-grouped-by-field" search-terms-grouped-by-field)
     ;; 2 - get {:basis #{items} :category #{items} ...} from hierarchical-facets
         facet-terms (get-facet-terms-for-subfield (:children hierarchical-facet))
-        ;; _ (println "---- facet-terms" facet-terms)
+        _ (println "---- facet-terms" facet-terms)
         facets-grouped-by-field (reduce (fn [result next] (assoc result (:field next) (conj (get result (:field next) #{}) (:title next)))) {} facet-terms)
-        ;; _ (println "---- facets-grouped-by-field" facets-grouped-by-field)
-        ]
+        _ (println "---- facets-grouped-by-field" facets-grouped-by-field)]
+
     ;; compare 1 and 2
   ;; return items in 1 that are not in 2
   ;; -> ([:short-name EXAMPLE-NAME]) ([:field-hierarchy-level name-from-query])
@@ -705,11 +708,11 @@
                                   base-url
                                   query-params
                                   field
-                                  subfield-term-tuples)
+                                  subfield-term-tuples)]
         ;; _ (println "---- facets-with-zero-matches " facets-with-zero-matches)
         ;; hierarchical-facet (update hierarchical-facet :children #(concat % '(nil)))
         ;; _ (println "---- hierarchical-facet 3" hierarchical-facet)
-        ]
+
     (if (seq facets-with-zero-matches)
       ;; Add in links to remove any hierarchical fields that have been applied to the query-params
       ;; but do not have any matching collections.
@@ -720,9 +723,9 @@
   "Parses the elastic aggregations and generates the v2 facets for the given hierarchical field."
   [elastic-aggregations base-url query-params field]
   (let [sub-facets (hierarchical-bucket-map->facets-v2
-                    field (field elastic-aggregations) base-url query-params)
+                    field (field elastic-aggregations) base-url query-params)]
         ;; _ (println "---- sub-facets" sub-facets)
-        ]
+
     (when (seq sub-facets)
       (let [field-reg-ex (re-pattern (str (csk/->snake_case_string field) ".*"))
             applied? (->> query-params
