@@ -5,7 +5,6 @@
   specified with field[index][subfield] such as science_keyword[0][category]."
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common.util :as util]
@@ -526,10 +525,10 @@
                                       (let [search-term-set (get search-terms-grouped-by-field field)
                                             ;; _ (println "---- search-term-set" search-term-set)
                                             facet-set (get facets-grouped-by-field field)
-                                            facet-set-lower (set (map string/lower-case facet-set))
+                                            facet-set-lower (set (map util/safe-lowercase facet-set))
                                             ;; _ (println "---- facet-set" facet-set)
                                             diff-pairs (for [term search-term-set
-                                                  :when (not-any? #{(string/lower-case term)} facet-set-lower)]
+                                                  :when (not-any? #{(util/safe-lowercase term)} facet-set-lower)]
                                               [field term])
                                             ;; diff (set/difference search-term-set-lower facet-set-lower)
                                             ;; _ (println "---- diff" diff)
@@ -589,13 +588,13 @@
                          :let [search-terms (get-search-terms-for-hierarchical-field field subfield
                                                                                      query-params)]
                          :when (seq search-terms)]
-                     (let [terms-in-facets (map string/lower-case
+                     (let [terms-in-facets (map util/safe-lowercase
                                                 (get-terms-for-subfield hierarchical-facet subfield))]
                       ;;  (println "---- subfield" subfield)
                       ;;  (println "---- search-terms" search-terms)
                       ;;  (println "---- terms-in-facets" terms-in-facets)
                        (for [term search-terms
-                             :when (not-any? #{(string/lower-case term)} terms-in-facets)]
+                             :when (not-any? #{(util/safe-lowercase term)} terms-in-facets)]
                          [subfield term])))))))
 
 (defn- prune-hierarchical-facet
