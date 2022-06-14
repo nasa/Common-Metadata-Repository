@@ -9,35 +9,35 @@ import { chunkArray } from '../chunkArray'
 let sqs
 
 /**
- * Fetch a page of collections from CMR search endpoint and initiate or continue scroll request
+ * Fetch a page of collections from CMR search endpoint and initiate or continue search-after request
  * @param {Object} param0 The parameter object
- * @param {String} param0.scrollId An optional scroll-id given from the CMR
+ * @param {String} param0.searchAfter An optional search-after given from the CMR
  * @param {String} param0.token An optional Echo Token
  * @param {Gremlin Traversal Object} param0.gremlinConnection connection to gremlin server
  * @param {String} param0.providerId CMR provider id whose collections to bootstrap, null means all providers.
- * @param {Integer} param0.scrollNum Scroll number parameter used for logging the current iteration of the CMR scroll
- * @returns {String} CMR scroll id if more results available
+ * @param {Integer} param0.searchAfterNum searchAfter number parameter used for logging the current iteration of the CMR searchAfter
+ * @returns null
  */
 export const fetchPageFromCMR = async ({
-  scrollId,
+  searchAfter,
   token,
   gremlinConnection,
   providerId,
-  scrollNum = 0
+  searchAfterNum = 0
 }) => {
   const requestHeaders = {}
 
-  console.log(`Fetch collections from CMR, scroll #${scrollNum}`)
+  console.log(`Fetch collections from CMR, searchAfter #${searchAfterNum}`)
 
   if (token) {
     requestHeaders['Echo-Token'] = token
   }
 
-  if (scrollId) {
-    requestHeaders['CMR-Scroll-Id'] = scrollId
+  if (searchAfter) {
+    requestHeaders['CMR-Search-After'] = searchAfter
   }
 
-  let fetchUrl = `${process.env.CMR_ROOT}/search/collections.json?page_size=${process.env.PAGE_SIZE}&scroll=true`
+  let fetchUrl = `${process.env.CMR_ROOT}/search/collections.json?page_size=${process.env.PAGE_SIZE}&searchAfter=true`
 
   if (providerId !== null) {
     fetchUrl += `&provider=${providerId}`
@@ -55,7 +55,7 @@ export const fetchPageFromCMR = async ({
     })
 
     const { data, headers } = cmrCollections
-    const { 'cmr-scroll-id': cmrScrollId } = headers
+    const { 'cmr-search-after': cmrsearchAfter } = headers
 
     const { feed = {} } = data
     const { entry = [] } = feed
@@ -87,20 +87,17 @@ export const fetchPageFromCMR = async ({
       })
     }
 
-    // If we have an active scrollId and there are more results
-    if (cmrScrollId && entry.length === parseInt(process.env.PAGE_SIZE, 10)) {
+    // If we have an active searchAfter and there are more results
+    if (cmrsearchAfter && entry.length === parseInt(process.env.PAGE_SIZE, 10)) {
       await fetchPageFromCMR({
-        scrollId: cmrScrollId,
+        searchAfter: cmrsearchAfter,
         token,
         gremlinConnection,
         providerId,
-        scrollNum: (scrollNum + 1)
+        searchAfterNum: (searchAfterNum + 1)
       })
     }
-
-    return cmrScrollId
   } catch (e) {
     console.log(`Could not complete request due to error: ${e}`)
-    return null
   }
 }

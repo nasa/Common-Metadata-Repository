@@ -30,10 +30,6 @@ describe('bootstrapGremlinServer handler', () => {
           ]
         })
 
-      nock(/local-cmr/)
-        .post(/clear-scroll/, JSON.stringify({ scroll_id: '196827907' }))
-        .reply(204)
-
       jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => undefined)
 
       const response = await bootstrapGremlinServer(event)
@@ -53,7 +49,7 @@ describe('bootstrapGremlinServer handler', () => {
         .reply(200, {
           feed: {
             updated: '2021-06-24T17:06:22.292Z',
-            id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&scroll=true&page_size=1&pretty=true',
+            id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&page_size=1&pretty=true',
             title: 'ECHO dataset metadata',
             entry: [{
               time_start: '1999-12-18T00:00:00.000Z',
@@ -80,7 +76,7 @@ describe('bootstrapGremlinServer handler', () => {
               }]
             }]
           }
-        }, { 'cmr-scroll-id': 196827907 })
+        }, { 'cmr-search-after': '["aaa", 123, 456]' })
 
       nock(/local-cmr/)
         .get(/collections/)
@@ -89,11 +85,7 @@ describe('bootstrapGremlinServer handler', () => {
             title: 'ECHO dataset metadata',
             entry: []
           }
-        }, { 'cmr-scroll-id': 196827907 })
-
-      nock(/local-cmr/)
-        .post(/clear-scroll/, JSON.stringify({ scroll_id: '196827907' }))
-        .reply(204)
+        }, { 'cmr-search-after': '["bbb", 567, 890]' })
 
       jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => null)
 
@@ -113,7 +105,7 @@ describe('bootstrapGremlinServer handler', () => {
         .reply(200, {
           feed: {
             updated: '2021-06-24T17:06:22.292Z',
-            id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&scroll=true&page_size=1&pretty=true',
+            id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&page_size=1&pretty=true',
             title: 'ECHO dataset metadata',
             entry: [{
               time_start: '1999-12-18T00:00:00.000Z',
@@ -140,14 +132,14 @@ describe('bootstrapGremlinServer handler', () => {
               }]
             }]
           }
-        }, { 'cmr-scroll-id': 196827907 })
+        }, { 'cmr-search-after': '["aaa", 123, 456]' })
 
       nock(/local-cmr/)
         .get(/collections/)
         .reply(200, {
           feed: {
             updated: '2021-06-24T17:06:22.292Z',
-            id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&scroll=true&page_size=1&pretty=true',
+            id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&page_size=1&pretty=true',
             title: 'ECHO dataset metadata',
             entry: [{
               time_start: '1999-12-18T00:00:00.000Z',
@@ -210,7 +202,7 @@ describe('bootstrapGremlinServer handler', () => {
               version_id: '003'
             }]
           }
-        }, { 'cmr-scroll-id': 196827907 })
+        }, { 'cmr-search-after': '["bbb", 567, 890]' })
 
       nock(/local-cmr/)
         .get(/collections/)
@@ -219,11 +211,7 @@ describe('bootstrapGremlinServer handler', () => {
             title: 'ECHO dataset metadata',
             entry: []
           }
-        }, { 'cmr-scroll-id': 196827907 })
-
-      nock(/local-cmr/)
-        .post(/clear-scroll/, JSON.stringify({ scroll_id: '196827907' }))
-        .reply(204)
+        }, {})
 
       jest.spyOn(getEchoToken, 'getEchoToken').mockImplementation(() => null)
 
