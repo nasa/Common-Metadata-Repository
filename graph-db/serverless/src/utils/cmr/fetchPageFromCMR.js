@@ -37,7 +37,7 @@ export const fetchPageFromCMR = async ({
     requestHeaders['CMR-Search-After'] = searchAfter
   }
 
-  let fetchUrl = `${process.env.CMR_ROOT}/search/collections.json?page_size=${process.env.PAGE_SIZE}&searchAfter=true`
+  let fetchUrl = `${process.env.CMR_ROOT}/search/collections.json?page_size=${process.env.PAGE_SIZE}`
 
   if (providerId !== null) {
     fetchUrl += `&provider=${providerId}`
