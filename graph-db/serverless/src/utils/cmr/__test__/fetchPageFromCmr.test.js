@@ -29,7 +29,7 @@ describe('fetchPageFromCMR', () => {
     nock(/local-cmr/).get(/search/).reply(200, mockedBody)
 
     await fetchPageFromCMR({
-      scrollId: null,
+      searchAfter: null,
       token: null,
       gremlinConnection: global.testGremlinConnection,
       providerId: 'PROV1'
@@ -42,7 +42,7 @@ describe('fetchPageFromCMR', () => {
     const mockedBody = {
       feed: {
         updated: '2021-06-24T17:06:22.292Z',
-        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&scroll=true&page_size=1&pretty=true',
+        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&page_size=1&pretty=true',
         title: 'ECHO dataset metadata',
         entry: [{
           time_start: '1999-12-18T00:00:00.000Z',
@@ -71,16 +71,16 @@ describe('fetchPageFromCMR', () => {
       }
     }
 
-    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-scroll-id': 196827907 })
+    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-search-after': '["aaa", 123, 456]' })
     nock(/local-cmr/).get(/search/).reply(200, {
       feed: {
         title: 'ECHO dataset metadata',
         entry: []
       }
-    }, { 'cmr-scroll-id': 196827907 })
+    }, { })
 
     await fetchPageFromCMR({
-      scrollId: null,
+      searchAfter: null,
       token: null,
       gremlinConnection: global.testGremlinConnection,
       providerId: null
@@ -106,7 +106,7 @@ describe('fetchPageFromCMR', () => {
     const mockedBody = {
       feed: {
         updated: '2021-06-24T17:06:22.292Z',
-        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&scroll=true&page_size=1&pretty=true',
+        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&page_size=1&pretty=true',
         title: 'ECHO dataset metadata',
         entry: [{
           time_start: '1999-12-18T00:00:00.000Z',
@@ -135,16 +135,16 @@ describe('fetchPageFromCMR', () => {
       }
     }
 
-    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-scroll-id': 196827907 })
+    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-search-after': '["aaa", 123, 456]' })
     nock(/local-cmr/).get(/search/).reply(200, {
       feed: {
         title: 'ECHO dataset metadata',
         entry: []
       }
-    }, { 'cmr-scroll-id': 196827907 })
+    }, { 'cmr-search-after': '["bbb", 567, 890]' })
 
     await fetchPageFromCMR({
-      scrollId: 'fake-scroll-id',
+      searchAfter: 'fake-search-after',
       token: 'SUPER-SECRET-TOKEN',
       gremlinConnection: global.testGremlinConnection,
       providerId: null
@@ -174,7 +174,7 @@ describe('fetchPageFromCMR', () => {
     nock(/local-cmr/).get(/search/).reply(400, mockedBody)
 
     await fetchPageFromCMR({
-      scrollId: null,
+      searchAfter: null,
       token: null,
       gremlinConnection: global.testGremlinConnection,
       providerId: null
@@ -187,7 +187,7 @@ describe('fetchPageFromCMR', () => {
     const mockedBody = {
       feed: {
         updated: '2021-06-24T17:06:22.292Z',
-        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&scroll=true&page_size=1&pretty=true',
+        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&page_size=1&pretty=true',
         title: 'ECHO dataset metadata',
         entry: [{
           time_start: '1999-12-18T00:00:00.000Z',
@@ -216,21 +216,21 @@ describe('fetchPageFromCMR', () => {
       }
     }
 
-    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-scroll-id': 196827907 })
+    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-search-after': '["aaa", 123, 456]' })
     nock(/local-cmr/).get(/search/).reply(200, {
       feed: {
         title: 'ECHO dataset metadata',
         entry: []
       }
-    }, { 'cmr-scroll-id': 196827907 })
+    }, { 'cmr-search-after': '["bbb", 567, 890]' })
 
     const consoleMock = jest.spyOn(console, 'log')
     const errorResponse = jest.spyOn(chunkArray, 'chunkArray').mockImplementationOnce(() => {
       throw new Error('Oh no! I sure hope this exception is handled')
     })
 
-    const page = await fetchPageFromCMR({
-      scrollId: null,
+    await fetchPageFromCMR({
+      searchAfter: null,
       token: null,
       gremlinConnection: global.testGremlinConnection,
       providerId: null
@@ -238,6 +238,5 @@ describe('fetchPageFromCMR', () => {
 
     expect(consoleMock).toBeCalledWith('Could not complete request due to error: Error: Oh no! I sure hope this exception is handled')
     expect(errorResponse).toBeCalledTimes(1)
-    expect(page).toEqual(null)
   })
 })
