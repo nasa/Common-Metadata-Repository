@@ -45,10 +45,7 @@
         extract-fields (partial extract-humanized-elastic-fields humanized)
         kms-index (kms-fetcher/get-kms-index context)
         platforms2-humanized (map #(platform/humanized-platform2-nested-fields->elastic-doc kms-index %)
-                                  (:Platforms humanized))
-        ;; _   (Thread/sleep (rand-int 5000))
-        ;; _ (println "---- platforms2-humanized" platforms2-humanized)
-        ]
+                                  (:Platforms humanized))]
     (merge
       {:science-keywords-humanized (map sk/humanized-science-keyword->elastic-doc
                                         (:ScienceKeywords humanized))}

@@ -104,12 +104,9 @@
         science-keywords-facets (when (facet-fields-set :science-keywords)
                                   (hv2/create-hierarchical-v2-facets
                                    aggs base-url query-params :science-keywords-h))
-
         platform-facets (when (facet-fields-set :platforms)
                           (hv2/create-hierarchical-v2-facets
                            aggs base-url query-params :platforms-h))
-        ;; _ (println "---- platform-facets" platform-facets)
-
         variables-facets (when (and (facet-fields-set :variables) (include-variable-facets))
                            (hv2/create-hierarchical-v2-facets
                             aggs base-url query-params :variables-h))
