@@ -498,18 +498,18 @@
           '()
           fields))
 
-(defn- get-missing-subfield-term-tuples-v2
+(defn- get-missing-subfield-term-tuples
   "Compares the provided facet object and query-params to find any query-params
    that are not included in the provided facet.
    
    Args
-   field - keyword - Facet type (platform, keyword, instrument, ...)
+   field - keyword - Facet type: platform, keyword, instrument, ...
    field-hierarchy - list of keywords - (:basis :category :sub-category :short-name)
    hierarchical-facet - nested maps - facet maps that can contain children facets
    query-params - map - query parameters passed in with request
 
    Returns a list of vectors as field-hierarchy & term tuples ([:basis term-1] [:category term-2] ...)"
-  [field ;; platform-h
+  [field 
    field-hierarchy
    hierarchical-facet
    query-params]
@@ -610,7 +610,7 @@
         hierarchical-facet (-> v2-buckets
                                (prune-hierarchical-facet field true)
                                (remove-non-earth-science-keywords field))
-        subfield-term-tuples (get-missing-subfield-term-tuples-v2
+        subfield-term-tuples (get-missing-subfield-term-tuples
                               field
                               field-hierarchy
                               hierarchical-facet
