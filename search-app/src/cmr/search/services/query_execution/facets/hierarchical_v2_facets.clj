@@ -519,7 +519,7 @@
                           (rest field-hierarchy)
                           field-hierarchy)
         search-terms (for [subfield field-hierarchy]
-                       {subfield (into #{} (get-search-terms-for-hierarchical-field field subfield query-params))})
+                       {subfield (set (get-search-terms-for-hierarchical-field field subfield query-params))})
         search-terms-grouped-by-field (into {} search-terms)
         facet-terms (get-facet-terms-for-subfield (:children hierarchical-facet))
         facets-grouped-by-field (reduce (fn [result next] (assoc result (:field next) (conj (get result (:field next) #{}) (:title next)))) {} facet-terms)]
