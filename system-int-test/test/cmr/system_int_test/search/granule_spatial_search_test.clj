@@ -529,6 +529,50 @@
         [whole-world polygon-with-holes polygon-with-holes-cart normal-line-cart normal-line
          normal-poly-cart]))))
 
+(deftest granule-with-multiple-spatial-features-test
+  (let [coll (d/ingest-concept-with-metadata-file "CMR-8076/C2036880739-POCLOUD-Collection.iso19115"
+                                                  {:provider-id "PROV1"
+                                                   :concept-type :collection
+                                                   :native-id "orbit-parent"
+                                                   :format-key :iso19115})
+        _ (index/wait-until-indexed)
+        granule1 (d/ingest-concept-with-metadata-file "CMR-8076/G2226084285-POCLOUD.echo10"
+                                                      {:provider-id "PROV1"
+                                                       :concept-type :granule
+                                                       :native-id "inside"
+                                                       :format-key :echo10})
+
+        intersect-polygon-only [99.48146 70.96863
+                                104.15878 65.55085
+                                104.78926 74.37265
+                                99.48146 70.96863]
+        intersect-bbox-only [-83.68022 88.41303
+                             -87.20738 84.48795
+                             -79.61266 84.00407
+                             -83.68022 88.41303]
+        intersect-both [-67.20315 67.85336
+                        -72.89021 54.72786
+                        -57.4791 55.05788
+                        -67.20315 67.85336]
+        intersect-none [125.73942 88.94912
+                        121.73351 84.29363
+                        129.19452 84.24357
+                        125.73942 88.94912]]
+    (index/wait-until-indexed)
+    (testing "Spatial search query for granule which has multiple geometries in its metadata"
+      (testing "Intersects Polygon only"
+        (is (= 1 (:hits (search/find-refs :granule {:provider "PROV1"
+                                                    :polygon (apply search-poly intersect-polygon-only)})))))
+      (testing "Intersects Bounding Box only"
+        (is (= 1 (:hits (search/find-refs :granule {:provider "PROV1"
+                                                    :polygon (apply search-poly intersect-bbox-only)})))))
+      (testing "Intersects both Bounding Box and Polygon"
+        (is (= 1 (:hits (search/find-refs :granule {:provider "PROV1"
+                                                    :polygon (apply search-poly intersect-both)})))))
+      (testing "Intersects Neither"
+        (is (= 0 (:hits (search/find-refs :granule {:provider "PROV1"
+                                                    :polygon (apply search-poly intersect-none)}))))))))
+
 (deftest no-lr-spatial-search-test
   (let [geodetic-coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})}))
         geodetic-coll-cid (get-in geodetic-coll [:concept-id])
