@@ -14,6 +14,7 @@
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as cutil]
    [cmr.metadata-db.data.concepts :as c]
+   [cmr.metadata-db.data.generic-documents :as gen-doc]
    [cmr.metadata-db.data.ingest-events :as ingest-events]
    [cmr.metadata-db.data.providers :as provider-db]
    [cmr.metadata-db.services.concept-constraints :as cc]
@@ -473,6 +474,7 @@
          {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
          provider (provider-service/get-provider-by-id context provider-id true)]
      (or (c/get-concept db concept-type provider concept-id revision-id)
+         (gen-doc/get-concept db :generic provider concept-id revision-id)
          (cmsg/data-error :not-found
                           msg/concept-with-concept-id-and-rev-id-does-not-exist
                           concept-id

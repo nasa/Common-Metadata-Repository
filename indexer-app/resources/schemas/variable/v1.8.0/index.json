@@ -1,0 +1,60 @@
+{
+  "MetadataSpecification": {
+      "URL": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1",
+      "Name": "Generic-Index",
+      "Version": "0.0.1"
+  },
+  "Indexes":
+  [
+    {
+      "Description": "Short Name",
+      "Field": ".Name",
+      "Name": "Short-Name",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Standard Name",
+      "Field": ".StandardName",
+      "Name": "Standard-Name",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Additional Identifiers",
+      "Field": ".AdditionalIdentifiers[0].Identifier",
+      "Name": "Additional-Identifier",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Additional Description",
+      "Field": ".AdditionalIdentifiers[0].Description",
+      "Name": "AdditionalDescription",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Additional Info",
+      "Field": ".AdditionalIdentifiers[0]",
+      "Name": "Additional-Info",
+      "Mapping": "string",
+      "Indexer": "complex-field",
+      "Configuration": {"sub-fields": ["Identifier", "Description"]}
+    },
+    {
+      "Description": "Long Name",
+      "Field": ".LongName",
+      "Name": "Long-Name",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Type",
+      "Field": ".VariableType",
+      "Name": "VariableType",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Definition",
+      "Field": ".Definition",
+      "Name": "Definition",
+      "Mapping": "string"
+    }
+  ]
+}

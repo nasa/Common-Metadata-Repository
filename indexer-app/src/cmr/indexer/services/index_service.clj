@@ -176,7 +176,8 @@
                                    :variable :variable-association
                                    :service :service-association
                                    :tool :tool-association
-                                   :subscription}
+                                   :subscription
+                                   :generic}
                                  concept-type))))
 
 (defconfig collection-reindex-batch-size
@@ -437,6 +438,14 @@
                                       context service-associations)
                 tool-associations (es/parse-non-tombstone-associations
                                    context tool-associations)
+                ;; get-concept-index-names can not solve our problem here, we need a list based on
+                ;; the metadata and not the concept id mapping
+                concept-type-raw (cs/concept-id->type concept-id)
+                concept-type (if (= :generic concept-type-raw)
+                                   (keyword (str "generic-" (clojure.string/lower-case
+                                                             (get-in parsed-concept
+                                                                     [:MetadataSpecification :Name]))))
+                                   concept-type-raw)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
                 es-doc (es/parsed-concept->elastic-doc

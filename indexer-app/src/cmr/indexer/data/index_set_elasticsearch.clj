@@ -28,10 +28,17 @@
   (let [{:keys [index-name settings mapping]} idx-w-config]
     (when-not (esi-helper/exists? conn index-name)
       (try
+        ;; TODO: Generic work: only print this in dev mode
+        (println "Here in create-index function creating" index-name)
+        (when (= index-name "1_services") (println "mappings:" mapping))
+        ;; TODO: Generic work: print out anything with generic in the name
+        (when (= index-name "1_generic_grid") (println "mappings:" mapping))
+        (when (= index-name "1_generic_variable") (println "mappings:" mapping))
         (esi-helper/create conn index-name {:settings settings :mappings mapping})
         (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
                 error (:error body)]
+            (println "here catching error creating elastic index, but these do not always roll back")
             (info (format "error creating %s elastic index, elastic reported error: %s"
                           index-name error))
             (throw e)))))))
