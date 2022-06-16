@@ -2447,7 +2447,7 @@ For granule additional attributes search, the default is searching for the attri
 
 #### <a name="g-spatial"></a> Find granules by Spatial
 The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
-Note: When querying a granule which has multiple types of spatial features (i.e. a Polygon and a Bounding Box), the granule will be returned if the spatial query matches at least one of the spatial types (i.e. matches the Polygon OR Bounding Box).
+Note: When querying a granule which has multiple types of spatial features in the granule metadata (i.e. a Polygon and a Bounding Box), the granule will be returned if the spatial query matches at least one of the spatial types on the given granule (i.e. matches the granule's Polygon OR Bounding Box).
 
 ##### <a name="g-polygon"></a> Polygon
 Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.
