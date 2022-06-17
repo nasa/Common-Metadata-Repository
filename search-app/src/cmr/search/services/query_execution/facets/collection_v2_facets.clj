@@ -5,6 +5,7 @@
    [camel-snake-kebab.core :as csk]
    [clojure.string :as string]
    [cmr.common.config :refer [defconfig]]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
@@ -107,6 +108,7 @@
         platform-facets (when (facet-fields-set :platforms)
                           (hv2/create-hierarchical-v2-facets
                            aggs base-url query-params :platforms-h))
+        _  (info "CMR-8263 platform-facets" (pr-str platform-facets))
         variables-facets (when (and (facet-fields-set :variables) (include-variable-facets))
                            (hv2/create-hierarchical-v2-facets
                             aggs base-url query-params :variables-h))
@@ -126,5 +128,6 @@
                           variables-facets
                           two-d-facets
                           latency-facets
-                          range-facets)]
+                          range-facets)
+        _  (info "CMR-8263 v2-facets" (pr-str platform-facets))]
     v2-facets))

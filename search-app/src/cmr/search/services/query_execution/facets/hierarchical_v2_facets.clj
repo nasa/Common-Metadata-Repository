@@ -644,7 +644,8 @@
   "Parses the elastic aggregations and generates the v2 facets for the given hierarchical field."
   [elastic-aggregations base-url query-params field]
   (let [sub-facets (hierarchical-bucket-map->facets-v2
-                    field (field elastic-aggregations) base-url query-params)]
+                    field (field elastic-aggregations) base-url query-params)
+        _ (when (= field :platforms-h) (info "CMR-8263 create-hierarchical-v2-facets sub-facets" (pr-str sub-facets)))]
     (when (seq sub-facets)
       (let [field-reg-ex (re-pattern (str (csk/->snake_case_string field) ".*"))
             applied? (->> query-params
