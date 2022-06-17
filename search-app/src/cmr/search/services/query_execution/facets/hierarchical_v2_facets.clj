@@ -7,6 +7,7 @@
    [camel-snake-kebab.core :as csk]
    [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as util]
    [cmr.common-app.services.search.parameters.converters.nested-field :as nested-field]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
@@ -509,7 +510,7 @@
    query-params - map - query parameters passed in with request
 
    Returns a list of vectors as field-hierarchy & term tuples ([:basis term-1] [:category term-2] ...)"
-  [field 
+  [field
    field-hierarchy
    hierarchical-facet
    query-params]
@@ -549,15 +550,17 @@
   "Helper function to create v2 facets for terms which are included in the search query, but have
   zero matching collections. This allows the user to easily remove an applied facet."
   [base-url query-params field subfield-term-tuples]
-  (remove-key-from-maps-seqs
-   :field
-   (for [[subfield search-term] subfield-term-tuples
-         :let [param-name (format "%s[0][%s]"
-                                  (csk/->snake_case_string field)
-                                  (csk/->snake_case_string subfield))
-               link (hlh/create-link-for-hierarchical-field base-url query-params param-name
-                                                            search-term)]]
-     (v2h/generate-hierarchical-filter-node search-term 0 link nil subfield))))
+  (let [facets (for [[subfield search-term] subfield-term-tuples
+                     :let [param-name (format "%s[0][%s]"
+                                              (csk/->snake_case_string field)
+                                              (csk/->snake_case_string subfield))
+                           link (hlh/create-link-for-hierarchical-field base-url query-params param-name
+                                                                        search-term)]]
+                 (v2h/generate-hierarchical-filter-node search-term 0 link nil subfield))
+        _   (when (= field :platforms-h) (info "CMR-8263 zero-match-nodes" (pr-str facets)))]
+    (remove-key-from-maps-seqs
+     :field
+     facets)))
 
 (def earth-science-category-string
   "Constant for the string used for the Earth Science category within humanized science keywords."
@@ -600,6 +603,10 @@
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
   that field."
   [field bucket-map base-url query-params]
+  (when (= field :platforms-h) (info "CMR-8263 field" field))
+  (when (= field :platforms-h) (info "CMR-8263 bucket-map" bucket-map))
+  (when (= field :platforms-h) (info "CMR-8263 base-url" base-url))
+  (when (= field :platforms-h) (info "CMR-8263 query-params" query-params))
   (let [field-hierarchy (get-field-hierarchy field query-params)
         v2-buckets (parse-hierarchical-bucket-v2
                     field
@@ -610,19 +617,23 @@
         hierarchical-facet (-> v2-buckets
                                (prune-hierarchical-facet field true)
                                (remove-non-earth-science-keywords field))
+        _ (when (= field :platforms-h) (info "CMR-8263 hierarchical-facet-1" hierarchical-facet))
         subfield-term-tuples (get-missing-subfield-term-tuples
                               field
                               field-hierarchy
                               hierarchical-facet
                               query-params)
+        _ (when (= field :platforms-h) (info "CMR-8263 subfield-term-tuples" subfield-term-tuples))
         ;; a field is inserted into the v2 facets to determine the subfield-term-tuples
         ;; once complete the field should be removed as it is no longer needed.
         hierarchical-facet (remove-key-from-maps-seqs :field hierarchical-facet)
+        _ (when (= field :platforms-h) (info "CMR-8263 hierarchical-facet-2" hierarchical-facet))
         facets-with-zero-matches (create-facets-with-zero-matches
                                   base-url
                                   query-params
                                   field
-                                  subfield-term-tuples)]
+                                  subfield-term-tuples)
+        _ (when (= field :platforms-h) (info "CMR-8263 facets-with-zero-matches" (pr-str facets-with-zero-matches)))]
     (if (seq facets-with-zero-matches)
       ;; Add in links to remove any hierarchical fields that have been applied to the query-params
       ;; but do not have any matching collections.
