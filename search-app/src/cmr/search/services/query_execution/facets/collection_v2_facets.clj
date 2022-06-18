@@ -108,7 +108,6 @@
         platform-facets (when (facet-fields-set :platforms)
                           (hv2/create-hierarchical-v2-facets
                            aggs base-url query-params :platforms-h))
-        _  (info "CMR-8263 platform-facets" (pr-str platform-facets))
         variables-facets (when (and (facet-fields-set :variables) (include-variable-facets))
                            (hv2/create-hierarchical-v2-facets
                             aggs base-url query-params :variables-h))
