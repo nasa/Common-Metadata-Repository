@@ -27,6 +27,7 @@
   "This tests the HTML output of the email generation"
   (testing "Create email content for granule refs"
     (let [actual (jobs/create-email-content
+                  :granule
                   (ingest-config/cmr-support-email)
                   "someone@gmail.com"
                   '("https://cmr.link/g1" "https://cmr.link/g2" "https://cmr.link/g3")
@@ -59,6 +60,7 @@
              (:content (first (:body actual)))))))
   (testing "Create email content for collection refs"
     (let [actual (jobs/create-email-content
+                  :collection
                   (ingest-config/cmr-support-email)
                   "someone@gmail.com"
                   '("https://cmr.link/c1" "https://cmr.link/c2" "https://cmr.link/c3")
