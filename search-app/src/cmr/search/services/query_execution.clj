@@ -236,7 +236,12 @@
 (defn- merge-search-result-facets
   "Returns search result by merging the base result and the facet results."
   [concept-type base-result facet-results]
-  (let [individual-facets (mapcat #(get-in % [:facets :children]) facet-results)]
+  (println "merge-search-result-facets concept-type" (pr-str concept-type))
+  (println "merge-search-result-facets base-result" (pr-str base-result))
+  (println "merge-search-result-facets facet-results" (pr-str facet-results))
+  (let [individual-facets (mapcat #(get-in % [:facets :children]) facet-results)
+        _ (println "merge-search-result-facets individual-facets" (pr-str individual-facets))
+        ]
     (-> base-result
         (assoc-in [:facets :has_children] true)
         (update-in [:facets :children] #(merge-facets concept-type % individual-facets)))))
@@ -256,9 +261,9 @@
                                           (set facet-fields-in-query))
         query (assoc query :complicated-facets false :facet-fields base-facet-fields)
         base-result (common-qe/execute-query context query)
-        _ (info "CMR-8263 execute-query :complicated-facets base-result" base-result)
+        _ (info "CMR-8263 execute-query :complicated-facets base-result" (pr-str base-result))
         facet-results (map #(get-facets-for-field context query %) facet-fields-in-query)
-        _ (info "CMR-8263 execute-query :complicated-facets facet-results" facet-results)
+        _ (info "CMR-8263 execute-query :complicated-facets facet-results" (pr-str facet-results))
         merge-results (merge-search-result-facets concept-type base-result facet-results)
-        _ (info "CMR-8263 execute-query :complicated-facets merge-results" merge-results)]
+        _ (info "CMR-8263 execute-query :complicated-facets merge-results" (pr-str merge-results))]
     merge-results))

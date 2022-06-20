@@ -128,5 +128,6 @@
                           two-d-facets
                           latency-facets
                           range-facets)
-        _  (info "CMR-8263 v2-facets" (pr-str platform-facets))]
+        ;; _  (info "CMR-8263 v2-facets" (pr-str platform-facets))
+        ]
     v2-facets))

@@ -221,5 +221,6 @@
         facet-fields (or facet-fields (facets-v2-params concept-type))
         aggregations (:aggregations elastic-results)
         v2-facets (assoc query-results :facets (create-v2-facets context concept-type aggregations facet-fields))
-        _ (info "CMR-8263 post-process-query-result-feature v2-facets" (pr-str v2-facets))]
+        ;; _ (info "CMR-8263 post-process-query-result-feature v2-facets" (pr-str v2-facets))
+        ]
     v2-facets))
