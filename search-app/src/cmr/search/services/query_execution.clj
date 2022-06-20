@@ -189,6 +189,8 @@
   updated-orig-facets-with-count is:
   [{:title \"t1\" :count 1} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]"
   [facets-for-field all-facets-for-field]
+  (info "CMR-8263 update-facets-for-field facets-for-field" (pr-str facets-for-field))
+  (info "CMR-8263 update-facets-for-field all-facets-for-field" (pr-str all-facets-for-field))
   (let [orig-first-facets-children (first (get-in facets-for-field [:facets :children]))
         orig-facets-with-count (get-facets-with-count facets-for-field)
         all-facets-with-count  (get-facets-with-count all-facets-for-field)
@@ -210,7 +212,11 @@
                   (assoc :page-size 0))
         facets-size-map (:facets-size query)
         facets-size-for-field (field facets-size-map)
-        facets-for-field (common-qe/execute-query context query)]
+        facets-for-field (common-qe/execute-query context query)
+        _ (info "CMR-8263 get-facets-for-field query" (pr-str query))
+        _ (info "CMR-8263 get-facets-for-field facets-size-map" (pr-str facets-size-map))
+        _ (info "CMR-8263 get-facets-for-field facets-size-for-field" (pr-str facets-size-for-field))
+        _ (info "CMR-8263 get-facets-for-field facets-for-field" (pr-str facets-for-field))]
     ;; Check if any facet contains 0 count, if so, and the
     ;; facets-size-for-field is not showing all facets, then we will try to
     ;; call get-facets-for-field again - with the query being query-with-all-facets-size.
@@ -236,12 +242,10 @@
 (defn- merge-search-result-facets
   "Returns search result by merging the base result and the facet results."
   [concept-type base-result facet-results]
-  (println "merge-search-result-facets concept-type" (pr-str concept-type))
-  (println "merge-search-result-facets base-result" (pr-str base-result))
-  (println "merge-search-result-facets facet-results" (pr-str facet-results))
-  (let [individual-facets (mapcat #(get-in % [:facets :children]) facet-results)
-        _ (println "merge-search-result-facets individual-facets" (pr-str individual-facets))
-        ]
+  (info "CMR-8263 merge-search-result-facets concept-type" (pr-str concept-type))
+  (info "CMR-8263 merge-search-result-facets base-result" (pr-str base-result))
+  (info "CMR-8263 merge-search-result-facets facet-results" (pr-str facet-results))
+  (let [individual-facets (mapcat #(get-in % [:facets :children]) facet-results)]
     (-> base-result
         (assoc-in [:facets :has_children] true)
         (update-in [:facets :children] #(merge-facets concept-type % individual-facets)))))
@@ -261,9 +265,10 @@
                                           (set facet-fields-in-query))
         query (assoc query :complicated-facets false :facet-fields base-facet-fields)
         base-result (common-qe/execute-query context query)
-        _ (info "CMR-8263 execute-query :complicated-facets base-result" (pr-str base-result))
+        ;; _ (info "CMR-8263 execute-query :complicated-facets base-result" (pr-str base-result))
         facet-results (map #(get-facets-for-field context query %) facet-fields-in-query)
-        _ (info "CMR-8263 execute-query :complicated-facets facet-results" (pr-str facet-results))
+        ;; _ (info "CMR-8263 execute-query :complicated-facets facet-results" (pr-str facet-results))
         merge-results (merge-search-result-facets concept-type base-result facet-results)
-        _ (info "CMR-8263 execute-query :complicated-facets merge-results" (pr-str merge-results))]
+        ;; _ (info "CMR-8263 execute-query :complicated-facets merge-results" (pr-str merge-results))
+        ]
     merge-results))
