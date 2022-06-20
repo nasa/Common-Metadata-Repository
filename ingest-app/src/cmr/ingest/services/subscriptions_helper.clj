@@ -149,24 +149,22 @@
                                  (t/now)
                                  (email-subscription-processing-lookback)))
               subscription (add-updated-since raw-subscription time-constraint)
-              sub-meta (-> (:metadata subscription)
-                           (json/decode true))
-              subscriber-id (get-in subscription [:extra-fields :subscriber-id])
-              sub-type (keyword (get sub-meta :Type))
+              {:keys [concept-id extra-fields metadata]} subscription
+              {:keys [subscriber-id subscription-type collection-concept-id]} extra-fields
+              sub-type (or (keyword subscription-type) :granule)
+              sub-meta (json/decode metadata true)
               query-string (:Query sub-meta)
-              sub-id (get subscription :concept-id)
-              coll-id (get-in subscription [:extra-fields :collection-concept-id])
               query-params (create-query-params query-string)
               search-by-revision (merge {:revision-date time-constraint}
-                                        (when coll-id
-                                          {:collection-concept-id coll-id})
+                                        (when collection-concept-id
+                                          {:collection-concept-id collection-concept-id})
                                         {:token (config/echo-system-token)}
                                         query-params)
-              concept-refs (if (= sub-type :collection)
-                             (search-collection-refs context search-by-revision sub-id)
-                             (search-gran-refs-by-collection-id context search-by-revision sub-id))
+              concept-refs (if (= :collection sub-type)
+                             (search-collection-refs context search-by-revision concept-id)
+                             (search-gran-refs-by-collection-id context search-by-revision concept-id))
               subscriber-filtered-concept-refs (filter-concept-refs-by-subscriber-id context concept-refs subscriber-id)]]
-    [sub-id subscriber-filtered-concept-refs subscriber-id subscription]))
+    [concept-id subscriber-filtered-concept-refs subscriber-id sub-type subscription]))
 
 (defn- ^:redef send-email
   "Wrapper for postal-core/send-message"
@@ -174,11 +172,11 @@
   (postal-core/send-message email-settings email-content))
 
 (defmulti create-email-content
-  (fn [from-email-address to-email-address concept-ref-locations subscription]
-    (keyword (:Type (json/parse-string (:metadata subscription) true)))))
+  (fn [sub-type from-email-address to-email-address concept-ref-locations subscription]
+    sub-type))
 
 (defmethod create-email-content :granule
-  [from-email-address to-email-address concept-ref-locations subscription]
+  [sub-type from-email-address to-email-address concept-ref-locations subscription]
   (let [metadata (json/parse-string (:metadata subscription))
         concept-id (get-in subscription [:extra-fields :collection-concept-id])
         meta-query (get metadata "Query")
@@ -202,7 +200,7 @@
                             ").\n"))}]}))
 
 (defmethod create-email-content :collection
-  [from-email-address to-email-address concept-ref-locations subscription]
+  [sub-type from-email-address to-email-address concept-ref-locations subscription]
   (let [metadata (json/parse-string (:metadata subscription))
         meta-query (get metadata "Query")
         sub-start-time (:start-time subscription)
@@ -230,11 +228,11 @@
    (send-subscription-emails context subscriber-filtered-concept-refs-list true))
   ([context subscriber-filtered-concept-refs-list update-notification-time?]
    (doseq [subscriber-filtered-concept-refs-tuple subscriber-filtered-concept-refs-list
-           :let [[sub-id subscriber-filtered-concept-refs subscriber-id subscription] subscriber-filtered-concept-refs-tuple]]
+           :let [[sub-id subscriber-filtered-concept-refs subscriber-id sub-type subscription] subscriber-filtered-concept-refs-tuple]]
      (when (seq subscriber-filtered-concept-refs)
        (let [concept-ref-locations (map :location subscriber-filtered-concept-refs)
              email-address (urs/get-user-email context subscriber-id)
-             email-content (create-email-content (mail-sender) email-address concept-ref-locations subscription)
+             email-content (create-email-content sub-type (mail-sender) email-address concept-ref-locations subscription)
              email-settings {:host (email-server-host) :port (email-server-port)}]
          (try
            (send-email email-settings email-content)
