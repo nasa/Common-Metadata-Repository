@@ -153,8 +153,10 @@
 (defn- update-facets
   "Update the orig-facets-with-count using the info in the all-facets-with-count."
   [orig-facets-with-count all-facets-with-count]
-  (for [title-val (map :title orig-facets-with-count)]
-    (some #(when (= title-val (:title %)) %) all-facets-with-count)))
+  (for [title-val (map :title orig-facets-with-count)
+        :let [match (some #(when (= title-val (:title %)) %) all-facets-with-count)]
+        :when (some? match)]
+    match))
 
 (defn- get-facets-with-count
   "Extract out the facet part that contains title and count, amoung other things:
@@ -189,15 +191,21 @@
   updated-orig-facets-with-count is:
   [{:title \"t1\" :count 1} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]"
   [facets-for-field all-facets-for-field]
-  (info "CMR-8263 update-facets-for-field facets-for-field" (pr-str facets-for-field))
-  (info "CMR-8263 update-facets-for-field all-facets-for-field" (pr-str all-facets-for-field))
+  ;; (info "CMR-8263 update-facets-for-field facets-for-field" (pr-str facets-for-field))
+  ;; (info "CMR-8263 update-facets-for-field all-facets-for-field" (pr-str all-facets-for-field))
   (let [orig-first-facets-children (first (get-in facets-for-field [:facets :children]))
+
         orig-facets-with-count (get-facets-with-count facets-for-field)
+        ;; _ (println "---- orig-facets-with-count" orig-facets-with-count)
         all-facets-with-count  (get-facets-with-count all-facets-for-field)
+        ;; _ (println "---- all-facets-with-count" all-facets-with-count)
         ;; replace the original facets with the facets in all-facets that have the same :title.
         updated-orig-facets-with-count (update-facets orig-facets-with-count all-facets-with-count)
+        ;; _ (println "---- updated-orig-facets-with-count" updated-orig-facets-with-count)
         updated-orig-first-facets-children
-        (assoc orig-first-facets-children :children updated-orig-facets-with-count)]
+        (assoc orig-first-facets-children :children updated-orig-facets-with-count)
+        ;; _ (println "---- updated-orig-first-facets-children" updated-orig-first-facets-children)
+        ]
     ;;Return the facets-for-field with the first facets children being the updated-orig-first-facets-children
     (assoc-in facets-for-field [:facets :children] [updated-orig-first-facets-children])))
 
@@ -213,10 +221,11 @@
         facets-size-map (:facets-size query)
         facets-size-for-field (field facets-size-map)
         facets-for-field (common-qe/execute-query context query)
-        _ (info "CMR-8263 get-facets-for-field query" (pr-str query))
-        _ (info "CMR-8263 get-facets-for-field facets-size-map" (pr-str facets-size-map))
-        _ (info "CMR-8263 get-facets-for-field facets-size-for-field" (pr-str facets-size-for-field))
-        _ (info "CMR-8263 get-facets-for-field facets-for-field" (pr-str facets-for-field))]
+        ;; _ (info "CMR-8263 get-facets-for-field query" (pr-str query))
+        ;; _ (info "CMR-8263 get-facets-for-field facets-size-map" (pr-str facets-size-map))
+        ;; _ (info "CMR-8263 get-facets-for-field facets-size-for-field" (pr-str facets-size-for-field))
+        ;; _ (info "CMR-8263 get-facets-for-field facets-for-field" (pr-str facets-for-field))
+        ]
     ;; Check if any facet contains 0 count, if so, and the
     ;; facets-size-for-field is not showing all facets, then we will try to
     ;; call get-facets-for-field again - with the query being query-with-all-facets-size.
@@ -242,9 +251,9 @@
 (defn- merge-search-result-facets
   "Returns search result by merging the base result and the facet results."
   [concept-type base-result facet-results]
-  (info "CMR-8263 merge-search-result-facets concept-type" (pr-str concept-type))
-  (info "CMR-8263 merge-search-result-facets base-result" (pr-str base-result))
-  (info "CMR-8263 merge-search-result-facets facet-results" (pr-str facet-results))
+  ;; (info "CMR-8263 merge-search-result-facets concept-type" (pr-str concept-type))
+  ;; (info "CMR-8263 merge-search-result-facets base-result" (pr-str base-result))
+  ;; (info "CMR-8263 merge-search-result-facets facet-results" (pr-str facet-results))
   (let [individual-facets (mapcat #(get-in % [:facets :children]) facet-results)]
     (-> base-result
         (assoc-in [:facets :has_children] true)
