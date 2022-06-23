@@ -123,17 +123,19 @@
   fields in 1.16.7. StartCircularLatitudeUnit is added only if StartCircularLatitude
   exists."
   [collection]
-  (let [orbit-period (get-in collection [:SpatialExtent :OrbitParameters :Period])
-        StartCircularLatitude (get-in collection [:SpatialExtent :OrbitParameters :StartCircularLatitude])
-        collection (-> collection
-                       (update-in [:SpatialExtent :OrbitParameters] dissoc :Period)
-                       (update-in [:SpatialExtent :OrbitParameters] assoc :SwathWidthUnit "Kilometer"
-                                                                          :OrbitPeriodUnit "Decimal Minute"
-                                                                          :InclinationAngleUnit "Degree"
-                                                                          :OrbitPeriod orbit-period))]
-    (if StartCircularLatitude
-      (assoc-in collection [:SpatialExtent :OrbitParameters :StartCircularLatitudeUnit] "Degree")
-      collection)))
+  (if (get-in collection [:SpatialExtent :OrbitParameters])
+    (let [orbit-period (get-in collection [:SpatialExtent :OrbitParameters :Period])
+          StartCircularLatitude (get-in collection [:SpatialExtent :OrbitParameters :StartCircularLatitude])
+          collection (-> collection
+                         (update-in [:SpatialExtent :OrbitParameters] dissoc :Period)
+                         (update-in [:SpatialExtent :OrbitParameters] assoc :SwathWidthUnit "Kilometer"
+                                                                            :OrbitPeriodUnit "Decimal Minute"
+                                                                            :InclinationAngleUnit "Degree"
+                                                                            :OrbitPeriod orbit-period))]
+      (if StartCircularLatitude
+        (assoc-in collection [:SpatialExtent :OrbitParameters :StartCircularLatitudeUnit] "Degree")
+        collection))
+    collection))
 
 (defn- get-largest-footprint-in-kilometer
   "Convert all foot-prints to Kilometer, return the largest value."
@@ -166,12 +168,14 @@
   convert SwathWidth to the value in assumed unit; If SwathWidth doesn't exist,
   convert largest Footprint to SwathWidth."
   [collection]
-  (let [swath-width (get-swath-width collection)
-        period (get-in collection [:SpatialExtent :OrbitParameters :OrbitPeriod])]
-    (-> collection
-        (update-in [:SpatialExtent :OrbitParameters] dissoc :Footprints :OrbitPeriod :SwathWidthUnit :OrbitPeriodUnit
-                :InclinationAngleUnit :StartCircularLatitudeUnit)
-        (update-in [:SpatialExtent :OrbitParameters] assoc :SwathWidth swath-width :Period period))))
+  (if (get-in collection [:SpatialExtent :OrbitParameters])
+    (let [swath-width (get-swath-width collection)
+          period (get-in collection [:SpatialExtent :OrbitParameters :OrbitPeriod])]
+      (-> collection
+          (update-in [:SpatialExtent :OrbitParameters] dissoc :Footprints :OrbitPeriod :SwathWidthUnit :OrbitPeriodUnit
+                                                              :InclinationAngleUnit :StartCircularLatitudeUnit)
+          (update-in [:SpatialExtent :OrbitParameters] assoc :SwathWidth swath-width :Period period)))
+    collection))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collection Migration Implementations
