@@ -3002,7 +3002,14 @@
      :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
                              :Name "UMM-C",
                              :Version "1.17.0"}}
-    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-2-Up}}))
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-2-Up}}
+
+    "Migrating up when Orbit Parameters is empty"
+    {:SpatialExtent {:OrbitParameters nil}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}
+    {:SpatialExtent {:OrbitParameters nil}}))
 
 (deftest migrate-1-17-0-to-1-16-7
   "Test the migration of collections from 1.17.0 to 1.16.7."
@@ -3029,6 +3036,13 @@
     "Migrating with SwathWidth being the largest Footprint"
     {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-3-Down}}
     {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-3-Down}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}
+    
+    "Migrating with no Orbit Paarameters"
+    {:SpatialExtent {:OrbitParameters nil}}
+    {:SpatialExtent {:OrbitParameters nil}
      :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
                              :Name "UMM-C",
                              :Version "1.17.0"}}))
