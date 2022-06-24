@@ -6,7 +6,6 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common-app.services.search.query-execution :as query-execution]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
@@ -220,7 +219,5 @@
         facet-fields (:facet-fields query)
         facet-fields (or facet-fields (facets-v2-params concept-type))
         aggregations (:aggregations elastic-results)
-        v2-facets (assoc query-results :facets (create-v2-facets context concept-type aggregations facet-fields))
-        ;; _ (info "CMR-8263 post-process-query-result-feature v2-facets" (pr-str v2-facets))
-        ]
+        v2-facets (assoc query-results :facets (create-v2-facets context concept-type aggregations facet-fields))]
     v2-facets))
