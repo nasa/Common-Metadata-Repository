@@ -556,9 +556,7 @@
                                               (csk/->snake_case_string subfield))
                            link (hlh/create-link-for-hierarchical-field base-url query-params param-name
                                                                         search-term)]]
-                 (v2h/generate-hierarchical-filter-node search-term 0 link nil subfield))
-        ;; _   (when (= field :platforms-h) (info "CMR-8263 zero-match-nodes" (pr-str facets)))
-        ]
+                 (v2h/generate-hierarchical-filter-node search-term 0 link nil subfield))]
     (remove-key-from-maps-seqs
      :field
      facets)))
@@ -604,10 +602,6 @@
   "Takes a map of elastic aggregation results for a nested field. Returns a hierarchical facet for
   that field."
   [field bucket-map base-url query-params]
-  ;; (when (= field :platforms-h) (info "CMR-8263 field" field))
-  ;; (when (= field :platforms-h) (info "CMR-8263 bucket-map" bucket-map))
-  ;; (when (= field :platforms-h) (info "CMR-8263 base-url" base-url))
-  ;; (when (= field :platforms-h) (info "CMR-8263 query-params" query-params))
   (let [field-hierarchy (get-field-hierarchy field query-params)
         v2-buckets (parse-hierarchical-bucket-v2
                     field
@@ -618,24 +612,19 @@
         hierarchical-facet (-> v2-buckets
                                (prune-hierarchical-facet field true)
                                (remove-non-earth-science-keywords field))
-        ;; _ (when (= field :platforms-h) (info "CMR-8263 hierarchical-facet-1" hierarchical-facet))
         subfield-term-tuples (get-missing-subfield-term-tuples
                               field
                               field-hierarchy
                               hierarchical-facet
                               query-params)
-        ;; _ (when (= field :platforms-h) (info "CMR-8263 subfield-term-tuples" subfield-term-tuples))
         ;; a field is inserted into the v2 facets to determine the subfield-term-tuples
         ;; once complete the field should be removed as it is no longer needed.
         hierarchical-facet (remove-key-from-maps-seqs :field hierarchical-facet)
-        ;; _ (when (= field :platforms-h) (info "CMR-8263 hierarchical-facet-2" hierarchical-facet))
         facets-with-zero-matches (create-facets-with-zero-matches
                                   base-url
                                   query-params
                                   field
-                                  subfield-term-tuples)
-        ;; _ (when (= field :platforms-h) (info "CMR-8263 facets-with-zero-matches" (pr-str facets-with-zero-matches)))
-        ]
+                                  subfield-term-tuples)]
     (if (seq facets-with-zero-matches)
       ;; Add in links to remove any hierarchical fields that have been applied to the query-params
       ;; but do not have any matching collections.
@@ -646,9 +635,7 @@
   "Parses the elastic aggregations and generates the v2 facets for the given hierarchical field."
   [elastic-aggregations base-url query-params field]
   (let [sub-facets (hierarchical-bucket-map->facets-v2
-                    field (field elastic-aggregations) base-url query-params)
-        ;; _ (when (= field :platforms-h) (info "CMR-8263 create-hierarchical-v2-facets sub-facets" (pr-str sub-facets)))
-        ]
+                    field (field elastic-aggregations) base-url query-params)]
     (when (seq sub-facets)
       (let [field-reg-ex (re-pattern (str (csk/->snake_case_string field) ".*"))
             applied? (->> query-params

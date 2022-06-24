@@ -191,21 +191,13 @@
   updated-orig-facets-with-count is:
   [{:title \"t1\" :count 1} {:title \"NonExist\" :count 0} {:title \"t3\" :count 1}]"
   [facets-for-field all-facets-for-field]
-  ;; (info "CMR-8263 update-facets-for-field facets-for-field" (pr-str facets-for-field))
-  ;; (info "CMR-8263 update-facets-for-field all-facets-for-field" (pr-str all-facets-for-field))
   (let [orig-first-facets-children (first (get-in facets-for-field [:facets :children]))
-
         orig-facets-with-count (get-facets-with-count facets-for-field)
-        ;; _ (println "---- orig-facets-with-count" orig-facets-with-count)
         all-facets-with-count  (get-facets-with-count all-facets-for-field)
-        ;; _ (println "---- all-facets-with-count" all-facets-with-count)
         ;; replace the original facets with the facets in all-facets that have the same :title.
         updated-orig-facets-with-count (update-facets orig-facets-with-count all-facets-with-count)
-        ;; _ (println "---- updated-orig-facets-with-count" updated-orig-facets-with-count)
         updated-orig-first-facets-children
-        (assoc orig-first-facets-children :children updated-orig-facets-with-count)
-        ;; _ (println "---- updated-orig-first-facets-children" updated-orig-first-facets-children)
-        ]
+        (assoc orig-first-facets-children :children updated-orig-facets-with-count)]
     ;;Return the facets-for-field with the first facets children being the updated-orig-first-facets-children
     (assoc-in facets-for-field [:facets :children] [updated-orig-first-facets-children])))
 

@@ -107,12 +107,9 @@
   "Executes a search for concepts and returns the results while logging execution times."
   [context query]
   (let [[query-execution-time results] (u/time-execution (qe/execute-query context query))
-        ;; _ (info "CMR-8263 time-concept-search results" results)
         [result-gen-time result-str] (u/time-execution
                                       (search-results->response
-                                       context query (assoc results :took query-execution-time)))
-        ;; _ (info "CMR-8263 time-concept-search result-str" result-str)
-        ]
+                                       context query (assoc results :took query-execution-time)))]
     (info "query-execution-time:" query-execution-time "result-gen-time:" result-gen-time)
     [results result-str]))
 
