@@ -31,6 +31,53 @@
       "Mapping": "string",
       "Indexer": "complex-field",
       "Configuration": {"sub-fields": ["Type", "URL"]}
-    }
+    },
+    {
+      "Description": "Mock index for property field",
+      "Field": ".Name",
+      "Name": "Name",
+      "Type": "graph",
+      "Indexer": "property"
+  },
+  {
+      "Description": "Mock index for property field",
+      "Field": ".Version",
+      "Name": "Version",
+      "Type": "graph",
+      "Indexer": "property"
+  },
+  {
+      "Description": "Mock index for separate entity field",
+      "Field": ".GridDefinition.CoordinateReferenceSystemID",
+      "Name": "CoordinateReferenceSystem",
+      "Type": "graph",
+      "Indexer": "separate-node",
+      "Configuration": {
+          "properties": ["Type", "URL"],
+          "relationship": "DefinedBy"
+          }
+  },
+  {
+      "Description": "Mock index for separate entity field",
+      "Field": ".Organization",
+      "Name": "Organization",
+      "Type": "graph",
+      "Indexer": "separate-node",
+      "Configuration": {
+          "properties": ["ShortName"],
+          "relationship": "PublishedBy"
+          }
+  },
+  {
+      "Description": "Mock index for separate entity field",
+      "Field": ".RelatedURLs",
+      "Name": "URL",
+      "Type": "graph",
+      "Indexer": "separate-node",
+      "Configuration": {
+          "properties": ["URL", "URLContentType"],
+          "relationship": "RelatedTo"
+          }
+  }
   ]
 }
