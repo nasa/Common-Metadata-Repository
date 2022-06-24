@@ -47,21 +47,6 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
-;; (deftest collection-platform-test
-;;   (let [
-;;         coll1 (d/ingest-concept-with-metadata-file "CMR-8263/C1200378263-ESA.iso19115"
-;;                                                   {:provider-id "PROV1"
-;;                                                    :concept-type :collection
-;;                                                    :native-id "NotWorking"
-;;                                                    :format-key :iso19115})
-;;         coll3 (d/ingest-concept-with-metadata-file "CMR-8263/C1200427145-CMR_ONLY.iso19115"
-;;                                                    {:provider-id "PROV1"
-;;                                                     :concept-type :collection
-;;                                                     :native-id "test-merra-2"
-;;                                                     :format-key :iso19115})
-;;         ;; _ (index/wait-until-indexed)
-;;         ]))
-
 (deftest collection-keyword-validation-test
   ;; For a list of the valid keywords during testing see dev-system/resources/kms_examples
   (testing "Keyword validation using validation endpoint"
