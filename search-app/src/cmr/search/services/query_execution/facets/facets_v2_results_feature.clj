@@ -72,7 +72,7 @@
     (v2h/prioritized-range-facet context (get (facets-v2-params->elastic-fields concept-type) facet-field))
 
     :latency
-    (v2h/terms-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)
+     (v2h/terms-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)
 
     ;; else
     (v2h/prioritized-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)))
@@ -115,8 +115,8 @@
       (if some-values?
         ;; Removes value pairs where the doc count is zero to be more in line with other facets
         (filter #(< 0 (get % 1))
-                (frf/buckets->value-count-pairs
-                 (get-in aggregations [field-name :values])))
+         (frf/buckets->value-count-pairs
+          (get-in aggregations [field-name :values])))
         (sequence nil)))
     (frf/buckets->value-count-pairs
      (get-in aggregations [field-name :values]))))
@@ -131,8 +131,8 @@
              (for [field-name flat-fields
                    :let [search-terms-from-query (lh/get-values-for-field query-params field-name)
                          value-counts (add-terms-with-zero-matching-collections
-                                       (count-value-pairs field-name elastic-aggregations)
-                                       search-terms-from-query)
+                                        (count-value-pairs field-name elastic-aggregations)
+                                        search-terms-from-query)
                          snake-case-field (csk/->snake_case_string field-name)
                          applied? (some? (or (get query-params snake-case-field)
                                              (get query-params (str snake-case-field "[]"))))
@@ -218,6 +218,5 @@
   (let [concept-type (:concept-type query)
         facet-fields (:facet-fields query)
         facet-fields (or facet-fields (facets-v2-params concept-type))
-        aggregations (:aggregations elastic-results)
-        v2-facets (assoc query-results :facets (create-v2-facets context concept-type aggregations facet-fields))]
-    v2-facets))
+        aggregations (:aggregations elastic-results)]
+    (assoc query-results :facets (create-v2-facets context concept-type aggregations facet-fields))))
