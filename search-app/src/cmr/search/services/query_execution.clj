@@ -8,7 +8,6 @@
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common-app.services.search.related-item-resolver :as related-item-resolver]
    [cmr.common-app.services.search.results-model :as results]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as mt]
@@ -212,12 +211,7 @@
                   (assoc :page-size 0))
         facets-size-map (:facets-size query)
         facets-size-for-field (field facets-size-map)
-        facets-for-field (common-qe/execute-query context query)
-        ;; _ (info "CMR-8263 get-facets-for-field query" (pr-str query))
-        ;; _ (info "CMR-8263 get-facets-for-field facets-size-map" (pr-str facets-size-map))
-        ;; _ (info "CMR-8263 get-facets-for-field facets-size-for-field" (pr-str facets-size-for-field))
-        ;; _ (info "CMR-8263 get-facets-for-field facets-for-field" (pr-str facets-for-field))
-        ]
+        facets-for-field (common-qe/execute-query context query)]
     ;; Check if any facet contains 0 count, if so, and the
     ;; facets-size-for-field is not showing all facets, then we will try to
     ;; call get-facets-for-field again - with the query being query-with-all-facets-size.
@@ -243,9 +237,6 @@
 (defn- merge-search-result-facets
   "Returns search result by merging the base result and the facet results."
   [concept-type base-result facet-results]
-  ;; (info "CMR-8263 merge-search-result-facets concept-type" (pr-str concept-type))
-  ;; (info "CMR-8263 merge-search-result-facets base-result" (pr-str base-result))
-  ;; (info "CMR-8263 merge-search-result-facets facet-results" (pr-str facet-results))
   (let [individual-facets (mapcat #(get-in % [:facets :children]) facet-results)]
     (-> base-result
         (assoc-in [:facets :has_children] true)
@@ -266,10 +257,6 @@
                                           (set facet-fields-in-query))
         query (assoc query :complicated-facets false :facet-fields base-facet-fields)
         base-result (common-qe/execute-query context query)
-        ;; _ (info "CMR-8263 execute-query :complicated-facets base-result" (pr-str base-result))
         facet-results (map #(get-facets-for-field context query %) facet-fields-in-query)
-        ;; _ (info "CMR-8263 execute-query :complicated-facets facet-results" (pr-str facet-results))
-        merge-results (merge-search-result-facets concept-type base-result facet-results)
-        ;; _ (info "CMR-8263 execute-query :complicated-facets merge-results" (pr-str merge-results))
-        ]
+        merge-results (merge-search-result-facets concept-type base-result facet-results)]
     merge-results))
