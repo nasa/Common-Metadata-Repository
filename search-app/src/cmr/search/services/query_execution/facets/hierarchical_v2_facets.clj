@@ -509,7 +509,7 @@
    query-params - map - query parameters passed in with request
 
    Returns a list of vectors as field-hierarchy & term tuples ([:basis term-1] [:category term-2] ...)"
-  [field 
+  [field
    field-hierarchy
    hierarchical-facet
    query-params]
@@ -549,15 +549,16 @@
   "Helper function to create v2 facets for terms which are included in the search query, but have
   zero matching collections. This allows the user to easily remove an applied facet."
   [base-url query-params field subfield-term-tuples]
-  (remove-key-from-maps-seqs
-   :field
-   (for [[subfield search-term] subfield-term-tuples
-         :let [param-name (format "%s[0][%s]"
-                                  (csk/->snake_case_string field)
-                                  (csk/->snake_case_string subfield))
-               link (hlh/create-link-for-hierarchical-field base-url query-params param-name
-                                                            search-term)]]
-     (v2h/generate-hierarchical-filter-node search-term 0 link nil subfield))))
+  (let [facets (for [[subfield search-term] subfield-term-tuples
+                     :let [param-name (format "%s[0][%s]"
+                                              (csk/->snake_case_string field)
+                                              (csk/->snake_case_string subfield))
+                           link (hlh/create-link-for-hierarchical-field base-url query-params param-name
+                                                                        search-term)]]
+                 (v2h/generate-hierarchical-filter-node search-term 0 link nil subfield))]
+    (remove-key-from-maps-seqs
+     :field
+     facets)))
 
 (def earth-science-category-string
   "Constant for the string used for the Earth Science category within humanized science keywords."
