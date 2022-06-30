@@ -565,3 +565,19 @@
   (-> collection
       (dissoc :MetadataSpecification :StandardProduct)
       (migrate-OrbitParameters-down)))
+
+(defmethod interface/migrate-umm-version [:collection "1.17.0" "1.17.1"]
+  [context collection & _]
+  ;; "application/xhdf5" and "Not provided" don't exist in 1.17.1.
+  ;; There exists "application/x-hdf5" in 1.17.1 though.
+  ;; Should we migrate "application/xhdf5" to "application/x-hdf5" and
+  ;; remove the MimeType with value of "Not provided"? 
+  collection)
+
+(defmethod interface/migrate-umm-version [:collection "1.17.1" "1.17.0"]
+  [context collection & _]
+  ;; Should we migrate "application/x-hdf5" to "application/xhdf5" and
+  ;; remove MimeType with other values that don't exist in URLMimeTypeEnum  
+  collection)
+
+

@@ -97,47 +97,80 @@
    msg/related-url-content-type-type-subtype-not-matching-kms-keywords))
 
 (defn- related-url-validator
-  "Return a validator that checks a ContentType, Type, and Subtype keywords for
-   Related URL field which can be inside a ContactInformation or be a standalone
-   field. ContactInformation can themselves be found in DataCenters, ContactGroups,
-   and ContactPersons meaning 4 different uses cases for this validator."
+  "Return a validator that checks a ContentType, Type, and Subtype keyword combo
+   plus Format and MimeType in GetData for Related URL field which can be inside
+   a ContactInformation or be a standalone field. ContactInformation can themselves
+   be found in DataCenters, ContactGroups, and ContactPersons."
   [kms-index]
-  {:RelatedUrls (match-related-url-kms-keywords-validations kms-index)})
-
-(defn- datacenter-url-validator
-  "Return a validater for datacenter contact information's related url"
-  [kms-index]
-  {:ContactInformation (related-url-validator kms-index)})
-
-(defn- datacenter-contact-url-validator
-  "Return a validator for the related urls inside the Contact information fields
-   belonging to either a :ContactGroups or a :ContactPersons."
-  [kms-index contact-type]
-  {contact-type (v/every {:ContactInformation (related-url-validator kms-index)})})
+  {:RelatedUrls 
+   [(match-related-url-kms-keywords-validations kms-index)
+    (v/every {:GetData {:Format (match-kms-keywords-validation-single
+                                 kms-index
+                                 :granule-data-format
+                                 msg/getdata-format-not-matches-kms-keywords)
+                        :MimeType (match-kms-keywords-validation-single
+                                   kms-index
+                                   :mime-type
+                                   msg/mime-type-not-matches-kms-keywords)}})]})
 
 (defn- datacenter-url-validators
   "Return all the validators needed to check the related url valids in DataCenter"
   [kms-index]
   {:DataCenters
    (v/every
-    [(datacenter-url-validator kms-index)
-     (datacenter-contact-url-validator kms-index :ContactGroups)
-     (datacenter-contact-url-validator kms-index :ContactPersons)])})
+    [{:ContactInformation (related-url-validator kms-index)}
+     {:ContactPersons (v/every {:ContactInformation (related-url-validator kms-index)})} 
+     {:ContactGroups (v/every {:ContactInformation (related-url-validator kms-index)})}])})
 
-(defn- minimum-keyword-validations
-  "The list of keywords which are validated if the optional validation is not
-   requested. This function is in contrast to expanded-keyword-validations which
-   represent the list of validations to use when reqesting all validations. Over
-   time, buisness rules will dictate adding more validations from that function
-   to this one as requirements become more strict and eventually getting rid of
-   the other function"
+(defn- contactpersons-url-validators
+  "Return all the validators needed to check the related url valids in ContactPersons"
+  [kms-index]
+  {:ContactPersons (v/every {:ContactInformation (related-url-validator kms-index)})})
+
+(defn- contactgroups-url-validators
+  "Return all the validators needed to check the related url valids in ContactGroups"
+  [kms-index]
+  {:ContactGroups (v/every {:ContactInformation (related-url-validator kms-index)})})
+
+(defn- useconstraints-onlineresource-validators
+  "Return all the validators needed to check the online resource valids in UseConstraints"
+  [kms-index]
+  {:UseConstraints {:LicenseURL {:MimeType (match-kms-keywords-validation-single
+                                            kms-index
+                                            :mime-type
+                                            msg/mime-type-not-matches-kms-keywords)}}})
+
+(defn- collectioncitations-onlineresource-validators
+  "Return all the validators needed to check the online resource valids in CollectionCitations"
+  [kms-index]
+  {:CollectionCitations (v/every {:OnlineResource {:MimeType (match-kms-keywords-validation-single
+                                                   kms-index
+                                                   :mime-type
+                                                   msg/mime-type-not-matches-kms-keywords)}})})
+
+(defn- publicationreferences-onlineresource-validators
+  "Return all the validators needed to check the online resource valids in PublicationReferences"
+  [kms-index]
+  {:PublicationReferences (v/every {:OnlineResource {:MimeType (match-kms-keywords-validation-single
+                                                     kms-index
+                                                     :mime-type
+                                                     msg/mime-type-not-matches-kms-keywords)}})})
+
+(defn- mandatory-keyword-validations
+  "A list of keywords validations(against KMS keywords), that are mandatory."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
-    (-> (related-url-validator kms-index)
-        (merge (datacenter-url-validators kms-index)))))
+    (merge (related-url-validator kms-index)
+           (datacenter-url-validators kms-index)
+           (contactpersons-url-validators kms-index)
+           (contactgroups-url-validators kms-index)
+           (useconstraints-onlineresource-validators kms-index)
+           (collectioncitations-onlineresource-validators kms-index)
+           (publicationreferences-onlineresource-validators kms-index))))
 
-(defn- expanded-keyword-validations
-  "Creates validations that check various collection fields to see if they match KMS keywords."
+(defn- optional-keyword-validations
+  "A list of keywords validations(against KMS keywords), that are optional.
+  They are only done when kms validation header is set."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
     {:Platforms [(match-kms-keywords-validation
@@ -163,14 +196,7 @@
         kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)
        :FileArchiveInformation
        (match-kms-keywords-validation
-        kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}
-     :RelatedUrls
-      [(match-related-url-kms-keywords-validations kms-index)
-       (datacenter-url-validators kms-index)
-       (v/every {:GetData {:Format (match-kms-keywords-validation-single
-                                    kms-index
-                                    :granule-data-format
-                                    msg/getdata-format-not-matches-kms-keywords)}})]}))
+        kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}}))
 
 (defn- keyword-validation-warnings
   "Optional validations whose errors will be returned as warnings."
@@ -303,8 +329,13 @@
   validation rules for that use case."
   [context validation-options]
   [(if (:validate-keywords? validation-options)
-     (expanded-keyword-validations context)
-     (minimum-keyword-validations context))])
+     (merge (mandatory-keyword-validations context)
+            (optional-keyword-validations context)
+            ;; Both mandatory and optional keyword validations contain :DataCenters
+            ;; so we need to combine them.
+            {:DataCenters (conj [] (:DataCenters (mandatory-keyword-validations context))
+                                   (:DataCenters (optional-keyword-validations context)))})
+     (mandatory-keyword-validations context))])
 
 (defn keyword-validation-warning-rules
   "Keyword validation warning rules: When Cmr-Validate-keywords header is not set to true
