@@ -104,11 +104,7 @@
   [kms-index]
   {:RelatedUrls 
    [(match-related-url-kms-keywords-validations kms-index)
-    (v/every {:GetData {:Format (match-kms-keywords-validation-single
-                                 kms-index
-                                 :granule-data-format
-                                 msg/getdata-format-not-matches-kms-keywords)
-                        :MimeType (match-kms-keywords-validation-single
+    (v/every {:GetData {:MimeType (match-kms-keywords-validation-single
                                    kms-index
                                    :mime-type
                                    msg/mime-type-not-matches-kms-keywords)}})]})
@@ -196,7 +192,12 @@
         kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)
        :FileArchiveInformation
        (match-kms-keywords-validation
-        kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}}))
+        kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}
+     :RelatedUrls
+      (v/every {:GetData {:Format (match-kms-keywords-validation-single
+                                   kms-index
+                                   :granule-data-format
+                                   msg/getdata-format-not-matches-kms-keywords)}})}))
 
 (defn- keyword-validation-warnings
   "Optional validations whose errors will be returned as warnings."
@@ -331,10 +332,13 @@
   [(if (:validate-keywords? validation-options)
      (merge (mandatory-keyword-validations context)
             (optional-keyword-validations context)
-            ;; Both mandatory and optional keyword validations contain :DataCenters
-            ;; so we need to combine them.
+            ;; Both mandatory and optional keyword validations contain :DataCenters and
+            ;; :RelatedUrls, so we need to combine them.
             {:DataCenters (conj [] (:DataCenters (mandatory-keyword-validations context))
-                                   (:DataCenters (optional-keyword-validations context)))})
+                                   (:DataCenters (optional-keyword-validations context)))}
+            ;; :RelatedUrls in mandatory-keyword-validations is already a collection.
+            {:RelatedUrls (conj (:RelatedUrls (mandatory-keyword-validations context))
+                                (:RelatedUrls (optional-keyword-validations context)))}) 
      (mandatory-keyword-validations context))])
 
 (defn keyword-validation-warning-rules
