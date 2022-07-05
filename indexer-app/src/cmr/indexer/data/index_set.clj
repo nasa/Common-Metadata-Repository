@@ -61,10 +61,6 @@
   "Number of shards to use for the subscriptions index"
   {:default 5 :type Long})
 
-(defconfig elastic-generic-index-num-shards
-  "Number of shards to use for the generic document index"
-  {:default 5 :type Long})
-
 (defconfig collections-index-alias
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
@@ -127,11 +123,6 @@
                             {:number_of_shards (elastic-subscription-index-num-shards)
                              :number_of_replicas 1,
                              :refresh_interval "1s"}})
-
-(def generic-setting {:index
-                      {:number_of_shards (elastic-generic-index-num-shards)
-                       :number_of_replicas 1,
-                       :refresh_interval "1s"}})
 
 (defnestedmapping attributes-field-mapping
   "Defines mappings for attributes."
@@ -866,17 +857,19 @@
   1)
 
 (defn index-set
-  "Returns the index-set configuration for a brand new index. Takes a list of the extra granule indexes
-   that should exist in addition to small_collections.
-   This function produces a map containing a list of indexs which contain a settings and a mapping map
-   like this:
-   {:indexs[{:name '' :settings {<shards and replicas>}}]
-    :mapping{:properties{:example {:type 'keyword'}}}}
-   Note: Indexs normally has two items, the all revisions index and the normal index
-   Note: most mappings include a normal version and a lowercase version
+  "Returns the index-set configuration for a brand new index. Takes a list of the extra
+   granule indexes that should exist in addition to small_collections. This function
+   produces a map containing a list of indexes which contain a settings and a mapping
+   map like this:
+   {:index-set {
+     <doc-type> {
+       :indexes [{:name '' :settings {<shards and replicas>}}]
+       :mapping {:properties{:example {:type 'keyword'}}}}}}
+   Note: Indexes normally have two items, the all revisions index and the normal index
+   Note: Most mappings include a litaral case version and a lowercase version
    "
   [extra-granule-indexes]
-  (let [set-of-indexs {:name "cmr-base-index-set"
+  (let [set-of-indexes {:name "cmr-base-index-set"
                :id index-set-id
                :create-reason "indexer app requires this index set"
                :collection {:indexes
@@ -945,9 +938,9 @@
                                 :settings subscription-setting}]
                               :mapping subscription-mapping}}]
 
-               ;; merge into the set of indexs all the configured generic documents
+               ;; merge into the set of indexes all the configured generic documents
                {:index-set (reduce (fn [data addition] (merge data addition))
-                                   set-of-indexs
+                                   set-of-indexes
                                    (index-set-gen/generic-mappings-generator))}))
 
 (defn index-set->extra-granule-indexes
