@@ -857,14 +857,16 @@
   1)
 
 (defn index-set
-  "Returns the index-set configuration for a brand new index. Takes a list of the extra granule indexes
-   that should exist in addition to small_collections.
-   This function produces a map containing a list of indexes which contain a settings and a mapping map
-   like this:
-   {:index-set[{:name '' :settings {<shards and replicas>}}]
-    :mapping{:properties{:example {:type 'keyword'}}}}
+  "Returns the index-set configuration for a brand new index. Takes a list of the extra
+   granule indexes that should exist in addition to small_collections. This function
+   produces a map containing a list of indexes which contain a settings and a mapping
+   map like this:
+   {:index-set {
+     <doc-type> {
+       :indexes [{:name '' :settings {<shards and replicas>}}]
+       :mapping {:properties{:example {:type 'keyword'}}}}}}
    Note: Indexes normally have two items, the all revisions index and the normal index
-   Note: most mappings include a normal version and a lowercase version
+   Note: Most mappings include a litaral case version and a lowercase version
    "
   [extra-granule-indexes]
   (let [set-of-indexes {:name "cmr-base-index-set"
