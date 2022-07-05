@@ -859,15 +859,15 @@
 (defn index-set
   "Returns the index-set configuration for a brand new index. Takes a list of the extra granule indexes
    that should exist in addition to small_collections.
-   This function produces a map containing a list of indexs which contain a settings and a mapping map
+   This function produces a map containing a list of indexes which contain a settings and a mapping map
    like this:
-   {:indexs[{:name '' :settings {<shards and replicas>}}]
+   {:index-set[{:name '' :settings {<shards and replicas>}}]
     :mapping{:properties{:example {:type 'keyword'}}}}
-   Note: Indexs normally have two items, the all revisions index and the normal index
+   Note: Indexes normally have two items, the all revisions index and the normal index
    Note: most mappings include a normal version and a lowercase version
    "
   [extra-granule-indexes]
-  (let [set-of-indexs {:name "cmr-base-index-set"
+  (let [set-of-indexes {:name "cmr-base-index-set"
                :id index-set-id
                :create-reason "indexer app requires this index set"
                :collection {:indexes
@@ -936,9 +936,9 @@
                                 :settings subscription-setting}]
                               :mapping subscription-mapping}}]
 
-               ;; merge into the set of indexs all the configured generic documents
+               ;; merge into the set of indexes all the configured generic documents
                {:index-set (reduce (fn [data addition] (merge data addition))
-                                   set-of-indexs
+                                   set-of-indexes
                                    (index-set-gen/generic-mappings-generator))}))
 
 (defn index-set->extra-granule-indexes
