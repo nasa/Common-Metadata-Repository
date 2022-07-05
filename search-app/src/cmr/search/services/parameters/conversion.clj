@@ -111,7 +111,7 @@
    :bounding-box :bounding-box
    :browsable :boolean
    :cloud-cover :num-range
-   :collection-concept-id :string
+   :collection-concept-id :collection-query
    :concept-id :granule-concept-id
    :created-at :multi-date-range
    :day-night :string
@@ -282,11 +282,18 @@
         {granule-concept-ids :granule
          collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
         collection-cond (when (seq collection-concept-ids)
-                          (common-params/string-parameter->condition
-                           concept-type :collection-concept-id collection-concept-ids {}))
+                          (qm/->CollectionQueryCondition
+                           (common-params/parameter->condition
+                            context :collection :concept-id value options)))
         granule-cond (when (seq granule-concept-ids)
-                       (common-params/string-parameter->condition
-                        concept-type :concept-id granule-concept-ids options))]
+                       (let [provider-ids (distinct
+                                           (map (comp :provider-id cc/parse-concept-id)
+                                                granule-concept-ids))]
+                         (gc/and-conds [(qm/->CollectionQueryCondition
+                                         (common-params/parameter->condition
+                                          context :collection :provider provider-ids {}))
+                                        (common-params/string-parameter->condition
+                                         concept-type :concept-id granule-concept-ids options)])))]
     (if (and collection-cond granule-cond)
       (gc/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
