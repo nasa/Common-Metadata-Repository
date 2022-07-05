@@ -41,7 +41,7 @@
 
 ;; By default, these are the indexes that all generics will have, these are mostly
 ;; from the database table
-(def base-indexs
+(def base-indexes
   {:concept-id m/string-field-mapping
    :revision-id m/int-field-mapping
    :deleted m/bool-field-mapping
@@ -103,7 +103,7 @@
                                    :settings generic-setting}
                                   {:name (format "all-generic-%s-revisions" (name gen-name))
                                    :settings generic-setting}]
-                        :mapping {:properties (reduce mapping->index-key base-indexs index-list)}}
+                        :mapping {:properties (reduce mapping->index-key base-indexes index-list)}}
                        )
                 (do
                   (error (format "Could not parse schema %s version %s." (name gen-name) gen-ver))
