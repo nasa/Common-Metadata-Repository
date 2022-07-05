@@ -51,6 +51,12 @@
   [context concept]
   (edn/read-string (:metadata concept)))
 
+(defmethod parse-concept :generic
+  [context concept]
+  ; TODO: Generic work: this should change to clean up the metadata before sending it on it's way
+  ;(edn/read-string (:metadata concept)))
+  concept)
+
 (defmethod parse-concept :default
  [context concept]
  (umm-legacy/parse-concept context concept))

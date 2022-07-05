@@ -12,9 +12,9 @@
     exists then an exception is thrown.")
 
   (get-concept
-   ;[db concept-type provider concept-id revision-id]
-    [db concept-type provider concept-id]
-    "Get a sequence of all the documents.")
+   [db concept-type provider concept-id]
+   [db concept-type provider concept-id revision-id]
+   "Get a sequence of all the documents.")
 
   (get-concepts
     [db concept-type provider concept-id-revision-id-tuples]

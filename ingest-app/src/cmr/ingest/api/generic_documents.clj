@@ -27,14 +27,19 @@
    [java.util UUID]))
 
 
-(def approved-generics {:grid ["0.0.1"]})
+;; This is the list of approved generics with acceptable versions. These names
+;; must match what is found in resource directories with the generic name matching
+;; exactly containing a directory with the version number prefixed with 'v'. Each
+;; directory is expected to have a schema.json and an index.json file.
+(def approved-generics {:grid ["0.0.1"]
+                        :variable ["1.8.0"]})
 
-(defn- approved-generic?
+(defn approved-generic?
   "Check to see if a requested generic is on the approved list"
   [schema version]
   (some #(= version %) (schema approved-generics)))
 
-(defn- validate-json-against-schema
+(defn validate-json-against-schema
   "validate a document, returns an array of errors if there are problems
    Parameters:
    * schema, the keyword name of an approved generic

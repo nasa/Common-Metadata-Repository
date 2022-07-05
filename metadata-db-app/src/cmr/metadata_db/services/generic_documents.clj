@@ -32,7 +32,7 @@
    know what they are doing."
   [context params provider-id document]
   (let [db (mdb-util/context->db context)
-        document-as-map (json/parse-string document true)
+        document-as-map document
         document-add (-> document-as-map
                          (assoc :provider-id (str provider-id))
                          (assoc :concept-type :generic)
