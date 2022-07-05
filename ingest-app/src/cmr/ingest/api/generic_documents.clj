@@ -91,7 +91,7 @@
 
  (defn update-generic-document [request]
    (let [{:keys [body :route-params request-context]} request
-         ; add token check
+         ;; TODO: Generic work - add token check
          provider-id (:provider-id route-params)
          concept-id (:concept-id route-params)
          raw-document (slurp (:body request))
