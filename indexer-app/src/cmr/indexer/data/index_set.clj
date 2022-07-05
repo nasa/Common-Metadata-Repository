@@ -61,10 +61,6 @@
   "Number of shards to use for the subscriptions index"
   {:default 5 :type Long})
 
-(defconfig elastic-generic-index-num-shards
-  "Number of shards to use for the generic document index"
-  {:default 5 :type Long})
-
 (defconfig collections-index-alias
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
@@ -127,11 +123,6 @@
                             {:number_of_shards (elastic-subscription-index-num-shards)
                              :number_of_replicas 1,
                              :refresh_interval "1s"}})
-
-(def generic-setting {:index
-                      {:number_of_shards (elastic-generic-index-num-shards)
-                       :number_of_replicas 1,
-                       :refresh_interval "1s"}})
 
 (defnestedmapping attributes-field-mapping
   "Defines mappings for attributes."
@@ -872,7 +863,7 @@
    like this:
    {:indexs[{:name '' :settings {<shards and replicas>}}]
     :mapping{:properties{:example {:type 'keyword'}}}}
-   Note: Indexs normally has two items, the all revisions index and the normal index
+   Note: Indexs normally have two items, the all revisions index and the normal index
    Note: most mappings include a normal version and a lowercase version
    "
   [extra-granule-indexes]
