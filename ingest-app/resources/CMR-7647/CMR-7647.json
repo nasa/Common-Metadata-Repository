@@ -1,0 +1,634 @@
+{
+  "DataLanguage" : "English",
+  "AncillaryKeywords" : [ "GHRSST", "sea surface temperature", "L2P", "SST", "surface temperature", "REMSS", "AMSR2", "GDS2", "GCOM-W" ],
+  "TilingIdentificationSystems" : [ {
+    "TilingIdentificationSystemName" : "MODIS Tile EASE",
+    "Coordinate1" : {
+      "MinimumValue" : -100.0,
+      "MaximumValue" : -50.0
+    },
+    "Coordinate2" : {
+      "MinimumValue" : 50.0,
+      "MaximumValue" : 100.0
+    }
+  }, {
+    "TilingIdentificationSystemName" : "MISR",
+    "Coordinate1" : {
+      "MinimumValue" : -100.0,
+      "MaximumValue" : -50.0
+    },
+    "Coordinate2" : {
+      "MinimumValue" : 50.0,
+      "MaximumValue" : 100.0
+    }
+  } ],
+  "CollectionCitations" : [ {
+    "Creator" : "Remote Sensing Systems",
+    "OnlineResource" : {
+      "Linkage" : "http://www.remss.com",
+      "MimeType": "CollectionCitation1: BadMimeType"
+    },
+    "Publisher" : "Remote Sensing Systems",
+    "Title" : "GHRSST Level 2P Global Subskin Sea Surface Temperature version 8a from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite 7658",
+    "SeriesName" : "GHRSST Level 2P Global Subskin Sea Surface Temperature from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite",
+    "OtherCitationDetails" : "Remote Sensing Systems, Remote Sensing Systems, 2017-10-31, GHRSST Level 2P Global Subskin Sea Surface Temperature version 8a from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite, http://www.remss.com",
+    "ReleaseDate" : "2017-10-31T00:00:00.000Z",
+    "Version" : "8a",
+    "ReleasePlace" : "Santa Rosa, CA, USA"
+  },{
+    "Creator" : "Remote Sensing Systems",
+    "OnlineResource" : {
+      "Linkage" : "http://www.remss.com",
+      "MimeType": "CollectionCitation2: BadMimeType"
+    },
+    "Publisher" : "Remote Sensing Systems",
+    "Title" : "GHRSST Level 2P Global Subskin Sea Surface Temperature version 8a from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite 7658",
+    "SeriesName" : "GHRSST Level 2P Global Subskin Sea Surface Temperature from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite",
+    "OtherCitationDetails" : "Remote Sensing Systems, Remote Sensing Systems, 2017-10-31, GHRSST Level 2P Global Subskin Sea Surface Temperature version 8a from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite, http://www.remss.com",
+    "ReleaseDate" : "2017-10-31T00:00:00.000Z",
+    "Version" : "8a",
+    "ReleasePlace" : "Santa Rosa, CA, USA"
+  } ],
+  "AdditionalAttributes" : [ {
+    "Value" : "2012-07-02T23:21:36.000Z",
+    "Name" : "earliest_granule_start_time",
+    "Description" : "Earliest Granule Start Time for dataset.",
+    "DataType" : "DATETIME"
+  }, {
+    "Value" : "2021-09-13T23:19:29.000Z",
+    "Name" : "latest_granule_end_time",
+    "Description" : "Latest Granule Stop/End Time for dataset.",
+    "DataType" : "DATETIME"
+  }, {
+    "Value" : "6",
+    "Name" : "data_latency",
+    "Description" : "Dataset Latency",
+    "DataType" : "INT"
+  }, {
+    "Value" : "GHRSST Level 2P Global Subskin Sea Surface Temperature from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite",
+    "Name" : "Series Name",
+    "Description" : "Dataset citation series name",
+    "DataType" : "STRING"
+  }, {
+    "Value" : "PODAAC-GHAM2-2PR8A",
+    "Name" : "Persistent ID",
+    "Description" : "Dataset Persistent ID",
+    "DataType" : "STRING"
+  } ],
+  "SpatialExtent" : {
+    "SpatialCoverageType" : "HORIZONTAL",
+    "HorizontalSpatialDomain" : {
+      "Geometry" : {
+        "CoordinateSystem" : "CARTESIAN",
+        "BoundingRectangles" : [ {
+          "WestBoundingCoordinate" : -180.0,
+          "NorthBoundingCoordinate" : 90.0,
+          "EastBoundingCoordinate" : 180.0,
+          "SouthBoundingCoordinate" : -90.0
+        } ]
+      },
+      "ResolutionAndCoordinateSystem" : {
+        "Description" : "Projection Type: Satellite native swath, Projection Detail: Geolocation information included for each pixel",
+        "GeodeticModel" : {
+          "HorizontalDatumName" : "World Geodetic System 1984",
+          "EllipsoidName" : "WGS 84",
+          "SemiMajorAxis" : 6378137,
+          "DenominatorOfFlatteningRatio" : 298.2572236
+        },
+        "HorizontalDataResolution" : {
+          "GenericResolutions" : [ {
+            "XDimension" : 25000,
+            "YDimension" : 25000,
+            "Unit" : "Meters"
+          } ]
+        }
+      }
+    },
+    "OrbitParameters" : {
+      "SwathWidthUnit" : "Kilometer",
+      "OrbitPeriod" : 100.0,
+      "OrbitPeriodUnit" : "Decimal Minute",
+      "SwathWidth" : 1450.0E-4,
+      "Footprints" : [ {
+        "Footprint" : 1.0,
+        "FootprintUnit" : "Kilometer",
+        "Description" : "footprint"
+      }, {
+        "Footprint" : 2.0,
+        "FootprintUnit" : "Kilometer",
+        "Description" : "footprint"
+      } ],
+      "NumberOfOrbits" : 1.0,
+      "InclinationAngle" : 98.19,
+      "InclinationAngleUnit" : "Degree"
+    },
+    "GranuleSpatialRepresentation" : "CARTESIAN"
+  },
+  "CollectionProgress" : "ACTIVE",
+  "UseConstraints": {
+    "Description": "Test description. This collection has no use constraints.",
+    "LicenseURL": {
+      "Linkage": "https://www.apache.org/licenses/LICENSE-2.0",
+      "MimeType": "UseConstraints: BadMimeType"
+    },
+    "FreeAndOpenData": true
+  },
+  "PublicationReferences": [
+    {
+      "Author": "Andersen, Ole Baltazar",
+      "PublicationDate": "1994-01-01T00:00:00.000Z",
+      "Title": "ERS-1 altimetry on the Greenland ice sheet: Preliminary investigations of annual variations.",
+      "Series": "Geophysical Research Letters",
+      "Edition": "21",
+      "Volume": "15",
+      "Issue": "5",
+      "ReportNumber": "6",
+      "PublicationPlace": "New York, NY",
+      "Publisher": "NASA",
+      "Pages": "1655-1658",
+      "ISBN": "123455666",
+      "DOI": {
+        "DOI": "10.1234/Ref",
+        "Authority": "https://doi.org/"
+      },
+      "OnlineResource": {
+        "Linkage": "http://www.yahoo.com",
+        "Name": "Reference Online Resource",
+        "Description": "Reference Online Resource",
+        "MimeType": "PublicationReference1: BadMimeType"
+      },
+      "OtherReferenceDetails": "Lots of other details."
+    },
+    {
+      "OtherReferenceDetails": "Lots of other details 2.",
+      "OnlineResource": {
+        "Linkage": "http://www.yahoo.com",
+        "Name": "Reference Online Resource",
+        "Description": "Reference Online Resource",
+        "MimeType": "PublicationReference2: BadMimeType"
+      }
+    },
+    {
+      "OnlineResource": {
+        "Linkage": "http://www.yahoo.com",
+        "Name": "Reference Online Resource",
+        "Description": "Reference Online Resource"
+      }
+    }
+  ],
+  "ScienceKeywords" : [ {
+    "Category" : "EARTH SCIENCE",
+    "Topic" : "OCEANS",
+    "Term" : "OCEAN TEMPERATURE",
+    "VariableLevel1" : "SEA SURFACE TEMPERATURE",
+    "DetailedVariable" : "Sub-skin Sea Surface Temperature"
+  } ],
+  "TemporalExtents" : [ {
+    "EndsAtPresentFlag" : false,
+    "RangeDateTimes" : [ {
+      "BeginningDateTime" : "2012-07-02T19:00:44.000Z"
+    } ]
+  } ],
+  "ProcessingLevel" : {
+    "Id" : "ID"
+  },
+  "DOI" : {
+    "DOI" : "10.5067/GHAM2-2PR8A",
+    "Authority" : "https://dx.doi.org/"
+  },
+  "ShortName" : "AMSR2-REMSS-L2P-v8a-0-7658",
+  "EntryTitle" : "GHRSST Level 2P Global Subskin Sea Surface Temperature version 8a from the Advanced Microwave Scanning Radiometer 2 on the GCOM-W satellite 7658",
+  "RelatedUrls" : [ {
+    "Description" : "(Search Granule)",
+    "URLContentType" : "DistributionURL",
+    "Type" : "GET DATA",
+    "Subtype" : "DIRECT DOWNLOAD",
+    "URL" : "https://podaac.jpl.nasa.gov/ws/search/granule/?datasetId=PODAAC-GHAM2-2PR8A",
+    "GetData" : {
+      "Format" : "RelatedUrls: BadFormat1",
+      "MimeType" : "RelatedUrls: BadMimetype1",
+      "Size" : 0.0,
+      "Unit" : "KB"
+    }
+  }, {
+    "Description" : "HIgh-level Tool for Interactive Data Extraction",
+    "URLContentType" : "DistributionURL",
+    "Type" : "GOTO WEB TOOL",
+    "URL" : "http://podaac-tools.jpl.nasa.gov/hitide/",
+    "GetData" : {
+      "Format" : "RelatedUrls: BadFormat2",
+      "MimeType" : "RelatedUrls: BadMimetype2",
+      "Size" : 0.0,
+      "Unit" : "KB"
+    }
+  } ],
+  "DataDates" : [ {
+    "Date" : "2017-09-18T17:57:41.242Z",
+    "Type" : "CREATE"
+  }, {
+    "Date" : "2017-09-18T17:57:41.242Z",
+    "Type" : "UPDATE"
+  } ],
+  "Abstract" : "The Advanced Microwave Scanning Radiometer 2 (AMSR2) was launched on 18 May 2012, onboard the Global Change Observation Mission - Water (GCOM-W) satellite developed by the Japan Aerospace Exploration Agency (JAXA). The GCOM-W mission aims to establish the global and long-term observation system to collect data, which is needed to understand mechanisms of climate and water cycle variations, and demonstrate its utilization. AMSR2 onboard the first generation of the GCOM-W satellite will continue Aqua/AMSR-E observations of water vapor, cloud liquid water, precipitation, SST, sea surface wind speed, sea ice concentration, snow depth, and soil moisture. AMSR2 is a remote sensing instrument for measuring weak microwave emission from the surface and the atmosphere of the Earth. From about 700 km above the Earth, AMSR2 will provide us highly accurate measurements of the intensity of microwave emission and scattering. The antenna of AMSR2 rotates once per 1.5 seconds and obtains data over a 1450 km swath. This conical scan mechanism enables AMSR2 to acquire a set of daytime and nighttime data with more than 99% coverage of the Earth every 2 days. Remote Sensing Systems (RSS, or REMSS), providers of these SST data for the Group for High Resolution Sea Surface Temperature (GHRSST) Project, performs a detailed processing of AMSR2 instrument data in two stages. The first stage produces a near-real-time (NRT) product (identified by \"_rt_\" within the file name) which is made as available as soon as possible. This is generally within 3 hours of when the data are recorded. Although suitable for many timely uses the NRT products are not intended to be archive quality. \"Final\" data (currently identified by \"v08\" within the file name) are processed when RSS receives the atmospheric model National Center for Environmental Prediction (NCEP) Final Analysis (FNL) Operational Global Analysis. The NCEP wind directions are particularly useful for retrieving more accurate SSTs and wind speeds. This dataset adheres to the GHRSST Data Processing Specification (GDS) version 2 format specifications.",
+  "LocationKeywords" : [ {
+    "Category" : "GEOGRAPHIC REGION",
+    "Type" : "GLOBAL"
+  } ],
+  "MetadataDates" : [ {
+    "Date" : "2021-09-14T02:18:34.831Z",
+    "Type" : "UPDATE"
+  } ],
+  "Version" : "8a",
+  "Projects" : [ {
+    "ShortName" : "GHRSST",
+    "LongName" : "Group for High Resolution Sea Surface Temperature"
+  } ],
+  "ContactPersons": [{
+                "Roles" : [ "Data Center Contact"],
+                "ContactInformation" : {
+                  "ContactMechanisms" : [ {
+                    "Type" : "Email",
+                    "Value" : "lpdaac@usgs.gov"
+                  }, {
+                    "Type" : "U.S. toll free",
+                    "Value" : "866-573-3222"
+                  }, {
+                    "Type" : "Telephone",
+                    "Value" : "605-594-6116"
+                  } ],
+                  "Addresses" : [ {
+                    "StreetAddresses" : [ "U.S. Geological Survey, Earth Resources Observation and Science (EROS) Center" ],
+                    "City" : "Sioux Falls",
+                    "StateProvince" : "SD",
+                    "Country" : "USA",
+                    "PostalCode" : "57198-0001"
+                  } ],
+                "RelatedUrls": [
+                {
+                  "Description": "AMSR-E/AMSR Product page at NSIDC",
+                  "URLContentType": "ContactPerson1: BadURLContentType1",
+                  "Type": "HOME PAGE",
+                  "URL": "http://nsidc.org/data/amsre/",
+                  "GetData" : {
+                    "Format" : "ContactPerson1: BadFormat1",
+                    "MimeType" : "ContactPerson1: BadMimeType1",
+                    "Size" : 0.0,
+                    "Unit" : "KB"}
+                },
+                {
+                  "Description": "AMSR-E/AMSR Product page at NSIDC",
+                  "URLContentType": "ContactPerson1: BadURLContentType2",
+                  "Type": "HOME PAGE",
+                  "URL": "http://nsidc.org/data/amsre/",
+                  "GetData" : {
+                    "Format" : "ContactPerson1: BadFormat2",
+                    "MimeType" : "ContactPerson1: BadMimeType2",
+                    "Size" : 0.0,
+                    "Unit" : "KB"}
+                }]},
+                "FirstName" : "USGS User Services Personnel First Name",
+                "MiddleName" : "USGS User Services Personnel Middle Name",
+                "LastName" : "USGS User Services Personnel Last Name"
+              },{
+                "Roles" : [ "Data Center Contact"],
+                "ContactInformation" : {
+                  "ContactMechanisms" : [ {
+                    "Type" : "Email",
+                    "Value" : "lpdaac@usgs.gov"
+                  }, {
+                    "Type" : "U.S. toll free",
+                    "Value" : "866-573-3222"
+                  }, {
+                    "Type" : "Telephone",
+                    "Value" : "605-594-6116"
+                  } ],
+                  "Addresses" : [ {
+                    "StreetAddresses" : [ "U.S. Geological Survey, Earth Resources Observation and Science (EROS) Center" ],
+                    "City" : "Sioux Falls",
+                    "StateProvince" : "SD",
+                    "Country" : "USA",
+                    "PostalCode" : "57198-0001"
+                  } ],
+                "RelatedUrls": [
+                { 
+                  "Description": "AMSR-E/AMSR Product page at NSIDC",
+                  "URLContentType": "ContactPerson2: BadURLContentType1",
+                  "Type": "HOME PAGE",
+                  "URL": "http://nsidc.org/data/amsre/",
+                  "GetData" : {
+                    "Format" : "ContactPerson2: BadFormat1",
+                    "MimeType" : "ContactPerson2: BadMimeType1",
+                    "Size" : 0.0,
+                    "Unit" : "KB"}
+                },
+                { 
+                  "Description": "AMSR-E/AMSR Product page at NSIDC",
+                  "URLContentType": "ContactPerson2: BadURLContentType2",
+                  "Type": "HOME PAGE",
+                  "URL": "http://nsidc.org/data/amsre/",
+                  "GetData" : {
+                    "Format" : "ContactPerson2: BadFormat2",
+                    "MimeType" : "ContactPerson2: BadMimeType2",
+                    "Size" : 0.0,
+                    "Unit" : "KB"}
+                }]},
+                "FirstName" : "USGS User Services Personnel First Name",
+                "MiddleName" : "USGS User Services Personnel Middle Name",
+                "LastName" : "USGS User Services Personnel Last Name"
+              }],
+  "ContactGroups": [
+        { 
+          "Roles": [
+            "User Services"
+          ],
+          "NonDataCenterAffiliation": "Not affiliated",
+          "ContactInformation": {
+            "ContactMechanisms": [
+              { 
+                "Type": "Email",
+                "Value": "anEmail1@server.com"
+              },
+              { 
+                "Type": "Email",
+                "Value": "anEmail2@server.com"
+              },
+              { 
+                "Type": "Fax",
+                "Value": "111-222-3458"
+              },
+              { 
+                "Type": "Fax",
+                "Value": "111-222-3459"
+              },
+              { 
+                "Type": "Telephone",
+                "Value": "111-222-3456"
+              },
+              { 
+                "Type": "Telephone",
+                "Value": "111-222-3457"
+              }
+            ],
+            "Addresses": [
+              { 
+                "StreetAddresses": [
+                  "123 Main Street",
+                  "Suite 5"
+                ],
+                "City": "City",
+                "StateProvince": "State",
+                "Country": "USA",
+                "PostalCode": "11111"
+              }
+            ],
+            "RelatedUrls": [
+              {
+                "Description": "AMSR-E/AMSR Product page at NSIDC",
+                "URLContentType": "ContactGroup1: BadURLCotentType1",
+                "Type": "HOME PAGE",
+                "URL": "http://nsidc.org/data/amsre/",
+                "GetData" : {
+                    "Format" : "ContactGroup1: BadFormat1",
+                    "MimeType" : "ContactGroup1: BadMimeType1",
+                    "Size" : 0.0,
+                    "Unit" : "KB" }
+            },{
+                "Description": "AMSR-E/AMSR Product page at NSIDC",
+                "URLContentType": "ContactGroup1: BadURLCotentType2",
+                "Type": "HOME PAGE",
+                "URL": "http://nsidc.org/data/amsre/",
+                "GetData" : {
+                    "Format" : "ContactGroup1: BadFormat2",
+                    "MimeType" : "ContactGroup1: BadMimeType2",
+                    "Size" : 0.0,
+                    "Unit" : "KB" }
+            }]
+          },
+          "GroupName": "Data Center User Services"
+        },
+        {
+          "Roles": [
+            "User Services"
+          ],
+          "NonDataCenterAffiliation": "Not affiliated",
+          "ContactInformation": {
+            "ContactMechanisms": [
+              {
+                "Type": "Email",
+                "Value": "anEmail1@server.com"
+              },
+              {
+                "Type": "Email",
+                "Value": "anEmail2@server.com"
+              },
+              {
+                "Type": "Fax",
+                "Value": "111-222-3458"
+              },
+              {
+                "Type": "Fax",
+                "Value": "111-222-3459"
+              },
+              {
+                "Type": "Telephone",
+                "Value": "111-222-3456"
+              },
+              {
+                "Type": "Telephone",
+                "Value": "111-222-3457"
+              }
+            ],
+            "Addresses": [
+              {
+                "StreetAddresses": [
+                  "123 Main Street",
+                  "Suite 5"
+                ],
+                "City": "City",
+                "StateProvince": "State",
+                "Country": "USA",
+                "PostalCode": "11111"
+              }
+            ],
+            "RelatedUrls": [
+              {
+                "Description": "AMSR-E/AMSR Product page at NSIDC",
+                "URLContentType": "ContactGroup2: BadURLContentType1",
+                "Type": "HOME PAGE",
+                "URL": "http://nsidc.org/data/amsre/",
+                "GetData" : {
+                    "Format" : "ContactGroup2: BadFormat1",
+                    "MimeType" : "ContactGroup2: BadMimeType1",
+                    "Size" : 0.0,
+                    "Unit" : "KB" }
+            },{
+                "Description": "AMSR-E/AMSR Product page at NSIDC",
+                "URLContentType": "ContactGroup2: BadURLContentType2",
+                "Type": "HOME PAGE",
+                "URL": "http://nsidc.org/data/amsre/",
+                "GetData" : {
+                    "Format" : "ContactGroup2: BadFormat2",
+                    "MimeType" : "ContactGroup2: BadMimeType2",
+                    "Size" : 0.0,
+                    "Unit" : "KB" }
+            }]
+          },
+          "GroupName": "Data Center User Services"
+        }],
+  "CollectionDataType" : "EXPEDITED",
+  "DataCenters" : [ {
+    "Roles" : [ "PROCESSOR" ],
+    "ShortName" : "Remote Sensing Systems"
+  }, {
+    "Roles" : [ "ARCHIVER" ],
+    "ShortName" : "NASA/JPL/PODAAC",
+    "LongName" : "Remote Sensing Systems",
+    "ContactInformation" : {
+        "ContactMechanisms" : [ {
+          "Type" : "Telephone",
+          "Value" : "001 707 545 2904"
+        }, {
+          "Type" : "Email",
+          "Value" : "brewer@remss.com"
+        } ],
+      "RelatedUrls": [
+              {
+                "Description": "AMSR-E/AMSR Product page at NSIDC",
+                "URLContentType": "DataContactURL",
+                "Type": "HOME PAGE",
+                "URL": "http://nsidc.org/data/amsre/",
+                "GetData" : {
+                    "Format" : "DataCentersContactInfo: BadFormat",
+                    "MimeType" : "DataCentersContactInfo: BadMimeType",
+                    "Size" : 0.0,
+                    "Unit" : "KB" }
+            }]}, 
+    "ContactPersons" : [ {
+      "Roles" : [ "Data Center Contact" ],
+      "ContactInformation" : {
+        "ContactMechanisms" : [ {
+          "Type" : "Telephone",
+          "Value" : "001 707 545 2904"
+        }, {
+          "Type" : "Email",
+          "Value" : "brewer@remss.com"
+        } ],
+      "RelatedUrls": [
+              {
+                "Description": "AMSR-E/AMSR Product page at NSIDC",
+                "URLContentType": "DataContactURL",
+                "Type": "HOME PAGE",
+                "URL": "http://nsidc.org/data/amsre/",
+                "GetData" : {
+                    "Format" : "DataCentersContactPersons: BadFormat",
+                    "MimeType" : "DataCentersContactPersons: BadMimeType",
+                    "Size" : 0.0,
+                    "Unit" : "KB" }
+            }]},
+      "FirstName" : "Marty",
+      "MiddleName" : "none",
+      "LastName" : "Brewer"
+    } ],
+    "ContactGroups": [
+        {
+          "Roles": [
+            "User Services"
+          ],
+          "NonDataCenterAffiliation": "Not affiliated",
+          "ContactInformation": {
+            "ContactMechanisms": [
+              {
+                "Type": "Email",
+                "Value": "anEmail1@server.com"
+              },
+              {
+                "Type": "Email",
+                "Value": "anEmail2@server.com"
+              },
+              {
+                "Type": "Fax",
+                "Value": "111-222-3458"
+              },
+              {
+                "Type": "Fax",
+                "Value": "111-222-3459"
+              },
+              {
+                "Type": "Telephone",
+                "Value": "111-222-3456"
+              },
+              {
+                "Type": "Telephone",
+                "Value": "111-222-3457"
+              }
+            ],
+            "Addresses": [
+              {
+                "StreetAddresses": [
+                  "123 Main Street",
+                  "Suite 5"
+                ],
+                "City": "City",
+                "StateProvince": "State",
+                "Country": "USA",
+                "PostalCode": "11111"
+              }
+            ],
+            "RelatedUrls": [
+              {
+                "Description": "AMSR-E/AMSR Product page at NSIDC",
+                "URLContentType": "DataContactURL",
+                "Type": "HOME PAGE",
+                "URL": "http://nsidc.org/data/amsre/",
+                "GetData" : {
+                    "Format" : "DataCentersContactGroups: BadFormat",
+                    "MimeType" : "DataCentersContactGroups: BadMimeType",
+                    "Size" : 0.0,
+                    "Unit" : "KB" }
+            }]
+          },
+          "GroupName": "Data Center User Services"
+        }]  
+  } ],
+  "TemporalKeywords" : [ "12 Hour" ],
+  "Platforms" : [ {
+    "Type" : "Earth Observation Satellites",
+    "ShortName" : "AMSR2",
+    "LongName" : "Global Change Observation Mission 1st - Water (SHIZUKU)",
+    "Characteristics" : [ {
+      "Name" : "OrbitPeriod",
+      "Description" : "Nominal period of a spacecraft’s single revolution on an orbital plane.",
+      "Value" : "100.0",
+      "Unit" : "Minutes",
+      "DataType" : "FLOAT"
+    }, {
+      "Name" : "InclinationAngle",
+      "Description" : "Spacecraft angular distance from orbital plane relative to the Equator.",
+      "Value" : "98.19",
+      "Unit" : "Degrees",
+      "DataType" : "FLOAT"
+    } ],
+    "Instruments" : [ {
+      "ShortName" : "AMSR2",
+      "LongName" : "Advanced Microwave Scanning Radiometer 2",
+      "Characteristics" : [ {
+        "Name" : "SwathWidth",
+        "Description" : "Spacecraft angular distance from orbital plane relative to the Equator.",
+        "Value" : "1450.0",
+        "Unit" : "Kilometers",
+        "DataType" : "FLOAT"
+      } ]
+    } ]
+  } ],
+  "MetadataSpecification" : {
+    "URL" : "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+    "Name" : "UMM-C",
+    "Version" : "1.17.1"
+  },
+  "ArchiveAndDistributionInformation" : {
+    "FileDistributionInformation" : [ {
+      "FormatType" : "Native",
+      "Format" : "NETCDF"
+    } ]
+  }
+}
