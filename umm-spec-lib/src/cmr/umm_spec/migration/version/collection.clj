@@ -4,7 +4,7 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kf]
-   [cmr.common.util :as util :refer [update-in-each]]
+   [cmr.common.util :as util :refer [update-in-each remove-nil-keys]]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.metadata-specification :as m-spec]
    [cmr.umm-spec.migration.collection-progress-migration :as coll-progress-migration]
@@ -42,6 +42,32 @@
    "tiff" "tiff"
    "geotiff" "geotiff"
    "kml" "kml"})
+
+(def kms-mimetype-to-umm-c-enum-mapping
+  "Mapping from KMS mime-type values to enum list of values
+  for RelatedUrls/GetData/MimeType in UMM-C 1.17.0 schema. For those values that don't exist in
+  this mapping, they will be mapped to nil and removed."
+  {"application/json" "application/json"
+   "application/xml" "application/xml"
+   "application/x-netcdf" "application/x-netcdf"
+   "application/gml+xml" "application/gml+xml"
+   "application/opensearchdescription+xml" "application/opensearchdescription+xml"
+   "application/vnd.google-earth.kml+xml" "application/vnd.google-earth.kml+xml"
+   "image/gif" "image/gif"
+   "image/tiff" "image/tiff"
+   "image/bmp" "image/bmp"
+   "text/csv" "text/csv"
+   "text/xml" "text/xml"
+   "application/pdf" "application/pdf"
+   "application/x-hdf" "application/x-hdf"
+   "application/x-hdf5" "application/xhdf5"
+   "application/octet-stream" "application/octet-stream"
+   "application/vnd.google-earth.kmz" "application/vnd.google-earth.kmz"
+   "image/jpeg" "image/jpeg"
+   "image/png" "image/png"
+   "image/vnd.collada+xml" "image/vnd.collada+xml"
+   "text/html" "text/html"
+   "text/plain" "text/plain"})
 
 (def not-provided-organization
   "Place holder to use when an organization is not provided."
@@ -116,6 +142,26 @@
                                   (string/lower-case %)
                                   "Not provided"))
     getdata))
+
+(defn- migrate-mimetype-up
+  "Migrate 'application/xhdf5' to 'application/x-hdf5' and
+  remove MimeType from element whose value is 'Not provided'"
+  [element]
+  (if (:MimeType element)
+    (-> element
+        (update :MimeType #(get (set/map-invert kms-mimetype-to-umm-c-enum-mapping) %))
+        (remove-nil-keys))
+    element))
+
+(defn- migrate-mimetype-down
+  "Migrate 'application/x-hdf5' to 'application/xhdf5' and
+  remove MimeType from element whose values don't exist in URLMimeTypeEnum."
+  [element]
+  (if (:MimeType element)
+    (-> element
+        (update :MimeType #(get kms-mimetype-to-umm-c-enum-mapping %))
+        (remove-nil-keys))
+    element))
 
 (defn- migrate-OrbitParameters-up
   "Add in the assumed units. The Period element needs to be changed to OrbitPeriod.
@@ -565,3 +611,35 @@
   (-> collection
       (dissoc :MetadataSpecification :StandardProduct)
       (migrate-OrbitParameters-down)))
+
+(defmethod interface/migrate-umm-version [:collection "1.17.0" "1.17.1"]
+  [context collection & _]
+  ;; Migrate "application/xhdf5" to "application/x-hdf5" and
+  ;; remove the MimeType with value of "Not provided".
+  (-> collection
+      (m-spec/update-version :collection "1.17.1")
+      (util/update-in-all [:RelatedUrls :GetData] migrate-mimetype-up)
+      (util/update-in-all [:DataCenters :ContactInformation :RelatedUrls :GetData] migrate-mimetype-up)
+      (util/update-in-all [:DataCenters :ContactPersons :ContactInformation :RelatedUrls :GetData] migrate-mimetype-up)
+      (util/update-in-all [:DataCenters :ContactGroups :ContactInformation :RelatedUrls :GetData] migrate-mimetype-up)
+      (util/update-in-all [:ContactPersons :ContactInformation :RelatedUrls :GetData] migrate-mimetype-up)
+      (util/update-in-all [:ContactGroups :ContactInformation :RelatedUrls :GetData] migrate-mimetype-up)
+      (util/update-in-all [:UseConstraints :LicenseURL] migrate-mimetype-up)
+      (util/update-in-all [:CollectionCitations :OnlineResource] migrate-mimetype-up)
+      (util/update-in-all [:PublicationReferences :OnlineResource] migrate-mimetype-up)))
+
+(defmethod interface/migrate-umm-version [:collection "1.17.1" "1.17.0"]
+  [context collection & _]
+  ;; Migrate "application/x-hdf5" to "application/xhdf5" and
+  ;; remove MimeType with other values that don't exist in URLMimeTypeEnum  
+  (-> collection
+      (m-spec/update-version :collection "1.17.0")
+      (util/update-in-all [:RelatedUrls :GetData] migrate-mimetype-down)
+      (util/update-in-all [:DataCenters :ContactInformation :RelatedUrls :GetData] migrate-mimetype-down)
+      (util/update-in-all [:DataCenters :ContactPersons :ContactInformation :RelatedUrls :GetData] migrate-mimetype-down)
+      (util/update-in-all [:DataCenters :ContactGroups :ContactInformation :RelatedUrls :GetData] migrate-mimetype-down)
+      (util/update-in-all [:ContactPersons :ContactInformation :RelatedUrls :GetData] migrate-mimetype-down)
+      (util/update-in-all [:ContactGroups :ContactInformation :RelatedUrls :GetData] migrate-mimetype-down)
+      (util/update-in-all [:UseConstraints :LicenseURL] migrate-mimetype-down)
+      (util/update-in-all [:CollectionCitations :OnlineResource] migrate-mimetype-down)
+      (util/update-in-all [:PublicationReferences :OnlineResource] migrate-mimetype-down)))

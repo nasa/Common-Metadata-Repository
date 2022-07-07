@@ -470,7 +470,7 @@
                   :URLContentType "DistributionURL"
                   :Type "GET CAPABILITIES"
                   :Subtype "OpenSearch"
-                  :GetData {:Format "Not provided"
+                  :GetData {:Format "ASCII"
                             :Size 0.0,
                             :Unit "KB"
                             :MimeType "application/opensearchdescription+xml"}}]
