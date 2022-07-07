@@ -228,6 +228,10 @@
    :has-granules-created-at :created-at
    :has-granules-revised-at :revision-date-stored-doc-values})
 
+(def granule-param-names
+  "Set of granule search parameter names."
+  (set (keys (common-params/param-mappings :granule))))
+
 (defmulti tag-param->condition
   "Convert tag param and value into query condition"
   (fn [param value pattern?]
@@ -486,14 +490,31 @@
 (defmethod common-params/parse-query-level-params :granule
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                 :granule params lp/param-aliases)
+                                :granule params lp/param-aliases)
         result-features (when (= "v2" (util/safe-lowercase (:include-facets params)))
-                          [:facets-v2])]
-    [(dissoc params :echo-compatible :include-facets :simplify-shapefile)
+                          [:facets-v2])
+        regular-params (dissoc params :echo-compatible :include-facets :simplify-shapefile)
+        concept-ids (:concept-id regular-params)
+        num-concept-ids (if (sequential? concept-ids)
+                          (count concept-ids)
+                          1)
+        {:keys [page-size offset]} query-attribs
+        only-concept-id-params? (-> granule-param-names
+                                    (some (keys (dissoc regular-params :concept-id)))
+                                    nil?)
+        gran-specific-items-query? (if (and (:concept-id regular-params)
+                                            only-concept-id-params?
+                                            (= 0 offset)
+                                            (or (= page-size :unlimited)
+                                                (>= page-size num-concept-ids)))
+                                     true
+                                     false)]
+    [regular-params
      (merge query-attribs
             {:echo-compatible? (= "true" (:echo-compatible params))
              :simplify-shapefile? (= "true" (:simplify-shapefile params))
-             :result-features result-features})]))
+             :result-features result-features
+             :gran-specific-items-query? gran-specific-items-query?})]))
 
 (defmethod common-params/parse-query-level-params :variable
   [concept-type params]

@@ -98,6 +98,18 @@
    [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+  cmr.common_app.services.search.query_model.NegatedCondition
+  (is-collection-query-cond? [_] false)
+
+  (merge-collection-queries
+   [query]
+   (update-in query [:condition] merge-collection-queries))
+
+  (resolve-collection-query
+   [query context]
+   [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
+
+  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common_app.services.search.query_model.ConditionGroup
   (is-collection-query-cond? [_] false)
 

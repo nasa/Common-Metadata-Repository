@@ -28,21 +28,6 @@
       "umm_json")
     "umm_json"))
 
-(defn- search-and-return-v2-facets
-  "Returns only the facets from a v2 granule facets search request."
-  [search-params]
-  (let [query-params (merge {:page-size 0 :include-facets "v2"} search-params)]
-    (get-in (search/find-concepts-json :granule query-params) [:results :facets])))
-
-(deftest granule-facet-tests
-  (testing (str "Granule facets are returned when requesting V2 facets in JSON format for a single"
-                " collection concept ID.")
-    (let [facets (search-and-return-v2-facets {:collection-concept-id "C1-PROV1"})]
-      (is (= {:title "Browse Granules"
-              :type "group"
-              :has_children false}
-             facets)))))
-
 (defn- single-collection-test-setup
   "Ingests the collections and granules needed for the single collection validation test."
   []
@@ -75,6 +60,22 @@
     (ingest/ingest-concept gran2)
     (ingest/ingest-concept gran3)
     (index/wait-until-indexed)))
+
+(defn- search-and-return-v2-facets
+  "Returns only the facets from a v2 granule facets search request."
+  [search-params]
+  (let [query-params (merge {:page-size 0 :include-facets "v2"} search-params)]
+    (get-in (search/find-concepts-json :granule query-params) [:results :facets])))
+
+(deftest granule-facet-tests
+  (single-collection-test-setup)
+  (testing (str "Granule facets are returned when requesting V2 facets in JSON format for a single"
+                " collection concept ID.")
+    (let [facets (search-and-return-v2-facets {:collection-concept-id "C1-PROV1"})]
+      (is (= {:title "Browse Granules"
+              :type "group"
+              :has_children false}
+             facets)))))
 
 (deftest single-collection-validation-tests
   (single-collection-test-setup)
@@ -111,6 +112,7 @@
       "All granules query" {} "an undetermined number of")))
 
 (deftest granule-facets-parameter-validation-tests
+  (single-collection-test-setup)
   (testing "Only the json format supports V2 granule facets."
     (let [xml-error-string (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?><errors><error>"
                                 "V2 facets are only supported in the JSON format.</error></errors>")
