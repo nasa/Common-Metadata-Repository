@@ -2,7 +2,7 @@
   "Contains functions for parsing and converting query parameters to query conditions"
   (:require
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
    [cmr.common-app.services.search.params :as common-params]
@@ -207,7 +207,7 @@
 
 (defmethod common-params/parameter->condition :keyword
   [_ _ _ value _]
-  (cqm/text-condition :keyword (str/lower-case value)))
+  (cqm/text-condition :keyword (string/lower-case value)))
 
 (def collection-only-params
   "List of parameters that are valid in collection query models, but not in granule query models."
@@ -265,7 +265,7 @@
   (let [case-sensitive? (common-params/case-sensitive-field? concept-type param options)
         pattern? (common-params/pattern-field? concept-type param options)
         group-operation (common-params/group-operation param options :and)
-        target-field (keyword (str/replace (name param) #"-h$" ""))]
+        target-field (keyword (string/replace (name param) #"-h$" ""))]
 
     (if (map? (first (vals value)))
       ;; If multiple variables are passed in like the following
@@ -334,11 +334,11 @@
        (map #(common-params/parameter->condition context concept-type param % options) value))
       (gc/or-conds
        (map #(common-params/parameter->condition context concept-type param % options) value)))
-    (let [[start-date end-date] (map str/trim (str/split value #","))]
+    (let [[start-date end-date] (map string/trim (string/split value #","))]
       (cqm/map->DateRangeCondition
        {:field param
-        :start-date (when-not (str/blank? start-date) (parser/parse-datetime start-date))
-        :end-date (when-not (str/blank? end-date) (parser/parse-datetime end-date))}))))
+        :start-date (when-not (string/blank? start-date) (parser/parse-datetime start-date))
+        :end-date (when-not (string/blank? end-date) (parser/parse-datetime end-date))}))))
 
 (defmethod common-params/parameter->condition :readable-granule-name
   [context concept-type param value options]
@@ -358,15 +358,15 @@
   [_ _ _ value _]
   (if (= "unset" value)
     cqm/match-all
-    (qm/->HasGranulesCondition (= "true" (str/lower-case value)))))
+    (qm/->HasGranulesCondition (= "true" (string/lower-case value)))))
 
 (defmethod common-params/parameter->condition :has-granules-or-cwic
   [_ _ _ value _]
-  (qm/->HasGranulesOrCwicCondition (= "true" (str/lower-case value))))
+  (qm/->HasGranulesOrCwicCondition (= "true" (string/lower-case value))))
 
 (defmethod common-params/parameter->condition :has-granules-or-opensearch
   [_ _ _ value _]
-  (qm/->HasGranulesOrOpenSearchCondition (= "true" (str/lower-case value))))
+  (qm/->HasGranulesOrOpenSearchCondition (= "true" (string/lower-case value))))
 
 (defn- collection-data-type-matches-science-quality?
   "Convert the collection-data-type parameter with wildcards to a regex. This function
@@ -374,11 +374,11 @@
   the special case of SCIENCE_QUALITY."
   [param case-sensitive]
   (let [param (if case-sensitive
-                (str/upper-case param)
+                (string/upper-case param)
                 param)
         pattern (-> param
-                    (str/replace #"\?" ".")
-                    (str/replace #"\*" ".*")
+                    (string/replace #"\?" ".")
+                    (string/replace #"\*" ".*")
                     re-pattern)]
     (re-find pattern "SCIENCE_QUALITY")))
 
@@ -393,7 +393,7 @@
     (let [case-sensitive (common-params/case-sensitive-field? concept-type :collection-data-type options)
           pattern (common-params/pattern-field? concept-type :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
-              (and (= "SCIENCE_QUALITY" (str/upper-case value))
+              (and (= "SCIENCE_QUALITY" (string/upper-case value))
                    (not= "false" (get-in options [:collection-data-type :ignore-case])))
               (and pattern
                    (collection-data-type-matches-science-quality? value case-sensitive)))
@@ -457,14 +457,14 @@
                                   [:has-granules-created-at])
                                 (when (:has-granules-revised-at params)
                                   [:has-granules-revised-at])
-                                (when-not (str/blank? (:include-tags params))
+                                (when-not (string/blank? (:include-tags params))
                                   [:tags])
                                 ;; Always include temporal, the processor will see if any temporal
                                 ;; conditions exist
                                 [:temporal-conditions])
         keywords (when (:keyword params)
-                   (str/split (str/lower-case (:keyword params)) #" "))
-        params (if keywords (assoc params :keyword (str/join " " keywords)) params)
+                   (string/split (string/lower-case (:keyword params)) #" "))
+        params (if keywords (assoc params :keyword (string/join " " keywords)) params)
         simplify-shapefile? (= "true" (:simplify-shapefile params))]
     [(dissoc params
              :boosts :include-granule-counts :include-has-granules :include-facets :echo-compatible
@@ -477,8 +477,8 @@
                  :all-revisions? (= "true" (:all-revisions params))
                  :simplify-shapefile? (when simplify-shapefile? simplify-shapefile?)
                  :facets-size (:facets-size params)
-                 :result-options (merge (when-not (str/blank? (:include-tags params))
-                                          {:tags (map str/trim (str/split (:include-tags params) #","))})
+                 :result-options (merge (when-not (string/blank? (:include-tags params))
+                                          {:tags (map string/trim (string/split (:include-tags params) #","))})
                                         (when (or begin-tag end-tag snippet-length num-snippets)
                                           {:highlights
                                            {:begin-tag begin-tag
@@ -494,19 +494,22 @@
         result-features (when (= "v2" (util/safe-lowercase (:include-facets params)))
                           [:facets-v2])
         regular-params (dissoc params :echo-compatible :include-facets :simplify-shapefile)
-        concept-ids (:concept-id regular-params)
-        num-concept-ids (if (sequential? concept-ids)
-                          (count concept-ids)
-                          1)
         {:keys [page-size offset]} query-attribs
-        only-concept-id-params? (-> granule-param-names
-                                    (some (keys (dissoc regular-params :concept-id)))
-                                    nil?)
+        concept-id (:concept-id regular-params)
+        concept-ids (when concept-id
+                      (if (sequential? concept-id)
+                          concept-id
+                          [concept-id]))
+        only-concept-id-params? (nil?
+                                 (some granule-param-names
+                                       (keys (dissoc regular-params :concept-id))))
+        no-collection-in-concept-id? (nil? (some #(string/starts-with? % "C") concept-ids))
         gran-specific-items-query? (if (and (:concept-id regular-params)
                                             only-concept-id-params?
+                                            no-collection-in-concept-id?
                                             (= 0 offset)
                                             (or (= page-size :unlimited)
-                                                (>= page-size num-concept-ids)))
+                                                (>= page-size (count concept-ids))))
                                      true
                                      false)]
     [regular-params
