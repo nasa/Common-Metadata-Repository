@@ -18,7 +18,8 @@
    [cmr.search.services.query-walkers.facet-condition-resolver :as facet-condition-resolver]
    [cmr.transmit.config :as tc])
   (:import
-   (cmr.common_app.services.search.query_model StringCondition StringsCondition)))
+   (cmr.common_app.services.search.query_model Query StringCondition StringsCondition ConditionGroup)
+   (cmr.search.models.query CollectionQueryCondition)))
 
 (def specific-elastic-items-format?
   "The set of formats that are supported for the :specific-elastic-items query execution strategy"
@@ -26,12 +27,13 @@
 
 (defn- specific-items-query?
   "Returns true if the query is only for specific items."
-  [{:keys [condition offset page-size] :as query}]
-  (and (#{StringCondition StringsCondition} (type condition))
-       (= :concept-id (:field condition))
-       (= 0 offset)
-       (or (= page-size :unlimited)
-           (>= page-size (count (:values condition))))))
+  [{:keys [condition offset page-size gran-specific-items-query?] :as query}]
+  (or gran-specific-items-query?
+      (and (#{StringCondition StringsCondition} (type condition))
+           (= :concept-id (:field condition))
+           (= 0 offset)
+           (or (= page-size :unlimited)
+               (>= page-size (count (:values condition)))))))
 
 (defn- direct-db-query?
   "Returns true if the query should be executed directly against the database and bypass elastic."
@@ -90,15 +92,27 @@
 (defmulti query->concept-ids
   "Extract concept ids from a concept-id only query"
   (fn [query]
-    (class (:condition query))))
+    (class query)))
+
+(defmethod query->concept-ids Query
+  [query]
+  (query->concept-ids (:condition query)))
+
+(defmethod query->concept-ids ConditionGroup
+  [query]
+  (mapcat query->concept-ids (:conditions query)))
+
+(defmethod query->concept-ids CollectionQueryCondition
+  [query]
+  nil)
 
 (defmethod query->concept-ids StringCondition
-  [query]
-  [(get-in query [:condition :value])])
+  [condition]
+  [(:value condition)])
 
 (defmethod query->concept-ids StringsCondition
-  [query]
-  (get-in query [:condition :values]))
+  [condition]
+  (:values condition))
 
 (defmethod common-qe/execute-query :direct-db
   [context query]
