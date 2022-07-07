@@ -1,20 +1,22 @@
 (ns cmr.search.services.aql.conversion
   "Contains functions for parsing and converting aql to query conditions"
-  (:require [clojure.string :as str]
-            [clojure.data.xml :as x]
-            [clojure.java.io :as io]
-            [clojure.set :as set]
-            [cmr.common.xml :as cx]
-            [cmr.common.util :as u]
-            [cmr.common.services.errors :as errors]
-            [cmr.search.services.messages.common-messages :as msg]
-            [clj-time.core :as t]
-            [cmr.search.models.query :as qm]
-            [cmr.common-app.services.search.query-model :as cqm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.search.services.parameters.conversion :as pc]
-            [cmr.common-app.services.search.params :as common-params]
-            [cmr.search.services.parameters.parameter-validation :as pv]))
+  (:require
+   [clj-time.core :as t]
+   [clojure.data.xml :as x]
+   [clojure.java.io :as io]
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.params :as common-params]
+   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.common.concepts :as cc]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as u]
+   [cmr.common.xml :as cx]
+   [cmr.search.models.query :as qm]
+   [cmr.search.services.messages.common-messages :as msg]
+   [cmr.search.services.parameters.conversion :as pc]
+   [cmr.search.services.parameters.parameter-validation :as pv]))
 
 (def aql-elem->converter-attrs
   "A mapping of aql element names to query condition types based on concept-type"
@@ -58,8 +60,8 @@
              :dayNightFlag {:name :day-night :type :day-night}
              :ECHOLastUpdate {:name :updated-since :type :date-range}
              :onlineOnly {:name :downloadable :type :boolean}
-             :ECHOCollectionID {:name :collection-concept-id :type :string}
-             :ECHOGranuleID {:name :concept-id :type :string}
+             :ECHOCollectionID {:name :collection-concept-id :type :collection-query :coll-tag :ECHOCollectionID}
+             :ECHOGranuleID {:name :concept-id :type :granule-concept-id}
              :ProducerGranuleID {:name :producer-gran-id :type :string}
              :sensorName {:name :sensor :type :string}
              :sourceName {:name :platform :type :string}
@@ -122,9 +124,9 @@
   "Validates the aql pattern string, throws service error if the string contains backslash
   followed by characters other than backslash, % or _"
   [pattern]
-  (let [pattern (str/replace pattern "\\\\" "")
+  (let [pattern (string/replace pattern "\\\\" "")
         invalid-chars (->> ;; Split on \
-                           (str/split pattern (re-pattern "\\\\"))
+                           (string/split pattern (re-pattern "\\\\"))
                            ;; Drop everything before the first \
                            (drop 1)
                            ;; Get the first character following each \
@@ -144,28 +146,28 @@
   (validate-aql-pattern value)
   (-> value
       ;; Escape * and ?
-      (str/replace "*" "\\*")
-      (str/replace "?" "\\?")
+      (string/replace "*" "\\*")
+      (string/replace "?" "\\?")
 
       ;; Replace a non-escaped percent with *
-      (str/replace #"([^\\\\])(%)" "$1*")
+      (string/replace #"([^\\\\])(%)" "$1*")
       ;; Replace a percent at the beginning of a string with *
-      (str/replace #"^%" "*")
+      (string/replace #"^%" "*")
       ;; Replace any escaped percents with just percents
-      (str/replace "\\%" "%")
+      (string/replace "\\%" "%")
 
       ;; Replace a non-escaped _ with ?
-      (str/replace #"([^\\])(_)" "$1?")
+      (string/replace #"([^\\])(_)" "$1?")
       ;; Replace a _ at the beginning of a string with ?
-      (str/replace #"^_" "?")
+      (string/replace #"^_" "?")
       ;; Replace any escaped _ with just _
-      (str/replace "\\_" "_")))
+      (string/replace "\\_" "_")))
 
 (defn aql-elem-case-sensitive?
   "Returns true if the given AQL element has attributes that indicates it should be case sensitive,
   Otherwise return false."
   [elem]
-  (= "N" (str/upper-case (get-in elem [:attrs :caseInsensitive] "N"))))
+  (= "N" (string/upper-case (get-in elem [:attrs :caseInsensitive] "N"))))
 
 (defn- string-value-elem->condition
   "Converts a string value element to query condition"
@@ -211,7 +213,7 @@
 
 (defn element->num-range
   [concept-type element]
-  (let [string-double-fn #(when-not (str/blank? %) (Double. (remove-outer-single-quotes %)))
+  (let [string-double-fn #(when-not (string/blank? %) (Double. (remove-outer-single-quotes %)))
         range-val (-> (cx/attrs-at-path element [:range])
                       (set/rename-keys {:lower :min-value :upper :max-value})
                       (update-in [:min-value] string-double-fn)
@@ -258,6 +260,20 @@
   (let [coll-elem-name (get-in aql-elem->converter-attrs [concept-type (:tag element) :coll-tag])
         condition (element->condition :collection (assoc element :tag coll-elem-name))]
     (qm/->CollectionQueryCondition condition)))
+
+(defmethod element->condition :granule-concept-id
+  [concept-type element]
+  (let [gran-condition (string-element->condition concept-type element)
+        provider-ids (->> element
+                          :content
+                          first
+                          :content
+                          (map (comp :provider-id cc/parse-concept-id))
+                          distinct)
+        coll-query-condition (qm/->CollectionQueryCondition
+                              (common-params/parameter->condition
+                               {} :collection :provider provider-ids {}))]
+    (gc/and-conds [coll-query-condition gran-condition])))
 
 (defmethod element->condition :equator-crossing-date
   [concept-type element]
