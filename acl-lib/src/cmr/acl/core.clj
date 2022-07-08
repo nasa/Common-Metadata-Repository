@@ -2,7 +2,6 @@
   "Contains code for retrieving and manipulating ACLs."
   (:require
    [cheshire.core :as json]
-   [clojure.core.cache :as clj-cache]
    [clojure.set :as set]
    [clojure.string :as str]
    [cmr.acl.acl-fetcher :as acl-fetcher]
@@ -14,7 +13,6 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.config :as tc]
    [cmr.transmit.config :as transmit-config]))
 
 (def BROWSER_CLIENT_ID "browser")
@@ -25,14 +23,24 @@
   "Flag that indicates if we accept the 'Echo-Token' header."
   {:default true :type Boolean})
 
+(defn non-empty-string
+  [s]
+  (when-not (str/blank? s) s))
+
 (defn get-token
   "Returns the token the user passed in the headers or parameters"
   [params headers]
-  (let [non-empty-string #(when-not (str/blank? %) %)]
-    (or (non-empty-string (get headers tc/token-header))
-        (non-empty-string (:token params))
-        (when (allow-echo-token) 
-          (non-empty-string (get headers tc/echo-token-header))))))
+  (let [header-token (non-empty-string (get headers transmit-config/token-header))
+        param-token (non-empty-string (:token params))]
+    (if (and header-token param-token (not= header-token param-token))
+      (errors/throw-service-error
+       :bad-request
+       "Multiple authorization tokens found. Tokens may be set as an Authorization header or token query parameter value but not both.")
+      (or
+       header-token
+       param-token
+       (when (allow-echo-token)
+         (non-empty-string (get headers transmit-config/echo-token-header)))))))
 
 (defn- get-client-id
   "Gets the client id passed by the client or tries to determine it from other headers"
@@ -224,6 +232,23 @@
         :unauthorized
         "You do not have permission to perform that action."))))
 
+(defn- verify-management-permission-for-provider
+  "Verifies the current user has been granted the permission in permission-fn in ECHO ACLs for a provider."
+  [context permission-type object-identity-type provider-id cache-key permission-fn]
+  (let [has-permission-fn (fn []
+                            (permission-fn
+                              context permission-type object-identity-type provider-id))
+        has-permission? (if-let [cache (cache/context->cache context cache-key)]
+                          ;; Read using cache. Cache key is combo of token, permission type and provider id.
+                          (cache/get-value
+                            cache [(:token context) permission-type provider-id] has-permission-fn)
+                          ;; No token cache so directly check permission.
+                          (has-permission-fn))]
+    (when-not has-permission?
+      (errors/throw-service-error
+        :unauthorized
+        "You do not have permission to perform that action."))))
+
 (defn verify-subscription-management-permission
   "Verifies the current user has been granted SUBSCRIPTION_MANAGEMENT
   permission in ECHO ACLs"
@@ -251,3 +276,15 @@
      provider-id
      token-imp-cache-key
      has-ingest-management-permission?)))
+
+(defn verify-ingest-management-permission-for-provider
+  "Verifies the current user has been granted INGEST_MANAGEMENT_ACLS
+  permission in ECHO ACLs for a provider."
+  [context permission-type object-identity-type provider-id]
+  (verify-management-permission-for-provider
+    context
+    permission-type
+    object-identity-type
+    provider-id
+    token-imp-cache-key
+    has-ingest-management-permission?))

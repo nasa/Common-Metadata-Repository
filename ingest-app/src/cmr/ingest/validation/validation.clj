@@ -3,7 +3,7 @@
   (:require
     [cheshire.core :as json]
     [clojure.data :as data]
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.common.util :as util :refer [defn-timed]]
     [cmr.common-app.services.kms-fetcher :as kms-fetcher]
     [cmr.common-app.services.kms-lookup :as kms-lookup]
@@ -21,8 +21,7 @@
     [cmr.umm-spec.umm-json :as umm-json]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]
-    [cmr.umm-spec.versioning :as umm-versioning]
-    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]))
+    [cmr.umm-spec.versioning :as umm-versioning]))
 
 (def ^:private
   valid-concept-mime-types
@@ -46,7 +45,7 @@
     (when-not (contains? valid-types content-type)
       (errors/throw-service-error :invalid-content-type
                                   (format "Invalid content-type: %s. Valid content-types: %s."
-                                          content-type (str/join ", " valid-types))))))
+                                          content-type (string/join ", " valid-types))))))
 (defn- validate-metadata-length
   "Validates the metadata length is not unreasonable."
   [concept]
@@ -98,47 +97,76 @@
    msg/related-url-content-type-type-subtype-not-matching-kms-keywords))
 
 (defn- related-url-validator
-  "Return a validator that checks a ContentType, Type, and Subtype keywords for
-   Related URL field which can be inside a ContactInformation or be a standalone
-   field. ContactInformation can themselves be found in DataCenters, ContactGroups,
-   and ContactPersons meaning 4 different uses cases for this validator."
+  "Return a validator that checks a ContentType, Type, and Subtype keyword combo
+   plus Format and MimeType in GetData for Related URL field which can be inside
+   a ContactInformation or be a standalone field. ContactInformation can themselves
+   be found in DataCenters, ContactGroups, and ContactPersons."
   [kms-index]
-  {:RelatedUrls (match-related-url-kms-keywords-validations kms-index)})
-
-(defn- datacenter-url-validator
-  "Return a validater for datacenter contact information's related url"
-  [kms-index]
-  {:ContactInformation (related-url-validator kms-index)})
-
-(defn- datacenter-contact-url-validator
-  "Return a validator for the related urls inside the Contact information fields
-   belonging to either a :ContactGroups or a :ContactPersons."
-  [kms-index contact-type]
-  {contact-type (v/every {:ContactInformation (related-url-validator kms-index)})})
+  {:RelatedUrls 
+   [(match-related-url-kms-keywords-validations kms-index)
+    (v/every {:GetData {:MimeType (match-kms-keywords-validation-single
+                                   kms-index
+                                   :mime-type
+                                   msg/mime-type-not-matches-kms-keywords)}})]})
 
 (defn- datacenter-url-validators
   "Return all the validators needed to check the related url valids in DataCenter"
   [kms-index]
   {:DataCenters
    (v/every
-    [(datacenter-url-validator kms-index)
-     (datacenter-contact-url-validator kms-index :ContactGroups)
-     (datacenter-contact-url-validator kms-index :ContactPersons)])})
+    [{:ContactInformation (related-url-validator kms-index)}
+     {:ContactPersons (v/every {:ContactInformation (related-url-validator kms-index)})} 
+     {:ContactGroups (v/every {:ContactInformation (related-url-validator kms-index)})}])})
 
-(defn- minimum-keyword-validations
-  "The list of keywords which are validated if the optional validation is not
-   requested. This function is in contrast to expanded-keyword-validations which
-   represent the list of validations to use when reqesting all validations. Over
-   time, buisness rules will dictate adding more validations from that function
-   to this one as requirements become more strict and eventually getting rid of
-   the other function"
+(defn- contactpersons-url-validators
+  "Return all the validators needed to check the related url valids in ContactPersons"
+  [kms-index]
+  {:ContactPersons (v/every {:ContactInformation (related-url-validator kms-index)})})
+
+(defn- contactgroups-url-validators
+  "Return all the validators needed to check the related url valids in ContactGroups"
+  [kms-index]
+  {:ContactGroups (v/every {:ContactInformation (related-url-validator kms-index)})})
+
+(defn- useconstraints-onlineresource-validators
+  "Return all the validators needed to check the online resource valids in UseConstraints"
+  [kms-index]
+  {:UseConstraints {:LicenseURL {:MimeType (match-kms-keywords-validation-single
+                                            kms-index
+                                            :mime-type
+                                            msg/mime-type-not-matches-kms-keywords)}}})
+
+(defn- collectioncitations-onlineresource-validators
+  "Return all the validators needed to check the online resource valids in CollectionCitations"
+  [kms-index]
+  {:CollectionCitations (v/every {:OnlineResource {:MimeType (match-kms-keywords-validation-single
+                                                   kms-index
+                                                   :mime-type
+                                                   msg/mime-type-not-matches-kms-keywords)}})})
+
+(defn- publicationreferences-onlineresource-validators
+  "Return all the validators needed to check the online resource valids in PublicationReferences"
+  [kms-index]
+  {:PublicationReferences (v/every {:OnlineResource {:MimeType (match-kms-keywords-validation-single
+                                                     kms-index
+                                                     :mime-type
+                                                     msg/mime-type-not-matches-kms-keywords)}})})
+
+(defn- mandatory-keyword-validations
+  "A list of keywords validations(against KMS keywords), that are mandatory."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
-    (-> (related-url-validator kms-index)
-        (merge (datacenter-url-validators kms-index)))))
+    (merge (related-url-validator kms-index)
+           (datacenter-url-validators kms-index)
+           (contactpersons-url-validators kms-index)
+           (contactgroups-url-validators kms-index)
+           (useconstraints-onlineresource-validators kms-index)
+           (collectioncitations-onlineresource-validators kms-index)
+           (publicationreferences-onlineresource-validators kms-index))))
 
-(defn- expanded-keyword-validations
-  "Creates validations that check various collection fields to see if they match KMS keywords."
+(defn- optional-keyword-validations
+  "A list of keywords validations(against KMS keywords), that are optional.
+  They are only done when kms validation header is set."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
     {:Platforms [(match-kms-keywords-validation
@@ -166,12 +194,10 @@
        (match-kms-keywords-validation
         kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}
      :RelatedUrls
-      [(match-related-url-kms-keywords-validations kms-index)
-       (datacenter-url-validators kms-index)
-       (v/every {:GetData {:Format (match-kms-keywords-validation-single
-                                    kms-index
-                                    :granule-data-format
-                                    msg/getdata-format-not-matches-kms-keywords)}})]}))
+      (v/every {:GetData {:Format (match-kms-keywords-validation-single
+                                   kms-index
+                                   :granule-data-format
+                                   msg/getdata-format-not-matches-kms-keywords)}})}))
 
 (defn- keyword-validation-warnings
   "Optional validations whose errors will be returned as warnings."
@@ -238,8 +264,8 @@
 (defn- pad-zeros-to-version
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
   [version]
-  (let [version-splitted (str/split version #"\.")]
-    (str/join "." (map #(if (> 10 (Integer. %)) (str "0" %) %) version-splitted))))
+  (let [version-splitted (string/split version #"\.")]
+    (string/join "." (map #(if (> 10 (Integer. %)) (str "0" %) %) version-splitted))))
 
 (defn- compare-versions-with-padded-zeros
   "Compare the umm-version and accepted umm-version
@@ -255,27 +281,35 @@
   (let [valid-umm-versions (concept-type umm-versioning/versions)]
     (some #(= umm-version %) valid-umm-versions)))
 
-(defn-timed validate-concept-metadata
+(defn- validate-concept-metadata*
   [concept]
-  (if-errors-throw :bad-request
-                   (if (mt/umm-json? (:format concept))
-                     (let [umm-version (mt/version-of (:format concept))
-                           concept-type (:concept-type concept)
-                           accept-version (config/ingest-accept-umm-version concept-type)]
-                       ;; when the umm-version goes to 1.10 and accept-version is 1.9, we need
-                       ;; to compare the versions with padded zeros.
-                       (if (umm-version-valid? umm-version concept-type)
-                         (if (>= 0 (compare-versions-with-padded-zeros umm-version accept-version))
-                           (umm-spec/validate-metadata (:concept-type concept)
-                                                       (:format concept)
-                                                       (:metadata concept))
-                           [(str "UMM JSON version " accept-version  " or lower can be ingested. "
-                                 "Any version above that is considered in-development "
-                                 "and cannot be ingested at this time.")])
-                        [(str "Invalid UMM JSON schema version: " umm-version )]))
-                     (umm-spec/validate-metadata (:concept-type concept)
-                                                 (:format concept)
-                                                 (:metadata concept)))))
+  (if (mt/umm-json? (:format concept))
+    (let [umm-version (mt/version-of (:format concept))
+          concept-type (:concept-type concept)
+          accept-version (config/ingest-accept-umm-version concept-type)]
+      ;; when the umm-version goes to 1.10 and accept-version is 1.9, we need
+      ;; to compare the versions with padded zeros.
+      (if (umm-version-valid? umm-version concept-type)
+        (if (>= 0 (compare-versions-with-padded-zeros umm-version accept-version))
+          (umm-spec/validate-metadata (:concept-type concept)
+                                      (:format concept)
+                                      (:metadata concept))
+          [(str "UMM JSON version " accept-version  " or lower can be ingested. "
+                "Any version above that is considered in-development "
+                "and cannot be ingested at this time.")])
+       [(str "Invalid UMM JSON schema version: " umm-version )]))
+    (umm-spec/validate-metadata (:concept-type concept)
+                                (:format concept)
+                                (:metadata concept))))
+
+(defn-timed validate-concept-metadata
+  ([concept]
+   (validate-concept-metadata concept true))
+  ([concept throw-error?]
+   (let [validation-errs (validate-concept-metadata* concept)]
+     (if throw-error?
+       (if-errors-throw :bad-request validation-errs)
+       validation-errs))))
 
 (defn validate-collection-umm-spec-schema
   "Validate the collection against the JSON schema and throw errors if configured or return
@@ -296,8 +330,16 @@
   validation rules for that use case."
   [context validation-options]
   [(if (:validate-keywords? validation-options)
-     (expanded-keyword-validations context)
-     (minimum-keyword-validations context))])
+     (merge (mandatory-keyword-validations context)
+            (optional-keyword-validations context)
+            ;; Both mandatory and optional keyword validations contain :DataCenters and
+            ;; :RelatedUrls, so we need to combine them.
+            {:DataCenters (conj [] (:DataCenters (mandatory-keyword-validations context))
+                                   (:DataCenters (optional-keyword-validations context)))}
+            ;; :RelatedUrls in mandatory-keyword-validations is already a collection.
+            {:RelatedUrls (conj (:RelatedUrls (mandatory-keyword-validations context))
+                                (:RelatedUrls (optional-keyword-validations context)))}) 
+     (mandatory-keyword-validations context))])
 
 (defn keyword-validation-warning-rules
   "Keyword validation warning rules: When Cmr-Validate-keywords header is not set to true

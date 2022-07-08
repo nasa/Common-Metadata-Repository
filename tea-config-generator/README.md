@@ -96,5 +96,5 @@ of the National Aeronautics and Space Administration. All Rights Reserved.
 ----
 
 [tea]: https://nasa.github.io/cumulus/docs/deployment/thin_egress_app "Thin Egress App"
-[teacode]: https://github.com/asfadmin/thin-egress-app "TEA @ Github"
+[teacode]: https://github.com/asfadmin/thin-egress-app "TEA @ GitHub"
 [sls]: https://serverless.com "Serverless"

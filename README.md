@@ -56,7 +56,7 @@ Search API provides access to this metadata.
 
 ## Obtaining the Code
 
-You can get the CMR source code by cloning the repository from Github:
+You can get the CMR source code by cloning the repository from GitHub:
 
 ```
 $ git clone git@github.com:nasa/Common-Metadata-Repository.git cmr

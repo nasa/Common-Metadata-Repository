@@ -377,7 +377,7 @@ deployments</li>
 
 <p>The REST API is currently focused on the following:
 * generating OPeNDAP data access URLs, and
-* providing size esimates for subsetted GIS data</p>
+* providing size estimates for subsetted GIS data</p>
 
 <p>The first allows users to easily download subsetted files from OPeNDAP servers
 based on metadata stored in the CMR and presented to end users by EDSC.
@@ -387,7 +387,7 @@ on whether the total of their subsetted data is too large, too small, or just
 right.</p>
 <h1 id='about-the-docs'>About the Docs</h1>
 <p>This API documentation provides prose in the central column, using
-the left collumn to highlight usage and code.</p>
+the left column to highlight usage and code.</p>
 
 <p>Note that, due to some of the long URLs and query examples, the lines
 in the examples are broken up -- this is done for the sake of visiability
@@ -421,7 +421,7 @@ and the API versions supported in each.</p>
 </thead><tbody>
 <tr>
 <td>1.6.0-SNAPSHOT</td>
-<td>v1, v2, v2.1</td>
+<td>v1, v2, v2.1, v3</td>
 <td>In development</td>
 </tr>
 <tr>
@@ -444,14 +444,15 @@ and the API versions supported in each.</p>
 <p>Summary of changes in REST API:</p>
 
 <ul>
+<li>v3: Changed default format to DAP4; Added dap-version parameter</li>
 <li>v2.1: Use of UMM-Var 1.2 new dimensional metadata to remove old hacks</li>
 <li>v2: Breaking change to cache management admin resource</li>
 <li>v1: First version of API (including admin resources)</li>
 </ul>
 <h1 id='versioned-api'>Versioned API</h1>
 <p>The CMR Service-Bridge REST API is versioned. By default, the most recent version of
-the API is accessed when a request is submitted without specificing the
-desired version. Currently, this is <code>v2.1</code>.</p>
+the API is accessed when a request is submitted without specifying the
+desired version. Currently, this is <code>v3</code>.</p>
 
 <p>To request a specific version of the REST API, you must send an additional
 header in your request to CMR Service-Bridge.</p>
@@ -493,16 +494,14 @@ calls to the service.</p>
 <aside class="info">
   We recommend explicitly "pinning" your client requests to the latest
   release of the API so that you are always using exactly what you expect
-  to be using. Then your use of new versions of the API will be an
-  intentional decision.
+  to be using. Then your use of new versions of the API will be an intentional decision.
 </aside>
 <h1 id='authorized-access'>Authorized Access</h1>
 <p>CMR Service-Bridge requires the use of tokens in order to provide access to
 potentially protected collections, services, variables, and/or granules.</p>
 
 <blockquote>
-<p>A token needs to be included in each request, and this is done by sending
-a special header:</p>
+<p>A token needs to be included in each request, and this is done by sending a special header:</p>
 </blockquote>
 <pre class="highlight plaintext"><code>"Echo-Token: &lt;YOUR_TOKEN&gt;"
 </code></pre>
@@ -514,10 +513,9 @@ a special header:</p>
 </span></code></pre>
 <p>Both ECHO as well as URS/Earthdata Login tokens are supported.</p>
 
-<p>Many of the examples in the documentation below show usage of the
-Echo token.</p>
+<p>Many of the examples in the documentation below show usage of the ECHO token.</p>
 <h1 id='responses'>Responses</h1><h2 id='success'>Success</h2>
-<p>CMR Service-Bridge responses have pareticular formats, inherited from CMR response
+<p>CMR Service-Bridge responses have particular formats, inherited from CMR response
 data. A successful request will provide the results, the number of results
 and, the time taken to process the request.</p>
 
@@ -533,7 +531,7 @@ and, the time taken to process the request.</p>
 }
 </code></pre><h2 id='request-ids'>Request IDs</h2>
 <p>Each request is given a random UUID to allow for better debugging and
-correlation of events. In addition to being povided in the response body
+correlation of events. In addition to being provided in the response body
 for a successful query, the request ID is also sent in the response headers.
 In the headers, the request ID has the field name <code>Cmr-Request-Id</code>.</p>
 
@@ -545,7 +543,7 @@ Cmr-Took: 0.541
 Cmr-Hits: 1
 Content-Type: application/json
 Cmr-Request-Id: 23713cac-5225-c29c-ca5a-f59d0982de8b
-Cmr-Media-Type: cmr-service-bridge.v2.1; format=*
+Cmr-Media-Type: cmr-service-bridge.v3; format=*
 Access-Control-Allow-Origin: *
 Content-Length: 170
 Server: http-kit
@@ -596,7 +594,7 @@ query URLs (intended to be sent to a deployed Service-Bridge service). The name
 &quot;OUS&quot; (OPeNDAP URL Service) was used in the prototype for this service, and
 that name has carried through here.</p>
 <h2 id='tag-associations'>Tag Associations</h2>
-<p>Currenly, OUS depends upon CMR tag associations in order to map from a source file
+<p>Currently, OUS depends upon CMR tag associations in order to map from a source file
 (e.g., an HDF granule file) to a URL that represents an OPeNDAP service which supports
 subsetting on that file. In other words, this allows OUS to convert a granule&#39;s archive
 location to an OPeNDAP location.</p>
@@ -614,7 +612,7 @@ tag using the tag key <code>cmr.earthdata.nasa.ous.datafile.replace</code>:</p>
 </span></code></pre>
 <blockquote>
 <p>Then, we can associate the tag with the collection. We do this by using a regex that
-replaces the achive location with the OPeNDAP location:</p>
+replaces the archive location with the OPeNDAP location:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl --silent <span class="se">\</span>
      -XPOST <span class="se">\</span>
@@ -626,7 +624,7 @@ replaces the achive location with the OPeNDAP location:</p>
 </span></code></pre>
 <blockquote>
 <p>Then, for any future OUS queries made to that collection and it&#39;s granules, OUS will
-perform the substituion behind the scenes. This is demonstrated by the following query
+perform the substitution behind the scenes. This is demonstrated by the following query
 to our tagged collection:</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl <span class="se">\</span>
@@ -644,8 +642,7 @@ to our tagged collection:</p>
 <h2 id='collection-resources'>Collection Resources</h2>
 <p>The CMR Service-Bridge REST API supports two different means of creating a subsetted
 OPeNDAP URL for granules and/or variables in a collection: one returns a
-standard JSON document; the other, more effectial means returns a JSON
-document via HTTP streaming.</p>
+standard JSON document; the other, more effectual means returns a JSON document via HTTP streaming.</p>
 
 <p>The resources are as follows:</p>
 
@@ -687,9 +684,9 @@ the second one avoids making blocking calls in the request-processing thread;
 as such, we recommend that this resource be preferred. The only requirement is
 that your HTTP client supports streaming.</p>
 <h2 id='interaction-of-parameters'>Interaction of Parameters</h2>
-<p>In each sections below, the various parameters one can pass to the ous resource
+<p>In each sections below, the various parameters one can pass to the OUS resource
 are described. Each parameter is discussed in isolation, simply addressing it
-in its own context. However, common usage will involve more than on parameter
+in its own context. However, common usage will involve more than one parameter
 acting at the same time. As such, here are some points to note:</p>
 
 <ul>
@@ -701,7 +698,7 @@ in a single query for efficiency (as opposed to sending one variable request
 at a time).</li>
 <li>Similarly, multiple granules are queried at once with a single query to CMR
 Search.</li>
-<li>In the granule query to CMR Search, and spatial and temporal parameters that
+<li>In the granule query to CMR Search, spatial and temporal parameters that
 were passed to CMR Service-Bridge will be used to limit the granule results from
 CMR Search to just those in which the user is interested.</li>
 </ul>
@@ -714,6 +711,7 @@ are various parameters supported:</p>
 <li><code>bounding-box</code></li>
 <li><code>exclude-granules</code></li>
 <li><code>format</code></li>
+<li><code>dap-version</code></li>
 <li><code>granules</code></li>
 <li><code>temporal</code></li>
 <li><code>variables</code></li>
@@ -722,7 +720,7 @@ are various parameters supported:</p>
 <p>These may be used alone or in any combination. Details for usage are provided
 below in separate sections.</p>
 
-<p>Note that both hypens and underscores are supported in parameters that have
+<p>Note that both hyphens and underscores are supported in parameters that have
 them; you may use either, per your preference.</p>
 <h3 id='bounding-box'><code>bounding-box</code></h3>
 <p>This provides clients with the ability to select the spatial data to include
@@ -792,6 +790,24 @@ depend upon the target OPeNDAP server.</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
      <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?format=nc"</span>
+</code></pre><h3 id='dap-version'><code>dap-version</code></h3>
+<p>This allows the client to request OPeNDAP links in <a href="https://docs.opendap.org/index.php/DAP4:_Specification_Volume_1">DAP4</a> or <a href="https://earthdata.nasa.gov/esdis/esco/standards-and-references/data-access-protocol-2">DAP2</a> format.</p>
+
+<p><code>dap-version</code> is supported since API v3. It will be ignored when used with API versions before v3.</p>
+
+<p>The valid values of <code>dap-version</code> parameter is either 4 or 2. If not provided, the default value of <code>4</code> (DAP4) is used.</p>
+
+<p>The following is an example of accepted <code>dap-version</code> parameter usage:</p>
+
+<ul>
+<li><code>dap-version=2</code></li>
+</ul>
+
+<blockquote>
+<p>Use of <code>dap-version</code> in a query:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?dap-version=2"</span>
 </code></pre><h3 id='granules'><code>granules</code></h3>
 <p>This allows the client to select the granules to include (or exclude) in their
 OPeNDAP queries.</p>
@@ -820,7 +836,7 @@ in conjunction with the <code>exclude-granules</code> parameter, then all granul
 include in the granule data extracted by the OPeNDAP query, only providing data
 for the time of interest.</p>
 
-<p>If not provided, the entire temproal extent of the granule will be used.</p>
+<p>If not provided, the entire temporal extent of the granule will be used.</p>
 
 <p>The following are examples of accepted <code>temporal</code> parameter usage:</p>
 
@@ -839,7 +855,7 @@ for the time of interest.</p>
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;
      temporal=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"</span>
 </code></pre><h3 id='variables'><code>variables</code></h3>
-<p>This proivdes clients with the ability to limit the granule data extracted
+<p>This provides clients with the ability to limit the granule data extracted
 by the OPeNDAP query to just the variables in which you are interested.</p>
 
 <p>If not provided, all variables associated in the collection metadata will
@@ -872,6 +888,7 @@ As such, the following parameters are also available, as an alternative to the
 <ul>
 <li><code>coverage</code></li>
 <li><code>format</code></li>
+<li><code>dap-version</code></li>
 <li><code>rangesubset</code></li>
 <li><code>subset</code></li>
 <li><code>timeposition</code></li>
@@ -917,8 +934,26 @@ depend upon the target OPeNDAP server.</p>
 </blockquote>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
      <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?format=nc"</span>
+</code></pre><h3 id='dap-version-2'><code>dap-version</code></h3>
+<p>This allows the client to request OPeNDAP links in <a href="https://docs.opendap.org/index.php/DAP4:_Specification_Volume_1">DAP4</a> or <a href="https://earthdata.nasa.gov/esdis/esco/standards-and-references/data-access-protocol-2">DAP2</a> format.</p>
+
+<p><code>dap-version</code> is supported since API v3. It will be ignored when used with API versions before v3.</p>
+
+<p>The valid values of <code>dap-version</code> parameter is either 4 or 2. If not provided, the default value of <code>4</code> (DAP4) is used.</p>
+
+<p>The following is an example of accepted <code>dap-version</code> parameter usage:</p>
+
+<ul>
+<li><code>dap-version=2</code></li>
+</ul>
+
+<blockquote>
+<p>Use of <code>dap-version</code> in a query:</p>
+</blockquote>
+<pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
+     <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?dap-version=2"</span>
 </code></pre><h3 id='rangesubset'><code>rangesubset</code></h3>
-<p>This proivdes clients with the ability to limit the granule data extracted
+<p>This provides clients with the ability to limit the granule data extracted
 by the OPeNDAP query to just the variables in which you are interested.</p>
 
 <p>If not provided, all variables associated in the collection metadata will
@@ -969,7 +1004,7 @@ or more warning messages will be returned in the payload.</p>
 include in the granule data extracted by the OPeNDAP query, only providing data
 for the time of interest.</p>
 
-<p>If not provided, the entire temproal extent of the granule will be used.</p>
+<p>If not provided, the entire temporal extent of the granule will be used.</p>
 
 <p>The following is an example of accepted <code>timeposition</code> parameter usage:</p>
 
@@ -993,7 +1028,7 @@ for the time of interest.</p>
 <li><code>POST /service-bridge/ous/collections</code></li>
 </ul>
 <h1 id='ses-resources'>SES Resources</h1><h2 id='collection-resources-2'>Collection Resources</h2>
-<p>The Size Estimation Service offers a REST API for esimating the download sizes of subsetted
+<p>The Size Estimation Service offers a REST API for estimating the download sizes of subsetted
 collection-based granule queries. The usage is almost identical to the OUS resources, the
 primary different being the path segment:</p>
 
@@ -1006,14 +1041,14 @@ primary different being the path segment:</p>
 <ul>
 <li><code>granules</code> which is comma-separated for two or more granules, or <code>granules[]</code>,
 which is repeated for each granule in the query string</li>
-<li><code>variables(or variable_aliases)</code>  which is comma-separated for two or more variables(or variable-aliases), 
+<li><code>variables(or variable_aliases)</code>  which is comma-separated for two or more variables(or variable-aliases),
 or <code>variables[](or variable_aliases[]</code>, which is repeated for each variable(or variable_alias) in the query string.
-Note: values for variable_aliases could be aliases or the group nodes of the aliases. Both <code>alias=&lt;alias&gt;</code> 
-and <code>alias=&lt;alias&gt;/*</code> are searched in cmr variable search to take both alias and group nodes into account.</li>
+Note: values for variable_aliases could be aliases or the group nodes of the aliases. Both <code>alias=&lt;alias&gt;</code>
+and <code>alias=&lt;alias&gt;/*</code> are searched in CMR variable search to take both alias and group nodes into account.</li>
 </ul>
 
 <p>A <code>service_id</code> parameter is optional; if not provided, the service type of <code>opendap</code> is assumed.
-otherwise, the service type will be retrieved using the service_id through ous call to CMR.</p>
+otherwise, the service type will be retrieved using the service_id through OUS call to CMR.</p>
 
 <p>A <code>format</code> parameter is optional; if not provided, the format of <code>nc</code> (NetCDF3) is assumed for
 <code>opendap</code> service type and the format of <code>native</code> is assumed for <code>esi</code> service type.
@@ -1044,7 +1079,7 @@ Currently supported <code>format</code> values are (case insensitive):</p>
 
 <p>A final parameter that is unique to the size estimation service is <code>total-granule-input-bytes</code>:
 this is required when passing <code>nc4</code> or <code>ascii</code> as the format values. This parameter represents
-the size of the granules when no subsetting operation is being peformed.</p>
+the size of the granules when no subsetting operation is being performed.</p>
 <h2 id='examples'>Examples</h2>
 <p>Some example usage is given in the adjacent panel to the right; towards the bottom you will see
 examples for spatial subsetting sizing estimates.</p>
@@ -1212,7 +1247,7 @@ available for use by anyone.</p>
 making calls to other services upon which it depends. Those errors are not
 listed below, but will be appended to the array of errors in the response body.</p>
 <h2 id='cmr-service-bridge-warnings'>CMR Service-Bridge Warnings</h2>
-<p>Warning messages will generally be included in a successful reponse, and thus
+<p>Warning messages will generally be included in a successful response, and thus
 will usually have an HTTP status of 200.</p>
 <h3 id='gridded-data'>Gridded Data</h3>
 <table><thead>
@@ -1255,7 +1290,7 @@ will usually have an HTTP status of 200.</p>
 </thead><tbody>
 <tr>
 <td>400</td>
-<td>The requst includes a dataset whose processing level is not supported.</td>
+<td>The request includes a dataset whose processing level is not supported.</td>
 </tr>
 <tr>
 <td>400</td>
@@ -1271,11 +1306,11 @@ will usually have an HTTP status of 200.</p>
 </tr>
 <tr>
 <td>400</td>
-<td>The values provided for latitude are not within the valid range of -90 degrees through 90 degress.</td>
+<td>The values provided for latitude are not within the valid range of -90 degrees through 90 degrees.</td>
 </tr>
 <tr>
 <td>400</td>
-<td>The values provided for longitude are not within the valid range of -180 degrees through 180 degress.</td>
+<td>The values provided for longitude are not within the valid range of -180 degrees through 180 degrees.</td>
 </tr>
 </tbody></table>
 <h4 id='server-side'>Server-Side</h4>

@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
+   [clojure.set :as set]
    [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mime-types]
@@ -22,10 +23,13 @@
    [cmr.umm.echo10.echo10-core :as echo10]
    [cmr.umm-spec.versioning :as versioning]))
 
-(def versioned-content-type
-  "A versioned default content type used in the tests."
+(def ^:private latest-umm-sub-verison versioning/current-subscription-version)
+
+(defn- versioned-content-type
+  "A versioned content type used in the tests."
+  [umm-sub-version]
   (mime-types/with-version
-    mime-types/umm-json versioning/current-subscription-version))
+    mime-types/umm-json umm-sub-version))
 
 (def default-ingest-opts
   "Default HTTP client options for use when ingesting subscriptions using the functions below."
@@ -43,7 +47,7 @@
   [providers guest-permissions registered-permissions]
   (fn [f]
     ;; grant INGEST_MANAGEMENT_ACL permission.
-    (echo-util/grant-all-subscription-ima (s/context))
+    (echo-util/grant-system-ingest-management (s/context) guest-permissions registered-permissions)
     (let [providers (for [[provider-guid provider-id] providers]
                       {:provider-guid provider-guid
                        :provider-id provider-id})]
@@ -76,10 +80,24 @@
   ([metadata-attrs attrs]
    (make-subscription-concept metadata-attrs attrs 0))
   ([metadata-attrs attrs idx]
-   (-> (merge {:provider-id "PROV1"} metadata-attrs)
-       (data-umm-sub/subscription-concept idx)
-       (assoc :format versioned-content-type)
+   (make-subscription-concept metadata-attrs attrs idx latest-umm-sub-verison))
+  ([metadata-attrs attrs idx umm-sub-version]
+   (-> (merge {:provider-id "PROV1" :Name (str "Name " idx)} metadata-attrs)
+       (data-umm-sub/subscription-concept umm-sub-version)
+       (assoc :format (versioned-content-type umm-sub-version))
        (merge attrs))))
+
+(defn make-subscription-concept-with-umm-version
+  "Convenience function for creating a subscription concept with
+   a previous UMM-Sub version."
+  ([version]
+   (make-subscription-concept {} {} 0 version))
+  ([version metadata-attrs]
+   (make-subscription-concept metadata-attrs {} 0 version))
+  ([version metadata-attrs attrs]
+   (make-subscription-concept metadata-attrs attrs 0 version))
+  ([version metadata-attrs attrs idx]
+   (make-subscription-concept metadata-attrs attrs idx version)))
 
 (defn ingest-subscription
   "A convenience function for ingesting a subscription during tests."
@@ -114,14 +132,15 @@
 (defn- validate-subscription-response-format
   [subscription]
   ;; verifying schema keys are included
-  (is (= #{:collection_concept_id
-           :concept_id
-           :name
-           :native_id
-           :provider_id
-           :revision_id
-           :subscriber_id}
-         (set (keys subscription))))
+  (is (set/subset? (set (keys subscription))
+                   #{:collection_concept_id
+                   :type
+                   :concept_id
+                   :name
+                   :native_id
+                   :provider_id
+                   :revision_id
+                   :subscriber_id}))
   ;; verifying no dash in keys
   (is (not-any? #(string/includes? % "-") (map name (keys subscription)))))
 
@@ -158,7 +177,7 @@
 
 (def ^:private json-field-names
   "List of fields expected in a subscription JSON response."
-  [:concept-id :revision-id :provider-id :native-id :deleted :name :subscriber-id :collection-concept-id])
+  [:concept-id :revision-id :provider-id :native-id :deleted :name :subscriber-id :collection-concept-id :type])
 
 (defn extract-name-from-metadata
   "Pulls the name out of the metadata field in the provided subscription concept."
@@ -175,16 +194,24 @@
   [subscription]
   (:CollectionConceptId (json/parse-string (:metadata subscription) true)))
 
+(defn extract-type-from-metadata
+  "Pulls the collection-concept-id out of the metadata field in the provided subscription concept."
+  [subscription]
+  (:Type (json/parse-string (:metadata subscription) true)))
+
 (defn get-expected-subscription-json
   "For the given subscription return the expected subscription JSON."
   [subscription]
-  (let [sub-json-fields (select-keys
-                         (assoc subscription
-                                :name (extract-name-from-metadata subscription)
-                                :subscriber-id (extract-subscriber-id-from-metadata subscription)
-                                :collection-concept-id (extract-collection-concept-id-from-metadata subscription))
-                         json-field-names)]
-    sub-json-fields))
+  (let [subscription-type (extract-type-from-metadata subscription)]
+    (select-keys
+     (merge subscription
+            {:type (extract-type-from-metadata subscription)
+             :name (extract-name-from-metadata subscription)
+             :subscriber-id (extract-subscriber-id-from-metadata subscription)}
+            (if (= subscription-type "collection")
+              {:provider-id "CMR"}
+              {:collection-concept-id (extract-collection-concept-id-from-metadata subscription)}))
+     json-field-names)))
 
 (defn assert-subscription-search
   "Verifies the subscription search results. The response must be provided in JSON format."
@@ -217,7 +244,7 @@
     result))
 
 (defn save-umm-granule
-  "Saves a umm-granule concept.  If provided, attributes are merged with the concept 
+  "Saves a umm-granule concept.  If provided, attributes are merged with the concept
    and passed to metadata-db/concepts endpoint."
   ([provider-id umm-granule]
    (save-umm-granule provider-id umm-granule {}))

@@ -26,6 +26,9 @@
           provider-ids (if (seq sm-acls)
                          (map #(get-in % [:provider-identity :provider-id]) sm-acls)
                          ["non-existing-provider-id"])
+          provider-ids (if (acl-helper/has-system-read-permission? context)
+                         (concat provider-ids ["CMR"])
+                         provider-ids)
           acl-cond (gc/or-conds [(qm/string-conditions :provider-id provider-ids true)
                                  subscriber-cond])]
       (update-in query [:condition] #(gc/and-conds [acl-cond %])))))

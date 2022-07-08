@@ -5,8 +5,11 @@
 
 (defrecord UMM-Sub
   [
-   ;; The name of a subscription.
+   ;; The name of the subscription.
    Name
+
+   ;; The type of the subscription.
+   Type
 
    ;; The userid of the subscriber.
    SubscriberId
@@ -19,5 +22,25 @@
 
    ;; The search query for the granules that matches the subscription.
    Query
+
+   ;; Requires the client, or user, to add in schema information into every subscription record. It
+   ;; includes the schema's name, version, and URL location. The information is controlled through
+   ;; enumerations at the end of this schema.
+   MetadataSpecification
   ])
 (record-pretty-printer/enable-record-pretty-printing UMM-Sub)
+
+;; This object requires any metadata record that is validated by this schema to provide information
+;; about the schema.
+(defrecord MetadataSpecificationType
+  [
+   ;; This element represents the URL where the schema lives. The schema can be downloaded.
+   URL
+
+   ;; This element represents the name of the schema.
+   Name
+
+   ;; This element represents the version of the schema.
+   Version
+  ])
+(record-pretty-printer/enable-record-pretty-printing MetadataSpecificationType)

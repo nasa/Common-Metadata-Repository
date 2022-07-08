@@ -305,4 +305,5 @@
         (assoc :ArchiveAndDistributionInformation nil)
         (assoc :DirectDistributionInformation nil)
         (assoc-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem] nil)
+        (dissoc :StandardProduct)
         js/parse-umm-c)))

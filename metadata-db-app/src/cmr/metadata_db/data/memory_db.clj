@@ -126,6 +126,28 @@
   [concept]
   [(:concept-id concept) (:revision-id concept)])
 
+(defmulti find-existing-concept
+  "Returns the existing concept in db that matches the given concept-id or native-id."
+  (fn [db concept-type provider-id concept-id native-id]
+    concept-type))
+
+(defmethod find-existing-concept :subscription
+  [db concept-type provider-id concept-id native-id]
+  (->> @(:concepts-atom db)
+       (filter #(= concept-type (:concept-type %)))
+       (filter #(or (= concept-id (:concept-id %))
+                    (= native-id (:native-id %))))
+       first))
+
+(defmethod find-existing-concept :default
+  [db concept-type provider-id concept-id native-id]
+  (->> @(:concepts-atom db)
+       (filter #(= concept-type (:concept-type %)))
+       (filter #(= provider-id (:provider-id %)))
+       (filter #(or (= concept-id (:concept-id %))
+                    (= native-id (:native-id %))))
+       first))
+
 (defn validate-concept-id-native-id-not-changing
   "Validates that the concept-id native-id pair for a concept being saved is not changing. This
   should be done within a save transaction to avoid race conditions where we might miss it.
@@ -133,12 +155,8 @@
   [db provider concept]
   (let [{:keys [concept-id native-id concept-type provider-id]} concept
         {existing-concept-id :concept-id
-         existing-native-id :native-id} (->> @(:concepts-atom db)
-                                             (filter #(= concept-type (:concept-type %)))
-                                             (filter #(= provider-id (:provider-id %)))
-                                             (filter #(or (= concept-id (:concept-id %))
-                                                          (= native-id (:native-id %))))
-                                             first)]
+         existing-native-id :native-id} (find-existing-concept
+                                         db concept-type provider-id concept-id native-id)]
     (when (and (and existing-concept-id existing-native-id)
                (or (not= existing-concept-id concept-id)
                    (not= existing-native-id native-id)))
@@ -259,18 +277,24 @@
   [db providers params]
   ;; XXX Looking at search-with-params, seems like it might need to be
   ;;     in a utility ns for use by all impls
-  (let [found-concepts (mapcat #(concepts/search-with-params
+  (let [is-subscription? (= :subscription (:concept-type params))
+        found-concepts (mapcat #(concepts/search-with-params
                                  @(:concepts-atom db)
-                                 (assoc params :provider-id (:provider-id %)))
-                              providers)]
+                                 (if is-subscription?
+                                   params
+                                   (assoc params :provider-id (:provider-id %))))
+                               providers)]
     (concepts->find-result found-concepts params)))
 
 (defn find-latest-concepts
   [db provider params]
   (let [latest-concepts (latest-revisions @(:concepts-atom db))
+        params  (if (= :subscription (:concept-type params))
+                  params
+                  (assoc params :provider-id (:provider-id provider)))
         found-concepts (concepts/search-with-params
                         latest-concepts
-                        (assoc params :provider-id (:provider-id provider)))]
+                        params)]
     (concepts->find-result found-concepts params)))
 
 (def concept-search-behaviour

@@ -1,4 +1,3 @@
-import { clearScrollSession } from '../utils/cmr/clearScrollSession'
 import { fetchPageFromCMR } from '../utils/cmr/fetchPageFromCMR'
 import { getEchoToken } from '../utils/cmr/getEchoToken'
 import { initializeGremlinConnection } from '../utils/gremlin/initializeGremlinConnection'
@@ -23,19 +22,13 @@ const bootstrapGremlinServer = async (event) => {
 
   const { 'provider-id': providerId = null } = JSON.parse(body)
 
-  // Fetch all CMR Collections and index each page, utlimately returning the scroll session
-  // id if once was created
-  const scrollId = await fetchPageFromCMR({
-    scrollId: null,
+  // Fetch all CMR Collections and index each page
+  await fetchPageFromCMR({
+    searchAfter: null,
     token,
     gremlinConnection,
     providerId
   })
-
-  // If a scroll session was created we need to inform CMR that we are done with it
-  if (scrollId) {
-    await clearScrollSession(scrollId)
-  }
 
   console.log('Bootstrap completed.')
 

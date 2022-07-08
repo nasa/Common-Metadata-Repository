@@ -23,7 +23,7 @@
                                      [com.google.javascript/closure-compiler-unshaded]]}
              :dev {:dependencies [[clojusc/system-manager "0.3.0"]
                                   [clojusc/trifl "0.4.2"]
-                                  [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
+                                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]]
                    :plugins [[lein-shell "0.5.0"]
                              [venantius/ultra "0.5.2"]]
@@ -35,7 +35,7 @@
                     :plugins [[jonase/eastwood "0.3.3"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.1"]
-                              [lein-kibit "0.1.6"]]}
+                              [lein-kibit "0.1.8"]]}
              :test {:plugins [[lein-ltest "0.3.0"]]}}
   :aliases {
             ;; Dev & Testing Aliases

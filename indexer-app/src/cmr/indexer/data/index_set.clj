@@ -400,6 +400,7 @@
           :has-temporal-subsetting m/bool-field-mapping
           :has-opendap-url m/bool-field-mapping
           :cloud-hosted m/bool-field-mapping
+          :standard-product m/bool-field-mapping
 
           :platform-sn                    m/string-field-mapping
           :platform-sn-lowercase          m/string-field-mapping
@@ -832,8 +833,11 @@
    :collection-concept-id-lowercase (m/doc-values m/string-field-mapping)
    :subscriber-id (m/doc-values m/string-field-mapping)
    :subscriber-id-lowercase (m/doc-values m/string-field-mapping)
+   :subscription-type (m/doc-values m/string-field-mapping)
+   :subscription-type-lowercase (m/doc-values m/string-field-mapping)
    :deleted (m/doc-values m/bool-field-mapping)
    :user-id (m/doc-values m/string-field-mapping)
+   :creation-date (m/doc-values m/date-field-mapping)
    :revision-date (m/doc-values m/date-field-mapping)
    :metadata-format (m/doc-values m/string-field-mapping)})
 

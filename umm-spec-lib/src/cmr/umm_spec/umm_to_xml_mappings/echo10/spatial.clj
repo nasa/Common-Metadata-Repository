@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10.spatial
   (:require
    [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.migration.version.collection :as version-collection]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]))
 
@@ -93,10 +94,22 @@
       (convert-horizontal-data-resolutions sp)
       (convert-local-coordinate-sys sp)]]))
 
+(defn- get-orbit-parameters
+  "Return the OrbitParameters with the right SwathWidth and Period for ECHO10.
+  If SwathWidth exists, convert it to the value in assumed unit. Otherwise,
+  Get the largest Footprint in assumed unit, which is Kilometer.
+  Lastly, add :Period to the OrbitParameters."
+  [collection]
+  (when-let [op (get-in collection [:SpatialExtent :OrbitParameters])]
+    (let [swath-width (version-collection/get-swath-width collection)
+          period (:OrbitPeriod op)]
+      (assoc op :SwathWidth swath-width :Period period))))
+
 (defn spatial-element
   "Returns ECHO10 Spatial element from given UMM-C record."
   [c]
-  (let [sp (:SpatialExtent c)]
+  (let [sp (:SpatialExtent c)
+        orbit-parameters (get-orbit-parameters c)]
     [:Spatial
      (elements-from sp :SpatialCoverageType)
      (let [horiz (:HorizontalSpatialDomain sp)]
@@ -114,7 +127,7 @@
        [:VerticalSpatialDomain
         (elements-from vert :Type :Value)])
      [:OrbitParameters
-      (elements-from (:OrbitParameters sp)
+      (elements-from orbit-parameters
                      :SwathWidth :Period :InclinationAngle
                      :NumberOfOrbits :StartCircularLatitude)]
      [:GranuleSpatialRepresentation (or (:GranuleSpatialRepresentation sp)

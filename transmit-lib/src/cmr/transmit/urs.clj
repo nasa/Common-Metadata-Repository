@@ -22,6 +22,10 @@
   [conn username]
   (format "%s/api/users/%s" (conn/root-url conn) username))
 
+(defn- group-search-url
+  [conn]
+  (format "%s/api/user_groups/search" (conn/root-url conn)))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 
@@ -71,7 +75,7 @@
                                                           :method :get
                                                           :raw? true})]
     (when-not (= 200 status)
-      (info (format "Cannot get info for username [%s] in URS. Failed with status code [%d].
+      (error (format "Cannot get info for username [%s] in URS. Failed with status code [%d].
         EDL error message: [%s]" user status (pr-str body)))
       (errors/throw-service-error
         :unauthorized
@@ -85,6 +89,28 @@
   [context user]
   (:email_address (get-user-info context user)))
 
+(defn get-edl-groups-by-username
+  "Returns groups associated with a username"
+  [context user-id]
+  (let [{:keys [status body]} (request-with-auth context {:url-fn #(group-search-url %)
+                                                          :method :get
+                                                          :raw? true
+                                                          :http-options {:query-params
+                                                                         {:user_ids
+                                                                          user-id}}})]
+    (when-not (= 200 status)
+      (error (format "Cannot get group info for username [%s] in URS. Failed with status code [%d].
+        EDL error message: [%s]" user-id status (pr-str body)))
+      (errors/throw-service-error
+        :unauthorized
+        (format "Cannot get group info for username [%s] in URS. Failed with status code [%d]."
+                user-id status)))
+    (map  (fn [group]
+            (str (get group :name)
+                 ":"
+                 (when-let [tag (get group :tag)]
+                   tag)))
+         body)))
 
 (comment
  ;; Use this code to test with URS. Replace XXXX with real values

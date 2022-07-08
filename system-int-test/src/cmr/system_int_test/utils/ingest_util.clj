@@ -388,6 +388,56 @@
          params (merge params (when accept-format {:accept accept-format}))]
      (parse-ingest-response (client/request params) options))))
 
+;; Temporary function, this calls the subscription routes under the ingest root url, will be removed in CMR-8270
+(defn ingest-subscription-concept
+  "Ingest a concept and return a map with status, concept-id, and revision-id"
+  ([concept]
+   (ingest-subscription-concept concept {}))
+  ([concept options]
+   (let [{:keys [metadata format concept-type concept-id revision-id native-id]} concept
+         {:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id test-existing-errors]} options
+         accept-format (:accept-format options)
+         method (get options :method :put)
+         headers (util/remove-nil-keys {"Cmr-Concept-id" concept-id
+                                        "Cmr-Revision-id" revision-id
+                                        "Cmr-Validate-Keywords" validate-keywords
+                                        "Cmr-Validate-Umm-C" validate-umm-c
+                                        "Cmr-Test-Existing-Errors" test-existing-errors
+                                        "Authorization" token
+                                        "User-Id" user-id
+                                        "Client-Id" client-id
+                                        "CMR-Request-Id" cmr-request-id
+                                        "X-Request-Id" x-request-id})
+         params {:method method
+                 :url (url/ingest-subscription-url native-id)
+                 :body  metadata
+                 :content-type format
+                 :headers headers
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}
+         params (merge params (when accept-format {:accept accept-format}))]
+     (parse-ingest-response (client/request params) options))))
+
+(defn delete-subscription-concept
+  "Delete a given concept."
+  ([concept]
+   (delete-subscription-concept concept {}))
+  ([concept options]
+   (let [{:keys [concept-type native-id]} concept
+         {:keys [token client-id accept-format revision-id user-id]} options
+         headers (util/remove-nil-keys {"Authorization" token
+                                        "Client-Id" client-id
+                                        "User-Id" user-id
+                                        "Cmr-Revision-id" revision-id})
+         params {:method :delete
+                 :url (url/ingest-subscription-url native-id)
+                 :headers headers
+                 :accept accept-format
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}
+         params (merge params (when accept-format {:accept accept-format}))]
+     (parse-ingest-response (client/request params) options))))
+
 (defn delete-concept
   "Delete a given concept."
   ([concept]
@@ -826,6 +876,32 @@
           :grant-all-ingest? grant-all-ingest?
           :grant-all-access-control? grant-all-access-control?})))))
 
+(defn setup-providers-with-customized-options
+  "Creates the given providers in CMR. Providers can be passed in
+  two ways:
+  1) a map of provider-guids to provider-ids
+     {'provider-guid1' 'PROV1' 'provider-guid2' 'PROV2'}, or
+  2) a list of provider attributes maps:
+     [{:provider-guid 'provider-guid1' :provider-id 'PROV1'
+       :short-name 'provider short name'}...]
+  options are customized to individual providers:
+  {'PROV1' {:grant-all-search? false :grant-all-ingest? false}
+   'PROV2' {:grant-all-search? false :grant-all-ingest? true}}"
+  ([providers options]
+   (let [providers (if (sequential? providers)
+                       providers
+                       (for [[provider-guid provider-id consortiums] providers]
+                         {:provider-guid provider-guid
+                          :provider-id provider-id
+                          :consortiums consortiums}))]
+      (doseq [provider-map providers]
+        (let [provider-options (merge reset-fixture-default-options (get options (:provider-id provider-map)))]
+        (create-provider
+         provider-map
+         {:grant-all-search? (:grant-all-search? provider-options)
+          :grant-all-ingest? (:grant-all-ingest? provider-options)
+          :grant-all-access-control? (:grant-all-access-control? provider-options)}))))))
+
 (defn reset-fixture
   "Resets all the CMR systems then uses the `set-ingest-umm-version-to-current`
   function to set the accepted umm versions for ingest to the the latest UMM version defined in
@@ -843,6 +919,25 @@
      (set-ingest-umm-version-to-current)
      (when-not (empty? providers)
       (setup-providers providers options))
+     (f))))
+
+(defn reset-fixture-with-customized-options
+  "Resets all the CMR systems then uses the `set-ingest-umm-version-to-current`
+  function to set the accepted umm versions for ingest to the the latest UMM version defined in
+  umm-spec-lib, so that all the ingest tests are testing against the latest umm version.
+  and uses the `setup-providers` function to create a testing fixture.
+
+  For the format of the providers data structure, see `setup-providers`."
+  ([]
+   (reset-fixture {}))
+  ([providers]
+   (reset-fixture providers nil))
+  ([providers options]
+   (fn [f]
+     (dev-sys-util/reset)
+     (set-ingest-umm-version-to-current)
+     (when-not (empty? providers)
+      (setup-providers-with-customized-options providers options))
      (f))))
 
 (defn grant-all-search

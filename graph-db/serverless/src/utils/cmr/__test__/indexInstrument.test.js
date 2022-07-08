@@ -42,11 +42,11 @@ describe('indexInstrument', () => {
       // Provide `null` for the gremlin connection to throw an error
       await expect(
         indexInstrument(instrument, null, 'GPS', conceptId)
-      ).rejects.toThrow('Cannot read property \'V\' of null')
+      ).rejects.toThrow('Cannot read properties of null (reading \'V\')')
 
       expect(consoleMock).toBeCalledTimes(2)
       expect(consoleMock.mock.calls[0][0]).toEqual(`Failed to index Instrument for platform [GPS] ${JSON.stringify(instrument)}`)
-      expect(consoleMock.mock.calls[1][0]).toEqual(Error('Cannot read property \'V\' of null'))
+      expect(consoleMock.mock.calls[1][0]).toEqual(Error('Cannot read properties of null (reading \'V\')'))
     })
   })
 })

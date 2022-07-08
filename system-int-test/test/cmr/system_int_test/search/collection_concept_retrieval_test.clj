@@ -74,27 +74,12 @@
   [coll correct-entry-title]
   (assoc coll :entry-title correct-entry-title))
 
-;; ISO-19115 must be handled separately from the other formats becaue it uses xslt to translate
-;; ECHO10 and the resulting XML is not quite the same as what we get when going from UMM to XML.
-(defmethod result-matches? :iso19115
-  [original-format format-key umm response]
-  (let [metadata-xml (:body response)
-        metadata-umm (-> (umm-c/parse-collection metadata-xml)
-                         ;; Update entry-title to the correct value as the xslt is not generating
-                         ;; the correct entry-title as of now.
-                         ;; This is temporary and should be removed once CMR-3256 is fixed.
-                         (update-iso-entry-title (:entry-title umm))
-                         ;; remove default added by parser
-                         (assoc :metadata-language nil)
-                         ;; remove default added by parser
-                         (assoc :use-constraints nil))]
-    (is (= umm metadata-umm))))
-
 (defmethod result-matches? :default
   [original-format format-key umm response]
   (let [expected (d/expected-metadata test-context :collection original-format format-key umm)
         metadata-xml (:body response)]
-    (if (= :iso-smap format-key)
+    (if (or (= :iso-smap format-key)
+            (= :iso19115 format-key))
       (is (= (expected-conversion/ignore-ids expected)
              (expected-conversion/ignore-ids metadata-xml)))
       (is (= expected metadata-xml)))))

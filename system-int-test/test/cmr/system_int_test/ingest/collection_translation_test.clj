@@ -74,7 +74,9 @@
                               parsed-umm-json
                               [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
                               remove-all-nil-keys-from-hdr)
-            parsed-umm-json (convert-to-sets parsed-umm-json)]
+            parsed-umm-json (convert-to-sets parsed-umm-json)
+            expected (util/remove-nil-keys expected)
+            parsed-umm-json (util/remove-nil-keys expected)]
 
         (is (= 200 status) body)
         (is (= (mime-types/format->mime-type output-format) content-type))
@@ -86,7 +88,7 @@
         ;; the current-time can not be removed like before when the default was used because it is not a constant.
         ;; We can't modify the expected because we can't expect a changing current-time either.
         (if (and (= "dif" (name input-format)) (= "echo10" (name output-format)))
-          (is (= expected (assoc parsed-umm-json :DataDates nil)))
+          (is (= expected (dissoc parsed-umm-json :DataDates)))
           (is (= expected parsed-umm-json))))))
 
   (testing (format "Translating iso19115 to umm-json produces the right UseConstraints")

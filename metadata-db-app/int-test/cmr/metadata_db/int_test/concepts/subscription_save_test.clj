@@ -14,8 +14,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (use-fixtures :each (util/reset-database-fixture
-                     {:provider-id "PROV1" :small false}
-                     {:provider-id "PROV2" :small false}))
+                     {:provider-id "PROV1" :small false}))
 
 (defmethod c-spec/gen-concept :subscription
   [_ provider-id uniq-num attributes]
@@ -26,7 +25,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (deftest save-subscription
-  (c-spec/general-save-concept-test :subscription ["PROV1" "PROV2"]))
+  (c-spec/general-save-concept-test :subscription ["PROV1"]))
 
 (deftest save-subscription-with-missing-required-parameters
   (c-spec/save-test-with-missing-required-parameters

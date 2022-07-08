@@ -372,17 +372,22 @@
          :system_identity
          {:target tag-acl}))
 
+(defn grant-system-ingest-management
+  "Creates an ACL in mock echo granting system Ingest Management ACL for guests and registered users."
+  [context guest-permissions registered-permissions]
+  (grant context
+         [{:permissions registered-permissions
+           :user_type :registered}
+          {:permissions guest-permissions
+           :user_type :guest}]
+         :system_identity
+         {:target ingest-management-acl}))
+
 (defn grant-all-variable
   "Creates an ACL in mock echo granting registered users ability to do all
   variable related operations"
   [context]
-  (grant context
-         [{:permissions [:read :update]
-           :user_type :registered}
-          {:permissions [:read :update]
-           :user_type :guest}]
-         :system_identity
-         {:target ingest-management-acl}))
+  (grant-system-ingest-management context [:read :update] [:read :update]))
 
 (def grant-all-service
   "Creates an ACL in mock echo granting registered users ability to do all

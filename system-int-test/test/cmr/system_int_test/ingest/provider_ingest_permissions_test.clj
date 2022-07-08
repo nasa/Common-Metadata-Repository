@@ -27,7 +27,7 @@
                                     (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV1"}
                                                                   [:read :update]
                                                                   [:read :update])
-                                    (subscription-util/grant-all-subscription-fixture {"provguid1" "PROV2"}
+                                    (subscription-util/grant-all-subscription-fixture {"provguid2" "PROV2"}
                                                                   [:read]
                                                                   [:read])
                                     (dev-system/freeze-resume-time-fixture)]))
@@ -43,6 +43,12 @@
   [response]
   (let [status (:status response)]
     (is (= 401 status))))
+
+(defn- assert-ingest-not-found
+  "Succeeds if provided token returns 404 NOT FOUND error."
+  [response]
+  (let [status (:status response)]
+    (is (= 404 status))))
 
 (deftest ingest-provider-management-permissions-test
   (let [_ (mock-urs/create-users (s/context) [{:username "someSubId" :password "Password"}])
@@ -151,6 +157,10 @@
                     "PROV1"
                     (data-umm-c/collection {})
                     {:token provider-admin-update-token})
+        coll2 (d/ingest-umm-spec-collection
+                    "PROV2"
+                    (data-umm-c/collection {})
+                    {:token provider-admin-update-token})
         ingested-concept (mdb/get-concept (:concept-id collection))
 
         granule (d/item->concept
@@ -160,7 +170,8 @@
         subscription (subscription-util/make-subscription-concept {:CollectionConceptId (:concept-id collection)})
         ;; create a subscription on PROV2, which doesn't have SUBSCRIPTION_MANAGEMENT permission
         ;; to ingest. So all the ingests should fail.
-        subscription-np (subscription-util/make-subscription-concept {:provider-id "PROV2"})
+        subscription-np (subscription-util/make-subscription-concept {:CollectionConceptId (:concept-id coll2)
+                                                                      :provider-id "PROV2"} {} 1)
         tool (tool-util/make-tool-concept)]
 
     (testing "ingest granule update permissions"
@@ -286,7 +297,7 @@
             "another-prov-admin-token can't ingest"
             another-prov-admin-token
             "provider-admin-read-token can't ingest"
-            provider-admin-read-token)
+            provider-admin-read-token))
 
      ;; Ingest and delete of subscriptions are controlled by both INGEST_MANAGEMENT_ACL and SUBSCRIPTION+MANAGEMENT ACLs.
      ;; subscriptoin-np is ingested on PROV2, which has no SUBSCRIPTION_MANAGEMENT permission to ingest. so, even though
@@ -304,7 +315,7 @@
             provider-admin-update-delete-token)
 
       (are3 [token]
-            (assert-ingest-no-permission
+            (assert-ingest-not-found
              (ingest/delete-concept subscription-np {:token token
                                                      :allow-failure? true}))
             "provider-admin-update-token can not delete"
@@ -312,7 +323,7 @@
             "provider-admin-read-update token can not delete"
             provider-admin-read-update-token
             "provider-admin-update-delete token can not delete"
-            provider-admin-update-delete-token)))
+            provider-admin-update-delete-token))
 
     ;; The assert-ingest-succeeded tests below are identical to the tests above,
     ;; except that the subscription is on PROV1, which has both the INGEST and SUBSCRIPTION ACL permissions.
@@ -330,17 +341,6 @@
             "provider-admin-read-update token can ingest"
             provider-admin-read-update-token
             "provider-admin-update-delete token can ingest"
-            provider-admin-update-delete-token)
-
-      (are3 [token]
-            (assert-ingest-succeeded
-             (ingest/delete-concept subscription {:token token
-                                                  :allow-failure? true}))
-            "provider-admin-update-token can delete"
-            provider-admin-update-token
-            "provider-admin-read-update token can delete"
-            provider-admin-read-update-token
-            "provider-admin-update-delete token can delete"
             provider-admin-update-delete-token)
 
       (are3 [token]
@@ -371,7 +371,18 @@
             "another-prov-admin-token can't delete"
             another-prov-admin-token
             "provider-admin-read-token can't delete"
-            provider-admin-read-token))
+            provider-admin-read-token)
+
+      (are3 [token]
+            (assert-ingest-succeeded
+             (ingest/delete-concept subscription {:token token
+                                                  :allow-failure? true}))
+            "provider-admin-update-token can delete"
+            provider-admin-update-token
+            "provider-admin-read-update token can delete"
+            provider-admin-read-update-token
+            "provider-admin-update-delete token can delete"
+            provider-admin-update-delete-token))
 
     (testing "token expiration"
       ;; 29 days after token creation is OK since the token expires in 30 days

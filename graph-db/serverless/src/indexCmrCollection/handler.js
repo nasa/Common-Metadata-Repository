@@ -1,10 +1,10 @@
 import 'array-foreach-async'
 
+import { deleteCmrCollection } from '../utils/cmr/deleteCmrCollection'
 import { fetchCmrCollection } from '../utils/cmr/fetchCmrCollection'
 import { getConceptType } from '../utils/cmr/getConceptType'
 import { getEchoToken } from '../utils/cmr/getEchoToken'
 import { indexCmrCollection } from '../utils/cmr/indexCmrCollection'
-import { deleteCmrCollection } from '../utils/cmr/deleteCmrCollection'
 import { initializeGremlinConnection } from '../utils/gremlin/initializeGremlinConnection'
 
 let gremlinConnection

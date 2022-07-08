@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UMM-Sub",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "Name": {
+      "description": "The name of the subscription.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80
+    },
+    "Type": {
+      "description": "The type of the subscription.",
+      "type": "string",
+      "enum": [
+        "collection",
+        "granule"
+      ]
+    },
+    "SubscriberId": {
+      "description": "The userid of the subscriber.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 30
+    },
+    "EmailAddress": {
+      "description": "The email address of the subscriber.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "CollectionConceptId": {
+      "description": "The collection concept id of the granules subscribed.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "Query": {
+      "description": "The search query for the granules that matches the subscription.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 40000
+    },
+    "MetadataSpecification": {
+      "description": "Requires the client, or user, to add in schema information into every subscription record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "$ref": "#/definitions/MetadataSpecificationType"
+    }
+  },
+  "required": [
+    "Name",
+    "Query",
+    "Type",
+    "MetadataSpecification"
+  ],
+  "if": {
+    "properties": {
+      "Type": {
+        "const": "granule"
+      }
+    },
+    "required": [
+      "Type"
+    ]
+  },
+  "then": {
+    "required": [
+      "CollectionConceptId"
+    ]
+  },
+  "else": {
+    "not": {
+      "required": [
+        "CollectionConceptId"
+      ]
+    }
+  },
+  "definitions": {
+    "MetadataSpecificationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+      "properties": {
+        "URL": {
+          "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
+          "type": "string",
+          "enum": [
+            "https://cdn.earthdata.nasa.gov/umm/subscription/v1.1"
+          ]
+        },
+        "Name": {
+          "description": "This element represents the name of the schema.",
+          "type": "string",
+          "enum": [
+            "UMM-Sub"
+          ]
+        },
+        "Version": {
+          "description": "This element represents the version of the schema.",
+          "type": "string",
+          "enum": [
+            "1.1"
+          ]
+        }
+      },
+      "required": [
+        "URL",
+        "Name",
+        "Version"
+      ]
+    }
+  }
+}

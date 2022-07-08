@@ -1,4 +1,4 @@
-import AWS from 'aws-sdk'
+import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm'
 
 let ssm
 
@@ -9,17 +9,17 @@ let ssm
  */
 export const getSecureParam = async (param) => {
   if (!ssm) {
-    ssm = new AWS.SSM({
+    ssm = new SSMClient({
       region: 'us-east-1'
     })
   }
 
-  const request = await ssm
-    .getParameter({
-      Name: param,
-      WithDecryption: true
-    })
-    .promise()
+  const command = new GetParameterCommand({
+    Name: param,
+    WithDecryption: true
+  })
+
+  const request = await ssm.send(command)
 
   const { Parameter: { Value: value } } = request
 

@@ -93,7 +93,6 @@
         ;; Validate that a connection manager is always present. This can cause poor performance if not.
         _ (when-not (:connection-manager connection-params)
             (errors/internal-error! (format "No connection manager created for [%s] in current application" app-name)))
-
         response (http-response->raw-response
                    (client/request
                      (merge connection-params

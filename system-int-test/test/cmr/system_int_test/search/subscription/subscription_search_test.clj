@@ -1,12 +1,14 @@
 (ns cmr.system-int-test.search.subscription.subscription-search-test
   "This tests searching subscriptions."
   (:require
-   [clojure.test :refer :all]
    [clojure.string :as string]
+   [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
+   [cmr.common.date-time-parser :as dt-parser]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.mock-echo.client.mock-urs-client :as mock-urs]
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as system]
@@ -14,7 +16,7 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.subscription-util :as subscriptions]
-   [cmr.mock-echo.client.mock-urs-client :as mock-urs]))
+   [cmr.system-int-test.utils.tag-util :as tags]))
 
 (use-fixtures :each
               (join-fixtures
@@ -29,7 +31,8 @@
                   {"provguid3" "PROV3"} [:update] [:read :update])
                 ;; No read permission granted for any user_types for PROV4.
                 (subscriptions/grant-all-subscription-fixture
-                  {"provguid4" "PROV4"} [:update] [:update])]))
+                  {"provguid4" "PROV4"} [:update] [:update])
+                tags/grant-all-tag-fixture]))
 
 (deftest search-for-subscriptions-test-with-subscriber
   (echo-util/ungrant-by-search (system/context)
@@ -202,25 +205,89 @@
             (search/find-concepts-in-format
              nil :subscription {} {:url-extension "atom"}))))))
 
+(deftest search-for-subscription-by-type-test
+  (let [_ (mock-urs/create-users (system/context) [{:username "SubId1" :password "Password"}
+                                                   {:username "SubId2" :password "Password"}])
+        coll1 (data2-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "coll1"
+                 :EntryTitle "entry-title1"})
+               {:token "mock-echo-system-token"})
+        coll2 (data2-core/ingest-umm-spec-collection
+               "PROV2"
+               (data-umm-c/collection
+                {:ShortName "coll2"
+                 :EntryTitle "entry-title2"})
+               {:token "mock-echo-system-token"})
+        subscription1 (subscriptions/ingest-subscription-with-attrs {:native-id "sub1"
+                                                                     :Name "Subscription1"
+                                                                     :SubscriberId "SubId1"
+                                                                     :Query "platform=NOAA-6"
+                                                                     :CollectionConceptId (:concept-id coll1)
+                                                                     :provider-id "PROV1"})
+        subscription2 (subscriptions/ingest-subscription-with-attrs {:native-id "sub2"
+                                                                     :Name "Subscription2"
+                                                                     :SubscriberId "SubId2"
+                                                                     :Query "platform=NOAA-7"
+                                                                     :CollectionConceptId (:concept-id coll2)
+                                                                     :provider-id "PROV2"})
+        subscription3 (subscriptions/ingest-subscription-with-attrs {:native-id "sub3"
+                                                                     :Name "Subscription3"
+                                                                     :SubscriberId "SubId1"
+                                                                     :Type "collection"
+                                                                     :Query "platform=NOAA-10"
+                                                                     :provider-id "PROV1"})
+        subscription4 (subscriptions/ingest-subscription-with-attrs {:native-id "sub4"
+                                                                     :Name "Subscription4"
+                                                                     :SubscriberId "SubId2"
+                                                                     :Type "collection"
+                                                                     :Query "platform=NOAA-11"
+                                                                     :provider-id "PROV2"})
+        granule-subscriptions [subscription1 subscription2]
+        collection-subscriptions [subscription3 subscription4]
+        all-subscriptions (concat granule-subscriptions collection-subscriptions)]
+    (index/wait-until-indexed)
+
+    (are3 [expected-subscriptions query]
+      (do
+        (testing "XML references format"
+          (data2-core/assert-refs-match expected-subscriptions (subscriptions/search-refs query)))
+        (testing "JSON format"
+          (subscriptions/assert-subscription-search expected-subscriptions (subscriptions/search-json query))))
+
+      "Find all"
+      all-subscriptions {}
+
+      "By type, collection"
+      collection-subscriptions {:type "collection"}
+
+      "By type, granule"
+      granule-subscriptions {:type "granule"}
+
+      "Combination of params"
+      [subscription4]
+      {:type "collection" :name  "Sub*4" "options[name][pattern]" true})))
+
 (deftest search-for-subscriptions-test
   (let [_ (mock-urs/create-users (system/context) [{:username "SubId1" :password "Password"}
                                                    {:username "SubId2" :password "Password"}
                                                    {:username "SubId3" :password "Password"}
                                                    {:username "SubId4" :password "Password"}])
         coll1 (data2-core/ingest-umm-spec-collection
-               "PROV4"
+               "PROV1"
                (data-umm-c/collection
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})
         coll2 (data2-core/ingest-umm-spec-collection
-               "PROV4"
+               "PROV1"
                (data-umm-c/collection
                 {:ShortName "coll2"
                  :EntryTitle "entry-title2"})
                {:token "mock-echo-system-token"})
         coll3 (data2-core/ingest-umm-spec-collection
-               "PROV1"
+               "PROV2"
                (data-umm-c/collection
                 {:ShortName "coll3"
                  :EntryTitle "entry-title3"})
@@ -240,7 +307,7 @@
         subscription3 (subscriptions/ingest-subscription-with-attrs {:native-id "sub3"
                                                                      :Name "Subscrition3"
                                                                      :Query "platform=NOAA-8"
-                                                                     :CollectionConceptId (:concept-id coll1)
+                                                                     :CollectionConceptId (:concept-id coll3)
                                                                      :SubscriberId "SubId3"
                                                                      :provider-id "PROV2"})
         subscription4 (subscriptions/ingest-subscription-with-attrs {:native-id "sb4"
@@ -343,11 +410,11 @@
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; collection-concept-id Param
       "By name case sensitive - exact match"
-      [subscription1 subscription3]
+      [subscription1]
       {:collection-concept-id (:concept-id coll1)}
 
       "By collection-concept-id case sensitive, default ignore-case true"
-      [subscription1 subscription3]
+      [subscription1]
       {:collection-concept-id (string/lower-case (:concept-id coll1))}
 
       "By collection-concept-id ignore case false"
@@ -355,7 +422,7 @@
       {:collection-concept-id (string/lower-case (:concept-id coll1)) "options[collection-concept-id][ignore-case]" false}
 
       "By collection-concept-id ignore case true"
-      [subscription1 subscription3]
+      [subscription1]
       {:collection-concept-id (string/lower-case (:concept-id coll1)) "options[collection-concept-id][ignore-case]" true}
 
       "By collection-concept-id Pattern, default false"
@@ -363,7 +430,7 @@
       {:collection-concept-id  "*PROV1"}
 
       "By collection-concept-id Pattern true"
-      [subscription4]
+      prov1-subscriptions
       {:collection-concept-id "*PROV1" "options[collection-concept-id][pattern]" true}
 
       "By collection-concept-id Pattern false"
@@ -371,12 +438,12 @@
       {:collection-concept-id "*PROV1" "options[collection-concept-id][pattern]" false}
 
       "By multiple collection-concept-ids"
-      [subscription1 subscription2 subscription3]
+      [subscription1 subscription2]
       {:collection-concept-id [(:concept-id coll1) (:concept-id coll2)]}
 
       "By multiple collection-concept-ids with options"
       [subscription1 subscription3 subscription4]
-      {:collection-concept-id [(:concept-id coll1) "*PROV1"] "options[collection-concept-id][pattern]" true}
+      {:collection-concept-id [(:concept-id coll1) "*PROV2"] "options[collection-concept-id][pattern]" true}
 
       ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
       ;; provider Param
@@ -470,33 +537,67 @@
       [subscription3]
       {:native-id "sub*" :provider "PROV2" "options[native-id][pattern]" true})))
 
-(deftest subscription-search-sort
-  (let [_ (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
-        coll1 (data2-core/ingest-umm-spec-collection "PROV4"
+(deftest subscription-umm-json-search-results
+  (let [_ (mock-urs/create-users (system/context) [{:username "SubId1" :password "Password"}])
+        coll1 (data2-core/ingest-umm-spec-collection
+               "PROV1"
                (data-umm-c/collection
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})
-        subscription1 (subscriptions/ingest-subscription-with-attrs {:native-id "sub1"
-                                                                     :Name "subscription"
-                                                                     :Query "platform=NOAA-7"
-                                                                     :CollectionConceptId (:concept-id coll1)
-                                                                     :provider-id "PROV2"})
-        subscription2 (subscriptions/ingest-subscription-with-attrs {:native-id "sub2"
-                                                                     :Name "Subscription 2"
-                                                                     :Query "platform=NOAA-4"
-                                                                     :CollectionConceptId (:concept-id coll1)
-                                                                     :provider-id "PROV1"})
-        subscription3 (subscriptions/ingest-subscription-with-attrs {:native-id "sub3"
-                                                                     :Name "a subscription"
-                                                                     :Query "platform=NOAA-5"
-                                                                     :CollectionConceptId (:concept-id coll1)
-                                                                     :provider-id "PROV1"})
-        subscription4 (subscriptions/ingest-subscription-with-attrs {:native-id "sub4"
-                                                                     :Name "subscription"
-                                                                     :Query "platform=NOAA-6"
-                                                                     :CollectionConceptId (:concept-id coll1)
-                                                                     :provider-id "PROV1"})]
+        sub1 (subscriptions/ingest-subscription-with-attrs {:native-id "Sub1"
+                                                            :Name "Subscription1"
+                                                            :SubscriberId "SubId1"
+                                                            :Query "platform=NOAA-6"
+                                                            :CollectionConceptId (:concept-id coll1)
+                                                            :provider-id "PROV1"})]
+    (index/wait-until-indexed)
+    (testing "subscription-umm-json-results contains valid creation-date"
+      (let [{json-umm-status :status json-umm-results :results} (search/find-concepts-umm-json
+                                                                 :subscription {})
+            creation-date (-> json-umm-results :items first :meta :creation-date)
+            parsed-creation-date (dt-parser/parse-datetime creation-date)]
+        (is (= 200 json-umm-status))
+        (is (some? parsed-creation-date))))))
+
+(deftest subscription-search-sort
+  (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
+  (let [coll1 (data2-core/ingest-umm-spec-collection
+               "PROV1"
+               (data-umm-c/collection
+                {:ShortName "coll1"
+                 :EntryTitle "entry-title1"})
+               {:token "mock-echo-system-token"})
+        coll2 (data2-core/ingest-umm-spec-collection
+               "PROV2"
+               (data-umm-c/collection
+                {:ShortName "coll2"
+                 :EntryTitle "entry-title2"})
+               {:token "mock-echo-system-token"})
+        subscription1 (subscriptions/ingest-subscription-with-attrs
+                       {:native-id "sub1"
+                        :Name "subscription"
+                        :Query "platform=NOAA-7"
+                        :CollectionConceptId (:concept-id coll2)
+                        :provider-id "PROV2"})
+        subscription2 (subscriptions/ingest-subscription-with-attrs
+                       {:native-id "sub2"
+                        :Name "Subscription 2"
+                        :Query "platform=NOAA-4"
+                        :CollectionConceptId (:concept-id coll1)
+                        :provider-id "PROV1"})
+        subscription3 (subscriptions/ingest-subscription-with-attrs
+                       {:native-id "sub3"
+                        :Name "a subscription"
+                        :Query "platform=NOAA-5"
+                        :CollectionConceptId (:concept-id coll1)
+                        :provider-id "PROV1"})
+        subscription4 (subscriptions/ingest-subscription-with-attrs
+                       {:native-id "sub4"
+                        :Name "subscription"
+                        :Query "platform=NOAA-6"
+                        :CollectionConceptId (:concept-id coll1)
+                        :provider-id "PROV1"})]
     (index/wait-until-indexed)
 
     (are3 [sort-key expected-subscriptions]

@@ -172,6 +172,7 @@
      :has-transforms (cx/bool-at-path entry-elem [:hasTransforms])
      :has-spatial-subsetting (cx/bool-at-path entry-elem [:hasSpatialSubsetting])
      :has-temporal-subsetting (cx/bool-at-path entry-elem [:hasTemporalSubsetting])
+     :cloud-hosted (cx/bool-at-path entry-elem [:cloudHosted])
      :tags (when-let [tags (seq (map xml-elem->tag (cx/elements-at-path entry-elem [:tag])))]
              (into {} tags))}))
 
@@ -281,7 +282,7 @@
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
          :keys [concept-id format-key has-variables has-formats has-transforms
-                has-spatial-subsetting has-temporal-subsetting
+                has-spatial-subsetting has-temporal-subsetting cloud-hosted
                 services variables tools]} collection
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
         {:keys [summary entry-title related-urls associated-difs organizations]} collection
@@ -343,6 +344,7 @@
       :has-transforms (boolean has-transforms)
       :has-spatial-subsetting (boolean has-spatial-subsetting)
       :has-temporal-subsetting (boolean has-temporal-subsetting)
+      :cloud-hosted (boolean cloud-hosted)
       :associations associations})))
 
 (defn- get-coll-service-features

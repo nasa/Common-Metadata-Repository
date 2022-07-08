@@ -5,7 +5,6 @@
   "main": "handler.js",
   "repository": "nasa/common-metadata-repository",
   "scripts": {
-    "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
     "test": "jest -i",
     "test:watch": "jest -i --watchAll",
     "test-coverage": "jest --coverage",
@@ -32,29 +31,27 @@
   ],
   "license": "ISC",
   "dependencies": {
+    "@aws-sdk/client-sqs": "^3.87.0",
+    "@aws-sdk/client-ssm": "^3.94.0",
     "array-foreach-async": "^1.0.1",
-    "aws-sdk": "^2.891.0",
     "axios": "^0.24.0",
-    "gremlin": "^3.4.10",
+    "gremlin": "~3.4.10",
     "lodash": "^4.17.21",
-    "serverless": "^2.72.2",
-    "serverless-webpack": "^5.6.1",
-    "webpack": "^5.39.0"
+    "serverless": "^3.19.0",
+    "serverless-offline": "^8.8.0",
+    "serverless-webpack": "^5.7.1",
+    "webpack": "^5.73.0",
+    "webpack-node-externals": "^3.0.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.14.5",
+    "aws-sdk-client-mock": "^0.6.2",
     "eslint": "^7.28.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
     "jest": "^27.3.1",
     "jest-junit": "^12.2.0",
     "nock": "^13.2.1",
-    "serverless-offline": "^8.3.0",
-    "serverless-pseudo-parameters": "^2.5.0",
     "snyk": "^1.782.0"
-  },
-  "resolutions": {
-    "ansi-regex": "^5.0.1",
-    "simple-git": "^3.5.0"
   }
 }

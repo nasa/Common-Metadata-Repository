@@ -10,6 +10,7 @@
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [without-default-value-of]]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
@@ -20,6 +21,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]
    [cmr.umm-spec.xml-to-umm-mappings.dif10.spatial :as spatial]
    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
+   [cmr.umm-spec.versioning :as umm-spec-versioning]
    [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
 (def coll-progress-mapping
@@ -75,6 +77,15 @@
     (when-not (= su/not-provided (value-of platform-el "Instrument[1]/Short_Name"))
       (parse-instruments-impl platform-el))
     (parse-instruments-impl platform-el)))
+
+(defn parse-standard-product
+  "Returns UMM-C StandardProduct from DIF10 XML document.
+  if multiple standard product values are present, pick the last one."
+  [doc]
+  (last (for [metadata (select doc "/DIF/Extended_Metadata/Metadata")
+              :let [name (value-of metadata "Name")]
+              :when (= name "StandardProduct")]
+          (value-of metadata "Value"))))
 
 (defn parse-data-dates
   "Returns seq of UMM-C DataDates parsed from DIF 10 XML document."
@@ -315,6 +326,7 @@
    :TilingIdentificationSystems (spatial/parse-tiling doc)
    :ProcessingLevel {:Id (su/with-default (value-of doc "/DIF/Product_Level_Id") sanitize?)}
    :AdditionalAttributes (aa/xml-elem->AdditionalAttributes doc sanitize?)
+   :StandardProduct (parse-standard-product doc)
    :PublicationReferences (for [pub-ref (select doc "/DIF/Reference")]
                             (into {} (map (fn [x]
                                             (if (keyword? x)
@@ -363,7 +375,12 @@
                                      :S3CredentialsAPIEndpoint
                                        (value-of ddi "S3CredentialsAPIEndpoint")
                                      :S3CredentialsAPIDocumentationURL
-                                       (value-of ddi "S3CredentialsAPIDocumentationURL")})})
+                                       (value-of ddi "S3CredentialsAPIDocumentationURL")})
+    :MetadataSpecification (umm-c/map->MetadataSpecificationType
+                            {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                        umm-spec-versioning/current-collection-version),
+                             :Name "UMM-C"
+                             :Version umm-spec-versioning/current-collection-version})}) 
 
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document. The :sanitize? option

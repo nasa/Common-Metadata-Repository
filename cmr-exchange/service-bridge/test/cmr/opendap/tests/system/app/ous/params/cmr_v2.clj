@@ -1,4 +1,4 @@
-(ns ^:system cmr.opendap.tests.system.app.ous.params.cmr
+(ns ^:system cmr.opendap.tests.system.app.ous.params.cmr-v2
   "Note: this namespace is exclusively for system tests; all tests defined
   here will use one or more system test fixtures.
 
@@ -442,8 +442,7 @@
                    (merge
                     (util/create-json-payload
                      {})
-                    (request/add-token-header
-                     {} (util/get-sit-token))))]
+                    options))]
     (is (= 200 (:status response)))
     (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2002/AIRS.2002.09.04.L3.RetStd001.v6.0.9.0.G13208020620.hdf.nc"
             "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/user/FS2/AIRS/AIRX3STD.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.nc"]

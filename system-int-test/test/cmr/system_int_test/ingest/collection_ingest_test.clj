@@ -3,7 +3,6 @@
 
   For collection permissions tests, see `provider-ingest-permissions-test`."
   (:require
-   [clj-http.client :as client]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
@@ -11,7 +10,6 @@
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.date-time-parser :as date-time-parser]
-   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -20,7 +18,6 @@
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as system]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -40,6 +37,26 @@
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Verify a new concept fails ingest when StandardProduct validation fails. 
+(deftest standard-validation-test
+  (ingest/create-provider {:provider-guid "provguid_consortium3" :provider-id "PROV3" :consortiums "geoss"})
+  (ingest/create-provider {:provider-guid "provguid_consortium4" :provider-id "PROV4" :consortiums "eosdis geoss"})
+  (let [coll3-non-eosdis-consortium (ingest/ingest-concept
+                                     (data-umm-c/collection-concept 
+                                      {:provider-id "PROV3"
+                                       :StandardProduct true}
+                                      :umm-json))
+        coll4-wrong-collection-data-type (ingest/ingest-concept
+                                          (data-umm-c/collection-concept
+                                           {:provider-id "PROV4"
+                                            :StandardProduct true
+                                            :CollectionDataType "NEAR_REAL_TIME"}
+                                           :umm-json))]
+     (is (= ["Standard product validation failed: Standard Product designation is only allowed for NASA data products. This collection is being ingested using a non-NASA provider which means the record is not a NASA record. Please remove the StandardProduct element from the record."]
+            (:errors coll3-non-eosdis-consortium)))
+     (is (= ["Standard product validation failed: Standard Product cannot be true with the CollectionDataType being one of the following values: NEAR_REAL_TIME, LOW_LATENCY, or EXPEDITED. The CollectionDataType is [NEAR_REAL_TIME]."]
+            (:errors coll4-wrong-collection-data-type)))))
+    
 ;; Verify a new concept is ingested successfully.
 (deftest collection-ingest-test
   (testing "ingest of a new concept"
@@ -743,6 +760,40 @@
           {:keys [status]} (ingest/ingest-concept
                             (ingest/concept :collection "PROV1" "foo" :dif coll-metadata))]
       (is (= 201 status)))))
+
+(deftest invalid-mimetype-ingest
+  (testing "Ingest of a json collection with invalid mimetypes. This verifies that we validate mimetypes against kms." 
+    (let [coll-metadata (slurp (io/resource "CMR-7647/CMR-7647.json"))
+          {:keys [status errors]} (ingest/ingest-concept
+                            (ingest/concept :collection "PROV1" "foo" :umm-json coll-metadata))]
+      (is (= 422 status))
+      (is (= [["MimeType [RelatedUrls: BadMimetype2] was not a valid keyword."]
+              ["MimeType [PublicationReference2: BadMimeType] was not a valid keyword."]
+              ["MimeType [DataCentersContactGroups: BadMimeType] was not a valid keyword."]
+              ["MimeType [ContactPerson2: BadMimeType1] was not a valid keyword."]
+              ["MimeType [ContactGroup2: BadMimeType1] was not a valid keyword."]
+              ["MimeType [UseConstraints: BadMimeType] was not a valid keyword."]
+              ["Related URL Content Type, Type, and Subtype [ContactPerson2: BadURLContentType2>HOME PAGE>null] are not a valid set together."]
+              ["MimeType [ContactGroup1: BadMimeType1] was not a valid keyword."]
+              ["MimeType [ContactGroup1: BadMimeType2] was not a valid keyword."]
+              ["Related URL Content Type, Type, and Subtype [ContactPerson2: BadURLContentType1>HOME PAGE>null] are not a valid set together."]
+              ["MimeType [ContactPerson1: BadMimeType2] was not a valid keyword."]
+              ["MimeType [CollectionCitation2: BadMimeType] was not a valid keyword."]
+              ["MimeType [ContactPerson2: BadMimeType2] was not a valid keyword."]
+              ["Related URL Content Type, Type, and Subtype [ContactGroup2: BadURLContentType2>HOME PAGE>null] are not a valid set together."]
+              ["MimeType [PublicationReference1: BadMimeType] was not a valid keyword."]
+              ["MimeType [CollectionCitation1: BadMimeType] was not a valid keyword."]
+              ["Related URL Content Type, Type, and Subtype [ContactPerson1: BadURLContentType2>HOME PAGE>null] are not a valid set together."]
+              ["MimeType [RelatedUrls: BadMimetype1] was not a valid keyword."]
+              ["Related URL Content Type, Type, and Subtype [ContactGroup1: BadURLCotentType2>HOME PAGE>null] are not a valid set together."]
+              ["Related URL Content Type, Type, and Subtype [ContactPerson1: BadURLContentType1>HOME PAGE>null] are not a valid set together."]
+              ["MimeType [ContactGroup2: BadMimeType2] was not a valid keyword."]
+              ["MimeType [DataCentersContactInfo: BadMimeType] was not a valid keyword."]
+              ["Related URL Content Type, Type, and Subtype [ContactGroup1: BadURLCotentType1>HOME PAGE>null] are not a valid set together."]
+              ["MimeType [DataCentersContactPersons: BadMimeType] was not a valid keyword."]
+              ["MimeType [ContactPerson1: BadMimeType1] was not a valid keyword."]
+              ["Related URL Content Type, Type, and Subtype [ContactGroup2: BadURLContentType1>HOME PAGE>null] are not a valid set together."]]
+             (map :errors errors))))))
 
 (deftest CMR-4920-DOI-test
   (testing "Ingest echo10 collection with new DOI values"

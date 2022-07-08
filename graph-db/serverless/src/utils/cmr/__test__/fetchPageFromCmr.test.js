@@ -1,6 +1,7 @@
 import nock from 'nock'
 
-import AWS from 'aws-sdk'
+import { mockClient } from 'aws-sdk-client-mock'
+import { SQSClient, SendMessageBatchCommand } from '@aws-sdk/client-sqs'
 
 import * as chunkArray from '../../chunkArray'
 
@@ -10,16 +11,13 @@ beforeEach(() => {
   jest.clearAllMocks()
 })
 
-const sqsCollectionIndexingQueue = jest.fn().mockReturnValue({
-  promise: jest.fn().mockResolvedValue()
-})
-
-AWS.SQS = jest.fn()
-  .mockImplementationOnce(() => ({
-    sendMessageBatch: sqsCollectionIndexingQueue
-  }))
+const sqsClientMock = mockClient(SQSClient)
 
 describe('fetchPageFromCMR', () => {
+  beforeEach(() => {
+    sqsClientMock.reset()
+  })
+
   test('Empty page', async () => {
     const mockedBody = {
       feed: {
@@ -31,20 +29,20 @@ describe('fetchPageFromCMR', () => {
     nock(/local-cmr/).get(/search/).reply(200, mockedBody)
 
     await fetchPageFromCMR({
-      scrollId: null,
+      searchAfter: null,
       token: null,
       gremlinConnection: global.testGremlinConnection,
       providerId: 'PROV1'
     })
 
-    expect(sqsCollectionIndexingQueue).toBeCalledTimes(0)
+    expect(sqsClientMock.calls()).toHaveLength(0)
   })
 
   test('Single result', async () => {
     const mockedBody = {
       feed: {
         updated: '2021-06-24T17:06:22.292Z',
-        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&scroll=true&page_size=1&pretty=true',
+        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&page_size=1&pretty=true',
         title: 'ECHO dataset metadata',
         entry: [{
           time_start: '1999-12-18T00:00:00.000Z',
@@ -73,23 +71,26 @@ describe('fetchPageFromCMR', () => {
       }
     }
 
-    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-scroll-id': 196827907 })
+    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-search-after': '["aaa", 123, 456]' })
     nock(/local-cmr/).get(/search/).reply(200, {
       feed: {
         title: 'ECHO dataset metadata',
         entry: []
       }
-    }, { 'cmr-scroll-id': 196827907 })
+    }, { })
 
     await fetchPageFromCMR({
-      scrollId: null,
+      searchAfter: null,
       token: null,
       gremlinConnection: global.testGremlinConnection,
       providerId: null
     })
 
-    expect(sqsCollectionIndexingQueue).toBeCalledTimes(1)
-    expect(sqsCollectionIndexingQueue.mock.calls[0]).toEqual([{
+    const sendMessageBatchMock = sqsClientMock.commandCalls(SendMessageBatchCommand)
+
+    expect(sqsClientMock.calls()).toHaveLength(1)
+
+    expect(sendMessageBatchMock[0].args[0].input).toEqual({
       QueueUrl: 'http://example.com/collectionIndexQueue',
       Entries: [{
         Id: 'C1216257563-LPDAAC_TS1',
@@ -98,14 +99,14 @@ describe('fetchPageFromCMR', () => {
           'concept-id': 'C1216257563-LPDAAC_TS1'
         })
       }]
-    }])
+    })
   })
 
   test('Single result with mocked ECHO token', async () => {
     const mockedBody = {
       feed: {
         updated: '2021-06-24T17:06:22.292Z',
-        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&scroll=true&page_size=1&pretty=true',
+        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&page_size=1&pretty=true',
         title: 'ECHO dataset metadata',
         entry: [{
           time_start: '1999-12-18T00:00:00.000Z',
@@ -134,23 +135,26 @@ describe('fetchPageFromCMR', () => {
       }
     }
 
-    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-scroll-id': 196827907 })
+    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-search-after': '["aaa", 123, 456]' })
     nock(/local-cmr/).get(/search/).reply(200, {
       feed: {
         title: 'ECHO dataset metadata',
         entry: []
       }
-    }, { 'cmr-scroll-id': 196827907 })
+    }, { 'cmr-search-after': '["bbb", 567, 890]' })
 
     await fetchPageFromCMR({
-      scrollId: 'fake-scroll-id',
+      searchAfter: 'fake-search-after',
       token: 'SUPER-SECRET-TOKEN',
       gremlinConnection: global.testGremlinConnection,
       providerId: null
     })
 
-    expect(sqsCollectionIndexingQueue).toBeCalledTimes(1)
-    expect(sqsCollectionIndexingQueue.mock.calls[0]).toEqual([{
+    const sendMessageBatchMock = sqsClientMock.commandCalls(SendMessageBatchCommand)
+
+    expect(sqsClientMock.calls()).toHaveLength(1)
+
+    expect(sendMessageBatchMock[0].args[0].input).toEqual({
       QueueUrl: 'http://example.com/collectionIndexQueue',
       Entries: [{
         Id: 'C1216257563-LPDAAC_TS1',
@@ -159,7 +163,7 @@ describe('fetchPageFromCMR', () => {
           'concept-id': 'C1216257563-LPDAAC_TS1'
         })
       }]
-    }])
+    })
   })
 
   test('Invalid concept-id', async () => {
@@ -170,20 +174,20 @@ describe('fetchPageFromCMR', () => {
     nock(/local-cmr/).get(/search/).reply(400, mockedBody)
 
     await fetchPageFromCMR({
-      scrollId: null,
+      searchAfter: null,
       token: null,
       gremlinConnection: global.testGremlinConnection,
       providerId: null
     })
 
-    expect(sqsCollectionIndexingQueue).toBeCalledTimes(0)
+    expect(sqsClientMock.calls()).toHaveLength(0)
   })
 
   test('Function catches and handles errors', async () => {
     const mockedBody = {
       feed: {
         updated: '2021-06-24T17:06:22.292Z',
-        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&scroll=true&page_size=1&pretty=true',
+        id: 'https://cmr.uat.earthdata.nasa.gov:443/search/collections.json?provider=LPDAAC_TS1&page_size=1&pretty=true',
         title: 'ECHO dataset metadata',
         entry: [{
           time_start: '1999-12-18T00:00:00.000Z',
@@ -212,21 +216,21 @@ describe('fetchPageFromCMR', () => {
       }
     }
 
-    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-scroll-id': 196827907 })
+    nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-search-after': '["aaa", 123, 456]' })
     nock(/local-cmr/).get(/search/).reply(200, {
       feed: {
         title: 'ECHO dataset metadata',
         entry: []
       }
-    }, { 'cmr-scroll-id': 196827907 })
+    }, { 'cmr-search-after': '["bbb", 567, 890]' })
 
     const consoleMock = jest.spyOn(console, 'log')
     const errorResponse = jest.spyOn(chunkArray, 'chunkArray').mockImplementationOnce(() => {
       throw new Error('Oh no! I sure hope this exception is handled')
     })
 
-    const page = await fetchPageFromCMR({
-      scrollId: null,
+    await fetchPageFromCMR({
+      searchAfter: null,
       token: null,
       gremlinConnection: global.testGremlinConnection,
       providerId: null
@@ -234,6 +238,5 @@ describe('fetchPageFromCMR', () => {
 
     expect(consoleMock).toBeCalledWith('Could not complete request due to error: Error: Oh no! I sure hope this exception is handled')
     expect(errorResponse).toBeCalledTimes(1)
-    expect(page).toEqual(null)
   })
 })

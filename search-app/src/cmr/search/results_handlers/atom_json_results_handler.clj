@@ -51,7 +51,7 @@
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters highlighted-summary-snippets tags organizations
                 has-variables has-formats has-transforms has-spatial-subsetting has-temporal-subsetting
-                platforms consortiums service-features associations]} reference
+                cloud-hosted platforms consortiums service-features associations]} reference
         shape-result (atom-spatial/shapes->json shapes)
         granule-count (get granule-counts-map id 0)
         result (merge {:id id
@@ -83,6 +83,7 @@
                        :has_transforms has-transforms
                        :has_spatial_subsetting has-spatial-subsetting
                        :has_temporal_subsetting has-temporal-subsetting
+                       :cloud_hosted cloud-hosted
                        :links (seq (map atom/atom-link->attribute-map atom-links))
                        :coordinate_system coordinate-system
                        :orbit_parameters (when orbit-parameters

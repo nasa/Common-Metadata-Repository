@@ -100,7 +100,7 @@
    "jobStore.clusterCheckinInterval"  "20000"
 
    ;; Data sources
-   "dataSource.myDS.driver"  "oracle.jdbc.driver.OracleDriver"
+   "dataSource.myDS.driver"  "oracle.jdbc.OracleDriver"
    "dataSource.myDS.maxConnections"  "5"
    "dataSource.myDS.validationQuery" "select 0 from dual"})
 

@@ -12,6 +12,8 @@
    :service "UMM-S"
    :tool "UMM-T"
 
+   :subscription "UMM-Sub"
+
    ;; UMM-V can not be used due to visualizations. Concept IDs start with V.
    :variable "UMM-Var"
 

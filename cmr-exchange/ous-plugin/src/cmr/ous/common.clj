@@ -25,23 +25,25 @@
 ;;;   Utility/Support Functions   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn format-opendap-lat-lon
-  [bounding-infos bounding-box]
+(defn- format-opendap-lat-lon
+  [bounding-infos is-dap4?]
   (when-let [bounding-info (first bounding-infos)]
-    (geog/format-opendap-lat-lon bounding-info)))
+    (geog/format-opendap-lat-lon bounding-info geog/default-lat-lon-stride is-dap4?)))
 
 (defn bounding-infos->opendap-query
   ([bounding-infos]
-   (bounding-infos->opendap-query bounding-infos nil))
-  ([bounding-infos bounding-box]
+   (bounding-infos->opendap-query bounding-infos false))
+  ([bounding-infos is-dap4?]
    (when (seq bounding-infos)
-     (str
-      (->> bounding-infos
-           (map geog/format-opendap-bounds)
-           (string/join ",")
-           (str "?"))
-      ","
-      (format-opendap-lat-lon bounding-infos bounding-box)))))
+     (let [delimiter (geog/get-delimiter is-dap4?)
+           head (if is-dap4? "?dap4.ce=" "?")]
+       (str
+        (->> bounding-infos
+             (map #(geog/format-opendap-bounds % geog/default-lat-lon-stride is-dap4?))
+             (string/join delimiter)
+             (str head))
+        delimiter
+        (format-opendap-lat-lon bounding-infos is-dap4?))))))
 
 (defn lat-dim?
   [dim]
@@ -115,20 +117,29 @@
     (string/replace url #"(?<!(http:|https:))[//]+" "/")
     url))
 
-(defn granule-links->opendap-urls
+(defn- is-dap-version-4?
+  "Returns true if the given dap-version is DAP4"
+  [dap-version]
+  (= "4" dap-version))
+
+(defn- granule-links->opendap-urls
   "Takes a collection of granule links maps and converts each one to an OPeNDAP URL. Returns an
   error if unable to determine any of the OPeNDAP URLs."
-  [params granule-links tag-data query-string]
+  [params dap-version granule-links tag-data query-string]
   (when granule-links
     (let [urls (map (comp replace-double-slashes
                           #(granule-link->opendap-url % tag-data))
                     granule-links)
-          format (or (:format params) const/default-format)]
+          format (or (:format params) const/default-format)
+          dap-format (if (and (is-dap-version-4? dap-version)
+                              (= "nc" format))
+                       "dap.nc4"
+                       format)]
       (if (errors/any-erred? urls)
         (do
           (log/error "Some problematic urls:" (vec urls))
           (apply errors/collect urls))
-        (map #(str % "." format query-string) urls)))))
+        (map #(str % "." dap-format query-string) urls)))))
 
 ;; XXX This function is nearly identical to one of the same name in
 ;;     cmr.sizing.core -- we should put this somewhere both can use,
@@ -136,14 +147,14 @@
 (defn process-results
   ([results start errs]
    (process-results results start errs {:warnings nil}))
-  ([{:keys [params granule-links tag-data query]} start errs warns]
+  ([{:keys [params dap-version granule-links tag-data query]} start errs warns]
    (log/trace "Got granule-links:" (vec granule-links))
    (log/trace "Process-results tag-data:" tag-data)
    (if errs
      (do
        (log/error errs)
        errs)
-     (let [urls-or-errs (granule-links->opendap-urls params granule-links tag-data query)]
+     (let [urls-or-errs (granule-links->opendap-urls params dap-version granule-links tag-data query)]
        ;; Error handling for post-stages processing
        (if (errors/erred? urls-or-errs)
          (do
@@ -304,10 +315,11 @@
     [services-promise bounding-infos errs]))
 
 (defn stage4
-  [_component services-promise bounding-box bounding-infos _options]
+  [_component services-promise bounding-box bounding-infos options]
   (log/debug "Starting stage 4 ...")
   (let [services (service/extract-metadata services-promise)
-        query (bounding-infos->opendap-query bounding-infos bounding-box)
+        is-dap4? (is-dap-version-4? (:dap-version options))
+        query (bounding-infos->opendap-query bounding-infos is-dap4?)
         errs (errors/collect services)]
     (when errs
       (log/error "Stage 4 errors:" errs))

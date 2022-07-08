@@ -32,8 +32,18 @@
   "The Earthdata cloud tag for s3 resources"
   "gov.nasa.earthdatacloud.s3")
 
+(def standard-product-tag
+  "The standard product tag"
+  "gov.nasa.eosdis.standardproduct")
+
 (defn has-cloud-s3-tag?
   "Looks through a list of tags and returns true if one of them is the
   earthdata-cloud-s3-tag"
   [tags]
   (some? (some #(= (:tag-key-lowercase %) earthdata-cloud-s3-tag) tags)))
+
+(defn has-standard-product-tag?
+  "Looks through a list of tags and returns true if one of them is the
+  standard-product-tag"
+  [tags]
+  (some? (some #(= (:tag-key-lowercase %) standard-product-tag) tags)))

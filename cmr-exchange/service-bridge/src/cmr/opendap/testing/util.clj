@@ -26,7 +26,7 @@
   (try
     (let [data (json/parse-string (:body response) true)]
       (cond
-        (not (nil? (:items data)))
+        (some? (:items data))
         (:items data)
 
         :else data))

@@ -107,7 +107,7 @@
                 links dif-ids online-access-flag browse-flag coordinate-system score platforms
                 shapes points boxes polygons lines granule-count has-granules has-granules-or-cwic
                 has-variables has-formats has-transforms has-spatial-subsetting
-                has-temporal-subsetting orbit-parameters highlighted-summary-snippets
+                has-temporal-subsetting cloud-hosted orbit-parameters highlighted-summary-snippets
                 organizations service-features associations consortiums]} json-entry]
     (util/remove-nil-keys
       {:id id
@@ -140,6 +140,7 @@
        :has-transforms has-transforms
        :has-spatial-subsetting has-spatial-subsetting
        :has-temporal-subsetting has-temporal-subsetting
+       :cloud-hosted cloud-hosted
        :shapes (json-geometry->shapes coordinate-system points boxes polygons lines)
        :orbit-parameters (parse-orbit-parameters orbit-parameters)
        :highlighted-summary-snippets highlighted-summary-snippets

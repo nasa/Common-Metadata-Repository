@@ -48,6 +48,7 @@
    :has-granules-revised-at :multi-date-range
    :has-opendap-url :boolean
    :cloud-hosted :boolean
+   :standard-product :boolean
    :instrument :string
    :instrument-h :humanizer
    :keyword :keyword
@@ -188,6 +189,7 @@
   [_]
   {:subscription-name :string
    :name :string
+   :type :string
    :subscriber-id :string
    :collection-concept-id :string
    :provider :string

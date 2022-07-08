@@ -26,7 +26,8 @@
    :access-group default-supported-find-parameters
    :acl default-supported-find-parameters
    :humanizer #{:concept-id :native-id}
-   :subscription #{:provider-id :concept-id :native-id :collection-concept-id :subscriber-id :normalized-query}
+   :subscription #{:provider-id :concept-id :native-id :collection-concept-id :subscriber-id :normalized-query
+                   :subscription-type}
    :variable #{:provider-id :concept-id :native-id}
    :variable-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
                            :variable-concept-id}
@@ -85,7 +86,10 @@
   (if-let [provider-id (:provider-id params)]
     (when-let [provider (provider-service/get-provider-by-id context provider-id)]
       [provider])
-    (provider-service/get-providers context)))
+    (let [providers (provider-service/get-providers context)]
+      (if (= :subscription (:concept-type params))
+        (concat [{:provider-id "CMR"}] providers)
+        providers))))
 
 (defn- find-cmr-concepts
   "Find tags or tag associations with specific parameters"

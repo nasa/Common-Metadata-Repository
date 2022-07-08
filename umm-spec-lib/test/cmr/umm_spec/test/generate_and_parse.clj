@@ -12,6 +12,7 @@
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iu]
    [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.migration.version.collection :as version-collection]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.test.expected-conversion :as expected-conversion]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
@@ -134,10 +135,24 @@
                     ;;  Remove them from the comparison.
                     expected (convert-to-sets (if (= :dif target-format)
                                                 (remove-vertical-spatial-domains expected)
-                                                expected))
+                                                ;; Footprints don't exist in dif10 and echo10
+                                                ;; it needs to be removed for round-trip comparison.
+                                                (if (or (= :dif10 target-format)
+                                                        (= :echo10 target-format)
+                                                        (not (get-in expected
+                                                              [:SpatialExtent :OrbitParameters :Footprints])))
+                                                  (update-in expected [:SpatialExtent :OrbitParameters]
+                                                             dissoc :Footprints)
+                                                    expected)))
                     actual (convert-to-sets (if (= :dif target-format)
                                               (remove-vertical-spatial-domains actual)
-                                              actual))]]
+                                              ;; remove Footprints if it's nil
+                                              (if (get-in actual [:SpatialExtent :OrbitParameters :Footprints])
+                                                actual
+                                                (update-in actual [:SpatialExtent :OrbitParameters]
+                                                           dissoc :Footprints))))
+                    expected (util/remove-nil-keys expected)
+                    actual (util/remove-nil-keys actual)]]
 
         ;; Taking the parsed UMM and converting it to another format produces the expected UMM
         (check-failure
@@ -149,7 +164,25 @@
   (doseq [metadata-format tested-collection-formats]
     (testing (str metadata-format)
       (let [expected (expected-conversion/convert expected-conversion/example-collection-record metadata-format)
-            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)]
+            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record)
+            expected (util/remove-nil-keys expected)
+            actual (util/remove-nil-keys actual)]
+        (is (= (convert-to-sets expected) (convert-to-sets actual)))))
+    (testing (str metadata-format " UMM-C contains Footprints instead of SwathWidth.")
+      ;; example-collection-record-no-swath contains Footprints instead of SwathWidth and SwatWidthUnit
+      (let [expected (expected-conversion/convert expected-conversion/example-collection-record-no-swath metadata-format)
+            expected (if (or (= :dif10 metadata-format) (= :echo10 metadata-format))
+                       (as-> expected exp
+                             (update-in exp [:SpatialExtent :OrbitParameters]
+                                        assoc :SwathWidth (version-collection/get-swath-width exp) :SwathWidthUnit "Kilometer")
+                             (update-in exp [:SpatialExtent :OrbitParameters] dissoc :Footprints))
+                       expected)
+            actual (xml-round-trip :collection metadata-format expected-conversion/example-collection-record-no-swath)
+            actual (if (or (= :dif10 metadata-format) (= :echo10 metadata-format))
+                     (update-in actual [:SpatialExtent :OrbitParameters] dissoc :Footprints)
+                     actual)
+            expected (util/remove-nil-keys expected)
+            actual (util/remove-nil-keys actual)]
         (is (= (convert-to-sets expected) (convert-to-sets actual)))))))
 
 (deftest validate-umm-json-example-record
@@ -169,7 +202,20 @@
   (checking "collection round tripping" 100
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
-    (let [umm-record (js/parse-umm-c
+    (let [;; CMR-8128 remove OrbitParameters 
+          ;; there are many situations when a parameter is not
+          ;; preserved after the roundtrip. We will have to make many special cases
+          ;; in order to do the comparison. Since they have been tested in other tests, we will
+          ;; just remove them from the generated roundtrip.
+          ;; The following lists a few issues with roundtrip on OrbitParameters for dif10 and echo10:
+          ;; 1. Footprints in umm doesn't exist and doesn't get translated so it can't be preserved
+          ;; 2. StartCircularLatitudeUnit in umm can't be preserved when StartCircularLatitude doesn't exist.
+          ;;    Assumed unit is used for translation only when StartCircularLatitude exists. This applies to iso1195 too.
+          ;; 3. SwathWidthUnit doesn't exist in dif10 and echo10. Assumed unit is Kilometer
+          ;;    so we have to convert the value and unit in umm-record to kilometer before round-trip comparison.
+          ;; 4. SwathWidth can be 1.0E-1 in umm, translating to other formats it could be changed to 0.1
+          umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
+          umm-record (js/parse-umm-c
                         (assoc umm-record
                                :DataDates [{:Date (t/date-time 2012)
                                             :Type "CREATE"}
@@ -177,6 +223,8 @@
                                             :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
+          expected (util/remove-nil-keys expected)
+          actual (util/remove-nil-keys actual)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]
@@ -197,7 +245,9 @@
   (checking-with-seed "collection round tripping seed" 100 1496683985472
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
      metadata-format (gen/elements tested-collection-formats)]
-    (let [umm-record (js/parse-umm-c
+    (let [;; CMR-8128 remove OrbitParameters for the same reason as the previous test.
+          umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
+          umm-record (js/parse-umm-c
                       (assoc umm-record
                              :DataDates [{:Date (t/date-time 2012)
                                           :Type "CREATE"}
@@ -205,6 +255,8 @@
                                           :Type "UPDATE"}]))
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
+          expected (util/remove-nil-keys expected)
+          actual (util/remove-nil-keys actual)
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]

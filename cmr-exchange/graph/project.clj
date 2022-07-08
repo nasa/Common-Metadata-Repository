@@ -29,7 +29,7 @@
                  [com.stuartsierra/component "0.3.2"]
                  [digest "1.4.6"]
                  [gov.nasa.earthdata/cmr-authz "0.1.0-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [gov.nasa.earthdata/cmr-http-kit "0.1.0-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-process-manager "0.1.1-SNAPSHOT"]
                  [http-kit "2.2.0"]
@@ -56,7 +56,7 @@
                     :plugins [[jonase/eastwood "0.2.5"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.1"]
-                              [lein-kibit "0.1.6"]]}
+                              [lein-kibit "0.1.8"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
                               [test2junit "1.4.0"]]

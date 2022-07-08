@@ -13,6 +13,7 @@
    [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value gmx-anchor-value]]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [char-string]]
    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
@@ -28,7 +29,8 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as dru]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]
-   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]))
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.tiling-system :as tiling]
+   [cmr.umm-spec.versioning :as umm-spec-versioning]))
 
 (def coll-progress-mapping
   "Mapping from values supported for ISO19115 ProgressCode to UMM CollectionProgress."
@@ -93,7 +95,13 @@
        "/gmd:extendedElementInformation/gmd:MD_ExtendedElementInformation"))
 
 (def collection-data-type-xpath
-  (str identifier-base-xpath "[gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.collectiondatatype']"
+  (str identifier-base-xpath
+       "[gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.collectiondatatype']"
+       "/gmd:code/gco:CharacterString"))
+
+(def standard-product-xpath
+  (str identifier-base-xpath
+       "[gmd:codeSpace/gco:CharacterString='gov.nasa.esdis.umm.standardproduct']"
        "/gmd:code/gco:CharacterString"))
 
 (def platform-alternative-xpath
@@ -256,6 +264,7 @@
       :TemporalExtents (or (seq (parse-temporal-extents doc md-data-id-el))
                            (when sanitize? su/not-provided-temporal-extents))
       :CollectionDataType (value-of (select doc collection-data-type-xpath) ".")
+      :StandardProduct (value-of (select doc standard-product-xpath) ".")
       :ProcessingLevel {:Id
                         (su/with-default
                          (char-string-value
@@ -281,7 +290,12 @@
                                                                                         archive-info-xpath
                                                                                         dist-info-xpath)
       :DirectDistributionInformation (archive-and-dist-info/parse-direct-dist-info doc
-                                                                                   dist-info-xpath)})))
+                                                                                   dist-info-xpath)
+      :MetadataSpecification (umm-c/map->MetadataSpecificationType
+                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                        umm-spec-versioning/current-collection-version),
+                              :Name "UMM-C"
+                              :Version umm-spec-versioning/current-collection-version})})))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document. The :sanitize? option

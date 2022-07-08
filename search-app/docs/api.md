@@ -93,6 +93,7 @@ CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens 
     * [With/without granules Or OpenSearch](#c-has-granules-or-opensearch)
     * [OPeNDAP service URL](#c-has-opendap-url)
     * [Cloud Hosted](#c-cloud-hosted)
+    * [Standard Product](#c-standard-product)
   * [Sorting Collection Results](#sorting-collection-results)
   * [Retrieving all Revisions of a Collection](#retrieving-all-revisions-of-a-collection)
   * [Granule Search By Parameters](#granule-search-by-parameters)
@@ -463,6 +464,7 @@ Important to note, dataCenter corresponds to the provider id while organizations
 | echo:hasTransforms (collections only)      | true if there are transformations (subset, interpolation or projection) in any of its associated services            |
 | echo:hasSpatialSubsetting (collections only)| true if any of its associated services support spatial subsetting            |
 | echo:hasTemporalSubsetting (collections only)| true if any of its associated services support temporal subsetting            |
+| echo:cloudHosted (collections only)        | true if the collection is hosted in the cloud            |
 | relevance:score (collections only)         | relevance score of the collection to search parameters                                                               |
 | echo:tag (collections only)                | tags associated with the collection. It includes sub-elements of tagKey and optional data which is in embedded JSON. |
 | echo:dayNightFlag (granules only)          | day night flag of the granule                                                                                        |
@@ -500,6 +502,7 @@ __Example__
       <echo:hasVariables>true</echo:hasVariables>
       <echo:hasFormats>false</echo:hasFormats>
       <echo:hasTransforms>false</echo:hasTransforms>
+      <echo:cloudHosted>true</echo:cloudHosted>
       <echo:tag>
         <echo:tagKey>tag1</echo:tagKey>
         <echo:data>{"status":"Reviewed","score":85}</echo:data>
@@ -921,6 +924,7 @@ __Example__
       "has_transforms": false,
       "has_spatial_subsetting": false,
       "has_temporal_subsetting": false,
+      "cloud_hosted": true,
       "online_access_flag": false,
       "platforms": ["Platform1"],
       "consortiums" : [ "ESA", "FEDEO" ],
@@ -2287,6 +2291,12 @@ The `cloud_hosted` parameter can be set to "true" or "false". When true, the res
 
     curl "%CMR-ENDPOINT%/collections?cloud_hosted=true"
 
+#### <a name="c-standard-product"></a> Find collections that are standard products.
+
+The `standard_product` parameter can be set to "true" or "false". When true, the results will be restricted to collections that have `StandardProduct` element being true or collections that don't have `StandardProduct` element set and have been tagged with `gov.nasa.eosdis.standardproduct`.
+
+    curl "%CMR-ENDPOINT%/collections?standard_product=true"
+
 #### <a name="sorting-collection-results"></a> Sorting Collection Results
 
 Collection results are sorted by ascending entry title by default when a search does not result in a score.
@@ -2437,6 +2447,7 @@ For granule additional attributes search, the default is searching for the attri
 
 #### <a name="g-spatial"></a> Find granules by Spatial
 The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
+Note: When querying a granule which has multiple types of spatial features in the granule metadata (i.e. a Polygon and a Bounding Box), the granule will be returned if the spatial query matches at least one of the spatial types on the given granule (i.e. matches the granule's Polygon OR Bounding Box).
 
 ##### <a name="g-polygon"></a> Polygon
 Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.
@@ -4468,7 +4479,7 @@ Access to service and service association is granted through the provider via th
 
 #### <a name="service-association"></a> Service Association
 
-A service identified by its concept id can be associated with collections through a list of collection concept revisions. The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create. Each individual service association response has an `associated_item` field and either a `service_association` field with the service association concept id and revision id when the service association succeeded or an `errors` field with detailed error message when the service association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during service association. Here is a sample service association request and its response:
+A service identified by its concept id can be associated with collections through a list of collection concept revisions. The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create. Each individual service association response has an `associated_item` field and either a `service_association` field with the service association concept id and revision id when the service association succeeded or an `errors` field with detailed error message when the service association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during service association. Service association requires that user has update permission on INGEST_MANAGEMENT_ACL for the collection's provider. Here is a sample service association request and its response:
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
@@ -4496,6 +4507,14 @@ Content-Length: 168
     "associated_item":{
       "concept_id":"C1200000006-PROV1"
     }
+  },
+  {
+    "errors":[
+      "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C1200000007-PROV2] to make the association."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000007-PROV2"
+    }
   }
 ]
 ```
@@ -4505,6 +4524,7 @@ On occassions when service association cannot be processed at all due to invalid
 #### <a name="service-dissociation"></a> Service Dissociation
 
 A service identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to service association requests.
+Service dissociation requires that user has update permission on INGEST_MANAGEMENT_ACL for either the collection's provider, or the service's provider.
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
@@ -4540,6 +4560,14 @@ Content-Length: 168
     ],
     "associated_item":{
       "concept_id":"C1200000007-PROV1"
+    }
+  },
+  {
+    "errors":[
+      "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C1200000008-PROV2] or provider of service/tool to delete the association."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000008-PROV2"
     }
   }
 ]
@@ -4836,7 +4864,7 @@ Access to tool is granted through the provider via the INGEST_MANAGEMENT_ACL.
 
 #### <a name="tool-association"></a> Tool Association
 
-A tool identified by its concept id can be associated with collections through a list of collection concept revisions. The tool association request normally returns status code 200 with a response that consists of a list of individual tool association responses, one for each tool association attempted to create. Each individual tool association response has an `associated_item` field and either a `tool_association` field with the tool association concept id and revision id when the tool association succeeded or an `errors` field with detailed error message when the tool association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tool association. Here is a sample tool association request and its response:
+A tool identified by its concept id can be associated with collections through a list of collection concept revisions. The tool association request normally returns status code 200 with a response that consists of a list of individual tool association responses, one for each tool association attempted to create. Each individual tool association response has an `associated_item` field and either a `tool_association` field with the tool association concept id and revision id when the tool association succeeded or an `errors` field with detailed error message when the tool association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tool association. Tool association requires that user has update permission on INGEST_MANAGEMENT_ACL for the collection's provider. Here is a sample tool association request and its response:
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
@@ -4864,7 +4892,16 @@ Content-Length: 168
     "associated_item":{
       "concept_id":"C1200000006-PROV1"
     }
+  },
+  {
+    "errors":[
+      "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C1200000007-PROV2] to make the association."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000007-PROV2"
+    }
   }
+
 ]
 ```
 
@@ -4873,6 +4910,7 @@ On occassions when tool association cannot be processed at all due to invalid in
 #### <a name="tool-dissociation"></a> Tool Dissociation
 
 A tool identified by its concept id can be dissociated from collections through a list of collection concept revisions similar to tool association requests.
+Tool dissociation requires that user has update permission on INGEST_MANAGEMENT_ACL for either the collection's provider, or the service's provider.
 
 ```
 curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
@@ -4909,6 +4947,14 @@ Content-Length: 168
     "associated_item":{
       "concept_id":"C1200000007-PROV1"
     }
+  },
+  {
+    "errors":[
+      "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C1200000008-PROV2] or provider of service/tool to delete the association."
+    ],
+    "associated_item":{
+      "concept_id":"C1200000008-PROV2"
+    }
   }
 ]
 ```
@@ -4917,7 +4963,12 @@ On occasions when tool dissociation cannot be processed at all due to invalid in
 
 ### <a name="subscription"></a> Subscription
 
-Email subscription is used to inform the users through emails when the granules that match the query in the subscription are created/updated. These granules can only belong to one collection, which is defined by the collection-concept-id in the subscription. There is a background job that processes the subscriptions periodically(configurable), to see if there are any granules that are created/updated between the time it's processed and the time it was last processed.  A subscription enables data to be accessed via a universal resource locator, Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription).
+Subscription allows a user to register some query conditions in CMR and be notified via email when collections/granules matching the conditions are created or updated in CMR. There are two types of subscriptions (identified by the `Type` field of the subscription):
+
+- collection subscription for users to be notified when collections are created/updated.
+- granule subscription for users to be notified when granules are created/updated.
+
+Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription).  Subscriptions of type `granule` must supply a requisite CollectionConceptId, and subscriptions of type `collection` cannot have a CollectionConceptId field. There is a background job that processes the subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
 
 #### <a name="searching-for-subscriptions"></a> Searching for Subscriptions
 
@@ -4948,6 +4999,7 @@ These parameters will match fields within a subscription. They are case insensit
   * concept_id
   * subscriber_id
   * collection_concept_id
+  * type
 ##### <a name="subscription-search-response"></a> Subscription Search Response
 
 ##### XML Reference
@@ -5001,6 +5053,7 @@ The JSON response includes the following fields.
   * revision_id
   * provider_id
   * native_id
+  * type
   * name
   * subscriber_id
   * collection_concept_id
@@ -5022,6 +5075,7 @@ Content-Length: 944
     "revision_id" : 1,
     "provider_id" : "PROV1",
     "native_id" : "subscription-1",
+    "type" : "granule",
     "name" : "someSub1",
     "subscriber-id" : "someSubId1",
     "collection-concept-id" : "C1200000001-PROV1"
@@ -5030,9 +5084,9 @@ Content-Length: 944
     "revision_id" : 1,
     "provider_id" : "PROV1",
     "native_id" : "subscription-2",
+    "type" : "collection",
     "name" : "someSub2",
     "subscriber-id" : "someSubId2",
-    "collection-concept-id" : "C1200000001-PROV1"
   } ]
 }
 ```
@@ -5055,6 +5109,7 @@ Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.0; charset=utf
       "provider-id" : "PROV1",
       "concept-type" : "subscription",
       "concept-id" : "SUB1200000005-PROV1",
+      "creation-date" : "2020-04-01T19:52:44Z",
       "revision-date" : "2020-04-01T19:52:44Z",
       "user-id" : "ECHO_SYS",
       "deleted" : false,

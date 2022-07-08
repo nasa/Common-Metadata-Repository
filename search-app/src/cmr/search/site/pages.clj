@@ -106,3 +106,11 @@
    context
    "templates/collection-base.html"
    (data/get-collection context concept-id)))
+
+(defn csw-retirement
+  "Prepare the CSW not found page."
+  [context]
+  (common-pages/render-html
+   context
+   "templates/csw-retirement.html"
+   (data/csw-page context)))

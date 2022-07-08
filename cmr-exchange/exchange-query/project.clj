@@ -14,7 +14,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-exchange-query "0.3.2-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-exchange-query "0.3.3-SNAPSHOT"
   :description "Cross-project query and parameter parsing and transformations"
   :url "https://github.com/cmr-exchange/cmr-exchange-query"
   :license {:name "Apache License, Version 2.0"
@@ -23,7 +23,7 @@
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
                  [com.stuartsierra/component "1.0.0"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [org.clojure/clojure "1.10.1"]
                  [ring/ring-codec "1.1.2"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
