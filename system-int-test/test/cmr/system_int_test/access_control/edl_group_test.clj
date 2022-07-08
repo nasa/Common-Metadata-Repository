@@ -19,7 +19,6 @@
                                            :grant-all-ingest? false
                                            :grant-all-access-control? true}))
 
-
 (defn create-acl
   [acl]
   (ac/create-acl (u/conn-context) acl {:token (transmit-config/echo-system-token)}))
@@ -287,4 +286,17 @@
         "search by EDL group via user, not found"
         "user1"
         2
-        fixture-acl-names))))
+        fixture-acl-names)
+
+      ;; CMR-8477 search all acls with include-legacy-group-guid true
+      (testing "search all ACLs with EDL group with include-legacy-group-guid true"
+        (let [{:keys [hits items]} (ac/search-for-acls
+                                    test-context
+                                    {:include-legacy-group-guid true
+                                     :include-full-acl true})]
+          (is (= 5 hits))
+          (is (= (set (concat fixture-acl-names
+                              ["group1 read and order"
+                               "group3 read and order"
+                               "Provider - PROV1 - INGEST_MANAGEMENT_ACL"]))
+                 (set (map :name items)))))))))
