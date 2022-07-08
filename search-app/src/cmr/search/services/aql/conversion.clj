@@ -264,10 +264,11 @@
 (defmethod element->condition :granule-concept-id
   [concept-type element]
   (let [gran-condition (string-element->condition concept-type element)
-        provider-ids (->> element
-                          :content
-                          first
-                          :content
+        concept-id-elem (first (:content element))
+        concept-ids (if (= :value (:tag concept-id-elem))
+                      (:content concept-id-elem)
+                      (mapcat :content (:content concept-id-elem)))
+        provider-ids (->> concept-ids
                           (map (comp :provider-id cc/parse-concept-id))
                           distinct)
         coll-query-condition (qm/->CollectionQueryCondition
