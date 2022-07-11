@@ -8,6 +8,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.services.ingest.subscription-common :as sub-common]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
@@ -37,7 +38,7 @@
 (defn approved-generic?
   "Check to see if a requested generic is on the approved list"
   [schema version]
-  (some #(= version %) (schema approved-generics)))
+  (some #(= version %) (schema (common-config/approved-pipeline-documents))))
 
 (defn validate-json-against-schema
   "validate a document, returns an array of errors if there are problems
@@ -108,4 +109,3 @@
 
  (defn delete-generic-document [request]
    (println "stub function: delete " request))
-

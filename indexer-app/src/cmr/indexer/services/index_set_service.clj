@@ -7,6 +7,7 @@
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.common-app.config :as common-config]
    [cmr.indexer.config :as config]
    [cmr.indexer.data.index-set-elasticsearch :as es]
    [cmr.indexer.services.messages :as m])
@@ -20,7 +21,7 @@
   [initial-list]
   (reduce (fn [data, item] (conj data (keyword (str "generic-" (name item)))))
           initial-list
-          (keys cmr.ingest.api.generic-documents/approved-generics)))
+          (keys (common-config/approved-pipeline-documents))))
 
 (def searchable-concept-types
   "Defines the concept types that are indexed in elasticsearch and thus searchable."

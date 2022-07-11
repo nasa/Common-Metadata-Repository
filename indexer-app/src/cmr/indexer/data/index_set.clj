@@ -9,6 +9,7 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
+   [cmr.common-app.config :as common-config]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
@@ -1114,7 +1115,7 @@
        ;; and return the index name for those
        (let [reported-type (clojure.string/lower-case (get-in concept [:MetadataSpecification :Name]))
               reported-version (get-in concept [:MetadataSpecification :Version])
-              approved (cmr.ingest.api.generic-documents/approved-generics reported-type reported-version)]
+              approved ((common-config/approved-pipeline-documents) reported-type reported-version)]
          (when approved
            (keyword (format "generic-%s" reported-type))
            (if all-revisions-index?

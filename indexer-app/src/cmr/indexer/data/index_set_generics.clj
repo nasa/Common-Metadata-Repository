@@ -10,6 +10,7 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
+   [cmr.common-app.config :as common-config]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.indexer.data.concepts.generic-util :as gen-util]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
@@ -88,7 +89,7 @@
    "
   []
   (reduce (fn [data gen-name]
-            (let [gen-ver (last (gen-name ingest-generic/approved-generics))
+            (let [gen-ver (last (gen-name (common-config/approved-pipeline-documents)))
                   index-definition-str (-> "schemas/%s/v%s/index.json"
                                        (format (name gen-name) gen-ver)
                                        (clojure.java.io/resource)
@@ -109,4 +110,4 @@
                   (error (format "Could not parse schema %s version %s." (name gen-name) gen-ver))
                   data))))
           {}
-          (keys ingest-generic/approved-generics)))
+          (keys (common-config/approved-pipeline-documents))))
