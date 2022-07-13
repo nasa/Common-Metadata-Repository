@@ -9,6 +9,7 @@
     (str "CREATE TABLE METADATA_DB.cmr_generic_documents (
           id NUMBER,
           concept_id VARCHAR(255) NOT NULL,
+          native_id VARCHAR(1030) NOT NULL,
           provider_id VARCHAR(10) NOT NULL,
           document_name VARCHAR(20) NOT NULL,
           schema VARCHAR(255) NOT NULL,
@@ -41,8 +42,8 @@
   ;; Supports queries to find generic document by document name
   (h/sql
    (clojure.string/replace
-    (str "CREATE INDEX generic_documents_vn
-          ON METADATA_DB.cmr_generic_documents (document_name)")
+    (str "CREATE INDEX generic_documents_native_id
+          ON METADATA_DB.cmr_generic_documents (native_id, provider_id)")
     #"\s+" " ")))
 
 (defn- create-generic-document-sequence
@@ -62,3 +63,9 @@
   (println "cmr.metadata-db.migration.078_add_generic_document_table down...")
   (h/sql "DROP SEQUENCE METADATA_DB.cmr_generic_documents_seq")
   (h/sql "DROP TABLE METADATA_DB.cmr_generic_documents"))
+
+
+(comment
+  (do
+  (down)
+  (up)))
