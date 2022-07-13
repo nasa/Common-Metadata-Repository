@@ -39,7 +39,7 @@
           ON METADATA_DB.cmr_generic_documents (concept_id, revision_id, deleted)")
     #"\s+" " "))
 
-  ;; Supports queries to find generic document by document name
+  ;; Supports queries to find generic document by native id within one provider
   (h/sql
    (clojure.string/replace
     (str "CREATE INDEX generic_documents_native_id
