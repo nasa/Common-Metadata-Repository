@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.migrations.078-add-generic-document-table
+(ns cmr.metadata-db.migrations.080-add-generic-document-table
   (:require
    [config.mdb-migrate-helper :as h]))
 
@@ -51,21 +51,15 @@
   (h/sql "CREATE SEQUENCE cmr_generic_documents_seq"))
 
 (defn up
-  "Migrate the database up to version 78"
+  "Migrate the database up to version 80"
   []
-  (println "cmr.metadata-db.migration.078_add_generic_document_table up...")
+  (println "cmr.metadata-db.migration.080_add_generic_document_table up...")
   (create-generic-documents-table)
   (create-generic-document-indices)
   (create-generic-document-sequence))
 
-(defn down "Migrate the database down from version 78"
+(defn down "Migrate the database down from version 80"
   []
-  (println "cmr.metadata-db.migration.078_add_generic_document_table down...")
+  (println "cmr.metadata-db.migration.080_add_generic_document_table down...")
   (h/sql "DROP SEQUENCE METADATA_DB.cmr_generic_documents_seq")
   (h/sql "DROP TABLE METADATA_DB.cmr_generic_documents"))
-
-
-(comment
-  (do
-  (down)
-  (up)))
