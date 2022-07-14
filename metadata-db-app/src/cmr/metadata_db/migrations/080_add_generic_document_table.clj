@@ -1,4 +1,4 @@
-(ns cmr.metadata-db.migrations.078-add-generic-document-table
+(ns cmr.metadata-db.migrations.080-add-generic-document-table
   (:require
    [config.mdb-migrate-helper :as h]))
 
@@ -9,6 +9,7 @@
     (str "CREATE TABLE METADATA_DB.cmr_generic_documents (
           id NUMBER,
           concept_id VARCHAR(255) NOT NULL,
+          native_id VARCHAR(1030) NOT NULL,
           provider_id VARCHAR(10) NOT NULL,
           document_name VARCHAR(20) NOT NULL,
           schema VARCHAR(255) NOT NULL,
@@ -38,11 +39,11 @@
           ON METADATA_DB.cmr_generic_documents (concept_id, revision_id, deleted)")
     #"\s+" " "))
 
-  ;; Supports queries to find generic document by document name
+  ;; Supports queries to find generic document by native id within one provider
   (h/sql
    (clojure.string/replace
-    (str "CREATE INDEX generic_documents_vn
-          ON METADATA_DB.cmr_generic_documents (document_name)")
+    (str "CREATE INDEX generic_documents_native_id
+          ON METADATA_DB.cmr_generic_documents (native_id, provider_id)")
     #"\s+" " ")))
 
 (defn- create-generic-document-sequence
@@ -50,15 +51,15 @@
   (h/sql "CREATE SEQUENCE cmr_generic_documents_seq"))
 
 (defn up
-  "Migrate the database up to version 78"
+  "Migrate the database up to version 80"
   []
-  (println "cmr.metadata-db.migration.078_add_generic_document_table up...")
+  (println "cmr.metadata-db.migration.080_add_generic_document_table up...")
   (create-generic-documents-table)
   (create-generic-document-indices)
   (create-generic-document-sequence))
 
-(defn down "Migrate the database down from version 78"
+(defn down "Migrate the database down from version 80"
   []
-  (println "cmr.metadata-db.migration.078_add_generic_document_table down...")
+  (println "cmr.metadata-db.migration.080_add_generic_document_table down...")
   (h/sql "DROP SEQUENCE METADATA_DB.cmr_generic_documents_seq")
   (h/sql "DROP TABLE METADATA_DB.cmr_generic_documents"))
