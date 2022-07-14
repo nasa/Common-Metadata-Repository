@@ -155,7 +155,7 @@
                      "Forum at https://wiki.earthdata.nasa.gov/display/CMR/"
                      "Granule+Queries+Now+Require+Collection+Identifiers for more "
                      "information, and for any questions please contact "
-                     )]
+                     (search-config/cmr-support-email) ".")]
     (when (reject-all-granule-query? headers)
       (svc-errors/throw-service-error :bad-request err-msg))))
 
