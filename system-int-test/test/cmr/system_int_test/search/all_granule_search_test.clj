@@ -3,6 +3,7 @@
    [clojure.test :refer :all]
    [cmr.common-app.test.side-api :as side]
    [cmr.search.api.concepts-search :as concepts-search]
+   [cmr.search.config :as search-config]
    [cmr.system-int-test.utils.search-util :as search]))
 
 ;; Tests all granule search when allow-all-granule-params-flag is false
@@ -77,7 +78,7 @@
         result14 (search/find-refs :granule params8)
         result15 (search/find-refs :granule params9)
         result16 (search/find-refs :granule params10)
-        err-msg "The CMR does not allow querying across granules in all collections. To help optimize your search, you should limit your query using conditions that identify one or more collections, such as provider, provider_id, concept_id, collection_concept_id, short_name, version or entry_title. Visit the CMR Client Developer Forum at https://wiki.earthdata.nasa.gov/display/CMR/Granule+Queries+Now+Require+Collection+Identifiers for more information, and for any questions please contact support@earthdata.nasa.gov."
+        err-msg (str "The CMR does not allow querying across granules in all collections. To help optimize your search, you should limit your query using conditions that identify one or more collections, such as provider, provider_id, concept_id, collection_concept_id, short_name, version or entry_title. Visit the CMR Client Developer Forum at https://wiki.earthdata.nasa.gov/display/CMR/Granule+Queries+Now+Require+Collection+Identifiers for more information, and for any questions please contact " (search-config/cmr-support-email) ".")
         err-msg-illegal-service-id "Invalid concept_id [S1234-PROV1]. For granule queries concept_id must be either a granule or collection concept ID."
         err-msg-illegal-variable-id "Invalid concept_id [V1234-PROV1]. For granule queries concept_id must be either a granule or collection concept ID."
         err-msg-illegal-service-id-in-array "Invalid concept_id [[\"\" \"S1234-PROV1\"]]. For granule queries concept_id must be either a granule or collection concept ID."

@@ -14,6 +14,7 @@
    [cmr.common.doi :as doi]
    [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
+   [cmr.search.config :as search-config]
    [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
    [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
@@ -70,7 +71,7 @@
   "public")
 
 (def DEFAULT_CONTACT_EMAIL
-  "support@earthdata.nasa.gov")
+  (search-config/cmr-support-email))
 
 (def DEFAULT_CONTACT_NAME
   "undefined")
