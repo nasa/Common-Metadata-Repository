@@ -364,12 +364,12 @@
   [{:parent {:child {:gchild 0}}} []]
   => (validate-map [:parent :child] {:parent {:child 0}})
   [{:parent {}} [\"Parameter [parent[child]] must contain a nested value, parent[child][...]=value.\"]]"
-  [keys params]
-  (let [value (get-in params keys)]
+  [map-keys params]
+  (let [value (get-in params map-keys)]
     (if (or (nil? value) (map? value))
       [params []]
-      (let [param-name (assoc-keys->param-name keys)]
-        [(util/dissoc-in params keys)
+      (let [param-name (assoc-keys->param-name map-keys)]
+        [(util/dissoc-in params map-keys)
          [(str "Parameter [" param-name "] must include a nested key, " param-name "[...]=value.")]]))))
 
 (defn apply-type-validations
@@ -392,8 +392,11 @@
   [validation-fn path params]
   (let [entries (get-in params path)]
     (if (seq entries)
-      (let [validations (map #(partial validation-fn (concat path [%])) (keys entries))]
-        (apply-type-validations params validations))
+      (if (map? entries)
+        (let [validations (map #(partial validation-fn (concat path [%])) (keys entries))]
+          (apply-type-validations params validations))
+        [(util/dissoc-in params path)
+         [(str "Parameter [" (string/join " " path) "] must include an index and nested key, " (name (csk/->snake_case (last path))) "[n][...]=value.")]])
       [params []])))
 
 (def common-validations

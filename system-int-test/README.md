@@ -45,4 +45,4 @@ e.g. `EXPORT CMR_TEST_GROUP="tests.group1.edn"` where the value is the name of t
 
 ## License
 
-Copyright © 2021 NASA
+Copyright © 2022 NASA
