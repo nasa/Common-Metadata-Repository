@@ -10,7 +10,7 @@
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as util]
    [cmr.common.validations.json-schema :as js]
-   [cmr.ingest.config :as ingest-config]
+   [cmr.common-app.config :as common-app-config]
    [cmr.ingest.data.granule-bulk-update :as data-granule-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.services.bulk-update-service :as bulk-update-service]
@@ -205,7 +205,7 @@
                        :internal-error
                        [(str "There was a problem saving a bulk granule update request."
                              "Please try again, if the problem persists please contact "
-                             (ingest-config/cmr-support-email)
+                             (common-app-config/cmr-support-email)
                              ".")]))))]
 
     ;; Queue the granules bulk update events

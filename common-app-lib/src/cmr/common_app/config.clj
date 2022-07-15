@@ -23,3 +23,8 @@
   "Includes all the consortiums that opensearch contains."
   {:default ["CWIC" "FEDEO" "GEOSS" "CEOS" "EOSDIS"]
    :parser #(json/decode ^String %)})
+
+(defconfig cmr-support-email
+  "CMR support email address"
+  {:default "cmr-support@earthdata.nasa.gov"})
+

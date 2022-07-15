@@ -14,7 +14,7 @@
    [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
    [cmr.search.api.core :as core-api] 
-   [cmr.search.config :as search-config]
+   [cmr.common-app.config :as common-app-config]
    [cmr.search.services.parameters.legacy-parameters :as lp]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
@@ -135,7 +135,7 @@
     (svc-errors/throw-service-error
       :too-many-requests
       (str "Excessive query rate. Please contact "
-           (search-config/cmr-support-email) "."))))
+           (common-app-config/cmr-support-email) "."))))
 
 (defn- reject-all-granule-query?
   "Return true if the all granule query will be rejected."
@@ -155,7 +155,7 @@
                      "Forum at https://wiki.earthdata.nasa.gov/display/CMR/"
                      "Granule+Queries+Now+Require+Collection+Identifiers for more "
                      "information, and for any questions please contact "
-                     (search-config/cmr-support-email) ".")]
+                     (common-app-config/cmr-support-email) ".")]
     (when (reject-all-granule-query? headers)
       (svc-errors/throw-service-error :bad-request err-msg))))
 

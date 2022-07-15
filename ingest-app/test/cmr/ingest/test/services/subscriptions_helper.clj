@@ -5,7 +5,7 @@
    [clojure.test :refer :all]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as u :refer [are3]]
-   [cmr.ingest.config :as ingest-config]
+   [cmr.common-app.config :as common-app-config]
    [cmr.ingest.services.subscriptions-helper :as jobs]))
 
 (deftest create-query-params
@@ -28,7 +28,7 @@
   (testing "Create email content for granule refs"
     (let [actual (jobs/create-email-content
                   :granule
-                  (ingest-config/cmr-support-email)
+                  (common-app-config/cmr-support-email)
                   "someone@gmail.com"
                   '("https://cmr.link/g1" "https://cmr.link/g2" "https://cmr.link/g3")
                   {:extra-fields {:collection-concept-id "C1200370131-EDF_DEV06"}
@@ -53,15 +53,15 @@
                   "<a href='https://cmr.link/g3'>https://cmr.link/g3</a></li></ul>"
                   "<p>To unsubscribe from these notifications, or if you have any questions, "
                   "please contact us at <a href='mailto:"
-                  (ingest-config/cmr-support-email)
+                  (common-app-config/cmr-support-email)
                   "'>"
-                  (ingest-config/cmr-support-email)
+                  (common-app-config/cmr-support-email)
                   "</a>.</p>")
              (:content (first (:body actual)))))))
   (testing "Create email content for collection refs"
     (let [actual (jobs/create-email-content
                   :collection
-                  (ingest-config/cmr-support-email)
+                  (common-app-config/cmr-support-email)
                   "someone@gmail.com"
                   '("https://cmr.link/c1" "https://cmr.link/c2" "https://cmr.link/c3")
                   {:metadata "{\"Name\": \"valid1\",
@@ -83,9 +83,9 @@
                   "<a href='https://cmr.link/c3'>https://cmr.link/c3</a></li></ul>"
                   "<p>To unsubscribe from these notifications, or if you have any questions, "
                   "please contact us at <a href='mailto:"
-                  (ingest-config/cmr-support-email)
+                  (common-app-config/cmr-support-email)
                   "'>"
-                  (ingest-config/cmr-support-email)
+                  (common-app-config/cmr-support-email)
                   "</a>.</p>")
              (:content (first (:body actual))))))))
 

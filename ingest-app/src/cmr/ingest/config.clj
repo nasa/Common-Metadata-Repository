@@ -75,10 +75,6 @@
   "Ingest database password"
   {})
 
-(defconfig cmr-support-email
-  "CMR support email address"
-  {:default "cmr-support@earthdata.nasa.gov"})
-
 (defn db-spec
   "Returns a db spec populated with config information that can be used to connect to oracle"
   [connection-pool-name]

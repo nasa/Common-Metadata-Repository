@@ -10,7 +10,7 @@
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
-   [cmr.ingest.config :as ingest-config]
+   [cmr.common-app.config :as common-app-config]
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
@@ -194,9 +194,9 @@
                             ", the following granules have been added or updated:\n\n"
                             (email-url-list concept-ref-locations)
                             "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at ["
-                            (ingest-config/cmr-support-email)
+                            (common-app-config/cmr-support-email)
                             "](mailto:"
-                            (ingest-config/cmr-support-email)
+                            (common-app-config/cmr-support-email)
                             ").\n"))}]}))
 
 (defmethod create-email-content :collection
@@ -216,9 +216,9 @@
                             ", the following collections have been added or updated:\n\n"
                             (email-url-list concept-ref-locations)
                             "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at ["
-                            (ingest-config/cmr-support-email)
+                            (common-app-config/cmr-support-email)
                             "](mailto:"
-                            (ingest-config/cmr-support-email)
+                            (common-app-config/cmr-support-email)
                             ").\n"))}]}))
 
 (defn- send-subscription-emails
