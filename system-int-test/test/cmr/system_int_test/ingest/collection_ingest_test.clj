@@ -755,16 +755,15 @@
 
 ;; CMR-7849
 (deftest ingest-field-length-validation-tests
-  (let [coll1 (data-core/ingest-concept-with-metadata-file "CMR-7849/Collection-With-Long-Fields.dif10"
-                                                   {:provider-id "PROV1"
-                                                    :concept-type :collection
-                                                    :native-id "dif-coll1"
-                                                    :format-key :dif10})
-
+  (let [coll (data-core/ingest-concept-with-metadata-file "CMR-7849/Collection-With-Long-Fields.dif10"
+                                                  {:provider-id "PROV1"
+                                                   :concept-type :collection
+                                                   :native-id "dif-coll1"
+                                                   :format-key :dif10})
         _ (index/wait-until-indexed)
         result (search/find-concepts-json :collection {})
         data (first (:entries (:results result)))]
-    ;(println (:summary data))
+
     (testing "Checking for a strings that are located within the maximum text field size"
       (is (string/includes? (:summary data) "invertebrate food webs are modulated by grazing"))
       (is (string/includes? (:short-name data) "ecosystem-coupling-and-multifunctionality-exclosure-experiment")))
