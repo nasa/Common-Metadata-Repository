@@ -395,14 +395,14 @@
                                                 (set (common-config/opensearch-consortiums))))))
             :granule-data-format granule-data-format
             :granule-data-format-lowercase (map str/lower-case granule-data-format)
-            :entry-id entry-id
-            :entry-id-lowercase (str/lower-case entry-id)
-            :entry-title (str/trim entry-title)
-            :entry-title-lowercase (str/trim (str/lower-case entry-title))
-            :provider-id provider-id
-            :provider-id-lowercase (str/lower-case provider-id)
-            :short-name short-name
-            :short-name-lowercase (util/safe-lowercase short-name)
+            :entry-id (keyword-util/limit-text-field-length :entry-id entry-id es/MAX_COLLECTION_SHORT_FIELD_LENGTH)
+            :entry-id-lowercase (keyword-util/limit-text-field-length :entry-id-lowercase (str/lower-case entry-id) es/MAX_COLLECTION_SHORT_FIELD_LENGTH)
+            :entry-title (keyword-util/limit-text-field-length :entry-title (str/trim entry-title) es/MAX_COLLECTION_SHORT_FIELD_LENGTH)
+            :entry-title-lowercase (keyword-util/limit-text-field-length :entry-title-lowercase (str/trim (str/lower-case entry-title)) es/MAX_COLLECTION_SHORT_FIELD_LENGTH)
+            :provider-id (keyword-util/limit-text-field-length :provider-id provider-id es/MAX_COLLECTION_SHORT_FIELD_LENGTH)
+            :provider-id-lowercase (keyword-util/limit-text-field-length :provider-id-lowercase (str/lower-case provider-id) es/MAX_COLLECTION_SHORT_FIELD_LENGTH)
+            :short-name (keyword-util/limit-text-field-length :short-name short-name es/MAX_COLLECTION_SHORT_FIELD_LENGTH)
+            :short-name-lowercase (keyword-util/limit-text-field-length :short-name-lowercase (util/safe-lowercase short-name) es/MAX_COLLECTION_SHORT_FIELD_LENGTH)
             :version-id version-id
             :version-id-lowercase (util/safe-lowercase version-id)
             :parsed-version-id-lowercase (util/safe-lowercase parsed-version-id)
@@ -468,7 +468,7 @@
             :downloadable downloadable
             :browsable browsable
             :atom-links atom-links
-            :summary summary
+            :summary (keyword-util/limit-text-field-length :summary summary es/MAX_TEXT_UTF8_ENCODING_BYTES)
             :metadata-format (name (mt/format-key format))
             :related-urls (map json/generate-string opendata-related-urls)
             :has-opendap-url (not (empty? (filter opendap-util/opendap-url? related-urls)))

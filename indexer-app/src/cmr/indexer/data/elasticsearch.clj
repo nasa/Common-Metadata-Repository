@@ -29,6 +29,10 @@
   "The maximum size in bytes that a string can be in Elasticsearch to be indexed as text"
   32766)
 
+(def MAX_COLLECTION_SHORT_FIELD_LENGTH
+  "The maximum size in bytes that a collection short text field can ingest"
+  7328)
+
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
   100)

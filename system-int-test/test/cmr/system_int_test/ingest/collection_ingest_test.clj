@@ -37,12 +37,12 @@
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Verify a new concept fails ingest when StandardProduct validation fails. 
+;; Verify a new concept fails ingest when StandardProduct validation fails.
 (deftest standard-validation-test
   (ingest/create-provider {:provider-guid "provguid_consortium3" :provider-id "PROV3" :consortiums "geoss"})
   (ingest/create-provider {:provider-guid "provguid_consortium4" :provider-id "PROV4" :consortiums "eosdis geoss"})
   (let [coll3-non-eosdis-consortium (ingest/ingest-concept
-                                     (data-umm-c/collection-concept 
+                                     (data-umm-c/collection-concept
                                       {:provider-id "PROV3"
                                        :StandardProduct true}
                                       :umm-json))
@@ -56,7 +56,7 @@
             (:errors coll3-non-eosdis-consortium)))
      (is (= ["Standard product validation failed: Standard Product cannot be true with the CollectionDataType being one of the following values: NEAR_REAL_TIME, LOW_LATENCY, or EXPEDITED. The CollectionDataType is [NEAR_REAL_TIME]."]
             (:errors coll4-wrong-collection-data-type)))))
-    
+
 ;; Verify a new concept is ingested successfully.
 (deftest collection-ingest-test
   (testing "ingest of a new concept"
@@ -752,6 +752,25 @@
         {:keys [status]} (ingest/ingest-concept concept)]
     (index/wait-until-indexed)
     (is (= 201 status))))
+
+;; CMR-7849
+(deftest ingest-field-length-validation-tests
+  (let [coll1 (data-core/ingest-concept-with-metadata-file "CMR-7849/Collection-With-Long-Fields.dif10"
+                                                   {:provider-id "PROV1"
+                                                    :concept-type :collection
+                                                    :native-id "dif-coll1"
+                                                    :format-key :dif10})
+
+        _ (index/wait-until-indexed)
+        result (search/find-concepts-json :collection {})
+        data (first (:entries (:results result)))]
+    ;(println (:summary data))
+    (testing "Checking for a strings that are located within the maximum text field size"
+      (is (string/includes? (:summary data) "invertebrate food webs are modulated by grazing"))
+      (is (string/includes? (:short-name data) "ecosystem-coupling-and-multifunctionality-exclosure-experiment")))
+    (testing "Checking for a strings that are located beyond the maximum text field size"
+      (is (not (string/includes? (:summary data) "This is the end of the summary.")))
+      (is (not (string/includes? (:short-name data) "Short-Name-End"))))))
 
 (deftest dif9-missing-version-ingest
   (testing "Ingest of a DIF9 collection with missing version. This verifies that we apply the
