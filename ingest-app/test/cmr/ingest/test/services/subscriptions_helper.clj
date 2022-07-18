@@ -3,9 +3,9 @@
   (:require
    [clj-time.core :as t]
    [clojure.test :refer :all]
-   [cmr.common.date-time-parser :as dtp]
-   [cmr.common.util :as u :refer [are3]]
    [cmr.common-app.config :as common-app-config]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.util :as u :refer [are3]] 
    [cmr.ingest.services.subscriptions-helper :as jobs]))
 
 (deftest create-query-params

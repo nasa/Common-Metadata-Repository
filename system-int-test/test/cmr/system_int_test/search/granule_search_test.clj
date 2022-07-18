@@ -8,7 +8,6 @@
    [cmr.common.services.messages :as msg]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.common-app.config :as common-app-config]
    [cmr.search.services.messages.common-messages :as smsg]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -541,7 +540,7 @@
 (deftest block-excessive-queries-test
   (testing "Blocking those MCD43A4 queries"
     (is (= {:status 429
-            :errors [(str "Excessive query rate. Please contact " (common-app-config/cmr-support-email) ".")]}
+            :errors [(str "Excessive query rate. Please contact support@earthdata.nasa.gov.")]}
            (search/make-raw-search-query :granule ".json?short_name=MCD43A4&&page_size=5")))))
 
 (deftest entry-title-with-preceeding-succeeding-whitespace-test
