@@ -14,7 +14,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
-   [cmr.search.api.core :as core-api] 
+   [cmr.search.api.core :as core-api]
    [cmr.search.services.parameters.legacy-parameters :as lp]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
@@ -133,9 +133,9 @@
                   (rfh/printable-result-format result-format)
                   (pr-str params)))
     (svc-errors/throw-service-error
-      :too-many-requests
-      (str "Excessive query rate. Please contact "
-           (common-app-config/cmr-support-email) "."))))
+     :too-many-requests
+     (str "Excessive query rate. Please contact "
+          (common-app-config/cmr-support-email) "."))))
 
 (defn- reject-all-granule-query?
   "Return true if the all granule query will be rejected."
@@ -390,17 +390,17 @@
 (def find-deleted-concepts-routes
   "Routes for finding deleted granules and collections."
   (routes
-    (context ["/:path-w-extension" :path-w-extension #"(?:deleted-collections)(?:\..+)?"] [path-w-extension]
-      (OPTIONS "/" req (common-routes/options-response))
-      (GET "/"
-        {params :params headers :headers ctx :request-context}
-        (get-deleted-collections ctx path-w-extension params headers)))
+   (context ["/:path-w-extension" :path-w-extension #"(?:deleted-collections)(?:\..+)?"] [path-w-extension]
+     (OPTIONS "/" req (common-routes/options-response))
+     (GET "/"
+       {params :params headers :headers ctx :request-context}
+       (get-deleted-collections ctx path-w-extension params headers)))
 
-    (context ["/:path-w-extension" :path-w-extension #"(?:deleted-granules)(?:\..+)?"] [path-w-extension]
-      (OPTIONS "/" req (common-routes/options-response))
-      (GET "/"
-        {params :params headers :headers ctx :request-context}
-        (get-deleted-granules ctx path-w-extension params headers)))))
+   (context ["/:path-w-extension" :path-w-extension #"(?:deleted-granules)(?:\..+)?"] [path-w-extension]
+     (OPTIONS "/" req (common-routes/options-response))
+     (GET "/"
+       {params :params headers :headers ctx :request-context}
+       (get-deleted-granules ctx path-w-extension params headers)))))
 
 (def aql-search-routes
   "Routes for finding concepts using the ECHO Alternative Query Language (AQL)."

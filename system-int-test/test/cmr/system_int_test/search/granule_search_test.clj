@@ -540,7 +540,7 @@
 (deftest block-excessive-queries-test
   (testing "Blocking those MCD43A4 queries"
     (is (= {:status 429
-            :errors [(str "Excessive query rate. Please contact support@earthdata.nasa.gov.")]}
+            :errors ["Excessive query rate. Please contact support@earthdata.nasa.gov."]}
            (search/make-raw-search-query :granule ".json?short_name=MCD43A4&&page_size=5")))))
 
 (deftest entry-title-with-preceeding-succeeding-whitespace-test
