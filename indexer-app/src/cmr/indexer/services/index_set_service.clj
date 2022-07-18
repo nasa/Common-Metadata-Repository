@@ -3,11 +3,11 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
+   [cmr.common-app.config :as common-config]
    [cmr.common.log :as log :refer [info]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
-   [cmr.common-app.config :as common-config]
+   [cmr.common.util :as util] 
    [cmr.indexer.config :as config]
    [cmr.indexer.data.index-set-elasticsearch :as es]
    [cmr.indexer.services.messages :as m])
