@@ -11,23 +11,22 @@
   (testing "test the defmacro to see if it creates the correct map"
 
     (are3 [expected]
-      (is (= expected (spatial/horizontal-resolution-code-name-to-key-map)))
-
-      "Test the defmacro to see if it creates the correct map"
-      {"variesresolution" :VariesResolution,
-       "NonGriddedResolutions" :NonGriddedResolutions,
-       "NonGriddedRangeResolutions" :NonGriddedRangeResolutions,
-       "GenericResolutions" :GenericResolutions,
-       "nongriddedresolutions" :NonGriddedResolutions,
-       "pointresolution" :PointResolution,
-       "PointResolution" :PointResolution,
-       "GriddedResolutions" :GriddedResolutions,
-       "nongriddedrangeresolutions" :NonGriddedRangeResolutions,
-       "VariesResolution" :VariesResolution,
-       "GriddedRangeResolutions" :GriddedRangeResolutions,
-       "genericresolutions" :GenericResolutions,
-       "griddedresolutions" :GriddedResolutions,
-       "griddedrangeresolutions" :GriddedRangeResolutions})))
+          (is (= expected (spatial/horizontal-resolution-code-name-to-key-map)))
+          "Test the defmacro to see if it creates the correct map"
+          {"variesresolution" :VariesResolution,
+           "NonGriddedResolutions" :NonGriddedResolutions,
+           "NonGriddedRangeResolutions" :NonGriddedRangeResolutions,
+           "GenericResolutions" :GenericResolutions,
+           "nongriddedresolutions" :NonGriddedResolutions,
+           "pointresolution" :PointResolution,
+           "PointResolution" :PointResolution,
+           "GriddedResolutions" :GriddedResolutions,
+           "nongriddedrangeresolutions" :NonGriddedRangeResolutions,
+           "VariesResolution" :VariesResolution,
+           "GriddedRangeResolutions" :GriddedRangeResolutions,
+           "genericresolutions" :GenericResolutions,
+           "griddedresolutions" :GriddedResolutions,
+           "griddedrangeresolutions" :GriddedRangeResolutions})))
 
 (deftest test-coordinate-system-parsing
   "Testing the parsing of the spatial coordinate system. The values of CARTESIAN and GEODETIC
@@ -39,3 +38,10 @@
                   (xpath/context)
                   (spatial/parse-coordinate-system))]
     (is (= "GEODETIC" value))))
+
+(deftest test-coordinate-system-parsing-invalid
+  "Testing the ability to handle parsing a number that exceeds the max integer value"
+
+  (let [valid (spatial/parse-horizontal-data-resolutions (slurp (io/resource "example-data/iso19115/artificial_test_data_2.xml")))
+        invalid (spatial/parse-horizontal-data-resolutions (slurp (io/resource "example-data/iso19115/artificial_test_data_invalid.xml")))]
+    (is (= valid invalid))))
