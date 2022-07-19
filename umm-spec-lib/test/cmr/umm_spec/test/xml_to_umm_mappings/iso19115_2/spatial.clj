@@ -11,22 +11,22 @@
   (testing "test the defmacro to see if it creates the correct map"
 
     (are3 [expected]
-          (is (= expected (spatial/horizontal-resolution-code-name-to-key-map)))
-          "Test the defmacro to see if it creates the correct map"
-          {"variesresolution" :VariesResolution,
-           "NonGriddedResolutions" :NonGriddedResolutions,
-           "NonGriddedRangeResolutions" :NonGriddedRangeResolutions,
-           "GenericResolutions" :GenericResolutions,
-           "nongriddedresolutions" :NonGriddedResolutions,
-           "pointresolution" :PointResolution,
-           "PointResolution" :PointResolution,
-           "GriddedResolutions" :GriddedResolutions,
-           "nongriddedrangeresolutions" :NonGriddedRangeResolutions,
-           "VariesResolution" :VariesResolution,
-           "GriddedRangeResolutions" :GriddedRangeResolutions,
-           "genericresolutions" :GenericResolutions,
-           "griddedresolutions" :GriddedResolutions,
-           "griddedrangeresolutions" :GriddedRangeResolutions})))
+      (is (= expected (spatial/horizontal-resolution-code-name-to-key-map)))
+      "Test the defmacro to see if it creates the correct map"
+      {"variesresolution" :VariesResolution,
+       "NonGriddedResolutions" :NonGriddedResolutions,
+       "NonGriddedRangeResolutions" :NonGriddedRangeResolutions,
+       "GenericResolutions" :GenericResolutions,
+       "nongriddedresolutions" :NonGriddedResolutions,
+       "pointresolution" :PointResolution,
+       "PointResolution" :PointResolution,
+       "GriddedResolutions" :GriddedResolutions,
+       "nongriddedrangeresolutions" :NonGriddedRangeResolutions,
+       "VariesResolution" :VariesResolution,
+       "GriddedRangeResolutions" :GriddedRangeResolutions,
+       "genericresolutions" :GenericResolutions,
+       "griddedresolutions" :GriddedResolutions,
+       "griddedrangeresolutions" :GriddedRangeResolutions})))
 
 (deftest test-coordinate-system-parsing
   "Testing the parsing of the spatial coordinate system. The values of CARTESIAN and GEODETIC
