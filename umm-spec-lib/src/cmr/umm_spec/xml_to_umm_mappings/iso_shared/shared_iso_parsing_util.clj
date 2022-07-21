@@ -2,6 +2,7 @@
   "Shared parsing functions for ISO 19115-2 MENDS and ISO 19115-2 SMAP."
   (:require
    [clojure.string :as string]
+   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]))
 
 ;; This section allows an ISO description that is encoded by key: value key: value etc.
@@ -66,8 +67,9 @@
                    (let [string-number (re-find #"-?\d+\.?\d+|-?\.?\d+" v)]
                      (if (string/includes? string-number ".")
                        {k (Double/parseDouble string-number)}
-                       {k (Integer/parseInt string-number)}))
-                   {k v}) (catch Exception e {k nil}))))))
+                       {k (Long/parseLong string-number)})) {k v})
+                 (catch java.lang.NumberFormatException e
+                   (errors/throw-service-error e)))))))
 
 (defn convert-iso-description-string-to-map
   "Convert Description string to a map, removing fields that are empty or nil.

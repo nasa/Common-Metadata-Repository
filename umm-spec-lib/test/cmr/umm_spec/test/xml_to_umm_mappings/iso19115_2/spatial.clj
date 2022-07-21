@@ -39,9 +39,8 @@
                   (spatial/parse-coordinate-system))]
     (is (= "GEODETIC" value))))
 
-(deftest test-coordinate-system-parsing-invalid
+(deftest test-coordinate-system-parsing-large-num
   "Testing the ability to handle parsing a number that exceeds the max integer value"
 
-  (let [valid (spatial/parse-horizontal-data-resolutions (slurp (io/resource "example-data/iso19115/artificial_test_data_2.xml")))
-        invalid (spatial/parse-horizontal-data-resolutions (slurp (io/resource "example-data/iso19115/artificial_test_data_invalid.xml")))]
-    (is (= valid invalid))))
+  (let [value (spatial/parse-horizontal-data-resolutions (slurp (io/resource "example-data/iso19115/artificial_test_data_large_num.xml")))]
+    (is (= 2147483648 (get (nth (get value :GriddedRangeResolutions) 0) :MaximumYDimension)))))
