@@ -7,6 +7,7 @@
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.generics :as common-generic :refer [approved-generic?]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
@@ -1041,11 +1042,6 @@
        :else
        ;; The collection is not rebalancing so it's either in a separate index or small Collections
        [(get indexes (keyword coll-concept-id) small-collections-index-name)]))))
-
-(defn- approved-generic?
-  "Check to see if a requested generic is on the approved list"
-  [schema version]
-  (some #(= version %) (schema (common-config/approved-pipeline-documents))))
 
 (defn resolve-generic-concept-type
   "if the concept type is generic, figure out from the concept what the actual document type is"

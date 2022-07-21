@@ -4,7 +4,9 @@
    that can be indexed in lucine."
   (:require
    [cheshire.core :as json]
+   [cmr.common-app.config :as common-config]
    [cmr.common.concepts :as concepts]
+   [cmr.common.generics :as common-generic :refer [approved-generic?]]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mtype]
    [cmr.common.util :as util]
@@ -69,7 +71,7 @@
         long-name (:LongName parsed-concept) ; should this exist as a required field
         gen-name (util/safe-lowercase (get-in parsed-concept [:MetadataSpecification :Name]))
         gen-ver (get-in parsed-concept [:MetadataSpecification :Version])
-        approved (cmr.ingest.api.generic-documents/approved-generic? (keyword gen-name) gen-ver)
+        approved (approved-generic? (keyword gen-name) gen-ver)
         ]
     (when approved
       (let [index-data-file (format "schemas/%s/v%s/index.json" gen-name gen-ver)
