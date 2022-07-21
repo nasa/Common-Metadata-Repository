@@ -97,7 +97,7 @@
   (let [access-count (read-csv-column csv-line hosts-col)]
     (if (seq access-count)
       (try
-        (long (bigdec  (str/replace access-count "," ""))) ; Remove commas in large ints
+        (Long/parseLong (str/replace access-count "," "")) ; Remove commas in large ints
         (catch java.lang.NumberFormatException e
           (errors/throw-service-error :invalid-data
                                       (format (str "Error parsing 'Hosts' CSV Data. "
