@@ -14,7 +14,6 @@
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.indexer.data.concepts.generic-util :as gen-util]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
-   [cmr.ingest.api.generic-documents :as ingest-generic]
    [cmr.schema-validation.json-schema :as js-validater]
    [cmr.transmit.metadata-db :as meta-db]))
 

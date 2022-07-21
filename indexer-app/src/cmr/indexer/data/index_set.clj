@@ -1042,6 +1042,10 @@
        ;; The collection is not rebalancing so it's either in a separate index or small Collections
        [(get indexes (keyword coll-concept-id) small-collections-index-name)]))))
 
+(defn- approved-generic?
+  "Check to see if a requested generic is on the approved list"
+  [schema version]
+  (some #(= version %) (schema (common-config/approved-pipeline-documents))))
 
 (defn resolve-generic-concept-type
   "if the concept type is generic, figure out from the concept what the actual document type is"
@@ -1049,7 +1053,7 @@
   (if (= :generic concept-type)
     (let [reported-name (clojure.string/lower-case (get-in concept [:MetadataSpecification :Name]))
           reported-version (get-in concept [:MetadataSpecification :Version])
-          approved (cmr.ingest.api.generic-documents/approved-generic?
+          approved (approved-generic?
                     (keyword reported-name)
                     reported-version)]
       (when approved (keyword (format "generic-%s" reported-name))))
