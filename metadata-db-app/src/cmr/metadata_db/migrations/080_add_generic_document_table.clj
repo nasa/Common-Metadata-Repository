@@ -1,11 +1,12 @@
 (ns cmr.metadata-db.migrations.080-add-generic-document-table
   (:require
+   [clojure.string :as string]
    [config.mdb-migrate-helper :as h]))
 
 (defn- create-generic-documents-table
   []
   (h/sql
-   (clojure.string/replace
+   (string/replace
     (str "CREATE TABLE METADATA_DB.cmr_generic_documents (
           id NUMBER,
           concept_id VARCHAR(255) NOT NULL,
@@ -32,18 +33,26 @@
 
 (defn- create-generic-document-indices
   []
-  ;; Supports queries to find generic document revisions that are deleted
+  ;; Supports queries to find generic documents that have been deleted
   (h/sql
-   (clojure.string/replace
+   (string/replace
     (str "CREATE INDEX generic_documents_crdi
-          ON METADATA_DB.cmr_generic_documents (concept_id, revision_id, deleted)")
+          ON METADATA_DB.cmr_generic_documents (concept_id, deleted)")
     #"\s+" " "))
 
   ;; Supports queries to find generic document by native id within one provider
   (h/sql
-   (clojure.string/replace
-    (str "CREATE INDEX generic_documents_native_id
-          ON METADATA_DB.cmr_generic_documents (native_id, provider_id)")
+   (string/replace
+    (str "CREATE INDEX generic_documents_provider_native_id
+          ON METADATA_DB.cmr_generic_documents (provider_id, native_id)")
+    #"\s+" " "))
+
+  ;; Supports queries to find specific generic document matching a native id
+  ;; and revision id within one provider
+  (h/sql
+   (string/replace
+    (str "CREATE INDEX generic_documents_native_id_rev
+          ON METADATA_DB.cmr_generic_documents (provider_id, native_id, revision_id)")
     #"\s+" " ")))
 
 (defn- create-generic-document-sequence
