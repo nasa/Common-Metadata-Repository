@@ -68,8 +68,9 @@
                      (if (string/includes? string-number ".")
                        {k (Double/parseDouble string-number)}
                        {k (Long/parseLong string-number)})) {k v})
-                 (catch java.lang.NumberFormatException e
-                   (errors/throw-service-error e)))))))
+                 (catch Exception e
+                   (errors/throw-service-error
+                    :invalid-data (format (str "Error parsing the value %s as a long") v))))))))
 
 (defn convert-iso-description-string-to-map
   "Convert Description string to a map, removing fields that are empty or nil.

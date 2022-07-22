@@ -42,5 +42,14 @@
 (deftest test-coordinate-system-parsing-large-num
   "Testing the ability to handle parsing a number that exceeds the max integer value"
 
-  (let [value (spatial/parse-horizontal-data-resolutions (slurp (io/resource "example-data/iso19115/artificial_test_data_large_num.xml")))]
-    (is (= 2147483648 (get (nth (get value :GriddedRangeResolutions) 0) :MaximumYDimension)))))
+  (let [value (spatial/parse-horizontal-data-resolutions
+               (slurp (io/resource "example-data/iso19115/artificial_test_data_large_num.xml")))]
+    (is (= 2147483648 (-> value :GriddedRangeResolutions first :MaximumYDimension)))))
+
+(deftest test-coordinate-system-parsing-invalid
+  "Testing the caught error when parsing an invalid number"
+
+  (let [value (try (spatial/parse-horizontal-data-resolutions
+                    (slurp (io/resource "example-data/iso19115/artificial_test_data_invalid.xml")))
+                   (catch Exception e (ex-message e)))]
+    (is (=  "Error parsing the value NAN as a long" value))))
