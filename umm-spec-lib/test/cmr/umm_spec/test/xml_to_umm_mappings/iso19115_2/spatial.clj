@@ -51,5 +51,5 @@
 
   (let [value (try (spatial/parse-horizontal-data-resolutions
                     (slurp (io/resource "example-data/iso19115/artificial_test_data_invalid.xml")))
-                   (catch Exception e (ex-message e)))]
-    (is (=  "Error parsing the value NAN" value))))
+                   (catch Exception e (str "Exception was correctly thrown")))]
+    (is (= "Exception was correctly thrown" value))))
