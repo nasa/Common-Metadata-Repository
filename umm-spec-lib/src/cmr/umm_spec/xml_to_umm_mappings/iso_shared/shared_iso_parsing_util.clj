@@ -67,7 +67,8 @@
                    (let [string-number (re-find #"-?\d+\.?\d+|-?\.?\d+" v)]
                      (if (string/includes? string-number ".")
                        {k (Double/parseDouble string-number)}
-                       {k (Long/parseLong string-number)})) {k v})
+                       {k (Long/parseLong string-number)}))
+                   {k v})
                  (catch Exception e
                    (errors/throw-service-error
                     :invalid-data (format (str "Error parsing the value %s") v))))))))
