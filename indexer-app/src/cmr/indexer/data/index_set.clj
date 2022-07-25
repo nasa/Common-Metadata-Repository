@@ -1115,7 +1115,7 @@
        ;; and return the index name for those
        (let [reported-type (clojure.string/lower-case (get-in concept [:MetadataSpecification :Name]))
               reported-version (get-in concept [:MetadataSpecification :Version])
-              approved ((common-config/approved-pipeline-documents) reported-type reported-version)]
+              approved ((cfg/approved-pipeline-documents) reported-type reported-version)]
          (when approved
            (keyword (format "generic-%s" reported-type))
            (if all-revisions-index?

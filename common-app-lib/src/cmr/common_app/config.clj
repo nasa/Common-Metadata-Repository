@@ -24,9 +24,9 @@
   {:default ["CWIC" "FEDEO" "GEOSS" "CEOS" "EOSDIS"]
    :parser #(json/decode ^String %)})
 
-(defconfig approved-pipeline-documents
-  "This string should contain JSON that looks like:
-   {'grid': ['0.0.1'],
-    'variable': ['1.8.0']}"
-  {:default ""
-   :parser #(json/parse-string % true)})
+;; (defconfig approved-pipeline-documents
+;;   "This string should contain JSON that looks like:
+;;    {'grid': ['0.0.1'],
+;;     'variable': ['1.8.0']}"
+;;   {:default ""
+;;    :parser #(json/parse-string % true)})

@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
-   [cmr.common-app.config :as common-config]
+   [cmr.common.config :as common-config]
    [cmr.common.log :as log :refer [info]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
