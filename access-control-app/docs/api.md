@@ -45,13 +45,9 @@ This defines common headers on the Access Control API.
 
 Content-Type is a standard HTTP header that specifies the content type of the body of the request. Access Control only supports `application/json` as the representation type for data.
 
-#### <a name="echo-token-header"></a> Echo-Token Header
-
-All Access Control API operations require specifying a token obtained from URS or ECHO. The token should be specified using the `Echo-Token` header.
-
 #### <a name="authorization-header"></a> Authorization Header
 
-The token can alternatively be specified using the `Authorization: Bearer` header, and by specifying a Bearer token.
+All Access Control API operations require specifying a token obtained from Earthdata Login (EDL). The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token.  For more information on obtaining an EDL bearer token, please reference the documentation [here](https://wiki.earthdata.nasa.gov/display/EL/How+to+Generate+a+User+Token).
 
 #### <a name="cmr-revision-id-header"></a> Cmr-Revision-Id Header
 
@@ -100,12 +96,12 @@ Groups are used to identify sets of users for the assignment of access privilege
 
 ### <a name="create-group"></a> Create Group
 
-Groups are created by POSTing a JSON representation of a group to `%CMR-ENDPOINT%/groups` along with a valid ECHO token. Optionally, a `managing_group_id` parameter can be used to specify the managing group of the newly created group; Its value is the concept id of the existing group that will able to update or delete the new group. The response will contain a concept id identifying the group along with the group revision id. Creating and updating a group is synchronous and the group will be visible in search immediately after the ingest response is returned.
+Groups are created by POSTing a JSON representation of a group to `%CMR-ENDPOINT%/groups` along with a valid EDL bearer token. Optionally, a `managing_group_id` parameter can be used to specify the managing group of the newly created group; Its value is the concept id of the existing group that will able to update or delete the new group. The response will contain a concept id identifying the group along with the group revision id. Creating and updating a group is synchronous and the group will be visible in search immediately after the ingest response is returned.
 
 #### Creating a System Level Group
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/groups -d \
 '{
   "name": "Administrators",
   "description": "The group of users that manages the CMR.",
@@ -121,7 +117,7 @@ Content-Type: application/json;charset=ISO-8859-1
 #### Creating a Provider Level Group
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/groups -d \
 '{
   "name": "Administrators",
   "provider_id": "PROV1",
@@ -139,7 +135,7 @@ Content-Type: application/json;charset=ISO-8859-1
 A single group can be retrieved by sending a GET request to `%CMR-ENDPOINT%/groups/<concept-id>` where `concept-id` is the concept id of the group returned when it was created.
 
 ```
-curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR?pretty=true
+curl -i -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR?pretty=true
 
 HTTP/1.1 200 OK
 Content-Type: application/json
@@ -157,7 +153,7 @@ Groups are updated by sending a PUT request with the JSON representation of a gr
 Only keys present in the update request will be updated. For example: if a `"members"` key is specified, then the group's members will be updated with the supplied value, otherwise the group's members will remain unchanged.
 
 ```
-curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR -d \
+curl -XPUT -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR -d \
 '{
   "name": "Administrators",
   "description": "The group of users that manages the CMR and related systems."
@@ -174,7 +170,7 @@ Content-Type: application/json;charset=ISO-8859-1
 Groups are deleted by sending a DELETE request to `%CMR-ENDPOINT%/groups/<concept-id>` where `concept-id` is the concept id of the group returned when it was created. Deleting a group creates a tombstone that marks the group as deleted. The concept id of the group and the revision id of the tombstone are returned from a delete request.
 
 ```
-curl -XDELETE -i  -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR
+curl -XDELETE -i  -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -187,7 +183,7 @@ Content-Type: application/json;charset=ISO-8859-1
 The members in a group can be retrieved by sending a GET request to `%CMR-ENDPOINT%/groups/<concept-id>/members` where `concept-id` is the concept id of the group returned when it was created.
 
 ```
-curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members?pretty=true
+curl -i -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members?pretty=true
 
 HTTP/1.1 200 OK
 Content-Type: application/json
@@ -200,7 +196,7 @@ Content-Type: application/json
 The members in a group can be added by sending a POST request to `%CMR-ENDPOINT%/groups/<concept-id>/members` where `concept-id` is the concept id of the group returned when it was created. The body of the request should be a JSON array of Earthdata Login usernames. The concept id and updated revision number is returned.
 
 ```
-curl -i -XPOST -H "Echo-Token: XXXX" -H "Content-Type: application/json" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members -d
+curl -i -XPOST -H "Authorization: Bearer XXXX" -H "Content-Type: application/json" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members -d
 '["user1", "user2", "user3"]'
 
 HTTP/1.1 200 OK
@@ -214,7 +210,7 @@ Content-Type: application/json
 The members in a group can be removed by sending a DELETE request to `%CMR-ENDPOINT%/groups/<concept-id>/members` where `concept-id` is the concept id of the group returned when it was created. The body of the request should be a JSON array of Earthdata Login usernames to remove. The concept id and updated revision number is returned.
 
 ```
-curl -i -XDELETE -H "Echo-Token: XXXX" -H "Content-Type: application/json" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members -d
+curl -i -XDELETE -H "Authorization: Bearer XXXX" -H "Content-Type: application/json" %CMR-ENDPOINT%/groups/AG1200000000-CMR/members -d
 '["user1", "user2", "user3"]'
 
 HTTP/1.1 200 OK
@@ -356,12 +352,12 @@ ACLs are uniquely identified by their identity. There can only be one ACL to a s
 
 ### <a name="create-acl"></a> Create ACL
 
-ACLs are created by POSTing a JSON representation of an ACL to `%CMR-ENDPOINT%/acls` along with a valid ECHO token. The response will contain a concept id identifying the ACL along with the ACL revision id.
+ACLs are created by POSTing a JSON representation of an ACL to `%CMR-ENDPOINT%/acls` along with a valid EDL bearer token. The response will contain a concept id identifying the ACL along with the ACL revision id.
 
 #### Creating an ACL
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/acls -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/acls -d \
 '{
     "group_permissions": [{
         "group_id": "AG1234-FOO",
@@ -459,7 +455,7 @@ For system, provider, and single instance identities, the grantable permissions 
 
 ### <a name="search-acls"></a> Search ACLs
 
-ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`, or a POST to `%CMR-ENDPOINT%/acls/search`. A valid Echo token is required to search ACLs.  If no token is supplied then guest permissions are used.
+ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`, or a POST to `%CMR-ENDPOINT%/acls/search`. A valid EDL bearer token is required to search ACLs.  If no token is supplied then guest permissions are used.
 
 ##### ACL Search Parameters
 
@@ -787,7 +783,7 @@ A single ACL can be retrieved by sending a GET request to `%CMR-ENDPOINT%/acls/<
 Search parameter `include_legacy_group_guid`, which is a boolean parameter, can be used to indicate if legacy group guid should be returned in place of group concept id in the returned ACL.
 
 ```
-curl -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR?pretty=true
+curl -i -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR?pretty=true
 
 HTTP/1.1 200 OK
 Content-Type: application/json
@@ -813,7 +809,7 @@ Content-Type: application/json
 An ACL can be updated by sending a PUT request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created. `legacy-guid` field cannot be modified during update. The fields that uniquely identify an ACL cannot be updated, e.g. the `target` field of a system identity ACL. This limitation will eventually be removed as documented in CMR-3163.
 
 ```
-curl -XPUT -i -H "Echo-Token: XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR -d \
+curl -XPUT -i -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR -d \
 '{
     "group_permissions": [{
         "group_id": "AG1234-FOO",
@@ -840,7 +836,7 @@ Content-Type: application/json;charset=ISO-8859-1
 An ACL can be deleted with a DELETE request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
 
 ```
-curl -XDELETE -i -H "Echo-Token: mock-echo-system-token" %CMR-ENDPOINT%/acls/ACL1200000000-CMR
+curl -XDELETE -i -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR
 
 HTTP/1.1 200 OK
 Content-Type: application/json
@@ -858,7 +854,7 @@ The response is a JSON object mapping target ids to arrays of permissions grante
 Example request:
 
 ```
-curl -g -i -H "Echo-Token: XXXX" "%CMR-ENDPOINT%/permissions?user_type=guest&concept_id[]=C1200000000-PROV1&concept_id[]=C1200000001-PROV1"
+curl -g -i -H "Authorization: Bearer XXXX" "%CMR-ENDPOINT%/permissions?user_type=guest&concept_id[]=C1200000000-PROV1&concept_id[]=C1200000001-PROV1"
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -892,7 +888,7 @@ This endpoint will return a JSON list of S3 buckets a user has access to. If a l
 
 Example request:
 ```
-curl -i -H "Echo-Token: XXXX" "%CMR-ENDPOINT%/s3-buckets?user_id=user1
+curl -i -H "Authorization: Bearer XXXX" "%CMR-ENDPOINT%/s3-buckets?user_id=user1
 
 HTTP/1.1 200 OK
 Content-Length: 81
@@ -904,7 +900,7 @@ Content-Type: application/json
 
 Example request with providers specified:
 ```
-curl -i -H "Echo-Token: XXXX" "%CMR-ENDPOINT%/s3-buckets?user_id=user1&provider[]=PROV2&provider[]=PROV3
+curl -i -H "Authorization: Bearer XXXX" "%CMR-ENDPOINT%/s3-buckets?user_id=user1&provider[]=PROV2&provider[]=PROV3
 
 HTTP/1.1 200 OK
 Content-Length: 51
