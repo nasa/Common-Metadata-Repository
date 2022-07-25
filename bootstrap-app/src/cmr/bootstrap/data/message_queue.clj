@@ -15,10 +15,14 @@
 
 (defn bootstrap-provider-event
   "Creates an event indicating to bootstrap a provider."
-  [provider-id start-index]
-  {:action :index-provider
-   :provider-id provider-id
-   :start-index start-index})
+  ([provider-id start-index]
+   {:action :index-provider
+    :provider-id provider-id
+    :start-index start-index})
+  ([provider-id _ date-time]
+   {:action :index-provider
+    :provider-id provider-id
+    :date-time date-time}))
 
 (defn publish-bootstrap-concepts-event
   "Put a bootstrap variables event on the message queue."
