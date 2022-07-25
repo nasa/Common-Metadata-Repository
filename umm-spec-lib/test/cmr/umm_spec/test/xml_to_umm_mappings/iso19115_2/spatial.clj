@@ -3,7 +3,6 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
-   [cmr.common.test.test-util :as tu]
    [cmr.common.util :refer [are3]]
    [cmr.common.xml.simple-xpath :as xpath]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]))
@@ -47,10 +46,3 @@
                (slurp (io/resource "example-data/iso19115/artificial_test_data_large_num.xml")))]
     (is (= 2147483648 (-> value :GriddedRangeResolutions first :MaximumYDimension)))))
 
-(deftest test-coordinate-system-parsing-invalid
-  "Testing the caught error when parsing an invalid number"
-  (is (tu/assert-exception-thrown-with-errors
-       :invalid-data
-       ["Error parsing the value NAN"]
-       (spatial/parse-horizontal-data-resolutions
-        (slurp (io/resource "example-data/iso19115/artificial_test_data_invalid.xml"))))))
