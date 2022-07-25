@@ -24,7 +24,7 @@
    :index-services :message-queue-dispatcher
    :index-tools :message-queue-dispatcher
    :index-subscriptions :message-queue-dispatcher
-   :index-data-later-than-date-time :core-async-dispatcher
+   :index-data-later-than-date-time :message-queue-dispatcher
    :index-collection :core-async-dispatcher
    :index-system-concepts :core-async-dispatcher
    :index-concepts-by-id :core-async-dispatcher

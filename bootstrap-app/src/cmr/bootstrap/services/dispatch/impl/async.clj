@@ -36,13 +36,6 @@
     (async/go (>! channel {:provider-id provider-id
                            :start-index start-index}))))
 
-(defn index-data-later-than-date-time
-  "Bulk index all the concepts with a revision date later than the given date-time."
-  [this context date-time]
-  (let [channel (:data-index-channel this)]
-    (info "Adding date-time" date-time "to data index channel.")
-    (async/go (>! channel {:date-time date-time}))))
-
 (defn index-collection
   "Bulk index all the granules in a collection"
   [this context provider-id collection-id options]
@@ -97,8 +90,6 @@
    provider-index-channel
    ;; Channel for processing collections to index.
    collection-index-channel
-   ;; Channel for processing data newer than a given date-time.
-   data-index-channel
    ;; Channel for processing bulk index requests for system concepts (tags, acls, access-groups)
    system-concept-channel
    ;; channel for processing bulk index requests by concept-id
@@ -114,7 +105,7 @@
    :index-provider index-provider
    :index-variables (partial not-implemented :index-variables)
    :index-services (partial not-implemented :index-services)
-   :index-data-later-than-date-time index-data-later-than-date-time
+   :index-data-later-than-date-time (partial not-implemented :index-data-later-than-date-time)
    :index-collection index-collection
    :index-system-concepts index-system-concepts
    :index-concepts-by-id index-concepts-by-id
@@ -130,7 +121,6 @@
    :collection-db-channel (async/chan 100)
    :provider-index-channel (async/chan 10)
    :collection-index-channel (async/chan 100)
-   :data-index-channel (async/chan 10)
    :system-concept-channel (async/chan 10)
    :concept-id-channel (async/chan 10)
    :virtual-product-channel (async/chan)})
@@ -143,7 +133,6 @@
                            (:collection-db-channel channels)
                            (:provider-index-channel channels)
                            (:collection-index-channel channels)
-                           (:data-index-channel channels)
                            (:system-concept-channel channels)
                            (:concept-id-channel channels)
                            (:virtual-product-channel channels))))

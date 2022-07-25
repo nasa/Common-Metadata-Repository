@@ -271,6 +271,29 @@
     (info "Deleted " total " concepts")
     total))
 
+(defn index-provider-data-later-than-date-time
+  "Index all concept revisions created later than or equal to the given date-time for a given provider."
+  [system provider-id date-time]
+  (info (format "Indexing concepts with revision-date later than [%s] for provider [%s] started."
+                date-time
+                provider-id))
+  (if (= "CMR" provider-id)
+    (let [system-concept-response-map (for [concept-type [:tag :acl :access-group]]
+                                        (fetch-and-index-new-concepts
+                                         system {:provider-id "CMR"} concept-type date-time))
+          system-concept-count (reduce + (map :num-indexed system-concept-response-map))]
+      (info (format "Indexed %d system concepts." system-concept-count)))
+
+    (let [provider (helper/get-provider system provider-id)
+          provider-response-map (for [concept-type [:collection :granule]]
+                                  (fetch-and-index-new-concepts
+                                   system provider concept-type date-time))
+          provider-concept-count (reduce + (map :num-indexed provider-response-map))]
+      (info (format "Indexed %d provider concepts." provider-concept-count))))
+  (info (format "Indexing concepts with revision-date later than [%s] for provider [%s] completed."
+                date-time
+                provider-id)))
+
 (defn index-data-later-than-date-time
   "Index all concept revisions created later than or equal to the given date-time."
   [system date-time]
@@ -305,13 +328,6 @@
   [system]
   (info "Starting background task for monitoring bulk provider indexing channels.")
   (let [core-async-dispatcher (:core-async-dispatcher system)]
-    (let [channel (:data-index-channel core-async-dispatcher)]
-      (ca/thread (while true
-                   (try ; catch any errors and log them, but don't let the thread die
-                     (let [{:keys [date-time]} (<!! channel)]
-                       (index-data-later-than-date-time system date-time))
-                     (catch Throwable e
-                       (error e (.getMessage e)))))))
     (let [channel (:provider-index-channel core-async-dispatcher)]
       (ca/thread (while true
                    (try ; catch any errors and log them, but don't let the thread die
