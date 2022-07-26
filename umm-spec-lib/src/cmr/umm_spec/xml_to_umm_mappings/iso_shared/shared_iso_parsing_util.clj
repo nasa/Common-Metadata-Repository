@@ -72,7 +72,7 @@
                 {k v})
               (catch Exception e
                 (errors/throw-service-error
-                 :invalid-data (format (str "Error parsing the field %s with value %s") k v))))))))
+                 :invalid-data (format "Error parsing the field %s with value %s" k v))))))))
 
 (defn convert-iso-description-string-to-map
   "Convert Description string to a map, removing fields that are empty or nil.
