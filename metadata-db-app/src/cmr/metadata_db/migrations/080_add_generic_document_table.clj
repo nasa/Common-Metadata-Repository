@@ -38,7 +38,6 @@
   ;; Supports queries to find specific generic document matching a native id
   ;; and revision id within one provider
   (h/sql
-
    (str "CREATE INDEX generic_documents_native_id_rev
          ON METADATA_DB.cmr_generic_documents (provider_id, native_id, revision_id)")))
 

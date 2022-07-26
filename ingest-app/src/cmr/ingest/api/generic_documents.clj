@@ -8,7 +8,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
-   [cmr.common-app.config :as common-config]
+   [cmr.common.generics :as gconfig]
    [cmr.common-app.services.ingest.subscription-common :as sub-common]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
@@ -17,7 +17,6 @@
    [cmr.ingest.services.subscriptions-helper :as jobs]
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
    [cmr.transmit.search :as search]
@@ -27,19 +26,6 @@
   (:import
    [java.util UUID]))
 
-
-;; This is the list of approved generics with acceptable versions. These names
-;; must match what is found in resource directories with the generic name matching
-;; exactly containing a directory with the version number prefixed with 'v'. Each
-;; directory is expected to have a schema.json and an index.json file.
-(def approved-generics {:grid ["0.0.1"]
-                        :variable ["1.8.0"]})
-
-(defn approved-generic?
-  "Check to see if a requested generic is on the approved list"
-  [schema version]
-  (some #(= version %) (schema (common-config/approved-pipeline-documents))))
-
 (defn validate-json-against-schema
   "validate a document, returns an array of errors if there are problems
    Parameters:
@@ -47,7 +33,7 @@
    * schema version, the schema version number, without 'v'" 
   [schema version raw-json]
 
-  (if-not (approved-generic? schema version)
+  (if-not (gconfig/approved-generic? schema version)
     ["Schema not approved"]
     (if-some [schema-url (jio/resource (format "generics/%s/v%s/schema.json"
                                                (name schema)

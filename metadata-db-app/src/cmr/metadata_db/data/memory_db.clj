@@ -630,6 +630,7 @@
 
 (def generic-doc-store-behaviour
   {:generate-concept-id generate-concept-id
+   :get-concept-id get-concept-id
    :get-concept get-concept
    :get-concepts get-concepts
    :get-latest-concepts get-latest-concepts
@@ -667,4 +668,5 @@
   (save-concept db "PROV6" my-concept)
   ;; to view most recently saved concept
   (first @(:concepts-atom db))
+  (get-concept-id db :generic "PROV1" "Native-id-first-record-01")
   )

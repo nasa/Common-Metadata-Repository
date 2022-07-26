@@ -4,7 +4,7 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.string :as string]
-   [cmr.common-app.config :as common-config]
+   [cmr.common-app.config :as app-config]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -16,7 +16,6 @@
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
    [cmr.schema-validation.json-schema :as js-validater]
    [cmr.transmit.metadata-db :as meta-db]))
-
 
 ;; TODO: Generic work - move this to a location where index and ingest can find it
 (defn- validate-index-against-schema
@@ -88,7 +87,7 @@
    "
   []
   (reduce (fn [data gen-name]
-            (let [gen-ver (last (gen-name (common-config/approved-pipeline-documents)))
+            (let [gen-ver (last (gen-name (app-config/approved-pipeline-documents)))
                   index-definition-str (-> "schemas/%s/v%s/index.json"
                                        (format (name gen-name) gen-ver)
                                        (clojure.java.io/resource)
@@ -109,4 +108,4 @@
                   (error (format "Could not parse schema %s version %s." (name gen-name) gen-ver))
                   data))))
           {}
-          (keys (common-config/approved-pipeline-documents))))
+          (keys (app-config/approved-pipeline-documents))))
