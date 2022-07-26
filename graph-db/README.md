@@ -32,7 +32,7 @@ Apache TinkerPop™ is an open source, vendor-agnostic, graph computing framewor
 Gremlin Server provides a way to remotely execute Gremlin against one or more Graph instances hosted within it. We use the default Gremlin Server TinkerGraph db as our local development graph db. To start Gremlin Server, run:
 
 ```
-docker run -it -p 8182:8182 tinkerpop/gremlin-server
+docker run --rm -it -p 8182:8182 tinkerpop/gremlin-server
 ```
 
 If you want to load existing local data into Gremlin Server, you can add `-v <path_to_cmr_graph-db>/data:/data` to map a local directory with data to the docker instance. Replace the `<path_to_cmr_graphdb>` with the path to your local data directory.
