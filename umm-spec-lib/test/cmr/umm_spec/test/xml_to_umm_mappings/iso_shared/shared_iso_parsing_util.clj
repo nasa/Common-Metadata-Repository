@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util
   (:require
    [clojure.test :refer :all]
+   [cmr.common.test.test-util :as tu]
    [cmr.common.util :refer [are3]]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as util]))
 
@@ -83,6 +84,14 @@
       nil
       nil
       nil))
+
+  (testing "Testing the ability to handle parsing an invalid number"
+    (let [map {:Unit "Meters", :YDimension "10", :XDimension "NAN"}
+          number-key-list '(:XDimension :MinimumXDimension :MaximumXDimension :YDimension :MinimumYDimension :MaximumYDimension)]
+      (tu/assert-exception-thrown-with-errors
+       :invalid-data
+       ["Error parsing the field :XDimension with value NAN"]
+       (util/convert-select-values-from-string-to-number map number-key-list))))
 
   (testing "Parsing given string and converting it to a map where the key is a key and not a string.
             also converting any expected numbers to a number."
