@@ -10,7 +10,7 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.common.services.errors :as errors] 
+   [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.indexer.data.concepts.generic-util :as gen-util]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
