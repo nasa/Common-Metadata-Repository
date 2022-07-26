@@ -6,6 +6,7 @@
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.generics :as common-generic :refer [approved-generic?]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
@@ -1041,14 +1042,13 @@
        ;; The collection is not rebalancing so it's either in a separate index or small Collections
        [(get indexes (keyword coll-concept-id) small-collections-index-name)]))))
 
-
 (defn resolve-generic-concept-type
   "if the concept type is generic, figure out from the concept what the actual document type is"
   [concept-type concept]
   (if (= :generic concept-type)
     (let [reported-name (clojure.string/lower-case (get-in concept [:MetadataSpecification :Name]))
           reported-version (get-in concept [:MetadataSpecification :Version])
-          approved (cmr.ingest.api.generic-documents/approved-generic?
+          approved (approved-generic?
                     (keyword reported-name)
                     reported-version)]
       (when approved (keyword (format "generic-%s" reported-name))))
@@ -1114,7 +1114,7 @@
        ;; and return the index name for those
        (let [reported-type (clojure.string/lower-case (get-in concept [:MetadataSpecification :Name]))
               reported-version (get-in concept [:MetadataSpecification :Version])
-              approved (cmr.ingest.api.generic-documents/approved-generics reported-type reported-version)]
+              approved ((cfg/approved-pipeline-documents) reported-type reported-version)]
          (when approved
            (keyword (format "generic-%s" reported-type))
            (if all-revisions-index?
