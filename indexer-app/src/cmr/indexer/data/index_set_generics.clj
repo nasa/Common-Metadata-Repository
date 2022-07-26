@@ -4,7 +4,6 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.string :as string]
-   [cmr.common-app.config :as app-config]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]

@@ -3,7 +3,6 @@
   (:require
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
-   [cmr.common-app.config :as common-config]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
