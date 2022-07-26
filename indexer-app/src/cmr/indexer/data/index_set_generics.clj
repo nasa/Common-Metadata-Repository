@@ -4,13 +4,12 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.string :as string]
-   [cmr.common-app.config :as app-config]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.common.services.errors :as errors] 
+   [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.indexer.data.concepts.generic-util :as gen-util]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
@@ -87,7 +86,7 @@
    "
   []
   (reduce (fn [data gen-name]
-            (let [gen-ver (last (gen-name (app-config/approved-pipeline-documents)))
+            (let [gen-ver (last (gen-name (cfg/approved-pipeline-documents)))
                   index-definition-str (-> "schemas/%s/v%s/index.json"
                                        (format (name gen-name) gen-ver)
                                        (clojure.java.io/resource)
@@ -108,4 +107,4 @@
                   (error (format "Could not parse schema %s version %s." (name gen-name) gen-ver))
                   data))))
           {}
-          (keys (app-config/approved-pipeline-documents))))
+          (keys (cfg/approved-pipeline-documents))))
