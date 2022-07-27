@@ -1,21 +1,19 @@
 (ns cmr.metadata-db.data.oracle.generic-documents
   "Functions for saving, retrieving, deleting generic documents."
   (:require
-   [cheshire.core :as json]
-   [clojure.java.jdbc :as jdbc]
-   [clojure.pprint :refer [pprint pp]]
-   ;[cmr.common.log :refer [debug info warn error]]
-   [cmr.common.time-keeper :as tkeep]
-   [cmr.common.util :as cutil]
-   [cmr.metadata-db.data.oracle.sql-helper :as sh]
-   [cmr.metadata-db.data.generic-documents :as gdoc]
-   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc
-                                        delete as]]
-   [cmr.oracle.connection :as oracle]
-   [clj-time.coerce :as coerce]
-   [cmr.common.date-time-parser :as dtp]
-   [cmr.common.util :as cutil]
-   )
+  [clj-time.coerce :as coerce]
+  [cheshire.core :as json]
+  [clojure.java.jdbc :as jdbc]
+  [clojure.pprint :refer [pprint pp]]
+  [cmr.common.date-time-parser :as dtp]
+  [cmr.common.time-keeper :as tkeep]
+  [cmr.common.util :as cutil]
+  [cmr.common.util :as cutil]
+  [cmr.metadata-db.data.generic-documents :as gdoc]
+  [cmr.metadata-db.data.oracle.sql-helper :as sh]
+  [cmr.oracle.connection :as oracle]
+  [cmr.oracle.sql-utils :as su :refer [insert values select from where with
+                                       order-by desc delete as]])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -47,32 +45,6 @@
                           :user-id user_id
                           :transaction-id transaction_id}
                           :metadata (when metadata (json/parse-string (cutil/gzip-blob->string metadata) true))))
-
-
-;; TODO: Generic work - remove this after some testing with lucia, don't want to retype it
-;; if we decided to have this layer format like this (what will memory db do?)
-
-(defn- dbresult->genericdoc2
-  "Converts a map result from the database to a generic doc map"
-  [{:keys [id concept_id native_id provider_id document_name schema format
-           mime_type metadata revision_id revision_date created_at deleted
-           user_id transaction_id]} db]
-  (cutil/remove-nil-keys {:info {:id id
-                                 :concept-id concept_id
-                                 :native-id native_id
-                                 :provider-id provider_id
-                                 :document-name document_name
-                                 :schema schema
-                                 :format format ;; concepts convert this to mimetype in the get, but we already have mimetype
-                                 :mime-type mime_type
-                                 :revision-id (int revision_id)
-                                 :revision-date (oracle/oracle-timestamp->str-time db revision_date)
-                                 :created-at (when created_at
-                                               (oracle/oracle-timestamp->str-time db created_at))
-                                 :deleted (not= (int deleted) 0)
-                                 :user-id user_id
-                                 :transaction-id transaction_id}
-                          :metadata (when metadata (json/parse-string (cutil/gzip-blob->string metadata) true))}))
 
 (defn- find-record
   "Look up latest revision of record in the db table and return a map of the row"
@@ -152,7 +124,7 @@
         created-at (coerce/to-sql-time (dtp/parse-datetime (:created-at document)))
         revision-date (coerce/to-sql-time (dtp/parse-datetime (:revision-date document)))]
     (insert-record db
-                   (cutil/tee {:id (get-next-id-seq db)
+                   {:id (get-next-id-seq db)
                     :concept_id (:concept-id document)
                     :native_id (:native-id document)
                     :provider_id provider-id
@@ -166,7 +138,7 @@
                     :created_at created-at
                     :deleted (or (:deleted document) 0)
                     :user_id "place-holder"
-                    :transaction_id (get-next-transaction-id db)}))))
+                    :transaction_id (get-next-transaction-id db)})))
 
 (defn get-concepts
   "Return all the concepts for a given format"

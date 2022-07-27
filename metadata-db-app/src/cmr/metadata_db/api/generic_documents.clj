@@ -19,7 +19,6 @@
 (defn- update-generic-document
   "Update a Generic Document"
   [context params provider-id native-id body]
-  (println "here with native-id" native-id "about to do an update...")
   (let [result (gen-doc/update-generic-document context params provider-id native-id body)]
     {:status 204}))
 
