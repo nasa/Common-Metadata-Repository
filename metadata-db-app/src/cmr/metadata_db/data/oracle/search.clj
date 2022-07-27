@@ -3,6 +3,7 @@
   for retrieving concepts using parameters"
   (:require
    [clojure.java.jdbc :as j]
+   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as util]
@@ -40,7 +41,7 @@
    :variable (into common-columns [:provider_id :variable_name :measurement :user_id :fingerprint])
    :variable-association (into common-columns
                                [:associated_concept_id :associated_revision_id
-                                :variable_concept_id :user_id])
+                                :source_concept_identifier :user_id])
    :service-association (into common-columns
                               [:associated_concept_id :associated_revision_id
                                :service_concept_id :user_id])
@@ -184,6 +185,11 @@
   (let [provider-ids (map :provider-id providers)
         fields (disj (columns-for-find-concept concept-type params) :provider_id)
         params (params->sql-params concept-type providers (assoc params :provider-id provider-ids))
+        params (if (= :variable-association concept-type)
+                 (-> params
+                     (set/rename-keys {:variable-concept-id :source-concept-identifier})
+                     (assoc :association-type "VARIABLE-COLLECTION"))
+                 params)
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
     (j/with-db-transaction
       [conn db]

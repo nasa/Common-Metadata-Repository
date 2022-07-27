@@ -58,7 +58,7 @@
 
 (defmethod get-table-name :variable-association
   [_ _]
-  "cmr_variable_associations")
+  "cmr_associations")
 
 (defmethod get-table-name :service-association
   [_ _]
