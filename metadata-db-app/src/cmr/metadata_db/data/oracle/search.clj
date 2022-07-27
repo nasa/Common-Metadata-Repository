@@ -15,6 +15,13 @@
   (:import
    (cmr.oracle.connection OracleStore)))
 
+(def association-concept-type->generic-association
+  "Mapping of various association concept types to columns needed for migration to CMR_ASSOCIATIONS table."
+  {:service-association {:association_type "SERVICE-COLLECTION" :kebab-key-mapping {:service-concept-id :source-concept-identifier}}
+   :tag-association {:association_type "TAG-COLLECTION" :kebab-key-mapping {:tag-key :source-concept-identifier}}
+   :tool-association {:association_type "TOOL-COLLECTION" :kebab-key-mapping {:tool-concept-id :source-concept-identifier}}
+   :variable-association {:association_type "VARIABLE-COLLECTION" :kebab-key-mapping {:variable-concept-id :source-concept-identifier}}})
+
 (def common-columns
   "A set of common columns for all concept types."
   #{:native_id :concept_id :revision_date :metadata :deleted :revision_id :format :transaction_id})
@@ -187,8 +194,10 @@
         params (params->sql-params concept-type providers (assoc params :provider-id provider-ids))
         params (if (= :variable-association concept-type)
                  (-> params
-                     (set/rename-keys {:variable-concept-id :source-concept-identifier})
-                     (assoc :association-type "VARIABLE-COLLECTION"))
+                     (set/rename-keys
+                      (get-in association-concept-type->generic-association [concept-type :kebab-key-mapping]))
+                     (assoc :association-type
+                            (get-in association-concept-type->generic-association [concept-type :association_type])))
                  params)
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
     (j/with-db-transaction
