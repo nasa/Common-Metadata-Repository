@@ -1032,9 +1032,3 @@
     (if (or (empty? x) (last x))
       x
       (recur (drop-last x)))))
-
-(defn tee
-  "Like the unix tee command, copy an input to the console while allowing the
-  same output to be used in other calls."
-  [anything]
-  (println anything) anything)
