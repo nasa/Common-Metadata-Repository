@@ -3,6 +3,7 @@
   through an environment variable. Configuration items should be added using the defconfig macro."
   (:require
    [camel-snake-kebab.core :as csk]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.set :as set]
@@ -215,6 +216,15 @@
   {:default false
    :type Boolean})
 
+(defconfig approved-pipeline-documents
+  "This is the feature toggle for the new document pipeline prototype, as well as serving as
+   the base truth list of approved document types.
+   This string should contain JSON that looks like:
+   {'grid': ['0.0.1'],
+    'variable': ['1.8.0']}"
+  {:default ""
+   :parser #(json/parse-string % true)})
+
 (defn check-env-vars
   "Checks any environment variables starting with CMR_ are recognized as known environment variables.
   If any are unrecognized a warning message is logged. Usually this should be called at the start
@@ -236,9 +246,5 @@
          true)
        false))))
 
-(defconfig approved-pipeline-documents
-  "This string should contain JSON that looks like:
-   {'grid': ['0.0.1'],
-    'variable': ['1.8.0']}"
-  {:default ""
-   :parser #(json/parse-string % true)})
+(when (seq (approved-pipeline-documents))
+  (info "Prototype feature toggle detected"))
