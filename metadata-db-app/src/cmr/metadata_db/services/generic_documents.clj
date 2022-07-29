@@ -5,6 +5,7 @@
    [clj-time.coerce :as coerce]
    ;[cmr.common.concepts :as common-concepts]
    [cmr.common.date-time-parser :as dtp]
+   [cmr.common.log :as log :refer (debug info warn error trace)]
    [cmr.common.services.messages :as messages]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tkeeper]
@@ -50,8 +51,9 @@
   "Insert a document under the provided provider-id. Generate a concept ID for
    the new record, At this time, nothing prevents multiple copies of a record
    from being inserted, users must know what they are doing."
-  [context params provider-id raw-native-id document]
+  [context params provider-id raw-native-id document] 
   (let [db (mdb-util/context->db context)
+        document (if (map? document) (json/generate-string document) document)
         document-as-map (json/parse-string document true)
         native-id (or raw-native-id (.toString (java.util.UUID/randomUUID))) ;; can this stay?
         document-add (assoc document-as-map
@@ -84,6 +86,7 @@
    will be automaticly handled. Old revisions will not be deleted."
   [context params provider-id native-id document]
   (let [db (mdb-util/context->db context)
+        document (if (map? document) (json/generate-string document) document)
         document-map (json/parse-string document true)
         provider {:provider-id provider-id}
         concept-id (data/get-concept-id db :generic provider native-id)
