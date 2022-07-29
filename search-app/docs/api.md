@@ -5,7 +5,7 @@ Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CM
 
 ### ECHO-Token Deprecation Notice
 
-CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens and send them with the Authorization header. This document contains many mentions of ECHO-Tokens, which will soon be out of date. Instructions on how to generate an EDL token are [here](https://wiki.earthdata.nasa.gov/display/EL/How+to+Generate+a+User+Token)
+CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens and send them with the Authorization header. This document contains many mentions of ECHO-Tokens, which will soon be out of date. Instructions on how to generate an EDL token are [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token)
 
 ### Table of Contents
 
@@ -2268,7 +2268,7 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 #### <a name="c-has-granules-or-cwic"></a> Find collections with or without granules, or the collection with CWIC consortium.
 
-The `has_granules_or_cwic` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with CWIC consortium.  When false, will return any collections without granules.
+The `has_granules_or_cwic` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with CWIC consortium. When false, will return any collections without granules.
 
     curl "%CMR-ENDPOINT%/collections?has_granules_or_cwic=true"
 
@@ -2276,7 +2276,7 @@ The `has_granules_or_cwic` parameter can be set to "true" or "false". When true,
 
 #### <a name="c-has-granules-or-opensearch"></a> Find collections with or without granules, or the collection is tagged with the configured OpenSearch tag.
 
-The `has_granules_or_opensearch` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with any of the configured OpenSearch consortiums, which are CWIC,FEDEO,GEOSS,CEOS and EOSDIS.  When false, will return any collections without granules.
+The `has_granules_or_opensearch` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with any of the configured OpenSearch consortiums, which are CWIC,FEDEO,GEOSS,CEOS and EOSDIS. When false, will return any collections without granules.
 
     curl "%CMR-ENDPOINT%/collections?has_granules_or_opensearch=true"
 
@@ -2329,7 +2329,7 @@ One or more sort keys can be specified using the `sort_key[]` parameter. The ord
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
   * `has_granules_or_cwic` - Sorts collections by whether they have granules or CWIC consortium. Collections with granules or CWIC consortium are sorted before collections without granules or a CWIC consortium.
   * `usage_score` - Sorts collection by usage. The usage score comes from the EMS metrics, which are ingested into the CMR.
-  * `ongoing` - Sorts collection by fuzzy collection end-date in relation to ongoing-days configured. Any end-date after today, minus the configured ongoing-days (30 by default), is considered ongoing.  Any end-date before that is not ongoing.  
+  * `ongoing` - Sorts collection by fuzzy collection end-date in relation to ongoing-days configured. Any end-date after today, minus the configured ongoing-days (30 by default), is considered ongoing. Any end-date before that is not ongoing.  
 
 Examples of sorting by start_date in descending(Most recent data first) and ascending orders(Note: the `+` must be escaped with %2B):
 
@@ -2738,7 +2738,7 @@ User can only search granules by exactly one cycle value when there are passes p
 
 Passes is part of the track information of the granule as specified in [UMM-G Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule). Track information is used to allow a user to search for granules whose spatial extent is based on an orbital cycle, pass, and tile mapping. Cycles and passes must be positive integers, tiles are in the format of an integer followed by L, R or F. e.g. 2L.
 
-User can search granules by pass and tiles in a nested object called passes. Multiple passes can be specified via different indexes to search granules.  There must be one and only one cycle parameter value present in the search params when searching granules with passes. Each `passes` parameter must have one and only one `pass` value. Pass and tiles within a `passes` parameter are ANDed together. Multiple passes are ORed together by default, but can be AND together through the AND options, i.e. `options[passes][AND]=true`. The following example searches for granules with orbit track info that has cycle 1, tiles cover 1L or 2F within pass 1, or 3R within pass 2.
+User can search granules by pass and tiles in a nested object called passes. Multiple passes can be specified via different indexes to search granules. There must be one and only one cycle parameter value present in the search params when searching granules with passes. Each `passes` parameter must have one and only one `pass` value. Pass and tiles within a `passes` parameter are ANDed together. Multiple passes are ORed together by default, but can be AND together through the AND options, i.e. `options[passes][AND]=true`. The following example searches for granules with orbit track info that has cycle 1, tiles cover 1L or 2F within pass 1, or 3R within pass 2.
 
     curl -g "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&cycle[]=1&passes[0][pass]=1&passes[0][tiles]=1L,2F&passes[1][pass]=2&passes[1][tiles]=3R"
 
@@ -4967,7 +4967,7 @@ Subscription allows a user to register some query conditions in CMR and be notif
 - collection subscription for users to be notified when collections are created/updated.
 - granule subscription for users to be notified when granules are created/updated.
 
-Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription).  Subscriptions of type `granule` must supply a requisite CollectionConceptId, and subscriptions of type `collection` cannot have a CollectionConceptId field. There is a background job that processes the subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
+Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription). Subscriptions of type `granule` must supply a requisite CollectionConceptId, and subscriptions of type `collection` cannot have a CollectionConceptId field. There is a background job that processes the subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
 
 #### <a name="searching-for-subscriptions"></a> Searching for Subscriptions
 

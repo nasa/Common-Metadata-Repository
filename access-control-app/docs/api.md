@@ -47,11 +47,11 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 
 #### <a name="authorization-header"></a> Authorization Header
 
-All Access Control API operations require specifying a token obtained from Earthdata Login (EDL). The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token.  For more information on obtaining an EDL bearer token, please reference the documentation [here](https://wiki.earthdata.nasa.gov/display/EL/How+to+Generate+a+User+Token).
+All Access Control API operations require specifying a token obtained from [Earthdata Login (EDL)](https://urs.earthdata.nasa.gov). The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the documentation [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token).
 
 #### <a name="cmr-revision-id-header"></a> Cmr-Revision-Id Header
 
-The revision id header allows specifying the revision id to use when saving the concept.  It is optional for all acl update.  The update will be rejected when 1. the revision id specified is not an integer. 2. the revision id specified <= current revision id of the acl - a HTTP Status code of 409 will be returned indicating a conflict.
+The revision id header allows specifying the revision id to use when saving the concept. It is optional for all acl update. The update will be rejected when 1. the revision id specified is not an integer. 2. the revision id specified <= current revision id of the acl - a HTTP Status code of 409 will be returned indicating a conflict.
 
 ***
 
@@ -455,7 +455,7 @@ For system, provider, and single instance identities, the grantable permissions 
 
 ### <a name="search-acls"></a> Search ACLs
 
-ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`, or a POST to `%CMR-ENDPOINT%/acls/search`. A valid EDL bearer token is required to search ACLs.  If no token is supplied then guest permissions are used.
+ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`, or a POST to `%CMR-ENDPOINT%/acls/search`. A valid EDL bearer token is required to search ACLs. If no token is supplied then guest permissions are used.
 
 ##### ACL Search Parameters
 
@@ -485,7 +485,7 @@ The following parameters are supported when searching for ACLs.
   * Matches ACLs which have the given object identity target
 * target_id
   * options: none (case-sensitive)
-  * Matches single_instance ACLs through specified group target_id.  Only applies when the single_instance target is GROUP_MANAGEMENT
+  * Matches single_instance ACLs through specified group target_id. Only applies when the single_instance target is GROUP_MANAGEMENT
   * identity_type=single_instance parameter is required alongside this parameter
 * permitted_user
   * options: none (always case-insensitive)
