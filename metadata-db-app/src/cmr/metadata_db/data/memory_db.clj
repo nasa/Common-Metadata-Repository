@@ -311,7 +311,7 @@
 (defn generate-concept-id
   [db concept]
   (let [{:keys [concept-type provider-id]} concept
-        concept-sub-type (get concept "concept-sub-type")
+        concept-sub-type (get concept :concept-sub-type)
         num (swap! (:next-id-atom db) inc)]
     (if (some? concept-sub-type)
       (cc/build-generic-concept-id {:concept-type concept-sub-type

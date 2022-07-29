@@ -22,13 +22,14 @@
   ([conn provider-id]
    {:pre [conn provider-id]}
    (println "in concept ingest url")
-   (format "%s/generics/%s" (conn/root-url conn) (codec/url-encode provider-id)))
+   (format "%s/generics/%s/%s" (conn/root-url conn) (codec/url-encode provider-id) "nativeId"))
   ([conn provider-id concept-id]
    {:pre [conn concept-id]}
-   (format "%s/generics/%s/%s"
+   (format "%s/generics/%s/%s/%s"
            (conn/root-url conn)
            (codec/url-encode provider-id)
-           (codec/url-encode concept-id))))
+           (codec/url-encode concept-id)
+           "nativeId")))
 
 (defn- concept-ingest-url2
   "Generate a URL to the metadata db for posting to the generic APIs, but allow

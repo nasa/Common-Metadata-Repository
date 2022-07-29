@@ -92,7 +92,7 @@
   "create the next concept id using the count of records currently in the database"
   [db document]
   (let [{:keys [concept-type provider-id]} document
-        concept-sub-type (get document "concept-sub-type")
+        concept-sub-type (get document :concept-sub-type)
         raw-count (-> db
                       (jdbc/query ["SELECT count(DISTINCT concept_id) AS last FROM CMR_GENERIC_DOCUMENTS"])
                       first
