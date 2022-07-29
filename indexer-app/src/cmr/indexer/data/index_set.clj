@@ -991,7 +991,11 @@
       ;:generic (get-concept-mapping-fn :generic) ; trick some layers
       ; TODO: Generic work, automate this
       :generic-grid (get-concept-mapping-fn :generic-grid)
-      :generic-variable (get-concept-mapping-fn :generic-variable)})))
+      :generic-variable (get-concept-mapping-fn :generic-variable)
+      :generic-dataqualitysummary (get-concept-mapping-fn :generic-dataqualitysummary)
+      :generic-orderoption (get-concept-mapping-fn :generic-orderoption)
+      :generic-serviceoption (get-concept-mapping-fn :generic-serviceoption)
+      :generic-serviceentry (get-concept-mapping-fn :generic-serviceentry)})))
 
 (defn fetch-rebalancing-collection-info
   "Fetch rebalancing collections, their targets, and status."
