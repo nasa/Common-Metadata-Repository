@@ -6,6 +6,10 @@
 
   (generate-concept-id [db document] "")
 
+  (get-concept-id
+   [db concept-type provider native-id]
+   "Convert a native-id to a concept-id")
+
   (save-concept
     [db provider concept]
     "Saves a document and returns the document id. If the document already

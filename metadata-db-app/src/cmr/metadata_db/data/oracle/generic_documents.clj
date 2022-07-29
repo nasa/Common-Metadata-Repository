@@ -1,23 +1,19 @@
 (ns cmr.metadata-db.data.oracle.generic-documents
   "Functions for saving, retrieving, deleting generic documents."
   (:require
-   [cheshire.core :as json]
-   [clojure.java.jdbc :as jdbc]
-   [clojure.pprint :refer [pprint pp]]
-   ;[cmr.common.log :refer [debug info warn error]]
-   [cmr.common.time-keeper :as tkeep]
-   [cmr.common.util :as cutil]
-   ;[cmr.metadata-db.data.oracle.concepts :as concepts]
-   ;[cmr.metadata-db.data.oracle.concept-tables :as ct]
-   [cmr.metadata-db.data.oracle.sql-helper :as sh]
-   [cmr.metadata-db.data.generic-documents :as gdoc]
-   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc
-                                        delete as]]
-   [cmr.oracle.connection :as oracle]
-   [clj-time.coerce :as coerce]
-   [cmr.common.date-time-parser :as dtp]
-   ;[clojure.java.io :as io]
-   )
+  [clj-time.coerce :as coerce]
+  [cheshire.core :as json]
+  [clojure.java.jdbc :as jdbc]
+  [clojure.pprint :refer [pprint pp]]
+  [cmr.common.date-time-parser :as dtp]
+  [cmr.common.time-keeper :as tkeep]
+  [cmr.common.util :as cutil]
+  [cmr.common.util :as cutil]
+  [cmr.metadata-db.data.generic-documents :as gdoc]
+  [cmr.metadata-db.data.oracle.sql-helper :as sh]
+  [cmr.oracle.connection :as oracle]
+  [cmr.oracle.sql-utils :as su :refer [insert values select from where with
+                                       order-by desc delete as]])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -41,23 +37,23 @@
                           :schema schema
                           :format format ;; concepts convert this to mimetype in the get, but we already have mimetype
                           :mime-type mime_type
-                          :metadata (when metadata (cutil/gzip-blob->string metadata))
                           :revision-id (int revision_id)
                           :revision-date (oracle/oracle-timestamp->str-time db revision_date)
                           :created-at (when created_at
                                         (oracle/oracle-timestamp->str-time db created_at))
                           :deleted (not= (int deleted) 0)
                           :user-id user_id
-                          :transaction-id transaction_id}))
+                          :transaction-id transaction_id}
+                          :metadata (when metadata (json/parse-string (cutil/gzip-blob->string metadata) true))))
 
 (defn- find-record
   "Look up latest revision of record in the db table and return a map of the row"
-  [db provider-id doc-name]
+  [db provider-id native-id]
   (-> db
       (jdbc/query ["SELECT * 
                     FROM cmr_generic_documents 
-                    WHERE document_name = ? AND provider_id = ? 
-                    ORDER BY revision_id ASC" doc-name provider-id])
+                    WHERE native_id = ? AND provider_id = ? 
+                    ORDER BY revision_id ASC" native-id provider-id])
       last))
 
 (defn- get-next-id-seq
@@ -92,6 +88,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn generate-concept-id
+  "create the next concept id using the count of records currently in the database"
   [db document]
   (let [{:keys [concept-type provider-id]} document
         raw-count (-> db
@@ -101,37 +98,50 @@
         next (+ 1200000001 raw-count)]
     (format "X%s-%s" next provider-id)))
 
-;; WORKS 
+(defn get-concept-id
+  "Convert a native-id to a concept-id"
+  [db concept-type provider native-id]
+  ;; sql will return a map of the column name and value, strip the first value out
+  (-> db
+      (jdbc/query [(str "SELECT concept_id "
+                        "FROM cmr_generic_documents "
+                        "WHERE provider_id = ? AND native_id = ?")
+                   (:provider-id provider) native-id])
+      first
+      vals
+      first))
+
 (defn save-concept
   "Create the document in the database, try to pull as many values out of the
    document as can be found. All documents must have at least a :Name and a
    :MetadataSpecification field."
   [db provider-id document]
-  (let [rm-fields [:concept-id :concept-type :created-at :native-id :provider-id :revision-date :revision-id]
+  (let [rm-fields [:deleted :concept-id :concept-type :created-at :native-id :provider-id :revision-date :revision-id]
         metadata (json/generate-string (strip-fields document rm-fields))
-        metadata-spec (get document "MetadataSpecification")
-        schema (get metadata-spec "Name")
-        version (get metadata-spec "Version")
-        now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))
+        metadata-spec (get document :MetadataSpecification)
+        schema (get metadata-spec :Name)
+        version (get metadata-spec :Version)
         created-at (coerce/to-sql-time (dtp/parse-datetime (:created-at document)))
         revision-date (coerce/to-sql-time (dtp/parse-datetime (:revision-date document)))]
     (insert-record db
                    {:id (get-next-id-seq db)
                     :concept_id (:concept-id document)
+                    :native_id (:native-id document)
                     :provider_id provider-id
-                    :document_name (get document "Name")
-                    :schema (get metadata-spec "Name")
-                    :format (get metadata-spec "Name")
+                    :document_name (get document :Name)
+                    :schema schema
+                    :format schema
                     :mime_type (format "application/%s;version=%s" schema version)
                     :metadata (cutil/string->gzip-bytes metadata)
                     :revision_id (:revision-id document)
                     :revision_date revision-date
                     :created_at created-at
-                    :deleted 0
+                    :deleted (or (:deleted document) 0)
                     :user_id "place-holder"
                     :transaction_id (get-next-transaction-id db)})))
 
 (defn get-concepts
+  "Return all the concepts for a given format"
   [db concept-type provider concept-id-revision-id-tuples]
   (map #(dbresult->genericdoc % db)
        (jdbc/query db ["SELECT * FROM cmr_generic_documents WHERE format = ?" concept-type])))
@@ -142,52 +152,66 @@
 ;; 3. why is it called "concept-id-revision-id-tuples" - seems to be vector of just concept-ids??
 (defn get-latest-concepts
   [db concept-type provider concept-id-revision-id-tuples]
-  (jdbc/with-db-transaction [transaction db]
-                            (let [rows (jdbc/query transaction
-                                                   ["SELECT * FROM cmr_generic_documents 
-                                                WHERE concept_id = ? 
-                                                ORDER BY revision_id DESC"
-                                                    (first concept-id-revision-id-tuples)])]
-                              (map #(dbresult->genericdoc % transaction) rows)))) 
+  (jdbc/with-db-transaction
+   [transaction db]
+   (let [rows (jdbc/query transaction
+                          ["SELECT * FROM cmr_generic_documents
+                            WHERE concept_id = ?
+                            ORDER BY revision_id DESC"
+                           (first concept-id-revision-id-tuples)])]
+     (map #(dbresult->genericdoc % transaction) rows)))) 
 
-;; WORKS
 (defn get-concept
-  [db concept-type provider concept-id]
-  (jdbc/with-db-transaction [transaction db]
-                            (let [rows (jdbc/query transaction
-                                                   ["SELECT * 
-                                                     FROM cmr_generic_documents 
-                                                     WHERE concept_id = ?
-                                                     ORDER BY revision_id DESC"
-                                                    concept-id])]
-                              (dbresult->genericdoc (first rows) transaction))))
+  "Return either the lattest generic document or a specific revision"
+  ([db concept-type provider concept-id rev-id]
+      (jdbc/with-db-transaction
+        [transaction db]
+        (let [rows (jdbc/query transaction
+                               ["SELECT *
+                                 FROM cmr_generic_documents
+                                 WHERE concept_id = ? AND revision_id = ?"
+                                concept-id, rev-id])]
+          (dbresult->genericdoc (first rows) transaction))))
+  ([db concept-type provider concept-id]
+   (jdbc/with-db-transaction
+     [transaction db]
+     (let [rows (jdbc/query transaction
+                            ["SELECT *
+                              FROM cmr_generic_documents
+                              WHERE concept_id = ?
+                              ORDER BY revision_id DESC"
+                             concept-id])]
+       (dbresult->genericdoc (first rows) transaction)))))
 
-;; Remove this??
+;; Remove this?? API does not call it
 (defn update-document
   "Add a new revision of the document in the database, only if at least one previous
    revision is found."
-  [db document provider-id user-id doc-name schema]
-  (when-let [last-revision (find-record db provider-id doc-name)]
-    (let [parsed (json/parse-string document true)
-          version (get-in parsed [:MetadataSpecification :Version])
-          now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
-      (insert-record db 
-                    {:id (get-next-id-seq db)
-                     :concept_id (:concept_id last-revision)
-                     :provider_id provider-id
-                     :document_name doc-name
-                     :schema schema
-                     :format (identity schema)
-                     :mime_type (format "application/%s;version=%s" schema version)
-                     :metadata (cutil/string->gzip-bytes document)
-                     :revision_id (-> (:revision_id last-revision)
-                                      int
-                                      inc)
-                     :revision_date now
-                     :created_at (:created_at last-revision)
-                     :deleted 0
-                     :user_id user-id
-                     :transaction_id (get-next-transaction-id db)}))))
+  ([db document provider-id user-id native-id schema]
+   (update-document db document provider-id user-id native-id schema 0))
+  ([db document provider-id user-id native-id schema delete-it]
+   (when-let [last-doc-revision (find-record db provider-id native-id)]
+     (let [parsed (json/parse-string document true)
+           version (get-in parsed [:MetadataSpecification :Version])
+           now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
+       (insert-record db
+                      {:id (get-next-id-seq db)
+                       :concept_id (:concept_id last-doc-revision)
+                       :native_id (:native_id last-doc-revision)
+                       :provider_id provider-id
+                       :document_name (:name last-doc-revision)
+                       :schema schema
+                       :format (identity schema)
+                       :mime_type (format "application/%s;version=%s" schema version)
+                       :metadata (cutil/string->gzip-bytes document)
+                       :revision_id (-> (:revision_id last-doc-revision)
+                                        int
+                                        inc)
+                       :revision_date now
+                       :created_at (:created_at last-doc-revision)
+                       :deleted delete-it
+                       :user_id user-id
+                       :transaction_id (get-next-transaction-id db)})))))
 
 (defn force-delete
   [db concept-type provider concept-id revision-id])
@@ -197,6 +221,7 @@
 
 (def behaviour
   {:generate-concept-id generate-concept-id
+   :get-concept-id get-concept-id
    :save-concept save-concept
    :get-concept get-concept
    :get-concepts get-concepts

@@ -52,7 +52,7 @@
    * failed validation rules (external) (pending)
    * Document name not unique"
    (let [{:keys [body route-params request-context]} request
-         ; add token check
+         ; TODO: Generic work - add token check
          provider-id (:provider-id route-params)
          raw-document (slurp (:body request))
          document (json/parse-string raw-document true)
@@ -78,7 +78,7 @@
 
  (defn update-generic-document [request]
    (let [{:keys [body :route-params request-context]} request
-         ;; TODO: Generic work - add token check
+         ; TODO: Generic work - add token check
          provider-id (:provider-id route-params)
          concept-id (:concept-id route-params)
          raw-document (slurp (:body request))
