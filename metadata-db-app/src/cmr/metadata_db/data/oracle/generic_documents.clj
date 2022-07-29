@@ -1,19 +1,19 @@
 (ns cmr.metadata-db.data.oracle.generic-documents
   "Functions for saving, retrieving, deleting generic documents."
   (:require
-  [clj-time.coerce :as coerce]
-  [cheshire.core :as json]
-  [clojure.java.jdbc :as jdbc]
-  [clojure.pprint :refer [pprint pp]]
-  [cmr.common.date-time-parser :as dtp]
-  [cmr.common.time-keeper :as tkeep]
-  [cmr.common.util :as cutil]
-  [cmr.common.util :as cutil]
-  [cmr.metadata-db.data.generic-documents :as gdoc]
-  [cmr.metadata-db.data.oracle.sql-helper :as sh]
-  [cmr.oracle.connection :as oracle]
-  [cmr.oracle.sql-utils :as su :refer [insert values select from where with
-                                       order-by desc delete as]])
+   [cheshire.core :as json]
+   [clj-time.coerce :as coerce]
+   [clojure.java.jdbc :as jdbc]
+   [clojure.pprint :refer [pprint pp]]
+   [cmr.common.concepts :as common-concepts]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.time-keeper :as tkeep]
+   [cmr.common.util :as cutil]
+   [cmr.metadata-db.data.generic-documents :as gdoc]
+   [cmr.metadata-db.data.oracle.sql-helper :as sh]
+   [cmr.oracle.connection :as oracle]
+   [cmr.oracle.sql-utils :as su :refer [insert values select from where with
+                                        order-by desc delete as]])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -86,17 +86,25 @@
   (apply dissoc document fields-vec))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; TODO: Generic work: shouldn't we use the same number generator as cmr.metadata-db.data.oracle.concepts/ generate-concept-id
+;; seq-num (:nextval (first (su/query db ["SELECT concept_id_seq.NEXTVAL FROM DUAL"])))
 (defn generate-concept-id
   "create the next concept id using the count of records currently in the database"
   [db document]
   (let [{:keys [concept-type provider-id]} document
+        concept-sub-type (get document "concept-sub-type")
         raw-count (-> db
                       (jdbc/query ["SELECT count(DISTINCT concept_id) AS last FROM CMR_GENERIC_DOCUMENTS"])
                       first
                       :last)
         next (+ 1200000001 raw-count)]
-    (format "X%s-%s" next provider-id)))
+    (if (some? concept-sub-type)
+      (common-concepts/build-generic-concept-id {:concept-type concept-sub-type
+                                                 :provider-id provider-id
+                                                 :sequence-number (biginteger next)})
+      (common-concepts/build-concept-id {:concept-type concept-type
+                                         :provider-id provider-id
+                                         :sequence-number (biginteger next)}))))
 
 (defn get-concept-id
   "Convert a native-id to a concept-id"

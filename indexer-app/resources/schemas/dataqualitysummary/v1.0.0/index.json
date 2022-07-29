@@ -1,0 +1,17 @@
+{
+    "MetadataSpecification": {
+        "URL": "https://cdn.earthdata.nasa.gov/generics/dataqualitysummary/v1.0.0",
+        "Name": "DataQuailtySummary",
+        "Version": "1.0.0"
+    },
+    "SubConceptType": "DQS",
+    "Indexes":
+    [
+      {
+        "Description": "Name",
+        "Field": ".Name",
+        "Name": "Name",
+        "Mapping": "string"
+      }
+    ]
+  }

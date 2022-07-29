@@ -11,8 +11,9 @@
    [cmr.common.time-keeper :as tkeeper]
    [cmr.common.util :as cutil]
    [cmr.metadata-db.services.messages :as msg]
-   [cmr.metadata-db.services.util :as mdb-util]
-   [cmr.metadata-db.data.generic-documents :as data]))
+   [cmr.metadata-db.data.generic-documents :as data]
+   [cmr.metadata-db.data.ingest-events :as ingest-events]
+   [cmr.metadata-db.services.util :as mdb-util]))
 
 (defn- assoc-these-from
   "Creates a new map from a given map where only the fields listed in items are included"
@@ -47,6 +48,21 @@
   ([error-id error-messsage extra]
    (merge {:error error-id :error-message error-messsage} extra)))
 
+;; TODO: Generic work: We need to be able to handle multiple revisions - right now every revision is 1 
+;; and we create a new document, instead of not letting them. - or maybe that is the design difference ;; between POST and PUT.
+;(defn- set-or-generate-revision-id
+;  "Get the next available revision id from the DB for the given concept or
+;  one if the concept has never been saved."
+;  [db provider concept & previous-revision]
+;  (if (:revision-id concept)
+;    concept
+;    (let [{:keys [concept-id concept-type provider-id]} concept
+;          previous-revision (first previous-revision)
+;          existing-revision-id (:revision-id (or previous-revision
+;                                                 (c/get-concept db concept-type provider concept-id)))
+;          revision-id (if existing-revision-id (inc existing-revision-id) 1)]
+;      (assoc concept :revision-id revision-id))))
+
 (defn insert-generic-document
   "Insert a document under the provided provider-id. Generate a concept ID for
    the new record, At this time, nothing prevents multiple copies of a record
@@ -56,17 +72,25 @@
         document (if (map? document) (json/generate-string document) document)
         document-as-map (json/parse-string document true)
         native-id (or raw-native-id (.toString (java.util.UUID/randomUUID))) ;; can this stay?
+        ;; I am now passing it in as edn;(json/parse-string document)
         document-add (assoc document-as-map
                             :provider-id (str provider-id)
                             :concept-type :generic
+                            ;; TODO: Generic work: Can't hard code the revision-id - or is this
+                            ;; because POST and PUT call different funtions.
                             :revision-id 1
                             :created-at (str (tkeeper/now))
                             :revision-date (dtp/clj-time->date-time-str (tkeeper/now))
                             :native-id native-id)
         concept-id (data/generate-concept-id db document-add)
-        metadata (assoc document-add :concept-id concept-id)
+        metadata (dissoc document-add "concept-sub-type")
+        metadata (assoc metadata :concept-id concept-id)
         _ (data/save-concept db provider-id metadata)
+        ;; TODO: Generic work: I think this is going to cause a race condition! We should return the actual thing that was saved and not get it back.
         saved (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))]
+    (ingest-events/publish-event
+      context
+      (ingest-events/concept-update-event metadata))
     (raw-generic->response saved)))
 
 (defn read-generic-document
@@ -104,6 +128,9 @@
                      :created-at orig-create-date)
         _ (data/save-concept db provider-id metadata)
         updated (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))]
+    (ingest-events/publish-event
+     context
+     (ingest-events/concept-update-event metadata))
     updated))
 
 (defn delete-generic-document
