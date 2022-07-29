@@ -22,6 +22,12 @@
         (GET "/"
              {ctx :request-context}
              (pages/home ctx))
+        (GET "/csw"
+             {ctx :request-context}
+             (pages/csw-retirement ctx))
+        (GET "/csw/*"
+             {ctx :request-context}
+             (pages/csw-retirement ctx))
         (GET "/sitemap.xml"
              {ctx :request-context params :params}
              (content-service/retrieve-page ctx params "/sitemap.xml"))

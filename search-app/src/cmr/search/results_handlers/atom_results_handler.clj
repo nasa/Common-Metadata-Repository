@@ -66,6 +66,7 @@
                      "has-transforms"
                      "has-spatial-subsetting"
                      "has-temporal-subsetting"
+                     "cloud-hosted"
                      "platforms"
                      "consortiums"
                      "service-features-gzip-b64"
@@ -164,6 +165,7 @@
           has-transforms :has-transforms
           has-spatial-subsetting :has-spatial-subsetting
           has-temporal-subsetting :has-temporal-subsetting
+          cloud-hosted :cloud-hosted
           platforms :platforms
           consortiums :consortium
           service-features-gzip-b64 :service-features-gzip-b64
@@ -218,6 +220,7 @@
             :has-transforms has-transforms
             :has-spatial-subsetting has-spatial-subsetting
             :has-temporal-subsetting has-temporal-subsetting
+            :cloud-hosted cloud-hosted
             :service-features (gzip-b64-str->service-features service-features-gzip-b64)
             :associations (some-> associations-gzip-b64
                                   util/gzip-base64->string
@@ -462,7 +465,7 @@
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters organizations tags has-variables has-formats has-transforms
-                has-spatial-subsetting has-temporal-subsetting consortiums]} reference
+                has-spatial-subsetting has-temporal-subsetting cloud-hosted consortiums]} reference
         granule-count (get granule-counts-map id 0)]
     (x/element :entry {}
                (x/element :id {} id)
@@ -498,6 +501,7 @@
                (x/element :echo:hasTransforms {} has-transforms)
                (x/element :echo:hasSpatialSubsetting {} has-spatial-subsetting)
                (x/element :echo:hasTemporalSubsetting {} has-temporal-subsetting)
+               (x/element :echo:cloudHosted {} cloud-hosted)
                (when score (x/element :relevance:score {} score))
                (map tag->xml-element tags))))
 

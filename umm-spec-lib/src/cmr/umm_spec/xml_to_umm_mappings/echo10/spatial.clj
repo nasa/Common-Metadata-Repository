@@ -108,11 +108,27 @@
      :HorizontalSpatialDomain      (parse-horizontal-spatial-domain doc)
      :VerticalSpatialDomains       (spatial-conversion/convert-vertical-spatial-domains-from-xml
                                     (select spatial "VerticalSpatialDomain"))
-     :OrbitParameters              (fields-from (first (select spatial "OrbitParameters"))
-                                                :SwathWidth
-                                                :Period
-                                                :InclinationAngle
-                                                :NumberOfOrbits
-                                                :StartCircularLatitude)}
+     :OrbitParameters              (as->(fields-from (first (select spatial "OrbitParameters"))
+                                                     :SwathWidth
+                                                     :Period
+                                                     :InclinationAngle
+                                                     :NumberOfOrbits
+                                                     :StartCircularLatitude) op
+                                        ;; Add assumed units for the corresponding fields.
+                                        ;; Replace :Period with :OrbitPeriod.
+                                        (if (:SwathWidth op) 
+                                          (assoc op :SwathWidthUnit "Kilometer")
+                                          op)
+                                        (if (:Period op) 
+                                          (assoc op :OrbitPeriod (:Period op)
+                                                    :OrbitPeriodUnit "Decimal Minute")
+                                          op)
+                                        (if (:InclinationAngle op)
+                                          (assoc op :InclinationAngleUnit "Degree")
+                                          op)
+                                        (if (:StartCircularLatitude op)
+                                          (assoc op :StartCircularLatitudeUnit "Degree")
+                                          op)
+                                        (dissoc op :Period))}
     (when sanitize?
       u/not-provided-spatial-extent)))

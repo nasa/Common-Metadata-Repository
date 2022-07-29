@@ -96,15 +96,15 @@
   [base-url query-params field-name some-term-applied?]
   (fn [[term count]]
     (let [links (if some-term-applied?
-                    (lh/create-link base-url query-params field-name term)
-                    (lh/create-apply-link base-url query-params field-name term))]
-     (merge sorted-facet-map
-            {:title term
-             :type :filter
-             :applied (= :remove (first (keys links)))
-             :links links
-             :count count
-             :has_children false}))))
+                  (lh/create-link base-url query-params field-name term)
+                  (lh/create-apply-link base-url query-params field-name term))]
+      (merge sorted-facet-map
+             {:title term
+              :type :filter
+              :applied (= :remove (first (keys links)))
+              :links links
+              :count count
+              :has_children false}))))
 
 (defn- any-facet-applied?
   "Returns true if any of the facets have an applied value of true, false otherwise."

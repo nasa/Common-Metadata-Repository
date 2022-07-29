@@ -257,6 +257,7 @@
   {:name cpv/string-param-options
    :subscription-name cpv/string-param-options
    :subscriber-id cpv/string-param-options
+   :type cpv/string-param-options
    :collection-concept-id cpv/string-param-options
    :native-id cpv/string-param-options
    :provider cpv/string-param-options})
@@ -634,7 +635,7 @@
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
                                          :include-has-granules :has-granules :hierarchical-facets
                                          :include-highlights :all-revisions :has-opendap-url
-                                         :simplify-shapefile :cloud-hosted])]
+                                         :simplify-shapefile :cloud-hosted :standard-product])]
     (mapcat
       (fn [[param value]]
         (when-not (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))

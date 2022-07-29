@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.12-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.13-SNAPSHOT"
   :description "A CMR connector service that provides an inter-service API"
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {:name "Apache License, Version 2.0"
@@ -26,20 +26,22 @@
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
                  [com.fasterxml.jackson.core/jackson-core "2.12.1"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.12.1"
+                  :exclusions [com.fasterxml.jackson.core/jackson-databind]]
+                 [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]
                  [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
-                 [gov.nasa.earthdata/cmr-authz "0.1.2"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.3.1-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-exchange-query "0.3.2-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-http-kit "0.2.0-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-jar-plugin "0.1.0"]
-                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.7-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-authz "0.1.3"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
+                 [gov.nasa.earthdata/cmr-exchange-query "0.3.3-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-http-kit "0.2.0"]
+                 [gov.nasa.earthdata/cmr-jar-plugin "0.1.2"]
+                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.8-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
-                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.7-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.8-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
-                 [gov.nasa.earthdata/cmr-sizing-plugin "0.3.4-SNAPSHOT"]
-                 [http-kit "2.3.0"]
+                 [gov.nasa.earthdata/cmr-sizing-plugin "0.3.5-SNAPSHOT"]
+                 [http-kit "2.5.3"]
                  [markdown-clj "1.10.0"]
                  [metosin/reitit-core "0.3.9"]
                  [metosin/reitit-ring "0.3.9"]
@@ -50,14 +52,14 @@
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
-                 [org.geotools/gt-geometry "24.5"]
-                 [org.geotools/gt-referencing "24.5"]
+                 [org.geotools/gt-geometry "24.6"]
+                 [org.geotools/gt-referencing "24.6"]
                  [ring/ring-core "1.7.1"]
                  [ring/ring-codec "1.1.2"]
                  [ring/ring-defaults "0.3.2"]
                  [selmer "1.12.12"]
                  [tolitius/xml-in "0.1.0"]]
-  :repositories [["osgeo" "https://repo.osgeo.org/repository/release/"]]
+  :repositories [["geo" "https://repo.osgeo.org/repository/release/"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
              "-Xms2g"
              "-Xmx2g"]
@@ -88,13 +90,14 @@
              :dev {:dependencies [[debugger "0.2.1"]]
                    :repl-options {:init-ns cmr.opendap.dev
                                   :prompt ~get-prompt
+                                  :timeout 120000
                                   :init ~(println (get-banner))}}
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
                     :plugins [[jonase/eastwood "0.3.5"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.2"]
-                              [lein-kibit "0.1.6"]
+                              [lein-kibit "0.1.8"]
                               [venantius/yagni "0.1.7"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]

@@ -21,7 +21,7 @@
              :test {:plugins [[lein-ancient "0.6.15"]
                               [jonase/eastwood "0.2.5"]
                               [lein-bikeshed "0.5.0"]
-                              [lein-kibit "0.1.6"]
+                              [lein-kibit "0.1.8"]
                               [venantius/yagni "0.1.4"]]}}
   :aliases {"ubercompile" ["with-profile" "+ubercompile" "compile"]
             "check-deps" ["with-profile" "+test" "ancient" "check" ":all"]

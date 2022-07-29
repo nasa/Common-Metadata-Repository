@@ -55,28 +55,12 @@
   [permission]
   (contains? (set schema/valid-permissions) (str/lower-case permission)))
 
-(defn valid-permitted-group?
-  "Returns true if the given permitted group is valid, i.e. guest, registered or conforms to
-  access group id format."
-  [group]
-  (or (.equalsIgnoreCase "guest" group)
-      (.equalsIgnoreCase "registered" group)
-      (some? (re-find #"[Aa][Gg]\d+-.+" group))))
-
 (defn- permitted-concept-id-validation
   "Validates permitted concept id parameter"
   [context params]
   (when-let [permitted-concept-id (:permitted-concept-id params)]
     (when-not (re-matches #"(C|G)\d+-[A-Za-z0-9_]+" permitted-concept-id)
       [(format "Must be collection or granule concept id.")])))
-
-(defn- permitted-group-validation
-  "Validates permitted group parameters."
-  [context params]
-  (let [permitted-groups (util/seqify (:permitted-group params))]
-    (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
-      [(format "Parameter permitted_group has invalid values [%s]. Only 'guest', 'registered' or a group concept id can be specified."
-               (str/join ", " invalid-groups))])))
 
 (defn- group-permission-parameter-index-validation
   "Validates that the indices used in group permission parameters are valid numerical indices."
@@ -99,17 +83,6 @@
                          "Only 'permitted_group' and 'permission' are allowed.")
                     (csk/->snake_case (name subfield)))))
         (mapcat keys (vals (:group-permission params)))))
-
-(defn- group-permission-permitted-group-validation
-  "Validates permitted group subfield of group-permission parameters."
-  [params]
-  (let [permitted-groups (->> (:group-permission params)
-                              vals
-                              (keep :permitted-group))]
-    (when-let [invalid-groups (seq (remove valid-permitted-group? permitted-groups))]
-      [(format (str "Sub-parameter permitted_group of parameter group_permissions has invalid values [%s]. "
-                    "Only 'guest', 'registered' or a group concept id may be specified.")
-               (str/join ", " invalid-groups))])))
 
 (defn- group-permission-permission-validation
   "Validates that the permission subfield of group-permission parameters is one of the permitted values."
@@ -134,7 +107,6 @@
   [context params]
   (concat (group-permission-parameter-index-validation params)
           (group-permission-parameter-subfield-validation params)
-          (group-permission-permitted-group-validation params)
           (group-permission-permission-validation params)))
 
 (def acl-identity-type->search-value
@@ -275,7 +247,6 @@
      :acl safe-params
      (concat cpv/common-validations
              [permitted-concept-id-validation
-              permitted-group-validation
               identity-type-validation
               group-permission-validation
               target-id-validation

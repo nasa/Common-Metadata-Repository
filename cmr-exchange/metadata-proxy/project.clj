@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.2.7-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-metadata-proxy "0.2.8-SNAPSHOT"
   :description ~(str "A library that provides convenience functions for "
                      "accessing and locally caching CMR metadata (granules, "
                      "collections, variables, services, etc.)")
@@ -27,10 +27,10 @@
                  [clojusc/twig "0.4.1"]
                  [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
-                 [gov.nasa.earthdata/cmr-authz "0.1.2"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.3.1-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-exchange-query "0.3.2-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-http-kit "0.1.5"]
+                 [gov.nasa.earthdata/cmr-authz "0.1.3"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
+                 [gov.nasa.earthdata/cmr-exchange-query "0.3.3-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-http-kit "0.2.0"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
                  [metosin/ring-http-response "0.9.1"]
                  [org.clojure/clojure "1.10.0"]
@@ -74,7 +74,7 @@
                     :plugins [[jonase/eastwood "0.3.5"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.2"]
-                              [lein-kibit "0.1.6"]]}
+                              [lein-kibit "0.1.8"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
                               [test2junit "1.4.2"]]

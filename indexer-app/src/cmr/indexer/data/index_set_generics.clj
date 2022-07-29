@@ -13,10 +13,8 @@
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.indexer.data.concepts.generic-util :as gen-util]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
-   [cmr.ingest.api.generic-documents :as ingest-generic]
    [cmr.schema-validation.json-schema :as js-validater]
    [cmr.transmit.metadata-db :as meta-db]))
-
 
 ;; TODO: Generic work - move this to a location where index and ingest can find it
 (defn- validate-index-against-schema
@@ -90,7 +88,7 @@
    "
   []
   (reduce (fn [data gen-name]
-            (let [gen-ver (last (gen-name ingest-generic/approved-generics))
+            (let [gen-ver (last (gen-name (cfg/approved-pipeline-documents)))
                   index-definition-str (-> "schemas/%s/v%s/index.json"
                                        (format (name gen-name) gen-ver)
                                        (clojure.java.io/resource)
@@ -113,4 +111,4 @@
                   (error (format "Could not parse schema %s version %s." (name gen-name) gen-ver))
                   data))))
           {}
-          (keys ingest-generic/approved-generics)))
+          (keys (cfg/approved-pipeline-documents))))

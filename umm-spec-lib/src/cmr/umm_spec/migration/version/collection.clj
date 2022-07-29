@@ -4,8 +4,9 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kf]
-   [cmr.common.util :as util :refer [update-in-each]]
+   [cmr.common.util :as util :refer [update-in-each remove-nil-keys]]
    [cmr.umm-spec.location-keywords :as lk]
+   [cmr.umm-spec.metadata-specification :as m-spec]
    [cmr.umm-spec.migration.collection-progress-migration :as coll-progress-migration]
    [cmr.umm-spec.migration.contact-information-migration :as ci]
    [cmr.umm-spec.migration.distance-units-migration :as distance-units-migration]
@@ -41,6 +42,32 @@
    "tiff" "tiff"
    "geotiff" "geotiff"
    "kml" "kml"})
+
+(def kms-mimetype-to-umm-c-enum-mapping
+  "Mapping from KMS mime-type values to enum list of values
+  for RelatedUrls/GetData/MimeType in UMM-C 1.17.0 schema. For those values that don't exist in
+  this mapping, they will be mapped to nil and removed."
+  {"application/json" "application/json"
+   "application/xml" "application/xml"
+   "application/x-netcdf" "application/x-netcdf"
+   "application/gml+xml" "application/gml+xml"
+   "application/opensearchdescription+xml" "application/opensearchdescription+xml"
+   "application/vnd.google-earth.kml+xml" "application/vnd.google-earth.kml+xml"
+   "image/gif" "image/gif"
+   "image/tiff" "image/tiff"
+   "image/bmp" "image/bmp"
+   "text/csv" "text/csv"
+   "text/xml" "text/xml"
+   "application/pdf" "application/pdf"
+   "application/x-hdf" "application/x-hdf"
+   "application/x-hdf5" "application/xhdf5"
+   "application/octet-stream" "application/octet-stream"
+   "application/vnd.google-earth.kmz" "application/vnd.google-earth.kmz"
+   "image/jpeg" "image/jpeg"
+   "image/png" "image/png"
+   "image/vnd.collada+xml" "image/vnd.collada+xml"
+   "text/html" "text/html"
+   "text/plain" "text/plain"})
 
 (def not-provided-organization
   "Place holder to use when an organization is not provided."
@@ -115,6 +142,84 @@
                                   (string/lower-case %)
                                   "Not provided"))
     getdata))
+
+(defn- migrate-mimetype-up
+  "Migrate 'application/xhdf5' to 'application/x-hdf5' and
+  remove MimeType from element whose value is 'Not provided'"
+  [element]
+  (if (:MimeType element)
+    (-> element
+        (update :MimeType #(get (set/map-invert kms-mimetype-to-umm-c-enum-mapping) %))
+        (remove-nil-keys))
+    element))
+
+(defn- migrate-mimetype-down
+  "Migrate 'application/x-hdf5' to 'application/xhdf5' and
+  remove MimeType from element whose values don't exist in URLMimeTypeEnum."
+  [element]
+  (if (:MimeType element)
+    (-> element
+        (update :MimeType #(get kms-mimetype-to-umm-c-enum-mapping %))
+        (remove-nil-keys))
+    element))
+
+(defn- migrate-OrbitParameters-up
+  "Add in the assumed units. The Period element needs to be changed to OrbitPeriod.
+  There are four units added in 1.17.0. Three of them are associated with the required
+  fields in 1.16.7. StartCircularLatitudeUnit is added only if StartCircularLatitude
+  exists."
+  [collection]
+  (if-let [orbit-period (get-in collection [:SpatialExtent :OrbitParameters :Period])]
+    (let [StartCircularLatitude (get-in collection [:SpatialExtent :OrbitParameters :StartCircularLatitude])
+          collection (-> collection
+                         (update-in [:SpatialExtent :OrbitParameters] dissoc :Period)
+                         (update-in [:SpatialExtent :OrbitParameters] assoc :SwathWidthUnit "Kilometer"
+                                    :OrbitPeriodUnit "Decimal Minute"
+                                    :InclinationAngleUnit "Degree"
+                                    :OrbitPeriod orbit-period))]
+      (if StartCircularLatitude
+        (assoc-in collection [:SpatialExtent :OrbitParameters :StartCircularLatitudeUnit] "Degree")
+        collection))
+    collection))
+
+(defn- get-largest-footprint-in-kilometer
+  "Convert all foot-prints to Kilometer, return the largest value."
+  [foot-prints]
+  (let [foot-prints-in-kilometer (map #(if (= "Meter" (:FootprintUnit %))
+                                         (double (/ (:Footprint %) 1000))
+                                         (:Footprint %))
+                                      foot-prints)]
+    (when (seq foot-prints)
+      (apply max foot-prints-in-kilometer))))
+
+(defn get-swath-width
+  "Get the correct value for collection's SwathWidth in v1.16.7 from v1.17.0.
+  If SwathWidth exists in v1.17.0, convert it to the value in Kilometer.
+  Otherwise, convert all Footprints to Kilometer, get the largest value and use it
+  for SwathWidth."
+  [collection]
+  (let [swath-width-unit (get-in collection [:SpatialExtent :OrbitParameters :SwathWidthUnit])
+        swath-width (get-in collection [:SpatialExtent :OrbitParameters :SwathWidth])
+        swath-width (if (and swath-width (= "Meter" swath-width-unit))
+                      (double (/ swath-width 1000))
+                      swath-width)]
+    (if swath-width
+      swath-width
+      ;; if SwathWidth doesn't exist, Footprints is required.
+      (get-largest-footprint-in-kilometer (get-in collection [:SpatialExtent :OrbitParameters :Footprints])))))
+
+(defn- migrate-OrbitParameters-down
+  "Remove Footprints element; rename OrbitPeriod to Period; remove all the units;
+  convert SwathWidth to the value in assumed unit; If SwathWidth doesn't exist,
+  convert largest Footprint to SwathWidth."
+  [collection]
+  (if-let [period (get-in collection [:SpatialExtent :OrbitParameters :OrbitPeriod])]
+    (let [swath-width (get-swath-width collection)]
+      (-> collection
+          (update-in [:SpatialExtent :OrbitParameters] dissoc :Footprints :OrbitPeriod :SwathWidthUnit :OrbitPeriodUnit
+                                                              :InclinationAngleUnit :StartCircularLatitudeUnit)
+          (update-in [:SpatialExtent :OrbitParameters] assoc :SwathWidth swath-width :Period period)))
+    collection))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collection Migration Implementations
@@ -488,3 +593,53 @@
     (if (or (= "LOW_LATENCY" CollectionDataType) (= "EXPEDITED" CollectionDataType))
       (assoc collection :CollectionDataType "NEAR_REAL_TIME")
       collection)))
+
+(defmethod interface/migrate-umm-version [:collection "1.16.7" "1.17.0"]
+  [context collection & _]
+  ;; MetadataSpecification - add in the field and the proper enumeration values.
+  ;; OrbitParameters - add in the assumed units. The Period element needs to be changed to OrbitPeriod.
+  (-> collection
+      (m-spec/update-version :collection "1.17.0")
+      (migrate-OrbitParameters-up)))
+
+(defmethod interface/migrate-umm-version [:collection "1.17.0" "1.16.7"]
+  [context collection & _]
+  ;; Remove MetadataSpecification and StandardProduct.
+  ;; OrbitParameters - remove Footprints element; rename OrbitPeriod to Period;
+  ;;                   remove all the units; convert SwathWidth to the value in assumed unit;
+  ;;                   if SwathWidth doesn't exist, convert largest Footprint to SwathWidth.
+  (-> collection
+      (dissoc :MetadataSpecification :StandardProduct)
+      (migrate-OrbitParameters-down)))
+
+(defmethod interface/migrate-umm-version [:collection "1.17.0" "1.17.1"]
+  [context collection & _]
+  ;; Migrate "application/xhdf5" to "application/x-hdf5" and
+  ;; remove the MimeType with value of "Not provided".
+  (-> collection
+      (m-spec/update-version :collection "1.17.1")
+      (util/update-in-all [:RelatedUrls :GetData] migrate-mimetype-up)
+      (util/update-in-all [:DataCenters :ContactInformation :RelatedUrls :GetData] migrate-mimetype-up)
+      (util/update-in-all [:DataCenters :ContactPersons :ContactInformation :RelatedUrls :GetData] migrate-mimetype-up)
+      (util/update-in-all [:DataCenters :ContactGroups :ContactInformation :RelatedUrls :GetData] migrate-mimetype-up)
+      (util/update-in-all [:ContactPersons :ContactInformation :RelatedUrls :GetData] migrate-mimetype-up)
+      (util/update-in-all [:ContactGroups :ContactInformation :RelatedUrls :GetData] migrate-mimetype-up)
+      (util/update-in-all [:UseConstraints :LicenseURL] migrate-mimetype-up)
+      (util/update-in-all [:CollectionCitations :OnlineResource] migrate-mimetype-up)
+      (util/update-in-all [:PublicationReferences :OnlineResource] migrate-mimetype-up)))
+
+(defmethod interface/migrate-umm-version [:collection "1.17.1" "1.17.0"]
+  [context collection & _]
+  ;; Migrate "application/x-hdf5" to "application/xhdf5" and
+  ;; remove MimeType with other values that don't exist in URLMimeTypeEnum  
+  (-> collection
+      (m-spec/update-version :collection "1.17.0")
+      (util/update-in-all [:RelatedUrls :GetData] migrate-mimetype-down)
+      (util/update-in-all [:DataCenters :ContactInformation :RelatedUrls :GetData] migrate-mimetype-down)
+      (util/update-in-all [:DataCenters :ContactPersons :ContactInformation :RelatedUrls :GetData] migrate-mimetype-down)
+      (util/update-in-all [:DataCenters :ContactGroups :ContactInformation :RelatedUrls :GetData] migrate-mimetype-down)
+      (util/update-in-all [:ContactPersons :ContactInformation :RelatedUrls :GetData] migrate-mimetype-down)
+      (util/update-in-all [:ContactGroups :ContactInformation :RelatedUrls :GetData] migrate-mimetype-down)
+      (util/update-in-all [:UseConstraints :LicenseURL] migrate-mimetype-down)
+      (util/update-in-all [:CollectionCitations :OnlineResource] migrate-mimetype-down)
+      (util/update-in-all [:PublicationReferences :OnlineResource] migrate-mimetype-down)))

@@ -15,7 +15,7 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (def sample-usage-csv
-  "Product,Version,Hosts\nAMSR-L1A,3,4\nAG_VIRTUAL,3.2,6\nMAPSS_MOD04_L2,N/A,87")
+  "Product,ProductVersion,Hosts\nAMSR-L1A,3,4\nAG_VIRTUAL,3.2,6\nMAPSS_MOD04_L2,N/A,87")
 
 (def sample-usage-data
   [{:short-name "AMSR-L1A"

@@ -1,4 +1,4 @@
-(ns ^:system cmr.opendap.tests.system.app.ous.params.wcs
+(ns ^:system cmr.opendap.tests.system.app.ous.params.wcs-v2
   "Note: this namespace is exclusively for system tests; all tests defined
   here will use one or more system test fixtures.
 
@@ -153,7 +153,7 @@
         response @(httpc/get
                    (format (str "http://localhost:%s"
                                 "/service-bridge/ous/collection/%s"
-                                "?coverage=%s,"
+                                "?coverage=%s"
                                 "&rangesubset=%s")
                            (test-system/http-port)
                            collection-id

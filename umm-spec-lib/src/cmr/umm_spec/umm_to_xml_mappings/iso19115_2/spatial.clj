@@ -107,16 +107,24 @@
 
 (defn- orbit-parameters->encoded-str
   "Encodes the orbit parameters as a string."
-  [{:keys [SwathWidth Period InclinationAngle NumberOfOrbits StartCircularLatitude]}]
-  (let [main-string (format "SwathWidth: %s Period: %s InclinationAngle: %s NumberOfOrbits: %s"
-                            (util/double->string SwathWidth)
-                            (util/double->string Period)
+  [{:keys [SwathWidth SwathWidthUnit OrbitPeriod OrbitPeriodUnit InclinationAngle InclinationAngleUnit
+           NumberOfOrbits StartCircularLatitude StartCircularLatitudeUnit]}]
+  (let [main-string (format "OrbitPeriod: %s OrbitPeriodUnit: %s
+                             InclinationAngle: %s InclinationAngleUnit: %s NumberOfOrbits: %s"
+                            (util/double->string OrbitPeriod)
+                            OrbitPeriodUnit
                             (util/double->string InclinationAngle)
-                            (util/double->string NumberOfOrbits))]
-    ;; StartCircularLatitude is the only optional element
-    (if StartCircularLatitude
-      (str main-string " StartCircularLatitude: " (util/double->string StartCircularLatitude))
-      main-string)))
+                            InclinationAngleUnit
+                            (util/double->string NumberOfOrbits))
+        sw-string (when SwathWidth
+                    (format "SwathWidth: %s SwathWidthUnit: %s "
+                            (util/double->string SwathWidth)
+                            SwathWidthUnit))
+        scl-string (when StartCircularLatitude
+                     (format " StartCircularLatitude: %s StartCircularLatitudeUnit: %s"
+                             (util/double->string StartCircularLatitude)
+                             StartCircularLatitudeUnit))]
+    (str sw-string main-string scl-string)))
 
 (defn- generate-iso-geographic-description
   "This is a generic function that creates an iso geographic desciption
@@ -141,6 +149,25 @@
                                          (orbit-parameters->encoded-str orbit-parameters)
                                          "gov.nasa.esdis.umm.orbitparameters"
                                          "OrbitParameters")))
+
+(defn- foot-print->encoded-str
+  "Encodes the foot print values as a string."
+  [{:keys [Footprint FootprintUnit Description]}]
+  (if Description
+    (format "Footprint: %s FootprintUnit: %s Description: %s" Footprint FootprintUnit Description)
+    (format "Footprint: %s FootprintUnit: %s" Footprint FootprintUnit)))
+
+(defn generate-orbit-parameters-foot-prints
+  "Returns a geographic element for the orbit parameters Footprints"
+  [c]
+  (when-let [foot-prints (-> c :SpatialExtent :OrbitParameters :Footprints)]
+    (for [x (range (count foot-prints))
+           :let [foot-print (nth foot-prints x)]]
+      (generate-iso-geographic-description
+        (str "OrbitParameter_Footprint_" x)
+        (foot-print->encoded-str foot-print)
+        "gov.nasa.esdis.umm.orbitparameters_footprint"
+        "OrbitParameters_Footprint"))))
 
 (defn spatial-extent-elements
   "Returns a sequence of ISO MENDS elements from the given UMM-C collection record."

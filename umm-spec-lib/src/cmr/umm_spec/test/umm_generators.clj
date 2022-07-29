@@ -18,6 +18,9 @@
       (:type schema-type) (:type schema-type)
       (:oneOf schema-type) "oneOf"
       (:anyOf schema-type) "anyOf"
+      (:if schema-type) "if"
+      (:then schema-type) "then"
+      (:else schema-type) "else"
       (:$ref schema-type) :$ref)))
 
 (defmethod schema-type->generator :default
@@ -52,7 +55,7 @@
   with properties or an object which uses oneOf to specify between lists of properties."
   [schema type-name schema-type]
   (rejected-unexpected-fields #{:properties :required :additionalProperties :dependencies :not :allOf
-                                :anyOf} schema-type)
+                                :anyOf :if :then :else} schema-type)
   (let [constructor-fn (if type-name
                          (record-gen/schema-type-constructor schema type-name)
                          identity)
@@ -142,7 +145,7 @@
 (defmethod schema-type->generator "object"
   [schema type-name schema-type]
   (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf
-                                :anyOf :allOf :not :dependencies :$id} schema-type)
+                                :anyOf :allOf :if :then :else :not :dependencies :$id} schema-type)
   (if-let [one-of (:oneOf schema-type)]
     (object-one-of->generator schema type-name schema-type)
     ;; else
@@ -166,6 +169,18 @@
   [schema type-name schema-type]
   (gen/one-of (mapv #(schema-type->generator schema type-name %)
                     (js/expand-refs schema (:anyOf schema-type)))))
+
+(defmethod schema-type->generator "if"
+  [_ _ _]
+  (gen/return ""))
+
+(defmethod schema-type->generator "then"
+  [_ _ _]
+  (gen/return ""))
+
+(defmethod schema-type->generator "else"
+  [_ _ _]
+  (gen/return ""))
 
 (def array-min-items 0)
 (def array-max-items 5)

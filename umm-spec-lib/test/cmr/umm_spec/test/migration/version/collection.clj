@@ -6,6 +6,7 @@
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
    [cmr.common.util :as util :refer [remove-empty-maps are3]]
    [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.migration.version.collection :as coll-mig]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
@@ -313,6 +314,117 @@
                  {:Roles ["PROCESSOR"]
                   :ShortName "Processing Center"
                   :LongName "processor.processor"}]})
+
+;; when migrate up, from 1.16.7 to 1.17.0, OrbitParameters_1_16_7-1-Up is converted to OrbitParameters_1_17_0-1-Up,
+;; OrbitParameters_1_16_7-2-Up is converted to OrbitParameters_1_17_0-2-Up
+
+(def OrbitParameters_1_16_7-1-Up
+  {:SwathWidth 1
+   :Period 2
+   :InclinationAngle 3
+   :NumberOfOrbits 4})
+
+(def OrbitParameters_1_17_0-1-Up
+  {:SwathWidth 1
+   :SwathWidthUnit "Kilometer"
+   :OrbitPeriod 2
+   :OrbitPeriodUnit "Decimal Minute"
+   :InclinationAngle 3
+   :InclinationAngleUnit "Degree"
+   :NumberOfOrbits 4})
+
+(def OrbitParameters_1_16_7-2-Up
+  {:SwathWidth 1
+   :Period 2
+   :InclinationAngle 3
+   :StartCircularLatitude 4
+   :NumberOfOrbits 5})
+
+(def OrbitParameters_1_17_0-2-Up
+  {:SwathWidth 1
+   :SwathWidthUnit "Kilometer"
+   :OrbitPeriod 2
+   :OrbitPeriodUnit "Decimal Minute"
+   :InclinationAngle 3
+   :InclinationAngleUnit "Degree"
+   :StartCircularLatitude 4
+   :StartCircularLatitudeUnit "Degree"
+   :NumberOfOrbits 5})
+
+;; when migrate down, from 1.17.0 to 1.16.7, OrbitParameters_1_17_0-1-Down is converted to OrbitParameters_1_16_7-1-Down,
+;; OrbitParameters_1_17_0-2-Down is converted to OrbitParameters_1_16_7-2-Down, OrbitParameters_1_17_0-3-Down is converted
+;; to OrbitParameters_1_16_7-3-Down.
+
+;; SwathWidth exists, with the same unit as the assumed one
+(def OrbitParameters_1_17_0-1-Down
+  {:SwathWidth 1
+   :SwathWidthUnit "Kilometer"
+   :OrbitPeriod 2
+   :OrbitPeriodUnit "Decimal Minute"
+   :InclinationAngle 3
+   :InclinationAngleUnit "Degree"
+   :StartCircularLatitude 4
+   :StartCircularLatitudeUnit "Degree"
+   :NumberOfOrbits 5
+   :Footprints [{:Footprint 6 :FootprintUnit "Kilometer"}
+                {:Footprint 5000 :FootprintUnit "Meter"}]})
+
+(def OrbitParameters_1_16_7-1-Down
+  {:SwathWidth 1
+   :Period 2
+   :InclinationAngle 3
+   :StartCircularLatitude 4
+   :NumberOfOrbits 5})
+
+;; SwathWidth exists, with different unit as the assumed one
+(def OrbitParameters_1_17_0-2-Down
+  {:SwathWidth 1000
+   :SwathWidthUnit "Meter"
+   :OrbitPeriod 2
+   :OrbitPeriodUnit "Decimal Minute"
+   :InclinationAngle 3
+   :InclinationAngleUnit "Degree"
+   :StartCircularLatitude 4
+   :StartCircularLatitudeUnit "Degree"
+   :NumberOfOrbits 5
+   :Footprints [{:Footprint 6 :FootprintUnit "Kilometer"}
+                {:Footprint 5000 :FootprintUnit "Meter"}]})
+
+(def OrbitParameters_1_16_7-2-Down
+  {:SwathWidth 1.0
+   :Period 2
+   :InclinationAngle 3
+   :StartCircularLatitude 4
+   :NumberOfOrbits 5})
+
+;; SwathWidth doesn't exist, convert the largest Footprint to SwathWidth.
+(def OrbitParameters_1_17_0-3-Down
+  {:OrbitPeriod 2
+   :OrbitPeriodUnit "Decimal Minute"
+   :InclinationAngle 3
+   :InclinationAngleUnit "Degree"
+   :StartCircularLatitude 4
+   :StartCircularLatitudeUnit "Degree"
+   :NumberOfOrbits 5
+   :Footprints [{:Footprint 6 :FootprintUnit "Kilometer"}
+                {:Footprint 5000 :FootprintUnit "Meter"}]})
+
+(def OrbitParameters_1_16_7-3-Down
+  {:SwathWidth 6
+   :Period 2
+   :InclinationAngle 3
+   :StartCircularLatitude 4
+   :NumberOfOrbits 5})
+
+
+
+(deftest get-largest-footprint-in-kilometer-test
+  (is (= 0.022 (#'coll-mig/get-largest-footprint-in-kilometer [{:Footprint 22
+                                                                :FootprintUnit "Meter"}]))))
+
+(deftest get-swath-width-test
+  (is (= 0.022 (coll-mig/get-swath-width {:SpatialExtent {:OrbitParameters {:SwathWidth 22
+                                                                            :SwathWidthUnit "Meter"}}}))))
 
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions {:collection ["1.0" "1.1" "1.2" "1.3" "1.9" "1.10"]}}
@@ -2855,7 +2967,7 @@
       (is (= expected (:CollectionDataType result))))
 
     "Migrating CollectionDataType-nothing to migrate"
-    "OTHER" 
+    "OTHER"
     {:CollectionDataType "OTHER"}))
 
 (deftest migrate-1-16-7-to-1-16-6
@@ -2872,3 +2984,659 @@
     "Migrating CollectionDataType"
     "NEAR_REAL_TIME"
     {:CollectionDataType "EXPEDITED"}))
+
+(deftest migrate-1-16-7-to-1-17-0
+  "Test the migration of collections from 1.16.7 to 1.17.0."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.16.7" "1.17.0" sample-collection)]
+      (is (= expected result)))
+
+    "Migrating without StartCircularLatitude"
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-1-Up}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-1-Up}}
+
+    "Migrating with StartCircularLatitude"
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-2-Up}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-2-Up}}
+
+    "Migrating up when Orbit Parameters is empty"
+    {:SpatialExtent {:OrbitParameters nil}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}
+    {:SpatialExtent {:OrbitParameters nil}}))
+
+(deftest migrate-1-17-0-to-1-16-7
+  "Test the migration of collections from 1.17.0 to 1.16.7."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.17.0" "1.16.7" sample-collection)]
+      (is (= expected result)))
+
+    "Migrating with SwathWidth in same unit"
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-1-Down}}
+    {:StandardProduct true
+     :SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-1-Down}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}
+
+    "Migrating with SwathWidth in different unit"
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-2-Down}}
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-2-Down}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}
+
+    "Migrating with SwathWidth being the largest Footprint"
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_16_7-3-Down}}
+    {:SpatialExtent {:OrbitParameters OrbitParameters_1_17_0-3-Down}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}
+    
+    "Migrating with no Orbit Paarameters"
+    {:SpatialExtent {:OrbitParameters nil}}
+    {:SpatialExtent {:OrbitParameters nil}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                             :Name "UMM-C",
+                             :Version "1.17.0"}}))
+
+(deftest migrate-1-17-0-to-1-17-1
+  "Test the migration of collections from 1.17.0 to 1.17.1."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.17.0" "1.17.1" sample-collection)]
+      (is (= expected result)))
+
+  "Nothing to migrate"
+  {:other-elements "other values"
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                           :Name "UMM-C",
+                           :Version "1.17.1"}}
+  {:other-elements "other values"}
+
+  "Migrate RelatedUrls"
+  {:RelatedUrls [{:Description "testing"} ;; no GetData
+                 {:Description "testing" ;; GetData No MimeType
+                  :GetData {:Format "Native"}}
+                 {:Description "testing" ;; GetData MimeType in kms
+                  :GetData {:Format "Native"
+                            :MimeType "application/x-hdf"}}
+                 {:Description "testing" ;; GetData MimeType being application/xhdf5
+                  :GetData {:Format "Native"
+                            :MimeType "application/x-hdf5"}}
+                 {:Description "testing" ;; GetData MimeType being "Not provided" which is not in kms
+                  :GetData {:Format "Native"}}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                           :Name "UMM-C",
+                           :Version "1.17.1"}}
+  {:RelatedUrls [{:Description "testing"} ;; no GetData
+                 {:Description "testing" ;; GetData No MimeType
+                  :GetData {:Format "Native"}}
+                 {:Description "testing" ;; GetData MimeType in kms
+                  :GetData {:Format "Native"
+                            :MimeType "application/x-hdf"}}
+                 {:Description "testing" ;; GetData MimeType being application/xhdf5
+                  :GetData {:Format "Native"
+                            :MimeType "application/xhdf5"}}
+                 {:Description "testing" ;; GetData MimeType being "Not provided" which is not in kms
+                  :GetData {:Format "Native"
+                            :MimeType "Not provided"}}]}
+
+  "Migrate DataCenters"
+  {:DataCenters [{:Roles ["PROCESSOR"]} ;; no ContactInformation, ContactPersons and ContactGroups.
+                 {:Roles ["PROCESSOR"] ;; ContactInformation without RelatedUrls
+                  :ContactInformation {:Addresses ["some address"]}}
+                 {:Roles ["PROCESSOR"] ;; ContactInformation with RelatedUrls
+                  :ContactInformation {:Addresses ["some address"]
+                                       :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                     {:Description "testing" ;; GetData No MimeType
+                                                      :GetData {:Format "Native"}}
+                                                     {:Description "testing" ;; GetData MimeType in kms
+                                                      :GetData {:Format "Native"
+                                                                :MimeType "application/x-hdf"}}
+                                                     {:Description "testing" ;; GetData MimeType being application/xhdf5
+                                                      :GetData {:Format "Native"
+                                                                :MimeType "application/x-hdf5"}}
+                                                     {:Description "testing" ;; GetData MimeType being "Not provided" which is not in kms
+                                                      :GetData {:Format "Native"}}]}}
+                 {:Roles ["PROCESSOR"] ;;ContactPersons with RelatedUrls
+                  :ContactPersons [{:Roles ["Data Center Contact"]} ;;no ContactInformation
+                                   {:Roles ["Data Center Contact"]  ;; ContactInformation without RelatedUrls
+                                    :ContactInformation {:Addresses ["some address"]}}
+                                   {:Roles ["Data Center Contact"] ;; ContactInformation with RelatedUrls
+                                    :ContactInformation {:Addresses ["some address"]
+                                                         :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                                       {:Description "testing" ;; GetData No MimeType
+                                                                        :GetData {:Format "Native"}}
+                                                                       {:Description "testing" ;; GetData MimeType in kms
+                                                                        :GetData {:Format "Native"
+                                                                                  :MimeType "application/x-hdf"}}
+                                                                       {:Description "testing" ;; GetData MimeType being application/xhdf5
+                                                                        :GetData {:Format "Native"
+                                                                                  :MimeType "application/x-hdf5"}}
+                                                                       {:Description "testing" ;; GetData MimeType being "Not provided" which is not in kms
+                                                                        :GetData {:Format "Native"}}]}}]}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                           :Name "UMM-C",
+                           :Version "1.17.1"}}
+  {:DataCenters [{:Roles ["PROCESSOR"]} ;; no ContactInformation, ContactPersons and ContactGroups.
+                 {:Roles ["PROCESSOR"] ;; ContactInformation without RelatedUrls
+                  :ContactInformation {:Addresses ["some address"]}}
+                 {:Roles ["PROCESSOR"] ;; ContactInformation with RelatedUrls
+                  :ContactInformation {:Addresses ["some address"]
+                                       :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                     {:Description "testing" ;; GetData No MimeType
+                                                      :GetData {:Format "Native"}}
+                                                     {:Description "testing" ;; GetData MimeType in kms
+                                                      :GetData {:Format "Native"
+                                                                :MimeType "application/x-hdf"}}
+                                                     {:Description "testing" ;; GetData MimeType being application/xhdf5
+                                                      :GetData {:Format "Native"
+                                                                :MimeType "application/xhdf5"}}
+                                                     {:Description "testing" ;; GetData MimeType being "Not provided" which is not in kms
+                                                      :GetData {:Format "Native"
+                                                                :MimeType "Not provided"}}]}}
+                 {:Roles ["PROCESSOR"] ;;ContactPersons with RelatedUrls
+                  :ContactPersons [{:Roles ["Data Center Contact"]} ;;no ContactInformation
+                                   {:Roles ["Data Center Contact"]  ;; ContactInformation without RelatedUrls
+                                    :ContactInformation {:Addresses ["some address"]}}
+                                   {:Roles ["Data Center Contact"] ;; ContactInformation with RelatedUrls
+                                    :ContactInformation {:Addresses ["some address"]
+                                                         :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                                       {:Description "testing" ;; GetData No MimeType
+                                                                        :GetData {:Format "Native"}}
+                                                                       {:Description "testing" ;; GetData MimeType in kms
+                                                                        :GetData {:Format "Native"
+                                                                                  :MimeType "application/x-hdf"}}
+                                                                       {:Description "testing" ;; GetData MimeType being application/xhdf5
+                                                                        :GetData {:Format "Native"
+                                                                                  :MimeType "application/xhdf5"}}
+                                                                       {:Description "testing" ;; GetData MimeType being "Not provided" which is not in kms
+                                                                        :GetData {:Format "Native"
+                                                                                  :MimeType "Not provided"}}]}}]}]}
+
+  "Migrate ContactPersons"
+  {:ContactPersons [{:Roles ["Data Center Contact"]} ;;no ContactInformation
+                    {:Roles ["Data Center Contact"]  ;; ContactInformation without RelatedUrls
+                     :ContactInformation {:Addresses ["some address"]}}
+                    {:Roles ["Data Center Contact"] ;; ContactInformation with RelatedUrls
+                     :ContactInformation {:Addresses ["some address"]
+                                          :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                        {:Description "testing" ;; GetData No MimeType
+                                                         :GetData {:Format "Native"}}
+                                                        {:Description "testing" ;; GetData MimeType in kms
+                                                         :GetData {:Format "Native"
+                                                                   :MimeType "application/x-hdf"}}
+                                                        {:Description "testing" ;; GetData MimeType being application/xhdf5
+                                                         :GetData {:Format "Native"
+                                                                   :MimeType "application/x-hdf5"}}
+                                                        {:Description "testing" ;; GetData MimeType being "Not provided" which is not in kms
+                                                         :GetData {:Format "Native"}}]}}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                           :Name "UMM-C",
+                           :Version "1.17.1"}}
+  {:ContactPersons [{:Roles ["Data Center Contact"]} ;;no ContactInformation
+                    {:Roles ["Data Center Contact"]  ;; ContactInformation without RelatedUrls
+                     :ContactInformation {:Addresses ["some address"]}}
+                    {:Roles ["Data Center Contact"] ;; ContactInformation with RelatedUrls
+                     :ContactInformation {:Addresses ["some address"]
+                                          :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                        {:Description "testing" ;; GetData No MimeType
+                                                         :GetData {:Format "Native"}}
+                                                        {:Description "testing" ;; GetData MimeType in kms
+                                                         :GetData {:Format "Native"
+                                                                   :MimeType "application/x-hdf"}}
+                                                        {:Description "testing" ;; GetData MimeType being application/xhdf5
+                                                         :GetData {:Format "Native"
+                                                                   :MimeType "application/xhdf5"}}
+                                                        {:Description "testing" ;; GetData MimeType being "Not provided" which is not in kms
+                                                         :GetData {:Format "Native"
+                                                                   :MimeType "Not provided"}}]}}]}
+
+  "Migrate ContactGroups"
+  {:ContactGroups [{:Roles ["User Services"]} ;;no ContactInformation
+                   {:Roles ["User services"]  ;; ContactInformation without RelatedUrls
+                    :ContactInformation {:Addresses ["some address"]}}
+                   {:Roles ["User Services"] ;; ContactInformation with RelatedUrls
+                    :ContactInformation {:Addresses ["some address"]
+                                         :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                       {:Description "testing" ;; GetData No MimeType
+                                                        :GetData {:Format "Native"}}
+                                                       {:Description "testing" ;; GetData MimeType in kms
+                                                        :GetData {:Format "Native"
+                                                                  :MimeType "application/x-hdf"}}
+                                                       {:Description "testing" ;; GetData MimeType being application/xhdf5
+                                                        :GetData {:Format "Native"
+                                                                  :MimeType "application/x-hdf5"}}
+                                                       {:Description "testing" ;; GetData MimeType being "Not provided" which is not in kms
+                                                        :GetData {:Format "Native"}}]}}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                           :Name "UMM-C",
+                           :Version "1.17.1"}}
+  {:ContactGroups [{:Roles ["User Services"]} ;;no ContactInformation
+                   {:Roles ["User services"]  ;; ContactInformation without RelatedUrls
+                    :ContactInformation {:Addresses ["some address"]}}
+                   {:Roles ["User Services"] ;; ContactInformation with RelatedUrls
+                    :ContactInformation {:Addresses ["some address"]
+                                         :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                       {:Description "testing" ;; GetData No MimeType
+                                                        :GetData {:Format "Native"}}
+                                                       {:Description "testing" ;; GetData MimeType in kms
+                                                        :GetData {:Format "Native"
+                                                                  :MimeType "application/x-hdf"}}
+                                                       {:Description "testing" ;; GetData MimeType being application/xhdf5
+                                                        :GetData {:Format "Native"
+                                                                  :MimeType "application/xhdf5"}}
+                                                       {:Description "testing" ;; GetData MimeType being "Not provided" which is not in kms
+                                                        :GetData {:Format "Native"
+                                                                  :MimeType "Not provided"}}]}}]}
+
+  "Migrate UseConstraints1 No LicenseURL"
+  {:UseConstraints {:Description "test"}
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                           :Name "UMM-C",
+                           :Version "1.17.1"}}
+  {:UseConstraints {:Description "test"}}
+
+  "Migrate UseConstraints2 LicenseURL No MimeType"
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"}}
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                           :Name "UMM-C",
+                           :Version "1.17.1"}}
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"}}}
+
+  "Migrate UseConstraints3 MimeType in kms"
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"
+                                 :MimeType "application/x-hdf"}}
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                           :Name "UMM-C",
+                           :Version "1.17.1"}}
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"
+                                 :MimeType "application/x-hdf"}}}
+
+  "Migrate UseConstraints4 MimeType application/xhdf5"
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"
+                                 :MimeType "application/x-hdf5"}}
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                           :Name "UMM-C",
+                           :Version "1.17.1"}}
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"
+                                 :MimeType "application/xhdf5"}}}
+
+  "Migrate UseConstraints5 MimeType being 'Not provided' which is not in kms"
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"}}
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                           :Name "UMM-C",
+                           :Version "1.17.1"}}
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"
+                                 :MimeType "Not provided"}}}
+
+  "Migrate CollectionCitations"
+  {:CollectionCitations [{:Creator "Remote Sensing Systems"} ;;no OnlineResource
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource without MimeType
+                          :OnlineResource {:Linkage "http://www.remss.com"}}
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType in kms
+                          :OnlineResource {:Linkage "http://www.remss.com"
+                                           :MimeType "application/x-hdf"}}
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType application/xhdf5
+                          :OnlineResource {:Linkage "http://www.remss.com"
+                                           :MimeType "application/x-hdf5"}}
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType being "Not provided" which is not in kms
+                          :OnlineResource {:Linkage "http://www.remss.com"}}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                           :Name "UMM-C",
+                           :Version "1.17.1"}}
+  {:CollectionCitations [{:Creator "Remote Sensing Systems"} ;;no OnlineResource
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource without MimeType
+                          :OnlineResource {:Linkage "http://www.remss.com"}}
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType in kms
+                          :OnlineResource {:Linkage "http://www.remss.com"
+                                           :MimeType "application/x-hdf"}}
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType application/xhdf5
+                          :OnlineResource {:Linkage "http://www.remss.com"
+                                           :MimeType "application/xhdf5"}}
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType being "Not provided" which is not in kms
+                          :OnlineResource {:Linkage "http://www.remss.com"
+                                           :MimeType "Not provided"}}]}
+
+ "Migrate PublicationReferences"
+  {:PublicationReferences [{:Author "Some author"} ;;no OnlineResource
+                           {:Author "Some author" ;; OnlineResource without MimeType
+                            :OnlineResource {:Linkage "http://www.remss.com"}}
+                           {:Author "Some author" ;; OnlineResource with MimeType in kms
+                            :OnlineResource {:Linkage "http://www.remss.com"
+                                             :MimeType "application/x-hdf"}}
+                           {:Author "Some author" ;; OnlineResource with MimeType application/xhdf5
+                            :OnlineResource {:Linkage "http://www.remss.com"
+                                             :MimeType "application/x-hdf5"}}
+                           {:Author "Some author" ;; OnlineResource with MimeType being "Not provided" which is not in kms
+                            :OnlineResource {:Linkage "http://www.remss.com"}}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                           :Name "UMM-C",
+                           :Version "1.17.1"}}
+  {:PublicationReferences [{:Author "Some author"} ;;no OnlineResource
+                           {:Author "Some author" ;; OnlineResource without MimeType
+                            :OnlineResource {:Linkage "http://www.remss.com"}}
+                           {:Author "Some author" ;; OnlineResource with MimeType in kms
+                            :OnlineResource {:Linkage "http://www.remss.com"
+                                             :MimeType "application/x-hdf"}}
+                           {:Author "Some author" ;; OnlineResource with MimeType application/xhdf5
+                            :OnlineResource {:Linkage "http://www.remss.com"
+                                             :MimeType "application/xhdf5"}}
+                           {:Author "Some author" ;; OnlineResource with MimeType being "Not provided" which is not in kms
+                            :OnlineResource {:Linkage "http://www.remss.com"
+                                             :MimeType "Not provided"}}]}
+))
+
+(deftest migrate-1-17-1-to-1-17-0
+  "Test the migration of collections from 1.17.1 to 1.17.0."
+
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.17.1" "1.17.0" sample-collection)]
+      (is (= expected result)))
+  
+  "Nothing to migrate"
+  {:other-elements "other values"
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                           :Name "UMM-C",
+                           :Version "1.17.0"}}
+  {:other-elements "other values"}
+
+  "Migrate RelatedUrls"
+  {:RelatedUrls [{:Description "testing"} ;; no GetData
+                 {:Description "testing" ;; GetData No MimeType
+                  :GetData {:Format "Native"}}
+                 {:Description "testing" ;; GetData MimeType in enum
+                  :GetData {:Format "Native"
+                            :MimeType "application/x-hdf"}}
+                 {:Description "testing" ;; GetData MimeType being application/x-hdf5
+                  :GetData {:Format "Native"
+                            :MimeType "application/xhdf5"}}
+                 {:Description "testing" ;; GetData MimeType not in enum
+                  :GetData {:Format "Native"}}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                           :Name "UMM-C",
+                           :Version "1.17.0"}}
+  {:RelatedUrls [{:Description "testing"} ;; no GetData
+                 {:Description "testing" ;; GetData No MimeType
+                  :GetData {:Format "Native"}}
+                 {:Description "testing" ;; GetData MimeType in enum
+                  :GetData {:Format "Native"
+                            :MimeType "application/x-hdf"}}
+                 {:Description "testing" ;; GetData MimeType being application/x-hdf5
+                  :GetData {:Format "Native"
+                            :MimeType "application/x-hdf5"}}
+                 {:Description "testing" ;; GetData MimeType not in enum
+                  :GetData {:Format "Native"
+                            :MimeType "Not in enum"}}]}
+
+  "Migrate DataCenters"
+  {:DataCenters [{:Roles ["PROCESSOR"]} ;; no ContactInformation, ContactPersons and ContactGroups.
+                 {:Roles ["PROCESSOR"] ;; ContactInformation without RelatedUrls
+                  :ContactInformation {:Addresses ["some address"]}}
+                 {:Roles ["PROCESSOR"] ;; ContactInformation with RelatedUrls
+                  :ContactInformation {:Addresses ["some address"]
+                                       :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                     {:Description "testing" ;; GetData No MimeType
+                                                      :GetData {:Format "Native"}}
+                                                     {:Description "testing" ;; GetData MimeType in enum
+                                                      :GetData {:Format "Native"
+                                                                :MimeType "application/x-hdf"}}
+                                                     {:Description "testing" ;; GetData MimeType being application/x-hdf5
+                                                      :GetData {:Format "Native"
+                                                                :MimeType "application/xhdf5"}}
+                                                     {:Description "testing" ;; GetData MimeType not in enum
+                                                      :GetData {:Format "Native"}}]}}
+                 {:Roles ["PROCESSOR"] ;;ContactPersons with RelatedUrls
+                  :ContactPersons [{:Roles ["Data Center Contact"]} ;;no ContactInformation
+                                   {:Roles ["Data Center Contact"]  ;; ContactInformation without RelatedUrls
+                                    :ContactInformation {:Addresses ["some address"]}}
+                                   {:Roles ["Data Center Contact"] ;; ContactInformation with RelatedUrls
+                                    :ContactInformation {:Addresses ["some address"]
+                                                         :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                                       {:Description "testing" ;; GetData No MimeType
+                                                                        :GetData {:Format "Native"}}
+                                                                       {:Description "testing" ;; GetData MimeType in enum
+                                                                        :GetData {:Format "Native"
+                                                                                  :MimeType "application/x-hdf"}}
+                                                                       {:Description "testing" ;; GetData MimeType being application/x-hdf5
+                                                                        :GetData {:Format "Native"
+                                                                                  :MimeType "application/xhdf5"}}
+                                                                       {:Description "testing" ;; GetData MimeType not in enum
+                                                                        :GetData {:Format "Native"}}]}}]}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                           :Name "UMM-C",
+                           :Version "1.17.0"}}
+  {:DataCenters [{:Roles ["PROCESSOR"]} ;; no ContactInformation, ContactPersons and ContactGroups.
+                 {:Roles ["PROCESSOR"] ;; ContactInformation without RelatedUrls
+                  :ContactInformation {:Addresses ["some address"]}}
+                 {:Roles ["PROCESSOR"] ;; ContactInformation with RelatedUrls
+                  :ContactInformation {:Addresses ["some address"]
+                                       :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                     {:Description "testing" ;; GetData No MimeType
+                                                      :GetData {:Format "Native"}}
+                                                     {:Description "testing" ;; GetData MimeType in enum
+                                                      :GetData {:Format "Native"
+                                                                :MimeType "application/x-hdf"}}
+                                                     {:Description "testing" ;; GetData MimeType being application/x-hdf5
+                                                      :GetData {:Format "Native"
+                                                                :MimeType "application/x-hdf5"}}
+                                                     {:Description "testing" ;; GetData MimeType not in enum
+                                                      :GetData {:Format "Native"
+                                                                :MimeType "Not in enum"}}]}}
+                 {:Roles ["PROCESSOR"] ;;ContactPersons with RelatedUrls
+                  :ContactPersons [{:Roles ["Data Center Contact"]} ;;no ContactInformation
+                                   {:Roles ["Data Center Contact"]  ;; ContactInformation without RelatedUrls
+                                    :ContactInformation {:Addresses ["some address"]}}
+                                   {:Roles ["Data Center Contact"] ;; ContactInformation with RelatedUrls
+                                    :ContactInformation {:Addresses ["some address"]
+                                                         :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                                       {:Description "testing" ;; GetData No MimeType
+                                                                        :GetData {:Format "Native"}}
+                                                                       {:Description "testing" ;; GetData MimeType in enum
+                                                                        :GetData {:Format "Native"
+                                                                                  :MimeType "application/x-hdf"}}
+                                                                       {:Description "testing" ;; GetData MimeType being application/x-hdf5
+                                                                        :GetData {:Format "Native"
+                                                                                  :MimeType "application/x-hdf5"}}
+                                                                       {:Description "testing" ;; GetData MimeType not in enum
+                                                                        :GetData {:Format "Native"
+                                                                                  :MimeType "Not in enum"}}]}}]}]}
+
+  "Migrate ContactPersons"
+  {:ContactPersons [{:Roles ["Data Center Contact"]} ;;no ContactInformation
+                    {:Roles ["Data Center Contact"]  ;; ContactInformation without RelatedUrls
+                     :ContactInformation {:Addresses ["some address"]}}
+                    {:Roles ["Data Center Contact"] ;; ContactInformation with RelatedUrls
+                     :ContactInformation {:Addresses ["some address"]
+                                          :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                        {:Description "testing" ;; GetData No MimeType
+                                                         :GetData {:Format "Native"}}
+                                                        {:Description "testing" ;; GetData MimeType in enum
+                                                         :GetData {:Format "Native"
+                                                                   :MimeType "application/x-hdf"}}
+                                                        {:Description "testing" ;; GetData MimeType being application/x-hdf5
+                                                         :GetData {:Format "Native"
+                                                                   :MimeType "application/xhdf5"}}
+                                                        {:Description "testing" ;; GetData MimeType not in enum
+                                                         :GetData {:Format "Native"}}]}}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                           :Name "UMM-C",
+                           :Version "1.17.0"}}
+  {:ContactPersons [{:Roles ["Data Center Contact"]} ;;no ContactInformation
+                    {:Roles ["Data Center Contact"]  ;; ContactInformation without RelatedUrls
+                     :ContactInformation {:Addresses ["some address"]}}
+                    {:Roles ["Data Center Contact"] ;; ContactInformation with RelatedUrls
+                     :ContactInformation {:Addresses ["some address"]
+                                          :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                        {:Description "testing" ;; GetData No MimeType
+                                                         :GetData {:Format "Native"}}
+                                                        {:Description "testing" ;; GetData MimeType in enum
+                                                         :GetData {:Format "Native"
+                                                                   :MimeType "application/x-hdf"}}
+                                                        {:Description "testing" ;; GetData MimeType being application/x-hdf5
+                                                         :GetData {:Format "Native"
+                                                                   :MimeType "application/x-hdf5"}}
+                                                        {:Description "testing" ;; GetData MimeType not in enum
+                                                         :GetData {:Format "Native"
+                                                                   :MimeType "Not in enum"}}]}}]}
+
+  "Migrate ContactGroups"
+  {:ContactGroups [{:Roles ["User Services"]} ;;no ContactInformation
+                   {:Roles ["User services"]  ;; ContactInformation without RelatedUrls
+                    :ContactInformation {:Addresses ["some address"]}}
+                   {:Roles ["User Services"] ;; ContactInformation with RelatedUrls
+                    :ContactInformation {:Addresses ["some address"] 
+                                         :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                       {:Description "testing" ;; GetData No MimeType
+                                                        :GetData {:Format "Native"}}
+                                                       {:Description "testing" ;; GetData MimeType in enum
+                                                        :GetData {:Format "Native"
+                                                                  :MimeType "application/x-hdf"}}
+                                                       {:Description "testing" ;; GetData MimeType being application/x-hdf5
+                                                        :GetData {:Format "Native"
+                                                                  :MimeType "application/xhdf5"}}
+                                                       {:Description "testing" ;; GetData MimeType not in enum
+                                                        :GetData {:Format "Native"}}]}}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                           :Name "UMM-C",
+                           :Version "1.17.0"}}
+  {:ContactGroups [{:Roles ["User Services"]} ;;no ContactInformation
+                   {:Roles ["User services"]  ;; ContactInformation without RelatedUrls
+                    :ContactInformation {:Addresses ["some address"]}}
+                   {:Roles ["User Services"] ;; ContactInformation with RelatedUrls
+                    :ContactInformation {:Addresses ["some address"] 
+                                         :RelatedUrls [{:Description "testing"} ;; no GetData
+                                                       {:Description "testing" ;; GetData No MimeType
+                                                        :GetData {:Format "Native"}}
+                                                       {:Description "testing" ;; GetData MimeType in enum
+                                                        :GetData {:Format "Native"
+                                                                  :MimeType "application/x-hdf"}}
+                                                       {:Description "testing" ;; GetData MimeType being application/x-hdf5
+                                                        :GetData {:Format "Native"
+                                                                  :MimeType "application/x-hdf5"}}
+                                                       {:Description "testing" ;; GetData MimeType not in enum
+                                                        :GetData {:Format "Native"
+                                                                  :MimeType "Not in enum"}}]}}]}
+
+
+  "Migrate UseConstraints1 No LicenseURL"
+  {:UseConstraints {:Description "test"}
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                           :Name "UMM-C",
+                           :Version "1.17.0"}}
+  {:UseConstraints {:Description "test"}}
+
+  "Migrate UseConstraints2 LicenseURL No MimeType"
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"}}
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                           :Name "UMM-C",
+                           :Version "1.17.0"}}
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"}}}
+
+  "Migrate UseConstraints3 MimeType in enum"
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"
+                                 :MimeType "application/x-hdf"}}
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                           :Name "UMM-C",
+                           :Version "1.17.0"}}
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"
+                                 :MimeType "application/x-hdf"}}}
+
+  "Migrate UseConstraints4 MimeType application/x-hdf5"
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"
+                                 :MimeType "application/xhdf5"}}
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                           :Name "UMM-C",
+                           :Version "1.17.0"}}
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"
+                                 :MimeType "application/x-hdf5"}}}
+
+  "Migrate UseConstraints5 MimeType not in enum"
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"}}
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                           :Name "UMM-C",
+                           :Version "1.17.0"}}
+  {:UseConstraints {:Description "test"
+                    :LicenseURL {:Linkage "https://www.apache.org/licenses/LICENSE-2.0"
+                                 :MimeType "Not in enum"}}}
+
+  "Migrate CollectionCitations"
+  {:CollectionCitations [{:Creator "Remote Sensing Systems"} ;;no OnlineResource
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource without MimeType
+                          :OnlineResource {:Linkage "http://www.remss.com"}}
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType in enum
+                          :OnlineResource {:Linkage "http://www.remss.com"
+                                           :MimeType "application/x-hdf"}}
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType application/x-hdf5 
+                          :OnlineResource {:Linkage "http://www.remss.com"
+                                           :MimeType "application/xhdf5"}}
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType not in enum
+                          :OnlineResource {:Linkage "http://www.remss.com"}}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                           :Name "UMM-C",
+                           :Version "1.17.0"}}
+  {:CollectionCitations [{:Creator "Remote Sensing Systems"} ;;no OnlineResource
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource without MimeType
+                          :OnlineResource {:Linkage "http://www.remss.com"}} 
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType in enum
+                          :OnlineResource {:Linkage "http://www.remss.com"
+                                           :MimeType "application/x-hdf"}}
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType application/x-hdf5
+                          :OnlineResource {:Linkage "http://www.remss.com"
+                                           :MimeType "application/x-hdf5"}}
+                         {:Creator "Remote Sensing Systems" ;; OnlineResource with MimeType not in enum
+                          :OnlineResource {:Linkage "http://www.remss.com"
+                                           :MimeType "Not in enum"}}]}
+
+  "Migrate PublicationReferences"
+  {:PublicationReferences [{:Author "Some author"} ;;no OnlineResource
+                           {:Author "Some author" ;; OnlineResource without MimeType
+                            :OnlineResource {:Linkage "http://www.remss.com"}} 
+                           {:Author "Some author" ;; OnlineResource with MimeType in enum
+                            :OnlineResource {:Linkage "http://www.remss.com"
+                                             :MimeType "application/x-hdf"}}
+                           {:Author "Some author" ;; OnlineResource with MimeType application/x-hdf5
+                            :OnlineResource {:Linkage "http://www.remss.com"
+                                             :MimeType "application/xhdf5"}}
+                           {:Author "Some author" ;; OnlineResource with MimeType not in enum
+                            :OnlineResource {:Linkage "http://www.remss.com"}}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+                           :Name "UMM-C",
+                           :Version "1.17.0"}}
+  {:PublicationReferences [{:Author "Some author"} ;;no OnlineResource
+                           {:Author "Some author" ;; OnlineResource without MimeType
+                            :OnlineResource {:Linkage "http://www.remss.com"}}
+                           {:Author "Some author" ;; OnlineResource with MimeType in enum
+                            :OnlineResource {:Linkage "http://www.remss.com"
+                                             :MimeType "application/x-hdf"}}
+                           {:Author "Some author" ;; OnlineResource with MimeType application/x-hdf5
+                            :OnlineResource {:Linkage "http://www.remss.com"
+                                             :MimeType "application/x-hdf5"}}
+                           {:Author "Some author" ;; OnlineResource with MimeType not in enum
+                            :OnlineResource {:Linkage "http://www.remss.com"
+                                             :MimeType "Not in enum"}}]}))

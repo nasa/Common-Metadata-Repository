@@ -156,7 +156,8 @@
        (testing "Subscription concepts are indexed."
          (let [{:keys [hits refs] :as response} (search/find-refs :subscription {})]
            (is (= 6 hits))
-           (is (= 6 (count refs)))))))))
+           (is (= 6 (count refs)))
+           ))))))
 
 (deftest ^:oracle bulk-index-all-subscriptions
   (mock-urs/create-users (system/context) [{:username "someSubId" :password "Password"}])
@@ -200,6 +201,12 @@
            coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                :ShortName "S1"
                                                                                :Version "V1"}))
+           coll2 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
+                                                                               :ShortName "S2"
+                                                                               :Version "V2"}))
+           coll3 (d/ingest-umm-spec-collection "PROV3" (data-umm-c/collection {:EntryTitle "E3"
+                                                                               :ShortName "S3"
+                                                                               :Version "V3"}))
            sub1-concept (subscription/make-subscription-concept {:native-id "SUB1"
                                                                  :Name "Sub1"
                                                                  :SubscriberId "user1"
@@ -209,19 +216,19 @@
            sub2-concept (subscription/make-subscription-concept {:native-id "SUB2"
                                                                  :Name "Sub2"
                                                                  :SubscriberId "user1"
-                                                                 :CollectionConceptId (:concept-id coll1)
+                                                                 :CollectionConceptId (:concept-id coll2)
                                                                  :Query "platform=NOAA-9"
                                                                  :provider-id "PROV2"})
            sub2-2-concept (subscription/make-subscription-concept {:native-id "SUB2"
                                                                    :Name "Sub2-2"
                                                                    :SubscriberId "user1"
-                                                                   :CollectionConceptId (:concept-id coll1)
+                                                                   :CollectionConceptId (:concept-id coll2)
                                                                    :Query "platform=NOAA-10"
                                                                    :provider-id "PROV2"})
            sub3-concept (subscription/make-subscription-concept {:native-id "SUB3"
                                                                  :Name "Sub1"
                                                                  :SubscriberId "user1"
-                                                                 :CollectionConceptId (:concept-id coll1)
+                                                                 :CollectionConceptId (:concept-id coll3)
                                                                  :Query "platform=NOAA-11"
                                                                  :provider-id "PROV3"})
            sub1-1 (subscription/ingest-subscription sub1-concept)

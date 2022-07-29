@@ -61,7 +61,7 @@
                       "granule_ur[]" (vec (set granule-urs))
                       "token" (transmit-config/echo-system-token)
                       "page-size" parameter-validation/max-page-size}
-        gran-refs (search/find-granule-references context query-params)]
+        gran-refs (search/find-concept-references context query-params :granule)]
     (for [{:keys [concept-id granule-ur]} gran-refs]
       {:concept-id concept-id
        :entry-title entry-title

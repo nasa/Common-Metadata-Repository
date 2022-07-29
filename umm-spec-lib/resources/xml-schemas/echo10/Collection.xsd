@@ -275,6 +275,12 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
+      <xs:element name="StandardProduct" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>The indication of whether this
+          collection is standard product.</xs:documentation>
+        </xs:annotation>
+      </xs:element>
       <xs:element name="Orderable" type="xs:boolean" minOccurs="0">
         <xs:annotation>
           <xs:documentation>The indication of whether this

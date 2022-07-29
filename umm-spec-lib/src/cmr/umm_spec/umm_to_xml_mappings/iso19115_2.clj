@@ -277,6 +277,13 @@
                   [:gmd:code [:gco:CharacterString collection-data-type]]
                   [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.collectiondatatype"]]
                   [:gmd:description [:gco:CharacterString "Collection Data Type"]]]])
+            (let [standard-product (:StandardProduct c)]
+              (when (some? standard-product)
+                [:gmd:identifier
+                  [:gmd:MD_Identifier
+                    [:gmd:code [:gco:CharacterString standard-product]]
+                    [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.standardproduct"]]
+                    [:gmd:description [:gco:CharacterString "Standard Product"]]]]))
             (collection-citation/convert-creator c)
             (collection-citation/convert-editor c)
             (collection-citation/convert-publisher c)
@@ -331,6 +338,7 @@
             (spatial/generate-resolution-and-coordinate-system-horizontal-data-resolutions c)
             (spatial/generate-vertical-domain c)
             (spatial/generate-orbit-parameters c)
+            (spatial/generate-orbit-parameters-foot-prints c)
             (for [temporal (:TemporalExtents c)
                   rdt (:RangeDateTimes temporal)]
               [:gmd:temporalElement

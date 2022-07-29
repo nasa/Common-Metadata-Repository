@@ -50,7 +50,7 @@
                            variable-alias)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 250 
              :mb 0.0
@@ -71,7 +71,7 @@
                            variable-alias)
                    options)]
     (is (= 200 (:status response)))
-    (is (= "cmr-service-bridge.v2.1; format=json"
+    (is (= "cmr-service-bridge.v3; format=json"
            (get-in response [:headers :cmr-media-type])))
     (is (= [{:bytes 250 
              :mb 0.0

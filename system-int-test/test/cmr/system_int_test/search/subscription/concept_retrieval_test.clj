@@ -118,7 +118,7 @@
 (deftest retrieve-subscription-by-concept-id-various-read-permission
   ;; We support UMM JSON format; No format and any format are also accepted.
   (let [_ (mock-urs/create-users (s/context) [{:username "someSubId" :password "Password"}])
-        coll1 (data-core/ingest-umm-spec-collection "PROV1"
+        coll1 (data-core/ingest-umm-spec-collection "PROV2"
                (data-umm-c/collection
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})

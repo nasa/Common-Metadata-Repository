@@ -8,7 +8,6 @@
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common-app.services.search.related-item-resolver :as related-item-resolver]
    [cmr.common-app.services.search.results-model :as results]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as mt]
@@ -39,17 +38,17 @@
   [{:keys [result-format result-features all-revisions? sort-keys concept-type] :as query}]
   (and ;;Collections won't be direct transformer queries since their metadata is cached. We'll use
        ;; elastic + the metadata cache for them
-       (= :granule concept-type)
-       (specific-items-query? query)
-       (mt/transformer-supported-format? result-format)
-       (not all-revisions?)
+   (= :granule concept-type)
+   (specific-items-query? query)
+   (mt/transformer-supported-format? result-format)
+   (not all-revisions?)
 
-       ;; Facets and tags require elastic search
-       (not-any? #(contains? #{:facets :tags} %) result-features)
-       ;; Sorting hasn't been specified or is set to the default value
-       ;; Note that we don't actually sort items by the default sort keys
-       ;; See issue CMR-607
-       (or (nil? sort-keys) (= (cqm/default-sort-keys concept-type) sort-keys))))
+   ;; Facets and tags require elastic search
+   (not-any? #(contains? #{:facets :tags} %) result-features)
+   ;; Sorting hasn't been specified or is set to the default value
+   ;; Note that we don't actually sort items by the default sort keys
+   ;; See issue CMR-607
+   (or (nil? sort-keys) (= (cqm/default-sort-keys concept-type) sort-keys))))
 
 (defn- specific-items-from-elastic-query?
   "Returns true if the query is only for specific items that will come directly from elastic
@@ -68,7 +67,7 @@
   (and (not= false (:complicated-facets query))
        ((set (:result-features query)) :facets-v2)
        (util/any-true? #(facet-condition-resolver/has-field? query %)
-                  (fv2rf/facets-v2-params concept-type))))
+                       (fv2rf/facets-v2-params concept-type))))
 
 (defn- collection-and-granule-execution-strategy-determiner
   "Determines the execution strategy to use for the given query."
@@ -108,9 +107,9 @@
         items (metadata-cache/get-latest-formatted-concepts
                context concept-ids result-format skip-acls?)
         results (results/map->Results
-                  {:hits (count items)
-                   :items items
-                   :result-format result-format})]
+                 {:hits (count items)
+                  :items items
+                  :result-format result-format})]
     (common-qe/post-process-query-result-features context query nil results)))
 
 (defn- filter-query-results-with-acls
@@ -153,8 +152,10 @@
 (defn- update-facets
   "Update the orig-facets-with-count using the info in the all-facets-with-count."
   [orig-facets-with-count all-facets-with-count]
-  (for [title-val (map :title orig-facets-with-count)]
-    (some #(when (= title-val (:title %)) %) all-facets-with-count)))
+  (for [title-val (map :title orig-facets-with-count)
+        :let [match (some #(when (= title-val (:title %)) %) all-facets-with-count)]
+        :when (some? match)]
+    match))
 
 (defn- get-facets-with-count
   "Extract out the facet part that contains title and count, amoung other things:
@@ -195,7 +196,7 @@
         ;; replace the original facets with the facets in all-facets that have the same :title.
         updated-orig-facets-with-count (update-facets orig-facets-with-count all-facets-with-count)
         updated-orig-first-facets-children
-         (assoc orig-first-facets-children :children updated-orig-facets-with-count)]
+        (assoc orig-first-facets-children :children updated-orig-facets-with-count)]
     ;;Return the facets-for-field with the first facets children being the updated-orig-first-facets-children
     (assoc-in facets-for-field [:facets :children] [updated-orig-first-facets-children])))
 
@@ -216,7 +217,7 @@
     ;; call get-facets-for-field again - with the query being query-with-all-facets-size.
     (if (get-facets-for-field-again? facets-size-for-field facets-for-field)
       (let [query-with-all-facets-size
-             (assoc query :facets-size (merge facets-size-map {field fv2rf/UNLIMITED_TERMS_SIZE}))
+            (assoc query :facets-size (merge facets-size-map {field fv2rf/UNLIMITED_TERMS_SIZE}))
             all-facets-for-field (get-facets-for-field context query-with-all-facets-size field)]
         (update-facets-for-field facets-for-field all-facets-for-field))
       facets-for-field)))
@@ -256,5 +257,6 @@
                                           (set facet-fields-in-query))
         query (assoc query :complicated-facets false :facet-fields base-facet-fields)
         base-result (common-qe/execute-query context query)
-        facet-results (map #(get-facets-for-field context query %) facet-fields-in-query)]
-    (merge-search-result-facets concept-type base-result facet-results)))
+        facet-results (map #(get-facets-for-field context query %) facet-fields-in-query)
+        merge-results (merge-search-result-facets concept-type base-result facet-results)]
+    merge-results))

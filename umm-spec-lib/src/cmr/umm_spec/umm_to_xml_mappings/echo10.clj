@@ -169,6 +169,7 @@
              [:Title (:Title assoc-doi)]
              [:Authority (:Authority assoc-doi)]])])
      [:CollectionDataType (:CollectionDataType c)]
+     [:StandardProduct (:StandardProduct c)]
      (when-let [revision-date (dates/metadata-update-date c)]
        [:RevisionDate (p/clj-time->date-time-str revision-date)])
      [:SuggestedUsage (util/trunc (:Purpose c) 4000)]

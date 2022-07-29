@@ -3,6 +3,7 @@
   through an environment variable. Configuration items should be added using the defconfig macro."
   (:require
    [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.set :as set]
    [clojure.string :as str]
@@ -234,3 +235,10 @@
                (pr-str unknown-vars))
          true)
        false))))
+
+(defconfig approved-pipeline-documents
+  "This string should contain JSON that looks like:
+   {'grid': ['0.0.1'],
+    'variable': ['1.8.0']}"
+  {:default ""
+   :parser #(json/parse-string % true)})

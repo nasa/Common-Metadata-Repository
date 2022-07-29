@@ -1,0 +1,13 @@
+{
+  "Name": "sample_subscription_v1.1",
+  "Type": "collection",
+  "EmailAddress": "someEmail@gmail.com",
+  "CollectionConceptId" : "C1200000018-PROV1",
+  "Query": "polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78",
+  "SubscriberId": "someSubId",
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/umm/subscription/v1.1",
+    "Name": "UMM-Sub",
+    "Version": "1.1"
+  }
+}

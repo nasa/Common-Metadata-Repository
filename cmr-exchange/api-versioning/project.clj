@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-api-versioning "0.1.0-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-api-versioning "0.1.1-SNAPSHOT"
   :description "A CMR utility library allowing services to provide versioned REST APIs"
   :url "https://github.com/cmr-exchange/cmr-api-versioning"
   :license {:name "Apache License, Version 2.0"
@@ -23,8 +23,8 @@
   :dependencies [[clojusc/trifl "0.4.0"]
                  [clojusc/twig "0.4.0"]
                  [com.stuartsierra/component "0.3.2"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.2.0-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-http-kit "0.1.3-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
+                 [gov.nasa.earthdata/cmr-http-kit "0.2.0"]
                  [metosin/reitit-ring "0.2.4"]
                  [org.clojure/clojure "1.9.0"]]
   :manifest {"CMR-Plugin" "service-bridge-app"}
@@ -61,7 +61,7 @@
                     :plugins [[jonase/eastwood "0.3.1"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.1"]
-                              [lein-kibit "0.1.6"]]}
+                              [lein-kibit "0.1.8"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
                               [test2junit "1.4.2"]]

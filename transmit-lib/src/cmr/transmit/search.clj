@@ -51,7 +51,7 @@
         {:keys [headers body]} response
         status (int (:status response))]
     (case status
-      200 (Integer/parseInt (get headers "CMR-Hits"))
+      200 (Long/parseLong (get headers "CMR-Hits"))
       ;; default
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s"
@@ -67,12 +67,22 @@
              :granule-ur (cx/string-at-path % [:name])
              :location (cx/string-at-path % [:location])}) ref-elems)))
 
-(defn-timed find-granule-references
+(defn parse-collection-response
+  "Parse xml search response body and return the collection references"
+  [xml]
+  (let [parsed (x/parse-str xml)
+        ref-elems (cx/elements-at-path parsed [:references :reference])]
+    (map #(util/remove-nil-keys
+            {:concept-id (cx/string-at-path % [:id])
+             :name (cx/string-at-path % [:name])
+             :location (cx/string-at-path % [:location])}) ref-elems)))
+
+(defn-timed find-concept-references
   "Find granules by parameters in a post request. The function returns an array of granule
   references, each reference being a map having concept-id and granule-ur as the fields"
-  [context params]
+  [context params concept-type]
   (let [conn (config/context->app-connection context :search)
-        request-url (str (conn/root-url conn) "/granules.xml")
+        request-url (str (conn/root-url conn) (format "/%ss.xml" (name concept-type)))
         request-body (dissoc params :token)
         token (:token params)
         header (ch/context->http-headers context)
@@ -89,12 +99,14 @@
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s" status body)))))
 
-(defn-timed validate-granule-search-params
+(defn-timed validate-search-params
   "Attempts to search granules using given params via a POST request. If the response contains a
   non-200 http code, returns the response body."
-  [context params]
+  [context params concept-type]
   (let [conn (config/context->app-connection context :search)
-        request-url (str (conn/root-url conn) "/granules.json")
+        request-url (str (conn/root-url conn) (case concept-type
+                                                :collection "/collections.json"
+                                                :granule "/granules.json"))
         request-body (-> params
                          (dissoc :token)
                          (assoc :page_size 0))

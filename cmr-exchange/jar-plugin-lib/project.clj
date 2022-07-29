@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-jar-plugin "0.1.0"
+(defproject gov.nasa.earthdata/cmr-jar-plugin "0.1.2"
   :description "A library for creating JAR-based plugins"
   :url "https://github.com/cmr-exchange/cmr-jar-plugin"
   :license {:name "Apache License, Version 2.0"
@@ -23,7 +23,7 @@
   :dependencies [[clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.0"]
                  [com.stuartsierra/component "0.3.2"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.2.2"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [org.clojure/clojure "1.9.0"]
                  [org.clojure/java.classpath "0.3.0"]]
   :aot [clojure.tools.logging.impl]
@@ -53,7 +53,7 @@
                     :plugins [[jonase/eastwood "0.3.3"]
                               [lein-ancient "0.6.15"]
                               [lein-bikeshed "0.5.1"]
-                              [lein-kibit "0.1.6"]]}
+                              [lein-kibit "0.1.8"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
                               [test2junit "1.4.2"]]

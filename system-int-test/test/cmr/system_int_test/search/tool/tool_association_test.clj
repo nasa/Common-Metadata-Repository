@@ -78,7 +78,7 @@
       (let [response (association-util/associate-by-concept-ids
                       token concept-id [{:concept-id "C100-P5"}])]
         (tool-util/assert-tool-association-bad-request
-         {["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
+         {["C100-P5"] {:errors ["User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C100-P5] to make the association."]}}
          response)))
 
     (testing "Associate to deleted collections"
@@ -107,7 +107,7 @@
         (tool-util/assert-tool-association-bad-request
          {[c2-p1] {:concept-id "TLA1200000028-CMR"
                    :revision-id 1}
-          ["C100-P5"] {:errors ["Collection [C100-P5] does not exist or is not visible."]}}
+          ["C100-P5"] {:errors ["User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C100-P5] to make the association."]}}
          response)))))
 
 (deftest associate-tool-failure-test

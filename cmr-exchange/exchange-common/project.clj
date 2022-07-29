@@ -14,7 +14,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-exchange-common "0.3.1-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-exchange-common "0.3.3"
   :description "Cross-project functionality, utilities, and general-use components"
   :url "https://github.com/cmr-exchange/cmr-exchange-common"
   :license {:name "Apache License, Version 2.0"
@@ -48,7 +48,7 @@
                     :test-paths ^:replace []
                     :plugins [[jonase/eastwood "0.3.4"]
                               [lein-ancient "0.6.15"]
-                              [lein-kibit "0.1.6"]]}
+                              [lein-kibit "0.1.8"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]]
                     :test-selectors {:unit #(not (or (:integration %) (:system %)))
