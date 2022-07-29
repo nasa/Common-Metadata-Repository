@@ -144,6 +144,11 @@
   (and (:contains-north-pole ring)
        (:contains-south-pole ring)))
 
+(defn point-order?
+  "Returns true if the points are in counter clockwise order"
+  [ring]
+  (= (:course-rotation-direction ring) :clockwise))
+
 (defn ring->arcs
   "Determines the arcs from the points in the ring."
   [^GeodeticRing ring]
