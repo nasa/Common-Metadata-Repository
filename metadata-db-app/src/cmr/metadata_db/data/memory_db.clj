@@ -284,14 +284,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB ConceptsStore Implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn generate-concept-id
   [db concept]
   (let [{:keys [concept-type provider-id]} concept
+        concept-sub-type (get concept "concept-sub-type")
         num (swap! (:next-id-atom db) inc)]
-   (cc/build-concept-id {:concept-type concept-type
-                         :sequence-number num
-                         :provider-id provider-id})))
+    (if (some? concept-sub-type)
+      (cc/build-generic-concept-id {:concept-type concept-sub-type
+                                    :sequence-number num
+                                    :provider-id provider-id})
+      (cc/build-concept-id {:concept-type concept-type
+                            :sequence-number num
+                            :provider-id provider-id}))))
 
 (defn get-concept-id
   [db concept-type provider native-id]

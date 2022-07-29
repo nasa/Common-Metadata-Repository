@@ -1,0 +1,21 @@
+{
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/generics/serviceentry/v1.0.0",
+    "Name": "ServiceEntry",
+    "Version": "1.0.0"
+  },
+  "SubConceptType": "SE",
+  "Indexes": [
+    {
+      "Description": "Name",
+      "Field": ".Name",
+      "Name": "Name",
+      "Mapping": "string"
+    }, {
+      "Description": "Legacy ID",
+      "Field": ".Id",
+      "Name": "Id",
+      "Mapping": "string"
+    }
+  ]
+}

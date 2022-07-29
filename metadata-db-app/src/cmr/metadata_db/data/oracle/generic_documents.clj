@@ -5,6 +5,7 @@
    [clojure.java.jdbc :as jdbc]
    [clojure.pprint :refer [pprint pp]]
    ;[cmr.common.log :refer [debug info warn error]]
+   [cmr.common.concepts :as common-concepts]
    [cmr.common.time-keeper :as tkeep]
    [cmr.common.util :as cutil]
    ;[cmr.metadata-db.data.oracle.concepts :as concepts]
@@ -90,16 +91,24 @@
   (apply dissoc document fields-vec))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
+;; TODO: Generic work: shouldn't we use the same number generator as cmr.metadata-db.data.oracle.concepts/ generate-concept-id
+;; seq-num (:nextval (first (su/query db ["SELECT concept_id_seq.NEXTVAL FROM DUAL"])))
 (defn generate-concept-id
   [db document]
   (let [{:keys [concept-type provider-id]} document
+        concept-sub-type (get document "concept-sub-type")
         raw-count (-> db
                       (jdbc/query ["SELECT count(DISTINCT concept_id) AS last FROM CMR_GENERIC_DOCUMENTS"])
                       first
                       :last)
         next (+ 1200000001 raw-count)]
-    (format "X%s-%s" next provider-id)))
+    (if (some? concept-sub-type)
+      (common-concepts/build-generic-concept-id {:concept-type concept-sub-type
+                                                 :provider-id provider-id
+                                                 :sequence-number (biginteger next)})
+      (common-concepts/build-concept-id {:concept-type concept-type
+                                         :provider-id provider-id
+                                         :sequence-number (biginteger next)}))))
 
 ;; WORKS 
 (defn save-concept

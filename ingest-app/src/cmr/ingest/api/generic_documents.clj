@@ -4,11 +4,13 @@
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.java.io :as jio]
+   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common-app.services.ingest.subscription-common :as sub-common]
+   [cmr.common.concepts :as common-concepts]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.ingest.api.core :as api-core]
@@ -32,7 +34,11 @@
 ;; exactly containing a directory with the version number prefixed with 'v'. Each
 ;; directory is expected to have a schema.json and an index.json file.
 (def approved-generics {:grid ["0.0.1"]
-                        :variable ["1.8.0"]})
+                        :variable ["1.8.0"]
+                        :dataqualitysummary ["1.0.0"]
+                        :orderoption ["1.0.0"]
+                        :serviceentry ["1.0.0"]
+                        :serviceoption ["1.0.0"]})
 
 (defn approved-generic?
   "Check to see if a requested generic is on the approved list"
@@ -56,6 +62,20 @@
         (js-validater/validate-json schema-obj raw-json))
       ["Schema not found"])))
 
+(defn get-sub-concept-type-concept-id-prefix
+  "There are many concept types within generics. Read in the concept-id prefix for this specific one."
+  [spec-key version]
+  (if-some [index-url (jio/resource (format "generics/%s/v%s/index.json"  
+                                            (name spec-key)  
+                                            version))]
+    (let [index-file-str (slurp index-url)
+          index-file (json/parse-string index-file-str true)
+          index-sub-concept (:SubConceptType index-file)]
+      (if index-sub-concept
+        index-sub-concept
+        (:generic (set/map-invert cmr.common.concepts/concept-prefix->concept-type))))
+    (:generic (set/map-invert cmr.common.concepts/concept-prefix->concept-type))))
+
  (defn create-generic-document
    [request]
    "Check a document for fitness to be ingested, and then ingest it. Records can
@@ -71,10 +91,11 @@
          document (json/parse-string raw-document true)
          specification (:MetadataSpecification document)
          spec-key (keyword (string/lower-case (:Name specification)))
-         spec-version (:Version specification)]
+         spec-version (:Version specification)
+         document (assoc document :concept-sub-type (get-sub-concept-type-concept-id-prefix spec-key spec-version))]
      (if-some [validation-errors (validate-json-against-schema spec-key spec-version raw-document)]
        validation-errors
-       (let [result (tgen/create-generic request-context provider-id raw-document)]
+       (let [result (tgen/create-generic request-context provider-id document)]
          result))))
 
  (defn read-generic-document
