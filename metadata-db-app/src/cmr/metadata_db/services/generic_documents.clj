@@ -94,7 +94,7 @@
     (raw-generic->response saved)))
 
 (defn read-generic-document
-  "Return the lattest record using the concept-id under the given provider"
+  "Return the latest record using the concept-id under the given provider"
   [context params provider-id native-id]
   (let [db (mdb-util/context->db context)
         provider {:provider-id provider-id}
