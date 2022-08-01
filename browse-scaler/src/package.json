@@ -34,6 +34,6 @@
     "sinon": "^11.1.2"
   },
   "resolutions": {
-    "ansi-regex": "^5.0.1"
+    "node-fetch": "3.2.10"
   }
 }
