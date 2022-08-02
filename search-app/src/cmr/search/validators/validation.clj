@@ -62,6 +62,14 @@
           :umm-json :umm-json-results}
         (umm-versioned-result-formats :subscription)))
 
+;; TODO: Generic work: Wrap this in a doseq for all of the other generic types.
+(defmethod cqv/supported-result-formats :dataqualitysummary
+  [_]
+  (into #{:xml :json
+          ;; umm-json supported with and without versions
+          :umm-json :umm-json-results}
+        (umm-versioned-result-formats :dataqualitysummary)))
+
 (def all-revisions-supported-result-formats
   "Supported search result format when all-revisions? is true."
   (into #{:legacy-umm-json :xml :umm-json :umm-json-results}

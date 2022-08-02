@@ -15,10 +15,18 @@
 ;;; Constants
 
 (def find-by-concept-id-concept-types
-  #{:collection :granule :service :tool :variable :subscription})
+  (concat #{:collection :granule :service :tool :variable :subscription} (concepts/get-generic-concept-types-array))) 
+
+(defn generate-generic-supported-concept-id-retrieval-mime-types
+  "Generates the mimetypes that can be retrieved for generic documents"
+  []
+  (zipmap (concepts/get-generic-concept-types-array) (repeat #{mt/any
+                                                               mt/xml
+                                                               mt/umm-json})))
 
 (def supported-concept-id-retrieval-mime-types
-  {:collection #{mt/any
+  (merge 
+   {:collection #{mt/any
                  mt/html
                  mt/xml    ; allows retrieving native format
                  mt/native ; retrieve in native format
@@ -53,7 +61,8 @@
                    mt/umm-json}
    :variable #{mt/any
                mt/xml
-               mt/umm-json}})
+               mt/umm-json}}
+   (generate-generic-supported-concept-id-retrieval-mime-types)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Support Functions
@@ -83,7 +92,7 @@
         concept-type (concepts/concept-id->type concept-id)
         concept-type-supported (supported-concept-id-retrieval-mime-types concept-type)]
 
-    (when-not (contains? find-by-concept-id-concept-types concept-type)
+    (when-not (some #(= % concept-type) find-by-concept-id-concept-types)
       (svc-errors/throw-service-error
        :bad-request
        (format (str "Retrieving concept by concept id is not supported for "

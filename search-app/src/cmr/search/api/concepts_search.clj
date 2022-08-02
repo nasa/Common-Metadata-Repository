@@ -41,10 +41,15 @@
 (defn- concept-type-path-w-extension->concept-type
   "Parses the concept type and extension (\"granules.echo10\") into the concept type"
   [concept-type-w-extension]
-  (-> #"^(.+)s(?:\..+)?"
-      (re-matches concept-type-w-extension)
-      second
-      keyword))
+  (let [ies (-> #"^(.+)ies(?:\..+)?"
+                (re-matches concept-type-w-extension)
+                second)]
+    (if (some? ies)
+      (keyword (str ies "y"))
+      (-> #"^(.+)s(?:\..+)?"
+          (re-matches concept-type-w-extension)
+          second
+          keyword))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Support Functions
@@ -365,7 +370,8 @@
 
 (def search-routes
   "Routes for /search/granules, /search/collections, etc."
-  (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services))(?:\..+)?"] [path-w-extension]
+  ;; TODO: Generic work: Think about putting this into a config file and creating the reg-ex from there.
+  (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services)|(?:dataqualitysummaries))(?:\..+)?"] [path-w-extension]
     (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}

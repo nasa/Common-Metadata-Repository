@@ -5,6 +5,7 @@
    [cheshire.core :as json]
    [clj-time.core :as t]
    [clj-time.format :as f]
+   [clojure.string :as string]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
@@ -442,7 +443,7 @@
                 ;; the metadata and not the concept id mapping
                 concept-type-raw (cs/concept-id->type concept-id)
                 concept-type (if (= :generic concept-type-raw)
-                                   (keyword (str "generic-" (clojure.string/lower-case
+                                   (keyword (str "generic-" (string/lower-case
                                                              (get-in parsed-concept
                                                                      [:MetadataSpecification :Name]))))
                                    concept-type-raw)

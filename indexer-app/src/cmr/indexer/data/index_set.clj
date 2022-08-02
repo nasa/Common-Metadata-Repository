@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
+   [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -1049,8 +1050,10 @@
 (defn resolve-generic-concept-type
   "if the concept type is generic, figure out from the concept what the actual document type is"
   [concept-type concept]
-  (if (= :generic concept-type)
-    (let [reported-name (clojure.string/lower-case (get-in concept [:MetadataSpecification :Name]))
+  ;; TODO: Generic work: This let block occurs multiple times we should either figure out that we don't need 
+  ;; to do this or pass around the result or put it into a common function. 
+  (if (cs/generic-concept? concept-type)
+    (let [reported-name (string/lower-case (get-in concept [:MetadataSpecification :Name]))
           reported-version (get-in concept [:MetadataSpecification :Version])
           approved (approved-generic?
                     (keyword reported-name)
@@ -1075,7 +1078,6 @@
                    (meta-db/get-concept context concept-id revision-id))]
      (get-concept-index-names context concept-id revision-id options concept)))
   ([context concept-id revision-id {:keys [target-index-key all-revisions-index?]} concept]
-
    (let [concept-type (cs/concept-id->type concept-id)
          index-concept-type (resolve-generic-concept-type concept-type concept)
          indexes (get-in (get-concept-type-index-names context) [:index-names index-concept-type])]
@@ -1113,10 +1115,16 @@
          [(get indexes :all-subscription-revisions)]
          [(get indexes (or target-index-key :subscriptions))])
 
-       :generic
+       ;; TODO Generic work: Figure out how to use cs/get-generic-concept-types-array or generic-concept?
+       (or :generic
+           :dataqualitysummary
+           :orderoption
+           :serviceoption
+           :serviceentry)
        ;; Generics are a bunch of document types, find out which one to work with
        ;; and return the index name for those
-       (let [reported-type (clojure.string/lower-case (get-in concept [:MetadataSpecification :Name]))
+       ;; TODO: Generic work: I don't think we need to check by MetadataSpecification here anymore.
+       (let [reported-type (string/lower-case (get-in concept [:MetadataSpecification :Name]))
               reported-version (get-in concept [:MetadataSpecification :Version])
               approved ((cfg/approved-pipeline-documents) reported-type reported-version)]
          (when approved

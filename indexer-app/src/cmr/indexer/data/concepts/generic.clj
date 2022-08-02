@@ -109,8 +109,9 @@
                       :long-name-lowercase (util/safe-lowercase long-name))
                doc)))))
 
-(defmethod esearch/parsed-concept->elastic-doc :generic
-  ;; Public function called by the indexer framework when a document is needed.
-  [context concept parsed-concept]
-  ;; context is not needed for this work, so call a local function without it
-  (parsed-concept->elastic-doc-without-context concept parsed-concept))
+(doseq [concept-type (concepts/get-generic-concept-types-array)]
+  (defmethod esearch/parsed-concept->elastic-doc concept-type
+    ;; Public function called by the indexer framework when a document is needed.
+    [context concept parsed-concept]
+    ;; context is not needed for this work, so call a local function without it
+    (parsed-concept->elastic-doc-without-context concept parsed-concept)))

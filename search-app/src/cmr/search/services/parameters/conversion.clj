@@ -197,6 +197,16 @@
    :concept-id :string
    :keyword :keyword})
 
+;; TODO: Generic work: See if we can wrap this in a doseq for all generic types or get from 
+;; a config file.
+(defmethod common-params/param-mappings :dataqualitysummary
+  [_]
+  {:name :string
+   :id :string
+   :provider :string
+   :native-id :string
+   :concept-id :string})
+
 (defmethod common-params/always-case-sensitive-fields :collection
   [_]
   #{:concept-id :variable-concept-id :service-concept-id :tool-concept-id})
@@ -513,6 +523,15 @@
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
                                  :subscription params)]
+    [(dissoc params :all-revisions)
+     (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
+
+;; TODO: Generic work: See if we can wrap this in a doseq for all generic types or get from 
+;; a config file.
+(defmethod common-params/parse-query-level-params :dataqualitysummary
+  [concept-type params]
+  (let [[params query-attribs] (common-params/default-parse-query-level-params
+                                :dataqualitysummary params)]
     [(dissoc params :all-revisions)
      (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
 

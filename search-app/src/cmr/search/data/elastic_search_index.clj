@@ -194,6 +194,13 @@
                  "1_subscriptions")
    :type-name "subscription"})
 
+(defmethod common-esi/concept-type->index-info :dataqualitysummary
+  [context _ query]
+  {:index-name (if (:all-revisions? query)
+                 "1_all_generic_dataqualitysummary_revisions"
+                 "1_generic_dataqualitysummary")
+   :type-name "dataqualitysummary"})
+
 (defn context->conn
   [context]
   (get-in context [:system :search-index :conn]))
