@@ -83,7 +83,7 @@
                             :revision-date (dtp/clj-time->date-time-str (tkeeper/now))
                             :native-id native-id)
         concept-id (data/generate-concept-id db document-add)
-        metadata (dissoc document-add "concept-sub-type")
+        metadata (dissoc document-add :concept-sub-type)
         metadata (assoc metadata :concept-id concept-id)
         _ (data/save-concept db provider-id metadata)
         ;; TODO: Generic work: I think this is going to cause a race condition! We should return the actual thing that was saved and not get it back.
