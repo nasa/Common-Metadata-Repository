@@ -1,9 +1,10 @@
-import gremlin from 'gremlin';
-const gremlinStatistics = gremlin.process.statics;
-const GraphPredicate = gremlin.process.P;
+import gremlin from 'gremlin'
+
 import { indexGroup } from './indexGroup'
 import { createHasAccessToEdge } from './createHasAccessToEdge'
-import { deleteCollectionAcl } from './deleteCollectionAcl'
+import { deleteAcl } from './deleteAcl'
+
+const gremlinStatistics = gremlin.process.statics
 
 /**
  * Create a new Acl vertex with properties from the "recieving SNS topic message"
@@ -12,21 +13,26 @@ import { deleteCollectionAcl } from './deleteCollectionAcl'
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server in gremlin fashion usually, g
  * @returns {Map} //Returns a Map will the results of the query i.e. the identity of the new ACL vertex
  */
-export const indexCollectionAcl = async (conceptId, aclObj, gremlinConnection) => {
-  const { catalog_item_identity: {
-    'name': name,
-    'provider_id': providerId,
-    'collection_identifier': collectionIdentifier
-  },
-  'group_permissions': groupPermissions,
-  'legacy_guid': legacyGuid } = aclObj
-  
-  //Call delete acl to help ensure that updates can be done to the graphDB records
-  await deleteCollectionAcl(conceptId, gremlinConnection)
+export const indexAcl = async (conceptId, aclObj, gremlinConnection) => {
+  const {
+    catalog_item_identity: catalogItemIdentity = {},
+    group_permissions: groupPermissions,
+    legacy_guid: legacyGuid
+  } = aclObj
+
+  const {
+    name,
+    provider_id: providerId,
+    collection_identifier: collectionIdentifier
+  } = catalogItemIdentity
+
+  await deleteAcl(conceptId, gremlinConnection)
+
   let aclVertex = null
-  //TODO here we need to figure out which fields are optional and which are not
-  if (!collectionIdentifier){
+
+  if (!collectionIdentifier) {
     console.log('This does not have a collection identifier')
+
     return false
   }
 
@@ -34,44 +40,49 @@ export const indexCollectionAcl = async (conceptId, aclObj, gremlinConnection) =
     const addVCommand = gremlinConnection.addV('acl').property('id', conceptId)
     addVCommand.property('name', name).property('providerId', providerId).property('legacyGuid', legacyGuid)
     // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
-    aclVertex = await gremlinConnection
-    .V()
-    .hasLabel('acl')
-    .has('id', conceptId)
-    .fold()
-    .coalesce(
-    gremlinStatistics.unfold(),
-    addVCommand
-    )
-    .next()
 
+    aclVertex = await gremlinConnection
+      .V()
+      .hasLabel('acl')
+      .has('id', conceptId)
+      .fold()
+      .coalesce(
+        gremlinStatistics.unfold(),
+        addVCommand
+      )
+      .next()
   } catch (error) {
     console.log(`Error inserting acl node [${conceptId}]: ${error.message}`)
-    console.log(error)
+
     return false
   }
+
   const { value = {} } = aclVertex
   const { id: aclId } = value // The id in the graphDB for the acl node not a concept id property
   // console.log('values stored in acl', aclId)
   // if the group permissions and exist and there are more than one of them
-  if (groupPermissions && groupPermissions.length > 0){
+  if (groupPermissions && groupPermissions.length > 0) {
     await groupPermissions.forEachAsync(async (group) => {
       await indexGroup(group, gremlinConnection, conceptId)
     })
   }
+
   // if there are collections in the collection identifer list i.e it is not an all collections acl
   // There is a minimum length of 1 collection required for a collection identifier field in the schema
   // we'll need to figure out temporal and access value type
-   // parse out the concept Ids list
-  //console.log(concept_ids);
+  // parse out the concept Ids list
+
   // TODO we need to find out if the schema requires certain components in a specific way that we are missing
-  if (collectionIdentifier && collectionIdentifier.concept_ids.length > 0){
-    const { concept_ids } = collectionIdentifier
-    await concept_ids.forEachAsync(async (concept_id) => {
-        await createHasAccessToEdge(concept_id, gremlinConnection, aclId)
+  if (collectionIdentifier && collectionIdentifier.concept_ids.length > 0) {
+    const { concept_ids: conceptIds } = collectionIdentifier
+
+    await conceptIds.forEachAsync(async (edgeConceptId) => {
+      await createHasAccessToEdge(edgeConceptId, gremlinConnection, aclId)
     })
   }
-  const { id: nodeId } = value;
-  console.log(`Node [${nodeId}] for acl - ${conceptId}] successfully inserted into graph db.`);
-  return aclVertex;
+
+  const { id: nodeId } = value
+  console.log(`Node [${nodeId}] for acl - ${conceptId}] successfully inserted into graph db.`)
+
+  return aclVertex
 }

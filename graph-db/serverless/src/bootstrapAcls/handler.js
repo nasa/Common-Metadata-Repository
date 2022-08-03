@@ -1,12 +1,11 @@
-//TODO don't forget that this has to be added to the serverless.yml file
-import { fetchCollectionAcls } from '../utils/cmr/fetchCollectionAcls'
+import { fetchPageFromAcls } from '../utils/cmr/fetchPageFromAcls'
 import { getEchoToken } from '../utils/cmr/getEchoToken'
 import { initializeGremlinConnection } from '../utils/gremlin/initializeGremlinConnection'
 
 let gremlinConnection
 let token
-// TODO what is this event referring to? I guess some file
-const bootstrapAcls = async (event) => {
+
+const bootstrapAcls = async () => {
   // Prevent creating more tokens than necessary
   if (token === undefined) {
     token = await getEchoToken()
@@ -17,14 +16,14 @@ const bootstrapAcls = async (event) => {
     gremlinConnection = initializeGremlinConnection()
   }
 
-  const { Records: bootstrapEvents } = event
+  // Fetch all CMR Collections and index each page
+  await fetchPageFromAcls({
+    searchAfter: null,
+    token,
+    gremlinConnection
+  })
 
-  const { body } = bootstrapEvents[0]
-
-  // Fetch all Acls in env and index them into graphDb
-  const fetchedAcls = await fetchCollectionAcls(token)
-  
-  console.log('Bootstrap Acls completed.')
+  console.log('Bootstrap completed.')
 
   return {
     isBase64Encoded: false,

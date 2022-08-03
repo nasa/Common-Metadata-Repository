@@ -1,4 +1,5 @@
 const conceptTypes = {
+  A: 'acl',
   C: 'collection',
   G: 'granule',
   S: 'service',
