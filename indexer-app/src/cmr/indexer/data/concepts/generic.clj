@@ -69,10 +69,11 @@
   (let [{:keys [concept-id revision-id deleted provider-id user-id
                 revision-date format-key extra-fields]} concept
         long-name (:LongName parsed-concept) ; should this exist as a required field
+        ;; TODO: Generic work: Need to remove this section 
+        ;; we already have checked for approval in the ingest application. 
         gen-name (util/safe-lowercase (get-in parsed-concept [:MetadataSpecification :Name]))
         gen-ver (get-in parsed-concept [:MetadataSpecification :Version])
-        approved (approved-generic? (keyword gen-name) gen-ver)
-        ]
+        approved (approved-generic? (keyword gen-name) gen-ver)]
     (when approved
       (let [index-data-file (format "schemas/%s/v%s/index.json" gen-name gen-ver)
         index-file-raw (slurp (clojure.java.io/resource index-data-file))

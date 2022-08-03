@@ -12,7 +12,8 @@
    "DQS" :dataqualitysummary
    "OO" :orderoption
    "SO" :serviceoption
-   "SE" :serviceentry})
+   "SE" :serviceentry
+   "G" :grid})
 
 (def generic-concept-types->concept-prefix
   "Gets an array of generic concept types."

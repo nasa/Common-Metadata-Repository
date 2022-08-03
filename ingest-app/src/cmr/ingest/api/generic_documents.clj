@@ -32,7 +32,7 @@
   "validate a document, returns an array of errors if there are problems
    Parameters:
    * schema, the keyword name of an approved generic
-   * schema version, the schema version number, without 'v'" 
+   * schema version, the schema version number, without 'v'"
   [schema version raw-json]
 
   (if-not (gconfig/approved-generic? schema version)
@@ -48,8 +48,8 @@
 (defn get-sub-concept-type-concept-id-prefix
   "There are many concept types within generics. Read in the concept-id prefix for this specific one."
   [spec-key version]
-  (if-some [index-url (jio/resource (format "generics/%s/v%s/index.json"  
-                                            (name spec-key)  
+  (if-some [index-url (jio/resource (format "generics/%s/v%s/index.json"
+                                            (name spec-key)
                                             version))]
     (let [index-file-str (slurp index-url)
           index-file (json/parse-string index-file-str true)
@@ -59,56 +59,72 @@
         (:generic (set/map-invert cmr.common.concepts/concept-prefix->concept-type))))
     (:generic (set/map-invert cmr.common.concepts/concept-prefix->concept-type))))
 
- (defn create-generic-document
-   [request]
-   "Check a document for fitness to be ingested, and then ingest it. Records can
+(defn prepare-generic-document
+  "Prepares a document to be ingested so that search can retrieve the contents."
+  [request]
+  (let [{:keys [route-params request-context headers]} request
+        provider-id (:provider-id route-params)
+        concept-id (:concept-id route-params)
+        ; TODO: Generic work - add token check
+        raw-document (slurp (:body request))
+        document (json/parse-string raw-document true)
+        specification (:MetadataSpecification document)
+        spec-key (keyword (string/lower-case (:Name specification)))
+        spec-version (:Version specification)]
+    {:concept (assoc {} :metadata raw-document
+                        :provider-id (:provider-id route-params)
+                        :concept-id (:concept-id route-params)
+                        :format (str "application/vnd.nasa.cmr.umm+json;version=" spec-version)
+                        :concept-type ":generic"
+                        :native-id ""
+                        :user-id (api-core/get-user-id request-context headers)
+                        :extra-fields {}
+                        :concept-sub-type (get-sub-concept-type-concept-id-prefix spec-key spec-version))
+                        ;:umm-concept document)
+     :spec-key spec-key
+     :spec-version spec-version
+     :provider-id provider-id
+     :concept-id concept-id
+     :request-context request-context}))
+
+(defn create-generic-document
+  [request]
+  "Check a document for fitness to be ingested, and then ingest it. Records can
    be rejected for the following reasons:
    * unsupported schema
    * failed schema
    * failed validation rules (external) (pending)
-   * Document name not unique"
-   (let [{:keys [body route-params request-context]} request
-         ; TODO: Generic work - add token check
-         provider-id (:provider-id route-params)
-         raw-document (slurp (:body request))
-         document (json/parse-string raw-document true)
-         specification (:MetadataSpecification document)
-         spec-key (keyword (string/lower-case (:Name specification)))
-         spec-version (:Version specification)
-         document (assoc document :concept-sub-type (get-sub-concept-type-concept-id-prefix spec-key spec-version))]
-     (if-some [validation-errors (validate-json-against-schema spec-key spec-version raw-document)]
-       validation-errors
-       (let [result (tgen/create-generic request-context provider-id document)]
-         result))))
+   * Document name not unique" 
+  (let [res (prepare-generic-document request)
+        {:keys [spec-key spec-version provider-id request-context concept]} res
+        metadata (:metadata concept)]
+    (if-some [validation-errors (validate-json-against-schema spec-key spec-version metadata)]
+      validation-errors
+      (tgen/create-generic request-context provider-id (json/generate-string concept)))))
+    
 
- (defn read-generic-document
-   [request]
-   "Read a document from it's Concept-Id and return it"
-   (let [{:keys [route-params request-context]} request
-         provider-id (:provider-id route-params)
-         concept-id (:concept-id route-params)
+(defn read-generic-document
+  [request]
+  "Read a document from it's Concept-Id and return it"
+  (let [{:keys [route-params request-context]} request
+        provider-id (:provider-id route-params)
+        concept-id (:concept-id route-params)
        ;; The update-generic is a macro which allows for a list of URL parameters to be
        ;; passed in to be resolved by a function.
         response (tgen/read-generic request-context [provider-id concept-id])
-         document (:body response)]
-     {:status 200 :body document}))
+        document (:body response)]
+    {:status 200 :body document}))
 
- (defn update-generic-document [request]
-   (let [{:keys [body :route-params request-context]} request
-         ; TODO: Generic work - add token check
-         provider-id (:provider-id route-params)
-         concept-id (:concept-id route-params)
-         raw-document (slurp (:body request))
-         document (json/parse-string raw-document true)
-         specification (:MetadataSpecification document)
-         spec-key (keyword (string/lower-case (:Name specification)))
-         spec-version (:Version specification)]
-     (if-some [validation-errors (validate-json-against-schema spec-key spec-version raw-document)]
-       validation-errors
+(defn update-generic-document [request]
+  "Update a generic document to the database and elastic search"
+  (let [res (prepare-generic-document request)
+        {:keys [spec-key spec-version provider-id concept-id request-context concept]} res
+        metadata (:metadata concept)]
+    (if-some [validation-errors (validate-json-against-schema spec-key spec-version metadata)]
+      validation-errors
        ;; The update-generic is a macro which allows for a list of URL parameters to be
        ;; passed in to be resolved by a function.
-       (let [result (tgen/update-generic request-context [provider-id concept-id] raw-document)]
-         {:status 204}))))
+      (tgen/update-generic request-context [provider-id concept-id] (json/generate-string concept)))))
 
- (defn delete-generic-document [request]
-   (println "stub function: delete " request))
+(defn delete-generic-document [request]
+  (println "stub function: delete " request))

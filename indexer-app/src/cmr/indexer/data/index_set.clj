@@ -990,7 +990,7 @@
       :tool (get-concept-mapping-fn :tool)
       :subscription (get-concept-mapping-fn :subscription)
       ;:generic (get-concept-mapping-fn :generic) ; trick some layers
-      ; TODO: Generic work, automate this
+      ; TODO: Generic work: automate this
       :generic-grid (get-concept-mapping-fn :generic-grid)
       :generic-variable (get-concept-mapping-fn :generic-variable)
       :generic-dataqualitysummary (get-concept-mapping-fn :generic-dataqualitysummary)
@@ -1053,12 +1053,7 @@
   ;; TODO: Generic work: This let block occurs multiple times we should either figure out that we don't need 
   ;; to do this or pass around the result or put it into a common function. 
   (if (cs/generic-concept? concept-type)
-    (let [reported-name (string/lower-case (get-in concept [:MetadataSpecification :Name]))
-          reported-version (get-in concept [:MetadataSpecification :Version])
-          approved (approved-generic?
-                    (keyword reported-name)
-                    reported-version)]
-      (when approved (keyword (format "generic-%s" reported-name))))
+    (keyword (format "generic-%s" (name (cs/generic-concept-prefix->concept-type (:concept-sub-type concept)))))
     concept-type))
 
 (defn get-concept-index-names
@@ -1123,15 +1118,9 @@
            :serviceentry)
        ;; Generics are a bunch of document types, find out which one to work with
        ;; and return the index name for those
-       ;; TODO: Generic work: I don't think we need to check by MetadataSpecification here anymore.
-       (let [reported-type (string/lower-case (get-in concept [:MetadataSpecification :Name]))
-              reported-version (get-in concept [:MetadataSpecification :Version])
-              approved ((cfg/approved-pipeline-documents) reported-type reported-version)]
-         (when approved
-           (keyword (format "generic-%s" reported-type))
-           (if all-revisions-index?
-             [(get indexes (keyword (format "all-generic-%s-revisions" reported-type)))]
-             [(get indexes (keyword (format "generic-%s" reported-type)))])))
+       (if all-revisions-index?
+         [(get indexes (keyword (format "all-generic-%s-revisions" (name (cs/generic-concept-prefix->concept-type (:concept-sub-type concept))))))]
+         [(get indexes (keyword (format "generic-%s" (name (cs/generic-concept-prefix->concept-type (:concept-sub-type concept))))))])
 
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
