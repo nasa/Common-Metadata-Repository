@@ -10,7 +10,7 @@ let sqs
 /**
  * Fetch acls from the access control application
  * @param {String} token An optional Echo Token
- * @returns [{JSON}] An array of UMM JSON collection results
+ * @returns [{JSON}] An array of JSON acl results
  */
 export const fetchPageFromAcls = async ({
   searchAfter,

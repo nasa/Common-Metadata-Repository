@@ -10,17 +10,17 @@ const gremlinStatistics = gremlin.process.statics
  * @returns null
  */
 export const indexGroup = async (groupPermissions, gremlinConnection, aclId) => {
-  console.log('Reached the indexGroup function');
-  console.log('This is a seperate iteration', groupPermissions);
-  console.log(aclId);
+  console.log('Reached the indexGroup function')
+  console.log('This is a seperate iteration', groupPermissions)
+  console.log(aclId)
   const {
-    permissions: permissions,
-    group_id: group_id
+    permissions,
+    group_id: groupId
   } = groupPermissions
   console.log(permissions)
-  console.log('The group_id for this permission', group_id)
+  console.log('The group_id for this permission', groupId)
 
-  if (!group_id) {
+  if (!groupId) {
     console.log('This was a user_type not a group', groupPermissions)
     return false
   }
@@ -30,49 +30,47 @@ export const indexGroup = async (groupPermissions, gremlinConnection, aclId) => 
     // permissions is a property of the group vertex; it is a list
     const groupVertex = await gremlinConnection
       .V()
-      .has('group', 'id', group_id)
+      .has('group', 'id', groupId)
       .fold()
       .coalesce(
         gremlinStatistics.unfold(),
         gremlinConnection.addV('group')
-        .property('id', group_id)
-        .property('permissions', [permissions])
+          .property('id', groupId)
+          .property('permissions', [permissions])
       )
       .next()
-
     const { value: vertexValue = {} } = groupVertex
-    const { id: groupId } = vertexValue
+    const { id: vertexGroupId } = vertexValue
 
-    console.log(`group vertex [${groupId}] indexed for acl [${aclId}]`)
-    
-    // The permissions of an existing group could be updated by the acl event
-    const upPermsGroupVertex = await gremlinConnection
+    console.log(`group vertex [${vertexGroupId}] indexed for acl [${aclId}]`)
+
+    // The permissions of an existing group could be updated by the acl update event
+    await gremlinConnection
       .V()
-      .has('group', 'id', group_id)
+      .has('group', 'id', groupId)
       .property('permissions', permissions)
       .next()
       // TODO get the id of the property itself for better logging
-    const { value: upPermValue = {} } = upPermsGroupVertex
-    const { id: upGroupId } = upPermValue
-    console.log(`group vertex it's permissions have been updated [${upGroupId}]`)
+    // const { value: upPermValue = {} } = upPermsGroupVertex
+    // const { id: upGroupId } = upPermValue
+    console.log(`Updated group: [${groupId}] with permissions [${permissions}]`)
 
     // Create an edge between this group and its linked access control list
-     const groupEdge = await gremlinConnection
-     .V().hasLabel('acl').has('id',aclId).as('c')
-     .V(groupId)
+    const groupAclEdge = await gremlinConnection
+      .V().hasLabel('acl').has('id', aclId).as('c')
+      .V(groupId)
       .coalesce(
         gremlinStatistics.outE('accessControlledBy').where(gremlinStatistics.inV().as('c')),
         gremlinConnection.addE('accessControlledBy').to('c')
       )
       .next()
-    
-    const { value:edgeValue } = groupEdge
+
+    const { value: edgeValue } = groupAclEdge
     console.log(edgeValue)
-    console.log(`group edge [${edgeValue}] indexed to point to acl [${aclId}]`)
-    let success = 'successfuly indexed group'
-    console.log(success);
+    console.log(`Created Edge: [${edgeValue}] from group:[${groupId}] to acl [${aclId}]`)
+    const success = 'successfuly indexed group'
+    console.log(success)
     return success
-  
   } catch (error) {
     // Log useful information pertaining to the error
     console.log(`Failed to index group for acl [${aclId}] ${JSON.stringify(groupPermissions)}`)

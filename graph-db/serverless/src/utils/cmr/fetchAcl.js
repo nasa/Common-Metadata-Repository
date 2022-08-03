@@ -4,7 +4,7 @@ import axios from 'axios'
  * Fetch a single acl from CMR access control
  * @param {String} conceptId acl concept id from CMR
  * @param {String} token An optional Echo Token
- * @returns [{JSON}] TODO What schema is this data in
+ * @returns [{JSON}] An array of JSON acl results
  */
 export const fetchAcl = async (conceptId, token) => {
   const requestHeaders = {}
