@@ -34,16 +34,19 @@
    * schema, the keyword name of an approved generic
    * schema version, the schema version number, without 'v'"
   [schema version raw-json]
-
   (if-not (gconfig/approved-generic? schema version)
-    ["Schema not approved"]
+    (errors/throw-service-error
+     :invalid-data
+     (format "The [%s] schema on version [%s] is not an approved schema. This record cannot be ingested." schema version))
     (if-some [schema-url (jio/resource (format "generics/%s/v%s/schema.json"
                                                (name schema)
                                                version))]
       (let [schema-file (slurp schema-url)
             schema-obj (js-validater/json-string->json-schema schema-file)]
-        (js-validater/validate-json schema-obj raw-json))
-      ["Schema not found"])))
+        (js-validater/validate-json schema-obj raw-json true))
+      (errors/throw-service-error
+       :invalid-data
+       (format "While the [%s] schema with version [%s] is approved, it cannot be found." schema version)))))
 
 (defn get-sub-concept-type-concept-id-prefix
   "There are many concept types within generics. Read in the concept-id prefix for this specific one."
@@ -87,6 +90,21 @@
      :concept-id concept-id
      :request-context request-context}))
 
+(defn validate-document-against-schema
+  "This function will validate the passed in document with its schema and throw a 
+   service error if there is a validation error."
+  [spec version metadata ] 
+  (try 
+    (validate-json-against-schema spec version metadata) 
+    (catch org.everit.json.schema.ValidationException e 
+      (errors/throw-service-error 
+       :invalid-data 
+       (format (str "While validating the record against the [%s] schema with version [%s] " 
+                    "the following error occurred: [%s]. The record cannot be ingested.") 
+               spec 
+               version 
+               (.getMessage e))))))
+
 (defn create-generic-document
   [request]
   "Check a document for fitness to be ingested, and then ingest it. Records can
@@ -98,10 +116,8 @@
   (let [res (prepare-generic-document request)
         {:keys [spec-key spec-version provider-id request-context concept]} res
         metadata (:metadata concept)]
-    (if-some [validation-errors (validate-json-against-schema spec-key spec-version metadata)]
-      validation-errors
-      (tgen/create-generic request-context provider-id (json/generate-string concept)))))
-    
+    (validate-document-against-schema spec-key spec-version metadata)
+    (tgen/create-generic request-context provider-id (json/generate-string concept))))
 
 (defn read-generic-document
   [request]
@@ -120,11 +136,10 @@
   (let [res (prepare-generic-document request)
         {:keys [spec-key spec-version provider-id concept-id request-context concept]} res
         metadata (:metadata concept)]
-    (if-some [validation-errors (validate-json-against-schema spec-key spec-version metadata)]
-      validation-errors
-       ;; The update-generic is a macro which allows for a list of URL parameters to be
-       ;; passed in to be resolved by a function.
-      (tgen/update-generic request-context [provider-id concept-id] (json/generate-string concept)))))
+    (validate-document-against-schema spec-key spec-version metadata)
+    ;; The update-generic is a macro which allows for a list of URL parameters to be
+    ;; passed in to be resolved by a function.
+    (tgen/update-generic request-context [provider-id concept-id] (json/generate-string concept))))
 
 (defn delete-generic-document [request]
   (println "stub function: delete " request))

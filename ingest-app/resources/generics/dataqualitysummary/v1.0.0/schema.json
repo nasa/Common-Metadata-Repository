@@ -5,6 +5,10 @@
   "additionalProperties": false,
   "type": "object",
   "properties": {
+    "Id": {
+      "description": "The identifier that was assigned to this record by an older system. It is in the schema to preserve search API functionality in order to store this identifier.",
+      "type": "string"
+    },
     "Name": {
       "description": "The name associated with the quality summary of the data set.",
       "type": "string"
