@@ -87,10 +87,8 @@
 
 (defn index-collection
   "Bulk index all the granules in a collection"
-  ([context dispatcher provider-id collection-id]
-   (index-collection context dispatcher provider-id collection-id nil))
-  ([context dispatcher provider-id collection-id options]
-   (dispatch/index-collection dispatcher context provider-id collection-id options)))
+  [context dispatcher provider-id collection-id options]
+  (dispatch/index-collection dispatcher context provider-id collection-id options))
 
 (defn index-system-concepts
   "Bulk index all the tags, acls, and access-groups."
