@@ -598,7 +598,7 @@
                            {:provider "PROV1"
                             :polygon (apply st/search-poly intersects-both)})))))
 
-    (testing "Polygon search with 'ignorebr' flag"
+    (testing "Polygon search with 'ignore-br' flag"
       (comment)
       (testing "Polygon search that has no intersections with the granule"
         (= 0 (:hits (search/find-refs
