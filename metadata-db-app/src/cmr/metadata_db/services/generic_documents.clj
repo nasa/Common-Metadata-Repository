@@ -36,13 +36,6 @@
   {:Info (select-keys raw-doc info-fields)
    :Metadata (reduce #(dissoc %1 %2) raw-doc fields-to-drop)})
 
-;; drop this?
-(defn- create-error-map
-  ([error-id error-messsage]
-   (create-error-map error-id error-messsage nil))
-  ([error-id error-messsage extra]
-   (merge {:error error-id :error-message error-messsage} extra)))
-
 ;; TODO: Generic work: We need to be able to handle multiple revisions - right now every revision is 1
 ;; and we create a new document, instead of not letting them. - or maybe that is the design difference ;; between POST and PUT.
 ;(defn- set-or-generate-revision-id
