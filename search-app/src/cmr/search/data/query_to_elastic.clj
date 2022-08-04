@@ -8,6 +8,7 @@
    [cmr.common-app.services.search.query-model :as q]
    [cmr.common-app.services.search.query-order-by-expense :as query-expense]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -154,6 +155,12 @@
    :name :subscription-name
    :type :subscription-type})
 
+;; TODO Generic work - this would be nice to put into a configuration file.
+(doseq [concept-type (concepts/get-generic-concept-types-array)]
+  (defmethod q2e/concept-type->field-mappings concept-type
+    [_]
+    {:provider :provider-id}))
+
 (defmethod q2e/elastic-field->query-field-mappings :autocomplete
   [_]
   {:value :value
@@ -248,6 +255,13 @@
   {:provider "provider-id-lowercase"
    :name "subscription-name-lowercase"
    :type "subscription-type-lowercase"})
+
+;; TODO Generic work - this would be nice to put into a configuration file.
+(doseq [concept-type (concepts/get-generic-concept-types-array)]
+  (defmethod q2e/field->lowercase-field-mappings concept-type
+    [_]
+    {:provider :provider-id-lowercase
+     :native-id :native-id-lowercase}))
 
 (defn- doc-values-lowercase-field-name
   "Returns the doc-values field-name for the given field."
