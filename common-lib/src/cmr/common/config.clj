@@ -247,4 +247,4 @@
        false))))
 
 (when (seq (approved-pipeline-documents))
-  (info "Prototype feature toggle detected"))
+  (info (format "Generic documents pipeline supports: %s" (approved-pipeline-documents))))
