@@ -526,14 +526,13 @@
     [(dissoc params :all-revisions)
      (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
 
-;; TODO: Generic work: See if we can wrap this in a doseq for all generic types or get from 
-;; a config file.
-(defmethod common-params/parse-query-level-params :dataqualitysummary
-  [concept-type params]
-  (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                :dataqualitysummary params)]
-    [(dissoc params :all-revisions)
-     (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})]))
+(doseq [concept-type-key (cc/get-generic-concept-types-array)]
+  (defmethod common-params/parse-query-level-params concept-type-key
+    [concept-type params]
+    (let [[params query-attribs] (common-params/default-parse-query-level-params
+                                 concept-type-key params)]
+      [(dissoc params :all-revisions)
+       (merge query-attribs {:all-revisions? (= "true" (:all-revisions params))})])))
 
 (defn timeline-parameters->query
   "Converts parameters from a granule timeline request into a query."

@@ -76,6 +76,9 @@
    "revision-id"
    "_score"])
 
+;; TODO: Generic work: Should use a configuration file here?  Or is this OK to have in code?  
+;; Then we need a how to create a new concept for search wiki page or read me or something.
+
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."
   {:collection :entry-title
