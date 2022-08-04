@@ -66,7 +66,8 @@
    "revision-id"
    "_score"])
 
-(defmethod elastic-search-index/concept-type+result-format->fields [:dataqualitysummary :xml]
+(doseq [concept-type-key (concepts/get-generic-concept-types-array)]
+  (defmethod elastic-search-index/concept-type+result-format->fields [concept-type-key :xml]
   [concept-type query]
   ["name"
    "id"
@@ -74,7 +75,7 @@
    "concept-id"
    "deleted"
    "revision-id"
-   "_score"])
+   "_score"]))
 
 ;; TODO: Generic work: Should use a configuration file here?  Or is this OK to have in code?  
 ;; Then we need a how to create a new concept for search wiki page or read me or something.
