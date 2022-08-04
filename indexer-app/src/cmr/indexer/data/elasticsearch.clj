@@ -62,10 +62,10 @@
          (map :transaction-id (:variable-associations concept))))
 
 (defmethod get-elastic-version :service
- [concept]
- (apply max
-        (:transaction-id concept)
-        (map :transaction-id (:service-associations concept))))
+  [concept]
+  (apply max
+         (:transaction-id concept)
+         (map :transaction-id (:service-associations concept))))
 
 (defmethod get-elastic-version :subscription
   [concept]
@@ -90,7 +90,7 @@
            (= :service (cs/concept-id->type concept-id))
            (= :tool (cs/concept-id->type concept-id))
            (= :subscription (cs/concept-id->type concept-id))
-           (= :generic (cs/concept-id->type concept-id)))
+           (cs/generic-concept? concept-id))
        all-revisions-index?)
     (str concept-id "," revision-id)
     concept-id))
@@ -169,12 +169,11 @@
   (index-set-svc/reset context)
   (create-indexes context))
 
-(defrecord ESstore
-  [
-   ;; configuration of host, port and admin-token for elasticsearch
+(defrecord ESstore 
+  [;; configuration of host, port and admin-token for elasticsearch 
    config
 
-   ;; The connection to elasticsearch
+   ;; The connection to elasticsearch 
    conn]
 
 
@@ -189,7 +188,7 @@
       this))
 
   (stop [this system]
-        this))
+    this))
 
 (defn create-elasticsearch-store
   "Creates the Elasticsearch store."
@@ -298,7 +297,7 @@
     (doseq [resp bad-items
             :let [resp-data (or (:index resp) (:delete resp))
                   {:keys [_id status error]} resp-data]]
-         (log/error (format "[%s] failed bulk indexing with status [%d] and error [%s]" _id status error)))))
+      (log/error (format "[%s] failed bulk indexing with status [%d] and error [%s]" _id status error)))))
 
 (defn bulk-index-autocomplete-suggestions
   "Save a batch of suggestion documents in Elasticsearch."
@@ -318,7 +317,7 @@
      (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
            conn (context->conn context)
            response (es-helper/bulk conn bulk-operations)]
-      (handle-bulk-index-response response)))))
+       (handle-bulk-index-response response)))))
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
@@ -337,7 +336,7 @@
              :conflict
              (str "Save to Elasticsearch failed " (str result))))
           (errors/internal-error!
-            (str "Save to Elasticsearch failed " (str result))))))))
+           (str "Save to Elasticsearch failed " (str result))))))))
 
 (defn get-document
   "Get the document from Elasticsearch, raise error if failed."

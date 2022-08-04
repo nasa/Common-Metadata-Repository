@@ -67,12 +67,13 @@
   "Generate an all of the elastic document parts that do not require a context"
   [concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id user-id
-                revision-date format-key extra-fields]} concept
+                revision-date format-key extra-fields native-id]} concept
         long-name (:LongName parsed-concept) ; should this exist as a required field
+        ;; TODO: Generic work: Need to remove this section 
+        ;; we already have checked for approval in the ingest application. 
         gen-name (util/safe-lowercase (get-in parsed-concept [:MetadataSpecification :Name]))
         gen-ver (get-in parsed-concept [:MetadataSpecification :Version])
-        approved (approved-generic? (keyword gen-name) gen-ver)
-        ]
+        approved (approved-generic? (keyword gen-name) gen-ver)]
     (when approved
       (let [index-data-file (format "schemas/%s/v%s/index.json" gen-name gen-ver)
         index-file-raw (slurp (clojure.java.io/resource index-data-file))
@@ -95,7 +96,9 @@
          :provider-id-lowercase (util/safe-lowercase provider-id)
          :keyword keyword-values
          :user-id user-id
-         :revision-date revision-date}
+         :revision-date revision-date
+         :native-id native-id
+         :native-id-lowercase native-id}
         configs (gen-util/only-elastic-preferences (:Indexes index-data))
         ;; now add the configured indexes
         doc (reduce
@@ -109,8 +112,9 @@
                       :long-name-lowercase (util/safe-lowercase long-name))
                doc)))))
 
-(defmethod esearch/parsed-concept->elastic-doc :generic
-  ;; Public function called by the indexer framework when a document is needed.
-  [context concept parsed-concept]
-  ;; context is not needed for this work, so call a local function without it
-  (parsed-concept->elastic-doc-without-context concept parsed-concept))
+(doseq [concept-type (concepts/get-generic-concept-types-array)]
+  (defmethod esearch/parsed-concept->elastic-doc concept-type
+    ;; Public function called by the indexer framework when a document is needed.
+    [context concept parsed-concept]
+    ;; context is not needed for this work, so call a local function without it
+    (parsed-concept->elastic-doc-without-context concept parsed-concept)))

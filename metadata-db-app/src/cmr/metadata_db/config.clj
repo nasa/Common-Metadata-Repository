@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.config
   "Contains functions to retrieve metadata db specific configuration"
   (:require
+   [cmr.common.concepts :as concepts]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as conn]
@@ -55,20 +56,22 @@
 
 (def concept-type->exchange-name-fn
   "Maps concept types to a function that returns the name of the exchange to publish the message to."
-  {:granule ingest-exchange-name
-   :collection ingest-exchange-name
-   :tag ingest-exchange-name
-   :tag-association ingest-exchange-name
-   :service ingest-exchange-name
-   :service-association ingest-exchange-name
-   :access-group access-control-exchange-name
-   :acl access-control-exchange-name
-   :humanizer ingest-exchange-name
-   :variable ingest-exchange-name
-   :variable-association ingest-exchange-name
-   :tool ingest-exchange-name
-   :tool-association ingest-exchange-name
-   :subscription ingest-exchange-name})
+  (merge
+   {:granule ingest-exchange-name 
+    :collection ingest-exchange-name
+    :tag ingest-exchange-name
+    :tag-association ingest-exchange-name
+    :service ingest-exchange-name
+    :service-association ingest-exchange-name
+    :access-group access-control-exchange-name
+    :acl access-control-exchange-name
+    :humanizer ingest-exchange-name
+    :variable ingest-exchange-name
+    :variable-association ingest-exchange-name
+    :tool ingest-exchange-name
+    :tool-association ingest-exchange-name
+    :subscription ingest-exchange-name}
+   (zipmap (concepts/get-generic-concept-types-array) (repeat ingest-exchange-name))))
 
 (defconfig deleted-concept-revision-exchange-name
   "An exchange that will have messages passed to it whenever a concept revision is removed from

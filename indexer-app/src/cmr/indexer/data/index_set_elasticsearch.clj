@@ -2,6 +2,7 @@
   (:require
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
+   [clojure.string :as string]
    [clojurewerkz.elastisch.rest :as esr]
    [cmr.common.log :as log :refer [info warn]]
    [cmr.common.services.errors :as errors]
@@ -34,9 +35,8 @@
         ;; to start
         (when (= "dev" (cmr.common-app.config/release-version))
           (println "This instance of CMR will publish to Elastic Index:" index-name)
-          ;; TODO: Generic work: print out anything with generic in the name
-          (when (= index-name "1_generic_grid") (println "mappings:" mapping))
-          (when (= index-name "1_generic_variable") (println "mappings:" mapping)))
+          ;;TODO: Generic work: remove this block when no longer needed.
+          (when (string/includes? index-name "1_generic")  (println "mappings:" mapping)))
         (esi-helper/create conn index-name {:settings settings :mappings mapping})
         (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)

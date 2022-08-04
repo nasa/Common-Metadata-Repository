@@ -51,7 +51,9 @@
    :provider-id-lowercase m/string-field-mapping
    :keyword m/string-field-mapping
    :user-id m/string-field-mapping
-   :revision-date m/date-field-mapping})
+   :revision-date m/date-field-mapping
+   :native-id m/string-field-mapping
+   :native-id-lowercase m/string-field-mapping})
 
 ;; These are the types which are allowed to be expressed in the Index config file
 (def config->index-mappings
@@ -76,6 +78,8 @@
         (assoc (keyword index-name) converted-mapping)
         (assoc (keyword index-name-lower) converted-mapping))))
 
+;; TODO: Generic work: We need to check throws here. When something is wrong in the schema,
+;; 500 errors are thrown.
 (defn generic-mappings-generator
   "create a map with an index for each of the known generic types. This is used
    to inform Elastic on CMR boot on what an index should look like
@@ -91,8 +95,10 @@
                                        (format (name gen-name) gen-ver)
                                        (clojure.java.io/resource)
                                        (slurp))
-                  index-definition  (when-not (validate-index-against-schema index-definition-str)
-                                      (json/parse-string index-definition-str true))
+                  ;; TODO: Generic work - need to fix or change the validation - are we supposed to validate the
+                  ;; index.json file?
+                  index-definition  ;(when-not (validate-index-against-schema index-definition-str)
+                                      (json/parse-string index-definition-str true)
                   index-list (gen-util/only-elastic-preferences (:Indexes index-definition))]
               (if index-definition
                 (assoc data

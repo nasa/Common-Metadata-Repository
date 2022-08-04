@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
+   [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -989,9 +990,13 @@
       :tool (get-concept-mapping-fn :tool)
       :subscription (get-concept-mapping-fn :subscription)
       ;:generic (get-concept-mapping-fn :generic) ; trick some layers
-      ; TODO: Generic work, automate this
+      ; TODO: Generic work: automate this
       :generic-grid (get-concept-mapping-fn :generic-grid)
-      :generic-variable (get-concept-mapping-fn :generic-variable)})))
+      :generic-variable (get-concept-mapping-fn :generic-variable)
+      :generic-dataqualitysummary (get-concept-mapping-fn :generic-dataqualitysummary)
+      :generic-orderoption (get-concept-mapping-fn :generic-orderoption)
+      :generic-serviceoption (get-concept-mapping-fn :generic-serviceoption)
+      :generic-serviceentry (get-concept-mapping-fn :generic-serviceentry)})))
 
 (defn fetch-rebalancing-collection-info
   "Fetch rebalancing collections, their targets, and status."
@@ -1045,13 +1050,8 @@
 (defn resolve-generic-concept-type
   "if the concept type is generic, figure out from the concept what the actual document type is"
   [concept-type concept]
-  (if (= :generic concept-type)
-    (let [reported-name (clojure.string/lower-case (get-in concept [:MetadataSpecification :Name]))
-          reported-version (get-in concept [:MetadataSpecification :Version])
-          approved (approved-generic?
-                    (keyword reported-name)
-                    reported-version)]
-      (when approved (keyword (format "generic-%s" reported-name))))
+  (if (cs/generic-concept? concept-type)
+    (keyword (format "generic-%s" (name (cs/generic-concept-prefix->concept-type (:concept-sub-type concept)))))
     concept-type))
 
 (defn get-concept-index-names
@@ -1071,7 +1071,6 @@
                    (meta-db/get-concept context concept-id revision-id))]
      (get-concept-index-names context concept-id revision-id options concept)))
   ([context concept-id revision-id {:keys [target-index-key all-revisions-index?]} concept]
-
    (let [concept-type (cs/concept-id->type concept-id)
          index-concept-type (resolve-generic-concept-type concept-type concept)
          indexes (get-in (get-concept-type-index-names context) [:index-names index-concept-type])]
@@ -1109,17 +1108,18 @@
          [(get indexes :all-subscription-revisions)]
          [(get indexes (or target-index-key :subscriptions))])
 
-       :generic
+       ;; TODO Generic work: Figure out how to use cs/get-generic-concept-types-array or generic-concept?
+       (or :generic
+           :dataqualitysummary
+           :orderoption
+           :serviceoption
+           :serviceentry
+           :grid)
        ;; Generics are a bunch of document types, find out which one to work with
        ;; and return the index name for those
-       (let [reported-type (clojure.string/lower-case (get-in concept [:MetadataSpecification :Name]))
-              reported-version (get-in concept [:MetadataSpecification :Version])
-              approved ((cfg/approved-pipeline-documents) reported-type reported-version)]
-         (when approved
-           (keyword (format "generic-%s" reported-type))
-           (if all-revisions-index?
-             [(get indexes (keyword (format "all-generic-%s-revisions" reported-type)))]
-             [(get indexes (keyword (format "generic-%s" reported-type)))])))
+       (if all-revisions-index?
+         [(get indexes (keyword (format "all-generic-%s-revisions" (name (cs/generic-concept-prefix->concept-type (:concept-sub-type concept))))))]
+         [(get indexes (keyword (format "generic-%s" (name (cs/generic-concept-prefix->concept-type (:concept-sub-type concept))))))])
 
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
