@@ -60,14 +60,15 @@
 
 (defn index-granules-for-collection
   "Index the granules for the given collection."
-  [system provider-id collection-id {:keys [target-index-key completion-message rebalancing-collection?]}]
+  [system provider-id collection-id {:keys [start-index target-index-key completion-message rebalancing-collection?]}]
   (info "Indexing granule data for collection" collection-id)
   (let [db (helper/get-metadata-db-db system)
         provider (p/get-provider db provider-id)
         params {:concept-type :granule
                 :provider-id provider-id
                 :parent-collection-id collection-id}
-        concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system))
+        start-index (or start-index 0)
+        concept-batches (db/find-concepts-in-batches db provider params (:db-batch-size system) start-index)
         num-granules (index/bulk-index {:system (helper/get-indexer system)}
                                        concept-batches
                                        {:target-index-key target-index-key})]
