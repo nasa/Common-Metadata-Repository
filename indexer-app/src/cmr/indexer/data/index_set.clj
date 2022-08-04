@@ -1113,7 +1113,8 @@
            :dataqualitysummary
            :orderoption
            :serviceoption
-           :serviceentry)
+           :serviceentry
+           :grid)
        ;; Generics are a bunch of document types, find out which one to work with
        ;; and return the index name for those
        (if all-revisions-index?
