@@ -33,7 +33,7 @@
         ;; will know which one caused the issue by seing which index was the last
         ;; to start
         (when (= "dev" (cmr.common-app.config/release-version))
-          (println "Here in create-index function creating" index-name)
+          (println "This instance of CMR will publish to Elastic Index:" index-name)
           ;; TODO: Generic work: print out anything with generic in the name
           (when (= index-name "1_generic_grid") (println "mappings:" mapping))
           (when (= index-name "1_generic_variable") (println "mappings:" mapping)))

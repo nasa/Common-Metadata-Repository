@@ -30,7 +30,7 @@
   "validate a document, returns an array of errors if there are problems
    Parameters:
    * schema, the keyword name of an approved generic
-   * schema version, the schema version number, without 'v'" 
+   * schema version, the schema version number, without 'v'"
   [schema version raw-json]
 
   (if-not (gconfig/approved-generic? schema version)
@@ -49,11 +49,11 @@
    be rejected for the following reasons:
    * unsupported schema
    * failed schema
-   * failed validation rules (external) (pending)
-   * Document name not unique"
+   * failed validation rules (external) (pending)"
+   (println "Here in create-generic-document...")
    (let [{:keys [body route-params request-context]} request
-         ; TODO: Generic work - add token check
          provider-id (:provider-id route-params)
+         native-id (:native-id route-params)
          raw-document (slurp (:body request))
          document (json/parse-string raw-document true)
          specification (:MetadataSpecification document)
@@ -61,28 +61,29 @@
          spec-version (:Version specification)]
      (if-some [validation-errors (validate-json-against-schema spec-key spec-version raw-document)]
        validation-errors
-       (let [result (tgen/create-generic request-context provider-id raw-document)]
+       (let [result (tgen/create-generic request-context [provider-id native-id] raw-document)]
          result))))
 
  (defn read-generic-document
    [request]
-   "Read a document from it's Concept-Id and return it"
+   "Read a document from it's Native_Id and return it"
    (let [{:keys [route-params request-context]} request
          provider-id (:provider-id route-params)
-         concept-id (:concept-id route-params)
+         native-id (:native-id route-params)
        ;; The update-generic is a macro which allows for a list of URL parameters to be
        ;; passed in to be resolved by a function.
-        response (tgen/read-generic request-context [provider-id concept-id])
+        response (tgen/read-generic request-context [provider-id native-id])
          document (:body response)]
      {:status 200 :body document}))
 
- (defn update-generic-document [request]
+ (defn update-generic-document
+   [request]
    (let [{:keys [body :route-params request-context]} request
          ; TODO: Generic work - add token check
          provider-id (:provider-id route-params)
-         concept-id (:concept-id route-params)
+         native-id (:native-id route-params)
          raw-document (slurp (:body request))
-         document (json/parse-string raw-document true)
+         document (json/parse-string raw-document true) ; is this type always a map?
          specification (:MetadataSpecification document)
          spec-key (keyword (string/lower-case (:Name specification)))
          spec-version (:Version specification)]
@@ -90,7 +91,7 @@
        validation-errors
        ;; The update-generic is a macro which allows for a list of URL parameters to be
        ;; passed in to be resolved by a function.
-       (let [result (tgen/update-generic request-context [provider-id concept-id] raw-document)]
+       (let [result (tgen/update-generic request-context [provider-id native-id] raw-document)]
          {:status 204}))))
 
  (defn delete-generic-document [request]
