@@ -51,7 +51,9 @@
    :provider-id-lowercase m/string-field-mapping
    :keyword m/string-field-mapping
    :user-id m/string-field-mapping
-   :revision-date m/date-field-mapping})
+   :revision-date m/date-field-mapping
+   :native-id m/string-field-mapping
+   :native-id-lowercase m/string-field-mapping})
 
 ;; These are the types which are allowed to be expressed in the Index config file
 (def config->index-mappings

@@ -67,7 +67,7 @@
   "Generate an all of the elastic document parts that do not require a context"
   [concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id user-id
-                revision-date format-key extra-fields]} concept
+                revision-date format-key extra-fields native-id]} concept
         long-name (:LongName parsed-concept) ; should this exist as a required field
         ;; TODO: Generic work: Need to remove this section 
         ;; we already have checked for approval in the ingest application. 
@@ -96,7 +96,9 @@
          :provider-id-lowercase (util/safe-lowercase provider-id)
          :keyword keyword-values
          :user-id user-id
-         :revision-date revision-date}
+         :revision-date revision-date
+         :native-id native-id
+         :native-id-lowercase native-id}
         configs (gen-util/only-elastic-preferences (:Indexes index-data))
         ;; now add the configured indexes
         doc (reduce
