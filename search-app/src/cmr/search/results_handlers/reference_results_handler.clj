@@ -88,7 +88,11 @@
    :service :service-name
    :tool :tool-name
    :subscription :subscription-name
-   :dataqualitysummary :name})
+   :dataqualitysummary :name
+   :orderoption :name
+   :serviceoption :name
+   :serviceentry :name
+   :grid :name})
 
 (defn- elastic-result->query-result-item
   [context query elastic-result]

@@ -207,6 +207,38 @@
    :native-id :string
    :concept-id :string})
 
+(defmethod common-params/param-mappings :orderoption
+  [_]
+  {:name :string
+   :id :string
+   :provider :string
+   :native-id :string
+   :concept-id :string})
+
+(defmethod common-params/param-mappings :serviceoption
+  [_]
+  {:name :string
+   :id :string
+   :provider :string
+   :native-id :string
+   :concept-id :string})
+
+(defmethod common-params/param-mappings :serviceentry
+  [_]
+  {:name :string
+   :id :string
+   :provider :string
+   :native-id :string
+   :concept-id :string})
+
+(defmethod common-params/param-mappings :grid
+  [_]
+  {:name :string
+   :id :string
+   :provider :string
+   :native-id :string
+   :concept-id :string})
+
 (defmethod common-params/always-case-sensitive-fields :collection
   [_]
   #{:concept-id :variable-concept-id :service-concept-id :tool-concept-id})

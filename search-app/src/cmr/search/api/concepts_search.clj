@@ -371,7 +371,7 @@
 (def search-routes
   "Routes for /search/granules, /search/collections, etc."
   ;; TODO: Generic work: Think about putting this into a config file and creating the reg-ex from there.
-  (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services)|(?:dataqualitysummaries))(?:\..+)?"] [path-w-extension]
+  (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services)|(?:dataqualitysummaries)|(?:orderoptions)|(?:serviceoptions)|(?:serviceentries)|(?:grids))(?:\..+)?"] [path-w-extension]
     (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}
