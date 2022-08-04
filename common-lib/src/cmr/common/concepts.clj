@@ -13,7 +13,7 @@
    "OO" :orderoption
    "SO" :serviceoption
    "SE" :serviceentry
-   "G" :grid})
+   "GRD" :grid})
 
 (def generic-concept-types->concept-prefix
   "Gets an array of generic concept types."
@@ -22,7 +22,7 @@
 (defn get-generic-concept-types-array
   "Gets the array of generic concept types."
   []
-  (into [] (keys generic-concept-types->concept-prefix)))
+  (vec (keys generic-concept-types->concept-prefix)))
 
 (defn generic-concept?
   "Return true if the passed in concept is a generic concept"

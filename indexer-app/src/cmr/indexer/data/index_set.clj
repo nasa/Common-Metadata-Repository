@@ -1050,8 +1050,6 @@
 (defn resolve-generic-concept-type
   "if the concept type is generic, figure out from the concept what the actual document type is"
   [concept-type concept]
-  ;; TODO: Generic work: This let block occurs multiple times we should either figure out that we don't need 
-  ;; to do this or pass around the result or put it into a common function. 
   (if (cs/generic-concept? concept-type)
     (keyword (format "generic-%s" (name (cs/generic-concept-prefix->concept-type (:concept-sub-type concept)))))
     concept-type))
