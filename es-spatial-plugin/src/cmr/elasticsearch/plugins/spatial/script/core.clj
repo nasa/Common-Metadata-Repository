@@ -117,14 +117,11 @@
   (-> this .data :search-lookup (.setDocument doc-id)))
 
 (defn- -init [^Object intersects-fn ^Map params ^SearchLookup lookup ^DocReader doc-reader]
-  ;(.info (LogManager/getLogger) (str "====PARAMS" params))
   [[params lookup doc-reader] {:intersects-fn intersects-fn
-                               ;:operator (:operator (extract-params params))
                                :params params
                                :search-lookup (.getLeafSearchLookup lookup (.getLeafReaderContext doc-reader))}])
 
 (defn -execute [^SpatialScript this]
-  ;(.info (LogManager/getLogger) (str "====THIS" (-> this .data)))
   (doc-intersects? (.getFields this)
                    (-> this .data :params)
                    (-> this .data :intersects-fn)))
