@@ -12,6 +12,7 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.search.granule-spatial-search-test :as st]
    [cmr.system-int-test.system :as int-s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
@@ -553,3 +554,94 @@
     (e/grant-guest (int-s/context) (e/gran-catalog-item-id "PROV1" (e/coll-id [" E1 "])))
     (index/wait-until-indexed)
     (d/refs-match? [gran1] (search/find-refs :granule (merge {:concept_id coll1-cid})))))
+
+(deftest granule-search-with-multiple-spatial-representations-testing
+  (let [coll (d/ingest-concept-with-metadata-file "CMR-8244/C2075141605-POCLOUD.echo10"
+                                                  {:provider-id "PROV1"
+                                                   :concept-type :collection
+                                                   :native-id "C2-collection"
+                                                   :format-key :echo10})
+        _ (index/wait-until-indexed)
+        granule (d/ingest-concept-with-metadata-file "CMR-8244/G2363859382-POCLOUD.echo10"
+                                                     {:provider-id "PROV1"
+                                                      :concept-type :granule
+                                                      :concept-id "G23-PROV1"
+                                                      :native-id "G23-granule"
+                                                      :format-key :echo10})
+        intersects-none [29.8125 19.0954 36.5625 12.90915 53.15625 23.0321 40.5 35.6858 29.8125 19.0954]
+        intersects-bbox [-110.8125 -7.61796 -104.34375 -19.42808 -86.90625 -21.11524 -84.09375 -5.9308 -110.8125 -7.61796]
+        intersects-polygon [99 39.30683 67.5 33.12058 76.5 11.74989 104.625 21.31046 99 39.30683]
+        intersects-both [-150.75 -36.61535 162.5625 -29.30433 176.0625 -84.9806 -145.6875 -89.47969 -150.75 -36.61535]
+        __ (index/wait-until-indexed)]
+
+    (testing "Polygon search with 'any' flag"
+      (comment)
+      (testing "Polygon search that has no intersections with the granule"
+        (= 0 (:hits (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :polygon (apply st/search-poly intersects-none)}))))
+      (testing "Polygon search that intersects with the bounding-box of the granule"
+        (= 1 (:hits (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :polygon (apply st/search-poly intersects-bbox)}))))
+      (testing "Polygon search that intersects with one polygon of the granule"
+        (= 1 (:hits (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :polygon (apply st/search-poly intersects-polygon)}))))
+
+      (testing "Polygon search that intersects with all geometries of the granule"
+        (= 1 (:hits (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :polygon (apply st/search-poly intersects-both)})))))
+
+    (testing "Polygon search with 'ignorebr' flag"
+      (comment)
+      (testing "Polygon search that has no intersections with the granule"
+        (= 0 (:hits (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :polygon {:ignore-br (apply st/search-poly intersects-none)}}))))
+      (testing "Polygon search that intersects with the bounding-box of the granule"
+        (= 0 (:hits (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :polygon {:ignore-br (apply st/search-poly intersects-bbox)}}))))
+      (testing "Polygon search that intersects with the one polygon of the granule"
+        (= 1 (:hits (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :polygon {:ignore-br (apply st/search-poly intersects-polygon)}}))))
+
+      (testing "Polygon search that intersects with all geometries of the granule"
+        (= 1 (:hits (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :polygon {:ignore-br (apply st/search-poly intersects-both)}})))))
+
+    (testing "Polygon search with 'every' flag"
+      (comment)
+      (testing "Polygon search that has no intersections with the granule"
+        (= 0 (:hits (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :polygon {:every (apply st/search-poly intersects-none)}}))))
+      (testing "Polygon search that intersects with the bounding-box of the granule"
+        (= 0 (:hits (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :polygon {:every (apply st/search-poly intersects-bbox)}}))))
+      (testing "Polygon search that intersects with the one polygon of the granule"
+        (= 0 (:hits (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :polygon {:every (apply st/search-poly intersects-polygon)}}))))
+
+      (testing "Polygon search that intersects with all geometries of the granule"
+        (= 1 (:hits (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :polygon {:every (apply st/search-poly intersects-both)}})))))))
