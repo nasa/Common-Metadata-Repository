@@ -47,7 +47,7 @@
    :project :string
    :archive-center :nested-condition
    :data-center :nested-condition
-   :spatial-keyword :string
+   :spatial-keyword :nested-condition
    :location-keyword :nested-condition
    :two-d-coordinate-system-name :string
    :horizontal-data-resolution-range :range-facet
@@ -136,7 +136,7 @@
 
 (defmulti parse-json-condition
   "Converts a JSON query condition into a query model condition"
-  (fn [concept-type condition-name value]
+  (fn [concept-type condition-name value & args]
     (query-condition-name->condition-type condition-name)))
 
 (defmethod parse-json-condition :default
@@ -185,13 +185,13 @@
                                (:pattern value))))
 
 (defmethod parse-json-condition :bounding-box
-  [concept-type _ value]
+  [concept-type _ value op]
   (let [bounding-box (if (map? value)
                        (mbr/mbr (:west value) (:north value) (:east value) (:south value))
                        (let [[west south east north] value]
                          (mbr/mbr west north east south)))]
     (sv/validate bounding-box)
-    (qm/->SpatialCondition bounding-box)))
+    (qm/->SpatialCondition bounding-box op)))
 
 (defmethod parse-json-condition :updated-since
   [concept-type _ value]

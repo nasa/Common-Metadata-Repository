@@ -15,6 +15,10 @@
   "The subfields of the granule temporal facet nested field."
   [:year :month :day])
 
+(def spatial-subfields
+  "The subfield for a spatial search field."
+  [:all])
+
 (def cycle-passes-subfields
   "The subfields of the granule cycle-pass nested field."
   [:pass])
@@ -43,6 +47,7 @@
       :variables variable-subfields
       :temporal-facet temporal-facet-subfields
       :passes pass-subfields
+      :spatial-keyword spatial-subfields
       :measurement-identifiers measurement-identifier-subfields
       :platforms2 (conj (:platforms kms/keyword-scheme->field-names) :any)
       ;; else

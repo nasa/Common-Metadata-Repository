@@ -14,13 +14,14 @@
    [cmr.spatial.serialize :as srl]))
 
 (defn- shape->script-cond
-  [shape]
+  [shape operator]
   (let [ords-info-map (-> (srl/shapes->ords-info-map [shape])
                           (update-in [:ords-info] #(string/join "," %))
-                          (update-in [:ords] #(string/join "," %)))]
+                          (update-in [:ords] #(string/join "," %)))
+        params (assoc ords-info-map :operator operator)]
     (qm/map->ScriptCondition {:source "spatial"
                               :lang "cmr_spatial"
-                              :params ords-info-map})))
+                              :params params})))
 
 (defn- br->cond
   [prefix {:keys [west north east south] :as br}]
@@ -156,6 +157,13 @@
                 (crossing-ranges->condition crossings)])))
           lat-ranges-crossings))))
 
+(defn- spatial-operator
+  "Returns the operator used to determine if spatial queries must match all polygons."
+  [params]
+  (if (= (type params) clojure.lang.PersistentArrayMap)
+    (first (keys params))
+    :any))
+
 (defn- orbital-condition
   "Create a condition that will use orbit parameters and orbital back tracking to find matches
   to a spatial search."
@@ -198,9 +206,12 @@
                          (orbital-condition context shape))
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
-          spatial-script (shape->script-cond shape)
+          operator (spatial-operator (:polygon (:query-params context)))
+          spatial-script (shape->script-cond shape operator)
         ; check the MBR first before doing the more expensive check
-          spatial-cond (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])]
+          spatial-cond (if (= operator :any)
+                         (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])
+                         spatial-script)]
       (if orbital-cond
         (gc/or-conds [spatial-cond orbital-cond])
         spatial-cond))))

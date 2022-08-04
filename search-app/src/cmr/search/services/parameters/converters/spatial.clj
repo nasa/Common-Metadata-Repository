@@ -39,7 +39,7 @@
 
 (defn url-value->spatial-condition
   [type value]
-  (let [shape (spatial-codec/url-decode type value)]
+  (let [shape (spatial-codec/url-decode type (if (map? value) ((first (keys value)) value) value))]
     (when-let [errors (:errors shape)]
       (errors/internal-error!
         (format "Shape format was invalid [%s]. Issues should have been handled in validation."
