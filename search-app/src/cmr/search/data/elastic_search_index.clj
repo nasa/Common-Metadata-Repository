@@ -194,12 +194,13 @@
                  "1_subscriptions")
    :type-name "subscription"})
 
-(defmethod common-esi/concept-type->index-info :dataqualitysummary
-  [context _ query]
-  {:index-name (if (:all-revisions? query)
-                 "1_all_generic_dataqualitysummary_revisions"
-                 "1_generic_dataqualitysummary")
-   :type-name "dataqualitysummary"})
+(doseq [concept-type (concepts/get-generic-concept-types-array)]
+  (defmethod common-esi/concept-type->index-info concept-type
+    [context _ query]
+    {:index-name (if (:all-revisions? query)
+                   (format "1_all_generic_%s_revisions" (name concept-type))
+                   (format "1_generic_%s" (name concept-type)))
+     :type-name (name concept-type)}))
 
 (defn context->conn
   [context]
