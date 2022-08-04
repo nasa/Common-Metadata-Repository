@@ -107,6 +107,8 @@ This should return the granule including the echo-10 xml.
 
 NOTE from CMR-1908 that when reindexing a provider the collections are not reindexed in the all revisions index. The workaround here is to use the indexer endpoint for reindexing collections.
 
+Operator can use the `start_index` parameter to index concepts with sequence number larger than the `start_index` value. This parameter is used to recover from a prematurely terminated bulk index request.
+
 ### Bulk index all providers
 
     curl -i -XPOST http://localhost:3006/bulk_index/providers/all
@@ -116,6 +118,8 @@ Bulk indexing all collections and granules for all providers. Similar to the bul
 ### Bulk index a single collection
 
     curl -i -XPOST  -H "Content-Type: application/json" -d '{"provider_id": "FIX_PROV1", "collection_id":"C123-FIX_PROV1"}' http://localhost:3006/bulk_index/collections
+
+Operator can use the `start_index` parameter to index concepts with sequence number larger than the `start_index` value. This parameter is used to recover from a prematurely terminated bulk index request.
 
 ### Bulk index concepts by concept-id - for indexing multiple specific items
 
