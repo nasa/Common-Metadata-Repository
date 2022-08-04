@@ -3,7 +3,8 @@
   (:require
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common-app.services.search.query-validation :as cqv]
-   [cmr.common.mime-types :as mt]
+   [cmr.common.concepts :as concepts]
+   [cmr.common.mime-types :as mt] 
    [cmr.search.models.query :as qm]
    [cmr.search.validators.all-granule-validation :as all-granule-validation]
    [cmr.search.validators.leading-wildcard-validation :as lwv]
@@ -61,6 +62,14 @@
           ;; umm-json supported with and without versions
           :umm-json :umm-json-results}
         (umm-versioned-result-formats :subscription)))
+
+(doseq [concept-type (concepts/get-generic-concept-types-array)]
+  (defmethod cqv/supported-result-formats concept-type
+    [_]
+    (into #{:xml :json
+            ;; umm-json supported with and without versions
+            :umm-json :umm-json-results}
+          (umm-versioned-result-formats concept-type))))
 
 (def all-revisions-supported-result-formats
   "Supported search result format when all-revisions? is true."
