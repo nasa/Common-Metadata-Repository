@@ -82,8 +82,8 @@
 
 (defn index-data-later-than-date-time
   "Bulk index all the concepts with a revision date later than the given date-time."
-  [context dispatcher date-time]
-  (dispatch/index-data-later-than-date-time dispatcher context date-time))
+  [context dispatcher provider-ids date-time]
+  (dispatch/index-data-later-than-date-time dispatcher context provider-ids date-time))
 
 (defn index-collection
   "Bulk index all the granules in a collection"
