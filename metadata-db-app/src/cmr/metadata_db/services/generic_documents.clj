@@ -33,6 +33,7 @@
    and putting them in the :Info field, then putting the metadata inside the
    :Metadata field without any of these extra fields."
   [raw-doc]
+  ;; TODO: Generic work: if the lower levels use :extra-fields instead of mixing, then would this code be simplified?
   {:Info (select-keys raw-doc info-fields)
    :Metadata (reduce #(dissoc %1 %2) raw-doc fields-to-drop)})
 
