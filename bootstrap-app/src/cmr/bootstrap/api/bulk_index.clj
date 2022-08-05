@@ -33,9 +33,10 @@
   (let [dispatcher (api-util/get-dispatcher context params :index-collection)
         provider-id (get provider-id-collection-map "provider_id")
         collection-id (get provider-id-collection-map "collection_id")
+        start-index (Long/parseLong (get params :start_index "0"))
         _ (service/validate-collection context provider-id collection-id)
         result (service/index-collection
-                context dispatcher provider-id collection-id)]
+                context dispatcher provider-id collection-id {:start-index start-index})]
     {:status 202
      :body {:message (msg/index-collection params result collection-id)}}))
 

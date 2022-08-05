@@ -2,7 +2,7 @@
   "Contains functions for parsing and converting query parameters to query conditions"
   (:require
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
    [cmr.common-app.services.search.params :as common-params]
@@ -111,7 +111,7 @@
    :bounding-box :bounding-box
    :browsable :boolean
    :cloud-cover :num-range
-   :collection-concept-id :string
+   :collection-concept-id :collection-query
    :concept-id :granule-concept-id
    :created-at :multi-date-range
    :day-night :string
@@ -249,7 +249,7 @@
 
 (defmethod common-params/parameter->condition :keyword
   [_ _ _ value _]
-  (cqm/text-condition :keyword (str/lower-case value)))
+  (cqm/text-condition :keyword (string/lower-case value)))
 
 (def collection-only-params
   "List of parameters that are valid in collection query models, but not in granule query models."
@@ -269,6 +269,10 @@
   {:concept-id :collection-concept-id
    :has-granules-created-at :created-at
    :has-granules-revised-at :revision-date-stored-doc-values})
+
+(def granule-param-names
+  "Set of granule search parameter names."
+  (set (keys (common-params/param-mappings :granule))))
 
 (defmulti tag-param->condition
   "Convert tag param and value into query condition"
@@ -303,7 +307,7 @@
   (let [case-sensitive? (common-params/case-sensitive-field? concept-type param options)
         pattern? (common-params/pattern-field? concept-type param options)
         group-operation (common-params/group-operation param options :and)
-        target-field (keyword (str/replace (name param) #"-h$" ""))]
+        target-field (keyword (string/replace (name param) #"-h$" ""))]
 
     (if (map? (first (vals value)))
       ;; If multiple variables are passed in like the following
@@ -324,11 +328,18 @@
         {granule-concept-ids :granule
          collection-concept-ids :collection} (group-by (comp :concept-type cc/parse-concept-id) values)
         collection-cond (when (seq collection-concept-ids)
-                          (common-params/string-parameter->condition
-                           concept-type :collection-concept-id collection-concept-ids {}))
+                          (qm/->CollectionQueryCondition
+                           (common-params/parameter->condition
+                            context :collection :concept-id value options)))
         granule-cond (when (seq granule-concept-ids)
-                       (common-params/string-parameter->condition
-                        concept-type :concept-id granule-concept-ids options))]
+                       (let [provider-ids (distinct
+                                           (map (comp :provider-id cc/parse-concept-id)
+                                                granule-concept-ids))]
+                         (gc/and-conds [(qm/->CollectionQueryCondition
+                                         (common-params/parameter->condition
+                                          context :collection :provider provider-ids {}))
+                                        (common-params/string-parameter->condition
+                                         concept-type :concept-id granule-concept-ids options)])))]
     (if (and collection-cond granule-cond)
       (gc/and-conds [collection-cond granule-cond])
       (or collection-cond granule-cond))))
@@ -365,11 +376,11 @@
        (map #(common-params/parameter->condition context concept-type param % options) value))
       (gc/or-conds
        (map #(common-params/parameter->condition context concept-type param % options) value)))
-    (let [[start-date end-date] (map str/trim (str/split value #","))]
+    (let [[start-date end-date] (map string/trim (string/split value #","))]
       (cqm/map->DateRangeCondition
        {:field param
-        :start-date (when-not (str/blank? start-date) (parser/parse-datetime start-date))
-        :end-date (when-not (str/blank? end-date) (parser/parse-datetime end-date))}))))
+        :start-date (when-not (string/blank? start-date) (parser/parse-datetime start-date))
+        :end-date (when-not (string/blank? end-date) (parser/parse-datetime end-date))}))))
 
 (defmethod common-params/parameter->condition :readable-granule-name
   [context concept-type param value options]
@@ -389,15 +400,15 @@
   [_ _ _ value _]
   (if (= "unset" value)
     cqm/match-all
-    (qm/->HasGranulesCondition (= "true" (str/lower-case value)))))
+    (qm/->HasGranulesCondition (= "true" (string/lower-case value)))))
 
 (defmethod common-params/parameter->condition :has-granules-or-cwic
   [_ _ _ value _]
-  (qm/->HasGranulesOrCwicCondition (= "true" (str/lower-case value))))
+  (qm/->HasGranulesOrCwicCondition (= "true" (string/lower-case value))))
 
 (defmethod common-params/parameter->condition :has-granules-or-opensearch
   [_ _ _ value _]
-  (qm/->HasGranulesOrOpenSearchCondition (= "true" (str/lower-case value))))
+  (qm/->HasGranulesOrOpenSearchCondition (= "true" (string/lower-case value))))
 
 (defn- collection-data-type-matches-science-quality?
   "Convert the collection-data-type parameter with wildcards to a regex. This function
@@ -405,11 +416,11 @@
   the special case of SCIENCE_QUALITY."
   [param case-sensitive]
   (let [param (if case-sensitive
-                (str/upper-case param)
+                (string/upper-case param)
                 param)
         pattern (-> param
-                    (str/replace #"\?" ".")
-                    (str/replace #"\*" ".*")
+                    (string/replace #"\?" ".")
+                    (string/replace #"\*" ".*")
                     re-pattern)]
     (re-find pattern "SCIENCE_QUALITY")))
 
@@ -424,7 +435,7 @@
     (let [case-sensitive (common-params/case-sensitive-field? concept-type :collection-data-type options)
           pattern (common-params/pattern-field? concept-type :collection-data-type options)]
       (if (or (= "SCIENCE_QUALITY" value)
-              (and (= "SCIENCE_QUALITY" (str/upper-case value))
+              (and (= "SCIENCE_QUALITY" (string/upper-case value))
                    (not= "false" (get-in options [:collection-data-type :ignore-case])))
               (and pattern
                    (collection-data-type-matches-science-quality? value case-sensitive)))
@@ -488,14 +499,14 @@
                                   [:has-granules-created-at])
                                 (when (:has-granules-revised-at params)
                                   [:has-granules-revised-at])
-                                (when-not (str/blank? (:include-tags params))
+                                (when-not (string/blank? (:include-tags params))
                                   [:tags])
                                 ;; Always include temporal, the processor will see if any temporal
                                 ;; conditions exist
                                 [:temporal-conditions])
         keywords (when (:keyword params)
-                   (str/split (str/lower-case (:keyword params)) #" "))
-        params (if keywords (assoc params :keyword (str/join " " keywords)) params)
+                   (string/split (string/lower-case (:keyword params)) #" "))
+        params (if keywords (assoc params :keyword (string/join " " keywords)) params)
         simplify-shapefile? (= "true" (:simplify-shapefile params))]
     [(dissoc params
              :boosts :include-granule-counts :include-has-granules :include-facets :echo-compatible
@@ -508,8 +519,8 @@
                  :all-revisions? (= "true" (:all-revisions params))
                  :simplify-shapefile? (when simplify-shapefile? simplify-shapefile?)
                  :facets-size (:facets-size params)
-                 :result-options (merge (when-not (str/blank? (:include-tags params))
-                                          {:tags (map str/trim (str/split (:include-tags params) #","))})
+                 :result-options (merge (when-not (string/blank? (:include-tags params))
+                                          {:tags (map string/trim (string/split (:include-tags params) #","))})
                                         (when (or begin-tag end-tag snippet-length num-snippets)
                                           {:highlights
                                            {:begin-tag begin-tag
@@ -521,14 +532,34 @@
 (defmethod common-params/parse-query-level-params :granule
   [concept-type params]
   (let [[params query-attribs] (common-params/default-parse-query-level-params
-                                 :granule params lp/param-aliases)
+                                :granule params lp/param-aliases)
         result-features (when (= "v2" (util/safe-lowercase (:include-facets params)))
-                          [:facets-v2])]
-    [(dissoc params :echo-compatible :include-facets :simplify-shapefile)
+                          [:facets-v2])
+        regular-params (dissoc params :echo-compatible :include-facets :simplify-shapefile)
+        {:keys [page-size offset]} query-attribs
+        concept-id (:concept-id regular-params)
+        concept-ids (when concept-id
+                      (if (sequential? concept-id)
+                          concept-id
+                          [concept-id]))
+        only-concept-id-params? (nil?
+                                 (some granule-param-names
+                                       (keys (dissoc regular-params :concept-id))))
+        no-collection-in-concept-id? (nil? (some #(string/starts-with? % "C") concept-ids))
+        gran-specific-items-query? (if (and (:concept-id regular-params)
+                                            only-concept-id-params?
+                                            no-collection-in-concept-id?
+                                            (= 0 offset)
+                                            (or (= page-size :unlimited)
+                                                (>= page-size (count concept-ids))))
+                                     true
+                                     false)]
+    [regular-params
      (merge query-attribs
             {:echo-compatible? (= "true" (:echo-compatible params))
              :simplify-shapefile? (= "true" (:simplify-shapefile params))
-             :result-features result-features})]))
+             :result-features result-features
+             :gran-specific-items-query? gran-specific-items-query?})]))
 
 (defmethod common-params/parse-query-level-params :variable
   [concept-type params]

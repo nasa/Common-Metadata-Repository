@@ -2,6 +2,7 @@
   "Shared parsing functions for ISO 19115-2 MENDS and ISO 19115-2 SMAP."
   (:require
    [clojure.string :as string]
+   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]))
 
 ;; This section allows an ISO description that is encoded by key: value key: value etc.
@@ -34,14 +35,14 @@
                                     string/trim
                                     (string/replace #"\s+HSTRING" key-split-string)
                                     (string/replace #":TSTRING\s+" (str ":" value-split-string)))]
-      (->> (string/split description-string (re-pattern key-split-string))
+    (->> (string/split description-string (re-pattern key-split-string))
            ;; split each string in the description-str-list
-           (map #(string/split % #":TSTRING"))
+         (map #(string/split % #":TSTRING"))
            ;; keep the ones with values.
-           (filter #(= 2 (count %)))
-           (into {})
+         (filter #(= 2 (count %)))
+         (into {})
            ;; remove "nil" valued keys
-           (util/remove-map-keys #(= "nil" %)))))
+         (util/remove-map-keys #(= "nil" %)))))
 
 (defn convert-key-strings-to-keywords
   "This function converts strings that are keys to keywords.
@@ -49,8 +50,8 @@
    To:   {:key-string \"value-string\"}"
   [map]
   (into {}
-    (for [[k v] map]
-      [(keyword k) v])))
+        (for [[k v] map]
+          [(keyword k) v])))
 
 (defn convert-select-values-from-string-to-number
   "Inputs a map of key-values and a list of keys where the value should be a number. The function
@@ -60,14 +61,18 @@
   (when (and (not (nil? map))
              (not (empty? map)))
     (into {}
-      (for [[k v] map]
-        (if (and (some #(= k %) number-key-list)
-                 (not (nil? v)))
-          (let [string-number (re-find #"-?\d+\.?\d+|-?\.?\d+" v)]
-            (if (string/includes? string-number ".")
-              {k (Double/parseDouble string-number)}
-              {k (Integer/parseInt string-number)}))
-          {k v})))))
+          (for [[k v] map]
+            (try
+              (if (and (some #(= k %) number-key-list)
+                       (not (nil? v)))
+                (let [string-number (re-find #"-?\d+\.?\d+|-?\.?\d+" v)]
+                  (if (string/includes? string-number ".")
+                    {k (Double/parseDouble string-number)}
+                    {k (Long/parseLong string-number)}))
+                {k v})
+              (catch Exception e
+                (errors/throw-service-error
+                 :invalid-data (format "Error parsing the field %s with value %s" k v))))))))
 
 (defn convert-iso-description-string-to-map
   "Convert Description string to a map, removing fields that are empty or nil.

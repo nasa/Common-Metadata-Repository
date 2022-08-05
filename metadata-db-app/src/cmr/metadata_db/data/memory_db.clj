@@ -187,14 +187,14 @@
             variable-name (get-in variable [:extra-fields :variable-name])
 
             ;;get all the variable associations with variable concept id being different from variable-concept-id
-            ;;and associated with the associated-concept-id, from cmr_variable_associations
+            ;;and associated with the associated-concept-id, from cmr_associations
             v-associations (->> @(:concepts-atom db)
                                 (filter #(not= variable-concept-id (get-in % [:extra-fields :variable-concept-id])))
                                 (filter #(= associated-concept-id (get-in % [:extra-fields :associated-concept-id]))))
-            v-concept-ids-in-aassociations (map #(get-in % [:extra-fields :variable-concept-id]) v-associations)
+            v-concept-ids-in-associations (map #(get-in % [:extra-fields :variable-concept-id]) v-associations)
 
             ;;get all the deleted variable associations with variable concept id being different from variable-concept-id
-            ;;and associated with the associated-concept-id, from cmr_variable_association
+            ;;and associated with the associated-concept-id, from cmr_association
             deleted-v-associations (->> @(:concepts-atom db)
                                         (filter #(not= variable-concept-id (get-in % [:extra-fields :variable-concept-id])))
                                         (filter #(= associated-concept-id (get-in % [:extra-fields :associated-concept-id])))
@@ -205,7 +205,7 @@
             ;;from cmr_variables table.
             v-concept-id-same-name (->> @(:concepts-atom db)
                                         (filter #(concept-id-in-list?
-                                                   v-concept-ids-in-aassociations
+                                                   v-concept-ids-in-associations
                                                    (:concept-id %)))
                                         (filter #(not (concept-id-in-list?
                                                         v-concept-ids-in-deleted-associations

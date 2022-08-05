@@ -12,7 +12,6 @@
 
     (are3 [expected]
       (is (= expected (spatial/horizontal-resolution-code-name-to-key-map)))
-
       "Test the defmacro to see if it creates the correct map"
       {"variesresolution" :VariesResolution,
        "NonGriddedResolutions" :NonGriddedResolutions,
@@ -39,3 +38,11 @@
                   (xpath/context)
                   (spatial/parse-coordinate-system))]
     (is (= "GEODETIC" value))))
+
+(deftest test-coordinate-system-parsing-large-num
+  "Testing the ability to handle parsing a number that exceeds the max integer value"
+
+  (let [value (spatial/parse-horizontal-data-resolutions
+               (slurp (io/resource "example-data/iso19115/artificial_test_data_large_num.xml")))]
+    (is (= 2147483648 (-> value :GriddedRangeResolutions first :MaximumYDimension)))))
+

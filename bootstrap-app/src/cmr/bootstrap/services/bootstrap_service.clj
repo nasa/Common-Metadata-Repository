@@ -24,7 +24,7 @@
    :index-services :message-queue-dispatcher
    :index-tools :message-queue-dispatcher
    :index-subscriptions :message-queue-dispatcher
-   :index-data-later-than-date-time :core-async-dispatcher
+   :index-data-later-than-date-time :message-queue-dispatcher
    :index-collection :core-async-dispatcher
    :index-system-concepts :core-async-dispatcher
    :index-concepts-by-id :core-async-dispatcher
@@ -87,10 +87,8 @@
 
 (defn index-collection
   "Bulk index all the granules in a collection"
-  ([context dispatcher provider-id collection-id]
-   (index-collection context dispatcher provider-id collection-id nil))
-  ([context dispatcher provider-id collection-id options]
-   (dispatch/index-collection dispatcher context provider-id collection-id options)))
+  [context dispatcher provider-id collection-id options]
+  (dispatch/index-collection dispatcher context provider-id collection-id options))
 
 (defn index-system-concepts
   "Bulk index all the tags, acls, and access-groups."

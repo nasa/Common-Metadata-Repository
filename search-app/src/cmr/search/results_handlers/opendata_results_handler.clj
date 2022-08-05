@@ -7,6 +7,7 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [clojure.walk :as walk]
+   [cmr.common-app.config :as common-app-config]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
@@ -70,7 +71,7 @@
   "public")
 
 (def DEFAULT_CONTACT_EMAIL
-  "support@earthdata.nasa.gov")
+  (common-app-config/cmr-support-email))
 
 (def DEFAULT_CONTACT_NAME
   "undefined")
