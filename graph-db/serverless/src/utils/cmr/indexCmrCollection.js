@@ -17,7 +17,8 @@ const gremlinStatistics = gremlin.process.statics
 export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
   const {
     meta: {
-      'concept-id': conceptId
+      'concept-id': conceptId,
+      'provider-id': providerId
     },
     umm: {
       EntryTitle: entryTitle,
@@ -36,14 +37,21 @@ export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
 
   let collection = null
   try {
+    // TODO: Query CMR ACL endpoint for ACLs that apply to this collection. Derive a list of groups from all of the ACLS
+    // const permittedGroups = determinePermittedGroups(conceptId)
+
     const addVCommand = gremlinConnection.addV('collection')
       .property('title', entryTitle)
       .property('id', conceptId)
       .property('shortName', shortName)
+      .property('providerId', providerId)
+      // .property('permittedGroups', permittedGroups)
 
     if (doiDescription) {
       addVCommand.property('doi', doiDescription)
     }
+
+    // TODO: If collection already exists, we need to ensure we update the properties
 
     // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
     collection = await gremlinConnection
