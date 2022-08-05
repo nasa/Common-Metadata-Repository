@@ -249,13 +249,13 @@
            request
            (bulk/get-provider-tasks :granule provider-id request)))))))
 
+;; TODO: Generic work - should this change to be more dynamic, gen type in front?
 (def generic-document-routes
-  (context "/generics/provider/:provider-id" [provider-id]
-
+  (context "/generics/provider/:provider-id/:native-id" [provider-id native-id]
     (POST "/" request (gen-doc/create-generic-document request))
-    (GET "/:concept-id" [concept-id :as request] (gen-doc/read-generic-document request))
-    (PUT "/:concept-id" [concept-id :as request] (gen-doc/update-generic-document request))
-    (DELETE "/:concept-id" [concept-id :as request] (gen-doc/delete-generic-document request))))
+    (GET "/" request (gen-doc/read-generic-document request))
+    (PUT "/" request (gen-doc/update-generic-document request))
+    (DELETE "/" request (gen-doc/delete-generic-document request))))
 
 (defn build-routes [system]
   (routes

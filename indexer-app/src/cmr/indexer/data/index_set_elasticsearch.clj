@@ -29,14 +29,7 @@
   (let [{:keys [index-name settings mapping]} idx-w-config]
     (when-not (esi-helper/exists? conn index-name)
       (try
-        ;; Print out the documents that are being added to elastic, if one fails
-        ;; then and for what ever reason is not rolled back, then the developer
-        ;; will know which one caused the issue by seing which index was the last
-        ;; to start
-        (when (= "dev" (cmr.common-app.config/release-version))
-          (println "Here in create-index function creating" index-name)
-          ;;TODO: Generic work: remove this block when no longer needed.
-          (when (string/includes? index-name "1_generic")  (println "mappings:" mapping)))
+        (info "This instance of CMR will publish Generic documents to Elastic Index:" index-name)
         (esi-helper/create conn index-name {:settings settings :mappings mapping})
         (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
