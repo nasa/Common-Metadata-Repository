@@ -34,7 +34,7 @@
 
 (defmethod get-table-name :tag-association
   [_ _]
-  "cmr_tag_associations")
+  "cmr_associations")
 
 (defmethod get-table-name :humanizer
   [_ _]
