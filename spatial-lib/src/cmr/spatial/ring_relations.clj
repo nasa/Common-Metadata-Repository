@@ -80,7 +80,7 @@
     (gr/covers-point? ring point))
   (inside-out?
     [ring]
-    (gr/contains-both-poles? ring))
+    (or (gr/point-order? ring)(gr/contains-both-poles? ring)))
   (invert
     [ring]
     (gr/ring (reverse (:points ring))))
