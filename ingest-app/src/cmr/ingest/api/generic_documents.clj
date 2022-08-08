@@ -142,8 +142,7 @@
     (validate-document-against-schema spec-key spec-version metadata)
     ;; The update-generic is a macro which allows for a list of URL parameters to be
     ;; passed in to be resolved by a function.
-    (tgen/update-generic request-context [provider-id native-id] (json/generate-string concept))
-    {:status 204}))
+    (tgen/update-generic request-context [provider-id native-id] (json/generate-string concept))))
 
 (defn delete-generic-document [request]
   (println "stub function: delete " request))
