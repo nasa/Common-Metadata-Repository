@@ -262,12 +262,12 @@
 (def generate-generic-concept-types-reg-ex
   "This function creates a regular expresion for all of the generic concepts.  This is used to create the api endpoints.
    An example string that is return looks like: \"dataqualitysummary|orderoption|serviceoption\" "
-  (let [x (-> (str (concepts/get-generic-concept-types-array))
+  (let [rx (-> (str (concepts/get-generic-concept-types-array))
               (clojure.string/replace #":|\]|\[" "")
               (clojure.string/replace #" " "|"))]
-    x))
+    rx))
 
-(def generic-document-routes-2
+(def generic-document-routes-auxiliary
  (routes
     (api-core/set-default-error-format
      :xml
@@ -291,7 +291,7 @@
 
       ;; add routes to create, update, read, and delete generic concepts
       generic-document-routes
-      generic-document-routes-2
+      generic-document-routes-auxiliary
 
       ;; db migration route
       db-migration-routes
