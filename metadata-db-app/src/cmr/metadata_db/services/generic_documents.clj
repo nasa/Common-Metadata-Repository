@@ -8,10 +8,11 @@
    [cmr.common.services.messages :as messages]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tkeeper]
-   [cmr.common.util :as cutil]
-   [cmr.metadata-db.services.messages :as msg]
+   [cmr.common.util :as cutil] 
    [cmr.metadata-db.data.generic-documents :as data]
    [cmr.metadata-db.data.ingest-events :as ingest-events]
+   [cmr.metadata-db.services.messages :as msg]
+   [cmr.metadata-db.services.provider-service :as provider-service]
    [cmr.metadata-db.services.util :as mdb-util]))
 
 ;; These are fields that should be put into the :Info field in the response
@@ -58,6 +59,8 @@
    from being inserted, users must know what they are doing."
   [context params provider-id raw-native-id document]
   (let [db (mdb-util/context->db context)
+        ;; Validate that the provider exists.
+        _ (provider-service/get-provider-by-id context provider-id true)
         document (if (map? document) (json/generate-string document) document)
         document-as-map (json/parse-string document true)
         ;; TODO: Generic work: Fix native id so that it is passed in correctly.

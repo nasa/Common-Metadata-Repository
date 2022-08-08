@@ -115,6 +115,7 @@
    * failed schema
    * failed validation rules (external) (pending)
    * Document name not unique"
+  (def request1 request)
   (let [res (prepare-generic-document request)
         {:keys [spec-key spec-version provider-id native-id request-context concept]} res
         metadata (:metadata concept)]
@@ -147,3 +148,32 @@
 
 (defn delete-generic-document [request]
   (println "stub function: delete " request))
+
+;; TODO: Generic work: This could be a candidate for a configuration file.
+(defn validate-and-get-required-parameters
+  "This function validates that the required parameters are present. If not then throw a service exception to let
+  the end users know what to do. If the parameters are provided, then return the request with the parameters included."
+  [request]
+  (def request request)
+  (let [provider (get-in request [:params :provider])]
+    (when-not provider
+      (errors/throw-service-error
+       :invalid-data
+       (format "Provider is a required URL parameter. Please add the provider to the list of URL parameters."))) 
+   {:provider-id provider}))
+
+;; TODO: Generic work:  Once we decide on the actual API calls we need to put the provider parameter either in the :param or :route-param
+;; sections of the request - which ever is appropriate for the URL.  Right now we are putting it into the route-params which is where
+;; the prepare-generic-document function is looking for it.
+(defn pass-on-required-query-parameters
+  "This function checks for required parameters. If they don't exist then throw an error, otherwise send the request
+   and the provider id on to the corresponding function."
+  [request funct-str]
+  (let [provider (validate-and-get-required-parameters request)
+        route-params (assoc  (:route-params request) :provider-id (:provider-id provider))
+        request (assoc request :route-params route-params)]
+    (case funct-str
+      :create (create-generic-document request)
+      :read (read-generic-document request)
+      :update (update-generic-document request)
+      :delete (delete-generic-document request))))
