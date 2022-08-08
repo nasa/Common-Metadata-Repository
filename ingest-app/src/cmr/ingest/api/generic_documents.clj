@@ -115,7 +115,6 @@
    * failed schema
    * failed validation rules (external) (pending)
    * Document name not unique"
-  (def request1 request)
   (let [res (prepare-generic-document request)
         {:keys [spec-key spec-version provider-id native-id request-context concept]} res
         metadata (:metadata concept)]
@@ -154,7 +153,6 @@
   "This function validates that the required parameters are present. If not then throw a service exception to let
   the end users know what to do. If the parameters are provided, then return the request with the parameters included."
   [request]
-  (def request request)
   (let [provider (get-in request [:params :provider])]
     (when-not provider
       (errors/throw-service-error
