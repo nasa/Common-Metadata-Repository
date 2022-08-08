@@ -276,7 +276,7 @@
          (GET "/" request (gen-doc/pass-on-required-query-parameters request :read))
          (POST "/" request (gen-doc/pass-on-required-query-parameters request :create)))
          (PUT "/" request (gen-doc/pass-on-required-query-parameters request :update))
-         (DELETE "/" request (gen-doc/pass-on-required-query-parameters request :delete)))))))
+         (DELETE "/" request (gen-doc/pass-on-required-query-parameters request :delete))))))
 
 (defn build-routes [system]
   (routes
