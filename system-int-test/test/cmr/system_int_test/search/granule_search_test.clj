@@ -555,7 +555,7 @@
     (index/wait-until-indexed)
     (d/refs-match? [gran1] (search/find-refs :granule (merge {:concept_id coll1-cid})))))
 
-(deftest granule-search-with-multiple-spatial-representations-testing
+(deftest granule-search-with-multiple-spatial-representations-test
   (let [coll (d/ingest-concept-with-metadata-file "CMR-8244/C2075141605-POCLOUD.echo10"
                                                   {:provider-id "PROV1"
                                                    :concept-type :collection
@@ -572,7 +572,7 @@
         intersects-bbox [-110.8125 -7.61796 -104.34375 -19.42808 -86.90625 -21.11524 -84.09375 -5.9308 -110.8125 -7.61796]
         intersects-polygon [99 39.30683 67.5 33.12058 76.5 11.74989 104.625 21.31046 99 39.30683]
         intersects-both [-150.75 -36.61535 162.5625 -29.30433 176.0625 -84.9806 -145.6875 -89.47969 -150.75 -36.61535]
-        __ (index/wait-until-indexed)]
+        _ (index/wait-until-indexed)]
 
     (testing "Polygon search with 'any' flag"
       (comment)
