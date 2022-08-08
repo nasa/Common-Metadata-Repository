@@ -693,9 +693,9 @@
   "Validate a geometry of the given type in the params"
   [params spatial-type]
   (when-let [spatial-param (spatial-type params)]
-    (if (string? spatial-param)
-      (mapcat #(:errors (spatial-codec/url-decode spatial-type %)) (flatten [spatial-param]))
-      (mapcat #(:errors (spatial-codec/url-decode spatial-type %)) (flatten [((first (keys spatial-param)) spatial-param)])))))
+    (if (map? spatial-param)
+      (mapcat #(:errors (spatial-codec/url-decode spatial-type %)) (flatten [((first (keys spatial-param)) spatial-param)]))
+      (mapcat #(:errors (spatial-codec/url-decode spatial-type %)) (flatten [spatial-param])))))
 
 (defn- polygon-validation
   ([params] (polygon-validation nil params))

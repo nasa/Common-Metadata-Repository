@@ -47,7 +47,7 @@
    :project :string
    :archive-center :nested-condition
    :data-center :nested-condition
-   :spatial-keyword :nested-condition
+   :spatial-keyword :string
    :location-keyword :nested-condition
    :two-d-coordinate-system-name :string
    :horizontal-data-resolution-range :range-facet
@@ -185,13 +185,13 @@
                                (:pattern value))))
 
 (defmethod parse-json-condition :bounding-box
-  [concept-type _ value op]
+  [concept-type _ value]
   (let [bounding-box (if (map? value)
                        (mbr/mbr (:west value) (:north value) (:east value) (:south value))
                        (let [[west south east north] value]
                          (mbr/mbr west north east south)))]
     (sv/validate bounding-box)
-    (qm/->SpatialCondition bounding-box op)))
+    (qm/->SpatialCondition bounding-box)))
 
 (defmethod parse-json-condition :updated-since
   [concept-type _ value]
