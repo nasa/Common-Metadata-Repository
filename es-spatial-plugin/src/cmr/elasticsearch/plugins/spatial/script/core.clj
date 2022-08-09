@@ -64,8 +64,7 @@
 (defn remove-br
   "Removes bounding rectangles from granule spatial data."
   [shapes]
-  ;; Bounding rectangles are the only 'shape' object with exactly 5 elements
-  (let [shapes-no-br (into [] (remove #(not (= 5 (count %)) shapes)))]
+  (let [shapes-no-br (into [] (remove #((instance? cmr.spatial.mbr.Mbr (first shapes)) shapes)))]
     shapes-no-br))
 
 (defn doc-intersects?
