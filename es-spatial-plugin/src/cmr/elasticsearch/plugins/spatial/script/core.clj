@@ -64,10 +64,8 @@
 (defn remove-br
   "Removes bounding rectangles from granule spatial data."
   [shapes]
-  (let [shapes-no-br (into [] (remove nil? (for [shape shapes]
-                                             (if (not (= 5 (count shape)))
-                                               shape
-                                               nil))))]
+  ;; Bounding rectangles are the only 'shape' object with exactly 5 elements
+  (let [shapes-no-br (into [] (remove #(not (= 5 (count %)) shapes)))]
     shapes-no-br))
 
 (defn doc-intersects?
