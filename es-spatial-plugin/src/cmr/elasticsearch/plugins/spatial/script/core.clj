@@ -52,12 +52,8 @@
   "Returns true if predicate f returns a truthy value against any of the items.
   This is very similar to some but it's faster through it's use of reduce."
   [f items]
-  (reduce (fn [_ i]
-            (if (f i)
-              (reduced true) ;; short circuit
-              false))
-          false
-          items))
+  (some true?
+    (map f items)))
 
 (defn every-true?
   "Returns true if predicate f returns a truthy value against all of the items."
