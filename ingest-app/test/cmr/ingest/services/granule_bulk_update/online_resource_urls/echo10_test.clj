@@ -72,6 +72,6 @@
 (deftest update-online-resource-urls-test--success
   (let [concept {:concept-type :granule
              :metadata echo10-metadata}
-      urls [{:URL-FROM "https://link-1.com"
-            :URL-TO "https://link-1-updated.com"}]]
-   (is (= echo10-metadata-updated (:metadata (echo10/update-online-access-url concept urls))))))
+        urls [{:from "https://link-1.com"
+               :to "https://link-1-updated.com"}]]
+    (is (= echo10-metadata-updated (string/trim (echo10/update-online-access-url concept urls))))))
