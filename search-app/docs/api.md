@@ -2467,6 +2467,16 @@ ll match both the first polygon and the second polygon.
 
 Note: if you use "polygon" for multiple polygon search, it won't work because only the last polygon parameter will take effect.
 
+If a granule has multiple spatial types in its data (i.e. a granule which contains a bounding rectangle and multiple polygons), it will be returned by a spatial search if the spatial search area matches any of the geometries in the granule. This may not always be the desired behavior if a granule has a bounding rectangle which is less precise than the polygons. For this, you may use the 'ignore-br' or 'every' keywords when doing polygon spatial searches.
+
+The 'ignore-br' flag will ignore the bounding rectangles of the granule and look to match at least one other geometry (i.e. one or more of the polygons).
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[ignore-br]=10,10,30,10,30,20,10,20,10,10"
+
+The 'every' flag will look to match every geometry a granule has. So if it has multiple bounding rectangles and multiple polygons, the spatial search area will need to intersect every bounding rectangle and every polygon to return the granule.
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[every]=10,10,30,10,30,20,10,20,10,10"
+
 ##### <a name="g-bounding-box"></a> Bounding Box
 
     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&bounding_box=-10,-5,10,5"
