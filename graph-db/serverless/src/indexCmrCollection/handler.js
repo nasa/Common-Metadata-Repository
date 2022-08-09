@@ -1,12 +1,12 @@
 import 'array-foreach-async'
 
-import { deleteAcl } from '../utils/cmr/deleteAcl'
+// import { deleteAcl } from '../utils/cmr/deleteAcl'
 import { deleteCmrCollection } from '../utils/cmr/deleteCmrCollection'
-import { fetchAcl } from '../utils/cmr/fetchAcl'
+// import { fetchAcl } from '../utils/cmr/fetchAcl'
 import { fetchCmrCollection } from '../utils/cmr/fetchCmrCollection'
 import { getConceptType } from '../utils/cmr/getConceptType'
 import { getEchoToken } from '../utils/cmr/getEchoToken'
-import { indexAcl } from '../utils/cmr/indexAcl'
+// import { indexAcl } from '../utils/cmr/indexAcl'
 import { indexCmrCollection } from '../utils/cmr/indexCmrCollection'
 import { initializeGremlinConnection } from '../utils/gremlin/initializeGremlinConnection'
 
@@ -37,8 +37,8 @@ const indexCmrCollections = async (event) => {
 
     const { 'concept-id': conceptId, 'revision-id': revisionId, action } = JSON.parse(body)
 
-    if (!['acl', 'collection'].includes(getConceptType(conceptId))) {
-      console.log(`Concept [${conceptId}] was not an acl or collection and will not be indexed`)
+    if (!['collection'].includes(getConceptType(conceptId))) {
+      console.log(`Concept [${conceptId}] was not a collection and will not be indexed`)
 
       return
     }
@@ -47,31 +47,6 @@ const indexCmrCollections = async (event) => {
       console.log(`Action [${action}] was unsupported for concept [${conceptId}]`)
 
       return
-    }
-
-    if (getConceptType(conceptId) === 'acl' && action === updateActionType) {
-      const acl = await fetchAcl(conceptId, token)
-
-      const { data, errors = [] } = acl
-
-      if (errors.length > 0) {
-        console.log(`Skip indexing of acl [${conceptId}]`)
-        console.log(errors)
-
-        skipCount += 1
-      } else {
-        console.log(`Start indexing concept [${conceptId}], revision-id [${revisionId}]`)
-
-        await indexAcl(conceptId, data, gremlinConnection)
-
-        recordCount += 1
-      }
-    } else if (getConceptType(conceptId) === 'acl' && action === deleteActionType) {
-      console.log(`Start deleting concept [${conceptId}], revision-id [${revisionId}]`)
-
-      await deleteAcl(conceptId, gremlinConnection)
-
-      recordCount += 1
     }
 
     if (getConceptType(conceptId) === 'collection' && action === updateActionType) {
@@ -93,7 +68,7 @@ const indexCmrCollections = async (event) => {
 
         recordCount += 1
       }
-    } else if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {
+    } if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {
       console.log(`Start deleting concept [${conceptId}], revision-id [${revisionId}]`)
 
       await deleteCmrCollection(conceptId, gremlinConnection)

@@ -5,6 +5,7 @@ import { deleteCmrCollection } from './deleteCmrCollection'
 import { indexPlatform } from './indexPlatform'
 import { indexProject } from './indexProject'
 import { indexRelatedUrl } from './indexRelatedUrl'
+import { fetchCollectionPermittedGroups } from './fetchCollectionPermittedGroups'
 
 const gremlinStatistics = gremlin.process.statics
 
@@ -37,21 +38,25 @@ export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
 
   let collection = null
   try {
-    // TODO: Query CMR ACL endpoint for ACLs that apply to this collection. Derive a list of groups from all of the ACLS
-    // const permittedGroups = determinePermittedGroups(conceptId)
+    // fetch the permitted groups for this collection from access-control
+    const groupList = await fetchCollectionPermittedGroups(conceptId)
 
     const addVCommand = gremlinConnection.addV('collection')
       .property('title', entryTitle)
       .property('id', conceptId)
       .property('shortName', shortName)
       .property('providerId', providerId)
-      // .property('permittedGroups', permittedGroups)
+
+    // See gremlin multi-properties vs list property
+    if (groupList.length > 0) {
+      groupList.forEach((group) => {
+        addVCommand.property('permittedGroups', group)
+      })
+    }
 
     if (doiDescription) {
       addVCommand.property('doi', doiDescription)
     }
-
-    // TODO: If collection already exists, we need to ensure we update the properties
 
     // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
     collection = await gremlinConnection

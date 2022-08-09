@@ -98,6 +98,13 @@ describe('indexCmrCollection handler', () => {
         took: 6,
         items: []
       })
+    nock(/local-cmr/)
+      .get(/acls/)
+      .reply(200, {
+        hits: 0,
+        took: 6,
+        items: []
+      })
 
     const event = getEvent('C123755555-TESTPROV', 'concept-update')
 
@@ -155,7 +162,6 @@ describe('indexCmrCollection handler', () => {
     const platform2 = 'Platform Two'
     const relatedUrl = 'https://en.wikipedia.org/wiki/latent_nfi'
 
-    // first index the collection and verify collection and relatedUrl vertices are created
     await updateCollection(
       'C1237293909-TESTPROV',
       collectionTitle,
@@ -204,7 +210,6 @@ describe('indexCmrCollection handler', () => {
     // this relatedUrl url is referenced only by one collection
     const ownDocUrl = 'https://en.wikipedia.org/wiki/latent_nfi2'
 
-    // first index the collection and verify collection and project/relatedUrl vertices are created
     await updateCollection(
       'C1237293909-TESTPROV',
       collectionTitle,
