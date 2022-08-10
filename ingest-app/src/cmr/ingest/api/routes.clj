@@ -273,10 +273,10 @@
      :xml
      (context ["/:concept-sub-type" :concept-sub-type (re-pattern generate-generic-concept-types-reg-ex)] [concept-sub-type]
        (context ["/:native-id" :native-id #".*$"] [native-id]
-         (GET "/" request (gen-doc/pass-on-required-query-parameters request :read))
-         (POST "/" request (gen-doc/pass-on-required-query-parameters request :create)))
-         (PUT "/" request (gen-doc/pass-on-required-query-parameters request :update))
-         (DELETE "/" request (gen-doc/pass-on-required-query-parameters request :delete))))))
+         (GET "/" request (gen-doc/validate-required-query-parameters request :read))
+         (POST "/" request (gen-doc/validate-required-query-parameters request :create))
+         (PUT "/" request (gen-doc/validate-required-query-parameters request :update))
+         (DELETE "/" request (gen-doc/delete-generic-document request)))))))
 
 (defn build-routes [system]
   (routes
