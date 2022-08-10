@@ -48,17 +48,6 @@
     (when-let [^FieldLookup field-lookup (.get lookup key)]
       (seq (.getValues field-lookup)))))
 
-(defn any-true?
-  "Returns true if predicate f returns a truthy value against any of the items.
-  This is very similar to some but it's faster through it's use of reduce."
-  [f items]
-  (some f items))
-
-(defn every-true?
-  "Returns true if predicate f returns a truthy value against all of the items."
-  [f items]
-  (every? f items))
-
 (defn remove-br
   "Removes bounding rectangles from granule spatial data."
   [shapes]
@@ -76,9 +65,9 @@
           op (:operator (extract-params params))]
       (try
         (case op
-          "every" (every-true? intersects-fn shapes)
-          "ignore_br" (any-true? intersects-fn shapes-no-br)
-          (any-true? intersects-fn shapes))
+          "every" (every? intersects-fn shapes)
+          "ignore_br" (some intersects-fn shapes-no-br)
+          (some intersects-fn shapes))
         (catch Throwable t
           (.printStackTrace t)
           (throw t))))
