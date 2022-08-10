@@ -575,73 +575,69 @@
         _ (index/wait-until-indexed)]
 
     (testing "Polygon search with 'any' flag"
-      (comment)
       (testing "Polygon search that has no intersections with the granule"
-        (= 0 (:hits (search/find-refs
-                           :granule
-                           {:provider "PROV1"
-                            :polygon (apply st/search-poly intersects-none)}))))
+        (is (= 0 (:hits (search/find-refs
+                          :granule
+                          {:provider "PROV1"
+                           :polygon (apply st/search-poly intersects-none)})))))
       (testing "Polygon search that intersects with the bounding-box of the granule"
-        (= 1 (:hits (search/find-refs
-                           :granule
-                           {:provider "PROV1"
-                            :polygon (apply st/search-poly intersects-bbox)}))))
+        (is (= 1 (:hits (search/find-refs
+                               :granule
+                               {:provider "PROV1"
+                                :polygon (apply st/search-poly intersects-bbox)})))))
       (testing "Polygon search that intersects with one polygon of the granule"
-        (= 1 (:hits (search/find-refs
-                           :granule
-                           {:provider "PROV1"
-                            :polygon (apply st/search-poly intersects-polygon)}))))
+        (is (= 1 (:hits (search/find-refs
+                               :granule
+                               {:provider "PROV1"
+                                :polygon (apply st/search-poly intersects-polygon)})))))
 
       (testing "Polygon search that intersects with all geometries of the granule"
-        (= 1 (:hits (search/find-refs
-                           :granule
-                           {:provider "PROV1"
-                            :polygon (apply st/search-poly intersects-both)})))))
-
+        (is (= 1 (:hits (search/find-refs
+                               :granule
+                               {:provider "PROV1"
+                                :polygon (apply st/search-poly intersects-both)}))))))
     (testing "Polygon search with 'ignore-br' flag"
-      (comment)
       (testing "Polygon search that has no intersections with the granule"
-        (= 0 (:hits (search/find-refs
-                           :granule
-                           {:provider "PROV1"
-                            :polygon {:ignore-br (apply st/search-poly intersects-none)}}))))
+        (is (= 0 (:hits (search/find-refs
+                               :granule
+                               {:provider "PROV1"
+                                :polygon {:ignore-br (apply st/search-poly intersects-none)}})))))
       (testing "Polygon search that intersects with the bounding-box of the granule"
-        (= 0 (:hits (search/find-refs
-                           :granule
-                           {:provider "PROV1"
-                            :polygon {:ignore-br (apply st/search-poly intersects-bbox)}}))))
+        (is (= 0 (:hits (search/find-refs
+                               :granule
+                               {:provider "PROV1"
+                                :polygon {:ignore-br (apply st/search-poly intersects-bbox)}})))))
       (testing "Polygon search that intersects with the one polygon of the granule"
-        (= 1 (:hits (search/find-refs
-                           :granule
-                           {:provider "PROV1"
-                            :polygon {:ignore-br (apply st/search-poly intersects-polygon)}}))))
+        (is (= 1 (:hits (search/find-refs
+                               :granule
+                               {:provider "PROV1"
+                                :polygon {:ignore-br (apply st/search-poly intersects-polygon)}})))))
 
       (testing "Polygon search that intersects with all geometries of the granule"
-        (= 1 (:hits (search/find-refs
-                           :granule
-                           {:provider "PROV1"
-                            :polygon {:ignore-br (apply st/search-poly intersects-both)}})))))
+        (is (= 1 (:hits (search/find-refs
+                               :granule
+                               {:provider "PROV1"
+                                :polygon {:ignore-br (apply st/search-poly intersects-both)}}))))))
 
     (testing "Polygon search with 'every' flag"
-      (comment)
       (testing "Polygon search that has no intersections with the granule"
-        (= 0 (:hits (search/find-refs
-                           :granule
-                           {:provider "PROV1"
-                            :polygon {:every (apply st/search-poly intersects-none)}}))))
+        (is (= 0 (:hits (search/find-refs
+                               :granule
+                               {:provider "PROV1"
+                                :polygon {:every (apply st/search-poly intersects-none)}})))))
       (testing "Polygon search that intersects with the bounding-box of the granule"
-        (= 0 (:hits (search/find-refs
-                           :granule
-                           {:provider "PROV1"
-                            :polygon {:every (apply st/search-poly intersects-bbox)}}))))
+        (is (= 0 (:hits (search/find-refs
+                               :granule
+                               {:provider "PROV1"
+                                :polygon {:every (apply st/search-poly intersects-bbox)}})))))
       (testing "Polygon search that intersects with the one polygon of the granule"
-        (= 0 (:hits (search/find-refs
-                           :granule
-                           {:provider "PROV1"
-                            :polygon {:every (apply st/search-poly intersects-polygon)}}))))
+        (is (= 0 (:hits (search/find-refs
+                               :granule
+                               {:provider "PROV1"
+                                :polygon {:every (apply st/search-poly intersects-polygon)}})))))
 
       (testing "Polygon search that intersects with all geometries of the granule"
-        (= 1 (:hits (search/find-refs
-                           :granule
-                           {:provider "PROV1"
-                            :polygon {:every (apply st/search-poly intersects-both)}})))))))
+        (is (= 1 (:hits (search/find-refs
+                               :granule
+                               {:provider "PROV1"
+                                :polygon {:every (apply st/search-poly intersects-both)}}))))))))

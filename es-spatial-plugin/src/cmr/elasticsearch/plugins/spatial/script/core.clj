@@ -62,7 +62,7 @@
 (defn remove-br
   "Removes bounding rectangles from granule spatial data."
   [shapes]
-  (let [shapes-no-br (into [] (remove #((instance? cmr.spatial.mbr.Mbr (first shapes)) shapes)))]
+  (let [shapes-no-br (into [] (remove #(instance? cmr.spatial.mbr.Mbr %) shapes))]
     shapes-no-br))
 
 (defn doc-intersects?
@@ -76,8 +76,8 @@
           op (:operator (extract-params params))]
       (try
         (case op
-          "every" (every-true? intersects-fn shapes-no-br)
-          "ignore-br" (any-true? intersects-fn shapes-no-br)
+          "every" (every-true? intersects-fn shapes)
+          "ignore_br" (any-true? intersects-fn shapes-no-br)
           (any-true? intersects-fn shapes))
         (catch Throwable t
           (.printStackTrace t)
