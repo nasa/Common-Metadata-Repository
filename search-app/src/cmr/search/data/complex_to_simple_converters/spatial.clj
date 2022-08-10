@@ -160,7 +160,7 @@
 (defn- spatial-operator
   "Returns the operator used to determine if spatial queries must match all polygons."
   [params]
-  (if (= (type params) clojure.lang.PersistentArrayMap)
+  (if (map? params)
     (first (keys params))
     :any))
 
