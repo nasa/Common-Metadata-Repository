@@ -128,7 +128,13 @@ Operator can use the `start_index` parameter to index concepts with sequence num
 
 ### Bulk index concepts newer than a given date-time
 
+For all providers and all system concepts:
+
     curl -i -XPOST http://localhost:3006/bulk_index/after_date_time?date_time=2015-02-02T10:00:00Z"
+
+For a given list of providers (use provider `CMR` to index all system concepts):
+
+    curl -i -XPOST -H "Content-Type: application/json" -d '{"provider_ids": ["PROV1" "PROV2" "CMR"]}' http://localhost:3006/bulk_index/after_date_time?date_time=2015-02-02T10:00:00Z"
 
 ### Bulk index all system concepts (tags/acls/access-groups)
 

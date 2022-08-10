@@ -23,11 +23,15 @@
     [cmr.oracle.connection :as oc]
     [cmr.transmit.config :as transmit-config]))
 
+(def ^:private system-concept-provider
+  "Provider name for indexing system concepts"
+  "CMR")
+
 (def ^:private elastic-http-try-count->wait-before-retry-time
   "A map of of the previous number of tries to communicate with Elasticsearch over http to the amount
   of time to wait before retrying an http request. Will stop retrying if the number of requests
   exceeds what is configured here. Bulk indexing is expected to succeed everytime so this is fairly
-  aggressive about retrying and waiting a "
+  aggressive about retrying and waiting."
   {1 100
    2 1000
    ;; 10 seconds
@@ -204,7 +208,7 @@
   "Bulk index tags, acls, and access-groups."
   [system start-index]
   (let [db (helper/get-metadata-db-db system)
-        provider {:provider-id "CMR"}
+        provider {:provider-id system-concept-provider}
         total (apply + (for [concept-type [:tag :acl :access-group]
                              :let [params {:concept-type concept-type
                                            :provider-id (:provider-id provider)}
@@ -278,7 +282,7 @@
   [system date-time]
   (let [system-concept-response-map (for [concept-type [:tag :acl :access-group]]
                                       (fetch-and-index-new-concepts
-                                       system {:provider-id "CMR"} concept-type date-time))
+                                       system {:provider-id system-concept-provider} concept-type date-time))
         max-revision-date (apply util/max-compare
                                  (map :max-revision-date system-concept-response-map))
         system-concept-count (reduce + (map :num-indexed system-concept-response-map))]
@@ -291,7 +295,7 @@
   (info (format "Indexing concepts with revision-date later than [%s] for provider [%s] started."
                 date-time
                 provider-id))
-  (if (= "CMR" provider-id)
+  (if (= system-concept-provider provider-id)
     (let [{:keys [num-indexed]} (index-system-concepts-after-datetime system date-time)]
       (info (format "Indexed %d system concepts." num-indexed)))
 
@@ -313,9 +317,9 @@
                 date-time
                 provider-ids))
   (let [has-cmr-provider? (or (empty? provider-ids)
-                              (some #{"CMR"} provider-ids))
+                              (some #{system-concept-provider} provider-ids))
         providers (if (seq provider-ids)
-                    (map #(helper/get-provider system %) (remove #(= "CMR" %) provider-ids))
+                    (map #(helper/get-provider system %) (remove #(= system-concept-provider %) provider-ids))
                     ;; all providers
                     (helper/get-providers system))
         provider-response-map (for [provider providers
