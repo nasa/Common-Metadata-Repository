@@ -63,6 +63,8 @@
           shapes (srl/ords-info->shapes ords-info ords)
           shapes-no-br (remove-br shapes)
           op (:operator (extract-params params))]
+      ;; Example for logging to Docker logs in es-spatial-plugin
+      ;;(.info (LogManager/getLogger) (str "OPERATOR:" op))
       (try
         (case op
           "every" (every? intersects-fn shapes)
