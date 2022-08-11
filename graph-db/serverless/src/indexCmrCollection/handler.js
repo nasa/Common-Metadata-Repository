@@ -1,12 +1,9 @@
 import 'array-foreach-async'
 
-// import { deleteAcl } from '../utils/cmr/deleteAcl'
 import { deleteCmrCollection } from '../utils/cmr/deleteCmrCollection'
-// import { fetchAcl } from '../utils/cmr/fetchAcl'
 import { fetchCmrCollection } from '../utils/cmr/fetchCmrCollection'
 import { getConceptType } from '../utils/cmr/getConceptType'
 import { getEchoToken } from '../utils/cmr/getEchoToken'
-// import { indexAcl } from '../utils/cmr/indexAcl'
 import { indexCmrCollection } from '../utils/cmr/indexCmrCollection'
 import { initializeGremlinConnection } from '../utils/gremlin/initializeGremlinConnection'
 
