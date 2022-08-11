@@ -117,6 +117,20 @@
   []
   (set-modes! :all settings/default-run-mode))
 
+(defn- distribute-schemas
+  "A function that will copy the directory OtherSchemas in to all the necessary
+   apps and will be called on reset"
+  []
+  (let [path (System/getProperty "user.dir")
+        apps ["search-app"
+              "ingest-app"
+              "indexer-app"
+              "metadata-db-app"
+              "system-int-test"]
+        source "OtherSchemas"]
+    (doseq [app apps]
+      (shell/sh "cp" "-r" (clojure.string/replace path #"dev-system" source) (clojure.string/replace path #"dev-system" app)))))
+
 (defn set-legacy
   "Passing `true` to this function will cause legacy configuration to be used
   during starts/resets."
@@ -136,7 +150,7 @@
 ;; for dev-system expects.
 (when (string? (dev-config/dev-system-queue-type))
   (dev-config/set-dev-system-queue-type!
-    (keyword (dev-config/dev-system-queue-type))))
+   (keyword (dev-config/dev-system-queue-type))))
 ;; If the ENV var for the dev queue type was set to use AWS, let's make the
 ;; `set-aws` call.
 (if (= :aws (dev-config/dev-system-queue-type))
@@ -259,7 +273,7 @@
                         (ingest-system/public-conf)))]
     (alter-var-root #'system
                     (constantly
-                      (system/start s))))
+                     (system/start s))))
 
   (d/touch-user-clj)
   (banner))
@@ -302,6 +316,8 @@
   (sit-sys/stop)
   ; Stops the running code
   (stop)
+  ; Distributes schemas to different apps for use
+  (distribute-schemas)
   ; Refreshes all of the code and then restarts the system
   (refresh :after 'user/start))
 
