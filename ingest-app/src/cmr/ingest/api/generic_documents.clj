@@ -60,8 +60,8 @@
           index-sub-concept (:SubConceptType index-file)]
       (if index-sub-concept
         index-sub-concept
-        (:generic (set/map-invert cmr.common.concepts/concept-prefix->concept-type))))
-    (:generic (set/map-invert cmr.common.concepts/concept-prefix->concept-type))))
+        (:generic (set/map-invert common-concepts/concept-prefix->concept-type))))
+    (:generic (set/map-invert common-concepts/concept-prefix->concept-type))))
 
 (def required-query-parameters
   "This defines in a map required parameters that are passed in and where they would be 
@@ -97,15 +97,15 @@
         document (json/parse-string raw-document true)
         specification (:MetadataSpecification document)
         spec-key (keyword (string/lower-case (:Name specification)))
-        spec-version (:Version specification)]
+        spec-version (:Version specification)
+        concept-sub-type (get-sub-concept-type-concept-id-prefix spec-key spec-version)]
     {:concept (assoc {} :metadata raw-document
                      :provider-id provider-id
                      :format (str "application/vnd.nasa.cmr.umm+json;version=" spec-version)
-                     :concept-type ":generic"
                      :native-id native-id
                      :user-id (api-core/get-user-id request-context headers)
                      :extra-fields {}
-                     :concept-sub-type (get-sub-concept-type-concept-id-prefix spec-key spec-version))
+                     :concept-sub-type concept-sub-type)
      :spec-key spec-key
      :spec-version spec-version
      :provider-id provider-id

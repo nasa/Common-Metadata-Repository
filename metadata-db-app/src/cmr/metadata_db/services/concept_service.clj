@@ -476,7 +476,7 @@
      (or (c/get-concept db concept-type provider concept-id revision-id)
          ;; TODO: Generic work: Should we use an if clause here to check if
          ;; if the concept is generic or not. Then we don't have to try to get the concept twice.
-         (gen-doc/get-concept db :generic provider concept-id revision-id)
+         (gen-doc/get-concept db concept-type provider concept-id revision-id)
          (cmsg/data-error :not-found
                           msg/concept-with-concept-id-and-rev-id-does-not-exist
                           concept-id
