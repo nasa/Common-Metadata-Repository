@@ -122,12 +122,12 @@
    apps and will be called on reset"
   []
   (let [path (System/getProperty "user.dir")
-        apps ["search-app"
-              "ingest-app"
-              "indexer-app"
-              "metadata-db-app"
-              "system-int-test"]
-        source "OtherSchemas"]
+        apps ["search-app/resources"
+              "ingest-app/resources"
+              "indexer-app/resources"
+              "metadata-db-app/resources"
+              "system-int-test/resources"]
+        source "schemas"]
     (doseq [app apps]
       (shell/sh "cp" "-r" (clojure.string/replace path #"dev-system" source) (clojure.string/replace path #"dev-system" app)))))
 

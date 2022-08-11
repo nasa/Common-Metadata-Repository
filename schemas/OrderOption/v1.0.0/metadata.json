@@ -1,0 +1,12 @@
+{
+    "MetadataSpecification": {
+        "URL": "https://cdn.earthdata.nasa.gov/generics/orderoption/v1.0.0",
+        "Name": "OrderOption",
+        "Version": "1.0.0"
+    },
+    "Name": "OrderOption-v1",
+    "Id": "Example-Id-OrderOption-v1",
+    "Description": "A sample OrderOption",
+    "Form": "ExampleForm",
+    "Scope": "PROVIDER"
+}

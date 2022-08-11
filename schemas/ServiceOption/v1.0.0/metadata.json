@@ -1,0 +1,11 @@
+{
+    "MetadataSpecification": {
+        "URL": "https://cdn.earthdata.nasa.gov/generics/serviceoption/v1.0.0",
+        "Name": "ServiceOption",
+        "Version": "1.0.0"
+    },
+    "Name": "ServiceOption-v1",
+    "Id": "Example-Id-ServiceOption-v1",
+    "Description": "A sample ServiceOption",
+    "Form": "ExampleForm"
+}

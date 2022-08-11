@@ -1,0 +1,12 @@
+{
+    "MetadataSpecification": {
+        "URL": "https://cdn.earthdata.nasa.gov/generics/serviceentry/v1.0.0",
+        "Name": "ServiceEntry",
+        "Version": "1.0.0"
+    },
+    "Name": "ServiceEntry-v1",
+    "Id": "Example-Id-ServiceEntry-v1",
+    "Description": "A sample ServiceEntry",
+    "URL": "https://example.gov",
+    "EntryType": "ADVERTISEMENT"
+}
