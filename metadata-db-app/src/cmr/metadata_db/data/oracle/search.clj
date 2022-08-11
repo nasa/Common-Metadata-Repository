@@ -52,7 +52,7 @@
                                 :source_concept_identifier :user_id])
    :service-association (into common-columns
                               [:associated_concept_id :associated_revision_id
-                               :service_concept_id :user_id])
+                               :source_concept_identifier :user_id])
    :tool-association (into common-columns
                            [:associated_concept_id :associated_revision_id
                             :tool_concept_id :user_id])})
@@ -194,7 +194,9 @@
         fields (disj (columns-for-find-concept concept-type params) :provider_id)
         params (params->sql-params concept-type providers (assoc params :provider-id provider-ids))
         params (if (or (= :variable-association concept-type)
-                       (= :tag-association concept-type))
+                       (= :tag-association concept-type)
+                       (= :service-association concept-type)
+                       (= :tool-association concept-type))
                  (-> params
                      (set/rename-keys
                       (get-in association-concept-type->generic-association [concept-type :kebab-key-mapping]))
