@@ -8,9 +8,11 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.util :as util]
    [cmr.metadata-db.config :as mdb-config]
+   [cmr.metadata-db.data.memory-db :as memory]
    [cmr.metadata-db.data.oracle.concepts :as c]
    [cmr.metadata-db.data.oracle.concepts.collection]
    [cmr.metadata-db.data.oracle.concepts.granule]
+   [cmr.metadata-db.data.oracle.generic-documents :as gdocs]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle])
   (:import
@@ -151,3 +153,69 @@
                "parent_collection_id" "delete_time" "granule_ur" "provider_id"]
               ["foo" "G7-PROV1" "<foo>" "ECHO10" 2 false "C5-PROV1" sql-timestamp "foo-ur" "PROV1"]]
              (fix-result (c/concept->insert-args concept true)))))))
+
+(defn mock-str-time [db date] date)
+
+(deftest test-concept->genericdoc
+  "Test if results get translated to a map"
+  (testing "Test that empty data comes back when empty data is sent"
+    (let [db (memory/create-db)
+          input {}
+          expected {}
+          actual (gdocs/dbresult->genericdoc input db)]
+      (is (= expected actual) "Could not convert results from empty map")))
+
+  (testing
+   "Test if all the db columns come back in their translated form, ignore extra fields"
+    ;; Don't include revision-date or created-date in test as this will trigger
+    ;; oracle-timestamp->str-time function which may fail locally. Other tests
+    ;; cover the oracle date function
+    (let [db (memory/create-db)
+          input {:id 0
+                 :concept_id "C0001"
+                 :native_id "some-native-id"
+                 :provider_id "prov1"
+                 :document_name "Doc Name"
+                 :schema "grid"
+                 :format "grid"
+                 :mime_type "application/grid"
+                 :revision_id 1
+                 :deleted 0
+                 :user_id "someuser"
+                 :transaction_id 1234
+                 :drop-this-value "This key-value should not be in the expected"
+                 :metadata (mock-blob "{\"key\": \"value\"}")}
+          expected {:id 0
+                    :concept-id "C0001"
+                    :native-id "some-native-id"
+                    :provider-id "prov1"
+                    :document-name "Doc Name"
+                    :schema "grid"
+                    :format "grid"
+                    :mime-type "application/grid"
+                    :revision-id 1
+                    :deleted false
+                    :user-id "someuser"
+                    :transaction-id 1234
+                    :metadata {:key "value"}}
+          actual (gdocs/dbresult->genericdoc input db)]
+      (is (= expected actual) "Could not convert from populated map"))))
+
+(comment deftest concept->genericdoc
+  (let [db (->> (mdb-config/db-spec "metadata-db-test")
+                oracle/create-db
+                (#(lifecycle/start % nil)))]
+    (try
+      (j/with-db-transaction
+        [db db]
+        (let [revision-time (t/date-time 1986 10 14 4 3 27 456)
+              oracle-timestamp (TIMESTAMPTZ. ^java.sql.Connection (oracle/db->oracle-conn db)
+                                             ^java.sql.Timestamp (cr/to-sql-time revision-time))]
+          (testing "collection results"
+
+            (let [expected nil
+                  actual (#'cmr.metadata-db.data.oracle.generic-documents/dbresult->genericdoc {} db)]
+              (is (= expected actual))))))
+
+      (finally
+        (lifecycle/stop db nil)))))
