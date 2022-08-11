@@ -160,9 +160,12 @@
 (defn- spatial-operator
   "Returns the operator used to determine if spatial queries must match all polygons."
   [params]
-  (if (map? params)
-    (first (keys params))
-    :any))
+  (let [spatial-shape (select-keys params [:polygon :bounding_box :line :point :circle])
+        spatial-keys (keys spatial-shape)
+        primary ((first spatial-keys) spatial-shape)]
+    (if (map? primary)
+      (first (keys primary))
+      :any)))
 
 (defn- orbital-condition
   "Create a condition that will use orbit parameters and orbital back tracking to find matches
@@ -206,7 +209,7 @@
                          (orbital-condition context shape))
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
-          operator (spatial-operator (:polygon (:query-params context)))
+          operator (spatial-operator (:query-params context))
           spatial-script (shape->script-cond shape operator)
         ; check the MBR first before doing the more expensive check
           spatial-cond (if (= operator :any)
