@@ -2,6 +2,7 @@ import 'array-foreach-async'
 
 import { deleteCmrCollection } from '../utils/cmr/deleteCmrCollection'
 import { fetchCmrCollection } from '../utils/cmr/fetchCmrCollection'
+import { fetchCollectionPermittedGroups } from '../utils/cmr/fetchCollectionPermittedGroups'
 import { getConceptType } from '../utils/cmr/getConceptType'
 import { getEchoToken } from '../utils/cmr/getEchoToken'
 import { indexCmrCollection } from '../utils/cmr/indexCmrCollection'
@@ -49,8 +50,8 @@ const indexCmrCollections = async (event) => {
     if (getConceptType(conceptId) === 'collection' && action === updateActionType) {
       const collection = await fetchCmrCollection(conceptId, token)
 
-      const { data } = collection
-      const { items } = data
+      const { data = {} } = collection
+      const { items = [] } = data
 
       if (items.length === 0) {
         console.log(`Skip indexing of collection [${conceptId}] as it is not found in CMR`)
@@ -59,9 +60,12 @@ const indexCmrCollections = async (event) => {
       } else {
         const [firstCollection] = items
 
+        // Fetch the permitted groups for this collection from access-control
+        const groupList = await fetchCollectionPermittedGroups(conceptId, token)
+
         console.log(`Start indexing concept [${conceptId}], revision-id [${revisionId}]`)
 
-        await indexCmrCollection(firstCollection, gremlinConnection)
+        await indexCmrCollection(firstCollection, groupList, gremlinConnection)
 
         recordCount += 1
       }

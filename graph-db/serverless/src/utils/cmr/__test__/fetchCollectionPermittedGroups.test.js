@@ -6,7 +6,7 @@ beforeEach(() => {
   jest.clearAllMocks()
 })
 
-describe('fetchCmrCollection', () => {
+describe('fetchCollectionPermittedGroups', () => {
   test('returns collection permitted groups metadata', async () => {
     const mockedBody = {
       items: [
@@ -74,19 +74,21 @@ describe('fetchCmrCollection', () => {
 
   test('If the concept_id does not exist CMR returns a 400 error', async () => {
     const consoleMock = jest.spyOn(console, 'log')
-    const mockedBody = null
+    const mockedBody = []
 
     nock(/local-cmr/)
       .get(/acls/)
       .reply(400, mockedBody)
+
     const result = await fetchCollectionPermittedGroups('Not_a_real_Collection', 'mock_token')
+
     expect(consoleMock).toHaveBeenCalledWith('Could not complete request due to error: Error: Request failed with status code 400')
     expect(result).toEqual(mockedBody)
   })
 
   test('If the no token was supplied', async () => {
     const consoleMock = jest.spyOn(console, 'log')
-    const mockedBody = null
+    const mockedBody = []
 
     nock(/local-cmr/)
       .get(/acls/)

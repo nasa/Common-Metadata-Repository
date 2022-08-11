@@ -31,7 +31,7 @@ export const fetchPageFromCMR = async ({
   console.log(`Fetch collections from CMR, searchAfter #${searchAfterNum}`)
 
   if (token) {
-    requestHeaders['Echo-Token'] = token
+    requestHeaders.Authorization = `Bearer ${token}`
   }
 
   if (searchAfter) {
@@ -39,6 +39,7 @@ export const fetchPageFromCMR = async ({
   }
 
   let fetchUrl = `${process.env.CMR_ROOT}/search/collections.json?page_size=${process.env.PAGE_SIZE}`
+  console.log('CMR_ROOT', process.env.CMR_ROOT)
 
   if (providerId !== null) {
     fetchUrl += `&provider=${providerId}`
@@ -65,9 +66,10 @@ export const fetchPageFromCMR = async ({
 
     if (chunkedItems.length > 0) {
       const { env: { IS_LOCAL } } = process
+      console.log('IS_Local', IS_LOCAL)
 
       await chunkedItems.forEachAsync(async (chunk) => {
-        if (IS_LOCAL) {
+        if (IS_LOCAL === 'true') {
           const queueBody = chunk.map((collection) => {
             const { id: conceptId, revision_id: revisionId } = collection
 
@@ -85,6 +87,7 @@ export const fetchPageFromCMR = async ({
           const sqsEntries = []
 
           chunk.forEach((collection) => {
+            console.log('collection', collection)
             const { id: conceptId } = collection
 
             sqsEntries.push({

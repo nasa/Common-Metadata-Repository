@@ -5,7 +5,6 @@ import { deleteCmrCollection } from './deleteCmrCollection'
 import { indexPlatform } from './indexPlatform'
 import { indexProject } from './indexProject'
 import { indexRelatedUrl } from './indexRelatedUrl'
-import { fetchCollectionPermittedGroups } from './fetchCollectionPermittedGroups'
 
 const gremlinStatistics = gremlin.process.statics
 
@@ -15,7 +14,7 @@ const gremlinStatistics = gremlin.process.statics
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
  * @returns
  */
-export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
+export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection) => {
   const {
     meta: {
       'concept-id': conceptId,
@@ -33,14 +32,11 @@ export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
     }
   } = collectionObj
 
-  // delete the collection first so that we can clean up its related, relatedUrl vertices
+  // Delete the collection first so that we can clean up its related, relatedUrl vertices
   await deleteCmrCollection(conceptId, gremlinConnection)
 
   let collection = null
   try {
-    // fetch the permitted groups for this collection from access-control
-    const groupList = await fetchCollectionPermittedGroups(conceptId)
-
     const addVCommand = gremlinConnection.addV('collection')
       .property('title', entryTitle)
       .property('id', conceptId)

@@ -7,14 +7,28 @@ import * as chunkArray from '../../chunkArray'
 
 import { fetchPageFromCMR } from '../fetchPageFromCMR'
 
+const OLD_ENV = process.env
+
 beforeEach(() => {
   jest.clearAllMocks()
+
+  // Manage resetting ENV variables
+  jest.resetModules()
+  process.env = { ...OLD_ENV }
+  delete process.env.NODE_ENV
+})
+
+afterEach(() => {
+  // Restore any ENV variables overwritten in tests
+  process.env = OLD_ENV
 })
 
 const sqsClientMock = mockClient(SQSClient)
 
 describe('fetchPageFromCMR', () => {
   beforeEach(() => {
+    process.env.IS_LOCAL = 'false'
+
     sqsClientMock.reset()
   })
 
@@ -77,7 +91,7 @@ describe('fetchPageFromCMR', () => {
         title: 'ECHO dataset metadata',
         entry: []
       }
-    }, { })
+    }, {})
 
     await fetchPageFromCMR({
       searchAfter: null,
@@ -136,6 +150,7 @@ describe('fetchPageFromCMR', () => {
     }
 
     nock(/local-cmr/).get(/search/).reply(200, mockedBody, { 'cmr-search-after': '["aaa", 123, 456]' })
+
     nock(/local-cmr/).get(/search/).reply(200, {
       feed: {
         title: 'ECHO dataset metadata',
