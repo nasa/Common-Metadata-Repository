@@ -5,6 +5,7 @@
    [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.walk :as walk]
+   [cmr.common-app.api.launchpad-token-validation :refer [get-token-type]]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.config :as common-app-config]
    [cmr.common-app.services.search :as search]
@@ -134,8 +135,7 @@
                   (pr-str params)))
     (svc-errors/throw-service-error
      :too-many-requests
-     (str "Excessive query rate. Please contact "
-          (common-app-config/cmr-support-email) "."))))
+     "Excessive query rate. Please contact support@earthdata.nasa.gov.")))
 
 (defn- reject-all-granule-query?
   "Return true if the all granule query will be rejected."
@@ -272,8 +272,8 @@
   "Retrieves a timeline of granules within each collection found."
   [ctx path-w-extension params headers query-string]
   (let [params (core-api/process-params :granule params path-w-extension headers mt/json)
-        _ (info (format "Getting granule timeline from client %s with params %s."
-                        (:client-id ctx) (pr-str params)))
+        _ (info (format "Getting granule timeline from client %s, token_type %s with params %s."
+                        (:client-id ctx) (get-token-type (:token ctx)) (pr-str params)))
         search-params (lp/process-legacy-psa params)]
     (core-api/search-response ctx (query-svc/get-granule-timeline ctx search-params))))
 

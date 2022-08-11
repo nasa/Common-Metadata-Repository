@@ -1,11 +1,13 @@
 (ns cmr.search.api.core
   "Core functions used by multiple API/routes namespaces."
   (:require
+   [cmr.common-app.api.launchpad-token-validation :refer [get-token-type]]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
    [cmr.common.cache :as cache]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
+
    [cmr.umm-spec.versioning :as umm-version]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -126,3 +128,25 @@
                       (update :result mt/format->mime-type)
                       (update :scroll-id (constantly short-scroll-id)))]
      (common-routes/search-response response))))
+
+(defn log-search-result-metadata
+  ([hits concept-type total-took client-id token-type result-format param-str & param-args]
+   (let [format-str (str "Found %d %ss in %d ms from client %s, token_type %s in format %s " param-str)]
+     (apply format format-str hits concept-type total-took client-id (get-token-type token-type) result-format param-args))))
+
+
+;; log-message (format "Found %d %ss in %d ms from client %s in format %s with JSON Query %s and query params %s"
+;;                     (:hits results) (name concept-type) total-took (:client-id context)
+;;                     (rfh/printable-result-format (:result-format query)) json-query (pr-str params))
+;; log-message1 (format "Found %d %ss in %d ms from client %s in format %s with params %s"
+;;                      (:hits results) (name concept-type) total-took (:client-id context)
+;;                      (rfh/printable-result-format (:result-format query)) (pr-str params))
+;; log2 (format "Found %d %ss in %d ms from client %s in format %s with aql: %s."
+;;              (:hits results) (name concept-type) total-took (:client-id context)
+;;              (rfh/printable-result-format (:result-format query)) aql)
+;; log3 (format "Found %d deleted collections in %d ms from client %s in format %s with params %s."
+;;              hits total-took (:client-id context)
+;;              (rfh/printable-result-format result-format) (pr-str params))
+;; log4 (format "Found %d deleted granules in %d ms from client %s in format %s with params %s."
+;;              (:hits results) total-took (:client-id context)
+;;              (rfh/printable-result-format result-format) (pr-str params))
