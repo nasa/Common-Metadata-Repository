@@ -2447,7 +2447,23 @@ For granule additional attributes search, the default is searching for the attri
 
 #### <a name="g-spatial"></a> Find granules by Spatial
 The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
+
 Note: When querying a granule which has multiple types of spatial features in the granule metadata (i.e. a Polygon and a Bounding Box), the granule will be returned if the spatial query matches at least one of the spatial types on the given granule (i.e. matches the granule's Polygon OR Bounding Box).
+This may not always be the desired behavior if a granule has a bounding rectangle which is less precise than the polygons. For this, you may use the 'ignore-br' or 'every' keywords when doing spatial searches. These flags can be applied to any type of spatial search (polygon, bounding box, circle, line, point).
+
+The 'ignore-br' flag will ignore the bounding rectangles of the granule and look to match at least one other geometry (i.e. one or more of the polygons).
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[ignore-br]=10,10,30,10,30,20,10,20,10,10"
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&bounding_box[ignore-br]=-10,-5,10,5"
+
+The 'every' flag will look to match every geometry a granule has. So if it has multiple bounding rectangles and multiple polygons, the spatial search area will need to intersect every bounding rectangle and every polygon to return the granule.
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&circle[every]=-87.629717,41.878112,1000"
+
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&line[every]=-0.37,-14.07,4.75,1.27,25.13,-15.51"
+
+If no flag is provided with the query, it will revert to the default behavior of matching any single geometry of the granule.
 
 ##### <a name="g-polygon"></a> Polygon
 Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.
@@ -2466,16 +2482,6 @@ ll match both the first polygon and the second polygon.
     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11&options[polygon][or]=true"
 
 Note: if you use "polygon" for multiple polygon search, it won't work because only the last polygon parameter will take effect.
-
-If a granule has multiple spatial types in its data (i.e. a granule which contains a bounding rectangle and multiple polygons), it will be returned by a spatial search if the spatial search area matches any of the geometries in the granule. This may not always be the desired behavior if a granule has a bounding rectangle which is less precise than the polygons. For this, you may use the 'ignore-br' or 'every' keywords when doing polygon spatial searches.
-
-The 'ignore-br' flag will ignore the bounding rectangles of the granule and look to match at least one other geometry (i.e. one or more of the polygons).
-
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[ignore-br]=10,10,30,10,30,20,10,20,10,10"
-
-The 'every' flag will look to match every geometry a granule has. So if it has multiple bounding rectangles and multiple polygons, the spatial search area will need to intersect every bounding rectangle and every polygon to return the granule.
-
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[every]=10,10,30,10,30,20,10,20,10,10"
 
 ##### <a name="g-bounding-box"></a> Bounding Box
 
