@@ -36,7 +36,48 @@
 
 (def no-hits? (complement string/includes?))
 
-(deftest online-resource-url-update-test--echo10
+(deftest online-resource-url-update-test--echo10--error-cases
+  (testing "invalid update json provided fails"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          bulk-update {:operation "UPDATE_FIELD"
+                       :update-field "OnlineResourceURL"
+                       :updoots [{"GranuleUR" "mime-type-update-gran-ur"
+                                  "Links" [{:to "http://missing-from"}]}]}
+          {:keys [status task-id]} (ingest/bulk-update-granules
+                                    "PROV1" bulk-update bulk-update-options)
+          {:keys [concept-id revision-id]} (:granule @test-atom)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      (is (= 400 status))))
+
+  (testing "no matching url given"
+    (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
+          bulk-update {:operation "UPDATE_FIELD"
+                       :update-field "OnlineResourceURL"
+                       :updates [{"GranuleUR" "mime-type-update-gran-ur"
+                                  "Links" [{:from "https://no-matching-url"
+                                            :to "ftp://link-1-updated"}]}]}
+          {:keys [status task-id]} (ingest/bulk-update-granules
+                                    "PROV1" bulk-update bulk-update-options)
+          {:keys [concept-id revision-id]} (:granule @test-atom)]
+      (index/wait-until-indexed)
+      (ingest/update-granule-bulk-update-task-statuses)
+
+      ;; verify the granule status is UPDATED
+      (is (= 200 status))
+      (is (some? task-id))
+      (let [status-req-options {:query-params {:show_granules "true"}}
+            status-response (ingest/granule-bulk-update-task-status task-id status-req-options)
+            {:keys [task-status status-message granule-statuses]} status-response]
+        (is (= "COMPLETE" task-status))
+        (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
+        (is (= [{:granule-ur "mime-type-update-gran-ur"
+                 :status "FAILED"
+                 :status-message "Update failed - please only specify URLs contained in the existing granule OnlineResources or OnlineAccessURLs [https://no-matching-url] were not found"}]
+               granule-statuses))))))
+
+(deftest online-resource-url-update-test--echo10--success-case
   (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
         bulk-update {:operation "UPDATE_FIELD"
                      :update-field "OnlineResourceURL"
@@ -64,4 +105,4 @@
     (let [original-metadata (:metadata (mdb/get-concept concept-id revision-id))
           updated-metadata (:metadata (mdb/get-concept concept-id (inc revision-id)))]
       (is (no-hits? original-metadata "ftp://link-1-updated"))
-      (is (string/includes? updated-metadata "<URL>ftp://link-1-updated</URL>"))))  )
+      (is (string/includes? updated-metadata "<URL>ftp://link-1-updated</URL>")))))
