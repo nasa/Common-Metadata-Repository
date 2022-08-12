@@ -136,7 +136,7 @@
 ;; for dev-system expects.
 (when (string? (dev-config/dev-system-queue-type))
   (dev-config/set-dev-system-queue-type!
-   (keyword (dev-config/dev-system-queue-type))))
+    (keyword (dev-config/dev-system-queue-type))))
 ;; If the ENV var for the dev queue type was set to use AWS, let's make the
 ;; `set-aws` call.
 (if (= :aws (dev-config/dev-system-queue-type))
@@ -259,7 +259,7 @@
                         (ingest-system/public-conf)))]
     (alter-var-root #'system
                     (constantly
-                     (system/start s))))
+                      (system/start s))))
 
   (d/touch-user-clj)
   (banner))
