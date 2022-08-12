@@ -12,6 +12,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-system]
    [cmr.access-control.test.util :as ac-util]
+   [cmr.system-int-test.utils.generic-util :as generic-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -19,7 +20,9 @@
    [cmr.system-int-test.utils.subscription-util :as subscription-util]
    [cmr.system-int-test.utils.tool-util :as tool-util]
    [cmr.system-int-test.utils.variable-util :as variable-util]
-   [cmr.mock-echo.client.mock-urs-client :as mock-urs]))
+   [cmr.mock-echo.client.mock-urs-client :as mock-urs])
+   (:import
+    [java.util UUID]))
 
 (use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}
                                           {:grant-all-search? false
@@ -172,7 +175,10 @@
         ;; to ingest. So all the ingests should fail.
         subscription-np (subscription-util/make-subscription-concept {:CollectionConceptId (:concept-id coll2)
                                                                       :provider-id "PROV2"} {} 1)
-        tool (tool-util/make-tool-concept)]
+        tool (tool-util/make-tool-concept)
+        
+        grid generic-util/grid-good
+        grid-native-id (format "Generic-Test-%s" (UUID/randomUUID))]
 
     (testing "ingest granule update permissions"
       (are [token]
@@ -298,7 +304,25 @@
             another-prov-admin-token
             "provider-admin-read-token can't ingest"
             provider-admin-read-token))
+     
+     ;; Generic Document Pipeline Prototype
+     (testing "ingest generic (grid) update permissions"
+       (are [token]
+            (assert-ingest-succeeded
+             (generic-util/generic-request token "PROV1" grid-native-id grid :post))
+         provider-admin-update-token
+         provider-admin-read-update-token
+         provider-admin-update-delete-token)
 
+       (are [token]
+            (assert-ingest-no-permission
+             (generic-util/generic-request token "PROV1" grid-native-id grid :post))
+         guest-token
+         user-token
+         super-admin-token
+         another-prov-admin-token
+         provider-admin-read-token))
+     
      ;; Ingest and delete of subscriptions are controlled by both INGEST_MANAGEMENT_ACL and SUBSCRIPTION+MANAGEMENT ACLs.
      ;; subscriptoin-np is ingested on PROV2, which has no SUBSCRIPTION_MANAGEMENT permission to ingest. so, even though
      ;; it has the INGEST_MANAGEMENT_ACL permissions, it still fails the ingest and delete.

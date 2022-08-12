@@ -5,7 +5,7 @@
    [clojure.data :as d]
    [clojure.data.xml :as x]
    [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer :all] 
    [cmr.acl.core :as acl]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
@@ -918,7 +918,7 @@
      (dev-sys-util/reset)
      (set-ingest-umm-version-to-current)
      (when-not (empty? providers)
-      (setup-providers providers options))
+       (setup-providers providers options))
      (f))))
 
 (defn reset-fixture-with-customized-options
