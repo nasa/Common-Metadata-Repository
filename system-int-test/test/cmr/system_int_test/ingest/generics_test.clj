@@ -132,10 +132,9 @@
                (:body result))
             "The body is not correct")))
 
-    (testing "CREATE a document with a valid config set that includs grid"
+    (testing "CREATE a document with a valid config set that includes grid"
       (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grid ["0.0.1"]}))
-      (let [result (good-generic-requester :post)
-            expected {:Info {:native-id native-id
+      (let [expected {:Info {:native-id native-id
                              :document-name "Grid-A7-v1"
                              :provider-id "PROV1"
                              :schema "grid"
@@ -144,73 +143,58 @@
                              :revision-id 1
                              :user-id "ECHO_SYS"}
                       :Metadata grid-good}
-            actual (json/parse-string (:body result) true)
+
+            create-result (good-generic-requester :post)
+            create-response (:body create-result)
+
+            read-result (generic-requester)
+            read-response (:body read-result)
+
+            actual (json/parse-string read-response true)
             concept-id (get-in actual [:Info :concept-id])
             normalised (-> actual
                            ;; these fields are complicated to test, do so another way
                            (cutil/dissoc-in [:Info :concept-id])
                            (cutil/dissoc-in [:Info :revision-date])
                            (cutil/dissoc-in [:Info :created-at]))]
-        (is (= 200 (:status result)) "The HTTP status code is not correct")
-        (is (= "application/json;charset=utf-8" (get-in result [:headers "Content-Type"]))
+        ;; test that the create was a success
+        (is (= 204 (:status create-result)) "The HTTP status code from create is not correct")
+        (is (nil? create-response) "Create returned content when it should not have")
+
+        ;; test that the created document can be read back and was stored correctly
+        (is (= 200 (:status read-result)) "The HTTP status code from read is not correct")
+        (is (= "application/json;charset=utf-8" (get-in read-result [:headers "Content-Type"]))
             "The content type is not correct)")
-        ;; test the three hard fields
+        ;; test the three complicated fields
         (is (some? (re-matches #"GRD[0-9]+-PROV1" concept-id)) "A concept id was not returned")
         (is (some? (get-in actual [:Info :revision-date])) "Response did not have a revision date")
         (is (some? (get-in actual [:Info :created-at])) "Response did not have a create date")
-        ;; test the content in parts to make it easy to see where the problem may be
+        ;; Test the content in sections to make it easy to see where a problem may be
         (is (= (:Info expected) (:Info normalised)) "Info section does not match")
         (is (= (:Metadata expected) (:Metadata normalised)) "Metadata section did not match")))
 
-    (testing "READ the document from step above document with a valid config setting including grid"
-      (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grid ["0.0.1"]}))
-      (let [result (generic-requester)
-            body (:body result)
-
-            expected {:Info {:native-id native-id
-                             :document-name "Grid-A7-v1"
-                             :provider-id "PROV1"
-                             :schema "grid"
-                             :format "grid"
-                             :mime-type "application/grid;version=0.0.1"
-                             :revision-id 1
-                             :user-id "ECHO_SYS"}
-                      :Metadata grid-good}
-
-            actual (json/parse-string body true)
-            concept-id (get-in actual [:Info :concept-id])
-            normalised (-> actual
-                            ;; these fields are complicated to test, do so another way
-                           (cutil/dissoc-in [:Info :concept-id])
-                           (cutil/dissoc-in [:Info :revision-date])
-                           (cutil/dissoc-in [:Info :created-at]))]
-        (is (= 200 (:status result)) "The HTTP status code is not correct")
-        (is (= "application/json;charset=utf-8" (get-in result [:headers "Content-Type"]))
-            "The content type is not correct)")
-        ;; test the three hard fields
-        (is (some? (re-matches #"GRD[0-9]+-PROV1" concept-id)) "A concept id was not returned")
-        (is (some? (get-in actual [:Info :revision-date])) "Response did not have a revision date")
-        (is (some? (get-in actual [:Info :created-at])) "Response did not have a create date")
-        ;; test the content in parts to make it easy to see where the problem may be
-        (is (= (:Info expected) (:Info normalised)) "Info section does not match")
-        (is (= (:Metadata expected) (:Metadata normalised)) "Metadata section did not match")))
+    (comment "READ was tested above and will be tested below, no need to do it here")
 
     (testing "UPDATE The document from above"
       (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grid ["0.0.1"]}))
-      ;; update is based on insert and read, so we don't need to test everything like above
+      ;; Update is based on insert and read, so we don't need to test everything like above
       (let [expected "This has been updated"
             input (update-in grid-good [:Description] (fn [_] expected))
             update-result (generic-requester input :put)
             update-body (:body update-result)
+
             read-result (generic-requester)
             read-body (:body read-result)
             read-json (json/parse-string read-body true)
             actual (get-in read-json [:Metadata :Description])]
+        ;; Test that the update was successfull
         (is (= 204 (:status update-result)) "The HTTP status code was not returned correctly from the update")
         (is (= nil update-body) "The update body was not empty")
+        ;; Test that the read saved document was updated
         (is (= 200 (:status read-result)) "The HTTP status code was not returned correctly from the read")
         (is (= expected actual) "The description was not updated.")))
 
+    ;; TODO: Generic work: add delete
     (comment testing "DELETE The document from above"
       (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grid ["0.0.1"]}))
       (let [result (good-generic-requester :delete)

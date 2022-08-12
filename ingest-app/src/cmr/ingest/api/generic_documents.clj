@@ -119,7 +119,8 @@
         {:keys [spec-key spec-version provider-id native-id request-context concept]} res
         metadata (:metadata concept)]
     (validate-document-against-schema spec-key spec-version metadata)
-    (tgen/create-generic request-context [provider-id native-id] (json/generate-string concept))))
+    (tgen/create-generic request-context [provider-id native-id] (json/generate-string concept))
+    {:status 204}))
 
 (defn read-generic-document
   [request]
@@ -146,4 +147,5 @@
     {:status 204}))
 
 (defn delete-generic-document [request]
-  (println "stub function: delete " request))
+  (println "stub function: delete " request)
+  {:status 204})

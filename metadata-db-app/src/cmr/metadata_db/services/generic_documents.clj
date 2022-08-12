@@ -21,6 +21,11 @@
                   :format :mime-type :revision-id :revision-date :created-at
                   :user-id :concept-type :concept-sub-type])
 
+;; Insert-generic-document and other CRUD actions, except Read, return nil on
+;; success, To make the code more understandable, give that success a name.
+;; Fails will be handled with exceptions.
+(def success-response nil)
+
 (defn- raw-generic->response
   "Take the raw database object returned from either SQL or In-Memory and shape
    it into the expected response by pulling out generated fields like concept-id
@@ -47,12 +52,12 @@
 (defn insert-generic-document
   "Insert a document under the provided provider-id. Generate a concept ID for
    the new record, At this time, nothing prevents multiple copies of a record
-   from being inserted, users must know what they are doing."
+   from being inserted, users must know what they are doing. Update will not call
+   this function."
   [context params provider-id raw-native-id document]
   (let [db (mdb-util/context->db context)
         document (if (map? document) (json/generate-string document) document)
         document-as-map (json/parse-string document true)
-        ;; TODO: Generic work: Fix native id so that it is passed in correctly.
         native-id (or raw-native-id (.toString (java.util.UUID/randomUUID))) ;; can this stay?
         inner-metadata (json/parse-string (:metadata document-as-map) true)
         doc-name (get inner-metadata :Name native-id)
@@ -60,21 +65,17 @@
                             :provider-id (str provider-id)
                             :concept-type :generic
                             :document-name (subs doc-name 0 (min 20 (count doc-name)))
-                            ;; TODO: Generic work: Can't hard code the revision-id - or is this
-                            ;; because POST and PUT call different funtions.
-                            :revision-id 1
+                            :revision-id 1 ;; this function only for Create, not Update
                             :created-at (str (tkeeper/now))
                             :revision-date (dtp/clj-time->date-time-str (tkeeper/now))
                             :native-id native-id)
         concept-id (data/generate-concept-id db document-add)
         metadata (assoc document-add :concept-id concept-id)
-        _ (data/save-concept db provider-id metadata)
-        ;; TODO: Generic work: I think this is going to cause a race condition! We should return the actual thing that was saved and not get it back.
-        saved (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))]
+        _ (data/save-concept db provider-id metadata)]
     (ingest-events/publish-event
      context
      (ingest-events/concept-update-event metadata))
-    (raw-generic->response saved)))
+    success-response))
 
 (defn read-generic-document
   "Return the latest record using the concept-id under the given provider"
@@ -110,14 +111,15 @@
                         :document-name doc-name
                         :revision-date (dtp/clj-time->date-time-str (tkeeper/now))
                         :created-at orig-create-date)
-        _ (data/save-concept db provider-id metadata)
-        updated (first (data/get-latest-concepts db :generic {:provider-id provider-id} [concept-id]))]
+         _ (data/save-concept db provider-id metadata)]
     (ingest-events/publish-event
      context
      (ingest-events/concept-update-event metadata))
-    updated))
+    success-response))
 
+;; TODO: Generic work: define a delete action
 (defn delete-generic-document
   "Stub function, does nothing"
   [context params provider-id concept-id]
-  {})
+  (debug format "Delete stub function called with %s %s" provider-id concept-id)
+  success-response)
