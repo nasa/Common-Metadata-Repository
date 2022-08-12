@@ -21,13 +21,13 @@
   "Update a Generic Document"
   [context params provider-id native-id body]
   (let [result (gen-doc/update-generic-document context params provider-id native-id body)]
-    {:status 204}))
+    {:status 200 :body result}))
 
 (defn- delete-generic-document
   "Mark a document as deleted by creating a new tombstone revision"
   [context params provider-id concept-id]
   (let [result (gen-doc/delete-generic-document context params concept-id)]
-    {:status 204}))
+    {:status 204 :body result}))
 
 (def generic-document-api-routes
   (context "/generics" []

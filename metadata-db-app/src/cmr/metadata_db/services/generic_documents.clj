@@ -4,14 +4,16 @@
    [cheshire.core :as json]
    [clj-time.coerce :as coerce]
    [cmr.common.date-time-parser :as dtp]
+   [cmr.common.concepts :as common-concepts]
    [cmr.common.log :as log :refer (debug info warn error trace)]
    [cmr.common.services.messages :as messages]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tkeeper]
    [cmr.common.util :as cutil]
-   [cmr.metadata-db.services.messages :as msg]
    [cmr.metadata-db.data.generic-documents :as data]
    [cmr.metadata-db.data.ingest-events :as ingest-events]
+   [cmr.metadata-db.services.messages :as msg]
+   [cmr.metadata-db.services.provider-service :as provider-service]
    [cmr.metadata-db.services.util :as mdb-util]))
 
 ;; These are fields that should be put into the :Info field in the response
@@ -34,21 +36,6 @@
   [raw-doc]
   {:Info (select-keys raw-doc info-fields) :Metadata (:metadata raw-doc)})
 
-;; TODO: Generic work: We need to be able to handle multiple revisions - right now every revision is 1
-;; and we create a new document, instead of not letting them. - or maybe that is the design difference ;; between POST and PUT.
-;(defn- set-or-generate-revision-id
-;  "Get the next available revision id from the DB for the given concept or
-;  one if the concept has never been saved."
-;  [db provider concept & previous-revision]
-;  (if (:revision-id concept)
-;    concept
-;    (let [{:keys [concept-id concept-type provider-id]} concept
-;          previous-revision (first previous-revision)
-;          existing-revision-id (:revision-id (or previous-revision
-;                                                 (c/get-concept db concept-type provider concept-id)))
-;          revision-id (if existing-revision-id (inc existing-revision-id) 1)]
-;      (assoc concept :revision-id revision-id))))
-
 (defn insert-generic-document
   "Insert a document under the provided provider-id. Generate a concept ID for
    the new record, At this time, nothing prevents multiple copies of a record
@@ -56,11 +43,14 @@
    this function."
   [context params provider-id raw-native-id document]
   (let [db (mdb-util/context->db context)
+        ;; Validate that the provider exists.
+        _ (provider-service/get-provider-by-id context provider-id true)
         document (if (map? document) (json/generate-string document) document)
         document-as-map (json/parse-string document true)
         native-id (or raw-native-id (.toString (java.util.UUID/randomUUID))) ;; can this stay?
         inner-metadata (json/parse-string (:metadata document-as-map) true)
         doc-name (get inner-metadata :Name native-id)
+        concept-type (get common-concepts/concept-prefix->concept-type (:concept-sub-type document-as-map))
         document-add (assoc document-as-map
                             :provider-id (str provider-id)
                             :concept-type :generic
@@ -85,8 +75,8 @@
         concept-id (data/get-concept-id db :generic provider native-id)
         raw-doc (first (data/get-latest-concepts db :generic provider [concept-id]))]
     (if (nil? raw-doc)
-        (messages/data-error :not-found str (format "Document [%s] was not found." native-id))
-        (raw-generic->response raw-doc))))
+      (messages/data-error :not-found str (format "Document [%s] was not found." native-id))
+      (raw-generic->response raw-doc))))
 
 (defn update-generic-document
   "Update a record which has already been inserted. Revision id and revision date
@@ -96,7 +86,8 @@
         document (if (map? document) (json/generate-string document) document)
         document-map (json/parse-string document true)
         provider {:provider-id provider-id}
-        concept-id (data/get-concept-id db :generic provider native-id)
+        concept-type (get common-concepts/concept-prefix->concept-type (:concept-sub-type document-map))
+        concept-id (data/get-concept-id db concept-type provider native-id)
         latest-document (first (data/get-latest-concepts db :generic provider [concept-id]))
         latest-rev-id (:revision-id latest-document)
         orig-native-id (:native-id latest-document)

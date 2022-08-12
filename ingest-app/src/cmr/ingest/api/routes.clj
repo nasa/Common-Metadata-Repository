@@ -6,6 +6,7 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.concepts :as concepts]
    [cmr.common.log :refer [info]]
    [cmr.ingest.api.bulk :as bulk]
    [cmr.ingest.api.collections :as collections]
@@ -250,12 +251,32 @@
            (bulk/get-provider-tasks :granule provider-id request)))))))
 
 ;; TODO: Generic work - should this change to be more dynamic, gen type in front?
+
 (def generic-document-routes
   (context "/generics/provider/:provider-id/:native-id" [provider-id native-id]
     (POST "/" request (gen-doc/create-generic-document request))
     (GET "/" request (gen-doc/read-generic-document request))
     (PUT "/" request (gen-doc/update-generic-document request))
     (DELETE "/" request (gen-doc/delete-generic-document request))))
+
+(def generate-generic-concept-types-reg-ex
+  "This function creates a regular expresion for all of the generic concepts.  This is used to create the api endpoints.
+   An example string that is return looks like: \"dataqualitysummary|orderoption|serviceoption\" "
+  (let [rx (-> (str (concepts/get-generic-concept-types-array))
+              (clojure.string/replace #":|\]|\[" "")
+              (clojure.string/replace #" " "|"))]
+    rx))
+
+(def generic-document-routes-auxiliary
+ (routes
+    (api-core/set-default-error-format
+     :xml
+     (context ["/:concept-sub-type" :concept-sub-type (re-pattern generate-generic-concept-types-reg-ex)] [concept-sub-type]
+       (context ["/:native-id" :native-id #".*$"] [native-id]
+         (GET "/" request (gen-doc/validate-required-query-parameters request :read))
+         (POST "/" request (gen-doc/validate-required-query-parameters request :create))
+         (PUT "/" request (gen-doc/validate-required-query-parameters request :update))
+         (DELETE "/" request (gen-doc/delete-generic-document request)))))))
 
 (defn build-routes [system]
   (routes
@@ -268,7 +289,9 @@
       ;; Add routes to create, update, delete, & validate concepts
       ingest-routes
 
+      ;; add routes to create, update, read, and delete generic concepts
       generic-document-routes
+      generic-document-routes-auxiliary
 
       ;; db migration route
       db-migration-routes

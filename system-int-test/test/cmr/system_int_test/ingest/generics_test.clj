@@ -195,10 +195,10 @@
         (is (= expected actual) "The description was not updated.")))
 
     ;; TODO: Generic work: add delete
-    (comment testing "DELETE The document from above"
+    (testing "DELETE The document from above"
       (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grid ["0.0.1"]}))
       (let [result (good-generic-requester :delete)
             body (:body result)]
-        (is (= 404 (:status result)))
-        (is (string/includes? body "<!DOCTYPE html>"))))
+        (is (= 501 (:status result)))
+        (is (= "" body))))
     (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! `original-setting))))
