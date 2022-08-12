@@ -36,7 +36,7 @@ describe('utils#indexCmrCollection', () => {
             identity_type: 'Catalog Item',
             acl: {
               group_permissions: [],
-              catalog_item_identity: [Object],
+              catalog_item_identity: [],
               legacy_guid: '26B6710B-0562-953D-CCE7-E185B36A9545'
             },
             name: 'All Collections',
@@ -48,7 +48,7 @@ describe('utils#indexCmrCollection', () => {
             identity_type: 'Catalog Item',
             acl: {
               group_permissions: [],
-              catalog_item_identity: [Object],
+              catalog_item_identity: [],
               legacy_guid: '78B9267A-8876-34B0-020D-2B62ED010C39'
             },
             name: 'IceBridge Public Collection',

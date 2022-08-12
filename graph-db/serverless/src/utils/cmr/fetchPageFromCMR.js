@@ -87,7 +87,6 @@ export const fetchPageFromCMR = async ({
           const sqsEntries = []
 
           chunk.forEach((collection) => {
-            console.log('collection', collection)
             const { id: conceptId } = collection
 
             sqsEntries.push({
