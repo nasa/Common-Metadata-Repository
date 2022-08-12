@@ -136,7 +136,7 @@
                    :concept_id (:concept-id document)
                    :native_id (:native-id document)
                    :provider_id provider-id
-                   :document_name (:document-name document)   ;(subs (:document-name metadata) 0 20)
+                   :document_name (:document-name document)
                    :schema schema
                    :format schema
                    :mime_type (format "application/%s;version=%s" schema version)
