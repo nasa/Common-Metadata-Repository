@@ -36,7 +36,7 @@
 
 (def no-hits? (complement string/includes?))
 
-(deftest online-resource-url-update-test--echo10--error-cases
+(deftest online-resource-url-update-test-echo10-error-cases
   (testing "invalid update json provided fails"
     (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
           bulk-update {:operation "UPDATE_FIELD"
@@ -77,7 +77,7 @@
                  :status-message "Update failed - please only specify URLs contained in the existing granule OnlineResources or OnlineAccessURLs [https://no-matching-url] were not found"}]
                granule-statuses))))))
 
-(deftest online-resource-url-update-test--echo10--success-case
+(deftest online-resource-url-update-test-echo10-success-case
   (let [bulk-update-options {:token (echo-util/login (system/context) "user1")}
         bulk-update {:operation "UPDATE_FIELD"
                      :update-field "OnlineResourceURL"
