@@ -106,7 +106,7 @@ export const updateCollection = async (conceptId, collectionTitle, attributes) =
               { permissions: ['read'], group_id: 'AG1337409406-CMR' },
               { permissions: ['read'], user_type: 'registered' },
               { permissions: ['read'], group_id: 'AG1337409407-CMR' }],
-            catalog_item_identity: [Object],
+            catalog_item_identity: [],
             legacy_guid: '26B6710B-0562-953D-CCE7-E185B36A9545'
           },
           name: 'All Collections',
@@ -125,7 +125,7 @@ export const updateCollection = async (conceptId, collectionTitle, attributes) =
               { permissions: ['read', 'order'], user_type: 'guest' },
               { permissions: ['read'], user_type: 'guest' },
               { permissions: ['read', 'order'], group_id: 'AG1337409411-CMR' }],
-            catalog_item_identity: [Object],
+            catalog_item_identity: [],
             legacy_guid: '78B9267A-8876-34B0-020D-2B62ED010C39'
           },
           name: 'IceBridge Public Collection',
