@@ -239,18 +239,18 @@
   (sit-sys/set-logging-level @settings/logging-level)
   (reset! system/in-memory-elastic-log-level-atom @settings/logging-level)
 
-    ;; If you would like to run CMR with legacy support, then be sure to call
-    ;; `(set-legacy true)` in the REPL. There is currently no lein profile or
-    ;; command line option for this.
+  ;; If you would like to run CMR with legacy support, then be sure to call
+  ;; `(set-legacy true)` in the REPL. There is currently no lein profile or
+  ;; command line option for this.
   (when @settings/legacy?
     (configure-for-legacy-services))
 
   (let [s (-> (system/create-system)
               (configure-systems-logging @settings/logging-level)
-                ;; The following inclusion of public-conf data is done in order
-                ;; to support search and access-control web pages and their use
-                ;; of templates which (indirectly) make use of/require app
-                ;; public-conf data.
+              ;; The following inclusion of public-conf data is done in order
+              ;; to support search and access-control web pages and their use
+              ;; of templates which (indirectly) make use of/require app
+              ;; public-conf data.
               (assoc-in [:apps :search :public-conf]
                         (search-system/public-conf))
               (assoc-in [:apps :access-control :public-conf]
