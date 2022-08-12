@@ -135,7 +135,8 @@
                   (pr-str params)))
     (svc-errors/throw-service-error
      :too-many-requests
-     "Excessive query rate. Please contact support@earthdata.nasa.gov.")))
+     (str "Excessive query rate. Please contact "
+          (common-app-config/cmr-support-email) "."))))
 
 (defn- reject-all-granule-query?
   "Return true if the all granule query will be rejected."
