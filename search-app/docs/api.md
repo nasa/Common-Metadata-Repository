@@ -2449,13 +2449,13 @@ For granule additional attributes search, the default is searching for the attri
 The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
 
 Note: When querying a granule which has multiple types of spatial features in the granule metadata (i.e. a Polygon and a Bounding Box), the granule will be returned if the spatial query matches at least one of the spatial types on the given granule (i.e. matches the granule's Polygon OR Bounding Box).
-This may not always be the desired behavior if a granule has a bounding rectangle which is less precise than the polygons. For this, you may use the 'ignore-br' or 'every' keywords when doing spatial searches. These flags can be applied to any type of spatial search (polygon, bounding box, circle, line, point).
+This may not always be the desired behavior if a granule has a bounding rectangle which is less precise than the polygons. For this, you may use the 'ignore_br' or 'every' keywords when doing spatial searches. These flags can be applied to any type of spatial search (polygon, bounding box, circle, line, point).
 
-The 'ignore-br' flag will ignore the bounding rectangles of the granule and look to match at least one other geometry (i.e. one or more of the polygons).
+The 'ignore_br' flag will ignore the bounding rectangles of the granule and look to match at least one other geometry (i.e. one or more of the polygons).
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[ignore-br]=10,10,30,10,30,20,10,20,10,10"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[ignore_br]=10,10,30,10,30,20,10,20,10,10"
 
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&bounding_box[ignore-br]=-10,-5,10,5"
+    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&bounding_box[ignore_br]=-10,-5,10,5"
 
 The 'every' flag will look to match every geometry a granule has. So if it has multiple bounding rectangles and multiple polygons, the spatial search area will need to intersect every bounding rectangle and every polygon to return the granule.
 
