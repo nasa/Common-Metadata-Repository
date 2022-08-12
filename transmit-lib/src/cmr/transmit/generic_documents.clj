@@ -40,5 +40,5 @@
 ;; single param function.
 (http-helper/defcreator2 create-generic :metadata-db concept-ingest-url {:use-system-token? true :raw? true})
 (http-helper/defgetter read-generic :metadata-db concept-ingest-url {:use-system-token? true :raw? true})
-(http-helper/defupdater update-generic :metadata-db concept-ingest-url {:use-system-token? true})
-(http-helper/defdestroyer delete-generic :metadata-db concept-ingest-url {:use-system-token? true})
+(http-helper/defupdater update-generic :metadata-db concept-ingest-url {:use-system-token? true :raw2 true})
+(http-helper/defdestroyer delete-generic :metadata-db concept-ingest-url {:use-system-token? true :raw2 true})

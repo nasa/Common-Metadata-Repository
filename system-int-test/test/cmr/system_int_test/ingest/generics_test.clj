@@ -158,8 +158,8 @@
                            (cutil/dissoc-in [:Info :revision-date])
                            (cutil/dissoc-in [:Info :created-at]))]
         ;; test that the create was a success
-        (is (= 204 (:status create-result)) "The HTTP status code from create is not correct")
-        (is (nil? create-response) "Create returned content when it should not have")
+        (is (= 200 (:status create-result)) "The HTTP status code from create is not correct")
+        (is (= "" create-response) "Create returned content when it should not have")
 
         ;; test that the created document can be read back and was stored correctly
         (is (= 200 (:status read-result)) "The HTTP status code from read is not correct")
@@ -188,8 +188,8 @@
             read-json (json/parse-string read-body true)
             actual (get-in read-json [:Metadata :Description])]
         ;; Test that the update was successfull
-        (is (= 204 (:status update-result)) "The HTTP status code was not returned correctly from the update")
-        (is (= nil update-body) "The update body was not empty")
+        (is (= 200 (:status update-result)) "The HTTP status code was not returned correctly from the update")
+        (is (= "" update-body) "The update body was not empty")
         ;; Test that the read saved document was updated
         (is (= 200 (:status read-result)) "The HTTP status code was not returned correctly from the read")
         (is (= expected actual) "The description was not updated.")))

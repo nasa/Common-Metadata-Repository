@@ -139,8 +139,7 @@
         {:keys [spec-key spec-version provider-id native-id request-context concept]} res
         metadata (:metadata concept)]
     (validate-document-against-schema spec-key spec-version metadata)
-    (tgen/create-generic request-context [provider-id native-id] (json/generate-string concept))
-    {:status 204}))
+    (tgen/create-generic request-context [provider-id native-id] (json/generate-string concept))))
 
 (defn read-generic-document
   [request]
@@ -148,12 +147,8 @@
   (let [{:keys [route-params request-context params]} request
         provider-id (or (:provider params)
                         (:provider-id route-params))
-        native-id (:native-id route-params)
-       ;; The update-generic is a macro which allows for a list of URL parameters to be
-       ;; passed in to be resolved by a function.
-        response (tgen/read-generic request-context [provider-id native-id])
-        document (:body response)]
-    {:status 200 :body document}))
+        native-id (:native-id route-params)]
+    (tgen/read-generic request-context [provider-id native-id])))
 
 (defn update-generic-document
   [request]
@@ -165,8 +160,7 @@
     (validate-document-against-schema spec-key spec-version metadata)
     ;; The update-generic is a macro which allows for a list of URL parameters to be
     ;; passed in to be resolved by a function.
-    (tgen/update-generic request-context [provider-id native-id] (json/generate-string concept))
-    {:status 204}))
+    (tgen/update-generic request-context [provider-id native-id] (json/generate-string concept))))
 
 (defn delete-generic-document
   "TODO: Generic work: add delete"

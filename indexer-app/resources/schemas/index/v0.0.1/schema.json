@@ -11,7 +11,6 @@
             "$ref": "#/definitions/MetadataSpecificationType"},
         "SubConceptType": {
           "type": "string",
-          "maxItems": 1,
           "minLength": 1,
           "maxLength": 4
         },

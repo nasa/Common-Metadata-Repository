@@ -53,7 +53,7 @@
         concept-type (get common-concepts/concept-prefix->concept-type (:concept-sub-type document-as-map))
         document-add (assoc document-as-map
                             :provider-id (str provider-id)
-                            :concept-type :generic
+                            :concept-type concept-type
                             :document-name (subs doc-name 0 (min 20 (count doc-name)))
                             :revision-id 1 ;; this function only for Create, not Update
                             :created-at (str (tkeeper/now))
@@ -95,7 +95,7 @@
         orig-create-date (:created-at latest-document)
         doc-name (:document-name latest-document)
         metadata (assoc document-map
-                        :concept-type :generic
+                        :concept-type concept-type
                         :revision-id (+ latest-rev-id 1)
                         :native-id orig-native-id
                         :concept-id orig-concept-id
