@@ -23,11 +23,15 @@
     [cmr.oracle.connection :as oc]
     [cmr.transmit.config :as transmit-config]))
 
+(def ^:private system-concept-provider
+  "Provider name for indexing system concepts"
+  "CMR")
+
 (def ^:private elastic-http-try-count->wait-before-retry-time
   "A map of of the previous number of tries to communicate with Elasticsearch over http to the amount
   of time to wait before retrying an http request. Will stop retrying if the number of requests
   exceeds what is configured here. Bulk indexing is expected to succeed everytime so this is fairly
-  aggressive about retrying and waiting a "
+  aggressive about retrying and waiting."
   {1 100
    2 1000
    ;; 10 seconds
@@ -204,7 +208,7 @@
   "Bulk index tags, acls, and access-groups."
   [system start-index]
   (let [db (helper/get-metadata-db-db system)
-        provider {:provider-id "CMR"}
+        provider {:provider-id system-concept-provider}
         total (apply + (for [concept-type [:tag :acl :access-group]
                              :let [params {:concept-type concept-type
                                            :provider-id (:provider-id provider)}
@@ -272,18 +276,28 @@
     (info "Deleted " total " concepts")
     total))
 
+(defn- index-system-concepts-after-datetime
+  "Index all system concepts created later than or equal to the given date-time.
+  Returns a map of :max-revision-date and :num-indexed."
+  [system date-time]
+  (let [system-concept-response-map (for [concept-type [:tag :acl :access-group]]
+                                      (fetch-and-index-new-concepts
+                                       system {:provider-id system-concept-provider} concept-type date-time))
+        max-revision-date (apply util/max-compare
+                                 (map :max-revision-date system-concept-response-map))
+        system-concept-count (reduce + (map :num-indexed system-concept-response-map))]
+    {:max-revision-date max-revision-date
+     :num-indexed system-concept-count}))
+
 (defn index-provider-data-later-than-date-time
   "Index all concept revisions created later than or equal to the given date-time for a given provider."
   [system provider-id date-time]
   (info (format "Indexing concepts with revision-date later than [%s] for provider [%s] started."
                 date-time
                 provider-id))
-  (if (= "CMR" provider-id)
-    (let [system-concept-response-map (for [concept-type [:tag :acl :access-group]]
-                                        (fetch-and-index-new-concepts
-                                         system {:provider-id "CMR"} concept-type date-time))
-          system-concept-count (reduce + (map :num-indexed system-concept-response-map))]
-      (info (format "Indexed %d system concepts." system-concept-count)))
+  (if (= system-concept-provider provider-id)
+    (let [{:keys [num-indexed]} (index-system-concepts-after-datetime system date-time)]
+      (info (format "Indexed %d system concepts." num-indexed)))
 
     (let [provider (helper/get-provider system provider-id)
           provider-response-map (for [concept-type [:collection :granule]]
@@ -296,28 +310,38 @@
                 provider-id)))
 
 (defn index-data-later-than-date-time
-  "Index all concept revisions created later than or equal to the given date-time."
-  [system date-time]
-  (info "Indexing concepts with revision-date later than " date-time "started.")
-  (let [providers (helper/get-providers system)
+  "Index all concept revisions created later than or equal to the given date-time
+  for the given providers. If provider-ids is empty, then all providers are indexed."
+  [system provider-ids date-time]
+  (info (format "Indexing concepts with revision-date later than %s for providers %s started."
+                date-time
+                provider-ids))
+  (let [has-cmr-provider? (or (empty? provider-ids)
+                              (some #{system-concept-provider} provider-ids))
+        providers (if (seq provider-ids)
+                    (map #(helper/get-provider system %) (remove #(= system-concept-provider %) provider-ids))
+                    ;; all providers
+                    (helper/get-providers system))
         provider-response-map (for [provider providers
                                     concept-type [:collection :granule]]
                                 (fetch-and-index-new-concepts
-                                  system provider concept-type date-time))
+                                 system provider concept-type date-time))
         provider-concept-count (reduce + (map :num-indexed provider-response-map))
-        system-concept-response-map (for [concept-type [:tag :acl :access-group]]
-                                      (fetch-and-index-new-concepts
-                                        system {:provider-id "CMR"} concept-type date-time))
-        system-concept-count (reduce + (map :num-indexed system-concept-response-map))
+        system-concept-response-map (if has-cmr-provider?
+                                      (index-system-concepts-after-datetime system date-time)
+                                      {:num-indexed 0})
+        system-concept-count (:num-indexed system-concept-response-map)
         indexing-complete-message (format "Indexed %d provider concepts and %d system concepts."
                                           provider-concept-count
                                           system-concept-count)]
-      (info "Indexing concepts with revision-date later than" date-time "completed.")
-      (info indexing-complete-message)
-      {:message indexing-complete-message
-       :max-revision-date (apply util/max-compare
-                           (map :max-revision-date
-                                (apply conj provider-response-map system-concept-response-map)))}))
+    (info (format "Indexing concepts with revision-date later than %s for providers %s completed."
+                  date-time
+                  provider-ids))
+    (info indexing-complete-message)
+    {:message indexing-complete-message
+     :max-revision-date (apply util/max-compare
+                               (map :max-revision-date
+                                    (apply conj provider-response-map system-concept-response-map)))}))
 
 ;; Background task to handle bulk index requests
 (defn handle-bulk-index-requests

@@ -505,7 +505,7 @@
                                  INCREMENT BY 1
                                  CACHE 20" INITIAL_CONCEPT_NUM))
   (j/db-do-commands this "DELETE FROM cmr_tags")
-  (j/db-do-commands this "DELETE FROM cmr_tag_associations")
+  (j/db-do-commands this "DELETE FROM cmr_associations where association_type = 'TAG-COLLECTION'")
   (j/db-do-commands this "DELETE FROM cmr_groups")
   (j/db-do-commands this "DELETE FROM cmr_acls")
   (j/db-do-commands this "DELETE FROM cmr_humanizers")

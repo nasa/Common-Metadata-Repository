@@ -31,6 +31,19 @@
                      :throw-exceptions false
                      :connection-manager (s/conn-mgr)})
          body (json/decode (:body response) true)]
+     (assoc body :status (:status response))))
+  ([date-time headers provider-ids]
+   (let [response (client/request
+                    {:method :post
+                     :headers headers
+                     :query-params {:synchronous true}
+                     :url (url/bulk-index-after-date-time-url date-time)
+                     :body (json/generate-string {:provider_ids provider-ids})
+                     :content-type :json
+                     :accept :json
+                     :throw-exceptions false
+                     :connection-manager (s/conn-mgr)})
+         body (json/decode (:body response) true)]
      (assoc body :status (:status response)))))
 
 (defn bulk-index-concepts

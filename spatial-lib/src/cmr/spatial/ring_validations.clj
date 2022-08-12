@@ -35,6 +35,12 @@
     (when (and (:contains-south-pole ring) (:contains-north-pole ring))
       [(msg/ring-contains-both-poles)])))
 
+(defn- ring-geo-point-order-validation
+  "Validates that a geodetic rings points are in counter clockwise order"
+  [ring]
+  (when (= (gr/ring->point-order ring) :clockwise)
+    [(msg/ring-points-out-of-order)]))
+
 (defn- ring-point-order-validation
   "Validates that a cartesian rings points are in counter clockwise order"
   [ring]
@@ -56,7 +62,8 @@
             ;; Advanced ring validation
             (let [ring (assoc ring :arcs (gr/ring->arcs ring))]
               (or (seq (ring-self-intersection-validation ring))
-                  (seq (ring-pole-validation ring)))))))
+                  (seq (ring-pole-validation ring))
+                  (seq (ring-geo-point-order-validation ring)))))))
 
   cmr.spatial.cartesian_ring.CartesianRing
   (validate

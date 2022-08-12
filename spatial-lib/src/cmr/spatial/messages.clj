@@ -85,13 +85,11 @@
 
 (defn ring-contains-both-poles
   []
- "The polygon boundary contains both the North and South Poles. A polygon can contain at most one pole. Please check the order of your points.
- You may have provided them in the wrong order (clockwise vs counter-clockwise)")
+ "The polygon boundary contains both the North and South Poles. A polygon can contain at most one pole.")
 
 (defn ring-points-out-of-order
   []
-  (str "The polygon boundary points are listed in the wrong order (clockwise vs counter clockwise). "
-       "Please see the API documentation for the correct order."))
+  "The polygon boundary points are listed in the wrong order. Points must be provided in counter-clockwise order.")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Polygon validation messages

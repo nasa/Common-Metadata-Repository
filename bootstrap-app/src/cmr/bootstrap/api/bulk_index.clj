@@ -42,16 +42,16 @@
 
 (defn data-later-than-date-time
   "Index all the data with a revision-date later than a given date-time."
-  [context params]
-  (let [dispatcher (api-util/get-dispatcher
-                    context params :index-data-later-than-date-time)
+  [context body params]
+  (let [dispatcher (api-util/get-dispatcher context params :index-data-later-than-date-time)
+        provider-ids (get body "provider_ids")
         date-time (:date_time params)]
     (if-let [date-time-value (date-time-parser/try-parse-datetime date-time)]
       {:status 202
        :body {:message (msg/data-later-than-date-time
                         params
                         (service/index-data-later-than-date-time
-                         context dispatcher date-time-value)
+                         context dispatcher provider-ids date-time-value)
                         date-time)}}
       ;; Can't parse date-time.
       (errors/throw-service-error

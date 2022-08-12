@@ -27,7 +27,7 @@
    "Bulk index all the collections and granules for a provider.")
 
   (index-data-later-than-date-time
-   [this context date-time]
+   [this context provider-ids date-time]
    "Bulk index all the concepts with a revision date later than the given date-time.")
 
   (index-collection

@@ -91,14 +91,17 @@
 
 (defn- index-data-later-than-date-time
   "Bulk index all the concepts with a revision date later than the given date-time."
-  [this context date-time]
+  [this context provider-ids date-time]
   (info "Publishing events to index all concepts after a given date time.")
-  (doseq [provider (conj (helper/get-providers (:system context)) {:provider-id "CMR"})
-          :let [provider-id (:provider-id provider)]]
-    (message-queue/publish-bootstrap-concepts-event
-     context
-     (message-queue/bootstrap-provider-event provider-id nil date-time)))
-  (info "Publishing events to index all concepts after a given date time completed."))
+  (let [provider-ids (if (seq provider-ids)
+                       provider-ids
+                       ;; all providers including CMR provider which is for system concepts
+                       (conj (map :provider-id (helper/get-providers (:system context))) "CMR"))]
+    (doseq [provider-id provider-ids]
+      (message-queue/publish-bootstrap-concepts-event
+       context
+       (message-queue/bootstrap-provider-event provider-id nil date-time)))
+    (info "Publishing events to index all concepts after a given date time completed.")))
 
 (defn- fingerprint-variables
   "Update fingerprints of variables. If a provider is passed, only update fingerprints of the

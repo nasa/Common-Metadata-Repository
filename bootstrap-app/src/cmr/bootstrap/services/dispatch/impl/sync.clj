@@ -25,8 +25,8 @@
 
 (defn- index-data-later-than-date-time
   "Bulk index all the concepts with a revision date later than the given date-time."
-  [this context date-time]
-  (bulk-index/index-data-later-than-date-time (:system context) date-time))
+  [this context provider-ids date-time]
+  (bulk-index/index-data-later-than-date-time (:system context) provider-ids date-time))
 
 (defn- index-collection
   "Bulk index all the granules in a collection"

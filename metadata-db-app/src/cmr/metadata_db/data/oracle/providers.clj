@@ -58,16 +58,16 @@
     (j/delete! db (ct/get-table-name provider :variable) ["provider_id = ?" provider-id])
 
     ;; Delete the service associations related to the provider via service
-    (j/db-do-commands db (str "DELETE FROM cmr_service_associations where service_concept_id like 'S%-" provider-id "'"))
+    (j/db-do-commands db (str "DELETE FROM CMR_ASSOCIATIONS where association_type = 'SERVICE-COLLECTION' and source_concept_identifier like 'S%-" provider-id "'"))
     ;; Delete the service associations related to the provider via collection
-    (j/db-do-commands db (str "DELETE FROM cmr_service_associations where associated_concept_id like 'C%-" provider-id "'"))
+    (j/db-do-commands db (str "DELETE FROM CMR_ASSOCIATIONS where association_type = 'SERVICE-COLLECTION' and associated_concept_id like 'C%-" provider-id "'"))
     ;; Delete services of the provider
     (j/delete! db (ct/get-table-name provider :service) ["provider_id = ?" provider-id])
 
     ;; Delete the tool associations related to the provider via tool
-    (j/db-do-commands db (str "DELETE FROM cmr_tool_associations where tool_concept_id like 'TL%-" provider-id "'"))
+    (j/db-do-commands db (str "DELETE FROM CMR_ASSOCIATIONS where association_type = 'TOOL-COLLECTION' and source_concept_identifier like 'TL%-" provider-id "'"))
     ;; Delete the tool associations related to the provider via collection
-    (j/db-do-commands db (str "DELETE FROM cmr_tool_associations where associated_concept_id like 'C%-" provider-id "'"))
+    (j/db-do-commands db (str "DELETE FROM CMR_ASSOCIATIONS where association_type = 'TOOL-COLLECTION' and associated_concept_id like 'C%-" provider-id "'"))
     ;; Delete tools of the provider
     (j/delete! db (ct/get-table-name provider :tool) ["provider_id = ?" provider-id])
 

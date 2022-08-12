@@ -11,7 +11,7 @@
           (assoc-in [:extra-fields :associated-revision-id]
                     (when-let [ari (:associated_revision_id result)]
                       (long ari)))
-          (assoc-in [:extra-fields :tag-key] (:tag_key result))
+          (assoc-in [:extra-fields :tag-key] (:source_concept_identifier result))
           (assoc :user-id (:user_id result))))
 
 ;; Only "CMR" provider is supported now which is not considered a 'small' provider. If we
@@ -22,5 +22,5 @@
   (let [{{:keys [associated-concept-id associated-revision-id tag-key]} :extra-fields
          :keys [user-id]} concept
         [cols values] (c/concept->common-insert-args concept)]
-    [(concat cols ["associated_concept_id" "associated_revision_id" "tag_key" "user_id"])
-     (concat values [associated-concept-id associated-revision-id tag-key user-id])]))
+    [(concat cols ["associated_concept_id" "associated_revision_id" "source_concept_identifier" "user_id" "association_type"])
+     (concat values [associated-concept-id associated-revision-id tag-key user-id "TAG-COLLECTION"])]))
