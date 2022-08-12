@@ -306,8 +306,8 @@ see the docstring for `run-suites` in `dev-system/dev/user.clj`.
 It will contain usage instructions
 #### Testing in the CI Environment
 
-Throughout the modules, in the `project.clj` files there are additional `lein` aliseses for 
-executing the tests in the CI/CD environment. They are 
+Throughout the modules, in the `project.clj` files there are additional `lein` aliseses for
+executing the tests in the CI/CD environment. They are
 * ci-itest
 * ci-utest
 
@@ -316,10 +316,10 @@ between `itest` and `ci-itest` or `utest` and `ci-utest` are the settings passed
 kaocha test runner.
 
 In the CI environment, color is omitted, and certain tests that require an internal memory
-database are excluded. The aliases may be used locally as well. 
+database are excluded. The aliases may be used locally as well.
 
 To see the differnce in detail, inspect the `tests.edn` files for each module to see the
-profile in use in the CI environment. Kaocha supports the use of profiles so more may 
+profile in use in the CI environment. Kaocha supports the use of profiles so more may
 be added as necessary.
 
 ### Test Development
@@ -447,7 +447,6 @@ applications, as well as several libraries and support applications.
 
 - CMR Client Partner User Guide: https://wiki.earthdata.nasa.gov/display/ED/CMR+Client+Partner+User+Guide
 - CMR Data Partner User Guide: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide
-- CMR Client Developer Forum: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum
 
 ## License
 
