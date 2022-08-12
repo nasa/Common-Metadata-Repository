@@ -96,7 +96,7 @@
          [(msg/ring-self-intersections [(p/point 1.5055573678910719 3.768366191776642)])]
 
          [0 0, 4 0, 6 5, 4.97 -1.77, 0 0]
-         [(msg/ring-contains-both-poles)])))
+         [(msg/ring-points-out-of-order)])))
 
 (declare ring-examples)
 

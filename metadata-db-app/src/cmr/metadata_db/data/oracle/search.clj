@@ -35,7 +35,8 @@
                       :user_id])
    :tag (into common-columns [:user_id])
    :tag-association (into common-columns
-                          [:associated_concept_id :associated_revision_id :tag_key :user_id])
+                          [:associated_concept_id :associated_revision_id
+                           :source_concept_identifier :user_id])
    :access-group (into common-columns [:provider_id :user_id])
    :service (into common-columns [:provider_id :service_name :user_id])
    :tool (into common-columns [:provider_id :tool_name :user_id])
@@ -51,10 +52,10 @@
                                 :source_concept_identifier :user_id])
    :service-association (into common-columns
                               [:associated_concept_id :associated_revision_id
-                               :service_concept_id :user_id])
+                               :source_concept_identifier :user_id])
    :tool-association (into common-columns
                            [:associated_concept_id :associated_revision_id
-                            :tool_concept_id :user_id])})
+                            :source_concept_identifier :user_id])})
 
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept
@@ -192,7 +193,10 @@
   (let [provider-ids (map :provider-id providers)
         fields (disj (columns-for-find-concept concept-type params) :provider_id)
         params (params->sql-params concept-type providers (assoc params :provider-id provider-ids))
-        params (if (= :variable-association concept-type)
+        params (if (or (= :variable-association concept-type)
+                       (= :tag-association concept-type)
+                       (= :service-association concept-type)
+                       (= :tool-association concept-type))
                  (-> params
                      (set/rename-keys
                       (get-in association-concept-type->generic-association [concept-type :kebab-key-mapping]))

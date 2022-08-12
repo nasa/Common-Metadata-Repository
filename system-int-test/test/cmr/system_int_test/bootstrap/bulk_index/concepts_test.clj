@@ -28,7 +28,8 @@
 
 (use-fixtures :each (join-fixtures
                      [(ingest/reset-fixture {"provguid1" "PROV1"
-                                             "provguid2" "PROV2"}
+                                             "provguid2" "PROV2"
+                                             "provguid3" "PROV3"}
                                             {:grant-all-ingest? true
                                              :grant-all-search? true
                                              :grant-all-access-control? false})
@@ -73,6 +74,32 @@
 
          "Granules"
          :granule granules)))
+
+(defn- assert-indexed-acls
+  "Assert that only the given acls are indexed"
+  [expected-acls]
+  (let [{:keys [items]} (ac/search-for-acls
+                         (u/conn-context) {} {:token (tc/echo-system-token)})]
+    (search-results-match? items expected-acls)))
+
+(defn- assert-indexed-groups
+  "Assert that only the given groups are indexed"
+  [expected-groups]
+  (let [{:keys [items]} (ac/search-for-groups
+                         (u/conn-context) {:token (tc/echo-system-token)})
+        ;; Need to filter out admin group created by fixture
+        found (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) items)]
+    (search-results-match? found expected-groups)))
+
+(defn- assert-indexed-tags
+  "Assert that only the given tags are indexed"
+  [expected-tags]
+  (let [result-tags (update
+                     (tags/search {})
+                     :items
+                     (fn [items]
+                       (map #(select-keys % [:concept-id :revision-id]) items)))]
+    (tags/assert-tag-search expected-tags result-tags)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
@@ -124,26 +151,11 @@
      (index/wait-until-indexed)
 
      ;; ACLs
-     (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
-           items (:items response)]
-       (search-results-match? items [acl1 acl2]))
-
+     (assert-indexed-acls [acl1 acl2])
      ;; Groups
-     (let [response (ac/search-for-groups (u/conn-context) {:token (tc/echo-system-token)})
-           ;; Need to filter out admin group created by fixture
-           items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
-       (search-results-match? items [group1 group3]))
-
-     (are3 [expected-tags]
-           (let [result-tags (update
-                              (tags/search {})
-                              :items
-                              (fn [items]
-                                (map #(select-keys % [:concept-id :revision-id]) items)))]
-             (tags/assert-tag-search expected-tags result-tags))
-
-           "Tags"
-           [tag2 tag3]))))
+     (assert-indexed-groups [group1 group3])
+     ;; Tags
+     (assert-indexed-tags [tag2 tag3]))))
 
 (deftest ^:oracle bulk-index-by-concept-id
   (s/only-with-real-database
@@ -178,16 +190,7 @@
 
      (testing "Concepts are indexed."
        (verify-collections-granules-are-indexed [coll1 coll2] [gran2])
-       (are3 [expected-tags]
-             (let [result-tags (update
-                                (tags/search {})
-                                :items
-                                (fn [items]
-                                  (map #(select-keys % [:concept-id :revision-id]) items)))]
-               (tags/assert-tag-search expected-tags result-tags))
-
-             "Tags"
-             [tag1])))))
+       (assert-indexed-tags [tag1])))))
 
 (deftest ^{:kaocha/skip true
            :oracle true} zzz_bulk-index-after-date-time
@@ -232,26 +235,87 @@
        (verify-collections-granules-are-indexed [coll2] [gran2] (tc/echo-system-token))
 
        ;; ACLs
-       (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
-             items (:items response)]
-         (search-results-match? items [acl2]))
-
+       (assert-indexed-acls [acl2])
        ;; Groups
-       (let [response (ac/search-for-groups (u/conn-context) {:token (tc/echo-system-token)})
-             ;; Need to filter out admin group created by fixture
-             items (filter #(not (= "mock-admin-group-guid" (:legacy_guid %))) (:items response))]
-         (search-results-match? items [group2]))
+       (assert-indexed-groups [group2])
+       ;; Tags
+       (assert-indexed-tags [tag2])))))
 
-       (are3 [expected-tags]
-             (let [result-tags (update
-                                (tags/search {})
-                                :items
-                                (fn [items]
-                                  (map #(select-keys % [:concept-id :revision-id]) items)))]
-               (tags/assert-tag-search expected-tags result-tags))
+(deftest ^{:kaocha/skip true
+           :oracle true} zzz_bulk-index-after-date-time-by-providers
+  ;; prefixed with zzz_ to ensure it runs last. There is a side-effect
+  ;; where if this runs before bulk-index-all-providers, concepts are
+  ;; not indexed correctly.
+  (s/only-with-real-database
+   ;; Remove fixture ACLs
+   (let [response (ac/search-for-acls (u/conn-context) {} {:token (tc/echo-system-token)})
+         items (:items response)]
+     (doseq [acl items]
+       (e/ungrant (s/context) (:concept_id acl))))
 
-             "Tags"
-             [tag2])))))
+   (let [;; saved but not indexed
+         coll1 (core/save-collection "PROV1" 1)
+         coll2 (core/save-collection "PROV1" 2 {:revision-date "3016-01-01T10:00:00Z"})
+         gran1 (core/save-granule "PROV1" 1 coll1)
+         gran2 (core/save-granule "PROV1" 2 coll2 {:revision-date "3016-01-01T10:00:00Z"})
+         coll3 (core/save-collection "PROV2" 3)
+         coll4 (core/save-collection "PROV2" 4 {:revision-date "3016-01-01T10:00:00Z"})
+         gran3 (core/save-granule "PROV2" 3 coll3)
+         gran4 (core/save-granule "PROV2" 4 coll4 {:revision-date "3016-01-01T10:00:00Z"})
+         coll5 (core/save-collection "PROV3" 5)
+         coll6 (core/save-collection "PROV3" 6 {:revision-date "3016-01-01T10:00:00Z"})
+         gran5 (core/save-granule "PROV3" 5 coll5)
+         gran6 (core/save-granule "PROV3" 6 coll6 {:revision-date "3016-01-01T10:00:00Z"})
+         tag1 (core/save-tag 1)
+         tag2 (core/save-tag 2 {:revision-date "3016-01-01T10:00:00Z"})
+         acl1 (core/save-acl 1
+                             {:revision-date "2000-01-01T09:59:40Z"
+                              :extra-fields {:acl-identity "system:token"
+                                             :target-provider-id "PROV1"}}
+                             "TOKEN")
+         acl2 (core/save-acl 2
+                             {:revision-date "3016-01-01T09:59:41Z"
+                              :extra-fields {:acl-identity "system:group"
+                                             :target-provider-id "PROV1"}}
+                             "GROUP")
+         group1 (core/save-group 1)
+         group2 (core/save-group 2 {:revision-date "3016-01-01T10:00:00Z"})
+         {:keys [status errors]} (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z" nil ["PROV1" "PROV2"])]
+
+     (is (= [401 ["You do not have permission to perform that action."]]
+            [status errors]))
+
+     (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z"
+                                           {tc/token-header (tc/echo-system-token)}
+                                           ["PROV1" "PROV2"])
+     (index/wait-until-indexed)
+
+     (testing "Only concepts after date on the given providers are indexed."
+       (verify-collections-granules-are-indexed [coll2 coll4] [gran2 gran4] (tc/echo-system-token))
+
+       ;; System concepts are not indexed when regular providers are bulk indexed
+       (assert-indexed-acls [])
+       (assert-indexed-groups [])
+       (assert-indexed-tags [])
+
+       (testing "Bulk index system concepts"
+         (let [{:keys [status errors]} (bootstrap/bulk-index-after-date-time
+                                        "2015-01-01T12:00:00Z" nil ["CMR"])]
+
+           (is (= [401 ["You do not have permission to perform that action."]]
+                  [status errors])))
+
+         (bootstrap/bulk-index-after-date-time "2015-01-01T12:00:00Z"
+                                               {tc/token-header (tc/echo-system-token)}
+                                               ["CMR"])
+         (index/wait-until-indexed)
+
+         (verify-collections-granules-are-indexed [coll2 coll4] [gran2 gran4] (tc/echo-system-token))
+         
+         ;; System concepts are indexed after CMR provider is bulk indexed
+         (assert-indexed-acls [acl2])
+         (assert-indexed-groups [group2])
+         (assert-indexed-tags [tag2]))))))
 
 (deftest ^:oracle bulk-index-all-providers
   (s/only-with-real-database

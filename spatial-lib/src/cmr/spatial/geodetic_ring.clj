@@ -144,6 +144,11 @@
   (and (:contains-north-pole ring)
        (:contains-south-pole ring)))
 
+(defn point-order?
+  "Returns true if the points are in counter clockwise order"
+  [ring]
+  (= (:course-rotation-direction ring) :clockwise))
+
 (defn ring->arcs
   "Determines the arcs from the points in the ring."
   [^GeodeticRing ring]
@@ -164,19 +169,22 @@
 
           contains-north-pole (or (some p/is-north-pole? points)
                                   (some a/crosses-north-pole? arcs)
-                                  (= :clockwise course-rotation-direction)
                                   (and (= :none course-rotation-direction)
                                        (= :counter-clockwise lon-rotation-direction)))
 
           contains-south-pole (or (some p/is-south-pole? points)
                                   (some a/crosses-south-pole? arcs)
-                                  (= :clockwise course-rotation-direction)
                                   (and (= :none course-rotation-direction)
                                        (= :clockwise lon-rotation-direction)))]
       (assoc ring
              :course-rotation-direction course-rotation-direction
              :contains-north-pole contains-north-pole
              :contains-south-pole contains-south-pole))))
+
+(defn ring->point-order
+  "Returns the direction of the arcs of a ring, either :clockwise, :counter-clockwise, or :none."
+  [^GeodeticRing ring]
+  (arcs->course-rotation-direction (ring->arcs ring)))
 
 (defn ring->mbr
   "Determines the mbr from the points in the ring."

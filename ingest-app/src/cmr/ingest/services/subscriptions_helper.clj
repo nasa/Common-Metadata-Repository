@@ -237,7 +237,8 @@
          (try
            (send-email email-settings email-content)
            (info (str "Successfully processed subscription [" sub-id "].
-                      Sent subscription email to [" email-address "]."))
+                      Sent subscription email to [" email-address "].
+                      \nSubscription email contents: [" email-content "]."))
            (when update-notification-time?
              (send-update-subscription-notification-time! context sub-id))
            (catch Exception e
