@@ -69,7 +69,8 @@ const indexCmrCollections = async (event) => {
 
         recordCount += 1
       }
-    } if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {
+    }
+    if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {
       console.log(`Start deleting concept [${conceptId}], revision-id [${revisionId}]`)
 
       await deleteCmrCollection(conceptId, gremlinConnection)
