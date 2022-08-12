@@ -74,7 +74,7 @@
         (is (= "Task completed with 1 FAILED out of 1 total granule update(s)." status-message))
         (is (= [{:granule-ur "mime-type-update-gran-ur"
                  :status "FAILED"
-                 :status-message "Update failed - please only specify URLs contained in the existing granule OnlineResources or OnlineAccessURLs [https://no-matching-url] were not found"}]
+                 :status-message "Update failed - please only specify URLs contained in the existing granule OnlineResources [https://no-matching-url] were not found"}]
                granule-statuses))))))
 
 (deftest online-resource-url-update-test-echo10-success-case

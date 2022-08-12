@@ -31,7 +31,7 @@
             (recur right-loc false))
           (recur loc true))))))
 
-(defn update-online-access-url
+(defn update-online-resource-url
   "Update the the URL for elements within OnlineResources in echo10
   granule metadata and return metadata."
   [concept links]
@@ -44,7 +44,7 @@
             (errors/throw-service-errors
              :invalid-data
              [(str "Update failed - please only specify URLs contained in the"
-                   " existing granule OnlineResources or OnlineAccessURLs ["
+                   " existing granule OnlineResources ["
                    (string/join ", " (set/difference (set (keys url-map)) (set existing-urls)))
                    "] were not found")]))
 

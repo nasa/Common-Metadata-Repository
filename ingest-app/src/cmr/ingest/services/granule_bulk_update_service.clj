@@ -420,7 +420,7 @@
 
 (defmethod update-online-resource-urls :echo10
   [_context concept urls]
-  (online-resource-url-echo10/update-online-access-url concept urls))
+  (online-resource-url-echo10/update-online-resource-url concept urls))
 
 (defmulti update-additional-files
   "Update AdditionalFiles in given granule concept."
@@ -554,7 +554,7 @@
 
 (defmethod update-granule-concept :update_field:onlineresourceurl
   [_context concept bulk-update-params user-id]
-  (let [updated-metadata (online-resource-url-echo10/update-online-access-url concept (get bulk-update-params :new-value []))]
+  (let [updated-metadata (online-resource-url-echo10/update-online-resource`-url concept (get bulk-update-params :new-value []))]
     (-> concept
         (assoc :metadata updated-metadata
                :user-id user-id

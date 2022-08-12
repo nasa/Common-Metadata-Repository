@@ -74,4 +74,4 @@
              :metadata echo10-metadata}
         urls [{:from "https://link-1.com"
                :to "https://link-1-updated.com"}]]
-    (is (= echo10-metadata-updated (string/trim (echo10/update-online-access-url concept urls))))))
+    (is (= echo10-metadata-updated (string/trim (echo10/update-online-resource-url concept urls))))))
