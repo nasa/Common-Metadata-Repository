@@ -4,8 +4,8 @@
    [cmr.spatial.serialize :as srl])
   (:import
    (java.util Map)
-   (org.elasticsearch.script DocReader)
    (org.apache.logging.log4j Logger LogManager)
+   (org.elasticsearch.script DocReader)
    (org.elasticsearch.common.xcontent.support XContentMapValues)
    (org.elasticsearch.search.lookup FieldLookup
                                     LeafDocLookup

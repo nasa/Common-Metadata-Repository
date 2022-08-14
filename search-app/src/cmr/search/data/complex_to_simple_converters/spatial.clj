@@ -157,16 +157,6 @@
                 (crossing-ranges->condition crossings)])))
           lat-ranges-crossings))))
 
-(defn- spatial-operator
-  "Returns the operator used to determine if spatial queries must match all polygons."
-  [params]
-  (let [spatial-shape (select-keys params [:polygon :bounding_box :line :point :circle])
-        spatial-keys (keys spatial-shape)
-        primary ((first spatial-keys) spatial-shape)]
-    (if (map? primary)
-      (first (keys primary))
-      :any)))
-
 (defn- orbital-condition
   "Create a condition that will use orbit parameters and orbital back tracking to find matches
   to a spatial search."
@@ -200,6 +190,18 @@
 
              (keys crossings-map))))))
 
+(defn- extract-operator
+  "If provided, extracts the spatial option operator from the query."
+  [params]
+  (let [operator (get-in params [:options :spatial] :any)]
+    (if (map? operator)
+        (if (= "true" ((first (keys operator)) operator))
+          (first (keys operator))
+          :any)
+        :any)))
+
+
+
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.SpatialCondition
   (c2s/reduce-query-condition
@@ -209,7 +211,7 @@
                          (orbital-condition context shape))
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
-          operator (spatial-operator (:query-params context))
+          operator (extract-operator (:query-params context))
           spatial-script (shape->script-cond shape operator)
         ; check the MBR first before doing the more expensive check
           spatial-cond (if (= operator :any)

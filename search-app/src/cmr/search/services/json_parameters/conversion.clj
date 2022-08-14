@@ -136,7 +136,7 @@
 
 (defmulti parse-json-condition
   "Converts a JSON query condition into a query model condition"
-  (fn [concept-type condition-name value & args]
+  (fn [concept-type condition-name value]
     (query-condition-name->condition-type condition-name)))
 
 (defmethod parse-json-condition :default

@@ -117,6 +117,7 @@
 
 (def exclude-plus-or-option #{:exclude-collection :or :exclude-boundary})
 (def exclude-plus-and-or-option #{:exclude-boundary :and :or})
+(def spatial-options #{:ignore-br :every})
 (def highlights-option #{:begin-tag :end-tag :snippet-length :num-snippets})
 
 (defmethod cpv/valid-parameter-options :collection
@@ -149,7 +150,7 @@
    :platforms cpv/string-plus-or-options ;; for facet v2 apply links
    :platforms-h cpv/string-plus-or-options ;; for facet v2 apply links
    :point cpv/and-or-option
-   :polygon cpv/string-plus-and-options
+   :polygon cpv/and-or-option
    :project cpv/string-plus-and-options
    :project-h cpv/string-plus-and-options
    :consortium cpv/string-plus-and-options
@@ -218,7 +219,7 @@
    :sensor cpv/string-plus-and-exclude-collection-options
    :short-name cpv/string-plus-and-options
    :simplify-shapefile cpv/string-param-options
-   :spatial cpv/and-or-option
+   :spatial spatial-options
    :spatial-keyword cpv/string-plus-and-options
    :temporal exclude-plus-and-or-option
    :two-d-coordinate-system cpv/string-param-options
@@ -693,9 +694,7 @@
   "Validate a geometry of the given type in the params"
   [params spatial-type]
   (when-let [spatial-param (spatial-type params)]
-    (if (map? spatial-param)
-      (mapcat #(:errors (spatial-codec/url-decode spatial-type %)) (flatten [((first (keys spatial-param)) spatial-param)]))
-      (mapcat #(:errors (spatial-codec/url-decode spatial-type %)) (flatten [spatial-param])))))
+    (mapcat #(:errors (spatial-codec/url-decode spatial-type %)) (flatten [spatial-param]))))
 
 (defn- polygon-validation
   ([params] (polygon-validation nil params))
