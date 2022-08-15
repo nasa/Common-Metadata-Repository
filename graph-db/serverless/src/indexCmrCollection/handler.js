@@ -2,6 +2,7 @@ import 'array-foreach-async'
 
 import { deleteCmrCollection } from '../utils/cmr/deleteCmrCollection'
 import { fetchCmrCollection } from '../utils/cmr/fetchCmrCollection'
+import { fetchCollectionPermittedGroups } from '../utils/cmr/fetchCollectionPermittedGroups'
 import { getConceptType } from '../utils/cmr/getConceptType'
 import { getEchoToken } from '../utils/cmr/getEchoToken'
 import { indexCmrCollection } from '../utils/cmr/indexCmrCollection'
@@ -34,19 +35,23 @@ const indexCmrCollections = async (event) => {
 
     const { 'concept-id': conceptId, 'revision-id': revisionId, action } = JSON.parse(body)
 
-    if (getConceptType(conceptId) !== 'collection') {
+    if (!['collection'].includes(getConceptType(conceptId))) {
       console.log(`Concept [${conceptId}] was not a collection and will not be indexed`)
+
+      return
     }
 
     if (action !== updateActionType && action !== deleteActionType) {
       console.log(`Action [${action}] was unsupported for concept [${conceptId}]`)
+
+      return
     }
 
     if (getConceptType(conceptId) === 'collection' && action === updateActionType) {
       const collection = await fetchCmrCollection(conceptId, token)
 
-      const { data } = collection
-      const { items } = data
+      const { data = {} } = collection
+      const { items = [] } = data
 
       if (items.length === 0) {
         console.log(`Skip indexing of collection [${conceptId}] as it is not found in CMR`)
@@ -55,13 +60,17 @@ const indexCmrCollections = async (event) => {
       } else {
         const [firstCollection] = items
 
+        // Fetch the permitted groups for this collection from access-control
+        const groupList = await fetchCollectionPermittedGroups(conceptId, token)
+
         console.log(`Start indexing concept [${conceptId}], revision-id [${revisionId}]`)
 
-        await indexCmrCollection(firstCollection, gremlinConnection)
+        await indexCmrCollection(firstCollection, groupList, gremlinConnection)
 
         recordCount += 1
       }
-    } else if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {
+    }
+    if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {
       console.log(`Start deleting concept [${conceptId}], revision-id [${revisionId}]`)
 
       await deleteCmrCollection(conceptId, gremlinConnection)

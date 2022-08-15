@@ -1,7 +1,7 @@
 import nock from 'nock'
 
 import { mockClient } from 'aws-sdk-client-mock'
-import { SQSClient, SendMessageBatchCommand } from '@aws-sdk/client-sqs'
+import { SQSClient } from '@aws-sdk/client-sqs'
 
 import bootstrapGremlinServer from '../handler'
 
