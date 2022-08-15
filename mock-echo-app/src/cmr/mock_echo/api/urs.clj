@@ -97,6 +97,46 @@
                           </body>
                         </html>"}))
 
+(defn get-groups-for-user
+  "Returns mock URS groups for a user"
+  [context user-id]
+  (if-not (= "null" user-id)
+    (case user-id
+      "edl-group-user1"
+      {:status 200 :body {:user_groups
+                          [{:group_id "group-id-1"
+                            :description "cmr test group"
+                            :name "cmr_test_group"
+                            :shared_user_group false
+                            :app_uid "mock_test_application"
+                            :client_id "cmr"
+                            :tag "PROV1"
+                            :created_by "mock_test_application"}
+                           {:group_id "group-id-2"
+                            :description "cmr test group"
+                            :name "cmr_test_group2"
+                            :shared_user_group false
+                            :app_uid "mock_test_application"
+                            :client_id "cmr"
+                            :tag nil
+                            :created_by "mock_test_application"}]}}
+      "edl-group-user3"
+      {:status 200 :body {:user_groups
+                          [{:group_id "group-id-3"
+                            :description "cmr test group"
+                            :name "cmr_test_group3"
+                            :shared_user_group false
+                            :app_uid "mock_test_application"
+                            :client_id "cmr"
+                            :tag "PROV1"
+                            :created_by "mock_test_application"}]}}
+      {:status 200 :body []})
+    {:status 500 :body "<!DOCTYPE html>
+                          <body>
+                            <p> There has been an error processing your request. </p>
+                          </body>
+                        </html>"}))
+
 (defn parse-create-user-xml
   "Parses a create user request into a map of user fields"
   [body]
@@ -203,7 +243,12 @@
       (context "/api/user_groups" []
         (GET "/search" {:keys [request-context params] :as request}
           (assert-bearer-token request)
-          (get-groups request-context (:user_ids params))))
+          (get-groups request-context (:user_ids params)))
+
+        (context ["/groups_for_user/:user-id" :user-id #".*$"] [user-id]
+          (GET "/" {:keys [request-context params] :as request}
+            (assert-bearer-token request)
+            (get-groups-for-user request-context user-id))))
 
       (context "/users" []
         ;; Create a bunch of users all at once

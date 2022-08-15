@@ -23,6 +23,7 @@
   [acl]
   (ac/create-acl (u/conn-context) acl {:token (transmit-config/echo-system-token)}))
 
+
 (deftest create-acl-with-edl-id
   (let [acl {:group_permissions [{:group_id "EDLGroupName1"
                                   :permissions ["read" "order"]}]
@@ -66,7 +67,7 @@
     (testing "acls granting collection catalog-item-identity access to edl groups"
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
       (create-acl {:group_permissions [{:permissions [:read :order]
-                                        :group_id "cmr_test_group:PROV1"}]
+                                        :group_id "group-id-1"}]
                    :catalog_item_identity {:name "coll1 read and order"
                                            :collection_applicable true
                                            :provider_id "PROV1"}})
@@ -89,7 +90,7 @@
     (testing "permissions granted to a edl group"
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
       (create-acl {:group_permissions [{:permissions [:read]
-                                        :group_id "cmr_test_group:PROV1"}]
+                                        :group_id "group-id-1"}]
                    :catalog_item_identity {:name "prov1 granule read"
                                            :granule_applicable true
                                            :provider_id "PROV1"}})
@@ -114,7 +115,7 @@
     (testing "granted to edl groups"
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
       (create-acl {:group_permissions [{:permissions [:update]
-                                        :group_id "cmr_test_group:PROV1"}]
+                                        :group_id "group-id-1"}]
                    :provider_identity {:provider_id "PROV1"
                                        :target "INGEST_MANAGEMENT_ACL"}})
 
@@ -148,7 +149,7 @@
     (testing "provider object permissions granted to edl groups"
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
       (create-acl {:group_permissions [{:permissions [:create :read :update :delete]
-                                        :group_id "cmr_test_group:PROV1"}]
+                                        :group_id "group-id-1"}]
                    :provider_identity {:provider_id "PROV1"
                                        :target "PROVIDER_OBJECT_ACL"}})
 
@@ -165,12 +166,12 @@
       (let [concept-id (e/grant
                         (u/conn-context)
                         [{:permissions [:read]
-                          :group_id "cmr_test_group:PROV1"}]
+                          :group_id "group-id-1"}]
                         :system_identity {:target "GROUP"})]
         (ac/update-acl (u/conn-context)
                        concept-id
                        {:group_permissions [{:permissions [:read]
-                                             :group_id "cmr_test_group:PROV1"}]
+                                             :group_id "group-id-1"}]
                         :system_identity {:target "GROUP"}}
                        {:token (transmit-config/echo-system-token)}))
 
@@ -191,14 +192,14 @@
     (testing "initial search find fixture ACLs"
       ;; search by permitted group
       (let [{:keys [hits items]} (ac/search-for-acls
-                                  test-context {:permitted-group ["cmr_test_group:PROV1"]})]
+                                  test-context {:permitted-group ["group-id-1"]})]
         (is (= 0 hits))
         (is (= [] (map :name items))))
 
       ; search by group permission
       (let [{:keys [hits items]} (ac/search-for-acls
                                   test-context
-                                  {:group-permission {:0 {:permitted-group ["cmr_test_group:PROV1"]}}})]
+                                  {:group-permission {:0 {:permitted-group ["group-id-1"]}}})]
         (is (= 0 hits))
         (is (= [] (map :name items))))
 
@@ -210,16 +211,16 @@
 
     (testing "search ACLs with EDL group"
       (create-acl {:group_permissions [{:permissions [:read :order]
-                                        :group_id "cmr_test_group:PROV1"}]
+                                        :group_id "group-id-1"}]
                    :catalog_item_identity {:name "group1 read and order"
                                            :collection_applicable true
                                            :provider_id "PROV1"}})
       (create-acl {:group_permissions [{:permissions [:update]
-                                        :group_id "cmr_test_group2:"}]
+                                        :group_id "group-id-2"}]
                    :provider_identity {:provider_id "PROV1"
                                        :target "INGEST_MANAGEMENT_ACL"}})
       (create-acl {:group_permissions [{:permissions [:read :order]
-                                        :group_id "cmr_test_group3:PROV1"}]
+                                        :group_id "group-id-3"}]
                    :catalog_item_identity {:name "group3 read and order"
                                            :collection_applicable true
                                            :provider_id "PROV1"}})
@@ -232,7 +233,7 @@
           (is (= expected-names (map :name items))))
 
         "search by EDL group, found"
-        ["cmr_test_group:PROV1"]
+        ["group-id-1"]
         1
         ["group1 read and order"]
 
@@ -242,7 +243,7 @@
         []
 
         "search by multiple EDL groups"
-        ["cmr_test_group:PROV1" "non_existent_group" "cmr_test_group2:"]
+        ["group-id-1" "non_existent_group" "group-id-2"]
         2
         ["group1 read and order" "Provider - PROV1 - INGEST_MANAGEMENT_ACL"])
 
@@ -255,7 +256,7 @@
           (is (= (set expected-names) (set (map :name items)))))
 
         "search by EDL group, found"
-        ["cmr_test_group:PROV1"]
+        ["group-id-1"]
         1
         ["group1 read and order"]
 
@@ -265,7 +266,7 @@
         []
 
         "search by multiple EDL groups"
-        ["cmr_test_group:PROV1" "non_existent_group" "cmr_test_group2:"]
+        ["group-id-1" "non_existent_group" "group-id-2"]
         2
         ["group1 read and order" "Provider - PROV1 - INGEST_MANAGEMENT_ACL"])
 
