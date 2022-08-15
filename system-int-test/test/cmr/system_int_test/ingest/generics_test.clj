@@ -55,7 +55,8 @@
        :connection-manager (system/conn-mgr)
        :body (when document (json/generate-string document))
        :throw-exceptions false
-       :headers {transmit-config/token-header
+       :headers {"Accept" "application/json"
+                 transmit-config/token-header
                  (transmit-config/echo-system-token)}}
       (clj-http.client/request))))
 
@@ -156,19 +157,24 @@
                            ;; these fields are complicated to test, do so another way
                            (cutil/dissoc-in [:Info :concept-id])
                            (cutil/dissoc-in [:Info :revision-date])
-                           (cutil/dissoc-in [:Info :created-at]))]
+                           (cutil/dissoc-in [:Info :created-at]))
+            expected-pattern (re-pattern "\\{\"concept-id\":\"GRD[0-9]+-PROV1\",\"revision-id\":1\\}")]
+
         ;; test that the create was a success
-        (is (= 200 (:status create-result)) "The HTTP status code from create is not correct")
-        (is (= "" create-response) "Create returned content when it should not have")
+        (is (= 201 (:status create-result)) "The HTTP status code from create is not correct")
+        (is (some? (re-matches expected-pattern create-response))
+            "Create returned content when it should not have")
 
         ;; test that the created document can be read back and was stored correctly
         (is (= 200 (:status read-result)) "The HTTP status code from read is not correct")
         (is (= "application/json;charset=utf-8" (get-in read-result [:headers "Content-Type"]))
             "The content type is not correct)")
+
         ;; test the three complicated fields
         (is (some? (re-matches #"GRD[0-9]+-PROV1" concept-id)) "A concept id was not returned")
         (is (some? (get-in actual [:Info :revision-date])) "Response did not have a revision date")
         (is (some? (get-in actual [:Info :created-at])) "Response did not have a create date")
+
         ;; Test the content in sections to make it easy to see where a problem may be
         (is (= (:Info expected) (:Info normalised)) "Info section does not match")
         (is (= (:Metadata expected) (:Metadata normalised)) "Metadata section did not match")))
@@ -186,10 +192,14 @@
             read-result (generic-requester)
             read-body (:body read-result)
             read-json (json/parse-string read-body true)
-            actual (get-in read-json [:Metadata :Description])]
+            actual (get-in read-json [:Metadata :Description])
+            expected-pattern (re-pattern "\\{\"concept-id\":\"GRD[0-9]+-PROV1\",\"revision-id\":2\\}")]
+
         ;; Test that the update was successfull
         (is (= 200 (:status update-result)) "The HTTP status code was not returned correctly from the update")
-        (is (= "" update-body) "The update body was not empty")
+        (is (some? (re-matches expected-pattern update-body))
+            "The update body was not empty")
+
         ;; Test that the read saved document was updated
         (is (= 200 (:status read-result)) "The HTTP status code was not returned correctly from the read")
         (is (= expected actual) "The description was not updated.")))

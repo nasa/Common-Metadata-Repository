@@ -23,11 +23,6 @@
                   :format :mime-type :revision-id :revision-date :created-at
                   :user-id :concept-type :concept-sub-type])
 
-;; Insert-generic-document and other CRUD actions, except Read, return nil on
-;; success, To make the code more understandable, give that success a name.
-;; Fails will be handled with exceptions.
-(def success-response nil)
-
 (defn- raw-generic->response
   "Take the raw database object returned from either SQL or In-Memory and shape
    it into the expected response by pulling out generated fields like concept-id
@@ -51,11 +46,12 @@
         inner-metadata (json/parse-string (:metadata document-as-map) true)
         doc-name (get inner-metadata :Name native-id)
         concept-type (get common-concepts/concept-prefix->concept-type (:concept-sub-type document-as-map))
+        revision-id 1 ;; triggeres special behavor, a different status code will be returned
         document-add (assoc document-as-map
                             :provider-id (str provider-id)
                             :concept-type concept-type
                             :document-name (subs doc-name 0 (min 20 (count doc-name)))
-                            :revision-id 1 ;; this function only for Create, not Update
+                            :revision-id revision-id ;; this function only for Create, not Update
                             :created-at (str (tkeeper/now))
                             :revision-date (dtp/clj-time->date-time-str (tkeeper/now))
                             :native-id native-id)
@@ -65,7 +61,7 @@
     (ingest-events/publish-event
      context
      (ingest-events/concept-update-event metadata))
-    success-response))
+    {:concept-id concept-id :revision-id revision-id}))
 
 (defn read-generic-document
   "Return the latest record using the concept-id under the given provider"
@@ -90,13 +86,14 @@
         concept-id (data/get-concept-id db concept-type provider native-id)
         latest-document (first (data/get-latest-concepts db :generic provider [concept-id]))
         latest-rev-id (:revision-id latest-document)
+        revision-id (+ latest-rev-id 1)
         orig-native-id (:native-id latest-document)
         orig-concept-id (:concept-id latest-document)
         orig-create-date (:created-at latest-document)
         doc-name (:document-name latest-document)
         metadata (assoc document-map
                         :concept-type concept-type
-                        :revision-id (+ latest-rev-id 1)
+                        :revision-id revision-id
                         :native-id orig-native-id
                         :concept-id orig-concept-id
                         :document-name doc-name
@@ -106,7 +103,7 @@
     (ingest-events/publish-event
      context
      (ingest-events/concept-update-event metadata))
-    success-response))
+    {:concept-id orig-concept-id :revision-id revision-id}))
 
 ;; TODO: Generic work: define a delete action
 (defn delete-generic-document

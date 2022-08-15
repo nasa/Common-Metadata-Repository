@@ -136,10 +136,14 @@
    * failed validation rules (external) (pending)
    * Document name not unique"
   (let [res (prepare-generic-document request)
+        headers (:headers request)
         {:keys [spec-key spec-version provider-id native-id request-context concept]} res
-        metadata (:metadata concept)]
+        metadata (:metadata concept)
+        metadata-json (json/generate-string concept)]
     (validate-document-against-schema spec-key spec-version metadata)
-    (tgen/create-generic request-context [provider-id native-id] (json/generate-string concept))))
+    (api-core/generate-ingest-response
+     headers
+     (:body (tgen/create-generic request-context [provider-id native-id] metadata-json)))))
 
 (defn read-generic-document
   [request]
@@ -150,17 +154,23 @@
         native-id (:native-id route-params)]
     (tgen/read-generic request-context [provider-id native-id])))
 
+(defn tee [any] (print any) any)
+
 (defn update-generic-document
   [request]
   "Update a generic document to the database and elastic search, return 204 and
    not the document because the user already has the document"
   (let [res (prepare-generic-document request)
+        headers (:headers request)
         {:keys [spec-key spec-version provider-id native-id request-context concept]} res
-        metadata (:metadata concept)]
+        metadata (:metadata concept)
+        metadata-json (json/generate-string concept)]
     (validate-document-against-schema spec-key spec-version metadata)
     ;; The update-generic is a macro which allows for a list of URL parameters to be
     ;; passed in to be resolved by a function.
-    (tgen/update-generic request-context [provider-id native-id] (json/generate-string concept))))
+    (api-core/generate-ingest-response
+     headers
+     (tgen/update-generic request-context [provider-id native-id] metadata-json))))
 
 (defn delete-generic-document
   "TODO: Generic work: add delete"
