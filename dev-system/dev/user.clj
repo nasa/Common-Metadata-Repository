@@ -118,8 +118,8 @@
   (set-modes! :all settings/default-run-mode))
 
 (defn- distribute-schemas
-  "A function that will copy the directory OtherSchemas in to all the necessary
-   apps and will be called on reset"
+  "A function that will copy the directory schemas in to all the necessary
+   apps with schemas renamed to lowercase"
   []
   (let [path (System/getProperty "user.dir")
         apps ["search-app/resources"
@@ -127,9 +127,16 @@
               "indexer-app/resources"
               "metadata-db-app/resources"
               "system-int-test/resources"]
-        source "schemas"]
+        source (clojure.string/replace path #"dev-system" "schemas")
+        source-names (-> (:out (shell/sh "ls" source))
+                         (clojure.string/split #"\n"))]
     (doseq [app apps]
-      (shell/sh "cp" "-r" (clojure.string/replace path #"dev-system" source) (clojure.string/replace path #"dev-system" app)))))
+      (doseq [src-name source-names]
+        (if-not (clojure.string/includes? src-name ".md")
+          (let [dest-path (clojure.string/replace path #"dev-system" app)
+                dest-name (clojure.string/lower-case src-name)]
+            (shell/sh "mkdir" "-p" (format "%s/schemas" dest-path))
+            (shell/sh "cp" "-r" (format "%s/%s" source src-name)  (format "%s/schemas/%s" dest-path dest-name))))))))
 
 (defn set-legacy
   "Passing `true` to this function will cause legacy configuration to be used
