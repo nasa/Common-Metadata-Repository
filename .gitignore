@@ -100,3 +100,10 @@ flycheck_*.el
 
 # directory configuration
 .dir-locals.el
+
+# copied schemas
+/indexer-app/resources/schemas/
+/ingest-app/resources/schemas/
+/metadata-db-app/resources/schemas/
+/search-app/resources/schemas/
+/system-int-test/resources/schemas/
