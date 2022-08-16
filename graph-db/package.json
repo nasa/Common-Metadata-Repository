@@ -36,7 +36,7 @@
     "@aws-sdk/client-ssm": "^3.94.0",
     "array-foreach-async": "^1.0.1",
     "axios": "^0.24.0",
-    "gremlin": "~3.4.10",
+    "gremlin": "~3.6.1",
     "lodash": "^4.17.21",
     "serverless": "^3.21.0",
     "serverless-webpack": "^5.7.1",
