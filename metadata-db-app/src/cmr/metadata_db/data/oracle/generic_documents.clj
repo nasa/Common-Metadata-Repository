@@ -129,7 +129,6 @@
   (let [metadata (json/parse-string (:metadata document) true)
         metadata-spec (get metadata :MetadataSpecification)
         schema (string/lower-case (get metadata-spec :Name))
-        version (get metadata-spec :Version)
         created-at (coerce/to-sql-time (dtp/parse-datetime (:created-at document)))
         revision-date (coerce/to-sql-time (dtp/parse-datetime (:revision-date document)))
         db-record {:id (get-next-id-seq db)
@@ -139,7 +138,7 @@
                    :document_name (:document-name document)
                    :schema schema
                    :format schema
-                   :mime_type (format "application/%s;version=%s" schema version)
+                   :mime_type (str (:mime-type document))
                    :metadata (cutil/string->gzip-bytes (:metadata document))
                    :revision_id (:revision-id document)
                    :revision_date revision-date
@@ -202,7 +201,6 @@
   ([db document provider-id user-id native-id schema delete-it]
    (when-let [last-doc-revision (find-record db provider-id native-id)]
      (let [parsed (json/parse-string document true)
-           version (get-in parsed [:MetadataSpecification :Version])
            now (coerce/to-sql-time (dtp/parse-datetime (str (tkeep/now))))]
        (insert-record db
                       {:id (get-next-id-seq db)
@@ -212,7 +210,7 @@
                        :document_name (:name last-doc-revision)
                        :schema schema
                        :format (identity schema)
-                       :mime_type (format "application/%s;version=%s" schema version)
+                       :mime_type (:mime-type parsed)
                        :metadata (cutil/string->gzip-bytes document)
                        :revision_id (-> (:revision_id last-doc-revision)
                                         int

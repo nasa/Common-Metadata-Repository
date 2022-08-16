@@ -68,7 +68,7 @@
         concept-id (data/generate-concept-id db document-add)
         metadata (assoc document-add :concept-id concept-id)
         _ (data/save-concept db provider-id metadata)]
-    (comment ingest-events/publish-event
+    (ingest-events/publish-event
      context
      (ingest-events/concept-update-event metadata))
     {:concept-id concept-id :revision-id revision-id}))
@@ -102,16 +102,22 @@
         orig-concept-id (:concept-id latest-document)
         orig-create-date (:created-at latest-document)
         doc-name (:document-name latest-document)
+        version (get-in document-map [:MetadataSpecification :Version])
         metadata (assoc document-map
                         :concept-type concept-type
                         :revision-id revision-id
                         :native-id orig-native-id
                         :concept-id orig-concept-id
                         :document-name doc-name
+                        :schema concept-type
+                        :format (identity concept-type)
+                        :mime-type (format "application/%s;version=%s"
+                                           (name concept-type)
+                                           version)
                         :revision-date (dtp/clj-time->date-time-str (tkeeper/now))
                         :created-at orig-create-date)
-         _ (data/save-concept db provider-id metadata)]
-    (comment ingest-events/publish-event
+        _ (data/save-concept db provider-id metadata)]
+    (ingest-events/publish-event
      context
      (ingest-events/concept-update-event metadata))
     {:concept-id orig-concept-id :revision-id revision-id}))
