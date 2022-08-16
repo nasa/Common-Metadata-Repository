@@ -110,4 +110,4 @@
   "Stub function, does nothing"
   [context params provider-id concept-id]
   (debug format "Delete stub function called with %s %s" provider-id concept-id)
-  success-response)
+  nil)

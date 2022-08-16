@@ -154,8 +154,6 @@
         native-id (:native-id route-params)]
     (tgen/read-generic request-context [provider-id native-id])))
 
-(defn tee [any] (print any) any)
-
 (defn update-generic-document
   [request]
   "Update a generic document to the database and elastic search, return 204 and
@@ -170,7 +168,7 @@
     ;; passed in to be resolved by a function.
     (api-core/generate-ingest-response
      headers
-     (tgen/update-generic request-context [provider-id native-id] metadata-json))))
+     (:body (tgen/update-generic request-context [provider-id native-id] metadata-json)))))
 
 (defn delete-generic-document
   "TODO: Generic work: add delete"

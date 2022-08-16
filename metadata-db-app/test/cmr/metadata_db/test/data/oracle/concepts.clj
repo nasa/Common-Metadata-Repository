@@ -200,22 +200,3 @@
                     :metadata {:key "value"}}
           actual (gdocs/dbresult->genericdoc input db)]
       (is (= expected actual) "Could not convert from populated map"))))
-
-(comment deftest concept->genericdoc
-  (let [db (->> (mdb-config/db-spec "metadata-db-test")
-                oracle/create-db
-                (#(lifecycle/start % nil)))]
-    (try
-      (j/with-db-transaction
-        [db db]
-        (let [revision-time (t/date-time 1986 10 14 4 3 27 456)
-              oracle-timestamp (TIMESTAMPTZ. ^java.sql.Connection (oracle/db->oracle-conn db)
-                                             ^java.sql.Timestamp (cr/to-sql-time revision-time))]
-          (testing "collection results"
-
-            (let [expected nil
-                  actual (#'cmr.metadata-db.data.oracle.generic-documents/dbresult->genericdoc {} db)]
-              (is (= expected actual))))))
-
-      (finally
-        (lifecycle/stop db nil)))))
