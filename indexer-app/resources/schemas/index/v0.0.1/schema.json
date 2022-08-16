@@ -9,6 +9,11 @@
         "MetadataSpecification": {
             "description": "Contains several fields to define the specifics of the grid",
             "$ref": "#/definitions/MetadataSpecificationType"},
+        "SubConceptType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4
+        },
         "Indexes": {
             "type": "array",
             "uniqueItems": true,

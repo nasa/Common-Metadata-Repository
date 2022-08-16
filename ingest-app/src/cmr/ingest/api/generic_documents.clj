@@ -64,7 +64,7 @@
     (:generic (set/map-invert common-concepts/concept-prefix->concept-type))))
 
 (def required-query-parameters
-  "This defines in a map required parameters that are passed in and where they would be 
+  "This defines in a map required parameters that are passed in and where they would be
    located once the http request makes its way through compojure. If there is an error the error
    messages goes into the cmr.ingest.services.messages.clj file."
   {:provider cmr.ingest.services.messages/provider-does-not-exist})
@@ -74,7 +74,7 @@
   "This function validates that the required parameters are present. If not then throw a service exception to let
   the end users know what to do."
   [required-param-to-check request]
-  (let [param-key (first required-param-to-check) 
+  (let [param-key (first required-param-to-check)
         msg (second required-param-to-check)
         value (get-in request [:params param-key])]
     (when-not value
@@ -136,10 +136,14 @@
    * failed validation rules (external) (pending)
    * Document name not unique"
   (let [res (prepare-generic-document request)
+        headers (:headers request)
         {:keys [spec-key spec-version provider-id native-id request-context concept]} res
-        metadata (:metadata concept)]
+        metadata (:metadata concept)
+        metadata-json (json/generate-string concept)]
     (validate-document-against-schema spec-key spec-version metadata)
-    (tgen/create-generic request-context [provider-id native-id] (json/generate-string concept))))
+    (api-core/generate-ingest-response
+     headers
+     (:body (tgen/create-generic request-context [provider-id native-id] metadata-json)))))
 
 (defn read-generic-document
   [request]
@@ -147,26 +151,30 @@
   (let [{:keys [route-params request-context params]} request
         provider-id (or (:provider params)
                         (:provider-id route-params))
-        native-id (:native-id route-params)
-       ;; The update-generic is a macro which allows for a list of URL parameters to be
-       ;; passed in to be resolved by a function.
-        response (tgen/read-generic request-context [provider-id native-id])
-        document (:body response)]
-    {:status 200 :body document}))
+        native-id (:native-id route-params)]
+    (tgen/read-generic request-context [provider-id native-id])))
 
-(defn update-generic-document [request]
+(defn update-generic-document
+  [request]
   "Update a generic document to the database and elastic search, return 204 and
    not the document because the user already has the document"
   (let [res (prepare-generic-document request)
+        headers (:headers request)
         {:keys [spec-key spec-version provider-id native-id request-context concept]} res
-        metadata (:metadata concept)]
+        metadata (:metadata concept)
+        metadata-json (json/generate-string concept)]
     (validate-document-against-schema spec-key spec-version metadata)
     ;; The update-generic is a macro which allows for a list of URL parameters to be
     ;; passed in to be resolved by a function.
-    (tgen/update-generic request-context [provider-id native-id] (json/generate-string concept))))
+    (api-core/generate-ingest-response
+     headers
+     (:body (tgen/update-generic request-context [provider-id native-id] metadata-json)))))
 
-(defn delete-generic-document [request]
-  (println "stub function: delete " request))
+(defn delete-generic-document
+  "TODO: Generic work: add delete"
+  [request]
+  (println "stub function: delete ")
+  {:status 501})
 
 ;; TODO: Generic work:  Once we decide on the actual API calls we need to put the provider parameter either in the :param or :route-param
 ;; sections of the request - which ever is appropriate for the URL.  Right now we are putting it into the route-params which is where
@@ -175,7 +183,7 @@
   "This function checks for required parameters. If they don't exist then throw an error, otherwise send the request
    on to the corresponding function."
   [request funct-str]
-  (validate-any-required-query-parameters request required-query-parameters) 
+  (validate-any-required-query-parameters request required-query-parameters)
   (case funct-str
     :create (create-generic-document request)
     :read (read-generic-document request)

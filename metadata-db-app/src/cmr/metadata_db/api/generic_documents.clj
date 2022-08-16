@@ -1,6 +1,7 @@
 (ns cmr.metadata-db.api.generic-documents
   "Defines the HTTP URL routes for Generic Documents"
   (:require
+   [cmr.metadata-db.api.route-helpers :as route-helpers]
    [cmr.metadata-db.services.generic-documents :as gen-doc]
    [compojure.core :refer :all]))
 
@@ -14,7 +15,7 @@
   "Read a Generic Document"
   [context params provider-id native-id]
   (let [result (gen-doc/read-generic-document context params provider-id native-id)]
-    {:status 200 :body result}))
+    {:status 200 :body result :headers route-helpers/json-header}))
 
 (defn- update-generic-document
   "Update a Generic Document"
@@ -30,7 +31,7 @@
 
 (def generic-document-api-routes
   (context "/generics" []
-    
+
     ;{:keys [provider-id body] :as params} :params
     (POST "/:provider-id/:native-id" {{:keys [provider-id native-id] :as params} :params
                            body :body
@@ -45,7 +46,7 @@
                                       body :body
                                       request-context :request-context}
       (update-generic-document request-context params provider-id native-id body))
-    
+
     (DELETE "/:provider-id/:native-id" {{:keys [provider-id native-id] :as params} :params
                                       request-context :request-context}
       (delete-generic-document request-context params provider-id native-id))

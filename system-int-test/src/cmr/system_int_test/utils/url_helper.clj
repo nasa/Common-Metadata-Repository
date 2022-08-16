@@ -320,6 +320,14 @@
            (transmit-config/ingest-port)
            task-id)))
 
+(defn ingest-generic-crud-url
+  "Get the URL for Creating a Generic"
+  [provider-id native-id]
+  (format "http://localhost:%s/generics/provider/%s/%s"
+          (transmit-config/ingest-port)
+          provider-id
+          native-id))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Search URLs
 

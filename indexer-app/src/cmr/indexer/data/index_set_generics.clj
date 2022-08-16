@@ -21,7 +21,7 @@
   "validate a document, returns an array of errors if there are problems
    Parameters:
    * raw-json, json as a string to validate"
-  [raw-json]  
+  [raw-json]
   (let [schema-file (slurp (clojure.java.io/resource "schemas/index/v0.0.1/schema.json"))
         schema-obj (js-validater/json-string->json-schema schema-file)]
     (js-validater/validate-json schema-obj raw-json)))
@@ -95,7 +95,7 @@
                                        (format (name gen-name) gen-ver)
                                        (clojure.java.io/resource)
                                        (slurp))
-                  ;; TODO: Generic work - need to fix or change the validation - are we supposed to validate the
+                  ;; TODO: Generic work: need to fix or change the validation - are we supposed to validate the
                   ;; index.json file?
                   index-definition  ;(when-not (validate-index-against-schema index-definition-str)
                                       (json/parse-string index-definition-str true)
@@ -107,8 +107,7 @@
                                    :settings generic-setting}
                                   {:name (format "all-generic-%s-revisions" (name gen-name))
                                    :settings generic-setting}]
-                        :mapping {:properties (reduce mapping->index-key base-indexes index-list)}}
-                       )
+                        :mapping {:properties (reduce mapping->index-key base-indexes index-list)}})
                 (do
                   (error (format "Could not parse schema %s version %s." (name gen-name) gen-ver))
                   data))))
