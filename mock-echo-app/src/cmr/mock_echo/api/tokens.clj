@@ -22,7 +22,6 @@
     ;; A list of group guids the user belongs to.
     :group_guids})
 
-
 (defn login
   [context body]
   (let [{info :token} (json/decode body true)
@@ -88,9 +87,11 @@
 (defn- get-token-info
   "Returns the token info for the given token"
   [context headers token-id]
-  (if (= "expired-token" token-id)
-    ;; echo-rest returns status code 400 for request with expired token
-    (ah/status-bad-request {:errors ["Token [expired-token] has expired."]})
+  (case token-id
+    "expired-token" (ah/status-bad-request {:errors ["Token [expired-token] has expired."]})
+    "gateway-timeout" (ah/status-gateway-timeout "<html><head><title>504 Gateway Time-out</title></head><body><center><h1>504 Gateway Time-out</h1></center></body></html>")
+
+    ;; default
     (do
       (ah/require-sys-admin-token headers)
       (ah/status-ok (get-token-info-mock context token-id)))))

@@ -18,7 +18,8 @@
    :invalid-content-type 415
    :invalid-data 422
    :too-many-requests 429
-   :service-unavailable 503})
+   :service-unavailable 503
+   :gateway-timeout 504})
 
 (def CONTENT_TYPE_HEADER "Content-Type")
 (def CORS_ORIGIN_HEADER "Access-Control-Allow-Origin")
@@ -124,7 +125,7 @@
                          (default-format-fn request e))
         status-code (type->http-status-code type)
         [content-type response-body] (response-type-body
-                                       errors results-format)]
+                                      errors results-format)]
     ;; Log exceptions for server errors
     (if (>= status-code 500)
       (error e)
