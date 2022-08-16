@@ -107,8 +107,7 @@
                                    :settings generic-setting}
                                   {:name (format "all-generic-%s-revisions" (name gen-name))
                                    :settings generic-setting}]
-                        :mapping {:properties (reduce mapping->index-key base-indexes index-list)}}
-                       )
+                        :mapping {:properties (reduce mapping->index-key base-indexes index-list)}})
                 (do
                   (error (format "Could not parse schema %s version %s." (name gen-name) gen-ver))
                   data))))

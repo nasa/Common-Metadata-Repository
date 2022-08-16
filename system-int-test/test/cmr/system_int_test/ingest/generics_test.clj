@@ -9,11 +9,18 @@
    [clojure.test :refer :all]
    [cmr.ingest.api.generic-documents :as gdocs]
    [cmr.system-int-test.system :as system]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.url-helper :as url-helper]
    [cmr.transmit.config :as transmit-config])
   (:import
    [java.util UUID]))
+
+;; known issue, a provider needs to be created through a ficture
+(comment use-fixtures :each
+  (join-fixtures
+   [(ingest/reset-fixture
+     {"provguid1" "PROV1"})]))
 
 ;; This is as sample record, a minimalistic Grid to base tests on
 (def grid-good

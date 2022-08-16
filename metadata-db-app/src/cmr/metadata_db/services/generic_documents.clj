@@ -21,7 +21,7 @@
 ;; to database column names which are to be shared with the world.
 (def info-fields [:concept-id :native-id :provider-id :document-name :schema
                   :format :mime-type :revision-id :revision-date :created-at
-                  :user-id :concept-type :concept-sub-type])
+                  :user-id])
 
 (defn- raw-generic->response
   "Take the raw database object returned from either SQL or In-Memory and shape
@@ -29,7 +29,11 @@
    and putting them in the :Info field, then putting the metadata inside the
    :Metadata field."
   [raw-doc]
-  {:Info (select-keys raw-doc info-fields) :Metadata (:metadata raw-doc)})
+  (let [metadata-field (:metadata raw-doc)
+        metadata (if (map? metadata-field)
+                   metadata-field
+                   (json/parse-string metadata-field true))]
+    {:Info (select-keys raw-doc info-fields) :Metadata metadata}))
 
 (defn insert-generic-document
   "Insert a document under the provided provider-id. Generate a concept ID for
@@ -38,19 +42,25 @@
    this function."
   [context params provider-id raw-native-id document]
   (let [db (mdb-util/context->db context)
-        ;; Validate that the provider exists.
+        ;; Validate that the provider exists, throws exeption.
         _ (provider-service/get-provider-by-id context provider-id true)
         document (if (map? document) (json/generate-string document) document)
         document-as-map (json/parse-string document true)
         native-id (or raw-native-id (.toString (java.util.UUID/randomUUID))) ;; can this stay?
         inner-metadata (json/parse-string (:metadata document-as-map) true)
+        version (get-in inner-metadata [:MetadataSpecification :Version])
         doc-name (get inner-metadata :Name native-id)
         concept-type (get common-concepts/concept-prefix->concept-type (:concept-sub-type document-as-map))
-        revision-id 1 ;; triggeres special behavor, a different status code will be returned
+        revision-id 1 ;; causes special behavor, a different status code will be returned
         document-add (assoc document-as-map
                             :provider-id (str provider-id)
                             :concept-type concept-type
                             :document-name (subs doc-name 0 (min 20 (count doc-name)))
+                            :schema concept-type
+                            :format (identity concept-type)
+                            :mime-type (format "application/%s;version=%s"
+                                               (name concept-type)
+                                               version)
                             :revision-id revision-id ;; this function only for Create, not Update
                             :created-at (str (tkeeper/now))
                             :revision-date (dtp/clj-time->date-time-str (tkeeper/now))
@@ -58,7 +68,7 @@
         concept-id (data/generate-concept-id db document-add)
         metadata (assoc document-add :concept-id concept-id)
         _ (data/save-concept db provider-id metadata)]
-    (ingest-events/publish-event
+    (comment ingest-events/publish-event
      context
      (ingest-events/concept-update-event metadata))
     {:concept-id concept-id :revision-id revision-id}))
@@ -68,6 +78,7 @@
   [context params provider-id native-id]
   (let [db (mdb-util/context->db context)
         provider {:provider-id provider-id}
+        ;; TODO: Generic work: need to include concept type here
         concept-id (data/get-concept-id db :generic provider native-id)
         raw-doc (first (data/get-latest-concepts db :generic provider [concept-id]))]
     (if (nil? raw-doc)
@@ -100,7 +111,7 @@
                         :revision-date (dtp/clj-time->date-time-str (tkeeper/now))
                         :created-at orig-create-date)
          _ (data/save-concept db provider-id metadata)]
-    (ingest-events/publish-event
+    (comment ingest-events/publish-event
      context
      (ingest-events/concept-update-event metadata))
     {:concept-id orig-concept-id :revision-id revision-id}))
