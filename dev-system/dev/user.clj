@@ -132,11 +132,11 @@
                          (clojure.string/split #"\n"))]
     (doseq [app apps]
       (doseq [src-name source-names]
-        (if-not (clojure.string/includes? src-name ".md")
+        (if-not (clojure.string/ends-with? src-name ".md")
           (let [dest-path (clojure.string/replace path #"dev-system" app)
                 dest-name (clojure.string/lower-case src-name)]
             (shell/sh "mkdir" "-p" (format "%s/schemas" dest-path))
-            (shell/sh "cp" "-r" (format "%s/%s" source src-name)  (format "%s/schemas/%s" dest-path dest-name))))))))
+            (shell/sh "cp" "-r" (format "%s/%s" source src-name) (format "%s/schemas/%s" dest-path dest-name))))))))
 
 (defn set-legacy
   "Passing `true` to this function will cause legacy configuration to be used
