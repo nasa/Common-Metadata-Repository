@@ -48,12 +48,6 @@
     (when-let [^FieldLookup field-lookup (.get lookup key)]
       (seq (.getValues field-lookup)))))
 
-(defn remove-br
-  "Removes bounding rectangles from granule spatial data."
-  [shapes]
-  (let [shapes-no-br (into [] (remove #(instance? cmr.spatial.mbr.Mbr %) shapes))]
-    shapes-no-br))
-
 (defn doc-intersects?
   "Returns true if the doc contains a ring that intersects the ring passed in."
   [^LeafStoredFieldsLookup lookup params intersects-fn]
@@ -61,7 +55,7 @@
   (if-let [ords-info (get-from-fields lookup "ords-info")]
     (let [ords (get-from-fields lookup "ords")
           shapes (srl/ords-info->shapes ords-info ords)
-          shapes-no-br (remove-br shapes)
+          shapes-no-br (remove #(instance? cmr.spatial.mbr.Mbr %) shapes)
           op (:operator (extract-params params))]
       ;; Example for logging to Docker logs in es-spatial-plugin
       ;;(.info (LogManager/getLogger) (str "OPERATOR:" op))
