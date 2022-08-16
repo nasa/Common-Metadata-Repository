@@ -6,6 +6,8 @@ import { updateCollection, deleteCollection } from '../../testUtil/indexCollecti
 
 import { verifyCollectionPropertiesInGraphDb } from '../../testUtil/verifyCollection'
 
+import * as fetchCollectionPermittedGroups from '../../utils/cmr/fetchCollectionPermittedGroups'
+
 import {
   verifyRelatedUrlExistInGraphDb, verifyRelatedUrlNotExistInGraphDb
 } from '../../testUtil/verifyRelatedUrl'
@@ -99,11 +101,15 @@ describe('indexCmrCollection handler', () => {
         items: []
       })
 
+    const fetchGroupsMock = jest.spyOn(fetchCollectionPermittedGroups, 'fetchCollectionPermittedGroups').mockReturnValueOnce([])
+
     const event = getEvent('C123755555-TESTPROV', 'concept-update')
 
     const consoleMock = jest.spyOn(console, 'log')
 
     const indexed = await indexCmrCollection(event)
+
+    expect(fetchGroupsMock).toBeCalledTimes(0)
 
     expect(consoleMock).toBeCalledTimes(1)
     expect(consoleMock).toBeCalledWith('Skip indexing of collection [C123755555-TESTPROV] as it is not found in CMR')

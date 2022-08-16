@@ -7,37 +7,8 @@
    [clojure.string :as string]
    [clojure.zip :as zip]
    [cmr.common.services.errors :as errors]
-   [cmr.common.xml :as cx]))
-
-(defn- xml-elem->online-resource
-  "Parses and returns XML element for OnlineResource"
-  [elem]
-  (let [url (cx/string-at-path elem [:URL])
-        description (cx/string-at-path elem [:Description])
-        resource-type (cx/string-at-path elem [:Type])
-        mime-type (cx/string-at-path elem [:MimeType])]
-    {:url url
-     :description description
-     :type resource-type
-     :mime-type mime-type}))
-
-(defn- update-resources
-  "Constructs the new OnlineResources node in zipper representation"
-  [online-resources url-map]
-  (let [edn-resources (map xml-elem->online-resource online-resources)
-        resources (map #(merge %
-                               (when-let [mime-type (get url-map (:url %))]
-                                 {:mime-type mime-type}))
-                       edn-resources)]
-    (xml/element
-     :OnlineResources {}
-     (for [r resources]
-       (let [{:keys [url description type mime-type]} r]
-         (xml/element :OnlineResource {}
-                      (xml/element :URL {} url)
-                      (when description (xml/element :Description {} description))
-                      (xml/element :Type {} type)
-                      (when mime-type (xml/element :MimeType {} mime-type))))))))
+   [cmr.common.xml :as cx]
+   [cmr.ingest.services.granule-bulk-update.utils.echo10 :as echo10-utils]))
 
 (defn- xml-elem->online-access-url
   "Parses and returns XML element for OnlineAccessURL"
@@ -86,15 +57,6 @@
             (recur right-loc false))
           (recur loc true))))))
 
-(defn- update-online-resources
-  "Return an OnlineResources node where MimeType is updated where the URL has a matching entry in the url-map."
-  [tree url-map]
-  (let [online-resources (cx/elements-at-path
-                          tree
-                          [:OnlineResources :OnlineResource])]
-    (when (seq online-resources)
-      (update-resources online-resources url-map))))
-
 (defn- update-online-access-urls
   "Return an OnlineAccessURLs node where MimeType is updated where the URL has a matching entry in the url-map."
   [tree url-map]
@@ -130,7 +92,7 @@
                    (string/join ", " (for [[v freq] (frequencies (map :URL links)) :when (> freq 1)] v))
                    "]")]))
 
-        online-resources (update-online-resources parsed url-map)
+        online-resources (echo10-utils/update-online-resources parsed :url :mime-type url-map)
         access-urls (update-online-access-urls parsed url-map)
 
         updated-metadata (-> parsed

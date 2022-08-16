@@ -15,6 +15,7 @@
         "Checksum",
         "Format",
         "MimeType",
+        "OnlineResourceURL",
         "OPeNDAPLink",
         "S3Link",
         "Size"
@@ -80,6 +81,24 @@
         },
         "MimeType": {
           "type": "string"
+        },
+        "OnlineResourceURL": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Describes an OnlineResource existing URL and replacment URL.",
+          "properties": {
+            "from": {
+              "description": "The existing URL to updated.",
+              "type": "string",
+              "minLength": 1
+            },
+            "to": {
+              "description": "The new URL to be substituted",
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "required": [ "from", "to" ]
         },
         "Checksum": {
           "type": "object",
