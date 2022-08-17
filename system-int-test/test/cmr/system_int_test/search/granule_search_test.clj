@@ -574,6 +574,15 @@
         intersects-both [-150.75 -36.61535 162.5625 -29.30433 176.0625 -84.9806 -145.6875 -89.47969 -150.75 -36.61535]
         _ (index/wait-until-indexed)]
 
+
+    (testing "Spatial polygon search with invalid options parameter"
+      (is (= [(cmsg/invalid-opt-for-param :spatial :foo)]
+             (:errors (search/find-refs
+                                      :granule
+                                      {:provider "PROV1"
+                                       :polygon (apply st/search-poly intersects-both)
+                                       :options {:spatial {:foo true}}})))))
+
     (testing "Polygon search with 'any' flag"
       (testing "Polygon search that has no intersections with the granule"
         (is (= 0 (:hits (search/find-refs
