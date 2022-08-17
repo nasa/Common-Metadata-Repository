@@ -12,6 +12,8 @@
    [cmr.mock-echo.data.token-db :as token-db]
    [compojure.core :refer :all]))
 
+(def ^:private error-504-gateway-timeout (ah/status-gateway-timeout "<html><head><title>504 Gateway Time-out</title></head><body><center><h1>504 Gateway Time-out</h1></center></body></html>"))
+
 (def token-keys
   #{;; Fields provided during login
     :username
@@ -89,7 +91,7 @@
   [context headers token-id]
   (case token-id
     "expired-token" (ah/status-bad-request {:errors ["Token [expired-token] has expired."]})
-    "gateway-timeout" (ah/status-gateway-timeout "<html><head><title>504 Gateway Time-out</title></head><body><center><h1>504 Gateway Time-out</h1></center></body></html>")
+    "gateway-timeout" error-504-gateway-timeout
 
     ;; default
     (do
@@ -103,10 +105,14 @@
      (POST "/" {params :params context :request-context body :body}
        (let [token (login context (slurp body))
              url (str "http://localhost:3000/tokens/" (:id token))]
-         {:status 201
-          :content-type :json
-          :headers {"Location" url}
-          :body {:token token}}))
+         (case token
+           "gateway-timeout" error-504-gateway-timeout
+
+           ;; default
+           {:status 201
+            :content-type :json
+            :headers {"Location" url}
+            :body {:token token}})))
      (POST "/get_token_info" {context :request-context headers :headers {token-id :id} :params}
        (get-token-info context headers token-id))
      (context "/:token-id" [token-id]
@@ -115,10 +121,12 @@
          (logout context token-id)
          {:status 200})
        (GET "/current_sids" {context :request-context}
-          ;; Does not require sys admin token
-         (if (= "expired-token" token-id)
-            ;; echo-rest returns status code 400 for request with expired token
-           (ah/status-bad-request {:errors ["Token [expired-token] has expired."]})
+         ;; Does not require sys admin token
+         (case token-id
+           "expired-token" (ah/status-bad-request {:errors ["Token [expired-token] has expired."]})
+           "gateway-timeout" error-504-gateway-timeout
+
+           ;; default
            (ah/status-ok (get-current-sids context token-id))))
        (GET "/token_info" {context :request-context headers :headers}
          (get-token-info context headers token-id))))
