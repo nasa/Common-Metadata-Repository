@@ -22,12 +22,15 @@
                              :client_id client-id
                              :user_ip_address user-ip-address}}
          [status parsed body] (r/rest-post context "/tokens" token-info)]
-     (if (= 201 status)
-       (get-in parsed [:token :id])
+     (case status
+       201 (get-in parsed [:token :id])
+       504 (r/gateway-timeout-error!)
+
+       ;; default
        (r/unexpected-status-error! status body)))))
 
 (defn logout
-  "Logs into ECHO and returns the token"
+  "Logs out of ECHO"
   [context token]
   (let [[status body] (r/rest-delete context (str "/tokens/" token))]
     (when-not (= 200 status)

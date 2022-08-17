@@ -78,6 +78,10 @@
      (format "Unexpected status %d from response. body: %s" status "Token does not exist")
      (format "Unexpected status %d from response. body: %s" status (pr-str body)))))
 
+(defn gateway-timeout-error!
+  []
+  (errors/throw-service-errors :gateway-timeout ["A gateway timeout occurred, please try your request again later."]))
+
 (defn- get-rest-health
   "Returns the echo-rest health by calling its availability api"
   [url]
