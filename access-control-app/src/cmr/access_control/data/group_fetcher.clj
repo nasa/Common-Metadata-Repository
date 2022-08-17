@@ -17,16 +17,15 @@
   []
   (mem-cache/create-in-memory-cache))
 
-(defn- edl-group?
-  "We will assume any group-id supplied that contains a : an EDL group and takes the form of name:tag.
-  Returns true for EDL group-ids."
+(defn- cmr-group?
+  "We detect if the group id passed is a CMR group and return true, false if otherwise."
   [group-id]
-  (not (empty? (re-matches #".+:.*" group-id))))
+  (not (empty? (re-matches #"^AG\d+-[A-Za-z0-9_]+" group-id))))
 
 (defn- get-group-legacy-guid
   "Returns the group legacy guid for the given group concept id by executing a search."
   [context group-id]
-  (when-not (edl-group? group-id)
+  (when (cmr-group? group-id)
     (:legacy-guid (group-service/get-group-by-concept-id context group-id))))
 
 (defn group-concept-id->legacy-guid

@@ -34,6 +34,7 @@
                                            :suppression-file "resources/security/suppression.xml"}}
              :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                        [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
+                                       [org.apache.logging.log4j/log4j-api "2.17.1"]
                                        [org.elasticsearch/elasticsearch "7.16.2"]]}
              :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.

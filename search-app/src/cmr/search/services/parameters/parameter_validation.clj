@@ -117,6 +117,7 @@
 
 (def exclude-plus-or-option #{:exclude-collection :or :exclude-boundary})
 (def exclude-plus-and-or-option #{:exclude-boundary :and :or})
+(def spatial-options #{:ignore-br :every})
 (def highlights-option #{:begin-tag :end-tag :snippet-length :num-snippets})
 
 (defmethod cpv/valid-parameter-options :collection
@@ -218,7 +219,7 @@
    :sensor cpv/string-plus-and-exclude-collection-options
    :short-name cpv/string-plus-and-options
    :simplify-shapefile cpv/string-param-options
-   :spatial cpv/and-or-option
+   :spatial spatial-options
    :spatial-keyword cpv/string-plus-and-options
    :temporal exclude-plus-and-or-option
    :two-d-coordinate-system cpv/string-param-options
