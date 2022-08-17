@@ -4,7 +4,9 @@
    [cmr.spatial.serialize :as srl])
   (:import
    (java.util Map)
-   (org.elasticsearch.script DocReader) 
+   (org.apache.logging.log4j Logger LogManager)
+   (org.elasticsearch.script DocReader)
+   (org.elasticsearch.common.xcontent.support XContentMapValues)
    (org.elasticsearch.search.lookup FieldLookup
                                     LeafDocLookup
                                     LeafStoredFieldsLookup
@@ -28,6 +30,18 @@
 ;;                         Begin script helper functions                     ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def parameters
+  "The parameters to the Spatial script"
+  [:ords :ords-info :operator])
+
+(defn- extract-params
+  "Extracts the parameters from the params map given in the script."
+  [script-params]
+  (when script-params
+    (into {} (for [param parameters]
+               [param (XContentMapValues/nodeStringValue
+                        (get script-params (name param)) nil)]))))
+
 (defn- get-from-fields
   [^LeafStoredFieldsLookup lookup key]
   (when (and lookup key (.containsKey lookup key))
@@ -36,15 +50,20 @@
 
 (defn doc-intersects?
   "Returns true if the doc contains a ring that intersects the ring passed in."
-  [^LeafStoredFieldsLookup lookup intersects-fn]
+  [^LeafStoredFieldsLookup lookup params intersects-fn]
   ;; Must explicitly return true or false or elastic search will complain
   (if-let [ords-info (get-from-fields lookup "ords-info")]
     (let [ords (get-from-fields lookup "ords")
-          shapes (srl/ords-info->shapes ords-info ords)]
+          shapes (srl/ords-info->shapes ords-info ords)
+          shapes-no-br (remove #(instance? cmr.spatial.mbr.Mbr %) shapes)
+          op (:operator (extract-params params))]
+      ;; Example for logging to Docker logs in es-spatial-plugin
+      ;;(.info (LogManager/getLogger) (str "OPERATOR:" op))
       (try
-        (if (u/any-true? intersects-fn shapes)
-          true
-          false)
+        (case op
+          "every" (every? intersects-fn shapes)
+          "ignore_br" (some intersects-fn shapes-no-br)
+          (some intersects-fn shapes))
         (catch Throwable t
           (.printStackTrace t)
           (throw t))))
@@ -75,10 +94,12 @@
 
 (defn- -init [^Object intersects-fn ^Map params ^SearchLookup lookup ^DocReader doc-reader]
   [[params lookup doc-reader] {:intersects-fn intersects-fn
+                               :params params
                                :search-lookup (.getLeafSearchLookup lookup (.getLeafReaderContext doc-reader))}])
 
 (defn -execute [^SpatialScript this]
   (doc-intersects? (.getFields this)
+                   (-> this .data :params)
                    (-> this .data :intersects-fn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
