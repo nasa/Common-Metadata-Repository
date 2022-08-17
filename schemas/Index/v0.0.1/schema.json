@@ -9,9 +9,15 @@
         "MetadataSpecification": {
             "description": "Contains several fields to define the specifics of the grid",
             "$ref": "#/definitions/MetadataSpecificationType"},
+        "SubConceptType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4
+        },
         "Indexes": {
             "type": "array",
             "uniqueItems": true,
+            "minItems": 1,
             "items": {"$ref": "#/definitions/IndexType"}
         }
     },
@@ -41,6 +47,7 @@
             "required": ["URL", "Name", "Version"]
         },
         "IndexType": {
+            "$comment": "This object is subject to major change",
             "type": "object",
             "additionalProperties": false,
             "description": "Define one index that needs to be created",
@@ -53,7 +60,14 @@
                 "Field": {
                     "description": "The Field to index, defined as a jq style path",
                     "type": "string",
+                    "examples": [".RootElement.SubElement"],
                     "minLength": 1
+                },
+                "Mapping": {
+                  "description": "The data format to map this index to",
+                  "type": "string",
+                  "default": "string",
+                  "enum": ["string", "int", "date"]
                 },
                 "Type": {
                     "description": "target index software to host the index",
