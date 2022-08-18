@@ -77,26 +77,28 @@
         result14 (search/find-refs :granule params8)
         result15 (search/find-refs :granule params9)
         result16 (search/find-refs :granule params10)
-        err-msg "The CMR does not allow querying across granules in all collections. To help optimize your search, you should limit your query using conditions that identify one or more collections, such as provider, provider_id, concept_id, collection_concept_id, short_name, version or entry_title. For any questions please contact cmr-support@earthdata.nasa.gov."
+        err-msg (seq '("The CMR does not allow querying across granules in all collections. To help optimize your search, you should limit your query using conditions that identify one or more collections, such as provider, provider_id, concept_id, collection_concept_id, short_name, version or entry_title. For any questions please contact cmr-support@earthdata.nasa.gov."))
         err-msg-illegal-service-id "Invalid concept_id [S1234-PROV1]. For granule queries concept_id must be either a granule or collection concept ID."
         err-msg-illegal-variable-id "Invalid concept_id [V1234-PROV1]. For granule queries concept_id must be either a granule or collection concept ID."
-        err-msg-illegal-service-id-in-array "Invalid concept_id [[\"\" \"S1234-PROV1\"]]. For granule queries concept_id must be either a granule or collection concept ID."
+        err-msg-illegal-service-id-in-array (seq '("Invalid concept_id [[\"\" \"S1234-PROV1\"]]. For granule queries concept_id must be either a granule or collection concept ID."))
         err-msg-illegal-number-id "Invalid concept_id [1]. For granule queries concept_id must be either a granule or collection concept ID."
         _ (side/eval-form `(concepts-search/set-allow-all-granule-params-flag! ~saved-flag-value))
         _ (side/eval-form `(concepts-search/set-allow-all-gran-header! ~saved-header-value))]
     (is (= nil
            (:errors result1)))
+
     (is (= nil
            (:errors result1-insensitive)))
-    (is (= [err-msg]
+
+    (is (= err-msg
            (:errors result2)))
-    (is (= [err-msg]
+    (is (= err-msg
            (:errors result3)))
-    (is (= [err-msg]
+    (is (= err-msg
            (:errors result4)))
-    (is (= [err-msg]
+    (is (= err-msg
            (:errors result5)))
-    (is (= [err-msg]
+    (is (= err-msg
            (:errors result6)))
     (is (= nil
            (:errors result7)))
@@ -112,11 +114,11 @@
            (:errors result9-service)))
     (is (= [err-msg-illegal-variable-id]
            (:errors result9-variable)))
-    (is (= [err-msg]
+    (is (= err-msg
            (:errors result9-empty-array)))
-    (is (= [err-msg-illegal-service-id-in-array]
+    (is (= err-msg-illegal-service-id-in-array
            (:errors result9-array-with-service)))
-    (is (= [err-msg]
+    (is (= err-msg
            (:errors result9-empty)))
     (is (= [err-msg-illegal-number-id]
            (:errors result9-number)))
@@ -134,9 +136,9 @@
            (:errors result13)))
     (is (= nil
            (:errors result13-alias)))
-    (is (= [err-msg]
+    (is (= err-msg
            (:errors result14)))
-    (is (= [err-msg]
+    (is (= err-msg
            (:errors result15)))
-    (is (= [err-msg]
+    (is (= err-msg
            (:errors result16)))))
