@@ -25,10 +25,14 @@
       "description": "The URL associated with the service.",
       "type": "string"
     },
-    "EntryType": {
+    "Type": {
       "description": "The type of the service.",
       "type": "string",
       "enum": ["ADVERTISEMENT", "SERVICE_INTERFACE", "SERVICE_IMPLEMENTATION", "GRAPHICAL_USER_INTERFACE"]
+    },
+    "InterfaceName": {
+      "description": "The name of the service interface.",
+      "type": "string"
     },
     "TagIds" :{
       "description": "The IDs of all the tags associated with this service entry.",
@@ -42,7 +46,7 @@
       "$ref": "#/definitions/MetadataSpecificationType"
     }
   },
-  "required": ["Name", "Description", "URL", "EntryType", "MetadataSpecification"],
+  "required": ["Name", "Description", "URL", "Type", "InterfaceName", "MetadataSpecification"],
   
   "definitions": {
     "MetadataSpecificationType": {

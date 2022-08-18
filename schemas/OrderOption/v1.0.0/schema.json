@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "OrderOption",
-  "description": "This schema describes order options. Order options are options that a user can choose when ordering data, such as how data can be accessed/distrbuted from the providers. These options are written in an XML format that must conform to the ECHO forms schema. The form will be used to display the option to the end users.",
+  "description": "This schema describes order options. Order options describe XML using some description language. This allows third parties to define parts of the API on CMR. Option Selections contain XML that must conform to the definition of the form in this. These are used during the ordering process to define how data can be accessed/distributed from the Providers.",
   "additionalProperties": false,
   "type": "object",
   "properties": {
@@ -39,7 +39,7 @@
       "type": "boolean"
     },
     "MetadataSpecification": {
-      "description": "Requires the client, or user, to add in schema information into every order option record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "description": "Requires the client, or user, to add in schema information into every data quality summary record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
       "$ref": "#/definitions/MetadataSpecificationType"
     }
   },

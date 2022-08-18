@@ -32,7 +32,7 @@
           "Field": ".GridDefinition.CoordinateReferenceSystemID.Type",
           "Name": "CoordinateReferenceSystemID-Type",
           "Indexer": "complex-field",
-          "Type": "graph",
+          "Type": "elastic",
           "Configuration": {"sub-fields": ["Type", "URL"]}
       }
 ]
