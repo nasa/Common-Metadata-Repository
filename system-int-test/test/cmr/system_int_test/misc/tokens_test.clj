@@ -10,6 +10,8 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
+(def bad-gateway-body "<html>\r\n<head><title>504 Gateway Time-out</title></head>\r\n<body>\r\n<center><h1>504 Gateway Time-out</h1></center>\r\n</body>\r\n</html>\r\n")
+
 (deftest multiple-authentication-tokens-test
   (ingest/ingest-concept
    (dc/collection-concept {:short-name "a-collection"})
