@@ -19,7 +19,7 @@
                  [org.pegdown/pegdown "1.6.0"]
                  [ring/ring-core "1.9.2"]
                  [ring/ring-json "0.5.1"]
-                 [selmer "1.12.5"]]
+                 [selmer "1.12.53"]]
   :plugins [[lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
   :jvm-opts ^:replace ["-server"

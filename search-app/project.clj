@@ -46,7 +46,7 @@
                  [ring/ring-codec "1.1.3"]
                  [ring/ring-core "1.9.2"]
                  [ring/ring-json "0.5.1"]
-                 [selmer "1.12.5"]
+                 [selmer "1.12.53"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is
                  ;; done.
                  [metosin/ring-swagger-ui "2.1.4-0"]

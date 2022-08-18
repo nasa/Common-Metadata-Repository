@@ -287,3 +287,8 @@
 (defmethod application-public-root-url :default
   [context]
   (format-public-root-url (get-in context [:system :public-conf])))
+
+(defconfig app-environment
+  "The environment in which the application is running in NGAP (wl, sit, uat, ops)"
+  {:default "local"
+   :type String})
