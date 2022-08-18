@@ -98,35 +98,35 @@
 
 (defn- related-url-validator
   "Return a validator that checks a ContentType, Type, and Subtype keyword combo
-   plus Format and MimeType in GetData for Related URL field which can be inside
-   a ContactInformation or be a standalone field. ContactInformation can themselves
-   be found in DataCenters, ContactGroups, and ContactPersons."
-  [kms-index]
-  {:RelatedUrls 
-   [(match-related-url-kms-keywords-validations kms-index)
-    (v/every {:GetData {:MimeType (match-kms-keywords-validation-single
-                                   kms-index
-                                   :mime-type
-                                   msg/mime-type-not-matches-kms-keywords)}})]})
+   if warn? is set to false, otherwise will check MimeType in GetData for Related URL
+   field. All of which can be inside a ContactInformation or be a standalone field.
+   ContactInformation can themselves be found in DataCenters, ContactGroups, and ContactPersons."
+  [kms-index warn?]
+  (if (not warn?)
+    {:RelatedUrls [(match-related-url-kms-keywords-validations kms-index)]}
+    {:RelatedUrls [(v/every {:GetData {:MimeType (match-kms-keywords-validation-single
+                                                  kms-index
+                                                  :mime-type
+                                                  msg/mime-type-not-matches-kms-keywords)}})]}))
 
 (defn- datacenter-url-validators
   "Return all the validators needed to check the related url valids in DataCenter"
-  [kms-index]
+  [kms-index warn?]
   {:DataCenters
    (v/every
-    [{:ContactInformation (related-url-validator kms-index)}
-     {:ContactPersons (v/every {:ContactInformation (related-url-validator kms-index)})} 
-     {:ContactGroups (v/every {:ContactInformation (related-url-validator kms-index)})}])})
+    [{:ContactInformation (related-url-validator kms-index warn?)}
+     {:ContactPersons (v/every {:ContactInformation (related-url-validator kms-index warn?)})} 
+     {:ContactGroups (v/every {:ContactInformation (related-url-validator kms-index warn?)})}])})
 
 (defn- contactpersons-url-validators
   "Return all the validators needed to check the related url valids in ContactPersons"
-  [kms-index]
-  {:ContactPersons (v/every {:ContactInformation (related-url-validator kms-index)})})
+  [kms-index warn?]
+  {:ContactPersons (v/every {:ContactInformation (related-url-validator kms-index warn?)})})
 
 (defn- contactgroups-url-validators
   "Return all the validators needed to check the related url valids in ContactGroups"
-  [kms-index]
-  {:ContactGroups (v/every {:ContactInformation (related-url-validator kms-index)})})
+  [kms-index warn?]
+  {:ContactGroups (v/every {:ContactInformation (related-url-validator kms-index warn?)})})
 
 (defn- useconstraints-onlineresource-validators
   "Return all the validators needed to check the online resource valids in UseConstraints"
@@ -156,13 +156,10 @@
   "A list of keywords validations(against KMS keywords), that are mandatory."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
-    (merge (related-url-validator kms-index)
-           (datacenter-url-validators kms-index)
-           (contactpersons-url-validators kms-index)
-           (contactgroups-url-validators kms-index)
-           (useconstraints-onlineresource-validators kms-index)
-           (collectioncitations-onlineresource-validators kms-index)
-           (publicationreferences-onlineresource-validators kms-index))))
+    (merge (related-url-validator kms-index false)
+           (datacenter-url-validators kms-index false)
+           (contactpersons-url-validators kms-index false)
+           (contactgroups-url-validators kms-index false))))
 
 (defn- optional-keyword-validations
   "A list of keywords validations(against KMS keywords), that are optional.
@@ -203,19 +200,26 @@
   "Optional validations whose errors will be returned as warnings."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
-    {:Platforms [(match-kms-keywords-validation
-                  kms-index :platforms msg/platform-not-matches-kms-keywords)
-                 (v/every {:Instruments (match-kms-keywords-validation
-                                         kms-index :instruments
-                                         msg/instrument-not-matches-kms-keywords)})]
-     :ScienceKeywords (match-kms-keywords-validation
-                       kms-index :science-keywords msg/science-keyword-not-matches-kms-keywords)
-     :Projects (match-kms-keywords-validation
-                kms-index :projects msg/project-not-matches-kms-keywords)
-     :LocationKeywords (match-kms-keywords-validation
-                        kms-index :spatial-keywords msg/location-keyword-not-matches-kms-keywords)
-     :DataCenters (match-kms-keywords-validation
-                   kms-index :providers msg/data-center-not-matches-kms-keywords)}))
+    (merge (useconstraints-onlineresource-validators kms-index)
+           (collectioncitations-onlineresource-validators kms-index)
+           (publicationreferences-onlineresource-validators kms-index)
+           (datacenter-url-validators kms-index true)
+           (contactpersons-url-validators kms-index true)
+           (contactgroups-url-validators kms-index true)
+           (related-url-validator kms-index true)
+           {:Platforms [(match-kms-keywords-validation
+                         kms-index :platforms msg/platform-not-matches-kms-keywords)
+                        (v/every {:Instruments (match-kms-keywords-validation
+                                                kms-index :instruments
+                                                msg/instrument-not-matches-kms-keywords)})]
+            :ScienceKeywords (match-kms-keywords-validation
+                              kms-index :science-keywords msg/science-keyword-not-matches-kms-keywords)
+            :Projects (match-kms-keywords-validation
+                       kms-index :projects msg/project-not-matches-kms-keywords)
+            :LocationKeywords (match-kms-keywords-validation
+                               kms-index :spatial-keywords msg/location-keyword-not-matches-kms-keywords)
+            :DataCenters (match-kms-keywords-validation
+                          kms-index :providers msg/data-center-not-matches-kms-keywords)})))
 
 (defn bulk-granule-keyword-validations
     "These are the keyword validation rules needed for bulk granule metadata.

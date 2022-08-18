@@ -762,37 +762,19 @@
       (is (= 201 status)))))
 
 (deftest invalid-mimetype-ingest
-  (testing "Ingest of a json collection with invalid mimetypes. This verifies that we validate mimetypes against kms." 
+  (testing "Ingest of a json collection with invalid mimetypes. This verifies that we validate mimetypes against kms."
     (let [coll-metadata (slurp (io/resource "CMR-7647/CMR-7647.json"))
           {:keys [status errors]} (ingest/ingest-concept
                             (ingest/concept :collection "PROV1" "foo" :umm-json coll-metadata))]
       (is (= 422 status))
-      (is (= [["MimeType [RelatedUrls: BadMimetype2] was not a valid keyword."]
-              ["MimeType [PublicationReference2: BadMimeType] was not a valid keyword."]
-              ["MimeType [DataCentersContactGroups: BadMimeType] was not a valid keyword."]
-              ["MimeType [ContactPerson2: BadMimeType1] was not a valid keyword."]
-              ["MimeType [ContactGroup2: BadMimeType1] was not a valid keyword."]
-              ["MimeType [UseConstraints: BadMimeType] was not a valid keyword."]
-              ["Related URL Content Type, Type, and Subtype [ContactPerson2: BadURLContentType2>HOME PAGE>null] are not a valid set together."]
-              ["MimeType [ContactGroup1: BadMimeType1] was not a valid keyword."]
-              ["MimeType [ContactGroup1: BadMimeType2] was not a valid keyword."]
-              ["Related URL Content Type, Type, and Subtype [ContactPerson2: BadURLContentType1>HOME PAGE>null] are not a valid set together."]
-              ["MimeType [ContactPerson1: BadMimeType2] was not a valid keyword."]
-              ["MimeType [CollectionCitation2: BadMimeType] was not a valid keyword."]
-              ["MimeType [ContactPerson2: BadMimeType2] was not a valid keyword."]
-              ["Related URL Content Type, Type, and Subtype [ContactGroup2: BadURLContentType2>HOME PAGE>null] are not a valid set together."]
-              ["MimeType [PublicationReference1: BadMimeType] was not a valid keyword."]
-              ["MimeType [CollectionCitation1: BadMimeType] was not a valid keyword."]
+      (is (= [["Related URL Content Type, Type, and Subtype [ContactPerson1: BadURLContentType1>HOME PAGE>null] are not a valid set together."]
               ["Related URL Content Type, Type, and Subtype [ContactPerson1: BadURLContentType2>HOME PAGE>null] are not a valid set together."]
-              ["MimeType [RelatedUrls: BadMimetype1] was not a valid keyword."]
-              ["Related URL Content Type, Type, and Subtype [ContactGroup1: BadURLCotentType2>HOME PAGE>null] are not a valid set together."]
-              ["Related URL Content Type, Type, and Subtype [ContactPerson1: BadURLContentType1>HOME PAGE>null] are not a valid set together."]
-              ["MimeType [ContactGroup2: BadMimeType2] was not a valid keyword."]
-              ["MimeType [DataCentersContactInfo: BadMimeType] was not a valid keyword."]
+              ["Related URL Content Type, Type, and Subtype [ContactPerson2: BadURLContentType1>HOME PAGE>null] are not a valid set together."]
+              ["Related URL Content Type, Type, and Subtype [ContactPerson2: BadURLContentType2>HOME PAGE>null] are not a valid set together."]
               ["Related URL Content Type, Type, and Subtype [ContactGroup1: BadURLCotentType1>HOME PAGE>null] are not a valid set together."]
-              ["MimeType [DataCentersContactPersons: BadMimeType] was not a valid keyword."]
-              ["MimeType [ContactPerson1: BadMimeType1] was not a valid keyword."]
-              ["Related URL Content Type, Type, and Subtype [ContactGroup2: BadURLContentType1>HOME PAGE>null] are not a valid set together."]]
+              ["Related URL Content Type, Type, and Subtype [ContactGroup1: BadURLCotentType2>HOME PAGE>null] are not a valid set together."]
+              ["Related URL Content Type, Type, and Subtype [ContactGroup2: BadURLContentType1>HOME PAGE>null] are not a valid set together."]
+              ["Related URL Content Type, Type, and Subtype [ContactGroup2: BadURLContentType2>HOME PAGE>null] are not a valid set together."]]
              (map :errors errors))))))
 
 (deftest CMR-4920-DOI-test

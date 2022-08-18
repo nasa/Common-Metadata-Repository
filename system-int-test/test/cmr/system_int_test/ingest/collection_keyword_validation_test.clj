@@ -72,11 +72,33 @@
                                                             :LongName "Airbus A340-600"
                                                             :Type "Jet"})]
                         :DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"]
-                                                                 :ShortName "SomeCenter"})]})
+                                                                 :ShortName "SomeCenter"})]
+                        :RelatedUrls [{:URL "http://example.com/file"
+                                       :Description  "description"
+                                       :Type "GET DATA"
+                                       :URLContentType "DistributionURL"
+                                       :Subtype "DIRECT DOWNLOAD"
+                                       :GetData {:Format "RelatedUrls: BadFormat1"
+                                                 :MimeType "RelatedUrls: BadMimeType1"
+                                                 :Size 0.0
+                                                 :Unit "KB"}}]
+                        :ContactGroups [{:Roles ["User Services"]
+                                         :GroupName "Data Center User Services"
+                                         :ContactInformation {:RelatedUrls [{:URL "http://example.com/file"
+                                                                             :Description  "description"
+                                                                             :Type "GET DATA"
+                                                                             :URLContentType "DistributionURL"
+                                                                             :Subtype "DIRECT DOWNLOAD"
+                                                                             :GetData {:Format "RelatedUrls: BadFormat2"
+                                                                                       :MimeType "RelatedUrls: BadMimeType2"
+                                                                                       :Size 0.0
+                                                                                       :Unit "KB"}}]}}
+                        ]}
+                   :umm-json)
 
           response (ingest/validate-concept concept {:validate-keywords false})]
       (is (= {:status 200
-              :warnings "After translating item to UMM-C the metadata had the following issue(s): [:Platforms 0] Platform short name [foo], long name [Airbus A340-600], and type [Jet] was not a valid keyword combination.;; [:DataCenters 0] Data center short name [SomeCenter] was not a valid keyword."}
+              :warnings "After translating item to UMM-C the metadata had the following issue(s): [:ContactGroups 0 :ContactInformation :RelatedUrls 0] URLContentType must be DataContactURL for ContactPersons or ContactGroups RelatedUrls;; [:RelatedUrls 0 :GetData :MimeType] MimeType [RelatedUrls: BadMimeType1] was not a valid keyword.;; [:ContactGroups 0 :ContactInformation :RelatedUrls 0 :GetData :MimeType] MimeType [RelatedUrls: BadMimeType2] was not a valid keyword.;; [:Platforms 0] Platform short name [foo], long name [Airbus A340-600], and type [Jet] was not a valid keyword combination.;; [:DataCenters 0] Data center short name [SomeCenter] was not a valid keyword."}
              response))))
 
  (testing "ArchiveAndDistributionInformation and RelatedUrls keyword validation"
