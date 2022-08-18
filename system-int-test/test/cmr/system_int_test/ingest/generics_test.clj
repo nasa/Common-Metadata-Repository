@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
+   [clojure.java.io :as jio]
    [cmr.common.config :as config]
    [cmr.common.generics :as gcfg]
    [cmr.common.util :as cutil]
@@ -16,41 +17,18 @@
   (:import
    [java.util UUID]))
 
-;; known issue, a provider needs to be created through a ficture
+;; TODO: Generic work: known issue, a provider needs to be created through a
+;; fixture, untill this is figured out, manually create a provider before testing
 (comment use-fixtures :each
   (join-fixtures
    [(ingest/reset-fixture
      {"provguid1" "PROV1"})]))
 
-;; This is as sample record, a minimalistic Grid to base tests on
-(def grid-good
-   {:MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/generic/grid/v0.0.1"
-                            :Name "Grid"
-                            :Version "0.0.1"}
-    :Name "Grid-A7-v1"
-    :LongName "Grid A-7 version 1.0"
-    :Version "v1.0"
-    :Description "A sample grid"
-    :GridDefinition {:CoordinateReferenceSystemID {:Type "EPSG:4326"
-                                                   :URL "https://epsg.io/4326"}
-                     :DimensionSize {:Height 3.14
-                                     :Width 3.14
-                                     :Time "12:00:00Z"
-                                     :Other {:Name "Other Dimension Size",
-                                             :Value "value here"}}
-                     :Resolution {:Unit "km"
-                                  :LongitudeResolution 64
-                                  :LatitudeResolution 32}
-                     :SpatialExtent {:BoundingRectangle {:0_360_DegreeProjection false,
-                                                         :NorthBoundingCoordinate -90.0,
-                                                         :EastBoundingCoordinate 180.0,
-                                                         :SouthBoundingCoordinate 90.0,
-                                                         :WestBoundingCoordinate -180.0}}}
-    :Organization {:ShortName "nasa.gov"}
-    :MetadataDate {:Create "2022-12-31T13:45:45Z"}
-    :AdditionalAttribute {:Name "name"
-                          :DataType "STRING"
-                          :Description "something"}})
+;; This is the sample record that comes with Grid
+(def grid-good (-> "schemas/grid/v0.0.1/metadata.json"
+                   (jio/resource)
+                   (slurp)
+                   (json/parse-string true)))
 
 (defn generic-request
   "This function will make a request to one of the generic URLs using the provided

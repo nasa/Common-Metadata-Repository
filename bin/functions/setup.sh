@@ -80,11 +80,11 @@ function setup_schemas () {
     src=$(printf "%s/schemas/" "." $app)
     printf "Creating %s\n" $dest
     mkdir -p $CMR_DIR/$dest
-    for src_name in $(ls $CMR_DIR/schemas)
+    for src_name in $(ls $CMR_DIR/schemas | grep -v '.md')
     do
       src_name_lower=$(echo $src_name | awk '{print tolower($0)}')
       printf "\tCopy schemas/%s to %s/%s\n" ${src_name} ${dest} ${src_name_lower}
-      cp -r "${CMR_DIR}/schemas/${src_name}" "${CMR_DIR}/${dest}/${src_name_lower}"
+      cp -R "${CMR_DIR}/schemas/${src_name}/" "${CMR_DIR}/${dest}/${src_name_lower}"
     done
   done
 }
