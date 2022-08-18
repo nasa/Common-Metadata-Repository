@@ -11,7 +11,7 @@
     "GridDefinition": {
         "CoordinateReferenceSystemID": {
             "Type": "EPSG",
-			"Code": "EPSG:4326",
+			      "Code": "EPSG:4326",
             "Title": "WGS84 - World Geodetic System 1984, used in GPS - EPSG:4326",
             "URL": "https://epsg.io/4326"
         },
@@ -56,8 +56,7 @@
                 "0_360_DegreeProjection": true,
                 "Y-Dimension": 0,
                 "X-Dimension": 180
-                },
-                ]
+                }]
             },
 
         "Distortion": {
@@ -65,7 +64,7 @@
             "Percent": 31
         },
         "Uniform-Grid": true,
-        "Bounded-Grid": true,
+        "Bounded-Grid": true
     },
     "Organization": {
         "ShortName": "NASA/GSFC/SED/ESD/GCDC/GESDISC",
@@ -90,7 +89,7 @@
     "MetadataDate": {"Create": "2022-04-20T08:00:00Z"},
     "RelatedURLs": [
         {
-            "URL": "https://example.gov",
+            "URL": "https://example.gov/",
             "URLContentType": "C-Type",
             "Type": "Type"
         },{
