@@ -25,6 +25,15 @@
    :headers {"Content-type" mt/json}
    :body (prepare-body body)})
 
+(defn status-gateway-timeout
+  "Generate a response for the BODY with the specified OPTS format."
+  ([body]
+   (status-gateway-timeout body {:format mt/html}))
+  ([body opts]
+   {:status 504
+    :headers {"Content-type" (:format opts)}
+    :body (prepare-body body)}))
+
 (defn status-created
   [body]
   {:status 201

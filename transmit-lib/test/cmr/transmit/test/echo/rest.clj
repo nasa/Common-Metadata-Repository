@@ -11,3 +11,9 @@
         java.lang.Exception
         (re-pattern (format "Unexpected status %d from response. body: %s" status replacement-message))
         (rest/unexpected-status-error! status error-message)))))
+
+(deftest gateway-timeout-error-test
+  (is (thrown-with-msg?
+       clojure.lang.ExceptionInfo
+       #"gateway timeout"
+       (rest/gateway-timeout-error!))))

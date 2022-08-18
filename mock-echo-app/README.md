@@ -95,6 +95,22 @@ Server: Jetty(7.6.8.v20121106)
 
 {"token_info":{"user_name":"guest","client_id":"dev test","guest":true,"token":"ABC-1","user_guid":"unsupported-in-mock-echo"}}
 
+### Gateway Timeout Response
+
+Using a token with value `gateway-timeout` will cause mock-echo to return a 504 Gateway Timeout response to be returned.
+
+``` shell
+curl -i -H"Accept: application/xml" http://localhost:3003/collections?token=gateway-timeout
+
+HTTP/1.1 504 Gateway Timeout
+Date: Tue, 16 Aug 2022 14:56:41 GMT
+Content-Type: application/xml
+Content-Length: 134
+Server: Jetty(9.4.39.v20210325)
+
+<?xml version="1.0" encoding="UTF-8"?><errors><error>A gateway timeout occurred, please try your request again later.</error></errors>
+```
+
 ### Get Current Sids
 
 #### Guest
@@ -124,4 +140,4 @@ curl -i -XPOST http://localhost:3000/reset
 
 ## License
 
-Copyright © 2021 NASA
+Copyright © 2022 NASA
