@@ -121,22 +121,8 @@
   "A function that will copy the directory schemas in to all the necessary
    apps with schemas renamed to lowercase"
   []
-  (let [path (System/getProperty "user.dir")
-        apps ["search-app/resources"
-              "ingest-app/resources"
-              "indexer-app/resources"
-              "metadata-db-app/resources"
-              "system-int-test/resources"]
-        source (clojure.string/replace path #"dev-system" "schemas")
-        source-names (-> (:out (shell/sh "ls" source))
-                         (clojure.string/split #"\n"))]
-    (doseq [app apps]
-      (doseq [src-name source-names]
-        (if-not (clojure.string/ends-with? src-name ".md")
-          (let [dest-path (clojure.string/replace path #"dev-system" app)
-                dest-name (clojure.string/lower-case src-name)]
-            (shell/sh "mkdir" "-p" (format "%s/schemas" dest-path))
-            (shell/sh "cp" "-r" (format "%s/%s" source src-name) (format "%s/schemas/%s" dest-path dest-name))))))))
+  (println "Distributing schemas")
+  (shell/sh "cmr" "setup" "schemas"))
 
 (defn set-legacy
   "Passing `true` to this function will cause legacy configuration to be used

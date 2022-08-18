@@ -39,7 +39,7 @@
     (errors/throw-service-error
      :invalid-data
      (format "The [%s] schema on version [%s] is not an approved schema. This record cannot be ingested." schema version))
-    (if-some [schema-url (jio/resource (format "generics/%s/v%s/schema.json"
+    (if-some [schema-url (jio/resource (format "schemas/%s/v%s/schema.json"
                                                (name schema)
                                                version))]
       (let [schema-file (slurp schema-url)
@@ -52,7 +52,7 @@
 (defn get-sub-concept-type-concept-id-prefix
   "There are many concept types within generics. Read in the concept-id prefix for this specific one."
   [spec-key version]
-  (if-some [index-url (jio/resource (format "generics/%s/v%s/index.json"
+  (if-some [index-url (jio/resource (format "schemas/%s/v%s/index.json"
                                             (name spec-key)
                                             version))]
     (let [index-file-str (slurp index-url)

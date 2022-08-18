@@ -62,7 +62,37 @@ function setup_db () {
     setup_db_do_migrations
 }
 
+# Schemas are managed at https://git.earthdata.nasa.gov/scm/emfd/otherschemas.git
+# and need to be imported manually into CMR. This function will distribute schemas
+# to all the applications that need to consume these schemas and their related files
+# to support the Generic Document Pipeline workflow.
+# Note: Schemas may be published with any directory case but the schemas are
+# consumed in lower case by CMR code.
+function setup_schemas () {
+  apps=("search-app"
+              "ingest-app"
+              "indexer-app"
+              "metadata-db-app"
+              "system-int-test")
+  for app in "${apps[@]}"
+  do
+    dest=$(printf "%s/resources/schemas" $app)
+    src=$(printf "%s/schemas/" "." $app)
+    printf "Creating %s\n" $dest
+    mkdir -p $CMR_DIR/$dest
+    for src_name in $(ls $CMR_DIR/schemas)
+    do
+      src_name_lower=$(echo $src_name | awk '{print tolower($0)}')
+      printf "\tCopy schemas/%s to %s/%s\n" ${src_name} ${dest} ${src_name_lower}
+      cp -r "${CMR_DIR}/schemas/${src_name}" "${CMR_DIR}/${dest}/${src_name_lower}"
+    done
+  done
+}
+
 function setup_dev () {
+    echo "Timestamp:" `date`
+    echo "Installing schemas to apps ..."
+    setup_schemas
     echo "Timestamp:" `date`
     echo "Installing all apps and generating API documentation ..."
     cd $CMR_DIR && lein 'install-with-content!'
