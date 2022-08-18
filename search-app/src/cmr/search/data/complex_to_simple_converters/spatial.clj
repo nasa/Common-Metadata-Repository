@@ -214,9 +214,10 @@
           operator (extract-operator (:query-params context))
           spatial-script (shape->script-cond shape operator)
         ; check the MBR first before doing the more expensive check
-          spatial-cond (if (= operator :any)
-                         (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])
-                         spatial-script)]
+          spatial-cond (if (or (= operator :every) (= operator :ignore_br))
+                         spatial-script
+                         (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])]))]
+
       (if orbital-cond
         (gc/or-conds [spatial-cond orbital-cond])
         spatial-cond))))

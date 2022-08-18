@@ -117,7 +117,7 @@
 
 (def exclude-plus-or-option #{:exclude-collection :or :exclude-boundary})
 (def exclude-plus-and-or-option #{:exclude-boundary :and :or})
-(def spatial-options #{:ignore-br :every})
+(def spatial-options #{:ignore-br :every :or :and})
 (def highlights-option #{:begin-tag :end-tag :snippet-length :num-snippets})
 
 (defmethod cpv/valid-parameter-options :collection
