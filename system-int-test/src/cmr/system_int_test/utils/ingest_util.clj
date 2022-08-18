@@ -917,7 +917,7 @@
    (fn [f]
      (dev-sys-util/reset)
      (set-ingest-umm-version-to-current)
-     (when-not (empty? providers)
+     (when (seq providers)
        (setup-providers providers options))
      (f))))
 

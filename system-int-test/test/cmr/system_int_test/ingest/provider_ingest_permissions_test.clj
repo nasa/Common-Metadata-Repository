@@ -177,6 +177,7 @@
                                                                       :provider-id "PROV2"} {} 1)
         tool (tool-util/make-tool-concept)
         
+        ;; Generic Document Pipeline
         grid generic-util/grid-good
         grid-native-id (format "Generic-Test-%s" (UUID/randomUUID))]
 
@@ -294,7 +295,7 @@
             (assert-ingest-no-permission
              (ingest/ingest-concept tool {:token token
                                           :allow-failure? true}))
-            "gest-token can't ingest"
+            "guest-token can't ingest"
             guest-token
             "user-token can't ingest"
             user-token
@@ -305,23 +306,31 @@
             "provider-admin-read-token can't ingest"
             provider-admin-read-token))
      
-     ;; Generic Document Pipeline Prototype
+     ;; Generic Document Pipeline
      (testing "ingest generic (grid) update permissions"
-       (are [token]
-            (assert-ingest-succeeded
-             (generic-util/generic-request token "PROV1" grid-native-id grid :post))
-         provider-admin-update-token
-         provider-admin-read-update-token
-         provider-admin-update-delete-token)
+       (are3 [token]
+             (assert-ingest-succeeded 
+              (generic-util/generic-request token "PROV1" grid-native-id grid :post))
+             "provider-admin-update-token can ingest"
+             provider-admin-update-token
+             "provider-admin-read-update-token can ingest"
+             provider-admin-read-update-token
+             "provider-admin-update-delete-token can ingest"
+             provider-admin-update-delete-token)
 
-       (are [token]
-            (assert-ingest-no-permission
-             (generic-util/generic-request token "PROV1" grid-native-id grid :post))
-         guest-token
-         user-token
-         super-admin-token
-         another-prov-admin-token
-         provider-admin-read-token))
+       (are3 [token]
+             (assert-ingest-no-permission 
+              (generic-util/generic-request token "PROV1" grid-native-id grid :post))
+             "guest-token can't ingest"
+             guest-token
+             "user-token can't ingest"
+             user-token
+             "super-admin-token can't ingest"
+             super-admin-token
+             "another-prov-admin-token can't ingest"
+             another-prov-admin-token
+             "provider-admin-read-token can't ingest"
+             provider-admin-read-token))
      
      ;; Ingest and delete of subscriptions are controlled by both INGEST_MANAGEMENT_ACL and SUBSCRIPTION+MANAGEMENT ACLs.
      ;; subscriptoin-np is ingested on PROV2, which has no SUBSCRIPTION_MANAGEMENT permission to ingest. so, even though
