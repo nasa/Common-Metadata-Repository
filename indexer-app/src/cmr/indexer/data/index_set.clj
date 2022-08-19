@@ -1049,9 +1049,9 @@
 
 (defn resolve-generic-concept-type
   "if the concept type is generic, figure out from the concept what the actual document type is"
-  [concept-type concept]
+  [concept-type]
   (if (cs/generic-concept? concept-type)
-    (keyword (format "generic-%s" (name (cs/generic-concept-prefix->concept-type (:concept-sub-type concept)))))
+    (keyword (format "generic-%s" (name concept-type)))
     concept-type))
 
 (defn get-concept-index-names
@@ -1072,7 +1072,7 @@
      (get-concept-index-names context concept-id revision-id options concept)))
   ([context concept-id revision-id {:keys [target-index-key all-revisions-index?]} concept]
    (let [concept-type (cs/concept-id->type concept-id)
-         index-concept-type (resolve-generic-concept-type concept-type concept)
+         index-concept-type (resolve-generic-concept-type concept-type)
          indexes (get-in (get-concept-type-index-names context) [:index-names index-concept-type])]
      (case concept-type
        :collection
@@ -1118,8 +1118,8 @@
        ;; Generics are a bunch of document types, find out which one to work with
        ;; and return the index name for those
        (if all-revisions-index?
-         [(get indexes (keyword (format "all-generic-%s-revisions" (name (cs/generic-concept-prefix->concept-type (:concept-sub-type concept))))))]
-         [(get indexes (keyword (format "generic-%s" (name (cs/generic-concept-prefix->concept-type (:concept-sub-type concept))))))])
+         [(get indexes (keyword (format "all-generic-%s-revisions" (name concept-type))))]
+         [(get indexes (keyword (format "generic-%s" (name concept-type))))])
 
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]

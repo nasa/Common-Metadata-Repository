@@ -174,6 +174,7 @@
   "Create indices listed in index-set. Rollback occurs if indices creation or
   index-set doc indexing fails."
   [context index-set]
+  (validate-requested-index-set context index-set false)
   (let [index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
         es-store (context->es-store context)]
