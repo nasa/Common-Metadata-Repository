@@ -224,7 +224,11 @@
     \"orderoption\": [\"1.0.0\"],
     \"serviceentry\": [\"1.0.0\"],
     \"serviceoption\": [\"1.0.0\"]}"
-  {:default ""
+  {:default {:grid ["0.0.1"]
+             :dataqualitysummary ["1.0.0"]
+             :orderoption ["1.0.0"]
+             :serviceentry ["1.0.0"]
+             :serviceoption ["1.0.0"]}
    :parser #(json/parse-string % true)})
 
 (defn check-env-vars
