@@ -122,7 +122,6 @@
    apps with schemas renamed to lowercase"
   []
   (println "Distributing schemas")
-  ;(shell/sh "cmr" "setup" "schemas")
   (shell/sh "../bin/cmr" "setup" "schemas"))
 
 (defn set-legacy
