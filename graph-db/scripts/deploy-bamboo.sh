@@ -15,7 +15,7 @@ cat <<EOF > Dockerfile
 FROM node:16
 COPY . /build
 WORKDIR /build
-RUN npm ci --production
+RUN npm install
 EOF
 
 dockerTag=cmr-graph-db-$bamboo_ENVIRONMENT
