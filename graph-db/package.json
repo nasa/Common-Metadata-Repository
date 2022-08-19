@@ -39,6 +39,7 @@
     "gremlin": "~3.4.10",
     "lodash": "^4.17.21",
     "serverless": "^3.21.0",
+    "serverless-offline": "^8.8.1",
     "serverless-webpack": "^5.7.1",
     "webpack": "^5.73.0",
     "webpack-node-externals": "^3.0.0"
@@ -52,11 +53,9 @@
     "jest": "^27.3.1",
     "jest-junit": "^12.2.0",
     "nock": "^13.2.1",
-    "serverless-offline": "^9.0.0",
     "snyk": "^1.782.0"
   },
   "resolutions": {
-    "file-type": "16.5.4",
-    "node-fetch": "3.2.10"
+    "file-type": "16.5.4"
   }
 }
