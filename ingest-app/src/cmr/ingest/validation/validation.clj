@@ -1,27 +1,27 @@
 (ns cmr.ingest.validation.validation
   "Provides functions to validate concept"
   (:require
-    [cheshire.core :as json]
-    [clojure.data :as data]
-    [clojure.string :as string]
-    [cmr.common.util :as util :refer [defn-timed]]
-    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
-    [cmr.common-app.services.kms-lookup :as kms-lookup]
-    [cmr.common.log :as log :refer (warn)]
-    [cmr.common.mime-types :as mt]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.validations.core :as v]
-    [cmr.ingest.config :as config]
-    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
-    [cmr.ingest.services.messages :as msg]
-    [cmr.ingest.validation.business-rule-validation :as bv]
-    [cmr.transmit.config :as transmit-config]
-    [cmr.transmit.search :as transmit-search]
-    [cmr.umm-spec.json-schema :as json-schema]
-    [cmr.umm-spec.umm-json :as umm-json]
-    [cmr.umm-spec.umm-spec-core :as umm-spec]
-    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]
-    [cmr.umm-spec.versioning :as umm-versioning]))
+   [cheshire.core :as json]
+   [clojure.data :as data]
+   [clojure.string :as string]
+   [cmr.common.util :as util :refer [defn-timed]]
+   [cmr.common-app.services.kms-fetcher :as kms-fetcher]
+   [cmr.common-app.services.kms-lookup :as kms-lookup]
+   [cmr.common.log :as log :refer (warn)]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.validations.core :as v]
+   [cmr.ingest.config :as config]
+   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
+   [cmr.ingest.services.messages :as msg]
+   [cmr.ingest.validation.business-rule-validation :as bv]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.search :as transmit-search]
+   [cmr.umm-spec.json-schema :as json-schema]
+   [cmr.umm-spec.umm-json :as umm-json]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm-spec.validation.umm-spec-validation-core :as umm-spec-validation]
+   [cmr.umm-spec.versioning :as umm-versioning]))
 
 (def ^:private
   valid-concept-mime-types
@@ -74,9 +74,9 @@
   match."
   [kms-index keyword-scheme msg-fn]
   (v/every
-    (fn [field-path value]
-      (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index keyword-scheme value)
-        {field-path [(msg-fn value)]}))))
+   (fn [field-path value]
+     (when-not (kms-lookup/lookup-by-umm-c-keyword kms-index keyword-scheme value)
+       {field-path [(msg-fn value)]}))))
 
 (defn match-kms-keywords-validation-single
   "Similar to match-kms-keywords-validation, only it returns a checker for just
@@ -96,37 +96,43 @@
    :related-urls
    msg/related-url-content-type-type-subtype-not-matching-kms-keywords))
 
+(defn- related-url-validator-warning
+  "Return a warning for invalid Mimetypes for Related URL field which can be inside a
+   ContactInformation or be a standalone field. ContactInformation can themselves be
+   found in DataCenters, ContactGroups, and ContactPersons."
+  [kms-index]
+  {:RelatedUrls
+   (v/every {:GetData {:MimeType (match-kms-keywords-validation-single
+                                  kms-index
+                                  :mime-type
+                                  msg/mime-type-not-matches-kms-keywords)}})})
+
 (defn- related-url-validator
   "Return a validator that checks a ContentType, Type, and Subtype keyword combo
-   if warn? is set to false, otherwise will check MimeType in GetData for Related URL
-   field. All of which can be inside a ContactInformation or be a standalone field.
-   ContactInformation can themselves be found in DataCenters, ContactGroups, and ContactPersons."
-  [kms-index warn?]
-  (if (not warn?)
-    {:RelatedUrls [(match-related-url-kms-keywords-validations kms-index)]}
-    {:RelatedUrls [(v/every {:GetData {:MimeType (match-kms-keywords-validation-single
-                                                  kms-index
-                                                  :mime-type
-                                                  msg/mime-type-not-matches-kms-keywords)}})]}))
+   for Related URL field which can be inside a ContactInformation or be a standalone
+   field. ContactInformation can themselves be found in DataCenters, ContactGroups, and ContactPersons."
+  [kms-index]
+  {:RelatedUrls
+   [(match-related-url-kms-keywords-validations kms-index)]})
 
 (defn- datacenter-url-validators
   "Return all the validators needed to check the related url valids in DataCenter"
-  [kms-index warn?]
+  [kms-index]
   {:DataCenters
    (v/every
-    [{:ContactInformation (related-url-validator kms-index warn?)}
-     {:ContactPersons (v/every {:ContactInformation (related-url-validator kms-index warn?)})} 
-     {:ContactGroups (v/every {:ContactInformation (related-url-validator kms-index warn?)})}])})
+    [{:ContactInformation (related-url-validator kms-index)}
+     {:ContactPersons (v/every {:ContactInformation (related-url-validator kms-index)})}
+     {:ContactGroups (v/every {:ContactInformation (related-url-validator kms-index)})}])})
 
 (defn- contactpersons-url-validators
   "Return all the validators needed to check the related url valids in ContactPersons"
-  [kms-index warn?]
-  {:ContactPersons (v/every {:ContactInformation (related-url-validator kms-index warn?)})})
+  [kms-index]
+  {:ContactPersons (v/every {:ContactInformation (related-url-validator kms-index)})})
 
 (defn- contactgroups-url-validators
   "Return all the validators needed to check the related url valids in ContactGroups"
-  [kms-index warn?]
-  {:ContactGroups (v/every {:ContactInformation (related-url-validator kms-index warn?)})})
+  [kms-index]
+  {:ContactGroups (v/every {:ContactInformation (related-url-validator kms-index)})})
 
 (defn- useconstraints-onlineresource-validators
   "Return all the validators needed to check the online resource valids in UseConstraints"
@@ -140,26 +146,26 @@
   "Return all the validators needed to check the online resource valids in CollectionCitations"
   [kms-index]
   {:CollectionCitations (v/every {:OnlineResource {:MimeType (match-kms-keywords-validation-single
-                                                   kms-index
-                                                   :mime-type
-                                                   msg/mime-type-not-matches-kms-keywords)}})})
+                                                              kms-index
+                                                              :mime-type
+                                                              msg/mime-type-not-matches-kms-keywords)}})})
 
 (defn- publicationreferences-onlineresource-validators
   "Return all the validators needed to check the online resource valids in PublicationReferences"
   [kms-index]
   {:PublicationReferences (v/every {:OnlineResource {:MimeType (match-kms-keywords-validation-single
-                                                     kms-index
-                                                     :mime-type
-                                                     msg/mime-type-not-matches-kms-keywords)}})})
+                                                                kms-index
+                                                                :mime-type
+                                                                msg/mime-type-not-matches-kms-keywords)}})})
 
 (defn- mandatory-keyword-validations
   "A list of keywords validations(against KMS keywords), that are mandatory."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
-    (merge (related-url-validator kms-index false)
-           (datacenter-url-validators kms-index false)
-           (contactpersons-url-validators kms-index false)
-           (contactgroups-url-validators kms-index false))))
+    (merge (related-url-validator kms-index)
+           (datacenter-url-validators kms-index)
+           (contactpersons-url-validators kms-index)
+           (contactgroups-url-validators kms-index))))
 
 (defn- optional-keyword-validations
   "A list of keywords validations(against KMS keywords), that are optional.
@@ -184,29 +190,26 @@
      :ISOTopicCategories (match-kms-keywords-validation
                           kms-index :iso-topic-categories msg/iso-topic-category-not-matches-kms-keywords)
      :ArchiveAndDistributionInformation
-      {:FileDistributionInformation
-       (match-kms-keywords-validation
-        kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)
-       :FileArchiveInformation
-       (match-kms-keywords-validation
-        kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}
+     {:FileDistributionInformation
+      (match-kms-keywords-validation
+       kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)
+      :FileArchiveInformation
+      (match-kms-keywords-validation
+       kms-index :granule-data-format msg/data-format-not-matches-kms-keywords)}
      :RelatedUrls
-      (v/every {:GetData {:Format (match-kms-keywords-validation-single
-                                   kms-index
-                                   :granule-data-format
-                                   msg/getdata-format-not-matches-kms-keywords)}})}))
+     (v/every {:GetData {:Format (match-kms-keywords-validation-single
+                                  kms-index
+                                  :granule-data-format
+                                  msg/getdata-format-not-matches-kms-keywords)}})}))
 
 (defn- keyword-validation-warnings
   "Optional validations whose errors will be returned as warnings."
   [context]
   (let [kms-index (kms-fetcher/get-kms-index context)]
-    (merge (useconstraints-onlineresource-validators kms-index)
+    (merge (related-url-validator-warning kms-index)
            (collectioncitations-onlineresource-validators kms-index)
            (publicationreferences-onlineresource-validators kms-index)
-           (datacenter-url-validators kms-index true)
-           (contactpersons-url-validators kms-index true)
-           (contactgroups-url-validators kms-index true)
-           (related-url-validator kms-index true)
+           (useconstraints-onlineresource-validators kms-index)
            {:Platforms [(match-kms-keywords-validation
                          kms-index :platforms msg/platform-not-matches-kms-keywords)
                         (v/every {:Instruments (match-kms-keywords-validation
@@ -218,24 +221,30 @@
                        kms-index :projects msg/project-not-matches-kms-keywords)
             :LocationKeywords (match-kms-keywords-validation
                                kms-index :spatial-keywords msg/location-keyword-not-matches-kms-keywords)
-            :DataCenters (match-kms-keywords-validation
-                          kms-index :providers msg/data-center-not-matches-kms-keywords)})))
+            :DataCenters [(match-kms-keywords-validation
+                           kms-index :providers msg/data-center-not-matches-kms-keywords)
+                          (v/every
+                           [{:ContactInformation (related-url-validator-warning kms-index)}
+                            {:ContactPersons (v/every {:ContactInformation (related-url-validator-warning kms-index)})}
+                            {:ContactGroups (v/every {:ContactInformation (related-url-validator-warning kms-index)})}])]
+            :ContactPersons (v/every {:ContactInformation (related-url-validator-warning kms-index)})
+            :ContactGroups (v/every {:ContactInformation (related-url-validator-warning kms-index)})})))
 
 (defn bulk-granule-keyword-validations
-    "These are the keyword validation rules needed for bulk granule metadata.
+  "These are the keyword validation rules needed for bulk granule metadata.
      Remember these granules are in the schema format."
-    [context]
-    (let [kms-index (kms-fetcher/get-kms-index context)]
-      {:DataGranule {:ArchiveAndDistributionInformation
-                     (v/every
-                      {:Format (match-kms-keywords-validation-single
-                                kms-index
-                                :granule-data-format
-                                msg/getdata-format-not-matches-kms-keywords)
-                       :Files (v/every {:Format (match-kms-keywords-validation-single
-                                                kms-index
-                                                :granule-data-format
-                                                msg/getdata-format-not-matches-kms-keywords)})})}}))
+  [context]
+  (let [kms-index (kms-fetcher/get-kms-index context)]
+    {:DataGranule {:ArchiveAndDistributionInformation
+                   (v/every
+                    {:Format (match-kms-keywords-validation-single
+                              kms-index
+                              :granule-data-format
+                              msg/getdata-format-not-matches-kms-keywords)
+                     :Files (v/every {:Format (match-kms-keywords-validation-single
+                                               kms-index
+                                               :granule-data-format
+                                               msg/getdata-format-not-matches-kms-keywords)})})}}))
 
 (defn granule-keyword-validations
   "These are the keyword validation rules needed for granule metadata. Remember
@@ -256,14 +265,14 @@
                                               :granule-data-format
                                               msg/getdata-format-not-matches-kms-keywords)})}}
 
-      :data-granule {:format (match-kms-keywords-validation-single
-                              kms-index
-                              :granule-data-format
-                              msg/getdata-format-not-matches-kms-keywords)
-                     :files (v/every {:format (match-kms-keywords-validation-single
-                                               kms-index
-                                               :granule-data-format
-                                               msg/getdata-format-not-matches-kms-keywords)})}}))
+     :data-granule {:format (match-kms-keywords-validation-single
+                             kms-index
+                             :granule-data-format
+                             msg/getdata-format-not-matches-kms-keywords)
+                    :files (v/every {:format (match-kms-keywords-validation-single
+                                              kms-index
+                                              :granule-data-format
+                                              msg/getdata-format-not-matches-kms-keywords)})}}))
 
 (defn- pad-zeros-to-version
   "Pad 0's to umm versions. Example: 1.9.1 becomes 01.09.01, 1.10.1 becomes 01.10.01"
@@ -301,7 +310,7 @@
           [(str "UMM JSON version " accept-version  " or lower can be ingested. "
                 "Any version above that is considered in-development "
                 "and cannot be ingested at this time.")])
-       [(str "Invalid UMM JSON schema version: " umm-version )]))
+        [(str "Invalid UMM JSON schema version: " umm-version)]))
     (umm-spec/validate-metadata (:concept-type concept)
                                 (:format concept)
                                 (:metadata concept))))
@@ -339,10 +348,10 @@
             ;; Both mandatory and optional keyword validations contain :DataCenters and
             ;; :RelatedUrls, so we need to combine them.
             {:DataCenters (conj [] (:DataCenters (mandatory-keyword-validations context))
-                                   (:DataCenters (optional-keyword-validations context)))}
+                                (:DataCenters (optional-keyword-validations context)))}
             ;; :RelatedUrls in mandatory-keyword-validations is already a collection.
             {:RelatedUrls (conj (:RelatedUrls (mandatory-keyword-validations context))
-                                (:RelatedUrls (optional-keyword-validations context)))}) 
+                                (:RelatedUrls (optional-keyword-validations context)))})
      (mandatory-keyword-validations context))])
 
 (defn keyword-validation-warning-rules
@@ -383,14 +392,14 @@
                                    ;; of the collection.
                                    err-messages
                                    (seq (umm-spec-validation/validate-collection
-                                       prev-collection
-                                       (keyword-validation-rules context validation-options))))
+                                         prev-collection
+                                         (keyword-validation-rules context validation-options))))
                ;; get the newly introduced validation errors
                new-err-messages (seq (first (data/diff (set err-messages) (set prev-err-messages))))]
-            (if new-err-messages
-              (errors/throw-service-errors :invalid-data new-err-messages)
+           (if new-err-messages
+             (errors/throw-service-errors :invalid-data new-err-messages)
               ;; when there is no newly introduced errors, err-messages contains only existing errors.
-              err-messages))
+             err-messages))
          (errors/throw-service-errors :invalid-data err-messages))
        (do
          (warn "UMM-C UMM Spec Validation Errors: " (pr-str (vec err-messages)))
@@ -450,9 +459,9 @@
     if it doesn't match."
   [kms-index msg-fn]
   (v/every
-    (fn [field-path value]
-      (when-let [invalid-measurements (kms-lookup/lookup-by-measurement kms-index value)]
-        {field-path [(msg-fn invalid-measurements)]}))))
+   (fn [field-path value]
+     (when-let [invalid-measurements (kms-lookup/lookup-by-measurement kms-index value)]
+       {field-path [(msg-fn invalid-measurements)]}))))
 
 (defn- variable-keyword-validations
   "Creates validations that check various collection fields to see if they match KMS keywords."
@@ -464,11 +473,7 @@
      :RelatedURLs (v/every [{:Format (match-kms-keywords-validation-single
                                       kms-index
                                       :granule-data-format
-                                      msg/getdata-format-not-matches-kms-keywords)}
-                            {:MimeType (match-kms-keywords-validation-single
-                                        kms-index
-                                        :mime-type
-                                        msg/mime-type-not-matches-kms-keywords)}])}))
+                                      msg/getdata-format-not-matches-kms-keywords)}])}))
 
 (defn- variable-keyword-validations-unignorable
   "Creates validations that check various collection fields to see if they match
@@ -505,10 +510,10 @@
                     :all-revisions true}
                    {:concept-id coll-concept-id})
           response (transmit-search/search-for-collections
-                     context
-                     params
-                     {:raw? true
-                      :http-options {:accept mt/umm-json}})
+                    context
+                    params
+                    {:raw? true
+                     :http-options {:accept mt/umm-json}})
           items (-> response
                     :body
                     (json/parse-string true)
@@ -524,14 +529,14 @@
                                  first)]
             (when (:deleted revision)
               (errors/throw-service-error
-                :invalid-data
-                (format "Collection [%s] revision [%s] is deleted"
-                        coll-concept-id coll-revision-id)))
+               :invalid-data
+               (format "Collection [%s] revision [%s] is deleted"
+                       coll-concept-id coll-revision-id)))
             (errors/throw-service-error
-              :invalid-data
-              (format "Collection [%s] revision [%s] does not exist"
-                      coll-concept-id coll-revision-id))))
+             :invalid-data
+             (format "Collection [%s] revision [%s] does not exist"
+                     coll-concept-id coll-revision-id))))
         (errors/throw-service-error
-          :invalid-data
-          (format "Collection [%s] does not exist or is not visible."
-                  coll-concept-id))))))
+         :invalid-data
+         (format "Collection [%s] does not exist or is not visible."
+                 coll-concept-id))))))
