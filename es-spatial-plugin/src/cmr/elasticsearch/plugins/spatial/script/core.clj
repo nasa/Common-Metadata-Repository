@@ -62,8 +62,8 @@
       (try
         (case op
           "every" (every? intersects-fn shapes)
-          "ignore_br" (some intersects-fn shapes-no-br)
-          (some intersects-fn shapes))
+          "ignore_br" (u/any-true? intersects-fn shapes-no-br)
+          (u/any-true? intersects-fn shapes))
         (catch Throwable t
           (.printStackTrace t)
           (throw t))))
