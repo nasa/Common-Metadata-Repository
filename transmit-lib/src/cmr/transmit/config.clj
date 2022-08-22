@@ -289,6 +289,6 @@
   (format-public-root-url (get-in context [:system :public-conf])))
 
 (defconfig status-app-url
-  "The environment in which the application is running in NGAP (wl, sit, uat, ops)"
+  "The URL to be used for the status app in tophat"
   {:default "https://status.earthdata.nasa.gov/api/v1/notifications"
    :type String})
