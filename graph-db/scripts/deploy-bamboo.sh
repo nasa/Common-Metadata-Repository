@@ -37,4 +37,4 @@ dockerRun() {
 stageOpts="--stage $bamboo_ENVIRONMENT"
 
 echo 'Deploying CMR GraphDB...'
-dockerRun npx serverless deploy $stageOpts
+dockerRun npx serverless deploy $stageOpts --force
