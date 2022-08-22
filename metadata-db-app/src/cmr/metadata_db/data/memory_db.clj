@@ -13,6 +13,7 @@
    [cmr.metadata-db.data.oracle.concepts.tag :as tag]
    [cmr.metadata-db.data.oracle.concepts]
    [cmr.metadata-db.data.providers :as providers]
+   [cmr.metadata-db.data.generic-documents :as gdoc]
    [cmr.metadata-db.data.util :refer [INITIAL_CONCEPT_NUM]]
    [cmr.metadata-db.services.provider-validation :as pv])
   (:import
@@ -307,26 +308,34 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB ConceptsStore Implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn generate-concept-id
   [db concept]
   (let [{:keys [concept-type provider-id]} concept
+        concept-sub-type (get concept :concept-sub-type)
         num (swap! (:next-id-atom db) inc)]
-   (cc/build-concept-id {:concept-type concept-type
-                         :sequence-number num
-                         :provider-id provider-id})))
+    (if (some? concept-sub-type)
+      (cc/build-generic-concept-id {:concept-type concept-sub-type
+                                    :sequence-number num
+                                    :provider-id provider-id})
+      (cc/build-concept-id {:concept-type concept-type
+                            :sequence-number num
+                            :provider-id provider-id}))))
 
 (defn get-concept-id
   [db concept-type provider native-id]
   (let [provider-id (:provider-id provider)
         concept-type (if (keyword? concept-type) concept-type (keyword concept-type))]
-   (->> @(:concepts-atom db)
-        (filter (fn [c]
-                  (and (= concept-type (:concept-type c))
-                       (= provider-id (:provider-id c))
-                       (= native-id (:native-id c)))))
-        first
-        :concept-id)))
+    (->> @(:concepts-atom db)
+         (filter (fn [c]
+                   (and (or (= concept-type :generic)
+                            ;; TODO: Generic work: this line above is needed till
+                            ;; read can provided a type. Normally just the line
+                            ;; below is needed
+                            (= concept-type (:concept-type c)))
+                        (= provider-id (:provider-id c))
+                        (= native-id (:native-id c)))))
+         first
+         :concept-id)))
 
 (defn get-granule-concept-ids
   [db provider native-id]
@@ -425,7 +434,7 @@
                             #(or % (p/clj-time->date-time-str (tk/now))))
          ;; Set the created-at time to the current timekeeper time for concepts which have
          ;; the created-at field and do not already have a :created-at time set.
-         concept (if (some #{concept-type} [:collection :granule :service :tool :variable :subscription])
+         concept (if (some #{concept-type} [:collection :granule :service :tool :variable :subscription :generic])
                    (update-in concept
                               [:created-at]
                               #(or % (p/clj-time->date-time-str (tk/now))))
@@ -540,6 +549,7 @@
 
 (defn save-provider
   [db {:keys [provider-id] :as provider}]
+  (def system-db db)
   (swap! (:providers-atom db) assoc provider-id provider))
 
 (defn get-providers
@@ -605,6 +615,41 @@
         provider-store-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Metadata DB GenDocsStore Implementation
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(comment def concept-store-behaviour
+  {:generate-concept-id generate-concept-id
+   :get-concept-id get-concept-id
+   :get-granule-concept-ids get-granule-concept-ids
+   :get-concept get-concept
+   :get-concepts get-concepts
+   :get-latest-concepts get-latest-concepts
+   :get-transactions-for-concept get-transactions-for-concept
+   :save-concept save-concept
+   :force-delete force-delete
+   :force-delete-concepts force-delete-concepts
+   :get-concept-type-counts-by-collection get-concept-type-counts-by-collection
+   :reset reset
+   :get-expired-concepts get-expired-concepts
+   :get-tombstoned-concept-revisions get-tombstoned-concept-revisions
+   :get-old-concept-revisions get-old-concept-revisions})
+
+
+(def generic-doc-store-behaviour
+  {:generate-concept-id generate-concept-id
+   :get-concept-id get-concept-id
+   :get-concept get-concept
+   :get-concepts get-concepts
+   :get-latest-concepts get-latest-concepts
+   :save-concept save-concept
+   :reset reset})
+
+(extend MemoryStore
+  gdoc/GenericDocsStore
+  generic-doc-store-behaviour)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MemoryStore Constructor
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -612,10 +657,24 @@
   "Creates and returns an in-memory database.
 
   Note that a wrapper is used here in order to support default initial values
-  that are only available in cmr.metaata-db.*."
+  that are only available in cmr.metadata-db.*."
   ([]
    (create-db []))
   ([concepts]
    (connection/create-db
     {:concepts-atom concepts
      :next-id-atom INITIAL_CONCEPT_NUM})))
+
+(comment
+  ;; Handy utility for future dev work
+  (def db (get-in user/system [:apps :metadata-db :db]))
+
+  (def test-file (slurp (clojure.java.io/resource "sample_tool.json")))
+  (def parsed (cheshire.core/parse-string test-file true))
+  (def my-concept {:concept-type :generic :provider-id "PROV6" :metadata parsed :revision-id 1})
+  (def my-concept (assoc my-concept :concept-id (generate-concept-id db my-concept)))
+  (save-concept db "PROV6" my-concept)
+  ;; to view most recently saved concept
+  (first @(:concepts-atom db))
+  (get-concept-id db :orderoption {:provider-id "PROV1"} "orderoption-1")
+  (get-concept db :orderoption {:provider-id "PROV1"} "OO1200000001-PROV1"))

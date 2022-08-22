@@ -241,6 +241,9 @@ case "$COMMAND" in
             profile)
                 setup_profile
                 ;;
+            schemas)
+                setup_schemas
+                ;;
             *)
                 subcmd_not_found $COMMAND
                 exit 127

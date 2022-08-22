@@ -101,6 +101,10 @@ flycheck_*.el
 # directory configuration
 .dir-locals.el
 
+# docker volume mount point created with default config from CMR wiki,
+# corresponds to opt/oracle/oradata
+cmr-oracle-db/
+
 # copied schemas
 /indexer-app/resources/schemas/
 /ingest-app/resources/schemas/

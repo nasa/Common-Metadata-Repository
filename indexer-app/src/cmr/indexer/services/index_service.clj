@@ -5,6 +5,7 @@
    [cheshire.core :as json]
    [clj-time.core :as t]
    [clj-time.format :as f]
+   [clojure.string :as string]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
@@ -176,7 +177,8 @@
                                    :variable :variable-association
                                    :service :service-association
                                    :tool :tool-association
-                                   :subscription}
+                                   :subscription
+                                   :generic}
                                  concept-type))))
 
 (defconfig collection-reindex-batch-size
@@ -437,6 +439,7 @@
                                       context service-associations)
                 tool-associations (es/parse-non-tombstone-associations
                                    context tool-associations)
+                concept-type (cs/concept-id->type concept-id)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
                 es-doc (es/parsed-concept->elastic-doc

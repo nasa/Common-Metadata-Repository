@@ -3,12 +3,11 @@
   through an environment variable. Configuration items should be added using the defconfig macro."
   (:require
    [camel-snake-kebab.core :as csk]
-   [cmr.common.log :as log :refer [debug info warn error]]
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.set :as set]
    [clojure.string :as str]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [environ.core :as environ]))
 
 (defonce ^{:private true
@@ -225,7 +224,11 @@
     \"orderoption\": [\"1.0.0\"],
     \"serviceentry\": [\"1.0.0\"],
     \"serviceoption\": [\"1.0.0\"]}"
-  {:default ""
+  {:default {:grid ["0.0.1"]
+             :dataqualitysummary ["1.0.0"]
+             :orderoption ["1.0.0"]
+             :serviceentry ["1.0.0"]
+             :serviceoption ["1.0.0"]}
    :parser #(json/parse-string % true)})
 
 (defn check-env-vars
@@ -249,5 +252,6 @@
          true)
        false))))
 
+;; TODO: Generic work after initial testing in SIT, this can be removed
 (when (seq (approved-pipeline-documents))
   (info (format "Generic documents pipeline supports: %s" (approved-pipeline-documents))))

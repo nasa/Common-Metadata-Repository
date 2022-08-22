@@ -3,13 +3,16 @@
   (:require
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
+   [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.generics :as common-generic :refer [approved-generic?]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
+   [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
    [cmr.transmit.metadata-db :as meta-db]))
 
@@ -840,6 +843,9 @@
    :revision-date (m/doc-values m/date-field-mapping)
    :metadata-format (m/doc-values m/string-field-mapping)})
 
+;; there is no defmapping for generic documents, instead see
+;; cmr.ingest.api.generic-documents/generic_documents.clj
+
 (def granule-settings-for-individual-indexes
   {:index {:number_of_shards (elastic-granule-index-num-shards),
            :number_of_replicas 1,
@@ -857,10 +863,19 @@
   1)
 
 (defn index-set
-  "Returns the index-set configuration for a brand new index. Takes a list of the extra granule indexes
-   that should exist in addition to small_collections."
+  "Returns the index-set configuration for a brand new index. Takes a list of the extra
+   granule indexes that should exist in addition to small_collections. This function
+   produces a map containing a list of indexes which contain a settings and a mapping
+   map like this:
+   {:index-set {
+     <doc-type> {
+       :indexes [{:name '' :settings {<shards and replicas>}}]
+       :mapping {:properties{:example {:type 'keyword'}}}}}}
+   Note: Indexes normally have two items, the all revisions index and the normal index
+   Note: Most mappings include a litaral case version and a lowercase version
+   "
   [extra-granule-indexes]
-  {:index-set {:name "cmr-base-index-set"
+  (let [set-of-indexes {:name "cmr-base-index-set"
                :id index-set-id
                :create-reason "indexer app requires this index set"
                :collection {:indexes
@@ -920,14 +935,19 @@
                        {:name "all-tool-revisions"
                         :settings tool-setting}]
                       :mapping tool-mapping}
-                :subscription {:indexes
-                               [{:name "subscriptions"
-                                 :settings subscription-setting}
+               :subscription {:indexes
+                              [{:name "subscriptions"
+                                :settings subscription-setting}
                                 ;; This index contains all the revisions (including tombstones) and
                                 ;; is used for all-revisions searches.
-                                {:name "all-subscription-revisions"
-                                 :settings subscription-setting}]
-                               :mapping subscription-mapping}}})
+                               {:name "all-subscription-revisions"
+                                :settings subscription-setting}]
+                              :mapping subscription-mapping}}]
+
+               ;; merge into the set of indexes all the configured generic documents
+               {:index-set (reduce (fn [data addition] (merge data addition))
+                                   set-of-indexes
+                                   (index-set-gen/generic-mappings-generator))}))
 
 (defn index-set->extra-granule-indexes
   "Takes an index set and returns the extra granule indexes that are configured"
@@ -949,7 +969,9 @@
                                        [:index-set :granule :rebalancing-collections])})))
 
 (defn fetch-concept-mapping-types
-  "Fetch mapping types for each concept type from index-set app"
+  "Fetch mapping types for each concept type from index-set app, returns a map of
+   concept types which define what the top level field is in each mapping description.
+   Normally this is 'properties'."
   ([context]
    (let [index-set-id (get-in (index-set context) [:index-set :id])]
      (fetch-concept-mapping-types context index-set-id)))
@@ -966,7 +988,15 @@
       :variable (get-concept-mapping-fn :variable)
       :service (get-concept-mapping-fn :service)
       :tool (get-concept-mapping-fn :tool)
-      :subscription (get-concept-mapping-fn :subscription)})))
+      :subscription (get-concept-mapping-fn :subscription)
+      ;:generic (get-concept-mapping-fn :generic) ; trick some layers
+      ; TODO: Generic work: automate this
+      :generic-grid (get-concept-mapping-fn :generic-grid)
+      :generic-variable (get-concept-mapping-fn :generic-variable)
+      :generic-dataqualitysummary (get-concept-mapping-fn :generic-dataqualitysummary)
+      :generic-orderoption (get-concept-mapping-fn :generic-orderoption)
+      :generic-serviceoption (get-concept-mapping-fn :generic-serviceoption)
+      :generic-serviceentry (get-concept-mapping-fn :generic-serviceentry)})))
 
 (defn fetch-rebalancing-collection-info
   "Fetch rebalancing collections, their targets, and status."
@@ -988,7 +1018,8 @@
     (cache/get-value cache :concept-indices (partial fetch-concept-type-index-names context))))
 
 (defn get-concept-mapping-types
-  "Fetch mapping types associated with concepts."
+  "Fetch mapping types associated with concepts. Should be a map of index types
+   with the name of the top level field in the mapping description."
   [context]
   (let [cache (cache/context->cache context index-set-cache-key)]
     (cache/get-value cache :concept-mapping-types (partial fetch-concept-mapping-types context))))
@@ -1016,12 +1047,24 @@
        ;; The collection is not rebalancing so it's either in a separate index or small Collections
        [(get indexes (keyword coll-concept-id) small-collections-index-name)]))))
 
+(defn resolve-generic-concept-type
+  "if the concept type is generic, figure out from the concept what the actual document type is"
+  [concept-type]
+  (if (cs/generic-concept? concept-type)
+    (keyword (format "generic-%s" (name concept-type)))
+    concept-type))
+
 (defn get-concept-index-names
   "Return the concept index names for the given concept id.
    Valid options:
    * target-index-key - Specifies a key into the index names map to choose an index to get to override
      the default.
-   * all-revisions-index? - true indicates we should target the all collection revisions index."
+   * all-revisions-index? - true indicates we should target the all collection revisions index.
+   Example:
+   {:index-names {
+      :service {
+        :services '1_services', :all-service-revisions '1_all_service_revisions'}}
+   "
   ([context concept-id revision-id options]
    (let [concept-type (cs/concept-id->type concept-id)
          concept (when (= :granule concept-type)
@@ -1029,7 +1072,8 @@
      (get-concept-index-names context concept-id revision-id options concept)))
   ([context concept-id revision-id {:keys [target-index-key all-revisions-index?]} concept]
    (let [concept-type (cs/concept-id->type concept-id)
-         indexes (get-in (get-concept-type-index-names context) [:index-names concept-type])]
+         index-concept-type (resolve-generic-concept-type concept-type)
+         indexes (get-in (get-concept-type-index-names context) [:index-names index-concept-type])]
      (case concept-type
        :collection
        (cond
@@ -1063,6 +1107,19 @@
        (if all-revisions-index?
          [(get indexes :all-subscription-revisions)]
          [(get indexes (or target-index-key :subscriptions))])
+
+       ;; TODO Generic work: Figure out how to use cs/get-generic-concept-types-array or generic-concept?
+       (or :generic
+           :dataqualitysummary
+           :orderoption
+           :serviceoption
+           :serviceentry
+           :grid)
+       ;; Generics are a bunch of document types, find out which one to work with
+       ;; and return the index name for those
+       (if all-revisions-index?
+         [(get indexes (keyword (format "all-generic-%s-revisions" (name concept-type))))]
+         [(get indexes (keyword (format "generic-%s" (name concept-type))))])
 
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
