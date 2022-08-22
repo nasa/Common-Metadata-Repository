@@ -288,7 +288,7 @@
   [context]
   (format-public-root-url (get-in context [:system :public-conf])))
 
-(defconfig app-environment
+(defconfig status-app-url
   "The environment in which the application is running in NGAP (wl, sit, uat, ops)"
-  {:default "local"
+  {:default "https://status.earthdata.nasa.gov/api/v1/notifications"
    :type String})
