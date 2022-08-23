@@ -474,6 +474,16 @@
                                       :granule-data-format
                                       msg/getdata-format-not-matches-kms-keywords)}])}))
 
+(defn- variable-keyword-validations-warnings
+  "Creates validations that check Mimetypes to see if they match KMS keywords that will be
+   returned as warnings."
+  [context]
+  (let [kms-index (kms-fetcher/get-kms-index context)]
+    {:RelatedURLs (v/every [{:MimeType (match-kms-keywords-validation-single
+                                        kms-index
+                                        :mime-type
+                                        msg/mime-type-not-matches-kms-keywords)}])}))
+
 (defn- variable-keyword-validations-unignorable
   "Creates validations that check various collection fields to see if they match
   KMS keywords. These validations must always pass regardless of the warn? flag."
@@ -492,10 +502,9 @@
   (let [err-messages (seq (umm-spec-validation/validate-variable
                            variable
                            [(variable-keyword-validations context)]))
-        kms-index (kms-fetcher/get-kms-index context)
         warning-messages (seq (umm-spec-validation/validate-variable
                                variable
-                               [(related-url-validator-warning kms-index)]))]
+                               [(variable-keyword-validations-warnings context)]))]
     (if (or (config/return-umm-spec-validation-errors)
             (not warn?))
        ;;when we are not supposed to return error as warnings
@@ -511,7 +520,6 @@
        ;; return both errors and warnings as warnings.
       (when-let [all-warning-messages (not-empty (remove nil? (merge err-messages warning-messages)))]
         (do
-          (println "3 " all-warning-messages)
           (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec all-warning-messages)))
           all-warning-messages)))))
 
