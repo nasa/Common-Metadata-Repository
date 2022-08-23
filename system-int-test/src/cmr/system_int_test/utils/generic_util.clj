@@ -4,6 +4,7 @@
    [clj-http.client :as client]
    [clojure.data :as d]
    [clojure.data.xml :as x]
+   [clojure.java.io :as jio]
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.acl.core :as acl]
