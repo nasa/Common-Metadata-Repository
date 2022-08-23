@@ -6,7 +6,7 @@
   "license": "Apache-2.0",
   "main": "index.js",
   "dependencies": {
-    "aws-sdk": "^2.814.0",
+    "aws-sdk": "^2.1186.0",
     "node-fetch": "^2.6.7",
     "redis": "^2.8.0",
     "sharp": "^0.30.0"
