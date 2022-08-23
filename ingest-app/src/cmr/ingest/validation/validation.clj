@@ -511,7 +511,6 @@
        ;; return both errors and warnings as warnings.
       (when-let [all-warning-messages (not-empty (remove nil? (merge err-messages warning-messages)))]
         (do
-          (println "3 " all-warning-messages)
           (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec all-warning-messages)))
           all-warning-messages)))))
 
