@@ -139,7 +139,6 @@
    :revision-date :multi-date-range
    :sensor :inheritance
    :short-name :collection-query
-   :spatial :spatial
    :temporal :temporal
    :temporal-facet :temporal-facet
    :two-d-coordinate-system :two-d-coordinate-system
