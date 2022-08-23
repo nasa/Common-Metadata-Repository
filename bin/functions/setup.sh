@@ -13,6 +13,7 @@ Defined subcommands:
     dev              - Install CMR jars, checkouts, and gems locally.
     help             - Show this message.
     profile          - Create a profile for development.
+    schemas          - copy the generic schemas from the schemas project to apps that need it locally for development.
 
 Environment variables required for DB setup:
 
@@ -79,6 +80,7 @@ function setup_schemas () {
     dest=$(printf "%s/resources/schemas" $app)
     src=$(printf "%s/schemas/" "." $app)
     printf "Creating %s\n" $dest
+    rm -r $CMR_DIR/$dest
     mkdir -p $CMR_DIR/$dest
     for src_name in $(ls $CMR_DIR/schemas | grep -v '.md')
     do
