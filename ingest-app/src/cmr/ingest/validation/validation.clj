@@ -469,7 +469,6 @@
   (let [kms-index (kms-fetcher/get-kms-index context)]
     {:MeasurementIdentifiers (measurement-validation
                               kms-index msg/measurements-not-matches-kms-keywords)
-
      :RelatedURLs (v/every [{:Format (match-kms-keywords-validation-single
                                       kms-index
                                       :granule-data-format
@@ -484,22 +483,37 @@
 
 (defn umm-spec-validate-variable
   "Validate variable through umm-spec validation functions. If warn? flag is
-  true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
+   true and umm-spec-validation is off, log warnings and return messages, otherwise throw errors."
   [variable context warn?]
   (when-let [non-ignorable (seq (umm-spec-validation/validate-variable-with-no-defaults
                                  variable
                                  [(variable-keyword-validations-unignorable context)]))]
     (errors/throw-service-errors :invalid-data non-ignorable))
-
-  (when-let [err-messages (seq (umm-spec-validation/validate-variable
-                                variable
-                                [(variable-keyword-validations context)]))]
+  (let [err-messages (seq (umm-spec-validation/validate-variable
+                           variable
+                           [(variable-keyword-validations context)]))
+        kms-index (kms-fetcher/get-kms-index context)
+        warning-messages (seq (umm-spec-validation/validate-variable
+                               variable
+                               [(related-url-validator-warning kms-index)]))]
     (if (or (config/return-umm-spec-validation-errors)
             (not warn?))
-      (errors/throw-service-errors :invalid-data err-messages)
-      (do
-        (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec err-messages)))
-        err-messages))))
+       ;;when we are not supposed to return error as warnings
+      (if err-messages
+         ;; throw errors when it exists
+        (errors/throw-service-errors :invalid-data err-messages)
+         ;; throw warnings when error doesn't exist.
+        (when warning-messages
+          (do
+            (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec warning-messages)))
+            warning-messages)))
+       ;; when we are supposed to return errors as warnings as well,
+       ;; return both errors and warnings as warnings.
+      (when-let [all-warning-messages (not-empty (remove nil? (merge err-messages warning-messages)))]
+        (do
+          (println "3 " all-warning-messages)
+          (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec all-warning-messages)))
+          all-warning-messages)))))
 
 (defn validate-variable-associated-collection
   "Validate the collection being associated to is accessible."
