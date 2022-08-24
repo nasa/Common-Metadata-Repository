@@ -65,7 +65,6 @@ export const fetchPageFromCMR = async ({
 
     if (chunkedItems.length > 0) {
       const { env: { IS_LOCAL } } = process
-      console.log('IS_Local', IS_LOCAL)
 
       await chunkedItems.forEachAsync(async (chunk) => {
         if (IS_LOCAL === 'true') {
