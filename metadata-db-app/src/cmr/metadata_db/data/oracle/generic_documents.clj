@@ -137,7 +137,7 @@
                    :provider_id provider-id
                    :document_name (:document-name document)
                    :schema schema
-                   :format schema
+                   :format (:format document)
                    :mime_type (str (:mime-type document))
                    :metadata (cutil/string->gzip-bytes (:metadata document))
                    :revision_id (:revision-id document)

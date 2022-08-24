@@ -57,7 +57,7 @@
                             :concept-type concept-type
                             :document-name (subs doc-name 0 (min 20 (count doc-name)))
                             :schema concept-type
-                            :format (identity concept-type)
+                            :format (str "application/vnd.nasa.cmr.umm+json;version=" version)
                             :mime-type (format "application/%s;version=%s"
                                                (name concept-type)
                                                version)
@@ -110,7 +110,7 @@
                         :concept-id orig-concept-id
                         :document-name doc-name
                         :schema concept-type
-                        :format (identity concept-type)
+                        :format (str "application/vnd.nasa.cmr.umm+json;version=" version)
                         :mime-type (format "application/%s;version=%s"
                                            (name concept-type)
                                            version)
@@ -122,9 +122,8 @@
      (ingest-events/concept-update-event metadata))
     {:concept-id orig-concept-id :revision-id revision-id}))
 
-;; TODO: Generic work: define a delete action
+;; TODO: Generic work: delete this function and anything that calls it.
 (defn delete-generic-document
-  "Stub function, does nothing"
-  [context params provider-id concept-id]
-  (debug format "Delete stub function called with %s %s" provider-id concept-id)
-  nil)
+  "Saves the tombstone concept and returns the concept."
+  [db provider _context concept]
+  (println "This function does nothing. It needs to be deleted."))
