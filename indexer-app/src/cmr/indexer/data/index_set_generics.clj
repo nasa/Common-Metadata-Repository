@@ -98,9 +98,9 @@
    [index-definition]
    (if-let [settings (:IndexSetup index-definition)]
      (let [config-shards (get-in settings [:index :number_of_shards])
-           ;; A changed environment variable takes precidence, then the config file, then the default.
+           ;; A changed environment variable takes precedence, then the config file, then the default.
            ;; If the the environment variable = default value then the environment variable is not set.
-           ;; If the enviornment variable is set, then use it.
+           ;; If the environment variable is set, then use it.
            num-shards (if (= (elastic-generic-index-num-shards) default-generic-index-num-shards)
                         (if config-shards 
                           (get-in settings [:index :number_of_shards])
