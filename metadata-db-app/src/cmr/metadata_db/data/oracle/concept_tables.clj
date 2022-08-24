@@ -34,7 +34,7 @@
 
 (defmethod get-table-name :tag-association
   [_ _]
-  "cmr_tag_associations")
+  "cmr_associations")
 
 (defmethod get-table-name :humanizer
   [_ _]
@@ -58,15 +58,15 @@
 
 (defmethod get-table-name :variable-association
   [_ _]
-  "cmr_variable_associations")
+  "cmr_associations")
 
 (defmethod get-table-name :service-association
   [_ _]
-  "cmr_service_associations")
+  "cmr_associations")
 
 (defmethod get-table-name :tool-association
   [_ _]
-  "cmr_tool_associations")
+  "cmr_associations")
 
 (defmethod get-table-name :default
   [provider concept-type]

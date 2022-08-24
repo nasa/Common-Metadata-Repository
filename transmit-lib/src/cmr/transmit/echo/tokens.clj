@@ -3,7 +3,6 @@
   (:require
    [cheshire.core :as json]
    [clj-time.core :as t]
-   [clojure.string :as s]
    [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
@@ -11,7 +10,6 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as common-util]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.echo.conversion :as c]
    [cmr.transmit.echo.rest :as r]))
 
 (defn login
@@ -24,12 +22,15 @@
                              :client_id client-id
                              :user_ip_address user-ip-address}}
          [status parsed body] (r/rest-post context "/tokens" token-info)]
-     (if (= 201 status)
-       (get-in parsed [:token :id])
+     (case status
+       201 (get-in parsed [:token :id])
+       504 (r/gateway-timeout-error!)
+
+       ;; default
        (r/unexpected-status-error! status body)))))
 
 (defn logout
-  "Logs into ECHO and returns the token"
+  "Logs out of ECHO"
   [context token]
   (let [[status body] (r/rest-delete context (str "/tokens/" token))]
     (when-not (= 200 status)
@@ -39,6 +40,34 @@
   "Logs in as a guest and returns the token."
   [context]
   (login context "guest" "guest-password"))
+
+(defn handle-get-user-id
+  [token status parsed body]
+  (case (int status)
+    200 (let [expires (some-> (get-in parsed [:token_info :expires])
+                              date-time-parser/parse-datetime)]
+          (if (or (nil? expires)
+                  (t/after? expires (tk/now)))
+            (get-in parsed [:token_info :user_name])
+            (errors/throw-service-error
+             :unauthorized
+             (format "Token [%s] has expired. Note the token value has been partially redacted."
+                     (common-util/scrub-token token)))))
+    401 (errors/throw-service-errors
+         :unauthorized
+         (:errors (json/decode body true)))
+    404 (errors/throw-service-error
+         :unauthorized
+         (format "Token %s does not exist" token))
+
+    ;; catalog-rest returns 401 when echo-rest returns 400 for expired token, we do the same in CMR
+    400 (errors/throw-service-errors :unauthorized (:errors (json/decode body true)))
+
+    ;; Gateway Timeout
+    504 (errors/throw-service-errors :gateway-timeout ["A gateway timeout occurred, please try your request again later."])
+
+    ;; default
+    (r/unexpected-status-error! status body)))
 
 (defn get-user-id
   "Get the user-id from ECHO for the given token"
@@ -51,25 +80,6 @@
                                             {:headers {"Accept" mt/json
                                                        "Authorization" (transmit-config/echo-system-token)}
                                              :form-params {:id token}})]
-
       (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
                     (common-util/scrub-token token) status))
-      (case (int status)
-        200 (let [expires (some-> (get-in parsed [:token_info :expires])
-                                  date-time-parser/parse-datetime)]
-              (if (or (nil? expires)
-                      (t/after? expires (tk/now)))
-                (get-in parsed [:token_info :user_name])
-                (errors/throw-service-error
-                  :unauthorized
-                  (format "Token [%s] has expired. Note the token value has been partially redacted."
-                          (common-util/scrub-token token)))))
-        401 (errors/throw-service-errors
-              :unauthorized
-              (:errors (json/decode body true)))
-        404 (errors/throw-service-error
-              :unauthorized
-              (format "Token %s does not exist" token))
-        ;; catalog-rest returns 401 when echo-rest returns 400 for expired token, we do the same in CMR
-        400 (errors/throw-service-errors :unauthorized  (:errors (json/decode body true)))
-        (r/unexpected-status-error! status body)))))
+      (handle-get-user-id token status parsed body))))

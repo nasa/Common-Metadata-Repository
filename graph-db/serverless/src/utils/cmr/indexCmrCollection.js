@@ -14,10 +14,11 @@ const gremlinStatistics = gremlin.process.statics
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
  * @returns
  */
-export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
+export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection) => {
   const {
     meta: {
-      'concept-id': conceptId
+      'concept-id': conceptId,
+      'provider-id': providerId
     },
     umm: {
       EntryTitle: entryTitle,
@@ -31,7 +32,7 @@ export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
     }
   } = collectionObj
 
-  // delete the collection first so that we can clean up its related, relatedUrl vertices
+  // Delete the collection first so that we can clean up its related, relatedUrl vertices
   await deleteCmrCollection(conceptId, gremlinConnection)
 
   let collection = null
@@ -40,6 +41,14 @@ export const indexCmrCollection = async (collectionObj, gremlinConnection) => {
       .property('title', entryTitle)
       .property('id', conceptId)
       .property('shortName', shortName)
+      .property('providerId', providerId)
+
+    // See gremlin multi-properties vs list property
+    if (groupList.length > 0) {
+      groupList.forEach((group) => {
+        addVCommand.property('permittedGroups', group)
+      })
+    }
 
     if (doiDescription) {
       addVCommand.property('doi', doiDescription)

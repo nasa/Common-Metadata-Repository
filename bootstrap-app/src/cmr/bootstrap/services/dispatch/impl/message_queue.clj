@@ -89,6 +89,20 @@
     context
     (message-queue/bootstrap-subscriptions-event provider-id))))
 
+(defn- index-data-later-than-date-time
+  "Bulk index all the concepts with a revision date later than the given date-time."
+  [this context provider-ids date-time]
+  (info "Publishing events to index all concepts after a given date time.")
+  (let [provider-ids (if (seq provider-ids)
+                       provider-ids
+                       ;; all providers including CMR provider which is for system concepts
+                       (conj (map :provider-id (helper/get-providers (:system context))) "CMR"))]
+    (doseq [provider-id provider-ids]
+      (message-queue/publish-bootstrap-concepts-event
+       context
+       (message-queue/bootstrap-provider-event provider-id nil date-time)))
+    (info "Publishing events to index all concepts after a given date time completed.")))
+
 (defn- fingerprint-variables
   "Update fingerprints of variables. If a provider is passed, only update fingerprints of the
   variables for that provider."
@@ -118,7 +132,7 @@
    :index-services index-services
    :index-tools index-tools
    :index-subscriptions index-subscriptions
-   :index-data-later-than-date-time (partial not-implemented :index-data-later-than-date-time)
+   :index-data-later-than-date-time index-data-later-than-date-time
    :index-collection (partial not-implemented :index-collection)
    :index-system-concepts (partial not-implemented :index-system-concepts)
    :index-concepts-by-id (partial not-implemented :index-concepts-by-id)
@@ -136,7 +150,10 @@
 
 (defmethod handle-bootstrap-event :index-provider
   [context msg]
-  (bulk-index/index-provider (:system context) (:provider-id msg) (:start-index msg)))
+  (if-let [start-index (:start-index msg)]
+    (bulk-index/index-provider (:system context) (:provider-id msg) start-index)
+    (bulk-index/index-provider-data-later-than-date-time
+     (:system context) (:provider-id msg) (:date-time msg))))
 
 (defmethod handle-bootstrap-event :index-variables
   [context msg]

@@ -10,4 +10,8 @@
       200
       (into {} (for [{:keys [provider]} providers]
                  [(:id provider) (:provider_id provider)]))
+      504
+      (r/gateway-timeout-error!)
+
+      ;; default
       (r/unexpected-status-error! status body))))

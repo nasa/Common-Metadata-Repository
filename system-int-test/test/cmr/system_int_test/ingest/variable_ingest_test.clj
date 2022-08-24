@@ -579,7 +579,12 @@
         {:Format "HDF42"}
         [422]
         [{:path ["RelatedUrLs" 0 "Format"]
-          :errors ["Format [HDF42] was not a valid keyword."]}])
+          :errors ["Format [HDF42] was not a valid keyword."]}]
+
+        "valid MimeType"
+        {:MimeType "application/x-hdf5"}
+        [200 201]
+        nil)
 
       (side/eval-form `(ingest-config/set-validate-umm-var-keywords! false))))
 

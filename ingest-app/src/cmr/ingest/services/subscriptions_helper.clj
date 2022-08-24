@@ -5,12 +5,12 @@
    [clj-time.core :as t]
    [clojure.spec.alpha :as spec]
    [clojure.string :as string]
+   [cmr.common-app.config :as common-app-config]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.date-time-range-parser :as date-time-range-parser]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
-   [cmr.common.services.errors :as errors]
-   [cmr.ingest.config :as ingest-config]
+   [cmr.common.services.errors :as errors] 
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
@@ -194,9 +194,9 @@
                             ", the following granules have been added or updated:\n\n"
                             (email-url-list concept-ref-locations)
                             "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at ["
-                            (ingest-config/cmr-support-email)
+                            (common-app-config/cmr-support-email)
                             "](mailto:"
-                            (ingest-config/cmr-support-email)
+                            (common-app-config/cmr-support-email)
                             ").\n"))}]}))
 
 (defmethod create-email-content :collection
@@ -216,9 +216,9 @@
                             ", the following collections have been added or updated:\n\n"
                             (email-url-list concept-ref-locations)
                             "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at ["
-                            (ingest-config/cmr-support-email)
+                            (common-app-config/cmr-support-email)
                             "](mailto:"
-                            (ingest-config/cmr-support-email)
+                            (common-app-config/cmr-support-email)
                             ").\n"))}]}))
 
 (defn- send-subscription-emails
@@ -237,7 +237,8 @@
          (try
            (send-email email-settings email-content)
            (info (str "Successfully processed subscription [" sub-id "].
-                      Sent subscription email to [" email-address "]."))
+                      Sent subscription email to [" email-address "].
+                      \nSubscription email contents: [" email-content "]."))
            (when update-notification-time?
              (send-update-subscription-notification-time! context sub-id))
            (catch Exception e

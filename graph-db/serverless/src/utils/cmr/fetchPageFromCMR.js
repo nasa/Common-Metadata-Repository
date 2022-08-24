@@ -5,6 +5,7 @@ import axios from 'axios'
 import { SQSClient, SendMessageBatchCommand } from '@aws-sdk/client-sqs'
 
 import { chunkArray } from '../chunkArray'
+import indexCmrCollections from '../../indexCmrCollection/handler'
 
 let sqs
 
@@ -30,7 +31,7 @@ export const fetchPageFromCMR = async ({
   console.log(`Fetch collections from CMR, searchAfter #${searchAfterNum}`)
 
   if (token) {
-    requestHeaders['Echo-Token'] = token
+    requestHeaders.Authorization = `Bearer ${token}`
   }
 
   if (searchAfter) {
@@ -38,6 +39,7 @@ export const fetchPageFromCMR = async ({
   }
 
   let fetchUrl = `${process.env.CMR_ROOT}/search/collections.json?page_size=${process.env.PAGE_SIZE}`
+  console.log('CMR_ROOT', process.env.CMR_ROOT)
 
   if (providerId !== null) {
     fetchUrl += `&provider=${providerId}`
@@ -63,27 +65,46 @@ export const fetchPageFromCMR = async ({
     const chunkedItems = chunkArray(entry, 10)
 
     if (chunkedItems.length > 0) {
+      const { env: { IS_LOCAL } } = process
+      console.log('IS_Local', IS_LOCAL)
+
       await chunkedItems.forEachAsync(async (chunk) => {
-        const sqsEntries = []
+        if (IS_LOCAL === 'true') {
+          const queueBody = chunk.map((collection) => {
+            const { id: conceptId, revision_id: revisionId } = collection
 
-        chunk.forEach((collection) => {
-          const { id: conceptId } = collection
+            return {
+              body: JSON.stringify({
+                'concept-id': conceptId,
+                'revision-id': revisionId,
+                action: 'concept-update'
+              })
+            }
+          })
 
-          sqsEntries.push({
-            Id: conceptId,
-            MessageBody: JSON.stringify({
-              action: 'concept-update',
-              'concept-id': conceptId
+          await indexCmrCollections({ Records: queueBody })
+        } else {
+          const sqsEntries = []
+
+          chunk.forEach((collection) => {
+            const { id: conceptId } = collection
+
+            sqsEntries.push({
+              Id: conceptId,
+              MessageBody: JSON.stringify({
+                action: 'concept-update',
+                'concept-id': conceptId
+              })
             })
           })
-        })
 
-        const command = new SendMessageBatchCommand({
-          QueueUrl: process.env.COLLECTION_INDEXING_QUEUE_URL,
-          Entries: sqsEntries
-        })
+          const command = new SendMessageBatchCommand({
+            QueueUrl: process.env.COLLECTION_INDEXING_QUEUE_URL,
+            Entries: sqsEntries
+          })
 
-        await sqs.send(command)
+          await sqs.send(command)
+        }
       })
     }
 

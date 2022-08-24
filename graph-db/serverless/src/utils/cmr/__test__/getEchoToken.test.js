@@ -17,8 +17,9 @@ afterEach(() => {
 })
 
 describe('getEchoToken', () => {
-  test('Default setting, no CMR token is provided', async () => {
+  test('Default setting, no CMR_TOKEN_KEY value is set', async () => {
     process.env.IS_LOCAL = 'false'
+    process.env.CMR_TOKEN_KEY = null
 
     const response = await getEchoToken()
 
@@ -38,6 +39,7 @@ describe('getEchoToken', () => {
 
   test('IS_LOCAL = true', async () => {
     process.env.IS_LOCAL = 'true'
+    process.env.TOKEN = null
 
     const token = await getEchoToken()
 

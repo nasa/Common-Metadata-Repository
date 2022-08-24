@@ -160,8 +160,10 @@ custom:
     ENVIRONMENT: ${self:provider.stage}
     GREMLIN_URL: ${env:GREMLIN_URL, 'wss://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'}
     PAGE_SIZE: ${env:PAGE_SIZE, '1000'}
+
   # Serverless Webpack configurations
   webpack:
     includeModules: true
     packager: 'npm'
     excludeFiles: src/**/*.test.js
+    

@@ -117,6 +117,27 @@
   []
   (set-modes! :all settings/default-run-mode))
 
+(defn- distribute-schemas
+  "A function that will copy the directory schemas in to all the necessary
+   apps with schemas renamed to lowercase"
+  []
+  (let [path (System/getProperty "user.dir")
+        apps ["search-app/resources"
+              "ingest-app/resources"
+              "indexer-app/resources"
+              "metadata-db-app/resources"
+              "system-int-test/resources"]
+        source (clojure.string/replace path #"dev-system" "schemas")
+        source-names (-> (:out (shell/sh "ls" source))
+                         (clojure.string/split #"\n"))]
+    (doseq [app apps]
+      (doseq [src-name source-names]
+        (if-not (clojure.string/ends-with? src-name ".md")
+          (let [dest-path (clojure.string/replace path #"dev-system" app)
+                dest-name (clojure.string/lower-case src-name)]
+            (shell/sh "mkdir" "-p" (format "%s/schemas" dest-path))
+            (shell/sh "cp" "-r" (format "%s/%s" source src-name) (format "%s/schemas/%s" dest-path dest-name))))))))
+
 (defn set-legacy
   "Passing `true` to this function will cause legacy configuration to be used
   during starts/resets."
@@ -136,7 +157,7 @@
 ;; for dev-system expects.
 (when (string? (dev-config/dev-system-queue-type))
   (dev-config/set-dev-system-queue-type!
-    (keyword (dev-config/dev-system-queue-type))))
+   (keyword (dev-config/dev-system-queue-type))))
 ;; If the ENV var for the dev queue type was set to use AWS, let's make the
 ;; `set-aws` call.
 (if (= :aws (dev-config/dev-system-queue-type))
@@ -259,7 +280,7 @@
                         (ingest-system/public-conf)))]
     (alter-var-root #'system
                     (constantly
-                      (system/start s))))
+                     (system/start s))))
 
   (d/touch-user-clj)
   (banner))
@@ -302,6 +323,8 @@
   (sit-sys/stop)
   ; Stops the running code
   (stop)
+  ; Distributes schemas to different apps for use
+  (distribute-schemas)
   ; Refreshes all of the code and then restarts the system
   (refresh :after 'user/start))
 

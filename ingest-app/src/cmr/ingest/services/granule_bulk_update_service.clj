@@ -3,6 +3,7 @@
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [clojure.string :as string]
+   [cmr.common-app.config :as common-app-config]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
@@ -10,7 +11,6 @@
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as util]
    [cmr.common.validations.json-schema :as js]
-   [cmr.ingest.config :as ingest-config]
    [cmr.ingest.data.granule-bulk-update :as data-granule-bulk-update]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.services.bulk-update-service :as bulk-update-service]
@@ -19,6 +19,7 @@
    [cmr.ingest.services.granule-bulk-update.format.echo10 :as format-echo10]
    [cmr.ingest.services.granule-bulk-update.mime-type.echo10 :as mime-type-echo10]
    [cmr.ingest.services.granule-bulk-update.mime-type.umm-g :as mime-type-umm-g]
+   [cmr.ingest.services.granule-bulk-update.online-resource-url.echo10 :as online-resource-url-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.echo10 :as opendap-echo10]
    [cmr.ingest.services.granule-bulk-update.opendap.opendap-util :as opendap-util]
    [cmr.ingest.services.granule-bulk-update.opendap.umm-g :as opendap-umm-g]
@@ -86,6 +87,15 @@
        :new-value Files})))
 
 (defmethod update->instruction :update_field:mimetype
+  [event-type item]
+  (if-not (map? item)
+    (invalid-update-error event-type)
+    (let [{:keys [GranuleUR Links]} item]
+      {:event-type event-type
+       :granule-ur GranuleUR
+       :new-value Links})))
+
+(defmethod update->instruction :update_field:onlineresourceurl
   [event-type item]
   (if-not (map? item)
     (invalid-update-error event-type)
@@ -205,7 +215,7 @@
                        :internal-error
                        [(str "There was a problem saving a bulk granule update request."
                              "Please try again, if the problem persists please contact "
-                             (ingest-config/cmr-support-email)
+                             (common-app-config/cmr-support-email)
                              ".")]))))]
 
     ;; Queue the granules bulk update events
@@ -398,6 +408,20 @@
   (errors/throw-service-errors
    :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))]))
 
+(defmulti update-online-resource-urls
+  "Update OnlineResourceURL"
+  (fn [context concept urls]
+    (mt/format-key (:format concept))))
+
+(defmethod update-online-resource-urls :default
+  [_ concept _]
+  (errors/throw-service-error
+   (format "Updating OnlineResourceURLs is not supported for format [%s]" (:format concept))))
+
+(defmethod update-online-resource-urls :echo10
+  [_context concept urls]
+  (online-resource-url-echo10/update-online-resource-url concept urls))
+
 (defmulti update-additional-files
   "Update AdditionalFiles in given granule concept."
   (fn [context concept checksum]
@@ -527,6 +551,15 @@
   [context concept bulk-update-params user-id]
   (modify-checksum-size-format
    context concept bulk-update-params user-id update-mime-type))
+
+(defmethod update-granule-concept :update_field:onlineresourceurl
+  [_context concept bulk-update-params user-id]
+  (let [updated-metadata (online-resource-url-echo10/update-online-resource-url concept (get bulk-update-params :new-value []))]
+    (-> concept
+        (assoc :metadata updated-metadata
+               :user-id user-id
+               :revision-date (time-keeper/now))
+        (update :revision-id inc))))
 
 (defn- modify-additional-files
   "Add or update the size, type, mimetype, and/or checksum value and algorithm for the given concept

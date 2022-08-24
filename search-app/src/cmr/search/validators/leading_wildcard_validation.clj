@@ -33,8 +33,7 @@
         "maximum allowed amount of [%d]. The CMR allows searching with patterns containing the "
         "wildcards * and ?. Patterns which start with a wildcard are expensive to execute so the "
         "number of patterns that can be used in one query is limited. If you would like to find "
-        "alternative ways to query please ask in the CMR Client Developer Forum. "
-        "https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum")
+        "alternative ways to query please ask the CMR Team at cmr-support@earthdata.nasa.gov. ")
    num-conditions
    (max-number-of-leading-wildcard-patterns)))
 

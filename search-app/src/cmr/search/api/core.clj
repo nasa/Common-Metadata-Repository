@@ -1,6 +1,7 @@
 (ns cmr.search.api.core
   "Core functions used by multiple API/routes namespaces."
   (:require
+   [cmr.common-app.api.launchpad-token-validation :refer [get-token-type]]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search :as search]
    [cmr.common.cache :as cache]
@@ -126,3 +127,8 @@
                       (update :result mt/format->mime-type)
                       (update :scroll-id (constantly short-scroll-id)))]
      (common-routes/search-response response))))
+
+(defn log-search-result-metadata
+  ([hits concept-type total-took client-id token-type result-format param-str & param-args]
+   (let [format-str (str "Found %d %ss in %d ms from client %s, token_type %s in format %s " param-str)]
+     (apply format format-str hits concept-type total-took client-id (get-token-type token-type) result-format param-args))))

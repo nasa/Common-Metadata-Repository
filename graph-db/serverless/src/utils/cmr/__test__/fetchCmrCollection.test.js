@@ -29,7 +29,7 @@ describe('fetchCmrCollection', () => {
     }
 
     nock(/local-cmr/)
-      .matchHeader('Echo-Token', 'mock_token')
+      .matchHeader('Authorization', 'Bearer mock_token')
       .get(/collections/)
       .reply(200, mockedBody)
 

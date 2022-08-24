@@ -2,7 +2,6 @@
 
 See the [CMR Data Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide) for a general guide to utilizing the CMR Ingest API as a data partner.
 See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide) for a general guide to developing a CMR client.
-Join the [CMR Client Developer Forum](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Developer+Forum) to ask questions, make suggestions and discuss topics like future CMR capabilities.
 
 ### API Conventions
 
@@ -1582,6 +1581,35 @@ curl -i -XPOST \
 			 ["granule_ur2", "OPENDAP DATA"]
 			 ["granule_ur3", "DIRECT DOWNLOAD"]
 	]
+}'
+```
+
+**operation: "UPDATE_FIELD", update-field: "OnlineResourceURL"**
+supported metadata formats:
+  - OnlineResource url in OnlineResources for ECHO10 format
+
+This update operation will replace the URL value of an OnlineResource element with the OnlineResources of a granule. Multiple URLs may be updated on the same granule.
+The original value to be replaced and a valid replacement link must be provided.
+
+``` bash
+curl -i -XPOST \
+  -H "Cmr-Pretty: true" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{
+    "name": "Update OnlineResource URL values",
+    "operation": "UPDATE_FIELD",
+    "update-field": "OnlineResourceURL",
+    "updates": [
+        {
+            "GranuleUR": "my-gran-ur",
+            "Links": [
+                { "from": "https://old-link", "to": "http://new-link" }
+            ]
+        }
+    ]
 }'
 ```
 

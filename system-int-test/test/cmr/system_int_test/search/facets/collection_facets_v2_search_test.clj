@@ -1314,3 +1314,33 @@
    (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all))
    (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1))
    (fu/make-coll 1 "PROV1" (fu/science-keywords sk-all sk-same-vl1 sk-diff-vl1))))
+
+(defn subset-matches?
+  [obj matcher]
+  (every? true? (map #(= (get obj %) (get matcher %)) (keys matcher))))
+
+(deftest hierarchical-query-responses
+  (are3 [query response]
+    (is (subset-matches? (search/find-concepts-json :collection query)
+                         response))
+
+    "platforms_h missing index and sub-key"
+    {:platforms-h "Suomi-NPP"}
+    {:status 400
+     :errors ["Parameter [:platforms-h] must include an index and nested key, platforms_h[n][...]=value."]}
+
+    "platforms_h missing index"
+    {:platforms-h "Suomi-NPP"}
+    {:status 400
+     :errors ["Parameter [:platforms-h] must include an index and nested key, platforms_h[n][...]=value."]}
+
+    "platforms_h missing sub-keys"
+    {:platforms-h {:0 nil}}
+    {:status 400
+     :errors ["Parameter [platforms_h[0]] must include a nested key, platforms_h[0][...]=value."]}
+
+    "platforms_h with valid index and subkey"
+    {:platforms-h {:0 {:basis "Space-based+Platforms"
+                       :category "Earth+Observation+Satellites"}}}
+    {:status 200
+     :hits 0}))

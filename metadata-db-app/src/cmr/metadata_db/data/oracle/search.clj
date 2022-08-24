@@ -3,6 +3,7 @@
   for retrieving concepts using parameters"
   (:require
    [clojure.java.jdbc :as j]
+   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as util]
@@ -13,6 +14,13 @@
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import
    (cmr.oracle.connection OracleStore)))
+
+(def association-concept-type->generic-association
+  "Mapping of various association concept types to columns needed for migration to CMR_ASSOCIATIONS table."
+  {:service-association {:association_type "SERVICE-COLLECTION" :kebab-key-mapping {:service-concept-id :source-concept-identifier}}
+   :tag-association {:association_type "TAG-COLLECTION" :kebab-key-mapping {:tag-key :source-concept-identifier}}
+   :tool-association {:association_type "TOOL-COLLECTION" :kebab-key-mapping {:tool-concept-id :source-concept-identifier}}
+   :variable-association {:association_type "VARIABLE-COLLECTION" :kebab-key-mapping {:variable-concept-id :source-concept-identifier}}})
 
 (def common-columns
   "A set of common columns for all concept types."
@@ -27,7 +35,8 @@
                       :user_id])
    :tag (into common-columns [:user_id])
    :tag-association (into common-columns
-                          [:associated_concept_id :associated_revision_id :tag_key :user_id])
+                          [:associated_concept_id :associated_revision_id
+                           :source_concept_identifier :user_id])
    :access-group (into common-columns [:provider_id :user_id])
    :service (into common-columns [:provider_id :service_name :user_id])
    :tool (into common-columns [:provider_id :tool_name :user_id])
@@ -40,13 +49,13 @@
    :variable (into common-columns [:provider_id :variable_name :measurement :user_id :fingerprint])
    :variable-association (into common-columns
                                [:associated_concept_id :associated_revision_id
-                                :variable_concept_id :user_id])
+                                :source_concept_identifier :user_id])
    :service-association (into common-columns
                               [:associated_concept_id :associated_revision_id
-                               :service_concept_id :user_id])
+                               :source_concept_identifier :user_id])
    :tool-association (into common-columns
                            [:associated_concept_id :associated_revision_id
-                            :tool_concept_id :user_id])})
+                            :source_concept_identifier :user_id])})
 
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept
@@ -184,6 +193,16 @@
   (let [provider-ids (map :provider-id providers)
         fields (disj (columns-for-find-concept concept-type params) :provider_id)
         params (params->sql-params concept-type providers (assoc params :provider-id provider-ids))
+        params (if (or (= :variable-association concept-type)
+                       (= :tag-association concept-type)
+                       (= :service-association concept-type)
+                       (= :tool-association concept-type))
+                 (-> params
+                     (set/rename-keys
+                      (get-in association-concept-type->generic-association [concept-type :kebab-key-mapping]))
+                     (assoc :association-type
+                            (get-in association-concept-type->generic-association [concept-type :association_type])))
+                 params)
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
     (j/with-db-transaction
       [conn db]

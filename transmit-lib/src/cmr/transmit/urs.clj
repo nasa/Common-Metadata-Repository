@@ -26,6 +26,10 @@
   [conn]
   (format "%s/api/user_groups/search" (conn/root-url conn)))
 
+(defn- groups-for-user-url
+  [conn username]
+  (format "%s/api/user_groups/groups_for_user/%s" (conn/root-url conn) username))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 
@@ -91,26 +95,18 @@
 
 (defn get-edl-groups-by-username
   "Returns groups associated with a username"
-  [context user-id]
-  (let [{:keys [status body]} (request-with-auth context {:url-fn #(group-search-url %)
+  [context username]
+  (let [{:keys [status body]} (request-with-auth context {:url-fn #(groups-for-user-url % (name username))
                                                           :method :get
-                                                          :raw? true
-                                                          :http-options {:query-params
-                                                                         {:user_ids
-                                                                          user-id}}})]
+                                                          :raw? true})]
     (when-not (= 200 status)
       (error (format "Cannot get group info for username [%s] in URS. Failed with status code [%d].
-        EDL error message: [%s]" user-id status (pr-str body)))
+        EDL error message: [%s]" username status (pr-str body)))
       (errors/throw-service-error
         :unauthorized
         (format "Cannot get group info for username [%s] in URS. Failed with status code [%d]."
-                user-id status)))
-    (map  (fn [group]
-            (str (get group :name)
-                 ":"
-                 (when-let [tag (get group :tag)]
-                   tag)))
-         body)))
+                username status)))
+    (map :group_id (:user_groups body))))
 
 (comment
  ;; Use this code to test with URS. Replace XXXX with real values
@@ -121,12 +117,11 @@
   (config/set-urs-host! "XXXX")
   (config/set-urs-port! 443)
   (config/set-urs-relative-root-url! ""))
-
  (do
   (config/set-urs-port! 4008)
   (def context
     {:system (config/system-with-connections {} [:urs])})
-
+  (get-edl-groups-by-username context username)
 
   (require '[cmr.mock-echo.client.mock-urs-client :as mock-urs])
 

@@ -249,23 +249,27 @@
     (when (and variable-concept-id associated-concept-id))
       ;; Get all the other variables sharing the same name; not deleted
       ;; and are associated with the same collection.
-      (let [stmt [(format "select va.variable_concept_id
-                           from   cmr_variable_associations va,
+      (let [stmt [(format "select va.source_concept_identifier
+                           from   (select revision_id, concept_id, deleted, source_concept_identifier, associated_concept_id
+                                   from cmr_associations
+                                   where association_type = 'VARIABLE-COLLECTION') va,
                                   (select concept_id, max(revision_id) maxrev
-                                   from cmr_variable_associations group by concept_id) latestva,
+                                   from cmr_associations
+                                   where association_type = 'VARIABLE-COLLECTION'
+                                   group by concept_id) latestva,
                                   cmr_variables v
                            where  va.revision_id = latestva.maxrev
                            and    va.concept_id = latestva.concept_id
                            and    va.deleted = 0
-                           and    va.variable_concept_id = v.concept_id
-                           and    va.variable_concept_id != '%s'
+                           and    va.source_concept_identifier = v.concept_id
+                           and    va.source_concept_identifier != '%s'
                            and    va.associated_concept_id = '%s'
                            and    v.variable_name in (select variable_name
                                                       from   cmr_variables
                                                       where  concept_id = '%s')"
                           variable-concept-id associated-concept-id variable-concept-id)]
             result (first (su/query db stmt))
-            v-concept-id-same-name (:variable_concept_id result)]
+            v-concept-id-same-name (:source_concept_identifier result)]
         (when v-concept-id-same-name
           {:error :collection-associated-with-variable-same-name
            :error-message (format (str "Variable [%s] and collection [%s] can not be associated "
@@ -501,7 +505,7 @@
                                  INCREMENT BY 1
                                  CACHE 20" INITIAL_CONCEPT_NUM))
   (j/db-do-commands this "DELETE FROM cmr_tags")
-  (j/db-do-commands this "DELETE FROM cmr_tag_associations")
+  (j/db-do-commands this "DELETE FROM cmr_associations where association_type = 'TAG-COLLECTION'")
   (j/db-do-commands this "DELETE FROM cmr_groups")
   (j/db-do-commands this "DELETE FROM cmr_acls")
   (j/db-do-commands this "DELETE FROM cmr_humanizers")
@@ -510,7 +514,7 @@
   (j/db-do-commands this "DELETE FROM cmr_services")
   (j/db-do-commands this "DELETE FROM cmr_tools")
   (j/db-do-commands this "DELETE FROM cmr_variables")
-  (j/db-do-commands this "DELETE FROM cmr_variable_associations"))
+  (j/db-do-commands this "DELETE FROM cmr_associations where association_type = 'VARIABLE-COLLECTION'"))
 
 (defn get-expired-concepts
   [this provider concept-type]

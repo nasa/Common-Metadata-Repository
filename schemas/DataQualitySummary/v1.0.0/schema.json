@@ -1,0 +1,22 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DataQuailitySummary",
+  "description": "This schema descibes data quality summaries. Data quality summaries inform users about about a dataset and it's granules data quality. It is described in this record because that information is not suitable for metadata.",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "Id": {
+      "description": "The identifier that was assigned to this record by an older system. It is in the schema to preserve search API functionality in order to store this identifier.",
+      "type": "string"
+    },
+    "Name": {
+      "description": "The human-readable name associated with this definition.",
+      "type": "string"
+    },
+    "Summary": {
+      "description": "A textual representation of the data quality summary. This summary may contain HTML.",
+      "type": "string"
+    }
+  },
+  "required": ["Name", "Summary"]
+}

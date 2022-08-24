@@ -268,7 +268,12 @@
               :errors ["Error parsing 'Hosts' CSV Data. Hosts must be an integer. CSV line entry: [\"AMSR-L1A\" \"3\" \"x\"]"]}
              (humanizer-util/update-community-usage-metrics
               admin-update-token
-              "Product,ProductVersion,Hosts\nAMSR-L1A,3,x"))))))
+              "Product,ProductVersion,Hosts\nAMSR-L1A,3,x"))))
+    (testing "large integer value for hosts (access-count)"
+      (is (= {:concept-id "H1200000011-CMR", :revision-id 2, :status 200}
+             (humanizer-util/update-community-usage-metrics
+              admin-update-token
+              "Product,ProductVersion,Hosts\nAMSR-L1A,3,2147483648"))))))
 
 (def sample-aggregation-csv
   "Sample CSV to test aggregation of access counts in different CSV entries with the same short-name

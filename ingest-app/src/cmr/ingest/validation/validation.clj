@@ -518,10 +518,10 @@
             warning-messages)))
        ;; when we are supposed to return errors as warnings as well,
        ;; return both errors and warnings as warnings.
-      (when-let [all-warning-messages  (seq (umm-spec-validation/validate-variable
-                                             variable
-                                             [(variable-keyword-validations context)
-                                              (variable-keyword-validations-warnings context)]))]
+      (when-let [all-warning-messages (seq (umm-spec-validation/validate-variable
+                                              variable
+                                              [(variable-keyword-validations context)
+                                               (variable-keyword-validations-warnings context)]))]
         (do
           (warn "UMM-Var UMM Spec Validation Errors: " (pr-str (vec all-warning-messages)))
           all-warning-messages)))))
