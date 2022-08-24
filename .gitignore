@@ -111,3 +111,4 @@ cmr-oracle-db/
 /metadata-db-app/resources/schemas/
 /search-app/resources/schemas/
 /system-int-test/resources/schemas/
+/schemas/*/*.md
