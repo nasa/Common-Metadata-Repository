@@ -22,13 +22,13 @@
             {:number_of_shards 5, :number_of_replicas 1, :refresh_interval "1s"}}
            (gen/get-settings index-definition-def))))
  
-  (testing "Test that a different shard number in the configuration file takes precidence." 
+  (testing "Test that a different shard number in the configuration file takes precedence." 
     (let [index-def-2 (assoc-in index-definition-def [:IndexSetup :index :number_of_shards] 4)
           actual (gen/get-settings index-def-2)]
       (is (= (get-in index-def-2 [:IndexSetup :index :number_of_shards])
              (get-in actual [:index :number_of_shards]))))) 
 
-  (testing "Test that setting the environment variable takes precidence"
+  (testing "Test that setting the environment variable takes precedence"
     (dev-sys-util/eval-in-dev-sys `(gen/set-elastic-generic-index-num-shards! 3))
     (is (= 3 (get-in (gen/get-settings index-definition-def) [:index :number_of_shards])))
     ;; Saving the original value doesn't work, because you can't use the variable to set it back. So the default is being used.
