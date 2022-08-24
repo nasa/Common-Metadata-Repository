@@ -174,7 +174,7 @@
      (:body (tgen/update-generic request-context [provider-id native-id] metadata-json)))))
 
 (defn delete-generic-document
-  "Deletes a generic document in elastic search and creates a tombstone in the database. Returns a 201
+  "Deletes a generic document in elasticsearch and creates a tombstone in the database. Returns a 201
    if successful with the concept id and revision number. A 204 status is returned if the concept has
    already been deleted."
   [request] 
