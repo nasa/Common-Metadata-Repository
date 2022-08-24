@@ -12,7 +12,7 @@
 
 ;; TODO: Generic work - move this to a location where index and ingest can find it
 (defn- validate-index-against-schema
-  "validate a document, returns an array of errors if there are problems
+  "Validate a document, returns an array of errors if there are problems
    Parameters:
    * raw-json, json as a string to validate"
   [raw-json]
@@ -20,35 +20,36 @@
         schema-obj (js-validater/json-string->json-schema schema-file)]
     (js-validater/validate-json schema-obj raw-json)))
 
-;; This is the default generic index number of shards.
-(def default-generic-index-num-shards 5)
+(def default-generic-index-num-shards 
+  "This is the default generic index number of shards."
+  5)
 
-;; This defconfig here so that the value can be overriden by environment variable.
-;; This value can also be overriden in the schema specific configuration files. These
-;; files are found in the schemas project.
-;; Here is an example: 
-;;     "IndexSetup" : {
-;;      "index" : {"number_of_shards" : 5,
-;;                 "number_of_replicas" : 1,
-;;                 "refresh_interval" : "1s"}
-;;    },
 (defconfig elastic-generic-index-num-shards
-  "Number of shards to use for the generic document index"
+  "Number of shards to use for the generic document index. This value can be overriden
+  by an environment variable. This value can also be overriden in the schema specific 
+  configuration files. These files are found in the schemas project.
+  Here is an example: 
+  \"IndexSetup\" : {
+    \"index\" : {\"number_of_shards\" : 5,
+                 \"number_of_replicas\" : 1,
+                 \"refresh_interval\" : \"1s\"}
+  },"
   {:default default-generic-index-num-shards :type Long})
 
-;; This def is here as a default just in case these values are not specified in the 
-;; schema specific configuration file found in the schemas project. 
-;; These values can be overriden in the schema specific configuration file.
-;; Here is an example: 
-;;     "IndexSetup" : {
-;;      "index" : {"number_of_shards" : 5,
-;;                 "number_of_replicas" : 1,
-;;                 "refresh_interval" : "1s"}
-;;    },
-(def generic-setting {:index
-                      {:number_of_shards (elastic-generic-index-num-shards)
-                       :number_of_replicas 1,
-                       :refresh_interval "1s"}})
+(def generic-setting 
+  "This def is here as a default just in case these values are not specified in the 
+  schema specific configuration file found in the schemas project. 
+  These values can be overriden in the schema specific configuration file.
+  Here is an example: 
+  \"IndexSetup\" : {
+    \"index\" : {\"number_of_shards\" : 5,
+                 \"number_of_replicas\" : 1,
+                 \"refresh_interval\" : \"1s\"}
+  },"
+  {:index 
+   {:number_of_shards (elastic-generic-index-num-shards) 
+    :number_of_replicas 1
+    refresh_interval "1s"}})
 
 ;; By default, these are the indexes that all generics will have, these are mostly
 ;; from the database table
@@ -111,7 +112,7 @@
      generic-setting))
 
 (defn read-schema-definition
-  "Read in the specific schema given the schema name and version number.  Throw an service error 
+  "Read in the specific schema given the schema name and version number.  Throw an error 
    if the file can't be read."
   [gen-name gen-version]
   (try

@@ -15,7 +15,7 @@
              {:Description "Id - This is the old ECHO 10 GUID.", :Field ".Id", :Name "Id", :Mapping "string"}]})
 
 (deftest get-settings-test
-  "Test getting the settings from either the config file, the environment variable, or the default value." 
+  ;; Test getting the settings from either the config file, the environment variable, or the default value.
 
   (testing "Test that concept prefixes can be looked up from either a configuration file or be assumed"
     (is (= {:index
@@ -35,7 +35,7 @@
     (dev-sys-util/eval-in-dev-sys `(gen/set-elastic-generic-index-num-shards! gen/default-generic-index-num-shards))))
 
 (deftest read-schema-definition-test
-  "Testing the read schema functionality"
+  ;; Testing the read schema functionality.
   
   (testing "Testing when a file exists."
     (let [gen-name "grid"
