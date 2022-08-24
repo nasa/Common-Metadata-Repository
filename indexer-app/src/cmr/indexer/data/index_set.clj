@@ -968,6 +968,19 @@
       :rebalancing-collections (get-in fetched-index-set
                                        [:index-set :granule :rebalancing-collections])})))
 
+(defn get-concept-mapping-types-for-generics
+  "This function sets up the concept mapping types for generics. Any generic that doesn't have a
+   map is ommitted."
+  [concept-type fetched-index-set]
+  (let [index-type (keyword (format "generic-%s" (name concept-type)))
+        mapping (get-in fetched-index-set [:index-set index-type :mapping])]
+    (when mapping
+      (let [mapping-type (-> mapping
+                             keys
+                             first
+                             name)]
+        {index-type (str mapping-type)}))))
+
 (defn fetch-concept-mapping-types
   "Fetch mapping types for each concept type from index-set app, returns a map of
    concept types which define what the top level field is in each mapping description.
@@ -982,21 +995,17 @@
                                       keys
                                       first
                                       name))]
-     {:collection (get-concept-mapping-fn :collection)
-      :granule (get-concept-mapping-fn :granule)
-      :tag (get-concept-mapping-fn :tag)
-      :variable (get-concept-mapping-fn :variable)
-      :service (get-concept-mapping-fn :service)
-      :tool (get-concept-mapping-fn :tool)
-      :subscription (get-concept-mapping-fn :subscription)
-      ;:generic (get-concept-mapping-fn :generic) ; trick some layers
-      ; TODO: Generic work: automate this
-      :generic-grid (get-concept-mapping-fn :generic-grid)
-      :generic-variable (get-concept-mapping-fn :generic-variable)
-      :generic-dataqualitysummary (get-concept-mapping-fn :generic-dataqualitysummary)
-      :generic-orderoption (get-concept-mapping-fn :generic-orderoption)
-      :generic-serviceoption (get-concept-mapping-fn :generic-serviceoption)
-      :generic-serviceentry (get-concept-mapping-fn :generic-serviceentry)})))
+     (merge 
+      {:collection (get-concept-mapping-fn :collection) 
+       :granule (get-concept-mapping-fn :granule)
+       :tag (get-concept-mapping-fn :tag)
+       :variable (get-concept-mapping-fn :variable)
+       :service (get-concept-mapping-fn :service)
+       :tool (get-concept-mapping-fn :tool)
+       :subscription (get-concept-mapping-fn :subscription)} 
+      (into {} 
+            (map #(get-concept-mapping-types-for-generics % fetched-index-set) 
+                 (cs/get-generic-concept-types-array)))))))
 
 (defn fetch-rebalancing-collection-info
   "Fetch rebalancing collections, their targets, and status."
