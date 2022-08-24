@@ -92,7 +92,10 @@
         provider-id (or (:provider params)
                         (:provider-id route-params))
         native-id (:native-id route-params)
-        ; TODO: Generic work - add token check
+        _ (lt-validation/validate-launchpad-token request-context)
+        _ (api-core/verify-provider-exists request-context provider-id)
+        _ (acl/verify-ingest-management-permission
+         request-context :update :provider-object provider-id)
         raw-document (slurp (:body request))
         document (json/parse-string raw-document true)
         specification (:MetadataSpecification document)
