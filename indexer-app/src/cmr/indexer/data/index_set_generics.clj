@@ -2,19 +2,13 @@
   (:refer-clojure :exclude [update])
   (:require
    [cheshire.core :as json]
-   [clj-http.client :as client]
+   [clojure.java.io :as io]
    [clojure.string :as string]
-   [cmr.common.cache :as cache]
-   [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
-   [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.common.services.errors :as errors]
-   [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
+   [cmr.common.log :as log :refer (error)]
+   [cmr.elastic-utils.index-util :as m]
    [cmr.indexer.data.concepts.generic-util :as gen-util]
-   [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
-   [cmr.schema-validation.json-schema :as js-validater]
-   [cmr.transmit.metadata-db :as meta-db]))
+   [cmr.schema-validation.json-schema :as js-validater]))
 
 ;; TODO: Generic work - move this to a location where index and ingest can find it
 (defn- validate-index-against-schema
@@ -22,16 +16,35 @@
    Parameters:
    * raw-json, json as a string to validate"
   [raw-json]
-  (let [schema-file (slurp (clojure.java.io/resource "schemas/index/v0.0.1/schema.json"))
+  (let [schema-file (slurp (io/resource "schemas/index/v0.0.1/schema.json"))
         schema-obj (js-validater/json-string->json-schema schema-file)]
     (js-validater/validate-json schema-obj raw-json)))
 
-;; TODO: Generic work - move this to the config file in future releases
+;; This is the default generic index number of shards.
+(def default-generic-index-num-shards 5)
+
+;; This defconfig here so that the value can be overriden by environment variable.
+;; This value can also be overriden in the schema specific configuration files. These
+;; files are found in the schemas project.
+;; Here is an example: 
+;;     "IndexSetup" : {
+;;      "index" : {"number_of_shards" : 5,
+;;                 "number_of_replicas" : 1,
+;;                 "refresh_interval" : "1s"}
+;;    },
 (defconfig elastic-generic-index-num-shards
   "Number of shards to use for the generic document index"
-  {:default 5 :type Long})
+  {:default default-generic-index-num-shards :type Long})
 
-;; TODO: Generic work - move this to the config file in future releases
+;; This def is here as a default just in case these values are not specified in the 
+;; schema specific configuration file found in the schemas project. 
+;; These values can be overriden in the schema specific configuration file.
+;; Here is an example: 
+;;     "IndexSetup" : {
+;;      "index" : {"number_of_shards" : 5,
+;;                 "number_of_replicas" : 1,
+;;                 "refresh_interval" : "1s"}
+;;    },
 (def generic-setting {:index
                       {:number_of_shards (elastic-generic-index-num-shards)
                        :number_of_replicas 1,
@@ -78,6 +91,41 @@
         (assoc (keyword index-name) converted-mapping)
         (assoc (keyword index-name-lower) converted-mapping))))
 
+ (defn get-settings
+   "Get the elastic settings from the configuration files. If the default number of shards has
+    changed, then use that instead of what was configured."
+   [index-definition]
+   (if-let [settings (:IndexSetup index-definition)]
+     (let [config-shards (get-in settings [:index :number_of_shards])
+           ;; A changed environment variable takes precidence, then the config file, then the default.
+           ;; If the the environment variable = default value then the environment variable is not set.
+           ;; If the enviornment variable is set, then use it.
+           num-shards (if (= (elastic-generic-index-num-shards) default-generic-index-num-shards)
+                        (if config-shards 
+                          (get-in settings [:index :number_of_shards])
+                          default-generic-index-num-shards)
+                        (elastic-generic-index-num-shards))]
+       (if (= config-shards num-shards)
+         settings
+         (assoc-in settings [:index :number_of_shards] num-shards)))
+     generic-setting))
+
+(defn read-schema-definition
+  "Read in the specific schema given the schema name and version number.  Throw an service error 
+   if the file can't be read."
+  [gen-name gen-version]
+  (try
+    (-> "schemas/%s/v%s/index.json"
+        (format (name gen-name) gen-version)
+        (io/resource)
+        (slurp))
+    (catch Exception e
+      (error 
+       (format (str "The index.json file for schema [%s] version [%s] cannot be found. Please make sure that it exists." 
+                    (.getMessage e))
+                gen-name
+                gen-version)))))
+ 
 ;; TODO: Generic work: We need to check throws here. When something is wrong in the schema,
 ;; 500 errors are thrown.
 (defn generic-mappings-generator
@@ -91,22 +139,20 @@
   []
   (reduce (fn [data gen-name]
             (let [gen-ver (last (gen-name (cfg/approved-pipeline-documents)))
-                  index-definition-str (-> "schemas/%s/v%s/index.json"
-                                       (format (name gen-name) gen-ver)
-                                       (clojure.java.io/resource)
-                                       (slurp))
+                  index-definition-str (read-schema-definition gen-name gen-ver)
                   ;; TODO: Generic work: need to fix or change the validation - are we supposed to validate the
                   ;; index.json file?
                   index-definition  ;(when-not (validate-index-against-schema index-definition-str)
                                       (json/parse-string index-definition-str true)
-                  index-list (gen-util/only-elastic-preferences (:Indexes index-definition))]
+                  index-list (gen-util/only-elastic-preferences (:Indexes index-definition))
+                  generic-settings (get-settings index-definition)]
               (if index-definition
                 (assoc data
                        (keyword (str "generic-" (name gen-name)))
                        {:indexes [{:name (format "generic-%s" (name gen-name))
-                                   :settings generic-setting}
+                                   :settings generic-settings}
                                   {:name (format "all-generic-%s-revisions" (name gen-name))
-                                   :settings generic-setting}]
+                                   :settings generic-settings}]
                         :mapping {:properties (reduce mapping->index-key base-indexes index-list)}})
                 (do
                   (error (format "Could not parse schema %s version %s." (name gen-name) gen-ver))
