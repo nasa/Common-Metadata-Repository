@@ -584,13 +584,7 @@
         "valid MimeType"
         {:MimeType "application/x-hdf5"}
         [200 201]
-        nil
-
-        "invalid MimeType"
-        {:MimeType "application/x-hdf42"}
-        [422]
-        [{:path ["RelatedUrLs" 0 "MimeType"]
-          :errors ["MimeType [application/x-hdf42] was not a valid keyword."]}])
+        nil)
 
       (side/eval-form `(ingest-config/set-validate-umm-var-keywords! false))))
 
