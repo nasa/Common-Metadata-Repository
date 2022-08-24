@@ -49,7 +49,7 @@
   {:index 
    {:number_of_shards (elastic-generic-index-num-shards) 
     :number_of_replicas 1
-    refresh_interval "1s"}})
+    :refresh_interval "1s"}})
 
 ;; By default, these are the indexes that all generics will have, these are mostly
 ;; from the database table
@@ -101,11 +101,15 @@
            ;; A changed environment variable takes precedence, then the config file, then the default.
            ;; If the the environment variable = default value then the environment variable is not set.
            ;; If the environment variable is set, then use it.
-           num-shards (if (= (elastic-generic-index-num-shards) default-generic-index-num-shards)
-                        (if config-shards 
-                          (get-in settings [:index :number_of_shards])
-                          default-generic-index-num-shards)
-                        (elastic-generic-index-num-shards))]
+           num-shards (cond 
+                        (not= (elastic-generic-index-num-shards) default-generic-index-num-shards)
+                        (elastic-generic-index-num-shards)
+                        
+                        config-shards
+                        (get-in settings [:index :number_of_shards])
+
+                        :else 
+                        default-generic-index-num-shards)]
        (if (= config-shards num-shards)
          settings
          (assoc-in settings [:index :number_of_shards] num-shards)))

@@ -26,7 +26,20 @@
     (let [index-def-2 (assoc-in index-definition-def [:IndexSetup :index :number_of_shards] 4)
           actual (gen/get-settings index-def-2)]
       (is (= (get-in index-def-2 [:IndexSetup :index :number_of_shards])
+             (get-in actual [:index :number_of_shards])))))
+
+  (testing "Test when a shard number doesn't exist. It should use the default."
+    (let [index-def-2 (assoc-in index-definition-def [:IndexSetup :index :number_of_shards] nil)
+          actual (gen/get-settings index-def-2)]
+      (is (= gen/default-generic-index-num-shards
              (get-in actual [:index :number_of_shards]))))) 
+  
+  (testing "Test when IndexSetup doesn't exist. It should use the default."
+    (let [index-def-2 (dissoc index-definition-def :IndexSetup)
+          actual (gen/get-settings index-def-2)]
+      (is (= {:index
+              {:number_of_shards 5, :number_of_replicas 1, :refresh_interval "1s"}}
+             (gen/get-settings index-def-2)))))
 
   (testing "Test that setting the environment variable takes precedence"
     (dev-sys-util/eval-in-dev-sys `(gen/set-elastic-generic-index-num-shards! 3))
