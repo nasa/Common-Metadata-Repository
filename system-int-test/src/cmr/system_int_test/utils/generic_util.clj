@@ -38,10 +38,10 @@
 (defn generic-request
   "This function will make a request to one of the generic URLs using the provided
    provider and native id"
-  ([token provider-id native-id] (generic-request token provider-id native-id nil :get))
-  ([token provider-id native-id document method]
+  ([token concept-type provider-id native-id] (generic-request token concept-type provider-id native-id nil :get))
+  ([token concept-type provider-id native-id document method]
    (-> {:method method
-        :url (url-helper/ingest-generic-crud-url provider-id native-id)
+        :url (url-helper/ingest-generic-crud-url concept-type provider-id native-id)
         :connection-manager (sys/conn-mgr)
         :body (when document (json/generate-string document))
         :throw-exceptions false

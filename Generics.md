@@ -30,7 +30,7 @@ Each setting consists of a key, which is the name for the Generic which must be 
 		index.json
 		metadata.json
 		schema.json
-		
+
 CMR will search for Generic definitions using the lower case value of the key (name) and the version number prefixed with a "v". Inside the directory there must be 4 files, three of which are directly read by CMR:
 
 * README.md - for humans
@@ -53,7 +53,7 @@ Creating:
 1. Create a new directory in the [EMFD Generics][schema-other] repository.
 2. In the directory create a README.md file
 3. Create a `CHANGELOG.MD` file and populate like other formats do
-4. Create a directory with the symantic version number prefixed with the letter `v`
+4. Create a directory with the semantic version number prefixed with the letter `v`
 	1. Version 1.0.0 would be `v1.0.0`.
 	2. Information on [Semantic Versioning][semver]
 5. Create at least a metadata.json and schema.json file inside the version number.
@@ -66,9 +66,31 @@ Creating:
 
 Updating is much the same as start, create a new version folder, populate it.
 
-DONT forget to update the change log!
+DON'T forget to update the change log!
 
 Commit and distribute to CMR as done in the addition steps.
+
+## Generic Document Pipeline API Endpoints
+
+The API endpoints are generated from a pre-configured list of document types. The type is singular in
+ingest and plural in search. The examples below use the "orderoption"/"orderoptions" type, with a
+native ID of "orderoption-1".
+
+#### ingest
+	curl -v -XPOST -H "Echo-Token: mock-echo-system-token" -H "Content-Type:application/vnd.nasa.cmr.umm+json" "http://localhost:3002/orderoption/orderoption-1?provider=PROV1" -d @orderoption-1.json
+	curl -v -XPUT -H "Echo-Token: mock-echo-system-token" -H "Content-Type:application/vnd.nasa.cmr.umm+json" "http://localhost:3002/orderoption/orderoption-1?provider=PROV1" -d @orderoption-1.json
+	curl -v -XGET -H "Echo-Token: mock-echo-system-token" -H "Content-Type:application/vnd.nasa.cmr.umm+json" "http://localhost:3002/orderoption/orderoption-1?provider=PROV1"
+	curl -v -XDELETE -H "$TOKEN" "http://localhost:3002/orderoption/dataqualitysummary-1?provider=PROV1"
+
+#### search
+	curl -v -H "Echo-Token: mock-echo-system-token" http://localhost:3003/concepts/OO1200000002-PROV1
+	curl -v -H "Echo-Token: mock-echo-system-token" http://localhost:3003/orderoptions?name="With%20Browse"
+	curl -v -H "Echo-Token: mock-echo-system-token" http://localhost:3003/orderoptions.json?name="With%20Browse"
+	curl -v -H "Echo-Token: mock-echo-system-token" http://localhost:3003/orderoptions.json?provider="PROV1"
+	curl -v -H "Echo-Token: mock-echo-system-token" http://localhost:3003/orderoptions.json?concept_id="OO1200000002-PROV1"
+
+Note also that concept IDs begin with a prefix unique to that document type. (Above see "OO" for order
+option)
 
 ----
 
