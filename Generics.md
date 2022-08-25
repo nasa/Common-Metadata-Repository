@@ -77,17 +77,17 @@ ingest and plural in search. The examples below use the "orderoption"/"orderopti
 native ID of "orderoption-1".
 
 #### ingest
-	curl -v -XPOST -H "Echo-Token: mock-echo-system-token" -H "Content-Type:application/vnd.nasa.cmr.umm+json" "http://localhost:3002/orderoption/orderoption-1?provider=PROV1" -d @orderoption-1.json
-	curl -v -XPUT -H "Echo-Token: mock-echo-system-token" -H "Content-Type:application/vnd.nasa.cmr.umm+json" "http://localhost:3002/orderoption/orderoption-1?provider=PROV1" -d @orderoption-1.json
-	curl -v -XGET -H "Echo-Token: mock-echo-system-token" -H "Content-Type:application/vnd.nasa.cmr.umm+json" "http://localhost:3002/orderoption/orderoption-1?provider=PROV1"
-	curl -v -XDELETE -H "$TOKEN" "http://localhost:3002/orderoption/dataqualitysummary-1?provider=PROV1"
+	curl -v -XPOST -H "$TOKEN" -H "Content-Type:application/vnd.nasa.cmr.umm+json" "http://cmr.earthdata.nasa.gov/ingest/orderoption/orderoption-1?provider=PROV1" -d @orderoption-1.json
+	curl -v -XPUT -H "$TOKEN" -H "Content-Type:application/vnd.nasa.cmr.umm+json" "http://cmr.earthdata.nasa.gov/ingest/orderoption/orderoption-1?provider=PROV1" -d @orderoption-1.json
+	curl -v -XGET -H "$TOKEN" -H "Content-Type:application/vnd.nasa.cmr.umm+json" "http://cmr.earthdata.nasa.gov/ingest/orderoption/orderoption-1?provider=PROV1"
+	curl -v -XDELETE -H "$TOKEN" "http://cmr.earthdata.nasa.gov/ingest/orderoption/dataqualitysummary-1?provider=PROV1"
 
 #### search
-	curl -v -H "Echo-Token: mock-echo-system-token" http://localhost:3003/concepts/OO1200000002-PROV1
-	curl -v -H "Echo-Token: mock-echo-system-token" http://localhost:3003/orderoptions?name="With%20Browse"
-	curl -v -H "Echo-Token: mock-echo-system-token" http://localhost:3003/orderoptions.json?name="With%20Browse"
-	curl -v -H "Echo-Token: mock-echo-system-token" http://localhost:3003/orderoptions.json?provider="PROV1"
-	curl -v -H "Echo-Token: mock-echo-system-token" http://localhost:3003/orderoptions.json?concept_id="OO1200000002-PROV1"
+	curl -v -H "$TOKEN" http://cmr.earthdata.nasa.gov/search/concepts/OO1200000002-PROV1
+	curl -v -H "$TOKEN" http://cmr.earthdata.nasa.gov/search/orderoptions?name="With%20Browse"
+	curl -v -H "$TOKEN" http://cmr.earthdata.nasa.gov/search/orderoptions.json?name="With%20Browse"
+	curl -v -H "$TOKEN" http://cmr.earthdata.nasa.gov/search/orderoptions.json?provider="PROV1"
+	curl -v -H "$TOKEN" http://cmr.earthdata.nasa.gov/search/orderoptions.json?concept_id="OO1200000002-PROV1"
 
 Note also that concept IDs begin with a prefix unique to that document type. (Above see "OO" for order
 option)
