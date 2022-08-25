@@ -310,7 +310,7 @@
      (testing "ingest generic (grid) update permissions"
        (are3 [token]
              (assert-ingest-succeeded 
-              (generic-util/generic-request token "PROV1" grid-native-id grid :post))
+              (generic-util/generic-request token "grid" "PROV1" grid-native-id grid :post))
              "provider-admin-update-token can ingest"
              provider-admin-update-token
              "provider-admin-read-update-token can ingest"
@@ -320,7 +320,7 @@
 
        (are3 [token]
              (assert-ingest-no-permission 
-              (generic-util/generic-request token "PROV1" grid-native-id grid :post))
+              (generic-util/generic-request token "grid" "PROV1" grid-native-id grid :post))
              "guest-token can't ingest"
              guest-token
              "user-token can't ingest"
