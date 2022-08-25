@@ -1,0 +1,682 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Grid",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "MetadataSpecification": {
+      "description": "Contains several fields to define the specifics of the grid",
+      "$ref": "#/definitions/MetadataSpecificationType"
+    },
+    "Name": {
+      "description": "Short name for this Grid, may not be human readable and must be unique for the provider.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 85
+    },
+    "LongName": {
+      "description": "Long form version of Name, should be human readable and does not have to be unique",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "Version": {
+      "description": "The edition or iteration of the Grid",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20
+    },
+    "Description": {
+      "description": "A brief text that allows others to understand the purpose of the grid",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "GridDefinition": {
+      "description": "Contains several elements to define the specifics of the grid",
+      "$ref": "#/definitions/GridDefinitionType" 
+    },
+    "Organization": {
+      "description": "Contains several elements to name the organization that defines the grid",
+      "$ref": "#/definitions/OrganizationType"
+    },
+    "MetadataDate": {
+      "description": "Contains several elements to define dates that are specific of the grid.",
+      "$ref": "#/definitions/MetadataDateType"
+    },
+    "RelatedURLs": {
+      "description": "Contains several elements to define the specifics of the grid's Related URLs",
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/definitions/RelatedURLType"
+      }
+    },
+    "AdditionalAttribute": {
+      "description": "Contains several elements to define unique elements of the grid",
+      "$ref": "#/definitions/AdditionalAttributeType"
+    }
+  },
+  "required": [
+    "MetadataSpecification",
+    "Name",
+    "LongName",
+    "Version",
+    "Description",
+    "GridDefinition",
+    "Organization",
+    "MetadataDate"
+  ],
+  "definitions": {
+    "MetadataSpecificationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+      "properties": {
+        "URL": {
+          "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
+          "type": "string",
+          "enum": ["https://cdn.earthdata.nasa.gov/generic/grid/v0.0.1"]
+        },
+        "Name": {
+          "description": "This element represents the name of the schema.",
+          "type": "string",
+          "enum": ["Grid"]
+        },
+        "Version": {
+          "description": "This element represents the version of the schema.",
+          "type": "string",
+          "enum": ["0.0.1"]
+        }
+      },
+      "required": [
+        "URL",
+        "Name",
+        "Version"
+      ]
+    },
+    "MetadataDateType": {
+      "type": "object",
+      "properties": {
+        "Create": {
+          "description": "This element represents the creation date of the metadata.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "Update": {
+          "description": "This element represents the update date of the metadata.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "Review": {
+          "description": "This element represents the provider's proposed review date of the metadata.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "Delete": {
+          "description": "This element represents the deletion date of the metadata.",
+          "format": "date-time",
+          "type": "string"
+        }
+      },
+      "required": [
+        "Create"
+      ]
+    },
+    "GridDefinitionType": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "CoordinateReferenceSystemID": {
+          "description": "The Coordinate reference system identifier of the grid. Use EPSG-4326 for simple geographic grids.",
+          "type": "object",
+          "properties": {
+            "Type": {
+                "description": "Coordinate reference system (CRS) identifier repository of the identified CRS type.",
+                "type": "string",
+                "enum": ["EPSG", "PROJ", "other"]
+                },
+            "Title": {
+                "description": "The Title or Long Name associated with the Type.",
+                "type": "string",
+                "examples": ["WGS 84 / World Mercator - EPSG:3395", "Albers Equal Area"],
+                "minLength": 4,
+                "maxLength": 2048
+            },
+            "URL": {
+              "description": "CRS Type repository entry record link.",
+              "type": "string",
+              "format": "uri",
+              "examples": ["https://epsg.io/3395", "https://proj.org/operations/projections/aea.html"],
+              "minLength": 16,
+              "maxLength": 2048
+            }   
+          },
+          "$comment": "Checks the CoordinateReferenceSystemID Type element for EPSG then sets the pattern of the elements value.",
+          "if": {"properties": {"Type": {"const": "EPSG"}}},
+          "then": {"properties": {"Code": {"pattern": "^EPSG:[0-9\\.]{4,}$"}},
+            "required": ["Code"]
+            }
+        },
+        
+        "DimensionSize": {
+          "description": "Dimensional extent, e.g., height and width (number of rows/columns) of the grid",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Height": {
+              "description": "The height associated with the Grid Dimension Size.",
+              "type": "number",
+              "minimum": 0
+            },
+            "Width": {
+              "description": "The width associated with the Grid Dimension Size.",
+              "type": "number",
+              "minimum": 0
+            },
+            "Time": {
+              "description": "The time associated with the Grid Dimension Size.",
+              "type": "string",
+              "format": "time"
+            },
+            "Other": {
+              "description": "An alternative additional dimension for the grid, either 3rd or 4th dimension beyond height/width/time (if defined).",
+              "additionalItems": false,
+              "properties": {
+                "Name": {
+                  "description": "The alternative dimension size name associated with the Grid.",
+                  "minLength": 1,
+                  "maxLength": 85
+                },
+                "Value": {
+                  "description": "The alternative dimension size value associated with the Grid.",
+                  "type": "string"
+                },
+                "Description": {
+      			  "description": "A brief text that allows others to understand the purpose of the alternative dimension being add to the DimensionSize",
+      			  "type": "string",
+      			  "minLength": 1,
+      			  "maxLength": 1024
+    			}
+              }
+            }
+          },
+          "required": [
+            "Height",
+            "Width"
+          ]
+        },
+        "Resolution": {
+          "description": "The resolution associated with the Grid.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Unit": {
+              "description": "The resolution unit of the measured size.",
+              "type": "string",
+              "$ref": "#/definitions/UnitEnum"
+            },
+            "LongitudeResolution": {
+              "description": "The Longitudes (columns) associated with the Grid Resolution.",
+              "type": "number",
+              "minimum": 1,
+              "maximum": 20000000
+            },
+            "LatitudeResolution": {
+              "description": "The Latitudes (Rows) associated with the Grid Resolution.",
+              "type": "number",
+              "minimum": 1,
+              "maximum": 20000000
+            }
+          },
+          "required": [
+            "Unit",
+            "LongitudeResolution",
+            "LatitudeResolution"
+          ]
+        },
+        "Distortion": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Description": {
+              "description": "A brief description of the grid distortion.",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            },
+            "Percent": {
+              "description": "The percentage amount of the distortion.",
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          }
+        },
+        "Uniform-Grid": {
+          "description": "a responsive layout control grid which arranges items in a evenly-spaced set of rows or columns to fill the total available display space.",
+          "type": "boolean",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "Bounded-Grid": {
+          "description": "True, if Bounded-Grid, is a rectangular grid with a finite number of rows and columns. False, if an Unbounded-Grid, is a rectangular grid with an unbounded (or infinite)) number of rows and columns.",
+          "type": "boolean",
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "SpatialExtent": {
+          "description": "This class contains elements which describe the spatial extent of a granule.",
+          "$ref": "#/definitions/SpatialExtentType"
+        },
+        "ScaleExtent": {
+          "description": "Specifies the scale extent coverage of the grid.",
+          "$ref": "#/definitions/ScaleExtentType"
+        }
+      },
+
+      "allOf": [
+        {"$ref": "#/definitions/ResolutionScaleKMCondition"},
+        {"$ref": "#/definitions/ResolutionScaleMCondition"},
+        {"$ref": "#/definitions/ResolutionScaleDegreeCondition"}
+      ],
+      "anyOf": [
+        {
+          "required": [
+            "CoordinateReferenceSystemID",
+            "DimensionSize",
+            "Resolution",
+            "SpatialExtent"
+          ]
+        },
+        {
+          "required": [
+            "CoordinateReferenceSystemID",
+            "DimensionSize",
+            "Resolution",
+            "ScaleExtent"
+          ]
+        }
+      ]
+    },
+
+    "OrganizationType": {
+      "type": "object",
+      "additionalItems": false,
+      "properties": {
+        "ShortName": {
+          "description": "The unique name of the organization.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "maxItems": 1
+        },
+        "LongName": {
+          "description": "This is the long name of the organization.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024,
+          "maxItems": 1
+        },
+        "RelatedURLs": {
+          "description": "This is the URL related to the organization.",
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+          "$ref": "#/definitions/RelatedURLType"
+          }
+        },
+        "ContactMechanisms": {
+          "description": "Mechanisms of contacting.",
+          "additionalItems": false,
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "properties": {
+              "Type": {
+                "type": "string",
+                "enum": [
+                  "Direct Line",
+                  "Email",
+                  "Facebook",
+                  "Fax",
+                  "Mobile",
+                  "Modem",
+                  "Primary",
+                  "TDD/TTY Phone",
+                  "Telephone",
+                  "Twitter",
+                  "U.S. toll free",
+                  "Other"
+                ]
+              },
+              "Value": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              }
+            },
+            "required": [
+              "Type",
+              "Value"
+            ]
+          }
+        }
+      },
+      "required": [
+        "ShortName"
+      ]
+    },
+    "SpatialExtentType": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "0_360_DegreeProjection": {
+          "description": "Describes whether the grid's bounding box geographic coverage is a -180 longitude by 180 longitude or 0 longitude by 360 longitude Degree Projection.",
+          "type": "boolean"
+        },
+        "WestBoundingCoordinate": {
+          "description": "The west bounding coordinate of the bounding box.",
+          "type": "number",
+          "$ref": "#/definitions/CoordinateCondition"
+        },
+        "SouthBoundingCoordinate": {
+          "description": "The south bounding coordinate of the bounding box.",
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "EastBoundingCoordinate": {
+          "description": "The east bounding coordinate of the bounding box.",
+          "type": "number",
+          "$ref": "#/definitions/CoordinateCondition"
+        },
+        "NorthBoundingCoordinate": {
+          "description": "The north bounding coordinate of the bounding box.",
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        }
+      },
+
+      "required": [
+        "WestBoundingCoordinate",
+        "SouthBoundingCoordinate",
+        "EastBoundingCoordinate",
+        "NorthBoundingCoordinate"
+      ]
+    },
+    
+    "ScaleExtentType": {
+      "additionalProperties": false,
+      "type": "object",
+      "properties": {
+        "ScaleDimensions": {
+        	"description": "characterizes the grid's X and Y Dimensions.",
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+                "type": "object",
+                "properties": {
+                      "Unit": {
+                        "description": "The measurement units used for the values.",
+                        "type": "string",
+                        "$ref": "#/definitions/UnitEnum"
+                      },  
+                      "0_360_DegreeProjection": {
+                        "description": "Describes whether the grid's bounding box geographic coverage is a -180 longitude by 180 longitude or 0 longitude by 360 longitude Degree Projection.",
+                        "type": "boolean"
+                      },
+                      "Y-Dimension": {
+                        "description": "The latitude values of a spatially referenced point.",
+                        "type": "number"
+                      },
+                      "X-Dimension": {
+                        "description": "The Longitude values of a spatially referenced point.",
+                        "type": "number"}
+                      },
+        
+                    "allOf": [
+                          {"$ref": "#/definitions/ScaleDimensionKilometerMinMaxCondition"},
+                          {"$ref": "#/definitions/ScaleDimensionMeterMinMaxCondition"},
+                          {"$ref": "#/definitions/ScaleDimensionDegreeMinMaxTrueCondition"},
+                          {"$ref": "#/definitions/ScaleDimensionDegreeMinMaxFalseCondition"}
+                      ],
+                      
+                    "required": [
+                      "Unit",
+                      "Y-Dimension",
+                      "X-Dimension"
+                    ]
+                }
+            }
+        }
+    },
+    
+    "RelatedURLType": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "URL": {
+          "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the collection landing page, the URL of the download site for the collection).",
+          "type": "string",
+          "format": "uri",
+          "examples": ["https://nsidc.org/data/polar-stereo/ps_grids.html"],
+          "minLength": 1,
+          "maxLength": 2048,
+          "maxItems": 1
+        },
+        "Description": {
+          "description": "Description of the web page at the URL.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "URLContentType": {
+          "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'DISTRIBUTION URL'). The valid values are contained in the KMS System: https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Type": {
+          "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'GET DATA', 'GET SERVICE', 'GET VISUALIZATION'). The valid values are contained in the KMS System: https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Subtype": {
+          "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'WEB COVERAGE SERVICES', 'WEB FEATURE SERVICES', 'WEB MAPPING SERVICES', 'SSW', 'ESI'). The valid values are contained in the KMS System: https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Format": {
+          "description": "Describes the organization of the data content so that users and applications know how to read and use the content. The controlled vocabulary for formats is maintained in the Keyword Management System (KMS): https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/DataFormat?gtm_scheme=DataFormat",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "MimeType": {
+          "description": "The multi-purpose internet mail extensions indicates the nature and format of the data that is accessed through the URL. The controlled vocabulary for MimeTypes is maintained in the Keyword Management System (KMS): https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/MimeType?gtm_scheme=MimeType",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": [
+        "URL",
+        "URLContentType",
+        "Type"
+      ]
+    },
+    "AdditionalAttributeType": {
+      "type": "object",
+      "additionalItems": false,
+      "properties": {
+        "Name": {
+          "description": "The name (1 word description) of the additional attribute.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Description": {
+          "description": "Free-text description of the additional attribute.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "Value": {
+          "description": "Value of the additional attribute if it is the same for all entries. If the value of the additional attribute may differ by entries in the grid, leave this value blank.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "DataType": {
+          "description": "Data type of the values of the additional attribute.",
+          "type": "string",
+          "enum": [
+            "STRING",
+            "FLOAT",
+            "INT",
+            "BOOLEAN",
+            "DATE",
+            "TIME",
+            "DATETIME",
+            "DATE_STRING",
+            "TIME_STRING",
+            "DATETIME_STRING"
+          ]
+        },
+        "MesurementResolution": {
+          "description": "The smallest unit increment to which the additional attribute value is measured.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ParameterRangeBegin": {
+          "description": "The minimum value of the additional attribute over the whole data.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ParameterRangeEnd": {
+          "description": "The maximum value of the additional attribute over the whole data.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ParameterUnitsOfMeasure": {
+          "description": "The standard unit of measurement for the additional attribute. For example, meters, hertz.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ParameterValueAccuracy": {
+          "description": "An estimate of the accuracy of the values of the additional attribute. For example, measurement error or precision-measurement error or precision of a data product parameter. This can be specified in percent or the unit with which the parameter is measured.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "ValueAccuracyExplanation": {
+          "description": "Describes the method used for determining the parameter value accuracy that is given for this additional attribute.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "Group": {
+          "description": "Identifies a namespace for the additional attribute name.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "UpdateDate": {
+          "description": "The date this additional attribute information was updated.",
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "Name",
+        "DataType",
+        "Description"
+      ],
+      "dependentRequired": {
+        "ParameterRangeBegin": [
+          "ParameterRangeEnd"
+        ],
+        "ParameterRangeEnd": [
+          "ParameterRangeBegin"
+        ]
+      }
+    },
+    
+    "CoordinateCondition": {
+        "$comment": "Checks if the the 0_360_DegreeProjection element is set to true then sets the minimum and maximum values.",
+        "if": {"properties": {"0_360_DegreeProjection": {"const": true}}},
+        "then": {"properties": {"WestBoundingCoordinate": {"minimum": 0, "maximum": 360},
+                "EastBoundingCoordinate": {"minimum": 0, "maximum": 360}}},
+        "else": {"properties": {"WestBoundingCoordinate": {"minimum": -180, "maximum": 180},
+                "EastBoundingCoordinate": {"minimum": -180, "maximum": 180}}}
+    },
+    
+    "UnitEnum": {
+       "description": "Units of measurement for distances.",
+       "type": "string",
+       "enum": ["Kilometer", "Meter", "Degree"]
+    },
+    
+    "ScaleDimensionKilometerMinMaxCondition": {
+        "$comment": "Checks if the ScaleDimensions Unit element value is Kilometer then sets the minimum and maximum values",
+    	"if": {"properties": {"Unit": {"const": "Kilometer"}}},
+        "then": {"properties": {"Y-Dimension": {"minimum": 0, "maximum": 40007.863},
+                "X-Dimension": {"minimum": 0, "maximum": 40075.017}}}
+    },
+          
+    "ScaleDimensionMeterMinMaxCondition": {
+        "$comment": "Checks if the ScaleDimensions Unit element value is Meter then sets the minimum and maximum values",
+    	"if": {"properties": {"Unit": {"const": "Meter"}}},
+        "then": {"properties": {"Y-Dimension": {"minimum": 0, "maximum": 40007863},
+                "X-Dimension": {"minimum": 0, "maximum": 40075017}}}
+    },
+          
+    "ScaleDimensionDegreeMinMaxTrueCondition": {
+    	"$comment": "Checks if the ScaleDimensions Unit element value is Degree and if the 0_360_DegreeProjection element is set to true then sets the minimum and maximum values.",
+    	"if": {"properties": {"Unit": {"const": "Degree"},
+              "0_360_DegreeProjection": {"const": true}}},
+        "then": {"properties": {"Y-Dimension": {"minimum": -90, "maximum": 90},
+                "X-Dimension": {"minimum": 0, "maximum": 360}}}
+    },
+          
+    "ScaleDimensionDegreeMinMaxFalseCondition": {
+        "$comment": "Checks if the ScaleDimensions Unit element value is Degree and if the 0_360_DegreeProjection element is set to false then sets the minimum and maximum values.",
+    	"if": {"properties": {"Unit": {"const": "Degree"},
+                "0_360_DegreeProjection": {"const": false}}},
+        "then": {"properties": {"Y-Dimension": {"minimum": -90, "maximum": 90},
+                "X-Dimension": {"minimum": -180, "maximum": 180}}}
+    },
+          
+    "ResolutionScaleKMCondition": {
+        "$comment": "Checks if both Resolution and ScaleDimensions unit elements have the value of Kilometer. If the unit values are diferent within the metadata then the metadata will fail validation against the schema.",
+        "if": {"properties": {"Resolution": {"properties": {"Unit": {"const": "Kilometer"}}}}},
+        "then": {"properties": {"ScaleExtent": {"properties": {"ScaleDimensions": {
+                "items": {"properties": {"Unit": {"const": "Kilometer"}}}}}}}}
+    },
+    
+    "ResolutionScaleMCondition": {
+        "$comment": "Checks if both Resolution and ScaleDimensions unit elements have the value of Meter. If the unit values are diferent within the metadata then the metadata will fail validation against the schema.",
+        "if": {"properties": {"Resolution": {"properties": {"Unit": {"const": "Meter"}}}}},
+        "then": {"properties": {"ScaleExtent": {"properties": {"ScaleDimensions": {
+        		"items": {"properties": {"Unit": {"const": "Meter"}}}}}}}}
+    },
+
+    "ResolutionScaleDegreeCondition": {
+        "$comment": "Checks if both Resolution and ScaleDimensions unit elements have the value of Degree. If the unit values are diferent within the metadata then the metadata will fail validation against the schema.",
+        "if": {"properties": {"Resolution": {"properties": {"Unit": {"const": "Degree"}}}}},
+        "then": {"properties": {"ScaleExtent": {"properties": {"ScaleDimensions": {
+                "items": {"properties": {"Unit": {"const": "Degree"}}}}}}}}}
+    }
+}
