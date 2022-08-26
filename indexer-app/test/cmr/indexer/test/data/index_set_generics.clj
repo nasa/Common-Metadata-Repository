@@ -1,8 +1,8 @@
 (ns cmr.indexer.test.data.index-set-generics
   (:require
    [clojure.test :refer :all]
-   [cmr.indexer.data.index-set-generics :as gen]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
+   [cmr.indexer.data.index-set-generics :as gen]))
+   ;[cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 (def index-definition-def 
   {:MetadataSpecification 
@@ -39,13 +39,14 @@
           actual (gen/get-settings index-def-2)]
       (is (= {:index
               {:number_of_shards 5, :number_of_replicas 1, :refresh_interval "1s"}}
-             (gen/get-settings index-def-2)))))
+             (gen/get-settings index-definition-def))))))
 
-  (testing "Test that setting the environment variable takes precedence"
-    (dev-sys-util/eval-in-dev-sys `(gen/set-elastic-generic-index-num-shards! 3))
-    (is (= 3 (get-in (gen/get-settings index-definition-def) [:index :number_of_shards])))
-    ;; Saving the original value doesn't work, because you can't use the variable to set it back. So the default is being used.
-    (dev-sys-util/eval-in-dev-sys `(gen/set-elastic-generic-index-num-shards! gen/default-generic-index-num-shards))))
+;; TODO: Generic work: move this test to a system-int test.
+;  (testing "Test that setting the environment variable takes precedence"
+;    (dev-sys-util/eval-in-dev-sys `(gen/set-elastic-generic-index-num-shards! 3))
+;    (is (= 3 (get-in (gen/get-settings index-definition-def) [:index :number_of_shards])))
+;    ;; Saving the original value doesn't work, because you can't use the variable to set it back. So the default is being used.
+;    (dev-sys-util/eval-in-dev-sys `(gen/set-elastic-generic-index-num-shards! gen/default-generic-index-num-shards))))
 
 (deftest read-schema-definition-test
   ;; Testing the read schema functionality.
