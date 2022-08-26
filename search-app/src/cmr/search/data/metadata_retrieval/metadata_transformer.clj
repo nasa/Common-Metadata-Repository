@@ -5,6 +5,7 @@
    [clojure.java.io :as io]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.cache :as cache]
+   [cmr.common.concepts :as cs]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -196,11 +197,12 @@
   (if (= :native target-format)
     concepts
     (u/fast-map (fn [concept]
-                  (if (:deleted concept)
-                    ;; A deleted concept needs no transformation.
+                  (if (or (:deleted concept)
+                          (cs/generic-concept? (:concept-type concept)))
+                    ;; A deleted or generic concept needs no transformation.
                     (assoc concept
                            :format (mt/format->mime-type target-format))
-                    (assoc concept
-                           :format (mt/format->mime-type target-format)
+                    (assoc concept 
+                           :format (mt/format->mime-type target-format) 
                            :metadata (transform context concept target-format))))
                 concepts)))

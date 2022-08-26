@@ -30,23 +30,24 @@
   [{:keys [id concept_id native_id provider_id document_name schema format
            mime_type metadata revision_id revision_date created_at deleted
            user_id transaction_id]} db]
-  (cutil/remove-nil-keys {:id id
-                          :concept-id concept_id
-                          :native-id native_id
-                          :provider-id provider_id
-                          :document-name document_name
-                          :schema schema
-                          :format format ;; concepts convert this to mimetype in the get, but we already have mimetype
-                          :mime-type mime_type
-                          :revision-id (when revision_id (int revision_id))
-                          :revision-date (when revision_date
-                                           (oracle/oracle-timestamp->str-time db revision_date))
-                          :created-at (when created_at
-                                        (oracle/oracle-timestamp->str-time db created_at))
-                          :deleted (when deleted (not= (int deleted) 0))
-                          :user-id user_id
-                          :transaction-id transaction_id
-                          :metadata (when metadata (json/parse-string (cutil/gzip-blob->string metadata) true))}))
+  (cutil/remove-nils-empty-maps-seqs
+   (cutil/remove-nil-keys {:id id
+                           :concept-id concept_id
+                           :native-id native_id
+                           :provider-id provider_id
+                           :document-name document_name
+                           :schema schema
+                           :format format ;; concepts convert this to mimetype in the get, but we already have mimetype
+                           :mime-type mime_type
+                           :revision-id (when revision_id (int revision_id))
+                           :revision-date (when revision_date
+                                            (oracle/oracle-timestamp->str-time db revision_date))
+                           :created-at (when created_at
+                                         (oracle/oracle-timestamp->str-time db created_at))
+                           :deleted (when deleted (not= (int deleted) 0))
+                           :user-id user_id
+                           :transaction-id transaction_id
+                           :metadata (when metadata (json/parse-string (cutil/gzip-blob->string metadata) true))})))
 
 (defn- find-record
   "Look up latest revision of record in the db table and return a map of the row"
