@@ -252,13 +252,6 @@
 
 ;; TODO: Generic work - should this change to be more dynamic, gen type in front?
 
-(def generic-document-routes
-  (context "/generics/provider/:provider-id/:native-id" [provider-id native-id]
-    (POST "/" request (gen-doc/create-generic-document request))
-    (GET "/" request (gen-doc/read-generic-document request))
-    (PUT "/" request (gen-doc/update-generic-document request))
-    (DELETE "/" request (gen-doc/delete-generic-document request))))
-
 (def generate-generic-concept-types-reg-ex
   "This function creates a regular expresion for all of the generic concepts.  This is used to create the api endpoints.
    An example string that is return looks like: \"dataqualitysummary|orderoption|serviceoption\" "
@@ -267,7 +260,7 @@
               (clojure.string/replace #" " "|"))]
     rx))
 
-(def generic-document-routes-auxiliary
+(def generic-document-routes
  (routes
     (api-core/set-default-error-format
      :xml
@@ -291,7 +284,6 @@
 
       ;; add routes to create, update, read, and delete generic concepts
       generic-document-routes
-      generic-document-routes-auxiliary
 
       ;; db migration route
       db-migration-routes
