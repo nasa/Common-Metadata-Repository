@@ -161,7 +161,7 @@
   (testing "Test that empty data comes back when empty data is sent"
     (let [db (memory/create-db)
           input {}
-          expected {}
+          expected nil
           actual (gdocs/dbresult->genericdoc input db)]
       (is (= expected actual) "Could not convert results from empty map")))
 
