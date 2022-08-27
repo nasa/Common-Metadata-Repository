@@ -4,14 +4,12 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.test :refer :all]
+   [cmr.common.config :as common-config]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.search.services.content-service :as content-service]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as url]))
 
 (use-fixtures :each (ingest/reset-fixture
@@ -261,10 +259,16 @@
         (url/indexer-read-caches-url)
         "indexer-index-set-cache"
         "concept-mapping-types"
-        {:collection "properties"
-         :granule "properties"
-         :tag "properties"
-         :variable "properties"
-         :service "properties"
-         :tool "properties"
-         :subscription "properties"}))))
+        (merge
+         {:collection "properties"
+          :granule "properties"
+          :tag "properties"
+          :variable "properties"
+          :service "properties"
+          :tool "properties"
+          :subscription "properties"}
+         (zipmap 
+          (reduce (fn [data, item] (conj data (keyword (str "generic-" (name item)))))
+                  []
+                  (keys (common-config/approved-pipeline-documents)))
+          (repeat "properties")))))))
