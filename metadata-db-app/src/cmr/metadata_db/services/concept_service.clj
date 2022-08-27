@@ -49,6 +49,7 @@
    [cmr.metadata-db.data.oracle.concepts.variable-association]
    [cmr.metadata-db.data.oracle.concepts.variable]
    [cmr.metadata-db.data.oracle.concepts]
+   [cmr.metadata-db.data.oracle.generic-documents]
    [cmr.metadata-db.data.oracle.providers]
    [cmr.metadata-db.data.oracle.search]))
 
