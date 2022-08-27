@@ -33,10 +33,10 @@
 (defn generic-request
   "This function will make a request to one of the generic URLs using the provided
    provider and native id"
-  ([provider-id native-id] (generic-request provider-id native-id nil :get))
-  ([provider-id native-id document method]
+  ([concept-type provider-id native-id] (generic-request concept-type provider-id native-id nil :get))
+  ([concept-type provider-id native-id document method]
   (-> {:method method
-       :url (url-helper/ingest-generic-crud-url provider-id native-id)
+       :url (url-helper/ingest-generic-crud-url concept-type provider-id native-id)
        :connection-manager (system/conn-mgr)
        :body (when document (json/generate-string document))
        :throw-exceptions false
@@ -54,58 +54,54 @@
 
   (testing
    "Test that approved-generic? approves configured Generic document types"
-    (let [original-setting (config/approved-pipeline-documents)]
-      (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grids ["1.0.0"]}))
-
-      (is (true? (gcfg/approved-generic? :grids "1.0.0")) "Grids should be an approved format")
-      (is (not (gcfg/approved-generic? :grid "0.0.1")) "CMR is using default configuration")
-      (is (not (gcfg/approved-generic? :fake "a.b.c")) "A fake type was incorectly approved")
-
-      (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! `original-setting))))
+    (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grids ["1.0.0"]}))
+    
+    (is (true? (gcfg/approved-generic? :grids "1.0.0")) "Grids should be an approved format")
+    (is (not (gcfg/approved-generic? :grid "0.0.1")) "CMR is using default configuration") 
+    (is (not (gcfg/approved-generic? :fake "a.b.c")) "A fake type was incorectly approved")
+    
+    (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! config/default-approved-pipeline-documents)))
 
   (testing
-   "Verify that a document can be validated as approved schema."
-    (let [original-setting (config/approved-pipeline-documents)]
-      (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grid ["0.0.1"]}))
-
-      (let [expected nil
-            actual (gdocs/validate-json-against-schema :grid "0.0.1" (json/generate-string grid-good))]
-        (is (= expected actual) "Grid 0.0.1 could not be found"))
-
-      (let [bad-json (-> grid-good
-                         (dissoc :MetadataSpecification) ;; remove a required tag
-                         (json/generate-string))]
-        (is (thrown-with-msg?
-             clojure.lang.ExceptionInfo
-             #"While validating the record against the \[:grid\] schema with version \[0.0.1\] the following error occurred: \[#: required key \[MetadataSpecification\] not found\]. The record cannot be ingested."
-             (gdocs/validate-document-against-schema :grid "0.0.1" bad-json))
-            "Was not able to generate a schema exception"))
-      (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! `original-setting)))))
+   "Verify that a document can be validated as approved schema." 
+    (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grid ["0.0.1"]}))
+    
+    (let [expected nil 
+          actual (gdocs/validate-json-against-schema :grid "0.0.1" (json/generate-string grid-good))] 
+      (is (= expected actual) "Grid 0.0.1 could not be found"))
+    
+    (let [bad-json (-> grid-good 
+                       (dissoc :MetadataSpecification) ;; remove a required tag 
+                       (json/generate-string))] 
+      (is (thrown-with-msg? 
+           clojure.lang.ExceptionInfo
+           #"While validating the record against the \[:grid\] schema with version \[0.0.1\] the following error occurred: \[#: required key \[MetadataSpecification\] not found\]. The record cannot be ingested."
+           (gdocs/validate-document-against-schema :grid "0.0.1" bad-json)) 
+          "Was not able to generate a schema exception")) 
+    (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! config/default-approved-pipeline-documents))))
 
 (deftest test-validate-concept-subtypes
   "Test that concept prefixes can be looked up from either a configuration file or be assumed"
 
   (testing
    "Test that concept prefixes can be looked up from either a configuration file or be assumed"
-    (let [original-setting (config/approved-pipeline-documents)]
-      (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grids ["1.0.0"]}))
+    (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grids ["1.0.0"]}))
 
-      (let [expected1 "GRD"
-            actual1 (gdocs/get-sub-concept-type-concept-id-prefix :grid "0.0.1")
-            expected2 "X"
-            actual2 (gdocs/get-sub-concept-type-concept-id-prefix :fake "A.B.C")]
-        (is (= expected1 actual1) "was not able to find GRD")
-        (is (= expected2 actual2) "was not able to default to X"))
+    (let [expected1 "GRD"
+          actual1 (gdocs/get-sub-concept-type-concept-id-prefix :grid "0.0.1")
+          expected2 "X"
+          actual2 (gdocs/get-sub-concept-type-concept-id-prefix :fake "A.B.C")]
+      (is (= expected1 actual1) "was not able to find GRD")
+      (is (= expected2 actual2) "was not able to default to X"))
 
-      (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! `original-setting)))))
+    (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! config/default-approved-pipeline-documents))))
 
 (deftest test-generic-CRUD
   "Test that a Generic can be walked through all the CRUD actions using the ingest
    interface. Use the same native-id for all these steps"
 
-  (let [original-setting (config/approved-pipeline-documents)
-        native-id (format "Generic-Test-%s" (UUID/randomUUID))
-        generic-requester (partial generic-request "PROV1" native-id)
+  (let [native-id (format "Generic-Test-%s" (UUID/randomUUID))
+        generic-requester (partial generic-request "grid" "PROV1" native-id)
         good-generic-requester (partial generic-requester grid-good)]
 
     (testing "send a good document with config set that does not include grid"
@@ -124,7 +120,7 @@
                              :document-name "Grid-A7-v1"
                              :provider-id "PROV1"
                              :schema "grid"
-                             :format "grid"
+                             :format "application/vnd.nasa.cmr.umm+json;version=0.0.1"
                              :mime-type "application/grid;version=0.0.1"
                              :revision-id 1
                              :user-id "ECHO_SYS"}
@@ -193,7 +189,9 @@
     (testing "DELETE The document from above"
       (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grid ["0.0.1"]}))
       (let [result (good-generic-requester :delete)
-            body (:body result)]
-        (is (= 501 (:status result)))
-        (is (= "" body))))
-    (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! `original-setting))))
+            body (:body result)
+            expected-pattern (re-pattern "\\{\"concept-id\":\"GRD[0-9].*-PROV1\",\"revision-id\":3.*?")]
+        (def body body)
+        (is (= 200 (:status result)))
+        (is (some? (re-matches expected-pattern body)))))
+    (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! config/default-approved-pipeline-documents))))
