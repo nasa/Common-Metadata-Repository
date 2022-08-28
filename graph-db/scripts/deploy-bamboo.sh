@@ -15,7 +15,7 @@ cat <<EOF > Dockerfile
 FROM node:16
 COPY . /build
 WORKDIR /build
-RUN npm ci --production
+RUN npm install
 EOF
 
 dockerTag=cmr-graph-db-$bamboo_ENVIRONMENT
@@ -37,4 +37,4 @@ dockerRun() {
 stageOpts="--stage $bamboo_ENVIRONMENT"
 
 echo 'Deploying CMR GraphDB...'
-dockerRun npx serverless deploy $stageOpts
+dockerRun npx serverless deploy $stageOpts --force

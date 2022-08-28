@@ -287,3 +287,8 @@
 (defmethod application-public-root-url :default
   [context]
   (format-public-root-url (get-in context [:system :public-conf])))
+
+(defconfig status-app-url
+  "The URL to be used for the status app in tophat"
+  {:default "https://status.earthdata.nasa.gov/api/v1/notifications"
+   :type String})

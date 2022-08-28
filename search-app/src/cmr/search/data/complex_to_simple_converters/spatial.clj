@@ -14,14 +14,13 @@
    [cmr.spatial.serialize :as srl]))
 
 (defn- shape->script-cond
-  [shape operator]
+  [shape]
   (let [ords-info-map (-> (srl/shapes->ords-info-map [shape])
                           (update-in [:ords-info] #(string/join "," %))
-                          (update-in [:ords] #(string/join "," %)))
-        params (assoc ords-info-map :operator operator)]
+                          (update-in [:ords] #(string/join "," %)))]
     (qm/map->ScriptCondition {:source "spatial"
                               :lang "cmr_spatial"
-                              :params params})))
+                              :params ords-info-map})))
 
 (defn- br->cond
   [prefix {:keys [west north east south] :as br}]
@@ -190,18 +189,6 @@
 
              (keys crossings-map))))))
 
-(defn- extract-operator
-  "If provided, extracts the spatial option operator from the query."
-  [params]
-  (let [operator (get-in params [:options :spatial] :any)]
-    (if (map? operator)
-        (if (= "true" ((first (keys operator)) operator))
-          (first (keys operator))
-          :any)
-        :any)))
-
-
-
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.SpatialCondition
   (c2s/reduce-query-condition
@@ -211,12 +198,9 @@
                          (orbital-condition context shape))
           mbr-cond (br->cond "mbr" (srl/shape->mbr shape))
           lr-cond (br->cond "lr" (srl/shape->lr shape))
-          operator (extract-operator (:query-params context))
-          spatial-script (shape->script-cond shape operator)
+          spatial-script (shape->script-cond shape)
         ; check the MBR first before doing the more expensive check
-          spatial-cond (if (= operator :any)
-                         (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])
-                         spatial-script)]
+          spatial-cond (gc/and-conds [mbr-cond (gc/or-conds [lr-cond spatial-script])])]
       (if orbital-cond
         (gc/or-conds [spatial-cond orbital-cond])
         spatial-cond))))
