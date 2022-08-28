@@ -55,12 +55,14 @@
   (testing
    "Test that approved-generic? approves configured Generic document types"
     (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grids ["1.0.0"]}))
+    (println (config/approved-pipeline-documents))
     
     (is (true? (gcfg/approved-generic? :grids "1.0.0")) "Grids should be an approved format")
     (is (not (gcfg/approved-generic? :grid "0.0.1")) "CMR is using default configuration") 
     (is (not (gcfg/approved-generic? :fake "a.b.c")) "A fake type was incorectly approved")
     
-    (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! config/default-approved-pipeline-documents)))
+    (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! config/default-approved-pipeline-documents))
+    (println (config/approved-pipeline-documents)))
 
   (testing
    "Verify that a document can be validated as approved schema." 
