@@ -90,7 +90,7 @@
            (= :service (cs/concept-id->type concept-id))
            (= :tool (cs/concept-id->type concept-id))
            (= :subscription (cs/concept-id->type concept-id))
-           (cs/generic-concept? concept-id))
+           (cs/generic-concept? (cs/concept-id->type concept-id)))
        all-revisions-index?)
     (str concept-id "," revision-id)
     concept-id))
