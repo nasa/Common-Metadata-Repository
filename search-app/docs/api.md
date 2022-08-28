@@ -4,7 +4,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
 
 ### ECHO-Token Deprecation Notice
 
-CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens and send them with the Authorization header. This document contains many mentions of ECHO-Tokens, which will soon be out of date. Instructions on how to generate an EDL token are [here](https://wiki.earthdata.nasa.gov/display/EL/How+to+Generate+a+User+Token)
+CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens and send them with the Authorization header. This document contains many mentions of ECHO-Tokens, which will soon be out of date. Instructions on how to generate an EDL token are [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token)
 
 ### Table of Contents
 
@@ -224,7 +224,7 @@ The Maximum URL Length supported by CMR is indirectly controlled by the Request 
 
 #### <a name="cors-header-support"></a> CORS Header support
 
-The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Echo-Token, Authorization, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id and CMR-Search-After. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Search-After, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count and CMR-Shapefile-Simplified-Point-Count.
+The CORS headers are supported on search endpoints. Check [CORS Documentation](https://developer.mozilla.org/en-US/docs/Web/HTTP/Access_control_CORS) for an explanation of CORS headers. Custom CORS request headers supported are Authorization, Client-Id, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id and CMR-Search-After. Custom response headers supported are CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Search-After, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count and CMR-Shapefile-Simplified-Point-Count.
 
 #### <a name="query-parameters"></a> Query Parameters
 
@@ -234,7 +234,7 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
  * `scroll` - A boolean flag (true/false) that allows all results to be retrieved efficiently. `page_size` is supported with `scroll` while `page_num` and `offset` are not. If `scroll` is `true` then the first call of a scroll session sets the page size; `page_size` is ignored on subsequent calls.
  * `sort_key` - Indicates one or more fields to sort on. Described below
  * `pretty` - return formatted results if set to true
- * `token` - specifies a user/guest token from ECHO to use to authenticate yourself. This can also be specified as the header Echo-Token
+ * `token` - specifies a user/guest token from EDL to use to authenticate yourself. This can also be specified as the header Authorization with a 'Bearer' prefix
  * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
 
 #### <a name="paging-details"></a> Paging Details
@@ -333,8 +333,7 @@ These are query parameters that control what extra data is included with collect
 
   * Accept - specifies the MimeType to return search results in. Default is "application/xml".
     * `curl -H "Accept: application/xml" -i "%CMR-ENDPOINT%/collections"`
-  * `Echo-Token` - specifies an ECHO token to use to authenticate yourself.
-  * `Authorization: Bearer` - specifies an EDL Authorization Bearer token to use to authenticate yourself.
+  * `Authorization: Bearer` - specifies an EDL bearer token to use to authenticate yourself.
     * `curl -H "Authorization: Bearer <access_token>" -i "%CMR-ENDPOINT%/collections"`
   * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
   * `X-Request-Id` - This provides standard X-Request-Id support to allow user to pass in some random ID which will be logged on the server side for debugging purpose.
@@ -2136,7 +2135,7 @@ or "polygon[]", for single or multiple polygon search. It supports the and/or op
 
     curl "%CMR-ENDPOINT%/collections?polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11&options[polygon][or]=true"
 
-Note: if you use "polygon" for multiple polygon search, it won't work because only the last polygon parameter will take effect.
+Note: if you use "polygon" for multiple polygon search, it won't work because only the last polyon parameter will take effect.
 
 ##### <a name="c-bounding-box"></a> Bounding Box
 
@@ -2268,7 +2267,7 @@ When `has_granules` is set to "true" or "false", results will be restricted to c
 
 #### <a name="c-has-granules-or-cwic"></a> Find collections with or without granules, or the collection with CWIC consortium.
 
-The `has_granules_or_cwic` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with CWIC consortium.  When false, will return any collections without granules.
+The `has_granules_or_cwic` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with CWIC consortium. When false, will return any collections without granules.
 
     curl "%CMR-ENDPOINT%/collections?has_granules_or_cwic=true"
 
@@ -2276,7 +2275,7 @@ The `has_granules_or_cwic` parameter can be set to "true" or "false". When true,
 
 #### <a name="c-has-granules-or-opensearch"></a> Find collections with or without granules, or the collection is tagged with the configured OpenSearch tag.
 
-The `has_granules_or_opensearch` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with any of the configured OpenSearch consortiums, which are CWIC,FEDEO,GEOSS,CEOS and EOSDIS.  When false, will return any collections without granules.
+The `has_granules_or_opensearch` parameter can be set to "true" or "false". When true, the results will be restricted to collections with granules or with any of the configured OpenSearch consortiums, which are CWIC,FEDEO,GEOSS,CEOS and EOSDIS. When false, will return any collections without granules.
 
     curl "%CMR-ENDPOINT%/collections?has_granules_or_opensearch=true"
 
@@ -2329,7 +2328,7 @@ One or more sort keys can be specified using the `sort_key[]` parameter. The ord
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
   * `has_granules_or_cwic` - Sorts collections by whether they have granules or CWIC consortium. Collections with granules or CWIC consortium are sorted before collections without granules or a CWIC consortium.
   * `usage_score` - Sorts collection by usage. The usage score comes from the EMS metrics, which are ingested into the CMR.
-  * `ongoing` - Sorts collection by fuzzy collection end-date in relation to ongoing-days configured. Any end-date after today, minus the configured ongoing-days (30 by default), is considered ongoing.  Any end-date before that is not ongoing.  
+  * `ongoing` - Sorts collection by fuzzy collection end-date in relation to ongoing-days configured. Any end-date after today, minus the configured ongoing-days (30 by default), is considered ongoing. Any end-date before that is not ongoing.  
 
 Examples of sorting by start_date in descending(Most recent data first) and ascending orders(Note: the `+` must be escaped with %2B):
 
@@ -2446,24 +2445,7 @@ For granule additional attributes search, the default is searching for the attri
 
 #### <a name="g-spatial"></a> Find granules by Spatial
 The parameters used for searching granules by spatial are the same as the spatial parameters used in collections searches. (See under "Find collections by Spatial" for more details.)
-
 Note: When querying a granule which has multiple types of spatial features in the granule metadata (i.e. a Polygon and a Bounding Box), the granule will be returned if the spatial query matches at least one of the spatial types on the given granule (i.e. matches the granule's Polygon OR Bounding Box).
-
-This may not always be the desired behavior if a granule has a bounding rectangle which is less precise than the polygons. For this, you may use the 'ignore_br' or 'every' keywords when doing spatial searches. These options can be applied to any type of spatial search (polygon, bounding box, circle, line, point).
-
-The 'ignore_br' option will ignore the bounding rectangles of the granule and look to match at least one other geometry (i.e. one or more of the polygons).
-
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon=10,10,30,10,30,20,10,20,10,10"&options[spatial][ignore_br]=true
-
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&bounding_box=-10,-5,10,5"&options[spatial][ignore_br]=true
-
-The 'every' option will look to match every geometry a granule has. So if it has multiple bounding rectangles and multiple polygons, the spatial search area will need to intersect every bounding rectangle and every polygon to return the granule.
-
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&circle=-87.629717,41.878112,1000"&options[spatial][every]=true
-
-    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&line=-0.37,-14.07,4.75,1.27,25.13,-15.51"&options[spatial][every]=true
-
-If no option is provided with the query, it will revert to the default behavior of matching any single geometry of the granule.
 
 ##### <a name="g-polygon"></a> Polygon
 Polygon points are provided in counter-clockwise order. The last point should match the first point to close the polygon. The values are listed comma separated in longitude latitude order, i.e. lon1, lat1, lon2, lat2, lon3, lat3, and so on.
@@ -2481,7 +2463,7 @@ ll match both the first polygon and the second polygon.
 
     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11&options[polygon][or]=true"
 
-Note: if you use "polygon" for multiple polygon search, it won't work because only the last polygon parameter will take effect.
+Note: if you use "polygon" for multiple polygon search, it won't work because only the last polyon parameter will take effect.
 
 ##### <a name="g-bounding-box"></a> Bounding Box
 
@@ -2755,7 +2737,7 @@ User can only search granules by exactly one cycle value when there are passes p
 
 Passes is part of the track information of the granule as specified in [UMM-G Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/granule). Track information is used to allow a user to search for granules whose spatial extent is based on an orbital cycle, pass, and tile mapping. Cycles and passes must be positive integers, tiles are in the format of an integer followed by L, R or F. e.g. 2L.
 
-User can search granules by pass and tiles in a nested object called passes. Multiple passes can be specified via different indexes to search granules.  There must be one and only one cycle parameter value present in the search params when searching granules with passes. Each `passes` parameter must have one and only one `pass` value. Pass and tiles within a `passes` parameter are ANDed together. Multiple passes are ORed together by default, but can be AND together through the AND options, i.e. `options[passes][AND]=true`. The following example searches for granules with orbit track info that has cycle 1, tiles cover 1L or 2F within pass 1, or 3R within pass 2.
+User can search granules by pass and tiles in a nested object called passes. Multiple passes can be specified via different indexes to search granules. There must be one and only one cycle parameter value present in the search params when searching granules with passes. Each `passes` parameter must have one and only one `pass` value. Pass and tiles within a `passes` parameter are ANDed together. Multiple passes are ORed together by default, but can be AND together through the AND options, i.e. `options[passes][AND]=true`. The following example searches for granules with orbit track info that has cycle 1, tiles cover 1L or 2F within pass 1, or 3R within pass 2.
 
     curl -g "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&cycle[]=1&passes[0][pass]=1&passes[0][tiles]=1L,2F&passes[1][pass]=2&passes[1][tiles]=3R"
 
@@ -3361,10 +3343,10 @@ Humanizers define the rules that are used by CMR to provide humanized values for
 
 #### <a name="updating-humanizers"></a> Updating Humanizers
 
-Humanizers can be updated with a JSON representation of the humanizer rules to `%CMR-ENDPOINT%/humanizers` along with a valid ECHO token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
+Humanizers can be updated with a JSON representation of the humanizer rules to `%CMR-ENDPOINT%/humanizers` along with a valid EDL bearer token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
 
 ```
-curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/humanizers -d \
+curl -XPUT -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/humanizers -d \
 '[{"type": "trim_whitespace", "field": "platform", "order": -100},
   {"type": "alias", "field": "platform", "source_value": "AM-1", "replacement_value": "Terra", "reportable": true, "order": 0}]'
 
@@ -3611,10 +3593,10 @@ Access to tags is granted through the TAG_GROUP system object identity. Users ca
 
 #### <a name="creating-a-tag"></a> Creating a Tag
 
-Tags are created by POSTing a JSON representation of a tag to `%CMR-ENDPOINT%/tags` along with a valid ECHO token. The user id of the user associated with the token will be used as the originator id. The response will contain a concept id identifying the tag along with the tag revision id.
+Tags are created by POSTing a JSON representation of a tag to `%CMR-ENDPOINT%/tags` along with a valid EDL bearer token. The user id of the user associated with the token will be used as the originator id. The response will contain a concept id identifying the tag along with the tag revision id.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags -d \
 '{
   "tag_key": "org.ceos.wgiss.cwic.quality",
   "description": "This is a sample tag."
@@ -3650,7 +3632,7 @@ Content-Type: application/json;charset=ISO-8859-1
 Tags are updated by sending a PUT request with the JSON representation of a tag to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag. The same rules apply when updating a tag as when creating it but in addition tag key and originator id cannot be modified. The response will contain the concept id along with the tag revision id.
 
 ```
-curl -XPUT -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality -d \
+curl -XPUT -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality -d \
 '{
   "tag_key": "org.ceos.wgiss.cwic.quality",
   "description": "This is a sample tag for indicating some data is high quality."
@@ -3668,7 +3650,7 @@ Content-Length: 48
 Tags are deleted by sending a DELETE request to `%CMR-ENDPOINT%/tags/<tag-key>` where `tag-key` is the tag key of the tag. Deleting a tag creates a tombstone that marks the tag as deleted. The concept id of the tag and the revision id of the tombstone are returned from a delete request. Deleting a tag dissociates all collections with the tag.
 
 ```
-curl -XDELETE -i  -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality
+curl -XDELETE -i  -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.quality
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
@@ -3683,7 +3665,7 @@ Content-Length: 48
 A tag can be associated with collections through either a JSON query or a list of collection concept revisions. Tag association by query only supports tagging the latest revision of collections. Tag association by collections supports tagging any specified collection revisions. The tag association request normally returns status code 200 with a response that consists of a list of individual tag association responses, one for each tag association attempted to create. Each individual tag association response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag association succeeded or an `errors` field with detailed error message when the tag association failed. The `tagged_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tag association. The tag and the collections must exist before they can be associated together. Here is a sample tag association request and its response:
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.native_id/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/org.ceos.wgiss.cwic.native_id/associations -d \
 '[{"concept_id": "C1200000005-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition, 2016"},
   {"concept_id": "C1200000006-PROV1", "data": "Global Maps of Atmospheric Nitrogen Deposition"}]'
 
@@ -3711,7 +3693,7 @@ On occasions when tag association cannot be processed at all due to invalid inpu
 Tags can be associated with collections by POSTing a JSON query for collections to `%CMR-ENDPOINT%/tags/<tag-key>/associations/by_query` where `tag-key` is the tag key of the tag. All collections found will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and re-added it will maintain its tags.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
@@ -3747,7 +3729,7 @@ Content-Length: 168
 Tags can be associated with collections by POSTing a JSON array of collection concept-ids and optional revision ids to `%CMR-ENDPOINT%/tags/<tag-key>/associations` where `tag-key` is the tag key of the tag. User can also provide arbitrary JSON data which is optional during tag association. The max length of JSON data used for tag association is 32KB. All referenced collections will be _added_ to the current set of associated collections with a tag. Tag associations are maintained throughout the life of a collection. If a collection is deleted and re-added it will maintain its tags. If a tag is already associated with a collection without revision, it cannot be associated with a specific revision of that collection again, and vice versa. Tags cannot be associated on tombstoned collection revisions.
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
 '[{"concept_id": "C1200000005-PROV1", "revision_id": 2, "data": "APPROVED"},
   {"concept_id": "C1200000006-PROV1", "revision_id": 1, "data": "IN_REVIEW"},
   {"concept_id": "C1200000007-PROV1", "revision_id": 1, "data": "REVIEW_DISPUTED"}]'
@@ -3785,7 +3767,7 @@ Content-Length: 168
 A tag can be dissociated from collections through either a JSON query or a list of collection concept revisions similar to tag association requests. Tag dissociation by query only supports tag dissociation of the latest revision of collections. Tag dissociation by collections supports tag dissociation from any specified collection revisions. The tag dissociation response looks the same as tag association response. It normally returns status code 200 with a response of a list of individual tag dissociation responses, one for each tag association attempted to delete. Each tag dissociation response has a `tagged_item` field and either a `tag_association` field with the tag association concept id and revision id when the tag dissociation succeeded or an `errors` or `warnings` field with detailed message when the tag dissociation failed or inapplicable. The `tagged_item` field is the collection concept id and the optional revision id that is used to identify the collection during tag dissociation. Here is a sample tag dissociation request and its response:
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
@@ -3831,7 +3813,7 @@ Tags can be dissociated from collections by sending a DELETE request with a JSON
 
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/edsc.in_modaps/associations/by_query -d \
 '{
   "condition": {"provider": "PROV1"}
  }'
@@ -3868,7 +3850,7 @@ Tags can be dissociated from collections by sending a DELETE request with a JSON
 
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tags/gov.nasa.gcmd.review_status/associations -d \
 '[{"concept_id": "C1200000005-PROV1", "revision_id": 1},
   {"concept_id": "C1200000006-PROV1", "revision_id": 2}]'
 
@@ -4498,7 +4480,7 @@ Access to service and service association is granted through the provider via th
 A service identified by its concept id can be associated with collections through a list of collection concept revisions. The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create. Each individual service association response has an `associated_item` field and either a `service_association` field with the service association concept id and revision id when the service association succeeded or an `errors` field with detailed error message when the service association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during service association. Service association requires that user has update permission on INGEST_MANAGEMENT_ACL for the collection's provider. Here is a sample service association request and its response:
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
@@ -4543,7 +4525,7 @@ A service identified by its concept id can be dissociated from collections throu
 Service dissociation requires that user has update permission on INGEST_MANAGEMENT_ACL for either the collection's provider, or the service's provider.
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
@@ -4883,7 +4865,7 @@ Access to tool is granted through the provider via the INGEST_MANAGEMENT_ACL.
 A tool identified by its concept id can be associated with collections through a list of collection concept revisions. The tool association request normally returns status code 200 with a response that consists of a list of individual tool association responses, one for each tool association attempted to create. Each individual tool association response has an `associated_item` field and either a `tool_association` field with the tool association concept id and revision id when the tool association succeeded or an `errors` field with detailed error message when the tool association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during tool association. Tool association requires that user has update permission on INGEST_MANAGEMENT_ACL for the collection's provider. Here is a sample tool association request and its response:
 
 ```
-curl -XPOST -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
+curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"}]'
 
@@ -4929,7 +4911,7 @@ A tool identified by its concept id can be dissociated from collections through 
 Tool dissociation requires that user has update permission on INGEST_MANAGEMENT_ACL for either the collection's provider, or the service's provider.
 
 ```
-curl -XDELETE -i -H "Content-Type: application/json" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
+curl -XDELETE -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/tools/TL1200000008-PROV1/associations -d \
 '[{"concept_id": "C1200000005-PROV1"},
   {"concept_id": "C1200000006-PROV1"},
   {"concept_id": "C1200000007-PROV1"}]'
@@ -4984,7 +4966,7 @@ Subscription allows a user to register some query conditions in CMR and be notif
 - collection subscription for users to be notified when collections are created/updated.
 - granule subscription for users to be notified when granules are created/updated.
 
-Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription).  Subscriptions of type `granule` must supply a requisite CollectionConceptId, and subscriptions of type `collection` cannot have a CollectionConceptId field. There is a background job that processes the subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
+Subscription metadata is in JSON format and conforms to [UMM-Sub Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/subscription). Subscriptions of type `granule` must supply a requisite CollectionConceptId, and subscriptions of type `collection` cannot have a CollectionConceptId field. There is a background job that processes the subscriptions periodically (configurable), to see if there are any collections/granules that are created/updated since the last time the subscription has been processed and notify the subscription user with any matches.
 
 #### <a name="searching-for-subscriptions"></a> Searching for Subscriptions
 
@@ -5252,14 +5234,14 @@ Community usage metrics are metrics showing how many times a particular version 
 
 #### <a name="updating-community-usage-metrics"></a> Updating Community Usage Metrics
 
-Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid ECHO token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR. The comprehensive parameter accepts a boolean value, true will cause a lookup verification on each line, false will try and short cut the lookup by checking first against the current metrics humanizer, defaults to false.
+Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid EDL bearer token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR. The comprehensive parameter accepts a boolean value, true will cause a lookup verification on each line, false will try and short cut the lookup by checking first against the current metrics humanizer, defaults to false.
 
 Note that when sending the data, use the --data-binary option so that the linebreaks in the CSV data are not removed. See the example below.
 
 The response will contain a concept id and revision id identifying the set of community usage metrics.
 
 ```
-curl -XPUT -i -H "Content-Type: text/csv" -H "Echo-Token: XXXXX" %CMR-ENDPOINT%/community-usage-metrics --data-binary <csv-file-location>
+curl -XPUT -i -H "Content-Type: text/csv" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/community-usage-metrics --data-binary <csv-file-location>
 
 HTTP/1.1 200 OK
 Content-Type: application/json

@@ -157,10 +157,8 @@
                      "collections. To help optimize your search, you should limit your "
                      "query using conditions that identify one or more collections, "
                      "such as provider, provider_id, concept_id, collection_concept_id, "
-                     "short_name, version or entry_title. Visit the CMR Client Developer "
-                     "Forum at https://wiki.earthdata.nasa.gov/display/CMR/"
-                     "Granule+Queries+Now+Require+Collection+Identifiers for more "
-                     "information, and for any questions please contact "
+                     "short_name, version or entry_title. "
+                     "For any questions please contact "
                      (common-app-config/cmr-support-email) ".")]
     (when (reject-all-granule-query? headers)
       (svc-errors/throw-service-error :bad-request err-msg))))
