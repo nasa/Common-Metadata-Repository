@@ -23,7 +23,13 @@
    [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params]))
+   [ring.middleware.params :as params])
+  (:require
+   ;; These must be required here to make multimethod implementations available.
+   ;; XXX This is not a good pattern for large software systems; we need to
+   ;;     find a different way to accomplish this goal ... possibly use protocols
+   ;;     instead.
+   [cmr.metadata-db.data.oracle.concepts.generic-documents]))
 
 (def admin-api-routes
   "The administrative control routes for metadata db."
