@@ -47,7 +47,7 @@
      (let [concept (validate-and-prepare-variable-concept concept)
            {concept-format :format metadata :metadata} concept
            variable (spec/parse-metadata request-context :variable concept-format metadata)
-           warnings (v/umm-spec-validate-variable
+           _ (v/umm-spec-validate-variable
                variable request-context (not (ingest-config/validate-umm-var-keywords)))
            concept-with-user-id
             (util/remove-nil-keys
@@ -64,7 +64,7 @@
            concept-to-log (api-core/concept-with-revision-id concept-with-user-id save-variable-result)]
        ;; Log the successful ingest, with the metadata size in bytes.
        (api-core/log-concept-with-metadata-size concept-to-log request-context)
-       (api-core/generate-ingest-response headers (merge save-variable-result {:warnings warnings}))))))
+       (api-core/generate-ingest-response headers save-variable-result)))))
 
 (defn delete-variable
   "Deletes the variable with the given provider id and native id."
