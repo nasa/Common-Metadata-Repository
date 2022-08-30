@@ -72,7 +72,7 @@ const indexCmrCollections = async (event) => {
         }
       } catch (e) {
         console.log('Collection FAILED during indexing process there may be an issue with the collection verify that the collection for the given env: ', conceptId)
-        // console.log('Verify that the collection returns for both umm_json form and json form')
+        console.log('Error indexing collection, Execption was thrown: ', e)
       }
     }
     if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {

@@ -132,9 +132,10 @@ describe('indexCmrCollection handler', () => {
 
     const indexed = await indexCmrCollection(event)
 
-    expect(consoleMock).toBeCalledTimes(2)
+    expect(consoleMock).toBeCalledTimes(3)
     expect(consoleMock).toBeCalledWith('Could not complete request due to error: Error: Error Collection not found')
     expect(consoleMock).toBeCalledWith('Collection FAILED during indexing process there may be an issue with the collection verify that the collection for the given env: ', 'C123755555-TESTPROV')
+    expect(consoleMock).toBeCalledWith('Error indexing collection, Execption was thrown: ', new Error('Cannot read properties of null (reading \'data\')'))
 
     const { body } = indexed
 
