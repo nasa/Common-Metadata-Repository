@@ -7,6 +7,7 @@
    [cmr.access-control.test.util :as u]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.mock-echo.client.mock-urs-client :as mock-urs-client]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
@@ -46,12 +47,49 @@
   "Helper to get permissions with the current context and the specified username string or user type keyword and concept ids."
   [user & concept-ids]
   (json/parse-string
-    (ac/get-permissions
-      (u/conn-context)
-      (merge {:concept_id concept-ids}
-             (if (keyword? user)
-               {:user_type (name user)}
-               {:user_id user})))))
+   (ac/get-permissions
+    (u/conn-context)
+    (merge {:concept_id concept-ids}
+           (if (keyword? user)
+             {:user_type (name user)}
+             {:user_id user})))))
+
+(defn get-current-sids
+  "For given token, returns list of sids."
+  [token]
+  (json/parse-string
+   (ac/get-current-sids
+    (u/conn-context)
+    token)))
+
+(deftest toggle-cmr-group-sids
+  (mock-urs-client/create-users (u/conn-context) [{:username "edl-group-user1" 
+                                                   :password "edl-group-user1-pass"}])
+  (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
+  (let [cmr-group (:concept_id
+                   (u/ingest-group
+                    (transmit-config/echo-system-token)
+                    {:name "cmr-test-group"}
+                    ["edl-group-user1"]))
+        token (e/login (system/context) "edl-group-user1")]
+
+    ;; Explicitly setting configs for each test case for clarity.
+    (testing "Both EDL and CMR group sids are turned on"
+      (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
+      (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-cmr-group-sids! true))
+      (is (= (set (get-current-sids token)) (set ["registered" cmr-group "group-id-1" "group-id-2"]))))
+    (testing "Both EDL and CMR group sids are turned off"
+      (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! false))
+      (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-cmr-group-sids! false))
+      (is (= (get-current-sids token) ["registered"])))
+    (testing "EDL sids are on and CMR group sids are off"
+      (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
+      (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-cmr-group-sids! false))
+      (is (= (set (get-current-sids token)) (set ["registered" "group-id-1" "group-id-2"]))))
+    (testing "EDL sids are off and CMR group sids are on"
+      (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! false))
+      (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-cmr-group-sids! true))
+      (is (= (set (get-current-sids token)) (set ["registered" cmr-group]))))))
 
 (deftest collection-simple-catalog-item-identity-permission-check-test
   (let [save-prov1-collection #(u/save-collection {:provider-id "PROV1"
