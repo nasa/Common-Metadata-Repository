@@ -17,9 +17,7 @@
   (:import
    [java.util UUID]))
 
-;; TODO: Generic work: known issue, a provider needs to be created through a
-;; fixture, untill this is figured out, manually create a provider before testing
-(comment use-fixtures :each
+(use-fixtures :each
   (join-fixtures
    [(ingest/reset-fixture
      {"provguid1" "PROV1"})]))
@@ -52,34 +50,29 @@
 (deftest validate-json-test
   "Check the functions which validate generic metadata"
 
-;  (testing
-;   "Test that approved-generic? approves configured Generic document types"
-;    (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grids ["1.0.0"]}))
-;    (println (config/approved-pipeline-documents))
-;    
-;    (is (true? (gcfg/approved-generic? :grids "1.0.0")) "Grids should be an approved format")
-;    (is (not (gcfg/approved-generic? :grid "0.0.1")) "CMR is using default configuration") 
-;    (is (not (gcfg/approved-generic? :fake "a.b.c")) "A fake type was incorectly approved")
-;    
-;    (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! config/default-approved-pipeline-documents))
-;    (println (config/approved-pipeline-documents)))
+  (testing
+   "Test that approved-generic? approves configured Generic document types"
+    (with-redefs [config/approved-pipeline-documents (fn [] {:grids ["1.0.0"]})]
+      (is (true? (gcfg/approved-generic? :grids "1.0.0")) "Grids should be an approved format")
+      (is (not (gcfg/approved-generic? :grid "0.0.1")) "CMR is using default configuration")
+      (is (not (gcfg/approved-generic? :fake "a.b.c")) "A fake type was incorectly approved")))
 
   (testing
-   "Verify that a document can be validated as approved schema." 
+   "Verify that a document can be validated as approved schema."
     (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grid ["0.0.1"]}))
-    
-    (let [expected nil 
-          actual (gdocs/validate-json-against-schema :grid "0.0.1" (json/generate-string grid-good))] 
+
+    (let [expected nil
+          actual (gdocs/validate-json-against-schema :grid "0.0.1" (json/generate-string grid-good))]
       (is (= expected actual) "Grid 0.0.1 could not be found"))
-    
-    (let [bad-json (-> grid-good 
-                       (dissoc :MetadataSpecification) ;; remove a required tag 
-                       (json/generate-string))] 
-      (is (thrown-with-msg? 
+
+    (let [bad-json (-> grid-good
+                       (dissoc :MetadataSpecification) ;; remove a required tag
+                       (json/generate-string))]
+      (is (thrown-with-msg?
            clojure.lang.ExceptionInfo
            #"While validating the record against the \[:grid\] schema with version \[0.0.1\] the following error occurred: \[#: required key \[MetadataSpecification\] not found\]. The record cannot be ingested."
-           (gdocs/validate-document-against-schema :grid "0.0.1" bad-json)) 
-          "Was not able to generate a schema exception")) 
+           (gdocs/validate-document-against-schema :grid "0.0.1" bad-json))
+          "Was not able to generate a schema exception"))
     (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! config/default-approved-pipeline-documents))))
 
 (deftest test-validate-concept-subtypes
@@ -190,10 +183,13 @@
     ;; TODO: Generic work: add delete
     (testing "DELETE The document from above"
       (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! {:grid ["0.0.1"]}))
-      (let [result (good-generic-requester :delete)
-            body (:body result)
-            expected-pattern (re-pattern "\\{\"concept-id\":\"GRD[0-9].*-PROV1\",\"revision-id\":3.*?")]
-        (def body body)
-        (is (= 200 (:status result)))
-        (is (some? (re-matches expected-pattern body)))))
+      (let [result1 (good-generic-requester :delete)
+            result2 (good-generic-requester :delete)
+            expected-pattern1 (re-pattern "\\{\"concept-id\":\"GRD[0-9].*-PROV1\",\"revision-id\":3.*?")
+            expected-pattern2 (re-pattern "\\{\"errors\":\\[\"Concept with native-id \\[Generic-Test-[0-9a-z-].* and concept-id \\[GRD[0-9].*-PROV1\\] is already deleted.\"\\]\\}")]
+        (is (= 200 (:status result1)) "First delete was not successfull")
+        (is (some? (re-matches expected-pattern1 (:body result1))) "Response from first delete was wrong")
+
+        (is (= 404 (:status result2)) "Second delete did not fail correctly")
+        (is (some? (re-matches expected-pattern2 (:body result2))) "Response from second delete was wrong")))
     (dev-sys-util/eval-in-dev-sys `(config/set-approved-pipeline-documents! config/default-approved-pipeline-documents))))

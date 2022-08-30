@@ -175,14 +175,14 @@
 
 (defn delete-generic-document
   "Deletes a generic document in elasticsearch and creates a tombstone in the database. Returns a 201
-   if successful with the concept id and revision number. A 204 status is returned if the concept has
+   if successful with the concept id and revision number. A 404 status is returned if the concept has
    already been deleted."
-  [request] 
+  [request]
   (let [{:keys [route-params request-context headers params]} request
         provider-id (or (:provider params)
                         (:provider-id route-params))
         native-id (:native-id route-params)
-        concept-type (:concept-sub-type route-params)] 
+        concept-type (:concept-sub-type route-params)]
     (api-core/delete-concept concept-type provider-id native-id request)))
 
 ;; TODO: Generic work:  Once we decide on the actual API calls we need to put the provider parameter either in the :param or :route-param
