@@ -8,26 +8,28 @@ import { getSecureParam } from './getSecureParam'
  * By Default, CMR_TOKEN_KEY should not be configured so that only public collections are indexed in graph db.
  */
 export const getEchoToken = async () => {
-  const { env: { IS_LOCAL, CMR_TOKEN_KEY } } = process
+  const { env = {} } = process
+  // Destructure env variables
+  const {
+    CMR_TOKEN_KEY: cmrTokenKey,
+    ENVIRONMENT: envrionment,
+    IS_LOCAL: isLocal,
+    TOKEN: localToken
+  } = env
 
-  if (IS_LOCAL === 'true') {
-    let localToken = process.env.TOKEN
-    if (localToken === undefined) {
-      localToken = null
-    }
-
+  if (isLocal === 'true') {
     return localToken
   }
 
   let token
 
-  if (CMR_TOKEN_KEY) {
+  if (cmrTokenKey) {
     try {
       token = await getSecureParam(
-        `/${process.env.ENVIRONMENT}/graph-db/${process.env.CMR_TOKEN_KEY}`
+        `/${envrionment}/graph-db/${cmrTokenKey}`
       )
     } catch (error) {
-      console.log(`Could not get ECHO token: ${error}`)
+      console.log(`Could not get token: ${error}`)
     }
   } else {
     token = null
