@@ -40,7 +40,7 @@
         sub-fields (get config :sub-fields {})
         layout (get config :format "%s=%s")
         field-name (util/safe-lowercase (:Name settings))
-        field-name-lower (str field-name"-lowercase")
+        field-name-lower (str field-name "-lowercase")
         field-value (reduce (fn [data-str, key-name]
                               (str
                                data-str
