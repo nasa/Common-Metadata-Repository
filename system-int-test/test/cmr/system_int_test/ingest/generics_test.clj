@@ -92,8 +92,12 @@
 
     (testing "send a good document with config set that does not include grid"
       (with-redefs [config/approved-pipeline-documents (fn [] {:fake ["u.r.a.b"]})]
+        (println (format "approved-pipeline-docments: %s" (config/approved-pipeline-documents)))
         (let [result (good-generic-requester :post)]
-          (is (= {:fake ["u.r.a.b"]} (config/approved-pipeline-documents)) "failed sanity check")
+          (is (= {:fake ["never.good"]} (config/approved-pipeline-documents))
+              (format "*****\nfailed sanity check: %s" (config/approved-pipeline-documents)))
+         (is (= {:fake ["u.r.a.b"]} (config/approved-pipeline-documents))
+              (format "failed sanity check: %s" (config/approved-pipeline-documents)))
           (is (= 422 (:status result)) "The HTTP status code is not correct")
           (is (= "application/json" (get-in result [:headers "Content-Type"]))
               "The content type is not correct")
