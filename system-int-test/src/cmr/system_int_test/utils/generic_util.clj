@@ -50,7 +50,7 @@
 
 (def generic-request-with-echo-token (partial generic-request (transmit-config/echo-system-token)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;; 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; draft for eventually using with ingest-util/ingest-concept
 (defn make-grid-concept
