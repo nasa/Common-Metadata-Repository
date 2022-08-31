@@ -250,8 +250,6 @@
            request
            (bulk/get-provider-tasks :granule provider-id request)))))))
 
-;; TODO: Generic work - should this change to be more dynamic, gen type in front?
-
 (def generate-generic-concept-types-reg-ex
   "This function creates a regular expresion for all of the generic concepts.  This is used to create the api endpoints.
    An example string that is return looks like: \"dataqualitysummary|orderoption|serviceoption\" "
