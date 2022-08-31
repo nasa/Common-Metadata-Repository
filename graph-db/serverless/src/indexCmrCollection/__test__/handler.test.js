@@ -120,6 +120,28 @@ describe('indexCmrCollection handler', () => {
     expect(statusCode).toBe(200)
   })
 
+  test('test indexing of a broken collection', async () => {
+    // Pass an error to the response of fetchCmrCollection
+    nock(/local-cmr/)
+      .get(/collections/)
+      .replyWithError('Error Collection not found', { statusCode: 404 })
+
+    const event = getEvent('C123755555-TESTPROV', 'concept-update')
+
+    const consoleMock = jest.spyOn(console, 'log')
+
+    const indexed = await indexCmrCollection(event)
+
+    expect(consoleMock).toBeCalledTimes(3)
+    expect(consoleMock).toBeCalledWith('Could not complete request due to error: Error: Error Collection not found')
+    expect(consoleMock).toBeCalledWith('Collection FAILED during indexing process there may be an issue with the collection verify that the collection for the given env: ', 'C123755555-TESTPROV')
+    expect(consoleMock).toBeCalledWith('Error indexing collection, Execption was thrown: ', new Error('Cannot read properties of null (reading \'data\')'))
+
+    const { body } = indexed
+
+    expect(body).toBe('Successfully indexed 0 collection(s).')
+  })
+
   test('test unsupported event type', async () => {
     const event = getEvent('C1237293909-TESTPROV', 'concept-create')
 
