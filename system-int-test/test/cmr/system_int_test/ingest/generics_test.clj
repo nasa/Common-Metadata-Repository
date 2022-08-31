@@ -16,10 +16,7 @@
   (:import
    [java.util UUID]))
 
-(use-fixtures :each
-  (join-fixtures
-   [(ingest/reset-fixture
-     {"provguid1" "PROV1"})]))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (defn generic-request
   "This function will make a request to one of the generic URLs using the provided
@@ -87,7 +84,7 @@
    interface. Use the same native-id for all these steps"
 
   (let [native-id (format "Generic-Test-%s" (UUID/randomUUID))
-        generic-requester (partial gen-util/generic-request-with-echo-token "grid" "PROV1" native-id)
+        generic-requester (partial gen-util/generic-request (transmit-config/echo-system-token) "grid" "PROV1" native-id)
         good-generic-requester (partial generic-requester gen-util/grid-good)]
 
     (testing "send a good document with config set that does not include grid"
