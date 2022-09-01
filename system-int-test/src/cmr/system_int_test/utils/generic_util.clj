@@ -45,10 +45,9 @@
         :connection-manager (sys/conn-mgr)
         :body (when document (json/generate-string document))
         :throw-exceptions false
-        :headers {transmit-config/token-header token}}
+        :headers {"Accept" "application/json"
+                  transmit-config/token-header token}}
        (clj-http.client/request))))
-
-(def generic-request-with-echo-token (partial generic-request (transmit-config/echo-system-token)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
