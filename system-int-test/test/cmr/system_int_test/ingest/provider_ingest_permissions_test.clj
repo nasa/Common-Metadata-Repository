@@ -176,7 +176,7 @@
         subscription-np (subscription-util/make-subscription-concept {:CollectionConceptId (:concept-id coll2)
                                                                       :provider-id "PROV2"} {} 1)
         tool (tool-util/make-tool-concept)
-        
+
         ;; Generic Document Pipeline
         grid generic-util/grid-good
         grid-native-id (format "Generic-Test-%s" (UUID/randomUUID))]
@@ -305,12 +305,12 @@
             another-prov-admin-token
             "provider-admin-read-token can't ingest"
             provider-admin-read-token))
-     
+
      ;; Generic Document Pipeline
      (testing "ingest generic (grid) update permissions"
        (are3 [token]
-             (assert-ingest-succeeded 
-              (generic-util/generic-request token "grid" "PROV1" grid-native-id grid :post))
+             (assert-ingest-succeeded
+              (generic-util/generic-request token "PROV1" grid-native-id "grid" grid :post))
              "provider-admin-update-token can ingest"
              provider-admin-update-token
              "provider-admin-read-update-token can ingest"
@@ -319,8 +319,8 @@
              provider-admin-update-delete-token)
 
        (are3 [token]
-             (assert-ingest-no-permission 
-              (generic-util/generic-request token "grid" "PROV1" grid-native-id grid :post))
+             (assert-ingest-no-permission
+              (generic-util/generic-request token "PROV1" grid-native-id "grid" grid :post))
              "guest-token can't ingest"
              guest-token
              "user-token can't ingest"
@@ -331,7 +331,7 @@
              another-prov-admin-token
              "provider-admin-read-token can't ingest"
              provider-admin-read-token))
-     
+
      ;; Ingest and delete of subscriptions are controlled by both INGEST_MANAGEMENT_ACL and SUBSCRIPTION+MANAGEMENT ACLs.
      ;; subscriptoin-np is ingested on PROV2, which has no SUBSCRIPTION_MANAGEMENT permission to ingest. so, even though
      ;; it has the INGEST_MANAGEMENT_ACL permissions, it still fails the ingest and delete.

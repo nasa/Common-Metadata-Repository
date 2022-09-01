@@ -2,40 +2,19 @@
   "Tests for the Generic Concept Ingest API"
   (:require
    [cheshire.core :as json]
-   [clojure.java.io :as jio]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.config :as config]
    [cmr.common.generics :as gcfg]
    [cmr.common.util :as cutil]
    [cmr.ingest.api.generic-documents :as gdocs]
-   [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.generic-util :as gen-util]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.url-helper :as url-helper]
    [cmr.transmit.config :as transmit-config])
   (:import
    [java.util UUID]))
 
-(use-fixtures :each
-  (join-fixtures
-   [(ingest/reset-fixture
-     {"provguid1" "PROV1"})]))
-
-(defn generic-request
-  "This function will make a request to one of the generic URLs using the provided
-   provider and native id"
-  ([concept-type provider-id native-id] (generic-request concept-type provider-id native-id nil :get))
-  ([concept-type provider-id native-id document method]
-  (-> {:method method
-       :url (url-helper/ingest-generic-crud-url concept-type provider-id native-id)
-       :connection-manager (system/conn-mgr)
-       :body (when document (json/generate-string document))
-       :throw-exceptions false
-       :headers {"Accept" "application/json"
-                 transmit-config/token-header
-                 (transmit-config/echo-system-token)}}
-      (clj-http.client/request))))
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
@@ -88,13 +67,15 @@
    interface. Use the same native-id for all these steps"
 
   (let [native-id (format "Generic-Test-%s" (UUID/randomUUID))
-        generic-requester (partial generic-request "grid" "PROV1" native-id)
-        bad-generic-type-requester (partial generic-request "fake-concept-type" "PROV1" native-id gen-util/grid-good)
-        good-generic-requester (partial generic-requester gen-util/grid-good)]
+        generic-tokened-request (partial gen-util/generic-request
+                                         (transmit-config/echo-system-token)
+                                         "PROV1"
+                                         native-id)
+        generic-requester (partial generic-tokened-request "grid")]
 
     (testing "send a good document with config set that does not include grid"
       (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
-        (let [result (bad-generic-type-requester :post)]
+        (let [result (generic-tokened-request "fake-concept-type" gen-util/grid-good :post)]
           (is (= 404 (:status result)) "The HTTP status code is not correct")
           (is (= "text/html" (get-in result [:headers "Content-Type"]))
               "The content type is not correct")
@@ -112,7 +93,7 @@
                                :user-id "ECHO_SYS"}
                         :Metadata gen-util/grid-good}
 
-              create-result (good-generic-requester :post)
+              create-result (generic-requester gen-util/grid-good :post)
               create-response (:body create-result)
 
               read-result (generic-requester)
@@ -176,8 +157,8 @@
     ;; TODO: Generic work: add delete
     (testing "DELETE The document from above, twice."
       (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
-        (let [result1 (good-generic-requester :delete)
-              result2 (good-generic-requester :delete)
+        (let [result1 (generic-requester gen-util/grid-good :delete)
+              result2 (generic-requester gen-util/grid-good :delete)
               expected-pattern1 (re-pattern "\\{\"concept-id\":\"GRD[0-9].*-PROV1\",\"revision-id\":3.*?")
               expected-pattern2 (re-pattern "\\{\"errors\":\\[\"Concept with native-id \\[Generic-Test-[0-9a-z-].* and concept-id \\[GRD[0-9].*-PROV1\\] is already deleted.\"\\]\\}")]
 
