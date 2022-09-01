@@ -86,34 +86,38 @@
     (validate-required-parameter param request)))
 
 (defn prepare-generic-document
-  "Prepares a document to be ingested so that search can retrieve the contents."
+  "Prepares a document to be ingested so that search can retrieve the contents.
+   Throws exceptions if something goes wrong, returns a map otherwise."
   [request]
   (let [{:keys [route-params request-context headers params]} request
         provider-id (or (:provider params)
                         (:provider-id route-params))
         native-id (:native-id route-params)
+        concept-type (keyword (:concept-sub-type route-params))
         _ (lt-validation/validate-launchpad-token request-context)
         _ (api-core/verify-provider-exists request-context provider-id)
         _ (acl/verify-ingest-management-permission
-         request-context :update :provider-object provider-id)
+           request-context :update :provider-object provider-id)
         raw-document (slurp (:body request))
         document (json/parse-string raw-document true)
         specification (:MetadataSpecification document)
         spec-key (keyword (string/lower-case (:Name specification)))
         spec-version (:Version specification)
         concept-sub-type (get-sub-concept-type-concept-id-prefix spec-key spec-version)]
-    {:concept (assoc {} :metadata raw-document
-                     :provider-id provider-id
-                     :format (str "application/vnd.nasa.cmr.umm+json;version=" spec-version)
-                     :native-id native-id
-                     :user-id (api-core/get-user-id request-context headers)
-                     :extra-fields {}
-                     :concept-sub-type concept-sub-type)
-     :spec-key spec-key
-     :spec-version spec-version
-     :provider-id provider-id
-     :native-id native-id
-     :request-context request-context}))
+    (if (not= concept-type spec-key)
+      (throw UnsupportedOperationException)
+      {:concept (assoc {} :metadata raw-document
+                       :provider-id provider-id
+                       :format (str "application/vnd.nasa.cmr.umm+json;version=" spec-version)
+                       :native-id native-id
+                       :user-id (api-core/get-user-id request-context headers)
+                       :extra-fields {}
+                       :concept-sub-type concept-sub-type)
+       :spec-key spec-key
+       :spec-version spec-version
+       :provider-id provider-id
+       :native-id native-id
+       :request-context request-context})))
 
 (defn validate-document-against-schema
   "This function will validate the passed in document with its schema and throw a

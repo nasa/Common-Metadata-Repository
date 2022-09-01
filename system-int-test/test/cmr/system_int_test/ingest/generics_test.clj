@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as jio]
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.config :as config]
    [cmr.common.generics :as gcfg]
@@ -88,22 +89,16 @@
 
   (let [native-id (format "Generic-Test-%s" (UUID/randomUUID))
         generic-requester (partial generic-request "grid" "PROV1" native-id)
+        bad-generic-type-requester (partial generic-request "fake-concept-type" "PROV1" native-id gen-util/grid-good)
         good-generic-requester (partial generic-requester gen-util/grid-good)]
 
     (testing "send a good document with config set that does not include grid"
-      (with-redefs [config/approved-pipeline-documents (fn [] {:fake ["u.r.a.b"]})]
-        (println (format "approved-pipeline-docments: %s" (config/approved-pipeline-documents)))
-        (let [result (good-generic-requester :post)]
-          (is (= {:fake ["never.good"]} (config/approved-pipeline-documents))
-              (format "*****\nfailed sanity check: %s" (config/approved-pipeline-documents)))
-         (is (= {:fake ["u.r.a.b"]} (config/approved-pipeline-documents))
-              (format "failed sanity check: %s" (config/approved-pipeline-documents)))
-          (is (= 422 (:status result)) "The HTTP status code is not correct")
-          (is (= "application/json" (get-in result [:headers "Content-Type"]))
+      (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
+        (let [result (bad-generic-type-requester :post)]
+          (is (= 404 (:status result)) "The HTTP status code is not correct")
+          (is (= "text/html" (get-in result [:headers "Content-Type"]))
               "The content type is not correct")
-          (is (= "{\"errors\":[\"The [:grid] schema on version [0.0.1] is not an approved schema. This record cannot be ingested.\"]}"
-                 (:body result))
-              "The body is not correct"))))
+          (is (string/starts-with? (:body result) "<!DOCTYPE html>") "The body is not correct"))))
 
     (testing "CREATE a document with a valid config set that includes grid"
       (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
