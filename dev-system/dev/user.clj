@@ -117,14 +117,6 @@
   []
   (set-modes! :all settings/default-run-mode))
 
-;; TODO: Generic work: delete this function
-(defn- distribute-schemas
-  "A function that will copy the directory schemas in to all the necessary
-   apps with schemas renamed to lowercase"
-  []
-  (println "Distributing schemas")
-  (shell/sh "../bin/cmr" "setup" "schemas"))
-
 (defn set-legacy
   "Passing `true` to this function will cause legacy configuration to be used
   during starts/resets."
@@ -310,9 +302,6 @@
   (sit-sys/stop)
   ; Stops the running code
   (stop)
-  ;; TODO: Generic work: Delete the next 2 lines to get rid of (distribute-schemas).
-  ; Distributes schemas to different apps for use
-  ;(distribute-schemas)
   ; Refreshes all of the code and then restarts the system
   (refresh :after 'user/start))
 
