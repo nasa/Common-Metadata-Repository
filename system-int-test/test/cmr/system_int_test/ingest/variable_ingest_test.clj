@@ -559,20 +559,22 @@
           _ (index/wait-until-indexed)]
       ;; Turn on UMM-Var keywords validation
       (side/eval-form `(ingest-config/set-validate-umm-var-keywords! true))
-      (are3 [metadata expected-status expected-errors]
+      (are3 [metadata expected-status expected-errors expected-warnings]
         (let [concept (variable-util/make-variable-concept
-                       {:RelatedURLs[(meta-related-url (merge (url-type-map) metadata))]}
+                       {:RelatedURLs [(meta-related-url (merge (url-type-map) metadata))]}
                        {:coll-concept-id (:concept-id coll1-PROV1)})
-              {:keys [status errors]} (variable-util/ingest-variable-with-association
-                                       concept
-                                       (variable-util/token-opts token))]
+              {:keys [status errors warnings]} (variable-util/ingest-variable-with-association
+                                                concept
+                                                (variable-util/token-opts token))]
           (is (= true (true? (some #(= status %) expected-status)))
               (format "status '%d' fail" status))
-          (is (= expected-errors errors)) "error check")
+          (is (= expected-errors errors)) "error check"
+          (is (= expected-warnings warnings)) "warnings check")
 
         "valid Format"
         {:Format "HDF5"}
         [200 201]
+        nil
         nil
 
         "invalid Format"
@@ -580,11 +582,19 @@
         [422]
         [{:path ["RelatedUrLs" 0 "Format"]
           :errors ["Format [HDF42] was not a valid keyword."]}]
+        nil
 
         "valid MimeType"
         {:MimeType "application/x-hdf5"}
         [200 201]
-        nil)
+        nil
+        nil
+
+        "invalid MimeType is still accepted, with warnings"
+        {:MimeType "application/x-hdf42"}
+        [200 201]
+        nil
+        "MimeType [application/x-hdf42] was not a valid keyword.")
 
       (side/eval-form `(ingest-config/set-validate-umm-var-keywords! false))))
 
