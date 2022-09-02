@@ -8,6 +8,12 @@
   "Indexes":
   [
     {
+       "Description": "Name",
+       "Field": ".Name",
+       "Name": "Name",
+       "Mapping": "string"
+    },
+    {
       "Description": "Long Name",
       "Field": ".LongName",
       "Name": "Long-Name",
