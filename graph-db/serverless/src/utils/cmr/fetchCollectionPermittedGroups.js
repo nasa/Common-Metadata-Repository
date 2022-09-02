@@ -53,7 +53,7 @@ export const fetchCollectionPermittedGroups = async (conceptId, token) => {
       })
     })
   } catch (error) {
-    console.log(`Could not complete request due to error: ${error}`)
+    console.log(`Could not complete request to acl due to error: ${error}`)
   }
 
   return groups

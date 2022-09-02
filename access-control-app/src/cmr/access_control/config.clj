@@ -38,6 +38,10 @@
    when determining SIDs."
   {:default false :type Boolean})
 
+(defconfig enable-cmr-group-sids
+  "Flag that indicates if we include CMR groups when looking up user SIDs."
+  {:default true :type Boolean})
+
 (defn queue-config
   "Returns the queue configuration for the application."
   []

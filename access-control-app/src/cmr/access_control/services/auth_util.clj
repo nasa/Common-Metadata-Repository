@@ -24,21 +24,23 @@
    (if (contains? #{"guest" "registered"} (name username-or-type))
      [(keyword username-or-type)]
      (concat
-       (when (access-control-config/enable-edl-groups)
-         (urs/get-edl-groups-by-username context username-or-type))
-       (let [query (qm/query {:concept-type :access-group
-                              :condition (qm/string-condition :member username-or-type)
-                              :skip-acls? true
-                              :page-size :unlimited
-                              :result-format :query-specified
-                              :result-fields [:concept-id :legacy-guid]})
-             groups (:items (qe/execute-query context query))]
-         (distinct
-          (concat [:registered]
-                  ;; ACLs may be from ECHO or CMR, and may reference ECHO GUIDs as well as CMR concept IDs,
-                  ;; depending on the context, so we will return both types of IDs here.
-                  (keep :legacy-guid groups)
-                  (keep :concept-id groups))))))))
+      [:registered]
+      (when (access-control-config/enable-edl-groups)
+        (urs/get-edl-groups-by-username context username-or-type))
+      (when (access-control-config/enable-cmr-group-sids)
+        (let [query (qm/query {:concept-type :access-group
+                               :condition (qm/string-condition :member username-or-type)
+                               :skip-acls? true
+                               :page-size :unlimited
+                               :result-format :query-specified
+                               :result-fields [:concept-id :legacy-guid]})
+              groups (:items (qe/execute-query context query))]
+          (distinct
+           (concat []
+                   ;; ACLs may be from ECHO or CMR, and may reference ECHO GUIDs as well as CMR concept IDs,
+                   ;; depending on the context, so we will return both types of IDs here.
+                   (keep :legacy-guid groups)
+                   (keep :concept-id groups)))))))))
 
 (defn- put-sids-in-context
   "Gets the current SIDs of the user in the context from the Access control application."
