@@ -154,7 +154,6 @@
               "The HTTP status code not returned correctly from the read")
           (is (= expected actual) "The description was not updated."))))
 
-    ;; TODO: Generic work: add delete
     (testing "DELETE The document from above, twice."
       (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
         (let [result1 (generic-requester gen-util/grid-good :delete)
