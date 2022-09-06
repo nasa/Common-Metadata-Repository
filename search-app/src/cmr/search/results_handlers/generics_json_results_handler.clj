@@ -6,7 +6,7 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.util :as util]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]))
 
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
@@ -15,7 +15,7 @@
     ["concept-id" "revision-id" "deleted" "provider-id" "native-id" "name" "id" "associations-gzip-b64"]))
   
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
-  (defmethod elastic-results/elastic-result->query-result-item [concept-type :json]
+  (defmethod er-to-qr/elastic-result->query-result-item [concept-type :json]
     [context query elastic-result]
     (let [{{name :name
             id :id
@@ -24,7 +24,7 @@
             native-id :native-id
             concept-id :concept-id
             associations-gzip-b64 :associations-gzip-b64} :_source} elastic-result
-          revision-id (elastic-results/get-revision-id-from-elastic-result concept-type elastic-result)
+          revision-id (er-to-qr/get-revision-id-from-elastic-result concept-type elastic-result)
           result-item (util/remove-nil-keys
                        {:concept_id concept-id
                         :revision_id revision-id

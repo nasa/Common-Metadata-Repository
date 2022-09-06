@@ -5,11 +5,10 @@
    [compojure.core :refer :all]))
 
 (def generic-api-routes
-  (context "/generics" []
+  (context "/associate" []
     ;; generic associations routes
     (context "/:concept-id" [concept-id]
       (context "/:revision-id" [revision-id]
-        (context "/associations" []
           ;; Associate a generic concept with a list of concepts
           (POST "/" {:keys [request-context headers body]}
             (generic-association/associate-concept-to-concepts
@@ -17,14 +16,13 @@
           ;; Dissociate a generic concept from a list of concepts 
           (DELETE "/" {:keys [request-context headers body]}
             (generic-association/dissociate-concept-from-concepts
-             request-context headers (slurp body) concept-id revision-id))))
-      (context "/associations" []
-        ;; Associate a generic concept with a list of concepts
-        (POST "/" {:keys [request-context headers body]}
-          (generic-association/associate-concept-to-concepts
-           request-context headers (slurp body) concept-id nil))
-        ;; Dissociate a generic concept from a list of concepts
-        (DELETE "/" {:keys [request-context headers body]}
-          (generic-association/dissociate-concept-from-concepts
-           request-context headers (slurp body) concept-id nil))))))
+             request-context headers (slurp body) concept-id revision-id)))
+      ;; Associate a generic concept with a list of concepts
+      (POST "/" {:keys [request-context headers body]}
+        (generic-association/associate-concept-to-concepts
+         request-context headers (slurp body) concept-id nil))
+      ;; Dissociate a generic concept from a list of concepts
+      (DELETE "/" {:keys [request-context headers body]}
+        (generic-association/dissociate-concept-from-concepts
+         request-context headers (slurp body) concept-id nil)))))
 

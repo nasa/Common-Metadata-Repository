@@ -414,7 +414,6 @@
 
 (defmethod index-concept :default
   [context concept parsed-concept options]
-  ;;(println "In index-concept :default for: " (:concept-id concept))
   (let [{:keys [all-revisions-index?]} options
         {:keys [concept-id revision-id concept-type deleted]} concept]
     (when (and (indexing-applicable? concept-type all-revisions-index?)
@@ -449,10 +448,8 @@
                                       context service-associations)
                 tool-associations (es/parse-non-tombstone-associations
                                    context tool-associations)
-                ;;_ (println "generic-associations before removing tombstone: " generic-associations)
                 generic-associations (es/parse-non-tombstone-associations
                                       context generic-associations)
-                ;;_ (println "generic-associations after removing tombstone: " generic-associations)
                 concept-type (cs/concept-id->type concept-id)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
@@ -507,7 +504,6 @@
 (defn- index-associated-generic-concept
   "Given a concept id, revision id, index the concept to which it refers."
   [context concept-id revision-id options]
-  ;;(println "index concept id: " concept-id)
   (let [concept (if revision-id
                   (meta-db/get-concept context concept-id revision-id)
                   (meta-db/get-latest-concept context concept-id))
@@ -517,7 +513,6 @@
 (defn- index-associated-generic-source
   "Index the associated source concept of the given generic association concept."
   [context concept options]
-  ;;(println "index-associated-generic-source") 
   (index-associated-generic-concept
    context
    (get-in concept [:extra-fields :source-concept-identifier])
@@ -527,7 +522,6 @@
 (defn- index-associated-generic-destination
   "Index the associated destination concept of the given generic association concept."
   [context concept options]
-  ;;(println "index-associated-generic-destination")
   (index-associated-generic-concept
    context
    (get-in concept [:extra-fields :associated-concept-id])
@@ -569,7 +563,6 @@
 
 (defmethod index-concept :generic-association
   [context concept parsed-concept options]
-  ;;(println "In index-concept :generic-association: " concept)
   (index-associated-generic-source context concept options)
   (index-associated-generic-destination context concept options))
 
@@ -684,7 +677,6 @@
 (defmethod delete-concept :generic-association
   [context concept-id revision-id options]
   (let [concept (meta-db/get-concept context concept-id revision-id)]
-    ;;(println "In delete-concept :generic-association: " concept)
     (index-associated-generic-source context concept options)
     (index-associated-generic-destination context concept options)))
 

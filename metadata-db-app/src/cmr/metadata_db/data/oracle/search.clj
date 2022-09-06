@@ -6,6 +6,7 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.concepts :as cc]
    [cmr.common.util :as util]
    [cmr.metadata-db.data.concepts :as c]
    [cmr.metadata-db.data.oracle.concept-tables :as tables]
@@ -28,6 +29,7 @@
 
 (def concept-type->columns
   "A map of concept type to the columns for that type in the database."
+ (merge 
   {:granule (into common-columns
                   [:provider_id :parent_collection_id :delete_time :granule_ur])
    :collection (into common-columns
@@ -57,8 +59,10 @@
                            [:associated_concept_id :associated_revision_id
                             :source_concept_identifier :user_id])
    :generic-association (into common-columns
-                              [:associated_concept_id :associated_revision_id
-                               :source_concept_identifier :source_revision_id :user_id])})
+                               [:associated_concept_id :associated_revision_id
+                                :source_concept_identifier :source_revision_id :user_id])}
+   (zipmap (cc/get-generic-concept-types-array) 
+           (repeat (into common-columns [:provider_id :document_name :schema :mime_type :user_id])))))
 
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept
@@ -172,7 +176,8 @@
         (= :variable concept-type)
         (= :service concept-type)
         (= :tool concept-type)
-        (= :subscription concept-type))))
+        (= :subscription concept-type)
+        (cc/generic-concept? concept-type))))
 
 ;; Execute a query against a single table where provider_id is a column
 (defmethod find-concepts-in-table true
