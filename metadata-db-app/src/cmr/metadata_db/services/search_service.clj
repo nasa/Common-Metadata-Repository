@@ -34,7 +34,9 @@
    :service-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
                            :service-concept-id}
    :tool-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
-                       :tool-concept-id}})
+                       :tool-concept-id}
+   :generic-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
+                          :source-concept-identifier :source-revision-id :association-type}})
 
 (def granule-supported-parameter-combinations
   "Supported search parameter combination sets for granule find. This does not include flags
@@ -131,7 +133,8 @@
                  :humanizer
                  :variable-association
                  :service-association
-                 :tool-association}
+                 :tool-association
+                 :generic-association}
                (:concept-type params))
     (find-cmr-concepts context params)
 

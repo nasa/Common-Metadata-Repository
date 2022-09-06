@@ -70,7 +70,8 @@
     :variable-association ingest-exchange-name
     :tool ingest-exchange-name
     :tool-association ingest-exchange-name
-    :subscription ingest-exchange-name}
+    :subscription ingest-exchange-name
+    :generic-association ingest-exchange-name}
    (zipmap (concepts/get-generic-concept-types-array) (repeat ingest-exchange-name))))
 
 (defconfig deleted-concept-revision-exchange-name

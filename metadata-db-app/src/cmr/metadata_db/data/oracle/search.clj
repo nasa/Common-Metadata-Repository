@@ -55,7 +55,10 @@
                                :source_concept_identifier :user_id])
    :tool-association (into common-columns
                            [:associated_concept_id :associated_revision_id
-                            :source_concept_identifier :user_id])})
+                            :source_concept_identifier :user_id])
+   :generic-association (into common-columns
+                              [:associated_concept_id :associated_revision_id
+                               :source_concept_identifier :source_revision_id :user_id])})
 
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept

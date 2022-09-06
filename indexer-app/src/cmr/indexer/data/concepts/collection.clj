@@ -141,16 +141,21 @@
 
 (defn- associations->gzip-base64-str
   "Returns the gziped base64 string for the given variable,service and tool associations"
-  [variable-associations service-associations tool-associations]
+  [variable-associations service-associations tool-associations generic-associations]
   (when (or (seq variable-associations)
             (seq service-associations)
-            (seq tool-associations))
+            (seq tool-associations)
+            (seq generic-associations))
     (util/string->gzip-base64
      (pr-str
       (util/remove-map-keys empty?
                             {:variables (mapv :variable-concept-id variable-associations)
                              :services (mapv :service-concept-id service-associations)
-                             :tools (mapv :tool-concept-id tool-associations)})))))
+                             :tools (mapv :tool-concept-id tool-associations)
+                             ;;the collections selected from :associated-concept-id
+                             ;;are from the rows that're variable/service/tool associations.
+                             :generics (remove #(= :collection (concepts/concept-id->type %))
+                                               (mapv :associated-concept-id generic-associations))})))))
 
 (defn- variable-service-tool-associations->elastic-docs
   "Returns the elastic docs for variable, service and tool assocations"
@@ -234,7 +239,7 @@
   [context concept collection]
   (let [{:keys [concept-id revision-id provider-id user-id native-id
                 created-at revision-date deleted format extra-fields tag-associations
-                variable-associations service-associations tool-associations]} concept
+                variable-associations service-associations tool-associations generic-associations]} concept
         consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
                               (metadata-db/get-providers context))
         original-consortiums (when consortiums-str
@@ -515,7 +520,7 @@
                                                          :value-lowercase)
             :associations-gzip-b64
             (associations->gzip-base64-str
-             variable-associations service-associations tool-associations)
+             variable-associations service-associations tool-associations generic-associations)
             :usage-relevancy-score 0
             :horizontal-data-resolutions {:value horizontal-data-resolutions
                                           :priority 0}
