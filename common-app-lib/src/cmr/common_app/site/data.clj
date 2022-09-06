@@ -31,7 +31,8 @@
   []
   (merge (time-page)
          default-partner-guide
-         {:base-url "../../../"}))
+         {:base-url "../../../"
+          :status-app-url (config/status-app-url)}))
 
 (defn base-page
   "Data that all pages have in common."
@@ -41,4 +42,5 @@
    (merge (time-page)
           default-partner-guide
           {:base-url (config/application-public-root-url context)
-           :app-title app-title})))
+           :app-title app-title
+           :status-app-url (config/status-app-url)})))

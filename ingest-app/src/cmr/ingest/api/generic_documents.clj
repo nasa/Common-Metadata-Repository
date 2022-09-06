@@ -67,7 +67,7 @@
   "This defines in a map required parameters that are passed in and where they would be
    located once the http request makes its way through compojure. If there is an error the error
    messages goes into the cmr.ingest.services.messages.clj file."
-  {:provider cmr.ingest.services.messages/provider-does-not-exist})
+  {:provider messages/provider-does-not-exist})
 
 ;; TODO: Generic work: This could be a candidate for a configuration file.
 (defn validate-required-parameter
@@ -86,31 +86,38 @@
     (validate-required-parameter param request)))
 
 (defn prepare-generic-document
-  "Prepares a document to be ingested so that search can retrieve the contents."
+  "Prepares a document to be ingested so that search can retrieve the contents.
+   Throws exceptions if something goes wrong, returns a map otherwise."
   [request]
   (let [{:keys [route-params request-context headers params]} request
         provider-id (or (:provider params)
                         (:provider-id route-params))
         native-id (:native-id route-params)
-        ; TODO: Generic work - add token check
+        concept-type (keyword (:concept-sub-type route-params))
+        _ (lt-validation/validate-launchpad-token request-context)
+        _ (api-core/verify-provider-exists request-context provider-id)
+        _ (acl/verify-ingest-management-permission
+           request-context :update :provider-object provider-id)
         raw-document (slurp (:body request))
         document (json/parse-string raw-document true)
         specification (:MetadataSpecification document)
         spec-key (keyword (string/lower-case (:Name specification)))
         spec-version (:Version specification)
         concept-sub-type (get-sub-concept-type-concept-id-prefix spec-key spec-version)]
-    {:concept (assoc {} :metadata raw-document
-                     :provider-id provider-id
-                     :format (str "application/vnd.nasa.cmr.umm+json;version=" spec-version)
-                     :native-id native-id
-                     :user-id (api-core/get-user-id request-context headers)
-                     :extra-fields {}
-                     :concept-sub-type concept-sub-type)
-     :spec-key spec-key
-     :spec-version spec-version
-     :provider-id provider-id
-     :native-id native-id
-     :request-context request-context}))
+    (if (not= concept-type spec-key)
+      (throw UnsupportedOperationException)
+      {:concept (assoc {} :metadata raw-document
+                       :provider-id provider-id
+                       :format (str "application/vnd.nasa.cmr.umm+json;version=" spec-version)
+                       :native-id native-id
+                       :user-id (api-core/get-user-id request-context headers)
+                       :extra-fields {}
+                       :concept-sub-type concept-sub-type)
+       :spec-key spec-key
+       :spec-version spec-version
+       :provider-id provider-id
+       :native-id native-id
+       :request-context request-context})))
 
 (defn validate-document-against-schema
   "This function will validate the passed in document with its schema and throw a
@@ -171,10 +178,16 @@
      (:body (tgen/update-generic request-context [provider-id native-id] metadata-json)))))
 
 (defn delete-generic-document
-  "TODO: Generic work: add delete"
+  "Deletes a generic document in elasticsearch and creates a tombstone in the database. Returns a 201
+   if successful with the concept id and revision number. A 404 status is returned if the concept has
+   already been deleted."
   [request]
-  (println "stub function: delete ")
-  {:status 501})
+  (let [{:keys [route-params request-context headers params]} request
+        provider-id (or (:provider params)
+                        (:provider-id route-params))
+        native-id (:native-id route-params)
+        concept-type (:concept-sub-type route-params)]
+    (api-core/delete-concept concept-type provider-id native-id request)))
 
 ;; TODO: Generic work:  Once we decide on the actual API calls we need to put the provider parameter either in the :param or :route-param
 ;; sections of the request - which ever is appropriate for the URL.  Right now we are putting it into the route-params which is where

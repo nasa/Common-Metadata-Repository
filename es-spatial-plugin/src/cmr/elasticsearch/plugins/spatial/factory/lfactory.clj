@@ -2,8 +2,7 @@
   (:import
    (cmr.elasticsearch.plugins SpatialScript)
    (java.util Map)
-   (org.apache.logging.log4j Logger LogManager)
-   (org.elasticsearch.script DocReader)
+   (org.elasticsearch.script DocReader) 
    (org.elasticsearch.common.xcontent.support XContentMapValues)
    (org.elasticsearch.search.lookup SearchLookup))
   (:require
@@ -26,7 +25,7 @@
 
 (def parameters
   "The parameters to the Spatial script"
-  [:ords :ords-info :operator])
+  [:ords :ords-info])
 
 (defn- extract-params
   "Extracts the parameters from the params map given in the script."

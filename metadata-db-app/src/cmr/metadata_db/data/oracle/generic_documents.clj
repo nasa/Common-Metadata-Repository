@@ -30,23 +30,24 @@
   [{:keys [id concept_id native_id provider_id document_name schema format
            mime_type metadata revision_id revision_date created_at deleted
            user_id transaction_id]} db]
-  (cutil/remove-nil-keys {:id id
-                          :concept-id concept_id
-                          :native-id native_id
-                          :provider-id provider_id
-                          :document-name document_name
-                          :schema schema
-                          :format format ;; concepts convert this to mimetype in the get, but we already have mimetype
-                          :mime-type mime_type
-                          :revision-id (when revision_id (int revision_id))
-                          :revision-date (when revision_date
-                                           (oracle/oracle-timestamp->str-time db revision_date))
-                          :created-at (when created_at
-                                        (oracle/oracle-timestamp->str-time db created_at))
-                          :deleted (when deleted (not= (int deleted) 0))
-                          :user-id user_id
-                          :transaction-id transaction_id
-                          :metadata (when metadata (json/parse-string (cutil/gzip-blob->string metadata) true))}))
+  (cutil/remove-nils-empty-maps-seqs
+   (cutil/remove-nil-keys {:id id
+                           :concept-id concept_id
+                           :native-id native_id
+                           :provider-id provider_id
+                           :document-name document_name
+                           :schema schema
+                           :format format ;; concepts convert this to mimetype in the get, but we already have mimetype
+                           :mime-type mime_type
+                           :revision-id (when revision_id (int revision_id))
+                           :revision-date (when revision_date
+                                            (oracle/oracle-timestamp->str-time db revision_date))
+                           :created-at (when created_at
+                                         (oracle/oracle-timestamp->str-time db created_at))
+                           :deleted (when deleted (not= (int deleted) 0))
+                           :user-id user_id
+                           :transaction-id transaction_id
+                           :metadata (when metadata (json/parse-string (cutil/gzip-blob->string metadata) true))})))
 
 (defn- find-record
   "Look up latest revision of record in the db table and return a map of the row"
@@ -137,7 +138,7 @@
                    :provider_id provider-id
                    :document_name (:document-name document)
                    :schema schema
-                   :format schema
+                   :format (:format document)
                    :mime_type (str (:mime-type document))
                    :metadata (cutil/string->gzip-bytes (:metadata document))
                    :revision_id (:revision-id document)
@@ -243,62 +244,3 @@
   behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(comment
-
-  (def db (get-in user/system [:apps :metadata-db :db]))
-
-  ;; io starts looking from the dev-system/ directory bc that's where the REPL starts
-  (def test-file (slurp (clojure.java.io/resource "sample_tool.json")))
-  (def gzip-blob (cutil/string->gzip-bytes test-file))
-  (def test-file2 (slurp (clojure.java.io/resource "AllElements-V1.16.6.json"))) ;; invalid test -- lacks MetadataSpecification
-  ;; here for your convenience - i didn't actually test with this, bc the transaction errors only show thru the api
-  (def test-grid (slurp (clojure.java.io/resource "sample_grid.json")))
-  ;;;;;;;; NEW
-
-  (def my-rm-fields [:concept-id :concept-type :created-at :native-id :provider-id :revision-date :revision-id])
-  (apply dissoc my-save my-rm-fields)
-
-
-  ;; these work but using that first comment (def db) up there
-  (jdbc/with-db-transaction [conn db] (get-concept conn :generic "PROV1" "X1200000002-PROV1"))
-
-  ;;;;;;;; OLD
-
-  (save-document db test-file "PROV1" "some-edl-user")
-
-  ;; save-document
-  (jdbc/insert! db
-                :cmr_generic_documents
-                ["id" "concept_id" "provider_id" "document_name" "schema" "format"
-                 "mime_type" "metadata" "revision_id" "revision_date" "created_at" "deleted"
-                 "user_id" "transaction_id"]
-                [1 "myconceptid" "PROV1" "mydocname" "myschema" "myformat"
-                 "application/json" gzip-blob 1 (cr/to-sql-time (p/parse-datetime "2020"))
-                 (cr/to-sql-time (p/parse-datetime "2020")) 1 "myuserid" 1])
-
-  (jdbc/with-db-transaction
-    [conn db]
-    (doall (get-document conn 1)))
-
-  ;; get documents
-  (jdbc/with-db-transaction
-    [conn db]
-    (jdbc/query db ["SELECT * FROM cmr_generic_documents"]))
-
-  ;(concepts/db-result->concept-map "generic" db nil get-all-result)
-  (jdbc/with-db-transaction [conn db] (get-documents conn "myformat"))
-
-  ;; get document
-  (jdbc/with-db-transaction [conn db] (get-document conn 1))
-
-  ;; update document
-  (update-document db test-file "PROV1" "someotheruser2" "USGS_TOOLS_LATLONG" "umm-c")
-  (def my-last-rev (last (jdbc/query db ["SELECT *
-                    FROM cmr_generic_documents
-                    WHERE document_name = ? AND provider_id = ?
-                    ORDER BY revision_id ASC" "USGS_TOOLS_LATLONG" "TESTPROV"])))
-
-  ;; delete document
-  (jdbc/delete! db "cmr_generic_documents" ["id=?" 1])
-  )

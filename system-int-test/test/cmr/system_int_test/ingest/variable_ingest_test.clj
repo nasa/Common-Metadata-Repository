@@ -35,7 +35,7 @@
   "Create a content-type, type, subtype map for use in a related url metadata
    document. Assume DistributionURL>GET DATA>DIRECT DOWNLOAD when no values are
    provided, or allow for any value to be missing if nil is used."
-  ([] (url-type-map "DistributionURL" "GET DATA" "DIRECT DOWNLOAD") )
+  ([] (url-type-map "DistributionURL" "GET DATA" "DIRECT DOWNLOAD"))
   ([url-content-type type] (url-type-map url-content-type type nil))
   ([url-content-type type subtype]
    (c-util/remove-nil-keys {:URLContentType url-content-type
@@ -279,8 +279,8 @@
         (is (= {:revision-id 1
                 :concept-id supplied-concept-id}
                (select-keys
-                 (ingest/parse-ingest-body :json response)
-                 [:revision-id :concept-id])))))
+                (ingest/parse-ingest-body :json response)
+                [:revision-id :concept-id])))))
 
     (testing "xml response"
       (let [response (variable-util/ingest-variable-with-association
@@ -338,7 +338,7 @@
                        "PROV1"
                        (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
                        {:token token})
-        _ (index/wait-until-indexed)
+          _ (index/wait-until-indexed)
           ingester #(variable-util/ingest-variable-with-association
                      (variable-util/make-variable-concept
                       {}
@@ -389,9 +389,9 @@
   (testing "delete a variable"
     (let [{token :token} (variable-util/setup-update-acl (s/context) "PROV1")
           coll1-PROV1 (data-core/ingest-umm-spec-collection
-                      "PROV1"
-                      (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                      {:token token})
+                       "PROV1"
+                       (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                       {:token token})
           _ (index/wait-until-indexed)
           concept (variable-util/make-variable-concept
                    {}
@@ -441,9 +441,9 @@
     (let [{token :token} (variable-util/setup-update-acl
                           (s/context) "PROV1" "user1" "update-group")
           coll1-PROV1 (data-core/ingest-umm-spec-collection
-                      "PROV1"
-                      (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                      {:token token})
+                       "PROV1"
+                       (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                       {:token token})
           _ (index/wait-until-indexed)]
       ;; Turn on UMM-Var keywords validation
       (side/eval-form `(ingest-config/set-validate-umm-var-keywords! true))
@@ -553,15 +553,15 @@
     (let [{token :token} (variable-util/setup-update-acl
                           (s/context) "PROV1" "user1" "update-group")
           coll1-PROV1 (data-core/ingest-umm-spec-collection
-                      "PROV1"
-                      (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                      {:token token})
+                       "PROV1"
+                       (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                       {:token token})
           _ (index/wait-until-indexed)]
       ;; Turn on UMM-Var keywords validation
       (side/eval-form `(ingest-config/set-validate-umm-var-keywords! true))
       (are3 [metadata expected-status expected-errors]
         (let [concept (variable-util/make-variable-concept
-                       {:RelatedURLs[(meta-related-url (merge (url-type-map) metadata))]}
+                       {:RelatedURLs [(meta-related-url (merge (url-type-map) metadata))]}
                        {:coll-concept-id (:concept-id coll1-PROV1)})
               {:keys [status errors]} (variable-util/ingest-variable-with-association
                                        concept
@@ -584,15 +584,43 @@
         "valid MimeType"
         {:MimeType "application/x-hdf5"}
         [200 201]
-        nil
-
-        "invalid MimeType"
-        {:MimeType "application/x-hdf42"}
-        [422]
-        [{:path ["RelatedUrLs" 0 "MimeType"]
-          :errors ["MimeType [application/x-hdf42] was not a valid keyword."]}])
+        nil)
 
       (side/eval-form `(ingest-config/set-validate-umm-var-keywords! false))))
+
+  (testing "ingest validation on returned warning with UMM-Var KMS Related URL Mimetypes"
+   (let [{token :token} (variable-util/setup-update-acl
+                         (s/context) "PROV1" "user1" "update-group")
+         coll1-PROV1 (data-core/ingest-umm-spec-collection
+                      "PROV1"
+                      (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                      {:token token})
+         _ (index/wait-until-indexed)]
+      ;; Turn on UMM-Var keywords validation
+     (side/eval-form `(ingest-config/set-validate-umm-var-keywords! true))
+     (are3 [metadata expected-status expected-warnings]
+       (let [concept (variable-util/make-variable-concept
+                      {:RelatedURLs [(meta-related-url (merge (url-type-map) metadata))]}
+                      {:coll-concept-id (:concept-id coll1-PROV1)})
+             {:keys [status warnings]} (variable-util/ingest-variable-with-association
+                                        concept
+                                        (variable-util/token-opts token))]
+         (is (= true (true? (some #(= status %) expected-status)))
+             (format "status '%d' fail" status))
+         (is (= expected-warnings warnings)) "error check")
+
+       "valid MimeType"
+       {:MimeType "application/x-hdf5"}
+       [200 201]
+       nil
+
+       "invalid MimeType"
+       {:MimeType "application/x-hdf42"}
+       [200]
+       [{:path ["RelatedURLs" 0 "MimeType"],
+         :errors ["MimeType [application/x-hdf42] was not a valid keyword."]}])
+
+     (side/eval-form `(ingest-config/set-validate-umm-var-keywords! false))))
 
   (testing "ingest validation on UMM-Var KMS keywords is off by default"
     (let [{token :token} (variable-util/setup-update-acl
@@ -629,35 +657,35 @@
           coll1-id {:coll-concept-id (:concept-id coll1-PROV1)}]
       (index/wait-until-indexed)
       (are3
-       [content-type-group expected-status expected-errors]
-       (let [metadata {:RelatedURLs[(meta-related-url content-type-group)]}
-             concept (variable-util/make-variable-concept metadata coll1-id)
-             results (variable-util/ingest-variable-with-association
-                      concept
-                      (variable-util/token-opts token))
-             {:keys [status errors]} results]
-         (is (= true (true? (some #(= status %) expected-status))) "status fail")
-         (is (= expected-errors errors) "error fail"))
+        [content-type-group expected-status expected-errors]
+        (let [metadata {:RelatedURLs [(meta-related-url content-type-group)]}
+              concept (variable-util/make-variable-concept metadata coll1-id)
+              results (variable-util/ingest-variable-with-association
+                       concept
+                       (variable-util/token-opts token))
+              {:keys [status errors]} results]
+          (is (= true (true? (some #(= status %) expected-status))) "status fail")
+          (is (= expected-errors errors) "error fail"))
 
-       "with all good values"
-       (url-type-map)
-       [200 201] nil
+        "with all good values"
+        (url-type-map)
+        [200 201] nil
 
-       "with good content and type but no subtype"
-       (url-type-map "DistributionURL" "GET DATA")
-       [200] nil
+        "with good content and type but no subtype"
+        (url-type-map "DistributionURL" "GET DATA")
+        [200] nil
 
-       "with bad content, no type, bad subtype"
-       (url-type-map "Wrong" nil "Wrong Subtype")
-       [400] ["#/RelatedURLs/0: required key [Type] not found"]
+        "with bad content, no type, bad subtype"
+        (url-type-map "Wrong" nil "Wrong Subtype")
+        [400] ["#/RelatedURLs/0: required key [Type] not found"]
 
-       "with good content, bad type, no subtype"
-       (url-type-map "DistributionURL" nil)
-       [400] ["#/RelatedURLs/0: required key [Type] not found"]
+        "with good content, bad type, no subtype"
+        (url-type-map "DistributionURL" nil)
+        [400] ["#/RelatedURLs/0: required key [Type] not found"]
 
-       "with bad content,type,subtype"
-       (url-type-map "Wrong" "Wrong Type")
-       [422] [{:path ["RelatedUrLs" 0]
-             :errors [(str "Related URL Content Type, Type, and Subtype "
-                           "[Wrong>Wrong Type>null] are not a valid set "
-                           "together.")]}]))))
+        "with bad content,type,subtype"
+        (url-type-map "Wrong" "Wrong Type")
+        [422] [{:path ["RelatedUrLs" 0]
+                :errors [(str "Related URL Content Type, Type, and Subtype "
+                              "[Wrong>Wrong Type>null] are not a valid set "
+                              "together.")]}]))))

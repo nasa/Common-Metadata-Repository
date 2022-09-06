@@ -28,7 +28,19 @@
    [cmr.transmit.echo.rest :as rest]
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.transmit.metadata-db2 :as meta-db2]
-   [cmr.transmit.search :as search]))
+   [cmr.transmit.search :as search])
+  ;; Required to get code loaded
+  ;; XXX This is really awful, and we do it a lot in the CMR. What we've got
+  ;;     as a result of this is a leak from implementation into a separate part
+  ;;     of the code ... not to mention that whatever is happing is is 100%
+  ;;     implicit and chock-a-block with side effects. I believe the reason we
+  ;;     do this is to work around issues with multimethods. We really need to
+  ;;     refactor our multimethod code -- and this isn't the only reason
+  ;;     (multimethods use slower code under the hood). If we really do need
+  ;;     the flexible polymorphism that multimethods provide, then let's
+  ;;     rethink our code reuse strategy around multimethods.
+  (:require
+   [cmr.indexer.data.concepts.generic]))
 
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data

@@ -694,3 +694,12 @@
   "URL to index a concept"
   []
   (format "http://localhost:%s" (transmit-config/indexer-port)))
+
+(defn ingest-generic-crud-url
+  "Get the URL for Creating a Generic Document"
+  [concept-type provider-id native-id]
+  (format "http://localhost:%s/%s/%s?provider=%s"
+          (transmit-config/ingest-port)
+          concept-type
+          native-id
+          provider-id))

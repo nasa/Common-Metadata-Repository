@@ -215,6 +215,14 @@
   {:default false
    :type Boolean})
 
+(def default-approved-pipeline-documents
+  "The default set of approved pipeline documents"
+  {:grid ["0.0.1"]
+   :dataqualitysummary ["1.0.0"]
+   :orderoption ["1.0.0"]
+   :serviceentry ["1.0.0"]
+   :serviceoption ["1.0.0"]})
+
 (defconfig approved-pipeline-documents
   "This is the feature toggle for the new document pipeline prototype, as well as serving as
    the base truth list of approved document types.
@@ -224,11 +232,7 @@
     \"orderoption\": [\"1.0.0\"],
     \"serviceentry\": [\"1.0.0\"],
     \"serviceoption\": [\"1.0.0\"]}"
-  {:default {:grid ["0.0.1"]
-             :dataqualitysummary ["1.0.0"]
-             :orderoption ["1.0.0"]
-             :serviceentry ["1.0.0"]
-             :serviceoption ["1.0.0"]}
+  {:default default-approved-pipeline-documents
    :parser #(json/parse-string % true)})
 
 (defn check-env-vars

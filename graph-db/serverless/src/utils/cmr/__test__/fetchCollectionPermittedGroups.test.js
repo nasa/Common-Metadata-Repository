@@ -82,7 +82,7 @@ describe('fetchCollectionPermittedGroups', () => {
 
     const result = await fetchCollectionPermittedGroups('Not_a_real_Collection', 'mock_token')
 
-    expect(consoleMock).toHaveBeenCalledWith('Could not complete request due to error: Error: Request failed with status code 400')
+    expect(consoleMock).toHaveBeenCalledWith('Could not complete request to acl due to error: Error: Request failed with status code 400')
     expect(result).toEqual(mockedBody)
   })
 
@@ -94,7 +94,7 @@ describe('fetchCollectionPermittedGroups', () => {
       .get(/acls/)
       .reply(400, mockedBody)
     const result = await fetchCollectionPermittedGroups('Not_a_real_Collection')
-    expect(consoleMock).toHaveBeenCalledWith('Could not complete request due to error: Error: Request failed with status code 400')
+    expect(consoleMock).toHaveBeenCalledWith('Could not complete request to acl due to error: Error: Request failed with status code 400')
     expect(result).toEqual(mockedBody)
   })
 
