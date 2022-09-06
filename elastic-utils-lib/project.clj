@@ -23,6 +23,7 @@
                  [org.elasticsearch/elasticsearch ~elastic-version]
                  [org.testcontainers/testcontainers "1.17.2"]
                  [potemkin "0.4.5"]]
+  :managed-dependencies [[org.yaml/snakeyaml "1.31"]]
   :plugins [[lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
   :jvm-opts ^:replace ["-server"
