@@ -10,7 +10,7 @@ export const fetchCmrCollection = async (conceptId, token) => {
   const requestHeaders = {}
 
   if (token) {
-    requestHeaders.Authorization = `Bearer ${token}`
+    requestHeaders.Authorization = token
   }
 
   let response

@@ -25,6 +25,7 @@ provider:
     ENVIRONMENT: ${self:custom.variables.ENVIRONMENT}
     GREMLIN_URL: ${self:custom.variables.GREMLIN_URL}
     PAGE_SIZE: ${self:custom.variables.PAGE_SIZE}
+    CMR_TOKEN_KEY: ${self:custom.variables.CMR_TOKEN_KEY}
 
 configValidationMode: error
 plugins:
@@ -160,6 +161,7 @@ custom:
     ENVIRONMENT: ${self:provider.stage}
     GREMLIN_URL: ${env:GREMLIN_URL, 'wss://${cf:neptune-${opt:stage}.DBClusterEndpoint}:8182/gremlin'}
     PAGE_SIZE: ${env:PAGE_SIZE, '1000'}
+    CMR_TOKEN_KEY: ${env:CMR_TOKEN_KEY, 'CMR_ECHO_SYSTEM_TOKEN'}
 
   # Serverless Webpack configurations
   webpack:
