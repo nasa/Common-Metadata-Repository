@@ -6,13 +6,10 @@
    [clojure.test :refer :all]
    [cmr.common.config :as config]
    [cmr.common.generics :as gcfg]
-   [cmr.common.util :as cutil]
    [cmr.ingest.api.generic-documents :as gdocs]
    [cmr.system-int-test.utils.generic-util :as gen-util]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.transmit.config :as transmit-config])
-  (:import
-   [java.util UUID]))
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -66,7 +63,7 @@
   "Test that a Generic can be walked through all the CRUD actions using the ingest
    interface. Use the same native-id for all these steps"
 
-  (let [native-id (format "Generic-Test-%s" (UUID/randomUUID))
+  (let [native-id (format "Generic-Test-CRUD")
         generic-tokened-request (partial gen-util/generic-request
                                          (transmit-config/echo-system-token)
                                          "PROV1"
@@ -82,32 +79,30 @@
           (is (string/starts-with? (:body result) "<!DOCTYPE html>") "The body is not correct"))))
 
     (testing "CREATE a document with a valid config set that includes grid"
-      (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
-        (let [expected {:Info {:native-id native-id
-                               :document-name "Grid-A7-v1"
-                               :provider-id "PROV1"
-                               :schema "grid"
-                               :format "application/vnd.nasa.cmr.umm+json;version=0.0.1"
-                               :mime-type "application/grid;version=0.0.1"
-                               :revision-id 1
-                               :user-id "ECHO_SYS"}
-                        :Metadata gen-util/grid-good}
+      (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})] 
+        (let [expected {:native-id native-id
+                        :deleted false
+                        :provider-id "PROV1"
+                        :format "UMM_JSON;0.0.1"
+                        :revision-id 1
+                        :user-id "ECHO_SYS"
+                        :concept-type "grid"
+                        :extra-fields {:document-name "Grid-A7-v1"
+                                       :schema "grid"
+                                       :mime-type "application/vnd.nasa.cmr.umm+json;version=0.0.1"}
+                        :metadata gen-util/grid-good}
 
               create-result (generic-requester gen-util/grid-good :post)
-              create-response (:body create-result)
+              create-response (:body create-result) 
 
               read-result (generic-requester)
               read-response (:body read-result)
 
-              actual (json/parse-string read-response true)
-              concept-id (get-in actual [:Info :concept-id])
-              normalised (-> actual
-                           ;; these fields are complicated to test, do so another way
-                             (cutil/dissoc-in [:Info :concept-id])
-                             (cutil/dissoc-in [:Info :revision-date])
-                             (cutil/dissoc-in [:Info :created-at]))
-              expected-pattern (re-pattern "\\{\"concept-id\":\"GRD[0-9]+-PROV1\",\"revision-id\":1\\}")]
-
+              actual (first (json/parse-string read-response true))
+              concept-id (get actual :concept-id)
+              ;; these fields are complicated to test, do so another way
+              normalised (dissoc actual :concept-id :revision-date :created-at :transaction-id)
+              expected-pattern (re-pattern "\\{\"concept-id\":\"GRD[0-9]+-PROV1\",\"revision-id\":1,\"warnings\":null,\"existing-errors\":null\\}")]
           ;; test that the create was a success
           (is (= 201 (:status create-result)) "The HTTP status code from create is not correct")
           (is (some? (re-matches expected-pattern create-response))
@@ -120,12 +115,12 @@
 
           ;; test the three complicated fields
           (is (some? (re-matches #"GRD[0-9]+-PROV1" concept-id)) "A concept id was not returned")
-          (is (some? (get-in actual [:Info :revision-date])) "Response did not have a revision date")
-          (is (some? (get-in actual [:Info :created-at])) "Response did not have a create date")
+          (is (some? (get actual :revision-date)) "Response did not have a revision date")
+          (is (some? (get actual :created-at)) "Response did not have a create date")
 
           ;; Test the content in sections to make it easy to see where a problem may be
-          (is (= (:Info expected) (:Info normalised)) "Info section does not match")
-          (is (= (:Metadata expected) (:Metadata normalised)) "Metadata section did not match"))))
+          (is (= (dissoc expected :metadata) (dissoc normalised :metadata)) "Info section does not match")
+          (is (= (:metadata expected) (json/parse-string (:metadata actual) true)) "Metadata section did not match"))))
 
     (comment "READ was tested above and will be tested below, no need to do it here")
 
@@ -138,10 +133,13 @@
               update-body (:body update-result)
 
               read-result (generic-requester)
-              read-body (:body read-result)
-              read-json (json/parse-string read-body true)
-              actual (get-in read-json [:Metadata :Description])
-              expected-pattern (re-pattern "\\{\"concept-id\":\"GRD[0-9]+-PROV1\",\"revision-id\":2\\}")]
+              read-body (:body read-result) 
+              read-json (->> (json/parse-string read-body true) 
+                             (filter #(= 2 (:revision-id %))) 
+                             (first))
+              metadata (:metadata read-json)
+              actual (get (json/parse-string metadata true) :Description)
+              expected-pattern (re-pattern "\\{\"concept-id\":\"GRD[0-9]+-PROV1\",\"revision-id\":2,\"warnings\":null,\"existing-errors\":null\\}")]
 
           ;; Test that the update was successfull
           (is (= 200 (:status update-result))
@@ -159,7 +157,7 @@
         (let [result1 (generic-requester gen-util/grid-good :delete)
               result2 (generic-requester gen-util/grid-good :delete)
               expected-pattern1 (re-pattern "\\{\"concept-id\":\"GRD[0-9].*-PROV1\",\"revision-id\":3.*?")
-              expected-pattern2 (re-pattern "\\{\"errors\":\\[\"Concept with native-id \\[Generic-Test-[0-9a-z-].* and concept-id \\[GRD[0-9].*-PROV1\\] is already deleted.\"\\]\\}")]
+              expected-pattern2 (re-pattern "\\{\"errors\":\\[\"Concept with native-id \\[Generic-Test-CRUD.* and concept-id \\[GRD[0-9].*-PROV1\\] is already deleted.\"\\]\\}")]
 
           (is (= 200 (:status result1)) "First delete was not successfull")
           (is (some? (re-matches expected-pattern1 (:body result1)))

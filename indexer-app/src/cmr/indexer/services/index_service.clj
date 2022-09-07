@@ -640,7 +640,9 @@
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
           ;; save tombstone in all revisions collection index
-          (let [es-doc (es/parsed-concept->elastic-doc context concept (:extra-fields concept))]
+          (let [es-doc (if (cs/generic-concept? concept-type)
+                         (es/parsed-concept->elastic-doc context concept (json/parse-string (:metadata concept) true))
+                         (es/parsed-concept->elastic-doc context concept (:extra-fields concept)))]
             (es/save-document-in-elastic
               context index-names (concept-mapping-types concept-type)
               es-doc concept-id revision-id elastic-version elastic-options))

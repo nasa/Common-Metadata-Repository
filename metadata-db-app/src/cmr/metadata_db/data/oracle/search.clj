@@ -62,7 +62,7 @@
                                [:associated_concept_id :associated_revision_id
                                 :source_concept_identifier :source_revision_id :user_id])}
    (zipmap (cc/get-generic-concept-types-array) 
-           (repeat (into common-columns [:provider_id :document_name :schema :mime_type :user_id])))))
+           (repeat (into common-columns [:provider_id :document_name :schema :mime_type :user_id :created_at])))))
 
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept

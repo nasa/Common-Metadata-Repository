@@ -4,13 +4,10 @@
    that can be indexed in lucine."
   (:require
    [cheshire.core :as json]
-   [cmr.common-app.config :as common-config]
    [cmr.common.concepts :as concepts]
    [cmr.common.generics :as common-generic :refer [approved-generic?]]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mtype]
    [cmr.common.util :as util]
-   [cmr.indexer.data.concept-parser :as concept-parser]
    [cmr.indexer.data.concepts.generic-util :as gen-util]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.elasticsearch :as esearch]
@@ -75,7 +72,7 @@
   "Generate an all of the elastic document parts"
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id user-id
-                revision-date format-key extra-fields native-id]} concept
+                revision-date extra-fields native-id]} concept
         generic-associations (esearch/parse-non-tombstone-associations
                               context
                               (meta-db/get-generic-associations-for-concept context concept))
@@ -121,7 +118,7 @@
                   common-doc
                   configs)]
              (if deleted
-               (assoc common-doc :metadata-format (name (mtype/format-key format-key))
+               (assoc common-doc :metadata-format (name (mtype/format-key (:mime-type extra-fields)))
                       :gen-type-lowercase (util/safe-lowercase gen-name)
                       :long-name long-name
                       :long-name-lowercase (util/safe-lowercase long-name))

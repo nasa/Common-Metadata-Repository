@@ -6,4 +6,5 @@
 (defn approved-generic?
   "Check to see if a requested generic is on the approved list"
   [schema version]
-  (some #(= version %) (schema (cfg/approved-pipeline-documents))))
+  (when (and schema version)
+    (some #(= version %) (schema (cfg/approved-pipeline-documents)))))
