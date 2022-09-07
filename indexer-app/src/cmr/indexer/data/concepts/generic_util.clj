@@ -16,6 +16,7 @@
         (map
          (fn [x] (when (or (nil? (:Type x)) (= "elastic" (:Type x))) x))
          list-of-indexes)))
+
 (defn jq->list
   "To make configuration authoring simple for humans, fields of a JSON record are
    to be denoted using a syntax simaler to the jq unix command. This syntax will
