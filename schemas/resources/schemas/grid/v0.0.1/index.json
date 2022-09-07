@@ -4,6 +4,10 @@
       "Name": "Generic-Index",
       "Version": "0.0.1"
   },
+    "Generic": {
+      "Name": "Grid",
+      "Version": "0.0.1"
+    },
   "SubConceptType": "GRD",
   "Indexes":
   [

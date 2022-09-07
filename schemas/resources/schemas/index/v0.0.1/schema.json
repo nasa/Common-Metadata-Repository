@@ -14,6 +14,11 @@
           "minLength": 1,
           "maxLength": 4
         },
+        "Generic": {"$ref": "#/definitions/GenericType"},
+        "IndexSetup" : {
+          "description": "Contains fields for index level configurations in Elastic",
+          "$ref": "#/definitions/IndexSetupType"
+        },
         "Indexes": {
             "type": "array",
             "uniqueItems": true,
@@ -21,7 +26,7 @@
             "items": {"$ref": "#/definitions/IndexType"}
         }
     },
-    "required": ["MetadataSpecification"],
+    "required": ["MetadataSpecification", "Generic"],
     "definitions": {
         "MetadataSpecificationType": {
             "type": "object",
@@ -45,6 +50,42 @@
                 }
             },
             "required": ["URL", "Name", "Version"]
+        },
+        "GenericType": {
+          "type": "object",
+          "additionalProperties": false,
+          "Description": "The matching schema for this index configuration",
+          "properties": {
+            "Name": {"type": "string"},
+            "Version": {"type": "string"}
+          },
+          "required": ["Name", "Version"]
+        },
+        "IndexSetupType": {
+          "type": "object",
+          "additionalProperties": false,
+          "Description": "Define Elastic configurations for the entire index",
+          "properties": {
+            "index" : {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "number_of_shards" : {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 32
+                },
+                "number_of_replicas" : {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 32
+                },
+                "refresh_interval" : {
+                  "type": "string",
+                  "pattern": "[0-9]+s"}
+              }
+            }
+          }
         },
         "IndexType": {
             "$comment": "This object is subject to major change",
