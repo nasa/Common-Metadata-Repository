@@ -10,7 +10,6 @@
    [cmr.indexer.data.concepts.generic-util :as gen-util]
    [cmr.schema-validation.json-schema :as js-validater]))
 
-;; TODO: Generic work - move this to a location where index and ingest can find it
 (defn- validate-index-against-schema
   "Validate a document, returns an array of errors if there are problems
    Parameters:
