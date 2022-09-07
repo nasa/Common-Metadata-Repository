@@ -514,7 +514,8 @@
   (j/db-do-commands this "DELETE FROM cmr_services")
   (j/db-do-commands this "DELETE FROM cmr_tools")
   (j/db-do-commands this "DELETE FROM cmr_variables")
-  (j/db-do-commands this "DELETE FROM cmr_associations where association_type = 'VARIABLE-COLLECTION'"))
+  (j/db-do-commands this "DELETE FROM cmr_associations where association_type = 'VARIABLE-COLLECTION'")
+  (j/db-do-commands this "DELETE FROM cmr_generic_documents"))
 
 (defn get-expired-concepts
   [this provider concept-type]

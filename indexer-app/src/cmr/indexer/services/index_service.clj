@@ -177,6 +177,17 @@
            {:num-indexed 0 :max-revision-date nil}
            concept-batches)))
 
+(def index-applicable-concepts
+  "These are the indexable concepts for all revisions."
+  (reduce conj
+          #{:collection :tag-association
+            :variable :variable-association
+            :service :service-association
+            :tool :tool-association
+            :subscription
+            :association}
+          (cs/get-generic-concept-types-array)))
+
 (defn- indexing-applicable?
   "Returns true if indexing is applicable for the given concept-type and all-revisions-index? flag.
   Indexing is applicable for all concept types if all-revisions-index? is false and only for
@@ -184,14 +195,8 @@
   if all-revisions-index? is true."
   [concept-type all-revisions-index?]
   (or (not all-revisions-index?)
-      (and all-revisions-index? (contains?
-                                 #{:collection :tag-association
-                                   :variable :variable-association
-                                   :service :service-association
-                                   :tool :tool-association
-                                   :subscription
-                                   :generic}
-                                 concept-type))))
+      (and all-revisions-index? (contains? index-applicable-concepts concept-type))))
+
 
 (defconfig collection-reindex-batch-size
   "Batch size used for re-indexing collections."
@@ -597,7 +602,9 @@
             elastic-options (select-keys options [:all-revisions-index? :ignore-conflict?])]
         (if all-revisions-index?
           ;; save tombstone in all revisions collection index
-          (let [es-doc (es/parsed-concept->elastic-doc context concept (:extra-fields concept))]
+          (let [es-doc (if (cs/generic-concept? concept-type)
+                         (es/parsed-concept->elastic-doc context concept (json/parse-string (:metadata concept) true))
+                         (es/parsed-concept->elastic-doc context concept (:extra-fields concept)))]
             (es/save-document-in-elastic
               context index-names (concept-mapping-types concept-type)
               es-doc concept-id revision-id elastic-version elastic-options))

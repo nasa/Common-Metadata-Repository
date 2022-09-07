@@ -262,7 +262,7 @@
  (routes
     (api-core/set-default-error-format
      :xml
-     (context ["/:concept-sub-type" :concept-sub-type (re-pattern generate-generic-concept-types-reg-ex)] [concept-sub-type]
+     (context ["/:concept-type" :concept-type (re-pattern generate-generic-concept-types-reg-ex)] [concept-type]
        (context ["/:native-id" :native-id #".*$"] [native-id]
          (POST "/" request (gen-doc/validate-required-query-parameters request :create))
          (GET "/" request (gen-doc/validate-required-query-parameters request :read))

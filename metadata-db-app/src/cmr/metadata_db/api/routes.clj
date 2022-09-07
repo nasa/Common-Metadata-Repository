@@ -11,7 +11,6 @@
    [cmr.common.jobs :as jobs]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.metadata-db.api.concepts :as concepts-api]
-   [cmr.metadata-db.api.generic-documents :as gen-doc]
    [cmr.metadata-db.api.provider :as provider-api]
    [cmr.metadata-db.api.subscriptions :as subscription-api]
    [cmr.metadata-db.services.concept-service :as concept-service]
@@ -72,7 +71,6 @@
       concepts-api/concepts-api-routes
       provider-api/provider-api-routes
       subscription-api/subscription-api-routes
-      gen-doc/generic-document-api-routes
       common-routes/cache-api-routes
       job-api-routes
       (common-health/health-api-routes hs/health)

@@ -3,7 +3,6 @@
   (:require
    [clj-time.core :as t]
    [clojure.set :as set]
-   [clojure.string :as string]
    [cmr.common.concepts :as cu]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.date-time-parser :as p]
@@ -14,7 +13,6 @@
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as cutil]
    [cmr.metadata-db.data.concepts :as c]
-   [cmr.metadata-db.data.generic-documents :as gen-doc]
    [cmr.metadata-db.data.ingest-events :as ingest-events]
    [cmr.metadata-db.data.providers :as provider-db]
    [cmr.metadata-db.services.concept-constraints :as cc]
@@ -36,6 +34,7 @@
   (:require
    [cmr.metadata-db.data.oracle.concepts.acl]
    [cmr.metadata-db.data.oracle.concepts.collection]
+   [cmr.metadata-db.data.oracle.concepts.generic-documents]
    [cmr.metadata-db.data.oracle.concepts.granule]
    [cmr.metadata-db.data.oracle.concepts.group]
    [cmr.metadata-db.data.oracle.concepts.humanizer]
@@ -49,7 +48,6 @@
    [cmr.metadata-db.data.oracle.concepts.variable-association]
    [cmr.metadata-db.data.oracle.concepts.variable]
    [cmr.metadata-db.data.oracle.concepts]
-   [cmr.metadata-db.data.oracle.generic-documents]
    [cmr.metadata-db.data.oracle.providers]
    [cmr.metadata-db.data.oracle.search]))
 
@@ -243,6 +241,11 @@
 (defmethod set-created-at :variable
   [db provider concept]
   (set-created-at-for-concept db provider concept))
+
+(doseq [concept-type (cu/get-generic-concept-types-array)]
+  (defmethod set-created-at concept-type
+    [db provider concept]
+    (set-created-at-for-concept db provider concept)))
 
 (defmethod set-created-at :granule
   [db provider concept & previous-revision]
@@ -475,9 +478,6 @@
          {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
          provider (provider-service/get-provider-by-id context provider-id true)]
      (or (c/get-concept db concept-type provider concept-id revision-id)
-         ;; TODO: Generic work: Should we use an if clause here to check if
-         ;; if the concept is generic or not. Then we don't have to try to get the concept twice.
-         (gen-doc/get-concept db concept-type provider concept-id revision-id)
          (cmsg/data-error :not-found
                           msg/concept-with-concept-id-and-rev-id-does-not-exist
                           concept-id
@@ -835,11 +835,14 @@
       ;; to send concept updates and deletions out of order.
       (if (and (util/is-tombstone? previous-revision) (nil? revision-id))
         previous-revision
-        (let [tombstone (merge previous-revision {:concept-id concept-id
+        (let [metadata (if (cu/generic-concept? concept-type)
+                         (:metadata previous-revision)
+                         "")
+              tombstone (merge previous-revision {:concept-id concept-id
                                                   :revision-id revision-id
                                                   :revision-date revision-date
                                                   :user-id user-id
-                                                  :metadata ""
+                                                  :metadata metadata
                                                   :deleted true})]
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)

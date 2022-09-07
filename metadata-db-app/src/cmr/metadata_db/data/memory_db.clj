@@ -5,7 +5,6 @@
    [clojure.string :as string]
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.lifecycle :as lifecycle]
    [cmr.common.memory-db.connection :as connection]
    [cmr.common.time-keeper :as tk]
    [cmr.metadata-db.data.concepts :as concepts]
@@ -13,7 +12,6 @@
    [cmr.metadata-db.data.oracle.concepts.tag :as tag]
    [cmr.metadata-db.data.oracle.concepts]
    [cmr.metadata-db.data.providers :as providers]
-   [cmr.metadata-db.data.generic-documents :as gdoc]
    [cmr.metadata-db.data.util :refer [INITIAL_CONCEPT_NUM]]
    [cmr.metadata-db.services.provider-validation :as pv])
   (:import
@@ -612,23 +610,6 @@
 (extend MemoryStore
         providers/ProvidersStore
         provider-store-behaviour)
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Metadata DB GenDocsStore Implementation
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-(def generic-doc-store-behaviour
-  {:generate-concept-id generate-concept-id
-   :get-concept-id get-concept-id
-   :get-concept get-concept
-   :get-concepts get-concepts
-   :get-latest-concepts get-latest-concepts
-   :save-concept save-concept
-   :reset reset})
-
-(extend MemoryStore
-  gdoc/GenericDocsStore
-  generic-doc-store-behaviour)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MemoryStore Constructor
