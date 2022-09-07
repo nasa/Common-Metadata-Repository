@@ -162,8 +162,6 @@
         [(.getMessage je)]))
     ))
 
-;; TODO: Generic work: We need to check throws here. When something is wrong in the schema,
-;; 500 errors are thrown.
 (defn generic-mappings-generator
   "create a map with an index for each of the known generic types. This is used
    to inform Elastic on CMR boot on what an index should look like
