@@ -1,6 +1,5 @@
 (ns cmr.search.services.association-validation
-  "This contains functions for validating the business rules of an association between a collection
-   and a tag or a variable."
+  "This contains functions for validating the business rules of a generic association"
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
@@ -88,6 +87,83 @@
       (if (contains? inaccessible-coll-revisions coll-revision)
         (append-error association (assoc-msg/inaccessible-collection-revision coll-revision))
         association))))
+
+(defn- validate-concept-concept-id
+  "Validates the association concept concept-id is not in the set of inaccessible-concept-ids,
+  returns the association with errors appended if applicable."
+  [inaccessible-concept-ids association]
+  (if (contains? inaccessible-concept-ids (:concept-id association))
+    (append-error association (assoc-msg/inaccessible-concept (:concept-id association)))
+    association))
+
+(defn- validate-concept-revision
+  "Validates the association concept revision is not in the set of tombstone-coll-revisions
+  and inaccessible-coll-revisions, returns the association with errors appended if applicable."
+  [assoc-type tombstone-revisions inaccessible-revisions association]
+  (let [concept-revision (select-keys association [:concept-id :revision-id])]
+    (if (contains? tombstone-revisions concept-revision)
+      (append-error association (assoc-msg/tombstone-concept assoc-type concept-revision))
+      (if (contains? inaccessible-revisions concept-revision)
+        (append-error association (assoc-msg/inaccessible-concept-revision concept-revision))
+        association))))
+
+(defn validate-generic-association-conflict-for-concept
+  "Validates concept with concept-id can not be associated with the concept in the association
+  with and without the revisions." 
+  [context concept-id association]
+  (let [;;Get all the generic associations between the concept with concept-id and the concept
+        ;;in the association. Depending on the order of the sorting between concept-id and (:concept-id association),
+        ;;concept-id could be at source-concept-identifier or associated-concept-id.
+        concept-id-as-source? (if (= concept-id (first (sort [concept-id (:concept-id association)])))
+                                true
+                                false)
+        generic-assocs (if concept-id-as-source? 
+                         (->> (mdb/find-concepts context
+                                                 {:source-concept-identifier concept-id
+                                                  :associated-concept-id (:concept-id association)
+                                                  :exclude-metadata true
+                                                  :latest true}
+                                                  :generic-association)
+                              (filter #(not (:deleted %))))
+                         (->> (mdb/find-concepts context
+                                                 {:source-concept-identifier (:concept-id association)
+                                                  :associated-concept-id concept-id 
+                                                  :exclude-metadata true
+                                                  :latest true}
+                                                  :generic-association)
+                              (filter #(not (:deleted %)))))
+        concept-revision-ids (if concept-id-as-source?
+                               (map #(get-in % [:extra-fields :associated-revision-id]) generic-assocs)
+                               (map #(get-in % [:extra-fields :source-revision-id]) generic-assocs))
+        not-nil-revision-ids (remove nil? concept-revision-ids)]
+    (cond
+      ;; there is no existing generic association found between the two concepts, no need to validate
+      (= 0 (count concept-revision-ids))
+      nil
+
+      ;; there are existing generic associations and they are all on concept revisions
+      (= (count concept-revision-ids) (count not-nil-revision-ids))
+      (when-not (:revision-id association)
+        (format (str "There are already generic associations between concept id [%s] and "
+                     "concept id [%s] revision ids [%s], cannot create generic association "
+                     "on the same concept without revision id.")
+                concept-id (:concept-id association) (string/join ", " concept-revision-ids)))
+
+      ;; there are existing generic associations and they are all on concept without revision
+      (= 0 (count not-nil-revision-ids))
+      (when-let [revision-id (:revision-id association)]
+        (format (str "There are already generic associations between concept id [%s] and "
+                     "concept id [%s] without revision id, cannot create generic association "
+                     "on the same concept with revision id [%s].")
+                concept-id (:concept-id association) revision-id))
+
+      ;; there are conflicts within the existing generic associations in metadata-db already
+      :else
+      (format (str "Concept can only be associated with a concept or a concept revision, "
+                   "never both at the same time. There are already conflicting generic associations "
+                   "in metadata-db between concept id [%s] and concept id [%s] , "
+                   "please delete one of the conflicting generic associations.")
+              concept-id (:concept-id association)))))
 
 (defmulti validate-association-conflict-for-collection
   "Validate the given association does not conflict with existing tag associations in that
@@ -266,6 +342,17 @@
     (append-error association error-msg)
     association))
 
+(defn- validate-generic-association-conflict
+  "Validates the association (either on a specific revision or over the whole collection)
+  does not conflict with one or more existing associations in Metadata DB. a concept 
+  cannot be associated with another concept revision and the same concept without revision
+  at the same time. Returns the association with errors appended if applicable."
+  [context concept-id association]
+  (if-let [error-msg (validate-generic-association-conflict-for-concept
+                      context concept-id association)]
+    (append-error association error-msg)
+    association))
+
 (defn- validate-collection-identifier
   "Validates the association concept-id and revision-id (if given) satisfy association rules,
   i.e. collection specified exist and are viewable by the token,
@@ -280,6 +367,21 @@
       (validate-collection-revision
         assoc-type tombstone-coll-revisions inaccessible-coll-revisions association)
       (validate-collection-concept-id inaccessible-concept-ids association))))
+
+(defn- validate-concept-identifier
+  "Validates the association concept-id and revision-id (if given) satisfy association rules,
+  i.e. concepts specified exist and are viewable by the token,
+  collection specified are not tombstones."
+  [context assoc-type no-permission-concept-ids inaccessible-concept-ids tombstone-revisions
+   inaccessible-revisions association association?]
+  (if (contains? no-permission-concept-ids (:concept-id association))
+    (if association?
+      (append-error association (assoc-msg/no-permission-concept-assoc (:concept-id association)))
+      (append-error association (assoc-msg/no-permission-concept-dissoc (:concept-id association))))
+    (if (:revision-id association)
+      (validate-concept-revision
+        assoc-type tombstone-revisions inaccessible-revisions association)
+      (validate-concept-concept-id inaccessible-concept-ids association))))
 
 (defn- validate-association-data
   "Validates the association data are within the maximum length requirement after written in JSON."
@@ -304,6 +406,43 @@
       (errors/throw-service-error
         :invalid-data (assoc-msg/conflict-associations assoc-type conflict-assocs)))))
 
+(defn- validate-generic-conflicts-within-request
+  "Validates the two lists have no intersection, otherwise there are conflicts within the same
+  request, throws service error if conflicts are found."
+  [assoc-type concept-id-only-assocs revision-assocs]
+  (let [conflict-assocs (set/intersection (set (map :concept-id concept-id-only-assocs))
+                                          (set (map :concept-id revision-assocs)))]
+    (when (seq conflict-assocs)
+      (errors/throw-service-error
+        :invalid-data (assoc-msg/conflict-generic-associations assoc-type conflict-assocs)))))
+
+(defn validate-no-same-concept-generic-association
+  "Validates that the concept is not associating with itself in the associations."
+  [concept associations]
+  (if (contains? (set (map :concept-id associations)) (:concept-id concept))
+    (errors/throw-service-error
+        :invalid-data (assoc-msg/same-concept-generic-association (:concept-id concept)))
+    associations))
+
+(defn validate-generic-association-types
+  "Validates only certain concept types are supported for generic associations."
+  [concept associations]
+  ;;We currently only support generic associations among collection and all generic concept types
+  ;; Other types could be ingested, but since the reindex event is not being handled
+  ;;yet, the associations won'be shown in the concept search. We should support them after
+  ;;having the event handler in place.
+  (let [concept-ids (concat [(:concept-id concept)] (map :concept-id associations))
+        concept-types (map #(concepts/concept-id->type %) concept-ids)
+        supported-concept-types (set (concat [:collection]
+                                             (concepts/get-generic-concept-types-array)))
+        non-supported-types (remove nil? 
+                                    (map #(when-not (contains? supported-concept-types %) %)
+                                         concept-types))]
+    (if (seq non-supported-types)
+      (errors/throw-service-error
+        :invalid-data (assoc-msg/non-supported-generic-association-types (pr-str non-supported-types)))
+      associations)))
+         
 (defn- partition-associations
   "Returns the associations as a list partitioned by if there is a revision-id."
   [associations]
@@ -340,6 +479,15 @@
   "Validates the associations for the given association type (:tag or :variable) based on the
   operation type, which is either :insert or :delete. Id is the identifier value of the tag or
   variable that is associated with the collections. Returns the associations with errors found
+  appended to them. If the provided associations fail the basic rules validation (e.g. empty
+  associations, conflicts within the request), throws a service error."
+  (fn [context assoc-type assoc-id associations operation-type]
+    operation-type))
+
+(defmulti validate-generic-associations
+  "Validates the associations based on the operation type, which is either :insert or :delete. 
+  assoc-typeand assoc-id are the concept type and concept id that is associated with the concepts
+  in the associations. Returns the associations with errors found
   appended to them. If the provided associations fail the basic rules validation (e.g. empty
   associations, conflicts within the request), throws a service error."
   (fn [context assoc-type assoc-id associations operation-type]
@@ -416,5 +564,129 @@
                 (set inaccessible-concept-ids)
                 (set tombstones)
                 (set inaccessibles)
+                %
+                false)))))
+
+(defn- get-bad-concept-revisions
+  "Returns the bad concept revisions of the given associations partitioned into a set of
+  concept revisions that are tombstones and a set of concept revisions that are inaccessible."
+  [context associations]
+  (when (seq associations)
+    (let [concept-ids-by-types (group-by concepts/concept-id->type (map :concept-id associations))
+          concept-ids-by-valid-types (dissoc concept-ids-by-types nil)
+          accessible-concept-revisions
+           (flatten (for [concept-type (keys concept-ids-by-valid-types)
+                          :let [concept-ids (concept-type concept-ids-by-valid-types)
+                                query (cqm/query {:concept-type concept-type
+                                                  :condition (cqm/string-conditions :concept-id concept-ids true)
+                                                  :page-size :unlimited
+                                                  :result-format :query-specified
+                                                  :result-fields [:concept-id :revision-id :deleted]
+                                                  :all-revisions? true
+                                                  :skip-acls? false})
+                                concepts (->> (qe/execute-query context query)
+                                              :items
+                                              (map #(select-keys % [:concept-id :revision-id :deleted])))]]
+                      concepts))
+          ids-fn (fn [concept] (select-keys concept [:concept-id :revision-id]))
+          concepts-set (set (map ids-fn associations))
+          matched-concepts (filter #(contains? concepts-set (ids-fn %)) accessible-concept-revisions)
+          tombstone-concept-revisions (set (map ids-fn (filter :deleted matched-concepts)))
+          inaccessible-concept-revisions (set/difference
+                                          concepts-set
+                                          (set (map ids-fn matched-concepts)))]
+      {:tombstoned-revisions tombstone-concept-revisions
+       :inaccessible-revisions inaccessible-concept-revisions})))
+
+(defn- get-generic-inaccessible-concept-ids
+  "Returns the concept-ids within the given list that are invalid,
+  i.e. the concepts for the given concept-ids do not exist or are not viewable by the token."
+  [context generic-concept-ids]
+  (when (seq generic-concept-ids)
+    (let [concept-ids-by-types (group-by concepts/concept-id->type generic-concept-ids)
+          concept-ids-by-valid-types (dissoc concept-ids-by-types nil)
+          accessible-concept-ids
+           (flatten (for [concept-type (keys concept-ids-by-valid-types)
+                          :let [concept-ids (concept-type concept-ids-by-valid-types)
+                                query (cqm/query {:concept-type concept-type
+                                                  :condition (cqm/string-conditions :concept-id concept-ids true)
+                                                  :page-size :unlimited
+                                                  :result-format :query-specified
+                                                  :result-fields [:concept-id]
+                                                  :skip-acls? false})
+                                ids (->> (qe/execute-query context query)
+                                         :items
+                                         (map :concept-id))]]
+                      ids))]
+      (set/difference (set generic-concept-ids) (set accessible-concept-ids)))))
+
+(defmethod validate-generic-associations :insert
+  [context assoc-type assoc-id associations operation-type]
+  (validate-empty-associations assoc-type associations)
+  (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
+        _ (validate-generic-conflicts-within-request assoc-type concept-id-only-assocs revision-assocs)
+        no-permission-concept-ids (get-no-permission-concept-ids
+                                   context (map :concept-id associations))
+
+        ;;Find inaccessible concept ids in concept-id-only-assocs.
+        ;;This will include the tombstoned concept ids because they won't be returned
+        ;;in the search result without using all_revision = true. So, the tombstoned ones
+        ;;are also inaccessible through non-all-revisions search.
+        inaccessible-concept-only-concept-ids (get-generic-inaccessible-concept-ids
+                                               context (map :concept-id concept-id-only-assocs))
+        ;;Find inaccessible concept revisions and tombstoned revisions from revision-assocs.
+        ;;This search uses all_revision=true, which can return the deleted revisions so we
+        ;;could distinguish the two. 
+        {:keys [tombstoned-revisions inaccessible-revisions]} (get-bad-concept-revisions context revision-assocs)
+        inaccessible-concept-only-conceptids (remove #(found-id? no-permission-concept-ids %)
+                                              inaccessible-concept-only-concept-ids)
+        tombstoned-revisions (remove #(found-id? no-permission-concept-ids (:concept-id %))
+                                     tombstoned-revisions)
+        inaccessible-revisions (remove #(found-id? no-permission-concept-ids (:concept-id %))
+                                       inaccessible-revisions)]
+    (->> associations
+         (map #(validate-concept-identifier
+                context
+                assoc-type
+                (set no-permission-concept-ids)
+                (set inaccessible-concept-only-concept-ids)
+                (set tombstoned-revisions)
+                (set inaccessible-revisions)
+                %
+                true))
+         (map #(validate-association-data assoc-type %))
+         (map #(validate-generic-association-conflict context assoc-id %)))))
+
+(defmethod validate-generic-associations :delete
+  [context assoc-type assoc-id associations operation-type]
+  (validate-empty-associations assoc-type associations)
+  (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
+        no-permission-concept-ids (get-no-permission-concept-ids
+                                   context (map :concept-id associations))
+
+        ;;Find inaccessible concept ids in concept-id-only-assocs.
+        ;;This will include the tombstoned concept ids because they won't be returned
+        ;;in the search result without using all_revision = true. So, the tombstoned ones
+        ;;are also inaccessible through non-all-revisions search.
+        inaccessible-concept-only-concept-ids (get-generic-inaccessible-concept-ids
+                                               context (map :concept-id concept-id-only-assocs))
+        ;;Find inaccessible concept revisions and tombstoned revisions from revision-assocs.
+        ;;This search uses all_revision=true, which can return the deleted revisions so we
+        ;;could distinguish the two.
+        {:keys [tombstoned-revisions inaccessible-revisions]} (get-bad-concept-revisions context revision-assocs)
+        inaccessible-concept-only-conceptids (remove #(found-id? no-permission-concept-ids %)
+                                              inaccessible-concept-only-concept-ids)
+        tombstoned-revisions (remove #(found-id? no-permission-concept-ids (:concept-id %))
+                                     tombstoned-revisions)
+        inaccessible-revisions (remove #(found-id? no-permission-concept-ids (:concept-id %))
+                                       inaccessible-revisions)]
+    (->> associations
+         (map #(validate-concept-identifier
+                context
+                assoc-type
+                (set no-permission-concept-ids)
+                (set inaccessible-concept-only-concept-ids)
+                (set tombstoned-revisions)
+                (set inaccessible-revisions)
                 %
                 false)))))

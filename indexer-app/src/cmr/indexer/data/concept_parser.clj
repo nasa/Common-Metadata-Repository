@@ -53,6 +53,10 @@
   [context concept]
   (edn/read-string (:metadata concept)))
 
+(defmethod parse-concept :generic-association
+  [context concept]
+  (edn/read-string (:metadata concept)))
+
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
   (defmethod parse-concept concept-type
     [context concept]

@@ -36,7 +36,9 @@
     :service-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
                            :service-concept-id}
     :tool-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
-                        :tool-concept-id}}
+                        :tool-concept-id}
+    :generic-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
+                          :source-concept-identifier :source-revision-id :association-type}}
    (zipmap (cc/get-generic-concept-types-array)
            (repeat #{:concept-id :provider-id :native-id}))))
 
@@ -135,7 +137,8 @@
                  :humanizer
                  :variable-association
                  :service-association
-                 :tool-association}
+                 :tool-association
+                 :generic-association}
                (:concept-type params))
     (find-cmr-concepts context params)
 
