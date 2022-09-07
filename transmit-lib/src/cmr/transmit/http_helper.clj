@@ -143,7 +143,7 @@
 
 (defmacro defcreator2
   "Creates a function that can be used to send standard requests to create an item using JSON.
-   This version differes from defcreater in that it sends two parameters to url-fn which allows
+   This version differs from defcreater in that it sends two parameters to url-fn which allows
    the caller to send in a list of values to be used by url-fn for constructing the path. This
    is needed when a service requires extra paramaters then normal.
    "
