@@ -1057,7 +1057,7 @@
        [(get indexes (keyword coll-concept-id) small-collections-index-name)]))))
 
 (defn resolve-generic-concept-type
-  "if the concept type is generic, figure out from the concept what the actual document type is"
+  "If the concept type is generic, figure out from the concept what the actual document type is"
   [concept-type]
   (if (cs/generic-concept? concept-type)
     (keyword (format "generic-%s" (name concept-type)))
