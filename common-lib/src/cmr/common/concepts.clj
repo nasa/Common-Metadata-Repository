@@ -44,7 +44,14 @@
     :tag-association
     :variable
     :variable-association
-    :subscription})
+    :subscription
+    :generic
+    :dataqualitysummary
+    :orderoption
+    :serviceoption
+    :serviceentry
+    :grid
+    :generic-association})
 
 (def concept-prefix->concept-type
   "Maps a concept id prefix to the concept type"
@@ -62,7 +69,8 @@
     "TA" :tag-association
     "V" :variable
     "VA" :variable-association
-    "SUB" :subscription} 
+    "SUB" :subscription
+    "GA" :generic-association}
    generic-concept-prefix->concept-type))
 
 (def concept-type->concept-prefix
