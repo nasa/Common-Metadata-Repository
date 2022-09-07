@@ -30,15 +30,10 @@
    [cmr.transmit.metadata-db2 :as meta-db2]
    [cmr.transmit.search :as search])
   ;; Required to get code loaded
-  ;; XXX This is really awful, and we do it a lot in the CMR. What we've got
-  ;;     as a result of this is a leak from implementation into a separate part
-  ;;     of the code ... not to mention that whatever is happing is is 100%
-  ;;     implicit and chock-a-block with side effects. I believe the reason we
-  ;;     do this is to work around issues with multimethods. We really need to
-  ;;     refactor our multimethod code -- and this isn't the only reason
-  ;;     (multimethods use slower code under the hood). If we really do need
-  ;;     the flexible polymorphism that multimethods provide, then let's
-  ;;     rethink our code reuse strategy around multimethods.
+  ;; These must be required here to make multimethod implementations available.
+  ;; XXX This is not a good pattern for large software systems; we need to
+  ;;     find a different way to accomplish this goal ... possibly use protocols
+  ;;     instead.
   (:require
    [cmr.indexer.data.concepts.generic]))
 
