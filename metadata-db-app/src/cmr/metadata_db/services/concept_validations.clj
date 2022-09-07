@@ -93,11 +93,11 @@
             (:errors data)))))))
 
 (defn- nil-extra-fields-validation
-  "Validates that among the extra fields, only delete-time, version-id and associated-revision-id
+  "Validates that among the extra fields, only delete-time, version-id, source-revision-id  and associated-revision-id
   can sometimes be nil."
   [concept]
   (nil-fields-validation (apply dissoc (:extra-fields concept)
-                                [:delete-time :version-id :associated-revision-id :target-provider-id :collection-concept-id])))
+                                [:delete-time :version-id :source-revision-id :associated-revision-id :target-provider-id :collection-concept-id])))
 
 (defn concept-id-validation
   [concept]
@@ -236,6 +236,10 @@
   (validate-association-concept concept))
 
 (defmethod validate-concept :variable-association
+  [concept]
+  (validate-association-concept concept))
+
+(defmethod validate-concept :generic-association
   [concept]
   (validate-association-concept concept))
 

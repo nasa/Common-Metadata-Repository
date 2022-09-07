@@ -57,7 +57,10 @@
                                :source_concept_identifier :user_id])
    :tool-association (into common-columns
                            [:associated_concept_id :associated_revision_id
-                            :source_concept_identifier :user_id])}
+                            :source_concept_identifier :user_id])
+   :generic-association (into common-columns
+                               [:associated_concept_id :associated_revision_id
+                                :source_concept_identifier :source_revision_id :user_id])}
    (zipmap (cc/get-generic-concept-types-array) 
            (repeat (into common-columns [:provider_id :document_name :schema :mime_type :user_id :created_at])))))
 

@@ -69,6 +69,10 @@
   [_ _]
   "cmr_associations")
 
+(defmethod get-table-name :generic-association
+  [_ _]
+  "cmr_associations")
+
 (doseq [concept-type (cc/get-generic-concept-types-array)]
   (defmethod get-table-name concept-type
     [_ _]

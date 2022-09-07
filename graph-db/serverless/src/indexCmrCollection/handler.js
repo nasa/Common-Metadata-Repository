@@ -48,26 +48,31 @@ const indexCmrCollections = async (event) => {
     }
 
     if (getConceptType(conceptId) === 'collection' && action === updateActionType) {
-      const collection = await fetchCmrCollection(conceptId, token)
+      try {
+        const collection = await fetchCmrCollection(conceptId, token)
 
-      const { data = {} } = collection
-      const { items = [] } = data
+        const { data = {} } = collection
+        const { items = [] } = data
 
-      if (items.length === 0) {
-        console.log(`Skip indexing of collection [${conceptId}] as it is not found in CMR`)
+        if (items.length === 0) {
+          console.log(`Skip indexing of collection [${conceptId}] as it is not found in CMR`)
 
-        skipCount += 1
-      } else {
-        const [firstCollection] = items
+          skipCount += 1
+        } else {
+          const [firstCollection] = items
 
-        // Fetch the permitted groups for this collection from access-control
-        const groupList = await fetchCollectionPermittedGroups(conceptId, token)
+          // Fetch the permitted groups for this collection from access-control
+          const groupList = await fetchCollectionPermittedGroups(conceptId, token)
 
-        console.log(`Start indexing concept [${conceptId}], revision-id [${revisionId}]`)
+          console.log(`Start indexing concept [${conceptId}], revision-id [${revisionId}]`)
 
-        await indexCmrCollection(firstCollection, groupList, gremlinConnection)
+          await indexCmrCollection(firstCollection, groupList, gremlinConnection)
 
-        recordCount += 1
+          recordCount += 1
+        }
+      } catch (e) {
+        console.log('Collection FAILED during indexing process there may be an issue with the collection verify that the collection for the given env: ', conceptId)
+        console.log('Error indexing collection, Execption was thrown: ', e)
       }
     }
     if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {
