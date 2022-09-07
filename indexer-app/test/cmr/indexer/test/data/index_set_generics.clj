@@ -40,13 +40,6 @@
               {:number_of_shards 5, :number_of_replicas 1, :refresh_interval "1s"}}
              (gen/get-settings index-definition-def))))))
 
-;; TODO: Generic work: move this test to a system-int test.
-;  (testing "Test that setting the environment variable takes precedence"
-;    (dev-sys-util/eval-in-dev-sys `(gen/set-elastic-generic-index-num-shards! 3))
-;    (is (= 3 (get-in (gen/get-settings index-definition-def) [:index :number_of_shards])))
-;    ;; Saving the original value doesn't work, because you can't use the variable to set it back. So the default is being used.
-;    (dev-sys-util/eval-in-dev-sys `(gen/set-elastic-generic-index-num-shards! gen/default-generic-index-num-shards))))
-
 (deftest read-schema-definition-test
   ;; Testing the read schema functionality.
 
