@@ -180,7 +180,6 @@
                   gen-name (name gen-keyword)
                   gen-ver (last (gen-keyword (cfg/approved-pipeline-documents)))
                   index-definition-str (read-schema-definition gen-keyword gen-ver)
-                  index-definition-str (if (= :grid gen-keyword) "{bad-json}" index-definition-str)
                   index-definition (when-not (validate-index-against-schema-safe
                                               index-definition-str
                                               gen-name)
