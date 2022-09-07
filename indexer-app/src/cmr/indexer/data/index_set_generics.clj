@@ -20,15 +20,15 @@
         schema-obj (js-validater/json-string->json-schema schema-file)]
     (js-validater/validate-json schema-obj raw-json)))
 
-(def default-generic-index-num-shards 
+(def default-generic-index-num-shards
   "This is the default generic index number of shards."
   5)
 
 (defconfig elastic-generic-index-num-shards
   "Number of shards to use for the generic document index. This value can be overriden
-  by an environment variable. This value can also be overriden in the schema specific 
+  by an environment variable. This value can also be overriden in the schema specific
   configuration files. These files are found in the schemas project.
-  Here is an example: 
+  Here is an example:
   \"IndexSetup\" : {
     \"index\" : {\"number_of_shards\" : 5,
                  \"number_of_replicas\" : 1,
@@ -36,18 +36,18 @@
   },"
   {:default default-generic-index-num-shards :type Long})
 
-(def generic-setting 
-  "This def is here as a default just in case these values are not specified in the 
-  schema specific configuration file found in the schemas project. 
+(def generic-setting
+  "This def is here as a default just in case these values are not specified in the
+  schema specific configuration file found in the schemas project.
   These values can be overriden in the schema specific configuration file.
-  Here is an example: 
+  Here is an example:
   \"IndexSetup\" : {
     \"index\" : {\"number_of_shards\" : 5,
                  \"number_of_replicas\" : 1,
                  \"refresh_interval\" : \"1s\"}
   },"
-  {:index 
-   {:number_of_shards (elastic-generic-index-num-shards) 
+  {:index
+   {:number_of_shards (elastic-generic-index-num-shards)
     :number_of_replicas 1
     :refresh_interval "1s"}})
 
@@ -102,14 +102,14 @@
            ;; A changed environment variable takes precedence, then the config file, then the default.
            ;; If the the environment variable = default value then the environment variable is not set.
            ;; If the environment variable is set, then use it.
-           num-shards (cond 
+           num-shards (cond
                         (not= (elastic-generic-index-num-shards) default-generic-index-num-shards)
                         (elastic-generic-index-num-shards)
-                        
+
                         config-shards
                         (get-in settings [:index :number_of_shards])
 
-                        :else 
+                        :else
                         default-generic-index-num-shards)]
        (if (= config-shards num-shards)
          settings
@@ -117,7 +117,7 @@
      generic-setting))
 
 (defn read-schema-definition
-  "Read in the specific schema given the schema name and version number.  Throw an error 
+  "Read in the specific schema given the schema name and version number.  Throw an error
    if the file can't be read."
   [gen-name gen-version]
   (try
@@ -126,12 +126,43 @@
         (io/resource)
         (slurp))
     (catch Exception e
-      (error 
-       (format (str "The index.json file for schema [%s] version [%s] cannot be found. Please make sure that it exists." 
+      (error
+       (format (str "The index.json file for schema [%s] version [%s] cannot be found. Please make sure that it exists."
                     (.getMessage e))
                 gen-name
                 gen-version)))))
- 
+
+(defn- validate-index-against-schema-safe
+  "Wrap the validate-index-against-schema function in a try catch block to prevent
+   basic JSON parse errors from throwing errors. If problems are encountered, log
+   the event and return nil allowing other code to proceide with working schemas.
+   "
+  [raw-json schema]
+  (try
+    (validate-index-against-schema raw-json)
+    (catch java.lang.NullPointerException npe
+      (let [msg (format "%s : Null Pointer Exception while trying to validate index.json for %s."
+                        (.getMessage npe)
+                        schema)]
+        (error msg)
+        [msg]))
+    (catch com.fasterxml.jackson.core.JacksonException je
+      (do (error (.getMessage je))
+          [(.getMessage je)]))))
+
+(defn- json-parse-string-safe
+  "Wrap the json parse-string function in a try/catch block and write an error log
+   and return nil if there is a problem, otherwise return the parsed JSON. All
+   parameteres are passed to json/parse-string."
+  [& options]
+  (try
+    (apply json/parse-string options)
+    (catch com.fasterxml.jackson.core.JacksonException je
+      (do
+       (error (.getMessage je))
+        [(.getMessage je)]))
+    ))
+
 ;; TODO: Generic work: We need to check throws here. When something is wrong in the schema,
 ;; 500 errors are thrown.
 (defn generic-mappings-generator
@@ -141,27 +172,44 @@
    {:generic-grid
     {:indexes []
      :mapping {:properties {:index-key-name {:type 'type'}}}}}
+   If the matching index.json file is not valid, then that schema will be logged and skipped.
    "
   []
-  (reduce (fn [data gen-name]
-            (let [gen-ver (last (gen-name (cfg/approved-pipeline-documents)))
-                  index-definition-str (read-schema-definition gen-name gen-ver)
-                  ;; TODO: Generic work: need to fix or change the validation - are we supposed to validate the
-                  ;; index.json file?
-                  index-definition  ;(when-not (validate-index-against-schema index-definition-str)
-                                      (json/parse-string index-definition-str true)
+  (reduce (fn [data gen-keyword]
+            (let [
+                  gen-name (name gen-keyword)
+                  gen-ver (last (gen-keyword (cfg/approved-pipeline-documents)))
+                  index-definition-str (read-schema-definition gen-keyword gen-ver)
+                  index-definition (when-not (validate-index-against-schema-safe
+                                              index-definition-str
+                                              gen-name)
+                                    (json-parse-string-safe index-definition-str true))
                   index-list (gen-util/only-elastic-preferences (:Indexes index-definition))
                   generic-settings (get-settings index-definition)]
               (if index-definition
                 (assoc data
-                       (keyword (str "generic-" (name gen-name)))
-                       {:indexes [{:name (format "generic-%s" (name gen-name))
+                       (keyword (str "generic-" gen-name))
+                       {:indexes [{:name (format "generic-%s" gen-name)
                                    :settings generic-settings}
-                                  {:name (format "all-generic-%s-revisions" (name gen-name))
+                                  {:name (format "all-generic-%s-revisions" gen-name)
                                    :settings generic-settings}]
                         :mapping {:properties (reduce mapping->index-key base-indexes index-list)}})
                 (do
-                  (error (format "Could not parse schema %s version %s." (name gen-name) gen-ver))
+                  (error (format "Could not parse the index.json file for %s version %s."
+                                 gen-name
+                                 gen-ver))
                   data))))
           {}
           (keys (cfg/approved-pipeline-documents))))
+
+(comment
+  ;; Since the change to distribute schemas files as a JAR makes it hard to test
+  ;; a bad index.json, add the following line after the index-definition-str
+  ;; declare in the let and run the function below
+
+  ;index-definition-str (if (= :grid gen-keyword) "{bad-json}" index-definition-str)
+
+  (when (nil? (:generic-grid (generic-mappings-generator)))
+    (println "Missing Generic Grid definition"))
+
+  )
