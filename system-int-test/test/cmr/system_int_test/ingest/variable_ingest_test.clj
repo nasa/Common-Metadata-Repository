@@ -609,26 +609,25 @@
       ;; Turn on UMM-Var keywords validation
      (side/eval-form `(ingest-config/set-validate-umm-var-keywords! true))
      (are3 [metadata expected-status expected-warnings]
-       (let [concept (variable-util/make-variable-concept
-                      {:RelatedURLs [(meta-related-url (merge (url-type-map) metadata))]}
-                      {:coll-concept-id (:concept-id coll1-PROV1)})
-             {:keys [status warnings]} (variable-util/ingest-variable-with-association
-                                        concept
-                                        (variable-util/token-opts token))]
-         (is (= true (true? (some #(= status %) expected-status)))
-             (format "status '%d' fail" status))
-         (is (= expected-warnings warnings)) "error check")
+           (let [concept (variable-util/make-variable-concept
+                          {:RelatedURLs [(meta-related-url (merge (url-type-map) metadata))]}
+                          {:coll-concept-id (:concept-id coll1-PROV1)})
+                 {:keys [status warnings]} (variable-util/ingest-variable-with-association
+                                            concept
+                                            (variable-util/token-opts token))]
+             (is (= true (true? (some #(= status %) expected-status)))
+                 (format "status '%d' fail" status))
+             (is (= expected-warnings warnings)) "error check")
 
-       "valid MimeType"
-       {:MimeType "application/x-hdf5"}
-       [200 201]
-       nil
+           "valid MimeType"
+           {:MimeType "application/x-hdf5"}
+           [200 201]
+           nil
 
-       "invalid MimeType"
-       {:MimeType "application/x-hdf42"}
-       [200]
-       [{:path ["RelatedURLs" 0 "MimeType"],
-         :errors ["MimeType [application/x-hdf42] was not a valid keyword."]}])
+           "invalid MimeType"
+           {:MimeType "application/x-hdf42"}
+           [200]
+           "MimeType [application/x-hdf42] was not a valid keyword.")
 
      (side/eval-form `(ingest-config/set-validate-umm-var-keywords! false))))
 
