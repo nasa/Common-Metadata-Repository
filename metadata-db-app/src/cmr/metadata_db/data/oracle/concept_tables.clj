@@ -4,6 +4,7 @@
    [clojure.pprint :refer (pprint pp)]
    [clojure.string :as string]
    [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.concepts :as cc]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as cutil]
    [cmr.metadata-db.data.oracle.collection-table :as ct]
@@ -67,6 +68,15 @@
 (defmethod get-table-name :tool-association
   [_ _]
   "cmr_associations")
+
+(defmethod get-table-name :generic-association
+  [_ _]
+  "cmr_associations")
+
+(doseq [concept-type (cc/get-generic-concept-types-array)]
+  (defmethod get-table-name concept-type
+    [_ _]
+    "cmr_generic_documents"))
 
 (defmethod get-table-name :default
   [provider concept-type]

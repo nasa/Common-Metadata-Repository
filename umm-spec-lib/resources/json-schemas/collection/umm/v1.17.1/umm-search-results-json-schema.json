@@ -129,6 +129,14 @@
             "$ref": "#/definitions/ConceptIdType"
           },
           "minItems": 0
+        },
+        "generics": {
+          "description": "The concept ids of generic concepts assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 0
         }
       }
     },

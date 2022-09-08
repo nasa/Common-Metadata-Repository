@@ -4,6 +4,11 @@
    [cmr.common.util :as util]
    [cmr.common.validations.core :as vc]))
 
+(defn provider-does-not-exist
+  "This is the error message when a provider does not exist on the URL parameters list."
+  []
+  "Provider is a required URL parameter. Please add the provider to the list of URL parameters.")
+
 (defn parent-collection-does-not-exist
   [provider-id granule-ur collection-ref]
   (let [collection-ref-fields (util/remove-nil-keys (into {} collection-ref))

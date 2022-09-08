@@ -2,6 +2,7 @@
   "unit tests for index-set app service functions"
   (:require
    [clojure.test :refer :all]
+   [cmr.indexer.data.index-set-generics :as index-set-gen]
    [cmr.indexer.services.index-set-service :as svc]
    [cmr.indexer.test.utility :as util]))
 
@@ -23,16 +24,18 @@
 (deftest prune-index-set-test
   (let [pruned-index-set {:id 3
                           :name "cmr-base-index-set"
-                          :concepts {:collection  {:C6-PROV3 "3_c6_prov3"
-                                                   :C4-PROV2 "3_c4_prov2"}
-                                     :granule {:small_collections "3_small_collections"
-                                               :C4-PROV3 "3_c4_prov3"
-                                               :C5-PROV5 "3_c5_prov5"}
-                                     :tag {}
-                                     :variable {}
-                                     :service {}
-                                     :tool {}
-                                     :deleted-granule {}
-                                     :autocomplete {}
-                                     :subscription {}}}]
+                          :concepts (merge
+                                     {:collection  {:C6-PROV3 "3_c6_prov3"
+                                                    :C4-PROV2 "3_c4_prov2"}
+                                      :granule {:small_collections "3_small_collections"
+                                                :C4-PROV3 "3_c4_prov3"
+                                                :C5-PROV5 "3_c5_prov5"}
+                                      :tag {}
+                                      :variable {}
+                                      :service {}
+                                      :tool {}
+                                      :deleted-granule {}
+                                      :autocomplete {}
+                                      :subscription {}}
+                                     (zipmap (keys (index-set-gen/generic-mappings-generator)) (repeat {})))}]
     (is (= pruned-index-set (svc/prune-index-set (:index-set util/sample-index-set))))))

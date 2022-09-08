@@ -8,6 +8,7 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.util :as util]
    [cmr.metadata-db.config :as mdb-config]
+   [cmr.metadata-db.data.memory-db :as memory]
    [cmr.metadata-db.data.oracle.concepts :as c]
    [cmr.metadata-db.data.oracle.concepts.collection]
    [cmr.metadata-db.data.oracle.concepts.granule]

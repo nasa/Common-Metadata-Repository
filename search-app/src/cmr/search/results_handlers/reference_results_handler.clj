@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clojure.data.xml :as x]
    [clojure.set :as set]
+   [cmr.common.concepts :as concepts]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
@@ -65,6 +66,20 @@
    "revision-id"
    "_score"])
 
+(doseq [concept-type-key (concepts/get-generic-concept-types-array)]
+  (defmethod elastic-search-index/concept-type+result-format->fields [concept-type-key :xml]
+  [concept-type query]
+  ["name"
+   "id"
+   "provider-id"
+   "concept-id"
+   "deleted"
+   "revision-id"
+   "_score"]))
+
+;; TODO: Generic work: Should use a configuration file here?  Or is this OK to have in code?  
+;; Then we need a how to create a new concept for search wiki page or read me or something.
+
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."
   {:collection :entry-title
@@ -72,7 +87,12 @@
    :variable :variable-name
    :service :service-name
    :tool :tool-name
-   :subscription :subscription-name})
+   :subscription :subscription-name
+   :dataqualitysummary :name
+   :orderoption :name
+   :serviceoption :name
+   :serviceentry :name
+   :grid :name})
 
 (defn- elastic-result->query-result-item
   [context query elastic-result]
@@ -88,7 +108,7 @@
      :name name-value
      :score (q/normalize-score score)}))
 
-(doseq [concept-type [:collection :granule :variable :service :tool :subscription]]
+(doseq [concept-type (into [] (concat [:collection :granule :variable :service :tool :subscription] (concepts/get-generic-concept-types-array)))]
   (defmethod elastic-results/elastic-result->query-result-item [concept-type :xml]
     [context query elastic-result]
     (elastic-result->query-result-item context query elastic-result)))
@@ -140,6 +160,19 @@
                             (map (partial reference->xml-element false results) items))
                (frf/facets->xml-element facets))))
 
+;; TODO: Generic work: I used this because I got a null results back. That is because 
+;; the generic document isn't being stored correctly.  It is missing cmr elements. Will be working
+;; on this next, so I may then be able to delete this.
+(defmethod results->xml-element :default
+  [_ include-facets? results]
+  (let [{:keys [hits took items facets]} results]
+    (x/element :results {}
+               (x/element :hits {} (str hits))
+               (x/element :took {} (str took))
+               (x/->Element :references {}
+                            (map (partial reference->xml-element false results) items))
+               (frf/facets->xml-element facets))))
+
 ;; ECHO Compatible implementations
 
 (defmethod reference->xml-element true
@@ -167,7 +200,7 @@
         include-facets? (boolean (some #{:facets} result-features))]
     (x/emit-str (results->xml-element echo-compatible? include-facets? results))))
 
-(doseq [concept-type [:collection :granule :variable :service :tool :subscription]]
+(doseq [concept-type (into [] (concat [:collection :granule :variable :service :tool :subscription] (concepts/get-generic-concept-types-array)))]
   (defmethod qs/search-results->response [concept-type :xml]
     [context query results]
     (search-results->response context query results)))

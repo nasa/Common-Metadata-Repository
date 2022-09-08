@@ -2131,7 +2131,7 @@ or "polygon[]", for single or multiple polygon search. It supports the and/or op
 
     curl "%CMR-ENDPOINT%/collections?polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11&options[polygon][or]=true"
 
-Note: if you use "polygon" for multiple polygon search, it won't work because only the last polyon parameter will take effect.
+Note: if you use "polygon" for multiple polygon search, it won't work because only the last polygon parameter will take effect.
 
 ##### <a name="c-bounding-box"></a> Bounding Box
 

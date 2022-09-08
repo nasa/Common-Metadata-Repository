@@ -1,0 +1,137 @@
+{
+   "$id": "https://earthdata.nasa.gov/schema/generics/index",
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "title": "Generic-Index",
+   "description": "This scheme defines how index configurations are to be defined. These index definitions support both Elastic and Graph-DB",
+   "type": "object",
+   "additionalProperties": false,
+   "properties": {
+        "MetadataSpecification": {
+            "description": "Contains several fields to define the specifics of the grid",
+            "$ref": "#/definitions/MetadataSpecificationType"},
+        "SubConceptType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4
+        },
+        "Generic": {"$ref": "#/definitions/GenericType"},
+        "IndexSetup" : {
+          "description": "Contains fields for index level configurations in Elastic",
+          "$ref": "#/definitions/IndexSetupType"
+        },
+        "Indexes": {
+            "type": "array",
+            "uniqueItems": true,
+            "minItems": 1,
+            "items": {"$ref": "#/definitions/IndexType"}
+        }
+    },
+    "required": ["MetadataSpecification", "Generic"],
+    "definitions": {
+        "MetadataSpecificationType": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+            "properties": {
+                "URL": {
+                    "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
+                    "type": "string",
+                    "const": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1"
+                },
+                "Name": {
+                    "description": "This element represents the name of the schema.",
+                    "type": "string",
+                    "const": "Generic-Index"
+                },
+                "Version": {
+                    "description": "This element represents the version of the schema.",
+                    "type": "string",
+                    "const": "0.0.1"
+                }
+            },
+            "required": ["URL", "Name", "Version"]
+        },
+        "GenericType": {
+          "type": "object",
+          "additionalProperties": false,
+          "Description": "The matching schema for this index configuration",
+          "properties": {
+            "Name": {"type": "string"},
+            "Version": {"type": "string"}
+          },
+          "required": ["Name", "Version"]
+        },
+        "IndexSetupType": {
+          "type": "object",
+          "additionalProperties": false,
+          "Description": "Define Elastic configurations for the entire index",
+          "properties": {
+            "index" : {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "number_of_shards" : {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 32
+                },
+                "number_of_replicas" : {
+                  "type": "number",
+                  "minimum": 1,
+                  "maximum": 32
+                },
+                "refresh_interval" : {
+                  "type": "string",
+                  "pattern": "[0-9]+s"}
+              }
+            }
+          }
+        },
+        "IndexType": {
+            "$comment": "This object is subject to major change",
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Define one index that needs to be created",
+            "properties": {
+                "Description": {
+                    "description": "Note about the setting",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "Field": {
+                    "description": "The Field to index, defined as a jq style path",
+                    "type": "string",
+                    "examples": [".RootElement.SubElement"],
+                    "minLength": 1
+                },
+                "Mapping": {
+                  "description": "The data format to map this index to",
+                  "type": "string",
+                  "default": "string",
+                  "enum": ["string", "int", "date"]
+                },
+                "Type": {
+                    "description": "target index software to host the index",
+                    "type": "string",
+                    "enum": ["elastic", "graph"],
+                    "default": "elastic"
+                },
+                "Name": {
+                    "description": "The name to give the index within the index server",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "Indexer": {
+                    "description": "The name of the function in code that will generate the index for this field",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "Configuration": {
+                    "decription": "Any valid JSON can be defined here and it will be passed to the indexer as a configuration for this specific index",
+                    "additionalProperties": true
+                }
+            },
+            "required": ["Field", "Name"]
+        }
+    }
+}

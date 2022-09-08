@@ -5,7 +5,6 @@
    [clojure.string :as string]
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.lifecycle :as lifecycle]
    [cmr.common.memory-db.connection :as connection]
    [cmr.common.time-keeper :as tk]
    [cmr.metadata-db.data.concepts :as concepts]
@@ -307,26 +306,34 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Metadata DB ConceptsStore Implementation
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
 (defn generate-concept-id
   [db concept]
   (let [{:keys [concept-type provider-id]} concept
+        concept-sub-type (get concept :concept-sub-type)
         num (swap! (:next-id-atom db) inc)]
-   (cc/build-concept-id {:concept-type concept-type
-                         :sequence-number num
-                         :provider-id provider-id})))
+    (if (some? concept-sub-type)
+      (cc/build-generic-concept-id {:concept-type concept-sub-type
+                                    :sequence-number num
+                                    :provider-id provider-id})
+      (cc/build-concept-id {:concept-type concept-type
+                            :sequence-number num
+                            :provider-id provider-id}))))
 
 (defn get-concept-id
   [db concept-type provider native-id]
   (let [provider-id (:provider-id provider)
         concept-type (if (keyword? concept-type) concept-type (keyword concept-type))]
-   (->> @(:concepts-atom db)
-        (filter (fn [c]
-                  (and (= concept-type (:concept-type c))
-                       (= provider-id (:provider-id c))
-                       (= native-id (:native-id c)))))
-        first
-        :concept-id)))
+    (->> @(:concepts-atom db)
+         (filter (fn [c]
+                   (and (or (= concept-type :generic)
+                            ;; TODO: Generic work: this line above is needed till
+                            ;; read can provided a type. Normally just the line
+                            ;; below is needed
+                            (= concept-type (:concept-type c)))
+                        (= provider-id (:provider-id c))
+                        (= native-id (:native-id c)))))
+         first
+         :concept-id)))
 
 (defn get-granule-concept-ids
   [db provider native-id]
@@ -425,7 +432,7 @@
                             #(or % (p/clj-time->date-time-str (tk/now))))
          ;; Set the created-at time to the current timekeeper time for concepts which have
          ;; the created-at field and do not already have a :created-at time set.
-         concept (if (some #{concept-type} [:collection :granule :service :tool :variable :subscription])
+         concept (if (some #{concept-type} [:collection :granule :service :tool :variable :subscription :generic])
                    (update-in concept
                               [:created-at]
                               #(or % (p/clj-time->date-time-str (tk/now))))
@@ -612,10 +619,24 @@
   "Creates and returns an in-memory database.
 
   Note that a wrapper is used here in order to support default initial values
-  that are only available in cmr.metaata-db.*."
+  that are only available in cmr.metadata-db.*."
   ([]
    (create-db []))
   ([concepts]
    (connection/create-db
     {:concepts-atom concepts
      :next-id-atom INITIAL_CONCEPT_NUM})))
+
+(comment
+  ;; Handy utility for future dev work
+  (def db (get-in user/system [:apps :metadata-db :db]))
+
+  (def test-file (slurp (clojure.java.io/resource "sample_tool.json")))
+  (def parsed (cheshire.core/parse-string test-file true))
+  (def my-concept {:concept-type :generic :provider-id "PROV6" :metadata parsed :revision-id 1})
+  (def my-concept (assoc my-concept :concept-id (generate-concept-id db my-concept)))
+  (save-concept db "PROV6" my-concept)
+  ;; to view most recently saved concept
+  (first @(:concepts-atom db))
+  (get-concept-id db :orderoption {:provider-id "PROV1"} "orderoption-1")
+  (get-concept db :orderoption {:provider-id "PROV1"} "OO1200000001-PROV1"))

@@ -505,7 +505,7 @@
                                  INCREMENT BY 1
                                  CACHE 20" INITIAL_CONCEPT_NUM))
   (j/db-do-commands this "DELETE FROM cmr_tags")
-  (j/db-do-commands this "DELETE FROM cmr_associations where association_type = 'TAG-COLLECTION'")
+  (j/db-do-commands this "DELETE FROM cmr_associations")
   (j/db-do-commands this "DELETE FROM cmr_groups")
   (j/db-do-commands this "DELETE FROM cmr_acls")
   (j/db-do-commands this "DELETE FROM cmr_humanizers")
@@ -514,7 +514,7 @@
   (j/db-do-commands this "DELETE FROM cmr_services")
   (j/db-do-commands this "DELETE FROM cmr_tools")
   (j/db-do-commands this "DELETE FROM cmr_variables")
-  (j/db-do-commands this "DELETE FROM cmr_associations where association_type = 'VARIABLE-COLLECTION'"))
+  (j/db-do-commands this "DELETE FROM cmr_generic_documents"))
 
 (defn get-expired-concepts
   [this provider concept-type]

@@ -3,7 +3,6 @@
   (:require
    [clj-time.core :as t]
    [clojure.set :as set]
-   [clojure.string :as string]
    [cmr.common.concepts :as cu]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.date-time-parser :as p]
@@ -35,6 +34,7 @@
   (:require
    [cmr.metadata-db.data.oracle.concepts.acl]
    [cmr.metadata-db.data.oracle.concepts.collection]
+   [cmr.metadata-db.data.oracle.concepts.generic-documents]
    [cmr.metadata-db.data.oracle.concepts.granule]
    [cmr.metadata-db.data.oracle.concepts.group]
    [cmr.metadata-db.data.oracle.concepts.humanizer]
@@ -67,7 +67,8 @@
    :service 10
    :tool 10
    :service-association 10
-   :tool-association 10})
+   :tool-association 10
+   :generic-association 10})
 
 (defconfig days-to-keep-tombstone
   "Number of days to keep a tombstone before is removed from the database."
@@ -85,7 +86,8 @@
     :humanizer
     :variable-association
     :service-association
-    :tool-association})
+    :tool-association
+    :generic-association})
 
 ;;; utility methods
 (def ^:private native-id-separator-character
@@ -241,6 +243,11 @@
 (defmethod set-created-at :variable
   [db provider concept]
   (set-created-at-for-concept db provider concept))
+
+(doseq [concept-type (cu/get-generic-concept-types-array)]
+  (defmethod set-created-at concept-type
+    [db provider concept]
+    (set-created-at-for-concept db provider concept)))
 
 (defmethod set-created-at :granule
   [db provider concept & previous-revision]
@@ -745,13 +752,23 @@
   "Delete the associations associated with the given collection revision and association type,
   no association deletion event is generated."
   [context assoc-type coll-concept-id coll-revision-id]
-  (let [search-params (cutil/remove-nil-keys
-                       {:concept-type assoc-type
-                        :associated-concept-id coll-concept-id
-                        :associated-revision-id coll-revision-id
-                        :exclude-metadata true
-                        :latest true})]
-    (tombstone-associations context assoc-type search-params true :collection)))
+  (let [search-params1 (cutil/remove-nil-keys
+                        {:concept-type assoc-type
+                         :source-concept-identifier coll-concept-id
+                         :source-revision-id coll-revision-id
+                         :exclude-metadata true
+                         :latest true})
+        search-params2 (cutil/remove-nil-keys
+                        {:concept-type assoc-type
+                         :associated-concept-id coll-concept-id
+                         :associated-revision-id coll-revision-id
+                         :exclude-metadata true
+                         :latest true})]
+    (when (= :generic-association assoc-type)
+      ;;For generic associations, concept collection could appear as both source-concept
+      ;;and associated-concept so it needs to tombstone additional associations.
+      (tombstone-associations context assoc-type search-params1 true :collection))
+    (tombstone-associations context assoc-type search-params2 true :collection)))
 
 (defmulti delete-associations
   "Delete the associations of the given association type that is associated with
@@ -811,6 +828,27 @@
       ;; create tool association tombstones and queue the tool association delete events
       (tombstone-associations context assoc-type search-params false :tool))))
 
+(doseq [concept-type (cu/get-generic-concept-types-array)]
+  (defmethod delete-associations concept-type
+    [context concept-type concept-id revision-id assoc-type]
+    (when (= :generic-association assoc-type)
+      (let [search-params1 (cutil/remove-nil-keys
+                            {:concept-type assoc-type
+                             :source-concept-identifier concept-id
+                             :source-revision-id revision-id
+                             :exclude-metadata true
+                             :latest true})
+            search-params2 (cutil/remove-nil-keys
+                            {:concept-type assoc-type
+                             :associated-concept-id concept-id
+                             :associated-revision-id revision-id
+                             :exclude-metadata true
+                             :latest true})]
+        ;;For generic associations, conceptn could appear as both source-concept
+        ;;and associated-concept so it needs to tombstone additional associations.
+      (tombstone-associations context assoc-type search-params1 true concept-type)
+      (tombstone-associations context assoc-type search-params2 true concept-type)))))
+
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
   [context concept]
@@ -830,11 +868,14 @@
       ;; to send concept updates and deletions out of order.
       (if (and (util/is-tombstone? previous-revision) (nil? revision-id))
         previous-revision
-        (let [tombstone (merge previous-revision {:concept-id concept-id
+        (let [metadata (if (cu/generic-concept? concept-type)
+                         (:metadata previous-revision)
+                         "")
+              tombstone (merge previous-revision {:concept-id concept-id
                                                   :revision-id revision-id
                                                   :revision-date revision-date
                                                   :user-id user-id
-                                                  :metadata ""
+                                                  :metadata metadata
                                                   :deleted true})]
           (cv/validate-concept tombstone)
           (validate-concept-revision-id db provider tombstone previous-revision)
@@ -846,6 +887,8 @@
             (delete-associations context concept-type concept-id nil :service-association)
             ;; delete the associated tool associations if applicable
             (delete-associations context concept-type concept-id nil :tool-association)
+            ;; delete the associated generic associations if applicable
+            (delete-associations context concept-type concept-id nil :generic-association)
             ;; skip publication flag is set for tag association when its associated
             ;; collection revision is force deleted. In this case, the association is no longer
             ;; needed to be indexed, so we don't publish the deletion event.
@@ -892,6 +935,31 @@
          context
          (ingest-events/associations-update-event associations))))))
 
+(defn- publish-generic-associations-update-event
+  "Publish one concept-update-event for all non-tombstoned generic associations for the
+  given generic concept. This is to trigger the reindexing of the related generic concepts in elastic
+  search when associated generic concept is updated."
+  [context concept-type concept-id]
+  (let [search-params1 (cutil/remove-nil-keys
+                       {:concept-type :generic-association
+                        :source-concept-identifier concept-id
+                        :exclude-metadata true
+                        :latest true})
+        associations1 (filter #(= false (:deleted %))
+                             (search/find-concepts context search-params1))
+        search-params2 (cutil/remove-nil-keys
+                       {:concept-type :generic-association
+                        :associated-concept-id concept-id
+                        :exclude-metadata true
+                        :latest true})
+        associations2(filter #(= false (:deleted %))
+                             (search/find-concepts context search-params2))
+        associations (concat associations1 associations2)]
+    (when (> (count associations) 0)
+      (ingest-events/publish-event
+       context
+       (ingest-events/associations-update-event associations)))))
+
 (defn- publish-tool-associations-update-event
   "Publish one concept-update-event for all non-tombstoned tool associations for the
   given tool concept; This is to trigger the reindexing of the associated collections in elastic
@@ -929,7 +997,6 @@
                      (set-or-generate-concept-id db provider)
                      (set-created-at db provider))
         {:keys [concept-type concept-id]} concept]
-
     (validate-concept-revision-id db provider concept)
     ;; validate newly ingested variable contains collection info.
     (when (= :variable concept-type)
@@ -953,6 +1020,7 @@
       ;; so that the collections can be updated in elasticsearch with the updated service/tool info
       (publish-service-associations-update-event context concept-type concept-id)
       (publish-tool-associations-update-event context concept-type concept-id)
+      (publish-generic-associations-update-event context concept-type concept-id)
       (ingest-events/publish-event
        context
        (ingest-events/concept-update-event concept))
@@ -977,6 +1045,7 @@
   (delete-associations context concept-type concept-id revision-id :variable-association)
   (delete-associations context concept-type concept-id revision-id :service-association)
   (delete-associations context concept-type concept-id revision-id :tool-association)
+  (delete-associations context concept-type concept-id revision-id :generic-association)
   (ingest-events/publish-concept-revision-delete-msg context concept-id revision-id))
 
 (defmethod force-delete-cascading-events :variable

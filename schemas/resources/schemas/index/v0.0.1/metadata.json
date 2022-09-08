@@ -1,0 +1,43 @@
+{
+  "MetadataSpecification": {
+      "URL": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1",
+      "Name": "Generic-Index",
+      "Version": "0.0.1"
+  },
+  "Generic": {
+    "Name": "Grid",
+    "Version": "0.0.1"
+  },
+  "Indexes":
+  [
+      {
+          "Description": "Long Name",
+          "Field": ".LongName",
+          "Name": "Long-Name"
+      },
+      {
+        "Description": "Type - maybe change",
+        "Field": ".GridDefinition.CoordinateReferenceSystemID.Type",
+        "Name": "CoordinateReferenceSystemID-Type"
+      },
+      {
+        "Description": "URL - maybe changee",
+        "Field": ".GridDefinition.CoordinateReferenceSystemID.URL",
+        "Name": "CoordinateReferenceSystemID-URL"
+      },
+      {
+          "Description": "Minimalistic graph mapping",
+          "Field": ".foo",
+          "Name": "foo",
+          "Type": "graph"
+      },
+      {
+          "Description": "Elastic index with a configuration",
+          "Field": ".GridDefinition.CoordinateReferenceSystemID.Type",
+          "Name": "CoordinateReferenceSystemID-Type",
+          "Indexer": "complex-field",
+          "Type": "elastic",
+          "Configuration": {"sub-fields": ["Type", "URL"]}
+      }
+]
+}
