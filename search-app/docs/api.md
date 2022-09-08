@@ -2,10 +2,6 @@
 
 See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide) for a general guide to developing a client utilizing the CMR Search API.
 
-### ECHO-Token Deprecation Notice
-
-CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens and send them with the Authorization header. This document contains many mentions of ECHO-Tokens, which will soon be out of date. Instructions on how to generate an EDL token are [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token)
-
 ### Table of Contents
 
   * [General Request Details](#general-request-details)
