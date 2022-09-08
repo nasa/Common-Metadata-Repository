@@ -39,6 +39,14 @@
    ;; 5 minutes
    4 (* 5 60 1000)})
 
+(def ^:private system-concept-types
+  "The list of system concept types"
+  [:tag :acl :access-group :variable :service :tool :subscription])
+
+(def ^:private misc-concept-types
+  "The list of miscellaneous concept types that are provider based but saved in a single system table"
+  [:variable :service :tool :subscription])
+
 (defn elastic-retry-handler
   "A custom http retry handler for use with elastic connections"
   [ex try-count http-context]
@@ -188,6 +196,9 @@
         params {:concept-type concept-type
                 :provider-id provider-id
                 :revision-date {:comparator `> :value (time-coerce/to-sql-time date-time)}}
+        params (if (some #{concept-type} misc-concept-types)
+                 (dissoc params :provider-id)
+                 params)
         concept-batches (db/find-concepts-in-batches
                           db provider params (:db-batch-size system))
         {:keys [max-revision-date num-indexed]} (if (contains? #{:acl :access-group} concept-type)
@@ -209,7 +220,7 @@
   [system start-index]
   (let [db (helper/get-metadata-db-db system)
         provider {:provider-id system-concept-provider}
-        total (apply + (for [concept-type [:tag :acl :access-group]
+        total (apply + (for [concept-type system-concept-types
                              :let [params {:concept-type concept-type
                                            :provider-id (:provider-id provider)}
                                    concept-batches (db/find-concepts-in-batches db
@@ -276,11 +287,11 @@
     (info "Deleted " total " concepts")
     total))
 
-(defn- index-system-concepts-after-datetime
-  "Index all system concepts created later than or equal to the given date-time.
+(defn- index-system-misc-concepts-after-datetime
+  "Index all system and miscellaneous concepts created later than or equal to the given date-time.
   Returns a map of :max-revision-date and :num-indexed."
   [system date-time]
-  (let [system-concept-response-map (for [concept-type [:tag :acl :access-group]]
+  (let [system-concept-response-map (for [concept-type (concat system-concept-types misc-concept-types)]
                                       (fetch-and-index-new-concepts
                                        system {:provider-id system-concept-provider} concept-type date-time))
         max-revision-date (apply util/max-compare
@@ -296,7 +307,7 @@
                 date-time
                 provider-id))
   (if (= system-concept-provider provider-id)
-    (let [{:keys [num-indexed]} (index-system-concepts-after-datetime system date-time)]
+    (let [{:keys [num-indexed]} (index-system-misc-concepts-after-datetime system date-time)]
       (info (format "Indexed %d system concepts." num-indexed)))
 
     (let [provider (helper/get-provider system provider-id)
@@ -328,7 +339,7 @@
                                  system provider concept-type date-time))
         provider-concept-count (reduce + (map :num-indexed provider-response-map))
         system-concept-response-map (if has-cmr-provider?
-                                      (index-system-concepts-after-datetime system date-time)
+                                      (index-system-misc-concepts-after-datetime system date-time)
                                       {:num-indexed 0})
         system-concept-count (:num-indexed system-concept-response-map)
         indexing-complete-message (format "Indexed %d provider concepts and %d system concepts."

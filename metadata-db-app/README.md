@@ -184,6 +184,7 @@ The tag association metadata can have "value": "string to be indexed" or "data":
       "user-id": "user1",
       "deleted": false,
       "format": "application/vnd.nasa.cmr.umm+json;version=1.0",
+      "coll-concept-id": "C1200000005-PROV1",
       "extra-fields": {
         "variable-name": "totCldH2OStdErr",
         "measurement": "totCldH2OStdErrMeasurement"
