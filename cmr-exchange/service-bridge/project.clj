@@ -54,6 +54,7 @@
                  [org.clojure/java.classpath "0.3.0"]
                  [org.geotools/gt-geometry "24.6"]
                  [org.geotools/gt-referencing "24.6"]
+                 [org.yaml/snakeyaml "1.31"]
                  [ring/ring-core "1.7.1"]
                  [ring/ring-codec "1.1.2"]
                  [ring/ring-defaults "0.3.2"]
