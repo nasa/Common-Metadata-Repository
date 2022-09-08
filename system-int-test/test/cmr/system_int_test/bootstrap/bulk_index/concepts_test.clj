@@ -12,7 +12,11 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.service-util :as services]
+   [cmr.system-int-test.utils.subscription-util :as subscriptions]
    [cmr.system-int-test.utils.tag-util :as tags]
+   [cmr.system-int-test.utils.tool-util :as tools]
+   [cmr.system-int-test.utils.variable-util :as variables]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as tc]))
 
@@ -100,6 +104,38 @@
                      (fn [items]
                        (map #(select-keys % [:concept-id :revision-id]) items)))]
     (tags/assert-tag-search expected-tags result-tags)))
+
+(defn- assert-indexed-variables
+  "Assert that only the given variables are indexed"
+  [expected]
+  (let [result-vars (->> (variables/search {})
+                         :items
+                         (map #(select-keys % [:concept-id :revision-id])))]
+    (is (= (set expected) (set result-vars)))))
+
+(defn- assert-indexed-services
+  "Assert that only the given services are indexed"
+  [expected]
+  (let [result-services (->> (services/search-refs {})
+                             :refs
+                             (map #(hash-map :concept-id (:id %) :revision-id (:revision-id %))))]
+    (is (= (set expected) (set result-services)))))
+
+(defn- assert-indexed-tools
+  "Assert that only the given tools are indexed"
+  [expected]
+  (let [result-tools (->> (tools/search-refs {})
+                          :refs
+                          (map #(hash-map :concept-id (:id %) :revision-id (:revision-id %))))]
+    (is (= (set expected) (set result-tools)))))
+
+(defn- assert-indexed-subscriptions
+  "Assert that only the given subscriptions are indexed"
+  [expected]
+  (let [results (->> (subscriptions/search-refs {:token (tc/echo-system-token)})
+                     :refs
+                     (map #(hash-map :concept-id (:id %) :revision-id (:revision-id %))))]
+    (is (= (set expected) (set results)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
@@ -211,6 +247,16 @@
          gran2 (core/save-granule "PROV1" 2 coll2 {:revision-date "3016-01-01T10:00:00Z"})
          tag1 (core/save-tag 1)
          tag2 (core/save-tag 2 {:revision-date "3016-01-01T10:00:00Z"})
+         var1 (core/save-variable 1 {:coll-concept-id (:concept-id coll1)
+                                     :revision-date "2000-01-01T10:00:00Z"})
+         var2 (core/save-variable 2 {:coll-concept-id (:concept-id coll1)
+                                     :revision-date "3016-01-01T10:00:00Z"})
+         service1 (core/save-service 1 {:revision-date "2000-01-01T10:00:00Z"})
+         service2 (core/save-service 2 {:revision-date "3016-01-01T10:00:00Z"})
+         tool1 (core/save-tool 1 {:revision-date "2000-01-01T10:00:00Z"})
+         tool2 (core/save-tool 2 {:revision-date "3016-01-01T10:00:00Z"})
+         sub1 (core/save-subscription 1 {:revision-date "2000-01-01T10:00:00Z"})
+         sub2 (core/save-subscription 2 {:revision-date "3016-01-01T10:00:00Z"})
          acl1 (core/save-acl 1
                              {:revision-date "2000-01-01T09:59:40Z"
                               :extra-fields {:acl-identity "system:token"
@@ -239,7 +285,15 @@
        ;; Groups
        (assert-indexed-groups [group2])
        ;; Tags
-       (assert-indexed-tags [tag2])))))
+       (assert-indexed-tags [tag2])
+       ;; Variables
+       (assert-indexed-variables [var2])
+       ;; Services
+       (assert-indexed-services [service2])
+       ;; Tools
+       (assert-indexed-tools [tool2])
+       ;; Subscriptions
+       (assert-indexed-subscriptions [sub2])))))
 
 (deftest ^{:kaocha/skip true
            :oracle true} zzz_bulk-index-after-date-time-by-providers
@@ -311,7 +365,7 @@
          (index/wait-until-indexed)
 
          (verify-collections-granules-are-indexed [coll2 coll4] [gran2 gran4] (tc/echo-system-token))
-         
+
          ;; System concepts are indexed after CMR provider is bulk indexed
          (assert-indexed-acls [acl2])
          (assert-indexed-groups [group2])
