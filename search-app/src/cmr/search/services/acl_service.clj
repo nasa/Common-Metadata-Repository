@@ -1,9 +1,10 @@
 (ns cmr.search.services.acl-service
   "Performs ACL related tasks for the search application"
   (:require
-    [cmr.common.api.context :as context-util]
-    [cmr.search.services.acls.acl-helper :as acl-helper]
-    [cmr.transmit.config :as tc]))
+   [cmr.common.api.context :as context-util]
+   [cmr.common.concepts :as cc]
+   [cmr.search.services.acls.acl-helper :as acl-helper]
+   [cmr.transmit.config :as tc]))
 
 (defmulti acls-match-concept?
   "Returns true if any of the catalog item acls match the concept.
@@ -33,6 +34,12 @@
 (defmethod acls-match-concept? :variable
   [context acls concept]
   true)
+
+;; genereric concepts currently have no catalog item ACLs, so return `true` for all ACL checks
+(doseq [concept-type (cc/get-generic-concept-types-array)]
+  (defmethod acls-match-concept? concept-type
+    [context acls concept]
+    true))
 
 ;; subscriptions checks provider object ACLs, not catalog item ACLs
 (defmethod acls-match-concept? :subscription
@@ -72,12 +79,15 @@
 (def concept-type->applicable-field
   "A mapping of concept type to the field in the ACL indicating if it is collection or granule
   applicable."
-  {:granule :granule-applicable
-   :collection :collection-applicable
-   :service :service-applicable
-   :tool :tool-applicable
-   :variable :variable-applicable
-   :subscription :subscription-applicable})
+  (merge
+   {:granule :granule-applicable
+    :collection :collection-applicable
+    :service :service-applicable
+    :tool :tool-applicable
+    :variable :variable-applicable
+    :subscription :subscription-applicable}
+   (zipmap (cc/get-generic-concept-types-array) (map #(keyword (format "%s-applicable" (name %))) 
+                                                     (cc/get-generic-concept-types-array)))))
 
 (defn filter-concepts
   "Filters out the concepts that the current user does not have access to. Concepts are the maps

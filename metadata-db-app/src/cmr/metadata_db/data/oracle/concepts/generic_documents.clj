@@ -4,6 +4,7 @@
    [cmr.common.concepts :as cc]
    [cmr.common.util :as util]
    [cmr.metadata-db.data.oracle.concepts :as c]
+   [cmr.metadata-db.data.util :as db-util]
    [cmr.oracle.connection :as oracle]))
 
 (doseq [doseq-concept-type (cc/get-generic-concept-types-array)]
@@ -29,7 +30,7 @@
                                :concept-id concept_id
                                :provider-id provider_id
                                :metadata (when metadata (util/gzip-blob->string metadata))
-                               :format format
+                               :format (db-util/db-format->mime-type format)
                                :revision-id (int revision_id)
                                :revision-date (oracle/oracle-timestamp->str-time db revision_date)
                                :created-at (when created_at
