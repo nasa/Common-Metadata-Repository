@@ -41,7 +41,7 @@
 (deftest test-search-results
 
   (let [native-id (format "Generic-Test-%s" (UUID/randomUUID))
-        generic-requester (partial gen-util/generic-request "PROV1" native-id "grid")
+        generic-requester (partial gen-util/generic-request nil "PROV1" native-id "grid")
         good-generic-requester (partial generic-requester gen-util/grid-good)
         post-results (good-generic-requester :post)
         body (json/parse-string (:body post-results) true)
@@ -75,8 +75,11 @@
 
     (testing "Test that generics will not work with bad parameters"
       (let [results (search-request "grids.json" "fake=parameter")
-            status (:status results)]
-        (is (= 500 status) "wrong http status")))
+            status (:status results)
+            body (:body results)]
+        (is (= 400 status) "wrong http status")
+        (is (string/includes? body "Parameter [fake] was not recognized.") 
+            "Parameter validation is wrong.")))
 
     (testing "Test that generics will work with concept searches."
       (let [results (search-request (format "concepts/%s" concept-id) "")

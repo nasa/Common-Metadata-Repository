@@ -6,7 +6,8 @@
    [clojure.java.io :as jio]
    [clojure.test :refer :all]
    [cmr.system-int-test.system :as sys]
-   [cmr.system-int-test.utils.url-helper :as url-helper]))
+   [cmr.system-int-test.utils.url-helper :as url-helper]
+   [cmr.transmit.config :as transmit-config]))
 
 (def grid-good (-> "schemas/grid/v0.0.1/metadata.json"
                    (jio/resource)
@@ -16,13 +17,17 @@
 (defn generic-request
   "This function will make a request to one of the generic URLs using the provided
    provider and native id"
-  ([provider-id native-id concept-type]
-   (generic-request provider-id native-id concept-type nil :get))
-  ([provider-id native-id concept-type document method]
-   (-> {:method method
-        :url (url-helper/ingest-generic-crud-url concept-type provider-id native-id)
-        :connection-manager (sys/conn-mgr)
-        :body (when document (json/generate-string document))
-        :throw-exceptions false
-        :headers {"Accept" "application/json"}}
-       (client/request))))
+  ([token provider-id native-id concept-type]
+   (generic-request token provider-id native-id concept-type nil :get))
+  ([token provider-id native-id concept-type document method]
+   (let [headers (if token
+                   {"Accept" "application/json"
+                    transmit-config/token-header token}
+                   {"Accept" "application/json"})]
+     (-> {:method method
+          :url (url-helper/ingest-generic-crud-url concept-type provider-id native-id)
+          :connection-manager (sys/conn-mgr)
+          :body (when document (json/generate-string document))
+          :throw-exceptions false
+          :headers headers}
+       (client/request)))))

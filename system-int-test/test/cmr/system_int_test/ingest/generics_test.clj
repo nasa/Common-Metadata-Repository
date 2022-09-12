@@ -67,8 +67,8 @@
 ;; Test that a Generic can be walked through all the CRUD actions using the ingest
 ;; interface. Use the same native-id for all these steps"
 (deftest test-generic-CRUD
-  (let [native-id (format "Generic-Test-CRUD")
-        generic-tokened-request (partial gen-util/generic-request "PROV1" native-id)
+  (let [native-id "Generic-Test-CRUD"
+        generic-tokened-request (partial gen-util/generic-request nil "PROV1" native-id)
         generic-requester (partial generic-tokened-request "grid")]
 
     (testing "send a good document with config set that does not include grid"
