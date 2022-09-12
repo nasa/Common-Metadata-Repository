@@ -35,7 +35,7 @@
   [context acls concept]
   true)
 
-;; genereric concepts currently have no catalog item ACLs, so return `true` for all ACL checks
+;; generic concepts currently have no catalog item ACLs, so return `true` for all ACL checks
 (doseq [concept-type (cc/get-generic-concept-types-array)]
   (defmethod acls-match-concept? concept-type
     [context acls concept]
