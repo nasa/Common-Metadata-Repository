@@ -45,13 +45,9 @@
         good-generic-requester (partial generic-requester gen-util/grid-good)
         post-results (good-generic-requester :post)
         body (json/parse-string (:body post-results) true)
-        _ (println body)
         concept-id (:concept-id body)
-        _ (println concept-id)
-        revision-id (:revision-id body)
-        _ (println revision-id)]
+        revision-id (:revision-id body)]
     (index/wait-until-indexed)
-    (println post-results)
 
     (testing "Check that test the document ingested before going forward with tests"
       (is (= 201 (:status post-results))) "failed to ingest test record")
