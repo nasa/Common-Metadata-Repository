@@ -4,22 +4,29 @@
    [cheshire.core :as json]
    [clojure.string :as string]
    [clojure.test :refer :all]
+   [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.common.config :as config]
    [cmr.common.generics :as gcfg]
    [cmr.ingest.api.generic-documents :as gdocs]
+   [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.generic-util :as gen-util]
-   [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.transmit.config :as transmit-config]))
+   [cmr.system-int-test.utils.ingest-util :as ingest]))
 
-(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
+(defn grant-all-generic-permission-fixture
+  "A test fixture that grants all users the ability to create and modify generic documents."
+  [f]
+  (echo-util/grant-system-ingest-management (system/context) [:read :update] [:read :update])
+  (f))
+
+(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"})
+                                    grant-all-generic-permission-fixture]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Check the functions which validate generic metadata
 (deftest validate-json-test
-  "Check the functions which validate generic metadata"
-
   (testing
    "Test that approved-generic? approves configured Generic document types"
     (with-redefs [config/approved-pipeline-documents (fn [] {:grids ["1.0.0"]})]
@@ -47,8 +54,6 @@
             "Was not able to generate a schema exception")))))
 
 (deftest test-validate-concept-subtypes
-  "Test that concept prefixes can be looked up from either a configuration file or be assumed"
-
   (testing
    "Test that concept prefixes can be looked up from either a configuration file or be assumed"
     (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
@@ -59,15 +64,11 @@
         (is (= expected1 actual1) "was not able to find GRD")
         (is (= expected2 actual2) "was not able to default to X")))))
 
+;; Test that a Generic can be walked through all the CRUD actions using the ingest
+;; interface. Use the same native-id for all these steps"
 (deftest test-generic-CRUD
-  "Test that a Generic can be walked through all the CRUD actions using the ingest
-   interface. Use the same native-id for all these steps"
-
-  (let [native-id (format "Generic-Test-CRUD")
-        generic-tokened-request (partial gen-util/generic-request
-                                         (transmit-config/echo-system-token)
-                                         "PROV1"
-                                         native-id)
+  (let [native-id "Generic-Test-CRUD"
+        generic-tokened-request (partial gen-util/generic-request nil "PROV1" native-id)
         generic-requester (partial generic-tokened-request "grid")]
 
     (testing "send a good document with config set that does not include grid"
@@ -83,9 +84,8 @@
         (let [expected {:native-id native-id
                         :deleted false
                         :provider-id "PROV1"
-                        :format "UMM_JSON;0.0.1"
+                        :format "application/vnd.nasa.cmr.umm+json;version=0.0.1"
                         :revision-id 1
-                        :user-id "ECHO_SYS"
                         :concept-type "grid"
                         :extra-fields {:document-name "Grid-A7-v1"
                                        :schema "grid"

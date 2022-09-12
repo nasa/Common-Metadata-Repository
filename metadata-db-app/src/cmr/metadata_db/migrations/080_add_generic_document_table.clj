@@ -12,7 +12,7 @@
     provider_id VARCHAR(10) NOT NULL,
     document_name VARCHAR(20) NOT NULL,
     schema VARCHAR(255) NOT NULL,
-    format VARCHAR(255),
+    format VARCHAR(255) NOT NULL,
     mime_type VARCHAR(255) NOT NULL,
     metadata BLOB NOT NULL,
     revision_id INTEGER DEFAULT 1 NOT NULL,
