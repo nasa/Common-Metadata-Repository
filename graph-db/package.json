@@ -38,7 +38,7 @@
     "axios": "^0.24.0",
     "gremlin": "~3.4.10",
     "lodash": "^4.17.21",
-    "serverless": "^3.21.0",
+    "serverless": "^3.22.0",
     "serverless-offline": "^8.8.1",
     "serverless-webpack": "^5.7.1",
     "webpack": "^5.73.0",
