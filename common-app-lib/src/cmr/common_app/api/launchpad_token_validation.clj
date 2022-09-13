@@ -23,7 +23,7 @@
       (string/starts-with? token "EDL-")
       (string/starts-with? token (str BEARER "EDL-"))))
 
-(defn- is-jwt-token?
+(defn is-jwt-token?
   "Check if a token matches the JWT pattern (Base64.Base64.Base64) and if it
    does, try to look inside the header section and verify that the token is JWT
    and it came from EarthDataLogin (EDL). Tokens may start with Bearer and end
