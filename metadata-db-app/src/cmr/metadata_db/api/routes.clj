@@ -28,6 +28,7 @@
    ;; XXX This is not a good pattern for large software systems; we need to
    ;;     find a different way to accomplish this goal ... possibly use protocols
    ;;     instead.
+   [cmr.metadata-db.data.oracle.concepts.generic-association]
    [cmr.metadata-db.data.oracle.concepts.generic-documents]))
 
 (def admin-api-routes
