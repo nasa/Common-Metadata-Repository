@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [cmr.common-app.config :as config]
    [cmr.common.services.errors :as errors]
+   [cmr.common.util :as common-util]
    [cmr.transmit.config :as transmit-config]))
 
 ;; Note: Similar code exists at gov.nasa.echo.kernel.service.authentication
@@ -23,33 +24,6 @@
       (string/starts-with? token "EDL-")
       (string/starts-with? token (str BEARER "EDL-"))))
 
-(defn is-jwt-token?
-  "Check if a token matches the JWT pattern (Base64.Base64.Base64) and if it
-   does, try to look inside the header section and verify that the token is JWT
-   and it came from EarthDataLogin (EDL). Tokens may start with Bearer and end
-   with with a client-id section.
-   Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
-  [raw-token]
-  (let [token (if (string/starts-with? raw-token BEARER)
-                (subs raw-token (count BEARER))
-                raw-token)]
-    (if (some? (re-find #"[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+\.[:A-Za-z0-9=_-]+" token))
-      (let [token-parts (string/split token #"\.")
-            token-header (first token-parts)
-            header-raw (String. (.decode (java.util.Base64/getDecoder) token-header))]
-        ;; don't parse the data unless it is really needed to prevent unnecessary
-        ;; processing. Check first to see if the data looks like JSON
-        (if (and (string/starts-with? header-raw "{")
-                 (string/ends-with? header-raw "}"))
-          (try
-            (if-let [header-data (json/parse-string header-raw true)]
-              (and (= "JWT" (:typ header-data))
-                   (= "Earthdata Login" (:origin header-data)))
-              false)
-            (catch com.fasterxml.jackson.core.JsonParseException e false))
-          false))
-      false)))
-
 (defn is-launchpad-token?
   "Returns true if the given token is a launchpad token.
    If the token is not a Legacy (ECHO), Heritage (EDL+), or JWT (newest) token,
@@ -58,7 +32,7 @@
   [token]
   ;; note: ordered from least expensive to most
   (not (or (is-legacy-token? token)
-           (is-jwt-token? token))))
+           (common-util/is-jwt-token? token))))
 
 (defn get-token-type
   "Returns the type of a given token"
@@ -68,7 +42,7 @@
       (= (transmit-config/echo-system-token) token) "System"
       (re-seq #"[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}" token) "Echo-Token"
       (is-legacy-token? token) "Legacy-EDL"
-      (is-jwt-token? token) "JWT"
+      (common-util/is-jwt-token? token) "JWT"
       :else "Launchpad")))
 
 (defn validate-launchpad-token
