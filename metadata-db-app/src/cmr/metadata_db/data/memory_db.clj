@@ -5,6 +5,7 @@
    [clojure.string :as string]
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as p]
+   [cmr.common.generics :as common-generic]
    [cmr.common.memory-db.connection :as connection]
    [cmr.common.time-keeper :as tk]
    [cmr.metadata-db.data.concepts :as concepts]
@@ -309,15 +310,10 @@
 (defn generate-concept-id
   [db concept]
   (let [{:keys [concept-type provider-id]} concept
-        concept-sub-type (get concept :concept-sub-type)
         num (swap! (:next-id-atom db) inc)]
-    (if (some? concept-sub-type)
-      (cc/build-generic-concept-id {:concept-type concept-sub-type
-                                    :sequence-number num
-                                    :provider-id provider-id})
-      (cc/build-concept-id {:concept-type concept-type
-                            :sequence-number num
-                            :provider-id provider-id}))))
+    (cc/build-concept-id {:concept-type concept-type
+                          :sequence-number num
+                          :provider-id provider-id})))
 
 (defn get-concept-id
   [db concept-type provider native-id]
@@ -432,7 +428,12 @@
                             #(or % (p/clj-time->date-time-str (tk/now))))
          ;; Set the created-at time to the current timekeeper time for concepts which have
          ;; the created-at field and do not already have a :created-at time set.
-         concept (if (some #{concept-type} [:collection :granule :service :tool :variable :subscription :generic])
+         ;; :generic is included for undeclared generic documents which may not specify one
+         ;; of the types in lattest-approved-document-types.
+         concepts-with-created-at
+         (into [:collection :granule :service :tool :variable :subscription :generic]
+               (common-generic/lattest-approved-document-types))
+         concept (if (some #{concept-type} concepts-with-created-at)
                    (update-in concept
                               [:created-at]
                               #(or % (p/clj-time->date-time-str (tk/now))))
