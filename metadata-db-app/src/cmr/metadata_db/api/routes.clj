@@ -1,14 +1,12 @@
 (ns cmr.metadata-db.api.routes
   "Defines the HTTP URL routes for the application."
   (:require
-   [cheshire.core :as json]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
    [cmr.common.cache :as cache]
-   [cmr.common.jobs :as jobs]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.metadata-db.api.concepts :as concepts-api]
    [cmr.metadata-db.api.provider :as provider-api]
