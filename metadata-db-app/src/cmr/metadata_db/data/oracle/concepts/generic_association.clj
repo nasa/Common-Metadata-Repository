@@ -1,5 +1,5 @@
 (ns cmr.metadata-db.data.oracle.concepts.generic-association
-  "Implements multi-method variations for generic concepts"
+  "Implements multi-method variations for generic association concepts"
   (:require
    [clojure.string :as string]
    [cmr.common.concepts :as concepts]
