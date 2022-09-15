@@ -3,21 +3,18 @@
   (:require [clojure.set :as cset]
             [clojure.string :as str]
             [cmr.common.util :as util]
+            [cmr.common.generics :as common-generic]
             [cmr.common.services.errors :as errors]))
 
-(def generic-concept-prefix->concept-type
-  "Maps a generic concept id prefix to the concept type."
-  {"X" :generic
-   ;; TODO: Generic work: Can I read a non common config file to read in the generics instead of coding them? This is primarily used for validation.
-   "DQS" :dataqualitysummary
-   "OO" :orderoption
-   "SO" :serviceoption
-   "SE" :serviceentry
-   "GRD" :grid})
-
 (def generic-concept-types->concept-prefix
-  "Gets an array of generic concept types."
-  (cset/map-invert generic-concept-prefix->concept-type))
+  "Gets an array of generic concept types.
+   Return {:generic \"X\" :grid \"GRD\"...}"
+  (merge {:generic "X"} (common-generic/approved-generic-concept-prefixes)))
+
+(def generic-concept-prefix->concept-type
+  "Maps a generic concept id prefix to the concept type.
+   Return: {\"X\" :generic \"GRD\" :grid...}"
+  (cset/map-invert generic-concept-types->concept-prefix))
 
 (defn get-generic-concept-types-array
   "Gets the array of generic concept types."
@@ -76,7 +73,7 @@
 (def concept-type->concept-prefix
   "Maps a concept type to the concept id prefix"
   (cset/map-invert concept-prefix->concept-type))
- 
+
 (def humanizer-native-id
   "The native id of the system level humanizer. There can only be one humanizer in CMR.
   We use just humanizer native id to enforce it."
