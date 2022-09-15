@@ -33,10 +33,10 @@
       [(concat cols ["associated_concept_id" "associated_revision_id" "source_concept_identifier" "user_id" "association_type"])
        (concat values [associated-concept-id associated-revision-id source-concept-identifier user-id association-type])])))
 
-(defmethod c/concept->insert-args [:generic-association false]
-  [concept _]
-  (generic-assoc-concept->insert-args concept))
+;;(defmethod c/concept->insert-args [:generic-association false]
+ ;; [concept _]
+  ;;(generic-assoc-concept->insert-args concept))
 
-(defmethod c/concept->insert-args [:generic-association true]
-  [concept _]
-  (generic-assoc-concept->insert-args concept))
+;;(defmethod c/concept->insert-args [:generic-association true]
+ ;; [concept _]
+  ;;(generic-assoc-concept->insert-args concept))
