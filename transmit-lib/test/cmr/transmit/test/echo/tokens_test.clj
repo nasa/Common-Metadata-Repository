@@ -1,8 +1,7 @@
 (ns cmr.transmit.test.echo.tokens-test
   (:require
    [clojure.test :refer :all]
-   [cmr.common-app.api.launchpad-token-validation :as token-validation]
-   [cmr.common.util :refer [are3]]
+   [cmr.common.util :refer [are3 is-jwt-token?]]
    [cmr.transmit.echo.tokens :as tokens])
   (:import
    clojure.lang.ExceptionInfo
@@ -55,10 +54,10 @@
 
   (testing "is-jwt-token? tests with"
     (testing "valid jwt token"
-      (is (= true (token-validation/is-jwt-token? expired-token))))
+      (is (= true (is-jwt-token? expired-token))))
     (testing "invalid jwt token"
-      (is (= true (token-validation/is-jwt-token? invalid-jwt-token))))
+      (is (= true (is-jwt-token? invalid-jwt-token))))
     (testing "non jwt invalid token"
-      (is (= false (token-validation/is-jwt-token? invalid-token))))
+      (is (= false (is-jwt-token? invalid-token))))
     (testing "valid token"
-      (is (= true (token-validation/is-jwt-token? not-expired-token))))))
+      (is (= true (is-jwt-token? not-expired-token))))))

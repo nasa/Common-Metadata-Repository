@@ -5,7 +5,6 @@
    [buddy.sign.jwt :as jwt]
    [cheshire.core :as json]
    [clj-time.core :as t]
-   [cmr.common-app.api.launchpad-token-validation :as token-validation]
    [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
@@ -100,7 +99,7 @@
   (if (transmit-config/echo-system-token? token)
     ;; Short circuit a lookup when we already know who this is.
     (transmit-config/echo-system-username)
-    (if (token-validation/is-jwt-token? token)
+    (if (common-util/is-jwt-token? token)
       (verify-edl-token-locally token)
       (let [[status parsed body] (r/rest-post context "/tokens/get_token_info"
                                               {:headers {"Accept" mt/json
