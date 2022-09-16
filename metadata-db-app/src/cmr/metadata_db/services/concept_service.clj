@@ -34,6 +34,7 @@
   (:require
    [cmr.metadata-db.data.oracle.concepts.acl]
    [cmr.metadata-db.data.oracle.concepts.collection]
+   [cmr.metadata-db.data.oracle.concepts.generic-association]
    [cmr.metadata-db.data.oracle.concepts.generic-documents]
    [cmr.metadata-db.data.oracle.concepts.granule]
    [cmr.metadata-db.data.oracle.concepts.group]
