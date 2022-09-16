@@ -8,12 +8,12 @@
 
 (def generic-concept-types->concept-prefix
   "Gets an array of generic concept types.
-   Return {:generic \"X\" :grid \"GRD\"...}"
+   Return {:generic (str X) :grid (str GRD)...}"
   (merge {:generic "X"} (common-generic/approved-generic-concept-prefixes)))
 
 (def generic-concept-prefix->concept-type
   "Maps a generic concept id prefix to the concept type.
-   Return: {\"X\" :generic \"GRD\" :grid...}"
+   Return: {(str X) :generic (str GRD) :grid...}"
   (cset/map-invert generic-concept-types->concept-prefix))
 
 (defn get-generic-concept-types-array
