@@ -429,10 +429,10 @@
          ;; Set the created-at time to the current timekeeper time for concepts which have
          ;; the created-at field and do not already have a :created-at time set.
          ;; :generic is included for undeclared generic documents which may not specify one
-         ;; of the types in lattest-approved-document-types.
+         ;; of the types in latest-approved-document-types.
          concepts-with-created-at
          (into [:collection :granule :service :tool :variable :subscription :generic]
-               (common-generic/lattest-approved-document-types))
+               (common-generic/latest-approved-document-types))
          concept (if (some #{concept-type} concepts-with-created-at)
                    (update-in concept
                               [:created-at]

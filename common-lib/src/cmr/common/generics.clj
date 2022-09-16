@@ -18,8 +18,8 @@
   (when (and schema version)
     (some #(= version %) (schema (cfg/approved-pipeline-documents)))))
 
-(defn lattest-approved-documents
-  "Return a map of all the configured approved generics and the lattest version
+(defn latest-approved-documents
+  "Return a map of all the configured approved generics and the latest version
    string for each one.
    Return {:doc-type \"ver.ion.string\"}"
   []
@@ -28,11 +28,11 @@
           {}
           (cfg/approved-pipeline-documents)))
 
-(defn lattest-approved-document-types
+(defn latest-approved-document-types
   "Return a list of configured approved generic keywords
    Returns: (:grid :dataqualitysummary ...)"
   []
-  (keys (lattest-approved-documents)))
+  (keys (latest-approved-documents)))
 
 (defn read-schema-file
   "Return the specific schema given the schema keyword name and version number.
@@ -113,4 +113,4 @@
                        generic-keyword
                        (get (json/parse-string index-raw true) :SubConceptType "X")))))
           {}
-          (lattest-approved-documents)))
+          (latest-approved-documents)))
