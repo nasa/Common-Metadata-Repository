@@ -178,15 +178,8 @@
         provider-id (:provider params)
         native-id (:native-id route-params)
         concept-type (keyword (:concept-type route-params))
-        query-params (assoc {} :provider-id provider-id :native-id native-id)
-        found-concepts (mdb2/find-concepts request-context query-params concept-type {:raw? true})
-        ;; in memory database is inserting these values, where as the sql is not
-        body (-> found-concepts
-                 :body
-                 last
-                 (dissoc :concept-sub-type :user-id)
-                 list)]
-    (assoc found-concepts :body body)))
+        query-params (assoc {} :provider-id provider-id :native-id native-id)]
+    (mdb2/find-concepts request-context query-params concept-type {:raw? true})))
 
 (defn update-generic-document
   [request]
