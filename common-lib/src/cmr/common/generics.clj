@@ -50,12 +50,15 @@
         (slurp))
     (catch Exception e
       (error
-       (format (str "The %s.json file for schema [%s] version [%s] cannot be found."
+       (format (str "The %s.json file for schema [%s] version [%s] cannot be found. "
+                    " - [%s] - "
                     "Please make sure that it exists. %s")
                (name file-name)
                (name generic-keyword)
                generic-version
-               (.getMessage e))))))
+               (format "schemas/%s/v%s/%s.json" (name generic-keyword) generic-version (name file-name))
+               (.getMessage e)))
+      (println "read-schema-file failed"))))
 
 (defn read-schema-index
   "Return the schema index configuration file given the schema name and version
