@@ -6,14 +6,14 @@
             [cmr.common.generics :as common-generic]
             [cmr.common.services.errors :as errors]))
 
+;; Gets an array of generic concept types.
+;; Return {:generic (str X) :grid (str GRD)...}
 (def generic-concept-types->concept-prefix
-  "Gets an array of generic concept types.
-   Return {:generic (str X) :grid (str GRD)...}"
   (merge {:generic "X"} (common-generic/approved-generic-concept-prefixes)))
 
+;; Maps a generic concept id prefix to the concept type.
+;; Return: {(str X) :generic (str GRD) :grid...}
 (def generic-concept-prefix->concept-type
-  "Maps a generic concept id prefix to the concept type.
-   Return: {(str X) :generic (str GRD) :grid...}"
   (cset/map-invert generic-concept-types->concept-prefix))
 
 (defn get-generic-concept-types-array
@@ -28,7 +28,7 @@
 
 (def concept-types
   "This is the set of the types of concepts in the CMR."
-  #{:access-group
+  (into #{:access-group
     :acl
     :collection
     :granule
@@ -43,12 +43,8 @@
     :variable-association
     :subscription
     :generic
-    :dataqualitysummary
-    :orderoption
-    :serviceoption
-    :serviceentry
-    :grid
-    :generic-association})
+    :generic-association}
+    (keys generic-concept-types->concept-prefix)))
 
 (def concept-prefix->concept-type
   "Maps a concept id prefix to the concept type"
