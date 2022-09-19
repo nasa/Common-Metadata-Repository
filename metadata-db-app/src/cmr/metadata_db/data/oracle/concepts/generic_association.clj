@@ -7,8 +7,16 @@
 
 (defmethod c/db-result->concept-map :generic-association
   [concept-type db provider-id result]
-  (let [concept-type-in-result (concepts/concept-id->type (:concept_id result))]
-    (if (= concept-type concept-type-in-result)
+  (println "result: " result)
+  (let [concept-id-in-result (:concept_id result)
+        concept-type-in-result (when concept-id-in-result
+                                 (concepts/concept-id->type concept-id-in-result))]
+    ;; For now, not every association in CMR_ASSOCIATIONS table has :generic-association type.
+    ;; there are also :variable-association, :service-association and :tool-association.
+    ;; We are working towards making them all :generic-association if possible. 
+    (if (and concept-type-in-result
+             (not=  concept-type concept-type-in-result))
+      (c/db-result->concept-map concept-type-in-result db provider-id result)
       (some-> (c/db-result->concept-map :default db provider-id result)
               (assoc :concept-type :generic-association)
               (assoc-in [:extra-fields :associated-concept-id] (:associated_concept_id result))
@@ -19,8 +27,7 @@
               (assoc-in [:extra-fields :source-revision-id]
                         (when-let [sri (:source_revision_id result)]
                           (long sri)))
-              (assoc :user-id (:user_id result)))
-      (c/db-result->concept-map concept-type-in-result db provider-id result))))
+              (assoc :user-id (:user_id result))))))
 
 (defn- generic-assoc-concept->insert-args
   [concept]
