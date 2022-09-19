@@ -129,11 +129,6 @@
   (let [prefix (concept-type->concept-prefix concept-type)]
     (format "%s%d-%s" prefix sequence-number provider-id)))
 
-(defn build-generic-concept-id
-  "Converts a map of concept-type sequence-number and provider-id to a concept-id for generic concept types."
-  [{:keys [concept-type sequence-number provider-id]}]
-  (format "%s%d-%s" concept-type sequence-number provider-id))
-
 (defn concept-id->type
   "Returns concept type for the given concept-id"
   [concept-id]
