@@ -242,7 +242,7 @@
         [validation-time associations]
         (util/time-execution
          (assoc-validation/validate-generic-associations
-          context concept-type concept-id associations operation-type))]
+          context concept-type concept-id revision-id associations operation-type))]
     (debug "link-to-concepts validation-time:" validation-time)
     (update-generic-associations context concept associations operation-type)))
 

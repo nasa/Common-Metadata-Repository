@@ -7,7 +7,6 @@
 
 (defmethod c/db-result->concept-map :generic-association
   [concept-type db provider-id result]
-  (println "result: " result)
   (let [concept-id-in-result (:concept_id result)
         concept-type-in-result (when concept-id-in-result
                                  (concepts/concept-id->type concept-id-in-result))]
