@@ -45,12 +45,11 @@
 
   (let [;;First ingest a Grid concept
         native-id (format "Generic-Test-%s" (UUID/randomUUID))
-        generic-requester (partial gen-util/generic-request nil "PROV1" native-id "grid")
-        good-generic-requester (partial generic-requester gen-util/grid-good)
-        post-results (good-generic-requester :post)
-        body (json/parse-string (:body post-results) true)
-        grid-concept-id (:concept-id body)
-        grid-revision-id (:revision-id body)
+        grid-doc gen-util/grid-good
+        grid (gen-util/ingest-generic-document
+              nil "PROV1" native-id :grid grid-doc :post)
+        grid-concept-id (:concept-id grid)
+        grid-revision-id (:revision-id grid)
         
         ;;Then ingest a collection
         coll (data-core/ingest-umm-spec-collection "PROV1"
