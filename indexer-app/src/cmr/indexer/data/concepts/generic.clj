@@ -69,7 +69,7 @@
      (keyword field-name-lower) value-lower}))
 
 (defn- parsed-concept->elastic-doc
-  "Generate an all of the elastic document parts"
+  "Generate elastic document"
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id user-id
                 revision-date extra-fields native-id]} concept

@@ -30,4 +30,14 @@
           :body (when document (json/generate-string document))
           :throw-exceptions false
           :headers headers}
-       (client/request)))))
+         (client/request)))))
+
+(defn ingest-generic-document
+  "A wrapper function for generic-request, and returns the concept ingested."
+  ([token provider-id native-id concept-type document]
+   (ingest-generic-document token provider-id native-id concept-type document :get))
+  ([token provider-id native-id concept-type document method]
+   (json/parse-string
+    (:body (generic-request
+            token provider-id native-id (name concept-type) document method))
+    true)))

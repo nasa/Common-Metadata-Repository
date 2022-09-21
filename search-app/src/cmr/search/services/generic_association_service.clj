@@ -232,17 +232,14 @@
         ;; Need to set the original revision-id back so that it can be inserted into
         ;; db correctly.
         concept (assoc concept :revision-id revision-id)
-        associations (assoc-validation/associations-json->associations associations-json)
-        associations (assoc-validation/validate-no-same-concept-generic-association
-                      concept
-                      associations)
-        associations (assoc-validation/validate-generic-association-types
-                      concept
-                      associations)
+        associations (->> associations-json
+                          (assoc-validation/associations-json->associations)
+                          (assoc-validation/validate-no-same-concept-generic-association concept)
+                          (assoc-validation/validate-generic-association-types concept))
         [validation-time associations]
         (util/time-execution
          (assoc-validation/validate-generic-associations
-          context concept-type concept-id associations operation-type))]
+          context concept-type concept-id revision-id associations operation-type))]
     (debug "link-to-concepts validation-time:" validation-time)
     (update-generic-associations context concept associations operation-type)))
 

@@ -343,15 +343,23 @@
     association))
 
 (defn- validate-generic-association-conflict
-  "Validates the association (either on a specific revision or over the whole collection)
-  does not conflict with one or more existing associations in Metadata DB. a concept 
-  cannot be associated with another concept revision and the same concept without revision
+  "A concept can NOT be associated with another concept with and without revision
   at the same time. Returns the association with errors appended if applicable."
-  [context concept-id association]
-  (if-let [error-msg (validate-generic-association-conflict-for-concept
-                      context concept-id association)]
-    (append-error association error-msg)
-    association))
+  [context concept-id concept-revision-id association]
+  ;;For generic associations, request can pass in revision-ids for both the source
+  ;;and the destination. so we need to validate both of the following:
+  ;;1. The source can not be associated with the destination with and without revision.
+  ;;2. The destination can not be associated with the source with and without revision
+  (let [source-error-msg (validate-generic-association-conflict-for-concept
+                          context concept-id association)
+        destination-error-msg (validate-generic-association-conflict-for-concept
+                               context
+                               (:concept-id association)
+                               {:concept-id concept-id :revision-id concept-revision-id})
+        error-msg (str source-error-msg "; " destination-error-msg)]
+    (if (or source-error-msg destination-error-msg)
+      (append-error association error-msg)
+      association)))
 
 (defn- validate-collection-identifier
   "Validates the association concept-id and revision-id (if given) satisfy association rules,
@@ -490,7 +498,7 @@
   in the associations. Returns the associations with errors found
   appended to them. If the provided associations fail the basic rules validation (e.g. empty
   associations, conflicts within the request), throws a service error."
-  (fn [context assoc-type assoc-id associations operation-type]
+  (fn [context assoc-type assoc-id assoc-revision-id associations operation-type]
     operation-type))
 
 (defmethod validate-associations :insert
@@ -621,7 +629,7 @@
       (set/difference (set generic-concept-ids) (set accessible-concept-ids)))))
 
 (defmethod validate-generic-associations :insert
-  [context assoc-type assoc-id associations operation-type]
+  [context assoc-type assoc-id assoc-revision-id associations operation-type]
   (validate-empty-associations assoc-type associations)
   (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
         _ (validate-generic-conflicts-within-request assoc-type concept-id-only-assocs revision-assocs)
@@ -655,10 +663,10 @@
                 %
                 true))
          (map #(validate-association-data assoc-type %))
-         (map #(validate-generic-association-conflict context assoc-id %)))))
+         (map #(validate-generic-association-conflict context assoc-id assoc-revision-id %)))))
 
 (defmethod validate-generic-associations :delete
-  [context assoc-type assoc-id associations operation-type]
+  [context assoc-type assoc-id assoc-revision-id associations operation-type]
   (validate-empty-associations assoc-type associations)
   (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
         no-permission-concept-ids (get-no-permission-concept-ids
