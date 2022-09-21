@@ -136,6 +136,8 @@ For a given list of providers (use provider `CMR` to index all system concepts):
 
     curl -i -XPOST -H "Content-Type: application/json" -d '{"provider_ids": ["PROV1", "PROV2", "CMR"]}' http://localhost:3006/bulk_index/after_date_time?date_time=2015-02-02T10:00:00Z"
 
+Similar to the bulk index a provider endpoint, this reindexing of concepts newer than a given date-time will not reindex the concepts in the all revisions index. The workaround here is to use the indexer endpoint for reindexing collections and the concept specific bootstrap bulk indexing endpoint for variables, services, tools and subscriptions.
+
 ### Bulk index all system concepts (tags/acls/access-groups)
 
     curl -i -XPOST http://localhost:3006/bulk_index/system_concepts

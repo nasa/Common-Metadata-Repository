@@ -7,8 +7,31 @@
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.transmit.association :as transmit-assoc]
+   [cmr.transmit.generic-association :as transmit-generic-assoc]
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.umm-spec.versioning :as versioning]))
+
+(defn generic-associate-by-concept-ids-revision-ids
+  "Associates a concept with the given concept id, revision id to a list of concept ids and revision ids."
+  ([token concept-id revision-id concept-id-revision-id-list]
+   (generic-associate-by-concept-ids-revision-ids token concept-id revision-id concept-id-revision-id-list nil))
+  ([token concept-id revision-id concept-id-revision-id-list options]
+   (let [options (merge {:raw? true :token token} options)
+         response (transmit-generic-assoc/associate-concept
+                   (s/context) concept-id revision-id concept-id-revision-id-list options)]
+     (index/wait-until-indexed)
+     (ingest-util/parse-map-response response))))
+
+(defn generic-dissociate-by-concept-ids-revision-ids
+  "Associates a concept with the given concept id, revision id to a list of concept ids and revision ids."
+  ([token concept-id revision-id concept-id-revision-id-list]
+   (generic-dissociate-by-concept-ids-revision-ids token concept-id revision-id concept-id-revision-id-list nil))
+  ([token concept-id revision-id concept-id-revision-id-list options]
+   (let [options (merge {:raw? true :token token} options)
+         response (transmit-generic-assoc/dissociate-concept
+                   (s/context) concept-id revision-id concept-id-revision-id-list options)]
+     (index/wait-until-indexed)
+     (ingest-util/parse-map-response response))))
 
 (defn associate-by-concept-ids
   "Associates a variable/service with the given concept id to a list of collections."

@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
+   [cmr.common.config :as common-config]
    [cmr.common.log :as log :refer [info]]
    [cmr.common.rebalancing-collections :as rebalancing-collections]
    [cmr.common.services.errors :as errors]
@@ -12,6 +13,15 @@
    [cmr.indexer.services.messages :as m])
   (:import
    (clojure.lang ExceptionInfo)))
+
+
+(defn- add-searchable-generic-types
+  "Add the list of supported generic document types to a list of fixed searchable
+   concept types presumable from searchable-concept-types"
+  [initial-list]
+  (reduce (fn [data, item] (conj data (keyword (str "generic-" (name item)))))
+          initial-list
+          (keys (common-config/approved-pipeline-documents))))
 
 (def searchable-concept-types
   "Defines the concept types that are indexed in elasticsearch and thus searchable."
@@ -38,7 +48,7 @@
   "Given an index-set, build list of indices with config."
   [idx-set]
   (let [prefix-id (get-in idx-set [:index-set :id])]
-    (for [concept-type searchable-concept-types
+    (for [concept-type (add-searchable-generic-types searchable-concept-types)
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (let [mapping (get-in idx-set [:index-set concept-type :mapping])
             {idx-name :name settings :settings} idx]
@@ -50,7 +60,7 @@
   "Given a index set build list of index names."
   [idx-set]
   (let [prefix-id (get-in idx-set [:index-set :id])]
-    (for [concept-type searchable-concept-types
+    (for [concept-type (add-searchable-generic-types searchable-concept-types)
           idx (get-in idx-set [:index-set concept-type :indexes])]
       (gen-valid-index-name prefix-id (:name idx)))))
 
@@ -68,7 +78,7 @@
   (let [prefix (:id index-set)]
     {:id (:id index-set)
      :name (:name index-set)
-     :concepts (into {} (for [concept-type searchable-concept-types]
+     :concepts (into {} (for [concept-type (add-searchable-generic-types searchable-concept-types)]
                           [concept-type
                            (into {} (for [idx (get-in index-set [concept-type :indexes])]
                                       [(keyword (:name idx)) (gen-valid-index-name prefix (:name idx))]))]))}))
@@ -168,11 +178,12 @@
   (let [index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
         es-store (context->es-store context)]
-
     ;; rollback index-set creation if index creation fails
     (try
       (dorun (map #(es/create-index es-store %) indices-w-config))
       (catch ExceptionInfo e
+        ;; TODO: Generic work: why does this fail to roll back with bad generics?
+        (println "failed to create index, roll back, this does not always work")
         (dorun (map #(es/delete-index es-store %) index-names))
         (m/handle-elastic-exception "attempt to create indices of index-set failed" e)))
     (try

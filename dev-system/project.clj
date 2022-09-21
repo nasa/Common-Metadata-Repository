@@ -5,6 +5,7 @@
    :cmr-bootstrap-app "0.1.0-SNAPSHOT"
    :cmr-common-app-lib "0.1.0-SNAPSHOT"
    :cmr-common-lib "0.1.1-SNAPSHOT"
+   :cmr-schemas "0.0.1-SNAPSHOT"
    :cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
    :cmr-indexer-app "0.1.0-SNAPSHOT"
    :cmr-ingest-app "0.1.0-SNAPSHOT"

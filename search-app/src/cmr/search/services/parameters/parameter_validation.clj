@@ -110,6 +110,16 @@
     :always-case-sensitive #{}
     :disallow-pattern #{}}))
 
+(doseq [concept-type (cc/get-generic-concept-types-array)]
+  (defmethod cpv/params-config concept-type
+    [_]
+    (cpv/merge-params-config
+     cpv/basic-params-config
+     {:single-value #{:keyword :all-revisions}
+      :multiple-value #{:name :provider :native-id :concept-id :id}
+      :always-case-sensitive #{}
+      :disallow-pattern #{}})))
+
 (def exclude-params
   "Map of concept-type to parameters which can be used to exclude items from results."
   {:collection #{:tag-key}
@@ -267,6 +277,14 @@
   {:q cpv/string-param-options
    :type cpv/string-plus-or-options})
 
+(doseq [concept-type (cc/get-generic-concept-types-array)]
+  (defmethod cpv/valid-parameter-options concept-type
+    [_]
+    {:name cpv/string-param-options
+     :native-id cpv/string-param-options
+     :provider cpv/string-param-options 
+     :id cpv/string-param-options}))
+
 (defmethod cpv/valid-query-level-params :collection
   [_]
   #{:include-granule-counts :include-has-granules :include-facets :hierarchical-facets
@@ -299,6 +317,11 @@
 (defmethod cpv/valid-query-level-params :subscription
   [_]
   #{:all-revisions})
+
+(doseq [concept-type (cc/get-generic-concept-types-array)]
+  (defmethod cpv/valid-query-level-params concept-type
+    [_]
+    #{:all-revisions}))
 
 (defmethod cpv/valid-sort-keys :collection
   [_]
@@ -372,6 +395,15 @@
     :subscription-name
     :collection-concept-id
     :provider})
+
+(doseq [concept-type (cc/get-generic-concept-types-array)]
+  (defmethod cpv/valid-sort-keys concept-type
+    [_]
+    #{:name
+      :long-name
+      :revision-date
+      :provider
+      :id}))
 
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
@@ -842,75 +874,79 @@
 
 (def parameter-validations
   "Lists of parameter validation functions by concept type"
-  {:collection (concat
-                cpv/common-validations
-                [boosts-validation
-                 temporal-format-validation
-                 updated-since-validation
-                 revision-date-validation
-                 created-at-validation
-                 orbit-number-validation
-                 equator-crossing-longitude-validation
-                 equator-crossing-date-validation
-                 cloud-cover-validation
-                 attribute-validation
-                 (partial science-keywords-validation-for-field :science-keywords)
-                 (partial science-keywords-validation-for-field :science-keywords-h)
-                 variables-validation
-                 exclude-validation
-                 boolean-value-validation
-                 polygon-validation
-                 bounding-box-validation
-                 point-validation
-                 line-validation
-                 tag-data-validation
-                 no-highlight-options-without-highlights-validation
-                 highlights-numeric-options-validation
-                 include-tags-parameter-validation
-                 collection-include-facets-validation
-                 no-facets-size-without-include-facets-v2
-                 collection-facets-size-validation
-                 circle-values-validation
-                 shapefile-format-validation])
-   :granule (concat
-             cpv/common-validations
-             [temporal-format-validation
-              created-at-validation
-              updated-since-validation
-              production-date-validation
-              revision-date-validation
-              orbit-number-validation
-              equator-crossing-longitude-validation
-              equator-crossing-date-validation
-              cloud-cover-validation
-              track/cycle-pass-tile-validation
-              attribute-validation
-              (partial science-keywords-validation-for-field :science-keywords)
-              exclude-validation
-              boolean-value-validation
-              polygon-validation
-              bounding-box-validation
-              point-validation
-              line-validation
-              collection-concept-id-validation
-              granule-include-facets-validation
-              temporal-facets-subfields-validation
-              temporal-facet-year-validation
-              temporal-facet-month-validation
-              temporal-facet-day-validation
-              circle-values-validation
-              shapefile-format-validation])
-   :tag cpv/common-validations
-   :variable (concat cpv/common-validations
-                     [boolean-value-validation
-                      measurement-identifiers-validation])
-   :service (concat cpv/common-validations
-                    [boolean-value-validation])
-   :tool (concat cpv/common-validations
-                 [boolean-value-validation])
-   :autocomplete cpv/common-validations
-   :subscription (concat cpv/common-validations
-                         [boolean-value-validation])})
+  (merge
+   {:collection (concat
+                 cpv/common-validations
+                 [boosts-validation
+                  temporal-format-validation
+                  updated-since-validation
+                  revision-date-validation
+                  created-at-validation
+                  orbit-number-validation
+                  equator-crossing-longitude-validation
+                  equator-crossing-date-validation
+                  cloud-cover-validation
+                  attribute-validation
+                  (partial science-keywords-validation-for-field :science-keywords)
+                  (partial science-keywords-validation-for-field :science-keywords-h)
+                  variables-validation
+                  exclude-validation
+                  boolean-value-validation
+                  polygon-validation
+                  bounding-box-validation
+                  point-validation
+                  line-validation
+                  tag-data-validation
+                  no-highlight-options-without-highlights-validation
+                  highlights-numeric-options-validation
+                  include-tags-parameter-validation
+                  collection-include-facets-validation
+                  no-facets-size-without-include-facets-v2
+                  collection-facets-size-validation
+                  circle-values-validation
+                  shapefile-format-validation])
+    :granule (concat
+              cpv/common-validations
+              [temporal-format-validation
+               created-at-validation
+               updated-since-validation
+               production-date-validation
+               revision-date-validation
+               orbit-number-validation
+               equator-crossing-longitude-validation
+               equator-crossing-date-validation
+               cloud-cover-validation
+               track/cycle-pass-tile-validation
+               attribute-validation
+               (partial science-keywords-validation-for-field :science-keywords)
+               exclude-validation
+               boolean-value-validation
+               polygon-validation
+               bounding-box-validation
+               point-validation
+               line-validation
+               collection-concept-id-validation
+               granule-include-facets-validation
+               temporal-facets-subfields-validation
+               temporal-facet-year-validation
+               temporal-facet-month-validation
+               temporal-facet-day-validation
+               circle-values-validation
+               shapefile-format-validation])
+    :tag cpv/common-validations
+    :variable (concat cpv/common-validations
+                      [boolean-value-validation
+                       measurement-identifiers-validation])
+    :service (concat cpv/common-validations
+                     [boolean-value-validation])
+    :tool (concat cpv/common-validations
+                  [boolean-value-validation])
+    :autocomplete cpv/common-validations
+    :subscription (concat cpv/common-validations
+                          [boolean-value-validation])}
+   (zipmap (cc/get-generic-concept-types-array) 
+           (repeat (concat cpv/common-validations
+                           [boolean-value-validation])))))
 
 (def standard-query-parameter-validations
   "A list of functions that can validate the query parameters passed in with an AQL or JSON search.

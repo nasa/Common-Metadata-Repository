@@ -1,0 +1,73 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OrderOption",
+  "description": "This schema describes order options. Order options describe XML using some description language. This allows third parties to define parts of the API on CMR. Option Selections contain XML that must conform to the definition of the form in this. These are used during the ordering process to define how data can be accessed/distributed from the Providers.",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "Id": {
+      "description": "The identifier that was assigned to this record by an older system. It is in the schema to preserve search API functionality in order to store this identifier.",
+      "type": "string",
+      "maxLength": 30
+    },
+    "Name": {
+      "description": "The name is a shortened name used to distinguish between other option definitions. This field must be unique per provider and is restricted to 30 characters.",
+      "type": "string",
+      "maxLength": 30
+    },
+    "Description": {
+      "description": "The description is a longer, human-readable description of the order option type or contents, intended for client display. This field is restricted to 1024 characters.",
+      "type": "string",
+      "maxLength": 1024
+    },
+    "Form": {
+      "description": "Contents must conform to ECHO Forms schema. See the ECHO Forms Specification for more information.",
+      "type": "string"
+    },
+    "Scope": {
+      "description": "There are two levels of order options, provider and system. Only administrators may add system level options and only providers may add provider level options.",
+      "type": "string",
+      "enum": ["PROVIDER", "SYSTEM"]
+    },
+    "SortKey": {
+      "description": "The sort key is used to indicate the preferred display order among other definitions. This field is restricted to 5 characters.",
+      "type": "string",
+      "maxLength": 5
+    },
+    "Deprecated": {
+      "description": "Indicates if the definition is deprecated. Deprecated definitions will be returned to the client and will be considered valid when validating an order, however new order items cannot be added using the definition and existing order items cannot be updated using the definition. This flag is ignored when creating an option definition, however it will always be set and returned once the definition has been created.",
+      "type": "boolean"
+    },
+    "MetadataSpecification": {
+      "description": "Requires the client, or user, to add in schema information into every data quality summary record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "$ref": "#/definitions/MetadataSpecificationType"
+    }
+  },
+  "required": ["Name", "Description", "Form", "Scope", "MetadataSpecification"],
+  
+  "definitions": {
+    "MetadataSpecificationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+      "properties": {
+        "URL": {
+          "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
+          "type": "string",
+          "enum": ["https://cdn.earthdata.nasa.gov/generics/orderoption/v1.0.0"]
+        },
+        "Name": {
+          "description": "This element represents the name of the schema.",
+          "type": "string",
+          "enum": ["OrderOption"]
+        },
+        "Version": {
+          "description": "This element represents the version of the schema.",
+          "type": "string",
+          "enum": ["1.0.0"]
+        }
+      },
+      "required": ["URL", "Name", "Version"]
+    }
+  }
+}

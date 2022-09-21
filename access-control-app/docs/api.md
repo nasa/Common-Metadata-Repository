@@ -50,8 +50,8 @@ All Access Control API operations require specifying a token obtained from [Eart
 
 #### <a name="cmr-revision-id-header"></a> Cmr-Revision-Id Header
 
-The revision id header allows specifying the revision id to use when saving the concept. It is optional for all acl update. The update will be rejected when: 
-1. The revision id specified is not an integer. 
+The revision id header allows specifying the revision id to use when saving the concept. It is optional for all ACL updates. The update will be rejected when:
+1. The revision id specified is not an integer.
 2. The revision id specified <= current revision id of the acl - a HTTP Status code of 409 will be returned indicating a conflict.
 
 ***

@@ -3,12 +3,11 @@
   through an environment variable. Configuration items should be added using the defconfig macro."
   (:require
    [camel-snake-kebab.core :as csk]
-   [cmr.common.log :as log :refer [debug info warn error]]
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.set :as set]
    [clojure.string :as str]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [environ.core :as environ]))
 
 (defonce ^{:private true
@@ -218,15 +217,22 @@
 
 (defconfig approved-pipeline-documents
   "This is the feature toggle for the new document pipeline prototype, as well as serving as
-   the base truth list of approved document types.
-   This string should contain JSON that looks like:
-   {\"grid\": [\"0.0.1\"],
-    \"dataqualitysummary\": [\"1.0.0\"],
-    \"orderoption\": [\"1.0.0\"],
-    \"serviceentry\": [\"1.0.0\"],
-    \"serviceoption\": [\"1.0.0\"]}"
-  {:default ""
+   the base truth list of approved document types. For tests to process, grid is required,
+   but grid is not needed in any deployment envirnment. AWS should use JSON as those values
+   are passed through the parser and returned as if it was the default.
+   This string should contain a clojure map that looks something like:
+   {:grid [\"0.0.1\"],
+    :dataqualitysummary [\"1.0.0\"]
+    :orderoption [\"1.0.0\"]
+    :serviceentry [\"1.0.0\"]
+    :serviceoption [\"1.0.0\"]}"
+  {:default {:grid ["0.0.1"]
+             :dataqualitysummary ["1.0.0"]
+             :orderoption ["1.0.0"]
+             :serviceentry ["1.0.0"]
+             :serviceoption ["1.0.0"]}
    :parser #(json/parse-string % true)})
+
 
 (defn check-env-vars
   "Checks any environment variables starting with CMR_ are recognized as known environment variables.
@@ -249,5 +255,6 @@
          true)
        false))))
 
+;; TODO: Generic work after initial testing in SIT, this can be removed
 (when (seq (approved-pipeline-documents))
   (info (format "Generic documents pipeline supports: %s" (approved-pipeline-documents))))

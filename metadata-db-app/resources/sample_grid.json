@@ -1,0 +1,123 @@
+{
+    "MetadataSpecification": {
+        "URL": "https://cdn.earthdata.nasa.gov/generic/grid/v0.0.1",
+        "Name": "Grid",
+        "Version": "0.0.1"
+    },
+    "Name": "Grid-A7-v1",
+    "LongName": "Grid A-7 version 1.0",
+    "Version": "v1.0",
+    "Description": "A sample grid",
+    "GridDefinition": {
+        "CoordinateReferenceSystemID": {
+            "Type": "EPSG:4326",
+            "URL": "https://epsg.io/4326"
+        },
+        "DimensionSize": {
+            "Height": 3.14,
+            "Width": 3.14,
+            "Time": "12:00:00Z",
+            "Other": {
+                "Name": "Other Dimension Size",
+                "Value": "value here"
+            }
+        },
+        "Resolution": {
+            "Unit": "km",
+            "LongitudeResolution": 64,
+            "LatitudeResolution": 32
+        },
+        "SpatialExtent": {
+            "BoundingRectangle": {
+                "0_360_DegreeProjection": false,
+                "NorthBoundingCoordinate": -90.0,
+                "EastBoundingCoordinate": 180.0,
+                "SouthBoundingCoordinate": 90.0,
+                "WestBoundingCoordinate": -180.0
+            },
+            "ScaleExtent": [
+                {
+                    "CornerBoundingCoordinate": {
+                        "0_360_DegreeProjection": false,
+                        "LatitudePoint": 30.98,
+                        "LongitudePoint": -168.35
+                    },
+                    "MidpointBoundingCoordinate": {
+                        "LatitudePoint": 39.43,
+                        "LongitudePoint": 135.0
+                    }
+                },{
+                    "CornerBoundingCoordinate": {
+                        "LatitudePoint": 31.37,
+                        "LongitudePoint": 102.34
+                    },
+                    "MidpointBoundingCoordinate": {
+                        "LatitudePoint": 56.35,
+                        "LongitudePoint": 45.0
+                    }
+                },{
+                    "CornerBoundingCoordinate": {
+                        "LatitudePoint": 34.35,
+                        "LongitudePoint": 350.03
+                    },
+                    "MidpointBoundingCoordinate": {
+                        "LatitudePoint": 43.28,
+                        "LongitudePoint": 315.0
+                    }
+                },{
+                    "CornerBoundingCoordinate": {
+                        "0_360_DegreeProjection": true,
+                        "LatitudePoint": 33.92,
+                        "LongitudePoint": 279.26
+                    },
+                    "MidpointBoundingCoordinate": {
+                        "LatitudePoint": 55.50,
+                        "LongitudePoint": 225.00
+                    }
+                }
+            ]
+        },
+        "Distortion": {
+            "Description": "Distortion around the grid edge",
+            "Percent": 31
+        }
+    },
+    "Organization": {
+        "ShortName": "NASA/GSFC/SED/ESD/GCDC/GESDISC",
+        "LongName": "Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA",
+        "RelatedURLs": [
+            {
+                "URL": "https://example.gov",
+                "URLContentType": "C-Type",
+                "Type": "Type"
+            }
+        ],
+        "ContactMechanisms": [
+            {
+                "Type": "Email",
+                "Value": "who@example.gov"
+            },{
+                "Type": "Email",
+                "Value": "you@example.gov"
+            }
+        ]
+    },
+    "MetadataDate": {"Create": "2022-04-20T08:00:00Z"},
+    "RelatedURLs": [
+        {
+            "URL": "https://example.gov",
+            "URLContentType": "C-Type",
+            "Type": "Type"
+        },{
+            "URL": "https://example.gov/two",
+            "Description": "Details about the URL or page",
+            "URLContentType": "C-Type",
+            "Type": "Type"
+        }
+    ],
+    "AdditionalAttribute": {
+        "Name": "attribute-1",
+        "Description": "Sample",
+        "DataType": "STRING"
+    }
+}

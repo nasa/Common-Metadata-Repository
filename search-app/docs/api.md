@@ -2,10 +2,6 @@
 
 See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide) for a general guide to developing a client utilizing the CMR Search API.
 
-### ECHO-Token Deprecation Notice
-
-CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens and send them with the Authorization header. This document contains many mentions of ECHO-Tokens, which will soon be out of date. Instructions on how to generate an EDL token are [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token)
-
 ### Table of Contents
 
   * [General Request Details](#general-request-details)
@@ -2135,7 +2131,7 @@ or "polygon[]", for single or multiple polygon search. It supports the and/or op
 
     curl "%CMR-ENDPOINT%/collections?polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11&options[polygon][or]=true"
 
-Note: if you use "polygon" for multiple polygon search, it won't work because only the last polyon parameter will take effect.
+Note: if you use "polygon" for multiple polygon search, it won't work because only the last polygon parameter will take effect.
 
 ##### <a name="c-bounding-box"></a> Bounding Box
 

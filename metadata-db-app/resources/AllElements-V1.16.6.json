@@ -1,0 +1,840 @@
+{
+  "MetadataLanguage": "English",
+  "MetadataDates": [{
+    "Date": "2021-01-01T00:00:00.000Z",
+    "Type": "CREATE"
+  }, {
+    "Date": "2021-03-01T00:00:00.000Z",
+    "Type": "UPDATE"
+  }, {
+    "Date": "2024-01-01T00:00:00.000Z",
+    "Type": "DELETE"
+  }, {
+    "Date": "2023-01-01T00:00:00.000Z",
+    "Type": "REVIEW"
+  }],
+  "DirectoryNames": [{
+    "ShortName": "GOSIC/GTOS"
+  }, {
+    "ShortName": "ISRO/UOPS",
+    "LongName": "User Order Processing System"
+  }],
+  "ShortName": "Mapping Short Name 1.16.6 CMR-7185",
+  "Version": "1.16.6-CMR-7185",
+  "EntryTitle": "Mapping Example for UMM-C 1.16.6 CMR-7185",
+  "DOI": {
+    "DOI": "10.1234/DOIID",
+    "Authority": "https://doi.org/"
+  },
+  "AssociatedDOIs": [{
+    "DOI": "10.1234/ParentDOIID1",
+    "Title": "DOI Title 1",
+    "Authority": "https://doi.org/"
+  }, {
+    "DOI": "10.1234/ParentDOIID2",
+    "Title": "DOI Title 2",
+    "Authority": "https://doi.org/"
+  }],
+  "VersionDescription": "Mapping Version 1.16.6 Description",
+  "Abstract": "This record is a Mapping Example.",
+  "Purpose": "This record is to be used to demonstrate how the CMR maps from one specification to another",
+  "DataLanguage": "English",
+  "DataDates": [{
+    "Date": "2020-01-02T00:00:00.000Z",
+    "Type": "CREATE"
+  }, {
+    "Date": "2020-03-02T00:00:00.000Z",
+    "Type": "UPDATE"
+  }, {
+    "Date": "2024-01-02T00:00:00.000Z",
+    "Type": "DELETE"
+  }, {
+    "Date": "2024-01-02T00:00:00.000Z",
+    "Type": "REVIEW"
+  }],
+  "DataCenters": [{
+    "Roles": ["PROCESSOR"],
+    "ShortName": "NASA/MSFC/AMSR-E SIPS"
+  }, {
+    "Roles": ["ARCHIVER"],
+    "ShortName": "NSIDC"
+  }, {
+    "Roles": ["ORIGINATOR"],
+    "ShortName": "NASA/MSFC/AMSR-E SIPS",
+    "LongName": "Advanced Microwave Scanning Radiometer - Earth Observing System Science Investigator-led Processing System",
+    "ContactPersons": [{
+      "Roles": ["Science Contact", "Investigator", "Data Center Contact" ],
+      "NonDataCenterAffiliation": "Not affiliated",
+      "ContactInformation": {
+        "ContactMechanisms": [{
+          "Type": "Email",
+          "Value": "anEmail1@server.com"
+        }, {
+          "Type": "Email",
+          "Value": "anEmail2@server.com"
+        }, {
+          "Type": "Fax",
+          "Value": "111-222-3458"
+        }, {
+          "Type": "Fax",
+          "Value": "111-222-3459"
+        }, {
+          "Type": "Telephone",
+          "Value": "111-222-3456"
+        }, {
+          "Type": "Telephone",
+          "Value": "111-222-3457"
+        }],
+        "Addresses": [{
+          "StreetAddresses": ["123 Main Street", "Suite 5"],
+          "City": "City",
+          "StateProvince": "State",
+          "Country": "USA",
+          "PostalCode": "11111"
+        }]
+      },
+      "FirstName": "Data Center Personnel First Name",
+      "MiddleName": "Data Center Personnel Middle Name",
+      "LastName": "Data Center Personnel Last Name"
+    }, {
+      "Roles": ["Technical Contact", "Data Center Contact"],
+      "ContactInformation": {
+        "ContactMechanisms": [{
+          "Type": "Email",
+          "Value": "anEmail1@server.com"
+        }, {
+          "Type": "Email",
+          "Value": "anEmail2@server.com"
+        }, {
+          "Type": "Fax",
+          "Value": "211-222-3458"
+        }, {
+          "Type": "Fax",
+          "Value": "211-222-3459"
+        }, {
+          "Type": "Telephone",
+          "Value": "211-222-3456"
+        }, {
+          "Type": "Telephone",
+          "Value": "211-222-3457"
+        }],
+        "Addresses": [{
+          "StreetAddresses": ["223 Main Street", "Suite 6"],
+          "City": "City",
+          "StateProvince": "State",
+          "Country": "USA",
+          "PostalCode": "21111"
+        }]
+      },
+      "FirstName": "Data Center Personnel2 First Name",
+      "MiddleName": "Data Center Personnel2 Middle Name",
+      "LastName": "Data Center Personnel2 Last Name"
+    }],
+    "ContactGroups": [{
+      "Roles": ["User Services"],
+      "NonDataCenterAffiliation": "Not affiliated",
+      "ContactInformation": {
+        "ContactMechanisms": [{
+          "Type": "Email",
+          "Value": "anEmail1@server.com"
+        }, {
+          "Type": "Email",
+          "Value": "anEmail2@server.com"
+        }, {
+          "Type": "Fax",
+          "Value": "111-222-3458"
+        }, {
+          "Type": "Fax",
+          "Value": "111-222-3459"
+        }, {
+          "Type": "Telephone",
+          "Value": "111-222-3456"
+        }, {
+          "Type": "Telephone",
+          "Value": "111-222-3457"
+        }],
+        "Addresses": [{
+          "StreetAddresses": ["123 Main Street", "Suite 5"],
+          "City": "City",
+          "StateProvince": "State",
+          "Country": "USA",
+          "PostalCode": "11111"
+        }]
+      },
+      "GroupName": "Data Center User Services"
+    }, {
+      "Roles": ["Science Software Development"],
+      "ContactInformation": {
+        "ContactMechanisms": [{
+          "Type": "Email",
+          "Value": "anEmail1@server.com"
+        }, {
+          "Type": "Email",
+          "Value": "anEmail2@server.com"
+        }, {
+          "Type": "Fax",
+          "Value": "211-222-3458"
+        }, {
+          "Type": "Fax",
+          "Value": "211-222-3459"
+        }, {
+          "Type": "Telephone",
+          "Value": "211-222-3456"
+        }, {
+          "Type": "Telephone",
+          "Value": "211-222-3457"
+        }],
+        "Addresses": [{
+          "StreetAddresses": ["223 Main Street", "Suite 6"],
+          "City": "City",
+          "StateProvince": "State",
+          "Country": "USA",
+          "PostalCode": "21111"
+        }],
+        "RelatedUrls": [{
+          "Description": "AMSR-E/AMSR Product page at NSIDC",
+          "URLContentType": "DataContactURL",
+          "Type": "HOME PAGE",
+          "URL": "http://nsidc.org/data/amsre/"
+        }]
+      },
+      "GroupName": "DAAC Software Development"
+    }]
+  }, {
+    "Roles": ["DISTRIBUTOR"],
+    "ShortName": "NSIDC",
+    "LongName": "National Snow and Ice Data Center",
+    "ContactInformation": {
+      "ServiceHours": "8am-5pm (Mountain Time) Monday through Friday",
+      "ContactInstruction": "contact by e-mail first",
+      "ContactMechanisms": [{
+        "Type": "Telephone",
+        "Value": "303-492-6199"
+      }, {
+        "Type": "Fax",
+        "Value": "303-492-2468"
+      }, {
+        "Type": "Email",
+        "Value": "nsidc@kryos.colorado.edu"
+      }],
+      "Addresses": [{
+        "StreetAddresses": ["1540 30th St Campus Box 449"],
+        "City": "Boulder",
+        "StateProvince": "CO",
+        "Country": "USA",
+        "PostalCode": "80303-0449"
+      }],
+      "RelatedUrls": [{
+        "Description": "AMSR-E/AMSR Product page at NSIDC",
+        "URLContentType": "DataCenterURL",
+        "Type": "HOME PAGE",
+        "URL": "http://nsidc.org/data/amsre/"
+      }]
+    }
+  }],
+  "ContactPersons": [{
+    "Roles": ["Metadata Author", "Data Center Contact"],
+    "NonDataCenterAffiliation": "Not affiliated",
+    "ContactInformation": {
+      "ContactMechanisms": [{
+        "Type": "Email",
+        "Value": "anEmail1@server.com"
+      }, {
+        "Type": "Email",
+        "Value": "anEmail2@server.com"
+      }, {
+        "Type": "Fax",
+        "Value": "111-222-3458"
+      }, {
+        "Type": "Fax",
+        "Value": "111-222-3459"
+      }, {
+        "Type": "Telephone",
+        "Value": "111-222-3456"
+      }, {
+        "Type": "Telephone",
+        "Value": "111-222-3457"
+      }],
+      "Addresses": [{
+        "StreetAddresses": ["123 Main Street", "Suite 5"],
+        "City": "City",
+        "StateProvince": "State",
+        "Country": "USA",
+        "PostalCode": "11111"
+      }]
+    },
+    "FirstName": "Personnel First Name",
+    "MiddleName": "Personnel Middle Name",
+    "LastName": "Personnel Last Name"
+  }, {
+    "Roles": ["Technical Contact", "Data Center Contact"],
+    "ContactInformation": {
+      "ContactMechanisms": [{
+        "Type": "Email",
+        "Value": "anEmail1@server.com"
+      }, {
+        "Type": "Email",
+        "Value": "anEmail2@server.com"
+      }, {
+        "Type": "Fax",
+        "Value": "211-222-3458"
+      }, {
+        "Type": "Fax",
+        "Value": "211-222-3459"
+      }, {
+        "Type": "Telephone",
+        "Value": "211-222-3456"
+      }, {
+        "Type": "Telephone",
+        "Value": "211-222-3457"
+      }],
+      "Addresses": [{
+        "StreetAddresses": ["223 Main Street", "Suite 6"],
+        "City": "City",
+        "StateProvince": "State",
+        "Country": "USA",
+        "PostalCode": "21111"
+      }]
+    },
+    "FirstName": "Personnel2 First Name",
+    "MiddleName": "Personnel2 Middle Name",
+    "LastName": "Personnel2 Last Name"
+  }],
+  "ContactGroups": [{
+    "Roles": ["User Services"],
+    "NonDataCenterAffiliation": "Not affiliated",
+    "ContactInformation": {
+      "ContactMechanisms": [{
+        "Type": "Email",
+        "Value": "anEmail1@server.com"
+      }, {
+        "Type": "Email",
+        "Value": "anEmail2@server.com"
+      }, {
+        "Type": "Fax",
+        "Value": "111-222-3458"
+      }, {
+        "Type": "Fax",
+        "Value": "111-222-3459"
+      }, {
+        "Type": "Telephone",
+        "Value": "111-222-3456"
+      }, {
+        "Type": "Telephone",
+        "Value": "111-222-3457"
+      }],
+      "Addresses": [{
+        "StreetAddresses": ["123 Main Street", "Suite 5"],
+        "City": "City",
+        "StateProvince": "State",
+        "Country": "USA",
+        "PostalCode": "11111"
+      }]
+    },
+    "GroupName": "DAAC USER SERVICES"
+  }, {
+    "Roles": ["Science Software Development"],
+    "ContactInformation": {
+      "ContactMechanisms": [{
+        "Type": "Email",
+        "Value": "anEmail1@server.com"
+      }, {
+        "Type": "Email",
+        "Value": "anEmail2@server.com"
+      }, {
+        "Type": "Fax",
+        "Value": "211-222-3458"
+      }, {
+        "Type": "Fax",
+        "Value": "211-222-3459"
+      }, {
+        "Type": "Telephone",
+        "Value": "211-222-3456"
+      }, {
+        "Type": "Telephone",
+        "Value": "211-222-3457"
+      }],
+      "Addresses": [{
+        "StreetAddresses": ["223 Main Street", "Suite 6"],
+        "City": "City",
+        "StateProvince": "State",
+        "Country": "USA",
+        "PostalCode": "21111"
+      }]
+    },
+    "GroupName": "DAAC Software Development"
+  }],
+  "CollectionDataType": "SCIENCE_QUALITY",
+  "ProcessingLevel": {
+    "ProcessingLevelDescription": "GRID",
+    "Id": "3"
+  },
+  "CollectionCitations": [{
+    "Creator": "Collection Citations Creators1",
+    "Editor": "Collection Citation Editors1",
+    "Title": "Collection Citiation Title1",
+    "SeriesName": "Series Name 1",
+    "ReleaseDate": "2017-01-01T12:00:00Z",
+    "ReleasePlace": "New York, NY",
+    "Publisher": "Some Publishing Co.",
+    "Version": "1",
+    "IssueIdentification": "12345",
+    "DataPresentationForm": "Word",
+    "OtherCitationDetails": "Other Citation Details",
+    "OnlineResource": {
+      "Linkage": "http://www.google.com?q=publishers",
+      "Protocol": "http",
+      "ApplicationProfile": "Microsoft Word",
+      "Name": "Collection Citations Online Resource 1",
+      "Description": "Collection Citations Online Resource 1",
+      "Function": "information"
+    }
+  }, {
+    "Creator": "Collection Citations Creators2",
+    "Editor": "Collection Citation Editors2",
+    "Title": "Collection Citiation Title2",
+    "SeriesName": "Series Name 2",
+    "ReleaseDate": "2017-01-01T13:00:00Z",
+    "ReleasePlace": "New York, NY",
+    "Publisher": "Some Publishing Co.",
+    "Version": "2",
+    "IssueIdentification": "12345",
+    "DataPresentationForm": "Word",
+    "OtherCitationDetails": "Other Citation Details",
+    "OnlineResource": {
+      "Linkage": "http://www.google.com?q=publishers",
+      "Protocol": "http",
+      "ApplicationProfile": "Microsoft Word",
+      "Name": "Collection Citations Online Resource 1",
+      "Description": "Collection Citations Online Resource 1",
+      "Function": "information"
+    }
+  }],
+  "CollectionProgress": "ACTIVE",
+  "Quality": "Some quality statement",
+  "UseConstraints": {
+    "Description": "Test description. This collection has no use constraints.",
+    "LicenseURL": {
+      "Linkage": "https://www.apache.org/licenses/LICENSE-2.0"
+    },
+    "FreeAndOpenData": true
+  },
+  "AccessConstraints": {
+    "Description": "Testing",
+    "Value": 1
+  },
+  "MetadataAssociations": [{
+    "Type": "SCIENCE ASSOCIATED",
+    "Description": "This is a description of the metadata association",
+    "EntryId": "C1234453343-ECHO_REST",
+    "Version": "1"
+  }, {
+    "Type": "LARGER CITATION WORKS",
+    "Description": "This is a description of the metadata association 2",
+    "EntryId": "C1234453342-ECHO_REST",
+    "Version": "2"
+  }],
+  "PublicationReferences": [{
+    "Author": "Andersen, Ole Baltazar",
+    "PublicationDate": "1994-01-01T00:00:00.000Z",
+    "Title": "ERS-1 altimetry on the Greenland ice sheet: Preliminary investigations of annual variations.",
+    "Series": "Geophysical Research Letters",
+    "Edition": "21",
+    "Volume": "15",
+    "Issue": "5",
+    "ReportNumber": "6",
+    "PublicationPlace": "New York, NY",
+    "Publisher": "NASA",
+    "Pages": "1655-1658",
+    "ISBN": "123455666",
+    "DOI": {
+      "DOI": "10.1234/Ref",
+      "Authority": "https://doi.org/"
+    },
+    "OnlineResource": {
+      "Linkage": "http://www.yahoo.com",
+      "Name": "Reference Online Resource",
+      "Description": "Reference Online Resource"
+    },
+    "OtherReferenceDetails": "Lots of other details."
+  }, {
+    "OtherReferenceDetails": "Lots of other details 2.",
+    "OnlineResource": {
+      "Linkage": "http://www.yahoo.com",
+      "Name": "Reference Online Resource",
+      "Description": "Reference Online Resource"
+    }
+  }, {
+    "OnlineResource": {
+      "Linkage": "http://www.yahoo.com",
+      "Name": "Reference Online Resource",
+      "Description": "Reference Online Resource"
+    }
+  }],
+  "ISOTopicCategories": ["BOUNDARIES", "CLIMATOLOGY/METEOROLOGY/ATMOSPHERE"],
+  "ScienceKeywords": [{
+    "Category": "EARTH SCIENCE",
+    "Topic": "TERRESTRIAL HYDROSPHERE",
+    "Term": "SNOW/ICE",
+    "VariableLevel1": "SNOW WATER EQUIVALENT",
+    "DetailedVariable": "RAIN"
+  }, {
+    "Category": "EARTH SCIENCE",
+    "Topic": "CRYOSPHERE",
+    "Term": "SNOW/ICE",
+    "VariableLevel1": "SNOW WATER EQUIVALENT",
+    "DetailedVariable": "SLEET"
+  }, {
+    "Category": "EARTH SCIENCE",
+    "Topic": "TERRESTRIAL HYDROSPHERE",
+    "Term": "SNOW/ICE",
+    "VariableLevel1": "SNOW WATER EQUIVALENT",
+    "VariableLevel2": "SNOW WATER EQUIVALENT"
+  }],
+  "AncillaryKeywords": ["U1", "T1", "Vq", "VV"],
+  "AdditionalAttributes": [{
+    "Group": "Metadata Group",
+    "Value": "2",
+    "Name": "SomeOtherFullElement",
+    "Description": "Metadata Description",
+    "DataType": "INT"
+  }, {
+    "Name": "An Additional Attribute Name",
+    "Description": "An Additional Attribute Description",
+    "Value": "5",
+    "DataType": "INT",
+    "MeasurementResolution": "MeasurementResolution",
+    "ParameterRangeBegin": "1",
+    "ParameterRangeEnd": "10",
+    "ParameterUnitsOfMeasure": "ParameterUnitsOfMeasure",
+    "ParameterValueAccuracy": "ParameterValueAccuracy",
+    "ValueAccuracyExplanation": "ValueAccuracyExplanation",
+    "Group": "gov.nasa.esdis.umm.additionalattribute",
+    "UpdateDate": "2017-03-03T01:00:00Z"
+  }, {
+    "Name": "An Additional Attribute Name 2",
+    "Description": "An Additional Attribute Description 2",
+    "Value": "6",
+    "DataType": "INT",
+    "MeasurementResolution": "MeasurementResolution",
+    "ParameterRangeBegin": "2",
+    "ParameterRangeEnd": "11",
+    "ParameterUnitsOfMeasure": "ParameterUnitsOfMeasure",
+    "ParameterValueAccuracy": "ParameterValueAccuracy",
+    "ValueAccuracyExplanation": "ValueAccuracyExplanation",
+    "UpdateDate": "2017-03-03T01:00:00Z"
+  }],
+  "RelatedUrls": [{
+    "URLContentType": "PublicationURL",
+    "Type": "VIEW RELATED INFORMATION",
+    "URL": "http://wwwghcc.msfc.nasa.gov/AMSR/qa.html",
+    "Description": "quality documentation"
+  }, {
+    "Description": "Testing Related url GET DATA translations",
+    "URLContentType": "DistributionURL",
+    "Type": "GET DATA",
+    "URL": "http://www.foo.com",
+    "GetData": {
+      "Format": "ascii",
+      "MimeType": "text/html",
+      "Size": 10,
+      "Unit": "MB",
+      "Fees": "fees",
+      "Checksum": "12345"
+    }
+  }, {
+    "Description": "An IDN related URL where the OSDD link has been changed.",
+    "URLContentType": "DistributionURL",
+    "Type": "GET CAPABILITIES",
+    "Subtype": "OpenSearch",
+    "URL": "http://osdd.org/data/amsre/someopensearchdescription.xml",
+    "GetData": { "Format": "text/xml",
+                 "Size": 0.0,
+                 "Unit": "KB",
+                 "MimeType": "application/opensearchdescription+xml"
+    }
+  }],
+  "TemporalExtents": [{
+    "PrecisionOfSeconds": 1,
+    "EndsAtPresentFlag": false,
+    "RangeDateTimes": [{
+      "BeginningDateTime": "2001-01-01T00:00:00.000Z",
+      "EndingDateTime": "2001-06-01T00:00:00.000Z"
+    }]
+  }],
+  "TemporalKeywords": ["TemporalKeyword1", "TemporalKeyword2"],
+  "PaleoTemporalCoverages": [{
+    "StartDate": "350 ka",
+    "EndDate": "0 ka",
+    "ChronostratigraphicUnits": [{
+      "Eon": "PHANEROZOIC",
+      "Era": "CENOZOIC",
+      "Period": "QUATERNARY",
+      "Epoch": "PLEISTONCENE",
+      "Stage": "STAGE",
+      "DetailedClassification": "SOME DEEPER CLASSIFICATION"
+    }]
+  }],
+  "SpatialExtent": {
+    "SpatialCoverageType": "HORIZONTAL",
+    "HorizontalSpatialDomain": {
+      "ZoneIdentifier": "1",
+      "Geometry": {
+        "CoordinateSystem": "CARTESIAN",
+        "GPolygons": [{
+          "Boundary": {
+            "Points": [{
+              "Longitude": -10,
+              "Latitude": -10
+            }, {
+              "Longitude": 10,
+              "Latitude": -10
+            }, {
+              "Longitude": 10,
+              "Latitude": 10
+            }, {
+              "Longitude": -10,
+              "Latitude": 10
+            }, {
+              "Longitude": -10,
+              "Latitude": -10
+            }
+          ]},
+          "ExclusiveZone": {
+            "Boundaries": [{
+              "Points": [{
+                "Longitude": -5,
+                "Latitude": -5
+              }, {
+                "Longitude": -1,
+                "Latitude": -5
+              }, {
+                "Longitude": -1,
+                "Latitude": -1
+              }, {
+                "Longitude": -5,
+                "Latitude": -1
+              }, {
+                "Longitude": -5,
+                "Latitude": -5
+              }]
+            }, {
+              "Points": [{
+                "Longitude": 0,
+                "Latitude": 0
+              }, {
+                "Longitude": 5,
+                "Latitude": 0
+              }, {
+                "Longitude": 5,
+                "Latitude": 5
+              }, {
+                "Longitude": 0,
+                "Latitude": 5
+              }, {
+                "Longitude": 0,
+                "Latitude": 0
+              }
+            ]}
+          ]}
+        }]
+      },
+      "ResolutionAndCoordinateSystem": {
+        "Description": "3 of the 10 pixels are averaged at 64 samples per second this gives a horizontal resolution of 1.5 km at the tangent point location.",
+        "GeodeticModel": {
+          "HorizontalDatumName": "World Geodetic System of 1984 (WGS84)",
+          "EllipsoidName": "WGS 84",
+          "SemiMajorAxis": 6378140.0,
+          "DenominatorOfFlatteningRatio": 298.257
+        },
+        "HorizontalDataResolution": {
+          "VariesResolution": "Varies",
+          "PointResolution": "Point",
+          "NonGriddedResolutions": [{
+            "XDimension": 10,
+            "YDimension": 10,
+            "Unit": "Meters",
+            "ViewingAngleType": "At Nadir",
+            "ScanDirection": "Cross Track"
+          }],
+          "NonGriddedRangeResolutions": [{
+            "MinimumXDimension": 10,
+            "MinimumYDimension": 10,
+            "MaximumXDimension": 20,
+            "MaximumYDimension": 20,
+            "Unit": "Meters",
+            "ViewingAngleType": "At Nadir",
+            "ScanDirection": "Cross Track"
+          }],
+          "GriddedResolutions": [{
+            "XDimension": 10,
+            "YDimension": 10,
+            "Unit": "Meters"
+          }, {
+            "XDimension": 20,
+            "YDimension": 20,
+            "Unit": "Meters"
+          }],
+          "GriddedRangeResolutions": [{
+            "MinimumXDimension": 10,
+            "MinimumYDimension": 10,
+            "MaximumXDimension": 20,
+
+            "Unit": "Meters"
+          }],
+          "GenericResolutions": [{
+            "XDimension": 15,
+
+            "Unit": "Not provided"
+          }]
+        }
+      }
+    },
+    "VerticalSpatialDomains": [{
+      "Type": "Maximum Altitude",
+      "Value": "100"
+    }, {
+      "Type": "Minimum Altitude",
+      "Value": "1"
+    }],
+    "OrbitParameters": {
+      "SwathWidth": 22,
+      "Period": 1,
+      "InclinationAngle": 4,
+      "NumberOfOrbits": 1,
+      "StartCircularLatitude": 1
+    },
+    "GranuleSpatialRepresentation": "CARTESIAN"
+  },
+  "TilingIdentificationSystems": [{
+    "TilingIdentificationSystemName": "MODIS Tile EASE",
+    "Coordinate1": {
+      "MinimumValue": -100,
+      "MaximumValue": -50
+    },
+    "Coordinate2": {
+      "MinimumValue": 50,
+      "MaximumValue": 100
+    }
+  }],
+  "SpatialInformation": {"SpatialCoverageType": "HORIZONTAL"},
+  "LocationKeywords": [{
+    "Category": "CONTINENT",
+    "Type": "NORTH AMERICA",
+    "Subregion1": "UNITED STATES OF AMERICA",
+    "Subregion2": "MAINE",
+    "Subregion3": "PORTLAND",
+    "DetailedLocation": "LocationKeywordDetailedLocation"
+  }, {
+    "Category": "CONTINENT",
+    "Type": "EUROPE",
+    "Subregion1": "NORTHERN EUROPE",
+    "DetailedLocation": "SVALBARD"
+  }],
+  "Platforms": [{
+    "Type": "Earth Observation Satellites",
+    "ShortName": "AM-1",
+    "LongName": "Earth Observing System, (AM-1)",
+    "Characteristics": [{
+      "Name": "PlatformCaracteristicName",
+      "Description": "Platform Characteristics Description",
+      "DataType": "INT",
+      "Unit": "Degrees",
+      "Value": "50"
+    }],
+    "Instruments": [{
+      "ShortName": "AMSR-E",
+      "LongName": "Advanced Microwave Scanning Radiometer-EOS",
+      "Technique": "Broadband scanning radiometry",
+      "Characteristics": [{
+        "Name": "InstrumentCaracteristicName",
+        "Description": "Instrument Characteristics Description",
+        "DataType": "INT",
+        "Unit": "Calvin",
+        "Value": "150"
+      }],
+      "NumberOfInstruments": 1,
+      "ComposedOf": [{
+        "ShortName": "AMSR-E",
+        "LongName": "Advanced Microwave Scanning Radiometer-EOS",
+        "Technique": "Radiometry",
+        "Characteristics": [{
+          "Name": "ChildInstrumentCaracteristicName",
+          "Description": "Child Instrument Characteristics Description",
+          "DataType": "INT",
+          "Unit": "Pascals",
+          "Value": "250"
+        }]
+      }],
+      "OperationalModes": ["Mode1", "Mode2"]
+    }]
+  }, {
+    "Type": "Earth Observation Satellites",
+    "ShortName": "LANDSAT-9",
+    "LongName": "Earth Observing System, (AM-1)"
+  }, {
+    "Type": "Earth Observation Satellites",
+    "ShortName": "LANDSAT-8",
+    "LongName": "Earth Observing System, (AM-1)"
+  }, {
+    "Type": "Space Stations/Crewed Spacecraft",
+    "ShortName": "ISS",
+    "LongName": "International Space Station"
+  }],
+  "Projects": [{
+    "ShortName": "AMSRICE06",
+    "Campaigns": ["Campaign1", "Campaign2"],
+    "LongName": "Advanced Microwave Scanning Radiometer Sea Ice Product Validation",
+    "StartDate": "2000-01-01T00:00:00Z",
+    "EndDate": "2018-01-01T00:00:00Z"
+  }],
+  "ArchiveAndDistributionInformation": {
+    "FileArchiveInformation": [{
+      "Format": "Binary",
+      "FormatType": "Native",
+      "FormatDescription": "Use the something app to open the binary file.",
+      "AverageFileSize": 3,
+      "AverageFileSizeUnit": "MB",
+      "TotalCollectionFileSize": 1095,
+      "TotalCollectionFileSizeUnit": "MB",
+      "Description": "These files are very difficult to use. If you want to use the binary data then contact us. These files are archived in CUMULUS."
+    }, {
+      "Format": "netCDF-4",
+      "FormatType": "Supported",
+      "FormatDescription": "An acsii file also exists.",
+      "AverageFileSize": 1,
+      "AverageFileSizeUnit": "MB",
+      "TotalCollectionFileSize": 365,
+      "TotalCollectionFileSizeUnit": "MB",
+      "Description": "These files are archived in CUMULUS."
+    }],
+    "FileDistributionInformation": [{
+      "Format": "netCDF-4",
+      "FormatType": "Supported",
+      "FormatDescription": "An acsii file also exists.",
+      "Media": ["Online", "CD-ROM"],
+      "AverageFileSize": 1,
+      "AverageFileSizeUnit": "MB",
+      "TotalCollectionFileSize": 365,
+      "TotalCollectionFileSizeUnit": "MB",
+      "Description": "These files are available on line or CD-ROMS can be ordered for a fee.",
+      "Fees": "US $1.00 per CD-ROM"
+    }, {
+      "Format": "netCDF-5",
+      "FormatType": "Supported",
+      "FormatDescription": "An acsii file also exists.",
+      "Media": ["Online"],
+      "AverageFileSize": 1.5,
+      "AverageFileSizeUnit": "MB",
+      "TotalCollectionFileSize": 548,
+      "TotalCollectionFileSizeUnit": "MB",
+      "Description": "These files may take longer to download as they are only available on demand."
+    }]
+  },
+  "DirectDistributionInformation": {
+    "Region": "us-east-2",
+    "S3BucketAndObjectPrefixNames": ["TestBucketOrObjectPrefix"],
+    "S3CredentialsAPIEndpoint": "https://DAACCredentialEndpoint.org",
+    "S3CredentialsAPIDocumentationURL": "https://DAACCredentialDocumentation.org"
+  }
+}
