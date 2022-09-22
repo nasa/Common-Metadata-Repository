@@ -5,6 +5,7 @@
    [buddy.sign.jwt :as jwt]
    [cheshire.core :as json]
    [clj-time.core :as t]
+   [clojure.string :as string]
    [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
@@ -48,7 +49,8 @@
   [token]
   (try
     (let [public-key (buddy-keys/jwk->public-key (json/parse-string (transmit-config/edl-public-key) true))
-          decrypted-token (jwt/unsign token public-key {:alg :rs256})]
+          bearer-stripped-token (string/replace token #"Bearer\W+" "")
+          decrypted-token (jwt/unsign bearer-stripped-token public-key {:alg :rs256})]
       (:uid decrypted-token))
     (catch clojure.lang.ExceptionInfo ex
       (let [error-data (ex-data ex)]
@@ -62,7 +64,7 @@
           (errors/throw-service-error
            :unauthorized
            (format "Token %s does not exist" token))
-         :else 
+         :else
          (r/unexpected-status-error! 500 (format "Unexpected error unsiging token locally. %s" error-data)))))))
 
 (defn handle-get-user-id
