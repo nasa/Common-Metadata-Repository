@@ -13,6 +13,7 @@
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.jobs :refer [defjob]]
+   [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.search.data.elastic-search-index :as idx]))
 
 (def REFRESH_HAS_GRANULES_OR_CWIC_MAP_JOB_INTERVAL
@@ -29,12 +30,12 @@
 (defn create-has-granules-or-cwic-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
-  (mem-cache/create-in-memory-cache))
+  (redis-cache/create-redis-cache))
 
 (defn create-has-granules-or-opensearch-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
-  (mem-cache/create-in-memory-cache))
+  (redis-cache/create-redis-cache))
 
 (defn get-cwic-collections
   "Returns the collection granule count by searching elasticsearch by aggregation"
