@@ -80,7 +80,7 @@
           (is (string/starts-with? (:body result) "<!DOCTYPE html>") "The body is not correct"))))
 
     (testing "CREATE a document with a valid config set that includes grid"
-      (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})] 
+      (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
         (let [expected {:native-id native-id
                         :deleted false
                         :provider-id "PROV1"
@@ -93,7 +93,7 @@
                         :metadata gen-util/grid-good}
 
               create-result (generic-requester gen-util/grid-good :post)
-              create-response (:body create-result) 
+              create-response (:body create-result)
 
               read-result (generic-requester)
               read-response (:body read-result)
@@ -101,7 +101,8 @@
               actual (first (json/parse-string read-response true))
               concept-id (get actual :concept-id)
               ;; these fields are complicated to test, do so another way
-              normalised (dissoc actual :concept-id :revision-date :created-at :transaction-id)
+              normalised (dissoc actual :concept-id :revision-date :created-at :transaction-id
+                                 :user-id :concept-sub-type)
               expected-pattern (re-pattern "\\{\"concept-id\":\"GRD[0-9]+-PROV1\",\"revision-id\":1,\"warnings\":null,\"existing-errors\":null\\}")]
           ;; test that the create was a success
           (is (= 201 (:status create-result)) "The HTTP status code from create is not correct")
@@ -133,9 +134,9 @@
               update-body (:body update-result)
 
               read-result (generic-requester)
-              read-body (:body read-result) 
-              read-json (->> (json/parse-string read-body true) 
-                             (filter #(= 2 (:revision-id %))) 
+              read-body (:body read-result)
+              read-json (->> (json/parse-string read-body true)
+                             (filter #(= 2 (:revision-id %)))
                              (first))
               metadata (:metadata read-json)
               actual (get (json/parse-string metadata true) :Description)

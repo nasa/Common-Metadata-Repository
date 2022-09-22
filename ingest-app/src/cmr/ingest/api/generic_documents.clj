@@ -143,16 +143,16 @@
                 (api-core/concept->loggable-string concept)
                 (:client-id context)))
   (let [save-collection-result (save-document context concept)
-        concept-to-log (-> concept 
-                           (api-core/concept-with-revision-id save-collection-result) 
+        concept-to-log (-> concept
+                           (api-core/concept-with-revision-id save-collection-result)
                            (assoc :name (:name save-collection-result)))]
-    ;; Log the successful ingest, with the metadata size in bytes. 
-    (api-core/log-concept-with-metadata-size concept-to-log context) 
-    (api-core/generate-ingest-response headers 
+    ;; Log the successful ingest, with the metadata size in bytes.
+    (api-core/log-concept-with-metadata-size concept-to-log context)
+    (api-core/generate-ingest-response headers
                                        (api-core/format-and-contextualize-warnings-existing-errors
                                         ;; name is added just for the logging above.
                                         ;; dissoc it so that it remains the same as the
-                                        ;; original code. 
+                                        ;; original code.
                                         (dissoc save-collection-result :name)))))
 
 (defn create-generic-document

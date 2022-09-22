@@ -27,6 +27,7 @@
                  [compojure "1.6.1"]
                  [environ "1.1.0"]
                  [instaparse "1.4.10"]
+                 [nasa-cmr/cmr-schemas "0.0.1-SNAPSHOT"]
                  [nasa-cmr/cmr-schema-validation-lib "0.1.0-SNAPSHOT"]
                  [net.jpountz.lz4/lz4 "1.3.0"]
                  [org.clojure/clojure "1.10.0"]

@@ -1,14 +1,10 @@
 (ns cmr.indexer.data.index-set
   (:refer-clojure :exclude [update])
   (:require
-   [cheshire.core :as cheshire]
-   [clj-http.client :as client]
-   [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :as cfg :refer [defconfig]]
-   [cmr.common.generics :as common-generic :refer [approved-generic?]]
-   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.generics :as common-generic]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
@@ -995,16 +991,16 @@
                                       keys
                                       first
                                       name))]
-     (merge 
-      {:collection (get-concept-mapping-fn :collection) 
+     (merge
+      {:collection (get-concept-mapping-fn :collection)
        :granule (get-concept-mapping-fn :granule)
        :tag (get-concept-mapping-fn :tag)
        :variable (get-concept-mapping-fn :variable)
        :service (get-concept-mapping-fn :service)
        :tool (get-concept-mapping-fn :tool)
-       :subscription (get-concept-mapping-fn :subscription)} 
-      (into {} 
-            (map #(get-concept-mapping-types-for-generics % fetched-index-set) 
+       :subscription (get-concept-mapping-fn :subscription)}
+      (into {}
+            (map #(get-concept-mapping-types-for-generics % fetched-index-set)
                  (cs/get-generic-concept-types-array)))))))
 
 (defn fetch-rebalancing-collection-info
@@ -1117,22 +1113,17 @@
          [(get indexes :all-subscription-revisions)]
          [(get indexes (or target-index-key :subscriptions))])
 
-       ;; TODO Generic work: Figure out how to use cs/get-generic-concept-types-array or generic-concept?
-       (or :generic
-           :dataqualitysummary
-           :orderoption
-           :serviceoption
-           :serviceentry
-           :grid)
-       ;; Generics are a bunch of document types, find out which one to work with
-       ;; and return the index name for those
-       (if all-revisions-index?
-         [(get indexes (keyword (format "all-generic-%s-revisions" (name concept-type))))]
-         [(get indexes (keyword (format "generic-%s" (name concept-type))))])
-
        :granule
        (let [coll-concept-id (:parent-collection-id (:extra-fields concept))]
-         (get-granule-index-names-for-collection context coll-concept-id target-index-key))))))
+         (get-granule-index-names-for-collection context coll-concept-id target-index-key))
+
+       ;; Default
+       (if (some? (concept-type (common-generic/latest-approved-documents)))
+         ;; Generics are a bunch of document types, find out which one to work with
+         ;; and return the index name for those
+         (if all-revisions-index?
+           [(get indexes (keyword (format "all-generic-%s-revisions" (name concept-type))))]
+           [(get indexes (keyword (format "generic-%s" (name concept-type))))]))))))
 
 (defn get-granule-index-names-for-provider
   "Return the granule index names for the input provider id"
