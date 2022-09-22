@@ -21,7 +21,7 @@
 (defn latest-approved-documents
   "Return a map of all the configured approved generics and the latest version
    string for each one.
-   Return {:doc-type \"1.2.3"}"
+   Return {:doc-type \"1.2.3\"}"
   []
   (reduce (fn [data item]
             (assoc data (first item) (last (second item))))
