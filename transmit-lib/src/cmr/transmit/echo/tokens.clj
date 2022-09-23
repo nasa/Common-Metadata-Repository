@@ -101,7 +101,8 @@
   (if (transmit-config/echo-system-token? token)
     ;; Short circuit a lookup when we already know who this is.
     (transmit-config/echo-system-username)
-    (if (common-util/is-jwt-token? token)
+    (if (and (common-util/is-jwt-token? token)
+             (transmit-config/local-edl-verification))
       (verify-edl-token-locally token)
       (let [[status parsed body] (r/rest-post context "/tokens/get_token_info"
                                               {:headers {"Accept" mt/json
