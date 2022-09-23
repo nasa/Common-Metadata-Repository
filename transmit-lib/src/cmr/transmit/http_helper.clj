@@ -141,39 +141,6 @@
                                          :accept :json}
                                         http-options#)}))))))
 
-(defmacro defcreator2
-  "Creates a function that can be used to send standard requests to create an item using JSON.
-   This version differs from defcreater in that it sends two parameters to url-fn which allows
-   the caller to send in a list of values to be used by url-fn for constructing the path. This
-   is needed when a service requires extra paramaters then normal.
-   "
-  ([fn-name app-name url-fn]
-   `(defcreator ~fn-name ~app-name ~url-fn nil))
-  ([fn-name app-name url-fn default-options]
-   `(defn ~fn-name
-      "Sends a request to create the item. Valid options are
-      * :raw? - set to true to indicate the raw response should be returned. See
-      cmr.transmit.http-helper for more info. Default false.
-      * token - the user token to use when creating the item. If not set the token in the context will
-      be used.
-      * http-options - Other http-options to be sent to clj-http."
-      ([context# url-items# item#]
-       (~fn-name context# url-items# item# nil))
-      ([context# url-items# item# options#]
-       (let [options# (merge options# ~default-options)
-             {raw?# :raw? token# :token http-options# :http-options} options#
-             token# (or token# (:token context#))
-             headers# (when token# {config/token-header token#})]
-         (request context# ~app-name
-                  {:url-fn #(~url-fn % url-items#)
-                   :method :post
-                   :raw? raw?#
-                   :http-options (merge {:body (json/generate-string item#)
-                                         :content-type :json
-                                         :headers headers#
-                                         :accept :json}
-                                        http-options#)}))))))
-
 (defmacro defupdater
   "Creates a function that can be used to send standard requests to updater an item using JSON. The
   url-fn will be passed the connection and the concept id"
