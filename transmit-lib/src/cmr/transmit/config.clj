@@ -116,6 +116,11 @@
   "Defines the password that is sent from the CMR to URS to authenticate the CMR."
   {})
 
+(defconfig local-edl-verification
+  "Controls when cmr uses the EDL public key to locally verify JWT tokens."
+  {:type Boolean
+   :default true})
+
 (defconfig edl-public-key
   "Defines the EDL public key which is used to validate EDL JWT tokens locally.  Default is set to
    a locally generated EDL test jwk and is used in token unit tests"
