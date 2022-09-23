@@ -4,7 +4,7 @@
    [clj-http.client :as client]
    [clojure.string :as string]
    [clojurewerkz.elastisch.rest :as esr]
-   [cmr.common.log :as log :refer [info warn]]
+   [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.es-helper :as es-helper]
@@ -33,9 +33,9 @@
         (esi-helper/create conn index-name {:settings settings :mappings mapping})
         (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
-                error (:error body)]
-            (info (format "error creating %s elastic index, elastic reported error: %s"
-                          index-name error))
+                error-message (:error body)]
+            (error (format "error creating %s elastic index, elastic reported error: %s"
+                          index-name error-message))
             (throw e)))))))
 
 (defn update-index
@@ -57,9 +57,9 @@
           (esi-helper/create conn index-name {:settings settings :mappings mapping})))
       (catch clojure.lang.ExceptionInfo e
         (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)
-              error (:error body)]
-          (info (format "error updating %s elastic index, elastic reported error: %s"
-                        index-name error))
+              error-message (:error body)]
+          (error (format "error updating %s elastic index, elastic reported error: %s"
+                        index-name error-message))
           (throw e))))))
 
 (defn index-set-exists?
