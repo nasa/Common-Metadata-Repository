@@ -109,7 +109,7 @@
          :native-id-lowercase native-id
          :associations-gzip-b64 (associations->gzip-base64-str generic-assoc-ids)}
         configs (gen-util/only-elastic-preferences (:Indexes index-data))
-             ;; now add the configured indexes
+        ;; now add the configured indexes
         doc (reduce
              (fn [data, config] (into data (field->index config parsed-concept)))
              common-doc
