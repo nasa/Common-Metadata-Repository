@@ -1,0 +1,112 @@
+{
+  "MetadataSpecification": {
+      "URL": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1",
+      "Name": "Generic-Index",
+      "Version": "0.0.1"
+  },
+    "Generic": {
+      "Name": "Grid",
+      "Version": "0.0.1"
+    },
+  "SubConceptType": "GRD",
+  "Indexes":
+  [
+    {
+       "Description": "Name",
+       "Field": ".Name",
+       "Name": "Name",
+       "Mapping": "string"
+    },
+    {
+      "Description": "Long Name",
+      "Field": ".LongName",
+      "Name": "Long-Name",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Description of the Grid",
+      "Field": ".Description",
+      "Name": "Description",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Coordinate Reference System Type",
+      "Field": ".GridDefinition.CoordinateReferenceSystemID.Type",
+      "Name": "CoordinateReferenceSystemID-Type",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Coordinate Reference System Code",
+      "Field": ".GridDefinition.CoordinateReferenceSystemID.Code",
+      "Name": "CoordinateReferenceSystemID-Code",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Coordinate Reference System Title",
+      "Field": ".GridDefinition.CoordinateReferenceSystemID.Title",
+      "Name": "CoordinateReferenceSystemID-Title",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Coordinate Reference System URL",
+      "Field": ".GridDefinition.CoordinateReferenceSystemID.URL",
+      "Name": "CoordinateReferenceSystemID-URL",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Coordinate Reference System",
+      "Field": ".GridDefinition.CoordinateReferenceSystemID",
+      "Name": "CoordinateReferenceSystem",
+      "Mapping": "string",
+      "Indexer": "complex-field",
+      "Configuration": {"sub-fields": ["Type", "Code", "Title", "URL"]}
+    },
+    {
+      "Description": "Mock index for property field",
+      "Field": ".Name",
+      "Name": "Name",
+      "Type": "graph",
+      "Indexer": "property"
+  },
+  {
+      "Description": "Mock index for property field",
+      "Field": ".Version",
+      "Name": "Version",
+      "Type": "graph",
+      "Indexer": "property"
+  },
+  {
+      "Description": "Mock index for separate entity field",
+      "Field": ".GridDefinition.CoordinateReferenceSystemID",
+      "Name": "CoordinateReferenceSystem",
+      "Type": "graph",
+      "Indexer": "separate-node",
+      "Configuration": {
+          "properties": ["Type", "URL"],
+          "relationship": "DefinedBy"
+          }
+  },
+  {
+      "Description": "Mock index for separate entity field",
+      "Field": ".Organization",
+      "Name": "Organization",
+      "Type": "graph",
+      "Indexer": "separate-node",
+      "Configuration": {
+          "properties": ["ShortName"],
+          "relationship": "PublishedBy"
+          }
+  },
+  {
+      "Description": "Mock index for separate entity field",
+      "Field": ".RelatedURLs",
+      "Name": "URL",
+      "Type": "graph",
+      "Indexer": "separate-node",
+      "Configuration": {
+          "properties": ["URL", "URLContentType"],
+          "relationship": "RelatedTo"
+          }
+  }
+  ]
+}

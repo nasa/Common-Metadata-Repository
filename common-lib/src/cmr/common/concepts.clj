@@ -1,13 +1,35 @@
 (ns cmr.common.concepts
   "This contains utility functions and vars related to concepts in the CMR"
-  (:require [clojure.set]
+  (:require [clojure.set :as cset]
             [clojure.string :as str]
             [cmr.common.util :as util]
+            [cmr.common.generics :as common-generic]
             [cmr.common.services.errors :as errors]))
+
+
+(def generic-concept-types->concept-prefix
+  "Gets an array of generic concept types.
+   Return {:generic (str X) :grid (str GRD)...}"
+  (merge {:generic "X"} (common-generic/approved-generic-concept-prefixes)))
+
+(def generic-concept-prefix->concept-type
+  "Maps a generic concept id prefix to the concept type.
+   Return: {(str X) :generic (str GRD) :grid...}"
+  (cset/map-invert generic-concept-types->concept-prefix))
+
+(defn get-generic-concept-types-array
+  "Gets the array of generic concept types."
+  []
+  (vec (keys generic-concept-types->concept-prefix)))
+
+(defn generic-concept?
+  "Return true if the passed in concept is a generic concept"
+  [concept]
+  (some #(= concept %) (get-generic-concept-types-array)))
 
 (def concept-types
   "This is the set of the types of concepts in the CMR."
-  #{:access-group
+  (into #{:access-group
     :acl
     :collection
     :granule
@@ -20,28 +42,34 @@
     :tag-association
     :variable
     :variable-association
-    :subscription})
+    :subscription
+    :generic
+    :generic-association}
+    (keys generic-concept-types->concept-prefix)))
 
 (def concept-prefix->concept-type
   "Maps a concept id prefix to the concept type"
-  {"ACL" :acl
-   "AG" :access-group
-   "C" :collection
-   "G" :granule
-   "H" :humanizer
-   "S" :service
-   "SA" :service-association
-   "TL" :tool
-   "TLA" :tool-association
-   "T" :tag
-   "TA" :tag-association
-   "V" :variable
-   "VA" :variable-association
-   "SUB" :subscription})
+  (merge
+   {"ACL" :acl
+    "AG" :access-group
+    "C" :collection
+    "G" :granule
+    "H" :humanizer
+    "S" :service
+    "SA" :service-association
+    "TL" :tool
+    "TLA" :tool-association
+    "T" :tag
+    "TA" :tag-association
+    "V" :variable
+    "VA" :variable-association
+    "SUB" :subscription
+    "GA" :generic-association}
+   generic-concept-prefix->concept-type))
 
 (def concept-type->concept-prefix
   "Maps a concept type to the concept id prefix"
-  (clojure.set/map-invert concept-prefix->concept-type))
+  (cset/map-invert concept-prefix->concept-type))
 
 (def humanizer-native-id
   "The native id of the system level humanizer. There can only be one humanizer in CMR.

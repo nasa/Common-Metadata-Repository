@@ -2,10 +2,6 @@
 
 See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide) for a general guide to developing a client utilizing the CMR Search API.
 
-### ECHO-Token Deprecation Notice
-
-CMR Legacy Services' ECHO tokens will be deprecated soon. Please use EDL tokens and send them with the Authorization header. This document contains many mentions of ECHO-Tokens, which will soon be out of date. Instructions on how to generate an EDL token are [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token)
-
 ### Table of Contents
 
   * [General Request Details](#general-request-details)
@@ -253,7 +249,9 @@ Search After supersedes scrolling. Search After allows the retrieval of all resu
 
 Search After is only supported for parameter queries and JSON queries. All query parameters are available with the exception of the `page_num` and `offset` parameters.
 
-Search After is stateless, it is always resolved against the latest version of the data. Any search against CMR that has results not fully returned in the current request will return a `search-after` value in the `CMR-Search-After` header of the search response. User can then pass this returned value in the `CMR-Search-After` header of the following request to retrieve the next page of result based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` response header. Supplying the new `search-after` value in the following request's `CMR-Search-After` header will retrieve the next page. The `CMR-Hits` header is useful for determining the number of requests that will be needed to retrieve all the available results.
+Search After is stateless, it is always resolved against the latest version of the data. Any search against CMR that has results not fully returned in the current request will return a `search-after` value in the `CMR-Search-After` header of the search response. User can then pass this returned value in the `CMR-Search-After` header of the following request to retrieve the next page of result based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` response header. Supplying the new `search-after` value in the following request's `CMR-Search-After` header will retrieve the next page. Similar to regular paging requests in CMR, if an ingest or delete occurs between these `search-after` paging requests, the order of your results may change, causing inconsistent results across pages.
+
+The `CMR-Hits` header is useful for determining the number of requests that will be needed to retrieve all the available results.
 
 When all the results have been returned, the subsequent search will return an empty result set and no `CMR-Search-After` header in the response.
 
@@ -282,7 +280,7 @@ We can then use the new `CMR-Search-After: ["xyz", 789, 999]` header to get the 
 ```
 curl -i -H 'CMR-Search-After: ["xyz", 789, 999]' "%CMR-ENDPOINT%/granules?concept_id=C1-PROV1&page_size=200"
 ```
-Since there are only 8 granules left and nothing to search after, we will get the 8 granules back and there won't be a `CMR-Search-After` header in the response.
+There will be only 8 granules in the result set. We can deem the search has reached the end because the number of results returned is less than the page_size, but if we search again with the new `CMR-Search-After` header value returned, we will get an empty result set and there won't be a `CMR-Search-After` header in the response.
 
 #### <a name="scrolling-details"></a> Scrolling Details
 
@@ -2135,7 +2133,7 @@ or "polygon[]", for single or multiple polygon search. It supports the and/or op
 
     curl "%CMR-ENDPOINT%/collections?polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11&options[polygon][or]=true"
 
-Note: if you use "polygon" for multiple polygon search, it won't work because only the last polyon parameter will take effect.
+Note: if you use "polygon" for multiple polygon search, it won't work because only the last polygon parameter will take effect.
 
 ##### <a name="c-bounding-box"></a> Bounding Box
 

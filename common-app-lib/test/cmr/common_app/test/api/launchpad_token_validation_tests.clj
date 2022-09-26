@@ -3,6 +3,7 @@
   (:require
    [clojure.data.codec.base64 :as base64]
    [clojure.test :refer :all]
+   [cmr.common.util :as util]
    [cmr.common-app.api.launchpad-token-validation :as token]))
 
 (defn- test-matrix
@@ -63,7 +64,7 @@
                    false false false false
                    false false
                    true true true
-                   false] #'token/is-jwt-token?))
+                   false] util/is-jwt-token?))
     (testing "Is token a legacy token?"
       (test-group [true
                    true true true true

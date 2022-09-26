@@ -217,6 +217,35 @@
                 :latest true}]
     (find-concepts context params :tool-association)))
 
+(defn get-generic-associations-by-concept-id
+  "Get generic associations (including tombstones) for a given concept-id revision-id."
+  [context concept-id revision-id]
+  (let [;;params used to get associations with source-concept-identifier being the generic concept
+        source-params {:source-concept-identifier concept-id
+                       :latest true}
+        associations-source (find-concepts context source-params :generic-association)
+        ;;we only want the associations that have no associated revision id or one equal to the
+        ;; revision
+        associations-source (filter (fn [ga] (let [rev-id (get-in ga [:extra-fields :source-revision-id])]
+                                               (or (nil? rev-id)
+                                                   (= rev-id revision-id))))
+                                    associations-source)
+        ;;params used to get associations with associated-concept-id being the generic concept
+        dest-params {:associated-concept-id concept-id
+                     :latest true}
+        associations-dest (find-concepts context dest-params :generic-association)
+        associations-dest (filter (fn [ga] (let [rev-id (get-in ga [:extra-fields :associated-revision-id])]
+                                             (or (nil? rev-id)
+                                                 (= rev-id revision-id))))
+                                  associations-dest)]
+    (concat associations-source associations-dest)))
+
+(defn get-generic-associations-for-concept
+  "Get all the generic associationse (including tombstones) for a concept."
+  [context concept]
+  (get-generic-associations-by-concept-id
+   context (:concept-id concept) (:revision-id concept)))
+
 (defn-timed find-collections
   "Searches metadata db for concepts matching the given parameters."
   [context params]

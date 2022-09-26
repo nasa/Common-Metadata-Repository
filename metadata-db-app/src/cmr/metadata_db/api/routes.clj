@@ -1,14 +1,12 @@
 (ns cmr.metadata-db.api.routes
   "Defines the HTTP URL routes for the application."
   (:require
-   [cheshire.core :as json]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
    [cmr.common.cache :as cache]
-   [cmr.common.jobs :as jobs]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.metadata-db.api.concepts :as concepts-api]
    [cmr.metadata-db.api.provider :as provider-api]
@@ -22,7 +20,13 @@
    [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params]))
+   [ring.middleware.params :as params])
+  (:require
+   ;; These must be required here to make multimethod implementations available.
+   ;; XXX This is not a good pattern for large software systems; we need to
+   ;;     find a different way to accomplish this goal ... possibly use protocols
+   ;;     instead.
+   [cmr.metadata-db.data.oracle.concepts.generic-documents]))
 
 (def admin-api-routes
   "The administrative control routes for metadata db."

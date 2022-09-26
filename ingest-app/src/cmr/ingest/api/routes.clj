@@ -6,10 +6,12 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common.concepts :as concepts]
    [cmr.common.log :refer [info]]
    [cmr.ingest.api.bulk :as bulk]
    [cmr.ingest.api.collections :as collections]
    [cmr.ingest.api.core :as api-core]
+   [cmr.ingest.api.generic-documents :as gen-doc]
    [cmr.ingest.api.granules :as granules]
    [cmr.ingest.api.provider :as provider-api]
    [cmr.ingest.api.services :as services]
@@ -248,6 +250,25 @@
            request
            (bulk/get-provider-tasks :granule provider-id request)))))))
 
+(def generate-generic-concept-types-reg-ex
+  "This function creates a regular expresion for all of the generic concepts.  This is used to create the api endpoints.
+   An example string that is return looks like: \"dataqualitysummary|orderoption|serviceoption\" "
+  (let [rx (-> (str (concepts/get-generic-concept-types-array))
+              (clojure.string/replace #":|\]|\[" "")
+              (clojure.string/replace #" " "|"))]
+    rx))
+
+(def generic-document-routes
+ (routes
+    (api-core/set-default-error-format
+     :xml
+     (context ["/:concept-type" :concept-type (re-pattern generate-generic-concept-types-reg-ex)] [concept-type]
+       (context ["/:native-id" :native-id #".*$"] [native-id]
+         (POST "/" request (gen-doc/validate-required-query-parameters request :create))
+         (GET "/" request (gen-doc/validate-required-query-parameters request :read))
+         (PUT "/" request (gen-doc/validate-required-query-parameters request :update))
+         (DELETE "/" request (gen-doc/delete-generic-document request)))))))
+
 (defn build-routes [system]
   (routes
     (context (get-in system [:public-conf :relative-root-url]) []
@@ -258,6 +279,9 @@
 
       ;; Add routes to create, update, delete, & validate concepts
       ingest-routes
+
+      ;; add routes to create, update, read, and delete generic concepts
+      generic-document-routes
 
       ;; db migration route
       db-migration-routes

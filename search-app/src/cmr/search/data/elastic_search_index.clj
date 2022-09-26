@@ -194,6 +194,14 @@
                  "1_subscriptions")
    :type-name "subscription"})
 
+(doseq [concept-type (concepts/get-generic-concept-types-array)]
+  (defmethod common-esi/concept-type->index-info concept-type
+    [context _ query]
+    {:index-name (if (:all-revisions? query)
+                   (format "1_all_generic_%s_revisions" (name concept-type))
+                   (format "1_generic_%s" (name concept-type)))
+     :type-name (name concept-type)}))
+
 (defn context->conn
   [context]
   (get-in context [:system :search-index :conn]))

@@ -1,8 +1,11 @@
 (ns cmr.transmit.echo.tokens
   "Contains functions for working with tokens using the echo-rest api."
   (:require
+   [buddy.core.keys :as buddy-keys]
+   [buddy.sign.jwt :as jwt]
    [cheshire.core :as json]
    [clj-time.core :as t]
+   [clojure.string :as string]
    [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
@@ -41,6 +44,29 @@
   [context]
   (login context "guest" "guest-password"))
 
+(defn verify-edl-token-locally
+  "Uses the EDL public key to verify jwt tokens locally."
+  [token]
+  (try
+    (let [public-key (buddy-keys/jwk->public-key (json/parse-string (transmit-config/edl-public-key) true))
+          bearer-stripped-token (string/replace token #"Bearer\W+" "")
+          decrypted-token (jwt/unsign bearer-stripped-token public-key {:alg :rs256})]
+      (:uid decrypted-token))
+    (catch clojure.lang.ExceptionInfo ex
+      (let [error-data (ex-data ex)]
+        (cond
+          (= :exp (:cause error-data))
+          (errors/throw-service-error
+           :unauthorized
+           (format "Token [%s] has expired. Note the token value has been partially redacted."
+                   (common-util/scrub-token token)))
+          (= :signature (:cause error-data))
+          (errors/throw-service-error
+           :unauthorized
+           (format "Token %s does not exist" token))
+         :else
+         (r/unexpected-status-error! 500 (format "Unexpected error unsiging token locally. %s" error-data)))))))
+
 (defn handle-get-user-id
   [token status parsed body]
   (case (int status)
@@ -75,11 +101,13 @@
   (if (transmit-config/echo-system-token? token)
     ;; Short circuit a lookup when we already know who this is.
     (transmit-config/echo-system-username)
-
-    (let [[status parsed body] (r/rest-post context "/tokens/get_token_info"
-                                            {:headers {"Accept" mt/json
-                                                       "Authorization" (transmit-config/echo-system-token)}
-                                             :form-params {:id token}})]
-      (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
-                    (common-util/scrub-token token) status))
-      (handle-get-user-id token status parsed body))))
+    (if (and (common-util/is-jwt-token? token)
+             (transmit-config/local-edl-verification))
+      (verify-edl-token-locally token)
+      (let [[status parsed body] (r/rest-post context "/tokens/get_token_info"
+                                              {:headers {"Accept" mt/json
+                                                         "Authorization" (transmit-config/echo-system-token)}
+                                               :form-params {:id token}})]
+        (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
+                      (common-util/scrub-token token) status))
+        (handle-get-user-id token status parsed body)))))

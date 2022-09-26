@@ -2,6 +2,7 @@
   (:require
    [cheshire.core :as cheshire]
    [clj-http.client :as client]
+   [clojure.string :as string]
    [clojurewerkz.elastisch.rest :as esr]
    [cmr.common.log :as log :refer [info warn]]
    [cmr.common.services.errors :as errors]
@@ -28,6 +29,7 @@
   (let [{:keys [index-name settings mapping]} idx-w-config]
     (when-not (esi-helper/exists? conn index-name)
       (try
+        (info "This instance of CMR will publish Generic documents to Elastic Index:" index-name)
         (esi-helper/create conn index-name {:settings settings :mappings mapping})
         (catch clojure.lang.ExceptionInfo e
           (let [body (cheshire/decode (get-in (ex-data e) [:body]) true)

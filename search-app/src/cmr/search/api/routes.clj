@@ -15,6 +15,7 @@
    [cmr.search.api.services :as services-api]
    [cmr.search.api.tags :as tags-api]
    [cmr.search.api.tools :as tools-api]
+   [cmr.search.api.generics :as generics-api]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.health-service :as hs]
    [compojure.core :refer :all])
@@ -30,6 +31,7 @@
    [cmr.search.results-handlers.atom-json-results-handler]
    [cmr.search.results-handlers.atom-results-handler]
    [cmr.search.results-handlers.csv-results-handler]
+   [cmr.search.results-handlers.generics-json-results-handler]
    [cmr.search.results-handlers.granules-umm-json-results-handler]
    [cmr.search.results-handlers.kml-results-handler]
    [cmr.search.results-handlers.metadata-results-handler]
@@ -65,6 +67,9 @@
 
         ;; Add routes for tool association
         tools-api/tool-api-routes
+
+        ;; Add routes for generic associations
+        generics-api/generic-api-routes
 
         ;; Add routes for humanizers
         humanizers-api/humanizers-routes

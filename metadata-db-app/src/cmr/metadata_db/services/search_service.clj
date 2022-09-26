@@ -2,6 +2,7 @@
   "Contains functions for retrieving concepts using parameter search"
   (:require
    [clojure.set :as set]
+   [cmr.common.concepts :as cc]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as util]
    [cmr.metadata-db.data.concepts :as c]
@@ -18,23 +19,28 @@
 
 (def supported-find-parameters
   "Map of concept-types to sets of parameters supported by find for each type."
-  {:collection #{:concept-id :provider-id :entry-title :entry-id :short-name :version-id :native-id}
-   :tag #{:concept-id :native-id}
-   :tag-association #{:concept-id :native-id :associated-concept-id :associated-revision-id :tag-key}
-   :service #{:provider-id :concept-id :native-id}
-   :tool #{:provider-id :concept-id :native-id}
-   :access-group default-supported-find-parameters
-   :acl default-supported-find-parameters
-   :humanizer #{:concept-id :native-id}
-   :subscription #{:provider-id :concept-id :native-id :collection-concept-id :subscriber-id :normalized-query
-                   :subscription-type}
-   :variable #{:provider-id :concept-id :native-id}
-   :variable-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
-                           :variable-concept-id}
-   :service-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
+  (merge
+   {:collection #{:concept-id :provider-id :entry-title :entry-id :short-name :version-id :native-id}
+    :tag #{:concept-id :native-id}
+    :tag-association #{:concept-id :native-id :associated-concept-id :associated-revision-id :tag-key}
+    :service #{:provider-id :concept-id :native-id}
+    :tool #{:provider-id :concept-id :native-id}
+    :access-group default-supported-find-parameters
+    :acl default-supported-find-parameters
+    :humanizer #{:concept-id :native-id}
+    :subscription #{:provider-id :concept-id :native-id :collection-concept-id :subscriber-id :normalized-query
+                    :subscription-type}
+    :variable #{:provider-id :concept-id :native-id}
+    :variable-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
+                            :variable-concept-id}
+    :service-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
                            :service-concept-id}
-   :tool-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
-                       :tool-concept-id}})
+    :tool-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
+                        :tool-concept-id}
+    :generic-association #{:concept-id :native-id :associated-concept-id :associated-revision-id
+                          :source-concept-identifier :source-revision-id :association-type}}
+   (zipmap (cc/get-generic-concept-types-array)
+           (repeat #{:concept-id :provider-id :native-id}))))
 
 (def granule-supported-parameter-combinations
   "Supported search parameter combination sets for granule find. This does not include flags
@@ -131,7 +137,8 @@
                  :humanizer
                  :variable-association
                  :service-association
-                 :tool-association}
+                 :tool-association
+                 :generic-association}
                (:concept-type params))
     (find-cmr-concepts context params)
 

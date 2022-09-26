@@ -917,8 +917,8 @@
    (fn [f]
      (dev-sys-util/reset)
      (set-ingest-umm-version-to-current)
-     (when-not (empty? providers)
-      (setup-providers providers options))
+     (when (seq providers)
+       (setup-providers providers options))
      (f))))
 
 (defn reset-fixture-with-customized-options
