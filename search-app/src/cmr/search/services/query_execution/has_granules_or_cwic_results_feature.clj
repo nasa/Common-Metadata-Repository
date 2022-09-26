@@ -14,6 +14,9 @@
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.jobs :refer [defjob]]
    [cmr.redis-utils.redis-cache :as redis-cache]
+   [cmr.transmit.cache.consistent-cache :as consistent-cache]
+   [cmr.common.cache.fallback-cache :as fallback-cache]
+   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.search.data.elastic-search-index :as idx]))
 
 (def REFRESH_HAS_GRANULES_OR_CWIC_MAP_JOB_INTERVAL
@@ -30,12 +33,34 @@
 (defn create-has-granules-or-cwic-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
-  (redis-cache/create-redis-cache))
+  ;; Single threaded lookup cache used to prevent indexing multiple items at the same time with
+  ;; empty cache cause lots of lookups in elasticsearch.
+  (stl-cache/create-single-thread-lookup-cache
+    ;; Use the fall back cache so that the data is fast and available in memory
+    ;; But if it's not available we'll fetch it from redis.
+    (fallback-cache/create-fallback-cache
+
+      ;; Consistent cache is required so that if we have multiple instances of the indexer we'll
+      ;; have only a single indexer refreshing its cache.
+      (consistent-cache/create-consistent-cache
+       {:hash-timeout-seconds (* 5 60)})
+      (redis-cache/create-redis-cache))))
 
 (defn create-has-granules-or-opensearch-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
-  (redis-cache/create-redis-cache))
+  ;; Single threaded lookup cache used to prevent indexing multiple items at the same time with
+  ;; empty cache cause lots of lookups in elasticsearch.
+  (stl-cache/create-single-thread-lookup-cache
+    ;; Use the fall back cache so that the data is fast and available in memory
+    ;; But if it's not available we'll fetch it from redis.
+    (fallback-cache/create-fallback-cache
+
+      ;; Consistent cache is required so that if we have multiple instances of the indexer we'll
+      ;; have only a single indexer refreshing its cache.
+      (consistent-cache/create-consistent-cache
+       {:hash-timeout-seconds (* 5 60)})
+      (redis-cache/create-redis-cache))))
 
 (defn get-cwic-collections
   "Returns the collection granule count by searching elasticsearch by aggregation"
