@@ -119,8 +119,7 @@
                :gen-type-lowercase (util/safe-lowercase gen-name)
                :long-name long-name
                :long-name-lowercase (util/safe-lowercase long-name))
-        doc)
-      ))
+        doc)))
 
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
   (defmethod esearch/parsed-concept->elastic-doc concept-type
