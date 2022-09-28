@@ -44,8 +44,7 @@
   (let [coll-id (:collection-id params)
         gran-ids (util/remove-empty (:granules params))
         exclude? (:exclude-granules params)
-        bounding-box (:bounding-box params)
-        temporal (:temporal params)]
+        {:keys [bounding-box temporal page-num page-size]} params]
     (str "collection_concept_id=" coll-id
          (when (seq gran-ids)
           (str "&"
@@ -57,7 +56,11 @@
                (query-util/seq->str bounding-box)))
          (when (seq temporal)
           (str "&"
-               (query-util/temporal-seq->cmr-query temporal))))))
+               (query-util/temporal-seq->cmr-query temporal)))
+         (when (seq page-num)
+          (str "&page-num=" page-num))
+         (when (seq page-size)
+          (str "&page-size=" page-size)))))
 
 (defn async-get-metadata
   "Given a data structure with :collection-id, :granules, and :exclude-granules
