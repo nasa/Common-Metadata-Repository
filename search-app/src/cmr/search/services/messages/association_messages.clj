@@ -32,6 +32,13 @@
   [non-supported-types]
   (format (str "The following concept types [%s] are not supported for generic associations.")
           non-supported-types))
+
+(defn cannot-assoc-msg
+  [concept-id assoc-concept-ids]
+  (format (str "The following concept ids [%s] can not be associated with concept id [%s] "
+               "because collection/[service|tool|variable] associations are not supported "
+               "by the new generic association api.")
+          assoc-concept-ids concept-id))
  
 (defn tombstone-collection
   [assoc-type {:keys [concept-id revision-id]}]
