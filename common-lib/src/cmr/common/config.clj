@@ -254,7 +254,3 @@
                (pr-str unknown-vars))
          true)
        false))))
-
-;; TODO: Generic work after initial testing in SIT, this can be removed
-(when (seq (approved-pipeline-documents))
-  (info (format "Generic documents pipeline supports: %s" (approved-pipeline-documents))))
