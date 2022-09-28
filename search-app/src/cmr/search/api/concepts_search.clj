@@ -20,7 +20,8 @@
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
    [cmr.search.validators.all-granule-validation :as all-gran-validation]
-   [compojure.core :refer :all]))
+   [compojure.core :refer :all]
+   [cmr.common.concepts :as concepts]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Constants and Utility Functions
@@ -366,13 +367,36 @@
   ;; no errors, return 204
   {:status 204})
 
+(defn pluralize-concept
+  "Return the plural form of a concept"
+  [concept]
+  (let [concept-name (name concept) last-letter (subs concept-name (- (count concept-name) 1))]
+    (if (= "y" last-letter)
+      (keyword (str (subs concept-name 0 (- (count concept-name) 1)) "ies"))
+      (keyword (str concept-name "s")))))
+
+(defn format-regex
+  "Adds the necessary string to each concept for a regex"
+  [concept] (str "(?" concept ")"))
+
+(def get-generics
+  "Retrieve the generics which were dynamically loaded, drop the keyword :generic"
+  (mapv pluralize-concept (drop 1 (keys concepts/generic-concept-types->concept-prefix))))
+
+(def join-generic-concepts
+  "Combines the generic concepts to be a single string"
+  (clojure.string/join "|" (mapv format-regex get-generics)))
+
+(def routes-regex
+  "Appends the generic concepts dynamically loaded to the non-generic concepts to match possible routes"
+  (re-pattern (str "(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services)|" join-generic-concepts ")(?:\\..+)?")))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions
 
 (def search-routes
   "Routes for /search/granules, /search/collections, etc."
-  ;; TODO: Generic work: Think about putting this into a config file and creating the reg-ex from there.
-  (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services)|(?:dataqualitysummaries)|(?:orderoptions)|(?:serviceoptions)|(?:serviceentries)|(?:grids))(?:\..+)?"] [path-w-extension]
+  (context ["/:path-w-extension" :path-w-extension routes-regex] [path-w-extension]
     (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}
