@@ -656,3 +656,15 @@
 (extend OracleStore
         concepts/ConceptsStore
         behaviour)
+
+(comment
+
+  (def db (get-in user/system [:apps :metadata-db :db]))
+  ;; Backdoor tool to read the encoded and zipped metadata column since this can
+  ;; not be done in a SQL query tool. All other columns are visible there.
+  (let [c (get-concept db :service-association "PROV1" "SA1200000040-CMR")
+        raw_meta_edn (:metadata c)
+        meta (read-string raw_meta_edn)]
+    meta)
+
+  )
