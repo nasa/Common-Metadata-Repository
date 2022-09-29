@@ -378,7 +378,7 @@
 
 (def join-generic-concepts
   "Combines the generic concepts to be a single string"
-  (clojure.string/join "|" (mapv format-regex get-generics)))
+  (string/join "|" (mapv format-regex get-generics)))
 
 (def routes-regex
   "Appends the generic concepts dynamically loaded to the non-generic concepts to match possible routes general form: (?:(?:granules)|...(?:dataqualitysummaries)"
