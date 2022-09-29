@@ -62,6 +62,13 @@
         token (echo-util/login (system/context) "user1")]
     (index/wait-until-indexed)
 
+    (testing "Generic associations can not be made between collection and service,tool and variables."
+      (let [ response (association-util/generic-associate-by-concept-ids-revision-ids
+                       token coll-concept-id nil [{:concept-id "SE1234-PROV1"} {:concept-id "V1234-PROV1"} {:concept-id "S1234-PROV1"} {:concept-id "TL1234-PROV1"}])]
+        (is (= 422 (:status response)))
+        (is (= ["The following concept ids [(\"V1234-PROV1\" \"S1234-PROV1\" \"TL1234-PROV1\")] can not be associated with concept id [C1200000007-PROV1] because collection/[service|tool|variable] associations are not supported by the new generic association api."]
+               (:errors response)))))
+ 
     (testing "Associate grid with collection by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                        token grid-concept-id grid-revision-id [{:concept-id coll-concept-id :revision-id coll-revision-id}])
@@ -132,6 +139,4 @@
 
         ;; Search for the collection again doesn't return the grid as generic association
         (is (= nil 
-               coll-search-generic-associations1)) 
-
-        ))))
+               coll-search-generic-associations1))))))
