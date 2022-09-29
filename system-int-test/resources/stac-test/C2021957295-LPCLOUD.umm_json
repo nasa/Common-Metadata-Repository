@@ -1,0 +1,568 @@
+{
+   "CollectionCitations":[
+      {
+         "Title":"HLS Sentinel-2 Multi-spectral Instrument Surface Reflectance Daily Global 30m v2.0",
+         "Creator":"Jeffrey Masek, Junchang Ju, Jean-Claude Roger, Sergii Skakun, Eric Vermote, Martin Claverie, Jennifer Dungan, Zhangshi Yin, Brian Freitag, Chris Justice",
+         "ReleaseDate":"2021-08-24T00:00:00.000Z",
+         "ReleasePlace":"Sioux Falls, South Dakota",
+         "Publisher":"NASA EOSDIS Land Processes DAAC",
+         "OtherCitationDetails":"The DOI landing page provides citations in APA and Chicago styles.",
+         "OnlineResource":{
+            "Name":"DOI Landing page",
+            "Linkage":"https://doi.org/10.5067/HLS/HLSS30.002"
+         }
+      }
+   ],
+   "MetadataDates":[
+      {
+         "Type":"CREATE",
+         "Date":"2021-03-16T15:59:00.000Z"
+      },
+      {
+         "Type":"UPDATE",
+         "Date":"2022-09-08T13:54:00.000Z"
+      }
+   ],
+   "VersionDescription":"HLS Version 2",
+   "ShortName":"HLSS30",
+   "Abstract":"The Harmonized Landsat Sentinel-2 (HLS) project provides consistent surface reflectance data from the Operational Land Imager (OLI) aboard the joint NASA/USGS Landsat 8 satellite and the Multi-Spectral Instrument (MSI) aboard Europe’s Copernicus Sentinel-2A and Sentinel-2B satellites. The combined measurement enables global observations of the land every 2–3 days at 30-meter (m) spatial resolution. The HLS project uses a set of algorithms to obtain seamless products from OLI and MSI that include atmospheric correction, cloud and cloud-shadow masking, spatial co-registration and common gridding, illumination and view angle normalization, and spectral bandpass adjustment. \r\n\r\nThe HLSS30 product provides 30-m Nadir Bidirectional Reflectance Distribution Function (BRDF)-Adjusted Reflectance (NBAR) and is derived from Sentinel-2A and Sentinel-2B MSI data products. The HLSS30 and HLSL30 products are gridded to the same resolution and Military Grid Reference System (MGRS) (https://hls.gsfc.nasa.gov/products-description/tiling-system/) tiling system, and thus are “stackable” for time series analysis.\r\n\r\nThe HLSS30 product is provided in Cloud Optimized GeoTIFF (COG) format, and each band is distributed as a separate COG. There are 13 bands included in the HLSS30 product along with four angle bands and a quality assessment (QA) band. See the User Guide for a more detailed description of the individual bands provided in the HLSS30 product.\r\n",
+   "TilingIdentificationSystems":[
+      {
+         "TilingIdentificationSystemName":"Military Grid Reference System",
+         "Coordinate1":{
+            "MinimumValue":161.0,
+            "MaximumValue":161.0
+         },
+         "Coordinate2":{
+            "MinimumValue":132.0,
+            "MaximumValue":132.0
+         }
+      }
+   ],
+   "DOI":{
+      "DOI":"10.5067/HLS/HLSS30.002",
+      "Authority":"https://doi.org"
+   },
+   "RelatedUrls":[
+      {
+         "Description":"Earthdata Search allows users to search, discover, visualize, refine, and access NASA Earth Observation data.",
+         "URLContentType":"DistributionURL",
+         "Type":"GET DATA",
+         "URL":"https://search.earthdata.nasa.gov/search?q=C2021957295-LPCLOUD"
+      },
+      {
+         "Description":"The LP DAAC product page provides information on Science Data Set layers and links for user guides, ATBDs, data access, tools, customer support, etc. ",
+         "URLContentType":"CollectionURL",
+         "Type":"DATA SET LANDING PAGE",
+         "URL":"https://doi.org/10.5067/HLS/HLSS30.002"
+      },
+      {
+         "Description":"The LP DAAC website provides detailed information on discovery, distribution, access, and support of land data products.",
+         "URLContentType":"CollectionURL",
+         "Type":"PROJECT HOME PAGE",
+         "URL":"https://lpdaac.usgs.gov/"
+      },
+      {
+         "Description":"The technical information in the User's Guide enables users to interpret and use the data products. ",
+         "URLContentType":"PublicationURL",
+         "Type":"VIEW RELATED INFORMATION",
+         "Subtype":"USER'S GUIDE",
+         "URL":"https://lpdaac.usgs.gov/documents/1326/HLS_User_Guide_V2.pdf"
+      },
+      {
+         "Description":"The ATBD provides physical theory and mathematical procedures for the calculations used to produce the data products.",
+         "URLContentType":"PublicationURL",
+         "Type":"VIEW RELATED INFORMATION",
+         "Subtype":"ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)",
+         "URL":"https://lpdaac.usgs.gov/documents/769/HLS_ATBD_V15_provisional.pdf"
+      },
+      {
+         "Description":"The HLS Quick Guide provides directions for accessing the data in Earthdat Search.",
+         "URLContentType":"PublicationURL",
+         "Type":"VIEW RELATED INFORMATION",
+         "Subtype":"HOW-TO",
+         "URL":"https://lpdaac.usgs.gov/documents/1117/HLS_Quick_Guide_v02.pdf"
+      },
+      {
+         "Description":"Getting Started with Cloud-Native HLS Data in Python is a Jupyter Notebook tutorial.",
+         "URLContentType":"PublicationURL",
+         "Type":"VIEW RELATED INFORMATION",
+         "Subtype":"HOW-TO",
+         "URL":"https://git.earthdata.nasa.gov/projects/LPDUR/repos/hls-tutorial/browse"
+      },
+      {
+         "Description":"HLS Subsetting, Processing and Exporting Reformatted (HLS SuPER) data prep script  is a command line executable Python script that finds, accesses, and processes HLS data according to input criteria.",
+         "URLContentType":"PublicationURL",
+         "Type":"VIEW RELATED INFORMATION",
+         "Subtype":"HOW-TO",
+         "URL":"https://git.earthdata.nasa.gov/projects/LPDUR/repos/hls-super-script/browse"
+      },
+      {
+         "Description":"Browse image for Earthdata Search",
+         "URLContentType":"VisualizationURL",
+         "Type":"GET RELATED VISUALIZATION",
+         "URL":"https://cmr.earthdata.nasa.gov/browse-scaler/browse_images/granules/G2095548655-LPCLOUD?h=512\u0026w=512"
+      },
+      {
+         "Description":"HLS download helper script ",
+         "URLContentType":"PublicationURL",
+         "Type":"VIEW RELATED INFORMATION",
+         "Subtype":"HOW-TO",
+         "URL":"https://git.earthdata.nasa.gov/projects/LPDUR/repos/hls-bulk-download/browse"
+      },
+      {
+         "Description":"Getting Started with Cloud-Native Harmonized Landsat Sentinel-2 (HLS) Data in R",
+         "URLContentType":"PublicationURL",
+         "Type":"VIEW RELATED INFORMATION",
+         "Subtype":"HOW-TO",
+         "URL":"https://lpdaac.usgs.gov/resources/e-learning/getting-started-with-cloud-native-harmonized-landsat-sentinel-2-hls-data-in-r/"
+      },
+      {
+         "Description":"GIBS blog post",
+         "URLContentType":"VisualizationURL",
+         "Type":"GET RELATED VISUALIZATION",
+         "URL":"https://wiki.earthdata.nasa.gov/pages/viewpage.action?pageId=195432390"
+      },
+      {
+         "Description":"Worldview HLS Tour Story",
+         "URLContentType":"VisualizationURL",
+         "Type":"GET RELATED VISUALIZATION",
+         "Subtype":"WORLDVIEW",
+         "URL":"https://worldview.earthdata.nasa.gov/?v=-191.12397594071413,-86.52209371542455,182.39111268571813,89.5139950740695\u0026t=2020-10-15-T16%3A46%3A06Z\u0026l=Reference_Labels(hidden),Reference_Features(hidden),Coastlines,HLS_S30_Nadir_BRDF_Adjusted_Reflectance(hidden),VIIRS_NOAA20_CorrectedReflectance_TrueColor(hidden),VIIRS_SNPP_CorrectedReflectance_TrueColor(hidden),MODIS_Aqua_CorrectedReflectance_TrueColor(hidden),MODIS_Terra_CorrectedReflectance_TrueColor\u0026tr=hls_intro "
+      },
+      {
+         "Description":"The Application for Extracting and Exploring Analysis Ready Samples (AρρEEARS) offers a simple and efficient way to perform data access and transformation processes.",
+         "URLContentType":"DistributionURL",
+         "Type":"GET DATA",
+         "Subtype":"APPEEARS",
+         "URL":"https://appeears.earthdatacloud.nasa.gov/"
+      }
+   ],
+   "DataDates":[
+      {
+         "Date":"2014-04-03T00:00:00.000Z",
+         "Type":"CREATE"
+      },
+      {
+         "Date":"2020-03-04T07:19:53.396Z",
+         "Type":"UPDATE"
+      }
+   ],
+   "SpatialExtent":{
+      "SpatialCoverageType":"HORIZONTAL",
+      "HorizontalSpatialDomain":{
+         "ZoneIdentifier":"UTM",
+         "Geometry":{
+            "CoordinateSystem":"CARTESIAN",
+            "BoundingRectangles":[
+               {
+                  "NorthBoundingCoordinate":90.0,
+                  "WestBoundingCoordinate":-180.0,
+                  "EastBoundingCoordinate":180.0,
+                  "SouthBoundingCoordinate":-90.0
+               }
+            ]
+         },
+         "ResolutionAndCoordinateSystem":{
+            "HorizontalDataResolution":{
+               "GenericResolutions":[
+                  {
+                     "XDimension":30.0,
+                     "YDimension":30.0,
+                     "Unit":"Meters"
+                  }
+               ]
+            }
+         }
+      },
+      "GranuleSpatialRepresentation":"GEODETIC"
+   },
+   "AdditionalAttributes":[
+      {
+         "Name":"CLOUD_COVERAGE",
+         "Description":"Percent of cloud coverage",
+         "DataType":"INT"
+      },
+      {
+         "Name":"MGRS_TILE_ID",
+         "Description":"Tile identifier of MGRS grid",
+         "DataType":"STRING"
+      },
+      {
+         "Name":"SPATIAL_COVERAGE",
+         "Description":"Percentage of spatial coverage",
+         "DataType":"INT"
+      },
+      {
+         "Name":"SPATIAL_RESOLUTION",
+         "Description":"Spatial Resolution ",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"HORIZONTAL_CS_CODE",
+         "Description":"EPSG code",
+         "DataType":"STRING"
+      },
+      {
+         "Name":"HORIZONTAL_CS_NAME",
+         "Description":"Coordinate system and UTM identifier ",
+         "DataType":"STRING"
+      },
+      {
+         "Name":"ULX",
+         "Description":"Longitude",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"ULY",
+         "Description":"Latitude",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"SPATIAL_RESAMPLING_ALG",
+         "Description":"Spatial Re-sampling Algorithm",
+         "DataType":"STRING"
+      },
+      {
+         "Name":"ADD_OFFSET",
+         "Description":"additional offset",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"REF_SCALE_FACTOR",
+         "Description":"Scale factor for reflectance bands",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"FILLVALUE",
+         "Description":"Fill Value",
+         "DataType":"INT"
+      },
+      {
+         "Name":"PRODUCT_URI",
+         "Description":"Product Unique Resource Identifier",
+         "DataType":"STRING"
+      },
+      {
+         "Name":"HLS_PROCESSING_TIME",
+         "Description":"HLS Processing Date and Time",
+         "DataType":"STRING"
+      },
+      {
+         "Name":"SENSING_TIME",
+         "Description":"Image Sensing Date and Time",
+         "DataType":"STRING"
+      },
+      {
+         "Name":"QA_FILLVALUE",
+         "Description":"Quality Assurance Data  Fill Value",
+         "DataType":"INT"
+      },
+      {
+         "Name":"NCOLS",
+         "Description":"Number of Columns",
+         "DataType":"INT"
+      },
+      {
+         "Name":"NROWS",
+         "Description":"Number of rows",
+         "DataType":"INT"
+      },
+      {
+         "Name":"MEAN_SUN_AZIMUTH_ANGLE",
+         "Description":"Mean sun azimuth angle band 1",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"MEAN_SUN_ZENITH_ANGLE",
+         "Description":"Mean sun zenith angle band 1",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"MEAN_VIEW_AZIMUTH_ANGLE",
+         "Description":"Mean view azimuth angle band 1",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"MEAN_VIEW_ZENITH_ANGLE",
+         "Description":"Mean view zenith angle band 1",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"NBAR_SOLAR_ZENITH",
+         "Description":"NBAR solar zenith",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"MSI_BAND_01_BANDPASS_ADJUSTMENT_SLOPE_AND_OFFSET",
+         "Description":"MSI band 1 bandpass adjustment slope and offset",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"MSI_BAND_02_BANDPASS_ADJUSTMENT_SLOPE_AND_OFFSET",
+         "Description":"MSI band 2 bandpass adjustment slope and offset",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"MSI_BAND_03_BANDPASS_ADJUSTMENT_SLOPE_AND_OFFSET",
+         "Description":"MSI band 03 bandpass adjustment slope and offset",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"MSI_BAND_04_BANDPASS_ADJUSTMENT_SLOPE_AND_OFFSET",
+         "Description":"MSI band 4 bandpass adjustment slope and offset",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"MSI_BAND_11_BANDPASS_ADJUSTMENT_SLOPE_AND_OFFSET",
+         "Description":"MSI band 11 bandpass adjustment slope and offset",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"MSI_BAND_12_BANDPASS_ADJUSTMENT_SLOPE_AND_OFFSET",
+         "Description":"MSI band 12 bandpass adjustment slope and offset",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"MSI_BAND_8A_BANDPASS_ADJUSTMENT_SLOPE_AND_OFFSET",
+         "Description":"MSI band 8a bandpass adjustment slope and offset",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"AROP_AVE_XSHIFT(METERS)",
+         "Description":"arop ave xshift in meters",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"AROP_AVE_YSHIFT(METERS)",
+         "Description":"arop ave yshift in meters",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"AROP_NCP",
+         "Description":"arop ncp",
+         "DataType":"INT"
+      },
+      {
+         "Name":"AROP_RMSE(METERS)",
+         "Description":"arop root mean square error",
+         "DataType":"FLOAT"
+      },
+      {
+         "Name":"AROP_S2_REFIMG",
+         "Description":"arop s2 remimg",
+         "DataType":"STRING"
+      },
+      {
+         "Name":"ACCODE",
+         "Description":"LaSRC Version",
+         "DataType":"STRING"
+      },
+      {
+         "Name":"PROCESSING_BASELINE",
+         "Description":"Processing baseline",
+         "DataType":"STRING"
+      },
+      {
+         "Name":"IDENTIFIER_PRODUCT_DOI",
+         "Description":"Digital object identifier that uniquely identifies this data product",
+         "Value":"10.5067/HLS/HLSS30.002",
+         "DataType":"STRING"
+      },
+      {
+         "Name":"IDENTIFIER_PRODUCT_DOI_AUTHORITY",
+         "Description":"URL of the digital object identifier resolving authority",
+         "Value":"https://doi.org",
+         "DataType":"STRING"
+      },
+      {
+         "Name":"ANG_SCALE_FACTOR",
+         "Description":"Scale factor for angle bands",
+         "DataType":"FLOAT"
+      }
+   ],
+   "ArchiveAndDistributionInformation":{
+      "FileDistributionInformation":[
+         {
+            "Format":"Cloud Optimized GeoTIFF (COG)",
+            "FormatType":"Native"
+         }
+      ]
+   },
+   "ScienceKeywords":[
+      {
+         "Category":"EARTH SCIENCE",
+         "Topic":"LAND SURFACE",
+         "Term":"SURFACE RADIATIVE PROPERTIES",
+         "VariableLevel1":"REFLECTANCE"
+      }
+   ],
+   "EntryTitle":"HLS Sentinel-2 Multi-spectral Instrument Surface Reflectance Daily Global 30m v2.0",
+   "CollectionProgress":"ACTIVE",
+   "CollectionDataType":"OTHER",
+   "UseConstraints":{
+      "LicenseURL":{
+         "Description":"License URL for data use policy",
+         "Linkage":"https://earthdata.nasa.gov/earth-observation-data/data-use-policy",
+         "MimeType":"text/html",
+         "Name":"Data Use Policy"
+      }
+   },
+   "ProcessingLevel":{
+      "Id":"3",
+      "ProcessingLevelDescription":"Variables mapped on uniform space-time grid scales, usually with some completeness and consistency"
+   },
+   "Platforms":[
+      {
+         "Type":"Earth Observation Satellites",
+         "ShortName":"Sentinel-2A",
+         "LongName":"Sentinel-2A",
+         "Instruments":[
+            {
+               "ShortName":"Sentinel-2 MSI",
+               "LongName":"Sentinel-2 Multispectral Imager"
+            }
+         ]
+      },
+      {
+         "Type":"Earth Observation Satellites",
+         "ShortName":"Sentinel-2B",
+         "LongName":"Sentinel-2B",
+         "Instruments":[
+            {
+               "ShortName":"Sentinel-2 MSI",
+               "LongName":"Sentinel-2 Multispectral Imager"
+            }
+         ]
+      }
+   ],
+   "Version":"2.0",
+   "TemporalExtents":[
+      {
+         "EndsAtPresentFlag":true,
+         "RangeDateTimes":[
+            {
+               "BeginningDateTime":"2015-11-28T00:00:00.000Z"
+            }
+         ]
+      }
+   ],
+   "DataCenters":[
+      {
+         "Roles":[
+            "ARCHIVER"
+         ],
+         "ShortName":"LP DAAC",
+         "LongName":"Land Processes Distributed Active Archive Center",
+         "ContactInformation":{
+            "ServiceHours":"M-F, 8 a.m. to 4 p.m. Central Time",
+            "ContactMechanisms":[
+               {
+                  "Type":"Telephone",
+                  "Value":"605-594-6116"
+               },
+               {
+                  "Type":"U.S. toll free",
+                  "Value":"866-573-3222"
+               },
+               {
+                  "Type":"Email",
+                  "Value":"lpdaac@usgs.gov"
+               }
+            ],
+            "Addresses":[
+               {
+                  "Country":"United States",
+                  "StreetAddresses":[
+                     "U.S. Geological Survey, Earth Resources Observation and Science (EROS) Center"
+                  ],
+                  "City":"Sioux Falls",
+                  "StateProvince":"South Dakota",
+                  "PostalCode":"57198"
+               }
+            ],
+            "RelatedUrls":[
+               {
+                  "URLContentType":"DataCenterURL",
+                  "Type":"HOME PAGE",
+                  "URL":"https://lpdaac.usgs.gov/"
+               }
+            ]
+         },
+         "ContactGroups":[
+            {
+               "Roles":[
+                  "User Services"
+               ],
+               "GroupName":"LP DAAC User Services",
+               "ContactInformation":{
+                  "ServiceHours":"M-F, 8 a.m. to 4 p.m. Central Time",
+                  "ContactInstruction":"LP DAAC User Services is the point of contact for answering questions concerning data products, data access, and online applications.",
+                  "ContactMechanisms":[
+                     {
+                        "Type":"Telephone",
+                        "Value":"605-594-6116"
+                     },
+                     {
+                        "Type":"U.S. toll free",
+                        "Value":"866-573-3222"
+                     },
+                     {
+                        "Type":"Email",
+                        "Value":"lpdaac@usgs.gov"
+                     }
+                  ],
+                  "Addresses":[
+                     {
+                        "Country":"United States",
+                        "StreetAddresses":[
+                           "U.S. Geological Survey, Earth Resources Observation and Science (EROS) Center"
+                        ],
+                        "City":"Sioux Falls",
+                        "PostalCode":"57198"
+                     }
+                  ],
+                  "RelatedUrls":[
+                     {
+                        "URLContentType":"DataContactURL",
+                        "Type":"HOME PAGE",
+                        "URL":"https://lpdaac.usgs.gov/"
+                     }
+                  ]
+               }
+            }
+         ]
+      },
+      {
+         "Roles":[
+            "PROCESSOR"
+         ],
+         "ShortName":"NASA/IMPACT",
+         "LongName":"Interagency Implementation and Advanced Concepts Team, NASA",
+         "ContactInformation":{
+            "Addresses":[
+               {
+                  "StreetAddresses":[
+                     "Not provided"
+                  ],
+                  "City":"Not provided",
+                  "StateProvince":"Not provided",
+                  "PostalCode":"Not provided"
+               }
+            ],
+            "RelatedUrls":[
+               {
+                  "URLContentType":"DataCenterURL",
+                  "Type":"HOME PAGE",
+                  "URL":"https://earthdata.nasa.gov/esds/impact"
+               }
+            ]
+         }
+      }
+   ],
+   "MetadataSpecification":{
+      "URL":"https://cdn.earthdata.nasa.gov/umm/collection/v1.17.0",
+      "Name":"UMM-C",
+      "Version":"1.17.0"
+   }
+}

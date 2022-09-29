@@ -1087,3 +1087,57 @@
 
         "retrieval by suffix"
         {:url-extension "stac"}))))
+
+(deftest combined-cloud-cover-stac-test
+  (let [coll-metadata (slurp (io/resource "stac-test/C2021957295-LPCLOUD.umm_json"))
+        {coll-concept-id :concept-id} (ingest/ingest-concept
+                                       (ingest/concept :collection
+                                                       "PROV1"
+                                                       "foo"
+                                                       {:format :umm-json :version "1.17.0"}
+                                                       coll-metadata))
+        {aa-gran-concept-id :concept-id} (ingest/ingest-concept
+                                          (ingest/concept :granule
+                                                          "PROV1"
+                                                          "aa"
+                                                          :echo10
+                                                          (slurp (io/resource "stac-test/G2485638210-LPCLOUD-aa.echo10"))))
+        {root-gran-concept-id :concept-id} (ingest/ingest-concept
+                                            (ingest/concept :granule
+                                                            "PROV1"
+                                                            "root"
+                                                            :echo10
+                                                            (slurp (io/resource "stac-test/G2485638210-LPCLOUD-root.echo10"))))
+        {neither-gran-concept-id :concept-id} (ingest/ingest-concept
+                                               (ingest/concept :granule
+                                                               "PROV1"
+                                                               "neither"
+                                                               :echo10
+                                                               (slurp (io/resource "stac-test/G2485638210-LPCLOUD-neither.echo10"))))
+        {both-gran-concept-id :concept-id} (ingest/ingest-concept
+                                            (ingest/concept :granule
+                                                            "PROV1"
+                                                            "both"
+                                                            :echo10
+                                                            (slurp (io/resource "stac-test/G2485638210-LPCLOUD-both.echo10"))))]
+
+    (index/wait-until-indexed)
+    (testing "combined cloud cover is STAC format aa only"
+      (let [response (search/retrieve-concept aa-gran-concept-id nil {:url-extension "stac"})]
+        (is (= 1
+               (:eo:cloud_cover (:properties (json/decode (:body response) true)))))))
+
+    (testing "combined cloud cover is STAC format root only"
+      (let [response (search/retrieve-concept root-gran-concept-id nil {:url-extension "stac"})]
+        (is (= 2.0
+               (:eo:cloud_cover (:properties (json/decode (:body response) true)))))))
+
+    (testing "combined cloud cover is STAC format neither"
+      (let [response (search/retrieve-concept neither-gran-concept-id nil {:url-extension "stac"})]
+        (is (= nil
+               (:eo:cloud_cover (:properties (json/decode (:body response) true)))))))
+
+    (testing "combined cloud cover is STAC format both"
+      (let [response (search/retrieve-concept both-gran-concept-id nil {:url-extension "stac"})]
+        (is (= 2.0
+               (:eo:cloud_cover (:properties (json/decode (:body response) true)))))))))
