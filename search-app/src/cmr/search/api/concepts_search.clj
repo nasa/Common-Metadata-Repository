@@ -10,7 +10,7 @@
    [cmr.common-app.config :as common-app-config]
    [cmr.common-app.services.search :as search]
    [cmr.common.cache :as cache]
-   [cmr.common.config :refer [defconfig]]
+   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
@@ -21,7 +21,7 @@
    [cmr.search.services.result-format-helper :as rfh]
    [cmr.search.validators.all-granule-validation :as all-gran-validation]
    [compojure.core :refer :all]
-   [cmr.common.concepts :as concepts]))
+   [inflections.core :as inf]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Constants and Utility Functions
@@ -367,28 +367,20 @@
   ;; no errors, return 204
   {:status 204})
 
-(defn pluralize-concept
-  "Return the plural form of a concept"
-  [concept]
-  (let [concept-name (name concept) last-letter (subs concept-name (- (count concept-name) 1))]
-    (if (= "y" last-letter)
-      (keyword (str (subs concept-name 0 (- (count concept-name) 1)) "ies"))
-      (keyword (str concept-name "s")))))
-
 (defn format-regex
   "Adds the necessary string to each concept for a regex"
   [concept] (str "(?" concept ")"))
 
 (def get-generics
-  "Retrieve the generics which were dynamically loaded, drop the keyword :generic"
-  (mapv pluralize-concept (drop 1 (keys concepts/generic-concept-types->concept-prefix))))
+  "Retrieve the generics which were dynamically loaded"
+  (mapv keyword (mapv inf/plural (keys (cfg/approved-pipeline-documents)))))
 
 (def join-generic-concepts
   "Combines the generic concepts to be a single string"
   (clojure.string/join "|" (mapv format-regex get-generics)))
 
 (def routes-regex
-  "Appends the generic concepts dynamically loaded to the non-generic concepts to match possible routes"
+  "Appends the generic concepts dynamically loaded to the non-generic concepts to match possible routes general form: (?:(?:granules)|...(?:dataqualitysummaries)"
   (re-pattern (str "(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services)|" join-generic-concepts ")(?:\\..+)?")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
