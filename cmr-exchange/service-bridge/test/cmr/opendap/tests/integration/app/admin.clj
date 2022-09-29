@@ -48,7 +48,7 @@
                                      "application/vnd.cmr-service-bridge.v1+json")))]
       (is (= 404 (:status response)))))
   (testing "v2 routes ..."
-    (let [response @(httpc/get (format "http://localhost:%s/service-bridge/cache/auth"
+    #_(let [response @(httpc/get (format "http://localhost:%s/service-bridge/cache/auth"
                                        (test-system/http-port))
                                 (-> {}
                                     (request/add-token-header

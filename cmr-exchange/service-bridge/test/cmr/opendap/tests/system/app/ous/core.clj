@@ -76,7 +76,7 @@
 
 (deftest no-tag-replacement-and-no-opendap-url
   (let [collection-id "C1200237759-DEMO_PROV"
-        granule-id "G1200237760-DEMO_PROV"
+        granule-id "G1200303332-DEMO_PROV"
         options (-> {}
                     (request/add-token-header (util/get-sit-token))
                     (util/override-api-version-header "v2.1"))
@@ -91,7 +91,8 @@
     (is (= 400 (:status response)))
     (is (= "cmr-service-bridge.v2.1; format=json"
            (get-in response [:headers :cmr-media-type])))
-    (is (= {:errors ["Could not determine OPeNDAP URL from tags and datafile URL or base OPeNDAP URL."]}
+    (is (= {:errors ["There was a problem extracting an OPeNDAP URL or data URL from the granule's metadata file."
+                    (format "Problematic granules: [%s]." granule-id)]}
            (util/parse-response response)))))
 
 (deftest no-opendap-url-or-data-url

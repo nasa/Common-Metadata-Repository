@@ -13,7 +13,7 @@
    [ring.util.codec :as codec]
    [taoensso.timbre :as log]))
 
-(defn build-include
+(defn- build-include
   [gran-ids]
   (string/join
    "&"
@@ -21,21 +21,17 @@
     (map #(str (codec/url-encode "concept_id[]")
                "="
                %)
-         gran-ids)
-    (str "page_size=" (count gran-ids)))))
+         gran-ids))))
 
-(defn build-exclude
-  [component gran-ids]
+(defn- build-exclude
+  [gran-ids]
   (string/join
    "&"
    (conj
     (map #(str (codec/url-encode "exclude[echo_granule_id][]")
                "="
                %)
-         gran-ids)
-    ;; We don't know how many granule ids will be involved in an exclude,
-    ;; so we use CMR's max page size.
-    (str "page_size=" (config/cmr-max-pagesize component)))))
+         gran-ids))))
 
 (defn build-query
   "Build the query string for querying granles, bassed upon the options
@@ -49,7 +45,7 @@
          (when (seq gran-ids)
           (str "&"
                (if exclude?
-                 (build-exclude component gran-ids)
+                 (build-exclude gran-ids)
                  (build-include gran-ids))))
          (when (seq bounding-box)
           (str "&bounding_box="
