@@ -11,6 +11,7 @@
    [cmr.common-app.services.search :as search]
    [cmr.common.cache :as cache]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.generics :as common-generic]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
@@ -373,7 +374,7 @@
 
 (def get-generics
   "Retrieve the generics which were dynamically loaded"
-  (mapv keyword (mapv inf/plural (keys (cfg/approved-pipeline-documents)))))
+  (mapv keyword (mapv inf/plural(common-generic/latest-approved-document-types))))
 
 (def join-generic-concepts
   "Combines the generic concepts to be a single string"
