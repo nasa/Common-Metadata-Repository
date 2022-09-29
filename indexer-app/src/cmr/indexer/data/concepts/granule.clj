@@ -9,6 +9,7 @@
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
    [cmr.elastic-utils.index-util :as index-util]
    [cmr.indexer.data.concepts.attribute :as attrib]
    [cmr.indexer.data.concepts.orbit-calculated-spatial-domain :as ocsd]
@@ -121,7 +122,7 @@
         {:keys [parent-collection-id]} extra-fields
         parent-collection (get-parent-collection context parent-collection-id)
         {:keys [granule-ur data-granule temporal platform-refs project-refs related-urls cloud-cover
-                access-value two-d-coordinate-system]} umm-granule
+                access-value two-d-coordinate-system product-specific-attributes]} umm-granule
         {:keys [size producer-gran-id day-night production-date-time
                 feature-ids crid-ids]} data-granule
         {:keys [start-coordinate-1 end-coordinate-1 start-coordinate-2 end-coordinate-2]
@@ -145,7 +146,14 @@
         granule-spatial-representation (get-in parent-collection
                                                [:SpatialExtent :GranuleSpatialRepresentation])
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
-        collection-concept-seq-id (:sequence-number (concepts/parse-concept-id parent-collection-id))]
+        collection-concept-seq-id (:sequence-number (concepts/parse-concept-id parent-collection-id))
+        ;; We want to pull cloud cover form additional attributes if the root level cloud cover value is absent
+        cloud-cover (or cloud-cover (->> product-specific-attributes
+                                         (filter #(= "CLOUD_COVERAGE" (:name %)))
+                                         first
+                                         :values
+                                         first
+                                         util/safe-read-string))]
     (merge {:concept-id concept-id
             :revision-id revision-id
             :concept-seq-id (min es/MAX_INT concept-seq-id)
