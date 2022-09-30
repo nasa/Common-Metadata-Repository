@@ -3,17 +3,22 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.string :as string]
+   [clojure.edn :as edn]
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.association-util :as association-util]
+   [cmr.system-int-test.utils.generic-util :as gen-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.service-util :as service-util]
+   [cmr.system-int-test.utils.tag-util :as tags]
+   [cmr.system-int-test.utils.tool-util :as tool-util]
    [cmr.system-int-test.utils.url-helper :as url-helper]
-   [cmr.system-int-test.utils.generic-util :as gen-util])
+   [cmr.system-int-test.utils.variable-util :as vu]
+   [cmr.transmit.tag :as transmit-tag])
   (:import
    [java.util UUID]))
 
@@ -24,7 +29,8 @@
   (f))
 
 (use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"})
-                                    grant-all-generic-permission-fixture]))
+                                    grant-all-generic-permission-fixture
+                                    tags/grant-all-tag-fixture]))
 
 (defn search-request
   "This function will make a request to one of the generic URLs using the provided
@@ -135,3 +141,80 @@
                coll-search-generic-associations1)) 
 
         ))))
+
+(deftest test-all-associations
+  (let [;; ingest two collections - the first for the test, and the second to put more assocation
+        ;; data into the cmr_associations table.
+        coll (data-core/ingest-umm-spec-collection "PROV1"
+                                                   (data-umm-c/collection
+                                                    {:ShortName "coll1"
+                                                     :EntryTitle "entry-title1"}))
+        coll-concept-id (:concept-id coll)
+        coll2 (data-core/ingest-umm-spec-collection "PROV1"
+                                                    (data-umm-c/collection
+                                                     {:ShortName "coll2"
+                                                      :EntryTitle "entry-title2"}))
+        coll-concept-id2 (:concept-id coll2)
+        ;; ingest a service
+        service-concept (service-util/ingest-service-with-attrs {:Name "service1"})
+        service-concept-id (:concept-id service-concept)
+        ;; ingest a tool
+        tool-concept (tool-util/ingest-tool-with-attrs {:Name "tool1"})
+        tool-concept-id (:concept-id tool-concept)
+        ;; ingest two variables.
+        var1-concept (vu/make-variable-concept
+                      {:Name "Variable1"
+                       :LongName "Measurement1"}
+                      {:native-id "var1"
+                       :coll-concept-id (:concept-id coll)})
+        var2-concept (vu/make-variable-concept
+                      {:Name "Variable2"
+                       :LongName "Measurement2"}
+                      {:native-id "var2"
+                       :coll-concept-id (:concept-id coll)})
+        ;; create a tag.
+        tag (tags/make-tag)
+        tag-key (:tag-key tag)
+        ;; create a token
+        token (echo-util/login (system/context) "user1")
+        _ (tags/create-tag token tag)
+        ;; create a data quality summary record
+        dqs (gen-util/ingest-generic-document
+             nil "PROV1" "dataqualitysummary-1" :dataqualitysummary gen-util/data-quality-summary :post)
+        ;; create a order option record
+        oo (gen-util/ingest-generic-document
+            nil "PROV1" "orderoption-1" :orderoption gen-util/order-option :post)
+        oo2 (gen-util/ingest-generic-document
+            nil "PROV1" "orderoption-2" :orderoption gen-util/order-option :post)]
+    (index/wait-until-indexed)
+
+    ;; Associate the concepts.
+    (association-util/associate-by-concept-ids
+     token service-concept-id [{:concept-id coll-concept-id, :data {:convert-format {:XYZ "ZYX"} :allow-regridding "true"}}
+                               {:concept-id coll-concept-id2}])
+    (association-util/associate-by-concept-ids
+     token tool-concept-id [{:concept-id coll-concept-id}
+                            {:concept-id coll-concept-id2}])
+    (vu/ingest-variable-with-association var1-concept)
+    (vu/ingest-variable-with-association var2-concept)
+    (tags/associate-by-query token tag-key {:provider "PROV1"})
+    (association-util/generic-associate-by-concept-ids-revision-ids
+     token (:concept-id dqs) nil [{:concept-id coll-concept-id}])
+    (association-util/generic-associate-by-concept-ids-revision-ids
+     token (:concept-id oo) (:revision-id oo) [{:concept-id (:concept-id dqs)}])
+    (association-util/generic-associate-by-concept-ids-revision-ids
+     token coll-concept-id nil [{:concept-id (:concept-id oo2)}])
+    (index/wait-until-indexed)
+
+    (let [coll-search-resp (search-request "collections.json" "entry-title=entry-title1")
+          body (json/parse-string (get coll-search-resp :body) true)
+          entry (first (:entry (:feed body)))
+          assoc (:associations entry)
+          assoc-details (:association-details entry)]
+      (is (= (:status coll-search-resp) 200))
+      (is (= (count (:variables assoc)) 2))
+      (is (= (count (:services assoc)) 1))
+      (is (= (count (:orderoptions assoc)) 1))
+      (is (= (count (:variables assoc-details)) 2))
+      (is (= (count (:services assoc-details)) 1))
+      (is (some? (:data (first (:services assoc-details))))))))

@@ -440,6 +440,7 @@
                 service-associations (get-service-associations context concept)
                 tool-associations (get-tool-associations context concept)
                 generic-associations (meta-db/get-generic-associations-for-concept context concept)
+                collection-associations (meta-db/get-associations-for-service context concept)
                 associations {:tag-associations tag-associations
                               :variable-associations variable-associations
                               :service-associations service-associations
@@ -457,6 +458,8 @@
                                    context tool-associations)
                 generic-associations (es/parse-non-tombstone-associations
                                       context generic-associations)
+                collection-associations (es/parse-non-tombstone-associations
+                                         context collection-associations)
                 concept-type (cs/concept-id->type concept-id)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
@@ -467,7 +470,8 @@
                             (assoc :variable-associations variable-associations)
                             (assoc :service-associations service-associations)
                             (assoc :tool-associations tool-associations)
-                            (assoc :generic-associations generic-associations))
+                            (assoc :generic-associations generic-associations)
+                            (assoc :collection-associations collection-associations))
                         parsed-concept)
                 elastic-options (-> options
                                     (select-keys [:all-revisions-index? :ignore-conflict?]))]
@@ -562,7 +566,10 @@
 
 (defmethod index-concept :service-association
   [context concept parsed-concept options]
-  (index-associated-collection context concept options))
+  (index-associated-collection context concept options)
+  (index-associated-concept context 
+                            (get-in concept [:extra-fields :service-concept-id])
+                            options))
 
 (defmethod index-concept :tool-association
   [context concept parsed-concept options]

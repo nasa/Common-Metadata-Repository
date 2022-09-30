@@ -14,6 +14,16 @@
                    (slurp)
                    (json/parse-string true)))
 
+(def data-quality-summary (-> "schemas/dataqualitysummary/v1.0.0/metadata.json"
+                              (jio/resource)
+                              (slurp)
+                               (json/parse-string true)))
+
+(def order-option (-> "schemas/orderoption/v1.0.0/metadata.json" 
+                      (jio/resource)
+                      (slurp)
+                      (json/parse-string true)))
+
 (defn generic-request
   "This function will make a request to one of the generic URLs using the provided
    provider and native id"

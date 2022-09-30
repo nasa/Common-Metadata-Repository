@@ -794,7 +794,9 @@
    :deleted (m/doc-values m/bool-field-mapping)
    :user-id (m/doc-values m/string-field-mapping)
    :revision-date (m/doc-values m/date-field-mapping)
-   :metadata-format (m/doc-values m/string-field-mapping)})
+   :metadata-format (m/doc-values m/string-field-mapping)
+   ;; associations with the service stored as EDN gzipped and base64 encoded for retrieving purpose 
+   :associations-gzip-b64 m/binary-field-mapping})
 
 (defmapping tool-mapping :tool
   "Defines the elasticsearch mapping for storing tools. These are the
