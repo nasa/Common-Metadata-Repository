@@ -4,8 +4,8 @@
    that can be indexed in lucine."
   (:require
    [cheshire.core :as json]
+   [clojure.java.io :as io]
    [cmr.common.concepts :as concepts]
-   [cmr.common.generics :as common-generic :refer [approved-generic?]]
    [cmr.common.mime-types :as mtype]
    [cmr.common.util :as util]
    [cmr.indexer.data.concepts.association-util :as assoc-util]
@@ -35,7 +35,7 @@
              :Configuration {:sub-fields [:s2] :format '%s == %s'}}
             {:l1 {:s1 'one' :s2 'two'}})"
   (fn [settings _] (or (:Indexer settings) :default)))
-  
+
 (defmethod field->index "complex-field"
   ;; This is an example of a complex indexer which takes a list of sub fields and
   ;; combines them into one field"
@@ -80,50 +80,47 @@
         generic-assoc-ids (remove #(= concept-id %)
                                   (concat (mapv :associated-concept-id generic-associations)
                                           (mapv :source-concept-identifier generic-associations)))
-        long-name (:LongName parsed-concept) ; should this exist as a required field
-        ;; TODO: Generic work: Need to remove this section 
-        ;; we already have checked for approval in the ingest application. 
+        long-name (:LongName parsed-concept)
+        ;; We have already checked for approval in the ingest application.
         gen-name (util/safe-lowercase (get-in parsed-concept [:MetadataSpecification :Name]))
         gen-ver (get-in parsed-concept [:MetadataSpecification :Version])
-        approved (approved-generic? (keyword gen-name) gen-ver)]
-    (when approved
-      (let [index-data-file (format "schemas/%s/v%s/index.json" gen-name gen-ver)
-            index-file-raw (slurp (clojure.java.io/resource index-data-file))
-            index-data (json/parse-string index-file-raw true)
-            schema-keys [:LongName
-                         :Version
-                         :Description
-                         :RelatedURLs]
-            keyword-values (keyword-util/concept-keys->keyword-text
-                            parsed-concept schema-keys)
-            common-doc ;; fields common to all generic documents
-            {:concept-id concept-id 
-             :revision-id revision-id
-             :deleted deleted
-             :gen-name gen-name
-             :gen-name-lowercase (util/safe-lowercase gen-name)
-             :gen-version gen-ver
-             :generic-type (str gen-name " " gen-ver)
-             :provider-id provider-id
-             :provider-id-lowercase (util/safe-lowercase provider-id)
-             :keyword keyword-values
-             :user-id user-id
-             :revision-date revision-date
-             :native-id native-id 
-             :native-id-lowercase native-id 
-             :associations-gzip-b64 (associations->gzip-base64-str generic-assoc-ids)}
-             configs (gen-util/only-elastic-preferences (:Indexes index-data))
-             ;; now add the configured indexes
-             doc (reduce
-                  (fn [data, config] (into data (field->index config parsed-concept)))
-                  common-doc
-                  configs)]
-             (if deleted
-               (assoc common-doc :metadata-format (name (mtype/format-key (:mime-type extra-fields)))
-                      :gen-type-lowercase (util/safe-lowercase gen-name)
-                      :long-name long-name
-                      :long-name-lowercase (util/safe-lowercase long-name))
-               doc)))))
+        index-data-file (format "schemas/%s/v%s/index.json" gen-name gen-ver)
+        index-file-raw (slurp (io/resource index-data-file))
+        index-data (json/parse-string index-file-raw true)
+        schema-keys [:LongName
+                     :Version
+                     :Description
+                     :RelatedURLs]
+        keyword-values (keyword-util/concept-keys->keyword-text
+                        parsed-concept schema-keys)
+        common-doc ;; fields common to all generic documents
+        {:concept-id concept-id
+         :revision-id revision-id
+         :deleted deleted
+         :gen-name gen-name
+         :gen-name-lowercase (util/safe-lowercase gen-name)
+         :gen-version gen-ver
+         :generic-type (str gen-name " " gen-ver)
+         :provider-id provider-id
+         :provider-id-lowercase (util/safe-lowercase provider-id)
+         :keyword keyword-values
+         :user-id user-id
+         :revision-date revision-date
+         :native-id native-id
+         :native-id-lowercase native-id
+         :associations-gzip-b64 (associations->gzip-base64-str generic-assoc-ids)}
+        configs (gen-util/only-elastic-preferences (:Indexes index-data))
+        ;; now add the configured indexes
+        doc (reduce
+             (fn [data, config] (into data (field->index config parsed-concept)))
+             common-doc
+             configs)]
+      (if deleted
+        (assoc common-doc :metadata-format (name (mtype/format-key (:mime-type extra-fields)))
+               :gen-type-lowercase (util/safe-lowercase gen-name)
+               :long-name long-name
+               :long-name-lowercase (util/safe-lowercase long-name))
+        doc)))
 
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
   (defmethod esearch/parsed-concept->elastic-doc concept-type

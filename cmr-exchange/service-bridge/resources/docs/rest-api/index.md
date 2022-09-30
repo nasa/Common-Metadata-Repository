@@ -397,6 +397,9 @@ are various parameters supported:
 * `granules`
 * `temporal`
 * `variables`
+* `page-size`
+* `page-num`
+
 
 These may be used alone or in any combination. Details for usage are provided
 below in separate sections.
@@ -572,6 +575,20 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"
 ```
 
+### `page-size` 
+Number of results per page - default is 10, max is 2000
+The following are examples of accepted `page-size` parameter usage:
+
+* `page-size=5`
+* `page_size=5`
+
+### `page-num` 
+The page number to return
+
+The following are examples of accepted `page-num` parameter usage:
+
+* `page-num=2`
+* `page_num=2`
 
 ## WCS-Style Parameters
 
@@ -589,6 +606,8 @@ As such, the following parameters are also available, as an alternative to the
 * `rangesubset`
 * `subset`
 * `timeposition`
+* `page-size`
+* `page-num`
 
 These are show in more detail in the sub-sections below.
 
@@ -728,6 +747,21 @@ curl -H "Echo-Token: `cat ~/.cmr/tokens/sit`" \
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&
      timeposition=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"
 ```
+
+### `page-size` 
+Number of results per page - default is 10, max is 2000
+The following are examples of accepted `page-size` parameter usage:
+
+* `page-size=5`
+* `page_size=5`
+
+### `page-num` 
+The page number to return
+
+The following are examples of accepted `page-num` parameter usage:
+
+* `page-num=2`
+* `page_num=2`
 
 ## Forthcoming
 
