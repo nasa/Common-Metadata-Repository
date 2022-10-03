@@ -148,7 +148,8 @@
            :payload-too-large
            "The search is creating more clauses than allowed by CMR. Please narrow your search."))
         
-        (when (and (re-find #"\"type\":\"illegal_argument_exception\"" body)
+        (when (and (or (re-find #"\"type\":\"illegal_argument_exception\"" body)
+                       (re-find #"\"type\":\"parsing_exception\"" body))
                    (re-find #"search_after" body))
           (info "Execute ES query failed due to" body)
           (let [err-msg (-> (json/parse-string body true)
