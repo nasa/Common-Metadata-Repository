@@ -63,7 +63,7 @@
   [search-after]
   (try
     (seq (json/parse-string search-after))
-    (catch com.fasterxml.jackson.core.JsonParseException e
+    (catch Exception e
       (error (format "search-after header value is invalid, error: %s" (.getMessage e)))
       (svc-errors/throw-service-error
        :bad-request
