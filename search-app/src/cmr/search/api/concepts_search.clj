@@ -58,6 +58,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Support Functions
 
+(defn- validate-search-after-value
+  "Validate the search-after value is in the form of a JSON array; otherwise throw 400 error"
+  [search-after]
+  (try
+    (seq (json/parse-string search-after))
+    (catch com.fasterxml.jackson.core.JsonParseException e
+      (error (format "search-after header value is invalid, error: %s" (.getMessage e)))
+      (svc-errors/throw-service-error
+       :bad-request
+       "search-after header value is invalid, must be in the form of a JSON array."))))
+
 (defn- validate-search-after-params
   "Validate search-after and params, throws service error if failed."
   [context params]
@@ -259,6 +270,7 @@
   [ctx path-w-extension params headers body]
   (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))
         search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
+        _ (validate-search-after-value search-after)
         ctx (assoc ctx :search-after (json/decode search-after))]
     (cond
       (= mt/json content-type-header)
