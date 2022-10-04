@@ -275,9 +275,9 @@
                    (format "collections.json?entry_title=%s" entry-title))
         {:keys [status results]} (search/find-concepts-json
                                   :collection {:entry-title entry-title})]
-
     (is (= [200 coll-json]
-           [status results]))))
+           [status results])
+        "JSON Result failed")))
 
 (defn- assert-collection-atom-json-result
   "Verify collection in ATOM and JSON response has-formats, has-variables, has-transforms,
