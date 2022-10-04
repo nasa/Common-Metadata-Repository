@@ -46,7 +46,7 @@
 ;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Test that generic associations can be made between generic documents and collection 
+;; Test that generic associations can be made between generic documents and collection
 (deftest test-generic-association
 
   (let [;;First ingest a Grid concept
@@ -56,7 +56,7 @@
               nil "PROV1" native-id :grid grid-doc :post)
         grid-concept-id (:concept-id grid)
         grid-revision-id (:revision-id grid)
-        
+
         ;;Then ingest a collection
         coll (data-core/ingest-umm-spec-collection "PROV1"
               (data-umm-c/collection
@@ -72,13 +72,14 @@
       (let [ response (association-util/generic-associate-by-concept-ids-revision-ids
                        token coll-concept-id nil [{:concept-id "SE1234-PROV1"} {:concept-id "V1234-PROV1"} {:concept-id "S1234-PROV1"} {:concept-id "TL1234-PROV1"}])]
         (is (= 422 (:status response)))
-        (is (= ["The following concept ids [(\"V1234-PROV1\" \"S1234-PROV1\" \"TL1234-PROV1\")] can not be associated with concept id [C1200000007-PROV1] because collection/[service|tool|variable] associations are not supported by the new generic association api."]
-               (:errors response)))))
- 
+        (is (= ["The following concept ids [(\"V1234-PROV1\" \"S1234-PROV1\" \"TL1234-PROV1\")] can not be associated with concept id [C1200000008-PROV1] because collection/[service|tool|variable] associations are not supported by the new generic association api."]
+               (:errors response))
+            "error message did not match")))
+
     (testing "Associate grid with collection by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                        token grid-concept-id grid-revision-id [{:concept-id coll-concept-id :revision-id coll-revision-id}])
-            ;;Switch the position of grid and collection should return the same concept-id and revision-id is increased by 1. 
+            ;;Switch the position of grid and collection should return the same concept-id and revision-id is increased by 1.
             response2 (association-util/generic-associate-by-concept-ids-revision-ids
                        token coll-concept-id coll-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id}])
             ;;Try to associate grid with collection by concept-id only. This shouldn't be allowed.
@@ -91,12 +92,12 @@
             ;;Search for the grid, it should return the association
             grid-search-result (search-request "grids.json" "name=Grid-A7-v1")
             grid-search-body (json/parse-string (:body grid-search-result) true)
-            grid-search-generic-associations (get-in (first (:items grid-search-body)) [:generic-associations])
+            grid-search-generic-associations (get-in (first (:items grid-search-body)) [:associations])
 
             ;;Search for the collection, it should return the association
             coll-search-result (search-request "collections.umm-json" "entry_title=entry-title1")
             coll-search-body (json/parse-string (:body coll-search-result) true)
-            coll-search-generic-associations (get-in (first (:items coll-search-body)) [:meta :associations :generics])
+            coll-search-generic-associations (get-in (first (:items coll-search-body)) [:meta :associations :grids])
 
             ;;Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
@@ -106,29 +107,29 @@
             ;;Search for the grid again, it should NOT return the association
             grid-search-result1 (search-request "grids.json" "name=Grid-A7-v1")
             grid-search-body1 (json/parse-string (:body grid-search-result1) true)
-            grid-search-generic-associations1 (get-in (first (:items grid-search-body1)) [:generic-associations])
+            grid-search-generic-associations1 (get-in (first (:items grid-search-body1)) [:associations])
 
             ;;Search for the collection again, it should NOT return the association
             coll-search-result1 (search-request "collections.umm-json" "entry_title=entry-title1")
             coll-search-body1 (json/parse-string (:body coll-search-result1) true)
-            coll-search-generic-associations1 (get-in (first (:items coll-search-body1)) [:meta :associations :generics])]
-        
+            coll-search-generic-associations1 (get-in (first (:items coll-search-body1)) [:meta :associations :grids])]
+
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
-        
+
         ;; The first and second associations are creating and updating the same association
         (is (= (get-in (first (:body response1)) [:generic-association :concept-id])
                (get-in (first (:body response2)) [:generic-association :concept-id])))
         (is (= (get-in (first (:body response2)) [:generic-association :revision-id])
                (+ 1 (get-in (first (:body response1)) [:generic-association :revision-id]))))
-        
+
         ;; The third association is not allowed.
         (is (= 400 (:status response3)))
-        (is (= ["There are already generic associations between concept id [GRD1200000006-PROV1] and concept id [C1200000007-PROV1] revision ids [1], cannot create generic association on the same concept without revision id.; There are already generic associations between concept id [C1200000007-PROV1] and concept id [GRD1200000006-PROV1] revision ids [1], cannot create generic association on the same concept without revision id."]
+        (is (= ["There are already generic associations between concept id [GRD1200000007-PROV1] and concept id [C1200000008-PROV1] revision ids [1], cannot create generic association on the same concept without revision id.; There are already generic associations between concept id [C1200000008-PROV1] and concept id [GRD1200000007-PROV1] revision ids [1], cannot create generic association on the same concept without revision id."]
                (get-in (first (:body response3)) [:errors])))
 
         ;; Search for the grid returns the collection as generic association
-        (is (= [coll-concept-id]
+        (is (= {:collections [coll-concept-id]}
                grid-search-generic-associations))
 
         ;; Search for the collection returns the grid as generic association
@@ -136,15 +137,15 @@
                coll-search-generic-associations))
 
         ;; Dissociation of the association is successful
-        (is (= {:status 200, :body [{:generic-association {:concept-id "GA1200000008-CMR", :revision-id 3}, :associated-item {:concept-id "GRD1200000006-PROV1", :revision-id 1}}]}
-               response4))
+        (is (= {:status 200, :body [{:generic-association {:concept-id "GA1200000009-CMR", :revision-id 3}, :associated-item {:concept-id "GRD1200000007-PROV1", :revision-id 1}}]}
+               response4) "Dissociation of the association failed.")
 
         ;; Search for the grid again doesn't return the collection as generic association
-        (is (= nil 
+        (is (= nil
                grid-search-generic-associations1))
 
         ;; Search for the collection again doesn't return the grid as generic association
-        (is (= nil 
+        (is (= nil
                coll-search-generic-associations1))))))
 
 (deftest test-all-associations
