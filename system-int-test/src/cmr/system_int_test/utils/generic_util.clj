@@ -17,9 +17,9 @@
 (def data-quality-summary (-> "schemas/dataqualitysummary/v1.0.0/metadata.json"
                               (jio/resource)
                               (slurp)
-                               (json/parse-string true)))
+                              (json/parse-string true)))
 
-(def order-option (-> "schemas/orderoption/v1.0.0/metadata.json" 
+(def order-option (-> "schemas/orderoption/v1.0.0/metadata.json"
                       (jio/resource)
                       (slurp)
                       (json/parse-string true)))
