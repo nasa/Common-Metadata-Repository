@@ -805,7 +805,22 @@
                           :exclude-metadata true
                           :latest true})]
       ;; create variable association tombstones and queue the variable association delete events
-      (tombstone-associations context assoc-type search-params false :variable))))
+      (tombstone-associations context assoc-type search-params false :variable)))
+  (when (= :generic-association assoc-type)
+    (let [search-params1 (cutil/remove-nil-keys
+                          {:concept-type assoc-type
+                           :source-concept-identifier concept-id
+                           :source-revision-id revision-id
+                           :exclude-metadata true
+                           :latest true})
+          search-params2 (cutil/remove-nil-keys
+                          {:concept-type assoc-type
+                           :associated-concept-id concept-id
+                           :associated-revision-id revision-id
+                           :exclude-metadata true
+                           :latest true})]
+      (tombstone-associations context assoc-type search-params1 false :variable)
+      (tombstone-associations context assoc-type search-params2 false :variable))))
 
 (defmethod delete-associations :service
   [context concept-type concept-id revision-id assoc-type]

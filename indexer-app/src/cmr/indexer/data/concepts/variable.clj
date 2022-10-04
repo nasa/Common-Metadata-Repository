@@ -31,10 +31,19 @@
       (map #(merge base-doc (measurement-quantity->elastic-doc %)) quantities)
       [base-doc])))
 
+(defn- get-concept-id-revision-id-map
+ "Return the concept-id revision-id map."
+ [concept-id revision-id]
+ (util/remove-nil-keys
+  {:concept-id concept-id
+   :revision-id (if (string? revision-id)
+                  (read-string revision-id)
+                  revision-id)}))
+
 (defmethod es/parsed-concept->elastic-doc :variable
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
-                revision-date format extra-fields variable-associations]} concept
+                revision-date format extra-fields variable-associations generic-associations]} concept
         {:keys [variable-name measurement]} extra-fields
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
         schema-keys [:ScienceKeywords :measurement :variable-name :variable-associations :set-names]
@@ -81,16 +90,27 @@
        :metadata-format (name (mt/format-key format))
        :measurement-identifiers (mapcat measurement-identifier->elastic-doc
                                         (:MeasurementIdentifiers parsed-concept))
-       ;; associated collections saved in elasticsearch for retrieving purpose in the format of:
+       ;; associated collections and generic concepts saved in elasticsearch for retrieving purpose in the format of:
        ;; [{"concept_id":"C1200000007-PROV1"}, {"concept_id":"C1200000008-PROV1","revision_id":5}]
-       :collections-gzip-b64 (when (seq variable-associations)
-                               (util/string->gzip-base64
-                                (pr-str
-                                 (map (fn [va]
-                                        (util/remove-nil-keys
-                                         {"concept-id" (:associated-concept-id va)
-                                          "revision-id" (:associated-revision-id va)}))
-                                      variable-associations))))})))
+       :concepts-gzip-b64 (when (or (seq variable-associations)
+                                    (seq generic-associations))
+                            (util/string->gzip-base64
+                             (pr-str
+                              (util/remove-map-keys empty?
+                               {:collections (map #(get-concept-id-revision-id-map
+                                                    (:associated-concept-id %)
+                                                    (:associated-revision-id %))
+                                                  variable-associations)
+                                :generics (let [generics (concat
+                                                          (map #(get-concept-id-revision-id-map
+                                                                 (:source-concept-identifier %)
+                                                                 (:source-revision-id %))
+                                                               generic-associations)
+                                                          (map #(get-concept-id-revision-id-map
+                                                                 (:associated-concept-id %)
+                                                                 (:associated-revision-id %))
+                                                               generic-associations))]
+                                            (remove #(= concept-id (:concept-id %)) generics))}))))})))
 
 (defn- variable-associations->variable-concepts
   "Returns the variable concepts for the given variable associations."

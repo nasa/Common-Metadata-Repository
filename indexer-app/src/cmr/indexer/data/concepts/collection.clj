@@ -141,7 +141,7 @@
 
 (defn- associations->gzip-base64-str
   "Returns the gziped base64 string for the given variable,service and tool associations"
-  [variable-associations service-associations tool-associations generic-associations]
+  [variable-associations service-associations tool-associations generic-associations concept-id]
   (when (or (seq variable-associations)
             (seq service-associations)
             (seq tool-associations)
@@ -152,10 +152,9 @@
                             {:variables (mapv :variable-concept-id variable-associations)
                              :services (mapv :service-concept-id service-associations)
                              :tools (mapv :tool-concept-id tool-associations)
-                             ;;the collections selected from :associated-concept-id
-                             ;;are from the rows that're variable/service/tool associations.
-                             :generics (remove #(= :collection (concepts/concept-id->type %))
-                                               (mapv :associated-concept-id generic-associations))})))))
+                             :generics (remove #(= concept-id %)
+                                               (concat (mapv :source-concept-identifier generic-associations)
+                                                       (mapv :associated-concept-id generic-associations)))})))))
 
 (defn- variable-service-tool-associations->elastic-docs
   "Returns the elastic docs for variable, service and tool assocations"
@@ -520,7 +519,7 @@
                                                          :value-lowercase)
             :associations-gzip-b64
             (associations->gzip-base64-str
-             variable-associations service-associations tool-associations generic-associations)
+             variable-associations service-associations tool-associations generic-associations concept-id)
             :usage-relevancy-score 0
             :horizontal-data-resolutions {:value horizontal-data-resolutions
                                           :priority 0}
