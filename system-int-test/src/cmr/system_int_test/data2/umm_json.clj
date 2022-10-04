@@ -17,12 +17,25 @@
 
 (def test-context (lkt/setup-context-for-test))
 
+(defn expand-associations
+  ;; Build association structure which reports back both source and destination
+  ;; of the association. This structure looks like:
+  ;;     #{{:service-concept-id "S1200000008-PROV1"
+  ;;        :associated-concept-id "C1200000007-PROV1"}}})
+  ;; for a service assocation and is iserted into {:association {:service <here>}}
+  [association-type association-list associated-concept-id]
+  (set (map (fn [an-association]
+              {(keyword (str (name association-type) "-concept-id")) an-association
+               :associated-concept-id associated-concept-id})
+            association-list)))
+
 (defn- collection->umm-json-meta
   "Returns the meta section of umm-json format."
   [collection]
   (let [{:keys [user-id format-key revision-id concept-id provider-id deleted
                 has-variables has-formats has-transforms has-spatial-subsetting
-                has-temporal-subsetting variables services tools s3-bucket-and-object-prefix-names]} collection]
+                has-temporal-subsetting variables services tools s3-bucket-and-object-prefix-names]} collection
+        associated-services (set (expand-associations :service services concept-id))]
     (util/remove-nil-keys
      {:concept-type "collection"
       :concept-id concept-id
@@ -41,7 +54,7 @@
       :associations (when (or (seq services) (seq variables) (seq tools))
                       (util/remove-map-keys empty? {:variables (set variables)
                                                     :tools (set tools)
-                                                    :services (set services)}))})))
+                                                    :services associated-services}))})))
 
 (defn- collection->legacy-umm-json
   "Returns the response of a search in legacy UMM JSON format. The UMM JSON search response format was
@@ -101,14 +114,16 @@
   (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
     (is (= 200 (:status search-result)) (pr-str search-result))
     (do
-      (is (= mt/umm-json-results (mt/base-mime-type-of (:content-type search-result))))
-      (is (= version (mt/version-of (:content-type search-result))))
+      (is (= mt/umm-json-results (mt/base-mime-type-of (:content-type search-result)))
+          "Bad Mime-Type")
+      (is (= version (mt/version-of (:content-type search-result))) "Bad Version")
       (is (nil? (util/seqv (umm-json-schema/validate-collection-umm-json-search-result
                             (:body search-result) version)))
           "UMM search result JSON was invalid")
       (is (= (set (map #(collection->umm-json version %) collections))
              (set (map #(update % :meta meta-for-comparison)
-                       (get-in search-result [:results :items]))))))))
+                       (get-in search-result [:results :items]))))
+          "Match of Content failed"))))
 
 (defn- concept->umm-json-meta
   "Returns the meta section of umm-json format."
