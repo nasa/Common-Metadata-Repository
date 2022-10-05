@@ -773,8 +773,8 @@
    :revision-date (m/doc-values m/date-field-mapping)
    :metadata-format (m/doc-values m/string-field-mapping)
    :measurement-identifiers measurement-identifiers-mapping
-   ;; associated collections stored as EDN gzipped and base64 encoded for retrieving purpose
-   :collections-gzip-b64 m/binary-field-mapping})
+   ;; associated concepts stored as EDN gzipped and base64 encoded for retrieving purpose
+   :concepts-gzip-b64 m/binary-field-mapping})
 
 (defmapping service-mapping :service
   "Defines the elasticsearch mapping for storing services. These are the

@@ -83,6 +83,14 @@
             "$ref": "#/definitions/ConceptRevisionType"
           },
           "minItems": 1
+        },
+        "generics": {
+          "description": "The generic concepts associated with the variable.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptRevisionType"
+          },
+          "minItems": 1
         }
       },
       "required": ["collections"]
