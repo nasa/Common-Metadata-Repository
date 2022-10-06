@@ -34,7 +34,7 @@
             :collection
 
             "Tests an empty map"
-            {}
+            nil
             {}
             :collection))
     
@@ -49,6 +49,6 @@
             :collection
 
             "Tests a nil list"
-            {}
+            nil
             {}
             :collection))))

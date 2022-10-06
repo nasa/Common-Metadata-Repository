@@ -23,9 +23,10 @@
 (defn build-association-concept-id-list
   "Builds the association list from the passed in associations."
   [associations for-concept-type]
-  (into {}
-        (map #(build-each-concept-association-list % (get associations %) for-concept-type)
-             (keys associations))))
+  (util/remove-nils-empty-maps-seqs
+   (into {}
+         (map #(build-each-concept-association-list % (get associations %) for-concept-type)
+              (keys associations)))))
 
 (defn build-detail-assoc-struct
   "Builds the detailed association structure."
@@ -54,6 +55,7 @@
   concept type. The associations passed in are in the following structure:
   {<plural concept key> [{<(variable|service|tool) concept-id> <associated concept -id> <data>}]}"
   [associations for-concept-type]
-  (into {}
-        (map #(main-detail-assoc-structure % (get associations %) for-concept-type)
-             (keys associations))))
+  (util/remove-nils-empty-maps-seqs
+   (into {}
+         (map #(main-detail-assoc-structure % (get associations %) for-concept-type)
+              (keys associations)))))

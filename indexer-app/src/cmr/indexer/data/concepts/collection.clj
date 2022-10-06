@@ -151,7 +151,8 @@
                        ;; the collections selected from :associated-concept-id
                        ;; are from the rows that're variable/service/tool associations.
                        (let [g-assocs (remove #(= :collection (concepts/concept-id->type %))
-                                              (mapv :associated-concept-id generic-associations))]
+                                              (concat (mapv :source-concept-identifier generic-associations)
+                                                      (mapv :associated-concept-id generic-associations)))]
                          (assoc-util/generic-assoc-list->assoc-struct g-assocs)))]
       (util/string->gzip-base64
        (pr-str
