@@ -33,4 +33,4 @@
     :orderoptions [\"OO1200000014-PROV1\"]}"
   [generic-assoc-list]
   (generic-assocs->concept-named-assoc-list
-   (group-by :concept-type (map #(allow-group-by-concept-type %) generic-assoc-list))))
+   (group-by :concept-type (map allow-group-by-concept-type generic-assoc-list))))
