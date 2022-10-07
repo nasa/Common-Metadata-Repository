@@ -24,6 +24,7 @@
    :index-services :message-queue-dispatcher
    :index-tools :message-queue-dispatcher
    :index-subscriptions :message-queue-dispatcher
+   :index-generics :message-queue-dispatcher
    :index-data-later-than-date-time :message-queue-dispatcher
    :index-collection :core-async-dispatcher
    :index-system-concepts :core-async-dispatcher
@@ -135,6 +136,15 @@
    (dispatch/index-subscriptions dispatcher context))
   ([context dispatcher provider-id]
    (dispatch/index-subscriptions dispatcher context provider-id)))
+
+(defn index-generics
+  "(Re-)Index the generic documents stored in metadata-db. If a provider-id is passed,
+  only the generic documents for that provider will be indexed. With no provider-id,
+  all providers' generic documents are (re-)indexed."
+  ([context dispatcher concept-type]
+   (dispatch/index-generics dispatcher context concept-type))
+  ([context dispatcher concept-type provider-id]
+   (dispatch/index-generics dispatcher context concept-type provider-id)))
 
 (defn delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"

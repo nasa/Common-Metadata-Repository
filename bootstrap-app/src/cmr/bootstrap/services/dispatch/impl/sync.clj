@@ -75,6 +75,14 @@
   ([this context provider-id]
    (bulk-index/index-provider-concepts (:system context) :subscription provider-id)))
 
+(defn- index-generics
+  "Bulk index the generic documents of type concept-type in CMR. If a provider-id is given, only index the
+  tools for that provider."
+  ([this context concept-type]
+   (bulk-index/index-all-concepts (:system context) (keyword concept-type)))
+  ([this context concept-type provider-id]
+   (bulk-index/index-provider-concepts (:system context) (keyword concept-type) provider-id)))
+
 (defn- delete-concepts-from-index-by-id
   "Bulk delete the concepts given by the concept-ids from the indexes"
   [this context provider-id concept-type concept-ids]
@@ -109,6 +117,7 @@
    :index-services index-services
    :index-tools index-tools
    :index-subscriptions index-subscriptions
+   :index-generics index-generics
    :index-data-later-than-date-time index-data-later-than-date-time
    :index-collection index-collection
    :index-system-concepts index-system-concepts

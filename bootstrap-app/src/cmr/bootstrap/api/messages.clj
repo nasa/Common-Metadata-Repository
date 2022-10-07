@@ -61,6 +61,15 @@
       (format "Processing subscriptions for provider %s for bulk indexing." provider-id)
       "Processing all subscriptions for bulk indexing.")))
 
+(defn index-generics
+  "Message to return when indexing generic documents of type concept-type."
+  [params concept-type provider-id result]
+  (if (api-util/synchronous? params)
+    result
+    (if provider-id
+      (format "Processing generic documents of type %s for provider %s for bulk indexing." concept-type provider-id)
+      (format "Processing all generic documents of type %s for bulk indexing." concept-type))))
+
 (defn data-later-than-date-time
   [params result date-time]
   (if (api-util/synchronous? params)

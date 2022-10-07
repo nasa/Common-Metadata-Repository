@@ -6,6 +6,7 @@
    [cmr.bootstrap.api.bulk-migration :as bulk-migration]
    [cmr.bootstrap.api.fingerprint :as fingerprint]
    [cmr.bootstrap.api.rebalancing :as rebalancing]
+   [cmr.bootstrap.api.util :as util]
    [cmr.bootstrap.api.virtual-products :as virtual-products]
    [cmr.bootstrap.services.health-service :as hs]
    [cmr.common-app.api.health :as common-health]
@@ -17,6 +18,7 @@
    [compojure.core :refer :all]
    [compojure.route :as route]
    [drift.execute :as drift]
+   [inflections.core :as inf]
    [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
@@ -77,7 +79,16 @@
           (bulk-index/index-concepts-by-id request-context body params))
         (DELETE "/concepts" {:keys [request-context body params]}
           (acl/verify-ingest-management-permission request-context :update)
-          (bulk-index/delete-concepts-by-id request-context body params)))
+          (bulk-index/delete-concepts-by-id request-context body params))
+        ;; generating pluralized endpoints for each generic document type & converting to singular in call
+        (context ["/:concept-type" :concept-type 
+                  (re-pattern util/generate-plural-generic-concept-types-reg-ex)] [concept-type]
+          (POST "/" {:keys [request-context params]}
+            (acl/verify-ingest-management-permission request-context :update)
+            (bulk-index/index-generics request-context params (inf/singular concept-type)))
+          (POST "/:provider-id" [provider-id :as {:keys [request-context params]}]
+            (acl/verify-ingest-management-permission request-context :update)
+            (bulk-index/index-generics request-context params (inf/singular concept-type) provider-id))))
       (context "/rebalancing_collections/:concept-id" [concept-id]
         ;; Start rebalancing
         (POST "/start" {:keys [request-context params]}

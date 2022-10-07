@@ -9,6 +9,7 @@
    [cmr.common.mime-types :as mtype]
    [cmr.common.util :as util]
    [cmr.indexer.data.concepts.association-util :as assoc-util]
+   [cmr.indexer.data.concept-parser :as c-parser]
    [cmr.indexer.data.concepts.generic-util :as gen-util]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.elasticsearch :as esearch]
@@ -74,10 +75,12 @@
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id user-id
                 revision-date extra-fields native-id]} concept
+        parsed-concept (if (= true (:deleted concept))
+                         (c-parser/parse-concept context concept)
+                         parsed-concept)
         generic-associations (esearch/parse-non-tombstone-associations
                               context
                               (meta-db/get-generic-associations-for-concept context concept))
-        long-name (:LongName parsed-concept)
         gen-name (util/safe-lowercase (get-in parsed-concept [:MetadataSpecification :Name]))
         gen-ver (get-in parsed-concept [:MetadataSpecification :Version])
         index-data-file (format "schemas/%s/v%s/index.json" gen-name gen-ver)
@@ -111,12 +114,7 @@
              (fn [data, config] (into data (field->index config parsed-concept)))
              common-doc
              configs)]
-      (if deleted
-        (assoc common-doc :metadata-format (name (mtype/format-key (:mime-type extra-fields)))
-               :gen-type-lowercase (util/safe-lowercase gen-name)
-               :long-name long-name
-               :long-name-lowercase (util/safe-lowercase long-name))
-        doc)))
+    doc))
 
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
   (defmethod esearch/parsed-concept->elastic-doc concept-type
