@@ -891,8 +891,8 @@ __Example__
 
 The JSON response contains all the fields in the ATOM response, plus the the following fields:
 
-* associations - a map of the concept ids of concepts that can be associated with the collection.
-* association-details - a map of the concept ids, optional revision ids, and optional data of concepts that can be associated with the collection.
+* associations - a map of the concept ids of concepts that are associated with the collection.
+* association-details - a map of the concept ids, optional revision ids, and optional data of concepts that are associated with the collection.
 * platforms - a list of platform short names of the collection.
 * service_features - a map of service features for OPeNDAP, ESI and Harmony services.
 
@@ -4311,8 +4311,8 @@ The JSON response includes the following fields.
   * native_id
   * name
   * long_name
-  * associations - a map of the concept ids of concepts that can be associated with the service.
-  * association-details - a map of the concept ids, optional revision ids, and optional data of concepts that can be associated with the service.
+  * associations - a map of the concept ids of concepts that are associated with the service.
+  * association-details - a map of the concept ids, optional revision ids, and optional data of concepts that are associated with the service.
 
 __Example__
 
