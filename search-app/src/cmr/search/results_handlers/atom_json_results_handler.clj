@@ -10,6 +10,7 @@
    [cmr.common.util :as util]
    [cmr.search.results-handlers.atom-results-handler :as atom]
    [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
+   [cmr.search.results-handlers.results-handler-util :as rs-util]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.url-helper :as url]))
@@ -91,7 +92,8 @@
                        :highlighted-summary-snippets highlighted-summary-snippets
                        :tags tags
                        :service_features service-features
-                       :associations associations}
+                       :associations (rs-util/build-association-concept-id-list associations :collection)
+                       :association-details (rs-util/build-association-details associations :collection)}
                       shape-result)]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))

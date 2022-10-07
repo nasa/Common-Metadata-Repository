@@ -4,8 +4,8 @@
             [clojure.string :as str]
             [cmr.common.util :as util]
             [cmr.common.generics :as common-generic]
-            [cmr.common.services.errors :as errors]))
-
+            [cmr.common.services.errors :as errors]
+            [inflections.core :as inf]))
 
 (def generic-concept-types->concept-prefix
   "Gets an array of generic concept types.
@@ -70,6 +70,11 @@
 (def concept-type->concept-prefix
   "Maps a concept type to the concept id prefix"
   (cset/map-invert concept-prefix->concept-type))
+
+(defn pluralize-concept-type
+  "Pluralizes the passed in concept keyword and returns it."
+  [concept-key]
+  (keyword (inf/plural (name concept-key))))
 
 (def humanizer-native-id
   "The native id of the system level humanizer. There can only be one humanizer in CMR.

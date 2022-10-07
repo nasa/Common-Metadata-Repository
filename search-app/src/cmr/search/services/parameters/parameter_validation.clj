@@ -110,6 +110,7 @@
     :always-case-sensitive #{}
     :disallow-pattern #{}}))
 
+;; TODO: Generic work: multiple values need to be pulled from config files
 (doseq [concept-type (cc/get-generic-concept-types-array)]
   (defmethod cpv/params-config concept-type
     [_]
@@ -282,7 +283,7 @@
     [_]
     {:name cpv/string-param-options
      :native-id cpv/string-param-options
-     :provider cpv/string-param-options 
+     :provider cpv/string-param-options
      :id cpv/string-param-options}))
 
 (defmethod cpv/valid-query-level-params :collection
@@ -944,7 +945,7 @@
     :autocomplete cpv/common-validations
     :subscription (concat cpv/common-validations
                           [boolean-value-validation])}
-   (zipmap (cc/get-generic-concept-types-array) 
+   (zipmap (cc/get-generic-concept-types-array)
            (repeat (concat cpv/common-validations
                            [boolean-value-validation])))))
 

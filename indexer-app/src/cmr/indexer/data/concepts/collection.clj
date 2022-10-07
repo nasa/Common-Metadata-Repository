@@ -17,6 +17,7 @@
    [cmr.elastic-utils.index-util :as index-util]
    [cmr.indexer.config :as indexer-config]
    [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
+   [cmr.indexer.data.concepts.association-util :as assoc-util]
    [cmr.indexer.data.concepts.attribute :as attrib]
    [cmr.indexer.data.concepts.collection.collection-util :as collection-util]
    [cmr.indexer.data.concepts.collection.community-usage-metrics :as metrics]
@@ -146,15 +147,19 @@
             (seq service-associations)
             (seq tool-associations)
             (seq generic-associations))
-    (util/string->gzip-base64
-     (pr-str
-      (util/remove-map-keys empty?
-                            {:variables (mapv :variable-concept-id variable-associations)
-                             :services (mapv :service-concept-id service-associations)
-                             :tools (mapv :tool-concept-id tool-associations)
-                             :generics (remove #(= concept-id %)
-                                               (concat (mapv :source-concept-identifier generic-associations)
-                                                       (mapv :associated-concept-id generic-associations)))})))))
+    (let [gen-assocs (when (seq generic-associations)
+                       (let [g-assocs (remove #(= concept-id %)
+                                              (concat (mapv :source-concept-identifier generic-associations)
+                                                      (mapv :associated-concept-id generic-associations)))]
+                         (assoc-util/generic-assoc-list->assoc-struct g-assocs)))]
+      (util/string->gzip-base64
+       (pr-str
+        (util/remove-map-keys empty?
+                              (merge
+                               {:variables variable-associations
+                                :services service-associations
+                                :tools tool-associations}
+                               gen-assocs)))))))
 
 (defn- variable-service-tool-associations->elastic-docs
   "Returns the elastic docs for variable, service and tool assocations"

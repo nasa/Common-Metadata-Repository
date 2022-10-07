@@ -891,7 +891,8 @@ __Example__
 
 The JSON response contains all the fields in the ATOM response, plus the the following fields:
 
-* associations - a map of the concept ids of variables and services that are associated with the collection.
+* associations - a map of the concept ids of concepts that are associated with the collection.
+* association-details - a map of the concept ids, optional revision ids, and optional data of concepts that are associated with the collection.
 * platforms - a list of platform short names of the collection.
 * service_features - a map of service features for OPeNDAP, ESI and Harmony services.
 
@@ -960,8 +961,19 @@ __Example__
       },
       "associations": {
         "variables": ["V1200000007-PROV1"],
-        "services": ["S1200000008-PROV1", "S1200000009-PROV1", "S1200000010-PROV1"],
-        "tools": ["TL1200000011-PROV1", "TL1200000012-PROV1", "TL1200000013-PROV1"]
+        "services": ["S1200000008-PROV1", "S1200000009-PROV1","S1200000010-PROV1"],
+        "tools": ["TL1200000011-PROV1", "TL1200000012-PROV1","TL1200000013-PROV1"]
+      },
+      "association-details": {
+        "variables": [{"concept-id": "V1200000007-PROV1"}],
+        "services": [{"concept-id": "S1200000008-PROV1",
+                      "data": {"formatting-type": "zarr",
+                               "regridding-type": {"xyz": "zyx"}}},
+                     {"concept-id": "S1200000009-PROV1"}, 
+                     {"concept-id": "S1200000010-PROV1"}],
+        "tools": [{"concept-id": "TL1200000011-PROV1"}, 
+                  {"concept-id": "TL1200000012-PROV1"},
+                  {"concept-id": "TL1200000013-PROV1"}]
       }
     }]
   }
@@ -4299,6 +4311,8 @@ The JSON response includes the following fields.
   * native_id
   * name
   * long_name
+  * associations - a map of the concept ids of concepts that are associated with the service.
+  * association-details - a map of the concept ids, optional revision ids, and optional data of concepts that are associated with the service.
 
 __Example__
 
@@ -4339,7 +4353,17 @@ Content-Length: 944
     "provider_id" : "PROV1",
     "native_id" : "svc2",
     "name" : "Service2",
-    "long_name" : "OPeNDAP Service for AIRS Level-3 retrieval products"
+    "long_name" : "OPeNDAP Service for AIRS Level-3 retrieval products",
+    "associations": {
+      "collections": ["C1200000007-PROV1"],
+      "tools": ["TL1200000011-PROV1"]
+    },
+    "association-details": {
+      "collections": [{"concept-id": "C1200000007-PROV1",
+                       "data": {"formatting-type": "zarr",
+                                "regridding-type": {"xyz": "zyx"}}}],
+      "tools": [{"concept-id": "TL1200000011-PROV1"}]
+    }
   } ]
 }
 ```

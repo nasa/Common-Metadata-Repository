@@ -75,9 +75,9 @@
                         :native_id native-id
                         :name name
                         :id id
-                        :generic-associations (some-> associations-gzip-b64
-                                                      util/gzip-base64->string
-                                                      edn/read-string)})]
+                        :associations (some-> associations-gzip-b64
+                                              util/gzip-base64->string
+                                              edn/read-string)})]
       (if deleted
         (assoc result-item :deleted deleted)
         result-item))))

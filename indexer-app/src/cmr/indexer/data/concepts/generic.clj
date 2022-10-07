@@ -8,6 +8,7 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.mime-types :as mtype]
    [cmr.common.util :as util]
+   [cmr.indexer.data.concepts.association-util :as assoc-util]
    [cmr.indexer.data.concepts.generic-util :as gen-util]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.elasticsearch :as esearch]
@@ -18,7 +19,7 @@
   [generic-associations]
   (when (seq generic-associations)
     (util/string->gzip-base64
-     (pr-str generic-associations))))
+     (pr-str (assoc-util/generic-assoc-list->assoc-struct generic-associations)))))
 
 (defmulti field->index
   "Functions which convert a part of metadata to a name-value which can be added
