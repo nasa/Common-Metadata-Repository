@@ -13,23 +13,23 @@
   [concept-type query]
   (concat
    results-helper/meta-fields
-   ["collections-gzip-b64"]))
+   ["concepts-gzip-b64"]))
 
-(defn- elastic-result->associated-collections
-  "Returns the associated collections of the elastic result"
+(defn- elastic-result->associated-concepts
+  "Returns the associated concepts of the elastic result"
   [elastic-result]
-  (let [collections-gzip-b64 (get-in elastic-result [:_source :collections-gzip-b64])]
-    (when collections-gzip-b64
+  (let [concepts-gzip-b64 (get-in elastic-result [:_source :concepts-gzip-b64])]
+    (when concepts-gzip-b64
       (edn/read-string
-       (util/gzip-base64->string collections-gzip-b64)))))
+       (util/gzip-base64->string concepts-gzip-b64)))))
 
 (defmethod results-helper/elastic-result+metadata->umm-json-item :variable
   [concept-type elastic-result metadata]
   (let [base-result-item {:meta (results-helper/elastic-result->meta :variable elastic-result)
                           :umm (json/decode metadata)}
-        associated-colls (elastic-result->associated-collections elastic-result)]
-    (if associated-colls
-      (assoc base-result-item :associations {:collections associated-colls})
+        associated-concepts (elastic-result->associated-concepts elastic-result)]
+    (if associated-concepts
+      (assoc base-result-item :associations associated-concepts)
       base-result-item)))
 
 (defmethod elastic-results/elastic-results->query-results [:variable :umm-json-results]

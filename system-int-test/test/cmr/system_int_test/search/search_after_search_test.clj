@@ -170,6 +170,14 @@
           (is (not (nil? search-after)))
           (is (data2-core/refs-match? [gran1 gran2] result)))
 
+        (testing "search with invalid search-after value returns 400 error"
+          (let [{:keys [status errors]} (search/find-refs :granule
+                                                          params
+                                                          {:headers {routes/SEARCH_AFTER_HEADER "[0, \"xxx\"]"}})]
+            (is (= 400 status))
+            (is (= ["The search failed with error: [{:type \"illegal_argument_exception\", :reason \"search_after has 2 value(s) but sort has 3.\"}]. Please double check your search_after header."]
+                   errors))))
+
         (testing "Subsequent searches gets the next page of results"
           (let [result (search/find-refs :granule
                                          params
@@ -227,4 +235,25 @@
       "scroll is not allowed with search-after"
       {:scroll true}
       400
-      "scroll is not allowed with search-after")))
+      "scroll is not allowed with search-after"))
+
+  (testing "invalid search-after header value"
+    (are3 [value err-msg]
+          (let [{:keys [status errors]} (search/find-refs :granule
+                                                          {:provider "PROV1"}
+                                                          {:allow-failure? true
+                                                           :headers {routes/SEARCH_AFTER_HEADER value}})]
+            (is (= 400 status))
+            (is (= [err-msg] errors)))
+
+      "invaid search-after value, string"
+      12345
+      "search-after header value is invalid, must be in the form of a JSON array."
+
+      "invaid search-after value, string with quotes"
+      "\"abc \""
+      "The search failed with error: [{:type \"parsing_exception\", :reason \"Unknown key for a VALUE_STRING in [search_after].\", :line 1, :col 17}]. Please double check your search_after header."
+
+      "invaid search-after value, missing comma"
+      "[0 \"abc\"]"
+      "search-after header value is invalid, must be in the form of a JSON array.")))

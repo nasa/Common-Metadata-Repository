@@ -10,7 +10,8 @@
    [cmr.common-app.config :as common-app-config]
    [cmr.common-app.services.search :as search]
    [cmr.common.cache :as cache]
-   [cmr.common.config :refer [defconfig]]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.generics :as common-generic]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as svc-errors]
@@ -20,7 +21,8 @@
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
    [cmr.search.validators.all-granule-validation :as all-gran-validation]
-   [compojure.core :refer :all]))
+   [compojure.core :refer :all]
+   [inflections.core :as inf]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Constants and Utility Functions
@@ -55,6 +57,17 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Support Functions
+
+(defn- validate-search-after-value
+  "Validate the search-after value is in the form of a JSON array; otherwise throw 400 error"
+  [search-after]
+  (try
+    (seq (json/parse-string search-after))
+    (catch Exception e
+      (error (format "search-after header value is invalid, error: %s" (.getMessage e)))
+      (svc-errors/throw-service-error
+       :bad-request
+       "search-after header value is invalid, must be in the form of a JSON array."))))
 
 (defn- validate-search-after-params
   "Validate search-after and params, throws service error if failed."
@@ -257,6 +270,7 @@
   [ctx path-w-extension params headers body]
   (let [content-type-header (get headers (string/lower-case common-routes/CONTENT_TYPE_HEADER))
         search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
+        _ (validate-search-after-value search-after)
         ctx (assoc ctx :search-after (json/decode search-after))]
     (cond
       (= mt/json content-type-header)
@@ -366,13 +380,28 @@
   ;; no errors, return 204
   {:status 204})
 
+(defn format-regex
+  "Adds the necessary string to each concept for a regex"
+  [concept] (str "(?" concept ")"))
+
+(def get-generics
+  "Retrieve the generics which were dynamically loaded"
+  (mapv keyword (mapv inf/plural(common-generic/latest-approved-document-types))))
+
+(def join-generic-concepts
+  "Combines the generic concepts to be a single string"
+  (string/join "|" (mapv format-regex get-generics)))
+
+(def routes-regex
+  "Appends the generic concepts dynamically loaded to the non-generic concepts to match possible routes general form: (?:(?:granules)|...(?:dataqualitysummaries)"
+  (re-pattern (str "(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services)|" join-generic-concepts ")(?:\\..+)?")))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions
 
 (def search-routes
   "Routes for /search/granules, /search/collections, etc."
-  ;; TODO: Generic work: Think about putting this into a config file and creating the reg-ex from there.
-  (context ["/:path-w-extension" :path-w-extension #"(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services)|(?:dataqualitysummaries)|(?:orderoptions)|(?:serviceoptions)|(?:serviceentries)|(?:grids))(?:\..+)?"] [path-w-extension]
+  (context ["/:path-w-extension" :path-w-extension routes-regex] [path-w-extension]
     (OPTIONS "/" req (common-routes/options-response))
     (GET "/"
       {params :params headers :headers ctx :request-context query-string :query-string}

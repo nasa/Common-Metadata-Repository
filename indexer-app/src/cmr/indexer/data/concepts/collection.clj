@@ -142,15 +142,13 @@
 
 (defn- associations->gzip-base64-str
   "Returns the gziped base64 string for the given variable,service and tool associations"
-  [variable-associations service-associations tool-associations generic-associations]
+  [variable-associations service-associations tool-associations generic-associations concept-id]
   (when (or (seq variable-associations)
             (seq service-associations)
             (seq tool-associations)
             (seq generic-associations))
     (let [gen-assocs (when (seq generic-associations)
-                       ;; the collections selected from :associated-concept-id
-                       ;; are from the rows that're variable/service/tool associations.
-                       (let [g-assocs (remove #(= :collection (concepts/concept-id->type %))
+                       (let [g-assocs (remove #(= concept-id %)
                                               (concat (mapv :source-concept-identifier generic-associations)
                                                       (mapv :associated-concept-id generic-associations)))]
                          (assoc-util/generic-assoc-list->assoc-struct g-assocs)))]
@@ -158,9 +156,9 @@
        (pr-str
         (util/remove-map-keys empty?
                               (merge
-                               {:variables variable-associations ;(mapv :variable-concept-id variable-associations)
-                                :services service-associations ;(mapv :service-concept-id service-associations)
-                                :tools tool-associations} ;(mapv :tool-concept-id tool-associations)} 
+                               {:variables variable-associations
+                                :services service-associations
+                                :tools tool-associations}
                                gen-assocs)))))))
 
 (defn- variable-service-tool-associations->elastic-docs
@@ -526,7 +524,7 @@
                                                          :value-lowercase)
             :associations-gzip-b64
             (associations->gzip-base64-str
-             variable-associations service-associations tool-associations generic-associations)
+             variable-associations service-associations tool-associations generic-associations concept-id)
             :usage-relevancy-score 0
             :horizontal-data-resolutions {:value horizontal-data-resolutions
                                           :priority 0}

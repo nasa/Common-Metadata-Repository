@@ -1060,3 +1060,10 @@
     (if (or (empty? x) (last x))
       x
       (recur (drop-last x)))))
+
+(defn safe-read-string
+  "If s is a string, call read-string, otherwise returns s."
+  [s]
+  (if (string? s)
+    (read-string s)
+    s))

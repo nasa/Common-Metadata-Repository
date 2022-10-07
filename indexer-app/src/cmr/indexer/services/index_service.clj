@@ -340,8 +340,10 @@
 
 (defmethod get-elastic-version :variable
   [context concept]
-  (let [variable-associations (meta-db/get-associations-for-variable context concept)]
-    (get-elastic-version-with-associations context concept {:variable-associations variable-associations})))
+  (let [variable-associations (meta-db/get-associations-for-variable context concept)
+        generic-associations (meta-db/get-generic-associations-for-concept context concept)]
+    (get-elastic-version-with-associations context concept {:variable-associations variable-associations
+                                                            :generic-associations generic-associations})))
 
 (defmethod get-elastic-version :service
   [context concept]
