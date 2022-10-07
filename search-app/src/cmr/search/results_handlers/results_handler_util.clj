@@ -31,7 +31,7 @@
 (defn build-detail-assoc-struct
   "Builds the detailed association structure."
   [association for-concept-type]
-  (if (= java.lang.String (type association))
+  (if (string? association)
     {:concept-id association}
     (if (= :collection for-concept-type)
       (-> association
