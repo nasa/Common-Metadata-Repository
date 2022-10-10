@@ -48,6 +48,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
         * [PUT - Create or Update a subscription.](#update-subscription)
         * [DELETE - Delete a subscription.](#delete-subscription)
         * [Subscription Access Control](#subscription-access-control)
+%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%
 * Translations
     * /translate/collection
         * [POST - Translate collection metadata.](#translate-collection)
@@ -887,6 +888,7 @@ Ingest permissions for granule subscriptions are granted through the provider vi
 
 For lack of a better ACL, ingest permissions for collection subscription are granted through the SYSTEM OBJECT TAG_GROUP ACL update permission.
 
+%GENERIC-INGEST-DOCS%
 ## <a name="translate-collection"></a> Translate Collection Metadata
 
 Collection metadata can be translated between metadata standards using the translate API in Ingest. This API also supports the UMM JSON format which represents UMM as JSON. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header.

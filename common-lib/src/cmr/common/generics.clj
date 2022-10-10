@@ -4,6 +4,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
+   [clojure.string :as string]
    [cmr.common.config :as cfg]
    [cmr.common.log :as log :refer (error)]
    [cmr.schema-validation.json-schema :as js-validater]))
@@ -117,3 +118,30 @@
                        (get (json/parse-string index-raw true) :SubConceptType "X")))))
           {}
           (latest-approved-documents)))
+
+(defn read-generic-doc-file
+  "Return the specific schema's documentation files given the schema keyword name and version number.
+   If the file cannot be read return an empty string which will have no impact on the API document.
+   Parameters:
+   * file-name: [ingest | search]
+   * generic-keyword: [:grid | ...]
+   * generic-version: 0.0.1
+   Returns: string"
+  [file-name generic-keyword generic-version]
+  (try
+    (-> "schemas/%s/v%s/%s.md"
+        (format (name generic-keyword) generic-version (name file-name))
+        (io/resource)
+        (slurp))
+    (catch Exception e (str ""))))
+
+(defn all-generic-docs
+  "Parse over all of the generic documents and return their combined markdown as a string"
+  [file-name]
+(string/join (seq (for [[k,v] (latest-approved-documents)] (read-generic-doc-file file-name k (str v))))))
+
+;; (defn create-generic-table-of-contents
+;;   "From the markdown file string of either the ingest or search, dyanamically create the table of contents"
+;;   [generic-markdown]
+;;   (string/replace (re-seq #"\#.*\n" generic-markdown) #"" "")
+;;   )

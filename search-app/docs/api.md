@@ -200,6 +200,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
     * [Retrieving All Revisions of a Subscription](#retrieving-all-revisions-of-a-subscription)
     * [Sorting Subscription Results](#sorting-subscription-results)
     * [Subscription Access Control](#subscription-access-control)
+%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%
   * [Community Usage Metrics](#community-usage-metrics)
     * [Updating Community Usage Metrics](#updating-community-usage-metrics)
     * [Retrieving Community Usage Metrics](#retrieving-community-usage-metrics)
@@ -5225,6 +5226,9 @@ __Sample response__
 #### <a name="subscription-access-control"></a> Subscription Access Control
 
 Search permission for subscription is granted through the provider via the SUBSCRIPTION_MANAGEMENT ACL. In order to be able to search for a subscription for a given provider, read permission has to be granted to the user through SUBSCRIPTION_MANAGEMENT ACL for the provider.
+
+
+%GENERIC-SEARCH-DOCS%
 
 ### <a name="community-usage-metrics"></a> Community Usage Metrics
 
