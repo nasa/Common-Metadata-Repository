@@ -15,10 +15,12 @@
                            (mapv :service-concept-id associations)))
                      (seq (util/remove-nils-empty-maps-seqs
                            (mapv :tool-concept-id associations)))
-                     associations)}
+                     (seq (util/remove-nils-empty-maps-seqs
+                           (mapv :concept-id associations))))}
     {concept-key (or (seq (util/remove-nils-empty-maps-seqs
                            (mapv :associated-concept-id associations)))
-                     associations)}))
+                     (seq (util/remove-nils-empty-maps-seqs
+                           (mapv :concept-id associations))))}))
 
 (defn build-association-concept-id-list
   "Builds the association list from the passed in associations."

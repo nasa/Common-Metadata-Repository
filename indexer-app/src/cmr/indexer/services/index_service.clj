@@ -442,7 +442,8 @@
                 service-associations (get-service-associations context concept)
                 tool-associations (get-tool-associations context concept)
                 generic-associations (meta-db/get-generic-associations-for-concept context concept)
-                collection-associations (meta-db/get-associations-for-service context concept)
+                collection-associations (concat (meta-db/get-associations-for-service context concept)
+                                                (meta-db/get-associations-for-tool context concept))
                 associations {:tag-associations tag-associations
                               :variable-associations variable-associations
                               :service-associations service-associations
@@ -575,7 +576,10 @@
 
 (defmethod index-concept :tool-association
   [context concept parsed-concept options]
-  (index-associated-collection context concept options))
+  (index-associated-collection context concept options)
+  (index-associated-concept context
+                            (get-in concept [:extra-fields :tool-concept-id])
+                            options))
 
 (defmethod index-concept :generic-association
   [context concept parsed-concept options]
