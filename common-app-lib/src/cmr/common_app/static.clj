@@ -158,17 +158,6 @@
 ;;; Utility Functions & Constants
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; (defn get-generic-md
-;;   "Retrives all of the markdown files for the generics in the system"
-;;   [file-name]
-;;   (gconfig/all-generic-docs file-name)
-;;   )
-
-;; (defn get-search-md-files
-;;   "retrives all of the markdown files for the generics in the system"
-;;   []
-;;   (gconfig/all-generic-docs "search"))
-
 (defn md->html
   "Given markdown and an optional markdown processor, converts it to HTML.
   If a processor is not provided, one will be created."
@@ -182,48 +171,12 @@
   ([processor markdown]
    (.markdownToHtml processor markdown)))
 
-;; (defn read-ingest-markdown
-;;   "Reads the ingest mark-down for a given concept"
-;;   []
-;;   (->  (get-generic-md "ingest")
-;;        (md->html)
-;;        (selmer/render {})))
-
-;; (defn read-search-markdown
-;;   "Reads the search mark-down for a given concept"
-;;   []
-;;   (->  (get-generic-md "search")
-;;        (md->html)
-;;        (selmer/render {})))
-
-
-;; (defn read-search-table-of-contents-markdown
-;;   "Reads the search's table of contents mark-down for a given concept"
-;;   []
-;;   (->  (get-generic-md "search-table-contents")
-;;        (md->html)
-;;        (selmer/render {})))
-
-;; (defn read-ingest-table-of-contents-markdown
-;;   "Reads the ingest mark-down for a given concept"
-;;   []
-;;   (->  (get-generic-md "ingest-table-contents")
-;;        (md->html)
-;;        (selmer/render {})))
-
-
 (defn read-generic-markdown
   "Reads the file-name mark-down for all concepts"
   [file-name]
   (->  (gconfig/all-generic-docs file-name)
        (md->html)
        (selmer/render {})))
-
-;; (defn read-generic-markdown-as-markdown
-;;   "Reads the file-name mark-down for all concepts"
-;;   [file-name]
-;;   (->  (gconfig/all-generic-docs file-name)
-;;        (selmer/render {})))
 
 (def ^:private resource-root "public/site/")
 
@@ -286,12 +239,6 @@
               :headers {"Content-Type" "text/html; charset=utf-8"}
               :body (-> resource
                         slurp
-                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (read-generic-markdown "ingest-table-contents"))
-                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" "</ul></li></ul> <li>Grids\n    <ul>\n      <li>/providers/&lt;provider-id&gt;/grids/&lt;native-id&gt;\n        <ul>\n          <li><a href=\"#create-update-grid\">PUT - Create or update a grid.</a></li>\n          <li><a href=\"#delete-grid\">DELETE - Delete a Grid.</a></li>")
-                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" "</ul></li><li><a href=\"#grid\">Grid</a>\n    <ul>\n      <li><a href=\"#searching-for-grids\">Searching for Grids</a>\n        <ul>\n          <li><a href=\"#grid-search-params\">Grid Search Parameters</a></li>\n          <li><a href=\"#grid-search-response\">Grid Search Response</a></li>\n        </ul>\n      </li>\n      <li><a href=\"#retrieving-all-revisions-of-a-grid\">Retrieving All Revisions of a Grid</a></li>")
-                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (string/replace (string/replace-first (read-generic-markdown "ingest-table-contents") #"<ul>\n" "</ul></li></ul>") #"\n\s+</ul>\n\s+</li>\n\s+</ul>\n\s+</li>\n</ul>" ""))
-                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (string/replace (string/replace-first (read-generic-markdown "search-table-contents") #"<ul>\n" "</ul></li>") #"\n    </ul>\n  </li>\n</ul>" ""))
-                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (string/replace (string/replace-first (read-generic-markdown "search-table-contents") #"<ul>\n" "</ul></li>") #"\n\s+</ul>\n\s+</li>\n</ul>" ""))
                         (string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/all-generic-table-of-contents gconfig/search-table-of-contents-template))
                         (string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (gconfig/all-generic-table-of-contents gconfig/ingest-table-of-contents-template))
                         (string/replace "%GENERIC-SEARCH-DOCS%" (read-generic-markdown "search"))

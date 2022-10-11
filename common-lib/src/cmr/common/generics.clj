@@ -120,16 +120,9 @@
           {}
           (latest-approved-documents)))
 
-;(def ingest-table-of-contents-template "</ul></li></ul> <li>%uc-plural-generic%\n<ul>\n<li>/providers/&lt;provider-id&gt;/%plural-generic%/&lt;native-id&gt;\n<ul>\n<li><a href=\"#create-update-%generic%\">PUT - Create or update a %generic%.</a></li>\n<li><a href=\"#delete-%generic%\">DELETE - Delete a %uc-generic%.</a></li>")
-
-;(def search-table-of-contents-template "</ul></li><li><a href=\"#%generic%\">%uc-generic%</a>\n<ul>\n<li><a href=\"#searching-for-%plural-generic%\">Searching for %uc-plural-generic%</a>\n<ul>\n<li><a href=\"#%generic%-search-params\">%uc-generic% Search Parameters</a></li>\n<li><a href=\"#%generic%-search-response\">%uc-generic% Search Response</a></li>\n</ul>\n</li>\n<li><a href=\"#retrieving-all-revisions-of-a-%generic%\">Retrieving All Revisions of a %uc-generic%</a></li>")
-
-
+;HTML templates for generic table of content items
 (def ingest-table-of-contents-template (slurp (io/resource "ingest-table-of-contents-template.txt")))
 (def search-table-of-contents-template (slurp (io/resource "search-table-of-contents-template.txt")))
-
-
-;; (def search-table-of-contents-template (slurp (io/resource "search-table-of-contents-template.txt")))
 
 (defn read-generic-doc-file
   "Return the specific schema's documentation files given the schema keyword name and version number.
@@ -154,13 +147,6 @@
   Returns: string"
   [file-name]
   (string/join (seq (for [[k,v] (latest-approved-documents)] (read-generic-doc-file file-name k (str v))))))
-
-;; (defn create-generic-table-of-contents
-;;   "From the markdown file string of either the ingest or search, dyanamically create the table of contents"
-;;   [ generic-markdown]
-;;   (re-seq #"\#\s+<a.*\n" generic-markdown))
-
-;HTML templates for generic table of content items
 
 (defn get-generics-with-documenation
   "Retrieve the names of the generics that have documentation files. Re-seq returns both the full match and the group, so parse out all of the odd numbered indicies

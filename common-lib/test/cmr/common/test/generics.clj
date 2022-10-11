@@ -18,7 +18,6 @@
 (deftest all-generic-docs-test
   (testing "This string is ensuring that all the generics have their text concatanated together"
     (is (= true (string/includes? (gconfig/all-generic-docs "ingest") "Grid")))
-    ;(is (= true (string/includes? (gconfig/all-generic-docs "ingest") "dataquality")))
     ))
 
 (deftest get-generics-with-documenation-test
@@ -36,6 +35,4 @@
 ;As more generic documentation items are added we can add more concepts to the tests
 (deftest all-generic-table-of-contents-test
   (testing "Ensure that the combined html is returned that will be passed to the api docuement including all the generic's which have documentation are loaded into the system")
-  (is (= true (string/includes? (gconfig/all-generic-table-of-contents gconfig/ingest-table-of-contents-template) "grids")))
-  ;(is (= true (string/includes? (gconfig/all-generic-table-of-contents gconfig/ingest-table-of-contents-template) "serviceentries")))
-  )
+  (is (= true (string/includes? (gconfig/all-generic-table-of-contents gconfig/ingest-table-of-contents-template) "grids"))))
