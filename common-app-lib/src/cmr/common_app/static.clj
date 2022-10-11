@@ -219,11 +219,11 @@
        (md->html)
        (selmer/render {})))
 
-(defn read-generic-markdown-as-markdown
-  "Reads the file-name mark-down for all concepts"
-  [file-name]
-  (->  (gconfig/all-generic-docs file-name)
-       (selmer/render {})))
+;; (defn read-generic-markdown-as-markdown
+;;   "Reads the file-name mark-down for all concepts"
+;;   [file-name]
+;;   (->  (gconfig/all-generic-docs file-name)
+;;        (selmer/render {})))
 
 (def ^:private resource-root "public/site/")
 
@@ -289,9 +289,11 @@
                         ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (read-generic-markdown "ingest-table-contents"))
                         ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" "</ul></li></ul> <li>Grids\n    <ul>\n      <li>/providers/&lt;provider-id&gt;/grids/&lt;native-id&gt;\n        <ul>\n          <li><a href=\"#create-update-grid\">PUT - Create or update a grid.</a></li>\n          <li><a href=\"#delete-grid\">DELETE - Delete a Grid.</a></li>")
                         ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" "</ul></li><li><a href=\"#grid\">Grid</a>\n    <ul>\n      <li><a href=\"#searching-for-grids\">Searching for Grids</a>\n        <ul>\n          <li><a href=\"#grid-search-params\">Grid Search Parameters</a></li>\n          <li><a href=\"#grid-search-response\">Grid Search Response</a></li>\n        </ul>\n      </li>\n      <li><a href=\"#retrieving-all-revisions-of-a-grid\">Retrieving All Revisions of a Grid</a></li>")
-                        (string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (string/replace (string/replace-first (read-generic-markdown "ingest-table-contents") #"<ul>\n" "</ul></li></ul>") #"\n\s+</ul>\n\s+</li>\n\s+</ul>\n\s+</li>\n</ul>" ""))
+                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (string/replace (string/replace-first (read-generic-markdown "ingest-table-contents") #"<ul>\n" "</ul></li></ul>") #"\n\s+</ul>\n\s+</li>\n\s+</ul>\n\s+</li>\n</ul>" ""))
                         ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (string/replace (string/replace-first (read-generic-markdown "search-table-contents") #"<ul>\n" "</ul></li>") #"\n    </ul>\n  </li>\n</ul>" ""))
-                        (string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (string/replace (string/replace-first (read-generic-markdown "search-table-contents") #"<ul>\n" "</ul></li>") #"\n\s+</ul>\n\s+</li>\n</ul>" ""))
+                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (string/replace (string/replace-first (read-generic-markdown "search-table-contents") #"<ul>\n" "</ul></li>") #"\n\s+</ul>\n\s+</li>\n</ul>" ""))
+                        (string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/all-generic-table-of-contents gconfig/search-table-of-contents-template))
+                        (string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (gconfig/all-generic-table-of-contents gconfig/ingest-table-of-contents-template))
                         (string/replace "%GENERIC-SEARCH-DOCS%" (read-generic-markdown "search"))
                         (string/replace "%GENERIC-INGEST-DOCS%" (read-generic-markdown "ingest"))
                         (string/replace "%CMR-ENDPOINT%" cmr-root)

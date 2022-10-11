@@ -36,20 +36,8 @@ These parameters will match fields within a grid. They are case insensitive by d
 ````
 curl -g "%CMR-ENDPOINT%/grids?concept_id=GRD1200442373-DEMO_PROV"
 ````
-//TODO: I don't know how which keywords are being used here
-* keyword (free text)
-  * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
 
-The following fields are indexed for keyword (free text) search:
-
-* name
-* long name
-* provider
-* concept-id
-* Associated collection concept ids
-* Associated collection concept ids
-
-##### <a name="grid-search-response"></a> Variable Search Response
+##### <a name="grid-search-response"></a> Grid Search Response
 
 ##### XML Reference
 The XML reference response format is used for returning references to search results. It consists of the following fields:
@@ -64,7 +52,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 
 |    Field    |                                                   Description                                                   |
 | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| name        | the value of the Name field in variable metadata.                                                               |
+| name        | the value of the Name field in grid metadata.                                                               |
 | id          | the CMR identifier for the result                                                                               |
 | location    | the URL at which the full metadata for the result can be retrieved                                              |
 | revision-id | the internal CMR version number for the result                                                                  |
@@ -84,7 +72,7 @@ Content-Length: 393
     <took>13</took>
     <references>
         <reference>
-            <name>Grid-amazing-v1</name>
+            <name>Grid-name-v1</name>
             <id>GRD1200442373-DEMO_PROV</id>
             <location>%CMR-ENDPOINT%/concepts/GRD1200442373-DEMO_PROV/4</location>
             <revision-id>4</revision-id>
@@ -95,9 +83,9 @@ Content-Length: 393
 ##### JSON
 The JSON response includes the following fields.
 
-* hits - How many total variables were found.
+* hits - How many total grids were found.
 * took - How long the search took in milliseconds
-* items - a list of the current page of variables with the following fields
+* items - a list of the current page of grids with the following fields
   * concept_id
   * revision_id
   * provider_id
@@ -122,15 +110,15 @@ Content-Length: 292
             "concept_id": "GRD1200442373-DEMO_PROV",
             "revision_id": 4,
             "provider_id": "DEMO_PROV",
-            "native_id": "edsFavoriteGrid",
-            "name": "Grid-amazing-v1"
+            "native_id": "sampleNative-Id",
+            "name": "Grid-name-v1"
         }
     ]
 }
 ```
 ##### UMM JSON
-The UMM JSON response contains meta-metadata of the variable, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the variable and will list the collections that are associated with the variable.
-TODO: this this version num correct?
+The UMM JSON response contains meta-metadata of the grid, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the grid and will list the collections that are associated with the grid.
+
 __Example__
 
 ```
@@ -148,8 +136,8 @@ Content-Length: 1177
                 "revision-id": 4,
                 "deleted": false,
                 "provider-id": "DEMO_PROV",
-                "user-id": "edolivares",
-                "native-id": "edsFavoriteGrid",
+                "user-id": "user-id-example",
+                "native-id": "example-native-id",
                 "concept-id": "GRD1200442373-DEMO_PROV",
                 "revision-date": "2022-10-10T01:18:33.568Z",
                 "concept-type": "grid"
@@ -285,27 +273,27 @@ __Sample response__
     <took>80</took>
     <references>
         <reference>
-            <name></name>
+            <name>Grid-name-v1</name>
             <id>GRD1200442373-DEMO_PROV</id>
             <deleted>true</deleted>
             <revision-id>2</revision-id>
         </reference>
         <reference>
-            <name>Grid-amazing-v1</name>
+            <name>Grid-name-v2</name>
             <id>GRD1200442373-DEMO_PROV</id>
-            <location>https://cmr.sit.earthdata.nasa.gov:443/search/concepts/GRD1200442373-DEMO_PROV/3</location>
+            <location>%cmr-endpoint%/concepts/GRD1200442373-DEMO_PROV/3</location>
             <revision-id>3</revision-id>
         </reference>
         <reference>
-            <name>Grid-amazing-v1</name>
+            <name>Grid-amazing-v3</name>
             <id>GRD1200442373-DEMO_PROV</id>
-            <location>https://cmr.sit.earthdata.nasa.gov:443/search/concepts/GRD1200442373-DEMO_PROV/4</location>
+            <location>%cmr-endpoint%/concepts/GRD1200442373-DEMO_PROV/4</location>
             <revision-id>4</revision-id>
         </reference>
         <reference>
-            <name>Grid-amazing-v1</name>
+            <name>Grid-name-v4</name>
             <id>GRD1200442373-DEMO_PROV</id>
-            <location>https://cmr.sit.earthdata.nasa.gov:443/search/concepts/GRD1200442373-DEMO_PROV/1</location>
+            <location>%CMR-ENDPOINT%/concepts/GRD1200442373-DEMO_PROV/1</location>
             <revision-id>1</revision-id>
         </reference>
     </references>

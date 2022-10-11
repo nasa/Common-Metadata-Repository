@@ -1,0 +1,1 @@
+</ul></li></ul> <li>%uc-plural-generic%<ul><li>/providers/&lt;provider-id&gt;%plural-generic%&lt;native-id&gt;<ul><li><a href="#create-update-%generic%">PUT - Create or update a %generic%.</a></li><li><a href="#delete-%generic%">DELETE - Delete a %uc-generic%.</a></li>
