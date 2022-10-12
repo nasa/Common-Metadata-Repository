@@ -5,6 +5,7 @@
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
+   [cmr.search.results-handlers.results-handler-util :as rs-util]
    [cmr.spatial.mbr :as mbr]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
@@ -22,7 +23,11 @@
   [collection]
   (let [{:keys [user-id format-key revision-id concept-id provider-id deleted
                 has-variables has-formats has-transforms has-spatial-subsetting
-                has-temporal-subsetting variables services tools s3-bucket-and-object-prefix-names]} collection]
+                has-temporal-subsetting variables services tools s3-bucket-and-object-prefix-names]} collection
+        associations (when (or (seq services) (seq variables) (seq tools))
+                       (util/remove-map-keys empty? {:variables (set variables)
+                                                     :tools (set tools)
+                                                     :services (set services)}))]
     (util/remove-nil-keys
      {:concept-type "collection"
       :concept-id concept-id
@@ -38,10 +43,8 @@
       :has-spatial-subsetting (when-not deleted (boolean has-spatial-subsetting))
       :has-temporal-subsetting (when-not deleted (boolean has-temporal-subsetting))
       :s3-links s3-bucket-and-object-prefix-names
-      :associations (when (or (seq services) (seq variables) (seq tools))
-                      (util/remove-map-keys empty? {:variables (set variables)
-                                                    :tools (set tools)
-                                                    :services (set services)}))})))
+      :associations associations
+      :association-details (rs-util/build-association-details associations concept-id)})))
 
 (defn- collection->legacy-umm-json
   "Returns the response of a search in legacy UMM JSON format. The UMM JSON search response format was
