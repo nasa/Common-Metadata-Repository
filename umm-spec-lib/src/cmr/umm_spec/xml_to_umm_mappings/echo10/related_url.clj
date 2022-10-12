@@ -5,6 +5,7 @@
    [clojure.java.io :as io]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.common.util :as util]
    [cmr.umm-spec.related-url :as related-url]
    [cmr.umm-spec.util :as su]
    [cmr.umm-spec.url :as url]))
@@ -120,6 +121,21 @@
   "WORLDVIEW" {:URLContentType "VisualizationURL", :Type "GET RELATED VISUALIZATION", :Subtype "WORLDVIEW"}
   "Worldview Imagery" {:URLContentType "VisualizationURL", :Type "GET RELATED VISUALIZATION", :Subtype "WORLDVIEW"}})
 
+(def ^:private get-data-subtypes
+ "Defines a list of KMS Subtypes for RelatedURL GET DATA type."
+  ["GIOVANNI" "NOAA CLASS" "MIRADOR" "USGS EARTH EXPLORER" "SUBSCRIBE" "CERES ORDERING TOOL" "EARTHDATA SEARCH" "SUB-ORBITAL ORDER TOOL" 
+   "DATA TREE" "ORDER" "LAADS" "DATACAST URL" "LANCE" "VIRTUAL COLLECTION" "MLHUB" "MODAPS" "PORTAL" "ICEBRIDGE PORTAL" "APPEEARS" 
+   "DATA COLLECTION BUNDLE" "NOMADS" "VERTEX" "DIRECT DOWNLOAD" "GOLIVE PORTAL" "EOSDIS DATA POOL"])
+
+(defn- get-url-subtype
+  "Return the subtype with known abbreviations and GET DATA subtypes sanitized."
+  [url-type url-subtype]
+  (let [subtype (get (set/map-invert related-url/subtype->abbreviation) url-subtype url-subtype)]
+   (if (= "GET DATA" url-type)
+     (when (some #{(util/safe-uppercase subtype)} get-data-subtypes)
+       subtype)
+     subtype)))
+
 (defn- get-url-type
  "Get UMM URL type from ECHO online resource type. The resource type could be the
  URLContentType, Type, and Subtype delimited by :, otherwise try lookup in the table.
@@ -135,7 +151,7 @@
      (if-let [url-content-type (su/type->url-content-type (first types))]
       {:URLContentType url-content-type
        :Type (first types)
-       :Subtype (get (set/map-invert related-url/subtype->abbreviation) (second types) (second types))}
+       :Subtype (get-url-subtype (first types) (second types))}
       (get online-resource-type->related-url-types resource-type su/default-url-type)))
     (get online-resource-type->related-url-types resource-type su/default-url-type)))
   su/default-url-type))
