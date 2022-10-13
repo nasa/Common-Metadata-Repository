@@ -1,3 +1,0 @@
-# sample regex patterns
-ignore:
-  - "cmr-exchange/dev-env-manager"  # ignore folders and all its contents
