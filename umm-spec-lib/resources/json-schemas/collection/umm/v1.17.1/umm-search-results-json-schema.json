@@ -179,7 +179,7 @@
     "AssociationDetailsType": {
       "type": "object",
       "additionalProperties": true,
-      "description": "Variables and Services associated with the collection.",
+      "description": "Association details of concepts associated with the collection.",
       "properties": {
         "concept-id": {
           "description": "The concept id of the associated concept.",

@@ -13,8 +13,7 @@
    [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
-   [cmr.umm.collection.entry-id :as eid]
-   [cmr.umm.umm-core :as umm-lib]))
+   [cmr.umm.collection.entry-id :as eid]))
 
 (def test-context (lkt/setup-context-for-test))
 
@@ -44,7 +43,8 @@
       :has-temporal-subsetting (when-not deleted (boolean has-temporal-subsetting))
       :s3-links s3-bucket-and-object-prefix-names
       :associations associations
-      :association-details (rs-util/build-association-details associations concept-id)})))
+      :association-details (when associations
+                             (util/map-values set (rs-util/build-association-details associations concept-id)))})))
 
 (defn- collection->legacy-umm-json
   "Returns the response of a search in legacy UMM JSON format. The UMM JSON search response format was
@@ -96,7 +96,10 @@
        (dissoc :revision-date)
        (update :associations (fn [assocs]
                                (when (seq assocs)
-                                 (util/map-values set assocs)))))))
+                                 (util/map-values set assocs))))
+       (update :association-details (fn [assocs]
+                                      (when (seq assocs)
+                                        (util/map-values set assocs)))))))
 
 (defn assert-umm-jsons-match
   "Returns true if the UMM collection umm-jsons match the umm-jsons returned from the search."
@@ -118,7 +121,7 @@
 (defn- concept->umm-json-meta
   "Returns the meta section of umm-json format."
   [concept-type concept]
-  (let [{:keys [user-id revision-id concept-id provider-id native-id deleted]} concept
+  (let [{:keys [user-id revision-id concept-id provider-id native-id deleted associations association-details]} concept
         deleted (boolean deleted)
         meta (util/remove-nil-keys
               {:concept-type (name concept-type)
@@ -127,7 +130,9 @@
                :native-id native-id
                :user-id user-id
                :provider-id provider-id
-               :deleted deleted})]
+               :deleted deleted
+               :associations associations
+               :association-details association-details})]
     (if deleted
       meta
       (assoc meta :format mt/umm-json))))

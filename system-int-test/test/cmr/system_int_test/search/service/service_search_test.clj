@@ -564,7 +564,9 @@
           service2 (services/ingest-service service2-concept)
           service1-concept-id (:concept-id service1)
           service1-assoc-colls [{:concept-id (:concept-id coll1)}]
-          expected-service1 (merge service1-concept service1)
+          associations {:associations {:collections [(:concept-id coll1)]}
+                        :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
+          expected-service1 (merge service1-concept service1 associations)
           expected-service2 (merge service2-concept service2)]
       ;; index the collections so that they can be found during service association
       (index/wait-until-indexed)
@@ -572,8 +574,7 @@
       (au/associate-by-concept-ids token service1-concept-id service1-assoc-colls)
       (index/wait-until-indexed)
 
-      ;; verify service search UMM JSON response is correct and does not have
-      ;; collection associations like variable search response does
+      ;; verify service search UMM JSON response is correct.
       (are3 [umm-version options]
         (data-umm-json/assert-service-umm-jsons-match
          umm-version [expected-service1 expected-service2]
