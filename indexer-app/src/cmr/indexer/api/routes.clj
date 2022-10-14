@@ -17,6 +17,7 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.indexer.data.concepts.collection]
    [cmr.indexer.data.concepts.granule]
+   [cmr.indexer.data.concepts.subscription]
    [cmr.indexer.data.concepts.tag]
    [cmr.indexer.services.index-service :as index-svc]
    [cmr.indexer.services.index-set-service :as index-set-svc]
