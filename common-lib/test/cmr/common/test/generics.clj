@@ -17,12 +17,11 @@
 ;;This function is concatenating all of the generic documentation into one string to be passed into the api docs
 (deftest all-generic-docs-test
   (testing "This string is ensuring that all the generics have their text concatanated together"
-    (is (= true (string/includes? (gconfig/all-generic-docs "ingest") "Grid")))
-    ))
+    (is (= true (string/includes? (gconfig/all-generic-docs "ingest") "Grid")))))
 
 (deftest get-generics-with-documenation-test
   (testing "This should return a list of the names of the documents currently in the system, ensure that grid is in the system"
-    (is (= "grid" (some #{"grid"} (gconfig/get-generics-with-documenation (gconfig/all-generic-docs "ingest")))))))
+    (is (= "grid" (some #{"grid"} (gconfig/get-list-of-generics-with-documenation (gconfig/all-generic-docs "ingest")))))))
 
 (deftest table-of-contents-html-test
   (testing "Ensure that the strings have been replaced given a generic type in the system with documentation")

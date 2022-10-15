@@ -239,10 +239,14 @@
               :headers {"Content-Type" "text/html; charset=utf-8"}
               :body (-> resource
                         slurp
-                        (string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/all-generic-table-of-contents gconfig/search-table-of-contents-template))
-                        (string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (gconfig/all-generic-table-of-contents gconfig/ingest-table-of-contents-template))
-                        (string/replace "%GENERIC-SEARCH-DOCS%" (read-generic-markdown "search"))
-                        (string/replace "%GENERIC-INGEST-DOCS%" (read-generic-markdown "ingest"))
+                        ;; (string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/all-generic-table-of-contents gconfig/search-table-of-contents-template))
+                        ;; (string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (gconfig/all-generic-table-of-contents gconfig/ingest-table-of-contents-template))
+                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/retrieve-html-table-content "search"))
+                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (gconfig/stuff "ingest"))
+                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/stuff "search"))
+                        (string/replace "%GENERIC-DOCS%" (read-generic-markdown (nth (re-find #"/(.*)/" (str page)) 1)))
+                        ;(string/replace "%GENERIC-SEARCH-DOCS%" (read-generic-markdown "search"))
+                        ;(string/replace "%GENERIC-INGEST-DOCS%" (read-generic-markdown "ingest"))
                         (string/replace "%CMR-ENDPOINT%" cmr-root)
                         (string/replace "%CMR-RELEASE-VERSION%" (config/release-version))
                         (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id))})))

@@ -119,8 +119,8 @@
                        (get (json/parse-string index-raw true) :SubConceptType "X")))))
           {}
           (latest-approved-documents)))
-
-;HTML templates for generic table of content items
+;;TODO: Make sure comments have two semicolons on them but, the comment below is likely going to go away
+;;HTML templates for generic table of content items
 (def ingest-table-of-contents-template (slurp (io/resource "ingest-table-of-contents-template.txt")))
 (def search-table-of-contents-template (slurp (io/resource "search-table-of-contents-template.txt")))
 
@@ -148,7 +148,7 @@
   [file-name]
   (string/join (seq (for [[k,v] (latest-approved-documents)] (read-generic-doc-file file-name k (str v))))))
 
-(defn get-generics-with-documenation
+(defn get-list-of-generics-with-documenation
   "Retrieve the names of the generics that have documentation files. Re-seq returns both the full match and the group, so parse out all of the odd numbered indicies
    so that only the group matches remain
    Parameters:
@@ -176,4 +176,45 @@
    * table-of-contents-template: [ingest-table-of-contents-template | search-table-of-contents-template]
    Returns: string"
   [table-of-contents-template]
-  (string/join (mapv #(table-of-contents-html table-of-contents-template %) (get-generics-with-documenation (all-generic-docs "ingest")))))
+  (string/join (mapv #(table-of-contents-html table-of-contents-template %) (get-list-of-generics-with-documenation (all-generic-docs "ingest")))))
+
+(defn get-table-contents-info-from-markdown
+  "From the markdown file string of either the ingest or search, dyanamically create the table of content"
+  [generic-markdown]
+  (re-seq #"^\#+\s+<a\s.*" generic-markdown))
+
+(defn get-html-from-table-of-contents-headers
+  "From the list of headers, retrieve the desired html for the table of contents"
+  [list-of-headers]
+  (let [mylist list-of-headers]
+  ;(conj list-of-headers "hi"))
+    (str "</ul></li></ul><li>grids<ul><li>/providers/&lt;provider-id&gt;%grids%&lt;native-id&gt;<ul>" (string/join (map #(str % "</a></li>")
+                       (map #(string/replace % #"</a>" "") (map #(string/replace % #"#\s+<a\s+name=\"" "<li><a href=\"#") mylist)))))))
+      ;; ;Replace the tag with HTML tag
+      ;; (string/replace #"#\s+<a\s+name=" "<li><a href=")
+      ;; (str "</a></li>")
+      ;; (string/replace #"\\" ""))
+
+
+
+(defn retrieve-html-table-content
+"gets the new combined HTML"
+[gen-doc]
+ (get-html-from-table-of-contents-headers (get-table-contents-info-from-markdown (all-generic-docs gen-doc))))
+
+
+; for each of these items:
+
+; </ul></li></ul> <li>%uc-plural-generic%<ul><li>/providers/&lt;provider-id&gt;%plural-generic%&lt;native-id&gt;<ul>
+;<li><a href="#%ITEM_NAME%>%ITEM_SUMMARY%</a></li>
+; find out what is in the name tag the value vetween the \ characters
+;
+
+;So here we would replace all of the strings with the other strings?
+
+;bad
+;"</ul></li></ul><li>%uc-plural-generic%<ul><li>/providers/&lt;provider-id&gt;%plural-generic%&lt;native-id&gt;<ul><li><a href=\"#create-update-grid\"></a> Create / Update a Grid</a></li><li><a href=\"#delete-grid\"></a> Delete a Grid</a></li>"
+
+
+;good
+;</ul></li></ul> <li>%uc-plural-generic%<ul><li>/providers/&lt;provider-id&gt;%plural-generic%&lt;native-id&gt;<ul><li><a href="#create-update-%generic%">PUT - Create or update a %generic%.</a></li><li><a href="#delete-%generic%">DELETE - Delete a %uc-generic%.</a></li>
