@@ -499,6 +499,12 @@
           "type": "string",
           "minLength": 1,
           "maxLength": 80
+        },
+        "MimeType": {
+          "description": "The multi-purpose internet mail extensions indicates the nature and format of the data that is accessed through the URL. The controlled vocabulary for MimeTypes is maintained in the Keyword Management System (KMS): https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/MimeType?gtm_scheme=MimeType",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
         }
       },
       "required": [
