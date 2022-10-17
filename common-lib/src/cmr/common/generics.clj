@@ -157,6 +157,15 @@
   [generic-markdown]
   (take-nth 2 (rest (flatten (re-seq #"### <a name=\"create-update-([a-z]+)" generic-markdown)))))
 
+(defn get-list-of-generics-with-documenation2
+  "Retrieve the names of the generics that have documentation files. Re-seq returns both the full match and the group, so parse out all of the odd numbered indicies
+   so that only the group matches remain
+   Parameters:
+   * generic-markdown: a slurped markdown file
+   Returns: string"
+  [generic-markdown]
+  (take-nth 2 (rest (flatten (re-seq #"href=\"#.*-(.*)\"" generic-markdown)))))
+
 (defn table-of-contents-html
   "Return the html for the table of contents given a generic concept
    Parameters:
@@ -169,8 +178,8 @@
       (string/replace  #"%plural-generic%" (inf/plural generic-type))
       (string/replace  #"%uc-plural-generic%" (inf/plural (string/capitalize generic-type)))))
 
-(defn all-generic-table-of-contents
-  "Parse over all of the generic documents and return their combined html for the table of contents as a string
+(defn all-generic-table-of-contentsdfasdf
+  "Parse over all of the generic documenass and return their combined html for the table of contents as a string
    we use ingest to retrieve the list of generics with documenation for both search and ingest as it would be expected both documents would be in the schema dir
    Parameters:
    * table-of-contents-template: [ingest-table-of-contents-template | search-table-of-contents-template]
@@ -178,10 +187,10 @@
   [table-of-contents-template]
   (string/join (mapv #(table-of-contents-html table-of-contents-template %) (get-list-of-generics-with-documenation (all-generic-docs "ingest")))))
 
-(defn get-table-contents-info-from-markdown
+(defn get-table-contents-headers-from-markdown
   "From the markdown file string of either the ingest or search, dyanamically create the table of content"
   [generic-markdown]
-  (re-seq #"^\#+\s+<a\s.*" generic-markdown))
+  (re-seq #"\#+\s+<a\s.*" generic-markdown))
 
 (defn get-html-from-table-of-contents-headers
   "From the list of headers, retrieve the desired html for the table of contents"
@@ -194,14 +203,64 @@
       ;; (string/replace #"#\s+<a\s+name=" "<li><a href=")
       ;; (str "</a></li>")
       ;; (string/replace #"\\" ""))
+;; (defn usingas
+;;   "Process the markdown into useable html"
+;;   [table-contents-headers]
+;;   (-> table-contents-headers
+;;   (string/join table-contents-headers)
+;;   (as-> xs (string/replace xs #"#\s+<a\s+name=\"" "<li><a href=\"#"))
+;;   (as-> xs (string/replace xs #"</a>" ""))))
 
 
+(defn addSalt-to-table-of-contents-while-reading-gen-file
+  "Return the specific schema's documentation files given the schema keyword name and version number.
+   if the file cannot be read, return an empty string which will have no impact on the API document.
+   Parameters:
+   * file-name: [ingest | search]
+   * generic-keyword: [:grid | ...]
+   * generic-version: 0.0.1
+   Returns: string
+   TODO: If filename is ingest use one template, if filename is search use a different template"
+  [file-name generic-keyword generic-version]
+  (try
+    (-> "schemas/%s/v%s/%s.md"
+        (format (name generic-keyword) generic-version (name file-name))
+        (io/resource)
+        (slurp)
+        (get-table-contents-headers-from-markdown)
+        (string/join)
+        (as-> xs (str "</ul></li></ul><li>%uc-plural-generic%<ul><li>/providers/&lt;provider-id&gt;%plural-generic%&lt;native-id&gt;<ul>" xs))
+        ;(as-> xs (str "</ul></li>" xs))
+        (table-of-contents-html (name generic-keyword)))
+    (catch Exception e (str ""))))
+
+(defn all-generic-docs-toc
+  "Parse over all of the generic documents and return their combined markdown as a string
+  Parameters:
+  * file-name: [ingest | search]
+  Returns: string"
+  [file-name]
+  (seq (for [[k,v] (latest-approved-documents)] (addSalt-to-table-of-contents-while-reading-gen-file file-name k (str v)))))
+
+
+(defn another
+  "one"
+  [header-list]
+  (-> header-list
+  (as-> xs (map #(string/replace % #"#+\s+<a\s+name=\"" "<li><a href=\"#") xs))
+  (as-> xs (map #(string/replace % #"</a>" "") xs))
+  ;(as-> xs (map #(str % "</a></li>") xs))
+  (as-> xs (map #(str % "</a></li>") xs))
+  (as-> xs (string/join xs))))
 
 (defn retrieve-html-table-content
 "gets the new combined HTML"
 [gen-doc]
- (get-html-from-table-of-contents-headers (get-table-contents-info-from-markdown (all-generic-docs gen-doc))))
+ (another (all-generic-docs-toc gen-doc)))
 
+
+
+;We need take the string and apppend the table of contents cover
 
 ; for each of these items:
 

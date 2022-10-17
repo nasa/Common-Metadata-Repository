@@ -31,7 +31,7 @@
   (is (= true (string/includes? (gconfig/table-of-contents-html gconfig/ingest-table-of-contents-template "grid") "grids")))
   )
 
-;As more generic documentation items are added we can add more concepts to the tests
-(deftest all-generic-table-of-contents-test
-  (testing "Ensure that the combined html is returned that will be passed to the api docuement including all the generic's which have documentation are loaded into the system")
-  (is (= true (string/includes? (gconfig/all-generic-table-of-contents gconfig/ingest-table-of-contents-template) "grids"))))
+;; ;As more generic documentation items are added we can add more concepts to the tests
+;; (deftest all-generic-table-of-contents-test
+;;   (testing "Ensure that the combined html is returned that will be passed to the api docuement including all the generic's which have documentation are loaded into the system")
+;;   (is (= true (string/includes? (gconfig/all-generic-table-of-contents gconfig/ingest-table-of-contents-template) "grids"))))

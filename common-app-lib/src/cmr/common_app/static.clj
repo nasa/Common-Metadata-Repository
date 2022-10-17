@@ -244,6 +244,7 @@
                         ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/retrieve-html-table-content "search"))
                         ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (gconfig/stuff "ingest"))
                         ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/stuff "search"))
+                        (string/replace "%GENERIC-TABLE-OF-CONTENTS%" (gconfig/retrieve-html-table-content (nth (re-find #"/(.*)/" (str page)) 1)))
                         (string/replace "%GENERIC-DOCS%" (read-generic-markdown (nth (re-find #"/(.*)/" (str page)) 1)))
                         ;(string/replace "%GENERIC-SEARCH-DOCS%" (read-generic-markdown "search"))
                         ;(string/replace "%GENERIC-INGEST-DOCS%" (read-generic-markdown "ingest"))

@@ -1,4 +1,3 @@
-
 ### <a name="grid"></a> Grid
 
 Grids provide metadata support to perform reprojection in the reprojection services [UMM-Grid Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/grid) schema.
