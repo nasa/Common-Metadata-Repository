@@ -16,10 +16,10 @@
 
 (defn- associations->gzip-base64-str
   "Returns the gziped base64 string for the given generic associations"
-  [generic-associations]
+  [generic-associations concept-id]
   (when (seq generic-associations)
     (util/string->gzip-base64
-     (pr-str (assoc-util/generic-assoc-list->assoc-struct generic-associations)))))
+     (pr-str (assoc-util/generic-assoc-list->assoc-struct generic-associations concept-id)))))
 
 (defmulti field->index
   "Functions which convert a part of metadata to a name-value which can be added
@@ -77,11 +77,7 @@
         generic-associations (esearch/parse-non-tombstone-associations
                               context
                               (meta-db/get-generic-associations-for-concept context concept))
-        generic-assoc-ids (remove #(= concept-id %)
-                                  (concat (mapv :associated-concept-id generic-associations)
-                                          (mapv :source-concept-identifier generic-associations)))
         long-name (:LongName parsed-concept)
-        ;; We have already checked for approval in the ingest application.
         gen-name (util/safe-lowercase (get-in parsed-concept [:MetadataSpecification :Name]))
         gen-ver (get-in parsed-concept [:MetadataSpecification :Version])
         index-data-file (format "schemas/%s/v%s/index.json" gen-name gen-ver)
@@ -108,7 +104,7 @@
          :revision-date revision-date
          :native-id native-id
          :native-id-lowercase native-id
-         :associations-gzip-b64 (associations->gzip-base64-str generic-assoc-ids)}
+         :associations-gzip-b64 (associations->gzip-base64-str generic-associations concept-id)}
         configs (gen-util/only-elastic-preferences (:Indexes index-data))
         ;; now add the configured indexes
         doc (reduce

@@ -1,11 +1,9 @@
 (ns cmr.indexer.services.index-service
   "Provide functions to index concept"
   (:require
-   [camel-snake-kebab.core :as camel-snake-kebab]
    [cheshire.core :as json]
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojure.string :as string]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
@@ -402,6 +400,10 @@
   [context concept]
   (meta-db/get-associations-for-collection context concept :service-association))
 
+(defmethod get-service-associations :service
+  [context concept]
+  (meta-db/get-associations-for-service context concept))
+
 (defmulti get-tool-associations
   "Returns the tool associations of the concept"
   (fn [context concept]
@@ -414,6 +416,10 @@
 (defmethod get-tool-associations :collection
   [context concept]
   (meta-db/get-associations-for-collection context concept :tool-association))
+
+(defmethod get-tool-associations :tool
+  [context concept]
+  (meta-db/get-associations-for-tool context concept))
 
 (defmulti index-concept
   "Index the given concept with the parsed umm record. Indexing tag association and variable
@@ -442,7 +448,6 @@
                 service-associations (get-service-associations context concept)
                 tool-associations (get-tool-associations context concept)
                 generic-associations (meta-db/get-generic-associations-for-concept context concept)
-                collection-associations (meta-db/get-associations-for-service context concept)
                 associations {:tag-associations tag-associations
                               :variable-associations variable-associations
                               :service-associations service-associations
@@ -460,8 +465,6 @@
                                    context tool-associations)
                 generic-associations (es/parse-non-tombstone-associations
                                       context generic-associations)
-                collection-associations (es/parse-non-tombstone-associations
-                                         context collection-associations)
                 concept-type (cs/concept-id->type concept-id)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
@@ -472,8 +475,7 @@
                             (assoc :variable-associations variable-associations)
                             (assoc :service-associations service-associations)
                             (assoc :tool-associations tool-associations)
-                            (assoc :generic-associations generic-associations)
-                            (assoc :collection-associations collection-associations))
+                            (assoc :generic-associations generic-associations))
                         parsed-concept)
                 elastic-options (-> options
                                     (select-keys [:all-revisions-index? :ignore-conflict?]))]
@@ -575,7 +577,10 @@
 
 (defmethod index-concept :tool-association
   [context concept parsed-concept options]
-  (index-associated-collection context concept options))
+  (index-associated-collection context concept options)
+  (index-associated-concept context
+                            (get-in concept [:extra-fields :tool-concept-id])
+                            options))
 
 (defmethod index-concept :generic-association
   [context concept parsed-concept options]

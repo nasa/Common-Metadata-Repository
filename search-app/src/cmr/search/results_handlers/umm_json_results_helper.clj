@@ -38,13 +38,9 @@
                 associations-gzip-b64 s3-bucket-and-object-prefix-names]} (:_source elastic-result)
         creation-date (when creation-date (string/replace (str creation-date) #"\+0000" "Z"))
         revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))
-        associations (when (or (= :collection concept-type)
-                               (= :variable concept-type))
-                       (some-> associations-gzip-b64
-                               util/gzip-base64->string
-                               edn/read-string
-                               (rs-util/build-association-concept-id-list concept-type)
-                               (util/remove-nils-empty-maps-seqs)))]
+        associations (some-> associations-gzip-b64
+                             util/gzip-base64->string
+                             edn/read-string)]
     (util/remove-nil-keys
      {:concept-type concept-type
       :concept-id concept-id
@@ -62,7 +58,8 @@
       :has-spatial-subsetting has-spatial-subsetting
       :has-temporal-subsetting has-temporal-subsetting
       :s3-links s3-bucket-and-object-prefix-names
-      :associations associations})))
+      :associations (rs-util/build-association-concept-id-list associations concept-type)
+      :association-details (rs-util/build-association-details associations concept-type)})))
 
 (defn elastic-result->tuple
   "Returns a tuple of concept id and revision id from the elastic result of the given concept type."

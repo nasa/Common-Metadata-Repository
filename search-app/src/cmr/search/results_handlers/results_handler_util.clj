@@ -15,10 +15,12 @@
                            (mapv :service-concept-id associations)))
                      (seq (util/remove-nils-empty-maps-seqs
                            (mapv :tool-concept-id associations)))
-                     associations)}
+                     (seq (util/remove-nils-empty-maps-seqs
+                           (mapv :concept-id associations))))}
     {concept-key (or (seq (util/remove-nils-empty-maps-seqs
                            (mapv :associated-concept-id associations)))
-                     associations)}))
+                     (seq (util/remove-nils-empty-maps-seqs
+                           (mapv :concept-id associations))))}))
 
 (defn build-association-concept-id-list
   "Builds the association list from the passed in associations."
@@ -37,12 +39,14 @@
       (-> association
           (s/rename-keys {:variable-concept-id :concept-id
                           :service-concept-id :concept-id
-                          :tool-concept-id :concept-id})
-          (dissoc :associated-concept-id)
+                          :tool-concept-id :concept-id
+                          :source-revision-id :revision-id})
+          (dissoc :associated-concept-id :associated-revision-id)
           (util/remove-nil-keys)) 
       (-> association
-          (s/rename-keys {:associated-concept-id :concept-id})
-          (dissoc :variable-concept-id :service-concept-id :tool-concept-id)
+          (s/rename-keys {:associated-concept-id :concept-id
+                          :associated-revision-id :revision-id})
+          (dissoc :variable-concept-id :service-concept-id :tool-concept-id :source-revision-id)
           (util/remove-nil-keys)))))
 
 (defn main-detail-assoc-structure
