@@ -512,9 +512,9 @@
 (defn- index-associated-concept
   "Given a concept id, index the concept to which it refers."
   [context concept-id options]
-  (let [concept (meta-db/get-latest-concept context concept-id)
-        parsed-concept (cp/parse-concept context concept)]
-    (index-concept context concept parsed-concept options)))
+  (let [concept (meta-db/get-latest-concept context concept-id)]
+    (when-not (:deleted concept)
+      (index-concept context concept (cp/parse-concept context concept) options))))
 
 (defn- index-associated-generic-concept
   "Given a concept id, revision id, index the concept to which it refers."
