@@ -23,11 +23,13 @@
                                 {:source-concept-identifier "C1200000021-PROV1"
                                  :associated-concept-id "SE1200000017-PROV1"}
                                 {:source-concept-identifier "C1200000021-PROV1"
-                                 :associated-concept-id "GRD1200000018-PROV1"}]
+                                 :source-revision-id 2
+                                 :associated-concept-id "GRD1200000018-PROV1"
+                                 :associated-revision-id 4}]
           expected {:dataqualitysummaries [{:concept-id "DQS1200000012-PROV1" :data {:hello "ok"}} 
                                            {:concept-id "DQS1200000013-PROV1"}]
                     :orderoptions [{:concept-id "OO1200000014-PROV1"}]
                     :serviceoptions [{:concept-id "SO1200000015-PROV1"} {:concept-id "SO1200000016-PROV1"}]
                     :serviceentries [{:concept-id "SE1200000017-PROV1"}]
-                    :grids [{:concept-id "GRD1200000018-PROV1"}]}]
+                    :grids [{:concept-id "GRD1200000018-PROV1" :revision-id 4}]}]
       (is (= expected (assoc-util/generic-assoc-list->assoc-struct generic-associations "C1200000021-PROV1"))))))

@@ -8,14 +8,27 @@
 (defn allow-group-by-concept-type
   "Creates a temporary structure so that we can group the concept ids by concept type."
   [association concept-id]
-  (let [asn (if (= concept-id (:source-concept-identifier association))
+  (let [asn (cond
+             (or (= concept-id (:source-concept-identifier association))
+                 (= concept-id (:service-concept-id association))
+                 (= concept-id (:tool-concept-id association))
+                 (= concept-id (:variable-concept-id association)))
               (-> association
-                  (dissoc :source-concept-identifier)
-                  (s/rename-keys {:associated-concept-id :concept-id}))
+                  (dissoc :source-concept-identifier :source-revision-id
+                          :service-concept-id :tool-concept-id :variable-concept-id)
+                  (s/rename-keys {:associated-concept-id :concept-id
+                                  :associated-revision-id :revision-id}))
+
+              (= concept-id (:associated-concept-id association))
               (-> association
-                  (dissoc :associated-concept-id)
-                  (s/rename-keys {:source-concept-identifier :concept-id})))]
-    (assoc asn :concept-type (cc/concept-id->type (:concept-id asn)))))
+                  (dissoc :associated-concept-id :associated-revision-id)
+                  (s/rename-keys {:source-concept-identifier :concept-id
+                                  :service-concept-id :concept-id
+                                  :tool-concept-id :concept-id
+                                  :variable-concept-id :concept-id
+                                  :source-revision-id :revision-id})))]
+    (when asn
+      (assoc asn :concept-type (cc/concept-id->type (:concept-id asn))))))
 
 (defn build-single-concept-association-list
   "Creates a map of a pluralized concept key with the a group of like concept, concept ids.

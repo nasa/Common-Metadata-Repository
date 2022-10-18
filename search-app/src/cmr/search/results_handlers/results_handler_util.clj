@@ -39,12 +39,14 @@
       (-> association
           (s/rename-keys {:variable-concept-id :concept-id
                           :service-concept-id :concept-id
-                          :tool-concept-id :concept-id})
-          (dissoc :associated-concept-id)
+                          :tool-concept-id :concept-id
+                          :source-revision-id :revision-id})
+          (dissoc :associated-concept-id :associated-revision-id)
           (util/remove-nil-keys)) 
       (-> association
-          (s/rename-keys {:associated-concept-id :concept-id})
-          (dissoc :variable-concept-id :service-concept-id :tool-concept-id)
+          (s/rename-keys {:associated-concept-id :concept-id
+                          :associated-revision-id :revision-id})
+          (dissoc :variable-concept-id :service-concept-id :tool-concept-id :source-revision-id)
           (util/remove-nil-keys)))))
 
 (defn main-detail-assoc-structure
