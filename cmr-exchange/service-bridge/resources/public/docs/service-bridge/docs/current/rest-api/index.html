@@ -714,6 +714,8 @@ are various parameters supported:</p>
 <li><code>granules</code></li>
 <li><code>temporal</code></li>
 <li><code>variables</code></li>
+<li><code>page-size</code></li>
+<li><code>page-num</code></li>
 </ul>
 
 <p>These may be used alone or in any combination. Details for usage are provided
@@ -875,7 +877,24 @@ be used.</p>
 <pre class="highlight shell tab-shell"><code>curl -H <span class="s2">"Echo-Token: </span><span class="sb">`</span>cat ~/.cmr/tokens/sit<span class="sb">`</span><span class="s2">"</span> <span class="se">\</span>
      <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS"</span>
-</code></pre><h2 id='wcs-style-parameters'>WCS-Style Parameters</h2>
+</code></pre><h3 id='page-size'><code>page-size</code></h3>
+<p>Number of results per page - default is 10, max is 2000
+The following are examples of accepted <code>page-size</code> parameter usage:</p>
+
+<ul>
+<li><code>page-size=5</code></li>
+<li><code>page_size=5</code></li>
+</ul>
+<h3 id='page-num'><code>page-num</code></h3>
+<p>The page number to return</p>
+
+<p>The following are examples of accepted <code>page-num</code> parameter usage:</p>
+
+<ul>
+<li><code>page-num=2</code></li>
+<li><code>page_num=2</code></li>
+</ul>
+<h2 id='wcs-style-parameters'>WCS-Style Parameters</h2>
 <p>The original implementation of the OPeNDAP URL translation service was not a
 part of the CMR, and thus did not take into consideration the internal
 standards adopted by both the CMR and EDSC code bases. Instead, it was
@@ -891,6 +910,8 @@ As such, the following parameters are also available, as an alternative to the
 <li><code>rangesubset</code></li>
 <li><code>subset</code></li>
 <li><code>timeposition</code></li>
+<li><code>page-size</code></li>
+<li><code>page-num</code></li>
 </ul>
 
 <p>These are show in more detail in the sub-sections below.</p>
@@ -1019,7 +1040,24 @@ for the time of interest.</p>
      <span class="s2">"%%BASE_URL%%service-bridge/ous/collection/C1200187767-EDF_OPS?
      variables=V1200241812-EDF_OPS,V1200241817-EDF_OPS&amp;
      timeposition=2002-09-01T00:00:00Z,2016-07-03T00:00:00Z"</span>
-</code></pre><h2 id='forthcoming'>Forthcoming</h2>
+</code></pre><h3 id='page-size-2'><code>page-size</code></h3>
+<p>Number of results per page - default is 10, max is 2000
+The following are examples of accepted <code>page-size</code> parameter usage:</p>
+
+<ul>
+<li><code>page-size=5</code></li>
+<li><code>page_size=5</code></li>
+</ul>
+<h3 id='page-num-2'><code>page-num</code></h3>
+<p>The page number to return</p>
+
+<p>The following are examples of accepted <code>page-num</code> parameter usage:</p>
+
+<ul>
+<li><code>page-num=2</code></li>
+<li><code>page_num=2</code></li>
+</ul>
+<h2 id='forthcoming'>Forthcoming</h2>
 <p>The following are coming soon:</p>
 
 <ul>

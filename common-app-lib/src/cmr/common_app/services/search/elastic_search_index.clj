@@ -146,7 +146,18 @@
           (info "Execute ES query failed due to" body)
           (errors/throw-service-error
            :payload-too-large
-           "The search is creating more clauses than allowed by CMR. Please narrow your search.")))
+           "The search is creating more clauses than allowed by CMR. Please narrow your search."))
+        
+        (when (and (or (re-find #"\"type\":\"illegal_argument_exception\"" body)
+                       (re-find #"\"type\":\"parsing_exception\"" body))
+                   (re-find #"search_after" body))
+          (info "Execute ES query failed due to" body)
+          (let [err-msg (-> (json/parse-string body true)
+                            (get-in [:error :root_cause])
+                            str)]
+            (errors/throw-service-error
+             :bad-request
+             (format "The search failed with error: %s. Please double check your search_after header." err-msg)))))
       ;; for other errors, rethrow the exception
       (throw e))))
 

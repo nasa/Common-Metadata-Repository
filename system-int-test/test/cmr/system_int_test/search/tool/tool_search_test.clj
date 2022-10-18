@@ -536,7 +536,9 @@
           tool2 (tool/ingest-tool tool2-concept)
           tool1-concept-id (:concept-id tool1)
           tool1-assoc-colls [{:concept-id (:concept-id coll1)}]
-          expected-tool1 (merge tool1-concept tool1)
+          associations {:associations {:collections [(:concept-id coll1)]}
+                        :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
+          expected-tool1 (merge tool1-concept tool1 associations)
           expected-tool2 (merge tool2-concept tool2)]
       ;; index the collections so that they can be found during tool association
       (index/wait-until-indexed)
@@ -556,8 +558,7 @@
 
         (is (= tool-associations [tool1-concept-id])))
 
-      ;; verify tool search UMM JSON response is correct and does not have
-      ;; collection associations like variable search response does
+      ;; verify tool search UMM JSON response is correct.
       (are3 [umm-version options]
         (data-umm-json/assert-tool-umm-jsons-match
          umm-version [expected-tool1 expected-tool2]

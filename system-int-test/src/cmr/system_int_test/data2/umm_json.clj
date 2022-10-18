@@ -5,6 +5,7 @@
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
+   [cmr.search.results-handlers.results-handler-util :as rs-util]
    [cmr.spatial.mbr :as mbr]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
@@ -12,8 +13,7 @@
    [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
-   [cmr.umm.collection.entry-id :as eid]
-   [cmr.umm.umm-core :as umm-lib]))
+   [cmr.umm.collection.entry-id :as eid]))
 
 (def test-context (lkt/setup-context-for-test))
 
@@ -22,7 +22,11 @@
   [collection]
   (let [{:keys [user-id format-key revision-id concept-id provider-id deleted
                 has-variables has-formats has-transforms has-spatial-subsetting
-                has-temporal-subsetting variables services tools s3-bucket-and-object-prefix-names]} collection]
+                has-temporal-subsetting variables services tools s3-bucket-and-object-prefix-names]} collection
+        associations (when (or (seq services) (seq variables) (seq tools))
+                       (util/remove-map-keys empty? {:variables (set variables)
+                                                     :tools (set tools)
+                                                     :services (set services)}))]
     (util/remove-nil-keys
      {:concept-type "collection"
       :concept-id concept-id
@@ -38,10 +42,9 @@
       :has-spatial-subsetting (when-not deleted (boolean has-spatial-subsetting))
       :has-temporal-subsetting (when-not deleted (boolean has-temporal-subsetting))
       :s3-links s3-bucket-and-object-prefix-names
-      :associations (when (or (seq services) (seq variables) (seq tools))
-                      (util/remove-map-keys empty? {:variables (set variables)
-                                                    :tools (set tools)
-                                                    :services (set services)}))})))
+      :associations associations
+      :association-details (when associations
+                             (util/map-values set (rs-util/build-association-details associations concept-id)))})))
 
 (defn- collection->legacy-umm-json
   "Returns the response of a search in legacy UMM JSON format. The UMM JSON search response format was
@@ -93,7 +96,10 @@
        (dissoc :revision-date)
        (update :associations (fn [assocs]
                                (when (seq assocs)
-                                 (util/map-values set assocs)))))))
+                                 (util/map-values set assocs))))
+       (update :association-details (fn [assocs]
+                                      (when (seq assocs)
+                                        (util/map-values set assocs)))))))
 
 (defn assert-umm-jsons-match
   "Returns true if the UMM collection umm-jsons match the umm-jsons returned from the search."
@@ -101,19 +107,21 @@
   (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
     (is (= 200 (:status search-result)) (pr-str search-result))
     (do
-      (is (= mt/umm-json-results (mt/base-mime-type-of (:content-type search-result))))
-      (is (= version (mt/version-of (:content-type search-result))))
+      (is (= mt/umm-json-results (mt/base-mime-type-of (:content-type search-result)))
+          "Bad Mime-Type")
+      (is (= version (mt/version-of (:content-type search-result))) "Bad Version")
       (is (nil? (util/seqv (umm-json-schema/validate-collection-umm-json-search-result
                             (:body search-result) version)))
           "UMM search result JSON was invalid")
       (is (= (set (map #(collection->umm-json version %) collections))
              (set (map #(update % :meta meta-for-comparison)
-                       (get-in search-result [:results :items]))))))))
+                       (get-in search-result [:results :items]))))
+          "Match of Content failed"))))
 
 (defn- concept->umm-json-meta
   "Returns the meta section of umm-json format."
   [concept-type concept]
-  (let [{:keys [user-id revision-id concept-id provider-id native-id deleted]} concept
+  (let [{:keys [user-id revision-id concept-id provider-id native-id deleted associations association-details]} concept
         deleted (boolean deleted)
         meta (util/remove-nil-keys
               {:concept-type (name concept-type)
@@ -122,7 +130,9 @@
                :native-id native-id
                :user-id user-id
                :provider-id provider-id
-               :deleted deleted})]
+               :deleted deleted
+               :associations associations
+               :association-details association-details})]
     (if deleted
       meta
       (assoc meta :format mt/umm-json))))

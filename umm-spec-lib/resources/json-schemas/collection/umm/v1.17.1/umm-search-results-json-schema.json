@@ -91,6 +91,10 @@
           "description": "Contains variables and services associated with the collection",
           "$ref": "#/definitions/AssociationsType"
         },
+        "association-details": {
+          "description": "Contains the details of each association.",
+          "$ref": "#/definitions/AssociationDetailsType"
+        },
         "s3-links": {
           "description": "Contains the DirectDistributionInformation S3 links assoociated with the collection.",
           "type": "array",
@@ -104,7 +108,7 @@
     "AssociationsType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Variables and Services associated with the collection.",
+      "description": "Any concept associated with the collection.",
       "properties": {
         "variables": {
           "description": "The concept ids of variables assciated with the collection",
@@ -112,7 +116,7 @@
           "items": {
             "$ref": "#/definitions/ConceptIdType"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "services": {
           "description": "The concept ids of services assciated with the collection",
@@ -120,7 +124,7 @@
           "items": {
             "$ref": "#/definitions/ConceptIdType"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "tools": {
           "description": "The concept ids of tools assciated with the collection",
@@ -128,15 +132,62 @@
           "items": {
             "$ref": "#/definitions/ConceptIdType"
           },
-          "minItems": 0
+          "minItems": 1
         },
-        "generics": {
-          "description": "The concept ids of generic concepts assciated with the collection",
+        "dataqualitysummaries": {
+          "description": "The concept ids of data quality summary concepts assciated with the collection",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
           },
-          "minItems": 0
+          "minItems": 1
+        },
+        "orderoptions": {
+          "description": "The concept ids of order option concepts assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "serviceoptions": {
+          "description": "The concept ids of service option concepts assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "serviceentries": {
+          "description": "The concept ids of service entry concepts assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "grids": {
+          "description": "The concept ids of grid concepts assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "AssociationDetailsType": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Association details of concepts associated with the collection.",
+      "properties": {
+        "concept-id": {
+          "description": "The concept id of the associated concept.",
+          "type": "string"
+        },
+        "revision-id": {
+          "description": "The revision id of the associated concept.",
+          "type": "string"
         }
       }
     },

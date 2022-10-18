@@ -797,3 +797,11 @@
           response (ingest/ingest-concept concept {:raw? true})]
       (is (= {:concept-id "C2-PROV1" :revision-id 1}
              (select-keys (ingest/parse-ingest-body :xml response) [:concept-id :revision-id]))))))
+
+(deftest CMR-8657-GET-DATA-subtype-test
+  (testing "Ingest ECHO10 collection with GET DATA RelatedUrl type and invalid KMS subtype is OK"
+    (let [coll-metadata (-> "CMR-8657/coll_invalid_kms_getdata_subtypes.xml" io/resource slurp)
+          {:keys [status errors]} (ingest/ingest-concept
+                                   (ingest/concept :collection "PROV1" "CMR-8657-GET-DATA-subtype" :echo10 coll-metadata))]
+      (is (= 201 status))
+      (is (= nil errors)))))

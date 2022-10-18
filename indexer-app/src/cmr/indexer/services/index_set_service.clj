@@ -178,6 +178,8 @@
   (let [index-names (get-index-names index-set)
         indices-w-config (build-indices-list-w-config index-set)
         es-store (context->es-store context)]
+    (when-let [generic-docs (keys (common-config/approved-pipeline-documents))]
+      (info "This instance of CMR will publish Elasticsearch indices for the following generic document types:" generic-docs))
     ;; rollback index-set creation if index creation fails
     (try
       (dorun (map #(es/create-index es-store %) indices-w-config))

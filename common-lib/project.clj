@@ -26,6 +26,7 @@
                  [commons-codec/commons-codec "1.11"]
                  [compojure "1.6.1"]
                  [environ "1.1.0"]
+                 [inflections "0.13.0"]
                  [instaparse "1.4.10"]
                  [nasa-cmr/cmr-schemas "0.0.1-SNAPSHOT"]
                  [nasa-cmr/cmr-schema-validation-lib "0.1.0-SNAPSHOT"]

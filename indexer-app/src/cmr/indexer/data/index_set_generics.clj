@@ -173,8 +173,7 @@
    "
   []
   (reduce (fn [data gen-keyword]
-            (let [
-                  gen-name (name gen-keyword)
+            (let [gen-name (name gen-keyword)
                   gen-ver (last (gen-keyword (cfg/approved-pipeline-documents)))
                   index-definition-str (read-schema-definition gen-keyword gen-ver)
                   index-definition (when-not (validate-index-against-schema-safe

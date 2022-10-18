@@ -234,6 +234,7 @@
         concept (assoc concept :revision-id revision-id)
         associations (->> associations-json
                           (assoc-validation/associations-json->associations)
+                          (assoc-validation/validate-generic-association-combination-types concept)
                           (assoc-validation/validate-no-same-concept-generic-association concept)
                           (assoc-validation/validate-generic-association-types concept))
         [validation-time associations]

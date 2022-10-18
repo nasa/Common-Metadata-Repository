@@ -1,11 +1,9 @@
 (ns cmr.indexer.services.index-service
   "Provide functions to index concept"
   (:require
-   [camel-snake-kebab.core :as camel-snake-kebab]
    [cheshire.core :as json]
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojure.string :as string]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
@@ -340,8 +338,10 @@
 
 (defmethod get-elastic-version :variable
   [context concept]
-  (let [variable-associations (meta-db/get-associations-for-variable context concept)]
-    (get-elastic-version-with-associations context concept {:variable-associations variable-associations})))
+  (let [variable-associations (meta-db/get-associations-for-variable context concept)
+        generic-associations (meta-db/get-generic-associations-for-concept context concept)]
+    (get-elastic-version-with-associations context concept {:variable-associations variable-associations
+                                                            :generic-associations generic-associations})))
 
 (defmethod get-elastic-version :service
   [context concept]
@@ -400,6 +400,10 @@
   [context concept]
   (meta-db/get-associations-for-collection context concept :service-association))
 
+(defmethod get-service-associations :service
+  [context concept]
+  (meta-db/get-associations-for-service context concept))
+
 (defmulti get-tool-associations
   "Returns the tool associations of the concept"
   (fn [context concept]
@@ -412,6 +416,10 @@
 (defmethod get-tool-associations :collection
   [context concept]
   (meta-db/get-associations-for-collection context concept :tool-association))
+
+(defmethod get-tool-associations :tool
+  [context concept]
+  (meta-db/get-associations-for-tool context concept))
 
 (defmulti index-concept
   "Index the given concept with the parsed umm record. Indexing tag association and variable
@@ -504,9 +512,9 @@
 (defn- index-associated-concept
   "Given a concept id, index the concept to which it refers."
   [context concept-id options]
-  (let [concept (meta-db/get-latest-concept context concept-id)
-        parsed-concept (cp/parse-concept context concept)]
-    (index-concept context concept parsed-concept options)))
+  (let [concept (meta-db/get-latest-concept context concept-id)]
+    (when-not (:deleted concept)
+      (index-concept context concept (cp/parse-concept context concept) options))))
 
 (defn- index-associated-generic-concept
   "Given a concept id, revision id, index the concept to which it refers."
@@ -562,11 +570,17 @@
 
 (defmethod index-concept :service-association
   [context concept parsed-concept options]
-  (index-associated-collection context concept options))
+  (index-associated-collection context concept options)
+  (index-associated-concept context 
+                            (get-in concept [:extra-fields :service-concept-id])
+                            options))
 
 (defmethod index-concept :tool-association
   [context concept parsed-concept options]
-  (index-associated-collection context concept options))
+  (index-associated-collection context concept options)
+  (index-associated-concept context
+                            (get-in concept [:extra-fields :tool-concept-id])
+                            options))
 
 (defmethod index-concept :generic-association
   [context concept parsed-concept options]

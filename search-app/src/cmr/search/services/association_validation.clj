@@ -432,16 +432,49 @@
         :invalid-data (assoc-msg/same-concept-generic-association (:concept-id concept)))
     associations))
 
+(defn- get-assoc-type
+  "Return association type given the concept-id and the assoc-id."
+  [concept-id assoc-id]
+  (let [source-concept-id (first (sort [concept-id assoc-id]))
+        dest-concept-id (second (sort [concept-id assoc-id]))
+        source-concept-type-str (name (concepts/concept-id->type source-concept-id))
+        dest-concept-type-str (name (concepts/concept-id->type dest-concept-id))]
+    (string/upper-case (str source-concept-type-str "-" dest-concept-type-str))))
+
+(defn validate-generic-association-combination-types
+  "Disallow collection to be associated with services, tools and variables through
+  generic association api. because the old association api and the new ones have different
+  native-id, concept-id, association-type structures."
+  [concept associations]
+  (let [concept-id (:concept-id concept)
+        concept-type (concepts/concept-id->type concept-id)
+        associated-concept-ids (map :concept-id associations)
+        associated-concept-types (map #(concepts/concept-id->type %) associated-concept-ids)
+        checking-types [:variable :service :tool :collection]
+        disallowed-association-types ["COLLECTION-VARIABLE" "COLLECTION-SERVICE" "COLLECTION-TOOL"]]
+    (if (and (some #(= concept-type %) checking-types)
+             (seq (set/intersection (set associated-concept-types) (set checking-types))))
+      (let [cannot-assoc-ids (for [associated-concept-id associated-concept-ids
+                                   :let [assoc-type (get-assoc-type concept-id associated-concept-id)]
+                                   :when (some #(= assoc-type %) disallowed-association-types)]
+                               associated-concept-id)]
+        (if (seq cannot-assoc-ids)
+          (errors/throw-service-error
+           :invalid-data
+           (assoc-msg/cannot-assoc-msg concept-id (pr-str cannot-assoc-ids)))
+          associations))
+      associations)))
+
 (defn validate-generic-association-types
   "Validates only certain concept types are supported for generic associations."
   [concept associations]
   ;;We currently only support generic associations among collection and all generic concept types
-  ;; Other types could be ingested, but since the reindex event is not being handled
+  ;;Other types could be ingested, but since the reindex event is not being handled
   ;;yet, the associations won'be shown in the concept search. We should support them after
   ;;having the event handler in place.
   (let [concept-ids (concat [(:concept-id concept)] (map :concept-id associations))
         concept-types (map #(concepts/concept-id->type %) concept-ids)
-        supported-concept-types (set (concat [:collection]
+        supported-concept-types (set (concat [:collection :variable]
                                              (concepts/get-generic-concept-types-array)))
         non-supported-types (remove nil? 
                                     (map #(when-not (contains? supported-concept-types %) %)

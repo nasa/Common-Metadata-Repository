@@ -12,6 +12,7 @@
    [cmr.common-app.services.search.results-model :as results]
    [cmr.metadata-db.services.concept-service :as metadata-db]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
+   [cmr.search.results-handlers.results-handler-util :as rs-util]
    [cmr.search.results-handlers.umm-json-results-helper :as results-helper]))
 
 (defn- fetch-metadata
@@ -68,6 +69,9 @@
             concept-id :concept-id
             associations-gzip-b64 :associations-gzip-b64} :_source} elastic-result
           revision-id (er-to-qr/get-revision-id-from-elastic-result concept-type elastic-result)
+          associations (some-> associations-gzip-b64
+                               util/gzip-base64->string
+                               edn/read-string)
           result-item (util/remove-nil-keys
                        {:concept_id concept-id
                         :revision_id revision-id
@@ -75,9 +79,8 @@
                         :native_id native-id
                         :name name
                         :id id
-                        :generic-associations (some-> associations-gzip-b64
-                                                      util/gzip-base64->string
-                                                      edn/read-string)})]
+                        :associations (rs-util/build-association-concept-id-list associations concept-type)
+                        :association-details (rs-util/build-association-details associations concept-type)})]
       (if deleted
         (assoc result-item :deleted deleted)
         result-item))))

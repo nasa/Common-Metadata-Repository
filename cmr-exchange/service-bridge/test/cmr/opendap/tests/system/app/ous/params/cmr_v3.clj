@@ -621,3 +621,51 @@
         (is (= 400 (:status response)))
         (is (= {:errors ["Parameter dap-version can only be either 2 or 4, but was 3."]}
                (util/parse-response response)))))))
+
+(deftest collection-paging
+  (let [collection-id "C1200442179-HMR_TME"
+        base-url (format "http://localhost:%s/service-bridge/ous/collection/%s"
+                         (test-system/http-port)
+                         collection-id)]
+    (testing "default paging"
+      (let [response @(httpc/get base-url options)]
+        (is (= 200 (:status response)))
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020621.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020622.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020623.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020624.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020625.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020626.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020627.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020628.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020629.he5.dap.nc4"]
+               (util/parse-response response))))
+      (let [response @(httpc/get (str base-url "?page_num=2") options)]
+        (is (= 200 (:status response)))
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020630.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/FS2/AIRS/AIRX3TEST.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.dap.nc4"]
+               (util/parse-response response)))))
+
+    (testing "specific page_size and page_num"
+      (let [response @(httpc/get (str base-url "?page_size=5") options)]
+        (is (= 200 (:status response)))
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m0105t093001.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020621.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020622.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020623.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020624.he5.dap.nc4"]
+               (util/parse-response response))))
+      (let [response @(httpc/get (str base-url "?page_size=5&page_num=2") options)]
+        (is (= 200 (:status response)))
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020625.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020626.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020627.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020628.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020629.he5.dap.nc4"]
+               (util/parse-response response))))
+      (let [response @(httpc/get (str base-url "?page_size=5&page_num=3") options)]
+        (is (= 200 (:status response)))
+        (is (= ["https://f5eil01.edn.ecs.nasa.gov/opendap/HDF-EOS5/Aura_OMI_Level3/OMUVBd.003/2015/OMI-Aura_L3-OMUVBd_2015m0101_v003-2015m13208020630.he5.dap.nc4"
+                "https://f5eil01.edn.ecs.nasa.gov/opendap/DEV01/FS2/AIRS/AIRX3TEST.006/2016.07.01/AIRS.2016.07.01.L3.RetStd001.v6.0.31.0.G16187132305.hdf.dap.nc4"]
+               (util/parse-response response)))))))

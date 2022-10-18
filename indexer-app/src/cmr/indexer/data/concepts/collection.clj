@@ -5,11 +5,9 @@
    [clj-time.core :as t]
    [clojure.set :as set]
    [clojure.string :as str]
-   [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
@@ -17,6 +15,7 @@
    [cmr.elastic-utils.index-util :as index-util]
    [cmr.indexer.config :as indexer-config]
    [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
+   [cmr.indexer.data.concepts.association-util :as assoc-util]
    [cmr.indexer.data.concepts.attribute :as attrib]
    [cmr.indexer.data.concepts.collection.collection-util :as collection-util]
    [cmr.indexer.data.concepts.collection.community-usage-metrics :as metrics]
@@ -33,23 +32,19 @@
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.concepts.service :as service]
    [cmr.indexer.data.concepts.spatial :as spatial]
-   [cmr.indexer.data.concepts.subscription :as subscription]
    [cmr.indexer.data.concepts.tag :as tag]
    [cmr.indexer.data.concepts.tool :as tool]
    [cmr.indexer.data.concepts.variable :as variable]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.transmit.metadata-db :as metadata-db]
    [cmr.umm.collection.entry-id :as eid]
-   [cmr.umm-spec.acl-matchers :as umm-matchers]
    [cmr.umm-spec.date-util :as date-util]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.models.umm-collection-models :as umm-collection]
    [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.related-url :as ru]
    [cmr.umm-spec.time :as spec-time]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
-   [cmr.umm-spec.util :as su]
-   [cmr.umm.umm-collection :as umm-c]))
+   [cmr.umm-spec.util :as su]))
 
 (defn spatial->elastic
   [collection]
@@ -140,22 +135,22 @@
       (assoc-nil-if :DataCenters (= (:DataCenters collection) [su/not-provided-data-center]))))
 
 (defn- associations->gzip-base64-str
-  "Returns the gziped base64 string for the given variable,service and tool associations"
-  [variable-associations service-associations tool-associations generic-associations]
+  "Returns the gziped base64 string for the given variable, service and tool associations"
+  [variable-associations service-associations tool-associations generic-associations concept-id]
   (when (or (seq variable-associations)
             (seq service-associations)
             (seq tool-associations)
             (seq generic-associations))
-    (util/string->gzip-base64
-     (pr-str
-      (util/remove-map-keys empty?
-                            {:variables (mapv :variable-concept-id variable-associations)
-                             :services (mapv :service-concept-id service-associations)
-                             :tools (mapv :tool-concept-id tool-associations)
-                             ;;the collections selected from :associated-concept-id
-                             ;;are from the rows that're variable/service/tool associations.
-                             :generics (remove #(= :collection (concepts/concept-id->type %))
-                                               (mapv :associated-concept-id generic-associations))})))))
+    (let [gen-assocs (when (seq generic-associations)
+                       (assoc-util/generic-assoc-list->assoc-struct generic-associations concept-id))]
+      (util/string->gzip-base64
+       (pr-str
+        (util/remove-map-keys empty?
+                              (merge
+                               {:variables variable-associations
+                                :services service-associations
+                                :tools tool-associations}
+                               gen-assocs)))))))
 
 (defn- variable-service-tool-associations->elastic-docs
   "Returns the elastic docs for variable, service and tool assocations"
@@ -520,7 +515,7 @@
                                                          :value-lowercase)
             :associations-gzip-b64
             (associations->gzip-base64-str
-             variable-associations service-associations tool-associations generic-associations)
+             variable-associations service-associations tool-associations generic-associations concept-id)
             :usage-relevancy-score 0
             :horizontal-data-resolutions {:value horizontal-data-resolutions
                                           :priority 0}
