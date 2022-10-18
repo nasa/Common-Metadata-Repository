@@ -48,7 +48,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
         * [PUT - Create or Update a subscription.](#update-subscription)
         * [DELETE - Delete a subscription.](#delete-subscription)
         * [Subscription Access Control](#subscription-access-control)
-%GENERIC-TABLE-OF-CONTENTS%
+* %GENERIC-TABLE-OF-CONTENTS%
 * Translations
     * /translate/collection
         * [POST - Translate collection metadata.](#translate-collection)
@@ -1043,10 +1043,10 @@ Bulk update post request takes the following parameters:
 * Name (optional) - a name used to identify a bulk update task. It needs to be unique within a provider.
 * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`, `FIND_AND_UPDATE_HOME_PAGE_URL`
 * Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
-* Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.  
+* Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.
 * Find value (required for `FIND_AND_REPLACE`, `FIND_AND_UPDATE` and `FIND_AND_REMOVE` update types) - UMM-JSON representation of the data to find
 
-Update types that include a FIND will match on the fields supplied in the find value. For example, for a science keyword update with a find value of `{"Category": "EARTH SCIENCE"}`, any science keyword with a category of "EARTH SCIENCE" will be considered a match regardless of the values of the science keyword topic, term, etc. It's worth noting that find value can not contain nested fields. So for bulk update on PLATFORMS, for example, find value can only contain Type, ShortName and LongName, not the nested fields like Characteristics and Instruments. On the other hand, update value can contain all the valid fields including the nested fields. So, nested fields can be updated, they just can't be used to find the matches.   
+Update types that include a FIND will match on the fields supplied in the find value. For example, for a science keyword update with a find value of `{"Category": "EARTH SCIENCE"}`, any science keyword with a category of "EARTH SCIENCE" will be considered a match regardless of the values of the science keyword topic, term, etc. It's worth noting that find value can not contain nested fields. So for bulk update on PLATFORMS, for example, find value can only contain Type, ShortName and LongName, not the nested fields like Characteristics and Instruments. On the other hand, update value can contain all the valid fields including the nested fields. So, nested fields can be updated, they just can't be used to find the matches.
 
 The difference between `FIND_AND_UPDATE` and `FIND_AND_REPLACE` is `FIND_AND_REPLACE` will remove the matches and replace them entirely with the values specified in update value, while with `FIND_AND_UPDATE`, only the field(s) specified in the update value will be replaced, with the rest of the original value retained. For example, with a platform update value of `{"ShortName": "A340-600"}`, only the short name will be updated during a find and update, while the long name, instruments, and other fields retain their values. If a field specified in the update value doesn't exist in the matches, the field will be added.
 

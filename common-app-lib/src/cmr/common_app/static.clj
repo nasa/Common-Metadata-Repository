@@ -234,7 +234,10 @@
          (when-let [resource (site-resource page)]
            (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)
                  site-example-provider (get site-provider-map (headers "host") "PROV1")
-                 cmr-example-collection-id (str "C1234567-" site-example-provider)]
+                 cmr-example-collection-id (str "C1234567-" site-example-provider)
+                 markdown-content (read-generic-markdown (nth (re-find #"/(.*)/" (str page)) 1))
+                 markdown-toc (read-generic-markdown (str (nth (re-find #"/(.*)/" (str page)) 1) "-toc"))]
+             (def my-toc markdown-toc)
              {:status 200
               :headers {"Content-Type" "text/html; charset=utf-8"}
               :body (-> resource
@@ -244,8 +247,10 @@
                         ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/retrieve-html-table-content "search"))
                         ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (gconfig/stuff "ingest"))
                         ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/stuff "search"))
-                        (string/replace "%GENERIC-TABLE-OF-CONTENTS%" (gconfig/retrieve-html-table-content (nth (re-find #"/(.*)/" (str page)) 1)))
-                        (string/replace "%GENERIC-DOCS%" (read-generic-markdown (nth (re-find #"/(.*)/" (str page)) 1)))
+                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS%" (gconfig/retrieve-html-table-content (nth (re-find #"/(.*)/" (str page)) 1)))
+                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS%" (str "" (read-generic-markdown (str (nth (re-find #"/(.*)/" (str page)) 1) "-toc")) ""))
+                        (string/replace "%GENERIC-TABLE-OF-CONTENTS%" (subs markdown-toc 11 (- (count markdown-toc) 11)))
+                        (string/replace "%GENERIC-DOCS%" markdown-content)
                         ;(string/replace "%GENERIC-SEARCH-DOCS%" (read-generic-markdown "search"))
                         ;(string/replace "%GENERIC-INGEST-DOCS%" (read-generic-markdown "ingest"))
                         (string/replace "%CMR-ENDPOINT%" cmr-root)

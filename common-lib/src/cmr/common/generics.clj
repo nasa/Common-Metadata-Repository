@@ -228,9 +228,11 @@
         (io/resource)
         (slurp)
         (get-table-contents-headers-from-markdown)
+        (as-> xs (map #(str % "</a><ul>") xs))
         (string/join)
-        (as-> xs (str "</ul></li></ul><li>%uc-plural-generic%<ul><li>/providers/&lt;provider-id&gt;%plural-generic%&lt;native-id&gt;<ul>" xs))
-        ;(as-> xs (str "</ul></li>" xs))
+        ;; ingest (as-> xs (str "</ul></li></ul><li>%uc-plural-generic%<ul><li>/providers/&lt;provider-id&gt;%plural-generic%&lt;native-id&gt;<ul>" xs))
+        (as-> xs (str "</ul></li>" xs))
+        (string/replace #"</a><ul>$" "</a></li>")
         (table-of-contents-html (name generic-keyword)))
     (catch Exception e (str ""))))
 
@@ -248,9 +250,9 @@
   [header-list]
   (-> header-list
   (as-> xs (map #(string/replace % #"#+\s+<a\s+name=\"" "<li><a href=\"#") xs))
-  (as-> xs (map #(string/replace % #"</a>" "") xs))
+  (as-> xs (map #(string/replace % #"</a>\s" "") xs))
   ;(as-> xs (map #(str % "</a></li>") xs))
-  (as-> xs (map #(str % "</a></li>") xs))
+  ;(as-> xs (map #(str % "</a></li>") xs))
   (as-> xs (string/join xs))))
 
 (defn retrieve-html-table-content
