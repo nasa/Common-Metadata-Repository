@@ -23,8 +23,7 @@
                     provider_id
                     user_id
                     document_name
-                    schema
-                    mime_type]} result]
+                    schema]} result]
         (util/remove-nil-keys {:concept-type concept-type
                                :native-id native_id
                                :concept-id concept_id
@@ -39,17 +38,16 @@
                                :transaction-id transaction_id
                                :user-id user_id
                                :extra-fields {:document-name document_name
-                                              :schema schema
-                                              :mime-type mime_type}})))))
+                                              :schema schema}})))))
 
 (defn- concept->insert-args
   [concept]
-  (let [{{:keys [document-name schema mime-type]} :extra-fields
+  (let [{{:keys [document-name schema]} :extra-fields
          user-id :user-id
          provider-id :provider-id} concept
         [cols values] (c/concept->common-insert-args concept)]
-    [(concat cols ["provider_id" "user_id" "document_name" "schema" "mime_type"])
-     (concat values [provider-id user-id document-name schema mime-type])]))
+    [(concat cols ["provider_id" "user_id" "document_name" "schema"])
+     (concat values [provider-id user-id document-name schema])]))
 
 (doseq [doseq-concept-type (cc/get-generic-concept-types-array)]
   (defmethod c/concept->insert-args [doseq-concept-type false]

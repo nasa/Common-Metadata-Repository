@@ -103,8 +103,7 @@
                        :native-id native-id
                        :user-id (api-core/get-user-id request-context headers)
                        :extra-fields {:document-name (:Name document)
-                                      :schema spec-key
-                                      :mime-type (str "application/vnd.nasa.cmr.umm+json;version=" spec-version)}
+                                      :schema spec-key}
                        :concept-sub-type concept-sub-type)
        :spec-key spec-key
        :spec-version spec-version

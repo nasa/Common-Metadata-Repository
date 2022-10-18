@@ -88,8 +88,7 @@
                         :revision-id 1
                         :concept-type "grid"
                         :extra-fields {:document-name "Grid-A7-v1"
-                                       :schema "grid"
-                                       :mime-type "application/vnd.nasa.cmr.umm+json;version=0.0.1"}
+                                       :schema "grid"}
                         :metadata gen-util/grid-good}
 
               create-result (generic-requester gen-util/grid-good :post)
