@@ -462,7 +462,8 @@
                       {:concept-id (:coll-concept-id concept)
                        :revision-id (:coll-revision-id concept)
                        :source-concept-id (:concept-id concept)
-                       :user-id (:user-id concept)})]
+                       :user-id (:user-id concept)
+                       :data (:data concept)})]
     ;; context passed from perform-post-commit-association is already a mdb-context.
     (update-variable-association context association :insert)))
 

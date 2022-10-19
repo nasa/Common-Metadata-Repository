@@ -662,9 +662,18 @@
   (def db (get-in user/system [:apps :metadata-db :db]))
   ;; Backdoor tool to read the encoded and zipped metadata column since this can
   ;; not be done in a SQL query tool. All other columns are visible there.
+  ;; find a full list of types (param 2) in common-lib/src/cmr/common/concepts.clj
   (let [c (get-concept db :service-association "PROV1" "SA1200000040-CMR")
         raw_meta_edn (:metadata c)
         meta (read-string raw_meta_edn)]
+    meta)
+
+  ;; or here is a variable-association example:
+  (let [c (get-concept db :variable-association "PROV1" "VA1200000061-CMR")
+        _ (println c)
+        raw-meta-edn (:metadata c)
+        _ (println "raw meta:\n" raw-meta-edn)
+        meta (read-string raw-meta-edn)]
     meta)
 
   )

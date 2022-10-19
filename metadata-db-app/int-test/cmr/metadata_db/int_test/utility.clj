@@ -233,26 +233,28 @@
 
 (defn- save-concept-core
   "Fundamental save operation"
-  [concept]
-  (let [response (client/post (concepts-url)
-                              {:body (json/generate-string concept)
-                               :content-type :json
-                               :accept :json
-                               :throw-exceptions false
-                               :connection-manager (conn-mgr)})
-        status (:status response)
-        body (json/decode (:body response) true)
-        {:keys [revision-id concept-id errors variable-association]} body]
-    (if (= :variable (:concept-type concept))
-      {:status status
-       :revision-id revision-id
-       :concept-id concept-id
-       :errors errors
-       :variable-association variable-association}
-      {:status status
-       :revision-id revision-id
-       :concept-id concept-id
-       :errors errors})))
+  ([concept] (save-concept-core concept nil))
+  ([concept headers]
+   (let [response (client/post (concepts-url)
+                               {:body (json/generate-string concept)
+                                :content-type :json
+                                :accept :json
+                                :headers (when headers headers)
+                                :throw-exceptions false
+                                :connection-manager (conn-mgr)})
+         status (:status response)
+         body (json/decode (:body response) true)
+         {:keys [revision-id concept-id errors variable-association]} body]
+     (if (= :variable (:concept-type concept))
+       {:status status
+        :revision-id revision-id
+        :concept-id concept-id
+        :errors errors
+        :variable-association variable-association}
+       {:status status
+        :revision-id revision-id
+        :concept-id concept-id
+        :errors errors}))))
 
 (defn save-concept
   "Make a POST request to save a concept with JSON encoding of the concept.
@@ -262,13 +264,15 @@
   ([concept]
    (save-concept concept 1))
   ([concept num-revisions]
+   (save-concept concept num-revisions nil))
+  ([concept num-revisions header]
    (let [concept (update-in concept [:revision-date]
                             ;; Convert date times to string but allow invalid
                             ;; strings to be passed through
                             #(when % (str %)))]
      (dotimes [n (dec num-revisions)]
-       (assert-no-errors (save-concept-core concept)))
-     (save-concept-core concept))))
+       (assert-no-errors (save-concept-core concept header)))
+     (save-concept-core concept header))))
 
 (defn delete-concept
   "Make a DELETE request to mark a concept as deleted. Returns the status and revision id of the

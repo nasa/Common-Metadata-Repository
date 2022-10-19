@@ -16,7 +16,8 @@
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.echo.tokens :as tokens])
+   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.common.util :as util])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -217,20 +218,29 @@
     concept))
 
 (defn read-body!
-  "Returns the body content string by slurping the request body.
-  This function has the side effect of emptying the request body.
-  Don't try to read the body again after calling this function."
+  "Returns the body content string by slurping the request body. This function
+   has the side effect of emptying the request body. Don't try to read the body
+   again after calling this function.
+   For some calls with curl, users may send two -d flags, for example: one for
+   variables, and a second with the payload. Curl will transmit these two
+   sections with an ampersand between them. If this is found in the data, then
+   all sections will be split and returned as different items in array,
+   otherwise an array with one item is returned."
   [body]
-  (string/trim (slurp body)))
+  (let [body (string/trim (slurp body))
+        parts (string/split body #"&")]
+    (if (> (count parts) 0) parts [body])))
 
 (defn- metadata->concept
   "Create a metadata concept from the given metadata"
   [concept-type metadata content-type headers]
-  (-> {:metadata metadata
+  (-> {:metadata (first metadata)
+       :data (second metadata)
        :format (mt/keep-version content-type)
        :concept-type concept-type}
       (set-concept-id headers)
-      (set-revision-id headers)))
+      (set-revision-id headers)
+      (util/remove-nil-keys)))
 
 (defn body->concept!
   "Create a metadata concept from the given request body.
