@@ -345,8 +345,10 @@
 
 (defmethod get-elastic-version :service
   [context concept]
-  (let [service-associations (meta-db/get-associations-for-service context concept)]
-    (get-elastic-version-with-associations context concept {:service-associations service-associations})))
+  (let [service-associations (meta-db/get-associations-for-service context concept)
+        generic-associations (meta-db/get-generic-associations-for-concept context concept)]
+    (get-elastic-version-with-associations context concept {:service-associations service-associations
+                                                            :generic-associations generic-associations})))
 
 (defmethod get-elastic-version :subscription
   [context concept]

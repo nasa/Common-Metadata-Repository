@@ -13,7 +13,7 @@
 (defmethod es/parsed-concept->elastic-doc :service
   [_context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
-                revision-date format extra-fields service-associations]} concept
+                revision-date format extra-fields service-associations generic-associations]} concept
         {:keys [service-name]} extra-fields
         long-name (:LongName parsed-concept)
         service-type (:Type parsed-concept)
@@ -62,8 +62,9 @@
                                (pr-str
                                 (util/remove-map-keys
                                  empty?
-                                 (assoc-util/generic-assoc-list->assoc-struct service-associations
-                                                                              concept-id))))})))
+                                 (assoc-util/generic-assoc-list->assoc-struct
+                                  (concat service-associations generic-associations)
+                                   concept-id))))})))
 
 (defn- service-associations->service-concepts
   "Returns the service concepts for the given service associations."

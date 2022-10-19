@@ -45,6 +45,185 @@
 ;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Test that generic associations can be made between generic documents and services. 
+(deftest test-service-and-generic-association
+  (let [token (echo-util/login (system/context) "user1")
+        ;;First ingest a Grid concept
+        native-id (format "Generic-Test-%s" (UUID/randomUUID))
+        grid-doc gen-util/grid-good
+        grid (gen-util/ingest-generic-document
+              nil "PROV1" native-id :grid grid-doc :post)
+        grid-concept-id (:concept-id grid)
+        grid-revision-id (:revision-id grid)
+
+        ;;Then ingest two collections and two services 
+        coll1 (data-core/ingest-umm-spec-collection "PROV1"
+                                                    (data-umm-c/collection
+                                                     {:ShortName "coll1"
+                                                      :EntryTitle "entry-title1"})
+                                                    {:token "mock-echo-system-token"})
+        coll2 (data-core/ingest-umm-spec-collection "PROV1"
+                                                    (data-umm-c/collection
+                                                     {:ShortName "coll2"
+                                                      :EntryTitle "entry-title2"})
+                                                    {:token "mock-echo-system-token"})
+        coll1-concept-id (:concept-id coll1)
+        coll1-revision-id (:revision-id coll1)
+        coll2-concept-id (:concept-id coll2)
+        coll2-revision-id (:revision-id coll2)
+        _ (index/wait-until-indexed)
+        sv1 (service-util/ingest-service-with-attrs {:native-id "sv1"
+                                                     :Name "service1"}) 
+        sv2 (service-util/ingest-service-with-attrs {:native-id "sv2"
+                                                     :Name "service2"}) 
+        sv1-concept-id (:concept-id sv1)
+        sv1-revision-id (:revision-id sv1)
+        sv2-concept-id (:concept-id sv2)
+        sv2-revision-id (:revision-id sv2)]
+    (index/wait-until-indexed)
+    (testing "Associate service with service by concept-id and revision-ids"
+      (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token sv2-concept-id sv2-revision-id [{:concept-id sv1-concept-id  :revision-id sv1-revision-id}])
+            ;;Switch the position of sv1 and sv2 should return the same concept-id and revision-id is increased by 1.
+            response2 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token sv1-concept-id sv1-revision-id [{:concept-id sv2-concept-id :revision-id sv2-revision-id}])
+            ;;Try to associate sv1 with sv2 by concept-id only. This shouldn't be allowed.
+            ;;Try to associate sv2 with sv1 by conept-id only,  This shouldn't be allowed.
+            ;;The following association is trying to do both of the above.
+            response3 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token sv2-concept-id nil [{:concept-id sv1-concept-id}])
+            _ (index/wait-until-indexed)
+
+            ;;Search for the service sv1, it should return the association
+            sv1-search-result (search-request "services.umm_json" "native_id=sv1")
+            sv1-search-body (json/parse-string (:body sv1-search-result) true)
+            sv1-search-generic-associations (get-in (first (:items sv1-search-body)) [:meta :associations :services])
+
+            ;;Search for the service sv2, it should return the association
+            sv2-search-result (search-request "services.umm_json" "native_id=sv2")
+            sv2-search-body (json/parse-string (:body sv2-search-result) true)
+            sv2-search-generic-associations (get-in (first (:items sv2-search-body)) [:meta :associations :services])
+
+            ;;Dissociate the association
+            response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
+                       token sv1-concept-id sv1-revision-id [{:concept-id sv2-concept-id :revision-id sv2-revision-id}])
+            _ (index/wait-until-indexed)
+
+            ;;Search for the service sv1 again, it should NOT return the association
+            sv1-search-result1 (search-request "variables.umm_json" "native_id=sv1")
+            sv1-search-body1 (json/parse-string (:body sv1-search-result1) true)
+            sv1-search-generic-associations1 (get-in (first (:items sv1-search-body1)) [:meta :associations :services])
+
+            ;;Search for the service sv2 again, it should NOT return the association
+            sv2-search-result1 (search-request "variables.umm_json" "native_id=sv2")
+            sv2-search-body1 (json/parse-string (:body sv2-search-result1) true)
+            sv2-search-generic-associations1 (get-in (first (:items sv2-search-body1)) [:meta :associations :services])]
+        ;; The first and second associations are successful
+        (is (= 200 (:status response1) (:status response2)))
+
+        ;; The first and second associations are creating and updating the same association
+        (is (= (get-in (first (:body response1)) [:generic-association :concept-id])
+               (get-in (first (:body response2)) [:generic-association :concept-id])))
+        (is (= (get-in (first (:body response2)) [:generic-association :revision-id])
+               (+ 1 (get-in (first (:body response1)) [:generic-association :revision-id]))))
+
+        ;; The third association is not allowed.
+        (is (= 400 (:status response3)))
+        (is (some? (re-find #"There are already generic associations between concept id \[S\d*-PROV1\] and concept id \[S\d*-PROV1\] revision ids \[\d*\], cannot create generic association on the same concept without revision id."
+                            (-> response3
+                                (:body)
+                                (first)
+                                (:errors)
+                                (first)))))
+
+        ;; Search for the service sv1 returns the sv2 as generic association
+        (is (= [sv2-concept-id]
+               sv1-search-generic-associations))
+
+        ;; Search for the variable sv2 returns the sv1 as generic association
+        (is (= [sv1-concept-id]
+               sv2-search-generic-associations))
+
+        ;; Dissociation of the association is successful
+        (is (= 200 (:status response4)))
+
+        ;; Search for the service sv1 again doesn't return the sv2 as generic association
+        (is (= nil sv1-search-generic-associations1))
+
+        ;; Search for the service sv2 again doesn't return the sv1 as generic association
+        (is (= nil sv2-search-generic-associations1))))
+    (testing "Associate grid with service by concept-id and revision-ids"
+      (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token grid-concept-id grid-revision-id [{:concept-id sv1-concept-id  :revision-id sv1-revision-id}])
+            ;;Switch the position of grid and service should return the same concept-id and revision-id is increased by 1.
+            response2 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token sv1-concept-id sv1-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id}])
+            ;;Try to associate grid with service by concept-id only. This shouldn't be allowed.
+            ;;Try to associate service with grid by conept-id only,  This shouldn't be allowed.
+            ;;The following association is trying to do both of the above.
+            response3 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token grid-concept-id nil [{:concept-id sv1-concept-id}])
+            _ (index/wait-until-indexed)
+
+            ;;Search for the grid, it should return the association
+            grid-search-result (search-request "grids.json" "name=Grid-A7-v1")
+            grid-search-body (json/parse-string (:body grid-search-result) true)
+            grid-search-generic-associations (get-in (first (:items grid-search-body)) [:associations :services])
+
+            ;;Search for the service, it should return the association
+            sv1-search-result (search-request "services.umm_json" "native_id=sv1")
+            sv1-search-body (json/parse-string (:body sv1-search-result) true)
+            sv1-search-generic-associations (get-in (first (:items sv1-search-body)) [:meta :associations :grids])
+
+            ;;Dissociate the association
+            response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
+                       token sv1-concept-id sv1-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id}])
+            _ (index/wait-until-indexed)
+
+            ;;Search for the grid again, it should NOT return the association
+            grid-search-result1 (search-request "grids.json" "name=Grid-A7-v1")
+            grid-search-body1 (json/parse-string (:body grid-search-result1) true)
+            grid-search-generic-associations1 (get-in (first (:items grid-search-body1)) [:associations :services])
+
+            ;;Search for the service again, it should NOT return the association
+            sv1-search-result1 (search-request "services.umm_json" "native_id=sv1")
+            sv1-search-body1 (json/parse-string (:body sv1-search-result1) true)
+            sv1-search-generic-associations1 (get-in (first (:items sv1-search-body1)) [:meta :associations :grids])]
+        ;; The first and second associations are successful
+        (is (= 200 (:status response1) (:status response2)))
+
+        ;; The first and second associations are creating and updating the same association
+        (is (= (get-in (first (:body response1)) [:generic-association :concept-id])
+               (get-in (first (:body response2)) [:generic-association :concept-id])))
+        (is (= (get-in (first (:body response2)) [:generic-association :revision-id])
+               (+ 1 (get-in (first (:body response1)) [:generic-association :revision-id]))))
+
+        ;; The third association is not allowed.
+        (is (= 400 (:status response3)))
+        (is (some? (re-find #"There are already generic associations between concept id \[GRD\d*-PROV1\] and concept id \[S\d*-PROV1\] revision ids \[\d*\], cannot create generic association on the same concept without revision id."
+                            (-> response3
+                                (:body)
+                                (first)
+                                (:errors)
+                                (first)))))
+
+        ;; Search for the grid returns the sv1 as generic association
+        (is (= [sv1-concept-id]
+               grid-search-generic-associations))
+
+        ;; Search for the service returns the grid as generic association
+        (is (= [grid-concept-id]
+               sv1-search-generic-associations))
+
+        ;; Dissociation of the association is successful
+        (is (= 200 (:status response4)))
+
+        ;; Search for the grid again doesn't return the sv1 as generic association
+        (is (= nil grid-search-generic-associations1))
+
+        ;; Search for the service again doesn't return the grid as generic association
+        (is (= nil  sv1-search-generic-associations1))))))
+
 ;; Test that generic associations can be made between generic documents and variables.
 (deftest test-variable-and-generic-association
   (let [token (echo-util/login (system/context) "user1")
