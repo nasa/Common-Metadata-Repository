@@ -543,11 +543,14 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 A new variable ingest endpoint is provided to ensure that variable association is created at variable ingest time.
 Variable concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/collections/<collection-concept-id>/<collection-revision-id>/variables/<native-id>`.  `<collection-revision-id>` is optional. The response will include the [concept id](#concept-id),[revision id](#revision-id), variable-association and associated-item.
 
+Association data can be provided by using multiple `-d` flags with the data being sent as the content for the second `-d` section. When updating a Variable, the calling application is responible for updating any association data meaning that if the data is to be present in the new revision, it must be carried over from the previouse revision.
+
 Note:
 
 1. There is no more fingerprint check at variable's ingest/update time because the existing fingerprint is obsolete. The new variable uniqueness is defined by variable name and the collection it's associated with and is checked at variable association creation time.
 2. When using the new variable ingest endpoint to update a variable, the association will be updated too. There can be one and only one association for each variable, with or without collection revision info. This decision is based on the feedback from NSIDC that there is no need for a variable to be associated with multiple revisions of a collection. When a new association info is passed in, the old one will be replaced, when the exact same association info is passed in, a new revision of the old association is created.
 3. MeasurementNames must conform to values specified by the KMS list: [Measurement Names](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/MeasurementName?format=csv).
+4. When using multiple `-d` flags, curl will add a `&` between all data blocks. When not using curl, this must be done in code or CMR will not be able to accept both variable and data.
 
 ```
 curl -i -XPUT \
@@ -568,7 +571,8 @@ curl -i -XPUT \
   \"VariableType\":\"SCIENCE_VARIABLE\",
   \"LongName\":\"A long UMM-Var name\",
   \"DimensionsName\":\"H2OFunc\",
-  \"DataType\":\"float32\"}"
+  \"DataType\":\"float32\"}" \
+  -d "{\"XYZ\": \"XYZ\", \"allow-regridding\": True}\"
 ```
 #### Successful Response in XML
 
