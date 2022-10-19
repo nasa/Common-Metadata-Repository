@@ -299,7 +299,7 @@ __Sample response__
 </results>
 ```
 
-##### <a name="sorting-grid-results"></a> Sorting Grid Results
+#### <a name="sorting-grid-results"></a> Sorting Grid Results
 
 By default, grid results are sorted by name, then provider-id.
 
