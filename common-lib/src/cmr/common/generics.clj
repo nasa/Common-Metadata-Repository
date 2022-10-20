@@ -134,7 +134,8 @@
         (format (name generic-keyword) generic-version (name file-name))
         (io/resource)
         (slurp))
-    (catch Exception e (str ""))))
+    (catch Exception e (str "" )
+           (error (format "Generic %s documentation was skipped" (name generic-keyword))))))
 
 (defn all-generic-docs
   "Parse over all of the generic documents and return their combined markdown as a string
@@ -188,7 +189,9 @@
    * table-of-content-headers: string list, the headers in the document
    * doc-type: string [ingest | search]"
   ([table-of-content-headers doc-type]
-   (let [depth (if (= doc-type "ingest") (ingest-depth-map (count (re-seq #"#" table-of-content-headers))) (search-depth-map (count (re-seq #"#" table-of-content-headers))))
+   (let [depth (if (= doc-type "ingest")
+                 (ingest-depth-map (count (re-seq #"#" table-of-content-headers)))
+                 (search-depth-map (count (re-seq #"#" table-of-content-headers))))
          link (peek (re-find #"=\"(.*)\">" table-of-content-headers))
          content (peek (re-find #">\s+([^<]*)$" table-of-content-headers))]
      (build-markdown-toc depth link content))))
@@ -203,16 +206,13 @@
    Returns: string"
   [file-name generic-keyword generic-version]
   (try
-    (-> "schemas/%s/v%s/%s.md"
-        (format (name generic-keyword) generic-version (name file-name))
-        (io/resource)
-        (slurp)
+    (-> (read-generic-doc-file file-name generic-keyword generic-version)
         (get-toc-headers-from-markdown)
         (as-> xs (map #(get-toc-data % (name file-name)) xs))
         (string/join)
         (as-> xs (if (= file-name "ingest")
-        (str (fill-in-generic-name "* %uc-plural-generic%\n    * /providers/\\<provider-id>/%plural-generic%/\\<native-id>\n"
-        (name generic-keyword)) xs) (str "" xs))))
+                   (str (fill-in-generic-name "* %uc-plural-generic%\n    * /providers/\\<provider-id>/%plural-generic%/\\<native-id>\n" (name generic-keyword)) xs)
+                   (str "" xs))))
     (catch Exception e (str ""))))
 
 (defn all-generic-docs-toc
@@ -224,11 +224,11 @@
   (string/join (seq (for [[k,v] (latest-approved-documents)] (format-generic-toc file-name k (str v))))))
 
 (defn format-toc-into-doc
-  "To fit generic docs into the toc a few html tags must be removed
-   Parameters: the fully markdown for ingest or search toc
+  "To fit generic docs into the toc a few html tags must be removed, this block will
+   exist in one and only one bullet item
+   Parameters: the complete markdown for ingest or search toc
    * generic-doc-toc: the full markdown data for the table of contents
    for either ingest or search
    Returns: string"
   [generic-doc-toc]
-  (string/replace-first
-   (string/replace generic-doc-toc #"\s*<\/li>\n?<\/ul>$" "") #"<ul>\s*\n?\s*<li>" ""))
+  (string/replace-first (string/replace generic-doc-toc #"\s*<\/li>\n?<\/ul>$" "") #"<ul>\s*\n?\s*<li>" ""))
