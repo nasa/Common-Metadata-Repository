@@ -241,26 +241,15 @@
            (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)
                  site-example-provider (get site-provider-map (headers "host") "PROV1")
                  cmr-example-collection-id (str "C1234567-" site-example-provider)
-                 docType (nth (re-find #"/(.*)/" (str page)) 1)
-                 markdown-content (read-generic-markdown (nth (re-find #"/(.*)/" (str page)) 1))
-                 markdown-toc (read-generic-markdown (str (nth (re-find #"/(.*)/" (str page)) 1) "-toc"))
-                 markdown-toc-items (read-generic-markdown-toc (gconfig/retrieve-html-table-content docType))]
-             (def my-toc markdown-toc)
+                 doc-type (nth (re-find #"/(.*)/" (str page)) 1)
+                 generic-doc-body (read-generic-markdown doc-type)
+                 generic-doc-toc (read-generic-markdown-toc (gconfig/all-generic-docs-toc doc-type))]
              {:status 200
               :headers {"Content-Type" "text/html; charset=utf-8"}
               :body (-> resource
                         slurp
-                        ;; (string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/all-generic-table-of-contents gconfig/search-table-of-contents-template))
-                        ;; (string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (gconfig/all-generic-table-of-contents gconfig/ingest-table-of-contents-template))
-                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/retrieve-html-table-content "search"))
-                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-INGEST-DOCS%" (gconfig/stuff "ingest"))
-                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS-SEARCH-DOCS%" (gconfig/stuff "search"))
-                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS%" (gconfig/retrieve-html-table-content (nth (re-find #"/(.*)/" (str page)) 1)))
-                        ;(string/replace "%GENERIC-TABLE-OF-CONTENTS%" (str "" (read-generic-markdown (str (nth (re-find #"/(.*)/" (str page)) 1) "-toc")) ""))
-                        (string/replace "%GENERIC-TABLE-OF-CONTENTS%" (string/replace-first (string/replace markdown-toc-items #"\s*<\/li>\n?<\/ul>$" "") #"<ul>\s+\n?\s+<li>" ""))
-                        (string/replace "%GENERIC-DOCS%" markdown-content)
-                        ;(string/replace "%GENERIC-SEARCH-DOCS%" (read-generic-markdown "search"))
-                        ;(string/replace "%GENERIC-INGEST-DOCS%" (read-generic-markdown "ingest"))
+                        (string/replace "%GENERIC-TABLE-OF-CONTENTS%" (gconfig/format-toc-into-doc generic-doc-toc))
+                        (string/replace "%GENERIC-DOCS%" generic-doc-body)
                         (string/replace "%CMR-ENDPOINT%" cmr-root)
                         (string/replace "%CMR-RELEASE-VERSION%" (config/release-version))
                         (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id))})))

@@ -19,19 +19,63 @@
   (testing "This string is ensuring that all the generics have their text concatanated together"
     (is (= true (string/includes? (gconfig/all-generic-docs "ingest") "Grid")))))
 
-(deftest get-generics-with-documenation-test
-  (testing "This should return a list of the names of the documents currently in the system, ensure that grid is in the system"
-    (is (= "grid" (some #{"grid"} (gconfig/get-list-of-generics-with-documenation (gconfig/all-generic-docs "ingest")))))))
+;; (deftest get-generics-with-documenation-test
+;;   (testing "This should return a list of the names of the documents currently in the system, ensure that grid is in the system"
+;;     (is (= "grid" (some #{"grid"} (gconfig/get-list-of-generics-with-documenation (gconfig/all-generic-docs "ingest")))))))
 
 (deftest table-of-contents-html-test
   (testing "Ensure that the strings have been replaced given a generic type in the system with documentation")
-  ;; (is (= true (string/includes? (gconfig/fill-in-generic-name gconfig/ingest-table-of-contents-template "grid") "Grid")))
-  ;; (is (= true (string/includes? (gconfig/fill-in-generic-name gconfig/ingest-table-of-contents-template "grid") "grid")))
-  ;; (is (= true (string/includes? (gconfig/fill-in-generic-name gconfig/ingest-table-of-contents-template "grid") "Grids")))
-  ;; (is (= true (string/includes? (gconfig/fill-in-generic-name gconfig/ingest-table-of-contents-template "grid") "grids")))
+  (def gen-string "/%generic%/%uc-generic%/%plural-generic%/%uc-plural-generic%")
+  (is (= true (string/includes?(gconfig/fill-in-generic-name gen-string "grid") "grid")))
+  (is (= true (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "grids")))
+  (is (= true (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "Grids")))
+  (is (= true (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "Grid"))))
+
+
+(def header-extract-full "### <a name=\"link\"></a> content\n Other items should not be indcluded")
+(deftest get-toc-headers-from-markdown
+  (testing "Ensure we can extact header information from the markdown to build a toc")
+  (is (= (gconfig/get-toc-headers-from-markdown header-extract-full) (list "### <a name=\"link\"></a> content"))))
+
+
+;; (def grid-toc "* Grids
+;;     * /providers/\<provider-id>/grids/\<native-id>
+;;         * [PUT - Create or update a grid.](#create-update-grid)
+;;         * [DELETE - Delete a grid.](#delete-grid)")
+(def header-extract-formatted-search "#### <a name=\"link\"></a> content")
+(def header-extract-formatted-ingest "### <a name=\"link\"></a> content")
+
+(deftest get-toc-data
+  (testing "Ensuring that we can extract the necessary components from a toc header")
+  (is (= (gconfig/get-toc-data header-extract-formatted-search "search") "    * [content](#link)\n"))
+  (is (= (gconfig/get-toc-data header-extract-formatted-ingest "ingest") "        * [content](#link)\n"))
   )
+
+(deftest build-markdown-toc-test
+  (testing "Ensuring that the markdown can be created from all of the headers for a given generic
+    retrived from the ingest or search .md")
+  (is (= (gconfig/build-markdown-toc 4 "GridInfo" "grid-link") "    * [grid-link](#GridInfo)\n")))
+
 
 ;; ;As more generic documentation items are added we can add more concepts to the tests
 ;; (deftest all-generic-table-of-contents-test
 ;;   (testing "Ensure that the combined html is returned that will be passed to the api docuement including all the generic's which have documentation are loaded into the system")
 ;;   (is (= true (string/includes? (gconfig/all-generic-table-of-contents gconfig/ingest-table-of-contents-template) "grids"))))
+(def formatted-search-grid-markdown "* [Grid](#grid)\n    * [Searching for grids](#searching-for-grids)\n        * [Grid Search Parameters](#grid-search-params)\n        * [Grid Search Response](#grid-search-response)\n    * [Retrieving All Revisions of a Grid](#retrieving-all-revisions-of-a-grid)\n    * [Sorting Grid Results](#sorting-grid-results)\n")
+(def formatted-ingest-grid-markdown "* Grids\n    * /providers/\\<provider-id>/grids/\\<native-id>\n        * [PUT - Create / Update a Grid](#create-update-grid)\n        * [DELETE - Delete a Grid](#delete-grid)\n")
+
+(deftest format-generic-toc-test
+  (testing "Ensuring that the generic-toc returns a formatted markdown")
+  (is (= (gconfig/format-generic-toc "search" "grid" "0.0.1") formatted-search-grid-markdown))
+  (is (= (gconfig/format-generic-toc "ingest" "grid" "0.0.1") formatted-ingest-grid-markdown)))
+
+(deftest all-generic-docs-toc-test
+  (testing "Ensuring that the generic-toc returns a formatted markdown")
+  (is (= true (string/includes? (gconfig/all-generic-docs-toc "search") "[Grid](#grid)"))))
+
+(def buried-html-item "<ul><li>Grid html</li></ul>")
+(deftest format-toc-into-doc-test
+  (testing "Due to preexisting formatting in the api.md documents we need to
+  remove the outer list item and unordered list item tags to ensure that the generics,
+            table of contents does NOT break formatting on the documentation")
+(is (= "Grid html" (gconfig/format-toc-into-doc buried-html-item))))

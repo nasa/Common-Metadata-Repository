@@ -257,7 +257,7 @@ Content-Length: 1177
 }
 ```
 
-##### <a name="retrieving-all-revisions-of-a-grid"></a> Retrieving All Revisions of a Grid
+#### <a name="retrieving-all-revisions-of-a-grid"></a> Retrieving All Revisions of a Grid
 
 In addition to retrieving the latest revision for a grid parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
