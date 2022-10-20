@@ -81,6 +81,39 @@
         sv2-concept-id (:concept-id sv2)
         sv2-revision-id (:revision-id sv2)]
     (index/wait-until-indexed)
+    (testing "Associate collection with service by concept-id and revision-ids"
+      (let [response1 (association-util/associate-by-concept-ids
+                       token sv1-concept-id [{:concept-id coll1-concept-id}
+                                             {:concept-id coll2-concept-id}])
+            _ (index/wait-until-indexed)
+            ;;Search for the service sv1, it should return the association
+            sv1-search-result (search-request "services.umm_json" "native_id=sv1")
+            sv1-search-body (json/parse-string (:body sv1-search-result) true)
+            sv1-search-generic-associations (get-in (first (:items sv1-search-body)) [:meta :associations :collections])
+           
+            ;;Search for the collection coll1, it should return the association
+            coll1-search-result (search-request "collections.umm-json" "entry_title=entry-title1")
+            coll1-search-body (json/parse-string (:body coll1-search-result) true)
+            coll1-search-generic-associations (get-in (first (:items coll1-search-body)) [:meta :associations :services])
+
+            ;;Search for the collection coll2, it should return the association
+            coll2-search-result (search-request "collections.umm-json" "entry_title=entry-title2")
+            coll2-search-body (json/parse-string (:body coll2-search-result) true)
+            coll2-search-generic-associations (get-in (first (:items coll2-search-body)) [:meta :associations :services])]
+        (is (= 200 (:status response1)))
+
+        ;; Search for the service sv1 returns the coll1 as association
+        (is (= (set [coll2-concept-id coll1-concept-id])
+               (set sv1-search-generic-associations)))
+
+        ;; Search for the collection coll1 returns the sv1 as association
+        (is (= [sv1-concept-id]
+               coll1-search-generic-associations))
+
+        ;; Search for the collection coll2 returns the sv1 as association
+        (is (= [sv1-concept-id]
+               coll2-search-generic-associations))))
+             
     (testing "Associate service with service by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                        token sv2-concept-id sv2-revision-id [{:concept-id sv1-concept-id  :revision-id sv1-revision-id}])

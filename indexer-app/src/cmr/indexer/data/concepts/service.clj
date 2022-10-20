@@ -62,7 +62,7 @@
                                (pr-str
                                 (util/remove-map-keys
                                  empty?
-                                 (assoc-util/generic-assoc-list->assoc-struct
+                                 (assoc-util/assoc-list->assoc-struct
                                   (concat service-associations generic-associations)
                                    concept-id))))})))
 
