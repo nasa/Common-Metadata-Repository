@@ -68,6 +68,6 @@
 (deftest format-toc-into-doc-test
   (testing "Due to preexisting formatting in the api.md documents we need to
   remove the outer list item and unordered list item tags to ensure that the generics,
-            table of contents does NOT break formatting on the documentation")
+table of contents does NOT break formatting on the documentation")
 (is (= "Grid html" (gconfig/format-toc-into-doc buried-html-item)))
 (is (= "Grid html" (gconfig/format-toc-into-doc buried-html-item-newline))))

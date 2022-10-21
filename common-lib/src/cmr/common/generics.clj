@@ -171,7 +171,6 @@
       (string/replace #"%plural-generic%" (inf/plural generic-type))
       (string/replace #"%uc-plural-generic%" (inf/plural (string/capitalize generic-type)))))
 
-;For each of the depth in the map get the output
 (defn build-markdown-toc
   "Get the markdown file for a generic based on the api string being read in
    Depth is a measure of how many spaces we need from the start of the line for the
