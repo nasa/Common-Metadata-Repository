@@ -52,7 +52,7 @@
                                                      (pr-str
                                                       (util/remove-map-keys
                                                        empty?
-                                                       (assoc-util/generic-assoc-list->assoc-struct tool-associations
+                                                       (assoc-util/assoc-list->assoc-struct tool-associations
                                                                                                     concept-id))))))))
 
 (defn- tool-associations->tool-concepts

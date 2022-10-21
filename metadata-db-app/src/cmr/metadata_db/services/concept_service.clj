@@ -831,7 +831,22 @@
                           :exclude-metadata true
                           :latest true})]
       ;; create service association tombstones and queue the service association delete events
-      (tombstone-associations context assoc-type search-params false :service))))
+      (tombstone-associations context assoc-type search-params false :service)))
+  (when (= :generic-association assoc-type)
+    (let [search-params1 (cutil/remove-nil-keys
+                          {:concept-type assoc-type
+                           :source-concept-identifier concept-id
+                           :source-revision-id revision-id
+                           :exclude-metadata true
+                           :latest true})
+          search-params2 (cutil/remove-nil-keys
+                          {:concept-type assoc-type
+                           :associated-concept-id concept-id
+                           :associated-revision-id revision-id
+                           :exclude-metadata true
+                           :latest true})]
+      (tombstone-associations context assoc-type search-params1 false :service)
+      (tombstone-associations context assoc-type search-params2 false :service))))
 
 (defmethod delete-associations :tool
   [context concept-type concept-id revision-id assoc-type]

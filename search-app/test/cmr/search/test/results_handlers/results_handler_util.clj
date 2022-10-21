@@ -4,19 +4,14 @@
             [cmr.search.results-handlers.results-handler-util :as rs-util]))
 
 (deftest convert-associations-test
-   (let [associations {:variables
-                       [{:variable-concept-id "V1200000019-PROV1", :associated-concept-id "C1200000007-PROV1"}
-                        {:variable-concept-id "V1200000021-PROV1", :associated-concept-id "C1200000007-PROV1"}],
-                       :services [{:service-concept-id "S1200000009-PROV1",
-                                   :associated-concept-id "C1200000007-PROV1",
-                                   :associated-revision-id 1,
-                                   :data {:convert-format {:XYZ "ZYX"}, :allow-regridding "true"}}]
-                       :tools [{:tool-concept-id "TL1200000010-PROV1", :associated-concept-id "C1200000007-PROV1", :associated-revision-id 1}] ,
+   (let [associations {:variables [{:concept-id "V1200000019-PROV1"} {:concept-id "V1200000021-PROV1"}]
+                       :services [{:concept-id "S1200000009-PROV1" :data {:convert-format {:XYZ "ZYX"}, :allow-regridding "true"}}]
+                       :tools [{:concept-id "TL1200000010-PROV1"}]
                        :dataqualitysummaries [{:concept-id "DQS1200000012-PROV1", :data {:XYZ "ZYX"}, :revision-id 1}],
                        :orderoptions [{:concept-id "OO1200000014-PROV1"} {:concept-id "OO1200000015-PROV1"}]}
          expected-detail {:variables [{:concept-id "V1200000019-PROV1"} {:concept-id "V1200000021-PROV1"}],
                           :services [{:data {:convert-format {:XYZ "ZYX"}, :allow-regridding "true"}, :concept-id "S1200000009-PROV1"}],
-                          :tools [{:concept-id "TL1200000010-PROV1"}] ,
+                          :tools [{:concept-id "TL1200000010-PROV1"}]
                           :dataqualitysummaries [{:concept-id "DQS1200000012-PROV1" :data {:XYZ "ZYX"}, :revision-id 1}],
                           :orderoptions [{:concept-id "OO1200000014-PROV1"} {:concept-id "OO1200000015-PROV1"}]}
          expected-list {:variables ["V1200000019-PROV1" "V1200000021-PROV1"] ,
@@ -24,8 +19,8 @@
                         :tools ["TL1200000010-PROV1"] ,
                         :dataqualitysummaries ["DQS1200000012-PROV1"],
                         :orderoptions ["OO1200000014-PROV1" "OO1200000015-PROV1"]}
-         tool-associations {:collections [{:tool-concept-id "TL1200000010-PROV1", :associated-concept-id "C1200000007-PROV1", 
-                                           :associated-revision-id 1, :data {:convert-format {:XYZ "ZYX"}, :allow-regridding "true"}}],
+         tool-associations {:collections [{:concept-id "C1200000007-PROV1" 
+                                           :revision-id 1, :data {:convert-format {:XYZ "ZYX"}, :allow-regridding "true"}}],
                             :dataqualitysummaries [{:concept-id "DQS1200000012-PROV1", :data {:XYZ "ZYX"}, :revision-id 1}]}
          tool-expected-detail {:collections [{:concept-id "C1200000007-PROV1" :revision-id 1, :data {:convert-format {:XYZ "ZYX"}, :allow-regridding "true"}}]
                                :dataqualitysummaries [{:concept-id "DQS1200000012-PROV1" :data {:XYZ "ZYX"}, :revision-id 1}]}]

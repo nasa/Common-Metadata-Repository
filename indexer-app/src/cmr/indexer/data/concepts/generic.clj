@@ -19,7 +19,7 @@
   [generic-associations concept-id]
   (when (seq generic-associations)
     (util/string->gzip-base64
-     (pr-str (assoc-util/generic-assoc-list->assoc-struct generic-associations concept-id)))))
+     (pr-str (assoc-util/assoc-list->assoc-struct generic-associations concept-id)))))
 
 (defmulti field->index
   "Functions which convert a part of metadata to a name-value which can be added
