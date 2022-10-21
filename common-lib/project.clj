@@ -67,7 +67,6 @@
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [criterium "0.4.4"]
-                                  [inflections "0.13.0"]
                                   [proto-repl "0.3.1"]
                                   [clj-http "2.3.0"]]
                    :jvm-opts ^:replace ["-server"]
