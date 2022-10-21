@@ -17,7 +17,8 @@
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.echo.tokens :as tokens]
-   [cmr.common.util :as util])
+   [cmr.common.util :as util]
+   [ring.util.codec :as ring-codec])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -221,21 +222,36 @@
   "Returns the body content string by slurping the request body. This function
    has the side effect of emptying the request body. Don't try to read the body
    again after calling this function.
+
+   Note, for testing/reuse use the three parameter function which takes a string
+   and makes fewer assupmtions about the content of the body.
+
    For some calls with curl, users may send two -d flags, for example: one for
    variables, and a second with the payload. Curl will transmit these two
-   sections with an ampersand between them. If this is found in the data, then
-   all sections will be split and returned as different items in array,
-   otherwise an array with one item is returned."
+   sections with an ampersand between them. To be HTTP complient, each section
+   needs to have a name and = sign to match the value. The first two sections
+   will be split and returned as different items in array, otherwise an array
+   with one item is returned."
   [body]
-  (let [body (string/trim (slurp body))
-        parts (string/split body #"&")]
-    (if (> (count parts) 0) parts [body])))
+  (let [body-str (string/trim (slurp body))]
+    (if (and ;;be flexable on location of parameters
+         (some? (re-matches (re-pattern (str ".*content=\\{.+\\}")) body-str))
+         (some? (re-matches (re-pattern (str ".+=.+&.+=.+")) body-str))
+         (some? (re-matches (re-pattern (str ".*data=\\{.+\\}")) body-str)))
+      (let [data (-> body-str
+                     (string/replace "&" "%26") ;; content may have URLs with & in them
+                     (string/replace
+                      (str "}%26data={") ;; was changed with all the others,
+                      (str "}&data={")) ;; but this one is special, switch it back
+                     (ring-codec/form-decode))] ;; split on our special deleminator
+        [(get data "content") (get data "data")])
+      [body-str])))
 
 (defn- metadata->concept
   "Create a metadata concept from the given metadata"
   [concept-type metadata content-type headers]
   (-> {:metadata (first metadata)
-       :data (second metadata)
+       :data (second metadata) ;; may be nil if not provided
        :format (mt/keep-version content-type)
        :concept-type concept-type}
       (set-concept-id headers)
