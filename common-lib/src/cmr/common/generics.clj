@@ -204,19 +204,16 @@
    * generic-version: 0.0.1
    Returns: string"
   [file-name generic-keyword generic-version]
-  (try
-    (-> "schemas/%s/v%s/%s.md"
-        (format (name generic-keyword) generic-version (name file-name))
-        (io/resource)
-        (slurp)
-        (get-toc-headers-from-markdown)
-        (as-> xs (map #(get-toc-data % (name file-name)) xs))
-        (string/join)
-        (as-> xs (if (= file-name "ingest")
+  (let [generic-markdown (read-generic-doc-file file-name generic-keyword generic-version)]
+   (if (not= generic-markdown "")
+     (-> generic-markdown
+             get-toc-headers-from-markdown
+             (as-> xs (map #(get-toc-data % (name file-name)) xs))
+             (string/join)
+             (as-> xs (if (= file-name "ingest")
                    (str (fill-in-generic-name "* %uc-plural-generic%\n    * /providers/\\<provider-id>/%plural-generic%/\\<native-id>\n" (name generic-keyword)) xs)
                    (str "" xs))))
-    (catch Exception e (info (format "generic %s was skipped" generic-keyword))
-           (str ""))))
+     (str ""))))
 
 (defn all-generic-docs-toc
   "Parse over all of the generic documents and return their combined markdown as a string
