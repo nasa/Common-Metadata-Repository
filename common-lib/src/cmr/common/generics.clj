@@ -231,4 +231,6 @@
    for either ingest or search
    Returns: string"
   [generic-doc-toc]
-  (string/replace-first (string/replace generic-doc-toc #"\s*<\/li>\n?<\/ul>$" "") #"<ul>\s*\n?\s*<li>" ""))
+  (-> generic-doc-toc
+      (string/replace #"\s*<\/li>\n?<\/ul>$" "")
+      (string/replace-first #"<ul>\s*\n?\s*<li>" "")))

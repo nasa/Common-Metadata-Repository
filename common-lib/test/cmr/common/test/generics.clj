@@ -29,7 +29,6 @@
   (is (= true (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "Grids")))
   (is (= true (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "Grid"))))
 
-
 (def header-extract-full "### <a name=\"link\"></a> content\n Other items should not be indcluded")
 
 (deftest get-toc-headers-from-markdown
