@@ -6,7 +6,7 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.common.config :as cfg]
-   [cmr.common.log :as log :refer (error)]
+   [cmr.common.log :as log :refer (error, info)]
    [cmr.schema-validation.json-schema :as js-validater]
    [inflections.core :as inf]))
 
@@ -134,8 +134,8 @@
         (format (name generic-keyword) generic-version (name file-name))
         (io/resource)
         (slurp))
-    (catch Exception e (str "" )
-           (error (format "Generic %s documentation was skipped" (name generic-keyword))))))
+    (catch Exception e (info (format "generic %s was skipped" generic-keyword))
+           (str ""))))
 
 (defn all-generic-docs
   "Parse over all of the generic documents and return their combined markdown as a string
@@ -206,14 +206,18 @@
    Returns: string"
   [file-name generic-keyword generic-version]
   (try
-    (-> (read-generic-doc-file file-name generic-keyword generic-version)
+    (-> "schemas/%s/v%s/%s.md"
+        (format (name generic-keyword) generic-version (name file-name))
+        (io/resource)
+        (slurp)
         (get-toc-headers-from-markdown)
         (as-> xs (map #(get-toc-data % (name file-name)) xs))
         (string/join)
         (as-> xs (if (= file-name "ingest")
                    (str (fill-in-generic-name "* %uc-plural-generic%\n    * /providers/\\<provider-id>/%plural-generic%/\\<native-id>\n" (name generic-keyword)) xs)
                    (str "" xs))))
-    (catch Exception e (str ""))))
+    (catch Exception e (info (format "generic %s was skipped" generic-keyword))
+           (str ""))))
 
 (defn all-generic-docs-toc
   "Parse over all of the generic documents and return their combined markdown as a string
