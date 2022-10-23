@@ -9,6 +9,18 @@
    [compojure.core :refer [GET context routes]]
    [ring.util.response :refer [redirect]]))
 
+
+;; (defn options-map
+;;   []
+;;   (let [options {:spacer-func (fn [x] (- (* x 8) 16))}]))
+
+
+(defn options-map
+  "hi"
+  [x]
+  (- (* x 8) 16))
+
+
 (defn build-routes [system]
   (routes
     (context (get-in system [:public-conf :relative-root-url]) []
@@ -44,4 +56,5 @@
       ;; Add routes for general API documentation
       (static/docs-routes
        (get-in system [:public-conf :protocol])
-       (get-in system [:public-conf :relative-root-url])))))
+       (get-in system [:public-conf :relative-root-url])
+      options-map))))

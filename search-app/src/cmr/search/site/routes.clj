@@ -10,6 +10,19 @@
    [ring.swagger.ui :as ring-swagger-ui]
    [ring.util.response :refer [redirect]]))
 
+;This options map contains a function that will be passed
+; into common-lib/static.clj for search
+; pass the options map which then gets
+;; (def options-map
+;;   (let [options {:spacer-func (fn [x] (- (* x 4) 12))}]))
+
+(defn options-map
+  "hi"
+  [x]
+  (- (* x 4) 12))
+
+;foo (:spacer-func options)]
+
 (defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
@@ -97,7 +110,7 @@
         ;; Add routes for general API documentation
         (static/docs-routes
          (get-in system [:public-conf :protocol])
-         relative-root-url)
+         relative-root-url options-map)
         (ring-swagger-ui/swagger-ui
          "/swagger_ui"
          :swagger-docs (str relative-root-url "/site/swagger.json")

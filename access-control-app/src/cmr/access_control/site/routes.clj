@@ -56,4 +56,5 @@
       ;; Add routes for general API documentation
       (static/docs-routes
        (get-in system [:public-conf :protocol])
-       (get-in system [:public-conf :relative-root-url])))))
+       (get-in system [:public-conf :relative-root-url])
+       {}))))

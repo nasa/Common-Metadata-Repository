@@ -6,7 +6,7 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.common.config :as cfg]
-   [cmr.common.log :as log :refer (error, info)]
+   [cmr.common.log :as log :refer [error, info]]
    [cmr.schema-validation.json-schema :as js-validater]
    [inflections.core :as inf]))
 
@@ -146,9 +146,21 @@
   (string/join (seq (for [[k,v] (latest-approved-documents)]
                       (read-generic-doc-file file-name k (str v))))))
 
-(def search-depth-map (hash-map 3 0 4 4 5 8))
-(def ingest-depth-map (hash-map 3 8))
+;; (def search-depth-map (hash-map 3 0 4 4 5 8))
+;; (def ingest-depth-map (hash-map 3 8))
 
+;; (defn search-depth-map
+;;   "Returns the search mapped value"
+;;   [num-pounds]
+;;   (- (* 4 num-pounds) 12))
+
+;; (defn ingest-depth-map
+;;   "Returns the search mapped value"
+;;   [num-pounds]
+;;   (- (* 8 num-pounds) 16))
+
+;;This assumes that we continue to use the prefix notation for markdown
+;;
 (defn get-toc-headers-from-markdown
   "From the markdown file string of either the ingest or search,
   dyanamically create the table of content
@@ -167,9 +179,9 @@
   [table-of-contents-template generic-type]
   (-> table-of-contents-template
       (string/replace #"%generic%" generic-type)
-      (string/replace #"%uc-generic%" (string/capitalize generic-type))
+      (string/replace #"%uppercase-generic%" (string/capitalize generic-type))
       (string/replace #"%plural-generic%" (inf/plural generic-type))
-      (string/replace #"%uc-plural-generic%" (inf/plural (string/capitalize generic-type)))))
+      (string/replace #"%uppercase-plural-generic%" (inf/plural (string/capitalize generic-type)))))
 
 (defn build-markdown-toc
   "Get the markdown file for a generic based on the api string being read in
@@ -187,10 +199,10 @@
    Parameters:
    * table-of-content-headers: string list, the headers in the document
    * doc-type: string [ingest | search]"
-  ([table-of-content-headers doc-type]
+  ([table-of-content-headers doc-type options]
    (let [depth (if (= doc-type "ingest")
-                 (ingest-depth-map (count (re-seq #"#" table-of-content-headers)))
-                 (search-depth-map (count (re-seq #"#" table-of-content-headers))))
+                 (options (count (re-seq #"#" table-of-content-headers)))
+                 (options (count (re-seq #"#" table-of-content-headers))))
          link (peek (re-find #"=\"(.*)\">" table-of-content-headers))
          content (peek (re-find #">\s+([^<]*)$" table-of-content-headers))]
      (build-markdown-toc depth link content))))
@@ -203,15 +215,15 @@
    * generic-keyword: [:grid | ...]
    * generic-version: 0.0.1
    Returns: string"
-  [file-name generic-keyword generic-version]
+  [file-name generic-keyword generic-version options]
   (let [generic-markdown (read-generic-doc-file file-name generic-keyword generic-version)]
    (if (not= generic-markdown "")
      (-> generic-markdown
              get-toc-headers-from-markdown
-             (as-> xs (map #(get-toc-data % (name file-name)) xs))
+             (as-> xs (map #(get-toc-data % (name file-name) options) xs))
              (string/join)
              (as-> xs (if (= file-name "ingest")
-                   (str (fill-in-generic-name "* %uc-plural-generic%\n    * /providers/\\<provider-id>/%plural-generic%/\\<native-id>\n" (name generic-keyword)) xs)
+                   (str (fill-in-generic-name "* %uppercase-plural-generic%\n    * /providers/\\<provider-id>/%plural-generic%/\\<native-id>\n" (name generic-keyword)) xs)
                    (str "" xs))))
      (str ""))))
 
@@ -220,8 +232,8 @@
   Parameters:
   * file-name: [ingest | search]
   Returns: string"
-  [file-name]
-  (string/join (seq (for [[k,v] (latest-approved-documents)] (format-generic-toc file-name k (str v))))))
+  [file-name options]
+  (string/join (seq (for [[k,v] (latest-approved-documents)] (format-generic-toc file-name k (str v) options)))))
 
 (defn format-toc-into-doc
   "To fit generic docs into the toc a few html tags must be removed, this block will

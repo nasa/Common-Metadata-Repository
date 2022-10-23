@@ -221,7 +221,7 @@
 (defn docs-routes
   "Defines routes for returning API documentation. Takes the public-protocol (http or https),
   relative-root-url of the application, and the location of the welcome page within the classpath."
-  ([public-protocol relative-root-url]
+  ([public-protocol relative-root-url options]
    (routes
      (context "/site" []
        ;; Return swagger.json if the application provides one
@@ -243,7 +243,8 @@
                  cmr-example-collection-id (str "C1234567-" site-example-provider)
                  doc-type (nth (re-find #"/(.*)/" (str page)) 1)
                  generic-doc-body (read-generic-markdown doc-type)
-                 generic-doc-toc (read-generic-markdown-toc (gconfig/all-generic-docs-toc doc-type))]
+                 generic-doc-toc (read-generic-markdown-toc (gconfig/all-generic-docs-toc doc-type options))]
+             (def op (options 2))
              {:status 200
               :headers {"Content-Type" "text/html; charset=utf-8"}
               :body (-> resource
@@ -258,14 +259,14 @@
        (pages/not-found))
      (context "/" []
        (route/resources "/"))))
-  ([public-protocol relative-root-url welcome-page-location]
+  ([public-protocol relative-root-url welcome-page-location options]
    (routes
      ;; CMR Application Welcome Page
      (GET "/" req
        (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
                              {:status 200
                               :body (slurp (io/resource welcome-page-location))}))
-     (docs-routes public-protocol relative-root-url))))
+     (docs-routes public-protocol relative-root-url {}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Core API Documentation Functions
