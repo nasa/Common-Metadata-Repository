@@ -10,11 +10,7 @@
    [ring.swagger.ui :as ring-swagger-ui]
    [ring.util.response :refer [redirect]]))
 
-
-(defn options-map
-  "Defines function to be used as optional parameter to routes"
-  [x]
-  (- (* x 4) 12))
+(def options {:spacer #(- (* % 4) 12)})
 
 (defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
@@ -103,7 +99,7 @@
         ;; Add routes for general API documentation
         (static/docs-routes
          (get-in system [:public-conf :protocol])
-         relative-root-url options-map)
+         relative-root-url options)
         (ring-swagger-ui/swagger-ui
          "/swagger_ui"
          :swagger-docs (str relative-root-url "/site/swagger.json")

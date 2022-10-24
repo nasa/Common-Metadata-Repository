@@ -146,21 +146,6 @@
   (string/join (seq (for [[k,v] (latest-approved-documents)]
                       (read-generic-doc-file file-name k (str v))))))
 
-;; (def search-depth-map (hash-map 3 0 4 4 5 8))
-;; (def ingest-depth-map (hash-map 3 8))
-
-;; (defn search-depth-map
-;;   "Returns the search mapped value"
-;;   [num-pounds]
-;;   (- (* 4 num-pounds) 12))
-
-;; (defn ingest-depth-map
-;;   "Returns the search mapped value"
-;;   [num-pounds]
-;;   (- (* 8 num-pounds) 16))
-
-;;This assumes that we continue to use the prefix notation for markdown
-;;
 (defn get-toc-headers-from-markdown
   "From the markdown file string of either the ingest or search,
   dyanamically create the table of content
@@ -170,19 +155,6 @@
   [generic-markdown]
   (re-seq #"\#+\s+<a\s.*" generic-markdown))
 
-(defn fill-in-generic-name
-  "Return the html for the table of contents given a generic concept
-   Parameters:
-   * table-of-contents-template: [ingest-table-of-contents-template | search-table-of-contents-template]
-   * generic-type: grid, dataqualitysummary etc
-   Returns: string"
-  [table-of-contents-template generic-type]
-  (-> table-of-contents-template
-      (string/replace #"%generic%" generic-type)
-      (string/replace #"%uppercase-generic%" (string/capitalize generic-type))
-      (string/replace #"%plural-generic%" (inf/plural generic-type))
-      (string/replace #"%uppercase-plural-generic%" (inf/plural (string/capitalize generic-type)))))
-
 (defn build-markdown-toc
   "Get the markdown file for a generic based on the api string being read in
    Depth is a measure of how many spaces we need from the start of the line for the
@@ -190,7 +162,8 @@
    Parameters:
    * depth: integer a count of the number of spaces
    * content: string, the content for the toc
-   * link: string, the link to the location in the document"
+   * link: string, the link to the location in the document
+   Returns: string"
   [depth content link]
   (str (apply str (repeat depth " ")) (format "* [%s](#%s)\n" link content)))
 
@@ -198,17 +171,13 @@
   "Parses out the toc information from the api.md to build the markdown for the toc
    Parameters:
    * table-of-content-headers: string list, the headers in the document
-   * doc-type: string [ingest | search]"
-  ([table-of-content-headers doc-type options]
-   (let [depth (options (count (re-seq #"#" table-of-content-headers)))
+   * doc-type: string [ingest | search]
+   Returns: string"
+  ([table-of-content-headers doc-type spacer]
+   (let [depth (spacer (count (re-seq #"#" table-of-content-headers)))
          link (peek (re-find #"=\"(.*)\">" table-of-content-headers))
          content (peek (re-find #">\s+([^<]*)$" table-of-content-headers))]
      (build-markdown-toc depth link content))))
-
-(defn retrieve-provider-info
-  "This parses out the provider info line"
-  [generic-markdown]
-  (if-let [provider-info (re-find #"<!--(.*?\n.*?\n)-->" generic-markdown)] (peek provider-info) ""))
 
 (defn format-generic-toc
   "Return the specific schema's documentation files given the schema keyword name and version number.
@@ -223,9 +192,8 @@
    (if (not= generic-markdown "")
      (-> generic-markdown
              get-toc-headers-from-markdown
-             (as-> xs (map #(get-toc-data % (name file-name) options) xs))
-             (string/join)
-             (as-> xs (str (retrieve-provider-info generic-markdown) xs)))
+             (as-> xs (map #(get-toc-data % (name file-name) (get options :spacer (fn [x] x))) xs))
+             (string/join))
      (str ""))))
 
 (defn all-generic-docs-toc

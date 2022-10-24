@@ -9,10 +9,7 @@
    [compojure.core :refer [GET context routes]]
    [ring.util.response :refer [redirect]]))
 
-(defn options-map
-  "Defines function to be used as optional parameter to routes"
-  [x]
-  (- (* x 8) 16))
+(def options {:spacer #(- (* % 4) 4)})
 
 (defn build-routes [system]
   (routes
@@ -50,4 +47,4 @@
      (static/docs-routes
       (get-in system [:public-conf :protocol])
       (get-in system [:public-conf :relative-root-url])
-      options-map))))
+      options))))
