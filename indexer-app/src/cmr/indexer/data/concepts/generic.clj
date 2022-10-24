@@ -75,7 +75,7 @@
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id user-id
                 revision-date extra-fields native-id]} concept
-        parsed-concept (if (= true (:deleted concept))
+        parsed-concept (if (:deleted concept)
                          (c-parser/parse-concept context concept)
                          parsed-concept)
         generic-associations (esearch/parse-non-tombstone-associations

@@ -109,6 +109,7 @@
    :index-collection index-collection
    :index-system-concepts index-system-concepts
    :index-concepts-by-id index-concepts-by-id
+   :index-generics (partial not-implemented :index-generics)
    :delete-concepts-from-index-by-id delete-concepts-from-index-by-id
    :bootstrap-virtual-products bootstrap-virtual-products
    :fingerprint-variables (partial not-implemented :fingerprint-variables)})

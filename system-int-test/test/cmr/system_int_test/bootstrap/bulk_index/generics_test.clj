@@ -55,48 +55,23 @@
 
        (testing "Bulk index multiple grids for a single provider"
          ;; Ingest three more grids
-         (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-2" :grid generic/grid-good :post)
-         (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-3" :grid generic/grid-good :post)
-         (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-4" :grid generic/grid-good :post)
+         (let [grid3 (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-2" :grid generic/grid-good :post)
+               grid4 (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-3" :grid generic/grid-good :post)
+               grid5 (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-4" :grid generic/grid-good :post)]
 
-         ;; The above three new grids are not indexed, only grid1 is indexed. 
-         (is (= 1 (:hits (search/find-refs :grid {}))))
+          ;; The above three new grids are not indexed, only grid1 is indexed. 
+          (is (= 1 (:hits (search/find-refs :grid {}))))
 
-         ;; bulk index again, all the grids in PROV1 should be indexed. 
-         (bootstrap/bulk-index-grids "PROV1")
-         (index/wait-until-indexed)
+          ;; bulk index again, all the grids in PROV1 should be indexed. 
+          (bootstrap/bulk-index-grids "PROV1")
+          (index/wait-until-indexed)
 
-         (let [{:keys [hits refs]} (search/find-refs :grid {})]
-           (is (= 4 hits))
-           (is (= 4 (count refs))))))
+          (let [{:keys [hits refs]} (search/find-refs :grid {})]
+            (is (= 4 hits))
+            (is (= 4 (count refs)))
+            (is (= (set (map :id refs))
+                   (set (map :concept-id [grid1, grid3, grid4, grid5]))))))))
      
-     ;; Re-enable message publishing.
-     (core/reenable-automatic-indexing))))
-
-(deftest ^:oracle bulk-index-grids
-  (testing "Bulk index grids for multiple providers, explicitly"
-    (system/only-with-real-database
-     ;; Disable message publishing so items are not indexed.
-     (core/disable-automatic-indexing)
-     ;; The following are saved, but not indexed due to the above call
-     (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-1" :grid generic/grid-good :post)
-     (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-2" :grid generic/grid-good :post)
-     (generic/ingest-generic-document nil "PROV2" "Test-Native-Id-3" :grid generic/grid-good :post)
-     (generic/ingest-generic-document nil "PROV2" "Test-Native-Id-4" :grid generic/grid-good :post)
-     (generic/ingest-generic-document nil "PROV3" "Test-Native-Id-5" :grid generic/grid-good :post)
-     (generic/ingest-generic-document nil "PROV3" "Test-Native-Id-6" :grid generic/grid-good :post)
-
-     (is (= 0 (:hits (search/find-refs :grid {}))))
-
-     (bootstrap/bulk-index-grids "PROV1")
-     (bootstrap/bulk-index-grids "PROV2")
-     (bootstrap/bulk-index-grids "PROV3")
-     (index/wait-until-indexed)
-
-     (testing "Grid concepts are indexed."
-       (let [{:keys [hits refs]} (search/find-refs :grid {})]
-         (is (= 6 hits))
-         (is (= 6 (count refs)))))
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
@@ -106,19 +81,21 @@
      ;; Disable message publishing so items are not indexed.
      (core/disable-automatic-indexing)
      ;; The following are saved, but not indexed due to the above call
-     (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-1" :grid generic/grid-good :post)
-     (generic/ingest-generic-document nil "PROV2" "Test-Native-Id-2" :grid generic/grid-good :post)
-     (generic/ingest-generic-document nil "PROV3" "Test-Native-Id-3" :grid generic/grid-good :post)
+     (let [grid-prov1 (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-1" :grid generic/grid-good :post)
+           grid-prov2 (generic/ingest-generic-document nil "PROV2" "Test-Native-Id-2" :grid generic/grid-good :post)
+           grid-prov3 (generic/ingest-generic-document nil "PROV3" "Test-Native-Id-3" :grid generic/grid-good :post)]
 
-     (is (= 0 (:hits (search/find-refs :grid {}))))
+      (is (= 0 (:hits (search/find-refs :grid {}))))
 
-     (bootstrap/bulk-index-grids)
-     (index/wait-until-indexed)
-     
-     (testing "Grid concepts are indexed." 
-       (let [{:keys [hits refs]} (search/find-refs :grid {})] 
-         (is (= 3 hits)) 
-         (is (= 3 (count refs)))))
+      (bootstrap/bulk-index-grids)
+      (index/wait-until-indexed)
+
+      (testing "Grid concepts are indexed."
+        (let [{:keys [hits refs]} (search/find-refs :grid {})]
+          (is (= 3 hits))
+          (is (= 3 (count refs)))
+          (is (= (set (map :id refs))
+                 (set (map :concept-id [grid-prov1, grid-prov2, grid-prov3])))))))
      ;; Re-enable message publishing.
      (core/reenable-automatic-indexing))))
 
@@ -128,6 +105,7 @@
      ;; Disable message publishing so items are not indexed.
      (core/disable-automatic-indexing)
      (let [token (echo-util/login (system/context) "user1")
+           ;; Create, then delete, then re-instate a grid for PROV1
            grid1-1 (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-1"
                                                     :grid generic/grid-good :post)
            grid1-2-tombstone (merge (generic/ingest-generic-document token "PROV1" "Test-Native-Id-1"
@@ -138,6 +116,7 @@
            grid1-3 (generic/ingest-generic-document nil "PROV1" "Test-Native-Id-1"
                                                     :grid generic/grid-good :put)
            
+           ;; Create, then update, then delete a grid for PROV2
            grid2-1 (generic/ingest-generic-document nil "PROV2" "Test-Native-Id-2"
                                                     :grid generic/grid-good :post)
            grid2-2 (generic/ingest-generic-document nil "PROV2" "Test-Native-Id-2"
@@ -148,6 +127,7 @@
                                     {:deleted true
                                      :user-id "user1"})
            
+           ;; Create a grid for PROV3
            grid3 (generic/ingest-generic-document nil "PROV3" "Test-Native-Id-3"
                                                   :grid generic/grid-good :post)]
 
@@ -159,9 +139,19 @@
        ;; Just index PROV1
        (bootstrap/bulk-index-grids "PROV1")
        (index/wait-until-indexed)
+       ;;(println (search/find-concepts-umm-json :grid {:all-revisions true})) ;;REMOVEME
 
        (testing "After bulk indexing a provider, search found all grid revisions for that provider"
-         (let [{:keys [status results]} (search/find-concepts-umm-json :grid {:all-revisions true})]
+         (let [{:keys [status results]} (search/find-concepts-umm-json :grid {:all-revisions true})
+               results-tuples (map
+                               #(hash-map :concept-id (get-in % [:meta :concept-id])
+                                          :revision-id (get-in % [:meta :revision-id]))
+                               (:items results))
+               original-tuples (map
+                                #(hash-map :concept-id (:concept-id %)
+                                           :revision-id (:revision-id %))
+                                [grid1-1, grid1-2-tombstone, grid1-3])]
+           
            (is (= 200 status))
            (is (= 3 (:hits results)))))
 
@@ -170,9 +160,35 @@
        (index/wait-until-indexed)
        
        (testing "After bulk indexing all grids, search for grids finds all revisions of all providers" 
-         (let [{:keys [status results]} (search/find-concepts-umm-json :grid {:all-revisions true})] 
-           (is (= 200 status)) 
-           (is (= 7 (:hits results)))))
+         (let [{:keys [status results]} (search/find-concepts-umm-json :grid {:all-revisions true})
+               results-tuples (map
+                               #(hash-map :concept-id (get-in % [:meta :concept-id])
+                                          :revision-id (get-in % [:meta :revision-id]))
+                               (:items results))
+               original-tuples (map 
+                                #(hash-map :concept-id (:concept-id %) 
+                                           :revision-id (:revision-id %)) 
+                                [grid1-1, grid1-2-tombstone, grid1-3, 
+                                 grid2-1, grid2-2, grid2-3-tombstone, grid3])]
+           (is (= 200 status))
+           (is (= 7 (:hits results)))
+           (is (= (set results-tuples)
+                  (set original-tuples)))))
+       
+       (testing "The regular search does not include the deleted grids"
+         (let [{:keys [status results]} (search/find-concepts-umm-json :grid {})
+               results-tuples (map
+                               #(hash-map :concept-id (get-in % [:meta :concept-id])
+                                          :revision-id (get-in % [:meta :revision-id]))
+                               (:items results))
+               original-tuples (map
+                                #(hash-map :concept-id (:concept-id %)
+                                           :revision-id (:revision-id %))
+                                [grid1-3, grid3])]
+           (is (= 200 status))
+           (is (= 2 (:hits results)))
+           (is (= (set results-tuples)
+                  (set original-tuples)))))
 
        ;; Re-enable message publishing.
        (core/reenable-automatic-indexing)))))

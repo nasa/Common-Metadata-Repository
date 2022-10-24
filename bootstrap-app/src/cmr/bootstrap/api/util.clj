@@ -31,10 +31,8 @@
    (get-in context [:system (get-dispatcher-type params request-type)])))
 
 (def generate-plural-generic-concept-types-reg-ex
-  "Creates a regular expression for all of the generic concepts. Used to create the api endpoints.
-   An example string that is returned looks like: 
-   \"generics|grids|dataqualitysummaries|orderoptions|serviceentries|serviceoptions\" "
+  "Creates a regular expression for all of the generic concepts. Used to create the api endpoints."
   (->> (concepts/get-generic-concept-types-array)
        (map inf/plural)
        (vec)
-       (clojure.string/join "|")))
+       (string/join "|")))

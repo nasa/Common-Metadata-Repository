@@ -77,7 +77,7 @@
 
 (defn- index-generics
   "Bulk index the generic documents of type concept-type in CMR. If a provider-id is given, only index the
-  tools for that provider."
+  concept-type for that provider."
   ([this context concept-type]
    (bulk-index/index-all-concepts (:system context) (keyword concept-type)))
   ([this context concept-type provider-id]
