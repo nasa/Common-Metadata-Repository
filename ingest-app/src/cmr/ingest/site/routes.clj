@@ -9,7 +9,13 @@
    [compojure.core :refer [GET context routes]]
    [ring.util.response :refer [redirect]]))
 
-(def options {:spacer #(- (* % 4) 4)})
+;;The spacer function calculates the number of spaces used by headers
+;; in the table of contents for generic documents specific by document type
+(def options {:spacer #(case %
+                         2 0
+                         3 8
+                         4 4
+                         0)})
 
 (defn build-routes [system]
   (routes

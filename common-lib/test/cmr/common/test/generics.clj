@@ -43,12 +43,15 @@
   (is (= (gconfig/build-markdown-toc 4 "GridInfo" "grid-link") "    * [grid-link](#GridInfo)\n")))
 
 (def formatted-search-grid-markdown "* [Grid](#grid)\n    * [Searching for grids](#searching-for-grids)\n        * [Grid Search Parameters](#grid-search-params)\n        * [Grid Search Response](#grid-search-response)\n    * [Retrieving All Revisions of a Grid](#retrieving-all-revisions-of-a-grid)\n    * [Sorting Grid Results](#sorting-grid-results)\n")
-(def formatted-ingest-grid-markdown "* [Grid](#grid)\n    * [/providers/&lt;provider-id&gt;/grids/&lt;native-id&gt;](#provider-info-grid)\n        * [PUT - Create / Update a Grid](#create-update-grid)\n        * [DELETE - Delete a Grid](#delete-grid)\n")
+(def formatted-ingest-grid-markdown "    * [Grid](#grid)\n            * [/providers/&lt;provider-id&gt;/grids/&lt;native-id&gt;](#provider-info-grid)\n        * [PUT - Create / Update a Grid](#create-update-grid)\n        * [DELETE - Delete a Grid](#delete-grid)\n")
+(def default-formatted-ingest-default "  * [Grid](#grid)\n    * [/providers/&lt;provider-id&gt;/grids/&lt;native-id&gt;](#provider-info-grid)\n   * [PUT - Create / Update a Grid](#create-update-grid)\n   * [DELETE - Delete a Grid](#delete-grid)\n")
 
 (deftest format-generic-toc-test
   (testing "Ensuring that the generic-toc returns a formatted markdown")
   (is (= formatted-search-grid-markdown (gconfig/format-generic-toc "search" "grid" "0.0.1" options-map-search)))
   (is (= formatted-ingest-grid-markdown (gconfig/format-generic-toc "ingest" "grid" "0.0.1" options-map-ingest)))
+  ;;Coverge if the function is passed with a map with the spacer function
+  (is (= default-formatted-ingest-default (gconfig/format-generic-toc "ingest" "grid" "0.0.1" {})))
   (is (= "" (gconfig/format-generic-toc "none" "grid" "0.0.1" options-map-ingest))))
 
 (deftest all-generic-docs-toc-test

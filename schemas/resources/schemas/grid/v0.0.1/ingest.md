@@ -1,6 +1,6 @@
-# <a name="grid"></a> Grid
+## <a name="grid"></a> Grid
 
-## <a name="provider-info-grid"></a> /providers/&lt;provider-id&gt;/grids/&lt;native-id&gt;
+#### <a name="provider-info-grid"></a> /providers/&lt;provider-id&gt;/grids/&lt;native-id&gt;
 
 ### <a name="create-update-grid"></a> PUT - Create / Update a Grid
 

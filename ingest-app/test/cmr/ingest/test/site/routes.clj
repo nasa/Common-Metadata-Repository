@@ -93,3 +93,10 @@
       (is (string/includes?
            (get-in response [:headers "Location"])
            "site/docs/ingest/api.html")))))
+(deftest options-test
+  (testing "Testing the functions in the options map"
+    (is (= ((get r/options :spacer) 2) 0))
+    (is (= ((get r/options :spacer) 3) 8))
+    (is (= ((get r/options :spacer) 4) 4))
+        ;;Any umpapped number will default to 0
+    (is (= ((get r/options :spacer) 5) 0))))
