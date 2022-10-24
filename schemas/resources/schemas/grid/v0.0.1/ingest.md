@@ -1,3 +1,6 @@
+<!--* Grids
+    * /providers/\<provider-id\>/grids/\<native-id\>
+-->
 ### <a name="create-update-grid"></a> PUT - Create / Update a Grid
 
 Grid concepts can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/grid/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). Filename is the json document containing the record to be ingested

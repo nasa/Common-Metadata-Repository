@@ -4,6 +4,16 @@
    [clojure.string :as string]
    [clojure.test :refer :all]))
 
+(defn options-map-ingest
+  "Defines function to be used as optional parameter to routes"
+  [x]
+  (- (* x 8) 16))
+
+(defn options-map-search
+  "Defines function to be used as optional parameter to routes"
+  [x]
+  (- (* x 4) 12))
+
 (deftest read-generic-doc-file-test
   (testing "Reads the markdown file for the given generic if the generic is not in the system or it is the wrong version, return empty string"
     (is (= true (string/includes? (gconfig/read-generic-doc-file "ingest" :grid "0.0.1") "Create / Update a Grid")))
@@ -20,14 +30,14 @@
   (testing "This string is ensuring that all the generics have their text concatanated together"
     (is (= true (string/includes? (gconfig/all-generic-docs "ingest") "Grid")))))
 
-(def gen-string "/%generic%/%uc-generic%/%plural-generic%/%uc-plural-generic%")
+(def gen-string "/%generic%/%uppercase-generic%/%plural-generic%/%uppercase-plural-generic%")
 
 (deftest table-of-contents-html-test
   (testing "Ensure that the strings have been replaced given a generic type in the system with documentation")
-  (is (= true (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "grid")))
-  (is (= true (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "grids")))
-  (is (= true (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "Grids")))
-  (is (= true (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "Grid"))))
+  (is  (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "grid"))
+  (is  (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "grids"))
+  (is  (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "Grids"))
+  (is  (string/includes? (gconfig/fill-in-generic-name gen-string "grid") "Grid")))
 
 (def header-extract-full "### <a name=\"link\"></a> content\n Other items should not be indcluded")
 
@@ -40,8 +50,8 @@
 
 (deftest get-toc-data
   (testing "Ensuring that we can extract the necessary components from a toc header")
-  (is (= (gconfig/get-toc-data header-extract-formatted-search "search") "    * [content](#link)\n"))
-  (is (= (gconfig/get-toc-data header-extract-formatted-ingest "ingest") "        * [content](#link)\n")))
+  (is (= (gconfig/get-toc-data header-extract-formatted-search "search" options-map-search) "    * [content](#link)\n"))
+  (is (= (gconfig/get-toc-data header-extract-formatted-ingest "ingest" options-map-ingest) "        * [content](#link)\n")))
 
 (deftest build-markdown-toc-test
   (testing "Ensuring that the markdown can be created from all of the headers for a given generic
@@ -49,17 +59,17 @@
   (is (= (gconfig/build-markdown-toc 4 "GridInfo" "grid-link") "    * [grid-link](#GridInfo)\n")))
 
 (def formatted-search-grid-markdown "* [Grid](#grid)\n    * [Searching for grids](#searching-for-grids)\n        * [Grid Search Parameters](#grid-search-params)\n        * [Grid Search Response](#grid-search-response)\n    * [Retrieving All Revisions of a Grid](#retrieving-all-revisions-of-a-grid)\n    * [Sorting Grid Results](#sorting-grid-results)\n")
-(def formatted-ingest-grid-markdown "* Grids\n    * /providers/\\<provider-id>/grids/\\<native-id>\n        * [PUT - Create / Update a Grid](#create-update-grid)\n        * [DELETE - Delete a Grid](#delete-grid)\n")
+(def formatted-ingest-grid-markdown "* Grids\n    * /providers/\\<provider-id\\>/grids/\\<native-id\\>\n        * [PUT - Create / Update a Grid](#create-update-grid)\n        * [DELETE - Delete a Grid](#delete-grid)\n")
 
 (deftest format-generic-toc-test
   (testing "Ensuring that the generic-toc returns a formatted markdown")
-  (is (= (gconfig/format-generic-toc "search" "grid" "0.0.1") formatted-search-grid-markdown))
-  (is (= (gconfig/format-generic-toc "ingest" "grid" "0.0.1") formatted-ingest-grid-markdown))
-  (is (= (gconfig/format-generic-toc "none" "grid" "0.0.1") "")))
+  (is (= formatted-search-grid-markdown (gconfig/format-generic-toc "search" "grid" "0.0.1" options-map-search)))
+  (is (= formatted-ingest-grid-markdown (gconfig/format-generic-toc "ingest" "grid" "0.0.1" options-map-ingest)))
+  (is (= "" (gconfig/format-generic-toc "none" "grid" "0.0.1" options-map-ingest))))
 
 (deftest all-generic-docs-toc-test
   (testing "Ensuring that the generic-toc returns a formatted markdown")
-  (is (= true (string/includes? (gconfig/all-generic-docs-toc "search") "[Grid](#grid)"))))
+  (is (= true (string/includes? (gconfig/all-generic-docs-toc "search" options-map-search) "[Grid](#grid)"))))
 
 (def buried-html-item "<ul><li>Grid html</li></ul>")
 (def buried-html-item-newline "<ul> \n <li>Grid html</li></ul>")

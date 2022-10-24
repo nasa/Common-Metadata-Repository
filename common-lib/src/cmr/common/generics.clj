@@ -200,12 +200,15 @@
    * table-of-content-headers: string list, the headers in the document
    * doc-type: string [ingest | search]"
   ([table-of-content-headers doc-type options]
-   (let [depth (if (= doc-type "ingest")
-                 (options (count (re-seq #"#" table-of-content-headers)))
-                 (options (count (re-seq #"#" table-of-content-headers))))
+   (let [depth (options (count (re-seq #"#" table-of-content-headers)))
          link (peek (re-find #"=\"(.*)\">" table-of-content-headers))
          content (peek (re-find #">\s+([^<]*)$" table-of-content-headers))]
      (build-markdown-toc depth link content))))
+
+(defn retrieve-provider-info
+  "This parses out the provider info line"
+  [generic-markdown]
+  (if-let [provider-info (re-find #"<!--(.*?\n.*?\n)-->" generic-markdown)] (peek provider-info) ""))
 
 (defn format-generic-toc
   "Return the specific schema's documentation files given the schema keyword name and version number.
@@ -222,9 +225,7 @@
              get-toc-headers-from-markdown
              (as-> xs (map #(get-toc-data % (name file-name) options) xs))
              (string/join)
-             (as-> xs (if (= file-name "ingest")
-                   (str (fill-in-generic-name "* %uppercase-plural-generic%\n    * /providers/\\<provider-id>/%plural-generic%/\\<native-id>\n" (name generic-keyword)) xs)
-                   (str "" xs))))
+             (as-> xs (str (retrieve-provider-info generic-markdown) xs)))
      (str ""))))
 
 (defn all-generic-docs-toc
