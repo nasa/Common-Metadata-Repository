@@ -53,6 +53,11 @@
    [this context] [this context provider-id]
    "Bulk index all the subscritions in CMR. Optionally, pass a provider id, in
     which case only the subscriptions for that provider will be indexed.")
+  
+  (index-generics
+   [this context concept-type] [this context concept-type provider-id]
+   "Bulk index all the generic documents of a particular type in CMR. Optionally, pass a 
+    provider id, in which case only the documents for that provider will be indexed.")
 
   (index-system-concepts
    [this context start-index]

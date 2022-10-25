@@ -60,6 +60,14 @@
   ([provider-id]
    (assoc (bootstrap-subscriptions-event) :provider-id provider-id)))
 
+(defn bootstrap-generics-event
+  "Creates an event indicating to bootstrap a generic document of type concept-type."
+  ([concept-type]
+   {:action :index-generics
+    :concept-type concept-type})
+  ([concept-type provider-id]
+   (assoc (bootstrap-generics-event concept-type) :provider-id provider-id)))
+
 (defn fingerprint-variables-event
   "Creates an event indicating to update fingerprints of variables."
   [provider-id]

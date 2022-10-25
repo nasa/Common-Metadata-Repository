@@ -79,7 +79,9 @@
 (defn- params->sql-params
   "Converts the search params into params that can be converted into a sql condition clause."
   [concept-type providers params]
-  (if (or (every? :small providers) (single-table-with-providers-concept-type? concept-type))
+  (if (or (every? :small providers) 
+          (single-table-with-providers-concept-type? concept-type)
+          (cc/generic-concept? concept-type))
     (dissoc params :concept-type :exclude-metadata)
     (dissoc params :concept-type :exclude-metadata :provider-id)))
 

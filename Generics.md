@@ -92,6 +92,10 @@ native ID of "orderoption-1".
 Note also that concept IDs begin with a prefix unique to that document type. (Above see "OO" for order
 option)
 
+#### re-index through bootstrap-app
+	curl -v -H "$TOKEN" https://cmr.earthdata.nasa.gov/bootstrap/bulk_index/grids/
+	curl -v -H "$TOKEN" https://cmr.earthdata.nasa.gov/bootstrap/bulk_index/grids/PROV1
+
 ----
 
 Copyright © 2014-2022 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.

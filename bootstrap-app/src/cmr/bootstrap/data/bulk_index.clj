@@ -11,6 +11,7 @@
     [cmr.access-control.data.bulk-index :as ac-bulk-index]
     [cmr.bootstrap.data.bulk-migration :as bm]
     [cmr.bootstrap.embedded-system-helper :as helper]
+    [cmr.common.concepts :as cc]
     [cmr.common.log :refer (debug info warn error)]
     [cmr.common.util :as util]
     [cmr.indexer.data.elasticsearch :as es]
@@ -148,10 +149,13 @@
                 (name concept-type)
                 (:provider-id provider)))
   (let [db (helper/get-metadata-db-db system)
+        params (merge {:concept-type concept-type 
+                       :provider-id (:provider-id provider)}
+                      (when (cc/generic-concept? concept-type)
+                        {:schema (name concept-type)}))
         concept-batches (db/find-concepts-in-batches
                          db provider
-                         {:concept-type concept-type
-                          :provider-id (:provider-id provider)}
+                         params
                          (:db-batch-size system))
         num-concepts (bulk-index-concept-batches system concept-batches)
         msg (format "Indexing of %s %s revisions for provider %s completed."

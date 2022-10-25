@@ -159,6 +159,22 @@
      {:status 202
       :body {:message (msg/index-subscriptions params provider-id result)}})))
 
+(defn index-generics
+  "(Re-)Index the generic documents of a given type stored in metadata-db. If a provider-id is passed,
+  only the documents for that provider will be indexed. With no provider-id,
+  all providers' documents are (re-)indexed.
+
+  Note that this function differs from the service function it calls, in that
+  this function extracts dispatcher implementation from the context, while the
+  service function takes the dispatcher as an argument."
+  ([context params concept-type]
+   (index-generics context params concept-type nil))
+  ([context params concept-type provider-id]
+   (let [dispatcher (api-util/get-dispatcher context params :index-generics)
+         result (service/index-generics context dispatcher concept-type provider-id)]
+     {:status 202
+      :body {:message (msg/index-generics params concept-type provider-id result)}})))
+
 (defn delete-concepts-by-id
   "Delete concepts from the indexes by concept-id."
   [context request-details-map params]

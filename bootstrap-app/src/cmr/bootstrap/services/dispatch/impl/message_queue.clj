@@ -89,6 +89,24 @@
     context
     (message-queue/bootstrap-subscriptions-event provider-id))))
 
+(defn- index-generics
+  "Bulk index all the generic documents of a particular type. If a provider is passed, only index 
+   the documents for that provider."
+  ([this context concept-type]
+   (info "Publishing events to index all generic documents of type " concept-type)
+   (doseq [provider (helper/get-providers (:system context))
+           :let [provider-id (:provider-id provider)]]
+     (message-queue/publish-bootstrap-concepts-event
+      context
+      (message-queue/bootstrap-generics-event concept-type provider-id)))
+   (info "Completed publishing events to index all generic documents of type " concept-type))
+  ([this context concept-type provider-id]
+   (info "Publishing events to index all generic documents of type" concept-type "for provider " provider-id)
+   (message-queue/publish-bootstrap-concepts-event
+    context
+    (message-queue/bootstrap-generics-event concept-type provider-id))
+   (info "Completed publishing events to index all generic documents of type" concept-type "for provider" provider-id)))
+
 (defn- index-data-later-than-date-time
   "Bulk index all the concepts with a revision date later than the given date-time."
   [this context provider-ids date-time]
@@ -132,6 +150,7 @@
    :index-services index-services
    :index-tools index-tools
    :index-subscriptions index-subscriptions
+   :index-generics index-generics
    :index-data-later-than-date-time index-data-later-than-date-time
    :index-collection (partial not-implemented :index-collection)
    :index-system-concepts (partial not-implemented :index-system-concepts)
@@ -178,6 +197,12 @@
   (if-let [provider-id (:provider-id msg)]
     (bulk-index/index-provider-concepts (:system context) :subscription provider-id)
     (bulk-index/index-all-concepts (:system context) :subscription)))
+
+(defmethod handle-bootstrap-event :index-generics
+  [context msg]
+  (if-let [provider-id (:provider-id msg)]
+    (bulk-index/index-provider-concepts (:system context) (keyword (:concept-type msg)) provider-id)
+    (bulk-index/index-all-concepts (:system context) (keyword (:concept-type msg)))))
 
 (defmethod handle-bootstrap-event :fingerprint-variables
   [context msg]
