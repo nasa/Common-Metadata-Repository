@@ -22,7 +22,7 @@
 ;;;   Backwards-compatible Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def parse-json-body response/parse-json-body)
+(def parse-json-result response/parse-json-result)
 (def json-errors response/json-errors)
 (def parse-xml-body response/parse-xml-body)
 (def xml-errors response/xml-errors)
@@ -43,13 +43,13 @@
   [status headers body]
   (response/error-handler status headers body (format errors/status-code status)))
 
-(defn client-handler
+(defn initial-response-handler
   ([response]
-    (client-handler response identity))
+    (initial-response-handler response identity))
   ([response parse-fn]
-    (response/client-handler response error-handler parse-fn)))
+    (response/initial-response-handler response error-handler parse-fn)))
 
-(def json-handler #(client-handler % response/parse-json-body))
+(def json-handler #(initial-response-handler % response/parse-json-result))
 
 (defn process-err-results
   [data]

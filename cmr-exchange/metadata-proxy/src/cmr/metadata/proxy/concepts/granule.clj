@@ -40,7 +40,7 @@
   (let [coll-id (:collection-id params)
         gran-ids (util/remove-empty (:granules params))
         exclude? (:exclude-granules params)
-        {:keys [bounding-box temporal page-num page-size]} params]
+        {:keys [bounding-box temporal page-num page-size sa-header]} params]
     (str "collection_concept_id=" coll-id
          (when (seq gran-ids)
           (str "&"
@@ -56,7 +56,9 @@
          (when (seq page-num)
           (str "&page-num=" page-num))
          (when (seq page-size)
-          (str "&page-size=" page-size)))))
+          (str "&page-size=" page-size))
+         (when (seq sa-header)
+           (str "&search-after=" sa-header)))))
 
 (defn async-get-metadata
   "Given a data structure with :collection-id, :granules, and :exclude-granules
@@ -91,7 +93,7 @@
         (log/trace "Got results from CMR granule search:"
                    (results/elided rslts))
         (log/trace "Remaining results:" (results/remaining-items rslts))
-        (get-in rslts [:feed :entry])))))
+        (get-in rslts [:feed :entry :headers])))))
 
 (defn get-metadata
   [component search-endpoint user-token params]

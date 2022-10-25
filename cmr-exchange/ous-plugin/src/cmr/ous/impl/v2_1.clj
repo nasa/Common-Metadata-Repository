@@ -30,21 +30,22 @@
   [component coll-promise grans-promise {:keys [endpoint token params]}]
   (log/debug "Starting stage 2 ...")
   (let [granules (granule/extract-metadata grans-promise)
-        coll (collection/extract-metadata coll-promise)
-        tag-data (get-in coll [:tags (keyword collection/opendap-regex-tag) :data])
+        coll (collection/extract-body-metadata coll-promise)
+        tag-data (get-in (collection/extract-body-metadata coll) [:tags (keyword collection/opendap-regex-tag) :data])
         granule-links (map granule/extract-granule-links granules)
-        service-ids (collection/extract-service-ids coll)
-        vars (common/apply-bounding-conditions endpoint token coll params)
+        sa-header (get-in (collection/extract-header-data coll) [:cmr-search-after])
+        service-ids (collection/extract-service-ids (collection/extract-body-metadata coll))
+        vars (common/apply-bounding-conditions endpoint token (collection/extract-body-metadata coll) params)
         svcs (when (:service-id params)
                (service/get-metadata endpoint token [(:service-id params)]))
-        errs (apply errors/collect (concat [granules coll vars] granule-links))]
+        errs (apply errors/collect (concat [granules (collection/extract-body-metadata coll) vars] granule-links))]
     (when errs
       (log/error "Stage 2 errors:" errs))
     (log/trace "granule-links:" (vec granule-links))
     (log/trace "tag-data:" tag-data)
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
-    [params coll granule-links service-ids vars tag-data errs svcs]))
+    [params (collection/extract-body-metadata coll) granule-links sa-header service-ids vars tag-data errs svcs]))
 
 (defn stage3
   [component service-ids vars bounding-box {:keys [endpoint token params]}]
@@ -82,7 +83,7 @@
                          :token user-token
                          :params raw-params})
          ;; Stage 2
-         [params coll granule-links service-ids vars tag-data s2-errs]
+         [params coll granule-links sa-header service-ids vars tag-data s2-errs]
          (stage2 component
                  coll-promise
                  grans-promise
@@ -121,5 +122,6 @@
      (common/process-results {:params params
                               :dap-version dap-version
                               :granule-links granule-links
+                              :sa-header sa-header
                               :tag-data tag-data
                               :query query} start errs warns))))

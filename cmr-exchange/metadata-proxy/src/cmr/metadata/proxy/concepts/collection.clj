@@ -36,16 +36,22 @@
      {}
      response/json-handler)))
 
-(defn extract-metadata
+(defn extract-body-metadata
   [promise]
   (let [results @promise]
     (log/trace "Got results from CMR granule collection:" results)
-    (first (get-in results [:feed :entry]))))
+    (first (get-in (response/json-extract-body results) [:feed :entry]))))
+
+(defn extract-header-data
+  [promise]
+  (let [results @promise]
+    (log/trace "Got results from CMR granule collection:" results)
+    (response/json-extract-headers results)))
 
 (defn get-metadata
   [search-endpoint user-token params]
   (let [promise (async-get-metadata search-endpoint user-token params)]
-    (extract-metadata promise)))
+    (extract-body-metadata promise)))
 
 (defn extract-variable-ids
   [entry]

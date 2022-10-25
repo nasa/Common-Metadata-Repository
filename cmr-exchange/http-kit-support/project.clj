@@ -14,7 +14,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-http-kit "0.2.0"
+(defproject gov.nasa.earthdata/cmr-http-kit "0.3.0"
   :description "Utilities, wrappers, middleware, and components for http-kit interop"
   :url "https://github.com/cmr-exchange/cmr-http-kit"
   :license {
@@ -34,7 +34,7 @@
                  [tolitius/xml-in "0.1.0"]]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
-             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+             :security {:plugins [[com.livingsocial/lein-dependency-check "1.4.0"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
@@ -99,12 +99,12 @@
             "build-lite" ["do"
                           ["ltest" ":unit"]]
             "build" ["do"
-                     ["clean"]
-                     ["check-vers"]
+                     ["clean"] 
                      ["check-sec"]
                      ["ltest" ":unit"]
                      ["ubercompile"]
-                     ["build-uberjar"]]
+                     ["build-uberjar"]
+                     ["check-vers"]]
             "build-full" ["do"
                           ["ltest" ":unit"]
                           ["ubercompile"]

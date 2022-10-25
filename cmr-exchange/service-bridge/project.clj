@@ -69,7 +69,7 @@
         cmr.opendap.core]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
-             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.2"]]
+             :security {:plugins [[com.livingsocial/lein-dependency-check "1.4.0"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
@@ -212,12 +212,12 @@
             "build" ["do"
                      ["clean"]
                      ["lint"]
-                     ["check-vers"]
                      ["check-sec"]
                      ["ltest" ":unit"]
                      ["junit" ":unit"]
                      ["ubercompile"]
-                     ["build-uberjar"]]
+                     ["build-uberjar"]
+                     ["check-vers"]]
             ;; Build without version or security check.
             "build-no-check" ["do"
                               ["clean"]

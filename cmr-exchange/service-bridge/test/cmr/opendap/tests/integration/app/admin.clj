@@ -37,7 +37,7 @@
                                        (test-system/http-port)))]
       (is (= 403 (:status response)))
       (is (= {:errors ["An ECHO token is required to access this resource."]}
-             (response/parse-json-body (:body response))))))
+             (response/parse-json-result (:body response))))))
   (testing "v2 routes that don't exist in v1 ..."
     (let [response @(httpc/get (format "http://localhost:%s/service-bridge/cache"
                                        (test-system/http-port))

@@ -42,7 +42,7 @@
   :aot [clojure.tools.logging.impl]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
-             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.2"]]
+             :security {:plugins [[com.livingsocial/lein-dependency-check "1.4.0"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
@@ -156,12 +156,12 @@
                           ["ltest" ":unit"]]
             "build" ["do"
                      ["clean"]
-                     ["check-vers"]
                      ["check-sec"]
                      ["ltest" ":unit"]
                      ["junit" ":unit"]
                      ["ubercompile"]
-                     ["build-uberjar"]]
+                     ["build-uberjar"]
+                     ["check-vers"]]
             "build-full" ["do"
                           ["ltest" ":unit"]
                           ["generate-static"]

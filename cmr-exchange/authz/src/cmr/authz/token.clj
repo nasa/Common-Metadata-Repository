@@ -70,7 +70,7 @@
           (request/add-token-header token)
           (request/add-form-ct))
       {}
-      #(response/client-handler % response/error-handler parse-username))))
+      #(response/initial-response-handler % response/error-handler parse-username))))
 
 (defn ->user
   "Given a token, return the associated user name."

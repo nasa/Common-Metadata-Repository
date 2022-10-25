@@ -2,7 +2,7 @@
   "This namespace defines a default set of transform functions suitable for use
   in presenting results to HTTP clients.
 
-  Note that ring-based middleeware may take advantage of these functions either
+  Note that ring-based middleware may take advantage of these functions either
   by single use or composition."
   (:require
    [cheshire.core :as json]
@@ -54,9 +54,9 @@
 ;; This adds support for JSON-encoding the data cached in a SoftReference.
 (json-gen/add-encoder SoftReference soft-reference->json!)
 
-(defn parse-json-body
-  [body]
-  (let [str-data (stream->str body)
+(defn parse-json-result
+  [result]
+  (let [str-data (stream->str result)
         json-data (json/parse-string str-data true)]
     (log/trace "str-data:" str-data)
     (log/trace "json-data:" json-data)
@@ -64,7 +64,7 @@
 
 (defn json-errors
   [body]
-  (:errors (parse-json-body body)))
+  (:errors (:body (parse-json-result body))))
 
 (defn parse-xml-body
   [body]
@@ -159,31 +159,50 @@
             :else
             {:errors [default-msg]}))))
 
-(defn client-handler
+;;This function does some initial processing of response to handle errors and otherwise
+;;return the body and headers of response
+(defn initial-response-handler
   ([response]
-    (client-handler response error-handler))
+    (initial-response-handler response error-handler))
   ([response err-handler]
-    (client-handler response err-handler identity))
+    (initial-response-handler response err-handler identity))
   ([{:keys [status headers body error]} err-handler parse-fn]
-    (log/debug "Handling client response ...")
-    (cond error
-          (do
-            (log/error error)
-            {:errors [error]})
+   (log/debug "Handling client response ...")
+   (log/trace "headers:" headers)
+   (log/trace "body:" body)
+   (cond error
+         (do
+           (log/error error)
+           {:errors [error]})
 
-          (>= status 400)
-          (err-handler status headers body)
+         (>= status 400)
+         (err-handler status headers body)
 
-          :else
-          (-> body
-              stream->str
-              ((fn [x] (log/trace "headers:" headers)
-                       (log/trace "body:" x) x))
-              parse-fn))))
+         :else
+         (-> {:body body :headers headers}
+             stream->str
+             parse-fn))))
 
-(def identity-handler #(client-handler % error-handler identity))
-(def json-handler #(client-handler % error-handler parse-json-body))
-(def xml-handler #(client-handler % error-handler parse-xml-body))
+;;This function takes value returned by initial-response-handler
+;;and extracts the a specified field (only header or body at the moment)
+(defn response-extract-field
+  ([response field]
+   (response-extract-field response identity field))
+  ([response extract-function field]
+   (extract-function response field)))
+
+;;This function extracts a field from a JSON response
+(defn json-extract-field
+  [json-data field]
+  (get-in json-data field))
+
+(def identity-handler #(initial-response-handler % error-handler identity))
+(def json-handler #(initial-response-handler % error-handler parse-json-result))
+(def xml-handler #(initial-response-handler % error-handler parse-xml-body))
+
+;;Handlers for extracting different fields from initial-response-handler
+(def json-extract-headers #(response-extract-field json-extract-field :headers %))
+(def json-extract-body #(response-extract-field json-extract-field :body %))
 
 (defn process-ok-results
   [data]

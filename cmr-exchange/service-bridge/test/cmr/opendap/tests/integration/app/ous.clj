@@ -31,4 +31,4 @@
                              collection-id))]
       (is (= 403 (:status response)))
       (is (= {:errors ["An ECHO token is required to access this resource."]}
-             (response/parse-json-body (:body response)))))))
+             (response/parse-json-result (:body response)))))))

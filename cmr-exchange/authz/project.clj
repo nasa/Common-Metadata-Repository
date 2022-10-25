@@ -14,10 +14,11 @@
                  [org.clojure/clojure "1.9.0"]
                  [org.clojure/core.cache "0.7.1"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
-                 [tolitius/xml-in "0.1.0"]]
+                 [tolitius/xml-in "0.1.0"]] 
+  :plugins [[lein-ancient "0.6.15"]]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
-             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+             :security {:plugins [[com.livingsocial/lein-dependency-check "1.4.0"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
@@ -28,7 +29,6 @@
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
                     :plugins [[jonase/eastwood "0.3.3"]
-                              [lein-ancient "0.6.15"]
                               [lein-kibit "0.1.8"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]]
@@ -67,11 +67,11 @@
                           ["ltest" ":unit"]]
             "build" ["do"
                      ["clean"]
-                     ["check-vers"]
                      ["check-sec"]
                      ["ltest" ":unit"]
                      ["ubercompile"]
-                     ["build-uberjar"]]
+                     ["build-uberjar"]
+                     ["check-vers"]]
             "build-full" ["do"
                           ["ltest" ":unit"]
                           ["ubercompile"]
