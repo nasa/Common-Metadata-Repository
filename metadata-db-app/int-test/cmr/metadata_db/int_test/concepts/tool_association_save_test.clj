@@ -2,6 +2,7 @@
   "Contains integration tests for saving tool associations. Tests saves with various
    configurations including checking for proper error handling."
   (:require
+   [clojure.edn :as edn]
    [clojure.test :refer :all]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
    [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
@@ -36,3 +37,14 @@
       (is (= [(str "Tool association could not be associated with provider [REG_PROV]. "
                    "Tool associations are system level entities.")]
              errors)))))
+
+(deftest save-tool-assoc-data-test
+  (testing "The saved worked saving an association with data."
+    (let [coll-concept (concepts/create-and-save-concept :collection "REG_PROV" 1)
+          tool-concept (concepts/create-and-save-concept :tool "REG_PROV" 1)
+          assoc-concept (concepts/create-concept :tool-association coll-concept tool-concept 1 {:data {:XYZ "ZYX"}})
+          saved-assoc (util/save-concept assoc-concept)
+          stored-assoc (:concept (util/get-concept-by-id-and-revision (:concept-id saved-assoc)
+                                                                      (:revision-id saved-assoc)))
+          assoc-metadata (edn/read-string (:metadata stored-assoc))]
+      (is (= {:XYZ "ZYX"} (:data assoc-metadata))))))

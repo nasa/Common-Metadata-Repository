@@ -9,7 +9,8 @@
   "Valid EDN for variable association metadata"
   (pr-str {:tool-concept-id "TL120000008-PROV1"
            :associated-concept-id "C120000000-PROV1"
-           :revision-id 1}))
+           :revision-id 1
+           :data {:XYZ "ZYX"}}))
 
 (defmethod concepts/get-sample-metadata :tool-association
   [_]
