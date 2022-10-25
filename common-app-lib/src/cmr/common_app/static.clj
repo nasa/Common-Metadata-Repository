@@ -171,14 +171,14 @@
   ([processor markdown]
    (.markdownToHtml processor markdown)))
 
-(defn read-generic-markdown
+(defn- read-generic-markdown
   "Reads the file-name mark-down for all concepts"
   [file-name]
   (->  (gconfig/all-generic-docs file-name)
        (md->html)
        (selmer/render {})))
 
-(defn read-generic-markdown-toc
+(defn- read-generic-markdown-toc
   "Reads the file-name mark-down for all concepts"
   [markdown]
   (-> (md->html markdown)
