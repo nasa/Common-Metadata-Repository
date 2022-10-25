@@ -168,10 +168,7 @@
   this function extracts dispatcher implementation from the context, while the
   service function takes the dispatcher as an argument."
   ([context params concept-type]
-   (let [dispatcher (api-util/get-dispatcher context params :index-generics)
-         result (service/index-generics context dispatcher concept-type nil)]
-     {:status 202
-      :body {:message (msg/index-generics params concept-type nil result)}}))
+   (index-generics context params concept-type nil))
   ([context params concept-type provider-id]
    (let [dispatcher (api-util/get-dispatcher context params :index-generics)
          result (service/index-generics context dispatcher concept-type provider-id)]

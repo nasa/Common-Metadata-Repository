@@ -34,5 +34,4 @@
   "Creates a regular expression for all of the generic concepts. Used to create the api endpoints."
   (->> (concepts/get-generic-concept-types-array)
        (map inf/plural)
-       (vec)
        (string/join "|")))
