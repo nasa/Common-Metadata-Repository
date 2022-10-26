@@ -25,7 +25,10 @@
                      source-id)
         revision-id (if (= for-concept-id source-id)
                      assoc-revision-id
-                     source-revision-id)]
+                     source-revision-id)
+        revision-id (if (string? revision-id)
+                      (read-string revision-id)
+                      revision-id)]
     (-> association
         (dissoc :source-concept-identifier :source-revision-id
                 :associated-concept-id :associated-revision-id

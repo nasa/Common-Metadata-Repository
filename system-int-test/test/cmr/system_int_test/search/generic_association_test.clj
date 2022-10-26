@@ -143,12 +143,12 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the service sv1 again, it should NOT return the association
-            sv1-search-result1 (search-request "variables.umm_json" "native_id=sv1")
+            sv1-search-result1 (search-request "services.umm_json" "native_id=sv1")
             sv1-search-body1 (json/parse-string (:body sv1-search-result1) true)
             sv1-search-generic-associations1 (get-in (first (:items sv1-search-body1)) [:meta :associations :services])
 
             ;;Search for the service sv2 again, it should NOT return the association
-            sv2-search-result1 (search-request "variables.umm_json" "native_id=sv2")
+            sv2-search-result1 (search-request "services.umm_json" "native_id=sv2")
             sv2-search-body1 (json/parse-string (:body sv2-search-result1) true)
             sv2-search-generic-associations1 (get-in (first (:items sv2-search-body1)) [:meta :associations :services])]
         ;; The first and second associations are successful
@@ -323,12 +323,16 @@
             ;;Search for the variable var1, it should return the association
             var1-search-result (search-request "variables.umm_json" "native_id=var1")
             var1-search-body (json/parse-string (:body var1-search-result) true)
-            var1-search-generic-associations (get-in (first (:items var1-search-body)) [:associations :generics])
+            var1-search-generic-associations (get-in (first (:items var1-search-body)) [:associations :variables])
+            var1-search-generic-associations-in-meta (get-in (first (:items var1-search-body)) [:meta :associations :variables])
+            var1-search-generic-association-details-in-meta (get-in (first (:items var1-search-body)) [:meta :association-details :variables])
 
             ;;Search for the variable var2, it should return the association
             var2-search-result (search-request "variables.umm_json" "native_id=var2")
             var2-search-body (json/parse-string (:body var2-search-result) true)
-            var2-search-generic-associations (get-in (first (:items var2-search-body)) [:associations :generics])
+            var2-search-generic-associations (get-in (first (:items var2-search-body)) [:associations :variables])
+            var2-search-generic-associations-in-meta (get-in (first (:items var2-search-body)) [:meta :associations :variables])
+            var2-search-generic-association-details-in-meta (get-in (first (:items var2-search-body)) [:meta :association-details :variables])
 
             ;;Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
@@ -338,12 +342,12 @@
             ;;Search for the variable var1 again, it should NOT return the association
             var1-search-result1 (search-request "variables.umm_json" "native_id=var1")
             var1-search-body1 (json/parse-string (:body var1-search-result1) true)
-            var1-search-generic-associations1 (get-in (first (:items var1-search-body1)) [:associations :generics])
+            var1-search-generic-associations1 (get-in (first (:items var1-search-body1)) [:associations :variables])
 
             ;;Search for the variable var2 again, it should NOT return the association
             var2-search-result1 (search-request "variables.umm_json" "native_id=var2")
             var2-search-body1 (json/parse-string (:body var2-search-result1) true)
-            var2-search-generic-associations1 (get-in (first (:items var2-search-body1)) [:associations :generics])]
+            var2-search-generic-associations1 (get-in (first (:items var2-search-body1)) [:associations :variables])]
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
 
@@ -365,10 +369,18 @@
         ;; Search for the variable var1 returns the var2 as generic association
         (is (= [{:concept-id var2-concept-id :revision-id var2-revision-id}]
                var1-search-generic-associations))
+        (is (= [{:concept-id var2-concept-id :revision-id var2-revision-id}]
+               var1-search-generic-association-details-in-meta))
+        (is (= [var2-concept-id]
+               var1-search-generic-associations-in-meta))
 
         ;; Search for the variable var2 returns the var1 as generic association
         (is (= [{:concept-id var1-concept-id :revision-id var1-revision-id}]
                var2-search-generic-associations))
+        (is (= [{:concept-id var1-concept-id :revision-id var1-revision-id}]
+               var2-search-generic-association-details-in-meta))
+        (is (= [var1-concept-id]
+               var2-search-generic-associations-in-meta))
 
         ;; Dissociation of the association is successful
         (is (= 200 (:status response4)))
@@ -400,7 +412,7 @@
             ;;Search for the variable, it should return the association
             var1-search-result (search-request "variables.umm_json" "native_id=var1")
             var1-search-body (json/parse-string (:body var1-search-result) true)
-            var1-search-generic-associations (get-in (first (:items var1-search-body)) [:associations :generics])
+            var1-search-generic-associations (get-in (first (:items var1-search-body)) [:associations :grids])
 
             ;;Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
@@ -415,7 +427,7 @@
             ;;Search for the variable again, it should NOT return the association
             var1-search-result1 (search-request "variables.umm_json" "native_id=var1")
             var1-search-body1 (json/parse-string (:body var1-search-result1) true)
-            var1-search-generic-associations1 (get-in (first (:items var1-search-body1)) [:associations :generics])]
+            var1-search-generic-associations1 (get-in (first (:items var1-search-body1)) [:associations :grids])]
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
 

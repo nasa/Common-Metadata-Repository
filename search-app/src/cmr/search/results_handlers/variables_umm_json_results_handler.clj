@@ -13,15 +13,15 @@
   [concept-type query]
   (concat
    results-helper/meta-fields
-   ["concepts-gzip-b64"]))
+   ["associations-gzip-b64"]))
 
 (defn- elastic-result->associated-concepts
   "Returns the associated concepts of the elastic result"
   [elastic-result]
-  (let [concepts-gzip-b64 (get-in elastic-result [:_source :concepts-gzip-b64])]
-    (when concepts-gzip-b64
+  (let [associations-gzip-b64 (get-in elastic-result [:_source :associations-gzip-b64])]
+    (when associations-gzip-b64
       (edn/read-string
-       (util/gzip-base64->string concepts-gzip-b64)))))
+       (util/gzip-base64->string associations-gzip-b64)))))
 
 (defmethod results-helper/elastic-result+metadata->umm-json-item :variable
   [concept-type elastic-result metadata]
