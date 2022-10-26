@@ -134,24 +134,6 @@
       (assoc-nil-if :ScienceKeywords (= (:ScienceKeywords collection) su/not-provided-science-keywords))
       (assoc-nil-if :DataCenters (= (:DataCenters collection) [su/not-provided-data-center]))))
 
-(defn- associations->gzip-base64-str
-  "Returns the gziped base64 string for the given variable, service, tool and generic  associations"
-  [variable-associations service-associations tool-associations generic-associations concept-id]
-  (when (or (seq variable-associations)
-            (seq service-associations)
-            (seq tool-associations)
-            (seq generic-associations))
-    (util/string->gzip-base64
-     (pr-str
-      (util/remove-map-keys
-       empty?
-       (assoc-util/assoc-list->assoc-struct
-        (concat variable-associations
-                service-associations
-                tool-associations
-                generic-associations)
-        concept-id))))))
-
 (defn- variable-service-tool-associations->elastic-docs
   "Returns the elastic docs for variable, service and tool assocations"
   [context variable-associations service-associations tool-associations]
@@ -513,9 +495,9 @@
                                                          :processing-level-id-humanized
                                                          first
                                                          :value-lowercase)
-            :associations-gzip-b64
-            (associations->gzip-base64-str
-             variable-associations service-associations tool-associations generic-associations concept-id)
+            :associations-gzip-b64 (assoc-util/associations->gzip-base64-str
+                                    (concat variable-associations service-associations tool-associations generic-associations)
+                                    concept-id)
             :usage-relevancy-score 0
             :horizontal-data-resolutions {:value horizontal-data-resolutions
                                           :priority 0}

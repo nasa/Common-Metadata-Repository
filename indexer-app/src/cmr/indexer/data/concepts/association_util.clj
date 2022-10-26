@@ -64,3 +64,14 @@
        (map #(update-association-for-concept % concept-id))
        ;;group the associations into pluralized concept types.
        (group-by #(cc/pluralize-concept-type (cc/concept-id->type (:concept-id %))))))
+
+(defn associations->gzip-base64-str
+  "Returns the gziped base64 string for the given variable, service, tool and generic associations,
+  or the combinations."
+  [all-assocs concept-id]
+  (when all-assocs
+    (->> concept-id
+         (assoc-list->assoc-struct all-assocs)
+         (util/remove-map-keys empty?)
+         pr-str
+         util/string->gzip-base64)))

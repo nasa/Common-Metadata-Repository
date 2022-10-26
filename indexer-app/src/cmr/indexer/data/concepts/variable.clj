@@ -43,7 +43,8 @@
                         (merge parsed-concept extra-fields
                                {:variable-associations (map :associated-concept-id variable-associations)
                                 :set-names (map :Name (:Sets parsed-concept))})
-                        schema-keys)]
+                        schema-keys)
+        all-assocs (concat variable-associations generic-associations)]
     (if deleted
       ;; This is only called by re-indexing (bulk indexing)
       ;; Regular deleted variables would have gone through the index-service/delete-concept path.
@@ -84,15 +85,7 @@
                                         (:MeasurementIdentifiers parsed-concept))
        ;; associated collections and generic concepts saved in elasticsearch for retrieving purpose in the format of:
        ;; [{"concept_id":"C1200000007-PROV1"}, {"concept_id":"C1200000008-PROV1","revision_id":5}]
-       :associations-gzip-b64 (when (or (seq variable-associations)
-                                        (seq generic-associations))
-                                (util/string->gzip-base64
-                                 (pr-str
-                                  (util/remove-map-keys
-                                   empty?
-                                   (assoc-util/assoc-list->assoc-struct
-                                    (concat variable-associations generic-associations)
-                                     concept-id)))))})))
+       :associations-gzip-b64 (assoc-util/associations->gzip-base64-str all-assocs concept-id)}))) 
 
 (defn- variable-associations->variable-concepts
   "Returns the variable concepts for the given variable associations."
