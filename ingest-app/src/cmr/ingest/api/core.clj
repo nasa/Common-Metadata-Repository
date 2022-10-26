@@ -219,6 +219,13 @@
     concept))
 
 (defn read-body!
+   "Returns the body content string by slurping the request body.
+    This function has the side effect of emptying the request body.
+    Don't try to read the body again after calling this function."
+  [body]
+  (string/trim (slurp body)))
+
+(defn read-multiple-body!
   "Returns the body content string by slurping the request body. This function
    has the side effect of emptying the request body. Don't try to read the body
    again after calling this function.
@@ -233,7 +240,7 @@
    will be split and returned as different items in array, otherwise an array
    with one item is returned."
   [body]
-  (let [body-str (string/trim (slurp body))]
+  (let [body-str (read-body!)]
     (if (and ;;be flexable on location of parameters
          (some? (re-matches (re-pattern (str ".*content=\\{.+\\}")) body-str))
          (some? (re-matches (re-pattern (str ".+=.+&.+=.+")) body-str))
@@ -263,7 +270,7 @@
   This function has the side effect of emptying the request body.
   Don't try to read the body again after calling this function."
   ([concept-type body content-type headers]
-   (let [metadata (read-body! body)]
+   (let [metadata (read-multiple-body! body)]
      (metadata->concept concept-type metadata content-type headers)))
   ([concept-type native-id body content-type headers]
    (assoc (body->concept! concept-type body content-type headers)
