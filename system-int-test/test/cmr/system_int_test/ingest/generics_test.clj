@@ -53,19 +53,6 @@
              (gdocs/validate-document-against-schema :grid "0.0.1" bad-json))
             "Was not able to generate a schema exception")))))
 
-(deftest test-validate-concept-subtypes
-  (testing
-   "Test that concept prefixes can be looked up from either a configuration file or be assumed"
-    (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
-      (let [expected1 "GRD"
-            actual1 (gdocs/get-sub-concept-type-concept-id-prefix :grid "0.0.1")
-            expected2 "X"
-            actual2 (gdocs/get-sub-concept-type-concept-id-prefix :fake "A.B.C")]
-        (is (= expected1 actual1) "was not able to find GRD")
-        (is (= expected2 actual2) "was not able to default to X")))))
-
-;; Test that a Generic can be walked through all the CRUD actions using the ingest
-;; interface. Use the same native-id for all these steps"
 (deftest test-generic-CRUD
   (let [native-id "Generic-Test-CRUD"
         generic-tokened-request (partial gen-util/generic-request nil "PROV1" native-id)
@@ -101,7 +88,7 @@
               concept-id (get actual :concept-id)
               ;; these fields are complicated to test, do so another way
               normalised (dissoc actual :concept-id :revision-date :created-at :transaction-id
-                                 :user-id :concept-sub-type)
+                                 :user-id)
               expected-pattern (re-pattern "\\{\"concept-id\":\"GRD[0-9]+-PROV1\",\"revision-id\":1,\"warnings\":null,\"existing-errors\":null\\}")]
           ;; test that the create was a success
           (is (= 201 (:status create-result)) "The HTTP status code from create is not correct")
