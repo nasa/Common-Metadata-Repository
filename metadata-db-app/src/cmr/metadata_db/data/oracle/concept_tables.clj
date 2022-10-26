@@ -142,11 +142,11 @@
           (info "Dropping table" table-name)
           (j/db-do-commands db (str "DROP TABLE " table-name)))
         (catch java.sql.BatchUpdateException bue
-          (warn "Could not drop table " table-name)))
+          (warn "Could not drop table [" table-name "] because " (.getMessage bue))))
 
       (try
         (do
           (info "Dropping sequence" sequence-name)
           (j/db-do-commands db (str "DROP SEQUENCE " sequence-name)))
         (catch java.sql.BatchUpdateException bue
-          (warn "Could not drop table " table-name))))))
+          (warn "Could not drop table [" table-name "] because " (.getMessage bue)))))))

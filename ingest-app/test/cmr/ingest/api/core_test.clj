@@ -16,7 +16,7 @@
 (deftest read-body-test
   (testing "Test the read-body! function to make sure it can handle all the original and new cases"
   (are3 [data expected]
-        (is (= expected (core/read-body! (string->stream data))))
+        (is (= expected (core/read-multiple-body! (string->stream data))))
 
         "Empty strings"
         "" [""]

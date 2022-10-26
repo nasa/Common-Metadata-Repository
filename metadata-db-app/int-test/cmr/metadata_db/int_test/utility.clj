@@ -233,13 +233,14 @@
 
 (defn- save-concept-core
   "Fundamental save operation"
-  ([concept] (save-concept-core concept nil))
+  ([concept]
+   (save-concept-core concept nil))
   ([concept headers]
    (let [response (client/post (concepts-url)
                                {:body (json/generate-string concept)
                                 :content-type :json
                                 :accept :json
-                                :headers (when headers headers)
+                                :headers headers
                                 :throw-exceptions false
                                 :connection-manager (conn-mgr)})
          status (:status response)

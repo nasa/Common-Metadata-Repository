@@ -240,7 +240,7 @@
    will be split and returned as different items in array, otherwise an array
    with one item is returned."
   [body]
-  (let [body-str (read-body!)]
+  (let [body-str (read-body! body)]
     (if (and ;;be flexable on location of parameters
          (some? (re-matches (re-pattern (str ".*content=\\{.+\\}")) body-str))
          (some? (re-matches (re-pattern (str ".+=.+&.+=.+")) body-str))
