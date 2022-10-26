@@ -39,7 +39,7 @@
              errors)))))
 
 (deftest save-tool-assoc-data-test
-  (testing "The saved worked saving an association with data."
+  (testing "ensure that saving worked for an association with a data payload."
     (let [coll-concept (concepts/create-and-save-concept :collection "REG_PROV" 1)
           tool-concept (concepts/create-and-save-concept :tool "REG_PROV" 1)
           assoc-concept (concepts/create-concept :tool-association coll-concept tool-concept 1 {:data {:XYZ "ZYX"}})
