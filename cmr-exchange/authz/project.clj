@@ -1,8 +1,6 @@
 (defproject gov.nasa.earthdata/cmr-authz "0.1.5"
   :description "An authorization utility library for CMR services"
   :url "https://github.com/cmr-exchange/authz"
-  :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
-                                    :sign-releases false}]]
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[cheshire "5.8.1"]
