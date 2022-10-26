@@ -2,6 +2,7 @@
   "Contains integration tests for saving variable associations. Tests saves with various
    configurations including checking for proper error handling."
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
    [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
@@ -10,6 +11,20 @@
 
 (use-fixtures :each (util/reset-database-fixture {:provider-id "REG_PROV" :small false}
                                                  {:provider-id "PROV1" :small false}))
+
+(defn- inject-metadata
+  "Take a concept which has a :metadata field and inject some content into the
+   metadata.
+   Parameters:
+   original: concept map containing :metadata
+   metadata-additions: a name/value list sutible for use with apply"
+  [original metadata-additions]
+  (-> original
+      :metadata
+      (json/parse-string)
+      (as-> xs (apply assoc xs metadata-additions))
+      (json/generate-string)
+      (as-> xs (assoc original :metadata xs))))
 
 ;; tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -41,11 +56,23 @@
       (is (= 1 (:revision-id results)))
       (is (some? (:concept-id results)))))
 
+;; This metadata is to be added to a variable for testing '&' inside of data in
+;; The hope of tricking the content=foo&data=bar parser
+(def additional-variable-metadata
+  ["Description" "Update Content, with URIs & ampersands"
+   "MeasurementIdentifiers" {"MeasurementContextMedium" "ocean"
+                             "MeasurementContextMediumURI"
+                             "http://fake.gov/ontology/ENVO?content=var&data=test",
+                             "MeasurementObject" "sea_surface_subskin"
+                             "MeasurementObjectURI"
+                             "https://gcmd.earthdata.nasa.gov/kms/concept/68a09c56-be36-4100-8757-3a6eec7dc251?a=1&b=2"}])
+
   (testing "saving new variable association, with payload"
     (let [header {transmit-config/token-header (transmit-config/echo-system-token)}
           coll (concepts/create-and-save-concept :collection "PROV1" 1)
-          variable (concepts/create-and-save-concept :variable "PROV1" 1 1
+          variable (-> (concepts/create-and-save-concept :variable "PROV1" 1 1
                                                      {:coll-concept-id (:concept-id coll)})
+                       (inject-metadata additional-variable-metadata))
           variable-association (-> (concepts/create-concept :variable-association coll variable 2)
                                    (assoc :provider-id "CMR"))
           expected-payload {"XYZ" "XYZ" "allow-regridding" true}
