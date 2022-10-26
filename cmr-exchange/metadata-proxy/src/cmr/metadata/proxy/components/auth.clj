@@ -131,7 +131,7 @@
   (if-let [user-token (token/extract request)]
     (let [user-lookup (cached-user system user-token)
           errors (:errors user-lookup)]
-      (log/debug "ECHO token provided lol; proceeding ...")
+      (log/debug "ECHO token provided; proceeding ...")
       (log/trace "user-lookup:" user-lookup)
       (if errors
         (do

@@ -17,6 +17,8 @@
 (defproject gov.nasa.earthdata/cmr-http-kit "0.3.0"
   :description "Utilities, wrappers, middleware, and components for http-kit interop"
   :url "https://github.com/cmr-exchange/cmr-http-kit"
+  :deploy-repositories [["clojars" {:url "https://clojars.org/repo"
+                                    :sign-releases false}]]
   :license {
             :name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
