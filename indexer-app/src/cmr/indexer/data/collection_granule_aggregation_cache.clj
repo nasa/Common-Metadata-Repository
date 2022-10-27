@@ -219,18 +219,16 @@
          (c/set-value cache coll-gran-aggregate-cache-key
                       (coll-gran-aggregates->cachable-value merged-map))
 
-         (try
-           (when (seq updated-collections)
-             (info "Reindexing collections found with updated temporal values since last ingest:"
-                   (pr-str updated-collections))
+         (when (seq updated-collections)
+           (info "Reindexing collections found with updated temporal values since last ingest:"
+                 (pr-str updated-collections))
 
           ;; Reindex the collections that were modified
-             (->> updated-collections
-                  (meta-db/get-latest-concepts context)
+           (->> updated-collections
+                (meta-db/get-latest-concepts context)
                ;; wrap it in a vector to make a batch to bulk index
-                  vector
-                  (index-service/bulk-index context)))
-           (catch Exception e (error (.getMessage e))))))
+                vector
+                (index-service/bulk-index context)))))
 
       ;; There's no existing value so a full refresh is required.
       (full-cache-refresh context))))
