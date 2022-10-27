@@ -25,7 +25,10 @@
                      source-id)
         revision-id (if (= for-concept-id source-id)
                      assoc-revision-id
-                     source-revision-id)]
+                     source-revision-id)
+        revision-id (if (string? revision-id)
+                      (read-string revision-id)
+                      revision-id)]
     (-> association
         (dissoc :source-concept-identifier :source-revision-id
                 :associated-concept-id :associated-revision-id
@@ -61,3 +64,14 @@
        (map #(update-association-for-concept % concept-id))
        ;;group the associations into pluralized concept types.
        (group-by #(cc/pluralize-concept-type (cc/concept-id->type (:concept-id %))))))
+
+(defn associations->gzip-base64-str
+  "Returns the gziped base64 string for the given variable, service, tool and generic associations,
+  or the combinations."
+  [all-assocs concept-id]
+  (when all-assocs
+    (->> concept-id
+         (assoc-list->assoc-struct all-assocs)
+         (util/remove-map-keys empty?)
+         pr-str
+         util/string->gzip-base64)))

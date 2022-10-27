@@ -28,7 +28,8 @@
                      :ServiceKeywords
                      :ServiceOrganizations]
         keyword-values (service-keyword-util/concept-keys->keyword-text
-                        parsed-concept schema-keys)]
+                        parsed-concept schema-keys)
+        all-assocs (concat service-associations generic-associations)]
     (if deleted
       {:concept-id concept-id
        :revision-id revision-id
@@ -58,13 +59,7 @@
        :user-id user-id
        :revision-date revision-date
        :metadata-format (name (mt/format-key format))
-       :associations-gzip-b64 (util/string->gzip-base64
-                               (pr-str
-                                (util/remove-map-keys
-                                 empty?
-                                 (assoc-util/assoc-list->assoc-struct
-                                  (concat service-associations generic-associations)
-                                   concept-id))))})))
+       :associations-gzip-b64 (assoc-util/associations->gzip-base64-str all-assocs concept-id)})))
 
 (defn- service-associations->service-concepts
   "Returns the service concepts for the given service associations."

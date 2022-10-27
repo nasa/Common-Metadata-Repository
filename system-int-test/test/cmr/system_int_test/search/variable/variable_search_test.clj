@@ -508,6 +508,17 @@
           variable2 (variables/ingest-variable-with-association var2-concept)
           variable3 (variables/ingest-variable-with-association var3-concept)
 
+          associations1 {:associations {:collections [(:concept-id coll1)]}
+                         :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
+          associations2 {:associations {:collections [(:concept-id coll2)]}
+                         :association-details {:collections [{:concept-id (:concept-id coll2)
+                                                              :revision-id 1}]}}
+          associations3 {:associations {:collections [(:concept-id coll3)]}
+                         :association-details {:collections [{:concept-id (:concept-id coll3)}]}}
+          variable1 (merge variable1 associations1)
+          variable2 (merge variable2 associations2)
+          variable3 (merge variable3 associations3)
+
           variable1-assoc-colls [{:concept-id (:concept-id coll1)}]
           variable2-assoc-colls [{:concept-id (:concept-id coll2)
                                   :revision-id 1}]
@@ -543,6 +554,7 @@
                                            {:native-id "var1"
                                             :coll-concept-id (:concept-id coll1)})
                 updated-variable1 (variables/ingest-variable-with-association updated-variable1-concept)
+                updated-variable1 (merge updated-variable1 associations1)
                 expected-variable1 (merge updated-variable1-concept
                                           updated-variable1
                                           {:associated-collections variable1-assoc-colls})]

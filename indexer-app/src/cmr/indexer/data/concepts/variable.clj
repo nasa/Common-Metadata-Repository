@@ -6,6 +6,7 @@
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
+   [cmr.indexer.data.concepts.association-util :as assoc-util]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.transmit.metadata-db :as mdb]))
@@ -31,15 +32,6 @@
       (map #(merge base-doc (measurement-quantity->elastic-doc %)) quantities)
       [base-doc])))
 
-(defn- get-concept-id-revision-id-map
- "Return the concept-id revision-id map."
- [concept-id revision-id]
- (util/remove-nil-keys
-  {:concept-id concept-id
-   :revision-id (if (string? revision-id)
-                  (read-string revision-id)
-                  revision-id)}))
-
 (defmethod es/parsed-concept->elastic-doc :variable
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
@@ -51,7 +43,8 @@
                         (merge parsed-concept extra-fields
                                {:variable-associations (map :associated-concept-id variable-associations)
                                 :set-names (map :Name (:Sets parsed-concept))})
-                        schema-keys)]
+                        schema-keys)
+        all-assocs (concat variable-associations generic-associations)]
     (if deleted
       ;; This is only called by re-indexing (bulk indexing)
       ;; Regular deleted variables would have gone through the index-service/delete-concept path.
@@ -92,25 +85,7 @@
                                         (:MeasurementIdentifiers parsed-concept))
        ;; associated collections and generic concepts saved in elasticsearch for retrieving purpose in the format of:
        ;; [{"concept_id":"C1200000007-PROV1"}, {"concept_id":"C1200000008-PROV1","revision_id":5}]
-       :concepts-gzip-b64 (when (or (seq variable-associations)
-                                    (seq generic-associations))
-                            (util/string->gzip-base64
-                             (pr-str
-                              (util/remove-map-keys empty?
-                               {:collections (map #(get-concept-id-revision-id-map
-                                                    (:associated-concept-id %)
-                                                    (:associated-revision-id %))
-                                                  variable-associations)
-                                :generics (let [generics (concat
-                                                          (map #(get-concept-id-revision-id-map
-                                                                 (:source-concept-identifier %)
-                                                                 (:source-revision-id %))
-                                                               generic-associations)
-                                                          (map #(get-concept-id-revision-id-map
-                                                                 (:associated-concept-id %)
-                                                                 (:associated-revision-id %))
-                                                               generic-associations))]
-                                            (remove #(= concept-id (:concept-id %)) generics))}))))})))
+       :associations-gzip-b64 (assoc-util/associations->gzip-base64-str all-assocs concept-id)}))) 
 
 (defn- variable-associations->variable-concepts
   "Returns the variable concepts for the given variable associations."
