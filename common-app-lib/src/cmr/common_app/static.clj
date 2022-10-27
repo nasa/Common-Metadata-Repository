@@ -144,6 +144,7 @@
    [cmr.common-app.api.routes :as cr]
    [cmr.common-app.config :as config]
    [cmr.common-app.site.pages :as pages]
+   [cmr.common.generics :as gconfig]
    [compojure.handler :as handler]
    [compojure.route :as route]
    [compojure.core :refer :all]
@@ -156,6 +157,32 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions & Constants
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defn md->html
+  "Given markdown and an optional markdown processor, converts it to HTML.
+  If a processor is not provided, one will be created."
+  ([markdown]
+   (let [processor (PegDownProcessor.
+                    (int (bit-or Extensions/AUTOLINKS
+                                 Extensions/HARDWRAPS
+                                 Extensions/TABLES
+                                 Extensions/FENCED_CODE_BLOCKS)))]
+     (md->html processor markdown)))
+  ([processor markdown]
+   (.markdownToHtml processor markdown)))
+
+(defn- read-generic-markdown
+  "Reads the file-name mark-down for all concepts"
+  [file-name]
+  (->  (gconfig/all-generic-docs file-name)
+       (md->html)
+       (selmer/render {})))
+
+(defn- read-generic-markdown-toc
+  "Reads the file-name mark-down for all concepts"
+  [markdown]
+  (-> (md->html markdown)
+      (selmer/render {})))
 
 (def ^:private resource-root "public/site/")
 
@@ -194,46 +221,52 @@
 (defn docs-routes
   "Defines routes for returning API documentation. Takes the public-protocol (http or https),
   relative-root-url of the application, and the location of the welcome page within the classpath."
-  ([public-protocol relative-root-url]
+  ([public-protocol relative-root-url] (docs-routes public-protocol relative-root-url {}))
+  ([public-protocol relative-root-url options]
    (routes
-     (context "/site" []
+    (context "/site" []
        ;; Return swagger.json if the application provides one
-       (GET "/swagger.json" {:keys [headers]}
-         (if-let [resource (site-resource "swagger.json")]
-           {:status 200
-            :body (-> resource
-                      slurp
-                      (string/replace "%CMR-PROTOCOL%" public-protocol)
-                      (string/replace "%CMR-HOST%" (headers "host"))
-                      (string/replace "%CMR-BASE-PATH%" relative-root-url))
-            :headers (:headers (cr/options-response))}
-           (route/not-found (site-resource "404.html"))))
+      (GET "/swagger.json" {:keys [headers]}
+        (if-let [resource (site-resource "swagger.json")]
+          {:status 200
+           :body (-> resource
+                     slurp
+                     (string/replace "%CMR-PROTOCOL%" public-protocol)
+                     (string/replace "%CMR-HOST%" (headers "host"))
+                     (string/replace "%CMR-BASE-PATH%" relative-root-url))
+           :headers (:headers (cr/options-response))}
+          (route/not-found (site-resource "404.html"))))
        ;; Static HTML resources, typically API documentation which needs endpoint URLs replaced
-       (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
-         (when-let [resource (site-resource page)]
-           (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)
-                 site-example-provider (get site-provider-map (headers "host") "PROV1")
-                 cmr-example-collection-id (str "C1234567-" site-example-provider)]
-             {:status 200
-              :headers {"Content-Type" "text/html; charset=utf-8"}
-              :body (-> resource
-                        slurp
-                        (string/replace "%CMR-ENDPOINT%" cmr-root)
-                        (string/replace "%CMR-RELEASE-VERSION%" (config/release-version))
-                        (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id))})))
+      (GET ["/:page", :page #".*\.html$"] {headers :headers, {page :page} :params}
+        (when-let [resource (site-resource page)]
+          (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)
+                site-example-provider (get site-provider-map (headers "host") "PROV1")
+                cmr-example-collection-id (str "C1234567-" site-example-provider)
+                doc-type (nth (re-find #"/(.*)/" (str page)) 1)
+                generic-doc-body (read-generic-markdown doc-type)
+                generic-doc-toc (read-generic-markdown-toc (gconfig/all-generic-docs-toc doc-type options))]
+            {:status 200
+             :headers {"Content-Type" "text/html; charset=utf-8"}
+             :body (-> resource
+                       slurp
+                       (string/replace "%GENERIC-TABLE-OF-CONTENTS%" (gconfig/format-toc-into-doc generic-doc-toc))
+                       (string/replace "%GENERIC-DOCS%" generic-doc-body)
+                       (string/replace "%CMR-ENDPOINT%" cmr-root)
+                       (string/replace "%CMR-RELEASE-VERSION%" (config/release-version))
+                       (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id))})))
        ;; Other static resources (Javascript, CSS)
-       (route/resources "/" {:root resource-root})
-       (pages/not-found))
-     (context "/" []
-       (route/resources "/"))))
-  ([public-protocol relative-root-url welcome-page-location]
+      (route/resources "/" {:root resource-root})
+      (pages/not-found))
+    (context "/" []
+      (route/resources "/"))))
+  ([public-protocol relative-root-url welcome-page-location _options]
    (routes
      ;; CMR Application Welcome Page
-     (GET "/" req
-       (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
-                             {:status 200
-                              :body (slurp (io/resource welcome-page-location))}))
-     (docs-routes public-protocol relative-root-url))))
+    (GET "/" req
+      (force-trailing-slash req ; Without a trailing slash, the relative URLs in index.html are wrong
+                            {:status 200
+                             :body (slurp (io/resource welcome-page-location))}))
+    (docs-routes public-protocol relative-root-url {}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Core API Documentation Functions
@@ -257,19 +290,6 @@
     (println " * Copying swagger.json file to" (str swagger-target))
     (io/copy (io/file "resources/schema/swagger.json")
              swagger-target)))
-
-(defn md->html
-  "Given markdown and an optional markdown processor, converts it to HTML.
-  If a processor is not provided, one will be created."
-  ([markdown]
-   (let [processor (PegDownProcessor.
-                     (int (bit-or Extensions/AUTOLINKS
-                                  Extensions/HARDWRAPS
-                                  Extensions/TABLES
-                                  Extensions/FENCED_CODE_BLOCKS)))]
-     (md->html processor markdown)))
-  ([processor markdown]
-   (.markdownToHtml processor markdown)))
 
 (defn md-file->html
   "Given a markdown filename, slurp it and convert to HTML."

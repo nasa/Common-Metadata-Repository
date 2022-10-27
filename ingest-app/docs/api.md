@@ -15,53 +15,55 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
 
 ### Metadata Ingest API Overview
 
-* Collections
-    * /providers/\<provider-id>/validate/collection/\<native-id>
+* [Collections](#collection)
+    * [/providers/\<provider-id>/validate/collection/\<native-id>](#validate-collection-endpoint)
         * [POST - Validate collection metadata.](#validate-collection)
-    * /providers/\<provider-id>/collections/\<native-id>
+    * [/providers/\<provider-id>/collections/\<native-id>](#create-delete-collection-endpoint)
         * [PUT - Create or update a collection.](#create-update-collection)
         * [DELETE - Delete a collection.](#delete-collection)
-    * /providers/\<provider-id>/validate/granule/\<native-id>
+    * [/collections/\<collection-concept-id>/\<collection-revision-id>/variables/\<native-id>](#create-var-coll-endpoint)
+        * [PUT - Create or update a variable with association.](#create-update-variable)
+* [Granules](#granule)
+    * [/providers/\<provider-id>/validate/granule/\<native-id>](#validate-granule-endpoint)
         * [POST - Validate granule metadata.](#validate-granule)
-    * /providers/\<provider-id>/granules/\<native-id>
+    * [/providers/\<provider-id>/granules/\<native-id>](#create-delete-granule-endpoint)
         * [PUT - Create or update a granule.](#create-update-granule)
         * [DELETE - Delete a granule.](#delete-granule)
-    * /collections/\<collection-concept-id>/\<collection-revision-id>/variables/\<native-id>
-        * [PUT - Create or update a variable with association.](#create-update-variable)
-* Variables
-    * /providers/\<provider-id>/variables/\<native-id>
+* [Variables](#variable)
+    * [/providers/\<provider-id>/variables/\<native-id>](#variable-endpoint)
         * [PUT - Update a variable.](#create-update-variable)
         * [DELETE - Delete a variable.](#delete-variable)
-* Services
-    * /providers/\<provider-id>/services/\<native-id>
+* [Services](#service)
+    * [/providers/\<provider-id>/services/\<native-id>](#service-endpoint)
         * [PUT - Create or update a service.](#create-update-service)
         * [DELETE - Delete a service.](#delete-service)
-* Tools
-    * /providers/\<provider-id>/tools/\<native-id>
+* [Tools](#tool)
+    * [/providers/\<provider-id>/tools/\<native-id>](#tool-endpoint)
         * [PUT - Create or update a tool.](#create-update-tool)
         * [DELETE - Delete a tool.](#delete-tool)
-* Subscriptions
-    * /subscriptions
+* [Subscriptions](#subscription)
+    * [/subscriptions](#subscription-endpoint)
         *  [POST - Create a subscription without specifying a native-id.](#create-subscription)
-    * /subscriptions/\<native-id>
+    * [/subscriptions/\<native-id>](#subscription-native-id-endpoint)
         * [POST - Create a subscription with a provided native-id.](#create-subscription)
         * [PUT - Create or Update a subscription.](#update-subscription)
         * [DELETE - Delete a subscription.](#delete-subscription)
         * [Subscription Access Control](#subscription-access-control)
-* Translations
-    * /translate/collection
+* %GENERIC-TABLE-OF-CONTENTS%
+* [Translations](#translate-collection)
+    * [/translate/collection](#translate-collection-endpoint)
         * [POST - Translate collection metadata.](#translate-collection)
-    * /translate/granule
+    * [/translate/granule](#translate-granule-endpoint)
         * [POST - Translate granule metadata.](#translate-granule)
-* Bulk Updates
-    * /providers/\<provider-id\>/bulk-update/collections
+* [Bulk Updates](#bulk-update-collection-endpoint)
+    * [/providers/\<provider-id\>/bulk-update/collections](#bulk-update-collection-endpoint)
         * [POST - Collection bulk update](#collection-bulk-update)
-    * /providers/\<provider-id\>/bulk-update/granules
+    * [/providers/\<provider-id\>/bulk-update/granules](#bulk-update-granule-endpoint)
         *  [POST - Granule bulk update](#granule-bulk-update)
-    * /granule-bulk-update/status
-        * [POST - Granule bulk update](#granule-bulk-update)
-    * /granule-bulk-update/status/\<task-id\>
-        * [GET - Granule bulk update status](#granule-bulk-update)
+    * [/granule-bulk-update/status](#bulk-update-granules-status-endpoint)
+        * [GET - Granule bulk update status](#bulk-update-granules-status)
+    * [/granule-bulk-update/status/\<task-id\>](#bulk-update-granules-task-id-endpoint)
+        * [GET - Granule bulk update status by task-id](#bulk-update-granules-task-id)
 
 --------------------------------------------------------------------------------
 
@@ -357,7 +359,9 @@ The following are the latest acceptable UMM schema versions for metadata ingest:
 
 [//]: # "Note: The above version variables will be rendered at html generation time."
 
+## <a name="collection"></a> Collection
 ### <a name="validate-collection"></a> Validate Collection
+#### <a name="validate-collection-endpoint"></a> /providers/&lt;provider-id&gt;/validate/collection/&lt;native-id&gt;
 
 Collection metadata can be validated without having to ingest it. The validation performed is schema validation, UMM validation, and inventory specific validations. Keyword validation can be enabled with the [keyword validation header](#validate-keywords-header). It returns status code 200 with a list of any warnings on successful validation, status code 400 with a list of validation errors on failed validation. Warnings would be returned if the ingested record passes native XML schema validation, but not UMM-C validation.
 
@@ -381,6 +385,7 @@ curl -i -XPOST -H "Content-type: application/echo10+xml" \
 ```
 
 ### <a name="create-update-collection"></a> Create / Update a Collection
+#### <a name="create-delete-collection-endpoint"></a> /providers/&lt;provider-id&gt;/collections/&lt;native-id&gt;
 
 Collection metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). The metadata that is uploaded is validated for XML well-formedness, XML schema validation, and against UMM validation rules. Keyword validation can be enabled with the [keyword validation header](#validate-keywords-header). If there is a need to retrieve the native-id of an already-ingested collection for updating, requesting the collection via the search API in UMM-JSON format will provide the native-id.
 
@@ -443,10 +448,9 @@ Note: When a collection is deleted, all the associations will be deleted, also c
 #### Successful Response in JSON
 
 	{"concept-id":"C1200000000-PROV1","revision-id":2}
-
---------------------------------------------------------------------------------
-
+## <a name="granule"></a> Granule
 ### <a name="validate-granule"></a> Validate Granule
+#### <a name="validate-granule-endpoint"></a> /providers/&lt;provider-id&gt;/validate/granule/&lt;native-id&gt;
 
 Granule metadata can be validated without having to ingest it. The validation performed is schema validation, UMM validation, and inventory specific validations. It returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
 
@@ -484,6 +488,7 @@ Here's an example of validating a granule along with the parent collection using
       "%CMR-ENDPOINT%/providers/PROV1/validate/granule/sampleGranuleNativeId33"
 
 ### <a name="create-update-granule"></a> Create / Update a Granule
+#### <a name="create-delete-granule-endpoint"></a> /providers/&lt;provider-id&gt;/granules/&lt;native-id&gt;
 
 Granule metadata can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/granules/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). Once a granule is created to reference a parent collection, the granule cannot be changed to reference a different collection as its parent collection during granule update.
 
@@ -537,8 +542,9 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 #### Successful Response in JSON
 
     {"concept-id":"G1200000001-PROV1","revision-id":2}
-
+## <a name="variable"></a> Variable
 ### <a name="create-update-variable"></a> Create / Update a Variable
+#### <a name="create-var-coll-endpoint"></a> /collections/&lt;collection-concept-id&gt;/&lt;collection-revision-id&gt;/variables/&lt;native-id&gt;
 
 A new variable ingest endpoint is provided to ensure that variable association is created at variable ingest time.
 Variable concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/collections/<collection-concept-id>/<collection-revision-id>/variables/<native-id>`.  `<collection-revision-id>` is optional. The response will include the [concept id](#concept-id),[revision id](#revision-id), variable-association and associated-item.
@@ -611,6 +617,8 @@ get a JSON response:
 
 Variable concept can continue to be updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
+#### <a name="variable-endpoint"></a> /providers/&lt;provider-id&gt;/variables/&lt;native-id&gt;
+
 ```
 curl -i -XPUT \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
@@ -673,7 +681,9 @@ curl -i -X DELETE \
 #### Successful Response in JSON
 
     {"concept-id":"V1200000012-PROV1","revision-id":2}
+## <a name="service"></a> Service
 
+#### <a name="service-endpoint"></a> /providers/&lt;provider-id&gt;/services/&lt;native-id&gt;
 ### <a name="create-update-service"></a> Create / Update a Service
 
 Service concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/services/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
@@ -727,7 +737,9 @@ curl -i -X DELETE \
 #### Successful Response in JSON
 
     {"concept-id":"S1200000015-PROV1","revision-id":2}
+## <a name="tool"></a> Tool
 
+#### <a name="tool-endpoint"></a> /providers/&lt;provider-id&gt;/tools/&lt;native-id&gt;
 ### <a name="create-update-tool"></a> Create / Update a Tool
 
 Tool concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/tools/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
@@ -779,8 +791,9 @@ Tool metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT
 #### Successful Response in JSON
 
     {"concept-id":"TL1200000015-PROV1","revision-id":2}
-
+## <a name="subscription"></a> Subscription
 ### <a name="create-subscription"></a> Create a Subscription
+#### <a name="subscription-endpoint"></a> /subscriptions
 
 NOTE: The `%CMR-ENDPOINT%/providers/<provider-id>/subscriptions` API routes for subscription ingest are deprecated. Please switch to the new `%CMR-ENDPOINT%/subscriptions` API routes. All the examples below are using the new routes.
 
@@ -815,7 +828,7 @@ Query values should not be URL encoded. Instead, the query should consist of sta
 If the query provided is invalid for granule searching, subscription creation will fail with HTTP status response of 400, and an error message detailing which query parameters were invalid.
 
 ### <a name="update-subscription"></a> Update a Subscription
-
+#### <a name="subscription-native-id-endpoint"></a> /subscriptions/&lt;native-id&gt;
 Subscription concept can be updated by sending an HTTP POST or PUT with the metadata sent as data to the URL `%CMR-ENDPOINT%/subscriptions/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
 If a native-id is provided in a POST, and a subscription already exists for that provider with the given native-id, the request will be rejected.
@@ -887,7 +900,9 @@ Ingest permissions for granule subscriptions are granted through the provider vi
 
 For lack of a better ACL, ingest permissions for collection subscription are granted through the SYSTEM OBJECT TAG_GROUP ACL update permission.
 
+%GENERIC-DOCS%
 ## <a name="translate-collection"></a> Translate Collection Metadata
+#### <a name="translate-collection-endpoint"></a> /translate/collection
 
 Collection metadata can be translated between metadata standards using the translate API in Ingest. This API also supports the UMM JSON format which represents UMM as JSON. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header.
 
@@ -965,6 +980,7 @@ Example output:
 ```
 
 ## <a name="translate-granule"></a> Translate Granule Metadata
+#### <a name="translate-granule-endpoint"></a> /translate/granule
 
 Granule metadata can be translated between metadata standards using the translate API in Ingest. The request specifies the metadata standard being sent using the Content-Type header. Metadata is sent inside the body of the request. The output format is specified via the Accept header. The supported input formats are ECHO10, ISO SMAP and UMM-G. The supported output formats are ECHO10, ISO SMAP, UMM-G and ISO19115.
 
@@ -1011,6 +1027,7 @@ Example output:
 }
 ```
 ## <a name="collection-bulk-update"></a> Collection Bulk Update
+#### <a name="bulk-update-collection-endpoint"></a> /providers/&lt;provider-id&gt;/bulk-update/collections
 
 The collection bulk update API is used perform the same collection update to multiple concepts in one call.
 
@@ -1041,10 +1058,10 @@ Bulk update post request takes the following parameters:
 * Name (optional) - a name used to identify a bulk update task. It needs to be unique within a provider.
 * Update type (required) - choose from the enumeration: `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE`, `FIND_AND_REPLACE`, `FIND_AND_REMOVE`, `FIND_AND_UPDATE`, `FIND_AND_UPDATE_HOME_PAGE_URL`
 * Update field (required) - choose from the enumeration: `SCIENCE_KEYWORDS`, `LOCATION_KEYWORDS`, `DATA_CENTERS`, `PLATFORMS`, `INSTRUMENTS`
-* Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.  
+* Update value (required for all update types except for `FIND_AND_REMOVE`) - UMM-JSON representation of the update to make. It could be an array of objects when update type is `ADD_TO_EXISTING`, `CLEAR_ALL_AND_REPLACE` and `FIND_AND_REPLACE`. For any other update types, it can only be a single object. Update value can contain null values for non-required fields which indicates that these non-required fields should be removed in the found objects.
 * Find value (required for `FIND_AND_REPLACE`, `FIND_AND_UPDATE` and `FIND_AND_REMOVE` update types) - UMM-JSON representation of the data to find
 
-Update types that include a FIND will match on the fields supplied in the find value. For example, for a science keyword update with a find value of `{"Category": "EARTH SCIENCE"}`, any science keyword with a category of "EARTH SCIENCE" will be considered a match regardless of the values of the science keyword topic, term, etc. It's worth noting that find value can not contain nested fields. So for bulk update on PLATFORMS, for example, find value can only contain Type, ShortName and LongName, not the nested fields like Characteristics and Instruments. On the other hand, update value can contain all the valid fields including the nested fields. So, nested fields can be updated, they just can't be used to find the matches.   
+Update types that include a FIND will match on the fields supplied in the find value. For example, for a science keyword update with a find value of `{"Category": "EARTH SCIENCE"}`, any science keyword with a category of "EARTH SCIENCE" will be considered a match regardless of the values of the science keyword topic, term, etc. It's worth noting that find value can not contain nested fields. So for bulk update on PLATFORMS, for example, find value can only contain Type, ShortName and LongName, not the nested fields like Characteristics and Instruments. On the other hand, update value can contain all the valid fields including the nested fields. So, nested fields can be updated, they just can't be used to find the matches.
 
 The difference between `FIND_AND_UPDATE` and `FIND_AND_REPLACE` is `FIND_AND_REPLACE` will remove the matches and replace them entirely with the values specified in update value, while with `FIND_AND_UPDATE`, only the field(s) specified in the update value will be replaced, with the rest of the original value retained. For example, with a platform update value of `{"ShortName": "A340-600"}`, only the short name will be updated during a find and update, while the long name, instruments, and other fields retain their values. If a field specified in the update value doesn't exist in the matches, the field will be added.
 
@@ -1183,7 +1200,7 @@ curl -i \
 Bulk update status and results are available for 90 days.
 
 ## <a name="granule-bulk-update"></a> Granule Bulk Update
-
+#### <a name="bulk-update-granule-endpoint"></a> /providers/&lt;provider-id&gt;/bulk-update/granules
 The granule bulk update API is used perform the same granule update to multiple granule concepts in one call.
 
 Granule bulk update is initiated through a POST to the ingest endpoint with the bulk update operation, the update field, and the updates, which is a list of granule URs and update values in the request body. See the [Granule Bulk Update JSON Schema](https://github.com/nasa/Common-Metadata-Repository/blob/master/ingest-app/resources/granule_bulk_update_schema.json) for the detailed format of granule bulk update request.
@@ -1607,8 +1624,8 @@ curl -i -XPOST \
     ]
 }'
 ```
-
-### Query Granule Bulk Update Status
+### <a name="bulk-update-granules-status"></a> Query Granule Bulk Update Status
+#### <a name="bulk-update-granules-status-endpoint"></a> /granule-bulk-update/status
 
 The task information of all granule bulk update tasks that has been applied on a provider can be retrieved by sending an HTTP GET request to `%CMR-ENDPOINT%/providers/<provider-id>/bulk-update/granules/status`
 
@@ -1657,6 +1674,8 @@ curl -i \
 ```
 
 To get a detailed task status for a given granule bulk update task, user can send an HTTP GET request to `%CMR-ENDPOINT%/granule-bulk-update/status/<task-id>`
+### <a name="bulk-update-granules-task-id"></a> Query Granule Bulk retrieve status by task-id
+#### <a name="bulk-update-granules-task-id-endpoint"></a> /granule-bulk-update/status/&lt;task-id&gt;
 
 This returns the status of the bulk update task including the overall task status (IN_PROGRESS or COMPLETE), the name of the task, and the time the task began processing. Additionally, there are optional query parameters which will increase the verbosity of this response:
 

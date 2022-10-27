@@ -132,3 +132,11 @@
       (is (string/includes?
             (get-in response [:headers "Location"])
             "site/docs/search/site.html")))))
+
+(deftest options-test
+  (testing "Testing the functions in the options map"
+    (is (= ((get r/options :spacer) 3) 0))
+    (is (= ((get r/options :spacer) 4) 4))
+    (is (= ((get r/options :spacer) 5) 8))
+    ;;Any umpapped number will default to 0
+    (is (= ((get r/options :spacer) 2) 0))))

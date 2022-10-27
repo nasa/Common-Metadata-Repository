@@ -200,6 +200,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
     * [Retrieving All Revisions of a Subscription](#retrieving-all-revisions-of-a-subscription)
     * [Sorting Subscription Results](#sorting-subscription-results)
     * [Subscription Access Control](#subscription-access-control)
+  * %GENERIC-TABLE-OF-CONTENTS%
   * [Community Usage Metrics](#community-usage-metrics)
     * [Updating Community Usage Metrics](#updating-community-usage-metrics)
     * [Retrieving Community Usage Metrics](#retrieving-community-usage-metrics)
@@ -335,7 +336,7 @@ These are query parameters that control what extra data is included with collect
     * `curl -H "Authorization: Bearer <access_token>" -i "%CMR-ENDPOINT%/collections"`
   * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
   * `X-Request-Id` - This provides standard X-Request-Id support to allow user to pass in some random ID which will be logged on the server side for debugging purpose.
-  * `CMR-Request-Id` - This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems.  
+  * `CMR-Request-Id` - This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems.
 
   * The response headers include the following:
     CMR-Hits and CMR-Took indicate the number of result hits and the time to build and execute the query, respectively.
@@ -2338,7 +2339,7 @@ One or more sort keys can be specified using the `sort_key[]` parameter. The ord
   * `has_granules` - Sorts collections by whether they have granules or not. Collections with granules are sorted before collections without granules.
   * `has_granules_or_cwic` - Sorts collections by whether they have granules or CWIC consortium. Collections with granules or CWIC consortium are sorted before collections without granules or a CWIC consortium.
   * `usage_score` - Sorts collection by usage. The usage score comes from the EMS metrics, which are ingested into the CMR.
-  * `ongoing` - Sorts collection by fuzzy collection end-date in relation to ongoing-days configured. Any end-date after today, minus the configured ongoing-days (30 by default), is considered ongoing. Any end-date before that is not ongoing.  
+  * `ongoing` - Sorts collection by fuzzy collection end-date in relation to ongoing-days configured. Any end-date after today, minus the configured ongoing-days (30 by default), is considered ongoing. Any end-date before that is not ongoing.
 
 Examples of sorting by start_date in descending(Most recent data first) and ascending orders(Note: the `+` must be escaped with %2B):
 
@@ -5249,6 +5250,9 @@ __Sample response__
 #### <a name="subscription-access-control"></a> Subscription Access Control
 
 Search permission for subscription is granted through the provider via the SUBSCRIPTION_MANAGEMENT ACL. In order to be able to search for a subscription for a given provider, read permission has to be granted to the user through SUBSCRIPTION_MANAGEMENT ACL for the provider.
+
+
+%GENERIC-DOCS%
 
 ### <a name="community-usage-metrics"></a> Community Usage Metrics
 

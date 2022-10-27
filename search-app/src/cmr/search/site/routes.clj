@@ -10,6 +10,14 @@
    [ring.swagger.ui :as ring-swagger-ui]
    [ring.util.response :refer [redirect]]))
 
+;;The spacer function calculates the number of spaces used by headers
+;; in the table of contents for generic documents specific by document type
+(def options {:spacer #(case %
+                         3 0
+                         4 4
+                         5 8
+                         0)})
+
 (defn build-routes [system]
   (let [relative-root-url (get-in system [:public-conf :relative-root-url])]
     (routes
@@ -97,7 +105,7 @@
         ;; Add routes for general API documentation
         (static/docs-routes
          (get-in system [:public-conf :protocol])
-         relative-root-url)
+         relative-root-url options)
         (ring-swagger-ui/swagger-ui
          "/swagger_ui"
          :swagger-docs (str relative-root-url "/site/swagger.json")
