@@ -280,13 +280,13 @@ __Sample response__
         <reference>
             <name>Grid-name-v2</name>
             <id>GRD1200442373-DEMO_PROV</id>
-            <location>%cmr-endpoint%/concepts/GRD1200442373-DEMO_PROV/3</location>
+            <location>%CMR-ENDPOINT%/concepts/GRD1200442373-DEMO_PROV/3</location>
             <revision-id>3</revision-id>
         </reference>
         <reference>
             <name>Grid-amazing-v3</name>
             <id>GRD1200442373-DEMO_PROV</id>
-            <location>%cmr-endpoint%/concepts/GRD1200442373-DEMO_PROV/4</location>
+            <location>%CMR-ENDPOINT%/concepts/GRD1200442373-DEMO_PROV/4</location>
             <revision-id>4</revision-id>
         </reference>
         <reference>
