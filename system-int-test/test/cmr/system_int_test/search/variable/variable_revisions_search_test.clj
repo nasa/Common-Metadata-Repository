@@ -48,7 +48,14 @@
                        :provider-id "PROV2"}
                       {:native-id "var2"
                        :coll-concept-id (:concept-id coll2)})
-        var2 (variable/ingest-variable-with-association var2-concept)]
+        var2 (variable/ingest-variable-with-association var2-concept)
+        associations1 {:associations {:collections [(:concept-id coll1)]}
+                       :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
+        associations2 {:associations {:collections [(:concept-id coll2)]}
+                        :association-details {:collections [{:concept-id (:concept-id coll2)}]}}
+        var1-1 (merge var1-1 associations1)
+        var1-3 (merge var1-3 associations1)
+        var2 (merge var2 associations2)]
     (index/wait-until-indexed)
     (testing "search variables for all revisions"
       (are3 [variables params]
@@ -132,7 +139,13 @@
                        :provider-id "PROV2"}
                       {:native-id "var2"
                        :coll-concept-id (:concept-id coll2)})
-        var2 (variable/ingest-variable-with-association var2-concept)]
+        var2 (variable/ingest-variable-with-association var2-concept)
+        associations1 {:associations {:collections [(:concept-id coll1)]}
+                       :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
+        associations2 {:associations {:collections [(:concept-id coll2)]}
+                        :association-details {:collections [{:concept-id (:concept-id coll2)}]}}
+        var1-1 (merge var1-1 associations1)
+        var2 (merge var2 associations2)]
     (index/wait-until-indexed)
     (testing "search variables for all revisions"
       (are3 [variables params]
