@@ -69,7 +69,7 @@
           "minLength": 1
         },
         "associations": {
-          "description": "Contains concept ids of concepts associated with the service",
+          "description": "Contains concept ids of concepts associated with the variable",
           "$ref": "#/definitions/AssociationsType"
         },
         "association-details": {
@@ -82,10 +82,10 @@
     "AssociationsInItemType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Any concept associated with the service.",
+      "description": "Any concept associated with the variable.",
       "properties": {
         "variables": {
-          "description": "The concept ids of variables assciated with the service",
+          "description": "The concept ids of variables associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptRevisionType"
@@ -93,7 +93,7 @@
           "minItems": 1
         },
         "collections": {
-          "description": "The concept ids of collections assciated with the service",
+          "description": "The concept ids of collections associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptRevisionType"
@@ -101,7 +101,7 @@
           "minItems": 1
         },
         "tools": {
-          "description": "The concept ids of tools assciated with the service",
+          "description": "The concept ids of tools associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptRevisionType"
@@ -109,7 +109,7 @@
           "minItems": 1
         },
         "dataqualitysummaries": {
-          "description": "The concept ids of data quality summary concepts assciated with the service",
+          "description": "The concept ids of data quality summary concepts associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptRevisionType"
@@ -117,7 +117,7 @@
           "minItems": 1
         },
         "orderoptions": {
-          "description": "The concept ids of order option concepts assciated with the service",
+          "description": "The concept ids of order option concepts associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptRevisionType"
@@ -125,7 +125,7 @@
           "minItems": 1
         },
         "serviceoptions": {
-          "description": "The concept ids of service option concepts assciated with the service",
+          "description": "The concept ids of service option concepts associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptRevisionType"
@@ -133,7 +133,7 @@
           "minItems": 1
         },
         "serviceentries": {
-          "description": "The concept ids of service entry concepts assciated with the service",
+          "description": "The concept ids of service entry concepts associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptRevisionType"
@@ -141,7 +141,7 @@
           "minItems": 1
         },
         "grids": {
-          "description": "The concept ids of grid concepts assciated with the service",
+          "description": "The concept ids of grid concepts associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptRevisionType"
@@ -153,10 +153,10 @@
     "AssociationsType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Any concept associated with the service.",
+      "description": "Any concept associated with the variable.",
       "properties": {
         "variables": {
-          "description": "The concept ids of variables assciated with the service",
+          "description": "The concept ids of variables associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -164,7 +164,7 @@
           "minItems": 1
         },
         "collections": {
-          "description": "The concept ids of collections assciated with the service",
+          "description": "The concept ids of collections associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -172,7 +172,7 @@
           "minItems": 1
         },
         "tools": {
-          "description": "The concept ids of tools assciated with the service",
+          "description": "The concept ids of tools associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -180,7 +180,7 @@
           "minItems": 1
         },
         "dataqualitysummaries": {
-          "description": "The concept ids of data quality summary concepts assciated with the service",
+          "description": "The concept ids of data quality summary concepts associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -188,7 +188,7 @@
           "minItems": 1
         },
         "orderoptions": {
-          "description": "The concept ids of order option concepts assciated with the service",
+          "description": "The concept ids of order option concepts associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -196,7 +196,7 @@
           "minItems": 1
         },
         "serviceoptions": {
-          "description": "The concept ids of service option concepts assciated with the service",
+          "description": "The concept ids of service option concepts associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -204,7 +204,7 @@
           "minItems": 1
         },
         "serviceentries": {
-          "description": "The concept ids of service entry concepts assciated with the service",
+          "description": "The concept ids of service entry concepts associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -212,7 +212,7 @@
           "minItems": 1
         },
         "grids": {
-          "description": "The concept ids of grid concepts assciated with the service",
+          "description": "The concept ids of grid concepts associated with the variable",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -224,7 +224,7 @@
     "AssociationDetailsType": {
       "type": "object",
       "additionalProperties": true,
-      "description": "Association details of concepts associated with the collection.",
+      "description": "Association details of concepts associated with the variable.",
       "properties": {
         "concept-id": {
           "description": "The concept id of the associated concept.",
