@@ -59,21 +59,22 @@
   [component coll-promise grans-promise {:keys [endpoint token params]}]
   (log/debug "Starting stage 2 ...")
   (let [granules (granule/extract-metadata grans-promise)
-        coll (collection/extract-body-metadata coll-promise)
-        tag-data (get-in (collection/extract-body-metadata coll) [:tags (keyword collection/opendap-regex-tag) :data])
+        coll-body (collection/extract-body-metadata coll-promise)
+        coll-headers (collection/extract-header-data coll-promise)
+        tag-data (get-in coll-body [:tags (keyword collection/opendap-regex-tag) :data])
         granule-links (map granule/extract-granule-links (:body granules))
-        sa-header (get-in (collection/extract-header-data coll) [:cmr-search-after])
-        service-ids (collection/extract-service-ids (collection/extract-body-metadata coll))
-        params (apply-level-conditions (collection/extract-body-metadata coll) params)
-        vars (common/apply-bounding-conditions endpoint token (collection/extract-body-metadata coll) params)
-        errs (apply errors/collect (concat [granules (collection/extract-body-metadata coll) vars] granule-links))]
+        sa-header (get-in coll-headers [:cmr-search-after])
+        service-ids (collection/extract-service-ids coll-body)
+        params (apply-level-conditions coll-body params)
+        vars (common/apply-bounding-conditions endpoint token coll-body params)
+        errs (apply errors/collect (concat [granules coll-body vars] granule-links))]
     (when errs
       (log/error "Stage 2 errors:" errs))
     (log/trace "granule-links:" (vec granule-links))
     (log/trace "tag-data:" tag-data)
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
-    [params (collection/extract-body-metadata coll) granule-links sa-header service-ids vars tag-data errs]))
+    [params coll-body granule-links sa-header service-ids vars tag-data errs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

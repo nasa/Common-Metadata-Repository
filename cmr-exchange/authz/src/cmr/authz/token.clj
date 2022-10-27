@@ -33,7 +33,7 @@
 
 (defn find-xml
   [xml-str in-keys]
-  (log/trace "Got token XML data:" xml-str)
+  (log/debug "Got token XML data:" xml-str)
   (xml-in/find-first (xml/parse-str xml-str) in-keys))
 
 (defn parse-token-data
@@ -70,7 +70,7 @@
           (request/add-token-header token)
           (request/add-form-ct))
       {}
-      #(response/initial-response-handler % response/error-handler parse-username))))
+      #(response/body-only-response-handler % response/error-handler parse-username))))
 
 (defn ->user
   "Given a token, return the associated user name."

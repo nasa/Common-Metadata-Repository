@@ -161,11 +161,11 @@
 
 ;;This function does some initial processing of response to handle errors and otherwise
 ;;return the body and headers of response
-(defn initial-response-handler
+(defn general-response-handler
   ([response]
-    (initial-response-handler response error-handler))
+    (general-response-handler response error-handler))
   ([response err-handler]
-    (initial-response-handler response err-handler identity))
+    (general-response-handler response err-handler identity))
   ([{:keys [status headers body error]} err-handler parse-fn]
    (log/debug "Handling client response ...")
    (log/trace "headers:" headers)
@@ -179,30 +179,32 @@
          (err-handler status headers body)
 
          :else
-         (-> {:body body :headers headers}
-             stream->str
+         (-> {:body (stream->str body) :headers headers}
              parse-fn))))
 
-;;This function takes value returned by initial-response-handler
-;;and extracts the a specified field (only header or body at the moment)
-(defn response-extract-field
-  ([response field]
-   (response-extract-field response identity field))
-  ([response extract-function field]
-   (extract-function response field)))
+;;Helper function to specify a specific field to return from the general-response-handler
+(defn one-field-response-handler
+  [response err-handler parse-fn field]
+  (general-response-handler response err-handler #(parse-fn (field %1))))
 
-;;This function extracts a field from a JSON response
-(defn json-extract-field
-  [json-data field]
-  (get-in json-data field))
+;;Specific versions of one-field-response-handler
+(def body-only-response-handler #(one-field-response-handler %1 %2 %3 :body))
+(def headers-only-response-handler #(one-field-response-handler %1 %2 %3 :headers))
 
-(def identity-handler #(initial-response-handler % error-handler identity))
-(def json-handler #(initial-response-handler % error-handler parse-json-result))
-(def xml-handler #(initial-response-handler % error-handler parse-xml-body))
+;;This function extracts a field from an XML response
+;; (defn xml-extract-field
+;;   [xml-data field]
+;;   )
 
-;;Handlers for extracting different fields from initial-response-handler
-(def json-extract-headers #(response-extract-field json-extract-field :headers %))
-(def json-extract-body #(response-extract-field json-extract-field :body %))
+(def identity-handler #(general-response-handler % error-handler identity))
+
+(def json-handler #(general-response-handler % error-handler parse-json-result))
+(def json-body-handler #(body-only-response-handler % error-handler parse-json-result))
+(def json-header-handler #(headers-only-response-handler % error-handler parse-json-result))
+
+(def xml-handler #(general-response-handler % error-handler parse-xml-body))
+
+;;Handlers for extracting different fields from general-response-handler
 
 (defn process-ok-results
   [data]

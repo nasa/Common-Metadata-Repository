@@ -43,13 +43,27 @@
   [status headers body]
   (response/error-handler status headers body (format errors/status-code status)))
 
-(defn initial-response-handler
+(defn general-response-handler
   ([response]
-    (initial-response-handler response identity))
+    (general-response-handler response identity))
   ([response parse-fn]
-    (response/initial-response-handler response error-handler parse-fn)))
+    (response/general-response-handler response error-handler parse-fn)))
 
-(def json-handler #(initial-response-handler % response/parse-json-result))
+(defn body-only-response-handler
+  ([response]
+   (body-only-response-handler response identity))
+  ([response parse-fn]
+   (response/body-only-response-handler response error-handler parse-fn)))
+
+(defn headers-only-response-handler
+  ([response]
+   (body-only-response-handler response identity))
+  ([response parse-fn]
+   (response/headers-only-response-handler response error-handler parse-fn)))
+
+(def general-json-handler #(general-response-handler % response/parse-json-result))
+(def body-json-handler #(body-only-response-handler % response/parse-json-result))
+(def headers-json-handler #(headers-only-response-handler % response/parse-json-result))
 
 (defn process-err-results
   [data]

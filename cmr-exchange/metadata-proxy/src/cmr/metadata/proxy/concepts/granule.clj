@@ -80,7 +80,7 @@
          (request/add-payload payload)
          ((fn [x] (log/debug "Client request options:" x) x)))
      {}
-     response/json-handler)))
+     response/json-body-handler)))
 
 (defn extract-metadata
   [promise]
@@ -88,6 +88,8 @@
     (if (errors/erred? rslts)
       (do
         (log/error metadata-errors/granule-metadata)
+        (log/debug "results: "
+                   rslts)
         rslts)
       (do
         (log/trace "Got results from CMR granule search:"

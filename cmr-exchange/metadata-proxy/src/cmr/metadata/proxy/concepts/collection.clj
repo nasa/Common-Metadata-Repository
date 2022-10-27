@@ -39,14 +39,14 @@
 (defn extract-body-metadata
   [promise]
   (let [results @promise]
-    (log/trace "Got results from CMR granule collection:" results)
-    (first (get-in (response/json-extract-body results) [:feed :entry]))))
+    (log/trace "Got body from CMR granule collection:" results)
+    (first (get-in (:body results) [:feed :entry]))))
 
 (defn extract-header-data
   [promise]
   (let [results @promise]
-    (log/trace "Got results from CMR granule collection:" results)
-    (response/json-extract-headers results)))
+    (log/trace "Got headers from CMR granule collection:" results)
+    (:headers results)))
 
 (defn get-metadata
   [search-endpoint user-token params]

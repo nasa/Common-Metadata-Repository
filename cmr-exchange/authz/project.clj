@@ -1,4 +1,4 @@
-(defproject gov.nasa.earthdata/cmr-authz "0.1.5"
+(defproject gov.nasa.earthdata/cmr-authz "0.1.6-SNAPSHOT"
   :description "An authorization utility library for CMR services"
   :url "https://github.com/cmr-exchange/authz"
   :license {:name "Apache License, Version 2.0"
@@ -8,7 +8,7 @@
                  [clojusc/twig "0.4.0"]
                  [com.stuartsierra/component "0.3.2"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
-                 [gov.nasa.earthdata/cmr-http-kit "0.3.0"]
+                 [gov.nasa.earthdata/cmr-http-kit "0.3.1-SNAPSHOT"]
                  [http-kit "2.5.3"]
                  [metosin/reitit-ring "0.2.7"]
                  [org.clojure/clojure "1.9.0"]
