@@ -35,9 +35,7 @@
                            :native-id native-id
                            :extra-fields extra-fields}
                           (dissoc attributes :extra-fields))]
-    ;; no provider-id should be specified for tool associations
-    (dissoc (concepts/create-any-concept nil :generic-association uniq-num attributes)
-            :provider-id)))
+    (concepts/create-any-concept "CMR" :generic-association uniq-num attributes)))
 
 (defmethod concepts/create-concept :generic-association
   [_concept-type & args]
