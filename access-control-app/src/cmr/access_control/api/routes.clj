@@ -165,6 +165,7 @@
 (defn- get-permissions
   "Returns a Ring response with the requested permission check results."
   [ctx params]
+  (println "Here")
   (let [result (acl-service/get-permissions ctx params)]
     {:status 200
      :body (json/generate-string result)}))
@@ -368,7 +369,11 @@
 
         (GET "/"
              {ctx :request-context params :params}
-             (get-permissions ctx params)))
+             (get-permissions ctx params))
+
+        (POST "/"
+              {ctx :request-context params :params}
+              (get-permissions ctx params)))
 
       (context "/current-sids" []
         (OPTIONS "/" [] (common-routes/options-response))
