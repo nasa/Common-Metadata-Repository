@@ -4,7 +4,7 @@
 
 ### <a name="create-update-serviceoption"></a> Create / Update a Service Option
 
-Serviceoptions concepts can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/serviceoption/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). Filename is the json document containing the record to be ingested
+Service option concepts can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/serviceoption/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). Filename is the json document containing the record to be ingested
 
 ```
 curl -v -XPOST \
@@ -28,7 +28,7 @@ get a JSON response:
 
 ### <a name="delete-serviceoption"></a> Delete a Service Option
 
-Serviceoptions metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/serviceoption/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+Service option metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/serviceoption/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
 
   curl -i -XDELETE \

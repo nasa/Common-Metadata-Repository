@@ -4,6 +4,8 @@
    [clojure.string :as string]
    [clojure.test :refer :all]))
 
+;;These two functions are stubs to be passed to ensure
+;; funtions retrieve correct spacing
 (def options-map-ingest {:spacer #(- (* % 4) 4)})
 (def options-map-search {:spacer #(- (* % 4) 12)})
 

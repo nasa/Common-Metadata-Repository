@@ -28,7 +28,7 @@ get a JSON response:
 
 ### <a name="delete-dataqualitysummary"></a> Delete a Data Quality Summary
 
-Dataqualitysummaries metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/dataqualitysummary/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+Data quality summary metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/dataqualitysummary/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
 
   curl -i -XDELETE \

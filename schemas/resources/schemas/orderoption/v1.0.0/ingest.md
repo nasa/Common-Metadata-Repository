@@ -29,7 +29,7 @@ get a JSON response:
 
 ### <a name="delete-orderoption"></a> Delete a Order Option
 
-Orderoption metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/orderoption/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+Order option metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/orderoption/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
   curl -i -XDELETE \
     -H "Authorization: Bearer XXXX" \

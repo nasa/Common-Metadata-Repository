@@ -1,16 +1,16 @@
 ### <a name="serviceentry"></a> Service Entry
 
-Service entries describe services provided by a data provider. Serviceentry metadata is stored in the JSON format[UMM-Serviceentry Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/serviceentry) schema.
+Service entries describe services provided by a data provider. Service entry metadata is stored in the JSON format[UMM-Service-entry Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/serviceentry).
 
 #### <a name="searching-for-serviceentries"></a> Searching for Service Entries
 
-serviceentries can be searched for by sending a request to `%CMR-ENDPOINT%/serviceentries`. XML reference, JSON and UMM JSON response formats are supported for serviceentries search.
+Service Entries can be searched for by sending a request to `%CMR-ENDPOINT%/serviceentries`. XML reference, JSON and UMM JSON response formats are supported for service entries search.
 
-serviceentry search results are paged. See [Paging Details](#paging-details) for more information on how to page through serviceentry search results.
+Service entry search results are paged. See [Paging Details](#paging-details) for more information on how to page through service entry search results.
 
 ##### <a name="serviceentry-search-params"></a> Service Entry Search Parameters
 
-The following parameters are supported when searching for serviceentries.
+The following parameters are supported when searching for service entries.
 
 ##### Standard Parameters
 * page_size
@@ -20,7 +20,7 @@ The following parameters are supported when searching for serviceentries.
 
 ##### Service Entry Matching Parameters
 
-These parameters will match fields within a serviceentry. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are bitwise ORed together.
+These parameters will match fields within a service entry. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are bitwise ORed together.
 
 * name
   * options: pattern, ignore_case
@@ -50,7 +50,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 
 |    Field    |                                                   Description                                                   |
 | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| name        | the value of the Name field in serviceentry metadata.                                                               |
+| name        | the value of the Name field in service entry metadata.                                                               |
 | id          | the CMR identifier for the result                                                                               |
 | location    | the URL at which the full metadata for the result can be retrieved                                              |
 | revision-id | the internal CMR version number for the result                                                                  |
@@ -58,7 +58,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 __Example__
 
 ```
-curl -i "%CMR-ENDPOINT%/serviceentries.xml?pretty=true&name=Serviceentry1"
+curl -i "%CMR-ENDPOINT%/serviceentries.xml?pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/xml; charset=UTF-8
@@ -81,9 +81,9 @@ Content-Length: 393
 ##### JSON
 The JSON response includes the following fields.
 
-* hits - How many total serviceentries were found.
+* hits - How many total service entries were found.
 * took - How long the search took in milliseconds
-* items - a list of the current page of serviceentries with the following fields
+* items - a list of the current page of service entries with the following fields
   * concept_id
   * revision_id
   * provider_id
@@ -114,11 +114,11 @@ Content-Length: 292
 }
 ```
 ##### UMM JSON
-The UMM JSON response contains meta-metadata of the serviceentry, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the serviceentry and will list the collections that are associated with the serviceentry.
-TODO: this this version num correct?
+The UMM JSON response contains meta-metadata of the service entry, the UMM fields and the associations field if applicable.
+
 __Example__
 
-```TODO: change this when the endpoint is working
+```
 curl -g -i "%CMR-ENDPOINT%/serviceentries.umm_json?name=Serviceentry1234"
 
 HTTP/1.1 200 OK
@@ -156,9 +156,9 @@ Content-Length: 817
 
 ```
 
-##### <a name="retrieving-all-revisions-of-a-serviceentry"></a> Retrieving All Revisions of a Service Entry
+#### <a name="retrieving-all-revisions-of-a-serviceentry"></a> Retrieving All Revisions of a Service Entry
 
-In addition to retrieving the latest revision for a serviceentry parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true". serviceentries with only 1 revision will of course, return only one result.
+In addition to retrieving the latest revision for a service entry parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true". service entries with only 1 revision will of course, return only one result.
 
     curl "%CMR-ENDPOINT%/serviceentries.xml?concept_id=SE1200000000-PROV1&all_revisions=true"
 
@@ -200,17 +200,16 @@ __Sample response__
 
 #### <a name="sorting-serviceentry-results"></a> Sorting Service Entry Results
 
-By default, serviceentry results are sorted by name, then provider-id.
+By default, service entry results are sorted by name, then provider-id.
 
 One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
 
 ###### Valid Serviceentry Sort Keys
   * `name`
-  * `long_name`
   * `provider`
   * `revision_date`
 
-Examples of sorting by long_name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+Examples of sorting by name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
 
-    curl "%CMR-ENDPOINT%/serviceentries?sort_key\[\]=-long_name"
-    curl "%CMR-ENDPOINT%/serviceentries?sort_key\[\]=%2Blong_name"
+    curl "%CMR-ENDPOINT%/serviceentries?sort_key\[\]=-name"
+    curl "%CMR-ENDPOINT%/serviceentries?sort_key\[\]=%2Bname"

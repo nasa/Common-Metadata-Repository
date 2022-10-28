@@ -1,6 +1,6 @@
 ### <a name="grid"></a> Grid
 
-Grids provide metadata support to perform reprojection in the reprojection services [UMM-Grid Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/grid) schema.
+Grid metadata describes a set of coordinates and other supporting data that a service can use to reproject data. Grid metadata is stored in the JSON format [UMM-Grid Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/grid) schema.
 
 #### <a name="searching-for-grids"></a> Searching for grids
 
@@ -95,7 +95,7 @@ The JSON response includes the following fields.
 __Example__
 
 ```
-curl -g -i "%CMR-ENDPOINT%/grids.json?pretty=true&name=Var*&name="grid-name"
+curl -g -i "%CMR-ENDPOINT%/grids.json?pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
@@ -106,7 +106,7 @@ Content-Length: 292
     "took": 10,
     "items": [
         {
-            "concept_id": "GRD1200442373-DEMO_PROV",
+            "concept_id": "GRD1200000000-DEMO_PROV",
             "revision_id": 4,
             "provider_id": "DEMO_PROV",
             "native_id": "sampleNative-Id",
@@ -116,29 +116,29 @@ Content-Length: 292
 }
 ```
 ##### UMM JSON
-The UMM JSON response contains meta-metadata of the grid, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the grid and will list the collections that are associated with the grid.
+The UMM JSON response contains meta-metadata of the grid, the UMM fields and the associations field if applicable.
 
 __Example__
 
 ```
-curl -g -i "%CMR-ENDPOINT%/grids.umm_json?name=Grid1234"
+curl -g -i "%CMR-ENDPOINT%/grids.umm_json?name=Grid-v1"
 HTTP/1.1 200 OK
 Content-Type: application/vnd.nasa.cmr.umm_results+json;version=0.0.1; charset=utf-8
 Content-Length: 1177
 
 {
     "hits": 1,
-    "took": 23,
+    "took": 176,
     "items": [
         {
             "meta": {
-                "revision-id": 4,
+                "revision-id": 1,
                 "deleted": false,
-                "provider-id": "DEMO_PROV",
-                "user-id": "user-id-example",
-                "native-id": "example-native-id",
-                "concept-id": "GRD1200442373-DEMO_PROV",
-                "revision-date": "2022-10-10T01:18:33.568Z",
+                "provider-id": "PROV1",
+                "user-id": "someuser",
+                "native-id": "grid1234",
+                "concept-id": "GRD1200000000-PROV1",
+                "revision-date": "2022-10-28T15:38:07.588Z",
                 "concept-type": "grid"
             },
             "umm": {
@@ -181,7 +181,7 @@ Content-Length: 1177
                     "Description": "Sample",
                     "DataType": "STRING"
                 },
-                "Description": "A sample grid that Ed just made",
+                "Description": "A sample grid for testing",
                 "GridDefinition": {
                     "CoordinateReferenceSystemID": {
                         "Type": "EPSG",
@@ -244,7 +244,7 @@ Content-Length: 1177
                 "MetadataDate": {
                     "Create": "2022-04-20T08:00:00Z"
                 },
-                "Name": "Grid-amazing-v1",
+                "Name": "Grid-v1",
                 "MetadataSpecification": {
                     "URL": "https://cdn.earthdata.nasa.gov/generic/grid/v0.0.1",
                     "Name": "Grid",
@@ -259,7 +259,7 @@ Content-Length: 1177
 
 #### <a name="retrieving-all-revisions-of-a-grid"></a> Retrieving All Revisions of a Grid
 
-In addition to retrieving the latest revision for a grid parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+In addition to retrieving the latest revision for a grid parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
     curl "%CMR-ENDPOINT%/grids.xml?concept_id=GRD1200000010-PROV1&all_revisions=true"
 
@@ -307,11 +307,10 @@ One or more sort keys can be specified using the sort_key[] parameter. The order
 
 ###### Valid Grid Sort Keys
   * `name`
-  * `long_name`
   * `provider`
   * `revision_date`
 
-Examples of sorting by long_name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+Examples of sorting by name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
 
-    curl "%CMR-ENDPOINT%/grids?sort_key\[\]=-long_name"
-    curl "%CMR-ENDPOINT%/grids?sort_key\[\]=%2Blong_name"
+    curl "%CMR-ENDPOINT%/grids?sort_key\[\]=-name"
+    curl "%CMR-ENDPOINT%/grids?sort_key\[\]=%2Bname"

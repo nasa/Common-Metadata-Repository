@@ -1,16 +1,16 @@
 ### <a name="orderoption"></a> Order Option
 
-Orderoptions are an abstract structures used to define one or more settable parameters when ordering data. Orderoption metadata is stored in the JSON format[UMM-Orderoption Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/orderoption) schema.
+Order options are an abstract structures used to define one or more settable parameters when ordering data. Order option metadata is stored in the JSON format [UMM-Order-option Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/orderoption).
 
 #### <a name="searching-for-orderoptions"></a> Searching for Order Options
 
-Orderoptions can be searched for by sending a request to `%CMR-ENDPOINT%/orderoptions`. XML reference, JSON and UMM JSON response formats are supported for orderoptions search.
+Order options can be searched for by sending a request to `%CMR-ENDPOINT%/orderoptions`. XML reference, JSON and UMM JSON response formats are supported for order options search.
 
-orderoption search results are paged. See [Paging Details](#paging-details) for more information on how to page through orderoption search results.
+Order option search results are paged. See [Paging Details](#paging-details) for more information on how to page through order option search results.
 
 ##### <a name="orderoption-search-params"></a> Order Option Search Parameters
 
-The following parameters are supported when searching for orderoptions.
+The following parameters are supported when searching for order options.
 
 ##### Standard Parameters
 * page_size
@@ -20,7 +20,7 @@ The following parameters are supported when searching for orderoptions.
 
 ##### Order Option Matching Parameters
 
-These parameters will match fields within a orderoption. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
+These parameters will match fields within a order option. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
 * name
   * options: pattern, ignore_case
@@ -33,7 +33,7 @@ These parameters will match fields within a orderoption. They are case insensiti
 
 
 ````
-curl -g "%CMR-ENDPOINT%/orderoptions?concept_id=OO1200442213-PROV1"
+curl -g "%CMR-ENDPOINT%/orderoptions?concept_id=OO1200000000-PROV1"
 ````
 ##### <a name="orderoption-search-response"></a> Order Option Search Response
 
@@ -50,7 +50,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 
 |    Field    |                                                   Description                                                   |
 | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| name        | the value of the Name field in orderoption metadata.                                                               |
+| name        | the value of the Name field in order option metadata.                                                               |
 | id          | the CMR identifier for the result                                                                               |
 | location    | the URL at which the full metadata for the result can be retrieved                                              |
 | revision-id | the internal CMR version number for the result                                                                  |
@@ -70,9 +70,9 @@ Content-Length: 393
     <took>13</took>
     <references>
         <reference>
-            <name>Orderoption-name-v1</name>
-            <id>OO1200442213-PROV1</id>
-            <location>%CMR-ENDPOINT%/concepts/OO1200442213-PROV1/4</location>
+            <name>Orderoption1</name>
+            <id>OO1200000000-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/OO1200000000-PROV1/4</location>
             <revision-id>4</revision-id>
         </reference>
     </references>
@@ -81,9 +81,9 @@ Content-Length: 393
 ##### JSON
 The JSON response includes the following fields.
 
-* hits - How many total orderoptions were found.
+* hits - How many total order options were found.
 * took - How long the search took in milliseconds
-* items - a list of the current page of orderoptions with the following fields
+* items - a list of the current page of order options with the following fields
   * concept_id
   * revision_id
   * provider_id
@@ -93,7 +93,7 @@ The JSON response includes the following fields.
 __Example__
 
 ```
-curl -g -i "%CMR-ENDPOINT%/orderoptions.json?pretty=true&name="orderoption-name"
+curl -g -i "%CMR-ENDPOINT%/orderoptions.json?pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
@@ -104,22 +104,22 @@ Content-Length: 292
     "took": 10,
     "items": [
         {
-            "concept_id": "OO1200442213-PROV1",
+            "concept_id": "OO1200000000-PROV1",
             "revision_id": 4,
             "provider_id": "PROV-1",
             "native_id": "sampleNative-Id",
-            "name": "Orderoption-name-v1"
+            "name": "Orderoption1"
         }
     ]
 }
 ```
 ##### UMM JSON
-The UMM JSON response contains meta-metadata of the orderoption, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the orderoption and will list the collections that are associated with the orderoption.
-TODO: this this version num correct?
+The UMM JSON response contains meta-metadata of the order option, the UMM fields and the associations field if applicable.
+
 __Example__
 
 ```
-curl -g -i "%CMR-ENDPOINT%/orderoptions.umm_json?name=Orderoption1234"
+curl -g -i "%CMR-ENDPOINT%/orderoptions.umm_json?name=OrderOption1"
 
 HTTP/1.1 200 OK
 Content-Type: application/vnd.nasa.cmr.umm_results+json; charset=UTF-8
@@ -148,7 +148,7 @@ Content-Length: 2063
       "SortKey" : "Name",
       "Deprecated" : false,
       "MetadataSpecification" : {
-        "Name" : "OrderOption",
+        "Name" : "OrderOption1",
         "Version" : "1.0.0",
         "URL" : "https://cdn.earthdata.nasa.gov/generics/orderoption/v1.0.0"
       }
@@ -157,9 +157,9 @@ Content-Length: 2063
 }
 ```
 
-##### <a name="retrieving-all-revisions-of-a-orderoption"></a> Retrieving All Revisions of an Order Option
+#### <a name="retrieving-all-revisions-of-a-orderoption"></a> Retrieving All Revisions of an Order Option
 
-In addition to retrieving the latest revision for a orderoption parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+In addition to retrieving the latest revision for a order option parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
     curl "%CMR-ENDPOINT%/orderoptions.xml?concept_id=OO1200443608-PROV1&all_revisions=true"
 
@@ -173,26 +173,26 @@ __Sample response__
     <references>
         <reference>
             <name>Orderoption-name-v1</name>
-            <id>OO1200000000-DEMO_PROV</id>
+            <id>OO1200000000-PROV1</id>
             <deleted>true</deleted>
             <revision-id>1</revision-id>
         </reference>
         <reference>
             <name>Orderoption-name-v2</name>
-            <id>OO1200000000-DEMO_PROV</id>
-            <location>%CMR-ENDPOINT%/concepts/OO1200443608-DEMO_PROV/3</location>
+            <id>OO1200000000-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/OO1200443608-PROV1/3</location>
             <revision-id>2</revision-id>
         </reference>
         <reference>
             <name>Orderoption-amazing-v3</name>
-            <id>OO1200000000-DEMO_PROV</id>
-            <location>%CMR-ENDPOINT%/concepts/OO1200443608-DEMO_PROV/4</location>
+            <id>OO1200000000-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/OO1200443608-PROV1/4</location>
             <revision-id>3</revision-id>
-        </reference>
+      </reference>
         <reference>
             <name>Orderoption-name-v4</name>
-            <id>OO1200000001-DEMO_PROV</id>
-            <location>%CMR-ENDPOINT%/concepts/OO1200443608-DEMO_PROV/1</location>
+            <id>OO1200000001-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/OO1200443608-PROV1/1</location>
             <revision-id>1</revision-id>
         </reference>
     </references>
@@ -207,11 +207,10 @@ One or more sort keys can be specified using the sort_key[] parameter. The order
 
 ###### Valid Orderoption Sort Keys
   * `name`
-  * `long_name`
   * `provider`
   * `revision_date`
 
-Examples of sorting by long_name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
+Examples of sorting by name in descending (reverse alphabetical) and ascending orders (Note: the `+` must be escaped with %2B):
 
-    curl "%CMR-ENDPOINT%/orderoptions?sort_key\[\]=-long_name"
-    curl "%CMR-ENDPOINT%/orderoptions?sort_key\[\]=%2Blong_name"
+    curl "%CMR-ENDPOINT%/orderoptions?sort_key\[\]=-name"
+    curl "%CMR-ENDPOINT%/orderoptions?sort_key\[\]=%2Bname"

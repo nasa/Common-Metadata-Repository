@@ -28,7 +28,7 @@ get a JSON response:
 
 ### <a name="delete-serviceentry"></a> Delete a Service Entry
 
-Serviceentry metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/serviceentry/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
+Service entry metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/serviceentry/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
 
   curl -i -XDELETE \
