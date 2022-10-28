@@ -322,9 +322,6 @@
     (->> @(:concepts-atom db)
          (filter (fn [c]
                    (and
-                            ;; TODO: Generic work: this line above is needed till
-                            ;; read can provided a type. Normally just the line
-                            ;; below is needed
                     (= concept-type (:concept-type c))
                     (= provider-id (:provider-id c))
                     (= native-id (:native-id c)))))
