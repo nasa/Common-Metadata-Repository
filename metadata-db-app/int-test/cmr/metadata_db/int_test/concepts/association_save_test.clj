@@ -1,5 +1,5 @@
 (ns cmr.metadata-db.int-test.concepts.association-save-test
-  "Contains integration tests for saving tool associations. Tests saves with various
+  "Contains integration tests for saving generic associations. Tests saves with various
    configurations including checking for proper error handling."
   (:require
    [clojure.edn :as edn]
