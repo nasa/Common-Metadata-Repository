@@ -401,10 +401,8 @@
   (defmethod cpv/valid-sort-keys concept-type
     [_]
     #{:name
-      :long-name
       :revision-date
-      :provider
-      :id}))
+      :provider}))
 
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
