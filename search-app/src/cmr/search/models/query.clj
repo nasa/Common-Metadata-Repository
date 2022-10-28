@@ -2,6 +2,7 @@
   "Defines various query models and conditions specific for searching for various concepts."
   (:require
    [cmr.common-app.services.search.query-model :as common-qm]
+   [cmr.common.concepts :as concepts]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (defrecord AutocompleteSuggestion
@@ -191,6 +192,12 @@
   [_]
   [{:field :_score :order :desc}])
 
+(doseq [doseq-concept-type (concepts/get-generic-concept-types-array)]
+  (defmethod common-qm/default-sort-keys doseq-concept-type
+    [_]
+    [{:field :name :order :asc}
+     {:field :provider-id :order :asc}]))
+
 (defmethod common-qm/concept-type->default-query-attribs :granule
   [_]
   {:condition (common-qm/->MatchAllCondition)
@@ -263,6 +270,16 @@
    :result-format :json
    :echo-compatible? false
    :all-revisions? false})
+
+(doseq [doseq-concept-type (concepts/get-generic-concept-types-array)]
+(defmethod common-qm/concept-type->default-query-attribs doseq-concept-type
+  [_]
+  {:condition (common-qm/->MatchAllCondition)
+   :page-size common-qm/default-page-size
+   :offset common-qm/default-offset
+   :result-format :json
+   :echo-compatible? false
+   :all-revisions? false}))
 
 ;; Enable pretty printing of records
 (record-pretty-printer/enable-record-pretty-printing

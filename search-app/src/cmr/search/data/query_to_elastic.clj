@@ -11,7 +11,6 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
    [cmr.search.data.keywords-to-elastic :as k2e]
    [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor])
@@ -460,6 +459,12 @@
    :long-name :long-name-lowercase
    :provider :provider-id-lowercase})
 
+(doseq [doseq-concept-type (concepts/get-generic-concept-types-array)]
+  (defmethod q2e/concept-type->sort-key-map doseq-concept-type
+    [_]
+    {:name :name-lowercase
+     :provider :provider-id-lowercase}))
+
 (defmethod q2e/concept-type->sort-key-map :subscription
   [_]
   {:subscription-name :subscription-name-lowercase
@@ -617,6 +622,19 @@
         specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
         default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))]
     (or specified-sort default-sort)))
+
+(doseq [doseq-concept-type (concepts/get-generic-concept-types-array)]
+  (defmethod q2e/query->sort-params doseq-concept-type
+    [query]
+    (let [{:keys [concept-type sort-keys]} query
+          specified-sort (q2e/sort-keys->elastic-sort concept-type sort-keys)
+          default-sort (q2e/sort-keys->elastic-sort concept-type (q/default-sort-keys concept-type))
+          sub-sort-fields (if (:all-revisions? query)
+                            [{(q2e/query-field->elastic-field :concept-id doseq-concept-type) {:order "asc"}}
+                             {(q2e/query-field->elastic-field :revision-id doseq-concept-type) {:order "desc"}}]
+                            [{(q2e/query-field->elastic-field :name doseq-concept-type) {:order "asc"}}
+                             {(q2e/query-field->elastic-field :provider doseq-concept-type) {:order "asc"}}])]
+      (concat (or specified-sort default-sort) sub-sort-fields))))
 
 (extend-protocol c2s/ComplexQueryToSimple
   cmr.search.models.query.CollectionQueryCondition
