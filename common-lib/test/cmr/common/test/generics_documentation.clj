@@ -74,7 +74,15 @@ table of contents does NOT break formatting on the documentation")
 
 (def map1 {:a 1 :b 2})
 (def map2 {:a 1})
-(deftest get-generic-documentation-test
-  "Testing that we can retrieve the intersection of two maps as a map
-   This is to be used with maps from generic documents"
-  (is (= {:a 1} (into {} (clojure.set/intersection (set map1) (set map2))))))
+(def map3 {:a 1 :b 2})
+(def map4 {:c 1})
+(def map5 {:a 1 :b 2})
+(def map6 {:a 2})
+(deftest get-approved-generic-documentation-test
+(testing "Testing that we can retrieve the intersection of two maps as a map meaning,
+   entries that are in both map
+   This is to be used with maps from generic documents")
+  (is (= {:a 1} (into {} (clojure.set/intersection (set map1) (set map2)))))
+  (is (= {} (into {} (clojure.set/intersection (set map3) (set map4)))))
+  ;;Test if a key in one map is the same but, it's value is different
+  (is (= {} (into {} (clojure.set/intersection (set map5) (set map6))))))
