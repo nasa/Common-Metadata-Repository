@@ -4,6 +4,7 @@
    [cmr.common.config :as config]
    [cmr.elastic-utils.config :as es-config]
    [cmr.transmit.config :as transmit-config]
+   [inflections.core :as inf]
    [ring.util.codec :as codec])
   (:import (java.net URL)))
 
@@ -705,8 +706,9 @@
   "Get the URL for Creating a Generic Document"
   [concept-type provider-id native-id]
   ;; /providers/<provider-id>/<concept-type>/<native-id>
+  ;; NOTE: concept-type must be "plural"
   (format "http://localhost:%s/providers/%s/%s/%s"
           (transmit-config/ingest-port)
           provider-id
-          concept-type
+          (inf/plural concept-type)
           native-id))

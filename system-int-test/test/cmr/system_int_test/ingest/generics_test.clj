@@ -56,7 +56,7 @@
 (deftest test-generic-CRUD
   (let [native-id "Generic-Test-CRUD"
         generic-tokened-request (partial gen-util/generic-request nil "PROV1" native-id)
-        generic-requester (partial generic-tokened-request "grids")]
+        generic-requester (partial generic-tokened-request "grid")]
 
     (testing "send a good document with config set that does not include grid"
       (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
