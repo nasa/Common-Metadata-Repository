@@ -13,6 +13,12 @@
        (remove nil?)
        vec))
 
+(def ^:private plugin-api-routes
+  "This is a hack for defining the plugin api routes entry points for uberjar deployment.
+   Since there is no plugin jars in uberjar, the whole plugin loading mechanism is broken in uberjar deployment.
+   We just hard code the plugins api routes entry points here."
+  ["cmr.ous.app.routes.rest.core/all" "cmr.sizing.app.routes.rest/all"])
+
 (defn collected-routes
   "This function checks to see if there are any plugins with the configured
   plugin name (e.g. 'CMR-Plugin') and plugin type (e.g. 'service-bridge-app')
@@ -34,8 +40,11 @@
   [httpd-component]
   (let [{plugins-site-routes-fns :site
          plugins-api-routes-fns :api} (registry/resolved-routes httpd-component)
-         main-site-routes-fn (config/site-routes httpd-component)
-         main-api-routes-fn (config/api-routes httpd-component)]
+        main-site-routes-fn (config/site-routes httpd-component)
+        main-api-routes-fn (config/api-routes httpd-component)
+        plugins-api-routes-fns (if (seq plugins-api-routes-fns)
+                                 plugins-api-routes-fns
+                                 (jar-routes/resolve-routes plugin-api-routes))]
     ;; Note that the following calls don't call the routes, rather they call
     ;; the configuration function which extract the routes from the config
     ;; data. The route functions provided in the configuration data will be

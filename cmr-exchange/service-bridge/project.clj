@@ -31,6 +31,7 @@
                  [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]
                  [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
+                 [gov.nasa.earthdata/cmr-api-versioning "0.1.1-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-authz "0.1.3"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.3-SNAPSHOT"]
