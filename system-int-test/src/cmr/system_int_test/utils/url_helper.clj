@@ -704,8 +704,9 @@
 (defn ingest-generic-crud-url
   "Get the URL for Creating a Generic Document"
   [concept-type provider-id native-id]
-  (format "http://localhost:%s/%s/%s?provider=%s"
+  ;; /providers/<provider-id>/<concept-type>/<native-id>
+  (format "http://localhost:%s/providers/%s/%s/%s"
           (transmit-config/ingest-port)
+          provider-id
           concept-type
-          native-id
-          provider-id))
+          native-id))

@@ -5,7 +5,7 @@
    [cmr.common.util :as u :refer [are3]]
    [cmr.ingest.api.generic-documents :as gendoc]))
 
-(deftest required-query-parameters-test
+(comment deftest required-query-parameters-test
   "Tests the required query parameters functionality works."
   (are3 [expected request required-query-parameters]
         (try
