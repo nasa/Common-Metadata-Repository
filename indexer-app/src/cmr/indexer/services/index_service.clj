@@ -356,8 +356,10 @@
 
 (defmethod get-elastic-version :tool
   [context concept]
-  (let [tool-associations (meta-db/get-associations-for-tool context concept)]
-    (get-elastic-version-with-associations context concept {:tool-associations tool-associations})))
+  (let [tool-associations (meta-db/get-associations-for-tool context concept)
+        generic-associations (meta-db/get-generic-associations-for-concept context concept)]
+    (get-elastic-version-with-associations context concept {:tool-associations tool-associations
+                                                            :generic-associations generic-associations})))
 
 (defmulti get-tag-associations
   "Returns the tag associations of the concept"

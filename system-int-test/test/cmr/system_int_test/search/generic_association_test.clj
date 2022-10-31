@@ -45,6 +45,216 @@
 ;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; Test that generic associations can be made between generic documents and tools.
+(deftest test-tool-and-generic-association
+  (let [token (echo-util/login (system/context) "user1")
+        ;;First ingest a Grid concept
+        native-id (format "Generic-Test-%s" (UUID/randomUUID))
+        grid-doc gen-util/grid-good
+        grid (gen-util/ingest-generic-document
+              nil "PROV1" native-id :grid grid-doc :post)
+        grid-concept-id (:concept-id grid)
+        grid-revision-id (:revision-id grid)
+
+        ;;Then ingest two collections and two tools 
+        coll1 (data-core/ingest-umm-spec-collection "PROV1"
+                                                    (data-umm-c/collection
+                                                     {:ShortName "coll1"
+                                                      :EntryTitle "entry-title1"})
+                                                    {:token "mock-echo-system-token"})
+        coll2 (data-core/ingest-umm-spec-collection "PROV1"
+                                                    (data-umm-c/collection
+                                                     {:ShortName "coll2"
+                                                      :EntryTitle "entry-title2"})
+                                                    {:token "mock-echo-system-token"})
+        coll1-concept-id (:concept-id coll1)
+        coll1-revision-id (:revision-id coll1)
+        coll2-concept-id (:concept-id coll2)
+        coll2-revision-id (:revision-id coll2)
+        _ (index/wait-until-indexed)
+        tl1 (tool-util/ingest-tool-with-attrs {:native-id "tl1" :Name "tool1"}) 
+        tl2 (tool-util/ingest-tool-with-attrs {:native-id "tl2" :Name "tool2"}) 
+        tl1-concept-id (:concept-id tl1)
+        tl1-revision-id (:revision-id tl1)
+        tl2-concept-id (:concept-id tl2)
+        tl2-revision-id (:revision-id tl2)]
+    (index/wait-until-indexed)
+    (testing "Associate collection with tool by concept-id and revision-ids"
+      (let [response1 (association-util/associate-by-concept-ids
+                       token tl1-concept-id [{:concept-id coll1-concept-id}
+                                             {:concept-id coll2-concept-id}])
+            _ (index/wait-until-indexed)
+            ;;Search for the tool tl1, it should return the association
+            tl1-search-result (search-request "tools.umm_json" "native_id=tl1")
+            tl1-search-body (json/parse-string (:body tl1-search-result) true)
+            tl1-search-generic-associations (get-in (first (:items tl1-search-body)) [:meta :associations :collections])
+           
+            ;;Search for the collection coll1, it should return the association
+            coll1-search-result (search-request "collections.umm-json" "entry_title=entry-title1")
+            coll1-search-body (json/parse-string (:body coll1-search-result) true)
+            coll1-search-generic-associations (get-in (first (:items coll1-search-body)) [:meta :associations :tools])
+
+            ;;Search for the collection coll2, it should return the association
+            coll2-search-result (search-request "collections.umm-json" "entry_title=entry-title2")
+            coll2-search-body (json/parse-string (:body coll2-search-result) true)
+            coll2-search-generic-associations (get-in (first (:items coll2-search-body)) [:meta :associations :tools])]
+        (is (= 200 (:status response1)))
+
+        ;; Search for the tool tl1 returns the coll1 and coll2 as association
+        (is (= (set [coll2-concept-id coll1-concept-id])
+               (set tl1-search-generic-associations)))
+
+        ;; Search for the collection coll1 returns the tl1 as association
+        (is (= [tl1-concept-id]
+               coll1-search-generic-associations))
+
+        ;; Search for the collection coll2 returns the tl1 as association
+        (is (= [tl1-concept-id]
+               coll2-search-generic-associations))))
+             
+    (testing "Associate tool with tool by concept-id and revision-ids"
+      (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token tl2-concept-id tl2-revision-id [{:concept-id tl1-concept-id  :revision-id tl1-revision-id}])
+            ;;Switch the position of tl1 and tl2 should return the same concept-id and revision-id is increased by 1.
+            response2 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token tl1-concept-id tl1-revision-id [{:concept-id tl2-concept-id :revision-id tl2-revision-id}])
+            ;;Try to associate tl1 with tl2 by concept-id only. This shouldn't be allowed.
+            ;;Try to associate tl2 with tl1 by conept-id only,  This shouldn't be allowed.
+            ;;The following association is trying to do both of the above.
+            response3 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token tl2-concept-id nil [{:concept-id tl1-concept-id}])
+            _ (index/wait-until-indexed)
+
+            ;;Search for the tool tl1, it should return the association
+            tl1-search-result (search-request "tools.umm_json" "native_id=tl1")
+            tl1-search-body (json/parse-string (:body tl1-search-result) true)
+            tl1-search-generic-associations (get-in (first (:items tl1-search-body)) [:meta :associations :tools])
+
+            ;;Search for the tool tl2, it should return the association
+            tl2-search-result (search-request "tools.umm_json" "native_id=tl2")
+            tl2-search-body (json/parse-string (:body tl2-search-result) true)
+            tl2-search-generic-associations (get-in (first (:items tl2-search-body)) [:meta :associations :tools])
+
+            ;;Dissociate the association
+            response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
+                       token tl1-concept-id tl1-revision-id [{:concept-id tl2-concept-id :revision-id tl2-revision-id}])
+            _ (index/wait-until-indexed)
+
+            ;;Search for the tool tl1 again, it should NOT return the association
+            tl1-search-result1 (search-request "tools.umm_json" "native_id=tl1")
+            tl1-search-body1 (json/parse-string (:body tl1-search-result1) true)
+            tl1-search-generic-associations1 (get-in (first (:items tl1-search-body1)) [:meta :associations :tools])
+
+            ;;Search for the tool tl2 again, it should NOT return the association
+            tl2-search-result1 (search-request "tools.umm_json" "native_id=tl2")
+            tl2-search-body1 (json/parse-string (:body tl2-search-result1) true)
+            tl2-search-generic-associations1 (get-in (first (:items tl2-search-body1)) [:meta :associations :tools])]
+        ;; The first and second associations are successful
+        (is (= 200 (:status response1) (:status response2)))
+
+        ;; The first and second associations are creating and updating the same association
+        (is (= (get-in (first (:body response1)) [:generic-association :concept-id])
+               (get-in (first (:body response2)) [:generic-association :concept-id])))
+        (is (= (get-in (first (:body response2)) [:generic-association :revision-id])
+               (+ 1 (get-in (first (:body response1)) [:generic-association :revision-id]))))
+
+        ;; The third association is not allowed.
+        (is (= 400 (:status response3)))
+        (is (some? (re-find #"There are already generic associations between concept id \[TL\d*-PROV1\] and concept id \[TL\d*-PROV1\] revision ids \[\d*\], cannot create generic association on the same concept without revision id."
+                            (-> response3
+                                (:body)
+                                (first)
+                                (:errors)
+                                (first)))))
+
+        ;; Search for the tool tl1 returns the tl2 as generic association
+        (is (= [tl2-concept-id]
+               tl1-search-generic-associations))
+
+        ;; Search for the tool tl2 returns the tl1 as generic association
+        (is (= [tl1-concept-id]
+               tl2-search-generic-associations))
+
+        ;; Dissociation of the association is successful
+        (is (= 200 (:status response4)))
+
+        ;; Search for the tool tl1 again doesn't return the tl2 as generic association
+        (is (= nil tl1-search-generic-associations1))
+
+        ;; Search for the tool tl2 again doesn't return the tl1 as generic association
+        (is (= nil tl2-search-generic-associations1))))
+    (testing "Associate grid with tool by concept-id and revision-ids"
+      (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token grid-concept-id grid-revision-id [{:concept-id tl1-concept-id  :revision-id tl1-revision-id}])
+            ;;Switch the position of grid and tool should return the same concept-id and revision-id is increased by 1.
+            response2 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token tl1-concept-id tl1-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id}])
+            ;;Try to associate grid with tool by concept-id only. This shouldn't be allowed.
+            ;;Try to associate tool with grid by conept-id only,  This shouldn't be allowed.
+            ;;The following association is trying to do both of the above.
+            response3 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token grid-concept-id nil [{:concept-id tl1-concept-id}])
+            _ (index/wait-until-indexed)
+
+            ;;Search for the grid, it should return the association
+            grid-search-result (search-request "grids.json" "name=Grid-A7-v1")
+            grid-search-body (json/parse-string (:body grid-search-result) true)
+            grid-search-generic-associations (get-in (first (:items grid-search-body)) [:associations :tools])
+
+            ;;Search for the tool, it should return the association
+            tl1-search-result (search-request "tools.umm_json" "native_id=tl1")
+            tl1-search-body (json/parse-string (:body tl1-search-result) true)
+            tl1-search-generic-associations (get-in (first (:items tl1-search-body)) [:meta :associations :grids])
+
+            ;;Dissociate the association
+            response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
+                       token tl1-concept-id tl1-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id}])
+            _ (index/wait-until-indexed)
+
+            ;;Search for the grid again, it should NOT return the association
+            grid-search-result1 (search-request "grids.json" "name=Grid-A7-v1")
+            grid-search-body1 (json/parse-string (:body grid-search-result1) true)
+            grid-search-generic-associations1 (get-in (first (:items grid-search-body1)) [:associations :tools])
+
+            ;;Search for the tool again, it should NOT return the association
+            tl1-search-result1 (search-request "tools.umm_json" "native_id=tl1")
+            tl1-search-body1 (json/parse-string (:body tl1-search-result1) true)
+            tl1-search-generic-associations1 (get-in (first (:items tl1-search-body1)) [:meta :associations :grids])]
+        ;; The first and second associations are successful
+        (is (= 200 (:status response1) (:status response2)))
+
+        ;; The first and second associations are creating and updating the same association
+        (is (= (get-in (first (:body response1)) [:generic-association :concept-id])
+               (get-in (first (:body response2)) [:generic-association :concept-id])))
+        (is (= (get-in (first (:body response2)) [:generic-association :revision-id])
+               (+ 1 (get-in (first (:body response1)) [:generic-association :revision-id]))))
+
+        ;; The third association is not allowed.
+        (is (= 400 (:status response3)))
+        (is (some? (re-find #"There are already generic associations between concept id \[GRD\d*-PROV1\] and concept id \[TL\d*-PROV1\] revision ids \[\d*\], cannot create generic association on the same concept without revision id."
+                            (-> response3
+                                (:body)
+                                (first)
+                                (:errors)
+                                (first)))))
+
+        ;; Search for the grid returns the tl1 as generic association
+        (is (= [tl1-concept-id]
+               grid-search-generic-associations))
+
+        ;; Search for the tool returns the grid as generic association
+        (is (= [grid-concept-id]
+               tl1-search-generic-associations))
+
+        ;; Dissociation of the association is successful
+        (is (= 200 (:status response4)))
+
+        ;; Search for the grid again doesn't return the tl1 as generic association
+        (is (= nil grid-search-generic-associations1))
+
+        ;; Search for the tool again doesn't return the grid as generic association
+        (is (= nil  tl1-search-generic-associations1))))))
+
 ;; Test that generic associations can be made between generic documents and services. 
 (deftest test-service-and-generic-association
   (let [token (echo-util/login (system/context) "user1")
@@ -173,7 +383,7 @@
         (is (= [sv2-concept-id]
                sv1-search-generic-associations))
 
-        ;; Search for the variable sv2 returns the sv1 as generic association
+        ;; Search for the service sv2 returns the sv1 as generic association
         (is (= [sv1-concept-id]
                sv2-search-generic-associations))
 
