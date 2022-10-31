@@ -1,12 +1,12 @@
 ### <a name="dataqualitysummary"></a> Data Quality Summary
 
-data quality summaries inform users about the data quality of 1 or more collection(s) or dataset(s) and their granules. Dataqualitysummary metadata is stored in the JSON format [UMM-Data-Quality-Summary Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/dataqualitysummary).
+Data quality summaries inform users about the data quality of 1 or more collection(s) or dataset(s) and their granules. Data quality summary metadata is stored in the JSON format [UMM-Data-Quality-Summary Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/dataqualitysummary).
 
-#### <a name="searching-for-dataqualitysummaries"></a> Searching for data quality summaries
+#### <a name="searching-for-dataqualitysummaries"></a> Searching for Data Quality Summaries
 
-data quality summaries can be searched for by sending a request to `%CMR-ENDPOINT%/dataqualitysummaries`. XML reference, JSON and UMM JSON response formats are supported for data quality summary search.
+Data quality summaries can be searched for by sending a request to `%CMR-ENDPOINT%/dataqualitysummaries`. XML reference, JSON and UMM JSON response formats are supported for data quality summary search.
 
-data quality summary search results are paged. See [Paging Details](#paging-details) for more information on how to page through data quality summary search results.
+Data quality summary search results are paged. See [Paging Details](#paging-details) for more information on how to page through data quality summary search results.
 
 ##### <a name="dataqualitysummary-search-params"></a> Data Quality Summary Search Parameters
 
@@ -105,7 +105,7 @@ Content-Type: application/json; charset=UTF-8
             "revision_id": 4,
             "provider_id": "PROV-1",
             "native_id": "sampleNative-Id",
-            "name": "dataqualitysummary-name-v1"
+            "name": "dataqualitysummary-name"
         }
     ]
 }
@@ -115,7 +115,8 @@ The UMM JSON response contains meta-metadata of the data quality summary, the UM
 
 __Example__
 
-curl -g -i "%CMR-ENDPOINT%/dataqualitysummaries.umm_json?name=dataqualitysummary1234"
+curl -g -i "%CMR-ENDPOINT%/dataqualitysummaries.umm_json?name=dataqualitysummary1234&pretty=true"
+
 HTTP/1.1 200 OK
 Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.0.0; charset=utf-8
 Content-Length: 512
@@ -152,7 +153,7 @@ Content-Length: 512
 
 #### <a name="retrieving-all-revisions-of-a-dataqualitysummary"></a> Retrieving All Revisions of a Data Quality Summary
 
-In addition to retrieving the latest revision for a data quality summary parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true". data quality summaries with only 1 revision will of course, return only one result.
+In addition to retrieving the latest revision for a data quality summary parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true". data quality summaries with only one revision will of course, return only one result.
 
     curl "%CMR-ENDPOINT%/dataqualitysummaries.xml?concept_id=SO1200000000-PROV1&all_revisions=true"
 
@@ -177,16 +178,10 @@ __Sample response__
             <revision-id>2</revision-id>
         </reference>
         <reference>
-            <name>dataqualitysummary-amazing-v3</name>
+            <name>dataqualitysummary-name-v3</name>
             <id>SO1200000000-PROV1</id>
             <location>%CMR-ENDPOINT%/concepts/DQ1200000000-PROV1/4</location>
             <revision-id>3</revision-id>
-        </reference>
-        <reference>
-            <name>dataqualitysummary-name-v4</name>
-            <id>DQO1200000001-PROV1</id>
-            <location>%CMR-ENDPOINT%/concepts/DQ1200000001-PROV1/1</location>
-            <revision-id>1</revision-id>
         </reference>
     </references>
 </results>
@@ -194,7 +189,7 @@ __Sample response__
 
 #### <a name="sorting-dataqualitysummary-results"></a> Sorting Data Quality Summary Results
 
-By default, data quality summary results are sorted by name, then provider-id.
+By default, data quality summary results are sorted by name, then by provider-id.
 
 One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
 

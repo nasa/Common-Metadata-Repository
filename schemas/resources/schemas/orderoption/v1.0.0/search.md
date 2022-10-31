@@ -1,10 +1,10 @@
 ### <a name="orderoption"></a> Order Option
 
-Order options are an abstract structures used to define one or more settable parameters when ordering data. Order option metadata is stored in the JSON format [UMM-Order-option Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/orderoption).
+Order options are abstract structures used to define one or more settable parameters when ordering data. Order option metadata is stored in the JSON format [UMM-Order-option Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/orderoption).
 
 #### <a name="searching-for-orderoptions"></a> Searching for Order Options
 
-Order options can be searched for by sending a request to `%CMR-ENDPOINT%/orderoptions`. XML reference, JSON and UMM JSON response formats are supported for order options search.
+Order options can be searched for by sending a request to `%CMR-ENDPOINT%/orderoptions`. XML reference, JSON, and UMM JSON response formats are supported for order options search.
 
 Order option search results are paged. See [Paging Details](#paging-details) for more information on how to page through order option search results.
 
@@ -161,7 +161,7 @@ Content-Length: 2063
 
 In addition to retrieving the latest revision for a order option parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
-    curl "%CMR-ENDPOINT%/orderoptions.xml?concept_id=OO1200443608-PROV1&all_revisions=true"
+    curl "%CMR-ENDPOINT%/orderoptions.xml?concept_id=OO1200000000-PROV1&all_revisions=true"
 
 __Sample response__
 
@@ -184,17 +184,11 @@ __Sample response__
             <revision-id>2</revision-id>
         </reference>
         <reference>
-            <name>Orderoption-amazing-v3</name>
+            <name>Orderoption-name-v3</name>
             <id>OO1200000000-PROV1</id>
             <location>%CMR-ENDPOINT%/concepts/OO1200443608-PROV1/4</location>
             <revision-id>3</revision-id>
       </reference>
-        <reference>
-            <name>Orderoption-name-v4</name>
-            <id>OO1200000001-PROV1</id>
-            <location>%CMR-ENDPOINT%/concepts/OO1200443608-PROV1/1</location>
-            <revision-id>1</revision-id>
-        </reference>
     </references>
 </results>
 ```

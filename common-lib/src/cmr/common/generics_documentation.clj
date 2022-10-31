@@ -5,11 +5,29 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
+   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.config :as cfg]
    [cmr.common.generics :as gconfig]
    [cmr.common.log :as log :refer [error, info]]
    [inflections.core :as inf]))
+
+(defn latest-approved-documentation
+  "Return a map of all the configured approved generics and their versions
+   This list is to control the documentation portion of these
+   string for each one.
+   Return {:doc-type \"1.2.3\"}"
+  []
+  (reduce (fn [data item]
+            (assoc data (first item) (last (second item))))
+          {}
+          (cfg/approved-pipeline-documentation)))
+
+(defn get-approved-generic-documentation
+  "Retrieve the intersection of the documentation list and available generics list as a map"
+  []
+  (let [approved-generics (set (gconfig/latest-approved-documents)) approved-gen-docs (set (latest-approved-documentation))]
+    (into {} (clojure.set/intersection approved-gen-docs approved-generics))))
 
 (defn read-generic-doc-file
   "Return the specific schema's documentation files given the schema keyword name and version number.
@@ -34,7 +52,7 @@
   * file-name: [ingest | search]
   Returns: string"
   [file-name]
-  (string/join (seq (for [[k,v] (gconfig/latest-approved-documents)]
+  (string/join (seq (for [[k,v] (get-approved-generic-documentation)]
                       (read-generic-doc-file file-name k (str v))))))
 
 (defn get-toc-headers-from-markdown
@@ -93,7 +111,7 @@
   * file-name: [ingest | search]
   Returns: string"
   [file-name options]
-  (string/join (seq (for [[k,v] (gconfig/latest-approved-documents)] (format-generic-toc file-name k (str v) options)))))
+  (string/join (seq (for [[k,v] (get-approved-generic-documentation)] (format-generic-toc file-name k (str v) options)))))
 
 (defn format-toc-into-doc
   "To fit generic docs into the toc a few html tags must be removed, this block will

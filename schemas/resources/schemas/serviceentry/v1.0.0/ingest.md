@@ -4,8 +4,7 @@
 
 ### <a name="create-update-serviceentry"></a> Create / Update a Service Entry
 
-Service entry concepts can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/serviceentry/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). Filename is the json document containing the record to be ingested
-
+Service entry concepts can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/serviceentry/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). The contents of the metadata is passed in the body of the request.
 ```
 curl -v -XPOST \
 -H "Content-Type:application/vnd.nasa.cmr.umm+json" \
@@ -18,7 +17,7 @@ curl -v -XPOST \
 ```
 <?xml version="1.0" encoding="UTF-8"?><result><concept-id>SE1200000000-PROV1</concept-id><revision-id>1</revision-id><warnings></warnings><existing-errors></existing-errors></result>%
 ```
-Subsequet ingests to a serviceentry with this native Id will result in updates to this serviceentry as well as increment the revision-id
+Subsequent ingests tp the service entry record will result in updates to it's metadata as well as increment the revision-id of the record.
 #### Successful Response in JSON
 
 By passing the option `-H "Accept: application/json"` to `curl`, one may
@@ -48,7 +47,7 @@ Service entry metadata can be deleted by sending an HTTP DELETE to the URL `%CMR
 
   {"concept-id":"SE1200000000-PROV1","revision-id":2,"warnings":null,"existing-errors":null}
 
-Attempting to delete an already delete an already deleted orderoption will return
+Attempting to delete an already deleted service entry will return
 the following error message
 #### Unsuccessful Response in XML
 

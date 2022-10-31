@@ -160,39 +160,33 @@ Content-Length: 817
 
 In addition to retrieving the latest revision for a service entry parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true". service entries with only 1 revision will of course, return only one result.
 
-    curl "%CMR-ENDPOINT%/serviceentries.xml?concept_id=SE1200000000-PROV1&all_revisions=true"
+    curl "%CMR-ENDPOINT%/serviceentries.xml?concept_id=SE1200000006-PROV1&all_revisions=true"
 
 __Sample response__
 
 ```
 <?xml version="1.0" encoding="UTF-8"?>
 <results>
-    <hits>4</hits>
-    <took>80</took>
+    <hits>3</hits>
+    <took>67</took>
     <references>
         <reference>
-            <name>Serviceentry-name-v1</name>
-            <id>SE1200000000-PROV1</id>
-            <deleted>true</deleted>
+            <name>Test Service</name>
+            <id>SE1200000006-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/SE1200000006-PROV1/1</location>
             <revision-id>1</revision-id>
         </reference>
         <reference>
-            <name>Serviceentry-name-v2</name>
-            <id>SE1200000000-PROV1V</id>
-            <location>%CMR-ENDPOINT%/concepts/OO1200443608-DEMO_PROV/3</location>
+            <name>Test Service-v2</name>
+            <id>SE1200000006-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/SE1200000006-PROV1/2</location>
             <revision-id>2</revision-id>
         </reference>
         <reference>
-            <name>Serviceentry-amazing-v3</name>
-            <id>SE1200000000-PROV1</id>
-            <location>%CMR-ENDPOINT%/concepts/OO1200443608-DEMO_PROV/4</location>
+            <name>Test Service-v3</name>
+            <id>SE1200000006-PROV1</id>
+            <location>%CMR-ENDPOINT%/concepts/SE1200000006-PROV1/3</location>
             <revision-id>3</revision-id>
-        </reference>
-        <reference>
-            <name>Serviceentry-name-v4</name>
-            <id>SE1200000001-PROV1</id>
-            <location>%CMR-ENDPOINT%/concepts/OO1200443608-DEMO_PROV/1</location>
-            <revision-id>1</revision-id>
         </reference>
     </references>
 </results>

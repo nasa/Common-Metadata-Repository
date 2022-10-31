@@ -2,7 +2,8 @@
   (:require
    [cmr.common.generics-documentation :as gdocs]
    [clojure.string :as string]
-   [clojure.test :refer :all]))
+   [clojure.test :refer :all]
+   [clojure.set :as set]))
 
 ;;These two functions are stubs to be passed to ensure
 ;; funtions retrieve correct spacing
@@ -70,3 +71,10 @@
 table of contents does NOT break formatting on the documentation")
   (is (= "Grid html" (gdocs/format-toc-into-doc buried-html-item)))
   (is (= "Grid html" (gdocs/format-toc-into-doc buried-html-item-newline))))
+
+(def map1 {:a 1 :b 2})
+(def map2 {:a 1})
+(deftest get-generic-documentation-test
+  "Testing that we can retrieve the intersection of two maps as a map
+   This is to be used with maps from generic documents"
+  (is (= {:a 1} (into {} (clojure.set/intersection (set map1) (set map2))))))

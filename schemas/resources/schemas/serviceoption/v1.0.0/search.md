@@ -4,13 +4,13 @@ Service options describe options that are available within the ordering service 
 
 #### <a name="searching-for-serviceoptions"></a> Searching for Service Options
 
-service options can be searched for by sending a request to `%CMR-ENDPOINT%/serviceoptions`. XML reference, JSON and UMM JSON response formats are supported for service options search.
+Service options can be searched for by sending a request to `%CMR-ENDPOINT%/serviceoptions`. XML reference, JSON and UMM JSON response formats are supported for service options search.
 
-service option search results are paged. See [Paging Details](#paging-details) for more information on how to page through serviceoption search results.
+Service option search results are paged. See [Paging Details](#paging-details) for more information on how to page through serviceoption search results.
 
 ##### <a name="serviceoption-search-params"></a> Service Option Search Parameters
 
-The following parameters are supported when searching for serviceoptions.
+The following parameters are supported when searching for service options.
 
 ##### Standard Parameters
 * page_size
@@ -19,7 +19,7 @@ The following parameters are supported when searching for serviceoptions.
 
 ##### Service Option Matching Parameters
 
-These parameters will match fields within a serviceoption. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are bitwise ORed together.
+These parameters will match fields within a service option. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are bitwise ORed together.
 
 * name
   * options: pattern, ignore_case
@@ -67,7 +67,7 @@ Content-Type: application/xml; charset=UTF-8
     <took>13</took>
     <references>
         <reference>
-            <name>Serviceoption-name-v1</name>
+            <name>Serviceoption1</name>
             <id>SO1200000000-PROV1</id>
             <location>%CMR-ENDPOINT%/concepts/SO1200000000-PROV1/4</location>
             <revision-id>4</revision-id>
@@ -138,7 +138,7 @@ Content-Length: 555
             "umm": {
                 "Id": "1B41335E-82DD-8AAB-B8A9-546CC6DE6CBD",
                 "Name": "RangeSliderTest",
-                "Description": "Testing range slider - updated DEMO_PROV",
+                "Description": "Testing range slider",
                 "Form": "<form></form>",
                 "MetadataSpecification": {
                     "Name": "ServiceOption",
@@ -178,16 +178,10 @@ __Sample response__
             <revision-id>2</revision-id>
         </reference>
         <reference>
-            <name>Serviceoption-amazing-v3</name>
+            <name>Serviceoption-name-v3</name>
             <id>SO1200000000-PROV1</id>
             <location>%CMR-ENDPOINT%/concepts/SO1200000000-PROV1/4</location>
             <revision-id>3</revision-id>
-        </reference>
-        <reference>
-            <name>Serviceoption-name-v4</name>
-            <id>SO1200000001-PROV1</id>
-            <location>%CMR-ENDPOINT%/concepts/SO1200000001-PROV1/1</location>
-            <revision-id>1</revision-id>
         </reference>
     </references>
 </results>

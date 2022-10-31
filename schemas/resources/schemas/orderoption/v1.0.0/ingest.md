@@ -1,10 +1,10 @@
 ## <a name="orderoption"></a> Order Option
 
-#### <a name="provider-info-orderoption"></a> /providers/&lt;provider-id&gt;/grids/&lt;native-id&gt;
+#### <a name="provider-info-orderoption"></a> /providers/&lt;provider-id&gt;/orderoptions/&lt;native-id&gt;
 
 ### <a name="create-update-orderoption"></a> Create / Update an Order Option
 
-Order option concepts can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/orderoption/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). Filename is the json document containing the record to be ingested
+Order option concepts can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/orderoption/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). The contents of the metadata is passed in the body of the request
 
 ```
 curl -v -XPOST \
@@ -18,7 +18,7 @@ curl -v -XPOST \
 ```
 <?xml version="1.0" encoding="UTF-8"?><result><concept-id>OO1200000000-PROV1</concept-id><revision-id>1</revision-id><warnings></warnings><existing-errors></existing-errors></result>%
 ```
-Subsequet ingests to a orderoption with this native Id will result in updates to this orderoption as well as increment the revision-id
+Subsequet ingests to a orderoption record will result in updates to it's metadata as well as increment the revision-id of the record.
 
 #### Successful Response in JSON
 
@@ -48,7 +48,7 @@ Order option metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-
 
   {"concept-id":"OO1200443608-PROV1","revision-id":1,"warnings":null,"existing-errors":null}
 
-Attempting to delete an already delete an already deleted orderoption will return
+Attempting to delete an already deleted record will return
 the following error message
 #### Unsuccessful Response in XML
 
