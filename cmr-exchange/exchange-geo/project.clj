@@ -24,13 +24,14 @@
   :dependencies [[clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.0"]
                  [com.esri.geometry/esri-geometry-api "2.2.1"]
-                 [org.locationtech/jts "1.18.2"]
+                 [org.locationtech.jts/jts-core "1.19.0"]
                  [net.sf.geographiclib/GeographicLib-Java "1.49"]
                  [org.clojure/clojure "1.9.0"]
                  [org.geotools/gt-geometry "24.6"]
                  [org.geotools/gt-referencing "24.6"]]
   :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]
-                 ["geo" "https://repo.osgeo.org/repository/release"]]
+                 ["geo" "https://repo.osgeo.org/repository/release"]
+                 ["jts" "https://mvnrepository.com/artifact"]]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
              :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
