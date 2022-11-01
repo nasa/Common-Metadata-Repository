@@ -44,7 +44,7 @@
                                      [com.google.javascript/closure-compiler-unshaded]
                                      ;; The following is excluded because it stomps on twig's logger
                                      [org.slf4j/slf4j-simple]]}
-             :system {:dependencies [[clojusc/system-manager "0.3.0-SNAPSHOT"]]}
+             :system {:dependencies [[clojusc/system-manager "0.3.0"]]}
              :local {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                     [proto-repl "0.3.1"]]
                      :plugins [[lein-project-version "0.1.0"]
