@@ -37,7 +37,7 @@ docker run --rm -it -p 8182:8182 tinkerpop/gremlin-server
 
 If you want to load existing local data into Gremlin Server, you can add `-v <path_to_cmr_graph-db>/data:/data` to map a local directory with data to the docker instance. Replace the `<path_to_cmr_graphdb>` with the path to your local data directory.
 
-The Gremlin server can be started with multiple configurations by default it uses a websockets but, it can be configured to use http by running:
+The Gremlin server can be started with multiple configurations. By default it uses a websockets but, it can be configured to use http by running:
 
 ```
 docker run --rm -p 8182:8182 tinkerpop/gremlin-server conf/gremlin-server-rest-modern.yaml
