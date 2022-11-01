@@ -1,16 +1,16 @@
 ### <a name="orderoption"></a> Order Option
 
-Order options are abstract structures used to define one or more settable parameters when ordering data. Order option metadata is stored in the JSON format [UMM-Order-option Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/orderoption).
+Order Options are abstract structures used to define one or more settable parameters when ordering data. Order Option metadata is stored in the JSON format [UMM-Order-option Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/orderoption).
 
 #### <a name="searching-for-orderoptions"></a> Searching for Order Options
 
-Order options can be searched for by sending a request to `%CMR-ENDPOINT%/orderoptions`. XML reference, JSON, and UMM JSON response formats are supported for order options search.
+Order Options can be searched for by sending a request to `%CMR-ENDPOINT%/orderoptions`. XML reference, JSON, and UMM JSON response formats are supported for Order Options search.
 
-Order option search results are paged. See [Paging Details](#paging-details) for more information on how to page through order option search results.
+Order Option search results are paged. See [Paging Details](#paging-details) for more information on how to page through Order Option search results.
 
 ##### <a name="orderoption-search-params"></a> Order Option Search Parameters
 
-The following parameters are supported when searching for order options.
+The following parameters are supported when searching for Order Options.
 
 ##### Standard Parameters
 * page_size
@@ -20,7 +20,7 @@ The following parameters are supported when searching for order options.
 
 ##### Order Option Matching Parameters
 
-These parameters will match fields within a order option. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
+These parameters will match fields within a Order Option. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
 * name
   * options: pattern, ignore_case
@@ -50,7 +50,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 
 |    Field    |                                                   Description                                                   |
 | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| name        | the value of the Name field in order option metadata.                                                               |
+| name        | the value of the Name field in the Order Option metadata.                                                               |
 | id          | the CMR identifier for the result                                                                               |
 | location    | the URL at which the full metadata for the result can be retrieved                                              |
 | revision-id | the internal CMR version number for the result                                                                  |
@@ -81,9 +81,9 @@ Content-Length: 393
 ##### JSON
 The JSON response includes the following fields.
 
-* hits - How many total order options were found.
+* hits - How many total Order Options were found.
 * took - How long the search took in milliseconds
-* items - a list of the current page of order options with the following fields
+* items - a list of the current page of Order Options with the following fields
   * concept_id
   * revision_id
   * provider_id
@@ -114,7 +114,7 @@ Content-Length: 292
 }
 ```
 ##### UMM JSON
-The UMM JSON response contains meta-metadata of the order option, the UMM fields and the associations field if applicable.
+The UMM JSON response contains meta-metadata of the Order Option, the UMM fields and the associations field if applicable.
 
 __Example__
 
@@ -159,7 +159,7 @@ Content-Length: 2063
 
 #### <a name="retrieving-all-revisions-of-a-orderoption"></a> Retrieving All Revisions of an Order Option
 
-In addition to retrieving the latest revision for a order option parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+In addition to retrieving the latest revision for a Order Option parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
     curl "%CMR-ENDPOINT%/orderoptions.xml?concept_id=OO1200000000-PROV1&all_revisions=true"
 
@@ -195,11 +195,11 @@ __Sample response__
 
 #### <a name="sorting-orderoption-results"></a> Sorting Order Option Results
 
-By default, order option results are sorted by name, then provider-id.
+By default, Order Option results are sorted by name, then provider-id.
 
 One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
 
-###### Valid Orderoption Sort Keys
+###### Valid Order Option Sort Keys
   * `name`
   * `provider`
   * `revision_date`

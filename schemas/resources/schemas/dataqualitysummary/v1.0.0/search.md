@@ -1,16 +1,16 @@
 ### <a name="dataqualitysummary"></a> Data Quality Summary
 
-Data quality summaries inform users about the data quality of 1 or more collection(s) or dataset(s) and their granules. Data quality summary metadata is stored in the JSON format [UMM-Data-Quality-Summary Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/dataqualitysummary).
+Data Quality Summaries inform users about the data quality of 1 or more collection(s) or dataset(s) and their granules. Data Quality Summary metadata is stored in the JSON format [UMM-Data-Quality-Summary Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/dataqualitysummary).
 
 #### <a name="searching-for-dataqualitysummaries"></a> Searching for Data Quality Summaries
 
-Data quality summaries can be searched for by sending a request to `%CMR-ENDPOINT%/dataqualitysummaries`. XML reference, JSON and UMM JSON response formats are supported for data quality summary search.
+Data Quality Summaries can be searched for by sending a request to `%CMR-ENDPOINT%/dataqualitysummaries`. XML reference, JSON and UMM JSON response formats are supported for Data Quality Summary search.
 
-Data quality summary search results are paged. See [Paging Details](#paging-details) for more information on how to page through data quality summary search results.
+Data Quality Summary search results are paged. See [Paging Details](#paging-details) for more information on how to page through Data Quality Summary search results.
 
 ##### <a name="dataqualitysummary-search-params"></a> Data Quality Summary Search Parameters
 
-The following parameters are supported when searching for data quality summaries.
+The following parameters are supported when searching for Data Quality Summaries.
 
 ##### Standard Parameters
 * page_size
@@ -19,7 +19,7 @@ The following parameters are supported when searching for data quality summaries
 
 ##### Data Quality Summary Matching Parameters
 
-These parameters will match fields within a data quality summary. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are bitwise ORed together.
+These parameters will match fields within a Data Quality Summary. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are bitwise ORed together.
 
 * name
   * options: pattern, ignore_case
@@ -49,7 +49,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 
 |    Field    |                                                   Description                                                   |
 | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| name        | the value of the Name field in data quality summary metadata.                                                               |
+| name        | the value of the Name field in Data Quality Summary metadata.                                                               |
 | id          | the CMR identifier for the result                                                                               |
 | location    | the URL at which the full metadata for the result can be retrieved                                              |
 | revision-id | the internal CMR version number for the result                                                                  |
@@ -79,9 +79,9 @@ Content-Type: application/xml; charset=UTF-8
 ##### JSON
 The JSON response includes the following fields.
 
-* hits - How many total data quality summaries were found.
+* hits - How many total Data Quality Summaries were found.
 * took - How long the search took in milliseconds
-* items - a list of the current page of data quality summaries with the following fields
+* items - a list of the current page of Data Quality Summaries with the following fields
   * concept_id
   * revision_id
   * provider_id
@@ -111,7 +111,7 @@ Content-Type: application/json; charset=UTF-8
 }
 ```
 ##### UMM JSON
-The UMM JSON response contains meta-metadata of the data quality summary, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the data quality summary and will list the collections that are associated with the data quality summary.
+The UMM JSON response contains meta-metadata of the Data Quality Summary, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the Data Quality Summary and will list the collections that are associated with the Data Quality Summary.
 
 __Example__
 
@@ -153,7 +153,7 @@ Content-Length: 512
 
 #### <a name="retrieving-all-revisions-of-a-dataqualitysummary"></a> Retrieving All Revisions of a Data Quality Summary
 
-In addition to retrieving the latest revision for a data quality summary parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true". data quality summaries with only one revision will of course, return only one result.
+In addition to retrieving the latest revision for a Data Quality Summary parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true". Data Quality Summaries with only one revision will of course, return only one result.
 
     curl "%CMR-ENDPOINT%/dataqualitysummaries.xml?concept_id=SO1200000000-PROV1&all_revisions=true"
 
@@ -189,7 +189,7 @@ __Sample response__
 
 #### <a name="sorting-dataqualitysummary-results"></a> Sorting Data Quality Summary Results
 
-By default, data quality summary results are sorted by name, then by provider-id.
+By default, Data Quality Summary results are sorted by name, then by provider-id.
 
 One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
 

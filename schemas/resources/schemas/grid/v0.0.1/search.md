@@ -4,13 +4,13 @@ Grid metadata describes a set of coordinates and other supporting data that a se
 
 #### <a name="searching-for-grids"></a> Searching for Grids
 
-Grids can be searched for by sending a request to `%CMR-ENDPOINT%/grids`. XML reference, JSON, and UMM JSON response formats are supported for grids search.
+Grids can be searched for by sending a request to `%CMR-ENDPOINT%/grids`. XML reference, JSON, and UMM JSON response formats are supported for Grids search.
 
-Grid search results are paged. See [Paging Details](#paging-details) for more information on how to page through grid search results.
+Grid search results are paged. See [Paging Details](#paging-details) for more information on how to page through Grid search results.
 
 ##### <a name="grid-search-params"></a> Grid Search Parameters
 
-The following parameters are supported when searching for grids.
+The following parameters are supported when searching for Grids.
 
 ##### Standard Parameters
 * page_size
@@ -20,7 +20,7 @@ The following parameters are supported when searching for grids.
 
 ##### Grid Matching Parameters
 
-These parameters will match fields within a grid. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are bitwise ORed together.
+These parameters will match fields within a Grid. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are bitwise ORed together.
 
 * name
   * options: pattern, ignore_case
@@ -51,7 +51,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 
 |    Field    |                                                   Description                                                   |
 | ----------- | --------------------------------------------------------------------------------------------------------------- |
-| name        | the value of the Name field in grid metadata.                                                               |
+| name        | the value of the Name field in the Grid metadata.                                                               |
 | id          | the CMR identifier for the result                                                                               |
 | location    | the URL at which the full metadata for the result can be retrieved                                              |
 | revision-id | the internal CMR version number for the result                                                                  |
@@ -82,9 +82,9 @@ Content-Length: 393
 ##### JSON
 The JSON response includes the following fields.
 
-* hits - How many total grids were found.
+* hits - How many total Grids were found.
 * took - How long the search took in milliseconds
-* items - a list of the current page of grids with the following fields
+* items - a list of the current page of Grids with the following fields
   * concept_id
   * revision_id
   * provider_id
@@ -116,7 +116,7 @@ Content-Length: 292
 }
 ```
 ##### UMM JSON
-The UMM JSON response contains meta-metadata of the grid, the UMM fields and the associations field if applicable.
+The UMM JSON response contains meta-metadata of the Grid, the UMM fields and the associations field if applicable.
 
 __Example__
 
@@ -259,7 +259,7 @@ Content-Length: 1177
 
 #### <a name="retrieving-all-revisions-of-a-grid"></a> Retrieving All Revisions of a Grid
 
-In addition to retrieving the latest revision for a grid parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+In addition to retrieving the latest revision for a Grid parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
     curl "%CMR-ENDPOINT%/grids.xml?concept_id=GRD1200442373-PROV1&all_revisions=true"
 
@@ -295,7 +295,7 @@ __Sample response__
 
 #### <a name="sorting-grid-results"></a> Sorting Grid Results
 
-By default, grid results are sorted by name, then provider-id.
+By default, Grid results are sorted by name, then provider-id.
 
 One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
 

@@ -18,7 +18,7 @@ curl -v -XPOST \
 ```
 <?xml version="1.0" encoding="UTF-8"?><result><concept-id>GRD1200442274-PROV1</concept-id><revision-id>1</revision-id><warnings></warnings><existing-errors></existing-errors></result>%
 ```
-Subsequet ingests to a grid record will result in updates to it's metadata as well as increment the revision-id of the record.
+Subsequent ingests to an Grid record will result in updates to it's metadata as well as increment the revision-id of the record.
 #### Successful Response in JSON
 
 By passing the option `-H "Accept: application/json"` to `curl`, one may
