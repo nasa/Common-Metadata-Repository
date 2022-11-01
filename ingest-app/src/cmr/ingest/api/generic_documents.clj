@@ -49,28 +49,6 @@
         (:generic (set/map-invert common-concepts/concept-prefix->concept-type))))
     (:generic (set/map-invert common-concepts/concept-prefix->concept-type))))
 
-;(def required-query-parameters
-;  "This defines in a map required parameters that are passed in and where they would be
-;   located once the http request makes its way through compojure. If there is an error the error
-;   messages goes into the cmr.ingest.services.messages.clj file."
-;  {:provider messages/provider-does-not-exist})
-
-;; TODO: Generic work: This could be a candidate for a configuration file.
-;(defn validate-required-parameter
-;  "This function validates that the required parameters are present. If not then throw a service exception to let
-;  the end users know what to do."
-;  [required-param-to-check request]
-;  (let [param-key (first required-param-to-check)
-;        msg (second required-param-to-check)
-;        value (get-in request [:params param-key])]
-;    (when-not value
-;      (errors/throw-service-error :invalid-data (msg)))))
-
-;(defn validate-any-required-query-parameters
-;  [request required-parameters]
-;  (doseq [param required-parameters]
-;    (validate-required-parameter param request)))
-
 (defn- concept-type->singular
   "Common task to convert concepts from their public URL form to their internal
    form. For example: grids -> grid"
@@ -206,7 +184,7 @@
         concept-type (concept-type->singular route-params)]
     (api-core/delete-concept concept-type provider-id native-id request)))
 
-(defn validate-required-query-parameters
+(defn crud-generic-document
   "This function checks for required parameters. If they don't exist then throw an error, otherwise send the request
    on to the corresponding function."
   [request funct-str]
