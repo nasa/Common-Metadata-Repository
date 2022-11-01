@@ -3,14 +3,12 @@
   "Defines utilities for new generic document pipeline. Most functions will deal
    with either returning generic config files, or lists of approved generics."
   (:require
-   [cheshire.core :as json]
    [clojure.java.io :as io]
-   [clojure.set :as set]
+   [clojure.set :as sset]
    [clojure.string :as string]
    [cmr.common.config :as cfg]
    [cmr.common.generics :as gconfig]
-   [cmr.common.log :as log :refer [error, info]]
-   [inflections.core :as inf]))
+   [cmr.common.log :as log :refer [error, info]]))
 
 (defn latest-approved-documentation
   "Return a map of all the configured approved generics and their versions
@@ -27,7 +25,7 @@
   "Retrieve the intersection of the documentation list and available generics list as a map"
   []
   (let [approved-generics (set (gconfig/latest-approved-documents)) approved-gen-docs (set (latest-approved-documentation))]
-    (into {} (clojure.set/intersection approved-gen-docs approved-generics))))
+    (into {} (sset/intersection approved-gen-docs approved-generics))))
 
 (defn read-generic-doc-file
   "Return the specific schema's documentation files given the schema keyword name and version number.
