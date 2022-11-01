@@ -218,7 +218,7 @@
 (defconfig approved-pipeline-documents
   "This is the feature toggle for the new document pipeline prototype, as well as serving as
    the base truth list of approved document types. For tests to process, grid is required,
-   but grid is not needed in any deployment envirnment. AWS should use JSON as those values
+   but grid is not needed in any deployment environment. AWS should use JSON as those values
    are passed through the parser and returned as if it was the default.
    This string should contain a clojure map that looks something like:
    {:grid [\"0.0.1\"],

@@ -5433,18 +5433,18 @@ __Example Response__
   }}]
 ```
 
-#### <a name="generic-multi-association"></a> Associate Multiple Concepts At Once
-Multiple associaitons with or without association details can be made to a specified concept on a single request by passing multiple concept ids in a lis. The response returns the association cocncept and the concept being associated.
+#### <a name="generic-multi-association"></a> Associate Multiple Concepts Simultaneously
+Multiple associaitons with or without association details can be made to a specified concept on a single request by passing multiple concept ids in a list form. The response returns the association cocncept and the concept being associated.
 __Example__
 ```
 curl -v -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000006-PROV1" -d '[{"concept_id":"S1200000008-PROV1"},{"concept_id": "C1200000007-PROV1"}]'
 ```
 __Example Response__
 ```
-[{"generic_association":{"concept_id":"GA1200000009-CMR","revision_id":3},"associated_item":{"concept_id":"S1200000008-PROV1"}},{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":3},"associated_item":{"concept_id":"GRD1200000006-PROV1"}}]%
+[{"generic_association":{"concept_id":"GA1200000009-CMR","revision_id":3},"associated_item":{"concept_id":"S1200000008-PROV1"}},{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":3},"associated_item":{"concept_id":"C1200000007-PROV1"}}]%
 ```
-#### <a name="generic-association-with-revisions"></a>Associate Concepts With Revision Id's
-An optional revision_id field can be passed into the association to create an association to specific revisions of two concepts.
+#### <a name="generic-association-with-revisions"></a>Associate Concepts by Revision Id
+An optional "revision_id" field can be passed into the association to create an association to specific revisions of two concepts.
 __Example__
 
 ```
@@ -5476,10 +5476,10 @@ __Example Response__
   }}]
 ```
 #### <a name="generic-association-update-details"></a> Update Association details
- Associations are created for specific revisions of two concepts by deafult the most current revision. Associating two concepts then changing the association-details will override the previous association data. A simple workaround is to create new revisions of both concepts then create a new association between the two revised concepts. When searching for the concepts using the all_revisions parameter will show both of the associations for that particular revision.
+ Associations are created for specific revisions of two concepts by deafult the most current revision. Associating two concepts then changing the association-details will override the previous association data. To create a new association but, maintain the old association in the revision history, create new revisions of both concepts then create a new association between the two revised concepts. When searching for the concepts using the "all_revisions" parameter will show all of the associations for each particular revision of the concept.
 
 #### <a name="generic-association-search"></a> Searching For Associated Concepts
-Associations can be queried by searching for one of the assocaited concepts using either the JSON and UMM_JSON formats. The "associations" field, contains a list of concepts associated to the concept that was searched for grouped by concept-type. The "association-details" field contains association details if they were included for the particular association. In the example case, a grid (GRD1200000000-PROV1) has been associated to another grid with association details(GRD1200000001-PROV1), as well as a service option (SO1200000001-PROV1) without any association details.
+Associations can be queried by searching for one of the assocaited concepts using either the JSON or UMM_JSON format. The "associations" field, contains a list of concepts associated to the concept that was searched for grouped by concept-type. The "association-details" field contains association details if they were included for the particular association. In the example case, a grid (GRD1200000000-PROV1) has been associated to another grid with association details(GRD1200000001-PROV1), as well as a service option (SO1200000001-PROV1) without any association details.
 
 __Example__
 
@@ -5534,20 +5534,23 @@ A concept identified by its concept id can be dissociated from another concept b
 
 __Example__
 
-```curl -i -X DELETE -H "Content-Type:application/json" -H "Authorization: Bearer XXXXX" "%CMR-ENDPOINT%/associate/GRD1200441922-PROV1" -d '[
+```
+curl -i -X DELETE -H "Content-Type:application/json" -H "Authorization: Bearer XXXXX" "%CMR-ENDPOINT%/associate/GRD1200441922-PROV1" -d '[
   {"concept_id": "SO1200000001-PROV1"}]
+
 ```
 
 __Example Response__
 ```
-[{"generic_association":{"concept_id":"GA1200443648-CMR","revision_id":6},"associated_item":{"concept_id":"GRD1200441922-PROV1"}}]%
+[{"generic_association":{"concept_id":"GA1200443648-CMR","revision_id":6},"associated_item":{"concept_id":"SO1200000001-PROV1"}}]%
 ```
 #### <a name="generic-association-multi-delete"></a> Dissociate Multiple Concepts
 Multiple disassocaitions to a specified concept are possible by passing multiple concept ids in a series of maps.
 
 __Example__
 ```
-curl -v -XDELETE -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000006-PROV1" -d '[{
+curl -v -XDELETE -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000006-PROV1" -d
+'[{
       "concept_id":"S1200000008-PROV1"},
     {
         "concept_id": "C1200000007-PROV1"
