@@ -53,7 +53,7 @@
    The structure looks like:
    {\"grid\" (/Users/eereiter/work/clojure/Common-Metadata-Repository-assoc/schemas/resources/schemas/grid/v0.0.1)}"
   [generic-concept-type-name]
-  {generic-concept-type-name (-> (str "schemas/" generic-concept-type-name "/")
+  {generic-concept-type-name (-> (str "schemas/" generic-concept-type-name)
                                  (io/resource)
                                  (io/file)
                                  (.listFiles)
