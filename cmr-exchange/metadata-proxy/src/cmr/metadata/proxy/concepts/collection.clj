@@ -22,19 +22,21 @@
 (defn async-get-metadata
   "Given a data structure with :collection-id, get the metadata for the
   associated collection."
-  [search-endpoint user-token params]
-  (let [concept-id (:collection-id params)
-        url (str search-endpoint
-                 "/collections?"
-                 (build-query concept-id))]
-    (log/debug "Collection query to CMR:" url)
-    (request/async-get
-     url
-     (-> {}
-         (request/add-token-header user-token)
-         (request/add-accept "application/json"))
-     {}
-     response/json-handler)))
+  [search-endpoint user-token params sa-header]
+   (let [concept-id (:collection-id params)
+         url (str search-endpoint
+                  "/collections?"
+                  (build-query concept-id))]
+     (log/debug "Collection query to CMR:" url)
+     (request/async-get
+      url
+      (-> {}
+          (request/add-token-header user-token)
+          (when (some? sa-header)
+            (request/add-search-after sa-header))
+          (request/add-accept "application/json"))
+      {}
+      response/json-handler)))
 
 (defn extract-body-metadata
   [promise]
@@ -49,9 +51,9 @@
     (:headers results)))
 
 (defn get-metadata
-  [search-endpoint user-token params]
-  (let [promise (async-get-metadata search-endpoint user-token params)]
-    (extract-body-metadata promise)))
+  [search-endpoint user-token params sa-header]
+   (let [promise (async-get-metadata search-endpoint user-token params sa-header)]
+      (extract-body-metadata promise)))
 
 (defn extract-variable-ids
   [entry]

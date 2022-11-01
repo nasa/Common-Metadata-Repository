@@ -95,7 +95,7 @@
         (log/trace "Got results from CMR granule search:"
                    (results/elided rslts))
         (log/trace "Remaining results:" (results/remaining-items rslts))
-        (get-in rslts [:feed :entry :headers])))))
+        (get-in rslts [:feed :entry])))))
 
 (defn get-metadata
   [component search-endpoint user-token params]

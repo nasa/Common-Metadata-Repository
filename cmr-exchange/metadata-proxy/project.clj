@@ -28,7 +28,7 @@
                  [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-authz "0.1.6-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.4-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.3-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.3.1-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]

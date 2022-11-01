@@ -23,7 +23,7 @@
   :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.0"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.4-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.2"]
                  [http-kit "2.5.3"]
                  [metosin/ring-http-response "0.9.1"]

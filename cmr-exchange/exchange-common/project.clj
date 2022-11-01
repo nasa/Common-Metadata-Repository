@@ -14,7 +14,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-exchange-common "0.3.3"
+(defproject gov.nasa.earthdata/cmr-exchange-common "0.3.4-SNAPSHOT"
   :description "Cross-project functionality, utilities, and general-use components"
   :url "https://github.com/cmr-exchange/cmr-exchange-common"
   :license {:name "Apache License, Version 2.0"
@@ -27,7 +27,7 @@
   :aot [clojure.tools.logging.impl]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
-             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+             :security {:plugins [[com.livingsocial/lein-dependency-check "1.4.0"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
@@ -86,11 +86,11 @@
                           ["ltest" ":unit"]]
             "build" ["do"
                      ["clean"]
-                     ["check-vers"]
                      ["check-sec"]
                      ["ltest" ":unit"]
                      ["ubercompile"]
-                     ["build-uberjar"]]
+                     ["build-uberjar"]
+                     ["check-vers"]]
             ;; Installing
             "install" ["do"
                        ["clean"]

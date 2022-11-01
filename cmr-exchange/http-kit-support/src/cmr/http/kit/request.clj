@@ -6,7 +6,7 @@
   (:refer-clojure :exclude [get]))
 
   ;; Change default client for your whole application. This adds support to https requests.
-  (alter-var-root #'org.httpkit.client/*default-client* (fn [_] sni-client/default-client))
+(alter-var-root #'org.httpkit.client/*default-client* (fn [_] sni-client/default-client))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Header Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -18,45 +18,57 @@
 
 (defn add-header
   ([field value]
-    (add-header {} field value))
+   (add-header {} field value))
   ([req field value]
-    (assoc-in req [:headers field] value)))
+   (assoc-in req [:headers field] value)))
+
+(defn add-header-set
+  ([field-values]
+   (add-header-set {} field-values))
+  ([req field-values]
+   (map #(add-header req (nth % 0) (nth % 1)) field-values)))
 
 (defn add-accept
   ([value]
-    (add-accept {} value))
+   (add-accept {} value))
   ([req value]
-    (add-header req "Accept" value)))
+   (add-header req "Accept" value)))
 
 (defn add-token-header
   ([token]
-    (add-token-header {} token))
+   (add-token-header {} token))
   ([req token]
-    (add-header req "Authorization" token)))
+   (add-header req "Authorization" token)))
 
 (defn add-content-type
   ([ct]
-    (add-content-type {} ct))
+   (add-content-type {} ct))
   ([req ct]
-    (add-header req "Content-Type" ct)))
+   (add-header req "Content-Type" ct)))
 
 (defn add-request-id
   ([id]
-    (add-request-id {} id))
+   (add-request-id {} id))
   ([req id]
-    (add-header req "Request-Id" id)))
+   (add-header req "Request-Id" id)))
+
+(defn add-search-after
+  ([sa-header]
+   (add-search-after {} sa-header))
+  ([req sa-header]
+   (add-header req "CMR-Search-After" sa-header)))
 
 (defn add-form-ct
   ([]
-    (add-form-ct {}))
+   (add-form-ct {}))
   ([req]
-    (add-content-type req "application/x-www-form-urlencoded")))
+   (add-content-type req "application/x-www-form-urlencoded")))
 
 (defn add-payload
   ([data]
-    (add-payload {} data))
+   (add-payload {} data))
   ([req data]
-    (assoc req :body data)))
+   (assoc req :body data)))
 
 (defn extract-request-id
   [req]
@@ -80,27 +92,27 @@
                      (merge req)
                      (assoc :url url :method method)
                      ((fn [x] (log/trace "Options to httpc:" x) x)))
-                  callback))
+                 callback))
 
 (defn async-get
   ([url]
-    (async-get url {}))
+   (async-get url {}))
   ([url req]
-    (async-get url req {}))
+   (async-get url req {}))
   ([url req options]
-    (async-get url req options nil))
+   (async-get url req options nil))
   ([url req options callback]
-    (request :get url req options callback)))
+   (request :get url req options callback)))
 
 (defn async-post
   ([url]
-    (async-post url {:body nil}))
+   (async-post url {:body nil}))
   ([url req]
-    (async-post url req {}))
+   (async-post url req {}))
   ([url req options]
-    (async-post url req options nil))
+   (async-post url req options nil))
   ([url req options callback]
-    (request :post url req options callback)))
+   (request :post url req options callback)))
 
 (defn get
   [& args]

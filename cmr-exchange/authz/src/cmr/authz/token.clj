@@ -33,7 +33,7 @@
 
 (defn find-xml
   [xml-str in-keys]
-  (log/debug "Got token XML data:" xml-str)
+  (log/trace "Got token XML data:" xml-str)
   (xml-in/find-first (xml/parse-str xml-str) in-keys))
 
 (defn parse-token-data
@@ -63,6 +63,7 @@
   (let [url (str base-url token-info-resource)
         data (str "id=" token)]
     (log/trace "Making token-info query to ECHO REST:" url)
+    (log/debug "Value from authz token:" data)
     (request/async-post
       url
       (-> {:body data}

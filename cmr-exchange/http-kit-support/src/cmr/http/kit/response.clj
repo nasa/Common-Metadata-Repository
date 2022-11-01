@@ -58,7 +58,7 @@
   [result]
   (let [str-data (stream->str result)
         json-data (json/parse-string str-data true)]
-    (log/trace "str-data:" str-data)
+    (log/trace "result:" result)
     (log/trace "json-data:" json-data)
     json-data))
 
@@ -106,6 +106,10 @@
 (defn version-media-type
   [response value]
   (add-header response :cmr-media-type value))
+
+(defn search-after
+  [response value]
+  (add-header response :cmr-search-after value))
 
 (defn add-request-id
   [response id]
@@ -179,13 +183,14 @@
          (err-handler status headers body)
 
          :else
-         (-> {:body (stream->str body) :headers headers}
-             parse-fn))))
+         {:body (parse-fn (stream->str body)) :headers headers})))
+        ;;  (-> {:body (stream->str body) :headers headers}
+        ;;      parse-fn))))
 
 ;;Helper function to specify a specific field to return from the general-response-handler
 (defn one-field-response-handler
   [response err-handler parse-fn field]
-  (general-response-handler response err-handler #(parse-fn (field %1))))
+  (field (general-response-handler response err-handler parse-fn)))
 
 ;;Specific versions of one-field-response-handler
 (def body-only-response-handler #(one-field-response-handler %1 %2 %3 :body))
@@ -208,9 +213,15 @@
 
 (defn process-ok-results
   [data]
-  {:headers {"CMR-Took" (:took data)
-             "CMR-Hits" (:hits data)}
-   :status 200})
+  (log/debug "Printing ok results:" data)
+  (if (contains? data :sa-header)
+    {:headers {"CMR-Took" (:took data)
+                "CMR-Hits" (:hits data)
+                "CMR-Search-After" (:sa-header data)}
+     :status 200}
+    {:headers {"CMR-Took" (:took data)
+               "CMR-Hits" (:hits data)}
+     :status 200}))
 
 (defn process-err-results
   [data]

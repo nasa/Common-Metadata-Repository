@@ -23,7 +23,7 @@
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
                  [com.stuartsierra/component "1.0.0"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.4-SNAPSHOT"]
                  [org.clojure/clojure "1.10.1"]
                  [ring/ring-codec "1.1.2"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"

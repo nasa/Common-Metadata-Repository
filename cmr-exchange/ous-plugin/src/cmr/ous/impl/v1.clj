@@ -125,6 +125,7 @@
               query s4-errs
               {:errors (errors/check
                         [not granule-links metadata-errors/empty-gnl-data-files])})]
+    (log/debug "printing the coll:" coll)
     (common/process-results {:params params
                              :granule-links granule-links
                              :sa-header sa-header

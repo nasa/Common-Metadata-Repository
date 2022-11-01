@@ -147,7 +147,7 @@
 (defn process-results
   ([results start errs]
    (process-results results start errs {:warnings nil}))
-  ([{:keys [params dap-version granule-links tag-data query]} start errs warns]
+  ([{:keys [params dap-version granule-links sa-header tag-data query]} start errs warns]
    (log/trace "Got granule-links:" (vec granule-links))
    (log/trace "Process-results tag-data:" tag-data)
    (if errs
@@ -166,6 +166,7 @@
                              (vec urls-or-errs)))
            (results/create urls-or-errs :request-id (:request-id params)
                                         :elapsed (util/timed start)
+                                        :sa-header sa-header
                                         :warnings warns)))))))
 
 (defn apply-bounding-conditions
@@ -288,7 +289,7 @@
         grans-promise (granule/async-get-metadata
                        component endpoint token params)
         coll-promise (concept/get :collection
-                      component endpoint token params)
+                      component endpoint token params nil)
         errs (errors/collect params valid-lat valid-lon)]
     (log/debug "Params: " params)
     (log/debug "Bounding box: " bounding-box)

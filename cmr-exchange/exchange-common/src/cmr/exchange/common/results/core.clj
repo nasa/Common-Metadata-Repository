@@ -7,6 +7,8 @@
    hits
    ;; Number of milleseconds elapsed from start to end of call
    took
+   ;; Search-after header
+   sa-header
    ;; The actual items in the result set
    items
    ;; The randomly generated request-id string
@@ -15,12 +17,13 @@
    warnings])
 
 (defn create
-  [results & {:keys [request-id elapsed warnings]}]
+  [results & {:keys [request-id elapsed sa-header warnings]}]
   (map->CollectionResults
     (merge {;; Our 'hits' is simplistic for now; will change when we support
             ;; paging, etc.
             :hits (count results)
             :took elapsed
+            :sa-header sa-header
             :request-id request-id 
             :items results}
            warnings)))

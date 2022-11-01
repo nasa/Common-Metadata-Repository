@@ -35,7 +35,8 @@
         dap-version (:dap-version (util/normalize-params (:params req)))]
     (->> data
          (merge {:collection-id concept-id
-                 :request-id (base-request/extract-request-id req)})
+                 :request-id (base-request/extract-request-id req)
+                 :cmr-search-after base-request/get-header req "cmr-search-after"})
          (ous/get-opendap-urls component api-version user-token dap-version)
          (response/json req))))
 
