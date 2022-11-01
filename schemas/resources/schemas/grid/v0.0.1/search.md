@@ -33,7 +33,7 @@ These parameters will match fields within a Grid. They are case insensitive by d
 
 
 ````
-curl -g "%CMR-ENDPOINT%/grids?concept_id=GRD1200442373-PROV1"
+curl "%CMR-ENDPOINT%/grids?concept_id=GRD1200442373-PROV1"
 ````
 
 ##### <a name="grid-search-response"></a> Grid Search Response
@@ -59,7 +59,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 __Example__
 
 ```
-curl -i "%CMR-ENDPOINT%/grids.xml?pretty=true&name=Grid1"
+curl "%CMR-ENDPOINT%/grids.xml?pretty=true&name=Grid1"
 
 HTTP/1.1 200 OK
 Content-Type: application/xml; charset=UTF-8
@@ -95,7 +95,7 @@ The JSON response includes the following fields.
 __Example__
 
 ```
-curl -g -i "%CMR-ENDPOINT%/grids.json?pretty=true"
+curl "%CMR-ENDPOINT%/grids.json?pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
@@ -121,7 +121,8 @@ The UMM JSON response contains meta-metadata of the Grid, the UMM fields and the
 __Example__
 
 ```
-curl -g -i "%CMR-ENDPOINT%/grids.umm_json?name=Grid-v1"
+curl "%CMR-ENDPOINT%/grids.umm_json?name=Grid-v1"
+
 HTTP/1.1 200 OK
 Content-Type: application/vnd.nasa.cmr.umm_results+json;version=0.0.1; charset=utf-8
 Content-Length: 1177

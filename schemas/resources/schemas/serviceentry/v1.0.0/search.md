@@ -33,7 +33,7 @@ These parameters will match fields within a Service Entry. They are case insensi
 
 
 ````
-curl -g "%CMR-ENDPOINT%/serviceentries?concept_id=SE1200000000-PROV1"
+curl "%CMR-ENDPOINT%/serviceentries?concept_id=SE1200000000-PROV1"
 ````
 ##### <a name="serviceentry-search-response"></a> Service Entry Search Response
 
@@ -58,7 +58,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 __Example__
 
 ```
-curl -i "%CMR-ENDPOINT%/serviceentries.xml?pretty=true"
+curl "%CMR-ENDPOINT%/serviceentries.xml?pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/xml; charset=UTF-8
@@ -93,7 +93,7 @@ The JSON response includes the following fields.
 __Example__
 
 ```
-curl -g -i "%CMR-ENDPOINT%/serviceentries.json?pretty=true&name="serviceentry-name"
+curl "%CMR-ENDPOINT%/serviceentries.json?pretty=true&name="serviceentry-name"
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
@@ -119,7 +119,7 @@ The UMM JSON response contains meta-metadata of the Service Entry, the UMM field
 __Example__
 
 ```
-curl -g -i "%CMR-ENDPOINT%/serviceentries.umm_json?name=Serviceentry1234"
+curl "%CMR-ENDPOINT%/serviceentries.umm_json?name=Serviceentry1234"
 
 HTTP/1.1 200 OK
 Content-Type: application/vnd.nasa.cmr.umm_results+json; charset=UTF-8

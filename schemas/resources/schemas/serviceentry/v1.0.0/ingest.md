@@ -6,7 +6,7 @@
 
 Service Entry concepts can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/serviceentry/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). The contents of the metadata is passed in the body of the request.
 ```
-curl -v -XPOST \
+curl -XPOST \
 -H "Content-Type:application/vnd.nasa.cmr.umm+json" \
 -H "Authorization: Bearer XXXX" \
 "%CMR-ENDPOINT%/serviceentry/sampleNativeId?provider=PROV1" \
@@ -30,7 +30,7 @@ get a JSON response:
 Service Entry metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/serviceentry/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
 
-  curl -i -XDELETE \
+  curl -XDELETE \
     -H "Authorization: Bearer XXXX" \
     %CMR-ENDPOINT%/serviceentry/sampleNative23Id?provider=PROV1"
 

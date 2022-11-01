@@ -7,7 +7,7 @@
 Order Option concepts can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/orderoption/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id). The contents of the metadata is passed in the body of the request
 
 ```
-curl -v -XPOST \
+curl -XPOST \
 -H "Content-Type:application/vnd.nasa.cmr.umm+json" \
 -H "Authorization: Bearer XXXX" \
 "%CMR-ENDPOINT%/orderoption/sampleNativeId?provider=PROV1" \
@@ -31,7 +31,7 @@ get a JSON response:
 
 Order Option metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/orderoption/<native-id>?provider=<provider-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
-  curl -i -XDELETE \
+  curl -XDELETE \
     -H "Authorization: Bearer XXXX" \
     %CMR-ENDPOINT%/orderoption/sampleNative23Id?provider=PROV1"
 

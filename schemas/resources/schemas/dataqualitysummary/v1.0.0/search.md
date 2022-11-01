@@ -32,7 +32,7 @@ These parameters will match fields within a Data Quality Summary. They are case 
 
 
 ````
-curl -g "%CMR-ENDPOINT%/dataqualitysummaries?concept_id=DQ1200000000-PROV1"
+curl "%CMR-ENDPOINT%/dataqualitysummaries?concept_id=DQ1200000000-PROV1"
 ````
 ##### <a name="dataqualitysummary-search-response"></a> Data Quality Summary Search Response
 
@@ -57,7 +57,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 __Example__
 
 ```
-curl -i "%CMR-ENDPOINT%/dataqualitysummaries.xml?pretty=true&name=dataqualitysummary1"
+curl "%CMR-ENDPOINT%/dataqualitysummaries.xml?pretty=true&name=dataqualitysummary1"
 
 HTTP/1.1 200 OK
 Content-Type: application/xml; charset=UTF-8
@@ -91,7 +91,7 @@ The JSON response includes the following fields.
 __Example__
 
 ```
-curl -g -i "%CMR-ENDPOINT%/dataqualitysummaries.json?pretty=true&name="dataqualitysummary-name"
+curl "%CMR-ENDPOINT%/dataqualitysummaries.json?pretty=true&name="dataqualitysummary-name"
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
@@ -115,7 +115,7 @@ The UMM JSON response contains meta-metadata of the Data Quality Summary, the UM
 
 __Example__
 
-curl -g -i "%CMR-ENDPOINT%/dataqualitysummaries.umm_json?name=dataqualitysummary1234&pretty=true"
+curl "%CMR-ENDPOINT%/dataqualitysummaries.umm_json?name=dataqualitysummary1234&pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.0.0; charset=utf-8

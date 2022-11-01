@@ -33,7 +33,7 @@ These parameters will match fields within a Order Option. They are case insensit
 
 
 ````
-curl -g "%CMR-ENDPOINT%/orderoptions?concept_id=OO1200000000-PROV1"
+curl "%CMR-ENDPOINT%/orderoptions?concept_id=OO1200000000-PROV1"
 ````
 ##### <a name="orderoption-search-response"></a> Order Option Search Response
 
@@ -58,7 +58,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 __Example__
 
 ```
-curl -i "%CMR-ENDPOINT%/orderoptions.xml?pretty=true&name=Orderoption1"
+curl "%CMR-ENDPOINT%/orderoptions.xml?pretty=true&name=Orderoption1"
 
 HTTP/1.1 200 OK
 Content-Type: application/xml; charset=UTF-8
@@ -93,7 +93,7 @@ The JSON response includes the following fields.
 __Example__
 
 ```
-curl -g -i "%CMR-ENDPOINT%/orderoptions.json?pretty=true"
+curl "%CMR-ENDPOINT%/orderoptions.json?pretty=true"
 
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
@@ -119,7 +119,7 @@ The UMM JSON response contains meta-metadata of the Order Option, the UMM fields
 __Example__
 
 ```
-curl -g -i "%CMR-ENDPOINT%/orderoptions.umm_json?name=OrderOption1"
+curl "%CMR-ENDPOINT%/orderoptions.umm_json?name=OrderOption1"
 
 HTTP/1.1 200 OK
 Content-Type: application/vnd.nasa.cmr.umm_results+json; charset=UTF-8
