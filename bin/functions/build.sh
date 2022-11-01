@@ -80,6 +80,16 @@ function build_uberjars {
     fi
 }
 
+function build_service_bridge_uberjar {
+    echo "Building Service Bridge uberjar ..."
+    (cd $CMR_DIR/cmr-exchange && \
+            lein modules install && cd service-bridge && lein uberjar)
+    if [ $? -ne 0 ] ; then
+        echo "Failed to generate Service Bridge uberjar" >&2
+        exit 127
+    fi
+}
+
 function build_all {
     cd $CMR_DIR && \
     cmr install jars,docs && \
