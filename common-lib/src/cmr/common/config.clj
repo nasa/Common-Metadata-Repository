@@ -234,18 +234,10 @@
    :parser #(json/parse-string % true)})
 
 (defconfig approved-pipeline-documentation
-  "This is the feature toggle for activating documentation for
-   the generic documents in CMR, this list should be a subset of approved-pipeline-documents or equal to it
-   {:grid [\"0.0.1\"],
-    :dataqualitysummary [\"1.0.0\"]
-    :orderoption [\"1.0.0\"]
-    :serviceentry [\"1.0.0\"]
-    :serviceoption [\"1.0.0\"]}"
-  {:default {:grid ["0.0.1"]
-             :dataqualitysummary ["1.0.0"]
-             :orderoption ["1.0.0"]
-             :serviceentry ["1.0.0"]
-             :serviceoption ["1.0.0"]}
+  "This is the feature toggle for activating documentation for generic types
+   it's default state is the same value as the approved-pipeline-documents but,
+   can be managaged seperately"
+  {:default (approved-pipeline-documents)
    :parser #(json/parse-string % true)})
 
 (defn check-env-vars

@@ -13,7 +13,7 @@
   (testing "Reads the markdown file for the given generic if the generic is not in the system or it is the wrong version, return empty string"
     (is (= true (string/includes? (gdocs/read-generic-doc-file "ingest" :grid "0.0.1") "Create / Update a Grid")))
     (is (pos? (count (gdocs/read-generic-doc-file "ingest" :grid "0.0.1"))))
-    (is (= true (string/includes? (gdocs/read-generic-doc-file "search" :grid "0.0.1") "Searching for grids")))
+    (is (= true (string/includes? (gdocs/read-generic-doc-file "search" :grid "0.0.1") "Searching for Grids")))
     (is (pos? (count (gdocs/read-generic-doc-file "search" :grid "0.0.1"))))
     (is (= 0 (count (gdocs/read-generic-doc-file "ingest" :notGenericInSystem "0.0.1"))))
     ;;This is testing if a version for a generic which does not exist is requested
@@ -45,7 +45,7 @@
     retrived from the ingest or search .md")
   (is (= (gdocs/build-markdown-toc 4 "GridInfo" "grid-link") "    * [grid-link](#GridInfo)\n")))
 
-(def formatted-search-grid-markdown "* [Grid](#grid)\n    * [Searching for grids](#searching-for-grids)\n        * [Grid Search Parameters](#grid-search-params)\n        * [Grid Search Response](#grid-search-response)\n    * [Retrieving All Revisions of a Grid](#retrieving-all-revisions-of-a-grid)\n    * [Sorting Grid Results](#sorting-grid-results)\n")
+(def formatted-search-grid-markdown "* [Grid](#grid)\n    * [Searching for Grids](#searching-for-grids)\n        * [Grid Search Parameters](#grid-search-params)\n        * [Grid Search Response](#grid-search-response)\n    * [Retrieving All Revisions of a Grid](#retrieving-all-revisions-of-a-grid)\n    * [Sorting Grid Results](#sorting-grid-results)\n")
 (def formatted-ingest-grid-markdown "    * [Grid](#grid)\n            * [/providers/&lt;provider-id&gt;/grids/&lt;native-id&gt;](#provider-info-grid)\n        * [PUT - Create / Update a Grid](#create-update-grid)\n        * [DELETE - Delete a Grid](#delete-grid)\n")
 (def default-formatted-ingest-default "  * [Grid](#grid)\n    * [/providers/&lt;provider-id&gt;/grids/&lt;native-id&gt;](#provider-info-grid)\n   * [PUT - Create / Update a Grid](#create-update-grid)\n   * [DELETE - Delete a Grid](#delete-grid)\n")
 

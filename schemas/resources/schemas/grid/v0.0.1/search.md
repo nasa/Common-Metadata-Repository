@@ -2,7 +2,7 @@
 
 Grid metadata describes a set of coordinates and other supporting data that a service can use to reproject data. Grid metadata is stored in the JSON format [UMM-Grid Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/grid).
 
-#### <a name="searching-for-grids"></a> Searching for grids
+#### <a name="searching-for-grids"></a> Searching for Grids
 
 Grids can be searched for by sending a request to `%CMR-ENDPOINT%/grids`. XML reference, JSON, and UMM JSON response formats are supported for grids search.
 
