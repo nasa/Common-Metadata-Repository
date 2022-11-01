@@ -543,7 +543,9 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 A new variable ingest endpoint is provided to ensure that variable association is created at variable ingest time.
 Variable concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/collections/<collection-concept-id>/<collection-revision-id>/variables/<native-id>`.  `<collection-revision-id>` is optional. The response will include the [concept id](#concept-id),[revision id](#revision-id), variable-association and associated-item.
 
-Association data can be provided by using multiple `-d` flags with the data being sent as the content for the second `-d` section. Each section will need a name with the variable being `conent=` and the data being `data=`. Association data will overwrite any existing association data in the previous revision.
+Variable associations can also have custom data to describe or augment the relationship. CMR makes no use of this extra data, but clients may use the information to derive a meaning from the relationship. Association Data can be any valid JSON. When providing Variable Association Data, the API requires that the variable and data be anotated in the PUT with URI style variable names. The Variable metadata must be assigned to `content=` and Association Data is assigned to `data=`.
+
+Both URI variables can be sent to CMR using multiple `-d` flags or in one `-d` attribute separated with an ampersand (`&`). When updating, association data will overwrite any existing association data from the previous revision. It is important to know that sending no data will effectively clear out existing data.
 
 Note:
 
