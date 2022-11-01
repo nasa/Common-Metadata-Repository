@@ -59,8 +59,7 @@
                (name generic-keyword)
                generic-version
                (format "schemas/%s/v%s/%s.json" (name generic-keyword) generic-version (name file-name))
-               (.getMessage e)))
-      (println "read-schema-file failed"))))
+               (.getMessage e))))))
 
 (defn read-schema-index
   "Return the schema index configuration file given the schema name and version

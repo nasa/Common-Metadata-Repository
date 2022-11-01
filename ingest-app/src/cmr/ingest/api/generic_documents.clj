@@ -168,7 +168,7 @@
         concept-type (concept-type->singular route-params)]
     (api-core/delete-concept concept-type provider-id native-id request)))
 
-(defn validate-required-query-parameters
+(defn crud-generic-document
   "This function checks for required parameters. If they don't exist then throw an error, otherwise send the request
    on to the corresponding function."
   [request funct-str]

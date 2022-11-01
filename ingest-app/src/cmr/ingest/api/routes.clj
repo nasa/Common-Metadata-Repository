@@ -241,10 +241,10 @@
        ;; Generic documents are by pattern: /providers/{prov_id}/{concept-type}/{native_id}
        (context ["/:concept-type" :concept-type generate-generic-concept-types-reg-ex] [concept-type]
          (context ["/:native-id" :native-id #".*$"] [native-id]
-           (POST "/" request (gen-doc/validate-required-query-parameters request :create))
-           (GET "/" request (gen-doc/validate-required-query-parameters request :read))
-           (PUT "/" request (gen-doc/validate-required-query-parameters request :update))
-           (DELETE "/" request (gen-doc/delete-generic-document request))))
+           (POST "/" request (gen-doc/crud-generic-document request :create))
+           (GET "/" request (gen-doc/crud-generic-document request :read))
+           (PUT "/" request (gen-doc/crud-generic-document request :update))
+           (DELETE "/" request (gen-doc/crud-generic-document request :delete))))
 
        ;; Bulk updates
        (context "/bulk-update/collections" []
