@@ -894,12 +894,12 @@
         _ (tags/create-tag token tag)
         ;; create a data quality summary record
         dqs (gen-util/ingest-generic-document
-             nil "PROV1" "dataqualitysummary-1" :dataqualitysummary gen-util/data-quality-summary :post)
+             nil "PROV1" "data-quality-summary-1" :data-quality-summary gen-util/data-quality-summary :post)
         ;; create a order option record
         oo (gen-util/ingest-generic-document
-            nil "PROV1" "orderoption-1" :orderoption gen-util/order-option :post)
+            nil "PROV1" "order-option-1" :order-option gen-util/order-option :post)
         oo2 (gen-util/ingest-generic-document
-            nil "PROV1" "orderoption-2" :orderoption gen-util/order-option :post)]
+            nil "PROV1" "order-option-2" :order-option gen-util/order-option :post)]
     (index/wait-until-indexed)
 
     ;; Associate the concepts.
@@ -928,7 +928,7 @@
       (is (= (:status coll-search-resp) 200))
       (is (= (count (:variables assoc)) 2))
       (is (= (count (:services assoc)) 1))
-      (is (= (count (:orderoptions assoc)) 1))
+      (is (= (count (:order-options assoc)) 1))
       (is (= (count (:variables assoc-details)) 2))
       (is (= (count (:services assoc-details)) 1))
       (is (some? (:data (first (:services assoc-details))))))))

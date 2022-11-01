@@ -105,7 +105,7 @@
           },
           "minItems": 1
         },
-        "dataqualitysummaries": {
+        "data-quality-summaries": {
           "description": "The concept ids of data quality summary concepts assciated with the tool",
           "type": "array",
           "items": {
@@ -113,7 +113,7 @@
           },
           "minItems": 1
         },
-        "orderoptions": {
+        "order-options": {
           "description": "The concept ids of order option concepts assciated with the tool",
           "type": "array",
           "items": {
@@ -121,7 +121,7 @@
           },
           "minItems": 1
         },
-        "serviceoptions": {
+        "service-options": {
           "description": "The concept ids of service option concepts assciated with the tool",
           "type": "array",
           "items": {
@@ -129,7 +129,7 @@
           },
           "minItems": 1
         },
-        "serviceentries": {
+        "service-entries": {
           "description": "The concept ids of service entry concepts assciated with the tool",
           "type": "array",
           "items": {

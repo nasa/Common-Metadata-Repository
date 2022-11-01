@@ -380,21 +380,11 @@
   ;; no errors, return 204
   {:status 204})
 
-(defn format-regex
-  "Adds the necessary string to each concept for a regex"
-  [concept] (str "(?" concept ")"))
-
-(def get-generics
-  "Retrieve the generics which were dynamically loaded"
-  (mapv keyword (mapv inf/plural(common-generic/latest-approved-document-types))))
-
-(def join-generic-concepts
-  "Combines the generic concepts to be a single string"
-  (string/join "|" (mapv format-regex get-generics)))
-
 (def routes-regex
-  "Appends the generic concepts dynamically loaded to the non-generic concepts to match possible routes general form: (?:(?:granules)|...(?:dataqualitysummaries)"
-  (re-pattern (str "(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services)|" join-generic-concepts ")(?:\\..+)?")))
+  "Appends the generic concepts dynamically loaded to the non-generic concepts to match possible routes general form: (?:(?:granules)|...(?:data-quality-summaries)"
+  (re-pattern (str "(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services)|" 
+                   common-generic/plural-generic-concept-types-reg-ex
+                   ")(?:\\..+)?")))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions

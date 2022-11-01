@@ -3,8 +3,7 @@
   (:require
    [cmr.common.concepts :as concepts]
    [clojure.string :as string]
-   [cmr.bootstrap.services.bootstrap-service :as service]
-   [inflections.core :as inf]))
+   [cmr.bootstrap.services.bootstrap-service :as service]))
 
 (defn synchronous?
   "Returns true if the params contains the :synchronous key and it's value
@@ -29,9 +28,3 @@
    (get-dispatcher context {} request-type))
   ([context params request-type]
    (get-in context [:system (get-dispatcher-type params request-type)])))
-
-(def generate-plural-generic-concept-types-reg-ex
-  "Creates a regular expression for all of the generic concepts. Used to create the api endpoints."
-  (->> (concepts/get-generic-concept-types-array)
-       (map inf/plural)
-       (string/join "|")))

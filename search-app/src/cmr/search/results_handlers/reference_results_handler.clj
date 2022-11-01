@@ -77,22 +77,22 @@
    "revision-id"
    "_score"]))
 
-;; TODO: Generic work: Should use a configuration file here?  Or is this OK to have in code?  
+;; TODO: Generic work: Should use a configuration file here?  Or is just "name" OK to have in code?  
 ;; Then we need a how to create a new concept for search wiki page or read me or something.
+(def generic-concepts->name-key
+  (zipmap (concepts/get-generic-concept-types-array)
+          (repeat (count (concepts/get-generic-concept-types-array)) :name)))
 
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."
-  {:collection :entry-title
-   :granule :granule-ur
-   :variable :variable-name
-   :service :service-name
-   :tool :tool-name
-   :subscription :subscription-name
-   :dataqualitysummary :name
-   :orderoption :name
-   :serviceoption :name
-   :serviceentry :name
-   :grid :name})
+  (merge 
+   {:collection :entry-title
+    :granule :granule-ur
+    :variable :variable-name
+    :service :service-name
+    :tool :tool-name
+    :subscription :subscription-name}
+   generic-concepts->name-key))
 
 (defn- elastic-result->query-result-item
   [context query elastic-result]

@@ -186,15 +186,15 @@ For all providers:
 
 Generic document bulk index endpoints are generated dynamically based on the value of the
 approved generic documents array defined in common lib. All endpoints take the plural form,
-so for example, for the generic concept type "dataqualitysummary", they would be:
+so for example, for the generic concept type "data-quality-summary", they would be:
 
 For a single provider:
 
-    curl -i -XPOST http://localhost:3006/bulk_index/dataqualitysummaries/PROV1
+    curl -i -XPOST http://localhost:3006/bulk_index/data-quality-summaries/PROV1
 
 For all providers:
 
-    curl -i -XPOST http://localhost:3006/bulk_index/dataqualitysummaries/
+    curl -i -XPOST http://localhost:3006/bulk_index/data-quality-summaries/
 
 ### Update fingerprints of variables:
 

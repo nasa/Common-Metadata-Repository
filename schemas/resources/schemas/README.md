@@ -9,10 +9,10 @@ Original Repository: [origin][origin].
 | ------------------ | -------------- | ----- |
 | Grid               | In progress    | Grid definitions |
 | Index              | In progress    | Configuration file for Schema used to specify indexes for Generic Documents |
-| OrderOption        | In progress    | Configuration files needed for supporting Legacy Services migration
-| DataQualitySummary | In progress    | Configuration files needed for supporting Legacy Services migration
-| ServiceEntry       | In progress    | Configuration files needed for supporting Legacy Services migration
-| ServiceOption      | In progress    | Configuration files needed for supporting Legacy Services migration
+| Order-Option        | In progress    | Configuration files needed for supporting Legacy Services migration
+| Data-Quality-Summary | In progress    | Configuration files needed for supporting Legacy Services migration
+| Service-Entry       | In progress    | Configuration files needed for supporting Legacy Services migration
+| Service-Option      | In progress    | Configuration files needed for supporting Legacy Services migration
 
 ## Usage
 
