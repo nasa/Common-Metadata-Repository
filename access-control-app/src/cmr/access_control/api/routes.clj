@@ -169,13 +169,6 @@
     {:status 200
      :body (json/generate-string result)}))
 
-(defn- get-permissions-with-post
-  "Returns a Ring response with the requested permission check results request."
-  [ctx body]
-  (let [result (acl-service/get-permissions ctx (json/parse-string body true))]
-    {:status 200
-     :body (json/generate-string result)}))
-
 (defn- get-current-sids
   "Returns a Ring response with the current user's sids"
   [request-context params]
@@ -379,7 +372,7 @@
 
         (POST "/"
               {ctx :request-context headers :headers body :body}
-              (get-permissions-with-post ctx (slurp body))))
+              (get-permissions ctx (json/parse-string (slurp body) true))))
 
       (context "/current-sids" []
         (OPTIONS "/" [] (common-routes/options-response))
