@@ -210,6 +210,13 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
     * [Reset the application to the initial state](#reset-the-application-to-the-initial-state)
     * [Querying caches](#querying-caches)
     * [Check application health](#check-application-health)
+  * [Associate Concepts](#generic-association)
+    * [Associate Multiple Concepts](#generic-multi-association)
+    * [Associate Concepts By Revision](#generic-association-with-revisions)
+    * [Associate Concepts With Details](#generic-association-with-payloads)
+    * [Search For Associations](#generic-association-search)
+    * [Disassociate Concepts](#generic-association-delete)
+    * [Disassociate Multiple Concepts](#generic-association-multi-delete)
 
 ***
 
@@ -970,9 +977,9 @@ __Example__
         "services": [{"concept-id": "S1200000008-PROV1",
                       "data": {"formatting-type": "zarr",
                                "regridding-type": {"xyz": "zyx"}}},
-                     {"concept-id": "S1200000009-PROV1"}, 
+                     {"concept-id": "S1200000009-PROV1"},
                      {"concept-id": "S1200000010-PROV1"}],
-        "tools": [{"concept-id": "TL1200000011-PROV1"}, 
+        "tools": [{"concept-id": "TL1200000011-PROV1"},
                   {"concept-id": "TL1200000012-PROV1"},
                   {"concept-id": "TL1200000013-PROV1"}]
       }
@@ -5404,4 +5411,150 @@ Example un-healthy response body:
     }
   }
 }
+```
+#### <a name="generic-association"></a> Associate concepts
+
+A concept of any type can be associated to another concept of any type using the association API. Note this type of association is functionally the same as associations of tools, services, and variables to collections but, uses a different API route and is applicable to all possible concept relationships. In such fashion, any concept can be associated to any other concept, including concepts of the same type i.e. associate a variable to another variable. Associations can also include an optional data payload the purpose of which is to describe the association itself. Associations which do not initially have association details, may have details added simply by providing association details as a subsequent revision. A concept cannot be associated to itself.
+
+__Example__
+
+```
+curl -v -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000000-PROV1" -d '[{"concept_id": "S1200000001-PROV1"}]'
+```
+__Example Response__
+```
+[{
+  "generic_association" : {
+    "concept_id" : "GA1200000000-CMR",
+    "revision_id" : 3
+  },
+  "associated_item" : {
+    "concept_id" : "S1200000001-PROV1"
+  }}]
+```
+
+#### <a name="generic-multi-association"></a> Associate Multiple Concepts At Once
+Multiple associaitons with or without association details can be made to a specified concept on a single request by passing multiple concept ids in a lis. The response returns the association cocncept and the concept being associated.
+__Example__
+```
+curl -v -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000006-PROV1" -d '[{"concept_id":"S1200000008-PROV1"},{"concept_id": "C1200000007-PROV1"}]'
+```
+__Example Response__
+```
+[{"generic_association":{"concept_id":"GA1200000009-CMR","revision_id":3},"associated_item":{"concept_id":"S1200000008-PROV1"}},{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":3},"associated_item":{"concept_id":"GRD1200000006-PROV1"}}]%
+```
+#### <a name="generic-association-with-revisions"></a>Associate Concepts With Revision Id's
+An optional revision_id field can be passed into the association to create an association to specific revisions of two concepts.
+__Example__
+
+```
+curl -v -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000011-PROV1" -d \ '[{
+        "concept_id": "SO1200000012-PROV1",
+        "revision_id ": 2
+}]'
+
+```
+__Example Response__
+```
+[{"generic_association":{"concept_id":"GA1200000013-CMR","revision_id":1},"associated_item":{"concept_id":"SO1200000012-PROV1"}}]%
+```
+
+#### <a name="generic-association-with-payloads"></a> Associate Concepts With Details
+__Example__
+```
+curl -v -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000000-PROV1" -d '[{"concept_id": "S1200000001-PROV1", "data": {"field": "value", "another_field": {"XYZ": "ZYX"}}}]'
+```
+__Example Response__
+```
+[ {
+  "generic_association" : {
+    "concept_id" : "GA1200000000-CMR",
+    "revision_id" : 3
+  },
+  "associated_item" : {
+    "concept_id" : "S1200000001-PROV1"
+  }}]
+```
+#### <a name="generic-association-update-details"></a> Update Association details
+ Associations are created for specific revisions of two concepts by deafult the most current revision. Associating two concepts then changing the association-details will override the previous association data. A simple workaround is to create new revisions of both concepts then create a new association between the two revised concepts. When searching for the concepts using the all_revisions parameter will show both of the associations for that particular revision.
+
+#### <a name="generic-association-search"></a> Searching For Associated Concepts
+Associations can be queried by searching for one of the assocaited concepts using either the JSON and UMM_JSON formats. The "associations" field, contains a list of concepts associated to the concept that was searched for grouped by concept-type. The "association-details" field contains association details if they were included for the particular association. In the example case, a grid (GRD1200000000-PROV1) has been associated to another grid with association details(GRD1200000001-PROV1), as well as a service option (SO1200000001-PROV1) without any association details.
+
+__Example__
+
+```
+curl -g -H "Authorization Bearer: XXXXX" "%CMR-ENDPOINT%/grids?concept_id=GRD1200000000-PROV1"
+
+```
+__Example Response with associated concepts__
+```
+{
+    "hits": 1,
+    "took": 6,
+    "items": [
+        {
+            "concept_id": "GRD1200000000-PROV1",
+            "revision_id": 22,
+            "provider_id": "PROV1",
+            "native_id": "sampleNativeId",
+            "name": "Grid-v1",
+            "associations": {
+                "grids": [
+                    "GRD1200000001-PROV1"
+                ],
+                "serviceoptions": [
+                    "SO1200000001-PROV1"
+                ]
+            },
+            "association-details": {
+                "grids": [
+                    {
+                        "data": {
+                            "somedata": "zarr",
+                            "somemoredata": {
+                                "XYZ": "ZYX"
+                            }
+                        },
+                        "concept-id": "GRD1200000001-PROV1"
+                    }
+                ],
+                "serviceoptions": [
+                    {
+                        "concept-id": "SO1200000001-PROV1"
+                    }
+                ]
+            }
+        }
+    ]
+}
+```
+#### <a name="generic-association-delete"></a> Dissociate Concepts
+A concept identified by its concept id can be dissociated from another concept by passing a DELETE request with the concept-id of the concept to be disassociated.
+
+__Example__
+
+```curl -i -X DELETE -H "Content-Type:application/json" -H "Authorization: Bearer XXXXX" "%CMR-ENDPOINT%/associate/GRD1200441922-PROV1" -d '[
+  {"concept_id": "SO1200000001-PROV1"}]
+```
+
+__Example Response__
+```
+[{"generic_association":{"concept_id":"GA1200443648-CMR","revision_id":6},"associated_item":{"concept_id":"GRD1200441922-PROV1"}}]%
+```
+#### <a name="generic-association-multi-delete"></a> Dissociate Multiple Concepts
+Multiple disassocaitions to a specified concept are possible by passing multiple concept ids in a series of maps.
+
+__Example__
+```
+curl -v -XDELETE -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000006-PROV1" -d '[{
+      "concept_id":"S1200000008-PROV1"},
+    {
+        "concept_id": "C1200000007-PROV1"
+    }]'
+
+```
+__Example Response__
+```
+[{"generic_association":{"concept_id":"GA1200000009-CMR","revision_id":2},"associated_item":{"concept_id":"S1200000008-PROV1"}},{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":2},"associated_item":{"concept_id":"GRD1200000006-PROV1"}}]
 ```
