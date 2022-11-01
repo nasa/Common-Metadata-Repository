@@ -32,12 +32,13 @@
   (log/trace "Got request:" (logger/pprint (into {} req)))
   (log/debug "Got request-id: " (base-request/extract-request-id req))
   (let [api-version (request/accept-api-version component req)
-        dap-version (:dap-version (util/normalize-params (:params req)))]
+        _ (log/debug "params" (:params req))
+        dap-version (:dap-version (util/normalize-params (:params req)))
+        sa-header (base-request/get-header req "cmr-search-after")]
     (->> data
          (merge {:collection-id concept-id
-                 :request-id (base-request/extract-request-id req)
-                 :cmr-search-after base-request/get-header req "cmr-search-after"})
-         (ous/get-opendap-urls component api-version user-token dap-version)
+                 :request-id (base-request/extract-request-id req)})
+         (ous/get-opendap-urls component api-version user-token dap-version sa-header)
          (response/json req))))
 
 (defn- generate-via-get
@@ -69,7 +70,7 @@
   [component]
   (fn [req]
     (log/debug "Method-dispatching for URLs generation ...")
-    (log/trace "request:" req)
+    (log/debug "request:" req)
     (let [user-token (token/extract req)
           concept-id (get-in req [:path-params :concept-id])]
       (case (:request-method req)

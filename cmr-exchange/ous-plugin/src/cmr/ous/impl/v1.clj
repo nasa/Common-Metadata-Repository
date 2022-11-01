@@ -59,11 +59,11 @@
   [component coll-promise grans-promise {:keys [endpoint token params]}]
   (log/debug "Starting stage 2 ...")
   (let [granules (granule/extract-metadata grans-promise)
+        gran-headers (granule/extract-header-data grans-promise)
         coll-body (collection/extract-body-metadata coll-promise)
-        coll-headers (collection/extract-header-data coll-promise)
         tag-data (get-in coll-body [:tags (keyword collection/opendap-regex-tag) :data])
         granule-links (map granule/extract-granule-links (:body granules))
-        sa-header (get-in coll-headers [:cmr-search-after])
+        sa-header (get-in gran-headers [:cmr-search-after])
         service-ids (collection/extract-service-ids coll-body)
         params (apply-level-conditions coll-body params)
         vars (common/apply-bounding-conditions endpoint token coll-body params)
@@ -81,7 +81,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn get-opendap-urls
-  [component user-token raw-params]
+  [component user-token raw-params input-sa-header]
   (log/trace "Got params:" raw-params)
   (let [start (util/now)
         search-endpoint (config/get-search-url component)
@@ -90,7 +90,8 @@
         (common/stage1 component
                        {:endpoint search-endpoint
                         :token user-token
-                        :params raw-params})
+                        :params raw-params
+                        :sa-header input-sa-header})
         ;; Stage 2
         [params coll granule-links sa-header service-ids vars tag-data s2-errs]
         (stage2 component

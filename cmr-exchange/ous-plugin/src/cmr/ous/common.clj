@@ -276,8 +276,9 @@
 ;;; the code could be properly prepared for async execution.
 
 (defn stage1
-  [component {:keys [endpoint token params]}]
+  [component {:keys [endpoint token params sa-header]}]
   (log/debug "Starting stage 1 ...")
+  (log/debug "params:" params)
   (let [params (query/parse params)
         bounding-box (:bounding-box params)
         valid-lat (when bounding-box
@@ -287,9 +288,9 @@
                     (validation/validate-longitude
                      (query-util/bounding-box-lon bounding-box)))
         grans-promise (granule/async-get-metadata
-                       component endpoint token params)
+                       component endpoint token params sa-header)
         coll-promise (concept/get :collection
-                      component endpoint token params nil)
+                      component endpoint token params)
         errs (errors/collect params valid-lat valid-lon)]
     (log/debug "Params: " params)
     (log/debug "Bounding box: " bounding-box)
