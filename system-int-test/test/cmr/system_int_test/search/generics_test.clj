@@ -51,7 +51,7 @@
 (defn set-concept-type-to-file-structure
   "This function sets up a map structure for the all-generic-search-results-test.
    The structure looks like:
-   {\"grid\" (/Users/eereiter/work/clojure/Common-Metadata-Repository-assoc/schemas/resources/schemas/grid/v0.0.1)}"
+   {\"grid\" (.../schemas/resources/schemas/grid/v0.0.1)}"
   [generic-concept-type-name]
   {generic-concept-type-name (-> (str "schemas/" generic-concept-type-name)
                                  (io/resource)
