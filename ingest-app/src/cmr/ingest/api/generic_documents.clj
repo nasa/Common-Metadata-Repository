@@ -38,20 +38,6 @@
        :invalid-data
        (format "While the [%s] schema with version [%s] is approved, it cannot be found." schema version)))))
 
-(defn get-sub-concept-type-concept-id-prefix
-  "There are many concept types within generics. Read in the concept-id prefix for this specific one."
-  [spec-key version]
-  (if-some [index-url (jio/resource (format "schemas/%s/v%s/index.json"
-                                            (name spec-key)
-                                            version))]
-    (let [index-file-str (slurp index-url)
-          index-file (json/parse-string index-file-str true)
-          index-sub-concept (:SubConceptType index-file)]
-      (if index-sub-concept
-        index-sub-concept
-        (:generic (set/map-invert common-concepts/concept-prefix->concept-type))))
-    (:generic (set/map-invert common-concepts/concept-prefix->concept-type))))
-
 (def required-query-parameters
   "This defines in a map required parameters that are passed in and where they would be
    located once the http request makes its way through compojure. If there is an error the error
@@ -91,8 +77,7 @@
         document (json/parse-string raw-document true)
         specification (:MetadataSpecification document)
         spec-key (keyword (string/lower-case (:Name specification)))
-        spec-version (:Version specification)
-        concept-sub-type (get-sub-concept-type-concept-id-prefix spec-key spec-version)]
+        spec-version (:Version specification)]
     (if (not= concept-type spec-key)
       (throw UnsupportedOperationException)
       {:concept (assoc {}
@@ -103,8 +88,7 @@
                        :native-id native-id
                        :user-id (api-core/get-user-id request-context headers)
                        :extra-fields {:document-name (:Name document)
-                                      :schema spec-key}
-                       :concept-sub-type concept-sub-type)
+                                      :schema spec-key})
        :spec-key spec-key
        :spec-version spec-version
        :provider-id provider-id
@@ -155,13 +139,13 @@
                                         (dissoc save-collection-result :name)))))
 
 (defn create-generic-document
-  [request]
   "Check a document for fitness to be ingested, and then ingest it. Records can
    be rejected for the following reasons:
    * unsupported schema
    * failed schema
    * failed validation rules (external) (pending)
    * Document name not unique"
+  [request]
   (let [res (prepare-generic-document request)
         headers (:headers request)
         {:keys [spec-key spec-version provider-id native-id request-context concept]} res
@@ -171,8 +155,8 @@
     (ingest-document request-context concept headers)))
 
 (defn read-generic-document
-  [request]
   "Read a document from the Native ID and return that document"
+  [request]
   (let [{:keys [route-params request-context params]} request
         provider-id (:provider params)
         native-id (:native-id route-params)
@@ -181,9 +165,9 @@
     (mdb2/find-concepts request-context query-params concept-type {:raw? true})))
 
 (defn update-generic-document
-  [request]
   "Update a generic document to the database and elastic search, return 204 and
    not the document because the user already has the document"
+  [request]
   (let [res (prepare-generic-document request)
         headers (:headers request)
         {:keys [spec-key spec-version provider-id native-id request-context concept]} res
