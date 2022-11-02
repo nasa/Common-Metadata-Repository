@@ -15,7 +15,6 @@
 
 (defn normalize-params
   [params]
-  (log/debug params)
   (->> params
        (map (fn [[k v]] [(normalize-param k) v]))
        (into {})))

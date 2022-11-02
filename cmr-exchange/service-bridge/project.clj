@@ -213,11 +213,11 @@
                      ["clean"]
                      ["lint"]
                      ["check-sec"]
+                     ["check-vers"]
                      ["ltest" ":unit"]
                      ["junit" ":unit"]
                      ["ubercompile"]
-                     ["build-uberjar"]
-                     ["check-vers"]]
+                     ["build-uberjar"]]
             ;; Build without version or security check.
             "build-no-check" ["do"
                               ["clean"]

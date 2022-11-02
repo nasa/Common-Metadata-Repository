@@ -87,10 +87,10 @@
             "build" ["do"
                      ["clean"]
                      ["check-sec"]
+                     ["check-vers"]
                      ["ltest" ":unit"]
                      ["ubercompile"]
-                     ["build-uberjar"]
-                     ["check-vers"]]
+                     ["build-uberjar"]]
             ;; Installing
             "install" ["do"
                        ["clean"]

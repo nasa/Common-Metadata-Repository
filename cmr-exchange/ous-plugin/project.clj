@@ -136,11 +136,11 @@
                      ["clean"]
                      ["lint"] 
                      ["check-sec"]
+                     ["check-vers"]
                      ["ltest" ":unit"]
                      ["junit" ":unit"]
                      ["ubercompile"]
-                     ["build-uberjar"]
-                     ["check-vers"]]
+                     ["build-uberjar"]]
             ;; Installing locally
             "install" ["do"
                        ["clean"]

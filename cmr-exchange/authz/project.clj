@@ -68,10 +68,10 @@
             "build" ["do"
                      ["clean"]
                      ["check-sec"]
+                     ["check-vers"]
                      ["ltest" ":unit"]
                      ["ubercompile"]
-                     ["build-uberjar"]
-                     ["check-vers"]]
+                     ["build-uberjar"]]
             "build-full" ["do"
                           ["ltest" ":unit"]
                           ["ubercompile"]

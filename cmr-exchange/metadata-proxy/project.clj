@@ -157,11 +157,11 @@
             "build" ["do"
                      ["clean"]
                      ["check-sec"]
+                     ["check-vers"]
                      ["ltest" ":unit"]
                      ["junit" ":unit"]
                      ["ubercompile"]
-                     ["build-uberjar"]
-                     ["check-vers"]]
+                     ["build-uberjar"]]
             "build-full" ["do"
                           ["ltest" ":unit"]
                           ["generate-static"]
