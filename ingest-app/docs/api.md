@@ -549,11 +549,18 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 A new variable ingest endpoint is provided to ensure that variable association is created at variable ingest time.
 Variable concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/collections/<collection-concept-id>/<collection-revision-id>/variables/<native-id>`.  `<collection-revision-id>` is optional. The response will include the [concept id](#concept-id),[revision id](#revision-id), variable-association and associated-item.
 
+Variable associations can also have custom data to describe or augment the relationship. CMR makes no use of this extra data, but clients may use the information to derive a meaning from the relationship. Association Data can be any valid JSON. When providing Variable Association Data, the API requires that the variable and data be anotated in the PUT with URI style variable names. The Variable metadata must be assigned to `content=` and Association Data is assigned to `data=`.
+
+Both URI variables can be sent to CMR using multiple `-d` flags or in one `-d` attribute separated with an ampersand (`&`). When updating, association data will overwrite any existing association data from the previous revision. It is important to know that sending no data will effectively clear out existing data.
+
 Note:
 
 1. There is no more fingerprint check at variable's ingest/update time because the existing fingerprint is obsolete. The new variable uniqueness is defined by variable name and the collection it's associated with and is checked at variable association creation time.
 2. When using the new variable ingest endpoint to update a variable, the association will be updated too. There can be one and only one association for each variable, with or without collection revision info. This decision is based on the feedback from NSIDC that there is no need for a variable to be associated with multiple revisions of a collection. When a new association info is passed in, the old one will be replaced, when the exact same association info is passed in, a new revision of the old association is created.
 3. MeasurementNames must conform to values specified by the KMS list: [Measurement Names](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/MeasurementName?format=csv).
+4. When using multiple `-d` flags, curl will add a `&` between all data blocks. When not using curl, this must be done in code or CMR will not be able to accept both variable and data.
+
+Only Variable, no Data:
 
 ```
 curl -i -XPUT \
@@ -576,6 +583,32 @@ curl -i -XPUT \
   \"DimensionsName\":\"H2OFunc\",
   \"DataType\":\"float32\"}"
 ```
+
+Both Variable and Data:
+
+```
+curl -i -XPUT \
+  -H "Content-type: application/vnd.nasa.cmr.umm+json" \
+  -H "Authorization: Bearer XXXX" \
+  %CMR-ENDPOINT%/collections/C1200000005-PROV1/1/variables/sampleVariableNativeId33 \
+  -d \
+"content={\"ValidRange\":{},
+  \"Dimensions\":\"11\",
+  \"Scale\":\"1.0\",
+  \"Offset\":\"0.0\",
+  \"FillValue\":\"-9999.0\",
+  \"Units\":\"m\",
+  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
+                        \"Topic\":\"sk-B\",
+                        \"Term\":\"sk-C\"}],
+  \"Name\":\"A-name\",
+  \"VariableType\":\"SCIENCE_VARIABLE\",
+  \"LongName\":\"A long UMM-Var name\",
+  \"DimensionsName\":\"H2OFunc\",
+  \"DataType\":\"float32\"}" \
+  -d "data={\"XYZ\": \"XYZ\", \"allow-regridding\": True}\"
+```
+
 #### Successful Response in XML
 
 ```

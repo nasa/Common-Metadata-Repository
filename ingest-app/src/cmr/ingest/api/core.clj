@@ -16,7 +16,9 @@
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.echo.tokens :as tokens])
+   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.common.util :as util]
+   [ring.util.codec :as ring-codec])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -217,27 +219,58 @@
     concept))
 
 (defn read-body!
-  "Returns the body content string by slurping the request body.
-  This function has the side effect of emptying the request body.
-  Don't try to read the body again after calling this function."
+   "Returns the body content string by slurping the request body.
+    This function has the side effect of emptying the request body.
+    Don't try to read the body again after calling this function."
   [body]
   (string/trim (slurp body)))
+
+(defn read-multiple-body!
+  "Returns the body content string by slurping the request body. This function
+   has the side effect of emptying the request body. Don't try to read the body
+   again after calling this function.
+
+   Note, for testing/reuse use the three parameter function which takes a string
+   and makes fewer assupmtions about the content of the body.
+
+   For some calls with curl, users may send two -d flags, for example: one for
+   variables, and a second with the payload. Curl will transmit these two
+   sections with an ampersand between them. To be HTTP complient, each section
+   needs to have a name and = sign to match the value. The first two sections
+   will be split and returned as different items in array, otherwise an array
+   with one item is returned."
+  [body]
+  (let [body-str (read-body! body)]
+    (if (and ;;be flexible on location of parameters
+         (some? (re-matches (re-pattern (str ".*content=\\{.+\\}")) body-str))
+         (some? (re-matches (re-pattern (str ".+=.+&.+=.+")) body-str))
+         (some? (re-matches (re-pattern (str ".*data=\\{.+\\}")) body-str)))
+      (let [data (-> body-str
+                     (string/replace "&" "%26") ;; content may have URLs with & in them
+                     (string/replace
+                      (str "}%26data={") ;; was changed with all the others,
+                      (str "}&data={")) ;; but this one is special, switch it back
+                     (ring-codec/form-decode))] ;; split on our special deleminator
+        [(get data "content") (get data "data")])
+      [body-str])))
 
 (defn- metadata->concept
   "Create a metadata concept from the given metadata"
   [concept-type metadata content-type headers]
-  (-> {:metadata metadata
+  (-> {:metadata (first metadata)
+       :data (second metadata) ;; may be nil if not provided
        :format (mt/keep-version content-type)
        :concept-type concept-type}
       (set-concept-id headers)
-      (set-revision-id headers)))
+      (set-revision-id headers)
+      (util/remove-nil-keys)))
 
 (defn body->concept!
   "Create a metadata concept from the given request body.
   This function has the side effect of emptying the request body.
   Don't try to read the body again after calling this function."
   ([concept-type body content-type headers]
-   (let [metadata (read-body! body)]
+   (let [metadata (read-multiple-body! body)]
      (metadata->concept concept-type metadata content-type headers)))
   ([concept-type native-id body content-type headers]
    (assoc (body->concept! concept-type body content-type headers)

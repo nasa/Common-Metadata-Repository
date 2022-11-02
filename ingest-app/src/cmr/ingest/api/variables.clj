@@ -39,23 +39,23 @@
      (lt-validation/validate-launchpad-token request-context)
      (api-core/verify-provider-exists request-context provider-id)
      (acl/verify-ingest-management-permission
-       request-context :update :provider-object provider-id)
+      request-context :update :provider-object provider-id)
      (common-enabled/validate-write-enabled request-context "ingest")
      ;; Ensures the associated collection is visible and not deleted.
      (v/validate-variable-associated-collection
-       request-context coll-concept-id coll-revision-id)
+      request-context coll-concept-id coll-revision-id)
      (let [concept (validate-and-prepare-variable-concept concept)
-           {concept-format :format metadata :metadata} concept
+           {concept-format :format metadata :metadata data :data} concept
            variable (spec/parse-metadata request-context :variable concept-format metadata)
            validate-var-result (v/umm-spec-validate-variable
-               variable request-context (not (ingest-config/validate-umm-var-keywords)))
+                                variable request-context (not (ingest-config/validate-umm-var-keywords)))
            concept-with-user-id
-            (util/remove-nil-keys
-              (-> concept
-                  (api-core/set-user-id request-context headers)
-                  (assoc :coll-concept-id coll-concept-id
-                         :coll-revision-id (when coll-revision-id
-                                             (read-string coll-revision-id)))))
+           (util/remove-nil-keys
+            (-> concept
+                (api-core/set-user-id request-context headers)
+                (assoc :coll-concept-id coll-concept-id
+                       :coll-revision-id (when coll-revision-id
+                                           (read-string coll-revision-id)))))
            ;; Log the ingest attempt
            _ (info (format "Ingesting variable %s from client %s"
                            (api-core/concept->loggable-string concept-with-user-id)
@@ -64,13 +64,12 @@
            concept-to-log (api-core/concept-with-revision-id concept-with-user-id save-variable-result)]
        ;; Log the successful ingest, with the metadata size in bytes.
        (api-core/log-concept-with-metadata-size concept-to-log request-context)
-       (api-core/generate-ingest-response headers 
+       (api-core/generate-ingest-response headers
                                           ;; if validate-var-result is truthy here, then it contains warnings
                                           (if (seq validate-var-result)
-                                            (merge save-variable-result 
+                                            (merge save-variable-result
                                                    {:warnings (errors/errors->message validate-var-result)})
-                                            save-variable-result))
-       ))))
+                                            save-variable-result))))))
 
 (defn delete-variable
   "Deletes the variable with the given provider id and native id."

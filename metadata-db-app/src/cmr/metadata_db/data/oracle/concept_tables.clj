@@ -133,7 +133,20 @@
   (doseq [concept-type all-provider-concept-types]
     (let [table-name (get-table-name provider concept-type)
           sequence-name (str table-name "_seq")]
-      (info "Dropping table" table-name)
-      (j/db-do-commands db (str "DROP TABLE " table-name))
-      (info "Dropping sequence" sequence-name)
-      (j/db-do-commands db (str "DROP SEQUENCE " sequence-name)))))
+      ;; there is a chance that when switching from in-memory database to sql
+      ;; database that only one of these table are created causing errors when
+      ;; a test provider is being reset. Each drop is independent now so that
+      ;; cmr can be started while in a bad state.
+      (try
+        (do
+          (info "Dropping table" table-name)
+          (j/db-do-commands db (str "DROP TABLE " table-name)))
+        (catch java.sql.BatchUpdateException bue
+          (warn "Could not drop table [" table-name "] because " (.getMessage bue))))
+
+      (try
+        (do
+          (info "Dropping sequence" sequence-name)
+          (j/db-do-commands db (str "DROP SEQUENCE " sequence-name)))
+        (catch java.sql.BatchUpdateException bue
+          (warn "Could not drop table [" table-name "] because " (.getMessage bue)))))))
