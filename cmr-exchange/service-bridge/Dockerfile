@@ -1,5 +1,4 @@
 FROM clojure:openjdk-8-lein
-COPY . /app
-EXPOSE 3013
+
+COPY ./target/cmr-service-bridge-1.6.13-SNAPSHOT-standalone.jar /app/cmr-standalone.jar
 WORKDIR /app
-CMD "lein" "trampoline" "run"
