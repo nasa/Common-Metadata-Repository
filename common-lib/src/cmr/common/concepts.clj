@@ -24,9 +24,9 @@
    Expected usage is to pass in pluralize-concept-type."
   ([] (get-generic-concept-types-array identity))
   ([modifier-func]
-   (reduce (fn [coll, item] (conj coll (modifier-func item)))
+   (reduce (fn [coll, item] (conj coll (modifier-func (key item))))
            []
-           (keys generic-concept-types->concept-prefix))))
+           (common-generic/approved-generic-concept-prefixes))))
 
 (defn generic-concept?
   "Return true if the passed in concept is a generic concept"
