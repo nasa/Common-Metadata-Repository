@@ -37,6 +37,17 @@ docker run --rm -it -p 8182:8182 tinkerpop/gremlin-server
 
 If you want to load existing local data into Gremlin Server, you can add `-v <path_to_cmr_graph-db>/data:/data` to map a local directory with data to the docker instance. Replace the `<path_to_cmr_graphdb>` with the path to your local data directory.
 
+The Gremlin server can be started with multiple configurations. By default it uses a websockets but, it can be configured to use http by running:
+
+```
+docker run --rm -p 8182:8182 tinkerpop/gremlin-server conf/gremlin-server-rest-modern.yaml
+```
+
+Http requests can then be sent to the gremlin-server using the form:
+
+```
+curl -XPOST http://localhost:8182  -d '{"gremlin":"g.V().count()"}'
+```
 ### Gremlin Console
 The Gremlin Console is a REPL environment that allows user to experiment with a variety of TinkerPop-related activities, such as loading data, administering graphs and working out complex traversals. We use Gremlin Console to connect to the Gremlin Server and explore the graph db in local development. To start it, run:
 
@@ -125,57 +136,6 @@ To bootstrap all collections in a specific provider (e.g LPDAAC_TS2), send the f
 CMR graph database is a Neptune database hosted on AWS. Currently, we index collections and their related urls, projects, platforms and instruments as vertices in the graph database. See the following diagram for details:
 
 ![CMR Collection GraphDB Diagram](images/cmr_collection_graphdb_diagram.png)
-
-### Access via CMR graphdb endpoint
-
-CMR graphdb access endpoint is at: https://cmr.sit.earthdata.nasa.gov/graphdb. Users can use the [Gremlin API](https://tinkerpop.apache.org/gremlin.html) to explore the relationships that are indexed in the graph database. Here are some examples:
-
-To see the total number of vertices in the graph db:
-```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().count()"}'
-```
-
-To see the content of the first 10 vertices in the graph db:
-```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().limit(10)"}'
-```
-
-To see all collections that share the same relatedUrl URL with the collection (C1200400842-GHRC):
-```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"collection\").has(\"id\", \"C1200400842-GHRC\").outE(\"linkedBy\").inV().hasLabel(\"relatedUrl\").inE(\"linkedBy\").outV().hasLabel(\"collection\").valueMap()"}'
-```
-
-To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared relatedUrl:
-```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"collection\", \"id\", \"C1200400842-GHRC\").as(\"a\").outE(\"linkedBy\").inV().project(\"shared-link\", \"id\").by(\"url\").by(inE(\"linkedBy\").outV().hasLabel(\"collection\").where(neq(\"a\")).values(\"id\").fold())"}'
-```
-
-To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared projects:
-```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"collection\", \"id\", \"C1200400842-GHRC\").as(\"a\").outE(\"includedIn\").inV().project(\"project\", \"id\").by(\"name\").by(inE(\"includedIn\").outV().hasLabel(\"collection\").where(neq(\"a\")).values(\"id\").fold())"}'
-```
-
-To see all collections that are associated with a collection (C1200400842-GHRC) with the result grouped by shared platform and instruments:
-```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().has(\"collection\", \"id\", \"C1200400842-GHRC\").as(\"a\").outE(\"acquiredBy\").inV().project(\"platformInstrument\", \"id\").by(valueMap()).by(inE(\"acquiredBy\").outV().hasLabel(\"collection\").where(neq(\"a\")).values(\"id\").fold())"}'
-```
-
-For users have write access to graphdb, they can also add vertices and edges between vertices. For example:
-
-To create a collection vertex:
-```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.addV(\"collection\").property(\"title\", \"GPM Ground Validation Precipitation Imaging Package (PIP) ICE POP V1\").property(\"id\", \"C1233352242-GHRC\").property(\"doi\", \"10.5067/GPMGV/ICEPOP/PIP/DATA101\")"}'
-```
-
-To create a relatedUrl vertex:
-```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.addV(\"relatedUrl\").property(\"url\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\").property(\"title\", \"NASA Participation in the International Collaborative Experiments for Pyeongchang 2018 Olympic and Paralympic Winter Games (ICE-POP 2018)\")"}'
-```
-
-To create an edge from the above relatedUrl vertex to the collection vertex:
-```
-curl -XPOST https://cmr.sit.earthdata.nasa.gov/graphdb  -d '{"gremlin":"g.V().hasLabel(\"collection\").has(\"id\", \"C1233352242-GHRC\").addE(\"linkedBy\").to(g.V().hasLabel(\"relatedUrl\").has(\"url\", \"https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/20180003615.pdf\"))"}'
-```
 
 ### Access via SSH tunnel and Gremlin Console locally
 For users who have access to AWS Neptune endpoint via an internal jumpbox, they can set up SSH tunnel to the Neptune endpoint and start Gremlin Console locally to connect to the Neptune endpoint. Then, they can use Gremlin console to explore the graph database as if it is local.
