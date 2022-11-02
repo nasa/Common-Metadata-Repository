@@ -135,8 +135,8 @@
             "build" ["do"
                      ["clean"]
                      ["lint"] 
-                     ["check-sec"]
                      ["check-vers"]
+                     ["check-sec"] 
                      ["ltest" ":unit"]
                      ["junit" ":unit"]
                      ["ubercompile"]

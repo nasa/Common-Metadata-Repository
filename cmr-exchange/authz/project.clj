@@ -67,8 +67,8 @@
                           ["ltest" ":unit"]]
             "build" ["do"
                      ["clean"]
-                     ["check-sec"]
                      ["check-vers"]
+                     ["check-sec"] 
                      ["ltest" ":unit"]
                      ["ubercompile"]
                      ["build-uberjar"]]
