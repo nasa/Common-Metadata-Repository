@@ -138,7 +138,7 @@
 (defn read-generic-document
   "Read a document from the Native ID and return that document"
   [request]
-  (let [{:keys [route-params request-context _params]} request
+  (let [{:keys [route-params request-context]} request
         provider-id (:provider-id route-params)
         native-id (:native-id route-params)
         concept-type (concept-type->singular route-params)
@@ -151,7 +151,7 @@
   [request]
   (let [res (prepare-generic-document request)
         headers (:headers request)
-        {:keys [spec-key spec-version _provider-id _native-id request-context concept]} res
+        {:keys [spec-key spec-version request-context concept]} res
         metadata (:metadata concept)]
     (validate-document-against-schema spec-key spec-version metadata)
     (ingest-document request-context concept headers)))
@@ -161,7 +161,7 @@
    if successful with the concept id and revision number. A 404 status is returned if the concept has
    already been deleted."
   [request]
-  (let [{:keys [route-params _request-context _headers params]} request
+  (let [{:keys [route-params params]} request
         provider-id (or (:provider params)
                         (:provider-id route-params))
         native-id (:native-id route-params)
