@@ -145,6 +145,7 @@
    [cmr.common-app.config :as config]
    [cmr.common-app.site.pages :as pages]
    [cmr.common.generics :as gconfig]
+   [cmr.common.generics-documentation :as gdocs]
    [compojure.handler :as handler]
    [compojure.route :as route]
    [compojure.core :refer :all]
@@ -174,7 +175,7 @@
 (defn- read-generic-markdown
   "Reads the file-name mark-down for all concepts"
   [file-name]
-  (->  (gconfig/all-generic-docs file-name)
+  (->  (gdocs/all-generic-docs file-name)
        (md->html)
        (selmer/render {})))
 
@@ -244,12 +245,12 @@
                 cmr-example-collection-id (str "C1234567-" site-example-provider)
                 doc-type (nth (re-find #"/(.*)/" (str page)) 1)
                 generic-doc-body (read-generic-markdown doc-type)
-                generic-doc-toc (read-generic-markdown-toc (gconfig/all-generic-docs-toc doc-type options))]
+                generic-doc-toc (read-generic-markdown-toc (gdocs/all-generic-docs-toc doc-type options))]
             {:status 200
              :headers {"Content-Type" "text/html; charset=utf-8"}
              :body (-> resource
                        slurp
-                       (string/replace "%GENERIC-TABLE-OF-CONTENTS%" (gconfig/format-toc-into-doc generic-doc-toc))
+                       (string/replace "%GENERIC-TABLE-OF-CONTENTS%" (gdocs/format-toc-into-doc generic-doc-toc))
                        (string/replace "%GENERIC-DOCS%" generic-doc-body)
                        (string/replace "%CMR-ENDPOINT%" cmr-root)
                        (string/replace "%CMR-RELEASE-VERSION%" (config/release-version))

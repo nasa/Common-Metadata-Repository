@@ -233,6 +233,12 @@
              :serviceoption ["1.0.0"]}
    :parser #(json/parse-string % true)})
 
+(defconfig approved-pipeline-documentation
+  "This is the feature toggle for activating documentation for generic types
+   it's default state is the same value as the approved-pipeline-documents but,
+   can be managaged seperately"
+  {:default (approved-pipeline-documents)
+   :parser #(json/parse-string % true)})
 
 (defn check-env-vars
   "Checks any environment variables starting with CMR_ are recognized as known environment variables.

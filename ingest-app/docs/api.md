@@ -55,7 +55,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
         * [POST - Translate collection metadata.](#translate-collection)
     * [/translate/granule](#translate-granule-endpoint)
         * [POST - Translate granule metadata.](#translate-granule)
-* [Bulk Updates](#bulk-update-collection-endpoint)
+* [Bulk Updates](#bulk-update-collection)
     * [/providers/\<provider-id\>/bulk-update/collections](#bulk-update-collection-endpoint)
         * [POST - Collection bulk update](#collection-bulk-update)
     * [/providers/\<provider-id\>/bulk-update/granules](#bulk-update-granule-endpoint)
