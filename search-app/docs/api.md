@@ -213,7 +213,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
   * [Associate Concepts](#generic-association)
     * [Associate Multiple Concepts](#generic-multi-association)
     * [Associate Concepts By Revision](#generic-association-with-revisions)
-    * [Associate Concepts With Details](#generic-association-with-payloads)
+    * [Associate Concepts With Details](#generic-association-with-details)
     * [Search For Associations](#generic-association-search)
     * [Disassociate Concepts](#generic-association-delete)
     * [Disassociate Multiple Concepts](#generic-association-multi-delete)
@@ -5419,7 +5419,7 @@ A concept of any type can be associated to another concept of any type using the
 __Example__
 
 ```
-curl -v -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000000-PROV1" -d '[{"concept_id": "S1200000001-PROV1"}]'
+curl -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000000-PROV1" -d '[{"concept_id": "S1200000001-PROV1"}]'
 ```
 __Example Response__
 ```
@@ -5437,7 +5437,7 @@ __Example Response__
 Multiple associaitons with or without association details can be made to a specified concept on a single request by passing multiple concept ids in a list form. The response returns the association cocncept and the concept being associated.
 __Example__
 ```
-curl -v -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000006-PROV1" -d '[{"concept_id":"S1200000008-PROV1"},{"concept_id": "C1200000007-PROV1"}]'
+curl -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000006-PROV1" -d '[{"concept_id":"S1200000008-PROV1"},{"concept_id": "C1200000007-PROV1"}]'
 ```
 __Example Response__
 ```
@@ -5448,7 +5448,7 @@ An optional "revision_id" field can be passed into the association to create an 
 __Example__
 
 ```
-curl -v -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000011-PROV1" -d \ '[{
+curl -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000011-PROV1" -d \ '[{
         "concept_id": "SO1200000012-PROV1",
         "revision_id ": 2
 }]'
@@ -5459,10 +5459,10 @@ __Example Response__
 [{"generic_association":{"concept_id":"GA1200000013-CMR","revision_id":1},"associated_item":{"concept_id":"SO1200000012-PROV1"}}]%
 ```
 
-#### <a name="generic-association-with-payloads"></a> Associate Concepts With Details
+#### <a name="generic-association-with-details"></a> Associate Concepts With Details
 __Example__
 ```
-curl -v -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000000-PROV1" -d '[{"concept_id": "S1200000001-PROV1", "data": {"field": "value", "another_field": {"XYZ": "ZYX"}}}]'
+curl -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000000-PROV1" -d '[{"concept_id": "S1200000001-PROV1", "data": {"field": "value", "another_field": {"XYZ": "ZYX"}}}]'
 ```
 __Example Response__
 ```
@@ -5484,7 +5484,7 @@ Associations can be queried by searching for one of the assocaited concepts usin
 __Example__
 
 ```
-curl -g -H "Authorization Bearer: XXXXX" "%CMR-ENDPOINT%/grids?concept_id=GRD1200000000-PROV1"
+curl -H "Authorization Bearer: XXXXX" "%CMR-ENDPOINT%/grids?concept_id=GRD1200000000-PROV1"
 
 ```
 __Example Response with associated concepts__
@@ -5535,7 +5535,7 @@ A concept identified by its concept id can be dissociated from another concept b
 __Example__
 
 ```
-curl -i -X DELETE -H "Content-Type:application/json" -H "Authorization: Bearer XXXXX" "%CMR-ENDPOINT%/associate/GRD1200441922-PROV1" -d '[
+curl -XDELETE -H "Content-Type:application/json" -H "Authorization: Bearer XXXXX" "%CMR-ENDPOINT%/associate/GRD1200441922-PROV1" -d '[
   {"concept_id": "SO1200000001-PROV1"}]
 
 ```
@@ -5549,7 +5549,7 @@ Multiple disassocaitions to a specified concept are possible by passing multiple
 
 __Example__
 ```
-curl -v -XDELETE -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000006-PROV1" -d
+curl -XDELETE -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json" "%CMR-ENDPOINT%/associate/GRD1200000006-PROV1" -d
 '[{
       "concept_id":"S1200000008-PROV1"},
     {
