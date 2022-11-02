@@ -26,6 +26,29 @@
 (use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"})
                                     grant-all-generic-permission-fixture]))
 
+(defn load-resource
+  "Using the passed in concept-type name, load in the directory
+  to find all available schema versions to test against."
+  [name]
+  (let [path (str "schemas/" name)
+        thr (Thread/currentThread)
+        ldr (.getContextClassLoader thr)]
+    (.getResourceAsStream ldr path)))
+
+(defn get-files-per-concept
+  "Using the passed in concept type name, find all concept-type version
+  directories and build a map of concept-type name with a list of example
+  metadata.json files. The structure looks like:
+  {\"grid\" (\"schemas/resources/schemas/grid/v0.0.1/metadata.json\")}"
+  [generic-concept-type-name]
+  (let [is (io/input-stream (load-resource generic-concept-type-name))
+        dir-names (with-open [rdr (io/reader is)]
+                    (vec (line-seq rdr)))
+        filtered-dir-names (remove nil? (map #(re-find #"v\d\.\d.*" %) dir-names))]
+    {generic-concept-type-name
+     (map #(str "schemas/" generic-concept-type-name "/" % "/metadata.json")
+          filtered-dir-names)}))
+
 (defn search-request
   "This function will make a request to one of the generic URLs using the provided
    provider and native id"
@@ -36,38 +59,14 @@
         :throw-exceptions false}
        (client/request))))
 
-(defn find-example-metadata-holding-dirs
-  "Goes through all of the directories and only uses the ones that contain v.#.#* in them.
-  These are the directories that contain the metadata.json example files. It is done this
-  way to support muliple versions with any number of minor versions in them."
-  [concept-file-structure]
-  (let [concept-type-name (first (keys concept-file-structure))]
-    {concept-type-name (->> (get concept-file-structure concept-type-name)
-                            (map #(re-find #".*/v\d\.\d.*" (str %)))
-                            (remove nil?)
-                            (flatten))}))
-
-
-(defn set-concept-type-to-file-structure
-  "This function sets up a map structure for the all-generic-search-results-test.
-   The structure looks like:
-   {\"grid\" (.../schemas/resources/schemas/grid/v0.0.1)}"
-  [generic-concept-type-name]
-  {generic-concept-type-name (-> (str "schemas/" generic-concept-type-name)
-                                 (io/resource)
-                                 (io/file)
-                                 (.listFiles)
-                                 (seq))})
-
 (defn get-example-dirs
   "Creates a list of maps. Each map consists of a concept-type name as the key
   and a list of metadata example files for each."
   []
   (let [generic-concept-type-names (->> (concepts/get-generic-concept-types-array)
                                         (map #(name %))
-                                        (remove #{"generic" "index"}))
-        dir-list (map set-concept-type-to-file-structure generic-concept-type-names)]
-    (map #(find-example-metadata-holding-dirs %) dir-list)))
+                                        (remove #{"generic" "index"}))]
+    (map get-files-per-concept generic-concept-type-names)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
@@ -79,7 +78,7 @@
     (let [concept-type-string (key (first (seq example-dirs)))
           dir-list (val (first (seq example-dirs)))]
       (doseq [dir dir-list]
-        (let [file (json/parse-string (slurp (str dir "/metadata.json")) true)
+        (let [file (json/parse-string (slurp (io/resource dir)) true)
               native-id (format "Generic-Test-%s" (UUID/randomUUID))
               name (:Name file)
               plural-concept-type-name (inf/plural concept-type-string)
