@@ -1,6 +1,7 @@
 (ns cmr.ingest.api.core
   "Supports the ingest API definitions."
   (:require
+   [cheshire.core :as json]
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [cmr.acl.core :as acl]
@@ -225,6 +226,9 @@
   [body]
   (string/trim (slurp body)))
 
+
+(defn tee [any] (println "tee:" any) any)
+
 (defn read-multiple-body!
   "Returns the body content string by slurping the request body. This function
    has the side effect of emptying the request body. Don't try to read the body
@@ -239,19 +243,17 @@
    needs to have a name and = sign to match the value. The first two sections
    will be split and returned as different items in array, otherwise an array
    with one item is returned."
+
+
+;; new rule, json always in, but look for 2 key version vs any number of keys
+
   [body]
-  (let [body-str (read-body! body)]
-    (if (and ;;be flexible on location of parameters
-         (some? (re-matches (re-pattern (str ".*content=\\{.+\\}")) body-str))
-         (some? (re-matches (re-pattern (str ".+=.+&.+=.+")) body-str))
-         (some? (re-matches (re-pattern (str ".*data=\\{.+\\}")) body-str)))
-      (let [data (-> body-str
-                     (string/replace "&" "%26") ;; content may have URLs with & in them
-                     (string/replace
-                      (str "}%26data={") ;; was changed with all the others,
-                      (str "}&data={")) ;; but this one is special, switch it back
-                     (ring-codec/form-decode))] ;; split on our special deleminator
-        [(get data "content") (get data "data")])
+  (let [body-str (read-body! body)
+        body-map (json/parse-string body-str)
+        content (get body-map "content")
+        data (get body-map "data")]
+    (if (and (some? content) (some? data))
+      [(json/generate-string content) (json/generate-string data)]
       [body-str])))
 
 (defn- metadata->concept
@@ -271,7 +273,7 @@
   Don't try to read the body again after calling this function."
   ([concept-type body content-type headers]
    (let [metadata (read-multiple-body! body)]
-     (metadata->concept concept-type metadata content-type headers)))
+     (tee (metadata->concept concept-type metadata content-type headers))))
   ([concept-type native-id body content-type headers]
    (assoc (body->concept! concept-type body content-type headers)
           :native-id native-id))
