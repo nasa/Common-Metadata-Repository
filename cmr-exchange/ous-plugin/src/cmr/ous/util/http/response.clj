@@ -44,23 +44,27 @@
   (response/error-handler status headers body (format errors/status-code status)))
 
 (defn general-response-handler
+  "Handles the response and returns body and headers"
   ([response]
     (general-response-handler response identity))
   ([response parse-fn]
     (response/general-response-handler response error-handler parse-fn)))
 
 (defn body-only-response-handler
+  "Returns only the body from a response"
   ([response]
    (body-only-response-handler response identity))
   ([response parse-fn]
    (response/body-only-response-handler response error-handler parse-fn)))
 
 (defn headers-only-response-handler
+  "Returns only the headers from a resposne"
   ([response]
    (body-only-response-handler response identity))
   ([response parse-fn]
    (response/headers-only-response-handler response error-handler parse-fn)))
 
+;; Wrapped for JSON specific use
 (def general-json-handler #(general-response-handler % response/parse-json-result))
 (def body-json-handler #(body-only-response-handler % response/parse-json-result))
 (def headers-json-handler #(headers-only-response-handler % response/parse-json-result))

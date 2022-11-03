@@ -22,12 +22,6 @@
   ([req field value]
    (assoc-in req [:headers field] value)))
 
-(defn add-header-set
-  ([field-values]
-   (add-header-set {} field-values))
-  ([req field-values]
-   (map #(add-header req (nth % 0) (nth % 1)) field-values)))
-
 (defn add-accept
   ([value]
    (add-accept {} value))
