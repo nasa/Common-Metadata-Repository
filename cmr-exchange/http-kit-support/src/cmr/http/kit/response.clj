@@ -191,7 +191,7 @@
   [response err-handler parse-fn field]
   (field (general-response-handler response err-handler parse-fn)))
 
-;;Specific versions of one-field-response-handler
+;; Specific versions of one-field-response-handler
 (def body-only-response-handler #(one-field-response-handler %1 %2 %3 :body))
 (def headers-only-response-handler #(one-field-response-handler %1 %2 %3 :headers))
 
@@ -199,7 +199,7 @@
 (def json-handler #(general-response-handler % error-handler parse-json-result))
 (def xml-handler #(general-response-handler % error-handler parse-xml-body))
 
-;;Handlers for extracting different fields from general-response-handler
+;; Handlers for extracting different fields from general-response-handler
 (def json-body-handler #(body-only-response-handler % error-handler parse-json-result))
 (def json-header-handler #(headers-only-response-handler % error-handler parse-json-result))
 
