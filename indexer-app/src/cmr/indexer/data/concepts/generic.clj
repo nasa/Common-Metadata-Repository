@@ -15,13 +15,6 @@
    [cmr.indexer.data.elasticsearch :as esearch]
    [cmr.transmit.metadata-db :as meta-db]))
 
-(defn- associations->gzip-base64-str
-  "Returns the gziped base64 string for the given generic associations"
-  [generic-associations concept-id]
-  (when (seq generic-associations)
-    (util/string->gzip-base64
-     (pr-str (assoc-util/assoc-list->assoc-struct generic-associations concept-id)))))
-
 (defmulti field->index
   "Functions which convert a part of metadata to a name-value which can be added
    to an index document. This defmulti is directed by looking for an :Indexer
@@ -107,7 +100,7 @@
          :revision-date revision-date
          :native-id native-id
          :native-id-lowercase native-id
-         :associations-gzip-b64 (associations->gzip-base64-str generic-associations concept-id)}
+         :associations-gzip-b64 (assoc-util/associations->gzip-base64-str generic-associations concept-id)}
         configs (gen-util/only-elastic-preferences (:Indexes index-data))
         ;; now add the configured indexes
         doc (reduce

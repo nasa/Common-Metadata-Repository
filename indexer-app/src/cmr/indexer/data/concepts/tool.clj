@@ -13,7 +13,7 @@
 (defmethod es/parsed-concept->elastic-doc :tool
   [context concept parsed-concept]
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
-                revision-date format extra-fields tool-associations]} concept
+                revision-date format extra-fields tool-associations generic-associations]} concept
         {:keys [tool-name]} extra-fields
         long-name (:LongName parsed-concept)
         tool-type (:Type parsed-concept)
@@ -29,6 +29,7 @@
                      :Organizations]
         keyword-values (keyword-util/concept-keys->keyword-text
                         parsed-concept schema-keys)
+        all-assocs (concat tool-associations generic-associations)
         doc-for-deleted
          {:concept-id concept-id
           :revision-id revision-id
@@ -48,12 +49,9 @@
                              :tool-type-lowercase (string/lower-case tool-type)
                              :long-name long-name
                              :long-name-lowercase (string/lower-case long-name)
-                             :associations-gzip-b64 (util/string->gzip-base64
-                                                     (pr-str
-                                                      (util/remove-map-keys
-                                                       empty?
-                                                       (assoc-util/assoc-list->assoc-struct tool-associations
-                                                                                                    concept-id))))))))
+                             :associations-gzip-b64 (assoc-util/associations->gzip-base64-str
+                                                     all-assocs
+                                                     concept-id)))))
 
 (defn- tool-associations->tool-concepts
   "Returns the tool concepts for the given tool associations."

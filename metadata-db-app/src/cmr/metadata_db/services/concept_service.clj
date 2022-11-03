@@ -858,7 +858,22 @@
                           :exclude-metadata true
                           :latest true})]
       ;; create tool association tombstones and queue the tool association delete events
-      (tombstone-associations context assoc-type search-params false :tool))))
+      (tombstone-associations context assoc-type search-params false :tool)))
+   (when (= :generic-association assoc-type)
+    (let [search-params1 (cutil/remove-nil-keys
+                          {:concept-type assoc-type
+                           :source-concept-identifier concept-id
+                           :source-revision-id revision-id
+                           :exclude-metadata true
+                           :latest true})
+          search-params2 (cutil/remove-nil-keys
+                          {:concept-type assoc-type
+                           :associated-concept-id concept-id
+                           :associated-revision-id revision-id
+                           :exclude-metadata true
+                           :latest true})]
+      (tombstone-associations context assoc-type search-params1 false :tool)
+      (tombstone-associations context assoc-type search-params2 false :tool))))
 
 (doseq [concept-type (cu/get-generic-concept-types-array)]
   (defmethod delete-associations concept-type
