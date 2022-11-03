@@ -157,7 +157,7 @@
             "build" ["do"
                      ["clean"]
                      ["check-vers"]
-                     ["check-sec"] 
+                     ["check-sec"]
                      ["ltest" ":unit"]
                      ["junit" ":unit"]
                      ["ubercompile"]

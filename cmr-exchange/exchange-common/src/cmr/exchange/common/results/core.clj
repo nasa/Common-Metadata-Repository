@@ -19,8 +19,7 @@
 (defn create
   [results & {:keys [request-id elapsed sa-header hits-header warnings]}]
   (map->CollectionResults
-    (merge {;; Our 'hits' is simplistic for now; will change when we support
-            ;; paging, etc.
+    (merge {
             :hits hits-header
             :took elapsed
             :sa-header sa-header
