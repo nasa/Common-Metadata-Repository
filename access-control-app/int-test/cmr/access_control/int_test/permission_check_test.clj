@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-time.core :as t]
+   [clojure.java.shell :as shell]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.int-test.fixtures :as fixtures]
@@ -919,6 +920,59 @@
             :registered []
             "user1" ["update" "delete"]
             "user2" []))))))
+
+(defn get-permissions-2
+  "Helper to get permissions with the current context and the specified username string or user type keyword and concept ids."
+  [user & concept-ids]
+  (json/parse-string
+    (ac/get-permissions
+      (u/conn-context)
+      (merge {:concept_id concept-ids}
+             (if (keyword? user)
+               {:user_type (name user)}
+               {:user_id user})))))
+
+(deftest permission-get-and-post-request-test
+  (let [token (e/login-guest (u/conn-context))
+        save-basic-collection (fn [short-name]
+                                  (u/save-collection {:entry-title (str short-name " entry title")
+                                                      :short-name short-name
+                                                      :native-id short-name
+                                                      :provider-id "PROV1"}))
+        coll1 (save-basic-collection "coll1")
+        coll2 (save-basic-collection "coll2")
+        coll3 (save-basic-collection "coll3")
+        coll4 (save-basic-collection "coll4")
+        get-coll-permissions #(get-permissions-2 :guest coll1 coll2 coll3 coll4)
+        base-url "http://localhost:3011/permissions"
+        get-url (str base-url
+                  "?user_type=guest"
+                  "&concept_id=" coll1
+                  "&concept_id=" coll2
+                  "&concept_id=" coll3
+                  "&concept_id=" coll4)
+        post-data-body (str "{ \"user_type\" : \"guest\", \"concept_id\" : ["
+                         "\"" coll1 "\", "
+                         "\"" coll2 "\", "
+                         "\"" coll3 "\", "
+                         "\"" coll4 "\""
+                         "] }")]
+
+    (testing "permissions endpoint allows get request"
+      (let [get-response (shell/sh "curl" "-g" "-i" get-url)
+            response-body (second (reverse get-response))]
+        (is (string/includes? (str response-body) coll1))
+        (is (string/includes? (str response-body) coll2))
+        (is (string/includes? (str response-body) coll3))
+        (is (string/includes? (str response-body) coll4))))
+
+    (testing "permissions endpoint allows post request"
+      (let [post-response (shell/sh "curl" "-i" "XPOST" "-H" "Content-Type: application/json" base-url "-d" post-data-body)
+            response-body (second (reverse post-response))]
+        (is (string/includes? (str response-body) coll1))
+        (is (string/includes? (str response-body) coll2))
+        (is (string/includes? (str response-body) coll3))
+        (is (string/includes? (str response-body) coll4))))))
 
 (deftest system-level-permission-check
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
