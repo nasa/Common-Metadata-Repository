@@ -921,17 +921,6 @@
             "user1" ["update" "delete"]
             "user2" []))))))
 
-(defn get-permissions-2
-  "Helper to get permissions with the current context and the specified username string or user type keyword and concept ids."
-  [user & concept-ids]
-  (json/parse-string
-    (ac/get-permissions
-      (u/conn-context)
-      (merge {:concept_id concept-ids}
-             (if (keyword? user)
-               {:user_type (name user)}
-               {:user_id user})))))
-
 (deftest permission-get-and-post-request-test
   (let [token (e/login-guest (u/conn-context))
         save-basic-collection (fn [short-name]
@@ -943,7 +932,7 @@
         coll2 (save-basic-collection "coll2")
         coll3 (save-basic-collection "coll3")
         coll4 (save-basic-collection "coll4")
-        get-coll-permissions #(get-permissions-2 :guest coll1 coll2 coll3 coll4)
+        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)
         base-url "http://localhost:3011/permissions"
         get-url (str base-url
                   "?user_type=guest"
