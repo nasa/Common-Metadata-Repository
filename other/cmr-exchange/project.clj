@@ -7,13 +7,8 @@
 ;; 'lein modules install' will run lein install in every project subdirectory. Lein-modules will
 ;; make sure to build the libraries and applications in the correct order based on the individual
 ;; project dependencies.
-;; 'lein with-profile uberjar modules uberjar' will build uberjars for all of the CMR applications
-;; listed in the uberjar profile.
-;; 'CMR_ELASTIC_PORT=9206 lein modules do clean, install, test-out' will set the elastic port to use
-;; as an environment variable, run clean in all project subdirectories, install in all project
-;; subdirectories, and then test-out in all project subdirectories.
-(defproject nasa-cmr/cmr "0.1.0-SNAPSHOT"
-  :description "Top level project to support all CMR libraries and applications."
+(defproject nasa-cmr/cmr-exchange "0.1.0-SNAPSHOT"
+  :description "Top level project to support all CMR Exchange libraries and applications."
   :plugins [[lein-modules "0.3.11"]
             [lein-shell "0.4.0"]]
   :profiles {:uberjar {:modules {:dirs ["cmr-exchange-common"
