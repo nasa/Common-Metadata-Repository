@@ -15,7 +15,6 @@
                  [org.clojure/core.cache "0.7.1"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [tolitius/xml-in "0.1.0"]] 
-  :plugins [[lein-ancient "0.6.15"]]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
              :security {:plugins [[com.livingsocial/lein-dependency-check "1.4.0"]]
