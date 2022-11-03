@@ -28,37 +28,18 @@
     (errors/throw-service-error
      :invalid-data
      (format "The [%s] schema on version [%s] is not an approved schema. This record cannot be ingested." schema version))
-    (if-some [schema-url (jio/resource (format "schemas/%s/v%s/schema.json"
-                                               (name schema)
-                                               version))]
-      (let [schema-file (slurp schema-url)
-            schema-obj (js-validater/json-string->json-schema schema-file)]
+    (if-some [schema-file (gconfig/read-schema-specification schema version)]
+      (let [schema-obj (js-validater/json-string->json-schema schema-file)]
         (js-validater/validate-json schema-obj raw-json true))
       (errors/throw-service-error
        :invalid-data
        (format "While the [%s] schema with version [%s] is approved, it cannot be found." schema version)))))
 
-(def required-query-parameters
-  "This defines in a map required parameters that are passed in and where they would be
-   located once the http request makes its way through compojure. If there is an error the error
-   messages goes into the cmr.ingest.services.messages.clj file."
-  {:provider messages/provider-does-not-exist})
-
-;; TODO: Generic work: This could be a candidate for a configuration file.
-(defn validate-required-parameter
-  "This function validates that the required parameters are present. If not then throw a service exception to let
-  the end users know what to do."
-  [required-param-to-check request]
-  (let [param-key (first required-param-to-check)
-        msg (second required-param-to-check)
-        value (get-in request [:params param-key])]
-    (when-not value
-      (errors/throw-service-error :invalid-data (msg)))))
-
-(defn validate-any-required-query-parameters
-  [request required-parameters]
-  (doseq [param required-parameters]
-    (validate-required-parameter param request)))
+(defn- concept-type->singular
+  "Common task to convert concepts from their public URL form to their internal
+   form. For example: grids -> grid"
+  [route-params]
+  (common-concepts/singularize-concept-type (:concept-type route-params)))
 
 (defn prepare-generic-document
   "Prepares a document to be ingested so that search can retrieve the contents.
@@ -68,7 +49,7 @@
         provider-id (or (:provider params)
                         (:provider-id route-params))
         native-id (:native-id route-params)
-        concept-type (keyword (:concept-type route-params))
+        concept-type (concept-type->singular route-params)
         _ (lt-validation/validate-launchpad-token request-context)
         _ (api-core/verify-provider-exists request-context provider-id)
         _ (acl/verify-ingest-management-permission
@@ -157,10 +138,10 @@
 (defn read-generic-document
   "Read a document from the Native ID and return that document"
   [request]
-  (let [{:keys [route-params request-context params]} request
-        provider-id (:provider params)
+  (let [{:keys [route-params request-context]} request
+        provider-id (:provider-id route-params)
         native-id (:native-id route-params)
-        concept-type (keyword (:concept-type route-params))
+        concept-type (concept-type->singular route-params)
         query-params (assoc {} :provider-id provider-id :native-id native-id)]
     (mdb2/find-concepts request-context query-params concept-type {:raw? true})))
 
@@ -170,7 +151,7 @@
   [request]
   (let [res (prepare-generic-document request)
         headers (:headers request)
-        {:keys [spec-key spec-version provider-id native-id request-context concept]} res
+        {:keys [spec-key spec-version request-context concept]} res
         metadata (:metadata concept)]
     (validate-document-against-schema spec-key spec-version metadata)
     (ingest-document request-context concept headers)))
@@ -180,18 +161,17 @@
    if successful with the concept id and revision number. A 404 status is returned if the concept has
    already been deleted."
   [request]
-  (let [{:keys [route-params request-context headers params]} request
+  (let [{:keys [route-params params]} request
         provider-id (or (:provider params)
                         (:provider-id route-params))
         native-id (:native-id route-params)
-        concept-type (:concept-type route-params)]
+        concept-type (concept-type->singular route-params)]
     (api-core/delete-concept concept-type provider-id native-id request)))
 
-(defn validate-required-query-parameters
+(defn crud-generic-document
   "This function checks for required parameters. If they don't exist then throw an error, otherwise send the request
    on to the corresponding function."
   [request funct-str]
-  (validate-any-required-query-parameters request required-query-parameters)
   (case funct-str
     :create (create-generic-document request)
     :read (read-generic-document request)

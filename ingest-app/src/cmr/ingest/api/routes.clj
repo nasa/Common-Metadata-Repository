@@ -102,6 +102,14 @@
            (jm/disable-email-subscription-processing-job ctx)
            {:status 200}))))
 
+(def generate-generic-concept-types-reg-ex
+  "This function creates a regular expresion for all of the generic concepts.  This is used to create the api endpoints.
+   An example string that is return looks like: \"dataqualitysummarys|orderoptions|serviceoptions\" "
+  (let [rx (-> (str (concepts/get-generic-concept-types-array concepts/pluralize-concept-type))
+               (clojure.string/replace #":|\]|\[" "")
+               (clojure.string/replace #" " "|"))]
+    (re-pattern rx)))
+
 (def ingest-routes
   (routes
     ;; variable ingest routes with association
@@ -229,6 +237,15 @@
            request
            (subscriptions/delete-subscription
             provider-id native-id request)))
+
+       ;; Generic documents are by pattern: /providers/{prov_id}/{concept-type}/{native_id}
+       (context ["/:concept-type" :concept-type generate-generic-concept-types-reg-ex] [concept-type]
+         (context ["/:native-id" :native-id #".*$"] [native-id]
+           (POST "/" request (gen-doc/crud-generic-document request :create))
+           (GET "/" request (gen-doc/crud-generic-document request :read))
+           (PUT "/" request (gen-doc/crud-generic-document request :update))
+           (DELETE "/" request (gen-doc/crud-generic-document request :delete))))
+
        ;; Bulk updates
        (context "/bulk-update/collections" []
          (POST "/"
@@ -250,25 +267,6 @@
            request
            (bulk/get-provider-tasks :granule provider-id request)))))))
 
-(def generate-generic-concept-types-reg-ex
-  "This function creates a regular expresion for all of the generic concepts.  This is used to create the api endpoints.
-   An example string that is return looks like: \"dataqualitysummary|orderoption|serviceoption\" "
-  (let [rx (-> (str (concepts/get-generic-concept-types-array))
-              (clojure.string/replace #":|\]|\[" "")
-              (clojure.string/replace #" " "|"))]
-    rx))
-
-(def generic-document-routes
- (routes
-    (api-core/set-default-error-format
-     :xml
-     (context ["/:concept-type" :concept-type (re-pattern generate-generic-concept-types-reg-ex)] [concept-type]
-       (context ["/:native-id" :native-id #".*$"] [native-id]
-         (POST "/" request (gen-doc/validate-required-query-parameters request :create))
-         (GET "/" request (gen-doc/validate-required-query-parameters request :read))
-         (PUT "/" request (gen-doc/validate-required-query-parameters request :update))
-         (DELETE "/" request (gen-doc/delete-generic-document request)))))))
-
 (defn build-routes [system]
   (routes
     (context (get-in system [:public-conf :relative-root-url]) []
@@ -279,9 +277,6 @@
 
       ;; Add routes to create, update, delete, & validate concepts
       ingest-routes
-
-      ;; add routes to create, update, read, and delete generic concepts
-      generic-document-routes
 
       ;; db migration route
       db-migration-routes

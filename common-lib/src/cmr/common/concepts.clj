@@ -18,9 +18,15 @@
   (cset/map-invert generic-concept-types->concept-prefix))
 
 (defn get-generic-concept-types-array
-  "Gets the array of generic concept types."
-  []
-  (vec (keys generic-concept-types->concept-prefix)))
+  "Gets the array of generic concept types and optionally modify those values.
+   By default, no parameters will return the list as is, however if a function
+   is passed in that takes one value, this value will be changed in some way.
+   Expected usage is to pass in pluralize-concept-type."
+  ([] (get-generic-concept-types-array identity))
+  ([modifier-func]
+   (reduce (fn [coll, item] (conj coll (modifier-func (key item))))
+           []
+           (common-generic/approved-generic-concept-prefixes))))
 
 (defn generic-concept?
   "Return true if the passed in concept is a generic concept"
@@ -72,9 +78,16 @@
   (cset/map-invert concept-prefix->concept-type))
 
 (defn pluralize-concept-type
-  "Pluralizes the passed in concept keyword and returns it."
+  "Pluralizes the passed in concept keyword/string and returns it. The compliment
+   function is singularize-concept-type"
   [concept-key]
   (keyword (inf/plural (name concept-key))))
+
+(defn singularize-concept-type
+  "Singularize the passed in concept keyword/string and returns it. The compliment
+   function is pluralize-concept-type"
+  [concept-key]
+  (keyword (inf/singular (name concept-key))))
 
 (def humanizer-native-id
   "The native id of the system level humanizer. There can only be one humanizer in CMR.
