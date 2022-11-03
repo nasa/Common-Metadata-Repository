@@ -210,6 +210,10 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
     * [Reset the application to the initial state](#reset-the-application-to-the-initial-state)
     * [Querying caches](#querying-caches)
     * [Check application health](#check-application-health)
+  * [Associate Any Concepts](#associate-any-concepts)
+     * [Concept associations](#concept-associations)
+     * [Concept dissociations](#concept-dissociations)
+     * [Associations in search result](#associations-in-search-result)
 
 ***
 
@@ -5405,3 +5409,101 @@ Example un-healthy response body:
   }
 }
 ```
+### <a name="associate-any-concepts"></a> Associate any concepts
+
+A new association API is developed to achieve the goal of being able to associate a concept of any type, with or without revision, to one or more other concepts of any type, with or without revisions. The new association API also allows the associations to include an optional data payload, whose purpose is to describe the association itself. Associations which do not initially have association data payload, may have it added through association update. A concept can only be associated with another concept either with or without revisions, not both. A concept can not be associated to itself, even with different revisions. It's worth noting that associations between collections and services/tools/variables can not be made through the new association API because these associations require different business rules and there exist some complexites with the way how certain fields of the association entries are constructed. Until we resolve these issues, these existing associations will continue to be made through the existing association API. 
+ 
+#### <a name="concept-associations"></a> Concept associations 
+
+A concept, with optional revision id, can be associated to one or more other concepts, with optional revision ids and data payloads.
+
+ Example
+
+ ```
+ curl -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json"
+      "%CMR-ENDPOINT%/associate/SE1200000006-PROV1/3"
+      -d '[{"concept_id": "V1200000008-PROV1", "revision_id": 1},
+           {"concept_id": "C1200000005-PROV1", "data": {"field": "value", "another_field": {"XYZ": "ZYX"}}}]'
+ ```
+
+ Example Response
+
+ ```
+Note: when two concepts are associated, their concept ids are sorted first. The one that appears at later position is considered associated_item.
+[{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":1},"associated_item":{"concept_id":"SE1200000006-PROV1","revision_id":"3"}},
+ {"generic_association":{"concept_id":"GA1200000011-CMR","revision_id":1},"associated_item":{"concept_id":"V1200000008-PROV1","revision_id":1}}]
+ ```
+#### <a name="associations-in-search-result"></a> Associations in the search result 
+Latest revisions of associations can be queried by searching for one of the assocaited concepts using either the JSON or UMM_JSON format. The "associations" field, contains a list of concept ids associated to the concept that was searched for grouped by concept-type. The "association-details" field contains concept ids, as well as association details like revision ids and data payloads if they were included for the particular association. In the example case, a grid (GRD1200000000-PROV1) has been associated to another grid with association details(GRD1200000001-PROV1), as well as a service option (SO1200000001-PROV1) without any association details.
+Note: If you update an association with new data payload information, a new revision of that association will be created. Old revisions of the association will be preserved in the database but won't show up in the search result of the associated concepts.
+
+ Example
+
+ ```
+ curl -H "Authorization Bearer: XXXXX" "%CMR-ENDPOINT%/grids?concept_id=GRD1200000000-PROV1"
+
+ ```
+ Example Response with associated concepts
+
+ ```
+ {
+     "hits": 1,
+     "took": 6,
+     "items": [
+         {
+             "concept_id": "GRD1200000000-PROV1",
+             "revision_id": 22,
+             "provider_id": "PROV1",
+             "native_id": "sampleNativeId",
+             "name": "Grid-v1",
+             "associations": {
+                 "grids": [
+                     "GRD1200000001-PROV1"
+                 ],
+                 "serviceoptions": [
+                     "SO1200000001-PROV1"
+                 ]
+             },
+             "association-details": {
+                 "grids": [
+                     {
+                         "data": {
+                             "somedata": "zarr",
+                             "somemoredata": {
+                                 "XYZ": "ZYX"
+                             }
+                         },
+                         "concept-id": "GRD1200000001-PROV1",
+			 "revision-id": 1
+                     }
+                 ],
+                 "serviceoptions": [
+                     {
+                         "concept-id": "SO1200000001-PROV1"
+                     }
+                 ]
+             }
+         }
+     ]
+ }
+ ```
+#### <a name="concept-dissociations"></a> Concept dissociations 
+
+A concept, with optional revision id, can be dissociated from one or more other concepts, with optional revision ids
+
+ Example
+
+ ```
+ curl -XDELETE -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json"
+      "%CMR-ENDPOINT%/associate/SE1200000006-PROV1/3"
+      -d '[{"concept_id": "V1200000008-PROV1", "revision_id": 1},
+           {"concept_id": "C1200000005-PROV1"}]'
+ ```
+
+ Example Response
+
+ ```
+[{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":2},"associated_item":{"concept_id":"SE1200000006-PROV1","revision_id":"3"}},
+ {"generic_association":{"concept_id":"GA1200000011-CMR","revision_id":2},"associated_item":{"concept_id":"V1200000008-PROV1","revision_id":1}}]
+ ```
+
