@@ -46,6 +46,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Test that generic associations can be made between generic documents and tools.
+;; Also test the collection-tool associations through the old association api and verify
+;; the associations are shown in the right place in the search result.
 (deftest test-tool-and-generic-association
   (let [token (echo-util/login (system/context) "user1")
         ;;First ingest a Grid concept
@@ -255,7 +257,9 @@
         ;; Search for the tool again doesn't return the grid as generic association
         (is (= nil  tl1-search-generic-associations1))))))
 
-;; Test that generic associations can be made between generic documents and services. 
+;; Test that generic associations can be made between generic documents and services.
+;; Also test the collection-service associations through the old association api and verify
+;; the associations are shown in the right place in the search result.
 (deftest test-service-and-generic-association
   (let [token (echo-util/login (system/context) "user1")
         ;;First ingest a Grid concept

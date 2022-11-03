@@ -5416,6 +5416,8 @@ A new association API is developed to achieve the goal of being able to associat
 #### <a name="concept-associations"></a> Concept associations 
 
 A concept, with optional revision id, can be associated to one or more other concepts, with optional revision ids and data payloads.
+When the revision id is not present, the latest revision is assumed. In the following example, "3" is optional for SE1200000006-PROV1
+and "revision_id" is optional for V1200000008-PROV1. 
 
  Example
 
