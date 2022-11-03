@@ -99,9 +99,9 @@
             "build-lite" ["do"
                           ["ltest" ":unit"]]
             "build" ["do"
-                     ["clean"] 
+                     ["clean"]
                      ["check-vers"]
-                     ["check-sec"] 
+                     ["check-sec"]
                      ["ltest" ":unit"]
                      ["ubercompile"]
                      ["build-uberjar"]]

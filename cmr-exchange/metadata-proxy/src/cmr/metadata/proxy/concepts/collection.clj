@@ -23,26 +23,28 @@
   "Given a data structure with :collection-id, get the metadata for the
   associated collection."
   [search-endpoint user-token params]
-   (let [concept-id (:collection-id params)
-         url (str search-endpoint
-                  "/collections?"
-                  (build-query concept-id))]
-     (log/debug "Collection query to CMR:" url)
-     (request/async-get
-      url
-      (-> {}
-          (request/add-token-header user-token)
-          (request/add-accept "application/json"))
-      {}
-      response/json-handler)))
+  (let [concept-id (:collection-id params)
+        url (str search-endpoint
+                 "/collections?"
+                 (build-query concept-id))]
+    (log/debug "Collection query to CMR:" url)
+    (request/async-get
+     url
+     (-> {}
+         (request/add-token-header user-token)
+         (request/add-accept "application/json"))
+     {}
+     response/json-handler)))
 
 (defn extract-body-metadata
+  "Get the entries from the body of a collection response"
   [promise]
   (let [results @promise]
-    (log/trace "Got body from CMR granule collection:" results)
+    (log/trace "Got body from CMR collection:" results)
     (first (get-in (:body results) [:feed :entry]))))
 
 (defn extract-header-data
+  "Get the headers of a response"
   [promise]
   (let [results @promise]
     (log/trace "Got headers from CMR collection:" results)
@@ -50,8 +52,8 @@
 
 (defn get-metadata
   [search-endpoint user-token params]
-   (let [promise (async-get-metadata search-endpoint user-token params)]
-      (extract-body-metadata promise)))
+  (let [promise (async-get-metadata search-endpoint user-token params)]
+    (extract-body-metadata promise)))
 
 (defn extract-variable-ids
   [entry]

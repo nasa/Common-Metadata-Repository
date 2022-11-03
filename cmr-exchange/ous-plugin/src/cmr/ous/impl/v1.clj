@@ -1,15 +1,15 @@
 (ns cmr.ous.impl.v1
   (:require
-    [cmr.exchange.common.results.core :as results]
-    [cmr.exchange.common.results.errors :as errors]
-    [cmr.exchange.common.util :as util]
-    [cmr.metadata.proxy.concepts.collection :as collection]
-    [cmr.metadata.proxy.concepts.granule :as granule]
-    [cmr.metadata.proxy.results.errors :as metadata-errors]
-    [cmr.ous.common :as common]
-    [cmr.ous.components.config :as config]
-    [cmr.ous.results.errors :as ous-errors]
-    [taoensso.timbre :as log]))
+   [cmr.exchange.common.results.core :as results]
+   [cmr.exchange.common.results.errors :as errors]
+   [cmr.exchange.common.util :as util]
+   [cmr.metadata.proxy.concepts.collection :as collection]
+   [cmr.metadata.proxy.concepts.granule :as granule]
+   [cmr.metadata.proxy.results.errors :as metadata-errors]
+   [cmr.ous.common :as common]
+   [cmr.ous.components.config :as config]
+   [cmr.ous.results.errors :as ous-errors]
+   [taoensso.timbre :as log]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Defaults   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -35,9 +35,9 @@
   [entry]
   (log/trace "Collection entry:" entry)
   (sanitize-processing-level
-    (or (:processing_level_id entry)
-        (get-in entry [:umm :ProcessingLevel :Id])
-        defualt-processing-level)))
+   (or (:processing_level_id entry)
+       (get-in entry [:umm :ProcessingLevel :Id])
+       defualt-processing-level)))
 
 (defn apply-level-conditions
   ""
@@ -64,6 +64,7 @@
         tag-data (get-in coll-body [:tags (keyword collection/opendap-regex-tag) :data])
         granule-links (map granule/extract-granule-links (:body granules))
         sa-header (get-in gran-headers [:cmr-search-after])
+        hits-header (get-in gran-headers [:cmr-hits])
         service-ids (collection/extract-service-ids coll-body)
         params (apply-level-conditions coll-body params)
         vars (common/apply-bounding-conditions endpoint token coll-body params)
@@ -74,7 +75,7 @@
     (log/trace "tag-data:" tag-data)
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
-    [params coll-body granule-links sa-header service-ids vars tag-data errs]))
+    [params coll-body granule-links sa-header hits-header service-ids vars tag-data errs]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   API   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -93,7 +94,7 @@
                         :params raw-params
                         :sa-header input-sa-header})
         ;; Stage 2
-        [params coll granule-links sa-header service-ids vars tag-data s2-errs]
+        [params coll granule-links sa-header hits-header service-ids vars tag-data s2-errs]
         (stage2 component
                 coll-promise
                 grans-promise
@@ -126,9 +127,9 @@
               query s4-errs
               {:errors (errors/check
                         [not granule-links metadata-errors/empty-gnl-data-files])})]
-    (log/debug "printing the coll:" coll)
     (common/process-results {:params params
                              :granule-links granule-links
                              :sa-header sa-header
+                             :hits hits-header
                              :tag-data tag-data
                              :query query} start errs)))

@@ -63,7 +63,6 @@
   (let [url (str base-url token-info-resource)
         data (str "id=" token)]
     (log/trace "Making token-info query to ECHO REST:" url)
-    (log/debug "Value from authz token:" data)
     (request/async-post
       url
       (-> {:body data}

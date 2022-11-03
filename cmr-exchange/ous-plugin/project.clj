@@ -134,9 +134,9 @@
                           ["ubercompile"]]
             "build" ["do"
                      ["clean"]
-                     ["lint"] 
+                     ["lint"]
                      ["check-vers"]
-                     ["check-sec"] 
+                     ["check-sec"]
                      ["ltest" ":unit"]
                      ["junit" ":unit"]
                      ["ubercompile"]

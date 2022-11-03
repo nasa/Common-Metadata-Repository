@@ -43,20 +43,20 @@
         {:keys [bounding-box temporal page-num page-size]} params]
     (str "collection_concept_id=" coll-id
          (when (seq gran-ids)
-          (str "&"
-               (if exclude?
-                 (build-exclude gran-ids)
-                 (build-include gran-ids))))
+           (str "&"
+                (if exclude?
+                  (build-exclude gran-ids)
+                  (build-include gran-ids))))
          (when (seq bounding-box)
-          (str "&bounding_box="
-               (query-util/seq->str bounding-box)))
+           (str "&bounding_box="
+                (query-util/seq->str bounding-box)))
          (when (seq temporal)
-          (str "&"
-               (query-util/temporal-seq->cmr-query temporal)))
+           (str "&"
+                (query-util/temporal-seq->cmr-query temporal)))
          (when (seq page-num)
-          (str "&page-num=" page-num))
+           (str "&page-num=" page-num))
          (when (seq page-size)
-          (str "&page-size=" page-size)))))
+           (str "&page-size=" page-size)))))
 
 (defn async-get-metadata
   "Given a data structure with :collection-id, :granules, and :exclude-granules
@@ -72,14 +72,14 @@
     (request/async-post
      url
      (as-> {} n
-         (request/add-token-header n user-token)
-         (request/add-accept n "application/json")
-         (request/add-form-ct n)
-         (request/add-payload n payload)
-         (if (some? sa-header)
-           (request/add-search-after n sa-header)
-           n)
-         ((fn [x] (log/debug "Client request options:" x) x) n))
+       (request/add-token-header n user-token)
+       (request/add-accept n "application/json")
+       (request/add-form-ct n)
+       (request/add-payload n payload)
+       (if (some? sa-header)
+         (request/add-search-after n sa-header)
+         n)
+       ((fn [x] (log/debug "Client request options:" x) x) n))
      {}
      response/json-handler)))
 
@@ -89,8 +89,6 @@
     (if (errors/erred? rslts)
       (do
         (log/error metadata-errors/granule-metadata)
-        (log/debug "results: "
-                   rslts)
         rslts)
       (do
         (log/trace "Got results from CMR granule search:"
@@ -99,17 +97,17 @@
         (get-in rslts [:body :feed :entry])))))
 
 (defn extract-body-data
+  "Extracts the body of a granule response"
   [promise]
   (let [results @promise]
-    (log/debug "results from promise: " results)
-    (log/trace "Got headers from CMR granule collection:" results)
+    (log/trace "Got headers from CMR granule:" results)
     (:body results)))
 
 (defn extract-header-data
+  "Extracts the headers from a granule response"
   [promise]
   (let [results @promise]
-    (log/debug "results from promise: " results)
-    (log/trace "Got headers from CMR granule collection:" results)
+    (log/trace "Got headers from CMR granule:" results)
     (:headers results)))
 
 (defn get-metadata

@@ -35,6 +35,7 @@
         tag-data (get-in coll-body [:tags (keyword collection/opendap-regex-tag) :data])
         granule-links (map granule/extract-granule-links granules)
         sa-header (get-in gran-headers [:cmr-search-after])
+        hits-header (get-in gran-headers [:cmr-hits])
         service-ids (collection/extract-service-ids coll-body)
         vars (common/apply-bounding-conditions endpoint token coll-body params)
         svcs (when (:service-id params)
@@ -46,7 +47,7 @@
     (log/trace "tag-data:" tag-data)
     (log/trace "service ids:" service-ids)
     (log/debug "Finishing stage 2 ...")
-    [params coll-body granule-links sa-header service-ids vars tag-data errs svcs]))
+    [params coll-body granule-links sa-header hits-header service-ids vars tag-data errs svcs]))
 
 (defn stage3
   [component service-ids vars bounding-box {:keys [endpoint token params]}]
@@ -85,7 +86,7 @@
                          :params raw-params
                          :sa-header input-sa-header})
          ;; Stage 2
-         [params coll granule-links sa-header service-ids vars tag-data s2-errs]
+         [params coll granule-links sa-header hits-header service-ids vars tag-data s2-errs]
          (stage2 component
                  coll-promise
                  grans-promise
@@ -125,5 +126,6 @@
                               :dap-version dap-version
                               :granule-links granule-links
                               :sa-header sa-header
+                              :hits-header hits-header
                               :tag-data tag-data
                               :query query} start errs warns))))

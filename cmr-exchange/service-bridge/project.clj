@@ -213,7 +213,7 @@
                      ["clean"]
                      ["lint"]
                      ["check-vers"]
-                     ["check-sec"] 
+                     ["check-sec"]
                      ["ltest" ":unit"]
                      ["junit" ":unit"]
                      ["ubercompile"]

@@ -89,11 +89,11 @@
 
 (defmethod get :collection
   [_type system search-endpoint user-token params]
-   (let [cache-key (concept-key (:collection-id params))]
-     (get-cached system
-                 cache-key
-                 collection/async-get-metadata
-                 [search-endpoint user-token params])))
+  (let [cache-key (concept-key (:collection-id params))]
+    (get-cached system
+                cache-key
+                collection/async-get-metadata
+                [search-endpoint user-token params])))
 
 (defmethod get :granules
   [_type system search-endpoint user-token params sa-header]

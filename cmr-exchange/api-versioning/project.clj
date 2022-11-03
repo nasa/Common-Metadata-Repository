@@ -110,9 +110,9 @@
                           ["ubercompile"]]
             "build" ["do"
                      ["clean"]
-                     ["lint"] 
+                     ["lint"]
                      ["check-vers"]
-                     ["check-sec"] 
+                     ["check-sec"]
                      ["ltest" ":all"]
                      ["junit" ":all"]
                      ["ubercompile"]
