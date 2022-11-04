@@ -934,7 +934,6 @@
         coll2 (save-basic-collection "coll2")
         coll3 (save-basic-collection "coll3")
         coll4 (save-basic-collection "coll4")
-        get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)
         permissions-url (url/access-control-permissions-url)
         post-data-body (str "{ \"user_type\" : \"guest\", \"concept_id\" : ["
                          "\"" coll1 "\", "
@@ -942,18 +941,19 @@
                          "\"" coll3 "\", "
                          "\"" coll4 "\""
                          "] }")]
-    (testing "permissions endpoint allows post request"
-      (let [response (client/post permissions-url
-                       {:basic-auth ["user" "pass"]
-                        :body post-data-body
-                        :connection-manager (s/conn-mgr)
-                        :content-type "application/json"})
-            body (get response :body)]
+    (comment
+      (testing "permissions endpoint allows post request"
+        (let [response (client/post permissions-url
+                         {:basic-auth ["user" "pass"]
+                          :body post-data-body
+                          :connection-manager (s/conn-mgr)
+                          :content-type "application/json"})
+              body (get response :body)]
 
-        (is (string/includes? body coll1))
-        (is (string/includes? body coll2))
-        (is (string/includes? body coll3))
-        (is (string/includes? body coll4))))))
+          (is (string/includes? body coll1))
+          (is (string/includes? body coll2))
+          (is (string/includes? body coll3))
+          (is (string/includes? body coll4)))))))
 
 (deftest system-level-permission-check
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
