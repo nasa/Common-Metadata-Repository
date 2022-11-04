@@ -226,35 +226,31 @@
   [body]
   (string/trim (slurp body)))
 
-
-(defn tee [any] (println "tee:" any) any)
-
 (defn read-multiple-body!
   "Returns the body content string by slurping the request body. This function
    has the side effect of emptying the request body. Don't try to read the body
    again after calling this function.
 
-   Note, for testing/reuse use the three parameter function which takes a string
-   and makes fewer assupmtions about the content of the body.
+   For some calls, specificly variables, two documents are sent in. These
+   documents are Metadata Content and Extended Data. Metadata Content is a
+   metadata JSON record, like UMM-V, where Extended Data is any valid JSON which
+   is inteended to be used as data for a Relationship.
 
-   For some calls with curl, users may send two -d flags, for example: one for
-   variables, and a second with the payload. Curl will transmit these two
-   sections with an ampersand between them. To be HTTP complient, each section
-   needs to have a name and = sign to match the value. The first two sections
-   will be split and returned as different items in array, otherwise an array
-   with one item is returned."
-
-
-;; new rule, json always in, but look for 2 key version vs any number of keys
-
+   Note: this function assumes JSON and not XML as the input."
   [body]
-  (let [body-str (read-body! body)
-        body-map (json/parse-string body-str)
-        content (get body-map "content")
-        data (get body-map "data")]
-    (if (and (some? content) (some? data))
-      [(json/generate-string content) (json/generate-string data)]
-      [body-str])))
+  (let [body-str (read-body! body)]
+    (try
+      (let [body-map (json/parse-string body-str)
+            content (get body-map "content")
+            data (get body-map "data")]
+        (if (and (some? content) (some? data))
+          [(json/generate-string content) (json/generate-string data)]
+          [body-str]))
+      (catch com.fasterxml.jackson.core.JsonParseException jpe
+        ;; other blocks of code will check the validity of the body, but at this
+        ;; point we may be looking at XML and not JSON, just return the content
+        ;; of body and stop looking for Association Data
+        [body-str]))))
 
 (defn- metadata->concept
   "Create a metadata concept from the given metadata"
@@ -273,7 +269,7 @@
   Don't try to read the body again after calling this function."
   ([concept-type body content-type headers]
    (let [metadata (read-multiple-body! body)]
-     (tee (metadata->concept concept-type metadata content-type headers))))
+     (metadata->concept concept-type metadata content-type headers)))
   ([concept-type native-id body content-type headers]
    (assoc (body->concept! concept-type body content-type headers)
           :native-id native-id))
