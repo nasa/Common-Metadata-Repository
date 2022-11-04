@@ -2,6 +2,7 @@
   "Tests the access control permission check routes."
   (:require
    [cheshire.core :as json]
+   [clj-http.client :as client]
    [clj-time.core :as t]
    [clojure.java.shell :as shell]
    [clojure.string :as string]
@@ -10,6 +11,8 @@
    [cmr.access-control.test.util :as u]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]))
 
@@ -933,35 +936,25 @@
         coll3 (save-basic-collection "coll3")
         coll4 (save-basic-collection "coll4")
         get-coll-permissions #(get-permissions :guest coll1 coll2 coll3 coll4)
-        base-url "http://localhost:3011/permissions"
-        get-url (str base-url
-                  "?user_type=guest"
-                  "&concept_id=" coll1
-                  "&concept_id=" coll2
-                  "&concept_id=" coll3
-                  "&concept_id=" coll4)
+        permissions-url (url/access-control-permissions-url)
         post-data-body (str "{ \"user_type\" : \"guest\", \"concept_id\" : ["
                          "\"" coll1 "\", "
                          "\"" coll2 "\", "
                          "\"" coll3 "\", "
                          "\"" coll4 "\""
                          "] }")]
-
-    (testing "permissions endpoint allows get request"
-      (let [get-response (shell/sh "curl" "-g" "-i" get-url)
-            response-body (second (reverse get-response))]
-        (is (string/includes? (str response-body) coll1))
-        (is (string/includes? (str response-body) coll2))
-        (is (string/includes? (str response-body) coll3))
-        (is (string/includes? (str response-body) coll4))))
-
     (testing "permissions endpoint allows post request"
-      (let [post-response (shell/sh "curl" "-i" "XPOST" "-H" "Content-Type: application/json" base-url "-d" post-data-body)
-            response-body (second (reverse post-response))]
-        (is (string/includes? (str response-body) coll1))
-        (is (string/includes? (str response-body) coll2))
-        (is (string/includes? (str response-body) coll3))
-        (is (string/includes? (str response-body) coll4))))))
+      (let [response (client/post permissions-url
+                       {:basic-auth ["user" "pass"]
+                        :body post-data-body
+                        :connection-manager (s/conn-mgr)
+                        :content-type "application/json"})
+            body (get response :body)]
+
+        (is (string/includes? body coll1))
+        (is (string/includes? body coll2))
+        (is (string/includes? body coll3))
+        (is (string/includes? body coll4))))))
 
 (deftest system-level-permission-check
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
