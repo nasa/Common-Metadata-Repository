@@ -22,7 +22,7 @@
 ;;;   Backwards-compatible Aliases   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(def parse-json-body response/parse-json-body)
+(def parse-json-result response/parse-json-result)
 (def json-errors response/json-errors)
 (def parse-xml-body response/parse-xml-body)
 (def xml-errors response/xml-errors)
@@ -43,13 +43,31 @@
   [status headers body]
   (response/error-handler status headers body (format errors/status-code status)))
 
-(defn client-handler
+(defn general-response-handler
+  "Handles the response and returns body and headers"
   ([response]
-    (client-handler response identity))
+   (general-response-handler response identity))
   ([response parse-fn]
-    (response/client-handler response error-handler parse-fn)))
+   (response/general-response-handler response error-handler parse-fn)))
 
-(def json-handler #(client-handler % response/parse-json-body))
+(defn body-only-response-handler
+  "Returns only the body from a response"
+  ([response]
+   (body-only-response-handler response identity))
+  ([response parse-fn]
+   (response/body-only-response-handler response error-handler parse-fn)))
+
+(defn headers-only-response-handler
+  "Returns only the headers from a response"
+  ([response]
+   (body-only-response-handler response identity))
+  ([response parse-fn]
+   (response/headers-only-response-handler response error-handler parse-fn)))
+
+;; Wrapped for JSON specific use
+(def general-json-handler #(general-response-handler % response/parse-json-result))
+(def body-json-handler #(body-only-response-handler % response/parse-json-result))
+(def headers-json-handler #(headers-only-response-handler % response/parse-json-result))
 
 (defn process-err-results
   [data]

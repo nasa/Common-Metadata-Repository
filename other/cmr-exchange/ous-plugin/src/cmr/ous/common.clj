@@ -147,7 +147,7 @@
 (defn process-results
   ([results start errs]
    (process-results results start errs {:warnings nil}))
-  ([{:keys [params dap-version granule-links tag-data query]} start errs warns]
+  ([{:keys [params dap-version granule-links sa-header hits-header tag-data query]} start errs warns]
    (log/trace "Got granule-links:" (vec granule-links))
    (log/trace "Process-results tag-data:" tag-data)
    (if errs
@@ -165,8 +165,10 @@
                              (:request-id params)
                              (vec urls-or-errs)))
            (results/create urls-or-errs :request-id (:request-id params)
-                                        :elapsed (util/timed start)
-                                        :warnings warns)))))))
+                           :elapsed (util/timed start)
+                           :hits-header hits-header
+                           :sa-header sa-header
+                           :warnings warns)))))))
 
 (defn apply-bounding-conditions
   "This function is where variable queries to the CMR are made. There are
@@ -221,8 +223,8 @@
     ;; Condition 4 - spatial subsetting but no variables
     (and bounding-box (empty? variables))
     (variable/get-metadata search-endpoint
-     user-token
-     (assoc params :variables (collection/extract-variable-ids coll)))))
+                           user-token
+                           (assoc params :variables (collection/extract-variable-ids coll)))))
 
 (defn apply-gridded-conditions
   "This function is responsible for identifying whether data is girdded or not.
@@ -275,7 +277,7 @@
 ;;; the code could be properly prepared for async execution.
 
 (defn stage1
-  [component {:keys [endpoint token params]}]
+  [component {:keys [endpoint token params sa-header]}]
   (log/debug "Starting stage 1 ...")
   (let [params (query/parse params)
         bounding-box (:bounding-box params)
@@ -286,9 +288,9 @@
                     (validation/validate-longitude
                      (query-util/bounding-box-lon bounding-box)))
         grans-promise (granule/async-get-metadata
-                       component endpoint token params)
+                       component endpoint token params sa-header)
         coll-promise (concept/get :collection
-                      component endpoint token params)
+                                  component endpoint token params)
         errs (errors/collect params valid-lat valid-lon)]
     (log/debug "Params: " params)
     (log/debug "Bounding box: " bounding-box)

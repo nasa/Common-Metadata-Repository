@@ -43,20 +43,20 @@
         {:keys [bounding-box temporal page-num page-size]} params]
     (str "collection_concept_id=" coll-id
          (when (seq gran-ids)
-          (str "&"
-               (if exclude?
-                 (build-exclude gran-ids)
-                 (build-include gran-ids))))
+           (str "&"
+                (if exclude?
+                  (build-exclude gran-ids)
+                  (build-include gran-ids))))
          (when (seq bounding-box)
-          (str "&bounding_box="
-               (query-util/seq->str bounding-box)))
+           (str "&bounding_box="
+                (query-util/seq->str bounding-box)))
          (when (seq temporal)
-          (str "&"
-               (query-util/temporal-seq->cmr-query temporal)))
+           (str "&"
+                (query-util/temporal-seq->cmr-query temporal)))
          (when (seq page-num)
-          (str "&page-num=" page-num))
+           (str "&page-num=" page-num))
          (when (seq page-size)
-          (str "&page-size=" page-size)))))
+           (str "&page-size=" page-size)))))
 
 (defn async-get-metadata
   "Given a data structure with :collection-id, :granules, and :exclude-granules
@@ -64,19 +64,22 @@
 
   Which granule metadata is returned depends upon the values of :granules and
   :exclude-granules"
-  [component search-endpoint user-token params]
+  [component search-endpoint user-token params sa-header]
   (let [url (str search-endpoint "/granules")
         payload (build-query component params)]
     (log/debug "Granules query CMR URL:" url)
     (log/debug "Granules query CMR payload:" payload)
     (request/async-post
      url
-     (-> {}
-         (request/add-token-header user-token)
-         (request/add-accept "application/json")
-         (request/add-form-ct)
-         (request/add-payload payload)
-         ((fn [x] (log/debug "Client request options:" x) x)))
+     (as-> {} request
+       (request/add-token-header request user-token)
+       (request/add-accept request "application/json")
+       (request/add-form-ct request)
+       (request/add-payload request payload)
+       (if (some? sa-header)
+         (request/add-search-after request sa-header)
+         request)
+       ((fn [x] (log/debug "Client request options:" x) x) request))
      {}
      response/json-handler)))
 
@@ -91,11 +94,25 @@
         (log/trace "Got results from CMR granule search:"
                    (results/elided rslts))
         (log/trace "Remaining results:" (results/remaining-items rslts))
-        (get-in rslts [:feed :entry])))))
+        (get-in rslts [:body :feed :entry])))))
+
+(defn extract-body-data
+  "Extracts the body of a granule response"
+  [promise]
+  (let [results @promise]
+    (log/trace "Got headers from CMR granule:" results)
+    (:body results)))
+
+(defn extract-header-data
+  "Extracts the headers from a granule response"
+  [promise]
+  (let [results @promise]
+    (log/trace "Got headers from CMR granule:" results)
+    (:headers results)))
 
 (defn get-metadata
-  [component search-endpoint user-token params]
-  (let [promise (async-get-metadata component search-endpoint user-token params)]
+  [component search-endpoint user-token params sa-header]
+  (let [promise (async-get-metadata component search-endpoint user-token params sa-header)]
     (extract-metadata promise)))
 
 (defn match-datafile-link

@@ -32,11 +32,12 @@
   (log/trace "Got request:" (logger/pprint (into {} req)))
   (log/debug "Got request-id: " (base-request/extract-request-id req))
   (let [api-version (request/accept-api-version component req)
-        dap-version (:dap-version (util/normalize-params (:params req)))]
+        dap-version (:dap-version (util/normalize-params (:params req)))
+        sa-header (base-request/get-header req "cmr-search-after")]
     (->> data
          (merge {:collection-id concept-id
                  :request-id (base-request/extract-request-id req)})
-         (ous/get-opendap-urls component api-version user-token dap-version)
+         (ous/get-opendap-urls component api-version user-token dap-version sa-header)
          (response/json req))))
 
 (defn- generate-via-get
@@ -68,7 +69,6 @@
   [component]
   (fn [req]
     (log/debug "Method-dispatching for URLs generation ...")
-    (log/trace "request:" req)
     (let [user-token (token/extract req)
           concept-id (get-in req [:path-params :concept-id])]
       (case (:request-method req)
@@ -97,9 +97,9 @@
         (log/debug "Setting 'on-close' callback ...")
         (server/on-close channel
                          (fn [status]
-                          (println "Channel closed; status " status)))
+                           (println "Channel closed; status " status)))
         (let [result-channel (async/thread
-                                ((generate-urls component) req))]
+                               ((generate-urls component) req))]
           (log/trace "Starting loop ...")
           (async/go-loop [id 0]
             (log/trace "Loop id:" id)
@@ -108,14 +108,14 @@
                 (log/trace "Result:" result)
                 (server/send! channel result)
                 (server/close channel)
-              (when (< id iterations)
-                (timer/schedule-task
-                 (* id heartbeat) ; send a message every heartbeat period
-                 (log/trace "\tSending 0-byte placeholder chunk to client ...")
-                 (server/send! channel
-                               {:status 202}
-                               false))
-                (recur (inc id))))))
+                (when (< id iterations)
+                  (timer/schedule-task
+                   (* id heartbeat) ; send a message every heartbeat period
+                   (log/trace "\tSending 0-byte placeholder chunk to client ...")
+                   (server/send! channel
+                                 {:status 202}
+                                 false))
+                  (recur (inc id))))))
           (timer/schedule-task timeout (server/close channel)))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -133,9 +133,9 @@
   [component destination data]
   (let [service-endpoint (get-service-endpoint component destination)]
     (format "%s?%s" service-endpoint
-                    (-> data
-                        (query/parse {:destination destination})
-                        base-query/->query-string))))
+            (-> data
+                (query/parse {:destination destination})
+                base-query/->query-string))))
 
 (defn bridge-services
   "Here's what we expect a request might look like:
@@ -157,6 +157,4 @@
                    (merge {:collection-id concept-id}))]
       (log/warnf "Handling bridge request from %s ..." (:referer req))
       (log/warnf "Bridging service to %s ..." destination)
-      (response/json {
-                      :service {
-                                :url (params->service-url component destination data)}}))))
+      (response/json {:service {:url (params->service-url component destination data)}}))))
