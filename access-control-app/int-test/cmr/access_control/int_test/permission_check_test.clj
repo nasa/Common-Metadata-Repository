@@ -4,7 +4,6 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clj-time.core :as t]
-   [clojure.java.shell :as shell]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.int-test.fixtures :as fixtures]
