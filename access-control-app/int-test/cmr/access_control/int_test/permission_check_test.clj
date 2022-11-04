@@ -923,25 +923,25 @@
             "user1" ["update" "delete"]
             "user2" []))))))
 
-(deftest permission-get-and-post-request-test
-  (let [token (e/login-guest (u/conn-context))
-        save-basic-collection (fn [short-name]
-                                  (u/save-collection {:entry-title (str short-name " entry title")
-                                                      :short-name short-name
-                                                      :native-id short-name
-                                                      :provider-id "PROV1"}))
-        coll1 (save-basic-collection "coll1")
-        coll2 (save-basic-collection "coll2")
-        coll3 (save-basic-collection "coll3")
-        coll4 (save-basic-collection "coll4")
-        permissions-url (url/access-control-permissions-url)
-        post-data-body (str "{ \"user_type\" : \"guest\", \"concept_id\" : ["
-                         "\"" coll1 "\", "
-                         "\"" coll2 "\", "
-                         "\"" coll3 "\", "
-                         "\"" coll4 "\""
-                         "] }")]
-    (comment
+(comment
+  (deftest permission-get-and-post-request-test
+    (let [token (e/login-guest (u/conn-context))
+          save-basic-collection (fn [short-name]
+                                    (u/save-collection {:entry-title (str short-name " entry title")
+                                                        :short-name short-name
+                                                        :native-id short-name
+                                                        :provider-id "PROV1"}))
+          coll1 (save-basic-collection "coll1")
+          coll2 (save-basic-collection "coll2")
+          coll3 (save-basic-collection "coll3")
+          coll4 (save-basic-collection "coll4")
+          permissions-url (url/access-control-permissions-url)
+          post-data-body (str "{ \"user_type\" : \"guest\", \"concept_id\" : ["
+                           "\"" coll1 "\", "
+                           "\"" coll2 "\", "
+                           "\"" coll3 "\", "
+                           "\"" coll4 "\""
+                           "] }")]
       (testing "permissions endpoint allows post request"
         (let [response (client/post permissions-url
                          {:basic-auth ["user" "pass"]
