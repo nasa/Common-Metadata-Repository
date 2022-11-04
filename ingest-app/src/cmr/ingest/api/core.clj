@@ -231,10 +231,10 @@
    has the side effect of emptying the request body. Don't try to read the body
    again after calling this function.
 
-   For some calls, specificly variables, two documents are sent in. These
+   For some calls, specifically variables, two documents are sent in. These
    documents are Metadata Content and Extended Data. Metadata Content is a
    metadata JSON record, like UMM-V, where Extended Data is any valid JSON which
-   is inteended to be used as data for a Relationship.
+   is intended to be used as data for a Relationship.
 
    Note: this function assumes JSON and not XML as the input."
   [body]
