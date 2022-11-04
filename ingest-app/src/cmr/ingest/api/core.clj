@@ -1,6 +1,7 @@
 (ns cmr.ingest.api.core
   "Supports the ingest API definitions."
   (:require
+   [cheshire.core :as json]
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [cmr.acl.core :as acl]
@@ -230,29 +231,26 @@
    has the side effect of emptying the request body. Don't try to read the body
    again after calling this function.
 
-   Note, for testing/reuse use the three parameter function which takes a string
-   and makes fewer assupmtions about the content of the body.
+   For some calls, specifically variables, two documents are sent in. These
+   documents are Metadata Content and Extended Data. Metadata Content is a
+   metadata JSON record, like UMM-V, where Extended Data is any valid JSON which
+   is intended to be used as data for a Relationship.
 
-   For some calls with curl, users may send two -d flags, for example: one for
-   variables, and a second with the payload. Curl will transmit these two
-   sections with an ampersand between them. To be HTTP complient, each section
-   needs to have a name and = sign to match the value. The first two sections
-   will be split and returned as different items in array, otherwise an array
-   with one item is returned."
+   Note: this function assumes JSON and not XML as the input."
   [body]
   (let [body-str (read-body! body)]
-    (if (and ;;be flexible on location of parameters
-         (some? (re-matches (re-pattern (str ".*content=\\{.+\\}")) body-str))
-         (some? (re-matches (re-pattern (str ".+=.+&.+=.+")) body-str))
-         (some? (re-matches (re-pattern (str ".*data=\\{.+\\}")) body-str)))
-      (let [data (-> body-str
-                     (string/replace "&" "%26") ;; content may have URLs with & in them
-                     (string/replace
-                      (str "}%26data={") ;; was changed with all the others,
-                      (str "}&data={")) ;; but this one is special, switch it back
-                     (ring-codec/form-decode))] ;; split on our special deleminator
-        [(get data "content") (get data "data")])
-      [body-str])))
+    (try
+      (let [body-map (json/parse-string body-str)
+            content (get body-map "content")
+            data (get body-map "data")]
+        (if (and (some? content) (some? data))
+          [(json/generate-string content) (json/generate-string data)]
+          [body-str]))
+      (catch com.fasterxml.jackson.core.JsonParseException jpe
+        ;; other blocks of code will check the validity of the body, but at this
+        ;; point we may be looking at XML and not JSON, just return the content
+        ;; of body and stop looking for Association Data
+        [body-str]))))
 
 (defn- metadata->concept
   "Create a metadata concept from the given metadata"
