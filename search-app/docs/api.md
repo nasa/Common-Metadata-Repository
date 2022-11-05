@@ -5432,7 +5432,7 @@ and "revision_id" is optional for V1200000008-PROV1.
 
  ```
 Note: when two concepts are associated, their concept ids are sorted first. The one that appears at later position is considered associated_item.
-[{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":1},"associated_item":{"concept_id":"SE1200000006-PROV1","revision_id":"3"}},
+[{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":1},"associated_item":{"concept_id":"C1200000005-PROV1"}},
  {"generic_association":{"concept_id":"GA1200000011-CMR","revision_id":1},"associated_item":{"concept_id":"V1200000008-PROV1","revision_id":1}}]
  ```
 #### <a name="associations-in-search-result"></a> Associations in the search result 
@@ -5505,7 +5505,7 @@ A concept, with optional revision id, can be dissociated from one or more other 
  Example Response
 
  ```
-[{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":2},"associated_item":{"concept_id":"SE1200000006-PROV1","revision_id":"3"}},
+[{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":2},"associated_item":{"concept_id":"C1200000005-PROV1"}},
  {"generic_association":{"concept_id":"GA1200000011-CMR","revision_id":2},"associated_item":{"concept_id":"V1200000008-PROV1","revision_id":1}}]
  ```
 
