@@ -15,7 +15,7 @@
        ns
        "\u001B[35m]\u001B[33m λ\u001B[m=> "))
 
-(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.13-SNAPSHOT"
+(defproject gov.nasa.earthdata/cmr-service-bridge "1.6.14-SNAPSHOT"
   :description "A CMR connector service that provides an inter-service API"
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {:name "Apache License, Version 2.0"
@@ -32,14 +32,14 @@
                  [com.stuartsierra/component "0.4.0"]
                  [environ "1.1.0"]
                  [gov.nasa.earthdata/cmr-api-versioning "0.1.1-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-authz "0.1.3"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
+                 [gov.nasa.earthdata/cmr-authz "0.1.6-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.4-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.3-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-http-kit "0.2.0"]
+                 [gov.nasa.earthdata/cmr-http-kit "0.3.1-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.2"]
-                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.8-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.9-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
-                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.8-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.9-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
                  [gov.nasa.earthdata/cmr-sizing-plugin "0.3.5-SNAPSHOT"]
                  [http-kit "2.5.3"]
@@ -70,7 +70,7 @@
         cmr.opendap.core]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
-             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.2"]]
+             :security {:plugins [[com.livingsocial/lein-dependency-check "1.4.0"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
