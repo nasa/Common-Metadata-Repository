@@ -2,6 +2,7 @@
   "Tests the access control permission check routes."
   (:require
    [cheshire.core :as json]
+   [clj-http.client :as client]
    [clj-time.core :as t]
    [clojure.string :as string]
    [clojure.test :refer :all]
