@@ -21,10 +21,10 @@
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [gov.nasa.earthdata/cmr-http-kit]
-  :dependencies [[gov.nasa.earthdata/cmr-authz "0.1.3"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
+  :dependencies [[gov.nasa.earthdata/cmr-authz "0.1.6-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.4-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.3-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-http-kit "0.2.0"]
+                 [gov.nasa.earthdata/cmr-http-kit "0.3.1-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-metadata-proxy "0.2.9-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-ous-plugin "0.3.9-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
