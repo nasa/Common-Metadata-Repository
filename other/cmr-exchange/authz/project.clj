@@ -7,7 +7,7 @@
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.0"]
                  [com.stuartsierra/component "0.3.2"]
-                 [gov.nasa.earthdata/cmr-exchange-common "0.3.4"]
+                 [gov.nasa.earthdata/cmr-exchange-common "0.3.4-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.3.1-SNAPSHOT"]
                  [http-kit "2.5.3"]
                  [metosin/reitit-ring "0.2.7"]
