@@ -10,7 +10,7 @@
    [cmr.access-control.test.util :as u]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.system-int-test.system :as s]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]))
 
