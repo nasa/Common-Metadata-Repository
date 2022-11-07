@@ -9,6 +9,11 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url]))
 
+(use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}
+                                          {:grant-all-search? false
+                                           :grant-all-ingest? false
+                                           :grant-all-access-control? true}))
+
 (deftest permission-get-and-post-request-test
   (let [save-basic-collection (fn [short-name]
                                   (u/save-collection {:entry-title (str short-name " entry title")
@@ -20,12 +25,11 @@
         coll3 (save-basic-collection "coll3")
         coll4 (save-basic-collection "coll4")
         permissions-url (url/access-control-permissions-url)
-        post-data-body (str "{ \"user_type\" : \"guest\", \"concept_id\" : ["
-                         "\"" coll1 "\", "
-                         "\"" coll2 "\", "
-                         "\"" coll3 "\", "
-                         "\"" coll4 "\""
-                         "] }")]
+        post-data-body (str "user_type=guest"
+                         "&concept_id=" coll1
+                         "&concept_id=" coll2
+                         "&concept_id=" coll3
+                         "&concept_id=" coll4)]
     (testing "permissions endpoint allows post request"
       (let [response (client/post permissions-url
                        {:basic-auth ["user" "pass"]

@@ -864,12 +864,12 @@ Content-Type: application/json;charset=ISO-8859-1
 {"C1200000000-PROV1": ["read"], "C1200000001-PROV1": []}
 ```
 
-When requesting permissions for large sets of concept ids, you can make a POST request to `%CMR-ENDPOINT%/permissions` and pass the query parameters encoded in the POST body.
+When requesting permissions for large sets of concept ids, you can make a POST request to `%CMR-ENDPOINT%/permissions` and pass the query parameters in the POST body.
 
 Example POST request:
 
 ```
-curl -i -XPOST -H "Content-Type: application/json" "%CMR-ENDPOINT%/permissions" -d '{ "user_type" : "guest", "concept_id" : ["C1200000011-PROV1", "C1200000031-PROV1"] }'
+curl -i -XPOST -H "Content-Type: application/json" "%CMR-ENDPOINT%/permissions" -d 'user_type=guest&concept_id=C1200000003-PROV1&concept_id=C1200000004-PROV1'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
