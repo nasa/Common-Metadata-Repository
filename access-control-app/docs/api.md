@@ -869,7 +869,8 @@ When requesting permissions for large sets of concept ids, you can make a POST r
 Example POST request:
 
 ```
-curl -i -XPOST -H "Content-Type: application/json" "%CMR-ENDPOINT%/permissions" -d 'user_type=guest&concept_id=C1200000003-PROV1&concept_id=C1200000004-PROV1'
+curl -i -XPOST -H "Content-Type: application/json" "http://localhost:3011/permissions" -d \
+  'user_type=guest&concept_id=C1200000003-PROV1&concept_id=C1200000004-PROV1'
 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
