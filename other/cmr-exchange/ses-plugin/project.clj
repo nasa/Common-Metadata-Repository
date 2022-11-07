@@ -25,8 +25,8 @@
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.3-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0"]
-                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.9-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.9-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-metadata-proxy "0.2.8-SNAPSHOT"]
+                 [gov.nasa.earthdata/cmr-ous-plugin "0.3.8-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
                  [org.clojure/clojure "1.10.0"]]
   :manifest {"CMR-Plugin" "service-bridge-app"}
