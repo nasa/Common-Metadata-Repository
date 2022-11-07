@@ -2,7 +2,7 @@
   "Defines the HTTP URL routes for the access-control API."
   (:require
    [cheshire.core :as json]
-   [clojure.walk :as w]
+   [clojure.walk :as walk]
    [cmr.access-control.data.access-control-index :as index]
    [cmr.access-control.data.acl-schema :as acl-schema]
    [cmr.access-control.data.group-schema :as group-schema]
@@ -374,7 +374,7 @@
 
         (POST "/"
               {ctx :request-context headers :headers body :body}
-              (get-permissions ctx (w/keywordize-keys (codec/form-decode (slurp body))))))
+              (get-permissions ctx (walk/keywordize-keys (codec/form-decode (slurp body))))))
 
       (context "/current-sids" []
         (OPTIONS "/" [] (common-routes/options-response))
