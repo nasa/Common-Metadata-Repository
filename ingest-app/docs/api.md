@@ -574,26 +574,47 @@ curl -XPUT \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/collections/C1200000005-PROV1/1/variables/sampleVariableNativeId33 \
   -d \
-"{\"ValidRanges\": [{\"Min\":0.0, \"Max\":1.0}],
-	  \"Dimensions\":\"total methane\",
-	  \"Definition\":\"11\",
-	  \"Scale\":1.0,
-	  \"Offset\":0.0,
-	  \"MetadataSpecification\": {\"URL\":\"https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1\",
-	                              \"Name\":\"UMM-Var\",
-	                              \"Version\":\"1.8.1\"},
-	  \"FillValues\": [{\"Value\":-9999.0, \"Type\":\"SCIENCE_FILLVALUE\"}],
-	  \"Units\":\"m\",
-	  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
-	                        \"Topic\":\"sk-B\",
-	                        \"Term\":\"sk-C\"}],
-	  \"Name\":\"A-name\",
-	  \"VariableType\":\"SCIENCE_VARIABLE\",
-	  \"LongName\":\"A long UMM-Var name\",
-	  \"Dimensions\": [{\"Name\":\"YDim\",
-	                    \"Size\":180.0,
-	                    \"Type\":\"LATITUDE_DIMENSION\"}],
-	  \"DataType\":\"float32\"}"
+"{
+  \"AdditionalIdentifiers\" : [ {
+    \"Identifier\" : \"air_temp\"
+  }, {
+    \"Description\" : \"AIRS_name\",
+    \"Identifier\" : \"TAirSup\"
+  } ],
+  \"VariableType\" : \"SCIENCE_VARIABLE\",
+  \"DataType\" : \"float32\",
+  \"StandardName\" : \"air_temperature\",
+  \"FillValues\" : [ {
+    \"Type\" : \"SCIENCE_FILLVALUE\",
+    \"Value\" : 9.969209968E36
+  } ],
+  \"Dimensions\" : [ {
+    \"Name\" : \"atrack\",
+    \"Size\" : 45,
+    \"Type\" : \"ALONG_TRACK_DIMENSION\"
+  }, {
+    \"Name\" : \"xtrack\",
+    \"Size\" : 30,
+    \"Type\" : \"CROSS_TRACK_DIMENSION\"
+  }, {
+    \"Name\" : \"air_pres\",
+    \"Size\" : 100,
+    \"Type\" : \"PRESSURE_DIMENSION\"
+  } ],
+  \"Definition\" : \"Air temperature profile from SNDRSNIML2CCPRET_2\",
+  \"Name\" : \"/air_temp\",
+  \"ValidRanges\" : [ {
+    \"Max\" : 400,
+    \"Min\" : 100
+  } ],
+  \"MetadataSpecification\" : {
+    \"Name\" : \"UMM-Var\",
+    \"URL\" : \"https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1\",
+    \"Version\" : \"1.8.1\"
+  },
+  \"Units\" : \"Kelvin\",
+  \"LongName\" : \"Air temperature profile\"
+}"
 ```
 
 Both Variable and Data:
@@ -605,26 +626,47 @@ curl -XPUT \
   %CMR-ENDPOINT%/collections/C1200000005-PROV1/1/variables/sampleVariableNativeId33 \
   -d \
 \"{\"content\":
-    {\"ValidRanges\": [{\"Min\":0.0, \"Max\":1.0}],
-	  \"Dimensions\":\"total methane\",
-	  \"Definition\":\"11\",
-	  \"Scale\":1.0,
-	  \"Offset\":0.0,
-	  \"MetadataSpecification\": {\"URL\":\"https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1\",
-	                              \"Name\":\"UMM-Var\",
-	                              \"Version\":\"1.8.1\"},
-	  \"FillValues\": [{\"Value\":-9999.0, \"Type\":\"SCIENCE_FILLVALUE\"}],
-	  \"Units\":\"m\",
-	  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
-	                        \"Topic\":\"sk-B\",
-	                        \"Term\":\"sk-C\"}],
-	  \"Name\":\"A-name\",
-	  \"VariableType\":\"SCIENCE_VARIABLE\",
-	  \"LongName\":\"A long UMM-Var name\",
-	  \"Dimensions\": [{\"Name\":\"YDim\",
-	                    \"Size\":180.0,
-	                    \"Type\":\"LATITUDE_DIMENSION\"}],
-	  \"DataType\":\"float32\"},
+    {
+      \"AdditionalIdentifiers\" : [ {
+        \"Identifier\" : \"air_temp\"
+      }, {
+        \"Description\" : \"AIRS_name\",
+        \"Identifier\" : \"TAirSup\"
+      } ],
+    \"VariableType\" : \"SCIENCE_VARIABLE\",
+    \"DataType\" : \"float32\",
+    \"StandardName\" : \"air_temperature\",
+    \"FillValues\" : [ {
+      \"Type\" : \"SCIENCE_FILLVALUE\",
+      \"Value\" : 9.969209968E36
+    } ],
+    \"Dimensions\" : [ {
+      \"Name\" : \"atrack\",
+      \"Size\" : 45,
+      \"Type\" : \"ALONG_TRACK_DIMENSION\"
+    }, {
+      \"Name\" : \"xtrack\",
+      \"Size\" : 30,
+      \"Type\" : \"CROSS_TRACK_DIMENSION\"
+    }, {
+      \"Name\" : \"air_pres\",
+      \"Size\" : 100,
+      \"Type\" : \"PRESSURE_DIMENSION\"
+    } ],
+    \"Definition\" : \"Air temperature profile from SNDRSNIML2CCPRET_2\",
+    \"Name\" : \"/air_temp\",
+    \"ValidRanges\" : [ {
+      \"Max\" : 400,
+      \"Min\" : 100
+    } ],
+    \"MetadataSpecification\" : {
+      \"Name\" : \"UMM-Var\",
+      \"URL\" : \"https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1\",
+      \"Version\" : \"1.8.1\"
+    },
+    \"Units\" : \"Kelvin\",
+    \"LongName\" : \"Air temperature profile\"
+  },
 	\"data\": {\"XYZ\": \"XYZ\", \"allow-regridding\": true}}"
 ```
 
@@ -677,26 +719,47 @@ curl -XPUT \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/variables/sampleVariableNativeId33 \
   -d \
-"{\"ValidRanges\": [{\"Min\":0.0, \"Max\":1.0}],
-	  \"Dimensions\":\"total methane\",
-	  \"Definition\":\"11\",
-	  \"Scale\":1.0,
-	  \"Offset\":0.0,
-	  \"MetadataSpecification\": {\"URL\":\"https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1\",
-	                              \"Name\":\"UMM-Var\",
-	                              \"Version\":\"1.8.1\"},
-	  \"FillValues\": [{\"Value\":-9999.0, \"Type\":\"SCIENCE_FILLVALUE\"}],
-	  \"Units\":\"m\",
-	  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
-	                        \"Topic\":\"sk-B\",
-	                        \"Term\":\"sk-C\"}],
-	  \"Name\":\"A-name\",
-	  \"VariableType\":\"SCIENCE_VARIABLE\",
-	  \"LongName\":\"A long UMM-Var name\",
-	  \"Dimensions\": [{\"Name\":\"YDim\",
-	                    \"Size\":180.0,
-	                    \"Type\":\"LATITUDE_DIMENSION\"}],
-	  \"DataType\":\"float32\"}"
+"{
+  \"AdditionalIdentifiers\" : [ {
+    \"Identifier\" : \"air_temp\"
+  }, {
+    \"Description\" : \"AIRS_name\",
+    \"Identifier\" : \"TAirSup\"
+  } ],
+  \"VariableType\" : \"SCIENCE_VARIABLE\",
+  \"DataType\" : \"float32\",
+  \"StandardName\" : \"air_temperature\",
+  \"FillValues\" : [ {
+    \"Type\" : \"SCIENCE_FILLVALUE\",
+    \"Value\" : 9.969209968E36
+  } ],
+  \"Dimensions\" : [ {
+    \"Name\" : \"atrack\",
+    \"Size\" : 45,
+    \"Type\" : \"ALONG_TRACK_DIMENSION\"
+  }, {
+    \"Name\" : \"xtrack\",
+    \"Size\" : 30,
+    \"Type\" : \"CROSS_TRACK_DIMENSION\"
+  }, {
+    \"Name\" : \"air_pres\",
+    \"Size\" : 100,
+    \"Type\" : \"PRESSURE_DIMENSION\"
+  } ],
+  \"Definition\" : \"Air temperature profile from SNDRSNIML2CCPRET_2\",
+  \"Name\" : \"/air_temp\",
+  \"ValidRanges\" : [ {
+    \"Max\" : 400,
+    \"Min\" : 100
+  } ],
+  \"MetadataSpecification\" : {
+    \"Name\" : \"UMM-Var\",
+    \"URL\" : \"https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1\",
+    \"Version\" : \"1.8.1\"
+  },
+  \"Units\" : \"Kelvin\",
+  \"LongName\" : \"Air temperature profile\"
+}"
 ```
 
 #### Successful Response in XML
