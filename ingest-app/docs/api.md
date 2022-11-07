@@ -551,7 +551,14 @@ Variable concept can be created or updated by sending an HTTP PUT with the metad
 
 Variable associations can also have custom data to describe or augment the relationship. CMR makes no use of this extra data, but clients may use the information to derive a meaning from the relationship. The extra "Association Data" can be any valid JSON. When providing Association Data, the API requires that the Variable Metadata and Association Data be sent together, in a JSON wrapper using the same PUT command and URL. The wrapper looks like this:
 
-``` {"content": <Variable Metadata here>, "": <Association Data here>} ```
+```
+{"content": {
+   "MetadataSpecification" : {
+   "URL" : "https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1",
+   "Name" : "UMM-Var",
+   "Version" : "1.8.1"},...},
+ "data": {"XYZ": "XYZ", "allow-regridding": true}}
+```
 
 **Note**:
 
@@ -567,20 +574,47 @@ curl -XPUT \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/collections/C1200000005-PROV1/1/variables/sampleVariableNativeId33 \
   -d \
-"{\"ValidRange\":{},
-  \"Dimensions\":\"11\",
-  \"Scale\":\"1.0\",
-  \"Offset\":\"0.0\",
-  \"FillValue\":\"-9999.0\",
-  \"Units\":\"m\",
-  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
-                        \"Topic\":\"sk-B\",
-                        \"Term\":\"sk-C\"}],
-  \"Name\":\"A-name\",
-  \"VariableType\":\"SCIENCE_VARIABLE\",
-  \"LongName\":\"A long UMM-Var name\",
-  \"DimensionsName\":\"H2OFunc\",
-  \"DataType\":\"float32\"}"
+"{
+  \"AdditionalIdentifiers\" : [ {
+    \"Identifier\" : \"air_temp\"
+  }, {
+    \"Description\" : \"AIRS_name\",
+    \"Identifier\" : \"TAirSup\"
+  } ],
+  \"VariableType\" : \"SCIENCE_VARIABLE\",
+  \"DataType\" : \"float32\",
+  \"StandardName\" : \"air_temperature\",
+  \"FillValues\" : [ {
+    \"Type\" : \"SCIENCE_FILLVALUE\",
+    \"Value\" : 9.969209968E36
+  } ],
+  \"Dimensions\" : [ {
+    \"Name\" : \"atrack\",
+    \"Size\" : 45,
+    \"Type\" : \"ALONG_TRACK_DIMENSION\"
+  }, {
+    \"Name\" : \"xtrack\",
+    \"Size\" : 30,
+    \"Type\" : \"CROSS_TRACK_DIMENSION\"
+  }, {
+    \"Name\" : \"air_pres\",
+    \"Size\" : 100,
+    \"Type\" : \"PRESSURE_DIMENSION\"
+  } ],
+  \"Definition\" : \"Air temperature profile from SNDRSNIML2CCPRET_2\",
+  \"Name\" : \"/air_temp\",
+  \"ValidRanges\" : [ {
+    \"Max\" : 400,
+    \"Min\" : 100
+  } ],
+  \"MetadataSpecification\" : {
+    \"Name\" : \"UMM-Var\",
+    \"URL\" : \"https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1\",
+    \"Version\" : \"1.8.1\"
+  },
+  \"Units\" : \"Kelvin\",
+  \"LongName\" : \"Air temperature profile\"
+}"
 ```
 
 Both Variable and Data:
@@ -591,22 +625,49 @@ curl -XPUT \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/collections/C1200000005-PROV1/1/variables/sampleVariableNativeId33 \
   -d \
-"{\"content\":
-    {\"ValidRange\":{},
-    \"Dimensions\":\"11\",
-    \"Scale\":\"1.0\",
-    \"Offset\":\"0.0\",
-    \"FillValue\":\"-9999.0\",
-    \"Units\":\"m\",
-    \"ScienceKeywords\":[{\"Category\":\"sk-A\",
-                          \"Topic\":\"sk-B\",
-                          \"Term\":\"sk-C\"}],
-    \"Name\":\"A-name\",
-    \"VariableType\":\"SCIENCE_VARIABLE\",
-    \"LongName\":\"A long UMM-Var name\",
-    \"DimensionsName\":\"H2OFunc\",
-    \"DataType\":\"float32\"},
-  \"data\": {\"XYZ\": \"XYZ\", \"allow-regridding\": true}}"
+\"{\"content\":
+    {
+      \"AdditionalIdentifiers\" : [ {
+        \"Identifier\" : \"air_temp\"
+      }, {
+        \"Description\" : \"AIRS_name\",
+        \"Identifier\" : \"TAirSup\"
+      } ],
+    \"VariableType\" : \"SCIENCE_VARIABLE\",
+    \"DataType\" : \"float32\",
+    \"StandardName\" : \"air_temperature\",
+    \"FillValues\" : [ {
+      \"Type\" : \"SCIENCE_FILLVALUE\",
+      \"Value\" : 9.969209968E36
+    } ],
+    \"Dimensions\" : [ {
+      \"Name\" : \"atrack\",
+      \"Size\" : 45,
+      \"Type\" : \"ALONG_TRACK_DIMENSION\"
+    }, {
+      \"Name\" : \"xtrack\",
+      \"Size\" : 30,
+      \"Type\" : \"CROSS_TRACK_DIMENSION\"
+    }, {
+      \"Name\" : \"air_pres\",
+      \"Size\" : 100,
+      \"Type\" : \"PRESSURE_DIMENSION\"
+    } ],
+    \"Definition\" : \"Air temperature profile from SNDRSNIML2CCPRET_2\",
+    \"Name\" : \"/air_temp\",
+    \"ValidRanges\" : [ {
+      \"Max\" : 400,
+      \"Min\" : 100
+    } ],
+    \"MetadataSpecification\" : {
+      \"Name\" : \"UMM-Var\",
+      \"URL\" : \"https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1\",
+      \"Version\" : \"1.8.1\"
+    },
+    \"Units\" : \"Kelvin\",
+    \"LongName\" : \"Air temperature profile\"
+  },
+	\"data\": {\"XYZ\": \"XYZ\", \"allow-regridding\": true}}"
 ```
 
 #### Successful Response in XML
@@ -658,20 +719,47 @@ curl -XPUT \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/variables/sampleVariableNativeId33 \
   -d \
-"{\"ValidRange\":{},
-  \"Dimensions\":\"11\",
-  \"Scale\":\"1.0\",
-  \"Offset\":\"0.0\",
-  \"FillValue\":\"-9999.0\",
-  \"Units\":\"m\",
-  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
-                        \"Topic\":\"sk-B\",
-                        \"Term\":\"sk-C\"}],
-  \"Name\":\"A-name\",
-  \"VariableType\":\"SCIENCE_VARIABLE\",
-  \"LongName\":\"A long UMM-Var name\",
-  \"DimensionsName\":\"H2OFunc\",
-  \"DataType\":\"float32\"}"
+"{
+  \"AdditionalIdentifiers\" : [ {
+    \"Identifier\" : \"air_temp\"
+  }, {
+    \"Description\" : \"AIRS_name\",
+    \"Identifier\" : \"TAirSup\"
+  } ],
+  \"VariableType\" : \"SCIENCE_VARIABLE\",
+  \"DataType\" : \"float32\",
+  \"StandardName\" : \"air_temperature\",
+  \"FillValues\" : [ {
+    \"Type\" : \"SCIENCE_FILLVALUE\",
+    \"Value\" : 9.969209968E36
+  } ],
+  \"Dimensions\" : [ {
+    \"Name\" : \"atrack\",
+    \"Size\" : 45,
+    \"Type\" : \"ALONG_TRACK_DIMENSION\"
+  }, {
+    \"Name\" : \"xtrack\",
+    \"Size\" : 30,
+    \"Type\" : \"CROSS_TRACK_DIMENSION\"
+  }, {
+    \"Name\" : \"air_pres\",
+    \"Size\" : 100,
+    \"Type\" : \"PRESSURE_DIMENSION\"
+  } ],
+  \"Definition\" : \"Air temperature profile from SNDRSNIML2CCPRET_2\",
+  \"Name\" : \"/air_temp\",
+  \"ValidRanges\" : [ {
+    \"Max\" : 400,
+    \"Min\" : 100
+  } ],
+  \"MetadataSpecification\" : {
+    \"Name\" : \"UMM-Var\",
+    \"URL\" : \"https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1\",
+    \"Version\" : \"1.8.1\"
+  },
+  \"Units\" : \"Kelvin\",
+  \"LongName\" : \"Air temperature profile\"
+}"
 ```
 
 #### Successful Response in XML
