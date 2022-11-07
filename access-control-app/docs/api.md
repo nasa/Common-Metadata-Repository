@@ -874,7 +874,7 @@ curl -i -XPOST -H "Content-Type: application/json" "%CMR-ENDPOINT%/permissions" 
 HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 
-"C1200000011-PROV1: ["read"], "C1200000031-PROV1": ["read"]}
+"C1200000003-PROV1: ["read"], "C1200000004-PROV1": ["read"]}
 ```
 
 #### Parameters
