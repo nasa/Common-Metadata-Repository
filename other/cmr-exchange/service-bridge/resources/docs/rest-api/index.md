@@ -179,11 +179,18 @@ and, the time taken to process the request.
 {
   "hits": ...,
   "took": ...,
+  "sa-header": "[...]",
   "items": [...],
   "request-id": ...,
   "warnings:" null
 }
 ```
+
+## Search-After
+
+CMR Service-Bridge allows the use of CMR-Search-After. When searching a collection
+on Service-Bridge, the response will include the Search-After header as a header
+and in the response body. This value can be used as a header for Search-After paging.
 
 ## Request IDs
 
@@ -198,6 +205,7 @@ In the headers, the request ID has the field name `Cmr-Request-Id`.
 HTTP/1.1 200 OK
 Cmr-Took: 0.541
 Cmr-Hits: 1
+Cmr-Search-After: ["hmr_tme", 10310976000000, 1200267320]
 Content-Type: application/json
 Cmr-Request-Id: 23713cac-5225-c29c-ca5a-f59d0982de8b
 Cmr-Media-Type: cmr-service-bridge.v3; format=*
@@ -240,6 +248,7 @@ API that will impact users of the default version.
 {
   "hits": ...,
   "took": ...,
+  "sa-header": "[...]",
   "request-id": ...,
   "items": [...],
   "warnings": [...]
