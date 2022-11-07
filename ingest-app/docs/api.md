@@ -574,20 +574,26 @@ curl -XPUT \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/collections/C1200000005-PROV1/1/variables/sampleVariableNativeId33 \
   -d \
-"{\"ValidRange\":{},
-  \"Dimensions\":\"11\",
-  \"Scale\":\"1.0\",
-  \"Offset\":\"0.0\",
-  \"FillValue\":\"-9999.0\",
-  \"Units\":\"m\",
-  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
-                        \"Topic\":\"sk-B\",
-                        \"Term\":\"sk-C\"}],
-  \"Name\":\"A-name\",
-  \"VariableType\":\"SCIENCE_VARIABLE\",
-  \"LongName\":\"A long UMM-Var name\",
-  \"DimensionsName\":\"H2OFunc\",
-  \"DataType\":\"float32\"}"
+"{\"ValidRanges\": [{\"Min\":0.0, \"Max\":1.0}],
+	  \"Dimensions\":\"total methane\",
+	  \"Definition\":\"11\",
+	  \"Scale\":1.0,
+	  \"Offset\":0.0,
+	  \"MetadataSpecification\": {\"URL\":\"https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1\",
+	                              \"Name\":\"UMM-Var\",
+	                              \"Version\":\"1.8.1\"},
+	  \"FillValues\": [{\"Value\":-9999.0, \"Type\":\"SCIENCE_FILLVALUE\"}],
+	  \"Units\":\"m\",
+	  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
+	                        \"Topic\":\"sk-B\",
+	                        \"Term\":\"sk-C\"}],
+	  \"Name\":\"A-name\",
+	  \"VariableType\":\"SCIENCE_VARIABLE\",
+	  \"LongName\":\"A long UMM-Var name\",
+	  \"Dimensions\": [{\"Name\":\"YDim\",
+	                    \"Size\":180.0,
+	                    \"Type\":\"LATITUDE_DIMENSION\"}],
+	  \"DataType\":\"float32\"}"
 ```
 
 Both Variable and Data:
@@ -598,22 +604,28 @@ curl -XPUT \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/collections/C1200000005-PROV1/1/variables/sampleVariableNativeId33 \
   -d \
-"{\"content\":
-    {\"ValidRange\":{},
-    \"Dimensions\":\"11\",
-    \"Scale\":\"1.0\",
-    \"Offset\":\"0.0\",
-    \"FillValue\":\"-9999.0\",
-    \"Units\":\"m\",
-    \"ScienceKeywords\":[{\"Category\":\"sk-A\",
-                          \"Topic\":\"sk-B\",
-                          \"Term\":\"sk-C\"}],
-    \"Name\":\"A-name\",
-    \"VariableType\":\"SCIENCE_VARIABLE\",
-    \"LongName\":\"A long UMM-Var name\",
-    \"DimensionsName\":\"H2OFunc\",
-    \"DataType\":\"float32\"},
-  \"data\": {\"XYZ\": \"XYZ\", \"allow-regridding\": true}}"
+\"{\"content\":
+    {\"ValidRanges\": [{\"Min\":0.0, \"Max\":1.0}],
+	  \"Dimensions\":\"total methane\",
+	  \"Definition\":\"11\",
+	  \"Scale\":1.0,
+	  \"Offset\":0.0,
+	  \"MetadataSpecification\": {\"URL\":\"https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1\",
+	                              \"Name\":\"UMM-Var\",
+	                              \"Version\":\"1.8.1\"},
+	  \"FillValues\": [{\"Value\":-9999.0, \"Type\":\"SCIENCE_FILLVALUE\"}],
+	  \"Units\":\"m\",
+	  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
+	                        \"Topic\":\"sk-B\",
+	                        \"Term\":\"sk-C\"}],
+	  \"Name\":\"A-name\",
+	  \"VariableType\":\"SCIENCE_VARIABLE\",
+	  \"LongName\":\"A long UMM-Var name\",
+	  \"Dimensions\": [{\"Name\":\"YDim\",
+	                    \"Size\":180.0,
+	                    \"Type\":\"LATITUDE_DIMENSION\"}],
+	  \"DataType\":\"float32\"},
+	\"data\": {\"XYZ\": \"XYZ\", \"allow-regridding\": true}}"
 ```
 
 #### Successful Response in XML
@@ -665,20 +677,26 @@ curl -XPUT \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/variables/sampleVariableNativeId33 \
   -d \
-"{\"ValidRange\":{},
-  \"Dimensions\":\"11\",
-  \"Scale\":\"1.0\",
-  \"Offset\":\"0.0\",
-  \"FillValue\":\"-9999.0\",
-  \"Units\":\"m\",
-  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
-                        \"Topic\":\"sk-B\",
-                        \"Term\":\"sk-C\"}],
-  \"Name\":\"A-name\",
-  \"VariableType\":\"SCIENCE_VARIABLE\",
-  \"LongName\":\"A long UMM-Var name\",
-  \"DimensionsName\":\"H2OFunc\",
-  \"DataType\":\"float32\"}"
+"{\"ValidRanges\": [{\"Min\":0.0, \"Max\":1.0}],
+	  \"Dimensions\":\"total methane\",
+	  \"Definition\":\"11\",
+	  \"Scale\":1.0,
+	  \"Offset\":0.0,
+	  \"MetadataSpecification\": {\"URL\":\"https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1\",
+	                              \"Name\":\"UMM-Var\",
+	                              \"Version\":\"1.8.1\"},
+	  \"FillValues\": [{\"Value\":-9999.0, \"Type\":\"SCIENCE_FILLVALUE\"}],
+	  \"Units\":\"m\",
+	  \"ScienceKeywords\":[{\"Category\":\"sk-A\",
+	                        \"Topic\":\"sk-B\",
+	                        \"Term\":\"sk-C\"}],
+	  \"Name\":\"A-name\",
+	  \"VariableType\":\"SCIENCE_VARIABLE\",
+	  \"LongName\":\"A long UMM-Var name\",
+	  \"Dimensions\": [{\"Name\":\"YDim\",
+	                    \"Size\":180.0,
+	                    \"Type\":\"LATITUDE_DIMENSION\"}],
+	  \"DataType\":\"float32\"}"
 ```
 
 #### Successful Response in XML
