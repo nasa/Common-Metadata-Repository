@@ -551,7 +551,14 @@ Variable concept can be created or updated by sending an HTTP PUT with the metad
 
 Variable associations can also have custom data to describe or augment the relationship. CMR makes no use of this extra data, but clients may use the information to derive a meaning from the relationship. The extra "Association Data" can be any valid JSON. When providing Association Data, the API requires that the Variable Metadata and Association Data be sent together, in a JSON wrapper using the same PUT command and URL. The wrapper looks like this:
 
-``` {"content": <Variable Metadata here>, "": <Association Data here>} ```
+```
+{"content": {
+   "MetadataSpecification" : {
+   "URL" : "https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1",
+   "Name" : "UMM-Var",
+   "Version" : "1.8.1"},...},
+ "data": {"XYZ": "XYZ", "allow-regridding": true}}
+```
 
 **Note**:
 
