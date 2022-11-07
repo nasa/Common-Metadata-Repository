@@ -2,7 +2,6 @@
   "Tests the access control permission check routes."
   (:require
    [cheshire.core :as json]
-   [clj-http.client :as client]
    [clj-time.core :as t]
    [clojure.string :as string]
    [clojure.test :refer :all]
@@ -10,7 +9,6 @@
    [cmr.access-control.test.util :as u]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.system :as s]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]))
 
@@ -921,8 +919,6 @@
             :registered []
             "user1" ["update" "delete"]
             "user2" []))))))
-
-
 
 (deftest system-level-permission-check
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
