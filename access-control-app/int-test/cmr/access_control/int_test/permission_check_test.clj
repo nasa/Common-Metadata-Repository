@@ -34,14 +34,16 @@
         coll2 (save-basic-collection "coll2")
         coll3 (save-basic-collection "coll3")
         coll4 (save-basic-collection "coll4")
-        permissions-url (ac/acl-permission-url)
         post-data-body (str "user_type=guest"
                          "&concept_id=" coll1
                          "&concept_id=" coll2
                          "&concept_id=" coll3
                          "&concept_id=" coll4)]
     (testing "permissions endpoint allows post request"
-      (let [response (client/post permissions-url
+      (let [response (client/post (ac/acl-permission-url
+                                    (transmit-config/context->app-connection
+                                     (u/conn-context)
+                                     :access-control))
                        {:basic-auth ["user" "pass"]
                         :body post-data-body
                         :content-type "application/x-www-form-urlencoded"})
