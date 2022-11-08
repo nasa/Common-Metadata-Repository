@@ -188,9 +188,12 @@ and, the time taken to process the request.
 
 ## Search-After
 
-CMR Service-Bridge allows the use of CMR-Search-After. When searching a collection
-on Service-Bridge, the response will include the Search-After header as a header
-and in the response body. This value can be used as a header for Search-After paging.
+CMR Service-Bridge allows the use of CMR-Search-After header to take advantage of the 
+CMR Search-After support for paging. Any search against CMR Service Bridge that has results
+not fully returned in the current request will return a search-after value in the 
+CMR-Search-After header of the search response. User can then pass this returned value 
+in the CMR-Search-After header of the following request to retrieve the next page of result 
+based on the specified page_size. See CMR API document on Search-After for a detailed description.
 
 ## Request IDs
 
