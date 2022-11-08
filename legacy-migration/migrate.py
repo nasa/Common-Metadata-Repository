@@ -40,7 +40,7 @@ def migrate_row(id, name, summary, provider_guid):
               "Authorization": access_token,
               "User-id": "legacy_migration"}
 
-    resp = requests.put(f"{url_root}/ingest/dataqualitysummary/{id}?provider={providers_map[provider_guid]}",
+    resp = requests.put(f"{url_root}/ingest/providers/{providers_map[provider_guid]}/dataqualitysummaries/{id}",
                         data=json.dumps(umm),
                         headers=header)
     if resp.status_code > 300:
