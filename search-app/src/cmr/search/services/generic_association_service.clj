@@ -130,7 +130,12 @@
   associated_item: {concept_id: C6-PROV1}}."
   [mdb-context association operation]
   ;; save each association if there is no errors on it, otherwise returns the errors.
-  (let [association (sort-association association)
+  (let [associated-item-concept-id (:concept-id association)
+        revision-id (:revision-id association)
+        associated-item-revision-id (if (string? revision-id)
+                                      (read-string revision-id)
+                                      revision-id)
+        association (sort-association association)
         {source-concept-id :source-concept-id
          source-revision-id :source-revision-id
          concept-id :concept-id
@@ -144,7 +149,8 @@
                         (assoc :native-id native-id)
                         (assoc :user-id (context->user-id mdb-context)))
         associated-item (util/remove-nil-keys
-                         {:concept-id concept-id :revision-id revision-id})]
+                         {:concept-id associated-item-concept-id
+                          :revision-id associated-item-revision-id})]
     (if (seq errors)
       {:errors errors :associated-item associated-item}
       (try

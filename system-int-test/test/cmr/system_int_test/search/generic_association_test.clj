@@ -828,6 +828,13 @@
         (is (= (get-in (first (:body response2)) [:generic-association :revision-id])
                (+ 1 (get-in (first (:body response1)) [:generic-association :revision-id]))))
 
+        ;; The first and second associations contain different associated-item because associated-item
+        ;; should always be related to one of the items in the list that's associated to a particular concept.
+        (is (= {:concept-id coll-concept-id  :revision-id coll-revision-id}
+               (get-in (first (:body response1)) [:associated-item])))
+        (is (= {:concept-id grid-concept-id  :revision-id grid-revision-id}
+               (get-in (first (:body response2)) [:associated-item])))
+
         ;; The third association is not allowed.
         (is (= 400 (:status response3)))
         (is (some? (re-find #"There are already generic associations between concept id \[GRD\d*-PROV1\] and concept id \[C\d*-PROV1\] revision ids \[\d*\], cannot create generic association on the same concept without revision id."
