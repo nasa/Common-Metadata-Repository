@@ -208,10 +208,10 @@
 
 (defn process-ok-results
   [data]
-  (if (contains? data :sa-header)
+  (if (contains? data :search-after)
     {:headers {"CMR-Took" (:took data)
                "CMR-Hits" (:hits data)
-               "CMR-Search-After" (:sa-header data)}
+               "CMR-Search-After" (:search-after data)}
      :status 200}
     {:headers {"CMR-Took" (:took data)
                "CMR-Hits" (:hits data)}

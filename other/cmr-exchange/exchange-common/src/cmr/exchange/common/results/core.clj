@@ -8,7 +8,7 @@
    ;; Number of milleseconds elapsed from start to end of call
    took
    ;; Search-after header
-   sa-header
+   search-after
    ;; The actual items in the result set
    items
    ;; The randomly generated request-id string
@@ -22,7 +22,7 @@
     (merge {
             :hits hits-header 
             :took elapsed
-            :sa-header sa-header
+            :search-after sa-header
             :request-id request-id 
             :items results}
            warnings)))
