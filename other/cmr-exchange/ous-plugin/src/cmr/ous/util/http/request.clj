@@ -14,15 +14,19 @@
 
 (defn add-user-agent
   ([]
-    (add-user-agent {}))
+   (add-user-agent {}))
   ([req]
-    (request/add-header req "User-Agent" const/user-agent)))
+   (request/add-header req "User-Agent" const/user-agent)))
 
 (defn add-client-id
   ([]
-    (add-client-id {}))
+   (add-client-id {}))
   ([req]
-    (request/add-header req "Client-Id" const/client-id)))
+   (request/add-header req "Client-Id" const/client-id)))
+
+(defn get-header
+  [request header]
+  (request/get-header request header))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Accept Header/Version Support   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

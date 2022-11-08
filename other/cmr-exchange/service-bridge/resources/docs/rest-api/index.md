@@ -179,11 +179,21 @@ and, the time taken to process the request.
 {
   "hits": ...,
   "took": ...,
+  "sa-header": "[...]",
   "items": [...],
   "request-id": ...,
   "warnings:" null
 }
 ```
+
+## Search-After
+
+CMR Service-Bridge allows the use of CMR-Search-After header to take advantage of the 
+CMR Search-After support for paging. Any search against CMR Service Bridge that has results
+not fully returned in the current request will return a search-after value in the 
+CMR-Search-After header of the search response. User can then pass this returned value 
+in the CMR-Search-After header of the following request to retrieve the next page of result 
+based on the specified page_size. See CMR API document on Search-After for a detailed description.
 
 ## Request IDs
 
@@ -198,6 +208,7 @@ In the headers, the request ID has the field name `Cmr-Request-Id`.
 HTTP/1.1 200 OK
 Cmr-Took: 0.541
 Cmr-Hits: 1
+Cmr-Search-After: ["hmr_tme", 10310976000000, 1200267320]
 Content-Type: application/json
 Cmr-Request-Id: 23713cac-5225-c29c-ca5a-f59d0982de8b
 Cmr-Media-Type: cmr-service-bridge.v3; format=*
@@ -240,6 +251,7 @@ API that will impact users of the default version.
 {
   "hits": ...,
   "took": ...,
+  "sa-header": "[...]",
   "request-id": ...,
   "items": [...],
   "warnings": [...]

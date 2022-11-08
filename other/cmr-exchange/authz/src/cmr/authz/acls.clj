@@ -24,4 +24,4 @@
      url
      (request/add-token-header req token)
      {}
-     response/json-handler)))
+     response/json-body-handler)))
