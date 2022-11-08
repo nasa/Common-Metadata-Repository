@@ -231,6 +231,10 @@
      (err-fn data)
      (ok-fn data))))
 
+(defn sanitize
+  [data]
+  (dissoc data :search-after))
+
 (defn json
   ([request data]
    (json request process-results data))
@@ -239,7 +243,7 @@
    (-> data
        (assoc :request-id (:request-id request))
        process-fn
-       (assoc :body (json/generate-string data))
+       (assoc :body (json/generate-string (sanitize data)))
        (response/content-type "application/json"))))
 
 (defn text
@@ -249,7 +253,7 @@
    (-> data
        (assoc :request-id (:request-id request))
        process-fn
-       (assoc :body data)
+       (assoc :body (sanitize data))
        (response/content-type "text/plain"))))
 
 (defn html
@@ -259,5 +263,5 @@
    (-> data
        (assoc :request-id (:request-id request))
        process-fn
-       (assoc :body data)
+       (assoc :body (sanitize data))
        (response/content-type "text/html"))))
