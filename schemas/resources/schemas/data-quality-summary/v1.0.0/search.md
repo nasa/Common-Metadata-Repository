@@ -141,7 +141,7 @@ Content-Length: 512
                 "Name": "CER-BDS_Terra",
                 "Summary": "Summary",
                 "MetadataSpecification": {
-                    "Name": "data-quality-summary1234",
+                    "Name": "Data Quality Summary",
                     "Version": "1.0.0",
                     "URL": "https://cdn.earthdata.nasa.gov/generics/data-quality-summary/v1.0.0"
                 }

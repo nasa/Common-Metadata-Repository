@@ -141,7 +141,7 @@ Content-Length: 555
                 "Description": "Testing range slider",
                 "Form": "<form></form>",
                 "MetadataSpecification": {
-                    "Name": "ServiceOption",
+                    "Name": "Service Option",
                     "Version": "1.0.0",
                     "URL": "https://cdn.earthdata.nasa.gov/generics/service-option/v1.0.0"
                 }

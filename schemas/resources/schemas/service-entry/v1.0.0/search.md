@@ -146,7 +146,7 @@ Content-Length: 817
       "InterfaceName" : "EOSIDS Service Interface",
       "URL" : "www.example.com",
       "MetadataSpecification" : {
-        "Name" : "Service-Entry",
+        "Name" : "Service Entry",
         "Version" : "1.0.0",
         "URL" : "https://cdn.earthdata.nasa.gov/generics/service-entry/v1.0.0"
       }

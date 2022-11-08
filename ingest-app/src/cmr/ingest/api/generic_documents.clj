@@ -57,7 +57,7 @@
         raw-document (slurp (:body request))
         document (json/parse-string raw-document true)
         specification (:MetadataSpecification document)
-        spec-key (csk/->kebab-case-keyword (:Name specification))
+        spec-key (csk/->kebab-case-keyword (:Name specification ""))
         spec-version (:Version specification)]
     (if (not= concept-type spec-key)
       (throw UnsupportedOperationException)

@@ -232,7 +232,7 @@
             provider-id native-id request)))
 
        ;; Generic documents are by pattern: /providers/{prov_id}/{concept-type}/{native_id}
-       (context ["/:concept-type" :concept-type (re-pattern common-generic/generic-concept-types-reg-ex)] [concept-type]
+       (context ["/:concept-type" :concept-type (re-pattern common-generic/plural-generic-concept-types-reg-ex)] [concept-type]
          (context ["/:native-id" :native-id #".*$"] [native-id]
            (POST "/" request (gen-doc/crud-generic-document request :create))
            (GET "/" request (gen-doc/crud-generic-document request :read))

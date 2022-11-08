@@ -148,7 +148,7 @@ Content-Length: 2063
       "SortKey" : "Name",
       "Deprecated" : false,
       "MetadataSpecification" : {
-        "Name" : "OrderOption1",
+        "Name" : "Order Option",
         "Version" : "1.0.0",
         "URL" : "https://cdn.earthdata.nasa.gov/generics/order-option/v1.0.0"
       }
