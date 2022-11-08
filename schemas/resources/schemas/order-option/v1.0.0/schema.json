@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Order-Option",
+  "title": "Order Option",
   "description": "This schema describes order options. Order options describe XML using some description language. This allows third parties to define parts of the API on CMR. Option Selections contain XML that must conform to the definition of the form in this. These are used during the ordering process to define how data can be accessed/distributed from the Providers.",
   "additionalProperties": false,
   "type": "object",
@@ -59,7 +59,7 @@
         "Name": {
           "description": "This element represents the name of the schema.",
           "type": "string",
-          "enum": ["Order-Option"]
+          "enum": ["Order Option"]
         },
         "Version": {
           "description": "This element represents the version of the schema.",

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Service-Option",
+  "title": "Service Option",
   "description": "This schema describes service options. Service options are options that a service can provide when servicing orders, such as how data can be accessed/distrbuted from the providers. These options are written in an XML format that must conform to the ECHO forms schema. The form will be used to send the ordering options to the service.",
   "additionalProperties": false,
   "type": "object",
@@ -46,7 +46,7 @@
         "Name": {
           "description": "This element represents the name of the schema.",
           "type": "string",
-          "enum": ["Service-Option"]
+          "enum": ["Service Option"]
         },
         "Version": {
           "description": "This element represents the version of the schema.",

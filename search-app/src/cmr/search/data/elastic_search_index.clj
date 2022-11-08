@@ -198,10 +198,10 @@
   (defmethod common-esi/concept-type->index-info concept-type
     [context _ query] 
     {:index-name (if (:all-revisions? query)
-                   (format "1_all_generic_%s_revisions" (clojure.string/replace 
-                                                         (name concept-type) #"-" "_"))
-                   (format "1_generic_%s" (clojure.string/replace 
-                                           (name concept-type) #"-" "_")))
+                   (format "1_all_generic_%s_revisions" (string/replace (name concept-type) 
+                                                                        #"-" "_"))
+                   (format "1_generic_%s" (string/replace (name concept-type) 
+                                                          #"-" "_")))
      :type-name (name concept-type)}))
 
 (defn context->conn

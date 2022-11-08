@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Data-Quality-Summary",
+  "title": "Data Quality Summary",
   "description": "Contains a human readable description of the quality of a set of data.",
   "additionalProperties": false,
   "type": "object",
@@ -38,7 +38,7 @@
         "Name": {
           "description": "This element represents the name of the schema.",
           "type": "string",
-          "enum": ["Data-Quality-Summary"]
+          "enum": ["Data Quality Summary"]
         },
         "Version": {
           "description": "This element represents the version of the schema.",

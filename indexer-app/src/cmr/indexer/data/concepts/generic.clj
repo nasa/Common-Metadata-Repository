@@ -3,6 +3,7 @@
    complying to a schema supported by the Generic Document system) to and object
    that can be indexed in lucine."
   (:require
+   [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.java.io :as io]
    [cmr.common.concepts :as concepts]
@@ -74,7 +75,8 @@
         generic-associations (esearch/parse-non-tombstone-associations
                               context
                               (meta-db/get-generic-associations-for-concept context concept))
-        gen-name (util/safe-lowercase (get-in parsed-concept [:MetadataSpecification :Name]))
+        gen-name (csk/->kebab-case (get-in parsed-concept 
+                                           [:MetadataSpecification :Name]))
         gen-ver (get-in parsed-concept [:MetadataSpecification :Version])
         index-data-file (format "schemas/%s/v%s/index.json" gen-name gen-ver)
         index-file-raw (slurp (io/resource index-data-file))

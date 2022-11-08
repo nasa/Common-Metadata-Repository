@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "Service-Entry",
+  "title": "Service Entry",
   "description": "This schema describes the information needed to describe a service provided by a data provider.",
   "additionalProperties": false,
   "type": "object",
@@ -62,7 +62,7 @@
         "Name": {
           "description": "This element represents the name of the schema.",
           "type": "string",
-          "enum": ["Service-Entry"]
+          "enum": ["Service Entry"]
         },
         "Version": {
           "description": "This element represents the version of the schema.",

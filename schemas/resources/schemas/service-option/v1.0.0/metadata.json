@@ -4,7 +4,7 @@
   "Description": "Testing range slider - updated DEMO_PROV",
   "Form": "<form></form>",
   "MetadataSpecification": {
-    "Name": "Service-Option",
+    "Name": "Service Option",
     "Version": "1.0.0",
     "URL": "https://cdn.earthdata.nasa.gov/generics/service-option/v1.0.0"
   }

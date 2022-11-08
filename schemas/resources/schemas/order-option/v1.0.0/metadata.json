@@ -7,7 +7,7 @@
   "SortKey": "Name",
   "Deprecated": false,
   "MetadataSpecification": {
-    "Name": "Order-Option",
+    "Name": "Order Option",
     "Version": "1.0.0",
     "URL": "https://cdn.earthdata.nasa.gov/generics/order-option/v1.0.0"
   }
