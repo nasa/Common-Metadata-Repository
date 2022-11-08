@@ -691,11 +691,6 @@
   []
   (format "http://localhost:%s/acls" (transmit-config/access-control-port)))
 
-(defn access-control-permissions-url
-  "URL to search permissions"
-  []
-  (format "http://localhost:%s/permissions" (transmit-config/access-control-port)))
-
 (defn access-control-s3-buckets-url
   "URL to search permitted s3-buckets"
   []
