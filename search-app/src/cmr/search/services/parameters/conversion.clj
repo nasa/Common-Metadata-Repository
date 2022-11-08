@@ -197,6 +197,8 @@
    :concept-id :string
    :keyword :keyword})
 
+;; TODO - generic concept work, these are the base parameters, we still need to 
+;; add additional search parameters dynamically based off each generic concept's index.json
 (doseq [concept-type (cc/get-generic-concept-types-array)]
   (defmethod common-params/param-mappings concept-type
     [_]
