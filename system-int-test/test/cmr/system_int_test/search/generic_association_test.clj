@@ -829,7 +829,7 @@
                (+ 1 (get-in (first (:body response1)) [:generic-association :revision-id]))))
 
         ;; The first and second associations contain different associated-item because associated-item
-        ;; should always be related to of the items in the list that's associated to a particular concept.
+        ;; should always be related to one of the items in the list that's associated to a particular concept.
         (is (= {:concept-id coll-concept-id  :revision-id coll-revision-id}
                (get-in (first (:body response1)) [:associated-item])))
         (is (= {:concept-id grid-concept-id  :revision-id grid-revision-id}
