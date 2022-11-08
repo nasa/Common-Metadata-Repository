@@ -28,6 +28,8 @@
 (defn extract
   "Extract the value of `Authorization` or `Echo-Token` header that was passed in the request."
   [request]
+  (when (request/get-header request "echo-token")
+    (log/warn (format "Still using Echo-Token for authorization, client id: %s." (request/get-header request "client-id"))))
   (or (request/get-header request "authorization")
       (request/get-header request "echo-token")))
 
