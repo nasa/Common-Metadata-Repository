@@ -373,8 +373,8 @@
              (get-permissions ctx params))
 
         (POST "/"
-              {ctx :request-context headers :headers body :body}
-              (get-permissions ctx (walk/keywordize-keys (codec/form-decode (slurp body))))))
+              {ctx :request-context headers :headers params :params}
+              (get-permissions ctx params)))
 
       (context "/current-sids" []
         (OPTIONS "/" [] (common-routes/options-response))
