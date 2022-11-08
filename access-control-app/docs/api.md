@@ -25,6 +25,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
     * [DELETE - Delete an ACL](#delete-acl)
   * /permissions
     * [GET - Check User Permissions](#get-permissions)
+    * [POST - Check User Permissions](#get-permissions)
   * /s3-buckets
     * [GET - Check User Permissions to S3 Buckets](#get-s3-buckets)
   * /health
@@ -852,7 +853,7 @@ You can check the permissions granted to a specific user or user type on specifi
 
 The response is a JSON object mapping target ids to arrays of permissions granted to the specified user for the respective concept.
 
-Example request:
+Example GET request:
 
 ```
 curl -g -i -H "Authorization: Bearer XXXX" "%CMR-ENDPOINT%/permissions?user_type=guest&concept_id[]=C1200000000-PROV1&concept_id[]=C1200000001-PROV1"
@@ -861,6 +862,20 @@ HTTP/1.1 200 OK
 Content-Type: application/json;charset=ISO-8859-1
 
 {"C1200000000-PROV1": ["read"], "C1200000001-PROV1": []}
+```
+
+When requesting permissions for large sets of concept ids, you can make a POST request to `%CMR-ENDPOINT%/permissions` and pass the query parameters in URL encoded query string in the POST body.
+
+Example POST request:
+
+```
+curl -i -XPOST -H "Content-Type: application/x-www-form-urlencoded" "%CMR-ENDPOINT%/permissions" -d \
+  'user_type=guest&concept_id=C1200000003-PROV1&concept_id=C1200000004-PROV1'
+
+HTTP/1.1 200 OK
+Content-Type: application/json;charset=ISO-8859-1
+
+"C1200000003-PROV1: ["read"], "C1200000004-PROV1": ["read"]}
 ```
 
 #### Parameters

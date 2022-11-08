@@ -2,6 +2,7 @@
   "Tests the access control permission check routes."
   (:require
    [cheshire.core :as json]
+   [clj-http.client :as client]
    [clj-time.core :as t]
    [clojure.string :as string]
    [clojure.test :refer :all]
@@ -22,6 +23,38 @@
                 (f))
               (fixtures/grant-all-group-fixture ["PROV1" "PROV2"])
               (fixtures/grant-all-acl-fixture))
+
+(deftest permission-get-and-post-request-test
+  (let [save-basic-collection (fn [short-name]
+                                  (u/save-collection {:entry-title (str short-name " entry title")
+                                                      :short-name short-name
+                                                      :native-id short-name
+                                                      :provider-id "PROV1"}))
+        coll1 (save-basic-collection "coll1")
+        coll2 (save-basic-collection "coll2")
+        coll3 (save-basic-collection "coll3")
+        coll4 (save-basic-collection "coll4")
+        post-data-body (str "user_type=guest"
+                         "&concept_id=" coll1
+                         "&concept_id=" coll2
+                         "&concept_id=" coll3
+                         "&concept_id=" coll4)]
+    (testing "permissions endpoint allows post request"
+      (let [permissions-url (ac/acl-permission-url
+                                         (transmit-config/context->app-connection
+                                          (u/conn-context)
+                                          :access-control))
+            post-response (client/post permissions-url
+                            {:basic-auth ["user" "pass"]
+                             :body post-data-body
+                             :content-type "application/x-www-form-urlencoded"})
+            get-response (client/get permissions-url
+                            {:query-params {"user_type" "guest"
+                                            "concept_id" [coll1 coll2 coll3 coll4]}})
+            post-body (get post-response :body)
+            get-body (get get-response :body)]
+
+        (is (= get-body post-body))))))
 
 (deftest multi-provider-permissions-test
   (testing "User permissions for same target and user accross two providers"
