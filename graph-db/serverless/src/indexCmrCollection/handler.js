@@ -49,6 +49,7 @@ const indexCmrCollections = async (event) => {
 
     if (getConceptType(conceptId) === 'collection' && action === updateActionType) {
       try {
+        // Retrieve collection records from CMR
         const collection = await fetchCmrCollection(conceptId, token)
 
         const { data = {} } = collection
@@ -66,13 +67,20 @@ const indexCmrCollections = async (event) => {
 
           console.log(`Start indexing concept [${conceptId}], revision-id [${revisionId}]`)
 
-          await indexCmrCollection(firstCollection, groupList, gremlinConnection)
+          // Index collection into the graphDb
+          let isIndexed = await indexCmrCollection(firstCollection, groupList, gremlinConnection)
+          let retries = 0
 
+          // Try to index again if there is a problem as long as we have not expired the number of attempts
+          while (isIndexed === false && retries < 3) {
+            // eslint-disable-next-line no-await-in-loop
+            isIndexed = await indexCmrCollection(firstCollection, groupList, gremlinConnection)
+            retries += 1
+          }
           recordCount += 1
         }
       } catch (e) {
-        console.log('Collection FAILED during indexing process there may be an issue with the collection verify that the collection for the given env: ', conceptId)
-        console.log('Error indexing collection, Execption was thrown: ', e)
+        console.log('Error indexing collection, Exception was thrown: ', e)
       }
     }
     if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {
