@@ -40,19 +40,21 @@
                          "&concept_id=" coll3
                          "&concept_id=" coll4)]
     (testing "permissions endpoint allows post request"
-      (let [response (client/post (ac/acl-permission-url
-                                    (transmit-config/context->app-connection
-                                     (u/conn-context)
-                                     :access-control))
-                       {:basic-auth ["user" "pass"]
-                        :body post-data-body
-                        :content-type "application/x-www-form-urlencoded"})
-            body (get response :body)]
+      (let [permissions-url (ac/acl-permission-url
+                                         (transmit-config/context->app-connection
+                                          (u/conn-context)
+                                          :access-control))
+            post-response (client/post permissions-url
+                            {:basic-auth ["user" "pass"]
+                             :body post-data-body
+                             :content-type "application/x-www-form-urlencoded"})
+            get-response (client/get permissions-url
+                            {:query-params {"user_type" "guest"
+                                            "concept_id" [coll1 coll2 coll3 coll4]}})
+            post-body (get post-response :body)
+            get-body (get get-response :body)]
 
-        (is (string/includes? body coll1))
-        (is (string/includes? body coll2))
-        (is (string/includes? body coll3))
-        (is (string/includes? body coll4))))))
+        (is (= get-body post-body))))))
 
 (deftest multi-provider-permissions-test
   (testing "User permissions for same target and user accross two providers"

@@ -2,7 +2,6 @@
   "Defines the HTTP URL routes for the access-control API."
   (:require
    [cheshire.core :as json]
-   [clojure.walk :as walk]
    [cmr.access-control.data.access-control-index :as index]
    [cmr.access-control.data.acl-schema :as acl-schema]
    [cmr.access-control.data.group-schema :as group-schema]
@@ -28,8 +27,7 @@
    [compojure.handler :as handler]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params]
-   [ring.util.codec :as codec])
+   [ring.middleware.params :as params])
   (:import
    (org.json JSONException)))
 
