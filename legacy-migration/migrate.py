@@ -26,7 +26,7 @@ def provider_guid_to_name_map():
             for r in cursor.execute(sql):
                 providers_map[r[0]] = r[1]
 
-def migrate_row(id, name, summary, provider_guid):
+def migrate_dqs_row(id, name, summary, provider_guid):
     global success_count, failure_count
     umm = {"Id": id,
            "Name": name,
@@ -43,24 +43,27 @@ def migrate_row(id, name, summary, provider_guid):
     resp = requests.put(f"{url_root}/ingest/providers/{providers_map[provider_guid]}/dataqualitysummaries/{id}",
                         data=json.dumps(umm),
                         headers=header)
-    if resp.status_code > 300:
+    if resp.status_code >= 300:
         failure_count += 1
         print(f"Failed to migrate [{id}] with status code: [{resp.status_code}], error: {resp.text}")
     else:
         success_count += 1
         print(f"Successfully migrated [{id}]")
 
+def migrate_data_quality_summary():
+    start = time.time()
+    print("Starting DataQualitySummary data migration...")
+    provider_guid_to_name_map()
+
+    with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
+        with connection.cursor() as cursor:
+            sql = """select GUID, NAME, SUMMARY, OWNER_PROVIDER_GUID from I_10_0_TESTBED_BUSINESS.DATA_QUAL_SUMMARY_DEF"""
+            for r in cursor.execute(sql):
+                migrate_dqs_row(r[0], r[1], r[2], r[3])
+
+    end = time.time()
+    print(f"Total DataQualitySummary data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}")
+
 
 ## Main
-start = time.time()
-print("Starting DataQualitySummary data migration...")
-provider_guid_to_name_map()
-
-with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
-    with connection.cursor() as cursor:
-        sql = """select GUID, NAME, SUMMARY, OWNER_PROVIDER_GUID from I_10_0_TESTBED_BUSINESS.DATA_QUAL_SUMMARY_DEF"""
-        for r in cursor.execute(sql):
-            migrate_row(r[0], r[1], r[2], r[3])
-
-end = time.time()
-print(f"Total DataQualitySummary data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}")
+migrate_data_quality_summary()
