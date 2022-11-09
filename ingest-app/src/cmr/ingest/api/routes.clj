@@ -7,6 +7,7 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.concepts :as concepts]
+   [cmr.common.generics :as common-generic]
    [cmr.common.log :refer [info]]
    [cmr.ingest.api.bulk :as bulk]
    [cmr.ingest.api.collections :as collections]
@@ -101,14 +102,6 @@
            (acl/verify-ingest-management-permission ctx :update)
            (jm/disable-email-subscription-processing-job ctx)
            {:status 200}))))
-
-(def generate-generic-concept-types-reg-ex
-  "This function creates a regular expresion for all of the generic concepts.  This is used to create the api endpoints.
-   An example string that is return looks like: \"dataqualitysummarys|orderoptions|serviceoptions\" "
-  (let [rx (-> (str (concepts/get-generic-concept-types-array concepts/pluralize-concept-type))
-               (clojure.string/replace #":|\]|\[" "")
-               (clojure.string/replace #" " "|"))]
-    (re-pattern rx)))
 
 (def ingest-routes
   (routes
@@ -239,7 +232,7 @@
             provider-id native-id request)))
 
        ;; Generic documents are by pattern: /providers/{prov_id}/{concept-type}/{native_id}
-       (context ["/:concept-type" :concept-type generate-generic-concept-types-reg-ex] [concept-type]
+       (context ["/:concept-type" :concept-type (re-pattern common-generic/plural-generic-concept-types-reg-ex)] [concept-type]
          (context ["/:native-id" :native-id #".*$"] [native-id]
            (POST "/" request (gen-doc/crud-generic-document request :create))
            (GET "/" request (gen-doc/crud-generic-document request :read))

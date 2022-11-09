@@ -636,5 +636,5 @@
   (save-concept db "PROV6" my-concept)
   ;; to view most recently saved concept
   (first @(:concepts-atom db))
-  (get-concept-id db :orderoption {:provider-id "PROV1"} "orderoption-1")
-  (get-concept db :orderoption {:provider-id "PROV1"} "OO1200000001-PROV1"))
+  (get-concept-id db :order-option {:provider-id "PROV1"} "order-option-1")
+  (get-concept db :order-option {:provider-id "PROV1"} "OO1200000001-PROV1"))

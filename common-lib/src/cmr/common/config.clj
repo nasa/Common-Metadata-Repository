@@ -222,15 +222,15 @@
    are passed through the parser and returned as if it was the default.
    This string should contain a clojure map that looks something like:
    {:grid [\"0.0.1\"],
-    :dataqualitysummary [\"1.0.0\"]
-    :orderoption [\"1.0.0\"]
-    :serviceentry [\"1.0.0\"]
-    :serviceoption [\"1.0.0\"]}"
+    :data-quality-summary [\"1.0.0\"]
+    :order-option [\"1.0.0\"]
+    :service-entry [\"1.0.0\"]
+    :service-option [\"1.0.0\"]}"
   {:default {:grid ["0.0.1"]
-             :dataqualitysummary ["1.0.0"]
-             :orderoption ["1.0.0"]
-             :serviceentry ["1.0.0"]
-             :serviceoption ["1.0.0"]}
+             :data-quality-summary ["1.0.0"]
+             :order-option ["1.0.0"]
+             :service-entry ["1.0.0"]
+             :service-option ["1.0.0"]}
    :parser #(json/parse-string % true)})
 
 (defconfig approved-pipeline-documentation

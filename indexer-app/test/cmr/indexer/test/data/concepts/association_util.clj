@@ -32,11 +32,11 @@
                          :associated-concept-id "C1200000021-PROV1"}
                         {:variable-concept-id "V1200000024-PROV1"
                          :associated-concept-id "C1200000021-PROV1"}]
-          expected {:dataqualitysummaries [{:concept-id "DQS1200000012-PROV1" :data {:hello "ok"}} 
+          expected {:data-quality-summaries [{:concept-id "DQS1200000012-PROV1" :data {:hello "ok"}} 
                                            {:concept-id "DQS1200000013-PROV1"}]
-                    :orderoptions [{:concept-id "OO1200000014-PROV1"}]
-                    :serviceoptions [{:concept-id "SO1200000015-PROV1"} {:concept-id "SO1200000016-PROV1"}]
-                    :serviceentries [{:concept-id "SE1200000017-PROV1"}]
+                    :order-options [{:concept-id "OO1200000014-PROV1"}]
+                    :service-options [{:concept-id "SO1200000015-PROV1"} {:concept-id "SO1200000016-PROV1"}]
+                    :service-entries [{:concept-id "SE1200000017-PROV1"}]
                     :grids [{:concept-id "GRD1200000018-PROV1" :revision-id 4}]
                     :services [{:concept-id "S1200000022-PROV1"}] 
                     :tools [{:concept-id "TL1200000023-PROV1"}] 

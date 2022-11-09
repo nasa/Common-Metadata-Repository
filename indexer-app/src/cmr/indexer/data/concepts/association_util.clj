@@ -54,8 +54,8 @@
          {:variable-concept-id \"VL1200000024-PROV1\"
           :associated-concept-id \"C1200000021-PROV1\"}]
    and converts it to
-   {:dataqualitysummaries [{:concept-id \"DQS1200000012-PROV1\" :revision-id 1 :data {:hello \"ok\"}}]
-    :orderoptions [{:concept-id \"OO1200000014-PROV1\"}]
+   {:data-quality-summaries [{:concept-id \"DQS1200000012-PROV1\" :revision-id 1 :data {:hello \"ok\"}}]
+    :order-options [{:concept-id \"OO1200000014-PROV1\"}]
     :services [{:concept-id \"S1200000022-PROV1\"}]
     :tools [{:concept-id \"TL1200000023-PROV1\"}]
     :variables [{:concept-id \"V1200000024-PROV1\"}] }"

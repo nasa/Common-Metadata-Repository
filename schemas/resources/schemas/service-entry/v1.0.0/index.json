@@ -1,0 +1,26 @@
+{
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1",
+    "Name": "Generic-Index",
+    "Version": "0.0.1"
+  },
+  "Generic": {
+    "Name": "Service Entry",
+    "Version": "1.0.0"
+  },
+  "SubConceptType": "SE",
+  "Indexes":
+  [
+    {
+      "Description": "Name",
+      "Field": ".Name",
+      "Name": "Name",
+      "Mapping": "string"
+    }, {
+      "Description": "Id - This is the old ECHO 10 GUID.",
+      "Field": ".Id",
+      "Name": "Id",
+      "Mapping": "string"
+    }
+  ]
+}

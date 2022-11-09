@@ -197,47 +197,16 @@
    :concept-id :string
    :keyword :keyword})
 
-;; TODO: Generic work: See if we can wrap this in a doseq for all generic types or get from 
-;; a config file.
-(defmethod common-params/param-mappings :dataqualitysummary
-  [_]
-  {:name :string
-   :id :string
-   :provider :string
-   :native-id :string
-   :concept-id :string})
-
-(defmethod common-params/param-mappings :orderoption
-  [_]
-  {:name :string
-   :id :string
-   :provider :string
-   :native-id :string
-   :concept-id :string})
-
-(defmethod common-params/param-mappings :serviceoption
-  [_]
-  {:name :string
-   :id :string
-   :provider :string
-   :native-id :string
-   :concept-id :string})
-
-(defmethod common-params/param-mappings :serviceentry
-  [_]
-  {:name :string
-   :id :string
-   :provider :string
-   :native-id :string
-   :concept-id :string})
-
-(defmethod common-params/param-mappings :grid
-  [_]
-  {:name :string
-   :id :string
-   :provider :string
-   :native-id :string
-   :concept-id :string})
+;; TODO - generic concept work, these are the base parameters, we still need to 
+;; add additional search parameters dynamically based off each generic concept's index.json
+(doseq [concept-type (cc/get-generic-concept-types-array)]
+  (defmethod common-params/param-mappings concept-type
+    [_]
+    {:name :string
+     :id :string
+     :provider :string
+     :native-id :string
+     :concept-id :string}))
 
 (defmethod common-params/always-case-sensitive-fields :collection
   [_]

@@ -12,7 +12,7 @@
 (deftest save-generic-assoc-data-test
   (testing "Ensure the generic association saved worked with a data in the payload."
     (let [coll-concept (concepts/create-and-save-concept :collection "REG_PROV" 1)
-          gen-concept (concepts/create-and-save-concept :dataqualitysummary "REG_PROV" 1)
+          gen-concept (concepts/create-and-save-concept :data-quality-summary "REG_PROV" 1)
           assoc-concept (concepts/create-concept :generic-association coll-concept gen-concept 1 {:data {:XYZ "ZYX"}})
           saved-assoc (util/save-concept assoc-concept)
           stored-assoc (:concept (util/get-concept-by-id-and-revision (:concept-id saved-assoc)

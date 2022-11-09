@@ -1,0 +1,10 @@
+{
+  "Id":"8EA5CA1F-E339-8065-26D7-53B64074D7CC",
+  "Name":"CER-BDS_Terra",
+  "Summary":"Summary",
+  "MetadataSpecification": {
+    "Name": "Data Quality Summary",
+    "Version": "1.0.0",
+    "URL": "https://cdn.earthdata.nasa.gov/generics/data-quality-summary/v1.0.0"
+  }
+}

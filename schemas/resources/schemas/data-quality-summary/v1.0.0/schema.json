@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Data Quality Summary",
+  "description": "Contains a human readable description of the quality of a set of data.",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "Id": {
+      "description": "The identifier that was assigned to this record by an older system. It is in the schema to preserve search API functionality in order to store this identifier.",
+      "type": "string"
+    },
+    "Name": {
+      "description": "The name associated with the quality summary of the data set.",
+      "type": "string"
+    },
+    "Summary": {
+      "description": "Contains the human readable summary of the quality of the data set.",
+      "type": "string"
+    },
+    "MetadataSpecification": {
+      "description": "Requires the client, or user, to add in schema information into every data quality summary record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "$ref": "#/definitions/MetadataSpecificationType"
+    }
+  },
+  "required": ["Name", "Summary", "MetadataSpecification"],
+
+  "definitions": {
+    "MetadataSpecificationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+      "properties": {
+        "URL": {
+          "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
+          "type": "string",
+          "enum": ["https://cdn.earthdata.nasa.gov/generics/data-quality-summary/v1.0.0"]
+        },
+        "Name": {
+          "description": "This element represents the name of the schema.",
+          "type": "string",
+          "enum": ["Data Quality Summary"]
+        },
+        "Version": {
+          "description": "This element represents the version of the schema.",
+          "type": "string",
+          "enum": ["1.0.0"]
+        }
+      },
+      "required": ["URL", "Name", "Version"]
+    }
+  }
+}

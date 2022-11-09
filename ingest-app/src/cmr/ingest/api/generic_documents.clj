@@ -1,10 +1,10 @@
 (ns cmr.ingest.api.generic-documents
   "Subscription ingest functions in support of the ingest API."
   (:require
+   [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.java.io :as jio]
    [clojure.set :as set]
-   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.generics :as gconfig]
@@ -57,7 +57,7 @@
         raw-document (slurp (:body request))
         document (json/parse-string raw-document true)
         specification (:MetadataSpecification document)
-        spec-key (keyword (string/lower-case (:Name specification)))
+        spec-key (csk/->kebab-case-keyword (:Name specification ""))
         spec-version (:Version specification)]
     (if (not= concept-type spec-key)
       (throw UnsupportedOperationException)
@@ -103,13 +103,13 @@
 (defn ingest-document
   "Ingest the concept into the database and the indexer through the database."
   [context concept headers]
-  (info (format "Ingesting collection %s from client %s"
+  (info (format "Ingesting concept %s from client %s"
                 (api-core/concept->loggable-string concept)
                 (:client-id context)))
-  (let [save-collection-result (save-document context concept)
+  (let [save-concept-result (save-document context concept)
         concept-to-log (-> concept
-                           (api-core/concept-with-revision-id save-collection-result)
-                           (assoc :name (:name save-collection-result)))]
+                           (api-core/concept-with-revision-id save-concept-result)
+                           (assoc :name (:name save-concept-result)))]
     ;; Log the successful ingest, with the metadata size in bytes.
     (api-core/log-concept-with-metadata-size concept-to-log context)
     (api-core/generate-ingest-response headers
@@ -117,7 +117,7 @@
                                         ;; name is added just for the logging above.
                                         ;; dissoc it so that it remains the same as the
                                         ;; original code.
-                                        (dissoc save-collection-result :name)))))
+                                        (dissoc save-concept-result :name)))))
 
 (defn create-generic-document
   "Check a document for fitness to be ingested, and then ingest it. Records can

@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Service Entry",
+  "description": "This schema describes the information needed to describe a service provided by a data provider.",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "Id": {
+      "description": "The identifier that was assigned to this record by an older system. It is in the schema to preserve search API functionality in order to store this identifier.",
+      "type": "string"
+    },
+    "Name": {
+      "description": "A short descriptive name for the service.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "Description": {
+      "description": "A human readable description of the service.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "URL": {
+      "description": "The URL associated with the service.",
+      "type": "string"
+    },
+    "Type": {
+      "description": "The type of the service.",
+      "type": "string",
+      "enum": ["ADVERTISEMENT", "SERVICE_INTERFACE", "SERVICE_IMPLEMENTATION", "GRAPHICAL_USER_INTERFACE"]
+    },
+    "InterfaceName": {
+      "description": "The name of the service interface.",
+      "type": "string"
+    },
+    "TagIds" :{
+      "description": "The IDs of all the tags associated with this service entry.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "MetadataSpecification": {
+      "description": "Requires the client, or user, to add in schema information into every service entry record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "$ref": "#/definitions/MetadataSpecificationType"
+    }
+  },
+  "required": ["Name", "Description", "URL", "Type", "InterfaceName", "MetadataSpecification"],
+
+  "definitions": {
+    "MetadataSpecificationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+      "properties": {
+        "URL": {
+          "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
+          "type": "string",
+          "enum": ["https://cdn.earthdata.nasa.gov/generics/service-entry/v1.0.0"]
+        },
+        "Name": {
+          "description": "This element represents the name of the schema.",
+          "type": "string",
+          "enum": ["Service Entry"]
+        },
+        "Version": {
+          "description": "This element represents the version of the schema.",
+          "type": "string",
+          "enum": ["1.0.0"]
+        }
+      },
+      "required": ["URL", "Name", "Version"]
+    }
+  }
+}

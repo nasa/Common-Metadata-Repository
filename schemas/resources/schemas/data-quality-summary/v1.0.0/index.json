@@ -1,0 +1,34 @@
+{
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/generic/index/v0.0.1",
+    "Name": "Generic-Index",
+    "Version": "0.0.1"
+  },
+  "Generic": {
+    "Name": "Data Quality Summary",
+    "Version": "1.0.0"
+  },
+  "SubConceptType": "DQS",
+  "IndexSetup" : {
+    "index": {
+      "number_of_shards": 3,
+      "number_of_replicas": 1,
+      "refresh_interval": "1s"
+    }
+  },
+  "Indexes":
+  [
+    {
+      "Description": "Name",
+      "Field": ".Name",
+      "Name": "Name",
+      "Mapping": "string"
+    },
+    {
+      "Description": "Id - This is the old ECHO 10 GUID.",
+      "Field": ".Id",
+      "Name": "Id",
+      "Mapping": "string"
+    }
+  ]
+}

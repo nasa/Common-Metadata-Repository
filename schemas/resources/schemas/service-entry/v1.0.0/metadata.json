@@ -1,0 +1,13 @@
+{
+  "Id": "0AF0BB4E-7455-FBB2-15C7-B5B7DE43AA6D",
+  "Name": "Test Service",
+  "Description": "Testing Service",
+  "Type":"SERVICE_IMPLEMENTATION",
+  "InterfaceName":"EOSIDS Service Interface",
+  "URL":"www.example.com",
+  "MetadataSpecification": {
+    "Name": "Service Entry",
+    "Version": "1.0.0",
+    "URL": "https://cdn.earthdata.nasa.gov/generics/service-entry/v1.0.0"
+  }
+}

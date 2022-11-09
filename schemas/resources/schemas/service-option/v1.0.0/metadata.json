@@ -1,0 +1,11 @@
+{
+  "Id": "1B41335E-82DD-8AAB-B8A9-546CC6DE6CBD",
+  "Name": "RangeSliderTest",
+  "Description": "Testing range slider - updated DEMO_PROV",
+  "Form": "<form></form>",
+  "MetadataSpecification": {
+    "Name": "Service Option",
+    "Version": "1.0.0",
+    "URL": "https://cdn.earthdata.nasa.gov/generics/service-option/v1.0.0"
+  }
+}

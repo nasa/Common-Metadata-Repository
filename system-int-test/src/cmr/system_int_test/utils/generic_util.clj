@@ -14,12 +14,12 @@
                    (slurp)
                    (json/parse-string true)))
 
-(def data-quality-summary (-> "schemas/dataqualitysummary/v1.0.0/metadata.json"
+(def data-quality-summary (-> "schemas/data-quality-summary/v1.0.0/metadata.json"
                               (jio/resource)
                               (slurp)
                               (json/parse-string true)))
 
-(def order-option (-> "schemas/orderoption/v1.0.0/metadata.json"
+(def order-option (-> "schemas/order-option/v1.0.0/metadata.json"
                       (jio/resource)
                       (slurp)
                       (json/parse-string true)))

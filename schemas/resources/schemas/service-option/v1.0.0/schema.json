@@ -1,0 +1,60 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Service Option",
+  "description": "This schema describes service options. Service options are options that a service can provide when servicing orders, such as how data can be accessed/distrbuted from the providers. These options are written in an XML format that must conform to the ECHO forms schema. The form will be used to send the ordering options to the service.",
+  "additionalProperties": false,
+  "type": "object",
+  "properties": {
+    "Id": {
+      "description": "The identifier that was assigned to this record by an older system. It is in the schema to preserve search API functionality in order to store this identifier.",
+      "type": "string"
+    },
+    "Name": {
+      "description": "The user supplied name of the service tag group.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 255
+    },
+    "Description": {
+      "description": "The description is a longer, human-readable description of the order option type or contents, intended for client display. A description of the service tag group.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4000
+    },
+    "Form": {
+      "description": "Contents must conform to ECHO Forms schema. See the ECHO Forms Specification for more information.",
+      "type": "string"
+    },
+    "MetadataSpecification": {
+      "description": "Requires the client, or user, to add in schema information into every service option record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "$ref": "#/definitions/MetadataSpecificationType"
+    }
+  },
+  "required": ["Id", "Name", "Description", "Form", "MetadataSpecification"],
+
+  "definitions": {
+    "MetadataSpecificationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+      "properties": {
+        "URL": {
+          "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
+          "type": "string",
+          "enum": ["https://cdn.earthdata.nasa.gov/generics/service-option/v1.0.0"]
+        },
+        "Name": {
+          "description": "This element represents the name of the schema.",
+          "type": "string",
+          "enum": ["Service Option"]
+        },
+        "Version": {
+          "description": "This element represents the version of the schema.",
+          "type": "string",
+          "enum": ["1.0.0"]
+        }
+      },
+      "required": ["URL", "Name", "Version"]
+    }
+  }
+}

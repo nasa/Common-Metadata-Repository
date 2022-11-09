@@ -5,8 +5,8 @@
 
 (def index-definition-def
   {:MetadataSpecification
-   {:URL "https://cdn.earthdata.nasa.gov/generics/dataqualitysummary/v1.0.0"
-    :Name "DataQuailtySummary",
+   {:URL "https://cdn.earthdata.nasa.gov/generics/data-quality-summary/v1.0.0"
+    :Name "Data Quality Summary",
     :Version "1.0.0"}
    :SubConceptType "DQS",
    :IndexSetup {:index {:number_of_shards 5, :number_of_replicas 1, :refresh_interval "1s"}},

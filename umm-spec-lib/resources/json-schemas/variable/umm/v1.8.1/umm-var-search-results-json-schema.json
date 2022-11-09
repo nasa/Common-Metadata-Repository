@@ -108,7 +108,7 @@
           },
           "minItems": 1
         },
-        "dataqualitysummaries": {
+        "data-quality-summaries": {
           "description": "The concept ids of data quality summary concepts associated with the variable",
           "type": "array",
           "items": {
@@ -116,7 +116,7 @@
           },
           "minItems": 1
         },
-        "orderoptions": {
+        "order-options": {
           "description": "The concept ids of order option concepts associated with the variable",
           "type": "array",
           "items": {
@@ -124,7 +124,7 @@
           },
           "minItems": 1
         },
-        "serviceoptions": {
+        "service-options": {
           "description": "The concept ids of service option concepts associated with the variable",
           "type": "array",
           "items": {
@@ -132,7 +132,7 @@
           },
           "minItems": 1
         },
-        "serviceentries": {
+        "service-entries": {
           "description": "The concept ids of service entry concepts associated with the variable",
           "type": "array",
           "items": {
@@ -179,7 +179,7 @@
           },
           "minItems": 1
         },
-        "dataqualitysummaries": {
+        "data-quality-summaries": {
           "description": "The concept ids of data quality summary concepts associated with the variable",
           "type": "array",
           "items": {
@@ -187,7 +187,7 @@
           },
           "minItems": 1
         },
-        "orderoptions": {
+        "order-options": {
           "description": "The concept ids of order option concepts associated with the variable",
           "type": "array",
           "items": {
@@ -195,7 +195,7 @@
           },
           "minItems": 1
         },
-        "serviceoptions": {
+        "service-options": {
           "description": "The concept ids of service option concepts associated with the variable",
           "type": "array",
           "items": {
@@ -203,7 +203,7 @@
           },
           "minItems": 1
         },
-        "serviceentries": {
+        "service-entries": {
           "description": "The concept ids of service entry concepts associated with the variable",
           "type": "array",
           "items": {
@@ -241,7 +241,7 @@
       "type": "string",
       "minLength": 4,
       "pattern": "[A-Z]+\\d+-[A-Z0-9_]+"
-    }, 
+    },
     "ConceptRevisionType": {
       "type": "object",
       "additionalProperties": false,

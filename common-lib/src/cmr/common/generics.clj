@@ -32,7 +32,7 @@
 
 (defn latest-approved-document-types
   "Return a list of configured approved generic keywords
-   Returns: (:grid :dataqualitysummary ...)"
+   Returns: (:grid :data-quality-summary ...)"
   []
   (keys (latest-approved-documents)))
 
@@ -118,3 +118,15 @@
                        (get (json/parse-string index-raw true) :SubConceptType "X")))))
           {}
           (latest-approved-documents)))
+
+(def generic-concept-types-reg-ex
+  "Creates a regular expression for all of the generic concepts. Used to create API endpoints."
+  (->> (latest-approved-document-types)
+       (map name)
+       (string/join "|")))
+
+(def plural-generic-concept-types-reg-ex
+  "Creates a pluralized regular expression for all of the generic concepts. Used to create API endpoints."
+  (->> (latest-approved-document-types)
+       (map inf/plural)
+       (string/join "|")))

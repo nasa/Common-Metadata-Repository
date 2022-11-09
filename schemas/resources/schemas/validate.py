@@ -36,7 +36,7 @@ def test_index(schema_name):
     index = f"{os.getcwd()}/{version}/index.json"
     ret = ret + validate_schema(jar, index_schema, index)
   return ret
-  
+
 def test_schema(schema_name):
   "Check that all versions of a schema matadata matches the definition"
   jar = os.path.expanduser(JAR)
@@ -54,7 +54,7 @@ def test_schema(schema_name):
 def main():
   ret = test_schema("index")
 
-  for i in ["dataqualitysummary", "grid", "orderoption", "serviceentry", "serviceoption"]:
+  for i in ["data-quality-summary", "grid", "order-option", "service-entry", "service-option"]:
     ret = ret + test_schema(i)
     ret = ret + test_index(i)
 
