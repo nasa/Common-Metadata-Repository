@@ -974,9 +974,9 @@ __Example__
         "services": [{"concept-id": "S1200000008-PROV1",
                       "data": {"formatting-type": "zarr",
                                "regridding-type": {"xyz": "zyx"}}},
-                     {"concept-id": "S1200000009-PROV1"}, 
+                     {"concept-id": "S1200000009-PROV1"},
                      {"concept-id": "S1200000010-PROV1"}],
-        "tools": [{"concept-id": "TL1200000011-PROV1"}, 
+        "tools": [{"concept-id": "TL1200000011-PROV1"},
                   {"concept-id": "TL1200000012-PROV1"},
                   {"concept-id": "TL1200000013-PROV1"}]
       }
@@ -5411,13 +5411,13 @@ Example un-healthy response body:
 ```
 ### <a name="associate-any-concepts"></a> Associate any concepts
 
-A new association API is developed to achieve the goal of being able to associate a concept of any type, with or without revision, to one or more other concepts of any type, with or without revisions. The new association API also allows the associations to include an optional data payload, whose purpose is to describe the association itself. Associations which do not initially have association data payload, may have it added through association update. A concept can only be associated with another concept either with or without revisions, not both. A concept can not be associated to itself, even with different revisions. It's worth noting that associations between collections and services/tools/variables can not be made through the new association API because these associations require different business rules and there exist some complexites with the way how certain fields of the association entries are constructed. Until we resolve these issues, these existing associations will continue to be made through the existing association API. 
- 
-#### <a name="concept-associations"></a> Concept associations 
+A new association API is developed to achieve the goal of being able to associate a concept of any type, with or without revision, to one or more other concepts of any type, with or without revisions. The new association API also allows the associations to include an optional data payload, whose purpose is to describe the association itself. Associations which do not initially have association data payload, may have it added through association update. A concept can only be associated with another concept either with or without revisions, not both. A concept can not be associated to itself, even with different revisions. It's worth noting that associations between collections and services/tools/variables can not be made through the new association API because these associations require different business rules and there exist some complexites with the way how certain fields of the association entries are constructed. Until we resolve these issues, these existing associations will continue to be made through the existing association API.
+
+#### <a name="concept-associations"></a> Concept associations
 
 A concept, with optional revision id, can be associated to one or more other concepts, with optional revision ids and data payloads.
 When the revision id is not present, the latest revision is assumed. In the following example, "3" is optional for SE1200000006-PROV1
-and "revision_id" is optional for V1200000008-PROV1. 
+and "revision_id" is optional for V1200000008-PROV1.
 
  Example
 
@@ -5435,7 +5435,7 @@ Note: when two concepts are associated, their concept ids are sorted first. The 
 [{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":1},"associated_item":{"concept_id":"C1200000005-PROV1"}},
  {"generic_association":{"concept_id":"GA1200000011-CMR","revision_id":1},"associated_item":{"concept_id":"V1200000008-PROV1","revision_id":1}}]
  ```
-#### <a name="associations-in-search-result"></a> Associations in the search result 
+#### <a name="associations-in-search-result"></a> Associations in the search result
 Latest revisions of associations can be queried by searching for one of the assocaited concepts using either the JSON or UMM_JSON format. The "associations" field, contains a list of concept ids associated to the concept that was searched for grouped by concept-type. The "association-details" field contains concept ids, as well as association details like revision ids and data payloads if they were included for the particular association. In the example case, a grid (GRD1200000000-PROV1) has been associated to another grid with association details(GRD1200000001-PROV1), as well as a service option (SO1200000001-PROV1) without any association details.
 Note: If you update an association with new data payload information, a new revision of that association will be created. Old revisions of the association will be preserved in the database but won't show up in the search result of the associated concepts.
 
@@ -5489,7 +5489,7 @@ Note: If you update an association with new data payload information, a new revi
      ]
  }
  ```
-#### <a name="concept-dissociations"></a> Concept dissociations 
+#### <a name="concept-dissociations"></a> Concept dissociations
 
 A concept, with optional revision id, can be dissociated from one or more other concepts, with optional revision ids
 
@@ -5508,4 +5508,3 @@ A concept, with optional revision id, can be dissociated from one or more other 
 [{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":2},"associated_item":{"concept_id":"C1200000005-PROV1"}},
  {"generic_association":{"concept_id":"GA1200000011-CMR","revision_id":2},"associated_item":{"concept_id":"V1200000008-PROV1","revision_id":1}}]
  ```
-
