@@ -240,6 +240,14 @@
   {:default (approved-pipeline-documents)
    :parser #(json/parse-string % true)})
 
+(defconfig generic-ingest-disabled-list
+  "This is a toggle to disallow specified generic concepts from being ingested into CMR,
+   Should be an array of keys with the name of the schema to be disallowed from ingest
+   example [:grid :order-option], would disallow grids and order options from being ingested into CMR
+   if no concepts should be disalllowed set to an empty list"
+  {:default []
+   :parser #(json/parse-string % true)})
+
 (defn check-env-vars
   "Checks any environment variables starting with CMR_ are recognized as known environment variables.
   If any are unrecognized a warning message is logged. Usually this should be called at the start

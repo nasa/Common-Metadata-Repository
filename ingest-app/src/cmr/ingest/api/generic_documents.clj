@@ -9,6 +9,7 @@
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.generics :as gconfig]
    [cmr.common.concepts :as common-concepts]
+   [cmr.common.config :as cfg]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :refer [defn-timed]]
@@ -17,6 +18,12 @@
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
    [cmr.schema-validation.json-schema :as js-validater]))
+
+(defn disabled-for-ingest?
+  "Determine if a generic schema is disallowed for ingest
+   * schema, the keyword name of an approved generic"
+  [schema]
+  (some #{schema} (cfg/generic-ingest-disabled-list)))
 
 (defn validate-json-against-schema
   "validate a document, returns an array of errors if there are problems
@@ -27,13 +34,17 @@
   (if-not (gconfig/approved-generic? schema version)
     (errors/throw-service-error
      :invalid-data
-     (format "The [%s] schema on version [%s] is not an approved schema. This record cannot be ingested." schema version))
-    (if-some [schema-file (gconfig/read-schema-specification schema version)]
-      (let [schema-obj (js-validater/json-string->json-schema schema-file)]
-        (js-validater/validate-json schema-obj raw-json true))
+     (format "The [%s] schema on version [%s] is not an approved schema. This record cannot be ingested" schema version))
+    (if (disabled-for-ingest? schema)
       (errors/throw-service-error
        :invalid-data
-       (format "While the [%s] schema with version [%s] is approved, it cannot be found." schema version)))))
+       (format "The %s schema is currently disabled and cannot be ingested" schema))
+      (if-some [schema-file (gconfig/read-schema-specification schema version)]
+        (let [schema-obj (js-validater/json-string->json-schema schema-file)]
+          (js-validater/validate-json schema-obj raw-json true))
+        (errors/throw-service-error
+         :invalid-data
+         (format "While the [%s] schema with version [%s] is approved, it cannot be found." schema version))))))
 
 (defn- concept-type->singular
   "Common task to convert concepts from their public URL form to their internal
