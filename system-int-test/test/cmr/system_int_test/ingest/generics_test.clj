@@ -37,13 +37,13 @@
 (deftest validate-json-test
   (testing
    "Test that approved-generic? approves configured Generic document types"
-    (with-redefs [config/approved-pipeline-documents (fn [] {:grids ["1.0.0"]}) config/generic-ingest-disabled-list (fn [] [])]
+    (with-redefs [config/approved-pipeline-documents (fn [] {:grids ["1.0.0"]})]
       (is (true? (gcfg/approved-generic? :grids "1.0.0")) "Grids should be an approved format")
       (is (not (gcfg/approved-generic? :grid "0.0.1")) "CMR is using default configuration")
       (is (not (gcfg/approved-generic? :fake "a.b.c")) "A fake type was incorectly approved")))
   (testing
    "Verify that a document can be validated as approved schema."
-    (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]}) config/generic-ingest-disabled-list (fn [] [])]
+    (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
       (let [expected nil
             actual (gdocs/validate-json-against-schema
                     :grid

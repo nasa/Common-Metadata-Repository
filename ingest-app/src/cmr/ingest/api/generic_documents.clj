@@ -39,7 +39,7 @@
     (if (disabled-for-ingest? schema)
       (errors/throw-service-error
        :invalid-data
-       (format "The %s schema is currently disabled and cannot be ingested" schema))
+       (format "The %s schema is currently disabled and cannot be ingested." schema))
       (if-some [schema-file (gconfig/read-schema-specification schema version)]
         (let [schema-obj (js-validater/json-string->json-schema schema-file)]
           (js-validater/validate-json schema-obj raw-json true))
