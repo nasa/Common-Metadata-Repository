@@ -60,7 +60,7 @@
              (gdocs/validate-document-against-schema :grid "0.0.1" bad-json))
             "Was not able to generate a schema exception"))))
   (testing
-   "Verify that if a schema is on the disabled on the ingest list, it is not ingested and an error message is returned."
+   "Verify that if a schema is on the disabled ingest list, it is not ingested and an error message is returned."
     (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]}) config/generic-ingest-disabled-list (fn [] [:grid])]
        (is (thrown-with-msg?
             clojure.lang.ExceptionInfo

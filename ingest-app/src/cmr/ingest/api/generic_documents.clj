@@ -21,6 +21,7 @@
 
 (defn disabled-for-ingest?
   "Determine if a generic schema is disallowed for ingest
+   Parameters:
    * schema, the keyword name of an approved generic"
   [schema]
   (some #{schema} (cfg/generic-ingest-disabled-list)))
