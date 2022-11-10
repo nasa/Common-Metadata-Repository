@@ -83,18 +83,20 @@
     (index/wait-until-indexed)
     (testing "Associate collection with tool by concept-id and revision-ids"
       (let [response1 (association-util/associate-by-concept-ids
-                       token tl1-concept-id [{:concept-id coll1-concept-id}
-                                             {:concept-id coll2-concept-id}])
+                       token tl1-concept-id [{:concept-id coll1-concept-id :revision-id coll1-revision-id}
+                                             {:concept-id coll2-concept-id :data "some data"}])
             _ (index/wait-until-indexed)
             ;;Search for the tool tl1, it should return the association
             tl1-search-result (search-request "tools.umm_json" "native_id=tl1")
             tl1-search-body (json/parse-string (:body tl1-search-result) true)
             tl1-search-generic-associations (get-in (first (:items tl1-search-body)) [:meta :associations :collections])
+            tl1-search-generic-association-details (get-in (first (:items tl1-search-body)) [:meta :association-details :collections])
            
             ;;Search for the collection coll1, it should return the association
             coll1-search-result (search-request "collections.umm-json" "entry_title=entry-title1")
             coll1-search-body (json/parse-string (:body coll1-search-result) true)
             coll1-search-generic-associations (get-in (first (:items coll1-search-body)) [:meta :associations :tools])
+            coll1-search-generic-association-details (get-in (first (:items coll1-search-body)) [:meta :association-details :tools])
 
             ;;Search for the collection coll2, it should return the association
             coll2-search-result (search-request "collections.umm-json" "entry_title=entry-title2")
@@ -105,10 +107,15 @@
         ;; Search for the tool tl1 returns the coll1 and coll2 as association
         (is (= (set [coll2-concept-id coll1-concept-id])
                (set tl1-search-generic-associations)))
+        (is (= (set [{:concept-id coll1-concept-id, :revision-id coll1-revision-id}
+                     {:data "some data", :concept-id coll2-concept-id}])
+               (set tl1-search-generic-association-details)))
 
         ;; Search for the collection coll1 returns the tl1 as association
         (is (= [tl1-concept-id]
                coll1-search-generic-associations))
+        (is (= [{:concept-id tl1-concept-id}]
+               coll1-search-generic-association-details))
 
         ;; Search for the collection coll2 returns the tl1 as association
         (is (= [tl1-concept-id]
@@ -202,6 +209,7 @@
             grid-search-result (search-request "grids.json" "name=Grid-A7-v1")
             grid-search-body (json/parse-string (:body grid-search-result) true)
             grid-search-generic-associations (get-in (first (:items grid-search-body)) [:associations :tools])
+            grid-search-generic-association-details (get-in (first (:items grid-search-body)) [:association-details :tools])
 
             ;;Search for the tool, it should return the association
             tl1-search-result (search-request "tools.umm_json" "native_id=tl1")
@@ -243,6 +251,8 @@
         ;; Search for the grid returns the tl1 as generic association
         (is (= [tl1-concept-id]
                grid-search-generic-associations))
+        (is (= [{:concept-id tl1-concept-id :revision-id tl1-revision-id}]
+               grid-search-generic-association-details))
 
         ;; Search for the tool returns the grid as generic association
         (is (= [grid-concept-id]
@@ -297,13 +307,14 @@
     (index/wait-until-indexed)
     (testing "Associate collection with service by concept-id and revision-ids"
       (let [response1 (association-util/associate-by-concept-ids
-                       token sv1-concept-id [{:concept-id coll1-concept-id}
-                                             {:concept-id coll2-concept-id}])
+                       token sv1-concept-id [{:concept-id coll1-concept-id :revision-id coll1-revision-id}
+                                             {:concept-id coll2-concept-id :data "some data"}])
             _ (index/wait-until-indexed)
             ;;Search for the service sv1, it should return the association
             sv1-search-result (search-request "services.umm_json" "native_id=sv1")
             sv1-search-body (json/parse-string (:body sv1-search-result) true)
             sv1-search-generic-associations (get-in (first (:items sv1-search-body)) [:meta :associations :collections])
+            sv1-search-generic-association-details (get-in (first (:items sv1-search-body)) [:meta :association-details :collections])
            
             ;;Search for the collection coll1, it should return the association
             coll1-search-result (search-request "collections.umm-json" "entry_title=entry-title1")
@@ -319,6 +330,9 @@
         ;; Search for the service sv1 returns the coll1 as association
         (is (= (set [coll2-concept-id coll1-concept-id])
                (set sv1-search-generic-associations)))
+        (is (= (set [{:concept-id coll1-concept-id, :revision-id coll1-revision-id}
+                     {:data "some data", :concept-id coll2-concept-id}])
+               (set sv1-search-generic-association-details)))
 
         ;; Search for the collection coll1 returns the sv1 as association
         (is (= [sv1-concept-id]
