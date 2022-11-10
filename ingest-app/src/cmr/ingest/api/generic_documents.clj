@@ -20,7 +20,7 @@
    [cmr.schema-validation.json-schema :as js-validater]))
 
 (defn disabled-for-ingest?
-  "Determine if a generic schema is disallowed for ingest
+  "Determine if a generic schema is disabled for ingest
    Parameters:
    * schema, the keyword name of an approved generic"
   [schema]
@@ -35,7 +35,7 @@
   (if-not (gconfig/approved-generic? schema version)
     (errors/throw-service-error
      :invalid-data
-     (format "The [%s] schema on version [%s] is not an approved schema. This record cannot be ingested" schema version))
+     (format "The [%s] schema on version [%s] is not an approved schema, this record cannot be ingested." schema version))
     (if (disabled-for-ingest? schema)
       (errors/throw-service-error
        :invalid-data
