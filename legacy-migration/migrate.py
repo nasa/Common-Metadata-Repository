@@ -43,7 +43,6 @@ def get_concept_id(xml_resp):
 
 def migrate_dqs_row(id, name, summary, provider_guid):
     global success_count, failure_count
-    
     umm = {"Id": id,
            "Name": name,
            "Summary": summary,
@@ -65,7 +64,6 @@ def migrate_dqs_row(id, name, summary, provider_guid):
 
 def migrate_od_row(id, name, description, form, scope, sort_key, deprecated, provider_guid):
     global success_count, failure_count
-
     umm = {"Id": id,
            "Name": name,
            "Description": description,
@@ -92,7 +90,6 @@ def migrate_od_row(id, name, description, form, scope, sort_key, deprecated, pro
 
 def migrate_dqsas(dqs_id, coll_concept_ids):
     global success_count, failure_count
-
     concept_ids = [{"concept_id": id} for id in coll_concept_ids]
 
     resp = requests.post(f"{url_root}/search/associate/{data_quality_summaries[dqs_id]}",
@@ -110,7 +107,6 @@ def migrate_data_quality_summary():
     global success_count, failure_count
     success_count = 0
     failure_count = 0
-
     start = time.time()
     print("Starting DataQualitySummary data migration...")
 
@@ -127,7 +123,6 @@ def migrate_option_definition():
     global success_count, failure_count
     success_count= 0
     failure_count = 0
-
     start = time.time()
     print("Starting OptionDefinition data migration...")
 
@@ -144,7 +139,6 @@ def migrate_data_quality_summary_assignment():
     global success_count, failure_count
     success_count = 0
     failure_count = 0
-
     start = time.time()
     print("Starting DATA_QUAL_SUMMARY_ASSIGN data migration...")
     assignments = collections.defaultdict(list)
