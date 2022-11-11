@@ -218,7 +218,7 @@
 (defconfig approved-pipeline-documents
   "This is the feature toggle for the new document pipeline prototype, as well as serving as
    the base truth list of approved document types. For tests to process, grid is required,
-   but grid is not needed in any deployment envirnment. AWS should use JSON as those values
+   but grid is not needed in any deployment environment. AWS should use JSON as those values
    are passed through the parser and returned as if it was the default.
    This string should contain a clojure map that looks something like:
    {:grid [\"0.0.1\"],
@@ -238,6 +238,14 @@
    it's default state is the same value as the approved-pipeline-documents but,
    can be managaged seperately"
   {:default (approved-pipeline-documents)
+   :parser #(json/parse-string % true)})
+
+(defconfig generic-ingest-disabled-list
+  "This is a toggle to prevent specified generic concepts from being ingested into CMR,
+   Should be an array of keys with the name of the schema to be blocked from ingest.
+   Example [:grid :order-option], would prevent grids and order options from being ingested into CMR
+   if no concepts should be blocked from ingest set to an empty array"
+  {:default []
    :parser #(json/parse-string % true)})
 
 (defn check-env-vars
