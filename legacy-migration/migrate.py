@@ -14,8 +14,8 @@ pwd = os.environ.get('MIGRATE_PWD')
 access_token = os.environ.get('ACCESS_TOKEN')
 
 header = {"Content-Type": "application/json",
-              "Authorization": access_token,
-              "User-id": "legacy_migration"}
+          "Authorization": access_token,
+          "User-id": "legacy_migration"}
 
 url_root = "https://cmr.sit.earthdata.nasa.gov"
 # providers map with guid -> provider_id
