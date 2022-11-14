@@ -22,6 +22,8 @@ url_root = "https://cmr.sit.earthdata.nasa.gov"
 providers_map = {}
 # data quality summaries with guid -> concept_id
 data_quality_summaries = {}
+# option definitions with guid -> concept_id
+option_definitions = {}
 
 success_count: int = 0
 failure_count: int = 0
@@ -60,7 +62,7 @@ def migrate_dqs_row(id, name, summary, provider_guid):
     else:
         success_count += 1
         data_quality_summaries[id] = get_concept_id(resp.text)
-        print(f"Successfully migrated [{id}]")
+        print(f"Successfully migrated DQS [{id}]")
 
 def migrate_od_row(id, name, description, form, scope, sort_key, deprecated, provider_guid):
     global success_count, failure_count
@@ -84,10 +86,10 @@ def migrate_od_row(id, name, description, form, scope, sort_key, deprecated, pro
         print(f"Failed to migrate [{id}] with status code: [{resp.status_code}], error: {resp.text}")
     else:
         success_count += 1
-        data_quality_summaries[id] = get_concept_id(resp.text)
-        print(f"Successfully migrated [{id}]")
+        option_definitions[id] = get_concept_id(resp.text)
+        print(f"Successfully migrated OD [{id}]")
 
-
+# Migrate Data Quality Summary Assignments for a single DataQualitySummary concept
 def migrate_dqsas(dqs_id, coll_concept_ids):
     global success_count, failure_count
     concept_ids = [{"concept_id": id} for id in coll_concept_ids]
@@ -102,6 +104,20 @@ def migrate_dqsas(dqs_id, coll_concept_ids):
         success_count += 1
         print(f"Successfully migrated associations for [{dqs_id}], concept_id: [{data_quality_summaries[dqs_id]}]")
 
+# Migrate Option Definition Assignments for a single OptionDefinition concept
+def migrate_odas(od_id, coll_concept_ids):
+    global success_count, failure_count
+    concept_ids = [{"concept_id": id} for id in coll_concept_ids]
+
+    resp = requests.post(f"{url_root}/search/associate/{option_definitions[od_id]}",
+                         data=json.dumps(concept_ids),
+                         headers=header)
+    if resp.status_code >= 300:
+        failure_count += 1
+        print(f"Failed to migrate associations for [{od_id}], concept_id: [{option_definitions[od_id]}] with status code: [{resp.status_code}], error: {resp.text}")
+    else:
+        success_count += 1
+        print(f"Successfully migrated associations for [{od_id}], concept_id: [{option_definitions[od_id]}]")
 
 def migrate_data_quality_summary():
     global success_count, failure_count
@@ -155,9 +171,30 @@ def migrate_data_quality_summary_assignment():
     end = time.time()
     print(f"Total DATA_QUAL_SUMMARY_ASSIGN data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}")
 
+def migrate_option_definition_assignment():
+    global success_count, failure_count
+    success_count = 0
+    failure_count = 0
+    start = time.time()
+    print("Starting EJB_CAT_OPTN_ASSGN data migration...")
+    assignments = collections.defaultdict(list)
+
+    with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
+        with connection.cursor() as cursor:
+            sql = """select OPTION_DEF_GUID, CATALOG_ITEM_GUID from I_10_0_TESTBED_BUSINESS.EJB_CAT_OPTN_ASSGN"""
+            for r in cursor.execute(sql):
+                assignments[r[0]].append(r[1])
+
+    for k, v in assignments.items():
+       migrate_odas(k, v)
+
+    end = time.time()
+    print(f"Total EJB_CAT_OPTN_ASSGN data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}")
+
 
 # Main
 provider_guid_to_name_map()
 migrate_data_quality_summary()
 migrate_data_quality_summary_assignment()
 migrate_option_definition()
+migrate_option_definition_assignment()
