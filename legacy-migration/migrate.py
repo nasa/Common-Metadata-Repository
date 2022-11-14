@@ -13,6 +13,10 @@ user = os.environ.get('MIGRATE_USER')
 pwd = os.environ.get('MIGRATE_PWD')
 access_token = os.environ.get('ACCESS_TOKEN')
 
+header = {"Content-Type": "application/json",
+          "Authorization": access_token,
+          "User-id": "legacy_migration"}
+
 url_root = "https://cmr.sit.earthdata.nasa.gov"
 # providers map with guid -> provider_id
 providers_map = {}
@@ -22,8 +26,7 @@ data_quality_summaries = {}
 success_count: int = 0
 failure_count: int = 0
 
-
-# retrieve providers map with provider_guid_to_name_map
+## retrieve providers map with provider_guid_to_name_map
 def provider_guid_to_name_map():
     global providers_map
     with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
@@ -48,11 +51,32 @@ def migrate_dqs_row(id, name, summary, provider_guid):
                "Version": "1.0.0",
                "URL": "https://cdn.earthdata.nasa.gov/generics/data-quality-summary/v1.0.0"}}
 
-    header = {"Content-Type": "application/json",
-              "Authorization": access_token,
-              "User-id": "legacy_migration"}
-
     resp = requests.put(f"{url_root}/ingest/providers/{providers_map[provider_guid]}/data-quality-summaries/{id}",
+                        data=json.dumps(umm),
+                        headers=header)
+    if resp.status_code >= 300:
+        failure_count += 1
+        print(f"Failed to migrate [{id}] with status code: [{resp.status_code}], error: {resp.text}")
+    else:
+        success_count += 1
+        data_quality_summaries[id] = get_concept_id(resp.text)
+        print(f"Successfully migrated [{id}]")
+
+def migrate_od_row(id, name, description, form, scope, sort_key, deprecated, provider_guid):
+    global success_count, failure_count
+    umm = {"Id": id,
+           "Name": name,
+           "Description": description,
+           "Form": form,
+           "Scope": scope,
+           "SortKey": sort_key if sort_key else "",
+           "Deprecated": True if deprecated else False,
+           "MetadataSpecification": {
+               "Name": "Order Option",
+               "Version": "1.0.0",
+               "URL": "https://cdn.earthdata.nasa.gov/generics/order-option/v1.0.0"}}
+
+    resp = requests.put(f"{url_root}/ingest/providers/{providers_map[provider_guid]}/order-options/{id}",
                         data=json.dumps(umm),
                         headers=header)
     if resp.status_code >= 300:
@@ -67,10 +91,6 @@ def migrate_dqs_row(id, name, summary, provider_guid):
 def migrate_dqsas(dqs_id, coll_concept_ids):
     global success_count, failure_count
     concept_ids = [{"concept_id": id} for id in coll_concept_ids]
-
-    header = {"Content-Type": "application/json",
-              "Authorization": access_token,
-              "User-id": "legacy_migration"}
 
     resp = requests.post(f"{url_root}/search/associate/{data_quality_summaries[dqs_id]}",
                          data=json.dumps(concept_ids),
@@ -99,6 +119,21 @@ def migrate_data_quality_summary():
     end = time.time()
     print(f"Total DataQualitySummary data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}")
 
+def migrate_option_definition():
+    global success_count, failure_count
+    success_count= 0
+    failure_count = 0
+    start = time.time()
+    print("Starting OptionDefinition data migration...")
+
+    with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
+        with connection.cursor() as cursor:
+            sql = """select GUID, NAME, DESCRIPTION, FORM, SCOPE, SORT_KEY, DEPRECATED, PROVIDER_GUID from I_10_0_TESTBED_BUSINESS.EJB_OPTION_DEF"""
+            for r in cursor.execute(sql):
+                migrate_od_row(r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7])
+
+    end = time.time()
+    print(f"Total OptionDefinition data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}")
 
 def migrate_data_quality_summary_assignment():
     global success_count, failure_count
@@ -125,3 +160,4 @@ def migrate_data_quality_summary_assignment():
 provider_guid_to_name_map()
 migrate_data_quality_summary()
 migrate_data_quality_summary_assignment()
+migrate_option_definition()
