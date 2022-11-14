@@ -245,16 +245,21 @@
                 cmr-example-collection-id (str "C1234567-" site-example-provider)
                 doc-type (nth (re-find #"/(.*)/" (str page)) 1)
                 generic-doc-body (read-generic-markdown doc-type)
-                generic-doc-toc (read-generic-markdown-toc (gdocs/all-generic-docs-toc doc-type options))]
+                generic-doc-toc (-> doc-type
+                                    (gdocs/all-generic-docs-toc options)
+                                    (read-generic-markdown-toc)
+                                    (gdocs/format-toc-into-doc))
+                generic-versions (md->html (gdocs/generic-document-versions->markdown))]
             {:status 200
              :headers {"Content-Type" "text/html; charset=utf-8"}
              :body (-> resource
                        slurp
-                       (string/replace "%GENERIC-TABLE-OF-CONTENTS%" (gdocs/format-toc-into-doc generic-doc-toc))
+                       (string/replace "%GENERIC-TABLE-OF-CONTENTS%" generic-doc-toc)
                        (string/replace "%GENERIC-DOCS%" generic-doc-body)
                        (string/replace "%CMR-ENDPOINT%" cmr-root)
                        (string/replace "%CMR-RELEASE-VERSION%" (config/release-version))
-                       (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id))})))
+                       (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id)
+                       (string/replace "%ALL-GENERIC-DOCUMENT-VERSIONS%" generic-versions))})))
        ;; Other static resources (Javascript, CSS)
       (route/resources "/" {:root resource-root})
       (pages/not-found))
