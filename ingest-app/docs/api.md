@@ -357,6 +357,10 @@ The following are the latest acceptable UMM schema versions for metadata ingest:
 * UMM-SUB: {{ umm-sub }}
 * UMM-VAR: {{ umm-var }}
 
+Other document versions:
+
+%ALL-GENERIC-DOCUMENT-VERSIONS%
+
 [//]: # "Note: The above version variables will be rendered at html generation time."
 
 ## <a name="collection"></a> Collection
@@ -542,8 +546,12 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 #### Successful Response in JSON
 
     {"concept-id":"G1200000001-PROV1","revision-id":2}
+
 ## <a name="variable"></a> Variable
 ### <a name="create-update-variable"></a> Create / Update a Variable
+
+Create a UMM-V record and associate that variable to a collection. For associations of other UMM documents, see %CMR-ENDPOINT%/site/docs/search/api.html
+
 #### <a name="create-var-coll-endpoint"></a> /collections/&lt;collection-concept-id&gt;/&lt;collection-revision-id&gt;/variables/&lt;native-id&gt;
 
 A new variable ingest endpoint is provided to ensure that variable association is created at variable ingest time.
@@ -625,7 +633,7 @@ curl -XPUT \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/collections/C1200000005-PROV1/1/variables/sampleVariableNativeId33 \
   -d \
-\"{\"content\":
+"{\"content\":
     {
       \"AdditionalIdentifiers\" : [ {
         \"Identifier\" : \"air_temp\"
@@ -815,7 +823,39 @@ curl -XPUT \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/services/service123 \
   -d \
-"{\"Name\": \"GESDISC_HL2SS\", \"LongName\": \"Harmony Level 2 Subsetting Service (HL2SS) for GES DISC\", \"Version\": \"1.3.1\", \"Type\": \"Harmony\", \"Description\": \"Endpoint for subsetting L2 Subsetter via Harmony\", \"URL\": { \"Description\": \"PROJECT HOME PAGE\", \"URLValue\": \"https:\/\/harmony.earthdata.nasa.gov\" }, \"ServiceKeywords\": [ { \"ServiceCategory\": \"EARTH SCIENCE SERVICES\", \"ServiceTopic\": \"DATA MANAGEMENT\/DATA HANDLING\", \"ServiceTerm\": \"SUBSETTING\/SUPERSETTING\" } ], \"ServiceOrganizations\": [ { \"Roles\": [ \"ORIGINATOR\" ], \"ShortName\": \"NASA\/JPL\/PODAAC\", \"LongName\": \"Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA\" } ], \"MetadataSpecification\": { \"URL\": \"https:\/\/cdn.earthdata.nasa.gov\/umm\/service\/v1.5.0\", \"Name\": \"UMM-S\", \"Version\": \"1.5.0\"}}"
+"{
+  \"Name\": \"GESDISC_HL2SS\",
+  \"LongName\": \"Harmony Level 2 Subsetting Service (HL2SS) for GES DISC\",
+  \"Version\": \"1.3.1\",
+  \"Type\": \"Harmony\",
+  \"Description\": \"Endpoint for subsetting L2 Subsetter via Harmony\",
+  \"URL\": {
+    \"Description\": \"PROJECT HOME PAGE\",
+    \"URLValue\": \"https://harmony.earthdata.nasa.gov\"
+  },
+  \"ServiceKeywords\": [
+    {
+      \"ServiceCategory\": \"EARTH SCIENCE SERVICES\",
+      \"ServiceTopic\": \"DATA MANAGEMENT/DATA HANDLING\",
+      \"ServiceTerm\": \"SUBSETTING/SUPERSETTING\"
+    }
+  ],
+  \"ServiceOrganizations\": [
+    {
+      \"Roles\": [
+        \"ORIGINATOR\"
+      ],
+      \"ShortName\": \"NASA/JPL/PODAAC\",
+      \"LongName\": \"Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA\"
+    }
+  ],
+  \"MetadataSpecification\": {
+    \"URL\": \"https://cdn.earthdata.nasa.gov/umm/service/v1.5.0\",
+    \"Name\": \"UMM-S\",
+    \"Version\": \"1.5.0\"
+  }
+}"
+
 ```
 
 #### Successful Response in XML
@@ -871,7 +911,38 @@ curl -XPUT \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/tools/tool123 \
   -d \
-"{\"Name\": \"USGS_TOOLS_LATLONG\", \"LongName\": \"WRS-2 Path/Row to Latitude/Longitude Converter\", \"Type\": \"Downloadable Tool\", \"Version\": \"1.0\", \"Description\": \"The USGS WRS-2 Path/Row to Latitude/Longitude Converter allows users to enter any Landsat path and row to get the nearest scene center latitude and longitude coordinates.\", \"URL\": { \"URLContentType\": \"DistributionURL\", \"Type\": \"DOWNLOAD SOFTWARE\", \"Description\": \"Access the WRS-2 Path/Row to Latitude/Longitude Converter.\", \"URLValue\": \"http://www.scp.byu.edu/software/slice_response/Xshape_temp.html\" }, \"ToolKeywords\" : [{ \"ToolCategory\": \"EARTH SCIENCE SERVICES\", \"ToolTopic\": \"DATA MANAGEMENT/DATA HANDLING\", \"ToolTerm\": \"DATA INTEROPERABILITY\", \"ToolSpecificTerm\": \"DATA REFORMATTING\" }], \"Organizations\" : [ { \"Roles\": [\"SERVICE PROVIDER\"], \"ShortName\": \"USGS/EROS\",    \"LongName\": \"US GEOLOGICAL SURVEY EARTH RESOURCE OBSERVATION AND SCIENCE (EROS) LANDSAT CUSTOMER SERVICES\", \"URLValue\": \"http://www.usgs.gov\" } ], \"MetadataSpecification\": { \"URL\": \"https://cdn.earthdata.nasa.gov/umm/tool/v1.2.0\", \"Name\": \"UMM-T\", \"Version\": \"1.2.0\" }"
+"{
+  \"Name\": \"GESDISC_HL2SS\",
+  \"LongName\": \"Harmony Level 2 Subsetting Service (HL2SS) for GES DISC\",
+  \"Version\": \"1.3.1\",
+  \"Type\": \"Harmony\",
+  \"Description\": \"Endpoint for subsetting L2 Subsetter via Harmony\",
+  \"URL\": {
+    \"Description\": \"PROJECT HOME PAGE\",
+    \"URLValue\": \"https://harmony.earthdata.nasa.gov\"
+  },
+  \"ServiceKeywords\": [
+    {
+      \"ServiceCategory\": \"EARTH SCIENCE SERVICES\",
+      \"ServiceTopic\": \"DATA MANAGEMENT/DATA HANDLING\",
+      \"ServiceTerm\": \"SUBSETTING/SUPERSETTING\"
+    }
+  ],
+  \"ServiceOrganizations\": [
+    {
+      \"Roles\": [
+        \"ORIGINATOR\"
+      ],
+      \"ShortName\": \"NASA/JPL/PODAAC\",
+      \"LongName\": \"Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA\"
+    }
+  ],
+  \"MetadataSpecification\": {
+    \"URL\": \"https://cdn.earthdata.nasa.gov/umm/service/v1.5.0\",
+    \"Name\": \"UMM-S\",
+    \"Version\": \"1.5.0\"
+  }
+}"
 ```
 
 #### Successful Response in XML
@@ -962,7 +1033,10 @@ curl -XPUT \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/subscriptions/subscription123 \
   -d \
-"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
+"{\"Name\": \"someSubscription\",
+  \"SubscriberId\": \"someSubscriberId\",
+  \"CollectionConceptId\": \"C1234-PROV1.\",
+  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
 ```
 
 ```
@@ -971,7 +1045,10 @@ curl -XPOST \
   -H "Authorization: Bearer XXXX" \
   %CMR-ENDPOINT%/subscriptions \
   -d \
-"{\"Name\": \"someSubscription\",  \"SubscriberId\": \"someSubscriberId\",  \"CollectionConceptId\": \"C1234-PROV1.\",  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
+"{\"Name\": \"someSubscription\",
+  \"SubscriberId\": \"someSubscriberId\",
+  \"CollectionConceptId\": \"C1234-PROV1.\",
+  \"Query\": \"polygon=-18,-78,-13,-74,-16,-73,-22,-77,-18,-78\"}"
 ```
 
 #### Successful Response in XML
