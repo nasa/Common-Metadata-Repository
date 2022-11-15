@@ -219,13 +219,7 @@
   "This is the feature toggle for the new document pipeline prototype, as well as serving as
    the base truth list of approved document types. For tests to process, grid is required,
    but grid is not needed in any deployment envirnment. AWS should use JSON as those values
-   are passed through the parser and returned as if it was the default.
-   This string should contain a clojure map that looks something like:
-   {:grid [\"0.0.1\"],
-    :data-quality-summary [\"1.0.0\"]
-    :order-option [\"1.0.0\"]
-    :service-entry [\"1.0.0\"]
-    :service-option [\"1.0.0\"]}"
+   are passed through the parser and returned as if it was the default."
   {:default {:grid ["0.0.1"]
              :data-quality-summary ["1.0.0"]
              :order-option ["1.0.0"]

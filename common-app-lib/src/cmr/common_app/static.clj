@@ -247,8 +247,8 @@
                 generic-doc-body (read-generic-markdown doc-type)
                 generic-doc-toc (-> doc-type
                                     (gdocs/all-generic-docs-toc options)
-                                    (read-generic-markdown-toc)
-                                    (gdocs/format-toc-into-doc))
+                                    read-generic-markdown-toc
+                                    gdocs/format-toc-into-doc)
                 generic-versions (md->html (gdocs/generic-document-versions->markdown))]
             {:status 200
              :headers {"Content-Type" "text/html; charset=utf-8"}
