@@ -17,7 +17,9 @@ header = {"Content-Type": "application/json",
           "Authorization": access_token,
           "User-id": "legacy_migration"}
 
+db_name = "I_10_0_TESTBED_BUSINESS"
 url_root = "https://cmr.sit.earthdata.nasa.gov"
+
 # providers map with guid -> provider_id
 providers_map = {}
 # data quality summaries with guid -> concept_id
@@ -35,7 +37,7 @@ def provider_guid_to_name_map():
     global providers_map
     with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
         with connection.cursor() as cursor:
-            sql = """select guid, provider_id from I_10_0_TESTBED_BUSINESS.provider"""
+            sql = f"select guid, provider_id from {db_name}.provider"
             for r in cursor.execute(sql):
                 providers_map[r[0]] = r[1]
 
@@ -157,7 +159,7 @@ def migrate_data_quality_summary():
 
     with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
         with connection.cursor() as cursor:
-            sql = """select GUID, NAME, SUMMARY, OWNER_PROVIDER_GUID from I_10_0_TESTBED_BUSINESS.DATA_QUAL_SUMMARY_DEF"""
+            sql = f"select GUID, NAME, SUMMARY, OWNER_PROVIDER_GUID from {db_name}.DATA_QUAL_SUMMARY_DEF"
             for r in cursor.execute(sql):
                 migrate_dqs_row(r[0], r[1], r[2], r[3])
 
@@ -174,7 +176,7 @@ def migrate_option_definition():
 
     with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
         with connection.cursor() as cursor:
-            sql = """select GUID, NAME, DESCRIPTION, FORM, SCOPE, SORT_KEY, DEPRECATED, PROVIDER_GUID from I_10_0_TESTBED_BUSINESS.EJB_OPTION_DEF"""
+            sql = f"select GUID, NAME, DESCRIPTION, FORM, SCOPE, SORT_KEY, DEPRECATED, PROVIDER_GUID from {db_name}.EJB_OPTION_DEF"
             for r in cursor.execute(sql):
                 migrate_od_row(r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7])
 
@@ -191,7 +193,7 @@ def migrate_service_option_definition():
 
     with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
         with connection.cursor() as cursor:
-            sql = """select GUID, PROVIDER_GUID, NAME, DESCRIPTION, FORM from I_10_0_TESTBED_BUSINESS.SERVICE_OPTION_DEFINITION"""
+            sql = f"select GUID, PROVIDER_GUID, NAME, DESCRIPTION, FORM from {db_name}.SERVICE_OPTION_DEFINITION"
             for r in cursor.execute(sql):
                 migrate_sod_row(r[0], r[1], r[2], r[3], r[4])
 
@@ -209,7 +211,7 @@ def migrate_data_quality_summary_assignment():
 
     with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
         with connection.cursor() as cursor:
-            sql = """select DEFINITION_GUID, CATALOG_ITEM_GUID from I_10_0_TESTBED_BUSINESS.DATA_QUAL_SUMMARY_ASSIGN"""
+            sql = f"select DEFINITION_GUID, CATALOG_ITEM_GUID from {db_name}.DATA_QUAL_SUMMARY_ASSIGN"
             for r in cursor.execute(sql):
                 assignments[r[0]].append(r[1])
 
@@ -230,7 +232,7 @@ def migrate_option_definition_assignment():
 
     with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
         with connection.cursor() as cursor:
-            sql = """select OPTION_DEF_GUID, CATALOG_ITEM_GUID from I_10_0_TESTBED_BUSINESS.EJB_CAT_OPTN_ASSGN"""
+            sql = f"select OPTION_DEF_GUID, CATALOG_ITEM_GUID from {db_name}.EJB_CAT_OPTN_ASSGN"
             for r in cursor.execute(sql):
                 assignments[r[0]].append(r[1])
 
