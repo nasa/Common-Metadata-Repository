@@ -74,4 +74,7 @@
 
 (deftest generic-document-versions->markdown-test
   (testing "Produce a markdown list containing at least the Generic Grid"
-    (is (string/includes? (gdocs/generic-document-versions->markdown) "\n* grid: 0.0.1\n"))))
+    (is (string/includes? (gdocs/generic-document-versions->markdown)
+                          "\n* grid: 0.0.1"))
+    (is (string/includes? (gdocs/generic-document-versions->markdown)
+                          "\n* data-quality-summary: 1.0.0"))))
