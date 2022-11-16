@@ -116,7 +116,7 @@
       (string/replace-first #"<ul>\s*\n?\s*<li>" "")))
 
 (defn generic-document-versions->markdown
-  "Creates a markdown list of all the Generic Documents with the lattest version
+  "Creates a markdown list of all the Generic Documents with the latest version
   numbers suitable for use on an api.md file."
   []
   (reduce (fn [doc item]
