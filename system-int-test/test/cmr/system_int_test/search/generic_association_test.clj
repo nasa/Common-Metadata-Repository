@@ -41,6 +41,20 @@
         :throw-exceptions false}
        (client/request))))
 
+(defn- get-associations-and-details
+  "Get the search result and extract asssociations and association-details."
+  [concept-type-ext params concept-type-plural meta?]
+  (let [search-result (search-request concept-type-ext params)
+        search-body (json/parse-string (:body search-result) true)
+        associations (if meta?
+                       (get-in (first (:items search-body)) [:meta :associations concept-type-plural])
+                       (get-in (first (:items search-body)) [:associations concept-type-plural]))
+        association-details (if meta?
+                              (get-in (first (:items search-body)) [:meta :association-details concept-type-plural])
+                              (get-in (first (:items search-body)) [:association-details concept-type-plural]))]
+    {:associations associations
+     :association-details association-details}))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -83,36 +97,35 @@
     (index/wait-until-indexed)
     (testing "Associate collection with tool by concept-id and revision-ids"
       (let [response1 (association-util/associate-by-concept-ids
-                       token tl1-concept-id [{:concept-id coll1-concept-id}
-                                             {:concept-id coll2-concept-id}])
+                       token tl1-concept-id [{:concept-id coll1-concept-id :revision-id coll1-revision-id}
+                                             {:concept-id coll2-concept-id :data "some data"}])
             _ (index/wait-until-indexed)
             ;;Search for the tool tl1, it should return the association
-            tl1-search-result (search-request "tools.umm_json" "native_id=tl1")
-            tl1-search-body (json/parse-string (:body tl1-search-result) true)
-            tl1-search-generic-associations (get-in (first (:items tl1-search-body)) [:meta :associations :collections])
-           
+            tl1-search-result (get-associations-and-details "tools.umm_json" "native_id=tl1" :collections true)
+
             ;;Search for the collection coll1, it should return the association
-            coll1-search-result (search-request "collections.umm-json" "entry_title=entry-title1")
-            coll1-search-body (json/parse-string (:body coll1-search-result) true)
-            coll1-search-generic-associations (get-in (first (:items coll1-search-body)) [:meta :associations :tools])
+            coll1-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :tools true)
 
             ;;Search for the collection coll2, it should return the association
-            coll2-search-result (search-request "collections.umm-json" "entry_title=entry-title2")
-            coll2-search-body (json/parse-string (:body coll2-search-result) true)
-            coll2-search-generic-associations (get-in (first (:items coll2-search-body)) [:meta :associations :tools])]
+            coll2-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title2" :tools true)]
         (is (= 200 (:status response1)))
 
         ;; Search for the tool tl1 returns the coll1 and coll2 as association
         (is (= (set [coll2-concept-id coll1-concept-id])
-               (set tl1-search-generic-associations)))
+               (set (:associations tl1-search-result))))
+        (is (= (set [{:concept-id coll1-concept-id, :revision-id coll1-revision-id}
+                     {:data "some data", :concept-id coll2-concept-id}])
+               (set (:association-details tl1-search-result))))
 
         ;; Search for the collection coll1 returns the tl1 as association
         (is (= [tl1-concept-id]
-               coll1-search-generic-associations))
+               (:associations coll1-search-result)))
+        (is (= [{:concept-id tl1-concept-id}]
+               (:association-details coll1-search-result)))
 
         ;; Search for the collection coll2 returns the tl1 as association
         (is (= [tl1-concept-id]
-               coll2-search-generic-associations))))
+               (:associations coll2-search-result)))))
              
     (testing "Associate tool with tool by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
@@ -128,14 +141,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the tool tl1, it should return the association
-            tl1-search-result (search-request "tools.umm_json" "native_id=tl1")
-            tl1-search-body (json/parse-string (:body tl1-search-result) true)
-            tl1-search-generic-associations (get-in (first (:items tl1-search-body)) [:meta :associations :tools])
+            tl1-search-result (get-associations-and-details "tools.umm_json" "native_id=tl1" :tools true)
 
             ;;Search for the tool tl2, it should return the association
-            tl2-search-result (search-request "tools.umm_json" "native_id=tl2")
-            tl2-search-body (json/parse-string (:body tl2-search-result) true)
-            tl2-search-generic-associations (get-in (first (:items tl2-search-body)) [:meta :associations :tools])
+            tl2-search-result (get-associations-and-details "tools.umm_json" "native_id=tl2" :tools true)
 
             ;;Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
@@ -143,14 +152,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the tool tl1 again, it should NOT return the association
-            tl1-search-result1 (search-request "tools.umm_json" "native_id=tl1")
-            tl1-search-body1 (json/parse-string (:body tl1-search-result1) true)
-            tl1-search-generic-associations1 (get-in (first (:items tl1-search-body1)) [:meta :associations :tools])
+            tl1-search-result1 (get-associations-and-details "tools.umm_json" "native_id=tl1" :tools true)
 
             ;;Search for the tool tl2 again, it should NOT return the association
-            tl2-search-result1 (search-request "tools.umm_json" "native_id=tl2")
-            tl2-search-body1 (json/parse-string (:body tl2-search-result1) true)
-            tl2-search-generic-associations1 (get-in (first (:items tl2-search-body1)) [:meta :associations :tools])]
+            tl2-search-result1 (get-associations-and-details "tools.umm_json" "native_id=tl2" :tools true)]
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
 
@@ -171,20 +176,20 @@
 
         ;; Search for the tool tl1 returns the tl2 as generic association
         (is (= [tl2-concept-id]
-               tl1-search-generic-associations))
+               (:associations tl1-search-result)))
 
         ;; Search for the tool tl2 returns the tl1 as generic association
         (is (= [tl1-concept-id]
-               tl2-search-generic-associations))
+               (:associations tl2-search-result)))
 
         ;; Dissociation of the association is successful
         (is (= 200 (:status response4)))
 
         ;; Search for the tool tl1 again doesn't return the tl2 as generic association
-        (is (= nil tl1-search-generic-associations1))
+        (is (= nil (:associations tl1-search-result1)))
 
         ;; Search for the tool tl2 again doesn't return the tl1 as generic association
-        (is (= nil tl2-search-generic-associations1))))
+        (is (= nil (:associations tl2-search-result1)))))
     (testing "Associate grid with tool by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                        token grid-concept-id grid-revision-id [{:concept-id tl1-concept-id  :revision-id tl1-revision-id}])
@@ -199,14 +204,17 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the grid, it should return the association
-            grid-search-result (search-request "grids.json" "name=Grid-A7-v1")
-            grid-search-body (json/parse-string (:body grid-search-result) true)
-            grid-search-generic-associations (get-in (first (:items grid-search-body)) [:associations :tools])
+            grid-search-result (get-associations-and-details "grids.json" "name=Grid-A7-v1" :tools false)
 
             ;;Search for the tool, it should return the association
-            tl1-search-result (search-request "tools.umm_json" "native_id=tl1")
-            tl1-search-body (json/parse-string (:body tl1-search-result) true)
-            tl1-search-generic-associations (get-in (first (:items tl1-search-body)) [:meta :associations :grids])
+            tl1-search-result (get-associations-and-details "tools.umm_json" "native_id=tl1" :grids true)
+
+            ;;Update the tool and the grid, search for the grid and the tool, it should return the association.
+            _ (gen-util/ingest-generic-document nil "PROV1" native-id :grid grid-doc :post)
+            _ (tool-util/ingest-tool-with-attrs {:native-id "tl1" :Name "tool1"})
+            grid-search-result-update (get-associations-and-details "grids.json" "name=Grid-A7-v1" :tools false)
+
+            tl1-search-result-update (get-associations-and-details "tools.umm_json" "native_id=tl1" :grids true)
 
             ;;Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
@@ -214,14 +222,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the grid again, it should NOT return the association
-            grid-search-result1 (search-request "grids.json" "name=Grid-A7-v1")
-            grid-search-body1 (json/parse-string (:body grid-search-result1) true)
-            grid-search-generic-associations1 (get-in (first (:items grid-search-body1)) [:associations :tools])
+            grid-search-result1 (get-associations-and-details "grids.json" "name=Grid-A7-v1" :tools false)
 
             ;;Search for the tool again, it should NOT return the association
-            tl1-search-result1 (search-request "tools.umm_json" "native_id=tl1")
-            tl1-search-body1 (json/parse-string (:body tl1-search-result1) true)
-            tl1-search-generic-associations1 (get-in (first (:items tl1-search-body1)) [:meta :associations :grids])]
+            tl1-search-result1 (get-associations-and-details "tools.umm_json" "native_id=tl1" :grids true)]
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
 
@@ -242,20 +246,25 @@
 
         ;; Search for the grid returns the tl1 as generic association
         (is (= [tl1-concept-id]
-               grid-search-generic-associations))
+               (:associations grid-search-result)
+               (:associations grid-search-result-update)))
+        (is (= [{:concept-id tl1-concept-id :revision-id tl1-revision-id}]
+               (:association-details grid-search-result)
+               (:association-details grid-search-result-update)))
 
         ;; Search for the tool returns the grid as generic association
         (is (= [grid-concept-id]
-               tl1-search-generic-associations))
+               (:associations tl1-search-result)
+               (:associations tl1-search-result-update)))
 
         ;; Dissociation of the association is successful
         (is (= 200 (:status response4)))
 
         ;; Search for the grid again doesn't return the tl1 as generic association
-        (is (= nil grid-search-generic-associations1))
+        (is (= nil (:associations grid-search-result1)))
 
         ;; Search for the tool again doesn't return the grid as generic association
-        (is (= nil  tl1-search-generic-associations1))))))
+        (is (= nil  (:associations tl1-search-result1)))))))
 
 ;; Test that generic associations can be made between generic documents and services.
 ;; Also test the collection-service associations through the old association api and verify
@@ -297,36 +306,33 @@
     (index/wait-until-indexed)
     (testing "Associate collection with service by concept-id and revision-ids"
       (let [response1 (association-util/associate-by-concept-ids
-                       token sv1-concept-id [{:concept-id coll1-concept-id}
-                                             {:concept-id coll2-concept-id}])
+                       token sv1-concept-id [{:concept-id coll1-concept-id :revision-id coll1-revision-id}
+                                             {:concept-id coll2-concept-id :data "some data"}])
             _ (index/wait-until-indexed)
             ;;Search for the service sv1, it should return the association
-            sv1-search-result (search-request "services.umm_json" "native_id=sv1")
-            sv1-search-body (json/parse-string (:body sv1-search-result) true)
-            sv1-search-generic-associations (get-in (first (:items sv1-search-body)) [:meta :associations :collections])
-           
+            sv1-search-result (get-associations-and-details "services.umm_json" "native_id=sv1" :collections true)
+
             ;;Search for the collection coll1, it should return the association
-            coll1-search-result (search-request "collections.umm-json" "entry_title=entry-title1")
-            coll1-search-body (json/parse-string (:body coll1-search-result) true)
-            coll1-search-generic-associations (get-in (first (:items coll1-search-body)) [:meta :associations :services])
+            coll1-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :services true)
 
             ;;Search for the collection coll2, it should return the association
-            coll2-search-result (search-request "collections.umm-json" "entry_title=entry-title2")
-            coll2-search-body (json/parse-string (:body coll2-search-result) true)
-            coll2-search-generic-associations (get-in (first (:items coll2-search-body)) [:meta :associations :services])]
+            coll2-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title2" :services true)]
         (is (= 200 (:status response1)))
 
         ;; Search for the service sv1 returns the coll1 as association
         (is (= (set [coll2-concept-id coll1-concept-id])
-               (set sv1-search-generic-associations)))
+               (set (:associations sv1-search-result))))
+        (is (= (set [{:concept-id coll1-concept-id, :revision-id coll1-revision-id}
+                     {:data "some data", :concept-id coll2-concept-id}])
+               (set (:association-details sv1-search-result))))
 
         ;; Search for the collection coll1 returns the sv1 as association
         (is (= [sv1-concept-id]
-               coll1-search-generic-associations))
+               (:associations coll1-search-result)))
 
         ;; Search for the collection coll2 returns the sv1 as association
         (is (= [sv1-concept-id]
-               coll2-search-generic-associations))))
+               (:associations coll2-search-result)))))
              
     (testing "Associate service with service by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
@@ -342,14 +348,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the service sv1, it should return the association
-            sv1-search-result (search-request "services.umm_json" "native_id=sv1")
-            sv1-search-body (json/parse-string (:body sv1-search-result) true)
-            sv1-search-generic-associations (get-in (first (:items sv1-search-body)) [:meta :associations :services])
+            sv1-search-result (get-associations-and-details "services.umm_json" "native_id=sv1" :services true)
 
             ;;Search for the service sv2, it should return the association
-            sv2-search-result (search-request "services.umm_json" "native_id=sv2")
-            sv2-search-body (json/parse-string (:body sv2-search-result) true)
-            sv2-search-generic-associations (get-in (first (:items sv2-search-body)) [:meta :associations :services])
+            sv2-search-result (get-associations-and-details "services.umm_json" "native_id=sv2" :services true)
 
             ;;Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
@@ -357,14 +359,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the service sv1 again, it should NOT return the association
-            sv1-search-result1 (search-request "services.umm_json" "native_id=sv1")
-            sv1-search-body1 (json/parse-string (:body sv1-search-result1) true)
-            sv1-search-generic-associations1 (get-in (first (:items sv1-search-body1)) [:meta :associations :services])
+            sv1-search-result1 (get-associations-and-details "services.umm_json" "native_id=sv1" :services true)
 
             ;;Search for the service sv2 again, it should NOT return the association
-            sv2-search-result1 (search-request "services.umm_json" "native_id=sv2")
-            sv2-search-body1 (json/parse-string (:body sv2-search-result1) true)
-            sv2-search-generic-associations1 (get-in (first (:items sv2-search-body1)) [:meta :associations :services])]
+            sv2-search-result1 (get-associations-and-details "services.umm_json" "native_id=sv2" :services true)]
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
 
@@ -385,20 +383,20 @@
 
         ;; Search for the service sv1 returns the sv2 as generic association
         (is (= [sv2-concept-id]
-               sv1-search-generic-associations))
+               (:associations sv1-search-result)))
 
         ;; Search for the service sv2 returns the sv1 as generic association
         (is (= [sv1-concept-id]
-               sv2-search-generic-associations))
+               (:associations sv2-search-result)))
 
         ;; Dissociation of the association is successful
         (is (= 200 (:status response4)))
 
         ;; Search for the service sv1 again doesn't return the sv2 as generic association
-        (is (= nil sv1-search-generic-associations1))
+        (is (= nil (:associations sv1-search-result1)))
 
         ;; Search for the service sv2 again doesn't return the sv1 as generic association
-        (is (= nil sv2-search-generic-associations1))))
+        (is (= nil (:associations sv2-search-result1)))))
     (testing "Associate grid with service by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                        token grid-concept-id grid-revision-id [{:concept-id sv1-concept-id  :revision-id sv1-revision-id}])
@@ -413,14 +411,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the grid, it should return the association
-            grid-search-result (search-request "grids.json" "name=Grid-A7-v1")
-            grid-search-body (json/parse-string (:body grid-search-result) true)
-            grid-search-generic-associations (get-in (first (:items grid-search-body)) [:associations :services])
+            grid-search-result (get-associations-and-details "grids.json" "name=Grid-A7-v1" :services false)
 
             ;;Search for the service, it should return the association
-            sv1-search-result (search-request "services.umm_json" "native_id=sv1")
-            sv1-search-body (json/parse-string (:body sv1-search-result) true)
-            sv1-search-generic-associations (get-in (first (:items sv1-search-body)) [:meta :associations :grids])
+            sv1-search-result (get-associations-and-details "services.umm_json" "native_id=sv1" :grids true)
 
             ;;Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
@@ -428,14 +422,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the grid again, it should NOT return the association
-            grid-search-result1 (search-request "grids.json" "name=Grid-A7-v1")
-            grid-search-body1 (json/parse-string (:body grid-search-result1) true)
-            grid-search-generic-associations1 (get-in (first (:items grid-search-body1)) [:associations :services])
+            grid-search-result1 (get-associations-and-details "grids.json" "name=Grid-A7-v1" :services false)
 
             ;;Search for the service again, it should NOT return the association
-            sv1-search-result1 (search-request "services.umm_json" "native_id=sv1")
-            sv1-search-body1 (json/parse-string (:body sv1-search-result1) true)
-            sv1-search-generic-associations1 (get-in (first (:items sv1-search-body1)) [:meta :associations :grids])]
+            sv1-search-result1 (get-associations-and-details "services.umm_json" "native_id=sv1" :grids true)]
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
 
@@ -456,20 +446,20 @@
 
         ;; Search for the grid returns the sv1 as generic association
         (is (= [sv1-concept-id]
-               grid-search-generic-associations))
+               (:associations grid-search-result)))
 
         ;; Search for the service returns the grid as generic association
         (is (= [grid-concept-id]
-               sv1-search-generic-associations))
+               (:associations sv1-search-result)))
 
         ;; Dissociation of the association is successful
         (is (= 200 (:status response4)))
 
         ;; Search for the grid again doesn't return the sv1 as generic association
-        (is (= nil grid-search-generic-associations1))
+        (is (= nil (:associations grid-search-result1)))
 
         ;; Search for the service again doesn't return the grid as generic association
-        (is (= nil  sv1-search-generic-associations1))))))
+        (is (= nil  (:associations sv1-search-result1)))))))
 
 ;; Test that generic associations can be made between generic documents and variables.
 (deftest test-variable-and-generic-association
@@ -535,18 +525,12 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the variable var1, it should return the association
-            var1-search-result (search-request "variables.umm_json" "native_id=var1")
-            var1-search-body (json/parse-string (:body var1-search-result) true)
-            var1-search-generic-associations (get-in (first (:items var1-search-body)) [:associations :variables])
-            var1-search-generic-associations-in-meta (get-in (first (:items var1-search-body)) [:meta :associations :variables])
-            var1-search-generic-association-details-in-meta (get-in (first (:items var1-search-body)) [:meta :association-details :variables])
+            var1-search-result (get-associations-and-details "variables.umm_json" "native_id=var1" :variables false)
+            var1-search-result-in-meta (get-associations-and-details "variables.umm_json" "native_id=var1" :variables true)
 
             ;;Search for the variable var2, it should return the association
-            var2-search-result (search-request "variables.umm_json" "native_id=var2")
-            var2-search-body (json/parse-string (:body var2-search-result) true)
-            var2-search-generic-associations (get-in (first (:items var2-search-body)) [:associations :variables])
-            var2-search-generic-associations-in-meta (get-in (first (:items var2-search-body)) [:meta :associations :variables])
-            var2-search-generic-association-details-in-meta (get-in (first (:items var2-search-body)) [:meta :association-details :variables])
+            var2-search-result (get-associations-and-details "variables.umm_json" "native_id=var2" :variables false)
+            var2-search-result-in-meta (get-associations-and-details "variables.umm_json" "native_id=var2" :variables true)
 
             ;;Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
@@ -554,14 +538,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the variable var1 again, it should NOT return the association
-            var1-search-result1 (search-request "variables.umm_json" "native_id=var1")
-            var1-search-body1 (json/parse-string (:body var1-search-result1) true)
-            var1-search-generic-associations1 (get-in (first (:items var1-search-body1)) [:associations :variables])
+            var1-search-result1 (get-associations-and-details "variables.umm_json" "native_id=var1" :variables false)
 
             ;;Search for the variable var2 again, it should NOT return the association
-            var2-search-result1 (search-request "variables.umm_json" "native_id=var2")
-            var2-search-body1 (json/parse-string (:body var2-search-result1) true)
-            var2-search-generic-associations1 (get-in (first (:items var2-search-body1)) [:associations :variables])]
+            var2-search-result1 (get-associations-and-details "variables.umm_json" "native_id=var2" :variables false)]
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
 
@@ -582,29 +562,29 @@
 
         ;; Search for the variable var1 returns the var2 as generic association
         (is (= [{:concept-id var2-concept-id :revision-id var2-revision-id}]
-               var1-search-generic-associations))
+               (:associations var1-search-result)))
         (is (= [{:concept-id var2-concept-id :revision-id var2-revision-id}]
-               var1-search-generic-association-details-in-meta))
+               (:association-details var1-search-result-in-meta)))
         (is (= [var2-concept-id]
-               var1-search-generic-associations-in-meta))
+               (:associations var1-search-result-in-meta)))
 
         ;; Search for the variable var2 returns the var1 as generic association
         (is (= [{:concept-id var1-concept-id :revision-id var1-revision-id}]
-               var2-search-generic-associations))
+               (:associations var2-search-result)))
         (is (= [{:concept-id var1-concept-id :revision-id var1-revision-id}]
-               var2-search-generic-association-details-in-meta))
+               (:association-details var2-search-result-in-meta)))
         (is (= [var1-concept-id]
-               var2-search-generic-associations-in-meta))
+               (:associations var2-search-result-in-meta)))
 
         ;; Dissociation of the association is successful
         (is (= 200 (:status response4)))
 
         ;; Search for the variable var1 again doesn't return the var2 as generic association
-        (is (= nil var1-search-generic-associations1))
+        (is (= nil (:associations var1-search-result1)))
 
         ;; Search for the variable var2 again doesn't return the var1 as generic association
         (is (= nil
-               var2-search-generic-associations1))))
+               (:associations var2-search-result1)))))
     (testing "Associate grid with variable by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                        token grid-concept-id grid-revision-id [{:concept-id var1-concept-id  :revision-id var1-revision-id}])
@@ -619,14 +599,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the grid, it should return the association
-            grid-search-result (search-request "grids.json" "name=Grid-A7-v1")
-            grid-search-body (json/parse-string (:body grid-search-result) true)
-            grid-search-generic-associations (get-in (first (:items grid-search-body)) [:associations])
+            grid-search-result (get-associations-and-details "grids.json" "name=Grid-A7-v1" :variables false)
 
             ;;Search for the variable, it should return the association
-            var1-search-result (search-request "variables.umm_json" "native_id=var1")
-            var1-search-body (json/parse-string (:body var1-search-result) true)
-            var1-search-generic-associations (get-in (first (:items var1-search-body)) [:associations :grids])
+            var1-search-result (get-associations-and-details "variables.umm_json" "native_id=var1" :grids false)
 
             ;;Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
@@ -634,14 +610,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the grid again, it should NOT return the association
-            grid-search-result1 (search-request "grids.json" "name=Grid-A7-v1")
-            grid-search-body1 (json/parse-string (:body grid-search-result1) true)
-            grid-search-generic-associations1 (get-in (first (:items grid-search-body1)) [:associations])
+            grid-search-result1 (get-associations-and-details "grids.json" "name=Grid-A7-v1" :variables false)
 
             ;;Search for the variable again, it should NOT return the association
-            var1-search-result1 (search-request "variables.umm_json" "native_id=var1")
-            var1-search-body1 (json/parse-string (:body var1-search-result1) true)
-            var1-search-generic-associations1 (get-in (first (:items var1-search-body1)) [:associations :grids])]
+            var1-search-result1 (get-associations-and-details "variables.umm_json" "native_id=var1" :grids false)]
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
 
@@ -662,20 +634,20 @@
 
         ;; Search for the grid returns the var1 as generic association
         (is (= [var1-concept-id]
-               (:variables grid-search-generic-associations)))
+               (:associations grid-search-result)))
 
         ;; Search for the variable returns the grid as generic association
         (is (= [{:concept-id grid-concept-id :revision-id grid-revision-id}]
-               var1-search-generic-associations))
+               (:associations var1-search-result)))
 
         ;; Dissociation of the association is successful
         (is (= 200 (:status response4)))
 
         ;; Search for the grid again doesn't return the var1 as generic association
-        (is (= nil grid-search-generic-associations1))
+        (is (= nil (:associations grid-search-result1)))
 
         ;; Search for the variable again doesn't return the grid as generic association
-        (is (= nil  var1-search-generic-associations1))))
+        (is (= nil  (:associations var1-search-result1)))))
     
     (testing "Associate collection with collection by concept-id and revision-ids"
       ;;since we ingested two collections in this test, it's better to do the collection-to-collection association test here.
@@ -692,14 +664,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the collection coll1, it should return the association
-            coll1-search-result (search-request "collections.umm-json" "entry_title=entry-title1")
-            coll1-search-body (json/parse-string (:body coll1-search-result) true)
-            coll1-search-generic-associations (get-in (first (:items coll1-search-body)) [:meta :associations :collections])
+            coll1-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :collections true)
 
             ;;Search for the collection coll2, it should return the association
-            coll2-search-result (search-request "collections.umm-json" "entry_title=entry-title2")
-            coll2-search-body (json/parse-string (:body coll2-search-result) true)
-            coll2-search-generic-associations (get-in (first (:items coll2-search-body)) [:meta :associations :collections])
+            coll2-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title2" :collections true)
 
             ;;Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
@@ -707,14 +675,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the collection coll1 again, it should NOT return the association
-            coll1-search-result1 (search-request "collections.umm-json" "entry_title=entry-title1")
-            coll1-search-body1 (json/parse-string (:body coll1-search-result1) true)
-            coll1-search-generic-associations1 (get-in (first (:items coll1-search-body1)) [:meta :associations :collections])
+            coll1-search-result1 (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :collections true)
 
             ;;Search for the collection coll2 again, it should NOT return the association
-            coll2-search-result1 (search-request "collections.umm-json" "entry_title=entry-title2")
-            coll2-search-body1 (json/parse-string (:body coll2-search-result1) true)
-            coll2-search-generic-associations1 (get-in (first (:items coll2-search-body1)) [:meta :associations :collections])]
+            coll2-search-result1 (get-associations-and-details "collections.umm-json" "entry_title=entry-title2" :collections true)]
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
 
@@ -735,22 +699,22 @@
 
         ;; Search for the collection coll1 returns the coll2 as generic association
         (is (= [coll2-concept-id]
-               coll1-search-generic-associations))
+               (:associations coll1-search-result)))
 
         ;; Search for the collection coll2 returns the coll1 as generic association
         (is (= [coll1-concept-id]
-               coll2-search-generic-associations))
+               (:associations coll2-search-result)))
 
         ;; Dissociation of the association is successful
         (is (= 200 (:status response4)))
 
         ;; Search for the collection coll1 again doesn't return the coll2 as generic association
         (is (= nil
-               coll1-search-generic-associations1))
+               (:associations coll1-search-result1)))
 
         ;; Search for the collection coll2 again doesn't return the coll1 as generic association
         (is (= nil
-               coll2-search-generic-associations1))))))
+               (:associations coll2-search-result1)))))))
 
 ;; Test that generic associations can be made between generic documents and collections. 
 (deftest test-collection-and-generic-association
@@ -795,14 +759,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the grid, it should return the association
-            grid-search-result (search-request "grids.json" "name=Grid-A7-v1")
-            grid-search-body (json/parse-string (:body grid-search-result) true)
-            grid-search-generic-associations (get-in (first (:items grid-search-body)) [:associations])
+            grid-search-result (get-associations-and-details "grids.json" "name=Grid-A7-v1" :collections false)
 
             ;;Search for the collection, it should return the association
-            coll-search-result (search-request "collections.umm-json" "entry_title=entry-title1")
-            coll-search-body (json/parse-string (:body coll-search-result) true)
-            coll-search-generic-associations (get-in (first (:items coll-search-body)) [:meta :associations :grids])
+            coll-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :grids true)
 
             ;;Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
@@ -810,14 +770,10 @@
             _ (index/wait-until-indexed)
 
             ;;Search for the grid again, it should NOT return the association
-            grid-search-result1 (search-request "grids.json" "name=Grid-A7-v1")
-            grid-search-body1 (json/parse-string (:body grid-search-result1) true)
-            grid-search-generic-associations1 (get-in (first (:items grid-search-body1)) [:associations])
+            grid-search-result1 (get-associations-and-details "grids.json" "name=Grid-A7-v1" :collections false)
 
             ;;Search for the collection again, it should NOT return the association
-            coll-search-result1 (search-request "collections.umm-json" "entry_title=entry-title1")
-            coll-search-body1 (json/parse-string (:body coll-search-result1) true)
-            coll-search-generic-associations1 (get-in (first (:items coll-search-body1)) [:meta :associations :grids])]
+            coll-search-result1 (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :grids true)]
 
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
@@ -845,23 +801,23 @@
                                 (first)))))
 
         ;; Search for the grid returns the collection as generic association
-        (is (= {:collections [coll-concept-id]}
-               grid-search-generic-associations))
+        (is (= [coll-concept-id]
+               (:associations grid-search-result)))
 
         ;; Search for the collection returns the grid as generic association
         (is (= [grid-concept-id]
-               coll-search-generic-associations))
+               (:associations coll-search-result)))
 
         ;; Dissociation of the association is successful
         (is (= 200 (:status response4)) "Dissociation of the association failed.")
 
         ;; Search for the grid again doesn't return the collection as generic association
         (is (= nil
-               grid-search-generic-associations1))
+               (:associations grid-search-result1)))
 
         ;; Search for the collection again doesn't return the grid as generic association
         (is (= nil
-               coll-search-generic-associations1))))))
+               (:associations coll-search-result1)))))))
 
 (deftest test-all-associations
   (let [;; ingest two collections - the first for the test, and the second to put more assocation

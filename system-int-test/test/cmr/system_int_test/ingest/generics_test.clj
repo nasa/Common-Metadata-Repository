@@ -26,6 +26,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 ;; Check the functions which validate generic metadata
+
+(deftest disabled-for-ingest?
+   (testing
+    "Test function for disabling ingest of specific concepts"
+    (with-redefs [config/generic-ingest-disabled-list (fn [] [:grid])]
+     (is (= :grid (gdocs/disabled-for-ingest? :grid)) "Grid is disabled in test and will be returned")
+     (is (= nil (gdocs/disabled-for-ingest? :order-option)) "order option is NOT disabled in test and returns nil"))))
+
 (deftest validate-json-test
   (testing
    "Test that approved-generic? approves configured Generic document types"
@@ -33,7 +41,6 @@
       (is (true? (gcfg/approved-generic? :grids "1.0.0")) "Grids should be an approved format")
       (is (not (gcfg/approved-generic? :grid "0.0.1")) "CMR is using default configuration")
       (is (not (gcfg/approved-generic? :fake "a.b.c")) "A fake type was incorectly approved")))
-
   (testing
    "Verify that a document can be validated as approved schema."
     (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
@@ -51,7 +58,17 @@
              clojure.lang.ExceptionInfo
              #"While validating the record against the \[:grid\] schema with version \[0.0.1\] the following error occurred: \[#: required key \[MetadataSpecification\] not found\]. The record cannot be ingested."
              (gdocs/validate-document-against-schema :grid "0.0.1" bad-json))
-            "Was not able to generate a schema exception")))))
+            "Was not able to generate a schema exception"))))
+  (testing
+   "Verify that if a schema is on the disabled ingest list, it is not ingested and an error message is returned."
+    (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]}) config/generic-ingest-disabled-list (fn [] [:grid])]
+       (is (thrown-with-msg?
+            clojure.lang.ExceptionInfo
+             #"The :grid schema is currently disabled and cannot be ingested"
+            (gdocs/validate-json-against-schema
+             :grid
+             "0.0.1"
+             (json/generate-string gen-util/grid-good)))))))
 
 (deftest test-generic-CRUD
   (let [native-id "Generic-Test-CRUD"
