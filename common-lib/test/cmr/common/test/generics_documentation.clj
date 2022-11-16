@@ -66,7 +66,15 @@
 
 (deftest format-toc-into-doc-test
   (testing "Due to preexisting formatting in the api.md documents we need to
-  remove the outer list item and unordered list item tags to ensure that the generics,
-table of contents does NOT break formatting on the documentation")
+            remove the outer list item and unordered list item tags to ensure
+            that the generics, table of contents does NOT break formatting on
+            the documentation")
   (is (= "Grid html" (gdocs/format-toc-into-doc buried-html-item)))
   (is (= "Grid html" (gdocs/format-toc-into-doc buried-html-item-newline))))
+
+(deftest generic-document-versions->markdown-test
+  (testing "Produce a markdown list containing at least the Generic Grid"
+    (is (string/includes? (gdocs/generic-document-versions->markdown)
+                          "\n* grid: 0.0.1"))
+    (is (string/includes? (gdocs/generic-document-versions->markdown)
+                          "\n* data-quality-summary: 1.0.0"))))
