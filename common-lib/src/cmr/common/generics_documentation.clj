@@ -114,3 +114,14 @@
   (-> generic-doc-toc
       (string/replace #"\s*<\/li>\n?<\/ul>$" "")
       (string/replace-first #"<ul>\s*\n?\s*<li>" "")))
+
+(defn generic-document-versions->markdown
+  "Creates a markdown list of all the Generic Documents with the latest version
+  numbers suitable for use on an api.md file."
+  []
+  (reduce (fn [doc item]
+            (let [gen-type (name (first item))
+                  gen-ver (last item)]
+              (format "%s\n* %s: %s" doc gen-type gen-ver)))
+          ""
+          (latest-approved-documentation)))
