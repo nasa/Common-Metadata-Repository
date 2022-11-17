@@ -5411,102 +5411,136 @@ Example un-healthy response body:
   }
 }
 ```
+
 ### <a name="associate-any-concepts"></a> Associate any concepts
 
-A new association API is developed to achieve the goal of being able to associate a concept of any type, with or without revision, to one or more other concepts of any type, with or without revisions. The new association API also allows the associations to include an optional data payload, whose purpose is to describe the association itself. Associations which do not initially have association data payload, may have it added through association update. A concept can only be associated with another concept either with or without revisions, not both. A concept can not be associated to itself, even with different revisions. It's worth noting that associations between collections and services/tools/variables can not be made through the new association API because these associations require different business rules and there exist some complexites with the way how certain fields of the association entries are constructed. Until we resolve these issues, these existing associations will continue to be made through the existing association API.
-
-#### <a name="concept-associations"></a> Concept associations
+A new association API has been developed to achieve the goal of being able to associate a concept of any type, with or without revision, to one or more other concepts of any type, with or without revisions. The new association API also allows the associations to include an optional data payload, whose purpose is to describe the association itself. Associations which do not initially have an association data payload, may have it added through an association update. A concept can only be associated with another concept either with or without revisions, not both. A concept can not be associated to itself, even with different revisions. It's worth noting that associations between collections and services/tools/variables can not be made through the new association API because these associations require different business rules and there exist complexites with the way how certain fields of the association entries are constructed. Until we resolve these issues, these existing associations will continue to be made through the existing association API.
+ 
+#### <a name="concept-associations"></a> Concept associations 
 
 A concept, with optional revision id, can be associated to one or more other concepts, with optional revision ids and data payloads.
-When the revision id is not present, the latest revision is assumed. In the following example, "3" is optional for SE1200000006-PROV1
-and "revision_id" is optional for V1200000008-PROV1.
+When the revision id is not present, the latest revision is assumed. In the following example, "3" is optional for S1200000006-PROV1
+and "revision_id" is optional for TL1200000008-PROV1.
 
- Example
+ __Example__
 
- ```
- curl -XPOST -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json"
-      "%CMR-ENDPOINT%/associate/SE1200000006-PROV1/3"
-      -d '[{"concept_id": "V1200000008-PROV1", "revision_id": 1},
-           {"concept_id": "C1200000005-PROV1", "data": {"field": "value", "another_field": {"XYZ": "ZYX"}}}]'
- ```
+```
+ curl -XPOST \
+	-H "Authorization: Bearer XXXXX" \
+	-H "Content-Type:application/json" \
+   "%CMR-ENDPOINT%/associate/S1200000006-PROV1/3" \
+   -d '[{"concept_id": "TL1200000008-PROV1", "revision_id": 1},
+         {"concept_id": "V1200000005-PROV1", "data": {"field": "value", "another_field": {"XYZ": "ZYX"}}}]'
+```
 
- Example Response
+ __Example Response__
 
- ```
-Note: when two concepts are associated, their concept ids are sorted first. The one that appears at later position is considered associated_item.
-[{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":1},"associated_item":{"concept_id":"C1200000005-PROV1"}},
- {"generic_association":{"concept_id":"GA1200000011-CMR","revision_id":1},"associated_item":{"concept_id":"V1200000008-PROV1","revision_id":1}}]
- ```
-#### <a name="associations-in-search-result"></a> Associations in the search result
-Latest revisions of associations can be queried by searching for one of the assocaited concepts using either the JSON or UMM_JSON format. The "associations" field, contains a list of concept ids associated to the concept that was searched for grouped by concept-type. The "association-details" field contains concept ids, as well as association details like revision ids and data payloads if they were included for the particular association. In the example case, a grid (GRD1200000000-PROV1) has been associated to another grid with association details(GRD1200000001-PROV1), as well as a service option (SO1200000001-PROV1) without any association details.
+Note: when two concepts are associated, their concept ids are sorted first. The one that appears at the later position is considered the associated_item.
+
+```
+[
+    {
+        "generic_association": {
+            "concept_id": "GA1200449894-CMR",
+            "revision_id": 1
+        },
+        "associated_item": {
+            "concept_id": "TL1200000008-PROV1"
+        }
+    },
+    {
+        "generic_association": {
+            "concept_id": "GA1200449895-CMR",
+            "revision_id": 1
+        },
+        "associated_item": {
+            "concept_id": "V1200000005-PROV1"
+        }
+    }
+]
+```
+#### <a name="associations-in-search-result"></a> Associations in the search result 
+
+Latest revisions of associations can be queried by searching for one of the associated concepts using either the JSON or UMM_JSON format. The "associations" field, contains a list of concept ids associated to the concept that was searched for grouped by concept-type. The "association-details" field contains concept ids, as well as association details like revision ids and data payloads if they were included for the particular association. In the example case, a service (S1200000010-PROV1) has been associated to a variable with association details(V1200000012-PROV1), as well as a tool (TL1200000014-PROV1) without any association details.
+
 Note: If you update an association with new data payload information, a new revision of that association will be created. Old revisions of the association will be preserved in the database but won't show up in the search result of the associated concepts.
 
- Example
+ __Example__
 
- ```
- curl -H "Authorization Bearer: XXXXX" "%CMR-ENDPOINT%/grids?concept_id=GRD1200000000-PROV1"
+```
+curl -H "CMR-Pretty:true" -H "Authorization Bearer: XXXXX" "%CMR-ENDPOINT%/services.json?concept_id=S1200000010-PROV1"
 
- ```
- Example Response with associated concepts
+```
 
- ```
- {
-     "hits": 1,
-     "took": 6,
-     "items": [
-         {
-             "concept_id": "GRD1200000000-PROV1",
-             "revision_id": 22,
-             "provider_id": "PROV1",
-             "native_id": "sampleNativeId",
-             "name": "Grid-v1",
-             "associations": {
-                 "grids": [
-                     "GRD1200000001-PROV1"
-                 ],
-                 "serviceoptions": [
-                     "SO1200000001-PROV1"
-                 ]
-             },
-             "association-details": {
-                 "grids": [
-                     {
-                         "data": {
-                             "somedata": "zarr",
-                             "somemoredata": {
-                                 "XYZ": "ZYX"
-                             }
-                         },
-                         "concept-id": "GRD1200000001-PROV1",
-			 "revision-id": 1
-                     }
-                 ],
-                 "serviceoptions": [
-                     {
-                         "concept-id": "SO1200000001-PROV1"
-                     }
-                 ]
-             }
-         }
-     ]
- }
- ```
-#### <a name="concept-dissociations"></a> Concept dissociations
+ __Example Response with associated concepts__
+
+```
+{
+  "hits" : 1,
+  "took" : 36,
+  "items" : [ {
+    "concept_id" : "S1200000010-PROV1",
+    "revision_id" : 1,
+    "provider_id" : "PROV1",
+    "native_id" : "newservice",
+    "name" : "NSIDC_ECS_EGI_API_SMAP_L1L2",
+    "long_name" : "NSIDC DAAC Programmatic Access Service for Customized Data Access",
+    "associations" : {
+      "tools" : [ "TL1200000014-PROV1" ],
+      "variables" : [ "V1200000012-PROV1" ]
+    },
+    "association-details" : {
+      "tools" : [ {
+        "concept-id" : "TL1200000014-PROV1"
+      } ],
+      "variables" : [ {
+        "data" : {
+          "field" : "value",
+          "another_field" : {
+            "XYZ" : "ZYX"
+          }
+        },
+        "concept-id" : "V1200000012-PROV1"
+      } ]
+    }
+  } ]
+}
+```
+
+#### <a name="concept-dissociations"></a> Concept dissociations 
 
 A concept, with optional revision id, can be dissociated from one or more other concepts, with optional revision ids
 
- Example
+ __Example__
 
- ```
- curl -XDELETE -H "Authorization: Bearer XXXXX" -H "Content-Type:application/json"
-      "%CMR-ENDPOINT%/associate/SE1200000006-PROV1/3"
-      -d '[{"concept_id": "V1200000008-PROV1", "revision_id": 1},
-           {"concept_id": "C1200000005-PROV1"}]'
- ```
+```
+curl -XDELETE \
+	-H "CMR-Pretty:true" \
+	-H "Authorization: Bearer XXXXX" \
+	-H "Content-Type:application/json" \
+  "%CMR-ENDPOINT%/associate/S1200000010-PROV1" \
+  -d '[{"concept_id": "TL1200000014-PROV1"},
+           {"concept_id": "V1200000012-PROV1"}]'
+```
 
- Example Response
+ __Example Response__
 
- ```
-[{"generic_association":{"concept_id":"GA1200000010-CMR","revision_id":2},"associated_item":{"concept_id":"C1200000005-PROV1"}},
- {"generic_association":{"concept_id":"GA1200000011-CMR","revision_id":2},"associated_item":{"concept_id":"V1200000008-PROV1","revision_id":1}}]
- ```
+```
+[ {
+  "generic_association" : {
+    "concept_id" : "GA1200000015-CMR",
+    "revision_id" : 4
+  },
+  "associated_item" : {
+    "concept_id" : "TL1200000014-PROV1"
+  }
+}, {
+  "generic_association" : {
+    "concept_id" : "GA1200000016-CMR",
+    "revision_id" : 4
+  },
+  "associated_item" : {
+    "concept_id" : "V1200000012-PROV1"
+  }
+} ]
+```
