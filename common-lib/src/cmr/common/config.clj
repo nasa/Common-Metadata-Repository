@@ -237,10 +237,10 @@
 (defconfig generic-ingest-disabled-list
   "This is a toggle to prevent specified generic concepts from being ingested into CMR,
    Should be an array of keys with the name of the schema to be blocked from ingest.
-   Example [\"grid\",\"order-option\"], would prevent grids and order options from being ingested into CMR
+   Example  \"grid,order-option\", would prevent grids and order options from being ingested into CMR
    if no concepts should be blocked from ingest set to an empty array"
   {:default []
-   :parser #(vec (map (fn [item] (keyword item)) (json/parse-string %)))})
+   :parser #(vec (map (fn [item] (keyword item)) (str/split % #",")))})
 
 (defn check-env-vars
   "Checks any environment variables starting with CMR_ are recognized as known environment variables.
