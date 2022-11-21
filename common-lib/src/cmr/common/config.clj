@@ -240,7 +240,7 @@
    Example  \"grid,order-option\", would prevent grids and order options from being ingested into CMR
    if no concepts should be blocked from ingest set to an empty array"
   {:default []
-   :parser #(map (fn [item] (keyword (str/trim item))) (str/split % #","))})
+   :parser #(map (comp keyword str/trim) (str/split % #","))})
 
 (defn check-env-vars
   "Checks any environment variables starting with CMR_ are recognized as known environment variables.
