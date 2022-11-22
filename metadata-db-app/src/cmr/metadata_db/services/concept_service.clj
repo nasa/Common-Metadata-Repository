@@ -893,8 +893,8 @@
                              :latest true})]
         ;;For generic associations, conceptn could appear as both source-concept
         ;;and associated-concept so it needs to tombstone additional associations.
-      (tombstone-associations context assoc-type search-params1 true concept-type)
-      (tombstone-associations context assoc-type search-params2 true concept-type)))))
+      (tombstone-associations context assoc-type search-params1 false concept-type)
+      (tombstone-associations context assoc-type search-params2 false concept-type)))))
 
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
@@ -950,7 +950,17 @@
             ;; collection revision is deleted. Indexer will index the variables associated with
             ;; the collection through the collection delete event. Not the variable association
             ;; delete event.
-            (when-not skip-publication
+
+            ;; CMR-8712: After deleting a collection, searching for services, tools, and generic
+            ;; documents that are associated with the collection, still show the collection association.
+            ;; This is because skip-publication is set to true for all associations when a collection is
+            ;; deleted. Given the above comments regarding the need for the tag and variable associations
+            ;; to skip the delete event publication, service/tool/generic association delete events should
+            ;; still be published.
+            (when (or (not skip-publication)
+                      (= concept-type :generic-association)
+                      (= concept-type :service-association)
+                      (= concept-type :tool-association))
               (ingest-events/publish-event
                context (ingest-events/concept-delete-event revisioned-tombstone)))
             revisioned-tombstone)))
