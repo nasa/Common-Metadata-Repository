@@ -936,6 +936,11 @@
             (delete-associations context concept-type concept-id nil :tool-association)
             ;; delete the associated generic associations if applicable
             (delete-associations context concept-type concept-id nil :generic-association)
+
+            ;; Missing from this list is tag association, retain these records in case the
+            ;; concept is brought back to life (un-tombstoned). This is a feature not a bug
+            ;; backed up by tests in tag_association_test.clj
+
             ;; skip publication flag is set for tag association when its associated
             ;; collection revision is force deleted. In this case, the association is no longer
             ;; needed to be indexed, so we don't publish the deletion event.
