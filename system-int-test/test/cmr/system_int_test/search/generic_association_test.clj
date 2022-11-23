@@ -819,6 +819,96 @@
         (is (= nil
                (:associations coll-search-result1)))))))
 
+;; Test that generic associations are removed from the search result when one of the
+;; associated concept is deleted - specifically when collection or generic doc is deleted.
+(deftest test-cascading-association-deletion-for-generic-doc
+  (let [;;First ingest a Grid concept
+        native-id (format "Generic-Test-%s" (UUID/randomUUID))
+        grid-doc gen-util/grid-good
+        grid (gen-util/ingest-generic-document
+              nil "PROV1" native-id :grid grid-doc :post)
+        grid-concept-id (:concept-id grid)
+        grid-revision-id (:revision-id grid)
+
+        ;;Then ingest a collection
+        coll (data-core/ingest-umm-spec-collection "PROV1"
+              (data-umm-c/collection
+               {:ShortName "coll1"
+                :EntryTitle "entry-title1"})
+              {:token "mock-echo-system-token"})
+        coll-concept-id (:concept-id coll)
+        coll-revision-id (:revision-id coll)
+        token (echo-util/login (system/context) "user1")
+        _ (index/wait-until-indexed)
+        ;; associate grid and collection
+        _ (association-util/generic-associate-by-concept-ids-revision-ids
+           token grid-concept-id grid-revision-id [{:concept-id coll-concept-id :revision-id coll-revision-id}])
+        ;; search for the collection, the association should be there.
+        coll-search-result1 (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :grids true)
+
+        ;; delete the grid
+        _ (gen-util/ingest-generic-document nil "PROV1" native-id :grid grid-doc :delete)
+        _ (index/wait-until-indexed)
+
+        ;; search for the collection, the association shouldn't be there.
+        coll-search-result2 (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :grids true)]
+    (is (= [grid-concept-id]
+           (:associations coll-search-result1)))
+    (is (= nil
+           (:associations coll-search-result2)))))
+
+(deftest test-cascading-association-deletion-for-collection
+  (let [;;First ingest a Grid concept
+        native-id (format "Generic-Test-%s" (UUID/randomUUID))
+        grid-doc gen-util/grid-good
+        grid (gen-util/ingest-generic-document
+              nil "PROV1" native-id :grid grid-doc :post)
+        grid-concept-id (:concept-id grid)
+        grid-revision-id (:revision-id grid)
+
+        ;;Then ingest a collection
+        coll (data-core/ingest-umm-spec-collection "PROV1"
+              (data-umm-c/collection
+               {:ShortName "coll1"
+                :EntryTitle "entry-title1"})
+              {:token "mock-echo-system-token"})
+        coll-concept-id (:concept-id coll)
+        coll-revision-id (:revision-id coll)
+
+        ;;Then ingest a tool
+        tl (tool-util/ingest-tool-with-attrs {:native-id "tl" :Name "tool"})
+        tl-concept-id (:concept-id tl) 
+        token (echo-util/login (system/context) "user1")
+        _ (index/wait-until-indexed)
+        
+        ;; associate grid and collection
+        _ (association-util/generic-associate-by-concept-ids-revision-ids
+           token grid-concept-id grid-revision-id [{:concept-id coll-concept-id :revision-id coll-revision-id}])
+
+        ;; associate tool and collection
+        _ (association-util/associate-by-concept-ids
+           token tl-concept-id [{:concept-id coll-concept-id :revision-id coll-revision-id}])
+        
+        ;; search for the grid, the association should be there.
+        grid-search-result1 (get-associations-and-details "grids.json" "name=Grid-A7-v1" :collections false)
+
+        ;; search for the tool, the association should be there.
+        tl-search-result1 (get-associations-and-details "tools.umm_json" "native_id=tl" :collections true)
+
+        ;; delete the collection
+        _ (ingest/delete-concept (data-core/umm-c-collection->concept coll :echo10) {:accept-format :json :raw? true}) 
+        _ (index/wait-until-indexed)
+
+        ;; search for the grid, the association shouldn't be there.
+        grid-search-result2 (get-associations-and-details "grids.json" "name=Grid-A7-v1" :collections false)
+        tl-search-result2 (get-associations-and-details "tools.umm_json" "native_id=tl" :collections false)]
+    (is (= [coll-concept-id]
+           (:associations grid-search-result1)
+           (:associations tl-search-result1)))
+    (is (= nil
+           (:associations grid-search-result2)
+           (:associations tl-search-result2)))))
+
 (deftest test-all-associations
   (let [;; ingest two collections - the first for the test, and the second to put more assocation
         ;; data into the cmr_associations table.
