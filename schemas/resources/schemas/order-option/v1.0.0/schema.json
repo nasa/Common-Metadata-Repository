@@ -13,12 +13,12 @@
     "Name": {
       "description": "The name is a shortened name used to distinguish between other option definitions. This field must be unique per provider and is restricted to 30 characters.",
       "type": "string",
-      "maxLength": 30
+      "maxLength": 255
     },
     "Description": {
       "description": "The description is a longer, human-readable description of the order option type or contents, intended for client display. This field is restricted to 1024 characters.",
       "type": "string",
-      "maxLength": 1024
+      "maxLength": 4000
     },
     "Form": {
       "description": "Contents must conform to ECHO Forms schema. See the ECHO Forms Specification for more information.",
@@ -43,8 +43,7 @@
       "$ref": "#/definitions/MetadataSpecificationType"
     }
   },
-  "required": ["Name", "Description", "Form", "Scope", "MetadataSpecification"],
-
+  "required": ["Name", "Description", "Form", "MetadataSpecification"],
   "definitions": {
     "MetadataSpecificationType": {
       "type": "object",
