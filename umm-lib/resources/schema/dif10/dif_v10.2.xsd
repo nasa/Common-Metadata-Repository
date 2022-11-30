@@ -51,7 +51,7 @@ History:
             <xs:documentation>
                 The GCMD Directory Interchange Format. Description of changes in DIF Version 10.2
             </xs:documentation>
-  </xs:annotation>
+        </xs:annotation>
         <xs:complexType>
             <xs:sequence>
                 <xs:element name="Entry_ID"                     type="EntryIDType"/>                                                        <!-- Renamed from Entry_ID -->
@@ -1158,8 +1158,8 @@ History:
             </xs:documentation>
         </xs:annotation>
         <xs:sequence>
-            <xs:element name="Minimum_Value" minOccurs="0" type="xs:decimal"/>
-            <xs:element name="Maximum_Value" minOccurs="0" type="xs:decimal"/>
+            <xs:element name="Minimum_Value" minOccurs="0" type="xs:string"/>
+            <xs:element name="Maximum_Value" minOccurs="0" type="xs:string"/>
         </xs:sequence>
     </xs:complexType>
 
@@ -1559,6 +1559,7 @@ History:
     |UseConstraints          |UseConstraints          |Use_Constraints          | No change      |
     | /Description           | /Description           | /Description            |                |
     | /FreeAndOpenData       | /FreeAndOpenData       | /Free_And_Open_Data     |                |
+    | /EULAIdentifiers       | /EULAIdentifiers       | /EULA_Identifier        |                |
     | /LicenseURL/URL        | /LicenseURL/Linkage    | /License_URL/URL        |                |
     | /LicenseURL/Type       | /LicenseURL/Name       | /License_URL/Title      |                |
     | /LicenseURL/Description| /LicenseURL/Description| /License_URL/Description|                |
@@ -1583,6 +1584,17 @@ History:
                 <xs:annotation>
                     <xs:documentation>This sub-element if true, describes to end users and machines that this collection's data is free of charge and open for any use the user sees fit.</xs:documentation>
                 </xs:annotation>
+            </xs:element>
+            <xs:element name="EULA_Identifier" minOccurs="0" maxOccurs="unbounded">
+                <xs:annotation>
+                    <xs:documentation>This sub-element provides an identifier for an End User License Agreement.</xs:documentation>
+                </xs:annotation>
+                <xs:simpleType>
+                    <xs:restriction base="xs:string">
+                        <xs:minLength value="1" />
+                        <xs:maxLength value="4000" />
+                    </xs:restriction>
+                </xs:simpleType>
             </xs:element>
             <xs:choice minOccurs="0">
               <xs:element name="License_URL">

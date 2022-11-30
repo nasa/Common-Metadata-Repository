@@ -168,21 +168,21 @@
 
 (deftest collection-tiling-identification-systems-validation
   (let [t1 (coll/map->TilingIdentificationSystemType {:TilingIdentificationSystemName "T1"
-                                                      :Coordinate1 (coll/map->TilingCoordinateType {:MinimumValue 0.0
-                                                                                                    :MaximumValue 6.0})
-                                                      :Coordinate2 (coll/map->TilingCoordinateType {:MinimumValue 10.0
-                                                                                                    :MaximumValue 10.0})})
+                                                      :Coordinate1 (coll/map->TilingCoordinateType {:MinimumValue "0.0"
+                                                                                                    :MaximumValue "6.0"})
+                                                      :Coordinate2 (coll/map->TilingCoordinateType {:MinimumValue "10.0"
+                                                                                                    :MaximumValue "10.0"})})
         t2 (coll/map->TilingIdentificationSystemType {:TilingIdentificationSystemName "T2"
-                                                      :Coordinate1 (coll/map->TilingCoordinateType {:MinimumValue 0.0})
-                                                      :Coordinate2 (coll/map->TilingCoordinateType {:MaximumValue 26.0})})
+                                                      :Coordinate1 (coll/map->TilingCoordinateType {:MinimumValue "0.0"})
+                                                      :Coordinate2 (coll/map->TilingCoordinateType {:MaximumValue "26.0"})})
         t3 (coll/map->TilingIdentificationSystemType {:TilingIdentificationSystemName "T3"
-                                                      :Coordinate1 (coll/map->TilingCoordinateType {:MinimumValue 10.0
-                                                                                                    :MaximumValue 6.0})})
+                                                      :Coordinate1 (coll/map->TilingCoordinateType {:MinimumValue "10.0"
+                                                                                                    :MaximumValue "6.0"})})
         t4 (coll/map->TilingIdentificationSystemType {:TilingIdentificationSystemName "T4"
-                                                      :Coordinate1 (coll/map->TilingCoordinateType {:MinimumValue 0.0
-                                                                                                    :MaximumValue 6.0})
-                                                      :Coordinate2 (coll/map->TilingCoordinateType {:MinimumValue 50.0
-                                                                                                    :MaximumValue 26.0})})]
+                                                      :Coordinate1 (coll/map->TilingCoordinateType {:MinimumValue "0.0"
+                                                                                                    :MaximumValue "6.0"})
+                                                      :Coordinate2 (coll/map->TilingCoordinateType {:MinimumValue "50.0"
+                                                                                                    :MaximumValue "26.0"})})]
     (testing "valid tiling identification systems"
       (h/assert-valid (coll/map->UMM-C {:TilingIdentificationSystems [t1 t2]})))
 

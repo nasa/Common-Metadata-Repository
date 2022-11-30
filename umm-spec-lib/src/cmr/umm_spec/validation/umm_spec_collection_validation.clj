@@ -2,6 +2,7 @@
   "Defines validations for UMM collections."
   (:require
    [cmr.common.validations.core :as v]
+   [cmr.common.util :as util]
    [cmr.umm-spec.validation.additional-attribute :as aa]
    [cmr.umm-spec.validation.data-date :as data-date]
    [cmr.umm-spec.validation.platform :as p]
@@ -19,7 +20,11 @@
 (defn- coordinate-validator
   "Validates coordinate, minimum must be less than the maximum"
   [field-path value]
-  (let [{:keys [MinimumValue MaximumValue]} value]
+  (let [{:keys [MinimumValue MaximumValue]} value
+        ;; Collection v1.17.2 converted these fields to strings, convert them back to numbers if needed.
+        ;; TODO - implement validation for Military Grid Reference System coordinates. Right now they are changed to nil here.
+        MinimumValue (util/str->num MinimumValue)
+        MaximumValue (util/str->num MaximumValue)]
     (when (and MinimumValue MaximumValue (> MinimumValue MaximumValue))
       {field-path [(format "%%s minimum [%s] must be less than or equal to the maximum [%s]."
                            (str MinimumValue) (str MaximumValue))]})))

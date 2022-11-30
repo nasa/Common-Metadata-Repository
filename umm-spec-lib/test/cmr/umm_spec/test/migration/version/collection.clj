@@ -3640,3 +3640,70 @@
                            {:Author "Some author" ;; OnlineResource with MimeType not in enum
                             :OnlineResource {:Linkage "http://www.remss.com"
                                              :MimeType "Not in enum"}}]}))
+
+(deftest migrate-1-17-1-to-1-17-2
+  "Test the migration of collections from 1.17.1 to 1.17.2."
+  
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.17.1" "1.17.2" sample-collection)]
+      (is (= expected result)))
+
+    "Migrating TilingIdentificationSystems Coordinate1/Coordinate2 up"
+    {:TilingIdentificationSystems [{:TilingIdentificationSystemName "MODIS Tile EASE",
+                                    :Coordinate1 {:MinimumValue "-100",
+                                                  :MaximumValue "-50"},
+                                    :Coordinate2 {:MinimumValue "50",
+                                                  :MaximumValue "100"}}
+                                   {:TilingIdentificationSystemName "MISR"
+                                    :Coordinate1 {:MinimumValue "1.0"
+                                                  :MaximumValue "10.0"}
+                                    :Coordinate2 {:MinimumValue "1.5"
+                                                  :MaximumValue "10.5"}}]
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.2",
+                             :Name "UMM-C",
+                             :Version "1.17.2"}}
+    {:TilingIdentificationSystems [{:TilingIdentificationSystemName "MODIS Tile EASE",
+                                    :Coordinate1 {:MinimumValue -100,
+                                                  :MaximumValue -50},
+                                    :Coordinate2 {:MinimumValue 50,
+                                                  :MaximumValue 100}}
+                                   {:TilingIdentificationSystemName "MISR"
+                                    :Coordinate1 {:MinimumValue 1.0
+                                                  :MaximumValue 10.0}
+                                    :Coordinate2 {:MinimumValue 1.5
+                                                  :MaximumValue 10.5}}]}))
+
+(deftest migrate-1-17-2-to-1-17-1
+  "Test the migration of collections from 1.17.2 to 1.17.1."
+  
+  (are3 [expected sample-collection]
+    (let [result (vm/migrate-umm {} :collection "1.17.2" "1.17.1" sample-collection)]
+      (is (= expected result)))
+    
+    "Migrating EULAIdentifiers down"
+    {:UseConstraints {}
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                             :Name "UMM-C",
+                             :Version "1.17.1"}}
+    {:UseConstraints {:EULAIdentifiers ["EULA-1" "EULA-2"]}}
+    
+    "Migrating TilingIdentificationSystems Coordinate1/Coordinate2 down - 
+     (keep when all coordinates' strings convert to numbers; otherwise discard entire tiling identification system)"
+    {:TilingIdentificationSystems [{:TilingIdentificationSystemName "MODIS Tile EASE",
+                                    :Coordinate1 {:MinimumValue -100,
+                                                  :MaximumValue -50},
+                                    :Coordinate2 {:MinimumValue 50,
+                                                  :MaximumValue 100}}]
+     :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.1",
+                             :Name "UMM-C",
+                             :Version "1.17.1"}}
+    {:TilingIdentificationSystems [{:TilingIdentificationSystemName "MODIS Tile EASE",
+                                    :Coordinate1 {:MinimumValue "-100",
+                                                  :MaximumValue "-50"},
+                                    :Coordinate2 {:MinimumValue "50",
+                                                  :MaximumValue "100"}}
+                                   {:TilingIdentificationSystemName "MISR"
+                                    :Coordinate1 {:MinimumValue "FFFF1.0"
+                                                  :MaximumValue "10.0"}
+                                    :Coordinate2 {:MinimumValue "1.5"
+                                                  :MaximumValue "10.5"}}]}))

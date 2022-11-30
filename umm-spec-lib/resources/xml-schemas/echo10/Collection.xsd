@@ -1648,9 +1648,9 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
     </xs:annotation>
     <xs:sequence>
       <xs:element name="MinimumValue" minOccurs="0"
-      type="xs:decimal" />
+      type="xs:string" />
       <xs:element name="MaximumValue" minOccurs="0"
-      type="xs:decimal" />
+      type="xs:string" />
     </xs:sequence>
   </xs:complexType>
   <xs:complexType name="Spatial">

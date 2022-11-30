@@ -469,6 +469,17 @@
     (catch NumberFormatException _
       false)))
 
+;; Differences from numeric-string? above:
+;;   More strict - For example, returns false on string "0D".
+;;   Works on any sequence of characters, not just strings.
+(defn numeric? [s]
+  (if-let [s (seq s)]
+    (let [s (if (= (first s) \-) (next s) s)
+          s (drop-while #(Character/isDigit %) s)
+          s (if (= (first s) \.) (next s) s)
+          s (drop-while #(Character/isDigit %) s)]
+      (empty? s))))
+
 (defn rename-keys-with [m kmap merge-fn]
   "Returns the map with the keys in kmap renamed to the vals in kmap. Values of
   renamed keys for which there is already existing value will be merged using
@@ -1067,3 +1078,10 @@
   (if (string? s)
     (read-string s)
     s))
+
+(defn str->num 
+  "If the string can be converted to a number, return that number, otherwise return nil."
+  [s] 
+  (if (numeric? s)
+    (safe-read-string s)
+    nil))

@@ -1,0 +1,223 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "ItemType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Represents a single item found in search results. It contains some metadata about the item found along with the UMM representing the item. umm won't be present if the item represents a tombstone.",
+      "properties": {
+        "meta": {
+          "$ref": "#/definitions/MetaType"
+        },
+        "umm": {
+          "$ref": "umm-c-json-schema.json"
+        }
+      },
+      "required": ["meta"]
+    },
+    "MetaType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "CMR level metadata about the item found. This represents data not found in the actual metadata.",
+      "properties": {
+        "granule-count": {
+          "description": "A number >= 0 that indicates the number of granules for the collection.",
+          "type": "number"
+        },
+        "provider-id": {
+          "description": "The identity of the provider in the CMR",
+          "type": "string",
+          "minLength": 1,
+          "pattern": "[A-Z0-9_]+"
+        },
+        "concept-type": {
+          "description": "The type of item found.",
+          "type": "string",
+          "enum": ["collection"]
+        },
+        "native-id": {
+          "description": "The id used by the provider to identify this item during ingest.",
+          "type": "string",
+          "minLength": 1
+        },
+        "concept-id": {
+          "description": "The concept id of the item found.",
+          "$ref": "#/definitions/ConceptIdType"
+        },
+        "revision-id": {
+          "description": "A number >= 1 that indicates which revision of the item.",
+          "type": "number"
+        },
+        "revision-date": {
+          "description": "The date this revision was created. This would be the creation or update date of the item in the CMR.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "user-id": {
+          "description": "The id of the user who created this item revision.",
+          "type": "string",
+          "minLength": 1
+        },
+        "deleted": {
+          "description": "Indicates if the item represents a tombstone",
+          "type": "boolean"
+        },
+        "format": {
+          "description": "The mime type of the original metadata",
+          "type": "string",
+          "minLength": 1
+        },
+        "has-variables": {
+          "description": "Indicates if there are variables associated with the collection",
+          "type": "boolean"
+        },
+        "has-formats": {
+          "description": "Indicates if there are multiple supported formats for any services associated with the collection",
+          "type": "boolean"
+        },
+        "has-transforms": {
+          "description": "Indicates if there are transformations (subset, interpolation or projection) in any services associated with the collection",
+          "type": "boolean"
+        },
+        "has-spatial-subsetting": {
+          "description": "Indicates if any associated services support spatial subsetting",
+          "type": "boolean"
+        },
+        "has-temporal-subsetting": {
+          "description": "Indicates if any associated services support temporal subsetting",
+          "type": "boolean"
+        },
+        "associations": {
+          "description": "Contains variables and services associated with the collection",
+          "$ref": "#/definitions/AssociationsType"
+        },
+        "association-details": {
+          "description": "Contains the details of each association.",
+          "$ref": "#/definitions/AssociationDetailsType"
+        },
+        "s3-links": {
+          "description": "Contains the DirectDistributionInformation S3 links assoociated with the collection.",
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": ["provider-id", "concept-type", "native-id", "concept-id", "revision-id", "revision-date"]
+    },
+    "AssociationsType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Any concept associated with the collection.",
+      "properties": {
+        "variables": {
+          "description": "The concept ids of variables assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "services": {
+          "description": "The concept ids of services assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "tools": {
+          "description": "The concept ids of tools assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "data-quality-summaries": {
+          "description": "The concept ids of data quality summary concepts assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "order-options": {
+          "description": "The concept ids of order option concepts assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "service-options": {
+          "description": "The concept ids of service option concepts assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "service-entries": {
+          "description": "The concept ids of service entry concepts assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "grids": {
+          "description": "The concept ids of grid concepts assciated with the collection",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "AssociationDetailsType": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Association details of concepts associated with the collection.",
+      "properties": {
+        "concept-id": {
+          "description": "The concept id of the associated concept.",
+          "type": "string"
+        },
+        "revision-id": {
+          "description": "The revision id of the associated concept.",
+          "type": "string"
+        }
+      }
+    },
+    "ConceptIdType": {
+      "description": "The concept id of a concept.",
+      "type": "string",
+      "minLength": 4,
+      "pattern": "[A-Z]+\\d+-[A-Z0-9_]+"
+    }
+  },
+  "title": "UMM Search Results",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "hits": {
+      "description": "The total number of items that matched the search.",
+      "type": "number"
+    },
+    "took": {
+      "description": "How long the search took in milliseconds from the time the CMR received the request until it had generated the response. This does not include network traffic time to send the request or return the response.",
+      "type": "number"
+    },
+    "items": {
+      "description": "The list of items matching the result in this page.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ItemType"
+      },
+      "minItems": 0
+    }
+  },
+  "required": ["hits", "took", "items"]
+}
