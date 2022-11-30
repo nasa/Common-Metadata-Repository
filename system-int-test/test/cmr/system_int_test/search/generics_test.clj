@@ -114,4 +114,11 @@
           (testing "Test that generics will work with concept and revision searches."
             (let [results (search-request (format "concepts/%s/%s" concept-id revision-id) "")
                   status (:status results)]
+              (is (= 200 status) "wrong http status")))
+          
+          (testing "Search generic concept by native-id"
+            (let [results (search-request plural-concept-type-name (str "native-id=" native-id))
+                  status (:status results)
+                  body (:body results)]
+              (is (string/includes? body concept-id) "record not found")
               (is (= 200 status) "wrong http status"))))))))

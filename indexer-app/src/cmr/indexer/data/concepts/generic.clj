@@ -6,8 +6,8 @@
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.java.io :as io]
+   [clojure.string :as string]
    [cmr.common.concepts :as concepts]
-   [cmr.common.mime-types :as mtype]
    [cmr.common.util :as util]
    [cmr.indexer.data.concepts.association-util :as assoc-util]
    [cmr.indexer.data.concept-parser :as c-parser]
@@ -100,7 +100,7 @@
          :user-id user-id
          :revision-date revision-date
          :native-id native-id
-         :native-id-lowercase native-id
+         :native-id-lowercase (string/lower-case native-id)
          :associations-gzip-b64 (assoc-util/associations->gzip-base64-str generic-associations concept-id)}
         configs (gen-util/only-elastic-preferences (:Indexes index-data))
         ;; now add the configured indexes
