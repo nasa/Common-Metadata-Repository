@@ -4506,11 +4506,11 @@ Access to service and service association is granted through the provider via th
 
 #### <a name="service-association"></a> Service Association
 
-A service identified by its concept id can be associated with collections through a list of collection concept revisions. The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create. Each individual service association response has an `associated_item` field and either a `service_association` field with the service association concept id and revision id when the service association succeeded or an `errors` field with detailed error message when the service association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during service association. Service association requires that user has update permission on INGEST_MANAGEMENT_ACL for the collection's provider. Here is a sample service association request and its response:
+A service identified by its concept id can be associated with collections through a list of collection concept revisions and an optional data payload in JSON format. The service association request normally returns status code 200 with a response that consists of a list of individual service association responses, one for each service association attempted to create. Each individual service association response has an `associated_item` field and either a `service_association` field with the service association concept id and revision id when the service association succeeded or an `errors` field with detailed error message when the service association failed. The `associated_item` field value has the collection concept id and the optional revision id that is used to identify the collection during service association. Service association requires that user has update permission on INGEST_MANAGEMENT_ACL for the collection's provider. Here is a sample service association request and its response:
 
 ```
 curl -XPOST -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/services/S1200000008-PROV1/associations -d \
-'[{"concept_id": "C1200000005-PROV1"},
+'[{"concept_id": "C1200000005-PROV1", "data": {"order_option": "OO1200445588-PROV1"}},
   {"concept_id": "C1200000006-PROV1"}]'
 
 HTTP/1.1 400 BAD REQUEST
@@ -4533,14 +4533,6 @@ Content-Length: 168
     ],
     "associated_item":{
       "concept_id":"C1200000006-PROV1"
-    }
-  },
-  {
-    "errors":[
-      "User doesn't have update permission on INGEST_MANAGEMENT_ACL for provider of collection [C1200000007-PROV2] to make the association."
-    ],
-    "associated_item":{
-      "concept_id":"C1200000007-PROV2"
     }
   }
 ]
