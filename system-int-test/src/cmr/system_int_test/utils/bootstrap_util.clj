@@ -179,7 +179,7 @@
   "Call the bootstrap app to bulk index a generic (either all of them, or just the
   ones for the given provider)."
   ([concept-type]
-   (bulk-index-generics concept-type {transmit-config/token-header (transmit-config/echo-system-token)}))
+   (bulk-index-generics concept-type nil {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([concept-type provider-id]
    (bulk-index-generics concept-type provider-id {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([concept-type provider-id headers]

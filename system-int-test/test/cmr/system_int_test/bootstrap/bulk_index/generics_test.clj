@@ -200,10 +200,10 @@
 (deftest ^:oracle bulk-index-generics-association
   (testing "Bulk index two grids which have been associated together and contain association details"
     (system/only-with-real-database
-  ;; Disable message publishing so items are not indexed but, they are ingested into the system.
-  (core/disable-automatic-indexing)
-  ;; Create two grids
-     (let [token (echo-util/login (system/context) "user1")
+    ;; Disable message publishing so items are not indexed but, they are ingested into the system.
+      (core/disable-automatic-indexing)
+      ;; Create two grids
+      (let [token (echo-util/login (system/context) "user1")
            grid1 (generic/ingest-generic-document nil "PROV1" "tg1" :grid generic/grid-good :post)
            grid2 (generic/ingest-generic-document nil "PROV1" "tg2" :grid generic/grid-good :post)
            grid1-concept-id (:concept-id grid1)
@@ -261,7 +261,7 @@
        (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                         token grid1-concept-id grid1-revision-id [{:concept-id grid2-concept-id :data "some data" :revision-id grid2-revision-id}])
              _ (index/wait-until-indexed)
-             ;; Search using the
+             ;; Search the grid for associations
              grid-search-result (association-test/get-associations-and-details "grids.json" "native_id=tg1" :grids false)])
        ;; Associations in the index should be empty since they were not there when the record was re-indexed
        (let [grid-search-pre-bulk (association-test/get-associations-and-details "grids.json" "native_id=tg1" :grids false)]
@@ -381,7 +381,7 @@
        (is (= 0 (:hits (search/find-refs :order-option {}))))
        ;; bulk index to create the indexes for the ingested grids
        (bootstrap/bulk-index-grids "PROV1")
-       (bootstrap/bulk-index-generics :order-option "PROV1")
+       (bootstrap/bulk-index-generics :order-option)
        (index/wait-until-indexed)
        ;; Grid and order-option should now be indexed
        (is (= 1 (:hits (search/find-refs :grid {}))))

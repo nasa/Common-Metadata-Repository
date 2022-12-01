@@ -11,8 +11,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.queue :as queue]
    [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.transmit.config :as transmit-config]
-   [cmr.system-int-test.utils.generic-util :as generic]))
+   [cmr.transmit.config :as transmit-config]))
 
 (defn refresh-elastic-index
   []
