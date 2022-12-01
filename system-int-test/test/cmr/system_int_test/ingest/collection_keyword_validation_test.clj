@@ -48,7 +48,7 @@
 
 (deftest collection-keyword-validation-test
   ;; For a list of the valid keywords during testing see dev-system/resources/kms_examples
-  (testing "Keyword validation using validation endpoint"
+  (testing "Keyword validation errors using validation endpoint"
     (let [concept (data-umm-c/collection-concept
                        {:Platforms [(data-umm-cmn/platform {:ShortName "foo"
                                                             :LongName "Airbus A340-600"
@@ -83,14 +83,19 @@
                                                                                                                :Size 0.0
                                                                                                                :Unit "KB"}}]}})]
                         :RelatedUrls [{:URL "http://example.com/file"
-                                       :Description  "description"
+                                       :Description  "Bad data, throws warning"
                                        :Type "GET DATA"
                                        :URLContentType "DistributionURL"
                                        :Subtype "DIRECT DOWNLOAD"
                                        :GetData {:Format "RelatedUrls: BadFormat2"
                                                  :MimeType "RelatedUrls: BadMimeType2"
                                                  :Size 0.0
-                                                 :Unit "KB"}}]}
+                                                 :Unit "KB"}}
+                                      {:URL "http://example.gov/file"
+                                       :Description "No Warning: KMS only content type (not in valid-url-content-types-map)"
+                                       :URLContentType "PublicationURL"
+                                       :Type "VIEW RELATED INFORMATION"
+                                       :Subtype "DATA PRODUCT SPECIFICATION"}]}
                    :umm-json)
 
           response (ingest/validate-concept concept {:validate-keywords false})]
