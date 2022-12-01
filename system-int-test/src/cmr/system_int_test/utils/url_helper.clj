@@ -536,6 +536,18 @@
   ([provider-id]
    (format "%s/%s" (bulk-index-grids-url) provider-id)))
 
+(defn bulk-index-order-options-url
+  ([]
+   (format "http://localhost:%s/bulk_index/order-options" (transmit-config/bootstrap-port)))
+  ([provider-id]
+   (format "%s/%s" (bulk-index-order-options-url) provider-id)))
+
+(defn bulk-index-generics-url
+  ([generic]
+   (format (str "http://localhost:%s/bulk_index/" generic) (transmit-config/bootstrap-port)))
+  ([generic provider-id]
+   (format "%s/%s" (bulk-index-generics-url generic) provider-id)))
+
 (defn bulk-index-collection-url
   []
   (format "http://localhost:%s/bulk_index/collections" (transmit-config/bootstrap-port)))

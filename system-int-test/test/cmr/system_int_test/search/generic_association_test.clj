@@ -41,8 +41,8 @@
         :throw-exceptions false}
        (client/request))))
 
-(defn- get-associations-and-details
-  "Get the search result and extract asssociations and association-details."
+(defn get-associations-and-details
+  "Get the search result and extract associations and association-details."
   [concept-type-ext params concept-type-plural meta?]
   (let [search-result (search-request concept-type-ext params)
         search-body (json/parse-string (:body search-result) true)
@@ -88,8 +88,8 @@
         coll2-concept-id (:concept-id coll2)
         coll2-revision-id (:revision-id coll2)
         _ (index/wait-until-indexed)
-        tl1 (tool-util/ingest-tool-with-attrs {:native-id "tl1" :Name "tool1"}) 
-        tl2 (tool-util/ingest-tool-with-attrs {:native-id "tl2" :Name "tool2"}) 
+        tl1 (tool-util/ingest-tool-with-attrs {:native-id "tl1" :Name "tool1"})
+        tl2 (tool-util/ingest-tool-with-attrs {:native-id "tl2" :Name "tool2"})
         tl1-concept-id (:concept-id tl1)
         tl1-revision-id (:revision-id tl1)
         tl2-concept-id (:concept-id tl2)
@@ -129,8 +129,8 @@
              
     (testing "Associate tool with tool by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
-                       token tl2-concept-id tl2-revision-id [{:concept-id tl1-concept-id  :revision-id tl1-revision-id}])
-            ;;Switch the position of tl1 and tl2 should return the same concept-id and revision-id is increased by 1.
+                       token tl2-concept-id tl2-revision-id [{:concept-id tl1-concept-id :revision-id tl1-revision-id}])
+            ;; Switch the position of tl1 and tl2 should return the same concept-id and revision-id is increased by 1.
             response2 (association-util/generic-associate-by-concept-ids-revision-ids
                        token tl1-concept-id tl1-revision-id [{:concept-id tl2-concept-id :revision-id tl2-revision-id}])
             ;;Try to associate tl1 with tl2 by concept-id only. This shouldn't be allowed.
@@ -196,17 +196,17 @@
             ;;Switch the position of grid and tool should return the same concept-id and revision-id is increased by 1.
             response2 (association-util/generic-associate-by-concept-ids-revision-ids
                        token tl1-concept-id tl1-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id}])
-            ;;Try to associate grid with tool by concept-id only. This shouldn't be allowed.
-            ;;Try to associate tool with grid by conept-id only,  This shouldn't be allowed.
-            ;;The following association is trying to do both of the above.
+            ;; Try to associate grid with tool by concept-id only. This shouldn't be allowed.
+            ;; Try to associate tool with grid by conept-id only,  This shouldn't be allowed.
+            ;; The following association is trying to do both of the above.
             response3 (association-util/generic-associate-by-concept-ids-revision-ids
                        token grid-concept-id nil [{:concept-id tl1-concept-id}])
             _ (index/wait-until-indexed)
 
-            ;;Search for the grid, it should return the association
+            ;; Search for the grid, it should return the association
             grid-search-result (get-associations-and-details "grids.json" "name=Grid-A7-v1" :tools false)
 
-            ;;Search for the tool, it should return the association
+            ;; Search for the tool, it should return the association
             tl1-search-result (get-associations-and-details "tools.umm_json" "native_id=tl1" :grids true)
 
             ;;Update the tool and the grid, search for the grid and the tool, it should return the association.
@@ -216,15 +216,15 @@
 
             tl1-search-result-update (get-associations-and-details "tools.umm_json" "native_id=tl1" :grids true)
 
-            ;;Dissociate the association
+            ;; Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
                        token tl1-concept-id tl1-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id}])
             _ (index/wait-until-indexed)
 
-            ;;Search for the grid again, it should NOT return the association
+            ;; Search for the grid again, it should NOT return the association
             grid-search-result1 (get-associations-and-details "grids.json" "name=Grid-A7-v1" :tools false)
 
-            ;;Search for the tool again, it should NOT return the association
+            ;; Search for the tool again, it should NOT return the association
             tl1-search-result1 (get-associations-and-details "tools.umm_json" "native_id=tl1" :grids true)]
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
@@ -279,7 +279,7 @@
         grid-concept-id (:concept-id grid)
         grid-revision-id (:revision-id grid)
 
-        ;;Then ingest two collections and two services 
+        ;; Then ingest two collections and two services
         coll1 (data-core/ingest-umm-spec-collection "PROV1"
                                                     (data-umm-c/collection
                                                      {:ShortName "coll1"
@@ -296,9 +296,9 @@
         coll2-revision-id (:revision-id coll2)
         _ (index/wait-until-indexed)
         sv1 (service-util/ingest-service-with-attrs {:native-id "sv1"
-                                                     :Name "service1"}) 
+                                                     :Name "service1"})
         sv2 (service-util/ingest-service-with-attrs {:native-id "sv2"
-                                                     :Name "service2"}) 
+                                                     :Name "service2"})
         sv1-concept-id (:concept-id sv1)
         sv1-revision-id (:revision-id sv1)
         sv2-concept-id (:concept-id sv2)
@@ -309,13 +309,13 @@
                        token sv1-concept-id [{:concept-id coll1-concept-id :revision-id coll1-revision-id}
                                              {:concept-id coll2-concept-id :data "some data"}])
             _ (index/wait-until-indexed)
-            ;;Search for the service sv1, it should return the association
+            ;; Search for the service sv1, it should return the association
             sv1-search-result (get-associations-and-details "services.umm_json" "native_id=sv1" :collections true)
 
-            ;;Search for the collection coll1, it should return the association
+            ;; Search for the collection coll1, it should return the association
             coll1-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :services true)
 
-            ;;Search for the collection coll2, it should return the association
+            ;; Search for the collection coll2, it should return the association
             coll2-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title2" :services true)]
         (is (= 200 (:status response1)))
 
@@ -337,31 +337,31 @@
     (testing "Associate service with service by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                        token sv2-concept-id sv2-revision-id [{:concept-id sv1-concept-id  :revision-id sv1-revision-id}])
-            ;;Switch the position of sv1 and sv2 should return the same concept-id and revision-id is increased by 1.
+            ;; Switch the position of sv1 and sv2 should return the same concept-id and revision-id is increased by 1.
             response2 (association-util/generic-associate-by-concept-ids-revision-ids
                        token sv1-concept-id sv1-revision-id [{:concept-id sv2-concept-id :revision-id sv2-revision-id}])
-            ;;Try to associate sv1 with sv2 by concept-id only. This shouldn't be allowed.
-            ;;Try to associate sv2 with sv1 by conept-id only,  This shouldn't be allowed.
-            ;;The following association is trying to do both of the above.
+            ;; Try to associate sv1 with sv2 by concept-id only. This shouldn't be allowed.
+            ;; Try to associate sv2 with sv1 by conept-id only,  This shouldn't be allowed.
+            ;; The following association is trying to do both of the above.
             response3 (association-util/generic-associate-by-concept-ids-revision-ids
                        token sv2-concept-id nil [{:concept-id sv1-concept-id}])
             _ (index/wait-until-indexed)
 
-            ;;Search for the service sv1, it should return the association
+            ;; Search for the service sv1, it should return the association
             sv1-search-result (get-associations-and-details "services.umm_json" "native_id=sv1" :services true)
 
-            ;;Search for the service sv2, it should return the association
+            ;; Search for the service sv2, it should return the association
             sv2-search-result (get-associations-and-details "services.umm_json" "native_id=sv2" :services true)
 
-            ;;Dissociate the association
+            ;; Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
                        token sv1-concept-id sv1-revision-id [{:concept-id sv2-concept-id :revision-id sv2-revision-id}])
             _ (index/wait-until-indexed)
 
-            ;;Search for the service sv1 again, it should NOT return the association
+            ;; Search for the service sv1 again, it should NOT return the association
             sv1-search-result1 (get-associations-and-details "services.umm_json" "native_id=sv1" :services true)
 
-            ;;Search for the service sv2 again, it should NOT return the association
+            ;; Search for the service sv2 again, it should NOT return the association
             sv2-search-result1 (get-associations-and-details "services.umm_json" "native_id=sv2" :services true)]
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
@@ -663,21 +663,21 @@
                        token coll2-concept-id nil [{:concept-id coll1-concept-id}])
             _ (index/wait-until-indexed)
 
-            ;;Search for the collection coll1, it should return the association
+            ;; Search for the collection coll1, it should return the association
             coll1-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :collections true)
 
-            ;;Search for the collection coll2, it should return the association
+            ;; Search for the collection coll2, it should return the association
             coll2-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title2" :collections true)
 
-            ;;Dissociate the association
+            ;; Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
                        token coll1-concept-id coll1-revision-id [{:concept-id coll2-concept-id :revision-id coll2-revision-id}])
             _ (index/wait-until-indexed)
 
-            ;;Search for the collection coll1 again, it should NOT return the association
+            ;; Search for the collection coll1 again, it should NOT return the association
             coll1-search-result1 (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :collections true)
 
-            ;;Search for the collection coll2 again, it should NOT return the association
+            ;; Search for the collection coll2 again, it should NOT return the association
             coll2-search-result1 (get-associations-and-details "collections.umm-json" "entry_title=entry-title2" :collections true)]
         ;; The first and second associations are successful
         (is (= 200 (:status response1) (:status response2)))
@@ -726,7 +726,7 @@
         grid-concept-id (:concept-id grid)
         grid-revision-id (:revision-id grid)
 
-        ;;Then ingest a collection
+        ;; Then ingest a collection
         coll (data-core/ingest-umm-spec-collection "PROV1"
               (data-umm-c/collection
                {:ShortName "coll1"
@@ -748,31 +748,31 @@
     (testing "Associate grid with collection by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                        token grid-concept-id grid-revision-id [{:concept-id coll-concept-id :revision-id coll-revision-id}])
-            ;;Switch the position of grid and collection should return the same concept-id and revision-id is increased by 1.
+            ;; Switch the position of grid and collection should return the same concept-id and revision-id is increased by 1.
             response2 (association-util/generic-associate-by-concept-ids-revision-ids
                        token coll-concept-id coll-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id}])
-            ;;Try to associate grid with collection by concept-id only. This shouldn't be allowed.
-            ;;Try to associate collection with grid by conept-id only,  This shouldn't be allowed.
-            ;;The following association is trying to do both of the above.
+            ;; Try to associate grid with collection by concept-id only. This shouldn't be allowed.
+            ;; Try to associate collection with grid by conept-id only,  This shouldn't be allowed.
+            ;; The following association is trying to do both of the above.
             response3 (association-util/generic-associate-by-concept-ids-revision-ids
                        token grid-concept-id nil [{:concept-id coll-concept-id}])
             _ (index/wait-until-indexed)
 
-            ;;Search for the grid, it should return the association
+            ;; Search for the grid, it should return the association
             grid-search-result (get-associations-and-details "grids.json" "name=Grid-A7-v1" :collections false)
 
-            ;;Search for the collection, it should return the association
+            ;; Search for the collection, it should return the association
             coll-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :grids true)
 
-            ;;Dissociate the association
+            ;; Dissociate the association
             response4 (association-util/generic-dissociate-by-concept-ids-revision-ids
                        token coll-concept-id coll-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id}])
             _ (index/wait-until-indexed)
 
-            ;;Search for the grid again, it should NOT return the association
+            ;; Search for the grid again, it should NOT return the association
             grid-search-result1 (get-associations-and-details "grids.json" "name=Grid-A7-v1" :collections false)
 
-            ;;Search for the collection again, it should NOT return the association
+            ;; Search for the collection again, it should NOT return the association
             coll-search-result1 (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :grids true)]
 
         ;; The first and second associations are successful
@@ -820,7 +820,7 @@
                (:associations coll-search-result1)))))))
 
 (deftest test-all-associations
-  (let [;; ingest two collections - the first for the test, and the second to put more assocation
+  (let [;; ingest two collections - the first for the test, and the second to put more association
         ;; data into the cmr_associations table.
         coll (data-core/ingest-umm-spec-collection "PROV1"
                                                    (data-umm-c/collection

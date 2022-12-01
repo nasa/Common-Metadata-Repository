@@ -11,7 +11,8 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.queue :as queue]
    [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.transmit.config :as transmit-config]))
+   [cmr.transmit.config :as transmit-config]
+   [cmr.system-int-test.utils.generic-util :as generic]))
 
 (defn refresh-elastic-index
   []
@@ -153,6 +154,27 @@
     (warn "Deleting index " index-name)
     (client/delete (format "%s/%s" (url/elastic-root) index-name)
                    {:connection-manager (s/conn-mgr)})))
+;
+; (defn delete-elasticsearch-index-generics
+;   "Helper to delete an elasticsearch index associated with a collection."
+;   ;; Pass the key for the generic and then pull out the name
+;   [generic]
+;   (let [index-name (string/replace (format "1_generic_%s" (string/lower-case (name generic)))
+;                                    #"-" "_")]
+;     (warn "Deleting index " index-name)
+;     (client/delete (format "%s/%s" (url/elastic-root) index-name)
+;                    {:connection-manager (s/conn-mgr)})))
+;
+;
+; (defn delete-elasticsearch-index-generics-all-revisions
+;   "Helper to delete an elasticsearch index associated with a generic document all revisions"
+;   ;; Pass the key for the generic and then pull out the name
+;   [generic]
+;   (let [index-name (string/replace (format "1_all_generic_%s" (str (string/lower-case (name generic)) "_revisions"))
+;                                    #"-" "_")]
+;     (warn "Deleting index " index-name)
+;     (client/delete (format "%s/%s" (url/elastic-root) index-name)
+;                    {:connection-manager (s/conn-mgr)})))
 
 (defn- query-for-granules-by-collection
   "Elasticsearch query to return all of the granules in a given collection."

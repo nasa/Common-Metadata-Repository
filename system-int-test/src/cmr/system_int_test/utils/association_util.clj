@@ -23,7 +23,7 @@
      (ingest-util/parse-map-response response))))
 
 (defn generic-dissociate-by-concept-ids-revision-ids
-  "Associates a concept with the given concept id, revision id to a list of concept ids and revision ids."
+  "Disassociates a concept with the given concept id, revision id to a list of concept ids and revision ids."
   ([token concept-id revision-id concept-id-revision-id-list]
    (generic-dissociate-by-concept-ids-revision-ids token concept-id revision-id concept-id-revision-id-list nil))
   ([token concept-id revision-id concept-id-revision-id-list options]
@@ -56,7 +56,7 @@
      (ingest-util/parse-map-response response))))
 
 (defn associate-by-single-concept-id
-  "Associates a variable with a collection. This uses the single variable/collection assocation route."
+  "Associates a variable with a collection. This uses the single variable/collection association route."
   ([token concept-id coll-concept-id]
    (associate-by-single-concept-id token concept-id coll-concept-id nil))
   ([token concept-id coll-concept-id options]
@@ -67,7 +67,7 @@
      (ingest-util/parse-map-response response))))
 
 (defn dissociate-by-single-concept-id
-  "Dissociates a variable from a collection. This uses the single variable/collection dissocation route."
+  "Dissociates a variable from a collection. This uses the single variable/collection dissociation route."
   ([token concept-id coll-concept-id]
    (dissociate-by-single-concept-id token concept-id coll-concept-id nil))
   ([token concept-id coll-concept-id options]
