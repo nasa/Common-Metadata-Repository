@@ -381,7 +381,7 @@
        (is (= 0 (:hits (search/find-refs :order-option {}))))
        ;; bulk index to create the indexes for the ingested grids
        (bootstrap/bulk-index-grids "PROV1")
-       (bootstrap/bulk-index-order-options "PROV1")
+       (bootstrap/bulk-index-generics :order-option "PROV1")
        (index/wait-until-indexed)
        ;; Grid and order-option should now be indexed
        (is (= 1 (:hits (search/find-refs :grid {}))))
@@ -397,7 +397,7 @@
          (is empty? (set (:association-details grid-search-pre-bulk))))
        ;; re-index the association since it was not there at the start of the test
        (bootstrap/bulk-index-grids)
-       (bootstrap/bulk-index-order-options "PROV1")
+       (bootstrap/bulk-index-generics :order-option "PROV1")
        (index/wait-until-indexed)
        ;; Should still have two indexes for both of the concepts
        (is (= 1 (:hits (search/find-refs :grid {}))))

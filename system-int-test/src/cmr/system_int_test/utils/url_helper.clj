@@ -543,10 +543,10 @@
    (format "%s/%s" (bulk-index-order-options-url) provider-id)))
 
 (defn bulk-index-generics-url
-  ([generic]
-   (format (str "http://localhost:%s/bulk_index/" generic) (transmit-config/bootstrap-port)))
-  ([generic provider-id]
-   (format "%s/%s" (bulk-index-generics-url generic) provider-id)))
+  ([concept-type]
+   (format (str "http://localhost:%s/bulk_index/" (inf/plural concept-type)) (transmit-config/bootstrap-port)))
+  ([concept-type provider-id]
+   (format "%s/%s" (bulk-index-generics-url concept-type) provider-id)))
 
 (defn bulk-index-collection-url
   []
