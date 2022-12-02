@@ -42,10 +42,13 @@ def provider_guid_to_name_map():
                 providers_map[r[0]] = r[1]
 
 
-def get_concept_id(xml_resp):
+def get_ingest_concept_id(xml_resp):
     root = ET.fromstring(xml_resp)
     return root.find('concept-id').text
 
+def get_search_concept_id(xml_result):
+    root = ET.fromstring(xml_result)
+    return root.find('references/reference/id').text
 
 def migrate_dqs_row(id, name, summary, provider_guid):
     global success_count, failure_count
@@ -65,12 +68,47 @@ def migrate_dqs_row(id, name, summary, provider_guid):
         print(f"Failed to migrate DQS [{id}] with status code: [{resp.status_code}], error: {resp.text}")
     else:
         success_count += 1
-        data_quality_summaries[id] = get_concept_id(resp.text)
+        data_quality_summaries[id] = get_ingest_concept_id(resp.text)
         print(f"Successfully migrated DQS [{id}]")
 
 
-def migrate_od_row(id, name, description, form, scope, sort_key, deprecated, provider_guid):
+# Register the concept id in global maps based on the concept type (OD or SOD)
+def register_concept(type, id, concept_id):
+    if type == 'OD':
+        option_definitions[id] = concept_id
+    else:
+        service_option_definitions[id] = concept_id
+
+
+# Returns the concept_id of the OrderOption concept with native id of the given id if found; otherwise return None.
+def get_order_option_concept_id(id):
+    resp = requests.get(f"{url_root}/search/order-options?native_id={id}",
+                            headers={"Authorization": access_token})
+    if resp.headers['CMR-Hits'] == "1":
+        return get_search_concept_id(resp.text)
+    else:
+        return None
+
+def migrate_into_order_option(type, id, provider_guid, umm):
     global success_count, failure_count
+    matched_concept_id = get_order_option_concept_id(id)
+    if matched_concept_id is None:
+        resp = requests.put(f"{url_root}/ingest/providers/{providers_map[provider_guid]}/order-options/{id}",
+                            data=json.dumps(umm),
+                            headers=header)
+        if resp.status_code >= 300:
+            failure_count += 1
+            print(f"Failed to migrate {type} [{id}] with status code: [{resp.status_code}], error: {resp.text}")
+        else:
+            success_count += 1
+            register_concept(type, id, get_ingest_concept_id(resp.text))
+            print(f"Successfully migrated {type} [{id}]")
+    else:
+        success_count += 1
+        register_concept(type, id, matched_concept_id)
+        print(f"Skip migrating {type} [{id}], already exists.")
+
+def migrate_od_row(id, name, description, form, scope, sort_key, deprecated, provider_guid):
     umm = {"Id": id,
            "Name": name,
            "Description": description,
@@ -82,40 +120,19 @@ def migrate_od_row(id, name, description, form, scope, sort_key, deprecated, pro
                "Name": "Order Option",
                "Version": "1.0.0",
                "URL": "https://cdn.earthdata.nasa.gov/generics/order-option/v1.0.0"}}
-
-    resp = requests.put(f"{url_root}/ingest/providers/{providers_map[provider_guid]}/order-options/{id}",
-                        data=json.dumps(umm),
-                        headers=header)
-    if resp.status_code >= 300:
-        failure_count += 1
-        print(f"Failed to migrate OD [{id}] with status code: [{resp.status_code}], error: {resp.text}")
-    else:
-        success_count += 1
-        option_definitions[id] = get_concept_id(resp.text)
-        print(f"Successfully migrated OD [{id}]")
+    migrate_into_order_option('OD', id, provider_guid, umm)
 
 
 def migrate_sod_row(id, provider_guid, name, description, form):
-    global success_count, failure_count
     umm = {"Id": id,
            "Name": name,
            "Description": description,
            "Form": form,
            "MetadataSpecification": {
-               "Name": "Service Option",
+               "Name": "Order Option",
                "Version": "1.0.0",
-               "URL": "https://cdn.earthdata.nasa.gov/generics/service-option/v1.0.0"}}
-
-    resp = requests.put(f"{url_root}/ingest/providers/{providers_map[provider_guid]}/service-options/{id}",
-                        data=json.dumps(umm),
-                        headers=header)
-    if resp.status_code >= 300:
-        failure_count += 1
-        print(f"Failed to migrate SOD [{id}] with status code: [{resp.status_code}], error: {resp.text}")
-    else:
-        success_count += 1
-        service_option_definitions[id] = get_concept_id(resp.text)
-        print(f"Successfully migrated SOD [{id}]")
+               "URL": "https://cdn.earthdata.nasa.gov/generics/order-option/v1.0.0"}}
+    migrate_into_order_option('SOD', id, provider_guid, umm)
 
 
 # Migrate Data Quality Summary Assignments for a single DataQualitySummary concept
