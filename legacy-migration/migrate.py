@@ -191,7 +191,7 @@ def migrate_data_quality_summary():
 
 
 def migrate_option_definition():
-    global success_count, failure_count
+    global success_count, failure_count, skipped_count
     success_count = 0
     failure_count = 0
     skipped_count = 0
@@ -209,7 +209,7 @@ def migrate_option_definition():
 
 
 def migrate_service_option_definition():
-    global success_count, failure_count
+    global success_count, failure_count, skipped_count
     success_count = 0
     failure_count = 0
     skipped_count = 0
