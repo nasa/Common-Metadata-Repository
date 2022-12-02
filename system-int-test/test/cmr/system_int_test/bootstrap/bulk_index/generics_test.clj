@@ -312,7 +312,7 @@
        ;; re-index the association since it was not there at the start of the test
        (bootstrap/bulk-index-grids "PROV1")
        (index/wait-until-indexed)
-       ;; Should still have two indexes for the grids
+       ;; Should still have three indexes for the grids
        (is (= 3 (:hits (search/find-refs :grid {}))))
        ;; The association should still be indexed
        (let [grid-search-result2 (association-test/get-associations-and-details "grids.umm_json" "native_id=tg1" :grids true)]
