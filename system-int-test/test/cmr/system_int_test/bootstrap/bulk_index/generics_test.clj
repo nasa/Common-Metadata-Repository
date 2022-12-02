@@ -200,7 +200,7 @@
 (deftest ^:oracle bulk-index-generics-association
   (testing "Bulk index two grids which have been associated together and contain association details"
     (system/only-with-real-database
-    ;; Disable message publishing so items are not indexed but, they are ingested into the system.
+      ;; Disable message publishing so items are not indexed but, they are ingested into the system.
       (core/disable-automatic-indexing)
       ;; Create two grids
       (let [token (echo-util/login (system/context) "user1")
@@ -240,9 +240,9 @@
 (deftest ^:oracle bulk-index-generics-association-json-endpoint
   (testing "Bulk index two grids which have been associated together and contain association details search on json endpoint"
     (system/only-with-real-database
-  ;; Disable message publishing so items are not indexed but, they are ingested into the system.
+      ;; Disable message publishing so items are not indexed but, they are ingested into the system.
      (core/disable-automatic-indexing)
-  ;; Create two grids
+     ;; Create two grids
      (let [token (echo-util/login (system/context) "user1")
            grid1 (generic/ingest-generic-document nil "PROV1" "tg1" :grid generic/grid-good :post)
            grid2 (generic/ingest-generic-document nil "PROV1" "tg2" :grid generic/grid-good :post)
@@ -281,9 +281,9 @@
 (deftest ^:oracle bulk-index-generics-multiple-associations
   (testing "Bulk index three grids multiple grids ensure associaions are returned"
     (system/only-with-real-database
-  ;; Disable message publishing so items are not indexed but, they are ingested into the system.
+      ;; Disable message publishing so items are not indexed but, they are ingested into the system.
      (core/disable-automatic-indexing)
-  ;; Create two grids
+     ;; Create two grids
      (let [token (echo-util/login (system/context) "user1")
            grid1 (generic/ingest-generic-document nil "PROV1" "tg1" :grid generic/grid-good :post)
            grid2 (generic/ingest-generic-document nil "PROV1" "tg2" :grid generic/grid-good :post)
@@ -324,9 +324,9 @@
 (deftest ^:oracle bulk-index-generics-specific-revision-id-association
   (testing "Bulk index two grids which have been associated together and contain association details between specific revisions"
     (system/only-with-real-database
-  ;; Disable message publishing so items are not indexed but, they are ingested into the system.
+      ;; Disable message publishing so items are not indexed but, they are ingested into the system.
      (core/disable-automatic-indexing)
-  ;; Create two grids
+     ;; Create two grids
      (let [token (echo-util/login (system/context) "user1")
            grid1 (generic/ingest-generic-document nil "PROV1" "tg1" :grid generic/grid-good :post)
            grid2 (generic/ingest-generic-document nil "PROV1" "tg2" :grid generic/grid-good :post)
@@ -366,9 +366,9 @@
 (deftest ^:oracle bulk-index-generics-different-concept-types
   (testing "bulk index two generic concepts which have been associated together and contain association details"
     (system/only-with-real-database
-  ;; Disable message publishing so items are not indexed but, they are ingested into the system.
+      ;; Disable message publishing so items are not indexed but, they are ingested into the system.
      (core/disable-automatic-indexing)
-  ;; Create a grid and an order-option
+     ;; Create a grid and an order-option
      (let [token (echo-util/login (system/context) "user1")
            grid1 (generic/ingest-generic-document nil "PROV1" "tg1" :grid generic/grid-good :post)
            orderOption1 (generic/ingest-generic-document nil "PROV1" "oo1" :order-option generic/order-option :post)
@@ -414,9 +414,9 @@
 (deftest ^:oracle bulk-index-generics-different-providers
   (testing "bulk index two grids which have been associated together and contain association details but, belong to different providers"
     (system/only-with-real-database
-  ;; Disable message publishing so items are not indexed but, they are ingested into the system.
+      ;; Disable message publishing so items are not indexed but, they are ingested into the system.
      (core/disable-automatic-indexing)
-  ;; Create two grids
+     ;; Create two grids
      (let [token (echo-util/login (system/context) "user1")
            grid1 (generic/ingest-generic-document nil "PROV1" "tg1" :grid generic/grid-good :post)
            grid2 (generic/ingest-generic-document nil "PROV2" "tg2" :grid generic/grid-good :post)
@@ -454,9 +454,9 @@
 (deftest ^:oracle bulk-index-generics-different-providers-reindex-only-one
  (testing "Bulk index two grids reindex only one them"
    (system/only-with-real-database
- ;; Disable message publishing so items are not indexed but, they are ingested into the system.
+     ;; Disable message publishing so items are not indexed but, they are ingested into the system.
     (core/disable-automatic-indexing)
- ;; Create two grids of different providers
+    ;; Create two grids of different providers
     (let [token (echo-util/login (system/context) "user1")
           grid1 (generic/ingest-generic-document nil "PROV1" "tg1" :grid generic/grid-good :post)
           grid2 (generic/ingest-generic-document nil "PROV2" "tg2" :grid generic/grid-good :post)
@@ -496,9 +496,9 @@
 (deftest ^:oracle bulk-index-grids-service-association
  (testing "Bulk index a grid associated to a service verify association on the grid"
    (system/only-with-real-database
- ;; Disable message publishing so items are not indexed but, they are ingested into the system.
+     ;; Disable message publishing so items are not indexed but, they are ingested into the system.
     (core/disable-automatic-indexing)
- ;; Create two grids and a service
+    ;; Create two grids and a service
     (let [token (echo-util/login (system/context) "user1")
           grid1 (generic/ingest-generic-document nil "PROV1" "tg1" :grid generic/grid-good :post)
           grid2 (generic/ingest-generic-document nil "PROV2" "tg2" :grid generic/grid-good :post)
