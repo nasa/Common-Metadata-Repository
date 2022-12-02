@@ -154,11 +154,39 @@
    (bulk-index-grids nil {transmit-config/token-header (transmit-config/echo-system-token)}))
   ([provider-id]
    (bulk-index-grids provider-id {transmit-config/token-header (transmit-config/echo-system-token)}))
-  ([provider-id headers] 
+  ([provider-id headers]
    (bulk-index-by-url
     (if (nil? provider-id)
       (url/bulk-index-grids-url)
       (url/bulk-index-grids-url provider-id))
+    headers)))
+
+(defn bulk-index-order-options
+  "Call the bootstrap app to bulk index order options (either all of them, or just the
+  ones for the given provider)."
+  ([]
+   (bulk-index-order-options nil {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([provider-id]
+   (bulk-index-order-options provider-id {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([provider-id headers]
+   (bulk-index-by-url
+    (if (nil? provider-id)
+      (url/bulk-index-order-options-url)
+      (url/bulk-index-order-options-url provider-id))
+    headers)))
+
+(defn bulk-index-generics
+  "Call the bootstrap app to bulk index a generic (either all of them, or just the
+  ones for the given provider)."
+  ([concept-type]
+   (bulk-index-generics concept-type nil {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([concept-type provider-id]
+   (bulk-index-generics concept-type provider-id {transmit-config/token-header (transmit-config/echo-system-token)}))
+  ([concept-type provider-id headers]
+   (bulk-index-by-url
+    (if (nil? provider-id)
+      (url/bulk-index-generics-url (name concept-type))
+      (url/bulk-index-generics-url (name concept-type) provider-id))
     headers)))
 
 (defn bulk-index-provider
