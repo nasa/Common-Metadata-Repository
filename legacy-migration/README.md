@@ -1,10 +1,10 @@
 # Legacy Serivce Migration
 
-Legacy Service Migration holds the migration scripts for migrating ordering related data from CMR Legacy Services to CMR. 
+Legacy Service Migration holds the migration scripts for migrating ordering related data from CMR Legacy Service to CMR. 
 
-The data migrated includes: DataQualitySummary, OptionDefinition, ServiceOptionDefinition, ServiceEntry and the associations among these data and CMR collections. 
+The data migrated includes: DataQualitySummary, OptionDefinition, ServiceOptionDefinition and the associations among these data and CMR collections. 
 
-The data is read from Legacy Service tables in Oracle and ingested into CMR via the generic concept ingest API. The associations are migrated via reading the corresponding Legacy Service associations tables in Oracle and make the same associations in CMR using the CMR generic concepts associations API.
+The data is read from Legacy Service tables in Oracle and ingested into CMR via the generic concept ingest API. DataQualitySummary is migrated into data-quality-summary concept, and both OptionDefinition and ServiceOptionDefinition are migrated into order-option concept. The associations are migrated via reading the corresponding Legacy Service associations tables in Oracle and service associations between collections and UMM-S concepts with the concept id of related order-option concept as association data.
 
 # Development Environment
 
@@ -23,6 +23,7 @@ Make sure you can access Oracle database (via tunnel to localhost:1521) in the c
 
 `python3 migrate.py`
 
+By default, OrderOptionDefinitions and ServiceOptionDefinitions will not be ingested into CMR again if a matching order-option concept already exist in CMR. User can use the `-f` option to force migration of OrderOptionDefinitions and ServiceOptionDefinitions regardless of if they already exist in CMR or not.
 
 ## License
 

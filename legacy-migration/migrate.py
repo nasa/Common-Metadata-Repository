@@ -1,3 +1,4 @@
+import argparse
 import collections
 import json
 import oracledb
@@ -31,6 +32,7 @@ service_option_definitions = {}
 
 success_count: int = 0
 failure_count: int = 0
+skipped_count: int = 0
 
 # retrieve providers map with provider_guid_to_name_map
 def provider_guid_to_name_map():
@@ -90,8 +92,12 @@ def get_order_option_concept_id(id):
         return None
 
 def migrate_into_order_option(type, id, provider_guid, umm):
-    global success_count, failure_count
-    matched_concept_id = get_order_option_concept_id(id)
+    global force, success_count, failure_count, skipped_count
+    if force:
+        matched_concept_id = None
+    else:
+        matched_concept_id = get_order_option_concept_id(id)
+
     if matched_concept_id is None:
         resp = requests.put(f"{url_root}/ingest/providers/{providers_map[provider_guid]}/order-options/{id}",
                             data=json.dumps(umm),
@@ -104,7 +110,7 @@ def migrate_into_order_option(type, id, provider_guid, umm):
             register_concept(type, id, get_ingest_concept_id(resp.text))
             print(f"Successfully migrated {type} [{id}]")
     else:
-        success_count += 1
+        skipped_count += 1
         register_concept(type, id, matched_concept_id)
         print(f"Skip migrating {type} [{id}], already exists.")
 
@@ -188,6 +194,7 @@ def migrate_option_definition():
     global success_count, failure_count
     success_count = 0
     failure_count = 0
+    skipped_count = 0
     start = time.time()
     print("Starting OptionDefinition data migration...")
 
@@ -198,13 +205,14 @@ def migrate_option_definition():
                 migrate_od_row(r[0], r[1], r[2], r[3], r[4], r[5], r[6], r[7])
 
     end = time.time()
-    print(f"Total OptionDefinition data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}")
+    print(f"Total OptionDefinition data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}, Skipped: {skipped_count}.")
 
 
 def migrate_service_option_definition():
     global success_count, failure_count
     success_count = 0
     failure_count = 0
+    skipped_count = 0
     start = time.time()
     print("Starting ServiceOptionDefinition data migration...")
 
@@ -215,7 +223,7 @@ def migrate_service_option_definition():
                 migrate_sod_row(r[0], r[1], r[2], r[3], r[4])
 
     end = time.time()
-    print(f"Total ServiceOptionDefinition data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}")
+    print(f"Total ServiceOptionDefinition data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}, Skipped: {skipped_count}.")
 
 
 def migrate_data_quality_summary_assignment():
@@ -261,9 +269,16 @@ def migrate_option_definition_assignment():
 
 
 # Main
+parser = argparse.ArgumentParser()
+# Add -f option to force migration of OrderOptionDefinitions and ServiceOptionDefinitions regardless of their existence in CMR.
+# By default, OrderOptionDefinitions and ServiceOptionDefinitions will not ingested into CMR again if a matching order-option concept already exist.
+parser.add_argument('-f', '--force', action='store_true', help='force migration of order-option concepts')
+args = parser.parse_args()
+force = args.force
+
 provider_guid_to_name_map()
 migrate_data_quality_summary()
 migrate_data_quality_summary_assignment()
 migrate_option_definition()
-migrate_option_definition_assignment()
+# migrate_option_definition_assignment()
 migrate_service_option_definition()
