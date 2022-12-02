@@ -30,6 +30,12 @@
 (def SHORTNAME_MAX
   85)
 
+;; Deprecated data, should only be used for translating older formats such as
+;; dif10 and echo10. New records/formats are based on KMS and not this static
+;; map
+;; NOTE: PublicationURL->VIEW RELATED INFORMATION->DATA PRODUCT SPECIFICATION
+;; is not a keyword in this list as it is a new Keyword. This fact can be
+;; exploited in tests.
 (def valid-url-content-types-map
   {"DistributionURL" {"DOWNLOAD SOFTWARE" ["MOBILE APP"]
                       "GET CAPABILITIES" ["OpenSearch" "GIBS"]
@@ -117,6 +123,8 @@
   [url-content-type type]
   (get-in valid-url-content-types-map [url-content-type type]))
 
+;; Uses deprecated data, should only be used for translating older formats such
+;; as dif10 and echo10. New records/formats are based on KMS and not static maps
 (defn type->url-content-type
   "Get the URLContentType from the type"
   [type]

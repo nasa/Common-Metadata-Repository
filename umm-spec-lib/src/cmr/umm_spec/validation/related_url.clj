@@ -102,7 +102,6 @@
 (def related-url-validations
   [{:URL url-validation}
    description-validation
-   related-url-type-validation
    get-service-validation
    get-data-validation])
 
