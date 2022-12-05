@@ -51,7 +51,9 @@
                   "<ul><li><a href='https://cmr.link/g1'>https://cmr.link/g1</a></li><li>"
                   "<a href='https://cmr.link/g2'>https://cmr.link/g2</a></li><li>"
                   "<a href='https://cmr.link/g3'>https://cmr.link/g3</a></li></ul>"
-                  "<p>To unsubscribe from these notifications, or if you have any questions, "
+                  "<p>To unsubscribe from these notifications, go to "
+                  (jobs/subscription-management-page)
+                  "</p><p>If you have any questions, "
                   "please contact us at <a href='mailto:"
                   (common-app-config/cmr-support-email)
                   "'>"
@@ -81,7 +83,9 @@
                   "<ul><li><a href='https://cmr.link/c1'>https://cmr.link/c1</a></li><li>"
                   "<a href='https://cmr.link/c2'>https://cmr.link/c2</a></li><li>"
                   "<a href='https://cmr.link/c3'>https://cmr.link/c3</a></li></ul>"
-                  "<p>To unsubscribe from these notifications, or if you have any questions, "
+                  "<p>To unsubscribe from these notifications, go to "
+                  (jobs/subscription-management-page)
+                  "</p><p>If you have any questions, "
                   "please contact us at <a href='mailto:"
                   (common-app-config/cmr-support-email)
                   "'>"
