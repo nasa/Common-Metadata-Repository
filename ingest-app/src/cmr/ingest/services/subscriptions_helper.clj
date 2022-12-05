@@ -80,6 +80,11 @@
   {:default 3600
    :type Long})
 
+(defconfig subscription-management-page
+  "Link to subscription management page"
+  {:default "https://search.earthdata.nasa.gov/subscriptions"
+   :type String})
+
 (defn email-url-list
   "take a list of URLs and format them for an email"
   [concept-ref-locations]
@@ -193,7 +198,9 @@
                             "Running the query with a time window from " sub-start-time " to " sub-end-time
                             ", the following granules have been added or updated:\n\n"
                             (email-url-list concept-ref-locations)
-                            "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at ["
+                            "\n\nTo unsubscribe from these notifications, go to "
+                            (subscription-management-page)
+                            "\n\nIf you have any questions, please contact us at ["
                             (common-app-config/cmr-support-email)
                             "](mailto:"
                             (common-app-config/cmr-support-email)
@@ -215,7 +222,9 @@
                             "Running the query with a time window from " sub-start-time " to " sub-end-time
                             ", the following collections have been added or updated:\n\n"
                             (email-url-list concept-ref-locations)
-                            "\n\nTo unsubscribe from these notifications, or if you have any questions, please contact us at ["
+                            "\n\nTo unsubscribe from these notifications, go to "
+                            (subscription-management-page)
+                            "\n\nIf you have any questions, please contact us at ["
                             (common-app-config/cmr-support-email)
                             "](mailto:"
                             (common-app-config/cmr-support-email)
