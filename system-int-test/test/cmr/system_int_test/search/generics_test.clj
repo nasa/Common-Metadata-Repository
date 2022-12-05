@@ -76,14 +76,11 @@
               guid-id (:Id file)
               provider "PROV1"]
           (index/wait-until-indexed)
-          ;; TODO Need to add in the options parameter
-          (testing "Testing the name search"
+          (testing "Testing generics name parameter search"
             (are3 [plural-concept-type-name search-parameter name-parameter options-flag]
               (let [results (search-request plural-concept-type-name (str search-parameter "=" name-parameter (if options-flag (str "&" options-flag) (str ""))))
                     status (:status results)
                     body (:body results)]
-                ;; (println "The search paramter" (str search-parameter "=" name))
-                ;; (println results)
                 (is (string/includes? body name) "record not found")
                 (is (= 200 status) "wrong http status"))
 
@@ -91,12 +88,6 @@
               (inf/plural concept-type-string)
               "name"
               name
-              nil
-
-              "Upper case name"
-              (inf/plural concept-type-string)
-              "name"
-              (string/upper-case name)
               nil
 
               "Upper case name ignore case true (default)"
@@ -116,52 +107,44 @@
               "name"
               (string/lower-case name)
               "options[name][pattern]=false"
-              ;; replace the last character with a * to test wildcard search
-              "Test using name with wildcard e.g name[removed last char]*"
+              ;; Replace the last character with a * to test wildcard search
+              "Test using name with pattern parameter e.g name[removed last char]*"
               (inf/plural concept-type-string)
               "name"
               (str (string/join "" (drop-last name)) "*")
               "options[name][pattern]=true"))
-              ;; Do we need to do 'id'?
-          (testing "Testing provider and provider variations"
+
+          (testing "Testing generics provider parameter search"
             (are3 [plural-concept-type-name search-parameter provider-parameter options-flag]
               (let [results (search-request plural-concept-type-name (str search-parameter "=" provider-parameter (if options-flag (str "&" options-flag) (str ""))))
                     status (:status results)
                     body (:body results)]
-                ; (println "The body of the request" body)
-                ;; (println "The search paramter" (str search-parameter "=" name))
                 (is (string/includes? body name) "record not found")
                 (is (= 200 status) "wrong http status"))
 
-              "Test are3 using provider"
+              "Test provider parameter search"
               (inf/plural concept-type-string)
               "provider"
               "PROV1"
               nil
 
-              "Test are3 using provider_id"
+              "Test provider_id parameter search, passing default pattern option"
               (inf/plural concept-type-string)
               "provider-id"
               "PROV1"
-              nil
+              "options[provider][pattern]=false"
 
-              "Test are3 using provider-id, pass ignore case option false"
+              "Test provider-id parameter search, pass ignore case option false"
               (inf/plural concept-type-string)
               "provider_id"
               "PROV1"
               "options[name][ignore-case]=false"
 
-              "Test using lowercase providerm pass ignore case option true"
+              "Test using lower-case provider pass ignore case option true"
               (inf/plural concept-type-string)
               "providerId"
               "prov1"
               "options[name][ignore-case]=true"
-
-              "Test using mixed case prov1, passing default pattern value"
-              (inf/plural concept-type-string)
-              "providerId"
-              "PrOv1"
-              "options[provider][pattern]=false"
 
               "testing provider pattern match"
               (inf/plural concept-type-string)
@@ -169,69 +152,65 @@
               "PRO*"
               "options[provider][pattern]=true"))
 
-          (testing "Testing concept id and concept-id variations"
+          (testing "Testing generics concept-id parameter search"
             (are3 [plural-concept-type-name search-parameter concept-id-parameter options-flag]
               (let [results (search-request plural-concept-type-name (str search-parameter "=" concept-id-parameter (if options-flag (str "&" options-flag) (str ""))))
                     status (:status results)
                     body (:body results)]
-                ;; (println "The body of the request" body)
-                ;; (println "The search paramter" (str search-parameter "=" name))
                 (is (string/includes? body name) "record not found")
                 (is (= 200 status) "wrong http status"))
 
-              "search using concept-id"
+              "Test concept-id parameter search"
               (inf/plural concept-type-string)
               "concept-id"
               concept-id
               nil
 
-              "search using concept_id"
+              "Test concept_id parameter search"
               (inf/plural concept-type-string)
               "concept_id"
               concept-id
               nil
 
-              "search using conceptId"
+              "Test conceptId parameter search"
               (inf/plural concept-type-string)
               "conceptId"
               concept-id
               nil))
-;; TODO add cases for option flags native id, add the guid 'id' parameter's tests
+
         (testing "Testing parameter of native_id"
           (are3 [plural-concept-type-name search-parameter native-id-parameter options-flag]
             (let [results (search-request plural-concept-type-name (str search-parameter "=" native-id-parameter (if options-flag (str "&" options-flag) (str ""))))
                   status (:status results)
                   body (:body results)]
-              ;; (println "The body of the request" body)
-              ;; (println "The search paramter" (str search-parameter "=" name))
               (is (string/includes? body name) "record not found")
               (is (= 200 status) "wrong http status"))
 
-            "search using native_id"
+            "Test native_id parameter search"
             (inf/plural concept-type-string)
             "native_id"
             native-id
             nil
 
-            "search using native-id"
+            "Test native-id parameter search"
             (inf/plural concept-type-string)
             "native-id"
             native-id
             nil
 
-            "search using nativeId, exact case search"
+            "Search using nativeId, exact case search"
             (inf/plural concept-type-string)
             "nativeId"
             native-id
             "options[native-id][ignore-case]=false"
 
-            "search using nativeId, and ignoring case"
+            "Search using nativeId, and ignoring case true (default)"
             (inf/plural concept-type-string)
             "nativeId"
             (string/upper-case native-id)
             "options[native-id][ignore-case]=true"
 
-            "search using native-id pattern paramter search"
+            "Search using native-id pattern parameter search"
             (inf/plural concept-type-string)
             "native-id"
             (str (string/join "" (drop-last native-id)) "*")
@@ -243,9 +222,6 @@
                 (let [results (search-request plural-concept-type-name (str search-parameter "=" concept-id-parameter (if options-flag (str "&" options-flag) (str ""))))
                       status (:status results)
                       body (:body results)]
-                      (println "The guid id for the current record" guid-id " of type " plural-concept-type-name)
-                  ;; (println "The body of the request" body)
-                  ;; (println "The search paramter" (str search-parameter "=" name))
                   (is (string/includes? body name) "record not found")
                   (is (= 200 status) "wrong http status"))
 
@@ -310,6 +286,7 @@
                   body (:body results)]
               (is (string/includes? body concept-id) "record not found")
               (is (= 200 status) "wrong http status")))
+              
           (testing "Search generic concept by provider"
             (let [results (search-request plural-concept-type-name (str "provider=" provider))
                   status (:status results)
