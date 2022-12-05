@@ -16,7 +16,7 @@ export const indexProject = async (project, gremlinConnection, collection, conce
   } = project
 
   try {
-    // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
+    // Use `fold` and `coalesce` to check existence of vertex, and create one if none exists.
     const projectVertex = await gremlinConnection
       .V()
       .has('project', 'name', shortName)

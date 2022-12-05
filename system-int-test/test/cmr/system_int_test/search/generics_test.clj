@@ -7,6 +7,7 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.config :as cfg]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.index-util :as index]
@@ -71,8 +72,84 @@
               post-results (good-generic-requester :post)
               body (json/parse-string (:body post-results) true)
               concept-id (:concept-id body)
-              revision-id (:revision-id body)]
+              revision-id (:revision-id body)
+              provider "PROV1"]
           (index/wait-until-indexed)
+          ;; TODO Need to add in the options parameter
+          (testing "Using are3 to do some of these tests"
+            (are3 [plural-concept-type-name search-parameter]
+              (let [results (search-request plural-concept-type-name (str search-parameter "=" name))
+                    status (:status results)
+                    body (:body results)]
+                (println "The search paramter" (str search-parameter "=" name))
+                (is (string/includes? body name) "record not found")
+                (is (= 200 status) "wrong http status"))
+
+              "Test are3 using name"
+              (inf/plural concept-type-string)
+              "name"))
+              ;; Do we need to do 'id'?
+          (testing "Testing provider and provider variations "
+            (are3 [plural-concept-type-name search-parameter provider-id]
+              (let [results (search-request plural-concept-type-name (str search-parameter "=" provider-id))
+                    status (:status results)
+                    body (:body results)]
+                ; (println "The body of the request" body)
+                ;; (println "The search paramter" (str search-parameter "=" name))
+                (is (string/includes? body name) "record not found")
+                (is (= 200 status) "wrong http status"))
+
+              "Test are3 using provider"
+              (inf/plural concept-type-string)
+              "provider"
+              "PROV1"
+
+              "Test are3 using provider_id"
+              (inf/plural concept-type-string)
+              "provider-id"
+              "PROV1"
+
+              "Test are3 using provider-id"
+              (inf/plural concept-type-string)
+              "provider_id"
+              "PROV1"
+
+              "Test are3 using providerasdfas"
+              (inf/plural concept-type-string)
+              "providerId"
+              "PROV1"
+
+              "Test using lowercase prov1"
+              (inf/plural concept-type-string)
+              "providerId"
+              "prov1"
+
+              "Test using mixed case prov1"
+              (inf/plural concept-type-string)
+              "providerId"
+              "PrOv1"))
+
+        (testing "Testing parameter of native_id"
+          (are3 [plural-concept-type-name search-parameter]
+            (let [results (search-request plural-concept-type-name (str search-parameter "=" native-id))
+                  status (:status results)
+                  body (:body results)]
+              (println "The body of the request" body)
+              ;; (println "The search paramter" (str search-parameter "=" name))
+              (is (string/includes? body name) "record not found")
+              (is (= 200 status) "wrong http status"))
+
+            "Test are3 using provider"
+            (inf/plural concept-type-string)
+            "native_id"
+
+            "Test are3 using provider_id"
+            (inf/plural concept-type-string)
+            "native-id"
+
+            "Test are3 using provider-id"
+            (inf/plural concept-type-string)
+            "nativeId"))
 
           (testing "Check that test the document ingested before going forward with tests"
             (is (= 201 (:status post-results))"failed to ingest test record"))
@@ -115,9 +192,23 @@
             (let [results (search-request (format "concepts/%s/%s" concept-id revision-id) "")
                   status (:status results)]
               (is (= 200 status) "wrong http status")))
-          
+
           (testing "Search generic concept by native-id"
             (let [results (search-request plural-concept-type-name (str "native-id=" native-id))
+                  status (:status results)
+                  body (:body results)]
+              (is (string/includes? body concept-id) "record not found")
+              (is (= 200 status) "wrong http status")))
+
+          (testing "Search generic concept by concept-id"
+            (let [results (search-request plural-concept-type-name (str "concept-id=" concept-id))
+                  status (:status results)
+                  body (:body results)]
+              (is (string/includes? body concept-id) "record not found")
+              (is (= 200 status) "wrong http status")))
+              ;; TODO We should iterate over all possible allowable strings (provider, provider_id, provider-id, providerId)
+          (testing "Search generic concept by provider"
+            (let [results (search-request plural-concept-type-name (str "provider=" provider))
                   status (:status results)
                   body (:body results)]
               (is (string/includes? body concept-id) "record not found")
