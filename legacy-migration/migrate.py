@@ -50,9 +50,11 @@ def get_ingest_concept_id(xml_resp):
     root = ET.fromstring(xml_resp)
     return root.find('concept-id').text
 
+
 def get_search_concept_id(xml_result):
     root = ET.fromstring(xml_result)
     return root.find('references/reference/id').text
+
 
 def migrate_dqs_row(id, name, summary, provider_guid):
     global success_count, failure_count
@@ -211,6 +213,32 @@ def migrate_odas(coll_concept_id, od_ids):
             print(f"Successfully migrated associations for [{od_id}], collection concept_id: [{coll_concept_id}]")
 
 
+# Migrate Service Option Definition Assignments for a single collection
+def migrate_soas(coll_concept_id, sod_ids):
+    global success_count, failure_count, skipped_count
+    if len(sod_ids) > 1:
+        print(f"Collection can only be associated with one UMM-S concept with type 'ESI', but was associated with {sod_ids}. Only {sod_ids[0]} will be migrated.")
+        skipped_count += len(sod_ids) - 1
+
+    sod_id = sod_ids[0]
+    register_collection(coll_concept_id)
+    umm_s_concept_id = collection_services[coll_concept_id]['esi_umm_s']
+    if umm_s_concept_id is None:
+        print(f"No UMM-S with type 'ESI' is associated with the collection {coll_concept_id}, skip ServiceOptionDefinition {sod_id} assignment migration.")
+        skipped_count += 1
+    else:
+        payload = [{"concept_id": coll_concept_id, "data": {"order_option": service_option_definitions[sod_id]}}]
+        resp = requests.post(f"{url_root}/search/services/{umm_s_concept_id}/associations",
+                             data=json.dumps(payload),
+                             headers=header)
+        if resp.status_code >= 300:
+            failure_count += 1
+            print(f"Failed to migrate associations for [{sod_id}], collection concept_id: [{coll_concept_id}] with status code: [{resp.status_code}], error: {resp.text}")
+        else:
+            success_count += 1
+            print(f"Successfully migrated associations for [{sod_id}], collection concept_id: [{coll_concept_id}]")
+
+
 def migrate_data_quality_summary():
     global success_count, failure_count
     success_count = 0
@@ -307,6 +335,27 @@ def migrate_option_definition_assignment():
     print(f"Total EJB_CAT_OPTN_ASSGN data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}, Skipped: {skipped_count}.")
 
 
+def migrate_service_option_assignment():
+    global success_count, failure_count, skipped_count
+    success_count = 0
+    failure_count = 0
+    skipped_count = 0
+    start = time.time()
+    print("Starting SERVICE_OPTION_ASSIGNMENT data migration...")
+    assignments = collections.defaultdict(list)
+
+    with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
+        with connection.cursor() as cursor:
+            sql = f"select CATALOG_ITEM_GUID, SERVICE_OPTION_DEFINITION_GUID from {db_name}.SERVICE_OPTION_ASSIGNMENT"
+            for r in cursor.execute(sql):
+                assignments[r[0]].append(r[1])
+
+    for k, v in assignments.items():
+        migrate_soas(k, v)
+
+    end = time.time()
+    print(f"Total SERVICE_OPTION_ASSIGNMENT data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}, Skipped: {skipped_count}.")
+
 # Main
 parser = argparse.ArgumentParser()
 # Add -f option to force migration of OrderOptionDefinitions and ServiceOptionDefinitions regardless of their existence in CMR.
@@ -321,3 +370,4 @@ migrate_data_quality_summary_assignment()
 migrate_option_definition()
 migrate_option_definition_assignment()
 migrate_service_option_definition()
+migrate_service_option_assignment()
