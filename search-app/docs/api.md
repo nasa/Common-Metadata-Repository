@@ -1914,6 +1914,8 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
 #### <a name="c-browse-only"></a> Find collections by browse_only
 
+`browse_only` is a legacy alias of `browsable`. They return the same search results.
+
     curl "%CMR-ENDPOINT%/collections?browse_only=true"
 
 #### <a name="c-browsable"></a> Find collections by browsable
