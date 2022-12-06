@@ -53,7 +53,7 @@
                   "<a href='https://cmr.link/g3'>https://cmr.link/g3</a></li></ul>"
                   "<p>To unsubscribe from these notifications, go to "
                   (jobs/subscription-management-page)
-                  "</p><p>If you have any questions, "
+                  ".</p><p>If you have any questions, "
                   "please contact us at <a href='mailto:"
                   (common-app-config/cmr-support-email)
                   "'>"
@@ -85,7 +85,7 @@
                   "<a href='https://cmr.link/c3'>https://cmr.link/c3</a></li></ul>"
                   "<p>To unsubscribe from these notifications, go to "
                   (jobs/subscription-management-page)
-                  "</p><p>If you have any questions, "
+                  ".</p><p>If you have any questions, "
                   "please contact us at <a href='mailto:"
                   (common-app-config/cmr-support-email)
                   "'>"
