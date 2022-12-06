@@ -200,7 +200,7 @@
                             (email-url-list concept-ref-locations)
                             "\n\nTo unsubscribe from these notifications, go to "
                             (subscription-management-page)
-                            "\n\nIf you have any questions, please contact us at ["
+                            ".\n\nIf you have any questions, please contact us at ["
                             (common-app-config/cmr-support-email)
                             "](mailto:"
                             (common-app-config/cmr-support-email)
@@ -224,7 +224,7 @@
                             (email-url-list concept-ref-locations)
                             "\n\nTo unsubscribe from these notifications, go to "
                             (subscription-management-page)
-                            "\n\nIf you have any questions, please contact us at ["
+                            ".\n\nIf you have any questions, please contact us at ["
                             (common-app-config/cmr-support-email)
                             "](mailto:"
                             (common-app-config/cmr-support-email)
