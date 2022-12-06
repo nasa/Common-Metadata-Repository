@@ -251,7 +251,7 @@ describe('fetchPageFromCMR', () => {
       providerId: null
     })
 
-    expect(consoleMock).toBeCalledWith('Could not complete request due to error: Error: Oh no! I sure hope this exception is handled')
+    expect(consoleMock).toBeCalledWith('Could not complete request due to an error requesting a page from CMR: Error: Oh no! I sure hope this exception is handled')
     expect(errorResponse).toBeCalledTimes(1)
   })
 })

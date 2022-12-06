@@ -6,9 +6,10 @@ import axios from 'axios'
  * @param {String} token An optional Authorization Token
  * @returns [] An array containing the permitted groups of a collection
  */
-export const fetchCollectionPermittedGroups = async (conceptId, token) => {
+export const fetchCollectionPermittedGroups = async (conceptId, token, depth = 1) => {
   const requestHeaders = {}
   const groups = []
+  const maxTries = 3
 
   if (token) {
     requestHeaders.Authorization = token
@@ -53,7 +54,10 @@ export const fetchCollectionPermittedGroups = async (conceptId, token) => {
       })
     })
   } catch (error) {
-    console.log(`Could not complete request to acl due to error: ${error}`)
+    console.log(`Could not complete request to Access Control App to retrieve group information for ${conceptId} due to error: ${error}`)
+    // if (depth < maxTries) {
+    //   await fetchCollectionPermittedGroups(conceptId, token, depth + 1)
+    // }
   }
 
   return groups

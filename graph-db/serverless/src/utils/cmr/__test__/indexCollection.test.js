@@ -1,6 +1,7 @@
 import nock from 'nock'
 
 import { indexCmrCollection } from '../indexCmrCollection'
+// import { initializeGremlinConnection } from '../../gremlin/initializeGremlinConnection'
 
 beforeEach(() => {
   jest.clearAllMocks()
@@ -8,7 +9,7 @@ beforeEach(() => {
 
 describe('utils#indexCmrCollection', () => {
   describe('when an exception is thrown', () => {
-    test('it is caught and logged', async () => {
+    test.only('it is caught and logged', async () => {
       const consoleMock = jest.spyOn(console, 'log')
 
       const conceptId = 'C1000000-CMR'
@@ -28,7 +29,7 @@ describe('utils#indexCmrCollection', () => {
           ShortName: 'shortName'
         }
       }
-      const mockedBody = {
+      const mockAclResponse = {
         items: [
           {
             concept_id: 'ACL1376510432-CMR',
@@ -58,20 +59,44 @@ describe('utils#indexCmrCollection', () => {
       }
       nock(/local-cmr/)
         .get(/acls/)
-        .reply(200, mockedBody)
+        .reply(200, mockAclResponse)
 
       // Provide `null` for the gremlin connection to throw an error
       const result = await indexCmrCollection(collectionObj, [], null)
 
       expect(result).toBeFalsy()
 
+      // Retry policy in place. Called 3 times using two different logs, so 6 total calls TODO use this after test, for now leave it off for 2
       expect(consoleMock).toBeCalledTimes(2)
 
       // Error message logged because deleteCmrCollection failed because of null gremlinConnection
       expect(consoleMock.mock.calls[0][0]).toEqual(`Error deleting project vertices only linked to collection [${conceptId}]: Cannot read properties of null (reading 'V')`)
 
       // Error message logged because addV failed because of null gremlinConnection
-      expect(consoleMock.mock.calls[1][0]).toEqual(`Error indexing collection [${conceptId}]: Cannot read properties of null (reading 'addV')`)
+      expect(consoleMock.mock.calls[1][0]).toEqual(`Error indexing collection into graph database [${conceptId}]: Cannot read properties of null (reading 'addV')`)
     })
   })
+  // Keep retry retry policy out for now
+  // describe('When an exception is thrown and retrying begins', () => {
+  //   test('test retry to index a collection if there is a failure such as a Concurrent Modification Error', async () => {
+  //     const gremlinConnection = initializeGremlinConnection()
+  //     const collectionObj = {
+  //       meta: {
+  //         'concept-id': 'C1000000-CMR'
+  //       },
+  //       umm: {
+  //         EntryTitle: 'entryTitle',
+  //         DOI: {
+  //           DOI: 'doiDescription'
+  //         },
+  //         Projects: 'projects',
+  //         Platforms: 'platforms',
+  //         RelatedUrls: 'relatedUrls',
+  //         ShortName: 'shortName'
+  //       }
+  //     }
+  //     // depth defaults to 0
+  //     const result = await indexCmrCollection(collectionObj, ['guest'], gremlinConnection)
+  //   })
+  // })
 })

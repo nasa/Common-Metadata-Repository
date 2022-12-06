@@ -14,6 +14,8 @@ let token
 const updateActionType = 'concept-update'
 const deleteActionType = 'concept-delete'
 
+// Maximum number of retries for the function
+
 const indexCmrCollections = async (event) => {
   // Prevent creating more tokens than necessary
   if (token === undefined) {
@@ -36,6 +38,7 @@ const indexCmrCollections = async (event) => {
     const { 'concept-id': conceptId, 'revision-id': revisionId, action } = JSON.parse(body)
 
     if (!['collection'].includes(getConceptType(conceptId))) {
+      // SQS queue subscription is to ingest_exchange, which is shared across concepts
       console.log(`Concept [${conceptId}] was not a collection and will not be indexed`)
 
       return
@@ -68,19 +71,12 @@ const indexCmrCollections = async (event) => {
           console.log(`Start indexing concept [${conceptId}], revision-id [${revisionId}]`)
 
           // Index collection into the graphDb
-          let isIndexed = await indexCmrCollection(firstCollection, groupList, gremlinConnection)
-          let retries = 0
+          await indexCmrCollection(firstCollection, groupList, gremlinConnection)
 
-          // Try to index again if there is a problem as long as we have not expired the number of attempts
-          while (isIndexed === false && retries < 3) {
-            // eslint-disable-next-line no-await-in-loop
-            isIndexed = await indexCmrCollection(firstCollection, groupList, gremlinConnection)
-            retries += 1
-          }
           recordCount += 1
         }
-      } catch (e) {
-        console.log('Error indexing collection, Exception was thrown: ', e)
+      } catch (error) {
+        console.log('Error indexing collection, Exception was thrown in lambda: ', error)
       }
     }
     if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {

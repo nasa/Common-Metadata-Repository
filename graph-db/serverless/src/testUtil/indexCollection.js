@@ -3,17 +3,17 @@ import nock from 'nock'
 
 import indexCmrCollection from '../indexCmrCollection/handler'
 
-// Helper to create a Project object simular to the one returned by CMR
+// Helper to create a Project object similar to the one returned by CMR
 const projectObj = (shortName) => ({
   ShortName: shortName
 })
 
-// Helper to create a Instrument object simular to the one returned by CMR
+// Helper to create a Instrument object similar to the one returned by CMR
 const instrumentObj = (shortName) => ({
   ShortName: shortName
 })
 
-// Helper to create a Platforms object simular to the one returned by CMR
+// Helper to create a Platforms object similar to the one returned by CMR
 // {platform: platformName, instruments: [instrumentName ...]}
 const platformInstrumentsObj = (attributes) => {
   const { platform, instruments } = attributes
@@ -29,7 +29,7 @@ const platformInstrumentsObj = (attributes) => {
   return returnObj
 }
 
-// Helper to create a RelatedUrl object simular to the one returned by CMR
+// Helper to create a RelatedUrl object similar to the one returned by CMR
 const relatedUrlObj = (relatedUrl) => ({
   URLContentType: 'PublicationURL',
   Type: 'VIEW RELATED INFORMATION',

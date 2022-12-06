@@ -48,7 +48,7 @@ export const fetchPageFromCMR = async ({
     if (sqs == null) {
       sqs = new SQSClient()
     }
-
+    // Send request to CMR
     const cmrCollections = await axios({
       url: fetchUrl,
       method: 'GET',
@@ -61,6 +61,7 @@ export const fetchPageFromCMR = async ({
     const { feed = {} } = data
     const { entry = [] } = feed
 
+    // Split page array into array with sub-arrays of size 10
     const chunkedItems = chunkArray(entry, 10)
 
     if (chunkedItems.length > 0) {
@@ -79,7 +80,7 @@ export const fetchPageFromCMR = async ({
               })
             }
           })
-
+          // Locally we will call indexCmrCollections directly, otherwise send the job to SQS queue
           await indexCmrCollections({ Records: queueBody })
         } else {
           const sqsEntries = []
@@ -116,7 +117,7 @@ export const fetchPageFromCMR = async ({
         searchAfterNum: (searchAfterNum + 1)
       })
     }
-  } catch (e) {
-    console.log(`Could not complete request due to error: ${e}`)
+  } catch (error) {
+    console.log(`Could not complete request due to an error requesting a page from CMR: ${error}`)
   }
 }
