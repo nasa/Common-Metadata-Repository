@@ -32,6 +32,7 @@ service_option_definitions = {}
 # collections with concept_id -> {'order_umm_s': <order-umm-s-concept-id> 'esi_umm_s': <esi-umm-s-concept-id>}
 collection_services = {}
 
+# These global variables are used to keep the counts for each migration data type to save us from passing these counts as arguments through implementation functions
 success_count: int = 0
 failure_count: int = 0
 skipped_count: int = 0
@@ -297,7 +298,7 @@ def migrate_data_quality_summary_assignment():
     success_count = 0
     failure_count = 0
     start = time.time()
-    print("Starting DATA_QUAL_SUMMARY_ASSIGN data migration...")
+    print("Starting DataQualitySummaryAssignment data migration...")
     assignments = collections.defaultdict(list)
 
     with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
@@ -310,7 +311,7 @@ def migrate_data_quality_summary_assignment():
         migrate_dqsas(k, v)
 
     end = time.time()
-    print(f"Total DATA_QUAL_SUMMARY_ASSIGN data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}")
+    print(f"Total DataQualitySummaryAssignment data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}")
 
 
 def migrate_option_definition_assignment():
@@ -319,7 +320,7 @@ def migrate_option_definition_assignment():
     failure_count = 0
     skipped_count = 0
     start = time.time()
-    print("Starting EJB_CAT_OPTN_ASSGN data migration...")
+    print("Starting OptionDefinitionAssignment data migration...")
     assignments = collections.defaultdict(list)
 
     with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
@@ -332,7 +333,7 @@ def migrate_option_definition_assignment():
         migrate_odas(k, v)
 
     end = time.time()
-    print(f"Total EJB_CAT_OPTN_ASSGN data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}, Skipped: {skipped_count}.")
+    print(f"Total OptionDefinitionAssignment data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}, Skipped: {skipped_count}.")
 
 
 def migrate_service_option_assignment():
@@ -341,7 +342,7 @@ def migrate_service_option_assignment():
     failure_count = 0
     skipped_count = 0
     start = time.time()
-    print("Starting SERVICE_OPTION_ASSIGNMENT data migration...")
+    print("Starting ServiceOptionAssignment data migration...")
     assignments = collections.defaultdict(list)
 
     with oracledb.connect(user=user, password=pwd, dsn="localhost:1521/orcl") as connection:
@@ -354,7 +355,7 @@ def migrate_service_option_assignment():
         migrate_soas(k, v)
 
     end = time.time()
-    print(f"Total SERVICE_OPTION_ASSIGNMENT data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}, Skipped: {skipped_count}.")
+    print(f"Total ServiceOptionAssignment data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}, Skipped: {skipped_count}.")
 
 # Main
 parser = argparse.ArgumentParser()
