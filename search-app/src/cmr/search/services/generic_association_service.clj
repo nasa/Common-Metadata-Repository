@@ -208,36 +208,17 @@
     (info "update-generic-associations:" t1)
     result))
 
-(defn- fetch-concept
-  "Fetches the the version with revision-id or the latest version of a concept by concept-id with
-  proper error handling."
-  [context concept-type concept-id revision-id]
-  (let [concept (if revision-id
-                  (mdb/get-concept context concept-id revision-id)
-                  (mdb/get-latest-concept context concept-id))]
-    (if-not (empty? (util/remove-nil-keys concept))
-      (if (:deleted concept)
-        (errors/throw-service-error
-         :not-found
-         (format "%s with concept id [%s] was deleted."
-                 (string/capitalize (name concept-type)) concept-id))
-        concept)
-      (errors/throw-service-error
-       :not-found
-       (format "%s could not be found with concept id [%s]"
-               (string/capitalize (name concept-type)) concept-id)))))
-
 (defn- link-to-concepts
   "Associate/Dissociate a concept to a list of concepts in the associations json
    based on the given operation type. The operation type can be either :insert or :delete.
    Throws service error if the concept with the given concept-id and revision-id is not found."
   [context concept-type concept-id revision-id associations-json operation-type]
-  (let [concept (fetch-concept context concept-type concept-id revision-id)
-        ;; When revision-id is nil, fetch-concept would get the latest revision,
-        ;; in which case (:revision-id concept) = latest revision.
-        ;; Need to set the original revision-id back so that it can be inserted into
-        ;; db correctly.
-        concept (assoc concept :revision-id revision-id)
+  (let [revision-id (when revision-id
+                      (read-string revision-id))
+        concept {:concept-id concept-id :revision-id revision-id}
+        ;;validate the user has the permission to access the concept
+        ;;and the concept is not tomb-stoned.
+        _ (assoc-validation/validate-concept-for-generic-associations context concept)
         associations (->> associations-json
                           (assoc-validation/associations-json->associations)
                           (assoc-validation/validate-generic-association-combination-types concept)

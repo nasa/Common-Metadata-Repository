@@ -679,7 +679,7 @@
         ;;This search uses all_revision=true, which can return the deleted revisions so we
         ;;could distinguish the two. 
         {:keys [tombstoned-revisions inaccessible-revisions]} (get-bad-concept-revisions context revision-assocs)
-        inaccessible-concept-only-conceptids (remove #(found-id? no-permission-concept-ids %)
+        inaccessible-concept-only-concept-ids (remove #(found-id? no-permission-concept-ids %)
                                               inaccessible-concept-only-concept-ids)
         tombstoned-revisions (remove #(found-id? no-permission-concept-ids (:concept-id %))
                                      tombstoned-revisions)
@@ -715,7 +715,7 @@
         ;;This search uses all_revision=true, which can return the deleted revisions so we
         ;;could distinguish the two.
         {:keys [tombstoned-revisions inaccessible-revisions]} (get-bad-concept-revisions context revision-assocs)
-        inaccessible-concept-only-conceptids (remove #(found-id? no-permission-concept-ids %)
+        inaccessible-concept-only-concept-ids (remove #(found-id? no-permission-concept-ids %)
                                               inaccessible-concept-only-concept-ids)
         tombstoned-revisions (remove #(found-id? no-permission-concept-ids (:concept-id %))
                                      tombstoned-revisions)
@@ -731,3 +731,26 @@
                 (set inaccessible-revisions)
                 %
                 false)))))
+
+(defn validate-concept-for-generic-associations
+  "Validate the concept is accessible and is not tombstoned."
+  [context concept]
+  (let [no-permission-concept-ids (get-no-permission-concept-ids context (map :concept-id [concept]))]
+    (if (seq no-permission-concept-ids)
+      (errors/throw-service-error
+       :unauthorized
+       (format "User has no permission on the the provider for concept id [%s]." (:concept-id concept)))
+      (if (:revision-id concept)
+        ;;check to see if the concept revision is tombstoned or inaccessible. if so, throw error.
+        (let [{:keys [tombstoned-revisions inaccessible-revisions]} (get-bad-concept-revisions context [concept])]
+          (when (or (seq tombstoned-revisions) (seq inaccessible-revisions))
+            (errors/throw-service-error
+             :invalid-data
+             (format "Concept with concept-id [%s] and revision-id [%s] is either tombstoned, or inaccessible."
+                     (:concept-id concept) (:revision-id concept)))))
+        ;;check to see if the concept is inaccessible. If so, throw error.
+        (let [inaccessible-concept-ids (get-generic-inaccessible-concept-ids context (map :concept-id [concept]))]
+          (when (seq inaccessible-concept-ids)
+            (errors/throw-service-error
+             :invalid-data
+             (format "Concept with concept-id [%s] is inaccessible." (:concept-id concept)))))))))
