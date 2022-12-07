@@ -749,7 +749,7 @@
              (format "Concept with concept-id [%s] and revision-id [%s] is either tombstoned, or inaccessible."
                      (:concept-id concept) (:revision-id concept)))))
         ;;check to see if the concept is inaccessible. If so, throw error.
-        (let [inaccessible-concept-ids (get-generic-inaccessible-concept-ids context (map :concept-id [concept]))]
+        (let [inaccessible-concept-ids (get-generic-inaccessible-concept-ids context [(:concept-id concept)])]
           (when (seq inaccessible-concept-ids)
             (errors/throw-service-error
              :invalid-data
