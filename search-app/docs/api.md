@@ -1878,15 +1878,17 @@ Find collections matching multiple 'science_keywords' param values, default is :
 
 #### <a name="c-twod-coordinate-system"></a> Find collections by two\_d\_coordinate\_system\_name
 
-This supports pattern. two\_d\_coordinate\_system\[name\] param is an alias of two\_d\_coordinate\_system\_name, but it does not support pattern.
+This supports searching by name of the two-dimensional tiling system for the collection. These are the valid values for two_d_coordinate_system aka TilingIdentificationSystem: `CALIPSO`, `MISR`, `MODIS Tile EASE`, `MODIS Tile SIN`, `WELD Alaska Tile`, `WELD CONUS Tile`, `WRS-1`, `WRS-2` and `Military Grid Reference System`.
+
+This search parameter supports pattern. two\_d\_coordinate\_system\[name\] param is an alias of two\_d\_coordinate\_system\_name, but it does not support pattern.
 
   Find collections matching 'two\_d\_coordinate\_system\_name' param value
 
-    curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=Alpha"
+    curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=CALIPSO"
 
   Find collections matching any of the 'two\_d\_coordinate\_system\_name' param values
 
-    curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=Alpha&two_d_coordinate_system_name\[\]=Bravo"
+    curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=CALIPSO&two_d_coordinate_system_name\[\]=MISR"
 
 #### <a name="c-collection-data-type"></a> Find collections by collection\_data\_type
 
