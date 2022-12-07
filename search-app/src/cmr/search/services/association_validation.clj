@@ -735,7 +735,7 @@
 (defn validate-concept-for-generic-associations
   "Validate the concept is accessible and is not tombstoned."
   [context concept]
-  (let [no-permission-concept-ids (get-no-permission-concept-ids context (map :concept-id [concept]))]
+  (let [no-permission-concept-ids (get-no-permission-concept-ids context [(:concept-id concept)])]
     (if (seq no-permission-concept-ids)
       (errors/throw-service-error
        :unauthorized
