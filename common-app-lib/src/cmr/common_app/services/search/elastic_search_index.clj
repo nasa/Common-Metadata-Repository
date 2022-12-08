@@ -197,9 +197,9 @@
            "with aggregations" (pr-str aggregations)
            "and highlights" (pr-str highlights))
     (when-let [scroll-id (:scroll-id query-map)]
-      (info "Using scroll-id" scroll-id))
+      (debug "Using scroll-id" scroll-id))
     (when-let [search-after (:search_after query-map)]
-      (info "Using search-after" search-after))
+      (debug "Using search-after" (pr-str search-after)))
     (let [response (send-query context index-info query-map)]
       ;; Replace the Elasticsearch field names with their query model field names within the results
       (update-in response [:hits :hits]
