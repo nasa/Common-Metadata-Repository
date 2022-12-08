@@ -7,3 +7,7 @@
 (deftest test-error-masked
   (let [error-message "Token 123 does not exist"]
     (is (= "Token does not exist" (errors/mask-token-error error-message)))))
+
+(deftest error-message-escaped
+  (let [error-message "html/\" qss=\"QssAttrValue"]
+    (is (= "html/&quot; qss=&quot;QssAttrValue" (errors/mask-token-error error-message)))))

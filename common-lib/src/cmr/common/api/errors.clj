@@ -4,10 +4,10 @@
    [cheshire.core :as json]
    [clojure.data.xml :as x]
    [clojure.string :as string]
-   [cmr.common.config :as cfg]
    [cmr.common.log :refer [error warn info debug]]
    [cmr.common.mime-types :as mt]
-   [cmr.common.services.errors :as errors]))
+   [cmr.common.services.errors :as errors]
+   [hiccup.util :as hp-util]))
 
 (def type->http-status-code
   {:bad-request 400
@@ -34,7 +34,8 @@
  [error-string]
  (if (re-matches #".*Token .* does not exist.*" error-string)
   "Token does not exist"
-  error-string))
+   ;; html escape the error message to deal with potential xss issues
+  (hp-util/escape-html error-string)))
 
 (defn- keyword-path->string-path
   "Converts a set of keyword field paths into the string equivalent field paths
