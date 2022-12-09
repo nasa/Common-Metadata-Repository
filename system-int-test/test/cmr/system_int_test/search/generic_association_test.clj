@@ -51,9 +51,11 @@
                        (get-in (first (:items search-body)) [:associations concept-type-plural]))
         association-details (if meta?
                               (get-in (first (:items search-body)) [:meta :association-details concept-type-plural])
-                              (get-in (first (:items search-body)) [:association-details concept-type-plural]))]
+                              ;; association_details (snake_case) is used for the .json endpoit which is being called if meta = false
+                              (get-in (first (:items search-body)) [:association_details concept-type-plural]))]
     {:associations associations
-     :association-details association-details}))
+     :association-details association-details
+     :association_details association-details}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
@@ -62,6 +64,7 @@
 ;; Test that generic associations can be made between generic documents and tools.
 ;; Also test the collection-tool associations through the old association api and verify
 ;; the associations are shown in the right place in the search result.
+;; TODO This is hte one that is failing
 (deftest test-tool-and-generic-association
   (let [token (echo-util/login (system/context) "user1")
         ;;First ingest a Grid concept
@@ -209,7 +212,7 @@
             ;; Search for the tool, it should return the association
             tl1-search-result (get-associations-and-details "tools.umm_json" "native_id=tl1" :grids true)
 
-            ;;Update the tool and the grid, search for the grid and the tool, it should return the association.
+            ;; Update the tool and the grid, search for the grid and the tool, it should return the association.
             _ (gen-util/ingest-generic-document nil "PROV1" native-id :grid grid-doc :post)
             _ (tool-util/ingest-tool-with-attrs {:native-id "tl1" :Name "tool1"})
             grid-search-result-update (get-associations-and-details "grids.json" "name=Grid-A7-v1" :tools false)
@@ -248,9 +251,10 @@
         (is (= [tl1-concept-id]
                (:associations grid-search-result)
                (:associations grid-search-result-update)))
-        (is (= [{:concept-id tl1-concept-id :revision-id tl1-revision-id}]
-               (:association-details grid-search-result)
-               (:association-details grid-search-result-update)))
+               ;; The grid is being searched from the .json endpoint which uses snake case assocation-details
+        (is (= [{:concept_id tl1-concept-id :revision_id tl1-revision-id}]
+               (:association_details grid-search-result)
+               (:association_details grid-search-result-update)))
 
         ;; Search for the tool returns the grid as generic association
         (is (= [grid-concept-id]
@@ -397,6 +401,7 @@
 
         ;; Search for the service sv2 again doesn't return the sv1 as generic association
         (is (= nil (:associations sv2-search-result1)))))
+        ;; TODO I don't think this tests is checking for association-details which is why it is passing here
     (testing "Associate grid with service by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                        token grid-concept-id grid-revision-id [{:concept-id sv1-concept-id  :revision-id sv1-revision-id}])
@@ -451,7 +456,7 @@
         ;; Search for the service returns the grid as generic association
         (is (= [grid-concept-id]
                (:associations sv1-search-result)))
-
+        (println "printing the assoc details" (:association_details grid-search-result))
         ;; Dissociation of the association is successful
         (is (= 200 (:status response4)))
 
@@ -598,7 +603,7 @@
                        token grid-concept-id nil [{:concept-id var1-concept-id}])
             _ (index/wait-until-indexed)
 
-            ;;Search for the grid, it should return the association
+            ;; Search for the grid, it should return the association
             grid-search-result (get-associations-and-details "grids.json" "name=Grid-A7-v1" :variables false)
 
             ;;Search for the variable, it should return the association
@@ -635,7 +640,7 @@
         ;; Search for the grid returns the var1 as generic association
         (is (= [var1-concept-id]
                (:associations grid-search-result)))
-
+        ;; TODO: is this the one test that needs to change to get variables up and running on .json?
         ;; Search for the variable returns the grid as generic association
         (is (= [{:concept-id grid-concept-id :revision-id grid-revision-id}]
                (:associations var1-search-result)))
@@ -1000,12 +1005,13 @@
     (association-util/generic-associate-by-concept-ids-revision-ids
      token coll-concept-id nil [{:concept-id (:concept-id oo2)}])
     (index/wait-until-indexed)
-
+    ;; TODO Asssociation_details somehow fixed this problem more research needed
+    ;; The collection is being searched from the .json endpoint which uses snake case assocation-details
     (let [coll-search-resp (search-request "collections.json" "entry-title=entry-title1")
           body (json/parse-string (get coll-search-resp :body) true)
           entry (first (:entry (:feed body)))
           assoc (:associations entry)
-          assoc-details (:association-details entry)]
+          assoc-details (:association_details entry)]
       (is (= (:status coll-search-resp) 200))
       (is (= (count (:variables assoc)) 2))
       (is (= (count (:services assoc)) 1))

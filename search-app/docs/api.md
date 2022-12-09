@@ -4100,7 +4100,7 @@ Content-Length: 292
 }
 ```
 ##### UMM JSON
-The UMM JSON response contains meta-metadata of the variable, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the variable and will list the collections that are associated with the variable.
+The UMM JSON response contains meta-metadata of the variable, the UMM fields and the associations field if applicable. The associations field only applies when there are collections or concepts generically associated to the variable and will list the collections that are associated with the variable.
 
 __Example__
 
@@ -5410,9 +5410,9 @@ Example un-healthy response body:
 
 ### <a name="associate-any-concepts"></a> Associate any concepts
 
-A new association API has been developed to achieve the goal of being able to associate a concept of any type, with or without revision, to one or more other concepts of any type, with or without revisions. The new association API also allows the associations to include an optional data payload, whose purpose is to describe the association itself. Associations which do not initially have an association data payload, may have it added through an association update. A concept can only be associated with another concept either with or without revisions, not both. A concept can not be associated to itself, even with different revisions. It's worth noting that associations between collections and services/tools/variables can not be made through the new association API because these associations require different business rules and there exist complexites with the way how certain fields of the association entries are constructed. Until we resolve these issues, these existing associations will continue to be made through the existing association API.
- 
-#### <a name="concept-associations"></a> Concept associations 
+A new association API has been developed to achieve the goal of being able to associate a concept of any type, with or without revision, to one or more other concepts of any type, with or without revisions. The new association API also allows the associations to include an optional data payload, whose purpose is to describe the association itself. Associations which do not initially have an association data payload, may have it added through an association update. A concept can only be associated with another concept either with or without revisions, not both. A concept can not be associated to itself, even with different revisions. It's worth noting that associations between collections and services/tools/variables cannot be made through the new association API because these associations require different business rules. These existing associations will continue to be made through the existing association API.
+
+#### <a name="concept-associations"></a> Concept associations
 
 A concept, with optional revision id, can be associated to one or more other concepts, with optional revision ids and data payloads.
 When the revision id is not present, the latest revision is assumed. In the following example, "3" is optional for S1200000006-PROV1
@@ -5455,7 +5455,7 @@ Note: when two concepts are associated, their concept ids are sorted first. The 
     }
 ]
 ```
-#### <a name="associations-in-search-result"></a> Associations in the search result 
+#### <a name="associations-in-search-result"></a> Associations in the search result
 
 Latest revisions of associations can be queried by searching for one of the associated concepts using either the JSON or UMM_JSON format. The "associations" field, contains a list of concept ids associated to the concept that was searched for grouped by concept-type. The "association-details" field contains concept ids, as well as association details like revision ids and data payloads if they were included for the particular association. In the example case, a service (S1200000010-PROV1) has been associated to a variable with association details(V1200000012-PROV1), as well as a tool (TL1200000014-PROV1) without any association details.
 
@@ -5503,7 +5503,7 @@ curl -H "CMR-Pretty:true" -H "Authorization Bearer: XXXXX" "%CMR-ENDPOINT%/servi
 }
 ```
 
-#### <a name="concept-dissociations"></a> Concept dissociations 
+#### <a name="concept-dissociations"></a> Concept dissociations
 
 A concept, with optional revision id, can be dissociated from one or more other concepts, with optional revision ids
 
