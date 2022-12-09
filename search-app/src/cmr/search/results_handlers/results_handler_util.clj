@@ -1,7 +1,15 @@
 (ns cmr.search.results-handlers.results-handler-util
   "Provides useful functions for several of the result handlers."
   (:require
+   [clojure.walk :as walk]
    [cmr.common.util :as util]))
+
+(defn replace-snake-keys
+ "Replace the snake keys in the nested data structure"
+ [associations]
+ (->> associations
+   (walk/postwalk-replace {:concept-id :concept_id})
+   (walk/postwalk-replace {:revision-id :revision_id})))
 
 (defn build-each-concept-association-list
   "This function builds a map with the passed in conept-key as the key and
@@ -17,11 +25,15 @@
    (into {}
          (map #(build-each-concept-association-list % (get associations %))
               (keys associations)))))
-
+;; TODO why can this be concept_id or concept-id
+;; It appears that that this value can be anything and not cause problems
+;; It's either got to be changed here, or be changed upstream at the index
+;; or it has to be changed as a seperate function to change it
+;; For each of hte associations in there you are pulling out the concept-id field
 (defn main-detail-assoc-structure
-  "Build the main association detail structure."
+  "Build the main association details structure."
   [concept-key associations]
-  {concept-key (map #(if (string? %) {:concept-id %} %)  associations)})
+  {concept-key (map #(if (string? %) {:concept-id %} %) associations)})
 
 (defn build-association-details
   "Builds the association details from the passed in associations
@@ -34,3 +46,15 @@
    (into {}
          (map #(main-detail-assoc-structure % (get associations %))
               (keys associations)))))
+
+(defn postwalk-replace-keys
+  "Replace the old keys in the nested data structure with the new ones"
+  [data-input old-key new-key]
+    (walk/postwalk-replace {old-key new-key} data-input))
+;
+; (defn replace-snake-keys
+;   "Replace the old keys in the nested data structure with the new ones"
+;   [associations]
+;   (->> associations
+;     (postwalk-replace-keys :concept-id :concept_id)
+;     (postwalk-replace-keys :revision-id :revision_id)))

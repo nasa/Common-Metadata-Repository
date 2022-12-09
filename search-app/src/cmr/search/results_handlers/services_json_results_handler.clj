@@ -34,7 +34,7 @@
                       :name service-name
                       :long_name long-name
                       :associations (rs-util/build-association-concept-id-list associations :service)
-                      :association-details (rs-util/build-association-details associations :service)})]
+                      :association_details (rs-util/build-association-details (rs-util/replace-snake-keys associations) :service)})]
     (if deleted
       (assoc result-item :deleted deleted)
       result-item)))

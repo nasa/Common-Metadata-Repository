@@ -6,7 +6,8 @@
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-   [cmr.common.util :as util]))
+   [cmr.common.util :as util]
+   [cmr.search.results-handlers.results-handler-util :as rs-util]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:variable :json]
   [concept-type query]
@@ -19,7 +20,12 @@
           deleted :deleted
           provider-id :provider-id
           native-id :native-id
-          concept-id :concept-id} :_source} elastic-result
+          concept-id :concept-id
+          ;; This is nil I'm not sure if that is on purpose or not
+          associations-gzip-b64 :associations-gzip-b64} :_source} elastic-result
+          associations (some-> associations-gzip-b64
+                               util/gzip-base64->string
+                               edn/read-string)
         revision-id (elastic-results/get-revision-id-from-elastic-result :variable elastic-result)
         result-item (util/remove-nil-keys
                      {:concept_id concept-id
@@ -27,7 +33,9 @@
                       :provider_id provider-id
                       :native_id native-id
                       :name variable-name
-                      :long_name measurement})]
+                      :long_name measurement
+                      :association_details (rs-util/build-association-details (rs-util/replace-snake-keys associations) :variable)})]
+                      (println "The associations on the variable " associations)
     (if deleted
       (assoc result-item :deleted deleted)
       result-item)))
