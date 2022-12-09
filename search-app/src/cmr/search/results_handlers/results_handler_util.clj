@@ -6,7 +6,7 @@
 
 (defn replace-snake-keys
  "Replace specified keys in the nested association data structure with
- snake-case version"
+ snake_case version"
  [associations]
  (->> associations
    (walk/postwalk-replace {:concept-id :concept_id})
