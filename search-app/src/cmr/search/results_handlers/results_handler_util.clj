@@ -43,15 +43,3 @@
    (into {}
          (map #(main-detail-assoc-structure % (get associations %))
               (keys associations)))))
-
-; (defn postwalk-replace-keys
-;   "Replace the old keys in the nested data structure with the new ones"
-;   [data-input old-key new-key]
-;     (walk/postwalk-replace {old-key new-key} data-input))
-;
-; (defn replace-snake-keys
-;   "Replace the old keys in the nested data structure with the new ones"
-;   [associations]
-;   (->> associations
-;     (postwalk-replace-keys :concept-id :concept_id)
-;     (postwalk-replace-keys :revision-id :revision_id)))

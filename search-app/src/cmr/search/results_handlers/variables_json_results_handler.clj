@@ -11,7 +11,7 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:variable :json]
   [concept-type query]
-  ["concept-id" "revision-id" "deleted" "provider-id" "native-id" "variable-name" "measurement"])
+  ["concept-id" "revision-id" "deleted" "provider-id" "native-id" "variable-name" "measurement" "associations-gzip-b64"])
 
 (defmethod elastic-results/elastic-result->query-result-item [:variable :json]
   [context query elastic-result]
@@ -20,12 +20,11 @@
           deleted :deleted
           provider-id :provider-id
           native-id :native-id
-          concept-id :concept-id} :_source} elastic-result
-          ;; This is nil I'm not sure if that is on purpose or not
-          ;; associations-gzip-b64 :associations-gzip-b64} :_source} elastic-result
-          ; associations (some-> associations-gzip-b64
-          ;                      util/gzip-base64->string
-          ;                      edn/read-string)
+          concept-id :concept-id
+          associations-gzip-b64 :associations-gzip-b64} :_source} elastic-result
+          associations (some-> associations-gzip-b64
+                               util/gzip-base64->string
+                               edn/read-string)
         revision-id (elastic-results/get-revision-id-from-elastic-result :variable elastic-result)
         result-item (util/remove-nil-keys
                      {:concept_id concept-id
@@ -33,10 +32,9 @@
                       :provider_id provider-id
                       :native_id native-id
                       :name variable-name
-                      :long_name measurement})]
-                      ;; :associations (rs-util/build-association-concept-id-list associations :variable)
-                      ;; :association_details (rs-util/build-association-details (rs-util/replace-snake-keys associations) :variable)})]
-                      ;; (println "The associations on the variable " associations)
+                      :long_name measurement
+                      :associations (rs-util/build-association-concept-id-list associations :variable)
+                      :association_details (rs-util/build-association-details (rs-util/replace-snake-keys associations) :variable)})]
     (if deleted
       (assoc result-item :deleted deleted)
       result-item)))

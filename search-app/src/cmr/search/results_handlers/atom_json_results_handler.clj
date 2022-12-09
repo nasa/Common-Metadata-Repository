@@ -95,7 +95,6 @@
                        :associations (rs-util/build-association-concept-id-list associations :collection)
                        :association_details (rs-util/build-association-details (rs-util/replace-snake-keys associations) :collection)}
                       shape-result)]
-                      ;; grab build asocaiton detials acll func to call it back
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
 
