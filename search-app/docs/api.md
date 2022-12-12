@@ -5485,9 +5485,9 @@ curl -H "CMR-Pretty:true" -H "Authorization Bearer: XXXXX" "%CMR-ENDPOINT%/servi
       "tools" : [ "TL1200000014-PROV1" ],
       "variables" : [ "V1200000012-PROV1" ]
     },
-    "association-details" : {
+    "association_details" : {
       "tools" : [ {
-        "concept-id" : "TL1200000014-PROV1"
+        "concept_id" : "TL1200000014-PROV1"
       } ],
       "variables" : [ {
         "data" : {
@@ -5496,7 +5496,7 @@ curl -H "CMR-Pretty:true" -H "Authorization Bearer: XXXXX" "%CMR-ENDPOINT%/servi
             "XYZ" : "ZYX"
           }
         },
-        "concept-id" : "V1200000012-PROV1"
+        "concept_id" : "V1200000012-PROV1"
       } ]
     }
   } ]
