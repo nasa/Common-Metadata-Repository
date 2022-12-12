@@ -14,8 +14,8 @@ const gremlinStatistics = gremlin.process.statics
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
  * @returns
  */
-export const indexCmrCollection = async (collectionObj, groupList, gremlinConn, depth = 1) => {
-  const maxDepth = 3
+export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection) => {
+  // const maxDepth = 3
   const {
     meta: {
       'concept-id': conceptId,
@@ -34,11 +34,11 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConn, 
   } = collectionObj
 
   // Delete the collection first so that we can clean up its related, relatedUrl vertices
-  await deleteCmrCollection(conceptId, gremlinConn)
-
+  await deleteCmrCollection(conceptId, gremlinConnection)
+  // TODO Introduce some kind of timeout here so that this can finnish executing on gremlin?
   let collection = null
   try {
-    const addVCommand = gremlinConn.addV('collection')
+    const addVCommand = gremlinConnection.addV('collection')
       .property('title', entryTitle)
       .property('id', conceptId)
       .property('shortName', shortName)
@@ -56,7 +56,7 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConn, 
     }
 
     // Use `fold` and `coalesce` to check existence of vertex, and create one if none exists.
-    collection = await gremlinConn
+    collection = await gremlinConnection
       .V()
       .hasLabel('collection')
       .has('id', conceptId)
@@ -68,8 +68,9 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConn, 
       .next()
   } catch (error) {
     console.log(`Error indexing collection into graph database [${conceptId}]: ${error.message}`)
+    // This might not work because the delete is also being done in this block
     // if (depth < maxDepth) {
-    //   console.log('Retrying to index collection into graph database attempt #', depth)
+    //   console.log(`Retrying to index collection ${conceptId}  into graph database attempt #', ${depth}`)
     //   await indexCmrCollection(collectionObj, groupList, gremlinConn, depth + 1)
     // }
     return false
@@ -80,19 +81,19 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConn, 
 
   if (projects && projects.length > 0) {
     await projects.forEachAsync(async (project) => {
-      await indexProject(project, gremlinConn, collectionId, conceptId)
+      await indexProject(project, gremlinConnection, collectionId, conceptId)
     })
   }
 
   if (platforms && platforms.length > 0) {
     await platforms.forEachAsync(async (platform) => {
-      await indexPlatform(platform, gremlinConn, collectionId, conceptId)
+      await indexPlatform(platform, gremlinConnection, collectionId, conceptId)
     })
   }
 
   if (relatedUrls && relatedUrls.length > 0) {
     await relatedUrls.forEachAsync(async (relatedUrl) => {
-      await indexRelatedUrl(relatedUrl, gremlinConn, collectionId, conceptId)
+      await indexRelatedUrl(relatedUrl, gremlinConnection, collectionId, conceptId)
     })
   }
 

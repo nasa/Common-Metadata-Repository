@@ -1,15 +1,21 @@
 import axios from 'axios'
-
+import axiosRetry from 'axios-retry'
 /**
  * Fetch a the permitted groups of a collection from CMR access control
  * @param {String} conceptId Collection concept id from CMR
  * @param {String} token An optional Authorization Token
  * @returns [] An array containing the permitted groups of a collection
  */
+
+// axiosRetry(axios, { retries: 3 })
+// Compensate for any misses to the endpoint max retries is going to be 3 using
+// exponential timing between the calls
+axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay, retries: 4 })
+
 export const fetchCollectionPermittedGroups = async (conceptId, token, depth = 1) => {
   const requestHeaders = {}
   const groups = []
-  const maxTries = 3
+  // const maxTries = 3
 
   if (token) {
     requestHeaders.Authorization = token
@@ -55,6 +61,7 @@ export const fetchCollectionPermittedGroups = async (conceptId, token, depth = 1
     })
   } catch (error) {
     console.log(`Could not complete request to Access Control App to retrieve group information for ${conceptId} due to error: ${error}`)
+
     // if (depth < maxTries) {
     //   await fetchCollectionPermittedGroups(conceptId, token, depth + 1)
     // }

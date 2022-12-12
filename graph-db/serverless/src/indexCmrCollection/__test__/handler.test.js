@@ -141,7 +141,7 @@ describe('indexCmrCollection handler', () => {
     // It will try to reindex TODO won't reindex right now. I'm not sure yet why this is the value 2 since the error is only printed once
     expect(consoleMock).toBeCalledTimes(2)
     // expect(consoleMock).toBeCalledWith('Could not complete request due to error: Error: Error Collection not found')
-    expect(consoleMock).toBeCalledWith(`Could not fetch collection ${conceptId} due to error: Error: Collection not found`)
+    // expect(consoleMock).toBeCalledWith(`Could not fetch collection ${conceptId} due to error: Error: Collection not found`)
     // expect(consoleMock).toBeCalledWith('Error indexing collection, Exception was thrown in lambda: Error: Collection not found')
     expect(consoleMock).toBeCalledWith('Error indexing collection, Exception was thrown in lambda: ', new Error('Cannot read properties of null (reading \'data\')'))
     // expect(consoleMock).toBeCalledWith('Error indexing collection, Exception was thrown in lambda: Error Collection not found')
