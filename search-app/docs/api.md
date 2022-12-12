@@ -5410,7 +5410,11 @@ Example un-healthy response body:
 
 ### <a name="associate-any-concepts"></a> Associate any concepts
 
-A new association API has been developed to achieve the goal of being able to associate a concept of any type, with or without revision, to one or more other concepts of any type, with or without revisions. The new association API also allows the associations to include an optional data payload, whose purpose is to describe the association itself. Associations which do not initially have an association data payload, may have it added through an association update. A concept can only be associated with another concept either with or without revisions, not both. A concept can not be associated to itself, even with different revisions. It's worth noting that associations between collections and services/tools/variables cannot be made through the new association API because these associations require different business rules. These existing associations will continue to be made through the existing association API.
+A new association API has been developed to achieve the goal of being able to associate a concept of any type, with or without revision, to one or more other concepts of any type, with or without revisions. The new association API also allows the associations to include an optional data payload, whose purpose is to describe the association itself. Associations which do not initially have an association data payload, may have it added through an association update.
+
+#### <a name="associate-any-concepts"></a> Concept to concept association important notes
+
+A concept can only be associated with another concept either with or without revisions, not both. A concept cannot be associated to itself, even with different revisions. It's worth noting that associations between collections and services/tools/variables cannot be made through the new association API because these associations require different business rules. These existing associations will continue to be made through the existing association API.
 
 #### <a name="concept-associations"></a> Concept associations
 

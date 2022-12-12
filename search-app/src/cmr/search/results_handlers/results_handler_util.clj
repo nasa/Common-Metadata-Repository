@@ -5,12 +5,12 @@
    [cmr.common.util :as util]))
 
 (defn replace-snake-keys
- "Replace specified keys in the nested association data structure with
- snake_case version"
- [associations]
- (->> associations
-   (walk/postwalk-replace {:concept-id :concept_id})
-   (walk/postwalk-replace {:revision-id :revision_id})))
+  "Replace specified keys in the nested association data structure with
+  snake_case version"
+  [associations]
+  (->> associations
+    (walk/postwalk-replace {:concept-id :concept_id})
+    (walk/postwalk-replace {:revision-id :revision_id})))
 
 (defn build-each-concept-association-list
   "This function builds a map with the passed in conept-key as the key and

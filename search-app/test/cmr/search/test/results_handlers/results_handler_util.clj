@@ -61,13 +61,14 @@
             :collection))))
 
 (comment "Useful for debugging nested association DS"
-  ((def assoc {:variables [{:concept-id "V1200000019-PROV1"} {:concept-id "V1200000021-PROV1"}]
-                      :services [{:concept-id "S1200000009-PROV1" :data {:convert-format {:XYZ "ZYX"}, :allow-regridding "true"}}]
-                      :tools [{:concept-id "TL1200000010-PROV1"}]
-                      :data-quality-summaries [{:concept-id "DQS1200000012-PROV1", :data {:XYZ "ZYX"}, :revision-id 1}],
-                      :order-options [{:concept-id "OO1200000014-PROV1"} {:concept-id "OO1200000015-PROV1"}]})
-    def assocVals (vals {:variables [{:concept-id "V1200000019-PROV1"} {:concept-id "V1200000021-PROV1"}]
-                      :services [{:concept-id "S1200000009-PROV1" :data {:convert-format {:XYZ "ZYX"}, :allow-regridding "true"}}]
-                      :tools [{:concept-id "TL1200000010-PROV1"}]
-                      :data-quality-summaries [{:concept-id "DQS1200000012-PROV1", :data {:XYZ "ZYX"}, :revision-id 1}],
-                      :order-options [{:concept-id "OO1200000014-PROV1"} {:concept-id "OO1200000015-PROV1"}]})))
+  (def assoc {:variables [{:concept-id "V1200000019-PROV1"} {:concept-id "V1200000021-PROV1"}]
+              :services [{:concept-id "S1200000009-PROV1" :data {:convert-format {:XYZ "ZYX"}, :allow-regridding "true"}}]
+              :tools [{:concept-id "TL1200000010-PROV1"}]
+              :data-quality-summaries [{:concept-id "DQS1200000012-PROV1", :data {:XYZ "ZYX"}, :revision-id 1}],
+              :order-options [{:concept-id "OO1200000014-PROV1"} {:concept-id "OO1200000015-PROV1"}]})
+
+  (def assocVals (vals {:variables [{:concept-id "V1200000019-PROV1"} {:concept-id "V1200000021-PROV1"}]
+              :services [{:concept-id "S1200000009-PROV1" :data {:convert-format {:XYZ "ZYX"}, :allow-regridding "true"}}]
+              :tools [{:concept-id "TL1200000010-PROV1"}]
+              :data-quality-summaries [{:concept-id "DQS1200000012-PROV1", :data {:XYZ "ZYX"}, :revision-id 1}],
+              :order-options [{:concept-id "OO1200000014-PROV1"} {:concept-id "OO1200000015-PROV1"}]})))

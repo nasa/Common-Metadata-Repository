@@ -51,7 +51,7 @@
                        (get-in (first (:items search-body)) [:associations concept-type-plural]))
         association-details (if meta?
                               (get-in (first (:items search-body)) [:meta :association-details concept-type-plural])
-    ;; association_details (snake_case) is used for the .json endpoit which is being called if meta = false
+                              ;; association_details (snake_case) is used for the .json endpoint which is being called if meta = false
                               (get-in (first (:items search-body)) [:association_details concept-type-plural]))]
     {:associations associations
      :association-details association-details
@@ -251,7 +251,7 @@
                (:associations grid-search-result)
                (:associations grid-search-result-update)))
         (is (= [{:concept_id tl1-concept-id :revision_id tl1-revision-id}]
-        ;; The grid is being searched from the .json endpoint which uses snake case assocation-details
+               ;; The grid is being searched from the .json endpoint which uses snake case assocation-details
                (:association_details grid-search-result)
                (:association_details grid-search-result-update)))
 
