@@ -296,9 +296,26 @@
                         params)]
     (concepts->find-result found-concepts params)))
 
+(defn find-associations
+  [db params]
+  ;; XXX Looking at search-with-params, seems like it might need to be
+  ;;     in a utility ns for use by all impls
+  (let [found-concepts (concepts/search-with-params @(:concepts-atom db) params)]
+    (concepts->find-result found-concepts params)))
+
+(defn find-latest-associations
+  [db params]
+  ;; XXX Looking at search-with-params, seems like it might need to be
+  ;;     in a utility ns for use by all impls
+  (let [latest-concepts (latest-revisions @(:concepts-atom db))
+        found-concepts (concepts/search-with-params latest-concepts params)]
+    (concepts->find-result found-concepts params)))
+
 (def concept-search-behaviour
   {:find-concepts find-concepts
-   :find-latest-concepts find-latest-concepts})
+   :find-latest-concepts find-latest-concepts
+   :find-associations find-associations
+   :find-latest-associations find-latest-associations})
 
 (extend MemoryStore
         concepts/ConceptSearch

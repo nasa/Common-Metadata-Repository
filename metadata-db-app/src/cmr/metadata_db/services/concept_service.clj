@@ -1080,9 +1080,9 @@
 
       ;; publish service/tool associations update event if applicable, i.e. when the concept is a service/tool,
       ;; so that the collections can be updated in elasticsearch with the updated service/tool info
-      (publish-service-associations-update-event context concept-type concept-id)
-      (publish-tool-associations-update-event context concept-type concept-id)
-      (publish-generic-associations-update-event context concept-type concept-id)
+      ;(publish-service-associations-update-event context concept-type concept-id)
+      ;(publish-tool-associations-update-event context concept-type concept-id)
+      ;(publish-generic-associations-update-event context concept-type concept-id)
       (ingest-events/publish-event
        context
        (ingest-events/concept-update-event concept))

@@ -23,22 +23,26 @@
 
              {:revision-id {:comparator `>, :value \"2000-01-01T10:00:00Z\"}} =>
                     `(> :revision-id \"2000-01-01T10:00:00Z\")"
-  [params]
-  ;; Validate parameter names as a sanity check to prevent sql injection
-  (let [valid-param-name #"^[a-zA-Z][a-zA-Z0-9_\-]*$"]
-    (when-let [invalid-names (seq (filter #(not (re-matches valid-param-name (name %))) (keys params)))]
-      (errors/internal-error! (format "Attempting to search with invalid parameter names [%s]"
-                                      (str/join ", " invalid-names)))))
-  (let [comparisons (for [[k v] params]
-                      (cond
-                        (sequential? v) (let [val (seq v)]
-                                          `(in ~k ~val))
-                        (map? v) (let [{:keys [value comparator]} v]
-                                   `(~comparator ~k ~value))
-                        :else `(= ~k ~v)))]
-    (if (> (count comparisons) 1)
-      (cons `and comparisons)
-      (first comparisons))))
+  ([params]
+   (find-params->sql-clause params false))
+  ([params ored]
+   ;; Validate parameter names as a sanity check to prevent sql injection
+   (let [valid-param-name #"^[a-zA-Z][a-zA-Z0-9_\-]*$"]
+     (when-let [invalid-names (seq (filter #(not (re-matches valid-param-name (name %))) (keys params)))]
+       (errors/internal-error! (format "Attempting to search with invalid parameter names [%s]"
+                                       (str/join ", " invalid-names)))))
+   (let [comparisons (for [[k v] params]
+                       (cond
+                         (sequential? v) (let [val (seq v)]
+                                           `(in ~k ~val))
+                         (map? v) (let [{:keys [value comparator]} v]
+                                    `(~comparator ~k ~value))
+                         :else `(= ~k ~v)))]
+     (if (> (count comparisons) 1)
+       (if ored
+         (cons `or comparisons)
+         (cons `and comparisons))
+       (first comparisons)))))
 
 (defn force-delete-concept-by-params
   "Delete the concepts based on params. concept-type and provider-id must be one of the params.

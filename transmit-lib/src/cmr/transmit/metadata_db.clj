@@ -246,6 +246,69 @@
   (get-generic-associations-by-concept-id
    context (:concept-id concept) (:revision-id concept)))
 
+(defn find-associations-raw
+  ""
+  [context params]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/associations/search")]
+    (client/post request-url (merge
+                              (config/conn-params conn)
+                              {:accept :json
+                               :form-params params
+                               :headers (ch/context->http-headers context)
+                               :throw-exceptions false}))))
+(comment
+  (find-associations-raw context2 {:associated-concept-id "S1200000002-PROV1"})
+  (find-associations context2 {:concept-id "S1200000002-PROV1" :revision-id 1})
+  (find-associations context2 {:associated-concept-id "C120000000-PROV1"})
+  (println concept2)
+  (let [conn (config/context->app-connection context2 :metadata-db)
+        request-url (str (conn/root-url conn) "/associations/search")]
+    request-url)
+  (println associations1)
+  (let [concept-id (:concept-id concept2)
+        revision-id (:revision-id concept2)]
+    (filter (fn [association]
+              (let [associated-concept-id (get-in association [:extra-fields :associated-concept-id])]
+                (if (= concept-id associated-concept-id)
+                  (let [rev-id (get-in association [:extra-fields :associated-revision-id])]
+                    (or (nil? rev-id)
+                        (= rev-id revision-id)))
+                  (let [rev-id (or (get-in association [:extra-fields :source-revision-id]))]
+                    (or (nil? rev-id)
+                        (= rev-id revision-id))))))
+            associations1))
+  
+)
+(defn find-associations
+  "Searches metadata db for associations matching the given parameters."
+  [context concept]
+  (def context2 context)
+  (def concept2 concept)
+  (let [concept-id (:concept-id concept)
+        revision-id (:revision-id concept)
+        params {:associated-concept-id concept-id
+                :source-concept-identifier concept-id
+                :latest true}
+        {:keys [status body]} (find-associations-raw context params)
+        status (int status)]
+    (case status
+      200 (let [associations (json/decode body true)]
+            (def associations1 associations)
+            (filter (fn [association]
+                      (let [associated-concept-id (get-in association [:extra-fields :associated-concept-id])]
+                        (if (= concept-id associated-concept-id)
+                          (let [rev-id (get-in association [:extra-fields :associated-revision-id])]
+                            (or (nil? rev-id)
+                                (= rev-id revision-id)))
+                          (let [rev-id (or (get-in association [:extra-fields :source-revision-id]))]
+                            (or (nil? rev-id)
+                                (= rev-id revision-id))))))
+                    associations))
+      ;; default
+      (errors/internal-error!
+       (format "association search failed. status: %s body: %s" status body)))))
+
 (defn-timed find-collections
   "Searches metadata db for concepts matching the given parameters."
   [context params]

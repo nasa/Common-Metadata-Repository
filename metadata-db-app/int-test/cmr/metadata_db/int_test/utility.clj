@@ -52,6 +52,10 @@
   []
   (str "http://localhost:" (transmit-config/metadata-db-port) "/providers"))
 
+(defn associations-url
+  []
+  (str "http://localhost:" (transmit-config/metadata-db-port) "/associations"))
+
 (defn old-revision-concept-cleanup
   "Runs the old revision concept cleanup job"
   []
@@ -216,6 +220,25 @@
   "Make a get to retrieve the latest revision of concepts by parameters for a specific concept type"
   [concept-type params]
   (find-concepts concept-type (assoc params :latest true)))
+
+(defn find-associations
+  "Make a get to retrieve associations by parameters for a specific concept id."
+  [params]
+  (let [response (client/get (str (associations-url) "/search")
+                             {:query-params params
+                              :accept :json
+                              :throw-exceptions false
+                              :connection-manager (conn-mgr)})
+        status (:status response)]
+    (if (= status 200)
+      {:status status
+       :concepts (parse-concepts response)}
+      (assoc (parse-errors response) :status status))))
+
+(defn find-latest-associations
+  "Make a get to retrieve the latest revision of associations by concept id."
+  [params]
+  (find-associations (assoc params :latest true)))
 
 (defn get-expired-collection-concept-ids
   "Make a get to retrieve expired collection concept ids."
