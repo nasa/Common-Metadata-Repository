@@ -483,7 +483,7 @@
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
-          (let [associations (meta-db/find-associations context concept)
+          (let [associations (get-associations context concept)
                 ;tag-associations (get-tag-associations context concept)
                 ;variable-associations (get-variable-associations context concept)
                 ;service-associations (get-service-associations context concept)
