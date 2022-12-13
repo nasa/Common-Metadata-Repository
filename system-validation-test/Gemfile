@@ -6,6 +6,7 @@ group :test do
   gem 'cucumber'
   gem 'httparty'
   gem 'jsonpath'
+  gem 'racc'	
   gem 'nokogiri'
   gem 'rspec'
 end
