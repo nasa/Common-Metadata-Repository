@@ -1,7 +1,16 @@
 (ns cmr.search.results-handlers.results-handler-util
   "Provides useful functions for several of the result handlers."
   (:require
+   [clojure.walk :as walk]
    [cmr.common.util :as util]))
+
+(defn replace-snake-keys
+  "Replace specified keys in the nested association data structure with
+  snake_case version"
+  [associations]
+  (->> associations
+    (walk/postwalk-replace {:concept-id :concept_id})
+    (walk/postwalk-replace {:revision-id :revision_id})))
 
 (defn build-each-concept-association-list
   "This function builds a map with the passed in conept-key as the key and
@@ -19,9 +28,9 @@
               (keys associations)))))
 
 (defn main-detail-assoc-structure
-  "Build the main association detail structure."
+  "Build the main association details structure."
   [concept-key associations]
-  {concept-key (map #(if (string? %) {:concept-id %} %)  associations)})
+  {concept-key (map #(if (string? %) {:concept-id %} %) associations)})
 
 (defn build-association-details
   "Builds the association details from the passed in associations
