@@ -319,18 +319,8 @@
        (when-let [start-index (find-batch-starting-id-with-stmt db stmt)]
          (lazy-find (max requested-start-index start-index)))))))
 
-
-(comment 
-  (let [table (tables/get-table-name nil :generic-association)])
-    (find-concepts-in-table db table concept-type [provider]
-                            (assoc params :include-all true))
-  (println params)
-  )
 (defn find-latest-concepts
   [db provider params]
-  (def db db)
-  (def provider provider)
-  (def params params)
   {:pre [(:concept-type params)]}
   ;; First we find all revisions of the concepts that have at least one revision that matches the
   ;; search parameters. Then we find the latest revisions of those concepts and match with the
@@ -345,37 +335,17 @@
                                     (->> concepts (sort-by :revision-id) reverse first))))]
     (c/search-with-params latest-concepts params)))
 
-;(defn generate-results
-;  ""
-;  [conn result]
-;  (some-> (oc/db-result->concept-map :default conn "CMR" result)
-;          (assoc :concept-type :generic-association)
-;          (assoc-in [:extra-fields :associated-concept-id] (:associated_concept_id result))
-;          (assoc-in [:extra-fields :associated-revision-id]
-;                    (when-let [ari (:associated_revision_id result)]
-;                      (long ari)))
-;          (assoc-in [:extra-fields :source-concept-identifier] (:source_concept_identifier result))
-;          (assoc-in [:extra-fields :source-revision-id]
-;                    (when-let [sri (:source_revision_id result)]
-;                      (long sri)))
-;          (assoc :user-id (:user_id result))))
-
-(comment
-  (println stmt1)  
-
-  )
 (defn find-associations
-  ""
+  "Find all associations in the database table that are part of a concept id
+  that is passed in through params. The parameters look like the following:
+  {:associated-concept-id \"C1200000013-PROV1\" :source-concept-identifier \"C1200000013-PROV1\"}"
   [db params]
   (let [fields (:generic-association concept-type->columns)
-        ;params {:associated-concept-id "C1200000013-PROV1" :source-concept-identifier "C1200000013-PROV1"}
+        table (tables/get-table-name nil :generic-association)
         stmt (su/build (select (vec fields)
-                      (from "cmr_associations")
-                      (when-not (empty? params)
-                        (where (sh/find-params->sql-clause params true)))))]
-        ;stmt [SELECT source_concept_identifier, deleted, transaction_id, associated_revision_id, format, concept_id, associated_concept_id, source_revision_id, revision_id, native_id, user_id, revision_date, metadata FROM cmr_associations WHERE ((associated_concept_id = ?) and (source_concept_identifier = ?)) C1200000062-PROV1 C1200000062-PROV1]]
-    (def stmt1 stmt)
-    ;stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
+                               (from table)
+                               (when-not (empty? params)
+                                 (where (sh/find-params->sql-clause params true)))))]
     (j/with-db-transaction
      [conn db]
      ;; doall is necessary to force result retrieval while inside transaction - otherwise
@@ -383,20 +353,18 @@
      (doall
       (mapv (fn [result]
               (oc/db-result->concept-map :generic-association conn "CMR" result))
-              ;(generate-results conn result))
-            (su/query conn stmt))))
-    )
-    )
+            (su/query conn stmt))))))
 
 (defn find-latest-associations
-  ""
+  "Find the latest associations in the database table that are part of a concept id
+  that is passed in through params. The parameters look like the following:
+  {:associated-concept-id \"C1200000013-PROV1\" :source-concept-identifier \"C1200000013-PROV1\"}"
   [db params]
   (let [associations (find-associations db params)]
     (->> associations
          (group-by :concept-id)
          (map (fn [[concept-id concepts]]
-                (->> concepts (sort-by :revision-id) reverse first)))))
-  )
+                (->> concepts (sort-by :revision-id) reverse first))))))
 
 (def behaviour
   {:find-concepts find-concepts

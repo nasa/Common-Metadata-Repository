@@ -148,7 +148,6 @@
           (find-concepts request-context params))
         (POST "/:concept-type" {:keys [params request-context]}
           (find-concepts request-context params)))
-        
       ;; saves a concept
       (POST "/" {:keys [request-context params body]}
         (save-concept-revision request-context params body))
@@ -181,9 +180,7 @@
       (get-provider-holdings context params))
     
     (GET "/associations/search" {context :request-context params :params}
-      (println "********* in metdata db concept route for /associations/search")
       (find-associations context params))
     
     (POST "/associations/search" {context :request-context params :params}
-      (println "********* in metdata db POST concept route for /associations/search")
       (find-associations context params))))

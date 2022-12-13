@@ -153,8 +153,6 @@
 (defn find-associations
   "Find associations with specific parameters."
   [context params]
-  (def context context)
-  (def params params)
   (let [db (db-util/context->db context)
         latest-only? (or (true? (:latest params))
                          (= "true" (:latest params)))
