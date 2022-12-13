@@ -1064,11 +1064,18 @@
 
 (deftest search-errors-in-json-or-xml-format
   (testing "invalid format"
-    (is (= {:errors ["The mime types specified in the accept header [application/echo11+xml] are not supported."],
-            :status 400}
+    (is (= {:status 400,
+            :errors ["The mime types specified in the accept header [application/echo11+xml] are not supported."]}
            (search/get-search-failure-xml-data
              (search/find-concepts-in-format
                "application/echo11+xml" :collection {})))))
+  
+  (testing "invalid format html escape"
+    (is (= {:status 400,
+            :errors ["The mime types specified in the accept header [application/html &quot;qss=&quot;QssAttrValue] are not supported."]}
+           (search/get-search-failure-xml-data
+            (search/find-concepts-in-format
+             "application/html \"qss=\"QssAttrValue" :collection {})))))
 
   (is (= {:status 400,
           :errors ["Parameter [unsupported] was not recognized."]}

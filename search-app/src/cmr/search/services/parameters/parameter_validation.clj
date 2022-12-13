@@ -563,10 +563,9 @@
         (reduce
          (fn [errors value]
            (if-not (valid-value-for-date-field? value date-field)
-             (conj errors (format (str "%s [%s] within [temporal_facet] is not a valid %s. "
+             (conj errors (format (str "%s within [temporal_facet] is not a valid %s. "
                                        "%ss must be between 1 and %d.")
                                   (s/capitalize (name date-field))
-                                  value
                                   (name date-field)
                                   (s/capitalize (name date-field))
                                   (max-value-for-date-field date-field)))
