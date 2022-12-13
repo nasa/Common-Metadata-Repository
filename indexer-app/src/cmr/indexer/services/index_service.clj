@@ -631,14 +631,16 @@
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
   [context concept-id revision-id options]
-  (when-not (and concept-id revision-id)
+  (when-not concept-id
     (errors/throw-service-error
      :bad-request
-     (format "Concept-id %s and revision-id %s cannot be null" concept-id revision-id)))
+     (format "Concept-id %s cannot be null" concept-id)))
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
-      (let [concept (meta-db/get-concept context concept-id revision-id)
+      (let [concept (if revision-id
+                      (meta-db/get-concept context concept-id revision-id)
+                      (meta-db/get-latest-concept context concept-id revision-id))
             parsed-concept (cp/parse-concept context concept)]
         (index-concept context concept parsed-concept options)
         (log-ingest-to-index-time concept)))))

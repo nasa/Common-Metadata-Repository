@@ -978,12 +978,31 @@
                          msg/concept-does-not-exist
                          concept-id)))))
 
+(comment
+  (println concept-id)
+  (let [concept-id "S1200000010-PROV1"
+        concept-type :service
+        search-params (cutil/remove-nil-keys
+                       {:concept-type :service-association
+                        :service-concept-id "S1200000010-PROV1"
+                        :exclude-metadata true
+                        :latest true})
+        associations (filter #(= false (:deleted %))
+                            (search/find-concepts context {:concept-type :service-association
+                                                           :service-concept-id "S1200000010-PROV1"
+                                                           :exclude-metadata true
+                                                           :latest true}))]
+    associations)
+  )
 (defn- publish-service-associations-update-event
   "Publish one concept-update-event for all non-tombstoned service associations for the
   given service concept; This is to trigger the reindexing of the associated collections in elastic
   search when service is updated because service info is indexed into the associated collections.
   Does nothing if the given concept is not a service concept."
   [context concept-type concept-id]
+  (def context context)
+  (def concept-type concept-type)
+  (def concept-id concept-id)
   (when (= :service concept-type)
     (let [search-params (cutil/remove-nil-keys
                          {:concept-type :service-association
@@ -1028,6 +1047,9 @@
   search when tool is updated because tool info is indexed into the associated collections.
   Does nothing if the given concept is not a tool concept."
   [context concept-type concept-id]
+  (def context1 context)
+  (def concept-type1 concept-type)
+  (def concept-id1 concept-id)
   (when (= :tool concept-type)
     (let [search-params (cutil/remove-nil-keys
                          {:concept-type :tool-association
@@ -1080,8 +1102,8 @@
 
       ;; publish service/tool associations update event if applicable, i.e. when the concept is a service/tool,
       ;; so that the collections can be updated in elasticsearch with the updated service/tool info
-      ;(publish-service-associations-update-event context concept-type concept-id)
-      ;(publish-tool-associations-update-event context concept-type concept-id)
+      (publish-service-associations-update-event context concept-type concept-id)
+      (publish-tool-associations-update-event context concept-type concept-id)
       ;(publish-generic-associations-update-event context concept-type concept-id)
       (ingest-events/publish-event
        context

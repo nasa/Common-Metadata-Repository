@@ -78,12 +78,12 @@
          (:transaction-id concept)
          (map :transaction-id (:tool-associations concept))))
 
-(doseq [concept-type (cs/get-generic-concept-types-array)]
-  (defmethod get-elastic-version concept-type
-    [concept]
-    (apply max
-           (:transaction-id concept)
-           (map :transaction-id (:generic-associations concept)))))
+;(doseq [concept-type (cs/get-generic-concept-types-array)]
+;  (defmethod get-elastic-version concept-type
+;    [concept]
+;    (apply max
+;           (:transaction-id concept)
+;           (map :transaction-id (:generic-associations concept)))))
 
 (defmethod get-elastic-version :default
   [concept]
