@@ -232,7 +232,7 @@
                          (format->mime-type (get extension-aliases extension-key extension-key)))]
        (if (and (some? valid-mime-types) (not (contains? valid-mime-types (base-mime-type-of mime-type))))
          (svc-errors/throw-service-error
-          :bad-request (format "The URL extension [%s] is not supported." extension))
+          :bad-request (format "The URL extension [%s] is not supported." (util/html-escape extension)))
          mime-type)))))
 
 (defn extract-header-mime-type
@@ -245,4 +245,4 @@
         (when validate?
           (svc-errors/throw-service-error
             :bad-request (format "The mime types specified in the %s header [%s] are not supported."
-                                 header header-value))))))
+                                 header (util/html-escape header-value)))))))

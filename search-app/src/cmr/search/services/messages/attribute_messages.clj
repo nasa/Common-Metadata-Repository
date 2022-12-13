@@ -1,5 +1,7 @@
 (ns cmr.search.services.messages.attribute-messages
-  "Contains messages for reporting responses to the user")
+  "Contains messages for reporting responses to the user"
+  (:require
+   [cmr.common.util :as util]))
 
 ;; Client error messages
 
@@ -10,11 +12,11 @@
 
 (defn invalid-type-msg
   [type]
-  (format "[%s] is an invalid type" (str type)))
+  (format "[%s] is an invalid type" (util/html-escape (str type))))
 
 (defn invalid-value-msg
   [type value]
-  (format "[%s] is an invalid value for type [%s]" (pr-str value) (name type)))
+  (format "[%s] is an invalid value for type [%s]" (util/html-escape (pr-str value)) (name type)))
 
 (defn invalid-name-msg
   [n]

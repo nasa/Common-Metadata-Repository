@@ -1101,23 +1101,23 @@
 
     "Invalid int"
     {:additional_attribute_value {:type "int" :name "B" :value "1"}}
-    ["[\"1\"] is an invalid value for type [int]"]
+    ["[&quot;1&quot;] is an invalid value for type [int]"]
 
     "Invalid float"
     {:additional_attribute_value {:type "float" :name "B" :value "1.42"}}
-    ["[\"1.42\"] is an invalid value for type [float]"]
+    ["[&quot;1.42&quot;] is an invalid value for type [float]"]
 
     "Invalid datetime"
     {:additional_attribute_value {:type "datetime" :name "B" :value "2012-01-11 10:00:00"}}
-    ["[\"2012-01-11 10:00:00\"] is an invalid value for type [datetime]"]
+    ["[&quot;2012-01-11 10:00:00&quot;] is an invalid value for type [datetime]"]
 
     "Invalid date"
     {:additional_attribute_value {:type "date" :name "B" :value "10:00:00Z"}}
-    ["[\"10:00:00Z\"] is an invalid value for type [date]"]
+    ["[&quot;10:00:00Z&quot;] is an invalid value for type [date]"]
 
     "Invalid time"
     {:additional_attribute_value {:type "time" :name "B" :value "2012-01-11"}}
-    ["[\"2012-01-11\"] is an invalid value for type [time]"]
+    ["[&quot;2012-01-11&quot;] is an invalid value for type [time]"]
 
     "Invalid use of exclude-boundary"
     {:additional_attribute_value {:type "string" :name "a" :value "b" :exclude_boundary true}}
@@ -1161,8 +1161,8 @@
 
     "Multiple errors can be returned"
     {:additional_attribute_range {:type "float" :name "B" :min_value "1.42" :max_value "foo"}}
-    ["[\"foo\"] is an invalid value for type [float]"
-     "[\"1.42\"] is an invalid value for type [float]"]))
+    ["[&quot;foo&quot;] is an invalid value for type [float]"
+     "[&quot;1.42&quot;] is an invalid value for type [float]"]))
 
 (deftest dif-extended-metadata-test
   (let [dif9-coll (data-core/ingest-concept-with-metadata-file

@@ -14,7 +14,8 @@
    [clojure.walk :as w]
    [cmr.common.config :as cfg]
    [cmr.common.log :refer (debug info warn error)]
-   [cmr.common.services.errors :as errors])
+   [cmr.common.services.errors :as errors]
+   [hiccup.util :as hp-util])
   (:import
    (java.text DecimalFormat)
    (java.util.zip GZIPInputStream GZIPOutputStream)
@@ -1067,3 +1068,8 @@
   (if (string? s)
     (read-string s)
     s))
+
+(defn html-escape
+  "Html escape the given string. it is used to deal with potential xss issues in user input."
+  [s]
+  (hp-util/escape-html s))
