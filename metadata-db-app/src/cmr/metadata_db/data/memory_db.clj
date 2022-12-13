@@ -8,6 +8,7 @@
    [cmr.common.generics :as common-generic]
    [cmr.common.memory-db.connection :as connection]
    [cmr.common.time-keeper :as tk]
+   [cmr.common.util :as util]
    [cmr.metadata-db.data.concepts :as concepts]
    [cmr.metadata-db.data.ingest-events :as ingest-events]
    [cmr.metadata-db.data.oracle.concepts.tag :as tag]
@@ -296,19 +297,33 @@
                         params)]
     (concepts->find-result found-concepts params)))
 
+(defn find-associations-by-concept-id
+  "Searches the passed in concepts (which is the in-memory DB) for all associations that 
+  involve the passed in concept id."
+  [concepts concept-id]
+  (util/remove-nils-empty-maps-seqs
+   (merge
+    (concepts/search-with-params concepts {:associated-concept-id concept-id})
+    (concepts/search-with-params concepts {:tool-concept-id concept-id})
+    (concepts/search-with-params concepts {:service-concept-id concept-id})
+    (concepts/search-with-params concepts {:variable-concept-id concept-id})
+    (concepts/search-with-params concepts {:source-concept-identifier concept-id}))))
+
 (defn find-associations
+  "Find all associations that a concept is associated with. It uses the passed
+  in parameters that contains the concept id."
   [db params]
-  ;; XXX Looking at search-with-params, seems like it might need to be
-  ;;     in a utility ns for use by all impls
-  (let [found-concepts (concepts/search-with-params @(:concepts-atom db) params)]
+  (let [concept-id (:associated-concept-id params)
+        found-concepts (find-associations-by-concept-id @(:concepts-atom db) concept-id)]
     (concepts->find-result found-concepts params)))
 
 (defn find-latest-associations
+  "Find the latest associations that a concept is associated with. It uses the passed
+  in parameters that contains the concept id."
   [db params]
-  ;; XXX Looking at search-with-params, seems like it might need to be
-  ;;     in a utility ns for use by all impls
-  (let [latest-concepts (latest-revisions @(:concepts-atom db))
-        found-concepts (concepts/search-with-params latest-concepts params)]
+  (let [concept-id (:associated-concept-id params)
+        latest-concepts (latest-revisions @(:concepts-atom db))
+        found-concepts (find-associations-by-concept-id latest-concepts concept-id)]
     (concepts->find-result found-concepts params)))
 
 (def concept-search-behaviour
