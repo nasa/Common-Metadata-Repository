@@ -8,11 +8,11 @@ import axiosRetry from 'axios-retry'
  */
 
 // axiosRetry(axios, { retries: 3 })
-// Compensate for any misses to the endpoint max retries is going to be 3 using
+// Compensate for any misses to the endpoint max retries is going to be 8 using
 // exponential timing between the calls
 axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay, retries: 4 })
 
-export const fetchCollectionPermittedGroups = async (conceptId, token, depth = 1) => {
+export const fetchCollectionPermittedGroups = async (conceptId, token) => {
   const requestHeaders = {}
   const groups = []
   // const maxTries = 3

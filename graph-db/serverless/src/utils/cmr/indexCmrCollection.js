@@ -14,8 +14,9 @@ const gremlinStatistics = gremlin.process.statics
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
  * @returns
  */
-export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection) => {
-  // const maxDepth = 3
+
+export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection, depth = 1) => {
+  // const maxDepth = 5
   const {
     meta: {
       'concept-id': conceptId,
@@ -68,11 +69,15 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
       .next()
   } catch (error) {
     console.log(`Error indexing collection into graph database [${conceptId}]: ${error.message}`)
-    // This might not work because the delete is also being done in this block
-    // if (depth < maxDepth) {
-    //   console.log(`Retrying to index collection ${conceptId}  into graph database attempt #', ${depth}`)
-    //   await indexCmrCollection(collectionObj, groupList, gremlinConn, depth + 1)
-    // }
+    if (depth > 3) {
+      console.log('Max depth exceeded with depth at value', depth)
+      return false
+    }
+    // setTimeout(5000)
+    console.log('retrying the lambda function to index the graph database depth = ', depth)
+    // Exponential back-off and retry policy
+
+    await indexCmrCollection(collectionObj, groupList, gremlinConnection, depth + 1)
     return false
   }
 
