@@ -121,7 +121,6 @@
   (let [{{min-1 :MinimumValue max-1 :MaximumValue} :Coordinate1
          {min-2 :MinimumValue max-2 :MaximumValue} :Coordinate2} (:parent two-d-coordinate-system)
         ;; Collection v1.17.2 converted these fields to strings, convert them back to numbers if needed
-        ;; TODO - implement validation for Military Grid Reference System coordinates. Right now they are changed to nil here.
         min-1 (util/str->num min-1)
         max-1 (util/str->num max-1)
         min-2 (util/str->num min-2)

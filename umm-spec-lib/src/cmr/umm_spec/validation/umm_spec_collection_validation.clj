@@ -22,7 +22,6 @@
   [field-path value]
   (let [{:keys [MinimumValue MaximumValue]} value
         ;; Collection v1.17.2 converted these fields to strings, convert them back to numbers if needed.
-        ;; TODO - implement validation for Military Grid Reference System coordinates. Right now they are changed to nil here.
         MinimumValue (util/str->num MinimumValue)
         MaximumValue (util/str->num MaximumValue)]
     (when (and MinimumValue MaximumValue (> MinimumValue MaximumValue))

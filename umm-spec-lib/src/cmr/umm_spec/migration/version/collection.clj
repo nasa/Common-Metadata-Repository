@@ -225,7 +225,7 @@
   "Migrate one TilingIdentificationSystem down if all coordinates' min and max values convert form string to number, 
    otherwise remove entire tiling identification system (return nil)"
   [element]
-  (if (and (util/str->num (get-in element [:Coordinate1 :MinimumValue]))
+  (when (and (util/str->num (get-in element [:Coordinate1 :MinimumValue]))
            (util/str->num (get-in element [:Coordinate1 :MaximumValue]))
            (util/str->num (get-in element [:Coordinate2 :MinimumValue]))
            (util/str->num (get-in element [:Coordinate2 :MaximumValue])))
@@ -233,8 +233,7 @@
         (update-in [:Coordinate1 :MinimumValue] util/str->num)
         (update-in [:Coordinate1 :MaximumValue] util/str->num)
         (update-in [:Coordinate2 :MinimumValue] util/str->num)
-        (update-in [:Coordinate2 :MaximumValue] util/str->num))
-    nil))
+        (update-in [:Coordinate2 :MaximumValue] util/str->num))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Collection Migration Implementations
