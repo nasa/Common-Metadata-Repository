@@ -24,11 +24,13 @@ export const fetchPageFromCMR = async ({
   token,
   gremlinConnection,
   providerId,
-  searchAfterNum = 0
+  searchAfterNum = 0,
+  sqsEntryJobCount = 0
 }) => {
   const requestHeaders = {}
 
   console.log(`Fetch collections from CMR, searchAfter #${searchAfterNum}`)
+  console.log(`Total SQS queue job size #${sqsEntryJobCount}`)
 
   if (token) {
     requestHeaders.Authorization = token
@@ -60,7 +62,7 @@ export const fetchPageFromCMR = async ({
 
     const { feed = {} } = data
     const { entry = [] } = feed
-
+    let currentBatchSize = 0
     // Split page array into array with sub-arrays of size 10
     const chunkedItems = chunkArray(entry, 10)
 
@@ -84,7 +86,6 @@ export const fetchPageFromCMR = async ({
           await indexCmrCollections({ Records: queueBody })
         } else {
           const sqsEntries = []
-
           chunk.forEach((collection) => {
             const { id: conceptId } = collection
 
@@ -95,6 +96,8 @@ export const fetchPageFromCMR = async ({
                 'concept-id': conceptId
               })
             })
+            // Retrieve the total number of collections being processed in here
+            currentBatchSize += 1
           })
 
           const command = new SendMessageBatchCommand({
@@ -107,14 +110,15 @@ export const fetchPageFromCMR = async ({
       })
     }
 
-    // If we have an active searchAfter and there are more results
+    // If we have an active searchAfter so we aren't on the last page and there are more results
     if (cmrsearchAfter && entry.length === parseInt(process.env.PAGE_SIZE, 10)) {
       await fetchPageFromCMR({
         searchAfter: cmrsearchAfter,
         token,
         gremlinConnection,
         providerId,
-        searchAfterNum: (searchAfterNum + 1)
+        searchAfterNum: (searchAfterNum + 1),
+        sqsEntryJobCount: (sqsEntryJobCount + currentBatchSize)
       })
     }
   } catch (error) {

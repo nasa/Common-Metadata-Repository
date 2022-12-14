@@ -7,15 +7,13 @@ import axiosRetry from 'axios-retry'
  * @returns [] An array containing the permitted groups of a collection
  */
 
-// axiosRetry(axios, { retries: 3 })
-// Compensate for any misses to the endpoint max retries is going to be 8 using
+// Compensate for any misses to the endpoint max retries is going to be 4 using
 // exponential timing between the calls
 axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay, retries: 4 })
 
 export const fetchCollectionPermittedGroups = async (conceptId, token) => {
   const requestHeaders = {}
   const groups = []
-  // const maxTries = 3
 
   if (token) {
     requestHeaders.Authorization = token
@@ -61,10 +59,6 @@ export const fetchCollectionPermittedGroups = async (conceptId, token) => {
     })
   } catch (error) {
     console.log(`Could not complete request to Access Control App to retrieve group information for ${conceptId} due to error: ${error}`)
-
-    // if (depth < maxTries) {
-    //   await fetchCollectionPermittedGroups(conceptId, token, depth + 1)
-    // }
   }
 
   return groups

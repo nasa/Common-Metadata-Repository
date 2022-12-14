@@ -119,7 +119,6 @@
 
       (index/wait-until-indexed)
       (variables/assert-variable-search-order [variable] (variables/search {:provider "PROV1"}))))
-
   (testing "variable associations with high concept-id searches return as expected"
     (let [coll (d/ingest-umm-spec-collection "PROV3"
                                              (data-umm-c/collection

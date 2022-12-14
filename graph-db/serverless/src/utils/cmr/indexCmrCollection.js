@@ -11,7 +11,9 @@ const gremlinStatistics = gremlin.process.statics
 /**
  * Given a collection from the CMR, index it into Gremlin
  * @param {JSON} collectionObj collection object from `items` array in cmr response
+ * @param {JSON} collectionObj List of groups that the collection can be read by from access-control
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
+ * @param {number} [depth=1] the recursion depth the function is currently on
  * @returns
  */
 
@@ -69,15 +71,16 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
       .next()
   } catch (error) {
     console.log(`Error indexing collection into graph database [${conceptId}]: ${error.message}`)
-    if (depth > 3) {
-      console.log('Max depth exceeded with depth at value', depth)
+
+    if (depth > 5) {
+      console.log(`Maximum attempts to index the graph database for [${conceptId}] attempt #${depth}`)
       return false
     }
-    // setTimeout(5000)
-    console.log('retrying the lambda function to index the graph database depth = ', depth)
-    // Exponential back-off and retry policy
+
+    console.log(`Retrying the lambda function to index the graph database for [${conceptId}] attempt #${depth}`)
 
     await indexCmrCollection(collectionObj, groupList, gremlinConnection, depth + 1)
+
     return false
   }
 

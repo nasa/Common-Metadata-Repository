@@ -75,7 +75,7 @@ describe('utils#indexCmrCollection', () => {
       // Error message logged because addV failed because of null gremlinConnection
       expect(consoleMock.mock.calls[1][0]).toEqual(`Error indexing collection into graph database [${conceptId}]: Cannot read properties of null (reading 'addV')`)
       // Function is being called recursively
-      expect(consoleMock.mock.calls[2][0]).toEqual('retrying the lambda function to index the graph database depth = ')
+      expect(consoleMock.mock.calls[2][0]).toEqual(`Retrying the lambda function to index the graph database for [${conceptId}] attempt #1`)
     })
   })
   // Keep retry retry policy out for now

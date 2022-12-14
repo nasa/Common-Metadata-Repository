@@ -14,8 +14,6 @@ let token
 const updateActionType = 'concept-update'
 const deleteActionType = 'concept-delete'
 
-// Maximum number of retries for the function
-
 const indexCmrCollections = async (event) => {
   // Prevent creating more tokens than necessary
   if (token === undefined) {
@@ -76,7 +74,7 @@ const indexCmrCollections = async (event) => {
           recordCount += 1
         }
       } catch (error) {
-        console.log('Error indexing collection, Exception was thrown in lambda: ', error)
+        console.log(`Error indexing collection [${conceptId}], Exception was thrown in index collection handler ${error}`)
       }
     }
     if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {
