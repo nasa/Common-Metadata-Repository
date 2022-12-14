@@ -6,6 +6,6 @@ group :test do
   gem 'cucumber'
   gem 'httparty'
   gem 'jsonpath'
-  gem 'nokogiri'
+  gem 'nokogiri', ">= 1.13.10"
   gem 'rspec'
 end
