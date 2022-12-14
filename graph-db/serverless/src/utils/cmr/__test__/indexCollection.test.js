@@ -66,8 +66,8 @@ describe('utils#indexCmrCollection', () => {
 
       expect(result).toBeFalsy()
 
-      // Retry policy in place. Called 4 times using three different logs, so 12 total calls TODO use this after test, for now leave it off for 2
-      expect(consoleMock).toBeCalledTimes(12)
+      // Retry policy in place. Called 5 times using three different logs, so 12 total calls TODO use this after test, for now leave it off for 2
+      expect(consoleMock).toBeCalledTimes(18)
 
       // Error message logged because deleteCmrCollection failed because of null gremlinConnection
       expect(consoleMock.mock.calls[0][0]).toEqual(`Error deleting project vertices only linked to collection [${conceptId}]: Cannot read properties of null (reading 'V')`)
