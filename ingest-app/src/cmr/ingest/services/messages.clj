@@ -15,93 +15,93 @@
         coll-ref-humanized-fields (for [[field value] collection-ref-fields]
                                     (format "%s [%s]" (vc/humanize-field field) value))]
     (format "Collection with %s referenced in granule [%s] provider [%s] does not exist."
-            (string/join ", " coll-ref-humanized-fields)
-            granule-ur provider-id)))
+            (util/html-escape (string/join ", " coll-ref-humanized-fields))
+            (util/html-escape granule-ur) (util/html-escape provider-id))))
 
 (defn invalid-multipart-params
   [expected-params actual-params]
   (format "Unexpected multipart parameters: [%s]. Expected the multipart parameters [%s]."
-          (string/join ", " actual-params)
-          (string/join ", " expected-params)))
+          (util/html-escape (string/join ", " actual-params))
+          (util/html-escape (string/join ", " expected-params))))
 
 (defn invalid-revision-id
   [revision-id]
-  (format "Invalid revision-id [%s]. Cmr-Revision-id in the header must be a positive integer." revision-id))
+  (format "Invalid revision-id [%s]. Cmr-Revision-id in the header must be a positive integer." (util/html-escape revision-id)))
 
 (defn invalid-parent-collection-for-validation
   [collection-validation-error]
   (str "The collection given for validating the granule was invalid: "
-       (pr-str collection-validation-error)))
+       (util/html-escape (pr-str collection-validation-error))))
 
 (defn platform-not-matches-kms-keywords
   [platform]
   (format "Platform short name [%s], long name [%s], and type [%s] was not a valid keyword combination."
-          (:ShortName platform) (:LongName platform) (:Type platform)))
+          (util/html-escape (:ShortName platform)) (util/html-escape (:LongName platform)) (util/html-escape (:Type platform))))
 
 (defn instrument-not-matches-kms-keywords
   [instrument]
   (format "Instrument short name [%s] and long name [%s] was not a valid keyword combination."
-          (:ShortName instrument) (:LongName instrument)))
+          (util/html-escape (:ShortName instrument)) (util/html-escape (:LongName instrument))))
 
 (defn project-not-matches-kms-keywords
   [project-map]
   (format "Project short name [%s] and long name [%s] was not a valid keyword combination."
-          (:ShortName project-map) (:LongName project-map)))
+          (util/html-escape (:ShortName project-map)) (util/html-escape (:LongName project-map))))
 
 (defn data-center-not-matches-kms-keywords
    "Error msg when DataCenter's ShortName is not in the KMS."
    [data-center]
    (format "Data center short name [%s] was not a valid keyword."
-          (:ShortName data-center)))
+          (util/html-escape (:ShortName data-center))))
 
 (defn data-format-not-matches-kms-keywords
   "Error message when FileDistributionInformation -> Format is
   not in the KMS."
   [archive-and-distribution-information]
   (format "Format [%s] was not a valid keyword."
-          (:Format archive-and-distribution-information)))
+          (util/html-escape (:Format archive-and-distribution-information))))
 
 (defn getdata-format-not-matches-kms-keywords
   "Error message when relatedurl-getdata-format is
   not in the KMS."
   [relatedurl-getdata-format]
   (format "Format [%s] was not a valid keyword."
-          relatedurl-getdata-format))
+          (util/html-escape relatedurl-getdata-format)))
 
 (defn mime-type-not-matches-kms-keywords
   "Error message when relatedurl-mimetype is
   not in the KMS."
   [relatedurl-mime-type]
   (format "MimeType [%s] was not a valid keyword."
-          relatedurl-mime-type))
+          (util/html-escape relatedurl-mime-type)))
 
 (defn directory-name-not-matches-kms-keywords
    "Error msg when DirectoryName's ShortName is not in the KMS."
    [directory-name]
    (format "Directory name short name [%s] was not a valid keyword."
-          (:ShortName directory-name)))
+          (util/html-escape (:ShortName directory-name))))
 
 (defn iso-topic-category-not-matches-kms-keywords
    "Error msg when ISOTopicCategory is not in the KMS."
    [iso-topic-category]
    (format "ISO Topic Category [%s] was not a valid keyword."
-           iso-topic-category))
+           (util/html-escape iso-topic-category)))
 
 (defn related-url-content-type-type-subtype-not-matching-kms-keywords
   "Error msg when Related URL Content Type, Type, and Subtype do not match a valid set in KMS."
   [related-url]
   (format "Related URL Content Type, Type, and Subtype [%s>%s>%s] are not a valid set together."
-          (:URLContentType related-url)
-          (:Type related-url)
-          (:Subtype related-url)))
+          (util/html-escape (:URLContentType related-url))
+          (util/html-escape (:Type related-url))
+          (util/html-escape (:Subtype related-url))))
 
 (defn url-content-type-type-subtype-not-matching-kms-keywords
   "Error msg when URL Content Type, Type, and Subtype do not match a valid set in KMS."
   [url]
   (format "URL Content Type, Type, and Subtype [%s>%s>%s] are not a valid set together."
-          (:URLContentType url)
-          (:Type url)
-          (:Subtype url)))
+          (util/html-escape (:URLContentType url))
+          (util/html-escape (:Type url))
+          (util/html-escape (:Subtype url))))
 
 (def science-keyword-attribute-order
   "The order of fields that should be displayed in the science keyword human readable list."

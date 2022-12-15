@@ -31,7 +31,7 @@
                       (some #(when (= provider-id (:provider-id %)) %)))]
     (when-not provider
       (srvc-errors/throw-service-error
-        :invalid-data (format "Provider with provider-id [%s] does not exist." provider-id)))))
+        :invalid-data (format "Provider with provider-id [%s] does not exist." (util/html-escape provider-id))))))
 
 (def valid-response-mime-types
   "Supported ingest response formats"

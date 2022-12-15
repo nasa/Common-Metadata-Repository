@@ -12,7 +12,7 @@
   (when-let [invalid-params (seq (remove (set allowed-param-names) (keys params)))]
     (errors/throw-service-errors :bad-request (for [param invalid-params]
                                                 (format "Parameter [%s] was not recognized."
-                                                        (name param))))))
+                                                        (util/html-escape (name param)))))))
 
 (defn validate-standard-params
   "Throws a service error if any parameters other than :token or :pretty are present."

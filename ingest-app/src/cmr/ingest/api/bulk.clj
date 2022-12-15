@@ -15,7 +15,8 @@
    [cmr.ingest.data.granule-bulk-update :as data-gran-bulk-update]
    [cmr.ingest.services.bulk-update-service :as bulk-update]
    [cmr.ingest.services.granule-bulk-update-service :as gran-bulk-update]
-   [cmr.ingest.services.ingest-service :as ingest]))
+   [cmr.ingest.services.ingest-service :as ingest]
+   [cmr.common.util :as util]))
 
 (defn bulk-update-collections
   "Bulk update collections. Validate provider exists, check ACLs, and validate
@@ -177,7 +178,7 @@
           collection-statuses (data-bulk-update/get-bulk-update-collection-statuses-for-task request-context task-id)]
       (when (or (nil? task-status) (nil? (:status task-status)))
         (srvc-errors/throw-service-error
-          :not-found (format "Bulk update task with task id [%s] could not be found for provider id [%s]." task-id provider-id)))
+          :not-found (format "Bulk update task with task id [%s] could not be found for provider id [%s]." (util/html-escape task-id) (util/html-escape provider-id))))
       (generate-provider-task-status-response
        headers
        {:status 200
@@ -239,7 +240,7 @@
     (when-not provider-id
       (srvc-errors/throw-service-error
        :not-found
-       (format "Granule bulk update task with task id [%s] could not be found." task-id)))
+       (format "Granule bulk update task with task id [%s] could not be found." (util/html-escape task-id))))
 
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)

@@ -70,7 +70,7 @@
     (when (:deleted existing-concept)
       (errors/throw-service-error
         :not-found (format "Concept with native-id [%s] and concept-id [%s] is already deleted."
-                           native-id concept-id)))
+                           (util/html-escape native-id) (util/html-escape concept-id))))
     (let [concept (-> concept-attribs
                       (dissoc :provider-id :native-id)
                       (assoc :concept-id concept-id :deleted true))

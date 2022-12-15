@@ -34,8 +34,8 @@
   (errors/throw-service-error
    :unauthorized
    (format "Collection with concept id [%s] does not exist or subscriber-id [%s] does not have permission to view the collection."
-           concept-id
-           subscriber-id)))
+           (util/html-escape concept-id)
+           (util/html-escape subscriber-id))))
 
 (defn- check-subscriber-collection-permission
   "Checks that the subscriber-id can read the collection supplied in the subscription metadata"
@@ -64,7 +64,7 @@
   [context params concept-type]
   (when-let [errors (search/validate-search-params context params concept-type)]
     (errors/throw-service-error :bad-request
-      (str "Subscription query validation failed with the following error(s): " errors))))
+      (str "Subscription query validation failed with the following error(s): " (util/html-escape errors)))))
 
 (defn- validate-query
   "Performs a search using subscription query parameters for purposes of validation"
@@ -98,7 +98,7 @@
       (errors/throw-service-error
        :conflict
        (format "The subscriber-id [%s] has already reached the subscription limit."
-               subscriber-id)))))
+               (util/html-escape subscriber-id))))))
 
 (defn- check-duplicate-subscription
   "The query used by a subscriber for a collection should be unique to prevent
@@ -138,13 +138,13 @@
          (format (str "The subscriber-id [%s] has already subscribed to the "
                       "collection with concept-id [%s] using the query [%s]. "
                       "Subscribers must use unique queries for each Collection.")
-                 subscriber-id collection-id normalized-query))
+                 (util/html-escape subscriber-id) (util/html-escape collection-id) (util/html-escape normalized-query)))
         (errors/throw-service-error
          :conflict
          (format (str "The subscriber-id [%s] has already subscribed "
                       "using the query [%s]. "
                       "Subscribers must use unique queries for each collection subscription")
-                 subscriber-id normalized-query))))))
+                 (util/html-escape subscriber-id) (util/html-escape normalized-query)))))))
 
 (defn- perform-subscription-ingest
   "Perform the last set of validations and checks, then submit the save request."
@@ -230,7 +230,7 @@
     (errors/throw-service-error
      :bad-request
      (format "Subscription creation failed - The user-id [%s] must correspond to a valid EDL account."
-             user-id))))
+             (util/html-escape user-id)))))
 
 (defn- validate-native-id-not-blank
   "Validate the given native-id is not blank. Raise error if it is."
@@ -362,7 +362,7 @@
        (when (native-id-collision? request-context native-id)
          (errors/throw-service-error
           :conflict
-          (format "Subscription with native-id [%s] already exists." native-id)))
+          (format "Subscription with native-id [%s] already exists." (util/html-escape native-id))))
        (perform-subscription-ingest request-context headers concept parsed)))))
 
 (defn create-or-update-subscription-with-native-id
@@ -414,10 +414,10 @@
             [provider-id subscriber-id])
           (errors/throw-service-error
            :not-found
-           (format "Subscription with native-id [%s] has already been deleted." native-id))))
+           (format "Subscription with native-id [%s] has already been deleted." (util/html-escape native-id)))))
       (errors/throw-service-error
        :not-found
-       (format "Subscription with native-id [%s] does not exist." native-id)))))
+       (format "Subscription with native-id [%s] does not exist." (util/html-escape native-id))))))
 
 (defn delete-subscription
   "Deletes the subscription with the given provider id and native id."

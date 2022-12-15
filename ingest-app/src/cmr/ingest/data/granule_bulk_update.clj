@@ -269,7 +269,7 @@
     (errors/throw-service-errors
      :not-found
      [(format "No granule bulk granule update task with ID [%s] found."
-              task-id)]))
+              (util/html-escape task-id))]))
   task-id)
 
 (defn-timed task-completed?

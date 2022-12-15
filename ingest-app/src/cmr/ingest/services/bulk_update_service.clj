@@ -15,7 +15,8 @@
    [cmr.ingest.services.ingest-service :as ingest-service]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
-   [cmr.umm-spec.field-update :as field-update]))
+   [cmr.umm-spec.field-update :as field-update]
+   [cmr.common.util :as util]))
 
 (def bulk-update-schema
   (js/json-string->json-schema (slurp (io/resource "bulk_update_schema.json"))))
@@ -82,12 +83,12 @@
                (nil? update-value))
       (errors/throw-service-errors :bad-request
                                    [(format "An update value must be supplied when the update is of type %s"
-                                            update-type)]))
+                                            (util/html-escape update-type))]))
     (when (and (= find-and-update-home-page-url update-type)
                (not= data-centers update-field))
       (errors/throw-service-errors
        :bad-request
-       [(str find-and-update-home-page-url " update type can not be used for the [" update-field
+       [(str find-and-update-home-page-url " update type can not be used for the [" (util/html-escape update-field)
              "] update field. "
              "It can only be used for the " data-centers " update field.")]))
     (when (and (not= add-to-existing update-type)
@@ -96,7 +97,7 @@
                (sequential? update-value))
       (errors/throw-service-errors
         :bad-request
-        [(str "An update value must be a single object for the [" update-type "] update type. "
+        [(str "An update value must be a single object for the [" (util/html-escape update-type) "] update type. "
               "Arrays are only supported for the " add-to-existing ", " clear-all-and-replace
               " and " find-and-replace " update types.")]))
     (when (and (or (= find-and-replace update-type)
@@ -105,7 +106,7 @@
                (nil? find-value))
       (errors/throw-service-errors :bad-request
                                    [(format "A find value must be supplied when the update is of type %s"
-                                            update-type)]))))
+                                            (util/html-escape update-type))]))))
 
 (defn- get-provider-collection-concept-ids
   "Returns a list of collection concept ids for a given provider-id.
@@ -142,7 +143,7 @@
       (when (seq err-msgs)
         (errors/throw-service-errors
           :bad-request
-          [(string/join ", " err-msgs)])))))
+          [(util/html-escape (string/join ", " err-msgs))])))))
 
 (defn- get-concept-ids
   "Get the concept-ids from either the concept-ids passed in or
