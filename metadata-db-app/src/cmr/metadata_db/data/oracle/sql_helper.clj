@@ -25,7 +25,7 @@
                     `(> :revision-id \"2000-01-01T10:00:00Z\")"
   ([params]
    (find-params->sql-clause params false))
-  ([params ored]
+  ([params or?]
    ;; Validate parameter names as a sanity check to prevent sql injection
    (let [valid-param-name #"^[a-zA-Z][a-zA-Z0-9_\-]*$"]
      (when-let [invalid-names (seq (filter #(not (re-matches valid-param-name (name %))) (keys params)))]
@@ -39,7 +39,7 @@
                                     `(~comparator ~k ~value))
                          :else `(= ~k ~v)))]
      (if (> (count comparisons) 1)
-       (if ored
+       (if or?
          (cons `or comparisons)
          (cons `and comparisons))
        (first comparisons)))))

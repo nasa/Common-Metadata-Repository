@@ -27,7 +27,8 @@
    [cmr.transmit.echo.rest :as rest]
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.transmit.metadata-db2 :as meta-db2]
-   [cmr.transmit.search :as search])
+   [cmr.transmit.search :as search]
+   [inflections.core :as inf])
   ;; Required to get code loaded
   ;; These must be required here to make multimethod implementations available.
   ;; XXX This is not a good pattern for large software systems; we need to
@@ -431,9 +432,9 @@
   For example, this function changes the named concept type from variable-association to a 
   key of :variable-associations."
   [key-str]
-  {key-str (keyword (str key-str "s")) })
+  {key-str (keyword (inf/plural key-str))})
 
-(defn get-associations
+(defn- get-associations
   "Get all of the associations for the passed in concept. Group the results by concept type
    so that it aligns with what index-concept :default expects."
   [context concept]
@@ -611,7 +612,7 @@
     (when (indexing-applicable? concept-type all-revisions-index?)
       (let [concept (if revision-id
                       (meta-db/get-concept context concept-id revision-id)
-                      (meta-db/get-latest-concept context concept-id revision-id))
+                      (meta-db/get-latest-concept context concept-id))
             parsed-concept (cp/parse-concept context concept)]
         (index-concept context concept parsed-concept options)
         (log-ingest-to-index-time concept)))))

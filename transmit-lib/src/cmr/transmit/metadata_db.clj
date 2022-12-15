@@ -246,7 +246,7 @@
   (get-generic-associations-by-concept-id
    context (:concept-id concept) (:revision-id concept)))
 
-(defn find-associations-raw
+(defn- find-associations-raw
   "Searches metadata db for associations matching the given parameters.
   Returns the raw response."
   [context params]

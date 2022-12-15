@@ -364,7 +364,7 @@
     (->> associations
          (group-by :concept-id)
          (map (fn [[concept-id concepts]]
-                (->> concepts (sort-by :revision-id) reverse first))))))
+                (->> concepts (sort-by :revision-id) last))))))
 
 (def behaviour
   {:find-concepts find-concepts

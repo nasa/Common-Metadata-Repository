@@ -22,8 +22,8 @@
 (defn associations-update-event
   "Create an event representing a list of collections that are associated
   to either a service or tool. This is to re-index the collection when
-  a service or tool has been re-indexed and an associated exists between the 
-  two. We don't want to re-index the association, because then the original 
+  a service or tool has been re-indexed and an association exists between the
+  two. We don't want to re-index the association, because then the original
   saved concept will be re-indexed n times the number of associations from it,
   and that is not necessary."
   [associations]
