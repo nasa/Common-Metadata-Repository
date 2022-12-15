@@ -69,6 +69,14 @@
      :body (json/generate-string concepts)
      :headers rh/json-header}))
 
+(defn- find-associations
+  "Find associations for a concept id with specific params"
+  [context params]
+  (let [associations (search-service/find-associations context params)]
+    {:status 200
+     :body (json/generate-string associations)
+     :headers rh/json-header}))
+
 (defn- save-concept-revision
   "Store a concept record and return the revision"
   [context params concept]
@@ -169,4 +177,10 @@
       (get-concept-id request-context params (keyword concept-type) provider-id native-id))
 
     (GET "/provider_holdings" {context :request-context params :params}
-      (get-provider-holdings context params))))
+      (get-provider-holdings context params))
+    
+    (GET "/associations/search" {context :request-context params :params}
+      (find-associations context params))
+    
+    (POST "/associations/search" {context :request-context params :params}
+      (find-associations context params))))

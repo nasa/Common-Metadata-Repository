@@ -149,3 +149,14 @@
 
     :else
     (find-provider-concepts context params)))
+
+(defn find-associations
+  "Find associations with specific parameters."
+  [context params]
+  (let [db (db-util/context->db context)
+        latest-only? (or (true? (:latest params))
+                         (= "true" (:latest params)))
+        params (dissoc params :latest)]
+    (if latest-only?
+      (c/find-latest-associations db params)
+      (c/find-associations db params))))
