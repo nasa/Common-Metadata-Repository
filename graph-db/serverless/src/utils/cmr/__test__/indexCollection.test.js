@@ -67,7 +67,7 @@ describe('utils#indexCmrCollection', () => {
       expect(result).toBeFalsy()
 
       // Retry policy in place. Called 5 times using three different logs, so 12 total calls TODO use this after test, for now leave it off for 2
-      expect(consoleMock).toBeCalledTimes(18)
+      expect(consoleMock).toBeCalledTimes(2)
 
       // Error message logged because deleteCmrCollection failed because of null gremlinConnection
       expect(consoleMock.mock.calls[0][0]).toEqual(`Error deleting project vertices only linked to collection [${conceptId}]: Cannot read properties of null (reading 'V')`)
@@ -75,7 +75,7 @@ describe('utils#indexCmrCollection', () => {
       // Error message logged because addV failed because of null gremlinConnection
       expect(consoleMock.mock.calls[1][0]).toEqual(`Error indexing collection into graph database [${conceptId}]: Cannot read properties of null (reading 'addV')`)
       // Function is being called recursively
-      expect(consoleMock.mock.calls[2][0]).toEqual(`Retrying the lambda function to index the graph database for [${conceptId}] attempt #1`)
+      // expect(consoleMock.mock.calls[2][0]).toEqual(`Retrying the lambda function to index the graph database for [${conceptId}] attempt #1`)
     })
   })
   // Keep retry retry policy out for now

@@ -17,7 +17,7 @@ const gremlinStatistics = gremlin.process.statics
  * @returns
  */
 
-export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection, depth = 1) => {
+export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection) => {
   // const maxDepth = 5
   const {
     meta: {
@@ -72,16 +72,16 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
   } catch (error) {
     console.log(`Error indexing collection into graph database [${conceptId}]: ${error.message}`)
 
-    if (depth > 5) {
-      console.log(`Maximum attempts to index the graph database for [${conceptId}] attempt #${depth}`)
-      return false
-    }
+    // if (depth > 5) {
+    //   console.log(`Maximum attempts to index the graph database for [${conceptId}] attempt #${depth}`)
+    //   return false
+    // }
 
-    console.log(`Retrying the lambda function to index the graph database for [${conceptId}] attempt #${depth}`)
+    // console.log(`Retrying the lambda function to index the graph database for [${conceptId}] attempt #${depth}`)
 
-    await indexCmrCollection(collectionObj, groupList, gremlinConnection, depth + 1)
-
-    return false
+    // await indexCmrCollection(collectionObj, groupList, gremlinConnection, depth + 1)
+    // Throw this error to have this be picked up by AWS dead letter queue to observe effects
+    throw Error
   }
 
   const { value = {} } = collection
