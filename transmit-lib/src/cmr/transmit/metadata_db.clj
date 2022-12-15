@@ -246,6 +246,47 @@
   (get-generic-associations-by-concept-id
    context (:concept-id concept) (:revision-id concept)))
 
+(defn- find-associations-raw
+  "Searches metadata db for associations matching the given parameters.
+  Returns the raw response."
+  [context params]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/associations/search")]
+    (client/post request-url (merge
+                              (config/conn-params conn)
+                              {:accept :json
+                               :form-params params
+                               :headers (ch/context->http-headers context)
+                               :throw-exceptions false}))))
+
+(defn find-associations
+  "Searches metadata db for associations matching the given parameters.
+  Keeps the associations that do not have a revision id (latest), or matches
+  the passed in revision id."
+  [context concept]
+  (let [concept-id (:concept-id concept)
+        revision-id (:revision-id concept)
+        params {:associated-concept-id concept-id
+                :source-concept-identifier concept-id
+                :latest true}
+        {:keys [status body]} (find-associations-raw context params)
+        status (int status)]
+    (case status
+      200 (let [associations (json/decode body true)]
+            (filter (fn [association]
+                      (let [associated-concept-id (get-in association [:extra-fields :associated-concept-id])]
+                        (if (= concept-id associated-concept-id)
+                          (let [rev-id (get-in association [:extra-fields :associated-revision-id])]
+                            (or (nil? rev-id)
+                                (= rev-id revision-id)))
+                          (let [rev-id (get-in association [:extra-fields :source-revision-id])]
+                            (or (nil? rev-id)
+                                (= rev-id revision-id))))))
+                    associations))
+      ;; default
+      (errors/internal-error!
+       (format "association search failed. status: %s body: %s" status body)))))
+
 (defn-timed find-collections
   "Searches metadata db for concepts matching the given parameters."
   [context params]

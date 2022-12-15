@@ -997,31 +997,6 @@
          context
          (ingest-events/associations-update-event associations))))))
 
-(defn- publish-generic-associations-update-event
-  "Publish one concept-update-event for all non-tombstoned generic associations for the
-  given generic concept. This is to trigger the reindexing of the related generic concepts in elastic
-  search when associated generic concept is updated."
-  [context concept-type concept-id]
-  (let [search-params1 (cutil/remove-nil-keys
-                       {:concept-type :generic-association
-                        :source-concept-identifier concept-id
-                        :exclude-metadata true
-                        :latest true})
-        associations1 (filter #(= false (:deleted %))
-                             (search/find-concepts context search-params1))
-        search-params2 (cutil/remove-nil-keys
-                       {:concept-type :generic-association
-                        :associated-concept-id concept-id
-                        :exclude-metadata true
-                        :latest true})
-        associations2(filter #(= false (:deleted %))
-                             (search/find-concepts context search-params2))
-        associations (concat associations1 associations2)]
-    (when (> (count associations) 0)
-      (ingest-events/publish-event
-       context
-       (ingest-events/associations-update-event associations)))))
-
 (defn- publish-tool-associations-update-event
   "Publish one concept-update-event for all non-tombstoned tool associations for the
   given tool concept; This is to trigger the reindexing of the associated collections in elastic
@@ -1082,7 +1057,6 @@
       ;; so that the collections can be updated in elasticsearch with the updated service/tool info
       (publish-service-associations-update-event context concept-type concept-id)
       (publish-tool-associations-update-event context concept-type concept-id)
-      (publish-generic-associations-update-event context concept-type concept-id)
       (ingest-events/publish-event
        context
        (ingest-events/concept-update-event concept))
