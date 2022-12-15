@@ -52,7 +52,7 @@
   [coll]
   (seq (for [[id freq] (frequencies coll)
              :when (> freq 1)]
-         id)))
+         (util/html-escape id))))
 
 (defn- invalid-update-error
   "Throws error in the case the wrong format for the updates field was used for a
@@ -143,7 +143,7 @@
      :bad-request
      [(format (str "Duplicate granule URs are not allowed in bulk update requests. "
                    "Detected the following duplicates [%s]")
-              (util/html-escape (string/join "," duplicate-urs)))]))
+              (string/join "," duplicate-urs))]))
   urs)
 
 (defn- validate-granule-bulk-update-no-blank-urs

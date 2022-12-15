@@ -131,7 +131,7 @@
                (if err-msg
                  err-msg
                  (when-not (string/starts-with? id "C")
-                   [(format "Collection concept-id [%s] is invalid, must start with C" id)]))]
+                   [(format "Collection concept-id [%s] is invalid, must start with C" (util/html-escape id))]))]
         :when err-msg]
     err-msg))
 
@@ -143,7 +143,7 @@
       (when (seq err-msgs)
         (errors/throw-service-errors
           :bad-request
-          [(util/html-escape (string/join ", " err-msgs))])))))
+          [(string/join ", " err-msgs)])))))
 
 (defn- get-concept-ids
   "Get the concept-ids from either the concept-ids passed in or

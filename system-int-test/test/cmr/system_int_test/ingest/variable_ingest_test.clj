@@ -696,5 +696,5 @@
         (url-type-map "Wrong" "Wrong Type")
         [422] [{:path ["RelatedUrLs" 0]
                 :errors [(str "Related URL Content Type, Type, and Subtype "
-                              "[Wrong>Wrong Type>null] are not a valid set "
+                              "[Wrong>Wrong Type>] are not a valid set "
                               "together.")]}]))))

@@ -22,7 +22,7 @@
          context-str (if context
                        (str " : " context)
                        "")]
-     (format "[%s] is not a valid %s%s" (util/html-escape (str value)) (util/html-escape type-name) (util/html-escape context-str)))))
+     (format "[%s] is not a valid %s%s" (util/html-escape (str value)) (util/html-escape type-name) context-str))))
 
 (defn invalid-numeric-range-msg
   "Creates a message saying the range string does not have the right format."
