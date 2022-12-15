@@ -81,7 +81,7 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
 
     // await indexCmrCollection(collectionObj, groupList, gremlinConnection, depth + 1)
     // Throw this error to have this be picked up by AWS dead letter queue to observe effects
-    throw Error
+    throw Error('throwing error in indexCmrCollection')
   }
 
   const { value = {} } = collection

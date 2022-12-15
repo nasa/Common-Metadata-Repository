@@ -9,7 +9,7 @@ beforeEach(() => {
 
 describe('utils#indexCmrCollection', () => {
   describe('when an exception is thrown', () => {
-    test.only('it is caught and logged', async () => {
+    test('it is caught and logged', async () => {
       const consoleMock = jest.spyOn(console, 'log')
 
       const conceptId = 'C1000000-CMR'
@@ -62,10 +62,15 @@ describe('utils#indexCmrCollection', () => {
         .reply(200, mockAclResponse)
 
       // Provide `null` for the gremlin connection to throw an error
-      const result = await indexCmrCollection(collectionObj, [], null)
+      // const result = await indexCmrCollection(collectionObj, [], null)
 
-      expect(result).toBeFalsy()
-
+      // expect(result).toBeFalsy()
+      await expect(
+        indexCmrCollection(collectionObj, [], null)
+      ).rejects.toThrow('throwing error in indexCmrCollection')
+      // expect(result.toThrow(Error))
+      // await expect(indexCmrCollection(collectionObj, [], null)).rejects.toThrow('some error')
+      // expect(() => { indexCmrCollection(collectionObj, [], null) }).toThrow(TypeError)
       // Retry policy in place. Called 5 times using three different logs, so 12 total calls TODO use this after test, for now leave it off for 2
       expect(consoleMock).toBeCalledTimes(2)
 
@@ -76,6 +81,7 @@ describe('utils#indexCmrCollection', () => {
       expect(consoleMock.mock.calls[1][0]).toEqual(`Error indexing collection into graph database [${conceptId}]: Cannot read properties of null (reading 'addV')`)
       // Function is being called recursively
       // expect(consoleMock.mock.calls[2][0]).toEqual(`Retrying the lambda function to index the graph database for [${conceptId}] attempt #1`)
+      // expect(result.toThrow(Error))
     })
   })
   // Keep retry retry policy out for now
