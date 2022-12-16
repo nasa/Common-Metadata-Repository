@@ -57,7 +57,7 @@
   (defmethod elastic-search-index/concept-type+result-format->fields [concept-type :json]
     [concept-type query]
     ["concept-id" "revision-id" "deleted" "provider-id" "native-id" "name" "id" "associations-gzip-b64"]))
-  
+
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
   (defmethod er-to-qr/elastic-result->query-result-item [concept-type :json]
     [context query elastic-result]
@@ -80,7 +80,7 @@
                         :name name
                         :id id
                         :associations (rs-util/build-association-concept-id-list associations concept-type)
-                        :association-details (rs-util/build-association-details associations concept-type)})]
+                        :association_details (rs-util/build-association-details (rs-util/replace-snake-keys associations) concept-type)})]
       (if deleted
         (assoc result-item :deleted deleted)
         result-item))))
@@ -89,7 +89,7 @@
   (defmethod qs/search-results->response [doseq-concept-type :json]
     [context query results]
     (json/generate-string (select-keys results [:hits :took :items])))
-  
+
   (defmethod elastic-search-index/concept-type+result-format->fields [doseq-concept-type :umm-json-results]
     [concept-type query]
     results-helper/meta-fields)

@@ -4,6 +4,7 @@
    [cheshire.core :as json]
    [clj-time.core :as t]
    [clj-time.format :as f]
+   [clojure.set :as cset]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
@@ -26,7 +27,8 @@
    [cmr.transmit.echo.rest :as rest]
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.transmit.metadata-db2 :as meta-db2]
-   [cmr.transmit.search :as search])
+   [cmr.transmit.search :as search]
+   [inflections.core :as inf])
   ;; Required to get code loaded
   ;; These must be required here to make multimethod implementations available.
   ;; XXX This is not a good pattern for large software systems; we need to
@@ -425,6 +427,22 @@
   [context concept]
   (meta-db/get-associations-for-tool context concept))
 
+(defn create-association-map-keys
+  "Creates the association map keys that lists out all of the different association types.
+  For example, this function changes the named concept type from variable-association to a 
+  key of :variable-associations."
+  [key-str]
+  {key-str (keyword (inf/plural key-str))})
+
+(defn- get-associations
+  "Get all of the associations for the passed in concept. Group the results by concept type
+   so that it aligns with what index-concept :default expects."
+  [context concept]
+  (let [combined-assocs (meta-db/find-associations context concept)
+        grouped-assocs (group-by :concept-type combined-assocs)
+        new-key-map (into {} (map #(create-association-map-keys %) (keys grouped-assocs)))]
+    (cset/rename-keys grouped-assocs new-key-map)))
+
 (defmulti index-concept
   "Index the given concept with the parsed umm record. Indexing tag association and variable
    association concept indexes the associated collection conept."
@@ -447,28 +465,19 @@
       (let [concept-mapping-types (idx-set/get-concept-mapping-types context)
             delete-time (get-in parsed-concept [:data-provider-timestamps :delete-time])]
         (when (or (nil? delete-time) (t/after? delete-time (tk/now)))
-          (let [tag-associations (get-tag-associations context concept)
-                variable-associations (get-variable-associations context concept)
-                service-associations (get-service-associations context concept)
-                tool-associations (get-tool-associations context concept)
-                generic-associations (meta-db/get-generic-associations-for-concept context concept)
-                associations {:tag-associations tag-associations
-                              :variable-associations variable-associations
-                              :service-associations service-associations
-                              :tool-associations tool-associations
-                              :generic-associations generic-associations}
+          (let [associations (get-associations context concept)
                 elastic-version (get-elastic-version-with-associations
                                  context concept associations)
                 tag-associations (es/parse-non-tombstone-associations
-                                  context tag-associations)
+                                  context (:tag-associations associations))
                 variable-associations (es/parse-non-tombstone-associations
-                                       context variable-associations)
+                                       context (:variable-associations associations))
                 service-associations (es/parse-non-tombstone-associations
-                                      context service-associations)
+                                      context (:service-associations associations))
                 tool-associations (es/parse-non-tombstone-associations
-                                   context tool-associations)
+                                   context (:tool-associations associations))
                 generic-associations (es/parse-non-tombstone-associations
-                                      context generic-associations)
+                                      context (:generic-associations associations))
                 concept-type (cs/concept-id->type concept-id)
                 concept-indexes (idx-set/get-concept-index-names context concept-id revision-id
                                                                  options concept)
@@ -594,14 +603,16 @@
 (defn index-concept-by-concept-id-revision-id
   "Index the given concept and revision-id"
   [context concept-id revision-id options]
-  (when-not (and concept-id revision-id)
+  (when-not concept-id
     (errors/throw-service-error
      :bad-request
-     (format "Concept-id %s and revision-id %s cannot be null" concept-id revision-id)))
+     (format "Concept-id %s cannot be null" concept-id)))
   (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)]
     (when (indexing-applicable? concept-type all-revisions-index?)
-      (let [concept (meta-db/get-concept context concept-id revision-id)
+      (let [concept (if revision-id
+                      (meta-db/get-concept context concept-id revision-id)
+                      (meta-db/get-latest-concept context concept-id))
             parsed-concept (cp/parse-concept context concept)]
         (index-concept context concept parsed-concept options)
         (log-ingest-to-index-time concept)))))

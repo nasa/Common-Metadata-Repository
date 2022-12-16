@@ -1878,15 +1878,17 @@ Find collections matching multiple 'science_keywords' param values, default is :
 
 #### <a name="c-twod-coordinate-system"></a> Find collections by two\_d\_coordinate\_system\_name
 
-This supports pattern. two\_d\_coordinate\_system\[name\] param is an alias of two\_d\_coordinate\_system\_name, but it does not support pattern.
+This supports searching by name of the two-dimensional tiling system for the collection. These are the valid values for two_d_coordinate_system aka TilingIdentificationSystem: `CALIPSO`, `MISR`, `MODIS Tile EASE`, `MODIS Tile SIN`, `WELD Alaska Tile`, `WELD CONUS Tile`, `WRS-1`, `WRS-2` and `Military Grid Reference System`.
+
+This search parameter supports pattern. two\_d\_coordinate\_system\[name\] param is an alias of two\_d\_coordinate\_system\_name, but it does not support pattern.
 
   Find collections matching 'two\_d\_coordinate\_system\_name' param value
 
-    curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=Alpha"
+    curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=CALIPSO"
 
   Find collections matching any of the 'two\_d\_coordinate\_system\_name' param values
 
-    curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=Alpha&two_d_coordinate_system_name\[\]=Bravo"
+    curl "%CMR-ENDPOINT%/collections?two_d_coordinate_system_name\[\]=CALIPSO&two_d_coordinate_system_name\[\]=MISR"
 
 #### <a name="c-collection-data-type"></a> Find collections by collection\_data\_type
 
@@ -1913,6 +1915,8 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
     curl "%CMR-ENDPOINT%/collections?downloadable=true"
 
 #### <a name="c-browse-only"></a> Find collections by browse_only
+
+`browse_only` is a legacy alias of `browsable`. They return the same search results.
 
     curl "%CMR-ENDPOINT%/collections?browse_only=true"
 
@@ -4096,7 +4100,7 @@ Content-Length: 292
 }
 ```
 ##### UMM JSON
-The UMM JSON response contains meta-metadata of the variable, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the variable and will list the collections that are associated with the variable.
+The UMM JSON response contains meta-metadata of the variable, the UMM fields and the associations field if applicable. The associations field only applies when there are collections or concepts generically associated to the variable and will list the collections that are associated with the variable.
 
 __Example__
 
@@ -5406,9 +5410,13 @@ Example un-healthy response body:
 
 ### <a name="associate-any-concepts"></a> Associate any concepts
 
-A new association API has been developed to achieve the goal of being able to associate a concept of any type, with or without revision, to one or more other concepts of any type, with or without revisions. The new association API also allows the associations to include an optional data payload, whose purpose is to describe the association itself. Associations which do not initially have an association data payload, may have it added through an association update. A concept can only be associated with another concept either with or without revisions, not both. A concept can not be associated to itself, even with different revisions. It's worth noting that associations between collections and services/tools/variables can not be made through the new association API because these associations require different business rules and there exist complexites with the way how certain fields of the association entries are constructed. Until we resolve these issues, these existing associations will continue to be made through the existing association API.
- 
-#### <a name="concept-associations"></a> Concept associations 
+A new association API has been developed to achieve the goal of being able to associate a concept of any type, with or without revision, to one or more other concepts of any type, with or without revisions. The new association API also allows the associations to include an optional data payload, whose purpose is to describe the association itself. Associations which do not initially have an association data payload, may have it added through an association update.
+
+#### <a name="associate-any-concepts"></a> Concept to concept association important notes
+
+A concept can only be associated with another concept either with or without revisions, not both. A concept cannot be associated to itself, even with different revisions. It's worth noting that associations between collections and services/tools/variables cannot be made through the new association API because these associations require different business rules. These existing associations will continue to be made through the existing association API.
+
+#### <a name="concept-associations"></a> Concept associations
 
 A concept, with optional revision id, can be associated to one or more other concepts, with optional revision ids and data payloads.
 When the revision id is not present, the latest revision is assumed. In the following example, "3" is optional for S1200000006-PROV1
@@ -5451,7 +5459,7 @@ Note: when two concepts are associated, their concept ids are sorted first. The 
     }
 ]
 ```
-#### <a name="associations-in-search-result"></a> Associations in the search result 
+#### <a name="associations-in-search-result"></a> Associations in the search result
 
 Latest revisions of associations can be queried by searching for one of the associated concepts using either the JSON or UMM_JSON format. The "associations" field, contains a list of concept ids associated to the concept that was searched for grouped by concept-type. The "association-details" field contains concept ids, as well as association details like revision ids and data payloads if they were included for the particular association. In the example case, a service (S1200000010-PROV1) has been associated to a variable with association details(V1200000012-PROV1), as well as a tool (TL1200000014-PROV1) without any association details.
 
@@ -5481,9 +5489,9 @@ curl -H "CMR-Pretty:true" -H "Authorization Bearer: XXXXX" "%CMR-ENDPOINT%/servi
       "tools" : [ "TL1200000014-PROV1" ],
       "variables" : [ "V1200000012-PROV1" ]
     },
-    "association-details" : {
+    "association_details" : {
       "tools" : [ {
-        "concept-id" : "TL1200000014-PROV1"
+        "concept_id" : "TL1200000014-PROV1"
       } ],
       "variables" : [ {
         "data" : {
@@ -5492,14 +5500,14 @@ curl -H "CMR-Pretty:true" -H "Authorization Bearer: XXXXX" "%CMR-ENDPOINT%/servi
             "XYZ" : "ZYX"
           }
         },
-        "concept-id" : "V1200000012-PROV1"
+        "concept_id" : "V1200000012-PROV1"
       } ]
     }
   } ]
 }
 ```
 
-#### <a name="concept-dissociations"></a> Concept dissociations 
+#### <a name="concept-dissociations"></a> Concept dissociations
 
 A concept, with optional revision id, can be dissociated from one or more other concepts, with optional revision ids
 

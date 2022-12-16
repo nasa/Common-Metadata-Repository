@@ -131,4 +131,21 @@
             err-msg (first (:errors (json/decode (:body response) true)))]
         (is (= 400 (:status response)))
         (is (= "The URL extension [html] is not supported."
+               err-msg))))
+    (testing "unsupported formats with html escape"
+      (let [response (search/retrieve-concept
+                      gran-concept-id nil
+                      {:headers {transmit-config/token-header user1-token}
+                       :accept "application/html \"qss=\"QssAttrValue"})
+            err-msg (first (search/safe-parse-error-xml (:body response)))]
+        (is (= 400 (:status response)))
+        (is (= "The mime types specified in the accept header [application/html &quot;qss=&quot;QssAttrValue] are not supported."
+             err-msg)))
+      (let [response (search/retrieve-concept
+                      gran-concept-id nil
+                      {:headers {transmit-config/token-header user1-token}
+                       :url-extension "application/html \"qss=\"QssAttrValue"})
+            err-msg (first (search/safe-parse-error-xml (:body response)))]
+        (is (= 400 (:status response)))
+        (is (= "The URL extension [application/html &quot;qss=&quot;QssAttrValue] is not supported."
                err-msg))))))

@@ -93,7 +93,7 @@
                        :tags tags
                        :service_features service-features
                        :associations (rs-util/build-association-concept-id-list associations :collection)
-                       :association-details (rs-util/build-association-details associations :collection)}
+                       :association_details (rs-util/build-association-details (rs-util/replace-snake-keys associations) :collection)}
                       shape-result)]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
