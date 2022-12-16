@@ -221,8 +221,38 @@
                                             :Type "CREATE"}
                                            {:Date (t/date-time 2013)
                                             :Type "UPDATE"}]))
+          ;; Collection version 1.17.2 changes yet to be implemented in echo10, iso. 
+          ;; 1. For now, EULAIdentifiers needs to exist (as nil) if UseConstraints exists, 
+          ;; because it gets added back in (as nil) when round-tripping.
+          ;; 2. TilingIdentificationSystems>Coordinate1/2>Min/MaxValue set back to number rather than string;
+          ;; needs to be set afterward (for expected/actual) as well.
+          umm-record (if (and (seq (:UseConstraints umm-record))
+                              (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap)))
+                       (update-in umm-record [:UseConstraints] assoc :EULAIdentifiers nil)
+                       umm-record)
+          umm-record (if (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap))
+                       (-> umm-record
+                           (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MinimumValue 100)
+                           (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MaximumValue -100)
+                           (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MinimumValue 1.5)
+                           (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MaximumValue -1.5))
+                       umm-record)
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
+          expected (if (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap))
+                     (-> expected
+                         (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MinimumValue 100)
+                         (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MaximumValue -100)
+                         (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MinimumValue 1.5)
+                         (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MaximumValue -1.5))
+                     expected)
+          actual (if (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap))
+                   (-> actual
+                       (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MinimumValue 100)
+                       (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MaximumValue -100)
+                       (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MinimumValue 1.5)
+                       (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MaximumValue -1.5))
+                   actual)
           expected (util/remove-nil-keys expected)
           actual (util/remove-nil-keys actual)
           ;; Change fields to sets for comparison
@@ -253,8 +283,34 @@
                                           :Type "CREATE"}
                                          {:Date (t/date-time 2013)
                                           :Type "UPDATE"}]))
+          ;; Collection version 1.17.2 changes - same as above
+          umm-record (if (and (seq (:UseConstraints umm-record))
+                              (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap)))
+                       (update-in umm-record [:UseConstraints] assoc :EULAIdentifiers nil)
+                       umm-record)
+          umm-record (if (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap))
+                       (-> umm-record
+                           (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MinimumValue 100)
+                           (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MaximumValue -100)
+                           (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MinimumValue 1.5)
+                           (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MaximumValue -1.5))
+                       umm-record)
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
+          expected (if (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap))
+                     (-> expected
+                         (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MinimumValue 100)
+                         (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MaximumValue -100)
+                         (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MinimumValue 1.5)
+                         (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MaximumValue -1.5))
+                     expected)
+          actual (if (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap))
+                   (-> actual
+                       (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MinimumValue 100)
+                       (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MaximumValue -100)
+                       (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MinimumValue 1.5)
+                       (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MaximumValue -1.5))
+                   actual)
           expected (util/remove-nil-keys expected)
           actual (util/remove-nil-keys actual)
           ;; Change fields to sets for comparison
