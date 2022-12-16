@@ -96,7 +96,7 @@
           "$ref": "#/definitions/AssociationDetailsType"
         },
         "s3-links": {
-          "description": "Contains the DirectDistributionInformation S3 links assoociated with the collection.",
+          "description": "Contains the DirectDistributionInformation S3 links associated with the collection.",
           "type": "array",
           "items": {
             "type": "string"
@@ -111,7 +111,7 @@
       "description": "Any concept associated with the collection.",
       "properties": {
         "variables": {
-          "description": "The concept ids of variables assciated with the collection",
+          "description": "The concept ids of variables associated with the collection",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -119,7 +119,7 @@
           "minItems": 1
         },
         "services": {
-          "description": "The concept ids of services assciated with the collection",
+          "description": "The concept ids of services associated with the collection",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -127,7 +127,7 @@
           "minItems": 1
         },
         "tools": {
-          "description": "The concept ids of tools assciated with the collection",
+          "description": "The concept ids of tools associated with the collection",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -135,7 +135,7 @@
           "minItems": 1
         },
         "data-quality-summaries": {
-          "description": "The concept ids of data quality summary concepts assciated with the collection",
+          "description": "The concept ids of data quality summary concepts associated with the collection",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -143,7 +143,7 @@
           "minItems": 1
         },
         "order-options": {
-          "description": "The concept ids of order option concepts assciated with the collection",
+          "description": "The concept ids of order option concepts associated with the collection",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -151,7 +151,7 @@
           "minItems": 1
         },
         "service-options": {
-          "description": "The concept ids of service option concepts assciated with the collection",
+          "description": "The concept ids of service option concepts associated with the collection",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -159,7 +159,7 @@
           "minItems": 1
         },
         "service-entries": {
-          "description": "The concept ids of service entry concepts assciated with the collection",
+          "description": "The concept ids of service entry concepts associated with the collection",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"
@@ -167,7 +167,7 @@
           "minItems": 1
         },
         "grids": {
-          "description": "The concept ids of grid concepts assciated with the collection",
+          "description": "The concept ids of grid concepts associated with the collection",
           "type": "array",
           "items": {
             "$ref": "#/definitions/ConceptIdType"

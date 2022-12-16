@@ -182,9 +182,15 @@
                                                       :Coordinate1 (coll/map->TilingCoordinateType {:MinimumValue "0.0"
                                                                                                     :MaximumValue "6.0"})
                                                       :Coordinate2 (coll/map->TilingCoordinateType {:MinimumValue "50.0"
-                                                                                                    :MaximumValue "26.0"})})]
+                                                                                                    :MaximumValue "26.0"})})
+        
+        t5 (coll/map->TilingIdentificationSystemType {:TilingIdentificationSystemName "T5"
+                                                      :Coordinate1 (coll/map->TilingCoordinateType {:MinimumValue "FF0.0"
+                                                                                                    :MaximumValue "AA6.0"})
+                                                      :Coordinate2 (coll/map->TilingCoordinateType {:MinimumValue "LL50.0"
+                                                                                                    :MaximumValue "LL26.0"})})]
     (testing "valid tiling identification systems"
-      (h/assert-valid (coll/map->UMM-C {:TilingIdentificationSystems [t1 t2]})))
+      (h/assert-valid (coll/map->UMM-C {:TilingIdentificationSystems [t1 t2 t5]})))
 
     (testing "invalid tiling identification systems"
       (testing "duplicate names"
