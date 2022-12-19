@@ -17,8 +17,9 @@ const gremlinStatistics = gremlin.process.statics
  * @returns
  */
 
-export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection) => {
+export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection, depth = 1) => {
   // const maxDepth = 5
+  const wait = (ms) => new Promise((res) => setTimeout(res, ms))
   const {
     meta: {
       'concept-id': conceptId,
@@ -70,18 +71,18 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
       )
       .next()
   } catch (error) {
-    console.log(`Error indexing collection into graph database [${conceptId}]: ${error.message}`)
+    console.log(`Error indexing collection into graph database [${conceptId}]: ${error.message}, retrying attempt #[${depth}]`)
 
-    // if (depth > 5) {
-    //   console.log(`Maximum attempts to index the graph database for [${conceptId}] attempt #${depth}`)
-    //   return false
-    // }
-
+    if (depth > 4) {
+      console.log(`Maximum attempts to index the graph database for [${conceptId}] error: ${error}`)
+      throw Error('throwing error in indexCmrCollection maximum attempts reached for', conceptId)
+    }
+    await wait(2 ** depth * 10)
+    // Exponential retry on the function
+    return indexCmrCollection(collectionObj, groupList, gremlinConnection, depth + 1)
     // console.log(`Retrying the lambda function to index the graph database for [${conceptId}] attempt #${depth}`)
 
     // await indexCmrCollection(collectionObj, groupList, gremlinConnection, depth + 1)
-    // Throw this error to have this be picked up by AWS dead letter queue to observe effects
-    throw Error('throwing error in indexCmrCollection')
   }
 
   const { value = {} } = collection

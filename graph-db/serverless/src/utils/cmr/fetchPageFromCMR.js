@@ -56,7 +56,7 @@ export const fetchPageFromCMR = async ({
       method: 'GET',
       headers: requestHeaders
     })
-
+    // Iterate over CMR-pages
     const { data, headers } = cmrCollections
     const { 'cmr-search-after': cmrsearchAfter } = headers
 
