@@ -17,7 +17,8 @@
    [cmr.ingest.services.messages :as messages]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
-   [cmr.schema-validation.json-schema :as js-validater]))
+   [cmr.schema-validation.json-schema :as js-validater]
+   [cmr.common.util :as util]))
 
 (defn disabled-for-ingest?
   "Determine if a generic schema is disabled for ingest
@@ -35,17 +36,17 @@
   (if-not (gconfig/approved-generic? schema version)
     (errors/throw-service-error
      :invalid-data
-     (format "The [%s] schema on version [%s] is not an approved schema, this record cannot be ingested." schema version))
+     (format "The [%s] schema on version [%s] is not an approved schema, this record cannot be ingested." (util/html-escape schema) (util/html-escape version)))
     (if (disabled-for-ingest? schema)
       (errors/throw-service-error
        :invalid-data
-       (format "The %s schema is currently disabled and cannot be ingested." schema))
+       (format "The %s schema is currently disabled and cannot be ingested." (util/html-escape schema)))
       (if-some [schema-file (gconfig/read-schema-specification schema version)]
         (let [schema-obj (js-validater/json-string->json-schema schema-file)]
           (js-validater/validate-json schema-obj raw-json true))
         (errors/throw-service-error
          :invalid-data
-         (format "While the [%s] schema with version [%s] is approved, it cannot be found." schema version))))))
+         (format "While the [%s] schema with version [%s] is approved, it cannot be found." (util/html-escape schema) (util/html-escape version)))))))
 
 (defn- concept-type->singular
   "Common task to convert concepts from their public URL form to their internal
@@ -99,8 +100,8 @@
        :invalid-data
        (format (str "While validating the record against the [%s] schema with version [%s] "
                     "the following error occurred: [%s]. The record cannot be ingested.")
-               spec
-               version
+               (util/html-escape spec)
+               (util/html-escape version)
                (.getMessage e))))))
 
 (defn-timed save-document

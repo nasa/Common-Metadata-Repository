@@ -767,14 +767,14 @@
           {:keys [status errors]} (ingest/ingest-concept
                             (ingest/concept :collection "PROV1" "foo" :umm-json coll-metadata))]
       (is (= 422 status))
-      (is (= [["Related URL Content Type, Type, and Subtype [ContactPerson1: BadURLContentType1>HOME PAGE>null] are not a valid set together."]
-              ["Related URL Content Type, Type, and Subtype [ContactPerson1: BadURLContentType2>HOME PAGE>null] are not a valid set together."]
-              ["Related URL Content Type, Type, and Subtype [ContactPerson2: BadURLContentType1>HOME PAGE>null] are not a valid set together."]
-              ["Related URL Content Type, Type, and Subtype [ContactPerson2: BadURLContentType2>HOME PAGE>null] are not a valid set together."]
-              ["Related URL Content Type, Type, and Subtype [ContactGroup1: BadURLCotentType1>HOME PAGE>null] are not a valid set together."]
-              ["Related URL Content Type, Type, and Subtype [ContactGroup1: BadURLCotentType2>HOME PAGE>null] are not a valid set together."]
-              ["Related URL Content Type, Type, and Subtype [ContactGroup2: BadURLContentType1>HOME PAGE>null] are not a valid set together."]
-              ["Related URL Content Type, Type, and Subtype [ContactGroup2: BadURLContentType2>HOME PAGE>null] are not a valid set together."]]
+      (is (= [["Related URL Content Type, Type, and Subtype [ContactPerson1: BadURLContentType1>HOME PAGE>] are not a valid set together."]
+              ["Related URL Content Type, Type, and Subtype [ContactPerson1: BadURLContentType2>HOME PAGE>] are not a valid set together."]
+              ["Related URL Content Type, Type, and Subtype [ContactPerson2: BadURLContentType1>HOME PAGE>] are not a valid set together."]
+              ["Related URL Content Type, Type, and Subtype [ContactPerson2: BadURLContentType2>HOME PAGE>] are not a valid set together."]
+              ["Related URL Content Type, Type, and Subtype [ContactGroup1: BadURLCotentType1>HOME PAGE>] are not a valid set together."]
+              ["Related URL Content Type, Type, and Subtype [ContactGroup1: BadURLCotentType2>HOME PAGE>] are not a valid set together."]
+              ["Related URL Content Type, Type, and Subtype [ContactGroup2: BadURLContentType1>HOME PAGE>] are not a valid set together."]
+              ["Related URL Content Type, Type, and Subtype [ContactGroup2: BadURLContentType2>HOME PAGE>] are not a valid set together."]]
              (map :errors errors))))))
 
 (deftest CMR-4920-DOI-test

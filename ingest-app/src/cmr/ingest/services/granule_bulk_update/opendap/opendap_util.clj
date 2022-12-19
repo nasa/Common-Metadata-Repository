@@ -2,7 +2,8 @@
   "Contains functions to facilitate OPeNDAP url granule bulk update."
   (:require
    [clojure.string :as string]
-   [cmr.common.services.errors :as errors]))
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]))
 
 (def ^:private cloud-pattern
   "Defines the Hyrax-in-the-cloud pattern for OPeNDAP url"
@@ -45,21 +46,21 @@
         (when (string/starts-with? url "s3://")
           (errors/throw-service-errors
            :invalid-data
-           [(str "OPeNDAP URL value cannot start with s3://, but was " url)])))
+           [(str "OPeNDAP URL value cannot start with s3://, but was " (util/html-escape url))])))
       (if (> (count urls) 2)
         (errors/throw-service-errors
-         :invalid-data [(str "Invalid URL value, no more than two urls can be provided: " url)])
+         :invalid-data [(str "Invalid URL value, no more than two urls can be provided: " (util/html-escape url))])
         (let [grouped-urls (group-by url->opendap-type urls)]
           (when (> (count (:cloud grouped-urls)) 1)
             (errors/throw-service-errors
              :invalid-data
              [(str "Invalid URL value, no more than one Hyrax-in-the-cloud OPeNDAP url can be provided: "
-                   url)]))
+                   (util/html-escape url))]))
           (when (> (count (:on-prem grouped-urls)) 1)
             (errors/throw-service-errors
              :invalid-data
              [(str "Invalid URL value, no more than one on-prem OPeNDAP url can be provided: "
-                   url)]))
+                   (util/html-escape url))]))
           grouped-urls)))))
 
 (defn- validate-append-no-conflicting-on-prem
@@ -70,7 +71,7 @@
     (when (get url-map :on-prem)
       (errors/throw-service-errors
        :invalid-data
-       [(str "Update contains conflict, cannot append on-prem OPeNDAP urls when there is one already present: " on-prem-url)]))))
+       [(str "Update contains conflict, cannot append on-prem OPeNDAP urls when there is one already present: " (util/html-escape on-prem-url))]))))
 
 (defn- validate-append-no-conflicting-cloud
   "Validate there is no cloud url already present when appending a new cloud-url
@@ -80,7 +81,7 @@
     (when (get url-map :cloud)
       (errors/throw-service-errors
        :invalid-data
-       [(str "Update contains conflict, cannot append Hyrax-in-the-cloud OPeNDAP urls when there is one already present: " cloud-url)]))))
+       [(str "Update contains conflict, cannot append Hyrax-in-the-cloud OPeNDAP urls when there is one already present: " (util/html-escape cloud-url))]))))
 
 (defn validate-append-no-conflicts
   "Takes the current OPeNDAP urls and the map produced by [[validate-url]]

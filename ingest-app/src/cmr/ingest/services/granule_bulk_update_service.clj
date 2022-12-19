@@ -52,7 +52,7 @@
   [coll]
   (seq (for [[id freq] (frequencies coll)
              :when (> freq 1)]
-         id)))
+         (util/html-escape id))))
 
 (defn- invalid-update-error
   "Throws error in the case the wrong format for the updates field was used for a
@@ -62,7 +62,7 @@
    :bad-request
    [(format (str "Bulk Granule Update failed - invalid update format specified for the "
                  "operation:update-field combination [%s].")
-            event-type)]))
+            (util/html-escape event-type))]))
 
 (defn- invalid-event-type
   "Throws error in the case the operation:update-field combination is invalid."
@@ -70,7 +70,7 @@
   (errors/throw-service-errors
    :bad-request
    [(format (str "Bulk Granule Update failed - the operation:update-field combination [%s] is invalid.")
-            event-type)]))
+            (util/html-escape event-type))]))
 
 (defmulti update->instruction
   "Returns the granule bulk update instruction for a single update item"

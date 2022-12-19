@@ -268,7 +268,7 @@
             ["Projects" 0]
             [(format (str "Project short name [%s] and long name [%s]"
                           " was not a valid keyword combination.")
-                     short-name long-name)])
+                     short-name (str long-name))])
 
           "Invalid short name"
           "foo" "European Digital Archive of Soil Maps"

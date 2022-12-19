@@ -2,7 +2,8 @@
   "Contains functions to facilitate S3 url granule bulk update."
   (:require
    [clojure.string :as string]
-   [cmr.common.services.errors :as errors]))
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]))
 
 (def S3_RELATEDURL_DESCRIPTION
   "RelatedUrl description of s3 url in UMM-G granule schema"
@@ -18,5 +19,5 @@
       (when-not (string/starts-with? url "s3://")
         (errors/throw-service-errors
          :invalid-data
-         [(str "Invalid URL value, each S3 url must start with s3://, but was " url)])))
+         [(str "Invalid URL value, each S3 url must start with s3://, but was " (util/html-escape url))])))
     urls))
