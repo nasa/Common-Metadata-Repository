@@ -272,6 +272,7 @@
         {:Description (value-of use-constraints "Description")
          :FreeAndOpenData (when-let [free-and-open (value-of use-constraints "Free_And_Open_Data")]
                             (Boolean/valueOf free-and-open))
+         :EULAIdentifiers (values-at use-constraints "EULA_Identifier")
          :LicenseURL (when-let [url (value-of use-constraints "License_URL/URL")]
                        {:Linkage url
                         :Name (value-of use-constraints "License_URL/Title")

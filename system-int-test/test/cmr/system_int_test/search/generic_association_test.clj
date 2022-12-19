@@ -51,9 +51,11 @@
                        (get-in (first (:items search-body)) [:associations concept-type-plural]))
         association-details (if meta?
                               (get-in (first (:items search-body)) [:meta :association-details concept-type-plural])
-                              (get-in (first (:items search-body)) [:association-details concept-type-plural]))]
+                              ;; association_details (snake_case) is used for the .json endpoint which is being called if meta = false
+                              (get-in (first (:items search-body)) [:association_details concept-type-plural]))]
     {:associations associations
-     :association-details association-details}))
+     :association-details association-details
+     :association_details association-details}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
@@ -72,7 +74,7 @@
         grid-concept-id (:concept-id grid)
         grid-revision-id (:revision-id grid)
 
-        ;;Then ingest two collections and two tools 
+        ;;Then ingest two collections and two tools
         coll1 (data-core/ingest-umm-spec-collection "PROV1"
                                                     (data-umm-c/collection
                                                      {:ShortName "coll1"
@@ -126,7 +128,7 @@
         ;; Search for the collection coll2 returns the tl1 as association
         (is (= [tl1-concept-id]
                (:associations coll2-search-result)))))
-             
+
     (testing "Associate tool with tool by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                        token tl2-concept-id tl2-revision-id [{:concept-id tl1-concept-id :revision-id tl1-revision-id}])
@@ -248,9 +250,10 @@
         (is (= [tl1-concept-id]
                (:associations grid-search-result)
                (:associations grid-search-result-update)))
-        (is (= [{:concept-id tl1-concept-id :revision-id tl1-revision-id}]
-               (:association-details grid-search-result)
-               (:association-details grid-search-result-update)))
+        (is (= [{:concept_id tl1-concept-id :revision_id tl1-revision-id}]
+               ;; The grid is being searched from the .json endpoint which uses snake case assocation-details
+               (:association_details grid-search-result)
+               (:association_details grid-search-result-update)))
 
         ;; Search for the tool returns the grid as generic association
         (is (= [grid-concept-id]
@@ -333,7 +336,7 @@
         ;; Search for the collection coll2 returns the sv1 as association
         (is (= [sv1-concept-id]
                (:associations coll2-search-result)))))
-             
+
     (testing "Associate service with service by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                        token sv2-concept-id sv2-revision-id [{:concept-id sv1-concept-id  :revision-id sv1-revision-id}])
@@ -648,7 +651,7 @@
 
         ;; Search for the variable again doesn't return the grid as generic association
         (is (= nil  (:associations var1-search-result1)))))
-    
+
     (testing "Associate collection with collection by concept-id and revision-ids"
       ;;since we ingested two collections in this test, it's better to do the collection-to-collection association test here.
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
@@ -716,7 +719,7 @@
         (is (= nil
                (:associations coll2-search-result1)))))))
 
-;; Test that generic associations can be made between generic documents and collections. 
+;; Test that generic associations can be made between generic documents and collections.
 (deftest test-collection-and-generic-association
   (let [;;First ingest a Grid concept
         native-id (format "Generic-Test-%s" (UUID/randomUUID))
@@ -899,10 +902,10 @@
 
         ;;Then ingest a tool
         tl (tool-util/ingest-tool-with-attrs {:native-id "tl" :Name "tool"})
-        tl-concept-id (:concept-id tl) 
+        tl-concept-id (:concept-id tl)
         token (echo-util/login (system/context) "user1")
         _ (index/wait-until-indexed)
-        
+
         ;; associate grid and collection
         _ (association-util/generic-associate-by-concept-ids-revision-ids
            token grid-concept-id grid-revision-id [{:concept-id coll-concept-id :revision-id coll-revision-id}])
@@ -914,14 +917,14 @@
         ;; associate tool and collection using the old association api (not allowed in the new api)
         _ (association-util/associate-by-concept-ids
            token tl-concept-id [{:concept-id coll-concept-id :revision-id coll-revision-id}])
-        
+
         ;; search for the grid,service and tool, the association should be there.
         grid-search-result1 (get-associations-and-details "grids.json" "name=Grid-A7-v1" :collections false)
         sv-search-result1 (get-associations-and-details "services.umm_json" "native_id=sv" :collections true)
         tl-search-result1 (get-associations-and-details "tools.umm_json" "native_id=tl" :collections true)
 
         ;; delete the collection
-        _ (ingest/delete-concept (data-core/umm-c-collection->concept coll :echo10) {:accept-format :json :raw? true}) 
+        _ (ingest/delete-concept (data-core/umm-c-collection->concept coll :echo10) {:accept-format :json :raw? true})
         _ (index/wait-until-indexed)
 
         ;; search for the grid,service and tool, the association shouldn't be there.
@@ -1005,7 +1008,7 @@
           body (json/parse-string (get coll-search-resp :body) true)
           entry (first (:entry (:feed body)))
           assoc (:associations entry)
-          assoc-details (:association-details entry)]
+          assoc-details (:association_details entry)]
       (is (= (:status coll-search-resp) 200))
       (is (= (count (:variables assoc)) 2))
       (is (= (count (:services assoc)) 1))

@@ -20,15 +20,20 @@
           (queue/publish-message queue-broker (exchange-name-fn) msg))))))
 
 (defn associations-update-event
-  "Create an event representing a list of associations being updated or created."
+  "Create an event representing a list of collections that are associated
+  to either a service or tool. This is to re-index the collection when
+  a service or tool has been re-indexed and an association exists between the
+  two. We don't want to re-index the association, because then the original
+  saved concept will be re-indexed n times the number of associations from it,
+  and that is not necessary."
   [associations]
   {:action :concept-update
-   :concept-id (:concept-id (first associations))
-   :revision-id (:revision-id (first associations))
+   :concept-id (get-in (first associations) [:extra-fields :associated-concept-id])
+   :revision-id (get-in (first associations) [:extra-fields :associated-revision-id])
    :more-concepts (when (> (count associations) 1)
                     (for [association (drop 1 associations)]
-                      {:concept-id (:concept-id association)
-                       :revision-id (:revision-id association)}))})
+                      {:concept-id (get-in association [:extra-fields :associated-concept-id])
+                       :revision-id (get-in association [:extra-fields :associated-revision-id])}))})
 
 (defmulti concept-update-event
   "Creates an event representing a concept being updated or created."

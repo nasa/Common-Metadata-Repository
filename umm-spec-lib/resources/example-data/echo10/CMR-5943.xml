@@ -266,12 +266,12 @@
         <TwoDCoordinateSystem>
             <TwoDCoordinateSystemName>MODIS Tile EASE</TwoDCoordinateSystemName>
             <Coordinate1>
-                <MinimumValue>-100</MinimumValue>
-                <MaximumValue>-50</MaximumValue>
+                <MinimumValue>-100.0</MinimumValue>
+                <MaximumValue>-50.0</MaximumValue>
             </Coordinate1>
             <Coordinate2>
-                <MinimumValue>50</MinimumValue>
-                <MaximumValue>100</MaximumValue>
+                <MinimumValue>50.0</MinimumValue>
+                <MaximumValue>100.0</MaximumValue>
             </Coordinate2>
         </TwoDCoordinateSystem>
     </TwoDCoordinateSystems>

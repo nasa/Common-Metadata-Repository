@@ -964,6 +964,8 @@
    ;; This element holds the actual license text. If this element is used the LicenseUrl element
    ;; cannot be used.
    LicenseText
+   
+   EULAIdentifiers
   ])
 (record-pretty-printer/enable-record-pretty-printing UseConstraintsType)
 

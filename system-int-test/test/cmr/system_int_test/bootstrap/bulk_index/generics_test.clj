@@ -265,7 +265,7 @@
              grid-search-result (association-test/get-associations-and-details "grids.json" "native_id=tg1" :grids false)])
        ;; Associations in the index should be empty since they were not there when the record was re-indexed
        (let [grid-search-pre-bulk (association-test/get-associations-and-details "grids.json" "native_id=tg1" :grids false)]
-         (is empty? (set (:association-details grid-search-pre-bulk))))
+         (is empty? (set (:association_details grid-search-pre-bulk))))
        ;; re-index the association since it was not there at the start of the test
        (bootstrap/bulk-index-grids "PROV1")
        (index/wait-until-indexed)
@@ -273,8 +273,9 @@
        (is (= 2 (:hits (search/find-refs :grid {}))))
        ;; The association should still be indexed
        (let [grid-search-result2 (association-test/get-associations-and-details "grids.json" "native_id=tg1" :grids false)]
-         (is (= (set [{:data "some data", :concept-id grid2-concept-id :revision-id grid2-revision-id}])
-                (set (:association-details grid-search-result2))))))
+         (is (= (set [{:data "some data", :concept_id grid2-concept-id :revision_id grid2-revision-id}])
+                ;; assocaion_details; search being retrieved by the .json endpoint
+                (set (:association_details grid-search-result2))))))
      ;; Reenable message publishing
      (core/reenable-automatic-indexing))))
 

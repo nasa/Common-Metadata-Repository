@@ -470,6 +470,19 @@
     (catch NumberFormatException _
       false)))
 
+(defn numeric? 
+  "Returns true if the sequence of characters can be converted to a number. 
+   False otherwise. Different from `cmr.common.util/numeric-string?` in that: 
+   1 - more strict, for example returns false for string '0D'.
+   2 - accepts any sequence of characters, not just strings."
+  [s]
+  (when-let [s (seq s)]
+    (let [s (if (= (first s) \-) (next s) s)
+          s (drop-while #(Character/isDigit %) s)
+          s (if (= (first s) \.) (next s) s)
+          s (drop-while #(Character/isDigit %) s)]
+      (empty? s))))
+
 (defn rename-keys-with [m kmap merge-fn]
   "Returns the map with the keys in kmap renamed to the vals in kmap. Values of
   renamed keys for which there is already existing value will be merged using
@@ -1068,6 +1081,13 @@
   (if (string? s)
     (read-string s)
     s))
+
+(defn str->num 
+  "If the string can be converted to a number, return that number, otherwise return nil."
+  [s] 
+  (if (numeric? s)
+    (safe-read-string s)
+    nil))
 
 (defn html-escape
   "Html escape the given string. it is used to deal with potential xss issues in user input."

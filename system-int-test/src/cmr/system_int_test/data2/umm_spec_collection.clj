@@ -147,8 +147,8 @@
   [name]
   (umm-c/map->TilingIdentificationSystemType
     {:TilingIdentificationSystemName name
-     :Coordinate1 {:MinimumValue 0.0 :MaximumValue 0.0}
-     :Coordinate2 {:MinimumValue 0.0 :MaximumValue 0.0}}))
+     :Coordinate1 {:MinimumValue "0.0" :MaximumValue "0.0"}
+     :Coordinate2 {:MinimumValue "0.0" :MaximumValue "0.0"}}))
 
 (defn tiling-identification-systems
   "Returns a sequence of tiling-identification-systems with the given names"

@@ -34,7 +34,7 @@
                       :name tool-name
                       :long_name long-name
                       :associations (rs-util/build-association-concept-id-list associations :tool)
-                      :association-details (rs-util/build-association-details associations :tool)})]
+                      :association_details (rs-util/build-association-details (rs-util/replace-snake-keys associations) :tool)})]
     (if deleted
       (assoc result-item :deleted deleted)
       result-item)))

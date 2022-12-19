@@ -652,14 +652,14 @@
 (deftest granule-two-d-coordinate-system-validation
   (let [collection (make-collection {:TilingIdentificationSystems
                                       [{:TilingIdentificationSystemName "name"
-                                         :Coordinate1 {:MinimumValue 0
-                                                       :MaximumValue 35}
-                                         :Coordinate2 {:MinimumValue 0
-                                                       :MaximumValue 17}}]})
+                                         :Coordinate1 {:MinimumValue "0"
+                                                       :MaximumValue "35"}
+                                         :Coordinate2 {:MinimumValue "0"
+                                                       :MaximumValue "17"}}]})
         collection-with-missing-bounds (make-collection {:TilingIdentificationSystems
                                                           [{:TilingIdentificationSystemName "name"
-                                                             :Coordinate1 {:MinimumValue 0}
-                                                             :Coordinate2 {:MaximumValue 17}}]})]
+                                                             :Coordinate1 {:MinimumValue "0"}
+                                                             :Coordinate2 {:MaximumValue "17"}}]})]
     (testing "granules with valid 2D coordinate system"
       (are3 [collection start1 end1 start2 end2]
         (is (empty? (v/validate-granule

@@ -335,11 +335,44 @@
                                     (->> concepts (sort-by :revision-id) reverse first))))]
     (c/search-with-params latest-concepts params)))
 
+(defn find-associations
+  "Find all associations in the database table that are part of a concept id
+  that is passed in through params. The parameters look like the following:
+  {:associated-concept-id \"C1200000013-PROV1\" :source-concept-identifier \"C1200000013-PROV1\"}"
+  [db params]
+  (let [fields (:generic-association concept-type->columns)
+        table (tables/get-table-name nil :generic-association)
+        stmt (su/build (select (vec fields)
+                               (from table)
+                               (when-not (empty? params)
+                                 (where (sh/find-params->sql-clause params true)))))]
+    (j/with-db-transaction
+     [conn db]
+     ;; doall is necessary to force result retrieval while inside transaction - otherwise
+     ;; connection closed errors will occur
+     (doall
+      (mapv (fn [result]
+              (oc/db-result->concept-map :generic-association conn "CMR" result))
+            (su/query conn stmt))))))
+
+(defn find-latest-associations
+  "Find the latest associations in the database table that are part of a concept id
+  that is passed in through params. The parameters look like the following:
+  {:associated-concept-id \"C1200000013-PROV1\" :source-concept-identifier \"C1200000013-PROV1\"}"
+  [db params]
+  (let [associations (find-associations db params)]
+    (->> associations
+         (group-by :concept-id)
+         (map (fn [[concept-id concepts]]
+                (->> concepts (sort-by :revision-id) last))))))
+
 (def behaviour
   {:find-concepts find-concepts
    :find-concepts-in-batches find-concepts-in-batches
    :find-concepts-in-batches-with-stmt find-concepts-in-batches-with-stmt
-   :find-latest-concepts find-latest-concepts})
+   :find-latest-concepts find-latest-concepts
+   :find-associations find-associations
+   :find-latest-associations find-latest-associations})
 
 (extend OracleStore
         c/ConceptSearch

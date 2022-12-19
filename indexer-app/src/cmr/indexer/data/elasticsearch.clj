@@ -2,13 +2,10 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clj-time.core :as t]
-   [clj-time.format :as f]
    [cmr.common.concepts :as cs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
-   [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.es-helper :as es-helper]
@@ -18,8 +15,7 @@
    [cmr.indexer.data.bulk :as cmr-bulk]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.data.index-set-elasticsearch :as index-set-es]
-   [cmr.indexer.services.index-set-service :as index-set-svc]
-   [cmr.umm.umm-core :as umm]))
+   [cmr.indexer.services.index-set-service :as index-set-svc]))
 
 (def MAX_INT
   "The maximum `integer` type value supported by Elasticsearch, 2^31 - 1"
@@ -53,7 +49,8 @@
          (concat (map :transaction-id (:tag-associations concept))
                  (map :transaction-id (:variable-associations concept))
                  (map :transaction-id (:service-associations concept))
-                 (map :transaction-id (:tool-associations concept)))))
+                 (map :transaction-id (:tool-associations concept))
+                 (map :transaction-id (:generic-associations concept)))))
 
 (defmethod get-elastic-version :variable
   [concept]

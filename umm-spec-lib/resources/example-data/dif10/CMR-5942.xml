@@ -357,12 +357,12 @@
             <TwoD_Coordinate_System>
                 <TwoD_Coordinate_System_Name>MODIS Tile EASE</TwoD_Coordinate_System_Name>
                 <Coordinate1>
-                    <Minimum_Value>-100</Minimum_Value>
-                    <Maximum_Value>-50</Maximum_Value>
+                    <Minimum_Value>-100.0</Minimum_Value>
+                    <Maximum_Value>-50.0</Maximum_Value>
                 </Coordinate1>
                 <Coordinate2>
-                    <Minimum_Value>50</Minimum_Value>
-                    <Maximum_Value>100</Maximum_Value>
+                    <Minimum_Value>50.0</Minimum_Value>
+                    <Maximum_Value>100.0</Maximum_Value>
                 </Coordinate2>
             </TwoD_Coordinate_System>
         </Spatial_Info>
