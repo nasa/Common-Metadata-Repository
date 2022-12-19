@@ -56,7 +56,7 @@
                          (json/generate-string))]
         (is (thrown-with-msg?
              clojure.lang.ExceptionInfo
-             #"While validating the record against the [grid] schema with version [0.0.1] the following error occurred: [#: required key [MetadataSpecification] not found]. The record cannot be ingested."
+             #"While validating the record against the \[grid\] schema with version \[0.0.1\] the following error occurred: \[#: required key \[MetadataSpecification\] not found\]. The record cannot be ingested."
              (gdocs/validate-document-against-schema :grid "0.0.1" bad-json))
             "Was not able to generate a schema exception"))))
   (testing
@@ -64,7 +64,7 @@
     (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]}) config/generic-ingest-disabled-list (fn [] [:grid])]
        (is (thrown-with-msg?
             clojure.lang.ExceptionInfo
-             #"The grid schema is currently disabled and cannot be ingested"
+             #"The :grid schema is currently disabled and cannot be ingested"
             (gdocs/validate-json-against-schema
              :grid
              "0.0.1"
