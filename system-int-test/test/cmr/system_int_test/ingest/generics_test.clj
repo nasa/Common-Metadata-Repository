@@ -64,7 +64,7 @@
     (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]}) config/generic-ingest-disabled-list (fn [] [:grid])]
        (is (thrown-with-msg?
             clojure.lang.ExceptionInfo
-             #"The :grid schema is currently disabled and cannot be ingested"
+             #"The grid schema is currently disabled and cannot be ingested"
             (gdocs/validate-json-against-schema
              :grid
              "0.0.1"
