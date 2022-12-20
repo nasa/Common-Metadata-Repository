@@ -366,10 +366,10 @@
 
 (deftest collection-concept-id-validation-test
   (is (empty? (#'pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Valid"})))
-  (is (= ["Collection-concept-id [C1234-Invalid&apos] is not valid."]
+  (is (= ["Collection-concept-id [C1234-Invalid&apos;] is not valid."]
          (#'pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Invalid'"})))
-  (is (= ["Collection-concept-id [C1234-Invalid&apos] is not valid."
-          "Collection-concept-id [C5678-Invalid&apos] is not valid."]
+  (is (= ["Collection-concept-id [C1234-Invalid&apos;] is not valid."
+          "Collection-concept-id [C5678-Invalid&apos;] is not valid."]
          (#'pv/collection-concept-id-validation :granule
                                               {:collection-concept-id ["C1234-Invalid'"
                                                                        "C5678-Invalid'"
