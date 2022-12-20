@@ -4,7 +4,8 @@
    [clojure.string :as string]
    [cmr.common-app.services.search.params :as common-params]
    [cmr.search.services.messages.common-messages :as msg]
-   [cmr.search.services.parameters.validation.util :as validation-util])
+   [cmr.search.services.parameters.validation.util :as validation-util]
+   [cmr.common.util :as util])
   (:import
    (clojure.lang ExceptionInfo)
    (java.lang Integer)))
@@ -22,10 +23,10 @@
     (let [num (Integer/parseInt value)]
       (when (< num 1)
         [(format "%s must be a positive integer, but was [%s]"
-                 (string/capitalize (name field)) value)]))
+                 (string/capitalize (name field)) (util/html-escape value))]))
     (catch NumberFormatException e
       [(format "%s must be a positive integer, but was [%s]"
-               (string/capitalize (name field)) value)])))
+               (string/capitalize (name field)) (util/html-escape value))])))
 
 (defn- validate-tile
   "Validate tile is in the format of \"\\d+[LRF]\""
