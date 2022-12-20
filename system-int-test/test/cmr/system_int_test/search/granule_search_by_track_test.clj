@@ -306,6 +306,13 @@
       (is (= 400 status))
       (is (= ["Cycle must be a positive integer, but was [1.2]"]
              errors))))
+  
+  (testing "search with XSS value is html escaped"
+    (let [{:keys [status errors]} (search/find-refs :granule {:cycle "Z--><QSS>"
+                                                              :passes {:0 {:pass 3}}})]
+      (is (= 400 status))
+      (is (= ["Cycle must be a positive integer, but was [Z--&gt;&lt;QSS&gt;]"]
+             errors))))
 
   (testing "search by non-integer pass is invalid"
     (let [{:keys [status errors]} (search/find-refs :granule {:cycle 1

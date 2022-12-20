@@ -366,14 +366,16 @@
 
 (deftest collection-concept-id-validation-test
   (is (empty? (#'pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Valid"})))
-  (is (= ["Collection-concept-id [C1234-Invalid'] is not valid."]
+  (is (= ["Collection-concept-id [C1234-Invalid&apos] is not valid."]
          (#'pv/collection-concept-id-validation :granule {:collection-concept-id "C1234-Invalid'"})))
-  (is (= ["Collection-concept-id [C1234-Invalid'] is not valid."
-          "Collection-concept-id [C5678-Invalid'] is not valid."]
+  (is (= ["Collection-concept-id [C1234-Invalid&apos] is not valid."
+          "Collection-concept-id [C5678-Invalid&apos] is not valid."]
          (#'pv/collection-concept-id-validation :granule
                                               {:collection-concept-id ["C1234-Invalid'"
                                                                        "C5678-Invalid'"
-                                                                       "C5678-Valid"]}))))
+                                                                       "C5678-Valid"]})))
+  (is (= ["Collection-concept-id [z--&gt;&lt;qss&gt;] is not valid."]
+         (#'pv/collection-concept-id-validation :granule {:collection-concept-id ["z--><qss>"]}))))
 
 (deftest valid-year-test
   (testing "Valid years"
