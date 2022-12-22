@@ -39,7 +39,7 @@
     "gremlin": "~3.4.10",
     "lodash": "^4.17.21",
     "serverless": "^3.24.1",
-    "serverless-offline": "^8.8.1",
+    "serverless-offline": "^12.0.3",
     "serverless-webpack": "^5.9.0",
     "webpack": "^5.73.0",
     "webpack-node-externals": "^3.0.0"
