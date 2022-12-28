@@ -33,7 +33,7 @@
   "license": "ISC",
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.211.0",
-    "@aws-sdk/client-ssm": "^3.211.0",
+    "@aws-sdk/client-ssm": "^3.226.0",
     "array-foreach-async": "^1.0.1",
     "axios": "^0.24.0",
     "gremlin": "~3.4.10",
