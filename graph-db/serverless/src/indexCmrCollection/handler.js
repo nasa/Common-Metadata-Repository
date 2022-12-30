@@ -74,7 +74,7 @@ const indexCmrCollections = async (event) => {
           recordCount += 1
         }
       } catch (error) {
-        console.log(`Error indexing collection [${conceptId}], Exception was thrown in index collection handler ${error}`)
+        console.log(`Error indexing collection [${conceptId}], Exception was thrown in index-collection handler ${error}`)
       }
     }
     if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {

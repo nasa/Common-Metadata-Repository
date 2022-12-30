@@ -178,7 +178,7 @@ describe('fetchCollectionPermittedGroups', () => {
 
     const result = await fetchCollectionPermittedGroups('C1708620364-NSIDC_ECS', 'mock_token')
 
-    // The result should be equal to a list of groups ['a', 'b', 'c']
+    // The result should be equal to a list of groups ['group-a', 'group-b', 'group-c']
     const permittedGroups = []
     expect(result).toEqual(permittedGroups)
   })

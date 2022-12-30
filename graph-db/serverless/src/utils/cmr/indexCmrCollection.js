@@ -17,8 +17,9 @@ const gremlinStatistics = gremlin.process.statics
  * @returns
  */
 
+// eslint-disable-next-line max-len
 export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection, depth = 1) => {
-  // const maxDepth = 5
+  const maxDepth = 4
   const wait = (ms) => new Promise((res) => setTimeout(res, ms))
   const {
     meta: {
@@ -39,7 +40,6 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
 
   // Delete the collection first so that we can clean up its related, relatedUrl vertices
   await deleteCmrCollection(conceptId, gremlinConnection)
-  // TODO Introduce some kind of timeout here so that this can finnish executing on gremlin?
   let collection = null
   try {
     const addVCommand = gremlinConnection.addV('collection')
@@ -73,16 +73,13 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
   } catch (error) {
     console.log(`Error indexing collection into graph database [${conceptId}]: ${error.message}, retrying attempt #[${depth}]`)
 
-    if (depth > 4) {
+    if (depth > maxDepth) {
       console.log(`Maximum attempts to index the graph database for [${conceptId}] error: ${error}`)
       throw Error('throwing error in indexCmrCollection maximum attempts reached for', conceptId)
     }
     await wait(2 ** depth * 10)
     // Exponential retry on the function
     return indexCmrCollection(collectionObj, groupList, gremlinConnection, depth + 1)
-    // console.log(`Retrying the lambda function to index the graph database for [${conceptId}] attempt #${depth}`)
-
-    // await indexCmrCollection(collectionObj, groupList, gremlinConnection, depth + 1)
   }
 
   const { value = {} } = collection

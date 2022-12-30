@@ -48,6 +48,25 @@ describe('indexRelatedUrl', () => {
     })
   })
 
+  describe('when the provided relatedUrl is missing both SubType and Description', () => {
+    test('it indexes the relatedUrl', async () => {
+      const relatedUrl = {
+        Type: 'VIEW RELATED INFORMATION',
+        URL: 'https://example.com/test.json'
+      }
+
+      await updateCollection(
+        'C100000-CMR',
+        'Vulputate Mollis Commodo',
+        {
+          relatedUrls: [relatedUrl.URL]
+        }
+      )
+
+      await verifyRelatedUrlExistInGraphDb('Vulputate Mollis Commodo', 'https://example.com/test.json')
+    })
+  })
+
   describe('when an exception is thrown', () => {
     test('it is caught and a new one is thrown', async () => {
       const consoleMock = jest.spyOn(console, 'log')
