@@ -398,8 +398,17 @@
                       {:native-id "var3"
                        :coll-concept-id (:concept-id coll3)})
         variable1 (variables/ingest-variable-with-association var1-concept)
+        associations1 {:associations {:collections [(:concept-id coll1)]}
+                       :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
+        variable1 (merge variable1 associations1)
         variable2 (variables/ingest-variable-with-association var2-concept)
-        variable3 (variables/ingest-variable-with-association var3-concept)]
+        associations2 {:associations {:collections [(:concept-id coll2)]}
+                       :association-details {:collections [{:concept-id (:concept-id coll2)}]}}
+        variable2 (merge variable2 associations2)
+        variable3 (variables/ingest-variable-with-association var3-concept)
+        associations3 {:associations {:collections [(:concept-id coll3)]}
+                       :association-details {:collections [{:concept-id (:concept-id coll3)}]}}
+        variable3 (merge variable3 associations3)]
     (index/wait-until-indexed)
 
     (are3 [expected-variables keyword]
@@ -457,11 +466,16 @@
                       {:native-id "var1"
                        :coll-concept-id (:concept-id coll1)})
         variable1 (variables/ingest-variable-with-association var1-concept {:token token})
+        associations1 {:associations {:collections [(:concept-id coll1)]}
+                       :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
+        variable1 (merge variable1 associations1)
         var2-concept (variables/make-variable-concept
                       {:Name "Variable2"}
                       {:native-id "var2"
                        :coll-concept-id (:concept-id coll1)})
         variable2 (variables/ingest-variable-with-association var2-concept {:token token})
+        ;; Variable2 has the same associations as variable1
+        variable2 (merge variable2 associations1)
         all-variables [variable1 variable2]]
     (index/wait-until-indexed)
 
@@ -609,9 +623,21 @@
                       {:native-id "var4"
                        :coll-concept-id (:concept-id coll4)})
         variable1 (variables/ingest-variable-with-association var1-concept)
+        associations1 {:associations {:collections [(:concept-id coll1)]}
+                       :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
+        variable1 (merge variable1 associations1)
         variable2 (variables/ingest-variable-with-association var2-concept)
+        associations2 {:associations {:collections [(:concept-id coll2)]}
+                       :association-details {:collections [{:concept-id (:concept-id coll2)}]}}
+        variable2 (merge variable2 associations2)
         variable3 (variables/ingest-variable-with-association var3-concept)
-        variable4 (variables/ingest-variable-with-association var4-concept)]
+        associations3 {:associations {:collections [(:concept-id coll3)]}
+                       :association-details {:collections [{:concept-id (:concept-id coll3)}]}}
+        variable3 (merge variable3 associations3)
+        variable4 (variables/ingest-variable-with-association var4-concept)
+        associations4 {:associations {:collections [(:concept-id coll4)]}
+                       :association-details {:collections [{:concept-id (:concept-id coll4)}]}}
+        variable4 (merge variable4 associations4)]
     (index/wait-until-indexed)
 
     (are3 [sort-key expected-variables]

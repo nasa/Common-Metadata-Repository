@@ -112,10 +112,14 @@
                         :provider-id "PROV1"
                         :concept-id "V222222222222222222-PROV1"
                         :coll-concept-id (:concept-id coll)})
-          variable (variables/ingest-variable-with-association var-concept)]
+          variable (variables/ingest-variable-with-association var-concept)
+          associations1 {:associations {:collections [(:concept-id coll)]}
+                         :association-details {:collections [{:concept-id (:concept-id coll)}]}}
+                         variable (merge variable associations1)]
+
       (index/wait-until-indexed)
       (variables/assert-variable-search-order [variable] (variables/search {:provider "PROV1"}))))
-  
+
   (testing "variable associations with high concept-id searches return as expected"
     (let [coll (d/ingest-umm-spec-collection "PROV3"
                                              (data-umm-c/collection
@@ -129,6 +133,10 @@
                        {:native-id "var2"
                         :provider-id "PROV3"
                         :coll-concept-id (:concept-id coll)})
-          variable (variables/ingest-variable-with-association var-concept)]
+          variable (variables/ingest-variable-with-association var-concept)
+          associations1 {:associations {:collections [(:concept-id coll)]}
+                         :association-details {:collections [{:concept-id (:concept-id coll)}]}}
+          variable (merge variable associations1)]
       (index/wait-until-indexed)
+      ;;TODO Check for the value for the associations here
       (variables/assert-variable-search-order [variable] (variables/search {:provider "PROV3"})))))
