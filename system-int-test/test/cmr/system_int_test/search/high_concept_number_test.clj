@@ -138,5 +138,4 @@
                          :association-details {:collections [{:concept-id (:concept-id coll)}]}}
           variable (merge variable associations1)]
       (index/wait-until-indexed)
-      ;;TODO Check for the value for the associations here
       (variables/assert-variable-search-order [variable] (variables/search {:provider "PROV3"})))))
