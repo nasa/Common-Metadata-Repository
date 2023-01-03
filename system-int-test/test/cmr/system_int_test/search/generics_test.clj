@@ -286,7 +286,7 @@
                   body (:body results)]
               (is (string/includes? body concept-id) "record not found")
               (is (= 200 status) "wrong http status")))
-              
+
           (testing "Search generic concept by provider"
             (let [results (search-request plural-concept-type-name (str "provider=" provider))
                   status (:status results)
