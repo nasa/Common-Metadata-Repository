@@ -120,7 +120,7 @@ describe('indexCmrCollection handler', () => {
     expect(statusCode).toBe(200)
   })
 
-  test('test collection that has an index on CMR but, it is on actually stored in db', async () => {
+  test('test collection that has an index on CMR but, it is Not stored in db', async () => {
     const conceptId = 'C123755555-TESTPROV'
     nock(/local-cmr/)
       .get(/collections/)

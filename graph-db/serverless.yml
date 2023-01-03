@@ -13,15 +13,15 @@ provider:
    name: graphdb-driver-deployment-bucket-${self:provider.stage}
    skipPolicySetup: true
 
-  vpc:
-    securityGroupIds:
-      - ${cf:${self:provider.stage}.servicesSecurityGroupId}
-    subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
+  # vpc:
+  #   securityGroupIds:
+  #     - ${cf:${self:provider.stage}.servicesSecurityGroupId}
+  #   subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
 
   environment:
     CMR_ROOT: ${self:custom.variables.CMR_ROOT}
-    COLLECTION_INDEXING_QUEUE_URL:
-      Ref: CollectionIndexingQueue
+    # COLLECTION_INDEXING_QUEUE_URL:
+    #   Ref: CollectionIndexingQueue
     ENVIRONMENT: ${self:custom.variables.ENVIRONMENT}
     GREMLIN_URL: ${self:custom.variables.GREMLIN_URL}
     PAGE_SIZE: ${self:custom.variables.PAGE_SIZE}
