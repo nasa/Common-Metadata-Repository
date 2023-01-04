@@ -3996,6 +3996,7 @@ These parameters will match fields within a variable. They are case insensitive 
   * options: ignore_case, or
 measurement_identifiers parameter is a nested parameter with subfields: contextmedium, object and quantity. Multiple measurement_identifiers can be specified via different indexes to search variables. The following example searches for variables that have at least one measurement_identifier with contextmedium of Med1, object of Object1 and quantity of Q1, and another measurement_identifier with contextmedium of Med2 and object of Obj2.
 
+__Example__
 
 ````
 curl -g "%CMR-ENDPOINT%/variables?measurement_identifiers\[0\]\[contextmedium\]=Med1&measurement_identifiers\[0\]\[object\]=Object1&measurement_identifiers\[0\]\[quantity\]=Q1&measurement_identifiers\[1\]\[contextmedium\]=med2&measurement_identifiers\[2\]\[object\]=Obj2"
@@ -4038,7 +4039,11 @@ __Example__
 
 ```
 curl -i "%CMR-ENDPOINT%/variables?pretty=true&name=Variable1"
+```
 
+__Example Response__
+
+```
 HTTP/1.1 200 OK
 Content-Type: application/xml; charset=UTF-8
 Content-Length: 393
@@ -4069,12 +4074,18 @@ The JSON response includes the following fields.
   * native_id
   * name
   * long_name
+  * associations (if applicable)
+  * association_details(if applicable)
 
 __Example__
 
 ```
 curl -g -i "%CMR-ENDPOINT%/variables.json?pretty=true&name=Var*&options[name][pattern]=true"
+```
 
+__Example Response__
+
+```
 HTTP/1.1 200 OK
 Content-Type: application/json; charset=UTF-8
 Content-Length: 292
@@ -4099,8 +4110,38 @@ Content-Length: 292
   } ]
 }
 ```
+__Example Response With Associations__
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json; charset=UTF-8
+Content-Length: 512
+
+{
+  "hits" : 1,
+  "took" : 41,
+  "items" : [ {
+    "concept_id" : "V1200000022-PROV1",
+    "revision_id" : 2,
+    "provider_id" : "PROV1",
+    "native_id" : "sample-variable",
+    "name" : "methaneVar",
+    "long_name" : "Total Methane",
+    "associations" : {
+      "collections" : [ "C1200000021-PROV1" ]
+    },
+    "association_details" : {
+      "collections" : [ {
+        "data" : "\"This is some sample data association\"",
+        "concept_id" : "C1200000021-PROV1"
+      } ]
+    }
+  } ]
+}
+```
+
 ##### UMM JSON
-The UMM JSON response contains meta-metadata of the variable, the UMM fields and the associations field if applicable. The associations field only applies when there are collections or concepts generically associated to the variable and will list the collections that are associated with the variable.
+The UMM JSON response contains meta-metadata of the variable, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated to the variable or other concepts generically associated to the variable.
 
 __Example__
 
