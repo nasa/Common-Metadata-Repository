@@ -161,6 +161,22 @@ describe('indexCmrCollection handler', () => {
     expect(statusCode).toBe(200)
   })
 
+  test('test unsupported event type', async () => {
+    const event = getEvent('C1237293909-TESTPROV', 'concept-create')
+
+    const consoleMock = jest.spyOn(console, 'log')
+
+    const indexed = await indexCmrCollection(event)
+
+    expect(consoleMock).toBeCalledTimes(1)
+    expect(consoleMock).toBeCalledWith('Action [concept-create] was unsupported for concept [C1237293909-TESTPROV]')
+
+    const { body, statusCode } = indexed
+
+    expect(body).toBe('Successfully indexed 0 collection(s).')
+    expect(statusCode).toBe(200)
+  })
+
   test('test deletion of single collection', async () => {
     const collectionTitle = 'Latent reserves within the Swiss NFI'
     const project1 = 'Project One'
@@ -362,60 +378,4 @@ describe('indexCmrCollection handler', () => {
     await verifyRelatedUrlExistInGraphDb(anothercollectionTitle, keptDocUrl)
     await verifyRelatedUrlExistInGraphDb(anothercollectionTitle, newDocUrl)
   })
-})
-
-test('test indexing a collection where the event types is invalid', async () => {
-  nock(/local-cmr/)
-    .get(/collections/)
-    .reply(200, {
-      hits: 0,
-      took: 6,
-      items: []
-    })
-
-  const fetchGroupsMock = jest.spyOn(fetchCollectionPermittedGroups, 'fetchCollectionPermittedGroups').mockReturnValueOnce([])
-
-  const event = getEvent('C123755555-TESTPROV', 'undefined')
-
-  const consoleMock = jest.spyOn(console, 'log')
-
-  const indexed = await indexCmrCollection(event)
-
-  expect(fetchGroupsMock).toBeCalledTimes(0)
-
-  expect(consoleMock).toBeCalledTimes(1)
-  expect(consoleMock).toBeCalledWith('Action [undefined] was unsupported for concept [C123755555-TESTPROV]')
-
-  const { body, statusCode } = indexed
-
-  expect(body).toBe('Successfully indexed 0 collection(s).')
-  expect(statusCode).toBe(200)
-})
-
-test('test indexing a collection where the event types is invalid', async () => {
-  nock(/local-cmr/)
-    .get(/collections/)
-    .reply(200, {
-      hits: 0,
-      took: 6,
-      items: []
-    })
-
-  const fetchGroupsMock = jest.spyOn(fetchCollectionPermittedGroups, 'fetchCollectionPermittedGroups').mockReturnValueOnce([])
-
-  const event = getEvent('C123755555-TESTPROV', 'undefined')
-
-  const consoleMock = jest.spyOn(console, 'log')
-
-  const indexed = await indexCmrCollection(event)
-
-  expect(fetchGroupsMock).toBeCalledTimes(0)
-
-  expect(consoleMock).toBeCalledTimes(1)
-  expect(consoleMock).toBeCalledWith('Action [undefined] was unsupported for concept [C123755555-TESTPROV]')
-
-  const { body, statusCode } = indexed
-
-  expect(body).toBe('Successfully indexed 0 collection(s).')
-  expect(statusCode).toBe(200)
 })
