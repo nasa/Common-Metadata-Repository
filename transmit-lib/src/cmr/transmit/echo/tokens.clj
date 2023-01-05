@@ -63,7 +63,7 @@
           (= :signature (:cause error-data))
           (errors/throw-service-error
            :unauthorized
-           (format "Token %s does not exist" token))
+           (format "Token %s does not exist" (common-util/scrub-token token)))
          :else
          (r/unexpected-status-error! 500 (format "Unexpected error unsiging token locally. %s" error-data)))))))
 
@@ -84,7 +84,7 @@
          (:errors (json/decode body true)))
     404 (errors/throw-service-error
          :unauthorized
-         (format "Token %s does not exist" token))
+         (format "Token %s does not exist" (common-util/scrub-token token)))
 
     ;; catalog-rest returns 401 when echo-rest returns 400 for expired token, we do the same in CMR
     400 (errors/throw-service-errors :unauthorized (:errors (json/decode body true)))

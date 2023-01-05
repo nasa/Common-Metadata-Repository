@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.util :as common-util]
    [cmr.common.services.errors :as svc-errors]
    [cmr.mock-echo.api.api-helpers :as ah]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -47,7 +48,7 @@
   (let [token-id (strip-bearer-if-exists token-id)]
     (if-let [token (token-db/fetch context token-id)]
       token
-      (svc-errors/throw-service-error :unauthorized (str "Token [" token-id "] does not exist")))))
+      (svc-errors/throw-service-error :unauthorized (str "Token [" (common-util/scrub-token token-id) "] does not exist")))))
 
 (defn logout
   [context token-id]
