@@ -4,7 +4,7 @@ source 'https://rubygems.org'
 
 group :test do
   gem 'cucumber'
-  gem 'httparty'
+  gem 'httparty', '>= 0.21.0'
   gem 'jsonpath'
   gem 'nokogiri', ">= 1.13.10"
   gem 'rspec'
