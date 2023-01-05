@@ -153,7 +153,7 @@
 
 (def ^:private json-field-names
   "List of fields expected in a variable JSON response."
-  [:concept-id :revision-id :provider-id :native-id :deleted :name :long-name])
+  [:concept-id :revision-id :provider-id :native-id :deleted :name :long-name :associations :association-details])
 
 (defn extract-name-from-metadata
   "Pulls the name out of the metadata field in the provided variable concept."
@@ -203,7 +203,7 @@
     (d/refs-match? variables response)))
 
 (defn assert-variable-search-order
-  "Verifies the searcch results are in the correct order"
+  "Verifies the search results are in the correct order"
   [variables response]
   (let [expected-items (seq (get-expected-json-variables variables))]
     (is (= expected-items (:items response)))))
