@@ -27,6 +27,7 @@ dockerRun() {
         -e "AWS_ACCESS_KEY_ID=$bamboo_AWS_ACCESS_KEY_ID" \
         -e "AWS_SECRET_ACCESS_KEY=$bamboo_AWS_SECRET_ACCESS_KEY" \
         -e "AWS_REGION=$bamboo_AWS_REGION" \
+        -e "GREMLIN_URL=$bamboo_GREMLIN_URL" \
         -e "CMR_CONCEPT_SNS_TOPIC=$bamboo_CMR_CONCEPT_SNS_TOPIC" \
         $dockerTag "$@"
 }
