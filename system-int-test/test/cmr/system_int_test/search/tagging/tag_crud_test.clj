@@ -273,7 +273,7 @@
           token (echo-util/login (system/context) "user1")
           {:keys [status errors]} (tags/create-tag token tag)]
       (is (= 400 status))
-      (is (= ["Launchpad token is required. Token [ABC-1] is not a launchpad token."] errors))))
+      (is (= ["Launchpad token is required. Token [XXX] is not a launchpad token."] errors))))
   (testing "launchpad token with launchpad token enforcement turned on"
     (let [tag-key "tag1"
           tag (tags/make-tag {:tag-key tag-key})
