@@ -26,7 +26,6 @@ These parameters will match fields within a Grid. They are case insensitive by d
 * provider - options: pattern, ignore\_case
 * native\_id - options: pattern, ignore\_case
 * concept\_id
-* id
 
 ```
     curl "%CMR-ENDPOINT%/grids?concept_id=GRD1200442373-PROV1"

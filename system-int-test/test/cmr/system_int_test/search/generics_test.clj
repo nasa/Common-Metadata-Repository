@@ -215,9 +215,10 @@
             "native-id"
             (str (string/join "" (drop-last native-id)) "*")
             "options[native-id][pattern]=true"))
-            ;; test for legacy documents but, some generics do not have a guid-id
+            ;; Test for legacy documents but, some generics do not have a guid-id
+            ;; Searching for a generic without an Id, namely grids will result in matching all grids
             (if guid-id
-              (testing "Testing id (GUID) parameter search"
+              (testing "Testing id (GUID), the identifier that was assigned from legacy system in the parameter search"
               (are3 [plural-concept-type-name search-parameter concept-id-parameter options-flag]
                 (let [results (search-request plural-concept-type-name (str search-parameter "=" concept-id-parameter (if options-flag (str "&" options-flag) (str ""))))
                       status (:status results)
@@ -225,7 +226,7 @@
                   (is (string/includes? body name) "record not found")
                   (is (= 200 status) "wrong http status"))
 
-                "search using id(guid)"
+                "Search using id(guid)"
                 (inf/plural concept-type-string)
                 "id"
                 guid-id

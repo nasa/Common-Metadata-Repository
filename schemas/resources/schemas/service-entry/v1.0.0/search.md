@@ -26,7 +26,7 @@ These parameters will match fields within a Service Entry. They are case insensi
 * provider - options: pattern, ignore\_case
 * native\_id - options: pattern, ignore\_case
 * concept\_id
-* id
+* id (legacy identifier)
 
 ```
     curl "%CMR-ENDPOINT%/service-entries?concept_id=SE1200000000-PROV1"
