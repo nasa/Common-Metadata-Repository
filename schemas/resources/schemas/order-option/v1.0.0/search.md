@@ -26,7 +26,7 @@ These parameters will match fields within a Order Option. They are case insensit
 * provider - options: pattern, ignore\_case
 * native\_id - options: pattern, ignore\_case
 * concept\_id
-* id
+* id (legacy identifier)
 
 ```
     curl "%CMR-ENDPOINT%/order-options?concept_id=OO1200000000-PROV1"

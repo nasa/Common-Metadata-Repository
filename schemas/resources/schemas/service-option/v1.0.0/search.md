@@ -26,7 +26,7 @@ These parameters will match fields within a Service Option. They are case insens
 * provider - options: pattern, ignore\_case
 * native\_id - options: pattern, ignore\_case
 * concept\_id
-* id
+* id (legacy identifier)
 
 ```
     curl "%CMR-ENDPOINT%/service-options?concept_id=SO1200000000-PROV1"
