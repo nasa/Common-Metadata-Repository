@@ -19,8 +19,14 @@
   "Validates the associations json and returns the parsed json"
   [associations-json]
   (jv/validate-associations-json (tv/sanitized-json associations-json))
-  (->> (json/parse-string associations-json true)
-       (map #(set/rename-keys % {:concept_id :concept-id :revision_id :revision-id}))))
+  (->> (json/parse-string associations-json)
+       (map #(set/rename-keys % {"concept_id" :concept-id
+                                 :concept_id :concept-id
+                                 "concept-id" :concept-id
+                                 "revision_id" :revision-id
+                                 :revision_id :revision-id
+                                 "revision-id" :revision-id
+                                 "data" :data}))))
 
 (defn- get-inaccessible-concept-ids
   "Returns the collection concept-ids within the given list that are invalid,
