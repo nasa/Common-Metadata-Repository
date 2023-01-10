@@ -57,4 +57,4 @@
                (not= (transmit-config/echo-system-token) token))
       (errors/throw-service-error
        :bad-request
-       (format "Launchpad token is required. Token [%s] is not a launchpad token." token)))))
+       (format "Launchpad token is required. Token [%s] is not a launchpad token." (common-util/scrub-token token))))))
