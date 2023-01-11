@@ -38,7 +38,7 @@ functions:
     handler: serverless/src/bootstrapGremlinServer/handler.default
 
   indexCmrCollection:
-    timeout: 20
+    timeout: 600
     handler: serverless/src/indexCmrCollection/handler.default
     events:
       - sqs:
