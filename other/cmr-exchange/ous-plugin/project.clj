@@ -32,7 +32,7 @@
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.2"]
                  [gov.nasa.earthdata/cmr-metadata-proxy "0.2.8-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
-                 [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
+                 [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [metosin/ring-http-response "0.9.1"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/core.async "0.4.490"]

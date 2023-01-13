@@ -40,7 +40,7 @@
                  [gov.nasa.earthdata/cmr-metadata-proxy "0.2.8-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
                  [gov.nasa.earthdata/cmr-ous-plugin "0.3.8-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
+                 [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-sizing-plugin "0.3.5-SNAPSHOT"]
                  [http-kit "2.5.3"]
                  [markdown-clj "1.10.0"]
