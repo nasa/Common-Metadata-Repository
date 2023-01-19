@@ -101,6 +101,9 @@
                               [lein-bikeshed "0.5.2"]
                               [lein-kibit "0.1.8"]
                               [venantius/yagni "0.1.7"]]}
+             ;; The following profile is overriden on the build server or in the user's
+             ;; ~/.lein/profiles.clj file.
+             :internal-repos {}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]
                               [test2junit "1.4.2"]
