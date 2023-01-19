@@ -90,6 +90,16 @@ function build_service_bridge_uberjar {
     fi
 }
 
+function build_site_templates_uberjar {
+    echo "Building Site Templates uberjar ..."
+    (cd $CMR_DIR/site-templates && \
+            lein uberjar)
+    if [ $? -ne 0 ] ; then
+        echo "Failed to generate Site Templates uberjar" >&2
+        exit 127
+    fi
+}
+
 function build_all {
     cd $CMR_DIR && \
     cmr install jars,docs && \
