@@ -720,11 +720,11 @@
                (:associations coll2-search-result1)))))
 (testing "Associate grid with variable retrieve data using the .json endpoint"
  (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
-                  token grid-concept-id grid-revision-id [{:concept-id var1-concept-id  :revision-id var1-revision-id :data {:convert-format {:XYZ "ZYX"} :allow-regridding "true"}}])
+                  token grid-concept-id grid-revision-id [{:concept-id var1-concept-id  :revision-id var1-revision-id :data {"convert format" {:XYZ "ZYX"} :allow-regridding "true"}}])
        ;; Switch the position of grid and variable should return the same concept-id and revision-id is increased by 1.
        ;; Associate with some mock payload data ensure that data payload is returned in the format it was associated with
        response2 (association-util/generic-associate-by-concept-ids-revision-ids
-                  token var1-concept-id var1-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id :data {:convert-format {:XYZ "ZYX"} :allow-regridding "true"}}])
+                  token var1-concept-id var1-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id :data {"convert format" {:XYZ "ZYX"} :allow-regridding "true"}}])
 
        ;; Search for the grid, it should return the association
        grid-search-result (get-associations-and-details "grids.json" "name=Grid-A7-v1" :variables false)
@@ -748,7 +748,7 @@
           (:associations var1-search-result)))
    ;; Searching the variable returns the grid's data as the association details
    (is (= [{:data
-             {:convert-format {:XYZ "ZYX"}, :allow-regridding "true"} :concept_id grid-concept-id :revision_id grid-revision-id}]
+             {(keyword "convert format") {:XYZ "ZYX"}, :allow-regridding "true"} :concept_id grid-concept-id :revision_id grid-revision-id}]
          (:association_details var1-search-result)))))))
 
 
