@@ -285,13 +285,18 @@
   content."
   []
   (println "Preparing docs generator ...")
-  (let [json-target (io/file "resources/public/site/JSONQueryLanguage.json")
+  (let [collection-json-target (io/file "resources/public/site/CollectionJSONQueryLanguage.json")
+        granule-json-target (io/file "resources/public/site/GranuleJSONQueryLanguage.json")
         aql-target (io/file "resources/public/site/IIMSAQLQueryLanguage.xsd")
         swagger-target (io/file "resources/public/site/swagger.json")]
-    (println " * Copying JSON Query Language Schema to" (str json-target))
-    (io/make-parents json-target)
-    (io/copy (io/file "resources/schema/JSONQueryLanguage.json")
-             json-target)
+    (println " * Copying collection JSON Query Language Schema to" (str collection-json-target))
+    (io/make-parents collection-json-target)
+    (io/copy (io/file "resources/schema/CollectionJSONQueryLanguage.json")
+             collection-json-target)
+    (println " * Copying granule JSON Query Language Schema to" (str granule-json-target))
+    (io/make-parents granule-json-target)
+    (io/copy (io/file "resources/schema/GranuleJSONQueryLanguage.json")
+             granule-json-target)
     (println " * Copying AQL Schema to" (str aql-target))
     (io/copy (io/file "resources/schema/IIMSAQLQueryLanguage.xsd")
              aql-target)

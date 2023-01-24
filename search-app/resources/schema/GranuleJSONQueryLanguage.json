@@ -1,0 +1,235 @@
+{
+	"$schema": "http://json-schema.org/draft-04/schema#",
+	"title": "Query",
+	"description": "A JSON format to support searching for granules in the CMR.",
+	"additionalProperties": false,
+	"type": "object",
+	"properties": {
+		"condition": {
+			"$ref": "#/definitions/QueryCondition"
+		}
+	},
+	"definitions": {
+		"QueryCondition": {
+			"description": "Condition used to filter granule  search results from the CMR. If multiple properties are provided in a single condition they will be implicitly AND'ed.",
+			"additionalProperties": false,
+			"minProperties": 1,
+			"type": "object",
+			"properties": {
+				"and": {
+					"description": "Groups together conditions to return the intersection of the results.",
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/QueryCondition"
+					},
+					"minItems": 1
+				},
+				"or": {
+					"description": "Groups together conditions to return the union of the results.",
+					"type": "array",
+					"items": {
+						"$ref": "#/definitions/QueryCondition"
+					},
+					"minItems": 1
+				},
+				"not": {
+					"description": "Negates the provided condition.",
+					"$ref": "#/definitions/QueryCondition"
+				},
+				"collection_concept_id": {
+					"description": "Collection Concept Id for parent collection",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"entry_title": {
+					"description": "UMM Entry Title",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"provider": {
+					"description": "UMM Provider",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"short_name": {
+					"description": "UMM Short Name",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"updated_since": {
+					"description": "Revisions with revision date later than provided value",
+					"format": "date-time",
+					"type": "string"
+				},
+				"version": {
+					"description": "UMM Version",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"concept_id": {
+					"description": "CMR concept ID",
+					"oneOf": [{
+						"type": "string"
+					}, {
+						"type": "object",
+						"additionalProperties": false,
+						"description": "Concept ID searches are always case sensitive",
+						"properties": {
+							"value": {
+								"type": "string"
+							},
+							"pattern": {
+								"$ref": "#/definitions/PatternOption"
+							}
+						},
+						"required": ["value"]
+					}]
+				},
+				"platform": {
+					"description": "UMM platform short name",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"instrument": {
+					"description": "UMM instrument short name",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"project": {
+					"description": "UMM project short name",
+					"$ref": "#/definitions/StringCondition"
+				},
+				"bounding_box": {
+					"description": "Specifies a bounding rectangle search.",
+					"$ref": "#/definitions/BoundingBoxCondition"
+				},
+				"temporal": {
+					"description": "Specifies a temporal search.",
+					"type": "object",
+					"additionalProperties": false,
+					"minProperties": 1,
+					"properties": {
+						"start_date": {
+							"description": "The temporal coverage start date.",
+							"format": "date-time",
+							"type": "string"
+						},
+						"end_date": {
+							"description": "The temporal coverage end date.",
+							"format": "date-time",
+							"type": "string"
+						},
+						"recurring_start_day": {
+							"description": "An integer representing the day to get granules with a temporal extent over a recurring annual period starting on or after the given day.",
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 366
+						},
+						"recurring_end_day": {
+							"description": "An integer representing the day to get granules with a temporal extent over a recurring annual period ending on or before the given day.",
+							"type": "integer",
+							"minimum": 0,
+							"maximum": 366
+						},
+						"exclude_boundary": {
+							"description": "If set to true, the search will not include the boundary date times. It has no impact on periodic temporal searches. Defaults to false.",
+							"type": "boolean"
+						}
+					}
+				}
+      }
+    },
+		"StringCondition": {
+			"description": "String searches can take either a string or an object with a value to search for and options to apply for the search.",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"description": "Used to specify the value and options to apply when searching against a particular field. 'value' is required.",
+				"type": "object",
+				"properties": {
+					"value": {
+						"description": "The value to search for the given field.",
+						"type": "string"
+					},
+					"ignore_case": {
+						"$ref": "#/definitions/IgnoreCaseOption"
+					},
+					"pattern": {
+						"$ref": "#/definitions/PatternOption"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["value"]
+			}]
+		},
+		"RangeCondition": {
+			"description": "Range Condition takes a string.",
+			"type": "string"
+		},
+		"CaseInsensitiveStringCondition": {
+			"description": "String searches can take either a string or an object with a value to search for and options to apply for the search. This is similar to StringCondition, but it does not support ignore_case options.",
+			"oneOf": [{
+				"type": "string"
+			}, {
+				"description": "Used to specify the value and options to apply when searching against a particular field. 'value' is required.",
+				"type": "object",
+				"properties": {
+					"value": {
+						"description": "The value to search for the given field.",
+						"type": "string"
+					},
+					"pattern": {
+						"$ref": "#/definitions/PatternOption"
+					}
+				},
+				"additionalProperties": false,
+				"required": ["value"]
+			}]
+		},
+		"BoundingBoxCondition": {
+			"description": "Specifies a bounding rectangle search.",
+			"oneOf": [{
+				"type": "array",
+				"description": "Must contain 4 numbers in the following order: west, south, east, north. West and east represent longitudes (-180 to 180), south and north represent latitudes (-90 to 90).",
+				"items": {
+					"type": "number",
+					"minimum": -180,
+					"maximum": 180
+				},
+				"minItems": 4,
+				"maxItems": 4
+			}, {
+				"type": "object",
+				"additionalProperties": false,
+				"properties": {
+					"north": {
+						"type": "number",
+						"description": "Northern latitude (-90 to 90).",
+						"minimum": -90,
+						"maximum": 90
+					},
+					"south": {
+						"type": "number",
+						"description": "Southern latitude (-90 to 90).",
+						"minimum": -90,
+						"maximum": 90
+					},
+					"east": {
+						"type": "number",
+						"description": "Eastern longitude (-180 to 180).",
+						"minimum": -180,
+						"maximum": 180
+					},
+					"west": {
+						"type": "number",
+						"description": "Western longitude (-180 to 180).",
+						"minimum": -180,
+						"maximum": 180
+					}
+				},
+				"required": ["north", "south", "east", "west"]
+			}]
+		},
+		"IgnoreCaseOption": {
+			"description": "If set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.",
+			"type": "boolean"
+		},
+		"PatternOption": {
+			"description": "If set to true, the search will treat the value provided for the given field as a pattern with wild-cards, in which '*' matches zero or more characters and '?' matches any single character. ",
+			"type": "boolean"
+		}
+  }
+}
