@@ -2928,9 +2928,9 @@ Provider holdings for a list of providers
 
 ### <a name="search-with-json-query"></a> Search with JSON Query
 
-Search for collections with JSON in a POST request body. The JSON must conform to the schema
-that is defined in `%CMR-ENDPOINT%/site/JSONQueryLanguage.json`. Only collection search is
-supported, not granule search.
+Search for collections or granules with JSON in a POST request body. The JSON must conform to the schema
+that is defined in `%CMR-ENDPOINT%/site/CollectionJSONQueryLanguage.json` or `%CMR-ENDPOINT%/site/GranuleJSONQueryLanguage.json`
+for collections and granules respectively. Only collection and granule search are supported.
 
     curl -XPOST -H "Content-Type: application/json" %CMR-ENDPOINT%/collections
     -d '{"condition": { "and": [{ "not": { "or": [{ "provider": "TEST" },
@@ -2938,6 +2938,14 @@ supported, not granule search.
                                                               "platform": {"short_name": "mars-satellite"}}]}]}},
                                 { "bounding_box": [-45,15,0,25],
                                   "science_keywords": { "category": "EARTH SCIENCE" }}]}}'
+
+    curl -XPOST -H "Content-Type: application/json" %CMR-ENDPOINT%/granules
+    -d '{"condition": { "and": [{ "not": { "or": [{ "provider": "TEST" },
+                                                  { "and": [{ "project": "test-project",
+                                                              "platform": {"short_name": "mars-satellite"}}]}]}},
+                                { "bounding_box": [-45,15,0,25],
+                                  "short_name": "Short_name 1"}]}}'
+
 ### <a name="search-with-aql"></a> Search with AQL
 
 Search collections or granules with AQL in POST request body. The AQL must conform to the schema

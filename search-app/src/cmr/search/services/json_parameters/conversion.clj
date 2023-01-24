@@ -24,11 +24,36 @@
             [cmr.spatial.validation :as sv]
             [inflections.core :as inf]))
 
-(def json-query-schema
+(def json-query-schema-collections
   "JSON Schema for querying for collections."
-  (js/parse-json-schema-from-path "schema/JSONQueryLanguage.json"))
+  (js/parse-json-schema-from-path "schema/CollectionJSONQueryLanguage.json"))
 
-(def query-condition-name->condition-type-map
+(def json-query-schema-granules
+  "JSON Schema for querying for granules."
+  (js/parse-json-schema-from-path "schema/GranuleJSONQueryLanguage.json"))
+
+(def query-condition-name->condition-type-map-granules
+  {:entry-title :string
+   :provider :string
+   :short-name :string
+   :version :string
+   :concept-id :string
+   :platform :string
+   :instrument :string
+   :project :string
+   :spatial-keyword :string
+   :two-d-coordinate-system-name :string
+   :bounding-box :bounding-box
+   :temporal :temporal
+   :updated-since :updated-since
+   :collection-concept-id :string
+
+   ;; query constructs
+   :or :or
+   :and :and
+   :not :not})
+
+(def query-condition-name->condition-type-map-collections
   "A mapping of query condition names to the query condition type."
   {;; collection query params
    :entry-title :string
@@ -66,20 +91,27 @@
    :and :and
    :not :not})
 
+(defn- concept-type->json-query-schema
+  "Returns route to json query schema for given concept-type"
+  [concept-type]
+  (if (= :granule concept-type)
+    json-query-schema-granules
+    json-query-schema-collections))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations
 
 (defn- concept-type-validation
   "Validates the provided concept type is valid for JSON query."
   [concept-type]
-  (when-not (= :collection concept-type)
+  (when-not (contains? #{:granule :collection} concept-type)
     (errors/throw-service-error :bad-request (msg/json-query-unsupported-msg concept-type))))
 
 (defn- validate-json-query
   "Perform all validations against the provided JSON query."
   [concept-type json-query]
   (concept-type-validation concept-type)
-  (when-let [errors (seq (js/validate-json json-query-schema json-query))]
+  (when-let [errors (seq (js/validate-json (concept-type->json-query-schema concept-type) json-query))]
     (errors/throw-service-errors :bad-request errors)))
 
 (def ^:private tag-subfields
@@ -109,9 +141,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn- query-condition-name->condition-type
-  "Returns the query condition type based on the given concept-type and param-name."
-  [condition-name]
-  (condition-name query-condition-name->condition-type-map))
+  "Returns the query condition type based on the given concept-type and condition-name."
+  [concept-type condition-name]
+  (if (= :granule concept-type)
+    (get query-condition-name->condition-type-map-granules condition-name)
+    (get query-condition-name->condition-type-map-collections condition-name)))
 
 (defn- case-sensitive-field?
   "Return true if the given field should be searched case-sensitive"
@@ -137,7 +171,7 @@
 (defmulti parse-json-condition
   "Converts a JSON query condition into a query model condition"
   (fn [concept-type condition-name value]
-    (query-condition-name->condition-type condition-name)))
+    (query-condition-name->condition-type concept-type condition-name)))
 
 (defmethod parse-json-condition :default
   [concept-type condition-name value]

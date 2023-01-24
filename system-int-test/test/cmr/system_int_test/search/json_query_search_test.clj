@@ -14,14 +14,18 @@
          :collection {:foo "bar"}
          ["#/condition: extraneous key [foo] is not permitted"]
 
+         :granule {:foo "bar"}
+         ["#/condition: extraneous key [foo] is not permitted"]
+
          :collection {:not {:or [{:provider "PROV1"} {:not-right {:another-bad-name "123"}}]}}
-         ["#/condition/not/or/1: extraneous key [not-right] is not permitted"]
-
-         :granule {:provider "PROV1"}
-         ["Searching using JSON query conditions is not supported for granules."]))
-
+         ["#/condition/not/or/1: extraneous key [not-right] is not permitted"]))
 
   (testing "Concept-id does not support case-insensitive searches"
+    (is (= {:status 400
+            :errors ["#/condition/concept_id: expected type: String, found: JSONObject"
+                     "#/condition/concept_id: extraneous key [ignore_case] is not permitted"]}
+           (search/find-refs-with-json-query :granule {} {:concept_id {:value "G3-PROV1"
+                                                                       :ignore_case true}})))
     (is (= {:status 400
             :errors ["#/condition/concept_id: expected type: String, found: JSONObject"
                      "#/condition/concept_id: extraneous key [ignore_case] is not permitted"]}
@@ -30,22 +34,34 @@
 
   (testing "Invalid NOT cases"
     (are [search errors]
-         (= {:status 400 :errors errors}
-            (search/find-refs-with-json-query :collection {} search))
+      (= {:status 400 :errors errors}
+         (search/find-refs-with-json-query :granule {} search))
 
-         {:not "PROV1"} ["#/condition/not: expected type: JSONObject, found: String"]
-         {:not {}} ["#/condition/not: minimum size: [1], found: [0]"]))
+      {:not "PROV1"} ["#/condition/not: expected type: JSONObject, found: String"]
+      {:not {}} ["#/condition/not: minimum size: [1], found: [0]"])
+
+    (are [search errors]
+      (= {:status 400 :errors errors}
+         (search/find-refs-with-json-query :collection {} search))
+
+      {:not "PROV1"} ["#/condition/not: expected type: JSONObject, found: String"]
+      {:not {}} ["#/condition/not: minimum size: [1], found: [0]"]))
 
   (testing "Empty conditions are invalid"
     (is (= {:status 400
             :errors ["#/condition: minimum size: [1], found: [0]"]}
-            (search/find-refs-with-json-query :collection {} {}))))
+           (search/find-refs-with-json-query :granule {} {})))
+    (is (= {:status 400
+            :errors ["#/condition: minimum size: [1], found: [0]"]}
+           (search/find-refs-with-json-query :collection {} {}))))
 
   (testing "Invalid bounding boxes"
     (util/are2
       [search errors]
-      (= {:status 400 :errors errors}
-         (search/find-refs-with-json-query :collection {} search))
+      (and (= {:status 400 :errors errors}
+             (search/find-refs-with-json-query :granule {} search))
+           (= {:status 400 :errors errors}
+              (search/find-refs-with-json-query :collection {} search)))
 
       "Invalid coordinates"
       {:bounding_box [-195, -200, 350, 425]}
@@ -93,22 +109,22 @@
   (testing "Science keywords must contain one of the subfields as part of the search"
     (is (= {:status 400
             :errors ["Invalid Science Keywords query condition {:ignore-case true}. Must contain at least one subfield."]}
-            (search/find-refs-with-json-query :collection {} {:science_keywords {:ignore_case true}}))))
+           (search/find-refs-with-json-query :collection {} {:science_keywords {:ignore_case true}}))))
 
   (testing "Platform must contain one of the subfields as part of the search"
     (is (= {:status 400
             :errors ["Invalid Platform query condition {:ignore-case true}. Must contain at least one subfield."]}
-            (search/find-refs-with-json-query :collection {} {:platform {:ignore_case true}}))))
+           (search/find-refs-with-json-query :collection {} {:platform {:ignore_case true}}))))
 
   (testing "Instrument must contain one of the subfields as part of the search"
     (is (= {:status 400
             :errors ["Invalid Instrument query condition {:ignore-case true}. Must contain at least one subfield."]}
-            (search/find-refs-with-json-query :collection {} {:instrument {:ignore_case true}}))))
+           (search/find-refs-with-json-query :collection {} {:instrument {:ignore_case true}}))))
 
   (testing "Archive center must contain one of the subfields as part of the search"
     (is (= {:status 400
             :errors ["Invalid Archive Center query condition {:ignore-case true}. Must contain at least one subfield."]}
-            (search/find-refs-with-json-query :collection {} {:archive_center {:ignore_case true}})))))
+           (search/find-refs-with-json-query :collection {} {:archive_center {:ignore_case true}})))))
 
 
 (comment
@@ -123,6 +139,4 @@
                                                          "value" "44"}
                                              "bad" "key"}]})
 
-  (perform-validations query-schema "")
-
-  )
+  (perform-validations query-schema ""))
