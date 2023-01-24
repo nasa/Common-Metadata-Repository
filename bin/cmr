@@ -101,6 +101,9 @@ case "$COMMAND" in
             service-bridge)
                 build_service_bridge_uberjar
                 ;;
+            site-templates)
+                build_site_templates_uberjar
+                ;;
             *)
                 if [[ -z "$PROJECT" ]]; then
                     build_all

@@ -27,7 +27,7 @@
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0"]
                  [gov.nasa.earthdata/cmr-metadata-proxy "0.2.8-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-ous-plugin "0.3.8-SNAPSHOT"]
-                 [gov.nasa.earthdata/cmr-site-templates "0.1.0"]
+                 [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]]
   :manifest {"CMR-Plugin" "service-bridge-app"}
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"
