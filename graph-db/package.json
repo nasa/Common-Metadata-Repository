@@ -58,6 +58,6 @@
   "resolutions": {
     "file-type": "16.5.4",
     "luxon": "1.28.1",
-    "simple-git": "3.15.0"
+    "simple-git": "3.16.0"
   }
 }
