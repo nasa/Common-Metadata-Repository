@@ -26,7 +26,7 @@ These parameters will match fields within a Data Quality Summary. They are case 
 * provider - options: pattern, ignore\_case
 * native\_id - options: pattern, ignore\_case
 * concept\_id
-* id (legacy identifier)
+* id
 
 ```
     curl "%CMR-ENDPOINT%/data-quality-summaries?concept_id=DQ1200000000-PROV1"
