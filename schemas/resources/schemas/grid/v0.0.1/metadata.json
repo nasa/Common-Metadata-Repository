@@ -11,7 +11,7 @@
     "GridDefinition": {
         "CoordinateReferenceSystemID": {
             "Type": "EPSG",
-			"Code": "EPSG:4326",
+            "Code": "EPSG:4326",
             "Title": "WGS84 - World Geodetic System 1984, used in GPS - EPSG:4326",
             "URL": "https://epsg.io/4326"
         },
