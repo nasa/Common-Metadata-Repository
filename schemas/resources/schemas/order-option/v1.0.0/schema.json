@@ -7,8 +7,7 @@
   "properties": {
     "Id": {
       "description": "The identifier that was assigned to this record by an older system. It is in the schema to preserve search API functionality in order to store this identifier.",
-      "type": "string",
-      "maxLength": 200
+      "type": "string"
     },
     "Name": {
       "description": "The name is a shortened name used to distinguish between other option definitions. This field must be unique per provider and is restricted to 30 characters.",

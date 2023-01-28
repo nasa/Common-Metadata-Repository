@@ -166,18 +166,18 @@
           "properties": {
             "Height": {
               "description": "The height associated with the Grid Dimension Size.",
-              "type": "number",
-              "minimum": 0
+              "type": "integer",
+              "minimum": 1
             },
             "Width": {
               "description": "The width associated with the Grid Dimension Size.",
-              "type": "number",
-              "minimum": 0
+              "type": "integer",
+              "minimum": 1
             },
             "Time": {
-              "description": "The time associated with the Grid Dimension Size.",
-              "type": "string",
-              "format": "time"
+              "description": "The time associated with the Grid Dimension Size given in whole number values, eg. 1 (for 1 second).",
+              "type": "integer",
+              "minimum": 1
             },
             "Other": {
               "description": "An alternative additional dimension for the grid, either 3rd or 4th dimension beyond height/width/time (if defined).",
@@ -193,11 +193,11 @@
                   "type": "string"
                 },
                 "Description": {
-      			  "description": "A brief text that allows others to understand the purpose of the alternative dimension being add to the DimensionSize",
-      			  "type": "string",
-      			  "minLength": 1,
-      			  "maxLength": 1024
-    			}
+      			     "description": "A brief text that allows others to understand the purpose of the alternative dimension being add to the DimensionSize",
+      			     "type": "string",
+      			     "minLength": 1,
+      			     "maxLength": 1024
+    			      }
               }
             }
           },
@@ -206,35 +206,7 @@
             "Width"
           ]
         },
-        "Resolution": {
-          "description": "The resolution associated with the Grid.",
-          "type": "object",
-          "additionalProperties": false,
-          "properties": {
-            "Unit": {
-              "description": "The resolution unit of the measured size.",
-              "type": "string",
-              "$ref": "#/definitions/UnitEnum"
-            },
-            "LongitudeResolution": {
-              "description": "The Longitudes (columns) associated with the Grid Resolution.",
-              "type": "number",
-              "minimum": 1,
-              "maximum": 20000000
-            },
-            "LatitudeResolution": {
-              "description": "The Latitudes (Rows) associated with the Grid Resolution.",
-              "type": "number",
-              "minimum": 1,
-              "maximum": 20000000
-            }
-          },
-          "required": [
-            "Unit",
-            "LongitudeResolution",
-            "LatitudeResolution"
-          ]
-        },
+
         "Distortion": {
           "type": "object",
           "additionalProperties": false,
@@ -254,7 +226,7 @@
           }
         },
         "Uniform-Grid": {
-          "description": "a responsive layout control grid which arranges items in a evenly-spaced set of rows or columns to fill the total available display space.",
+          "description": "A responsive layout control grid which arranges items in a evenly-spaced set of rows or columns to fill the total available display space.",
           "type": "boolean",
           "examples": [
             true,
@@ -269,38 +241,72 @@
             false
           ]
         },
-        "SpatialExtent": {
-          "description": "This class contains elements which describe the spatial extent of a granule.",
-          "$ref": "#/definitions/SpatialExtentType"
+
+        "SpatialConstraint": {
+          "description": "The group contains elements which describe the spatial constraint of a grid.",
+          "$ref": "#/definitions/SpatialConstraintType"
         },
-        "ScaleExtent": {
-          "description": "Specifies the scale extent coverage of the grid.",
-          "$ref": "#/definitions/ScaleExtentType"
+
+        "DimensionScale": {
+          "description": "The characterizes the grid's X, Y, Time, and Other Dimensions.",
+          "type": "object",
+          "properties": {
+            "0_360_DegreeProjection": {
+              "description": "Describes whether the grid's dimension scale Degree coverage is a -180 by 180 or 0 by 360 on x-axis.",
+              "type": "boolean"
+            },
+            "X": {
+              "description": "The horizontal dimension values of the x-axis.",
+              "$ref": "#/definitions/DimensionScaleType"
+            },
+            "Y": {
+              "description": "The vertical dimension values of the y-axis.",
+              "$ref": "#/definitions/DimensionScaleType"
+            },
+            "Time": {
+              "description": "The dimension values for time.",
+              "$ref": "#/definitions/DimensionScaleType"
+            },
+            "Other": {
+              "description": "The vertical dimension values for other.",
+              "$ref": "#/definitions/DimensionScaleType"
+            }
+          },         
+          "required": [
+            "X",
+            "Y",
+            "Time",
+            "Other"
+          ],
+          "allOf": [
+              {"$ref": "#/definitions/DimensionScaleUnitXEnumsCondition"},
+              {"$ref": "#/definitions/DimensionScaleUnitYEnumsCondition"},
+              {"$ref": "#/definitions/DimensionScaleUnitTimeEnumsCondition"},
+              {"$ref": "#/definitions/DimensionScaleXUnitPatternDMS"},
+              {"$ref": "#/definitions/DimensionScaleYUnitPatternDMS"},
+              {"$ref": "#/definitions/DimensionScaleMeterMinMaxConditionX"},
+              {"$ref": "#/definitions/DimensionScaleMeterMinMaxConditionY"},
+              {"$ref": "#/definitions/DimensionScaleKilometerMinMaxConditionX"},
+              {"$ref": "#/definitions/DimensionScaleKilometerMinMaxConditionY"},
+              {"$ref": "#/definitions/DimensionScaleDegreeMinMaxTrueConditionX"},
+              {"$ref": "#/definitions/DimensionScaleDegreeMinMaxTrueConditionY"},
+              {"$ref": "#/definitions/DimensionScaleHourMinMaxPatternConditionTime"},
+              {"$ref": "#/definitions/DimensionScaleMinutesMinMaxPatternConditionTime"},
+              {"$ref": "#/definitions/DimensionScaleSecondsMinMaxPatternConditionTime"},
+              {"$ref": "#/definitions/DimensionScaleDateMinMaxPatternConditionTime"},
+              {"$ref": "#/definitions/DimensionScaleTimeMinMaxPatternConditionTime"},
+              {"$ref": "#/definitions/DimensionScaleUTCDateTimeMinMaxPatternConditionTime"},
+              {"$ref": "#/definitions/ScaleDegreesMinutesSecondsCondition"},
+              {"$ref": "#/definitions/ScaleKMCondition"},
+              {"$ref": "#/definitions/ScaleMCondition"},
+              {"$ref": "#/definitions/ScaleDegreeCondition"}
+          ]
         }
       },
-
-      "allOf": [
-        {"$ref": "#/definitions/ResolutionScaleKMCondition"},
-        {"$ref": "#/definitions/ResolutionScaleMCondition"},
-        {"$ref": "#/definitions/ResolutionScaleDegreeCondition"}
-      ],
-      "anyOf": [
-        {
-          "required": [
-            "CoordinateReferenceSystemID",
-            "DimensionSize",
-            "Resolution",
-            "SpatialExtent"
-          ]
-        },
-        {
-          "required": [
-            "CoordinateReferenceSystemID",
-            "DimensionSize",
-            "Resolution",
-            "ScaleExtent"
-          ]
-        }
+      "required": [
+        "CoordinateReferenceSystemID",
+        "DimensionSize",
+        "DimensionScale"
       ]
     },
 
@@ -371,92 +377,107 @@
         "ShortName"
       ]
     },
-    "SpatialExtentType": {
+    "SpatialConstraintType": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "0_360_DegreeProjection": {
-          "description": "Describes whether the grid's bounding box geographic coverage is a -180 longitude by 180 longitude or 0 longitude by 360 longitude Degree Projection.",
+          "description": "Describes whether the grid's bounding box geographic coverage is -180 by 180 longitude or 0 by 360 longitude Degree Projection.",
           "type": "boolean"
         },
         "WestBoundingCoordinate": {
-          "description": "The west bounding coordinate of the bounding box.",
-          "type": "number",
-          "$ref": "#/definitions/CoordinateCondition"
+          "description": "The western bounding coordinate of the bounding box.",
+          "type": "number"
         },
         "SouthBoundingCoordinate": {
-          "description": "The south bounding coordinate of the bounding box.",
+          "description": "The southern bounding coordinate of the bounding box.",
           "type": "number",
           "minimum": -90,
           "maximum": 90
         },
         "EastBoundingCoordinate": {
-          "description": "The east bounding coordinate of the bounding box.",
-          "type": "number",
-          "$ref": "#/definitions/CoordinateCondition"
+          "description": "The eastern bounding coordinate of the bounding box.",
+          "type": "number"
         },
         "NorthBoundingCoordinate": {
-          "description": "The north bounding coordinate of the bounding box.",
+          "description": "The northern bounding coordinate of the bounding box.",
           "type": "number",
           "minimum": -90,
           "maximum": 90
+        },
+        "SpatialResolution": {
+          "description": "The spatial resolution associated with the Grid.",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "Unit": {
+              "description": "The unit used to measure the SpatialResolution.",
+              "type": "string",
+              "$ref": "#/definitions/UnitEnum"
+            },
+            "LongitudeResolution": {
+              "description": "The Longitudes (columns) associated with the Grid Resolution.",
+              "type": "string"
+            },
+            "LatitudeResolution": {
+              "description": "The Latitudes (Rows) associated with the Grid Resolution.",
+              "type": "string"
+            }
+          },
+          "required": [
+            "Unit",
+            "LongitudeResolution",
+            "LatitudeResolution"
+          ],
+          "allOf": [
+            {"$ref": "#/definitions/SpatialResolutionUnitPatternDMS"},
+            {"$ref": "#/definitions/SpatialResolutionUnitPatternDeg"},
+            {"$ref": "#/definitions/SpatialResolutionUnitPatternMinute"},
+            {"$ref": "#/definitions/SpatialResolutionUnitPatternSecond"},
+            {"$ref": "#/definitions/SpatialResolutionUnitPatternKM"},
+            {"$ref": "#/definitions/SpatialResolutionUnitPatternMeter"}
+          ]
         }
       },
-
       "required": [
         "WestBoundingCoordinate",
         "SouthBoundingCoordinate",
         "EastBoundingCoordinate",
         "NorthBoundingCoordinate"
+      ],
+      "allOf": [
+        {"$ref": "#/definitions/CoordinateCondition"}
       ]
     },
     
-    "ScaleExtentType": {
-      "additionalProperties": false,
+    "DimensionScaleType": {
+      "description": "The elements used for DimensionScale group.",
       "type": "object",
       "properties": {
-        "ScaleDimensions": {
-        	"description": "characterizes the grid's X and Y Dimensions.",
-            "type": "array",
-            "uniqueItems": true,
-            "items": {
-                "type": "object",
-                "properties": {
-                      "Unit": {
-                        "description": "The measurement units used for the values.",
-                        "type": "string",
-                        "$ref": "#/definitions/UnitEnum"
-                      },  
-                      "0_360_DegreeProjection": {
-                        "description": "Describes whether the grid's bounding box geographic coverage is a -180 longitude by 180 longitude or 0 longitude by 360 longitude Degree Projection.",
-                        "type": "boolean"
-                      },
-                      "Y-Dimension": {
-                        "description": "The latitude values of a spatially referenced point.",
-                        "type": "number"
-                      },
-                      "X-Dimension": {
-                        "description": "The Longitude values of a spatially referenced point.",
-                        "type": "number"}
-                      },
-        
-                    "allOf": [
-                          {"$ref": "#/definitions/ScaleDimensionKilometerMinMaxCondition"},
-                          {"$ref": "#/definitions/ScaleDimensionMeterMinMaxCondition"},
-                          {"$ref": "#/definitions/ScaleDimensionDegreeMinMaxTrueCondition"},
-                          {"$ref": "#/definitions/ScaleDimensionDegreeMinMaxFalseCondition"}
-                      ],
-                      
-                    "required": [
-                      "Unit",
-                      "Y-Dimension",
-                      "X-Dimension"
-                    ]
-                }
-            }
+        "Minimum": {
+          "description": "The lowest value of the element."
+        },
+        "Maximum": {
+          "description": "The highest value of the element."
+        },
+        "Unit": {
+          "description": "The measurement units used for the element values.",
+          "type": "string",
+          "enum": ["Kilometer", "Meter", "Degree", "Hour", "Minutes", "Seconds", "Degrees-Minutes-Seconds", "Date", "Time", "DateTime"]
+        },
+        "Resolution": {
+          "description": "The associated dimension resolution value for the element.",
+          "type": "number"
         }
+      },
+      "required": [
+        "Minimum",
+        "Maximum",
+        "Unit",
+        "Resolution"
+      ]
     },
-    
+
     "RelatedURLType": {
       "type": "object",
       "additionalProperties": false,
@@ -615,7 +636,7 @@
     },
     
     "CoordinateCondition": {
-        "$comment": "Checks if the the 0_360_DegreeProjection element is set to true then sets the minimum and maximum values.",
+        "$comment": "Checks if the the 0_360_DegreeProjection element in SpatialResolution is set to true then sets the minimum and maximum values.",
         "if": {"properties": {"0_360_DegreeProjection": {"const": true}}},
         "then": {"properties": {"WestBoundingCoordinate": {"minimum": 0, "maximum": 360},
                 "EastBoundingCoordinate": {"minimum": 0, "maximum": 360}}},
@@ -626,57 +647,196 @@
     "UnitEnum": {
        "description": "Units of measurement for distances.",
        "type": "string",
-       "enum": ["Kilometer", "Meter", "Degree"]
-    },
-    
-    "ScaleDimensionKilometerMinMaxCondition": {
-        "$comment": "Checks if the ScaleDimensions Unit element value is Kilometer then sets the minimum and maximum values",
-    	"if": {"properties": {"Unit": {"const": "Kilometer"}}},
-        "then": {"properties": {"Y-Dimension": {"minimum": 0, "maximum": 40007.863},
-                "X-Dimension": {"minimum": 0, "maximum": 40075.017}}}
-    },
-          
-    "ScaleDimensionMeterMinMaxCondition": {
-        "$comment": "Checks if the ScaleDimensions Unit element value is Meter then sets the minimum and maximum values",
-    	"if": {"properties": {"Unit": {"const": "Meter"}}},
-        "then": {"properties": {"Y-Dimension": {"minimum": 0, "maximum": 40007863},
-                "X-Dimension": {"minimum": 0, "maximum": 40075017}}}
-    },
-          
-    "ScaleDimensionDegreeMinMaxTrueCondition": {
-    	"$comment": "Checks if the ScaleDimensions Unit element value is Degree and if the 0_360_DegreeProjection element is set to true then sets the minimum and maximum values.",
-    	"if": {"properties": {"Unit": {"const": "Degree"},
-              "0_360_DegreeProjection": {"const": true}}},
-        "then": {"properties": {"Y-Dimension": {"minimum": -90, "maximum": 90},
-                "X-Dimension": {"minimum": 0, "maximum": 360}}}
-    },
-          
-    "ScaleDimensionDegreeMinMaxFalseCondition": {
-        "$comment": "Checks if the ScaleDimensions Unit element value is Degree and if the 0_360_DegreeProjection element is set to false then sets the minimum and maximum values.",
-    	"if": {"properties": {"Unit": {"const": "Degree"},
-                "0_360_DegreeProjection": {"const": false}}},
-        "then": {"properties": {"Y-Dimension": {"minimum": -90, "maximum": 90},
-                "X-Dimension": {"minimum": -180, "maximum": 180}}}
-    },
-          
-    "ResolutionScaleKMCondition": {
-        "$comment": "Checks if both Resolution and ScaleDimensions unit elements have the value of Kilometer. If the unit values are diferent within the metadata then the metadata will fail validation against the schema.",
-        "if": {"properties": {"Resolution": {"properties": {"Unit": {"const": "Kilometer"}}}}},
-        "then": {"properties": {"ScaleExtent": {"properties": {"ScaleDimensions": {
-                "items": {"properties": {"Unit": {"const": "Kilometer"}}}}}}}}
-    },
-    
-    "ResolutionScaleMCondition": {
-        "$comment": "Checks if both Resolution and ScaleDimensions unit elements have the value of Meter. If the unit values are diferent within the metadata then the metadata will fail validation against the schema.",
-        "if": {"properties": {"Resolution": {"properties": {"Unit": {"const": "Meter"}}}}},
-        "then": {"properties": {"ScaleExtent": {"properties": {"ScaleDimensions": {
-        		"items": {"properties": {"Unit": {"const": "Meter"}}}}}}}}
+       "enum": ["Kilometer", "Meter", "Degree", "Hour", "Minutes", "Seconds", "Degrees-Minutes-Seconds", "Date", "Time", "DateTime"]
     },
 
-    "ResolutionScaleDegreeCondition": {
-        "$comment": "Checks if both Resolution and ScaleDimensions unit elements have the value of Degree. If the unit values are diferent within the metadata then the metadata will fail validation against the schema.",
-        "if": {"properties": {"Resolution": {"properties": {"Unit": {"const": "Degree"}}}}},
-        "then": {"properties": {"ScaleExtent": {"properties": {"ScaleDimensions": {
-                "items": {"properties": {"Unit": {"const": "Degree"}}}}}}}}}
+    "DimensionScaleUnitXEnumsCondition": {
+      "$comment": "Sets DimensionScale's Unit element value types for X.",
+      "if": {"properties": {"X": {"properties": {"Unit": {"enum": ["Kilometer", "Meter", "Degree"]}}}}},
+      "then": {"properties": {"X": {"properties": {"Minimum": {"type": "number"}, "Maximum": {"type": "number"}}}}},
+      "else": {"properties": {"X": {"properties": {"Unit": {"enum": ["Degrees-Minutes-Seconds"]}}}}}
+    },
+
+    "DimensionScaleUnitYEnumsCondition": {
+      "$comment": "Sets DimensionScale's Unit element value types for Y.",
+      "if": {"properties": {"Y": {"properties": {"Unit": {"enum": ["Kilometer", "Meter", "Degree"]}}}}},
+      "then": {"properties": {"Y": {"properties": {"Minimum": {"type": "number"}, "Maximum": {"type": "number"}}}}},
+      "else": {"properties": {"Y": {"properties": {"Unit": {"enum": ["Degrees-Minutes-Seconds"]}}}}}
+    },
+
+
+    "DimensionScaleUnitTimeEnumsCondition": {
+      "$comment": "Sets DimensionScale's Unit element value types for Time.",
+      "if": {"properties": {"Time": {"properties": {"Unit": {"enum": ["Hour", "Minutes", "Seconds", "Degrees-Minutes-Seconds", "Date", "Time", "DateTime"]}}}}},
+      "then": {"properties": {"Time": {"properties": {"Minimum": {"type": "string"}, "Maximum": {"type": "string"}}}}},
+      "else": false
+    },
+    
+    "DimensionScaleMeterMinMaxConditionX": {
+      "$comment": "Checks if the DimensionScale's Unit element value is Meter then sets the minimum value for Minimum and Maximum sub-elements for X.",
+      "if": {"properties": {"X": {"properties": {"Unit": {"const": "Meter"}}}}},
+        "then": {"properties": {"X": {"properties": {"Minimum": {"minimum": 1},
+                "Maximum": {"minimum": 1}}}}}
+    },
+
+    "DimensionScaleMeterMinMaxConditionY": {
+      "$comment": "Checks if the DimensionScale's Unit element value is Meter then sets the minimum value for Minimum and Maximum sub-elements for Y.",
+      "if": {"properties": {"Y": {"properties": {"Unit": {"const": "Meter"}}}}},
+        "then": {"properties": {"Y": {"properties": {"Minimum": {"minimum": 1},
+                "Maximum": {"minimum": 1}}}}}
+    },
+
+    "DimensionScaleKilometerMinMaxConditionX": {
+      "$comment": "Checks if the DimensionScale's Unit element value is Kilometer then sets the minimum value for Minimum and Maximum sub-elements for X.",
+    	"if": {"properties": {"X": {"properties": {"Unit": {"const": "Kilometer"}}}}},
+        "then": {"properties": {"X": {"properties": {"Minimum": {"minimum": 1},
+                "Maximum": {"minimum": 1}}}}}
+    },
+
+    "DimensionScaleKilometerMinMaxConditionY": {
+      "$comment": "Checks if the DimensionScale's Unit element value is Kilometer then sets the minimum value for Minimum and Maximum sub-elements for Y.",
+      "if": {"properties": {"Y": {"properties": {"Unit": {"const": "Kilometer"}}}}},
+        "then": {"properties": {"Y": {"properties": {"Minimum": {"minimum": 1},
+                "Maximum": {"minimum": 1}}}}}
+    },
+
+    "DimensionScaleDegreeMinMaxTrueConditionX": {
+    	"$comment": "Checks if the DimensionScale's Unit element value is Degree then sets the minimum and maximum values for Minimum and Maximum sub-elements for X.",
+    	"if": {"properties": {"X": {"properties": {"Unit": {"const": "Degree"},
+            "0_360_DegreeProjection": {"const": true}}}}},
+        "then": {"properties": {"X": {"properties": {"Minimum": {"minimum": 0, "maximum": 360},
+                "Maximum": {"minimum": 0, "maximum": 360}}}}}
+    },
+
+
+    "DimensionScaleDegreeMinMaxTrueConditionY": {
+      "$comment": "Checks if the DimensionScale's Unit element value is Degree then sets the minimum and maximum values for Minimum and Maximum sub-elements for Y.",
+      "if": {"properties": {"Y": {"properties": {"Unit": {"const": "Degree"},
+              "0_360_DegreeProjection": {"const": true}}}}},
+        "then": {"properties": {"Y": {"properties": {"Minimum": {"minimum": 0, "maximum": 360},
+                "Maximum": {"minimum": 0, "maximum": 360}}}}}
+    },
+
+    "DimensionScaleHourMinMaxPatternConditionTime": {
+      "$comment": "Checks if the DimensionScale's Unit element value is Hour then set the pattern requirement",
+      "if": {"properties": {"Time": {"properties": {"Unit": {"const": "Hour"}}}}},
+        "then": {"properties": {"Time": {"properties": {"Minimum": {"pattern": "^[0-9][0-9](\\.[0-9]{3})?$"},
+        "Maximum": {"pattern": "^[0-9][0-9](\\.[0-9]{3})?$"}}}}}
+    },
+
+    "DimensionScaleMinutesMinMaxPatternConditionTime": {
+      "$comment": "Checks if the DimensionScale's Unit element value is Minutes then set the pattern requirement",
+      "if": {"properties": {"Time": {"properties": {"Unit": {"const": "Minutes"}}}}},
+        "then": {"properties": {"Time": {"properties": {"Minimum": {"pattern": "^[0-9][0-9](\\.[0-9]{3})?$"},
+        "Maximum": {"pattern": "^[0-9][0-9](\\.[0-9]{3})?$"}}}}}
+    },
+
+
+    "DimensionScaleSecondsMinMaxPatternConditionTime": {
+      "$comment": "Checks if the DimensionScale's Unit element value is Seconds then set the pattern requirement",
+      "if": {"properties": {"Time": {"properties": {"Unit": {"const": "Seconds"}}}}},
+        "then": {"properties": {"Time": {"properties": {"Minimum": {"pattern": "^[0-9][0-9](\\.[0-9]{3})?$"},
+        "Maximum": {"pattern": "^[0-9][0-9](\\.[0-9]{3})?$"}}}}}
+    },
+
+    "DimensionScaleDateMinMaxPatternConditionTime": {
+      "$comment": "Checks if the DimensionScale's Unit element value is Date then set the pattern requirement",
+      "if": {"properties": {"Time": {"properties": {"Unit": {"const": "Date"}}}}},
+        "then": {"properties": {"Time": {"properties": {"Minimum": {"pattern": "^[0-2][0-9]{3}-[0-1][0-2]-[0-3][0-9]$"},
+        "Maximum": {"pattern": "^[0-2][0-9]{3}-[0-1][0-2]-[0-3][0-9]$"}}}}}
+    },
+
+    "DimensionScaleTimeMinMaxPatternConditionTime": {
+      "$comment": "Checks if the DimensionScale's Unit element value is Time then set the pattern requirement. The value's format YYYY-MM-DDThh:mm:ss.SSSZ",
+      "if": {"properties": {"Time": {"properties": {"Unit": {"const": "Time"}}}}},
+        "then": {"properties": {"Time": {"properties": {"Minimum": {"pattern": "^(2[0-3]|[0-1]?[\\d]):[0-5][\\d]:[0-5][\\d](\\.[0-9]{3})?$"},
+        "Maximum": {"pattern": "^(2[0-3]|[0-1]?[\\d]):[0-5][\\d]:[0-5][\\d](\\.[0-9]{3})?$"}}}}}
+    },
+
+    "DimensionScaleUTCDateTimeMinMaxPatternConditionTime": {
+      "$comment": "Checks if the DimensionScale's Unit element value is UTC DateTime then set the pattern requirement. The value's format YYYY-MM-DDThh:mm:ss.SSSZ",
+      "if": {"properties": {"Time": {"properties": {"Unit": {"const": "DateTime"}}}}},
+        "then": {"properties": {"Time": {"properties": {"Minimum": {"pattern": "^[0-2][0-9]{3}-[0-1][0-2]-[0-3][0-9]T(2[0-3]|[0-1]?[\\d]):[0-5][\\d]:[0-5][\\d](\\.[0-9]{3})?Z$"},
+          "Maximum": {"pattern": "^[0-2][0-9]{3}-[0-1][0-2]-[0-3][0-9]T(2[0-3]|[0-1]?[\\d]):[0-5][\\d]:[0-5][\\d](\\.[0-9]{3})?Z$"}}}}}
+    },
+
+    "DimensionScaleXUnitPatternDMS": { 
+      "$comment": "Checks the DimensionScale's Unit element values pattern for Degrees-Minutes-Seconds. The value's format ##-##-##.### and Milliseconds are optional.",
+      "if": {"properties": {"X": {"properties": {"Unit": {"enum": ["Degrees-Minutes-Seconds"]}}}}},
+      "then": {"properties": {"X": {"properties": {"Minimum": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"},
+        "Maximum": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"}}}}}
+    },
+
+    "DimensionScaleYUnitPatternDMS": { 
+      "$comment": "Checks the DimensionScale's Unit element values pattern for Degrees-Minutes-Seconds. The value's format ##-##-##.### and Milliseconds are optional.",
+      "if": {"properties": {"Y": {"properties": {"Unit": {"enum": ["Degrees-Minutes-Seconds"]}}}}},
+      "then": {"properties": {"Y": {"properties": {"Minimum": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"},
+        "Maximum": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"}}}}}
+    },
+
+    "SpatialResolutionUnitPatternDMS": { 
+      "$comment": "Checks the SpatialResolution Unit element values pattern for Degrees-Minutes-Seconds. The value's format ##-##-##.### and Milliseconds are optional.",
+      "if": {"properties": {"Unit": {"const": "Degrees-Minutes-Seconds"}}},
+      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"},
+        "LatitudeResolution": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"}}}
+    },
+
+    "SpatialResolutionUnitPatternMinute": { 
+      "$comment": "Checks the SpatialResolution Unit element values pattern for Minutes. The value's format ##-##.### and Milliseconds are optional.",
+      "if": {"properties": {"Unit": {"const": "Minutes"}}},
+      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"},
+        "LatitudeResolution": {"pattern": "^[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"}}}
+    },
+
+    "SpatialResolutionUnitPatternSecond": { 
+      "$comment": "Checks the SpatialResolution Unit element values pattern for Seconds. The value's format ##.### and Milliseconds are optional.",
+      "if": {"properties": {"Unit": {"const": "Seconds"}}},
+      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{2}(\\.[0-9]{3})?$"},
+        "LatitudeResolution": {"pattern": "^[0-9]{2}(\\.[0-9]{3})?$"}}}
+    },
+
+    "SpatialResolutionUnitPatternDeg": {
+      "$comment": "Checks the SpatialResolution Unit element values pattern for Degrees.", 
+      "if": {"properties": {"Unit": {"const": "Degree"}}},
+      "then": {"properties": {"LongitudeResolution": {"pattern": "^(360|3[0-5][0-9]|[12][0-9]{1,2}|[1-9][0-9]|[0-9])$"},
+        "LatitudeResolution": {"pattern": "^(180|1[0-7][0-9]|[1-9][0-9]|[0-9])$"}}}
+    },
+
+    "SpatialResolutionUnitPatternKM": { 
+      "$comment": "Checks the SpatialResolution Unit element values pattern for Kilometer.",
+      "if": {"properties": {"Unit": {"const": "Kilometer"}}},
+      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{1,}(\\.[0-9]{3})?$"},
+        "LatitudeResolution": {"pattern": "^[0-9]{1,}(\\.[0-9]{3})?$"}}}
+    },
+
+    "SpatialResolutionUnitPatternMeter": {
+      "$comment": "Checks the SpatialResolution Unit element values pattern for Meter.", 
+      "if": {"properties": {"Unit": {"const": "Meter"}}},
+      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{1,}$"},
+        "LatitudeResolution": {"pattern": "^[0-9]{1,}$"}}}
+    },  
+    
+    "ScaleDegreesMinutesSecondsCondition": {
+        "$comment": "Checks if DimensionScale's X and Y elements have the value of Degrees-Minutes-Seconds. If the element has a value that is different within the metadata then the metadata will fail validation against the schema.",
+        "if": {"properties": {"X": {"properties": {"Unit": {"const": "Degrees-Minutes-Seconds"}}}}}, 
+        "then": {"properties": {"Y": {"properties": {"Unit": {"const": "Degrees-Minutes-Seconds"}}}}}
+    },
+
+    "ScaleKMCondition": {
+        "$comment": "Checks if DimensionScale's X and Y elements have the value of Kilometer. If the element has a value that is different within the metadata then the metadata will fail validation against the schema.",
+        "if": {"properties": {"X": {"properties": {"Unit": {"const": "Kilometer"}}}}}, 
+        "then": {"properties": {"Y": {"properties": {"Unit": {"const": "Kilometer"}}}}}
+    },
+    
+    "ScaleMCondition": {
+        "$comment": "Checks if DimensionScale's X and Y elements have the value of Meter. If the element has a value that is different within the metadata then the metadata will fail validation against the schema.",
+        "if": {"properties": {"X": {"properties": {"Unit": {"const": "Meter"}}}}}, 
+        "then": {"properties": {"Y": {"properties": {"Unit": {"const": "Meter"}}}}}
+    },
+
+    "ScaleDegreeCondition": {
+        "$comment": "Checks if DimensionScale's X and Y elements have the value of Degree. If the element has a value that is different within the metadata then the metadata will fail validation against the schema.",
+        "if": {"properties": {"X": {"properties": {"Unit": {"const": "Degree"}}}}}, 
+        "then": {"properties": {"Y": {"properties": {"Unit": {"const": "Degree"}}}}}}
     }
 }
