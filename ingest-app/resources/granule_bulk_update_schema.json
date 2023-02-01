@@ -53,7 +53,7 @@
     "UpdateURLType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Describes an existing URL and replacment URL.",
+      "description": "Describes an existing URL and replacement URL.",
       "properties": {
         "from": {
           "description": "The existing URL to updated.",
