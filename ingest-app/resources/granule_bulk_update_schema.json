@@ -56,7 +56,7 @@
       "description": "Describes an existing URL and replacement URL.",
       "properties": {
         "from": {
-          "description": "The existing URL to updated.",
+          "description": "The existing URL to be updated.",
           "type": "string",
           "minLength": 1
         },
