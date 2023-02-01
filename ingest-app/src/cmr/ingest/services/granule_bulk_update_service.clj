@@ -72,12 +72,8 @@
    [(format (str "Bulk Granule Update failed - the operation:update-field combination [%s] is invalid.")
             (util/html-escape event-type))]))
 
-(defmulti update->instruction
-  "Returns the granule bulk update instruction for a single update item"
-  (fn [event-type _item]
-    (keyword event-type)))
-
-(defmethod update->instruction :update_field:additionalfile
+(defn- update->instruction-update-field-additionalfile
+  "Returns the granule bulk update instruction for a single additionalfile upate."
   [event-type item]
   (if-not (map? item)
     (invalid-update-error event-type)
@@ -86,7 +82,8 @@
        :granule-ur GranuleUR
        :new-value Files})))
 
-(defmethod update->instruction :update_field:mimetype
+(defn- update->instruction-update-field-links
+  "Returns the granule bulk update instruction for a single links update."
   [event-type item]
   (if-not (map? item)
     (invalid-update-error event-type)
@@ -95,16 +92,8 @@
        :granule-ur GranuleUR
        :new-value Links})))
 
-(defmethod update->instruction :update_field:onlineresourceurl
-  [event-type item]
-  (if-not (map? item)
-    (invalid-update-error event-type)
-    (let [{:keys [GranuleUR Links]} item]
-      {:event-type event-type
-       :granule-ur GranuleUR
-       :new-value Links})))
-
-(defmethod update->instruction :update_type:opendaplink
+(defn- update->instruction-update-type-opendaplink
+  "Returns the granule bulk update instruction for a single opendaplink update."
   [event-type item]
   (cond
     (vector? item)
@@ -119,14 +108,22 @@
 
     :else (invalid-update-error event-type)))
 
-(defmethod update->instruction :default
+(defn- update->instruction
+  "Returns the granule bulk update instruction for a single update item"
   [event-type item]
-  (if-not (vector? item)
-    (invalid-update-error event-type)
-    (let [[granule-ur value] item]
-      {:event-type event-type
-       :granule-ur granule-ur
-       :new-value value})))
+  (case (keyword event-type)
+    :update_field:additionalfile (update->instruction-update-field-additionalfile event-type item)
+    (or
+     :update_field:mimetype
+     :update_field:onlineresourceurl
+     :update_field:onlineaccessurl) (update->instruction-update-field-links event-type item)
+    :update_type:opendaplink (update->instruction-update-type-opendaplink event-type item)
+    (if-not (vector? item)
+      (invalid-update-error event-type)
+      (let [[granule-ur value] item]
+        {:event-type event-type
+         :granule-ur granule-ur
+         :new-value value}))))
 
 (defn- request->instructions
   "Returns granule bulk update instructions for the given request"
@@ -252,199 +249,94 @@
                                               :version target-version})]
     (assoc concept :metadata updated-metadata :format updated-format)))
 
-(defmulti update-opendap-url
+(defn- update-opendap-url
   "Add OPeNDAP url to the given granule concept."
-  (fn [context concept grouped-urls]
-    (mt/format-key (:format concept))))
-
-(defmethod update-opendap-url :echo10
-  [_context concept grouped-urls]
-  (opendap-echo10/update-opendap-url concept grouped-urls))
-
-(defmethod update-opendap-url :umm-json
   [context concept grouped-urls]
-  (update-umm-g-metadata context concept grouped-urls opendap-umm-g/update-opendap-url))
+  (condp = (mt/format-key (:format concept))
+    :echo10 (opendap-echo10/update-opendap-url concept grouped-urls)
+    :umm-json (update-umm-g-metadata context concept grouped-urls opendap-umm-g/update-opendap-url)
+    (errors/throw-service-errors
+     :invalid-data [(format "Adding OPeNDAP url is not supported for format [%s]" (:format concept))])))
 
-(defmethod update-opendap-url :default
-  [_context concept _grouped-urls]
-  (errors/throw-service-errors
-   :invalid-data [(format "Adding OPeNDAP url is not supported for format [%s]" (:format concept))]))
-
-(defmulti update-opendap-type
+(defn- update-opendap-type
   "Updates the opendap type in the provided concepts.
    Note: grouped-urls will be nil for this update, as there is no input needed."
-  (fn [context concept grouped-urls]
-    (mt/format-key (:format concept))))
-
-(defmethod update-opendap-type :echo10
-  [_ concept type-to-update]
-  (opendap-echo10/update-opendap-type concept type-to-update))
-
-(defmethod update-opendap-type :umm-json
   [context concept grouped-urls]
-  (update-umm-g-metadata context concept grouped-urls opendap-umm-g/update-opendap-type))
+  (condp = (mt/format-key (:format concept))
+    :echo10 (opendap-echo10/update-opendap-type concept grouped-urls)
+    :umm-json (update-umm-g-metadata context concept grouped-urls opendap-umm-g/update-opendap-type)
+    (errors/throw-service-errors
+     :invalid-data [(format "Updating opendap type is not supported for format [%s]" (:format concept))])))
 
-(defmethod update-opendap-type :default
-  [context concept grouped-urls]
-  (errors/throw-service-errors
-   :invalid-data [(format "Updating opendap type is not supported for format [%s]" (:format concept))]))
-
-(defmulti append-opendap-url
+(defn- append-opendap-url
   "Append OPeNDAP url to the given granule concept."
-  (fn [context concept grouped-urls]
-    (mt/format-key (:format concept))))
-
-(defmethod append-opendap-url :echo10
   [context concept grouped-urls]
-  (opendap-echo10/append-opendap-url concept grouped-urls))
+  (condp = (mt/format-key (:format concept))
+    :echo10 (opendap-echo10/append-opendap-url concept grouped-urls)
+    :umm-json (update-umm-g-metadata context concept grouped-urls opendap-umm-g/append-opendap-url)
+    (errors/throw-service-errors
+     :invalid-data [(format "Append OPeNDAP url is not supported for format [%s]" (:format concept))])))
 
-(defmethod append-opendap-url :umm-json
-  [context concept grouped-urls]
-  (update-umm-g-metadata context concept grouped-urls opendap-umm-g/append-opendap-url))
-
-(defmethod append-opendap-url :default
-  [context concept grouped-urls]
-  (errors/throw-service-errors
-   :invalid-data [(format "Append OPeNDAP url is not supported for format [%s]" (:format concept))]))
-
-(defmulti add-s3-url
+(defn- add-s3-url
   "Add s3 url to the given granule concept."
-  (fn [context concept urls]
-    (mt/format-key (:format concept))))
-
-(defmethod add-s3-url :echo10
   [context concept urls]
-  (s3-echo10/update-s3-url concept urls))
+  (condp = (mt/format-key (:format concept))
+    :echo10 (s3-echo10/update-s3-url concept urls)
+    :umm-json (update-umm-g-metadata context concept urls s3-umm-g/update-s3-url)
+    (errors/throw-service-errors
+     :invalid-data [(format "Adding s3 urls is not supported for format [%s]" (:format concept))])))
 
-(defmethod add-s3-url :umm-json
-  [context concept urls]
-  (update-umm-g-metadata context concept urls s3-umm-g/update-s3-url))
-
-(defmethod add-s3-url :default
-  [context concept urls]
-  (errors/throw-service-errors
-   :invalid-data [(format "Adding s3 urls is not supported for format [%s]" (:format concept))]))
-
-(defmulti append-s3-url
+(defn- append-s3-url
   "Add s3 url to the given granule concept."
-  (fn [context concept urls]
-    (mt/format-key (:format concept))))
-
-(defmethod append-s3-url :echo10
   [context concept urls]
-  (s3-echo10/append-s3-url concept urls))
+  (condp = (mt/format-key (:format concept))
+    :echo10 (s3-echo10/append-s3-url concept urls)
+    :umm-json (update-umm-g-metadata context concept urls s3-umm-g/append-s3-url)
+    (errors/throw-service-errors
+     :invalid-data [(format "Appending s3 urls is not supported for format [%s]" (:format concept))])))
 
-(defmethod append-s3-url :umm-json
-  [context concept urls]
-  (update-umm-g-metadata context concept urls s3-umm-g/append-s3-url))
-
-(defmethod append-s3-url :default
-  [context concept urls]
-  (errors/throw-service-errors
-   :invalid-data [(format "Appending s3 urls is not supported for format [%s]" (:format concept))]))
-
-(defmulti update-checksum
+(defn- update-checksum
   "Add checksum to the given granule concept."
-  (fn [context concept checksum]
-    (mt/format-key (:format concept))))
+  [_context concept checksum]
+  (condp = (mt/format-key (:format concept))
+    :echo10 (checksum-echo10/update-checksum concept checksum)
+    :umm-json (errors/throw-service-errors
+               :invalid-data ["Updating checksum is not supported for UMM-G. Please use update-field: AdditionalFile"])
+    (errors/throw-service-errors
+     :invalid-data [(format "Updating checksum is not supported for format [%s]" (:format concept))])))
 
-(defmethod update-checksum :echo10
-  [context concept checksum]
-  (checksum-echo10/update-checksum concept checksum))
-
-(defmethod update-checksum :umm-json
-  [context concept checksum]
-  (errors/throw-service-errors
-   :invalid-data ["Updating checksum is not supported for UMM-G. Please use update-field: AdditionalFile"]))
-
-(defmethod update-checksum :default
-  [context concept checksum]
-  (errors/throw-service-errors
-   :invalid-data [(format "Updating checksum is not supported for format [%s]" (:format concept))]))
-
-(defmulti update-size
+(defn- update-size
   "Add/update size to the given granule concept."
-  (fn [context concept size]
-    (mt/format-key (:format concept))))
+  [_context concept size]
+  (condp = (mt/format-key (:format concept))
+    :echo10 (size-echo10/update-size concept size)
+    (errors/throw-service-errors
+     :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))])))
 
-(defmethod update-size :echo10
-  [context concept size]
-  (size-echo10/update-size concept size))
-
-(defmethod update-size :default
-  [context concept size]
-  (errors/throw-service-errors
-   :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))]))
-
-(defmulti update-format
+(defn- update-format
   "Add/update format to the given granule concept."
-  (fn [context concept size]
-    (mt/format-key (:format concept))))
+  [_context concept fmt]
+  (condp = (mt/format-key (:format concept))
+    :echo10 (format-echo10/update-format concept fmt)
+    (errors/throw-service-errors
+     :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))])))
 
-(defmethod update-format :echo10
-  [context concept size]
-  (format-echo10/update-format concept size))
-
-(defmethod update-format :default
-  [context concept size]
-  (errors/throw-service-errors
-   :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))]))
-
-(defmulti update-mime-type
+(defn- update-mime-type
   "Add/update mime types for RelatedUrl links in a given granule."
-  (fn [context concept links]
-    (mt/format-key (:format concept))))
-
-(defmethod update-mime-type :echo10
-  [_context concept links]
-  (mime-type-echo10/update-mime-type concept links))
-
-(defmethod update-mime-type :umm-json
   [context concept links]
-  (update-umm-g-metadata context concept links mime-type-umm-g/update-mime-type))
+  (condp = (mt/format-key (:format concept))
+    :echo10 (mime-type-echo10/update-mime-type concept links)
+    :umm-json (update-umm-g-metadata context concept links mime-type-umm-g/update-mime-type)
+    (errors/throw-service-errors
+     :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))])))
 
-(defmethod update-mime-type :default
-  [context concept links]
-  (errors/throw-service-errors
-   :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))]))
-
-(defmulti update-online-resource-urls
-  "Update OnlineResourceURL"
-  (fn [context concept urls]
-    (mt/format-key (:format concept))))
-
-(defmethod update-online-resource-urls :default
-  [_ concept _]
-  (errors/throw-service-error
-   (format "Updating OnlineResourceURLs is not supported for format [%s]" (:format concept))))
-
-(defmethod update-online-resource-urls :echo10
-  [_context concept urls]
-  (online-resource-url-echo10/update-online-resource-url concept urls))
-
-(defmulti update-additional-files
+(defn- update-additional-files
   "Update AdditionalFiles in given granule concept."
-  (fn [context concept checksum]
-    (mt/format-key (:format concept))))
-
-(defmethod update-additional-files :echo10
-  [context concept checksum]
-  (errors/throw-service-errors
-   :invalid-data ["Updating AdditionalFiles for ECHO10 is coming soon!"]))
-
-(defmethod update-additional-files :umm-json
-  [context concept new-files]
-  (update-umm-g-metadata context concept new-files additional-file-umm-g/update-additional-files))
-
-(defmethod update-additional-files :default
-  [context concept checksum]
-  (errors/throw-service-errors
-   :invalid-data [(format "Updating AdditionalFiles is not supported for format [%s]" (:format concept))]))
-
-(defmulti update-granule-concept
-  "Perform the update of the granule concept."
-  (fn [context concept bulk-update-params user-id]
-    (keyword (:event-type bulk-update-params))))
+  [context concept value]
+  (condp = (mt/format-key (:format concept))
+    :umm-json (update-umm-g-metadata context concept value additional-file-umm-g/update-additional-files)
+    (errors/throw-service-errors
+     :invalid-data [(format "Updating AdditionalFiles is not supported for format [%s]" (:format concept))])))
 
 (defn- modify-opendap-link*
   "For OPeNDAP links, there may be at most 2 urls, 1 cloud, 1 on-prem.
@@ -452,8 +344,7 @@
   will fail with an exception.
   Successful updates will return the updated concept."
   [context concept bulk-update-params target-field user-id xf]
-  (let [{:keys [format metadata]} concept
-        {:keys [granule-ur new-value]} bulk-update-params
+  (let [{:keys [new-value]} bulk-update-params
         grouped-urls (opendap-util/validate-url new-value)
         updated-concept (if (= :Type target-field)
                           (xf context concept new-value)
@@ -468,20 +359,18 @@
           (assoc :revision-date (time-keeper/now))
           (assoc :user-id user-id)))))
 
-(defmethod update-granule-concept :update_field:opendaplink
-  [context concept bulk-update-params user-id]
-  (modify-opendap-link*
-   context concept bulk-update-params :URL user-id update-opendap-url))
-
-(defmethod update-granule-concept :append_to_field:opendaplink
-  [context concept bulk-update-params user-id]
-  (modify-opendap-link*
-   context concept bulk-update-params :URL user-id append-opendap-url))
-
-(defmethod update-granule-concept :update_type:opendaplink
-  [context concept bulk-update-params user-id]
-  (modify-opendap-link*
-   context concept bulk-update-params :Type user-id update-opendap-type))
+(defn- update-granule-concept-online-url
+  [_context concept bulk-update-params user-id fx elem]
+  (let [updated-metadata
+        (condp = (mt/format-key (:format concept))
+          :echo10 (fx concept (get bulk-update-params :new-value []))
+          (errors/throw-service-error
+           (format "Updating %s is not supported for format [%s]" elem (:format concept))))]
+    (-> concept
+        (assoc :metadata updated-metadata
+               :user-id user-id
+               :revision-date (time-keeper/now))
+        (update :revision-id inc))))
 
 (defn- modify-s3-link*
   "Modify the S3Link data for the given concept with the provided URLs
@@ -489,8 +378,7 @@
   S3 links will be added to the existing concept. If a duplicate S3 link
   is provided it will be ignored."
   [context concept bulk-update-params user-id xf]
-  (let [{:keys [format metadata]} concept
-        {:keys [granule-ur new-value]} bulk-update-params
+  (let [{:keys [new-value]} bulk-update-params
         urls (s3-util/validate-url new-value)
         ;; invoke the appropriate transform
         updated-concept (xf context concept urls)
@@ -504,22 +392,11 @@
           (assoc :revision-date (time-keeper/now))
           (assoc :user-id user-id)))))
 
-(defmethod update-granule-concept :update_field:s3link
-  [context concept bulk-update-params user-id]
-  (modify-s3-link*
-   context concept bulk-update-params user-id add-s3-url))
-
-(defmethod update-granule-concept :append_to_field:s3link
-  [context concept bulk-update-params user-id]
-  (modify-s3-link*
-   context concept bulk-update-params user-id append-s3-url))
-
 (defn- modify-checksum-size-format
   "Add or update the checksum, size, or format for the given concept with the provided values
   using the provided transform function."
   [context concept bulk-update-params user-id xf]
-  (let [{:keys [format metadata]} concept
-        {:keys [granule-ur new-value]} bulk-update-params
+  (let [{:keys [new-value]} bulk-update-params
         ;; invoke the appropriate transform - for checksum, there is only one option (update)
         updated-concept (xf context concept new-value)
         {updated-metadata :metadata updated-format :format} updated-concept]
@@ -531,42 +408,12 @@
           (update :revision-id inc)
           (assoc :revision-date (time-keeper/now))
           (assoc :user-id user-id)))))
-
-(defmethod update-granule-concept :update_field:checksum
-  [context concept bulk-update-params user-id]
-  (modify-checksum-size-format
-   context concept bulk-update-params user-id update-checksum))
-
-(defmethod update-granule-concept :update_field:size
-  [context concept bulk-update-params user-id]
-  (modify-checksum-size-format
-   context concept bulk-update-params user-id update-size))
-
-(defmethod update-granule-concept :update_field:format
-  [context concept bulk-update-params user-id]
-  (modify-checksum-size-format
-   context concept bulk-update-params user-id update-format))
-
-(defmethod update-granule-concept :update_field:mimetype
-  [context concept bulk-update-params user-id]
-  (modify-checksum-size-format
-   context concept bulk-update-params user-id update-mime-type))
-
-(defmethod update-granule-concept :update_field:onlineresourceurl
-  [_context concept bulk-update-params user-id]
-  (let [updated-metadata (online-resource-url-echo10/update-online-resource-url concept (get bulk-update-params :new-value []))]
-    (-> concept
-        (assoc :metadata updated-metadata
-               :user-id user-id
-               :revision-date (time-keeper/now))
-        (update :revision-id inc))))
 
 (defn- modify-additional-files
   "Add or update the size, type, mimetype, and/or checksum value and algorithm for the given concept
    with the provided values using the provided transform function."
   [context concept bulk-update-params user-id xf]
-  (let [{:keys [format metadata]} concept
-        {:keys [granule-ur new-value]} bulk-update-params
+  (let [{:keys [new-value]} bulk-update-params
         ;; invoke the appropriate transform - for checksum, there is only one option (update)
         updated-concept (xf context concept new-value)
         {updated-metadata :metadata updated-format :format} updated-concept]
@@ -579,14 +426,25 @@
           (assoc :revision-date (time-keeper/now))
           (assoc :user-id user-id)))))
 
-(defmethod update-granule-concept :update_field:additionalfile
+(defn update-granule-concept
   [context concept bulk-update-params user-id]
-  (modify-additional-files
-   context concept bulk-update-params user-id update-additional-files))
+  (condp = (keyword (:event-type bulk-update-params))
+    :update_field:onlineresourceurl (update-granule-concept-online-url
+                                     context concept bulk-update-params user-id online-resource-url-echo10/update-online-resource-url "OnlineResourceURL")
+    :update_field:onlineaccessurl (update-granule-concept-online-url
+                                   context concept bulk-update-params user-id online-resource-url-echo10/update-online-access-url "OnlineAccessURL")
+    :update_field:additionalfile (modify-additional-files context concept bulk-update-params user-id update-additional-files)
+    :update_field:checksum (modify-checksum-size-format context concept bulk-update-params user-id update-checksum)
+    :update_field:size (modify-checksum-size-format context concept bulk-update-params user-id update-size)
+    :update_field:format (modify-checksum-size-format context concept bulk-update-params user-id update-format)
+    :update_field:mimetype (modify-checksum-size-format context concept bulk-update-params user-id update-mime-type)
+    :update_field:s3link (modify-s3-link* context concept bulk-update-params user-id add-s3-url)
+    :append_to_field:s3link (modify-s3-link* context concept bulk-update-params user-id append-s3-url)
+    :update_field:opendaplink (modify-opendap-link* context concept bulk-update-params :URL user-id update-opendap-url)
+    :append_to_field:opendaplink (modify-opendap-link* context concept bulk-update-params :URL user-id append-opendap-url)
+    :update_type:opendaplink (modify-opendap-link* context concept bulk-update-params :Type user-id update-opendap-type)
 
-(defmethod update-granule-concept :default
-  [context concept bulk-update-params user-id]
-  (invalid-event-type (:event-type bulk-update-params)))
+    (invalid-event-type (:event-type bulk-update-params))))
 
 (defn- update-granule-concept-and-status
   "Perform update for the granule concept and granule bulk update status."

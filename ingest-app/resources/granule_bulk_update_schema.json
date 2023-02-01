@@ -15,6 +15,7 @@
         "Checksum",
         "Format",
         "MimeType",
+        "OnlineAccessURL",
         "OnlineResourceURL",
         "OPeNDAPLink",
         "S3Link",
@@ -49,6 +50,24 @@
         }
       }
     },
+    "UpdateURLType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Describes an existing URL and replacement URL.",
+      "properties": {
+        "from": {
+          "description": "The existing URL to be updated.",
+          "type": "string",
+          "minLength": 1
+        },
+        "to": {
+          "description": "The new URL to be substituted",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": [ "from", "to" ]
+    },
     "FileType": {
       "type": "object",
       "additionalProperties": false,
@@ -82,23 +101,11 @@
         "MimeType": {
           "type": "string"
         },
+        "OnlineAccessURL": {
+          "$ref": "#/definitions/UpdateURLType"
+        },
         "OnlineResourceURL": {
-          "type": "object",
-          "additionalProperties": false,
-          "description": "Describes an OnlineResource existing URL and replacment URL.",
-          "properties": {
-            "from": {
-              "description": "The existing URL to updated.",
-              "type": "string",
-              "minLength": 1
-            },
-            "to": {
-              "description": "The new URL to be substituted",
-              "type": "string",
-              "minLength": 1
-            }
-          },
-          "required": [ "from", "to" ]
+          "$ref": "#/definitions/UpdateURLType"
         },
         "Checksum": {
           "type": "object",

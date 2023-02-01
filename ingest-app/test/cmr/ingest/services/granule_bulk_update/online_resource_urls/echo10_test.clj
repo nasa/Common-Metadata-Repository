@@ -73,5 +73,10 @@
   (let [concept {:concept-type :granule
              :metadata echo10-metadata}
         urls [{:from "https://link-1.com"
-               :to "https://link-1-updated.com"}]]
-    (is (= echo10-metadata-updated (string/trim (echo10/update-online-resource-url concept urls))))))
+               :to "https://link-1-updated.com"}]
+        access-urls [{:from "https://link-3.com" 
+                      :to "https://link-3-updated.com"}]
+        access-upated (string/replace echo10-metadata-updated "link-3" "link-3-updated")
+        access-upated (string/replace access-upated "link-1-updated" "link-1")]
+    (is (= echo10-metadata-updated (string/trim (echo10/update-online-resource-url concept urls))))
+    (is (= access-upated (string/trim (echo10/update-online-access-url concept access-urls))))))
