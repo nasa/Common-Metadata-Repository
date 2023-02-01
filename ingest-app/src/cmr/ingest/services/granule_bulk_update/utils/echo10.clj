@@ -56,8 +56,7 @@
      :mime-type mime-type}))
 
 (defn- update-accesses
-  "Return an OnlineAccessURLs node where UPDATE-FIELD is updated where the
-  LOCATOR-FIELD has a matching key in the VALUE-MAP."
+  "Constructs the new OnlineAccessURLs node in zipper representation"
   [online-access-urls locator-field value-field value-map]
   (let [edn-access-urls (map xml-elem->online-access-url online-access-urls)
         access-urls (map #(merge %
