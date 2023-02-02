@@ -1,0 +1,514 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "title": "UMM-Var",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "Name": {
+      "description": "The name of a variable.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "StandardName": {
+      "description": "This is the more formal or scientific name, .e.g., the CF Standard Name.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "AdditionalIdentifiers": {
+      "description": "Any additional identifiers of a variable.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/AdditionalIdentifierType"
+      },
+      "minItems": 1
+    },
+    "LongName": {
+      "description": "The expanded or long name related to the variable Name.",
+      "$ref": "#/definitions/LongNameType"
+    },
+    "Definition": {
+      "description": "The definition of the variable.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 10000
+    },
+    "Units": {
+      "description": "The units associated with a variable.",
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 100
+    },
+    "DataType": {
+      "description": "Specify data type of a variable. These types can be either: uint8, uint16, etc.",
+      "$ref": "#/definitions/DataTypeEnum"
+    },
+    "Dimensions": {
+      "description": "A variable consists of one or more dimensions. An example of a dimension name is 'XDim'. An example of a dimension size is '1200'. Variables are rarely one dimensional.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/DimensionType"
+      },
+      "minItems": 1
+    },
+    "ValidRanges": {
+      "description": "Valid ranges of variable data values.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ValidRangeType"
+      },
+      "minItems": 0
+    },
+    "Scale": {
+      "description": "The scale is the numerical factor by which all values in the stored data field are multiplied in order to obtain the original values. May be used together with Offset. An example of a scale factor is '0.002'",
+      "type": "number"
+    },
+    "Offset": {
+      "description": "The offset is the value which is either added to or subtracted from all values in the stored data field in order to obtain the original values. May be used together with Scale. An example of an offset is '0.49'.",
+      "type": "number"
+    },
+    "FillValues": {
+      "description": "The fill value of the variable in the data file. It is generally a value which falls outside the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'. The fill value type is data provider-defined. For example, 'Out of Valid Range'.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/FillValueType"
+      },
+      "minItems": 0
+    },
+    "VariableType": {
+      "description": "Specify basic type of a variable.",
+      "$ref": "#/definitions/VariableTypeEnum"
+    },
+    "VariableSubType": {
+      "description": "Specifies the sub type of a variable.",
+      "$ref": "#/definitions/VariableSubTypeEnum"
+    },
+    "IndexRanges": {
+      "description": "This element describes the x and y dimension ranges for this variable. Typically these values are 2 latitude and longitude ranges, but they don't necessarily have to be.",
+      "$ref": "#/definitions/IndexRangesType"
+    },
+    "MeasurementIdentifiers": {
+      "description": "The measurement information of a variable.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/MeasurementIdentifierType"
+      },
+      "minItems": 0
+    },
+    "SamplingIdentifiers": {
+      "description": "The sampling information of a variable.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/SamplingIdentifierType"
+      },
+      "minItems": 0
+    },
+    "ScienceKeywords": {
+      "description": "Controlled Science Keywords describing the measurements/variables. The controlled vocabulary for Science Keywords is maintained in the Keyword Management System (KMS).",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ScienceKeywordType"
+      },
+      "minItems": 0
+    },
+    "Sets": {
+      "description": "The set information of a variable. The variable is grouped within a set. The set is defined by the name, type, size and index. For example, Name: 'Data_Fields', Type: 'General', Size: '15', Index: '7' for the case of the variable named 'LST_Day_1km'.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/SetType"
+      },
+      "minItems": 1
+    },
+    "RelatedURLs": {
+      "description": "A described URL associated with the a web resource, or interface. e.g., the home page for the variable provider.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/RelatedURLType"
+      },
+      "minItems": 1
+    },
+    "MetadataSpecification": {
+      "description": "Requires the client, or user, to add in schema information into every variable record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+      "$ref": "#/definitions/MetadataSpecificationType"
+    }
+  },
+  "required": [
+    "Name",
+    "LongName",
+    "Definition",
+    "MetadataSpecification"
+  ],
+  "definitions": {
+    "AdditionalIdentifierType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The elements of this section apply to an additional identifier.",
+      "properties": {
+        "Identifier": {
+          "description": "The actual identifier.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Description": {
+          "description": "This element describes to a person or machine what the identifier is called. e.g., if the identifier is 1057.2345/asfb then the Description should be DOI or Digital Object Identifier.",
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 4000
+        }
+      },
+      "required": ["Identifier"]
+    },
+    "IndexRangesType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The index ranges consist of a LatRange and a LonRange.",
+      "properties": {
+        "LatRange": {
+          "description": "The LatRange consists of an index range for latitude.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "LonRange": {
+          "description": "The LonRange consists of an index range for longitude.",
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2
+        }
+      },
+      "required": ["LatRange", "LonRange"]
+    },
+    "MeasurementIdentifierType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The elements of this section allow authors to provide community sourced words or phrases to further describe the variable data.",
+      "properties": {
+        "MeasurementContextMedium": {
+          "description": "This element describes the context/medium within which the measurement was made.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "MeasurementContextMediumURI": {
+          "description": "This element contains the URI for the context/medium.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "MeasurementObject": {
+          "description": "This element describes the object which was measured.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "MeasurementObjectURI": {
+          "description": "This element contains the URI for the object which was measured.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "MeasurementQuantities": {
+          "description": "This element contains the quantity or quantities which was/were measured.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/MeasurementQuantityType"
+          },
+          "minItems": 0
+        }
+      },
+      "required": ["MeasurementContextMedium", "MeasurementObject"]
+    },
+    "MeasurementQuantityType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The elements of this section apply to a measurement name. The measurement name is structured according to the form defined by Scott Peckham. This is: <object>_<quantity>.",
+      "properties": {
+        "Value": {
+          "description": "This element describes the value for the quantity which was measured.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "MeasurementQuantityURI": {
+          "description": "This element contains the URI for the quantity which was measured.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        }
+      }
+    },
+    "SamplingIdentifierType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The elements of this section apply to a measurement.",
+      "properties": {
+        "SamplingMethod": {
+          "description": "The name of the sampling method used for the measurement. For example, 'radiometric detection within the visible and infra-red ranges of the electromagnetic spectrum.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "MeasurementConditions": {
+          "description": "The measurement conditions of the variable. For example, 'Sampled Particle Size Range: 90 - 600 nm'.",
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 4000
+        },
+        "ReportingConditions": {
+          "description": "The reporting conditions of the variable. The conditions over which the measurements of the variable are valid. For example, 'STP: 1013 mb and 273 K'.",
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 4000
+        }
+      },
+      "required": ["SamplingMethod", "MeasurementConditions"]
+    },
+    "FillValueType": {
+      "description": "The fill value, fill value type and fill value description of the variable in the data file. The fill value is generally a value which falls outside the valid range. For example, if the valid range is '0, 360', the fill value may be '-1'. The elements of this section apply to the fill value of a variable.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Value": {
+          "description": "The fill value of the variable in the data file.",
+          "type": "number"
+        },
+        "Type": {
+          "description": "Type of the fill value of the variable in the data file.",
+          "type": "string",
+          "enum": ["SCIENCE_FILLVALUE", "QUALITY_FILLVALUE", "ANCILLARY_FILLVALUE", "OTHER"]
+        },
+        "Description": {
+          "description": "Description of the fill value of the variable in the data file.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 160
+        }
+      },
+      "required": ["Value", "Type"]
+    },
+    "SetType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The elements of this section apply to variable sets.",
+      "properties": {
+        "Name": {
+          "description": "This element enables specification of set name. For example, 'Data_Fields'.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Type": {
+          "description": "This element enables specification of set type. For example, if the variables have been grouped together based on a particular theme, such as wavelength, then the type should be set to that theme, otherwise it should be set to 'General'.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Size": {
+          "description": "This element specifies the number of variables in the set. For example, if the number of variables in the set is fifteen, the size should be set to '15'.",
+          "type": "number"
+        },
+        "Index": {
+          "description": "This element specifies the index value within the set for this variable, For example, if this varible is the third variable in the set, the index value should be set to '3'.",
+          "type": "number"
+        }
+      },
+      "required": ["Name", "Type", "Size", "Index"]
+    },
+    "ValidRangeType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Valid range data value of a variable: minimum and maximum values. For example, '-100, 5000'.",
+      "properties": {
+        "Min": {
+          "description": "Minimum data value of a variable. For example, '-100'.",
+          "type": "number"
+        },
+        "Max": {
+          "description": "Maximum data value of a variable. For example, '5000'.",
+          "type": "number"
+        },
+        "CodeSystemIdentifierMeaning": {
+          "description": "This element can be used to specify a code system identifier meaning. For example, 'Open Shrubland' corresponds to '7'.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 60
+          },
+          "minItems": 0
+        },
+        "CodeSystemIdentifierValue": {
+          "description": "The code system identifier value is the textual or numerical value assigned to each meaning.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 30
+          },
+          "minItems": 0
+        }
+      }
+    },
+    "DataTypeEnum": {
+      "description": "This element is used to identify the data type of the variable.",
+      "type": "string",
+      "enum": ["byte", "float", "float32", "float64", "double", "ubyte", "ushort", "uint", "uchar", "string", "char8", "uchar8", "short", "long", "int", "int8", "int16", "int32", "int64", "uint8", "uint16", "uint32", "uint64", "OTHER"]
+    },
+    "DimensionType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "A variable consists of one or more dimensions. An example of a dimension name is 'XDim'. An example of a dimension size is '1200'. Variables are rarely one dimensional.",
+      "properties": {
+        "Name": {
+          "description": "The name of the dimension of the variable represented in the data field. For example, 'XDim.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Size": {
+          "description": "The size of the dimension of the variable represented in the data field. For example, '1200'.",
+          "type": "number"
+        },
+        "Type": {
+          "description": "The type of the dimension of the variable represented in the data field. For example, if the dimension has a special meaning, i.e., a latitude, longitude, pressure, height (or depth) or time, then the type should be set to either 'LATITUDE_DIMENSION', 'LONGITUDE_DIMENSION', 'PRESSURE_DIMENSION', 'HEIGHT_DIMENSION', 'DEPTH_DIMENSION' or 'TIME_DIMENSION', otherwise it should be set to 'OTHER'.",
+          "type": "string",
+          "enum": ["LATITUDE_DIMENSION", "LONGITUDE_DIMENSION", "ALONG_TRACK_DIMENSION", "CROSS_TRACK_DIMENSION", "PRESSURE_DIMENSION", "HEIGHT_DIMENSION", "DEPTH_DIMENSION", "TIME_DIMENSION", "OTHER"]
+        }
+      },
+      "required": ["Name", "Size", "Type"]
+    },
+    "VariableTypeEnum": {
+      "description": "This element is used to classify the variable. If a variable does not contain this field, it will be assumed to be a science variable.",
+      "type": "string",
+      "enum": ["SCIENCE_VARIABLE", "QUALITY_VARIABLE", "ANCILLARY_VARIABLE", "COORDINATE", "OTHER"]
+    },
+    "VariableSubTypeEnum": {
+      "description": "This element is used to further classify the variable. If a variable does not contain this field, it will be assumed to be a science vector.",
+      "type": "string",
+      "enum": ["SCIENCE_SCALAR", "SCIENCE_VECTOR", "SCIENCE_ARRAY", "SCIENCE_EVENTFLAG", "LATITUDE", "LONGITUDE", "TIME", "OTHER"]
+    },
+    "ScienceKeywordType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Enables specification of Earth science keywords related to the collection.  The Earth Science keywords are chosen from a controlled keyword hierarchy maintained in the Keyword Management System (KMS). The valid values can be found at the KMS website: https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords?format=csv.",
+      "properties": {
+        "Category": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "Topic": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "Term": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "VariableLevel1": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "VariableLevel2": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "VariableLevel3": {
+          "$ref": "#/definitions/KeywordStringType"
+        },
+        "DetailedVariable": {
+          "$ref": "#/definitions/KeywordStringType"
+        }
+      },
+      "required": ["Category", "Topic", "Term"]
+    },
+    "LongNameType": {
+      "description": "The expanded or long name related to the variable name main element.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "KeywordStringType": {
+      "description": "The keyword string type for science keywords. The pattern below helps to minimize the types of characters allowed in the keywords to help users minimize keyword issues.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 80,
+      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,79}"
+    },
+    "RelatedURLType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Represents Internet sites that contain information related to the data, as well as related Internet sites such as project home pages, variable colormaps, metadata extensions, etc.",
+      "properties": {
+        "Description": {
+          "description": "Description of the web resource at this URL.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4000
+        },
+        "URLContentType": {
+            "description": "A keyword describing the distinct content type of the online resource to this resource. (e.g., 'DATACENTER URL', 'DATA CONTACT URL', 'Visualization URL'). The valid values are contained in the KMS System: https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+        },
+        "Type": {
+            "description": "A keyword describing the type of the online resource to this resource. This helps the GUI to know what to do with this resource. (e.g., 'COLORMAP', 'GET VISUALIZATION'). The valid values are contained in the KMS System and are dependent on the URLContentType: https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+        },
+        "Subtype": {
+            "description": "A keyword describing the subtype of the online resource to this resource. This further helps the GUI to know what to do with this resource. (e.g., 'MEDIA', 'BROWSE', 'OPENDAP', 'OPENSEARCH', 'GITC', etc. ). The valid values are contained in the KMS System and are dependent on the Type: https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/all/8759ab63-ac04-4136-bc25-0c00eece1096",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80
+        },
+        "URL": {
+          "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the colormap server, etc.).",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Format": {
+          "description": "Describes the organization of the data content so that users and applications know how to read and use the content. The controlled vocabulary for formats is maintained in the Keyword Management System (KMS): https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/DataFormat?gtm_scheme=DataFormat",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "MimeType": {
+          "description": "The multi-purpose internet mail extensions indicates the nature and format of the data that is accessed through the URL. The controlled vocabulary for MimeTypes is maintained in the Keyword Management System (KMS): https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/MimeType?gtm_scheme=MimeType",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        }
+      },
+      "required": ["URLContentType", "Type", "URL"]
+    },
+    "MetadataSpecificationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+      "properties": {
+        "URL": {
+          "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
+          "type": "string",
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1"]
+        },
+        "Name": {
+          "description": "This element represents the name of the schema.",
+          "type": "string",
+          "enum": ["UMM-Var"]
+        },
+        "Version": {
+          "description": "This element represents the version of the schema.",
+          "type": "string",
+          "enum": ["1.8.1"]
+        }
+      },
+      "required": ["URL", "Name", "Version"]
+    }
+  }
+}

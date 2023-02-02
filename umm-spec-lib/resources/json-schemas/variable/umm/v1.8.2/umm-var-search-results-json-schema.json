@@ -1,0 +1,286 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "ItemType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Represents a single item found in search results. It contains some metadata about the item found along with the UMM representing the item. umm won't be present if the item represents a tombstone.",
+      "properties": {
+        "meta": {
+          "$ref": "#/definitions/MetaType"
+        },
+        "umm": {
+          "$ref": "umm-var-json-schema.json"
+        },
+        "associations": {
+          "$ref": "#/definitions/AssociationsInItemType"
+        }
+      },
+      "required": ["meta"]
+    },
+    "MetaType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "CMR level metadata about the item found. This represents data not found in the actual metadata.",
+      "properties": {
+        "provider-id": {
+          "description": "The identity of the provider in the CMR",
+          "type": "string",
+          "minLength": 1,
+          "pattern": "[A-Z0-9_]+"
+        },
+        "concept-type": {
+          "description": "The type of item found.",
+          "type": "string",
+          "enum": ["variable"]
+        },
+        "native-id": {
+          "description": "The id used by the provider to identify this item during ingest.",
+          "type": "string",
+          "minLength": 1
+        },
+        "concept-id": {
+          "description": "The concept id of the item found.",
+          "type": "string",
+          "minLength": 4,
+          "pattern": "[A-Z]+\\d+-[A-Z0-9_]+"
+        },
+        "revision-id": {
+          "description": "A number >= 1 that indicates which revision of the item.",
+          "type": "number"
+        },
+        "revision-date": {
+          "description": "The date this revision was created. This would be the creation or update date of the item in the CMR.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "user-id": {
+          "description": "The id of the user who created this item revision.",
+          "type": "string",
+          "minLength": 1
+        },
+        "deleted": {
+          "description": "Indicates if the item represents a tombstone",
+          "type": "boolean"
+        },
+        "format": {
+          "description": "The mime type of the original metadata",
+          "type": "string",
+          "minLength": 1
+        },
+        "associations": {
+          "description": "Contains concept ids of concepts associated with the variable",
+          "$ref": "#/definitions/AssociationsType"
+        },
+        "association-details": {
+          "description": "Contains the details of each association.",
+          "$ref": "#/definitions/AssociationDetailsType"
+        }
+      },
+      "required": ["provider-id", "concept-type", "native-id", "concept-id", "revision-id", "revision-date"]
+    },
+    "AssociationsInItemType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Any concept associated with the variable.",
+      "properties": {
+        "variables": {
+          "description": "The concept ids of variables associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptRevisionType"
+          },
+          "minItems": 1
+        },
+        "collections": {
+          "description": "The concept ids of collections associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptRevisionType"
+          },
+          "minItems": 1
+        },
+        "tools": {
+          "description": "The concept ids of tools associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptRevisionType"
+          },
+          "minItems": 1
+        },
+        "data-quality-summaries": {
+          "description": "The concept ids of data quality summary concepts associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptRevisionType"
+          },
+          "minItems": 1
+        },
+        "order-options": {
+          "description": "The concept ids of order option concepts associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptRevisionType"
+          },
+          "minItems": 1
+        },
+        "service-options": {
+          "description": "The concept ids of service option concepts associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptRevisionType"
+          },
+          "minItems": 1
+        },
+        "service-entries": {
+          "description": "The concept ids of service entry concepts associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptRevisionType"
+          },
+          "minItems": 1
+        },
+        "grids": {
+          "description": "The concept ids of grid concepts associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptRevisionType"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "AssociationsType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Any concept associated with the variable.",
+      "properties": {
+        "variables": {
+          "description": "The concept ids of variables associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "collections": {
+          "description": "The concept ids of collections associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "tools": {
+          "description": "The concept ids of tools associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "data-quality-summaries": {
+          "description": "The concept ids of data quality summary concepts associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "order-options": {
+          "description": "The concept ids of order option concepts associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "service-options": {
+          "description": "The concept ids of service option concepts associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "service-entries": {
+          "description": "The concept ids of service entry concepts associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        },
+        "grids": {
+          "description": "The concept ids of grid concepts associated with the variable",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ConceptIdType"
+          },
+          "minItems": 1
+        }
+      }
+    },
+    "AssociationDetailsType": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Association details of concepts associated with the variable.",
+      "properties": {
+        "concept-id": {
+          "description": "The concept id of the associated concept.",
+          "type": "string"
+        },
+        "revision-id": {
+          "description": "The revision id of the associated concept.",
+          "type": "string"
+        }
+      }
+    },
+    "ConceptIdType": {
+      "description": "The concept id of a concept.",
+      "type": "string",
+      "minLength": 4,
+      "pattern": "[A-Z]+\\d+-[A-Z0-9_]+"
+    },
+    "ConceptRevisionType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Concept id and revision id.",
+      "properties": {
+        "concept-id": {
+          "description": "The concept id of the item found.",
+          "type": "string",
+          "minLength": 4,
+          "pattern": "[A-Z]+\\d+-[A-Z0-9_]+"
+        },
+        "revision-id": {
+          "description": "A number >= 1 that indicates which revision of the item.",
+          "type": "number"
+        }
+      },
+      "required": ["concept-id"]
+    }
+  },
+  "title": "UMM Search Results",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "hits": {
+      "description": "The total number of items that matched the search.",
+      "type": "number"
+    },
+    "took": {
+      "description": "How long the search took in milliseconds from the time the CMR received the request until it had generated the response. This does not include network traffic time to send the request or return the response.",
+      "type": "number"
+    },
+    "items": {
+      "description": "The list of items matching the result in this page.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ItemType"
+      },
+      "minItems": 0
+    }
+  },
+  "required": ["hits", "took", "items"]
+}
