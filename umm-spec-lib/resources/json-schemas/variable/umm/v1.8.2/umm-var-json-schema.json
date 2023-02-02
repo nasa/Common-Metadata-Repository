@@ -374,8 +374,16 @@
           "maxLength": 80
         },
         "Size": {
-          "description": "The size of the dimension of the variable represented in the data field. For example, '1200'.",
-          "type": "number"
+          "oneOf": [{
+            "description": "The size of the dimension of the variable represented in the data field. For example, '1200'.",
+            "title": "Enter the dimension size.",
+            "type": "number"
+          }, {
+            "description": "A value to designate that the dimension size of a variable in each granule is not uniform, but that it varies across granules.",
+            "title": "Dimension size varies.",
+            "type": "string",
+            "enum": ["Varies"]
+          }]
         },
         "Type": {
           "description": "The type of the dimension of the variable represented in the data field. For example, if the dimension has a special meaning, i.e., a latitude, longitude, pressure, height (or depth) or time, then the type should be set to either 'LATITUDE_DIMENSION', 'LONGITUDE_DIMENSION', 'PRESSURE_DIMENSION', 'HEIGHT_DIMENSION', 'DEPTH_DIMENSION' or 'TIME_DIMENSION', otherwise it should be set to 'OTHER'.",
@@ -495,7 +503,7 @@
         "URL": {
           "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
           "type": "string",
-          "enum": ["https://cdn.earthdata.nasa.gov/umm/variable/v1.8.1"]
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/variable/v1.8.2"]
         },
         "Name": {
           "description": "This element represents the name of the schema.",
@@ -505,7 +513,7 @@
         "Version": {
           "description": "This element represents the version of the schema.",
           "type": "string",
-          "enum": ["1.8.1"]
+          "enum": ["1.8.2"]
         }
       },
       "required": ["URL", "Name", "Version"]

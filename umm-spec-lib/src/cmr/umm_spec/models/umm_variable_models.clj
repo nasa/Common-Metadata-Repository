@@ -257,7 +257,6 @@
    ;; The name of the dimension of the variable represented in the data field. For example, 'XDim.
    Name
 
-   ;; The size of the dimension of the variable represented in the data field. For example, '1200'.
    Size
 
    ;; The type of the dimension of the variable represented in the data field. For example, if the

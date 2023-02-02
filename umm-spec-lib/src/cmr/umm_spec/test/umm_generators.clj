@@ -55,7 +55,7 @@
   with properties or an object which uses oneOf to specify between lists of properties."
   [schema type-name schema-type]
   (rejected-unexpected-fields #{:properties :required :additionalProperties :dependencies :not :allOf
-                                :anyOf :if :then :else} schema-type)
+                                :anyOf :if :then :else :title} schema-type)
   (let [constructor-fn (if type-name
                          (record-gen/schema-type-constructor schema type-name)
                          identity)
@@ -216,7 +216,7 @@
 
 (defmethod schema-type->generator "string"
   [schema type-name schema-type]
-  (rejected-unexpected-fields #{:format :enum :minLength :maxLength :pattern} schema-type)
+  (rejected-unexpected-fields #{:format :enum :minLength :maxLength :pattern :title} schema-type)
   (cond
     (= (:format schema-type) "date-time")
     ext-gen/date-time
@@ -250,7 +250,7 @@
 
 (defmethod schema-type->generator "number"
   [_ _ schema-type]
-  (rejected-unexpected-fields #{:minimum :maximum} schema-type)
+  (rejected-unexpected-fields #{:minimum :maximum :title} schema-type)
   (let [{:keys [minimum maximum]} schema-type
         seed-double-gen (ext-gen/choose-double 0 10)]
     (if (or minimum maximum)

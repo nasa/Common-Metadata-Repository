@@ -241,3 +241,20 @@
       (update :VariableType #(if (= "COORDINATE" %) "OTHER" %))
       (update :VariableSubType #(if (or (= "LONGITUDE" %) (= "LATITUDE" %) (= "TIME" %)) "OTHER" %))
       (m-spec/update-version :variable "1.8")))
+
+;; migrations for 1.8.2 **********************************************************
+
+(defmethod interface/migrate-umm-version [:variable "1.8.1" "1.8.2"]
+  [_context umm-v & _]
+  ;; update the MetadataSpecification
+  (-> umm-v
+      (m-spec/update-version :variable "1.8.2")))
+
+(defmethod interface/migrate-umm-version [:variable "1.8.2" "1.8.1"]
+  [_context umm-v & _]
+  ;; Update the MetadataSpecification and Convert Dimension/Size from Varies to -1.
+  (-> umm-v
+      (util/update-in-each-vector [:Dimensions] #(if (= (:Size %) "Varies")
+                                                   (assoc % :Size -1)
+                                                   %))
+      (m-spec/update-version :variable "1.8.1")))
