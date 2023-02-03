@@ -5,7 +5,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.search.services.query-walkers.condition-extractor :as extractor])
   (:import
-   (cmr.common_app.services.search.query_model StringCondition StringsCondition)
+   (cmr.common_app.services.search.query_model StringCondition StringsCondition MatchNoneCondition)
    (cmr.search.models.query SpatialCondition)))
 
 (defconfig all-granules-page-depth-limit
@@ -24,7 +24,7 @@
            (instance? StringsCondition condition))
        (contains? granule-limiting-search-fields (:field condition))))
 
-(defn- all-granules-query?
+(defn all-granules-query?
   "Returns true if the query is for all granules, ie. it does not limit the query to one or more
    collections."
   [query]
@@ -34,6 +34,20 @@
   "Returns true if the query uses spatial conditions"
   [query]
   (some? (seq (extractor/extract-conditions query (fn [_ c] (instance? SpatialCondition c))))))
+
+(defn- match-none-query?
+  "Returns true if the query uses match none conditions"
+  [query]
+  (some? (seq (extractor/extract-conditions query (fn [_ c] (instance? MatchNoneCondition c))))))
+
+(defn no-all-granules-for-json-query
+  "Validates that the query is not an all granules query when validating granule json query requests"
+  [query]
+  (when (and (all-granules-query? query)
+             (not (match-none-query? query)))
+    (str "The CMR does not allow querying across granules with json queries."
+         " You should limit your query using conditions that identify one or more"
+         " collections such as provider, concept_id, short_name, or entry_title.")))
 
 (defn no-all-granules-with-spatial
   "Validates that the query is not an all granules query with spatial conditions"
