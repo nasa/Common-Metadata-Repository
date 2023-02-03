@@ -35,8 +35,8 @@
   (extract-condition-impl
     [query _ extract-tester]
     (extract-condition-impl (:condition query)
-                       [query]
-                       extract-tester))
+                            [query]
+                            extract-tester))
 
   ConditionGroup
   (extract-condition-impl
@@ -72,4 +72,3 @@
   (extract-condition-impl
     [this condition-path extract-tester]
     (extract-self condition-path extract-tester this)))
-

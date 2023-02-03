@@ -1,28 +1,30 @@
 (ns cmr.search.services.json-parameters.conversion
   "Contains functions for parsing and converting JSON queries into query conditions"
-  (:require [cheshire.core :as json]
-            [clojure.string :as str]
-            [clojure.set :as set]
-            [clojure.java.io :as io]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.util :as util]
-            [cmr.common.concepts :as cc]
-            [cmr.common.date-time-parser :as parser]
-            [cmr.common.validations.json-schema :as js]
-            [cmr.common-app.services.search.query-model :as cqm]
-            [cmr.common-app.services.search.query-to-elastic :as q2e]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common-app.services.search.params :as common-params]
-            [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
-            [cmr.search.models.query :as qm]
-            [cmr.search.services.parameters.legacy-parameters :as lp]
-            [cmr.search.services.parameters.conversion :as pc]
-            [cmr.search.services.parameters.converters.range-facet :as range-facet]
-            [cmr.search.services.parameters.parameter-validation :as pv]
-            [cmr.search.services.messages.common-messages :as msg]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.validation :as sv]
-            [inflections.core :as inf]))
+  (:require
+   [cheshire.core :as json]
+   [clojure.java.io :as io]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
+   [cmr.common-app.services.search.params :as common-params]
+   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.common.concepts :as cc]
+   [cmr.common.date-time-parser :as parser]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.common.validations.json-schema :as js]
+   [cmr.search.models.query :as qm]
+   [cmr.search.services.messages.common-messages :as msg]
+   [cmr.search.services.parameters.conversion :as pc]
+   [cmr.search.services.parameters.converters.range-facet :as range-facet]
+   [cmr.search.services.parameters.legacy-parameters :as lp]
+   [cmr.search.services.parameters.parameter-validation :as pv]
+   [cmr.search.validators.all-granule-validation :as all-granule-validation]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.validation :as sv]
+   [inflections.core :as inf]))
 
 (def json-query-schema-collections
   "JSON Schema for querying for collections."
@@ -42,7 +44,6 @@
    :instrument :string
    :project :string
    :spatial-keyword :string
-   :two-d-coordinate-system-name :string
    :bounding-box :bounding-box
    :temporal :temporal
    :updated-since :updated-since
@@ -137,6 +138,14 @@
   (when (empty? (dissoc value :exclude-boundary))
     (errors/throw-service-error
       :bad-request "Temporal condition with only exclude_boundary is invalid.")))
+
+(defn- validate-all-granules
+  "Validates json query for granules to prevent all granule queries."
+  [concept-type query]
+  (when (= :granule concept-type)
+    (when-let [error (all-granule-validation/no-all-granules-for-json-query query)]
+      (errors/throw-service-error
+       :bad-request error))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -256,9 +265,12 @@
   [concept-type params json-string]
   (let [params (pv/validate-standard-query-parameters concept-type params)]
     (validate-json-query concept-type json-string)
-    (cqm/query (assoc (second (common-params/parse-query-level-params concept-type params))
-                      :concept-type concept-type
-                      :condition (->> (json/parse-string json-string true)
-                                      util/map-keys->kebab-case
-                                      :condition
-                                      (parse-json-condition-map concept-type))))))
+    (let [query (cqm/query (assoc (second (common-params/parse-query-level-params concept-type params))
+                                  :concept-type concept-type
+                                  :condition (->> (json/parse-string json-string true)
+                                                  util/map-keys->kebab-case
+                                                  :condition
+                                                  (parse-json-condition-map concept-type))))]
+
+      (validate-all-granules concept-type query)
+      query)))

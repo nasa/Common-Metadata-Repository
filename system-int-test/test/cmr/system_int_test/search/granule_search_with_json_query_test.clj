@@ -87,9 +87,13 @@
                                                                                                     [(m/mbr 10 10 20 0)]))}))]
       (index/wait-until-indexed)
 
+      (testing "all granule validation error"
+        (let [resp (search/find-refs-with-json-query :granule {} {:updated_since "2012-01-01T12:00:00Z"})]
+          (is (= 400 (:status resp)))
+          (is (= ["The CMR does not allow querying across granules with json queries. You should limit your query using conditions that identify one or more collections such as provider, concept_id, short_name, or entry_title."] (:errors resp)))))
+
       (are3 [items json-query options]
         (d/refs-match? items (search/find-refs-with-json-query :granule options json-query))
-
 
         ;; String based conditions
         "single entry-title"
@@ -134,17 +138,20 @@
 
         "project"
         [gran3]
-        {:project "ABC"}
+        {:and [{:provider "PROV1"}
+               {:project "ABC"}]}
         {}
 
         "platform"
         [gran1]
-        {:platform "platform-1"}
+        {:and [{:provider "PROV1"}
+               {:platform "platform-1"}]}
         {}
 
         "instrument"
         [gran1]
-        {:instrument "instrument-1"}
+        {:and [{:provider "PROV1"}
+               {:instrument "instrument-1"}]}
         {}
 
         ;; Spatial
@@ -157,19 +164,23 @@
         ;; Temporal or date based condtions
         "temporal"
         [gran2]
-        {:temporal {:start_date "2012-01-01T12:00:00Z"
-                    :end_date "2012-01-11T12:00:00Z"}}
+        {:and [{:provider "PROV1"}
+               {:temporal {:start_date "2012-01-01T12:00:00Z"
+                           :end_date "2012-01-11T12:00:00Z"}}]}
         {}
 
         "updated-since"
-        [gran1 gran2 gran3 gran4 gran5]
-        {:updated_since "2012-01-01T12:00:00Z"}
+        [gran1 gran2 gran3]
+        {:and [{:provider "PROV1"}
+               {:updated_since "2012-01-01T12:00:00Z"}]}
         {}
 
         ;; Logic operators
         "not"
-        [gran2 gran3 gran4 gran5]
-        {:not {:instrument "instrument-1"}}
+        [gran1 gran2 gran3 gran4 gran5]
+        {:not
+         {:and [{:provider "PROV2"}
+                {:instrument "instrument-1"}]}}
         {}
 
         "or"
