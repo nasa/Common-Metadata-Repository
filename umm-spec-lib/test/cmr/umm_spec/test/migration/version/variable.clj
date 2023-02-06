@@ -4,6 +4,7 @@
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
+   [cmr.common.util :as util]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.test.umm-generators :as umm-gen]
@@ -582,3 +583,42 @@
   (let [expected (assoc variable-concept-18-1 :VariableType "SCIENCE_VARIABLE" :VariableSubType "SCIENCE_ARRAY")
         actual (migrate-variable "1.8" "1.8.1" variable-concept-18)]
     (is (= expected actual) "Document Match")))
+
+(def variable-concept-1-8-2
+  {:Name "/MODIS_Grid_Daily_1km_LST/Data_Fields/sea_surface_temperature"
+   :LongName "sea surface subskin temperature"
+   :Definition "sea surface subskin temperature in units of kelvin"
+   :VariableType "COORDINATE"
+   :VariableSubType "LATITUDE"
+   :Dimensions [{:Name "atrack" :Size 45 :Type "ALONG_TRACK_DIMENSION"}
+                {:Name "xtrack" :Size 30 :Type "CROSS_TRACK_DIMENSION"}
+                {:Name "air_pres" :Size -1, :Type "PRESSURE_DIMENSION"}]
+   :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/variable/v1.8.2"
+                           :Name "UMM-Var"
+                           :Version "1.8.2"}})
+
+(deftest migrate-1-8-1->1-8-2
+  ;; Only MetadataSpecification's version is updated.
+  (let [vc-1-8-1 (-> variable-concept-18-1
+                     (assoc :Dimensions [{:Name "atrack" :Size 45 :Type "ALONG_TRACK_DIMENSION"}
+                                         {:Name "xtrack" :Size 30 :Type "CROSS_TRACK_DIMENSION"}
+                                         {:Name "air_pres" :Size -1, :Type "PRESSURE_DIMENSION"}])
+                     (dissoc :RelatedURLs))
+        actual (migrate-variable "1.8.1" "1.8.2" vc-1-8-1)]
+    (is (= variable-concept-1-8-2 actual) "Document Match")))
+
+(deftest migrate-1-8-2->1-8-1
+  ;; Dimension/Size Varies is converted to -1.
+  ;; MetadataSpecification'version is converted.
+  (let [vc-1-8-2 (util/update-in-each-vector variable-concept-1-8-2
+                                             [:Dimensions]
+                                             #(if (= (:Name %) "air_pres")
+                                                (assoc % :Size "Varies")
+                                                %))
+        vc-1-8-1 (-> variable-concept-18-1
+                     (assoc :Dimensions [{:Name "atrack" :Size 45 :Type "ALONG_TRACK_DIMENSION"}
+                                         {:Name "xtrack" :Size 30 :Type "CROSS_TRACK_DIMENSION"}
+                                         {:Name "air_pres" :Size -1, :Type "PRESSURE_DIMENSION"}])
+                     (dissoc :RelatedURLs))
+        actual (migrate-variable "1.8.2" "1.8.1" vc-1-8-2)]
+    (is (= vc-1-8-1 actual) "Document Match")))

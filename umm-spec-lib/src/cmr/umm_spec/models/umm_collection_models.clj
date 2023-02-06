@@ -957,6 +957,12 @@
 
    FreeAndOpenData
 
+   ;; A list of End User license Agreement identifiers that are associated to a collection. These
+   ;; identifiers can be found in the Earthdata Login application where End User License Agreements
+   ;; are stored. These identifiers allow services to check if an end user has accepted a license
+   ;; agreement before allowing data to be downloaded.
+   EULAIdentifiers
+
    ;; This element holds the URL and associated information to access the License on the web. If
    ;; this element is used the LicenseText element cannot be used.
    LicenseURL
@@ -964,8 +970,6 @@
    ;; This element holds the actual license text. If this element is used the LicenseUrl element
    ;; cannot be used.
    LicenseText
-   
-   EULAIdentifiers
   ])
 (record-pretty-printer/enable-record-pretty-printing UseConstraintsType)
 

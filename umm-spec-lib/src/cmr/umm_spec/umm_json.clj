@@ -76,17 +76,33 @@
                            [k (parse-json schema (conj type-name-path k) k sub-type-def v)]))]
     (constructor-fn properties)))
 
+(defn- check-simple-type
+  "Function returns true if the schema-type that contains a oneOf structure
+  includes simple types of string, number, integer, or boolean.
+  This function assumes that the oneOf is either an object with a set of properties
+  or its simple. This function does not handle if the types are mixed."
+  [schema-type]
+  (let [schema-list (:oneOf schema-type)]
+    (case (:type (first schema-list))
+      (or "number"
+          "integer"
+          "string"
+          "boolean") true
+      false)))
+
 (defmethod parse-json "oneOf"
   [schema type-name-path type-name schema-type js-data]
-  (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
-        merged-prop-types (apply merge
-                                 (:properties schema-type)
-                                 (map :properties (js/expand-refs schema (:oneOf schema-type))))
-        properties (into {}
-                         (for [[k v] js-data
-                               :let [sub-type-def (get merged-prop-types k)]]
-                           [k (parse-json schema (conj type-name-path k) k sub-type-def v)]))]
-    (constructor-fn properties)))
+  (if (check-simple-type schema-type)
+    js-data
+    (let [constructor-fn (record-gen/schema-type-constructor schema type-name)
+          merged-prop-types (apply merge
+                                   (:properties schema-type)
+                                   (map :properties (js/expand-refs schema (:oneOf schema-type))))
+          properties (into {}
+                           (for [[k v] js-data
+                                 :let [sub-type-def (get merged-prop-types k)]]
+                             [k (parse-json schema (conj type-name-path k) k sub-type-def v)]))]
+      (constructor-fn properties))))
 
 (defmethod parse-json "anyOf"
   [schema type-name-path type-name schema-type js-data]
