@@ -81,13 +81,17 @@
                      (common-util/scrub-token token)))))
     401 (errors/throw-service-errors
          :unauthorized
-         (:errors (json/decode body true)))
+         (format "Token %s is invalid" (common-util/scrub-token token)))
+
     404 (errors/throw-service-error
          :unauthorized
          (format "Token %s does not exist" (common-util/scrub-token token)))
 
     ;; catalog-rest returns 401 when echo-rest returns 400 for expired token, we do the same in CMR
     400 (errors/throw-service-errors :unauthorized (:errors (json/decode body true)))
+
+    ;; Service Temporarily Unavailable
+    503 (errors/throw-service-errors :service-unavailable ["Service temporarily unavailable, please try your request again later."])
 
     ;; Gateway Timeout
     504 (errors/throw-service-errors :gateway-timeout ["A gateway timeout occurred, please try your request again later."])
