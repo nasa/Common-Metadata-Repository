@@ -81,7 +81,7 @@
                      (common-util/scrub-token token)))))
     401 (errors/throw-service-errors
          :unauthorized
-         (format "Token %s is invalid" (common-util/scrub-token token)))
+         (:errors (json/decode body true)))
 
     404 (errors/throw-service-error
          :unauthorized
