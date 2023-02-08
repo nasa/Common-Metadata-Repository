@@ -81,7 +81,10 @@
                      (common-util/scrub-token token)))))
     401 (errors/throw-service-errors
          :unauthorized
-         (:errors (json/decode body true)))
+         (let [err (:errors (json/decode body true))]
+           (if (string/includes? err "Caught exception") 
+             (format "Token %s is invalid" (common-util/scrub-token token))
+             err)))
 
     404 (errors/throw-service-error
          :unauthorized
