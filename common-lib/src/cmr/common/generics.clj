@@ -30,6 +30,20 @@
           {}
           (cfg/approved-pipeline-documents)))
 
+(def documents-all-versions
+  ;; TODO: Improve this, should this be a def?
+  "Return the list of all versions of the generic documents in the system"
+  (cfg/approved-pipeline-documents))
+
+(defn current-generic-version
+  "The current/latest version of the generic UMM schema
+   similar to umm-spec-lib/src/cmr/umm_spec/versioning.clj.
+   Parameters:
+   * generic-keyword: [:grid | ...]
+   Returns: string"
+  [concept-type]
+  (-> documents-all-versions concept-type last))
+
 (defn latest-approved-document-types
   "Return a list of configured approved generic keywords
    Returns: (:grid :data-quality-summary ...)"

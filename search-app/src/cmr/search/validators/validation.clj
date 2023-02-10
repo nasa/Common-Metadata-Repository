@@ -4,7 +4,8 @@
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common-app.services.search.query-validation :as cqv]
    [cmr.common.concepts :as concepts]
-   [cmr.common.mime-types :as mt] 
+   [cmr.common.mime-types :as mt]
+   [cmr.common.generics :as generic]
    [cmr.search.models.query :as qm]
    [cmr.search.validators.all-granule-validation :as all-granule-validation]
    [cmr.search.validators.leading-wildcard-validation :as lwv]
@@ -13,12 +14,12 @@
   ;; Must be required to be available.
   (:require
    cmr.spatial.ring-validations))
-
+;; Write that versions as an or
 (defn- umm-versioned-result-formats
   "Returns the umm versioned result formats for the given concept-type"
   [concept-type]
   (for [format-key [:umm-json :umm-json-results]
-        version (umm-version/versions concept-type)]
+        version ((merge umm-version/versions generic/documents-all-versions) concept-type)]
     {:format format-key
      :version version}))
 
@@ -66,7 +67,9 @@
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
   (defmethod cqv/supported-result-formats concept-type
     [_]
+    (print concepts/get-generic-concept-types-array)
     (into #{:xml :json
+            ;; TODO: it is not currently supported with versions
             ;; umm-json supported with and without versions
             :umm-json :umm-json-results}
           (umm-versioned-result-formats concept-type))))

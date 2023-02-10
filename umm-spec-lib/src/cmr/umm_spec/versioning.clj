@@ -1,11 +1,13 @@
 (ns cmr.umm-spec.versioning
-  "Contains UMM JSON version defintions and helper functions."
+  "Contains UMM JSON version definitions and helper functions."
   (:require [cmr.common.mime-types :as mt]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Important Constants
 
 ;; dynamic is here only for testing purposes
+;; dynamic is an instruction to the Clojure compiler that a symbol (as defined with def) is intended to be dynamically rebound
+;; TODO: We can grab these values from the directory names of the resources/schemas
 (def ^:dynamic versions
   "A map of concept type to a sequence of valid UMM Schema versions, with the newest one last.
   The sequence must be updated when new schema versions are added for the concept type."
@@ -17,8 +19,10 @@
    :variable ["1.0" "1.1" "1.2" "1.3" "1.4" "1.5" "1.6" "1.7" "1.8" "1.8.1" "1.8.2"]
    :service ["1.0" "1.1" "1.2" "1.3" "1.3.1" "1.3.2" "1.3.3" "1.3.4" "1.4" "1.4.1" "1.5.0"]
    :tool ["1.0" "1.1" "1.1.1" "1.2.0"]
-   :subscription ["1.0" "1.1"]})
-
+   :subscription ["1.0" "1.1"]}
+  )
+;; TODO we could grab a bunch of these records from the ingest logs so get current is really just grabbing the last thing
+;; in the sequence
 (def current-collection-version
   "The current version of the collection UMM schema."
   (-> versions :collection last))
