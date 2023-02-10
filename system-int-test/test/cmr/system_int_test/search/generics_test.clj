@@ -8,6 +8,7 @@
    [clojure.test :refer :all]
    [cmr.common.config :as cfg]
    [cmr.common.util :as util :refer [are3]]
+   [cmr.common.generics :as generics]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.index-util :as index]
@@ -35,6 +36,27 @@
         :url (format "%s%s?%s" (url-helper/search-root) concept-type-ext params)
         :connection-manager (system/conn-mgr)
         :throw-exceptions false}
+       (client/request))))
+
+
+(defn search-request-version-url-extension
+  "This function will make a request to one of the generic URLs using and extended url to include version"
+  ([concept-type-ext url-extension]
+   (-> {:method :get
+        :url (format "%s%s.%s" (url-helper/search-root) concept-type-ext url-extension)
+        :connection-manager (system/conn-mgr)
+        :throw-exceptions false}
+       (client/request))))
+
+
+(defn search-request-version-accept-header
+  "This function will make a request to one of the generic URLs passing the accept header to specify version"
+  ([concept-type-ext accept]
+   (-> {:method :get
+        :url (format "%s%s" (url-helper/search-root) concept-type-ext)
+        :connection-manager (system/conn-mgr)
+        :throw-exceptions false
+        :accept accept}
        (client/request))))
 
 (defn get-files-per-concept
@@ -293,4 +315,43 @@
                   status (:status results)
                   body (:body results)]
               (is (string/includes? body concept-id) "record not found")
-              (is (= 200 status) "wrong http status"))))))))
+              (is (= 200 status) "wrong http status")))
+          
+           (testing "Searching with non-existent UMM JSON version in the url suffix for generics"
+             (are3 [url-extension]
+                   (let [{:keys [status body]} (search-request-version-url-extension plural-concept-type-name url-extension)]
+                     (is (= 400 status))
+                     (is (= (format "{\"errors\":[\"The mime type [application/vnd.nasa.cmr.umm_results+json] with version [9.9.9] is not supported for %s.\"]}" plural-concept-type-name)
+                            body)))
+
+                   "explicit UMM JSON version through suffix"
+                   "umm_json_v9_9_9"))
+          
+             (testing "Searching with existing UMM JSON version in the url suffix for generics"
+               (are3 [url-extension]
+                     (let [{:keys [status body]} (search-request-version-url-extension plural-concept-type-name url-extension)]
+                       (is (= 200 status))
+                       (is (is (string/includes? body concept-id) "record not found")))
+               
+               "explicit UMM JSON version through suffix"
+               (format "umm_json_v%s" (string/replace (generics/current-generic-version (keyword concept-type-string)) #"\." "_"))))
+           
+           (testing "Searching with non-existent UMM JSON version for generics passing the accept header"
+             (are3 [acceptHeader]
+                   (let [{:keys [status body]} (search-request-version-accept-header plural-concept-type-name acceptHeader)]
+                     (is (= 400 status))
+                     (is (= (format "{\"errors\":[\"The mime type [application/vnd.nasa.cmr.umm_results+json] with version [9.9.9] is not supported for %s.\"]}" plural-concept-type-name)
+                            body)))
+
+                   "explicit UMM JSON version through suffix"
+                   "application/vnd.nasa.cmr.umm+json;version=9.9.9"))
+           
+           (testing "Searching with existing UMM JSON version for generics passing the accept header"
+             (are3 [acceptHeader]
+                   (let [results (search-request-version-accept-header plural-concept-type-name acceptHeader) status (:status results)
+                         body (:body results)]
+                     (is (= 200 status))
+                     (is (is (string/includes? body concept-id) "record not found")))
+
+                   "explicit UMM JSON version through suffix"
+                   (format "application/vnd.nasa.cmr.umm+json;version=%s" (generics/current-generic-version (keyword concept-type-string))))))))))

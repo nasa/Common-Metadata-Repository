@@ -2,7 +2,8 @@
   "Defines protocols and functions to validate query conditions"
   (:require [cmr.common-app.services.search.query-model :as qm]
             [cmr.common.mime-types :as mt]
-            [cmr.common-app.services.search.validators.max-number-of-conditions :as max-conditions]))
+            [cmr.common-app.services.search.validators.max-number-of-conditions :as max-conditions]
+            [inflections.core :as inf]))
 
 (defmulti supported-result-formats
   "Supported search result formats by concept."
@@ -11,7 +12,7 @@
 
 (defmethod supported-result-formats :default
   [_]
-  ;; Defaults to json unless overriden.
+  ;; Defaults to json unless overridden.
   #{:json})
 
 (defn validate-concept-type-result-format
@@ -24,9 +25,11 @@
                         result-format)]
     (when-not (get (supported-result-formats concept-type) result-format)
       (if-let [version (mt/version-of mime-type)]
-        [(format "The mime type [%s] with version [%s] is not supported for %ss."
-                 (mt/base-mime-type-of mime-type) version (name concept-type))]
-        [(format "The mime type [%s] is not supported for %ss." mime-type (name concept-type))]))))
+        ;; Some concepts aren't plural with just an 's'
+        [(format "The mime type [%s] with version [%s] is not supported for %s."
+                 (mt/base-mime-type-of mime-type) version (inf/plural (name concept-type)))]
+        ;; Some concepts aren't plural with just an 's'
+        [(format "The mime type [%s] is not supported for %s." mime-type (inf/plural (name concept-type)))]))))
 
 (defprotocol Validator
   "Defines the protocol for validating query conditions.

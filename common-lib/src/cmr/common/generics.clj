@@ -31,7 +31,6 @@
           (cfg/approved-pipeline-documents)))
 
 (def documents-all-versions
-  ;; TODO: Improve this, should this be a def?
   "Return the list of all versions of the generic documents in the system"
   (cfg/approved-pipeline-documents))
 

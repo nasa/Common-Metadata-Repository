@@ -6,8 +6,6 @@
 ;;; Important Constants
 
 ;; dynamic is here only for testing purposes
-;; dynamic is an instruction to the Clojure compiler that a symbol (as defined with def) is intended to be dynamically rebound
-;; TODO: We can grab these values from the directory names of the resources/schemas
 (def ^:dynamic versions
   "A map of concept type to a sequence of valid UMM Schema versions, with the newest one last.
   The sequence must be updated when new schema versions are added for the concept type."
@@ -21,8 +19,7 @@
    :tool ["1.0" "1.1" "1.1.1" "1.2.0"]
    :subscription ["1.0" "1.1"]}
   )
-;; TODO we could grab a bunch of these records from the ingest logs so get current is really just grabbing the last thing
-;; in the sequence
+
 (def current-collection-version
   "The current version of the collection UMM schema."
   (-> versions :collection last))

@@ -14,7 +14,7 @@
   ;; Must be required to be available.
   (:require
    cmr.spatial.ring-validations))
-;; Write that versions as an or
+
 (defn- umm-versioned-result-formats
   "Returns the umm versioned result formats for the given concept-type"
   [concept-type]
@@ -67,9 +67,7 @@
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
   (defmethod cqv/supported-result-formats concept-type
     [_]
-    (print concepts/get-generic-concept-types-array)
     (into #{:xml :json
-            ;; TODO: it is not currently supported with versions
             ;; umm-json supported with and without versions
             :umm-json :umm-json-results}
           (umm-versioned-result-formats concept-type))))
