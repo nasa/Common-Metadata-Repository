@@ -257,7 +257,7 @@
             (acl/verify-ingest-management-permission ctx :update)
             (pv/validate-standard-params params)
             (reindex-acls ctx))
-
+      (if (= 1 2)
       (context "/groups" []
         (OPTIONS "/"
                  {params :params}
@@ -320,6 +320,7 @@
                     (lt-validation/validate-launchpad-token ctx)
                     (pv/validate-group-route-params params)
                     (remove-members ctx headers (slurp body) group-id)))))
+          (context "/groups" []))
 
       (context "/acls" []
         (OPTIONS "/"
