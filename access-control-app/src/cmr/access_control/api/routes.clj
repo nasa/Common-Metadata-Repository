@@ -2,6 +2,7 @@
   "Defines the HTTP URL routes for the access-control API."
   (:require
    [cheshire.core :as json]
+   [cmr.access-control.config :as access-control-config]
    [cmr.access-control.data.access-control-index :as index]
    [cmr.access-control.data.acl-schema :as acl-schema]
    [cmr.access-control.data.group-schema :as group-schema]
@@ -257,7 +258,8 @@
             (acl/verify-ingest-management-permission ctx :update)
             (pv/validate-standard-params params)
             (reindex-acls ctx))
-      (if (= 1 2)
+
+      (if (access-control-config/enable-cmr-groups)
       (context "/groups" []
         (OPTIONS "/"
                  {params :params}
