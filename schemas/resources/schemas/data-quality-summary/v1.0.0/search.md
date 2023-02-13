@@ -29,7 +29,7 @@ These parameters will match fields within a Data Quality Summary. They are case 
 * id
 
 ```
-    curl "%CMR-ENDPOINT%/data-quality-summaries?concept_id=DQ1200000000-PROV1"
+    curl "%CMR-ENDPOINT%/data-quality-summaries?concept_id=DQS1200000000-PROV1"
 ```
 
 ##### <a name="data-quality-summary-search-response"></a> Data Quality Summary Search Response
@@ -57,7 +57,7 @@ __Example__
 
 ```
     curl -H "Cmr-Pretty: true" \
-        "%CMR-ENDPOINT%/data-quality-summaries.xml?name=data-quality-summary1"
+        "%CMR-ENDPOINT%/data-quality-summaries.xml?name=data-quality-summary-name-v1"
 ```
 
 __Sample response__
@@ -71,7 +71,7 @@ __Sample response__
             <reference>
                 <name>data-quality-summary-name-v1</name>
                 <id>DQ1200000000-PROV1</id>
-                <location>%CMR-ENDPOINT%/concepts/DQ1200000000-PROV1/4</location>
+                <location>%CMR-ENDPOINT%/concepts/DQS1200000000-PROV1/4</location>
                 <revision-id>4</revision-id>
             </reference>
         </references>
@@ -95,7 +95,7 @@ __Example__
 
 ```
     curl -H "Cmr-Pretty: true" \
-        "%CMR-ENDPOINT%/data-quality-summaries.json?name="data-quality-summary-name"
+        "%CMR-ENDPOINT%/data-quality-summaries.json?name="data-quality-summary-name-v1"
 ```
 
 __Sample response__
@@ -106,11 +106,11 @@ __Sample response__
         "took": 10,
         "items": [
             {
-                "concept_id": "DQ1200000000-PROV1",
+                "concept_id": "DQS1200000000-PROV1",
                 "revision\_id": 4,
                 "provider\_id": "PROV-1",
                 "native\_id": "sampleNative-Id",
-                "name": "data-quality-summary-name"
+                "name": "data-quality-summary-name-v1"
             }
         ]
     }
@@ -118,13 +118,13 @@ __Sample response__
 
 ##### UMM JSON
 
-The UMM JSON response contains meta-metadata of the Data Quality Summary, the UMM fields and the associations field if applicable. The associations field only applies when there are collections associated with the Data Quality Summary and will list the collections that are associated with the Data Quality Summary.
+The UMM JSON response contains meta-metadata of the Data Quality Summary, the UMM fields and the associations field if applicable. [To search over specific versions of UMM](#umm-json). 
 
 __Example__
 
 ```
     curl -H "pretty=true" \
-        "%CMR-ENDPOINT%/data-quality-summaries.umm_json?name=data-quality-summary1234"
+        "%CMR-ENDPOINT%/data-quality-summaries.umm_json?name=data-quality-summary-name-v1"
 ```
 
 __Sample response__
@@ -147,7 +147,7 @@ __Sample response__
                 },
                 "umm": {
                     "Id": "8EA5CA1F-E339-8065-26D7-53B64074D7CC",
-                    "Name": "CER-BDS_Terra",
+                    "Name": "data-quality-summary-name-v1",
                     "Summary": "Summary",
                     "MetadataSpecification": {
                         "Name": "Data Quality Summary",
@@ -162,13 +162,13 @@ __Sample response__
 
 #### <a name="retrieving-all-revisions-of-a-data-quality-summary"></a> Retrieving All Revisions of a Data Quality Summary
 
-In addition to retrieving the latest revision for a Data Quality Summary parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true". Data Quality Summaries with only one revision will of course, return only one result.
+In addition to retrieving the latest revision for a Data Quality Summary parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' respectively. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true". Data Quality Summaries with only one revision will of course, return only one result.
 
 __Example__
 
 ```
     curl -H "Cmr-Pretty: true" \
-        "%CMR-ENDPOINT%/data-quality-summaries.xml?concept_id=SO1200000000-PROV1&all_revisions=true"
+        "%CMR-ENDPOINT%/data-quality-summaries.xml?concept_id=DQS1200000000-PROV1&all_revisions=true"
 ```
 
 __Sample response__
@@ -181,20 +181,20 @@ __Sample response__
         <references>
             <reference>
                 <name>data-quality-summary-name-v1</name>
-                <id>DQ1200000000-PROV1</id>
+                <id>DQS1200000000-PROV1</id>
                 <deleted>true</deleted>
                 <revision-id>1</revision-id>
             </reference>
             <reference>
                 <name>data-quality-summary-name-v2</name>
-                <id>DQ1200000000-PROV1V</id>
-                <location>%CMR-ENDPOINT%/concepts/DQ1200000000-PROV1/3</location>
+                <id>DQS1200000000-PROV1V</id>
+                <location>%CMR-ENDPOINT%/concepts/DQS1200000000-PROV1/3</location>
                 <revision-id>2</revision-id>
             </reference>
             <reference>
                 <name>data-quality-summary-name-v3</name>
-                <id>SO1200000000-PROV1</id>
-                <location>%CMR-ENDPOINT%/concepts/DQ1200000000-PROV1/4</location>
+                <id>DQS1200000000-PROV1</id>
+                <location>%CMR-ENDPOINT%/concepts/DQS1200000000-PROV1/4</location>
                 <revision-id>3</revision-id>
             </reference>
         </references>

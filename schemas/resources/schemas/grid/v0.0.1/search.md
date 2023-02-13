@@ -56,7 +56,7 @@ The `references` field may contain multiple `reference` entries, each consisting
 __Example__
 
 ```
-    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/grids.xml?name=Grid1"
+    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/grids.xml?name=Grid-name-v1"
 ```
 
 __Sample response__
@@ -94,7 +94,7 @@ The JSON response includes the following fields.
 __Example__
 
 ```
-    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/grids.json"
+    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/grids.json?name=Grid-name-v1"
 ```
 
 __Sample response__
@@ -117,12 +117,12 @@ __Sample response__
 
 ##### UMM JSON
 
-The UMM JSON response contains meta-metadata of the Grid, the UMM fields and the associations field if applicable.
+The UMM JSON response contains meta-metadata of the Grid, the UMM fields and the associations field if applicable.[To search over specific versions of UMM](#umm-json).
 
 __Example__
 
 ```
-    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/grids.umm_json?name=Grid-v1"
+    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/grids.umm_json?name=Grid-name-v1"
 ```
 
 __Sample response__
@@ -246,7 +246,7 @@ __Sample response__
                     "MetadataDate": {
                         "Create": "2022-04-20T08:00:00Z"
                     },
-                    "Name": "Grid-v1",
+                    "Name": "Grid-name-v1",
                     "MetadataSpecification": {
                         "URL": "https://cdn.earthdata.nasa.gov/generic/grid/v0.0.1",
                         "Name": "Grid",
