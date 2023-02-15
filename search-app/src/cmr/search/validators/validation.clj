@@ -19,7 +19,7 @@
   "Returns the umm versioned result formats for the given concept-type"
   [concept-type]
   (for [format-key [:umm-json :umm-json-results]
-        version ((merge umm-version/versions generic/documents-all-versions) concept-type)]
+        version (get (merge umm-version/versions generic/documents-all-versions) concept-type)]
     {:format format-key
      :version version}))
 

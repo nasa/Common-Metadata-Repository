@@ -41,23 +41,23 @@
 
 (defn search-request-version-url-extension
   "This function will make a request to one of the generic URLs using and extended url to include version"
-  ([concept-type-ext url-extension]
+  [concept-type-ext url-extension]
    (-> {:method :get
         :url (format "%s%s.%s" (url-helper/search-root) concept-type-ext url-extension)
         :connection-manager (system/conn-mgr)
         :throw-exceptions false}
-       (client/request))))
+       (client/request)))
 
 
 (defn search-request-version-accept-header
   "This function will make a request to one of the generic URLs passing the accept header to specify version"
-  ([concept-type-ext accept]
+  [concept-type-ext accept]
    (-> {:method :get
         :url (format "%s%s" (url-helper/search-root) concept-type-ext)
         :connection-manager (system/conn-mgr)
         :throw-exceptions false
         :accept accept}
-       (client/request))))
+       (client/request)))
 
 (defn get-files-per-concept
   "Using the passed in concept type, find all concept-type version

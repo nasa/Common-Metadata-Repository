@@ -1,9 +1,9 @@
 (ns cmr.common-app.services.search.query-validation
   "Defines protocols and functions to validate query conditions"
   (:require [cmr.common-app.services.search.query-model :as qm]
+            [cmr.common.concepts :as concepts]
             [cmr.common.mime-types :as mt]
-            [cmr.common-app.services.search.validators.max-number-of-conditions :as max-conditions]
-            [inflections.core :as inf]))
+            [cmr.common-app.services.search.validators.max-number-of-conditions :as max-conditions]))
 
 (defmulti supported-result-formats
   "Supported search result formats by concept."
@@ -27,9 +27,9 @@
       (if-let [version (mt/version-of mime-type)]
         ;; Some concepts aren't plural with just an 's'
         [(format "The mime type [%s] with version [%s] is not supported for %s."
-                 (mt/base-mime-type-of mime-type) version (inf/plural (name concept-type)))]
+                 (mt/base-mime-type-of mime-type) version (concepts/pluralize-concept-type-name (name concept-type)))]
         ;; Some concepts aren't plural with just an 's'
-        [(format "The mime type [%s] is not supported for %s." mime-type (inf/plural (name concept-type)))]))))
+        [(format "The mime type [%s] is not supported for %s." mime-type (concepts/pluralize-concept-type-name (name concept-type)))]))))
 
 (defprotocol Validator
   "Defines the protocol for validating query conditions.
