@@ -13,14 +13,11 @@ const gremlinStatistics = gremlin.process.statics
  * @param {JSON} collectionObj collection object from `items` array in cmr response
  * @param {JSON} collectionObj List of groups that the collection can be read by from access-control
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
- * @param {number} [depth=1] the recursion depth the function is currently on
  * @returns
  */
 
 // eslint-disable-next-line max-len
-export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection, depth = 1) => {
-  const maxDepth = 4
-  const wait = (ms) => new Promise((res) => setTimeout(res, ms))
+export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection) => {
   const {
     meta: {
       'concept-id': conceptId,
@@ -71,15 +68,8 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
       )
       .next()
   } catch (error) {
-    console.log(`Error indexing collection into graph database [${conceptId}]: ${error.message}, retrying attempt #[${depth}]`)
-
-    if (depth > maxDepth) {
-      console.log(`Maximum attempts to index the graph database for [${conceptId}] error: ${error}`)
-      throw Error('throwing error in indexCmrCollection maximum attempts reached for', conceptId)
-    }
-    await wait(2 ** depth * 10)
-    // Exponential retry on the function
-    return indexCmrCollection(collectionObj, groupList, gremlinConnection, depth + 1)
+    console.log(`Error indexing collection into graph database [${conceptId}]: ${error.message}`)
+    return false
   }
 
   const { value = {} } = collection
@@ -103,7 +93,7 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
     })
   }
 
-  console.log(`Collection vertex [${collectionId}] indexed for collection [${conceptId}]`)
+  console.log(`Collection vertex [${collectionId}] successfully indexed for collection [${conceptId}]`)
 
   return true
 }

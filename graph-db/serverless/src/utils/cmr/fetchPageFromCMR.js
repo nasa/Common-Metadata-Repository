@@ -89,6 +89,9 @@ export const fetchPageFromCMR = async ({
           chunk.forEach((collection) => {
             const { id: conceptId } = collection
 
+            // TODO: Since we already made a call to CMR we may want to pass that information into the event
+            // TODO: it is possible that by passing cmr data in the event the data could be stale by the time
+            // the indexCollection handler picks it up to index it into the graphDb
             sqsEntries.push({
               Id: conceptId,
               MessageBody: JSON.stringify({
@@ -111,7 +114,10 @@ export const fetchPageFromCMR = async ({
     }
 
     // If we have an active searchAfter so we aren't on the last page and there are more results
+    // Second argument is to parse integers in base 10
     if (cmrsearchAfter && entry.length === parseInt(process.env.PAGE_SIZE, 10)) {
+      // TODO: Investigate putting in a wait function between calls for each page to allow it to get picked
+      // up by the other lambda and indexed into the graph database
       await fetchPageFromCMR({
         searchAfter: cmrsearchAfter,
         token,

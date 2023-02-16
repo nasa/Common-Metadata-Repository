@@ -20,6 +20,7 @@ const bootstrapGremlinServer = async (event) => {
 
   const { body } = bootstrapEvents[0]
 
+  // Parse the optional provider Id for bootstrap events limited to a single provider
   const { 'provider-id': providerId = null } = JSON.parse(body)
 
   // Fetch all CMR Collections and index each page

@@ -63,6 +63,9 @@ const indexCmrCollections = async (event) => {
         } else {
           const [firstCollection] = items
 
+          // TODO: slow down how frequently we are sending responses to the access-control application
+          // since this effects all collection calls that get indexed it may help with the collection problems
+          // await new Promise((rate) => setTimeout(rate, 500))
           // Fetch the permitted groups for this collection from access-control
           const groupList = await fetchCollectionPermittedGroups(conceptId, token)
 

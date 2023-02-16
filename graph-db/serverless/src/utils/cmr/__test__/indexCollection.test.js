@@ -61,21 +61,23 @@ describe('utils#indexCmrCollection', () => {
         .reply(200, mockAclResponse)
 
       // Provide `null` for the gremlin connection to throw an error
-      await expect(
-        indexCmrCollection(collectionObj, [], null)
-      ).rejects.toThrow('throwing error in indexCmrCollection maximum attempts reached')
+      // await expect(indexCmrCollection(collectionObj, [], null))
+
+      const result = await indexCmrCollection(collectionObj, [], null)
+
+      expect(result).toBeFalsy()
 
       // Retry policy in place. Called 5 times (maxDepth) uses two different logs for this error the project and the collection itself. One additional log for max attempts being reached
-      expect(consoleMock).toBeCalledTimes(11)
+      expect(consoleMock).toBeCalledTimes(2)
 
       // Error message logged because deleteCmrCollection failed because of null gremlinConnection
       expect(consoleMock.mock.calls[0][0]).toEqual(`Error deleting project vertices only linked to collection [${conceptId}]: Cannot read properties of null (reading 'V')`)
 
       // Error message logged because addV failed, first attempt being printed to console
-      expect(consoleMock.mock.calls[1][0]).toEqual(`Error indexing collection into graph database [${conceptId}]: Cannot read properties of null (reading 'addV'), retrying attempt #[1]`)
+      expect(consoleMock.mock.calls[1][0]).toEqual(`Error indexing collection into graph database [${conceptId}]: Cannot read properties of null (reading 'addV')`)
 
-      // Error message that max attempts have been reached according to the retry policy
-      expect(consoleMock.mock.calls[10][0]).toEqual(`Maximum attempts to index the graph database for [${conceptId}] error: TypeError: Cannot read properties of null (reading 'addV')`)
+      // // Error message that max attempts have been reached according to the retry policy
+      // expect(consoleMock.mock.calls[10][0]).toEqual(`Maximum attempts to index the graph database for [${conceptId}] error: TypeError: Cannot read properties of null (reading 'addV')`)
     })
   })
 })
