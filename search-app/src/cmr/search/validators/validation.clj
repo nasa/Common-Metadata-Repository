@@ -4,7 +4,8 @@
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common-app.services.search.query-validation :as cqv]
    [cmr.common.concepts :as concepts]
-   [cmr.common.mime-types :as mt] 
+   [cmr.common.generics :as generic]
+   [cmr.common.mime-types :as mt]
    [cmr.search.models.query :as qm]
    [cmr.search.validators.all-granule-validation :as all-granule-validation]
    [cmr.search.validators.leading-wildcard-validation :as lwv]
@@ -18,7 +19,7 @@
   "Returns the umm versioned result formats for the given concept-type"
   [concept-type]
   (for [format-key [:umm-json :umm-json-results]
-        version (umm-version/versions concept-type)]
+        version (get (merge umm-version/versions generic/documents-all-versions) concept-type)]
     {:format format-key
      :version version}))
 

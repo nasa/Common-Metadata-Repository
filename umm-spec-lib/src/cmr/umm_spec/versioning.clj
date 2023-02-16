@@ -1,5 +1,5 @@
 (ns cmr.umm-spec.versioning
-  "Contains UMM JSON version defintions and helper functions."
+  "Contains UMM JSON version definitions and helper functions."
   (:require [cmr.common.mime-types :as mt]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

@@ -93,7 +93,7 @@ The JSON response includes the following fields.
 __Example__
 
 ```
-    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/service-entries.json?name="service-entry-name"
+    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/service-entries.json?name="Serviceentry-name-v1"
 ```
 
 __Sample response__
@@ -109,6 +109,7 @@ __Sample response__
                 "provider\_id": "PROV1",
                 "native\_id": "sampleNative-Id",
                 "name": "Serviceentry-name-v1"
+                "id": "0AF0BB4E-7455-FBB2-15C7-B5B7DE43AA6D"
             }
         ]
     }
@@ -116,12 +117,12 @@ __Sample response__
 
 ##### UMM JSON
 
-The UMM JSON response contains meta-metadata of the Service Entry, the UMM fields and the associations field if applicable.
+The UMM JSON response contains meta-metadata of the Service Entry, the UMM fields and the associations field if applicable. [To search over specific versions of UMM](#umm-json).
 
 __Example__
 
 ```
-    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/service-entries.umm_json?name=Serviceentry1234"
+    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/service-entries.umm_json?name=Serviceentry-name-v1"
 ```
 
 __Sample response__
@@ -143,7 +144,7 @@ __Sample response__
         },
         "umm" : {
           "Id" : "0AF0BB4E-7455-FBB2-15C7-B5B7DE43AA6D",
-          "Name" : "Test Service",
+          "Name" : "Serviceentry-name-v1",
           "Description" : "Testing Service",
           "Type" : "SERVICE_IMPLEMENTATION",
           "InterfaceName" : "EOSIDS Service Interface",
@@ -160,7 +161,7 @@ __Sample response__
 
 #### <a name="retrieving-all-revisions-of-a-service-entry"></a> Retrieving All Revisions of a Service Entry
 
-In addition to retrieving the latest revision for a Service Entry parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true". Service Entries with only 1 revision will of course, return only one result.
+In addition to retrieving the latest revision for a Service Entry parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' respectively. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true". Service Entries with only 1 revision will of course, return only one result.
 
 __Example__
 

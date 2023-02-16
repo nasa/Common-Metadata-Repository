@@ -94,7 +94,7 @@ The JSON response includes the following fields.
 __Example__
 
 ```
-    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/order-options.json"
+    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/order-options.json?name=Orderoption1"
 ```
 
 __Sample response__
@@ -117,7 +117,7 @@ __Sample response__
 
 ##### UMM JSON
 
-The UMM JSON response contains meta-metadata of the Order Option, the UMM fields and the associations field if applicable.
+The UMM JSON response contains meta-metadata of the Order Option, the UMM fields and the associations field if applicable. [To search over specific versions of UMM](#umm-json).
 
 __Example__
 
@@ -145,7 +145,7 @@ __Sample response__
         },
         "umm" : {
           "Id" : "0AF0BB4E",
-          "Name" : "With Browse",
+          "Name" : "OrderOption1",
           "Description" : "",
           "Form" : "<form xmlns=\"http://echo.nasa.gov/v9/echoforms\" xmlns:xsd=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"> <model> <instance> <ecs:options xmlns:ecs=\"http://ecs.nasa.gov/options\"> <!-- ECS distribution options example --> <ecs:distribution> <ecs:mediatype> <ecs:value>FtpPull</ecs:value> </ecs:mediatype> <ecs:mediaformat> <ecs:ftppull-format> <ecs:value>FILEFORMAT</ecs:value> </ecs:ftppull-format> </ecs:mediaformat> </ecs:distribution> <ecs:do-ancillaryprocessing>true</ecs:do-ancillaryprocessing> <ecs:ancillary> <ecs:orderBrowse/> </ecs:ancillary> </ecs:options> </instance> </model> <ui> <group id=\"mediaOptionsGroup\" label=\"Media Options\" ref=\"ecs:distribution\"> <output id=\"MediaTypeOutput\" label=\"Media Type:\" relevant=\"ecs:mediatype/ecs:value ='FtpPull'\" type=\"xsd:string\" value=\"'HTTPS Pull'\"/> <output id=\"FtpPullMediaFormatOutput\" label=\"Media Format:\" relevant=\"ecs:mediaformat/ecs:ftppull-format/ecs:value='FILEFORMAT'\" type=\"xsd:string\" value=\"'File'\"/> </group> <group id=\"checkancillaryoptions\" label=\"Additional file options:\" ref=\"ecs:ancillary\" relevant=\"//ecs:do-ancillaryprocessing = 'true'\"> <input label=\"Include associated Browse file in order\" ref=\"ecs:orderBrowse\" type=\"xsd:boolean\"/> </group> </ui> </form>",
           "Scope" : "PROVIDER",
@@ -163,7 +163,7 @@ __Sample response__
 
 #### <a name="retrieving-all-revisions-of-a-order-option"></a> Retrieving All Revisions of an Order Option
 
-In addition to retrieving the latest revision for a Order Option parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' repecitvely. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
+In addition to retrieving the latest revision for a Order Option parameter search, it is possible to return all revisions, including tombstone (deletion marker) revisions, by passing in `all_revisions=true` with the URL parameters. The reference, JSON, and UMM JSON response formats are supported for all revision searches merely change to 'umm_json' and 'json' respectively. References to tombstone revisions do not include the `location` tag and include an additional tag, `deleted`, which always has content of "true".
 
 __Example__
 
