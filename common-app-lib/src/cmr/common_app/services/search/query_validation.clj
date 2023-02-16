@@ -25,10 +25,8 @@
                         result-format)]
     (when-not (get (supported-result-formats concept-type) result-format)
       (if-let [version (mt/version-of mime-type)]
-        ;; Some concepts aren't plural with just an 's'
         [(format "The mime type [%s] with version [%s] is not supported for %s."
                  (mt/base-mime-type-of mime-type) version (concepts/pluralize-concept-type-name (name concept-type)))]
-        ;; Some concepts aren't plural with just an 's'
         [(format "The mime type [%s] is not supported for %s." mime-type (concepts/pluralize-concept-type-name (name concept-type)))]))))
 
 (defprotocol Validator
