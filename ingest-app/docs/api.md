@@ -1440,9 +1440,9 @@ curl -XPOST \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "example of adding OPeNDAP link",
-	"operation": "UPDATE_FIELD",
-	"update-field":"OPeNDAPLink",
-	"updates":[
+   "operation": "UPDATE_FIELD",
+   "update-field":"OPeNDAPLink",
+   "updates":[
              ["granule_ur1", "https://via.placeholder.com/150"],
              ["granule_ur2", "https://via.placeholder.com/160"],
              ["granule_ur3", "https://via.placeholder.com/170,https://opendap.earthdata.nasa.gov/foo"]
@@ -1475,13 +1475,11 @@ curl -XPOST \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "example of updating granule checksums",
-	"operation": "UPDATE_FIELD",
-	"update-field":"Checksum",
-	"updates":[
-             ["granule_ur1", "92959a96fd69146c5fe7cbde6e5720f2"],
-             ["granule_ur2", "925a89b43f3caff507db0a86d20a2428007"],
-             ["granule_ur3", "a3dcb4d229de6fde0db5686dee47145d,SHA-256"]
-	]
+   "operation": "UPDATE_FIELD",
+   "update-field":"Checksum",
+   "updates":[["granule_ur1", "92959a96fd69146c5fe7cbde6e5720f2"],
+              ["granule_ur2", "925a89b43f3caff507db0a86d20a2428007"],
+              ["granule_ur3", "a3dcb4d229de6fde0db5686dee47145d,SHA-256"]]
 }'
 ```
 
@@ -1510,13 +1508,11 @@ curl -XPOST \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "Example of updating sizes",
-	"operation": "UPDATE_FIELD",
-	"update-field":"Size",
-	"updates":[
-             ["granule_ur1", "156"],
-             ["granule_ur2", "10.0"],
-             ["granule_ur3", "8.675306,8675309"]
-	]
+   "operation": "UPDATE_FIELD",
+   "update-field":"Size",
+   "updates":[["granule_ur1", "156"],
+              ["granule_ur2", "10.0"],
+              ["granule_ur3", "8.675306,8675309"]]
 }'
 ```
 
@@ -1543,13 +1539,11 @@ curl -XPOST \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "Example of updating format",
-	"operation": "UPDATE_FIELD",
-	"update-field":"Size",
-	"updates":[
-             ["granule_ur1", "HDF-EOS5"],
-             ["granule_ur2", "ZIP"],
-             ["granule_ur3", "netCDF"]
-	]
+   "operation": "UPDATE_FIELD",
+   "update-field":"Format",
+   "updates":[["granule_ur1", "HDF-EOS5"],
+              ["granule_ur2", "ZIP"],
+              ["granule_ur3", "netCDF"]]
 }'
 ```
 
@@ -1579,35 +1573,28 @@ curl -XPOST \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "Example of updating RelatedUrl MimeTypes",
-	"operation": "UPDATE_FIELD",
-	"update-field":"MimeType",
-	"updates":[{
-		"GranuleUR": "Gran_With_Links_1"
-		"Links": [
-			{
-				"URL": "www.example.com/1"
-			 "MimeType": application/json
-		 	},
-			{
-				"URL": "www.example.com/2"
-			 "MimeType": application/xml
-		 	}
-		]
-	},
-	{
-		"GranuleUR": "Gran_With_Links_2"
-		"Links": [
-			{
-				"URL": "www.example.com/myimportantlink"
-			 "MimeType": application/zip
-		 	},
-			{
-				"URL": "www.example.com/myveryimportanlink"
-			 "MimeType": application/tar
-		 	}
-		]
-	}]
-}'
+   "operation": "UPDATE_FIELD",
+   "update-field":"MimeType",
+   "updates":[{
+     "GranuleUR": "Gran_With_Links_1",
+     "Links": [{
+       "URL": "www.example.com/1",
+       "MimeType": "application/json"
+     }, {
+       "URL": "www.example.com/2",
+       "MimeType": "application/xml"
+     }]
+   }, {
+     "GranuleUR": "Gran_With_Links_2",
+     "Links": [{
+       "URL": "www.example.com/myimportantlink",
+       "MimeType": "application/zip"
+     }, {
+       "URL": "www.example.com/myveryimportanlink",
+       "MimeType": "application/tar"
+     }]
+   }]
+ }'
 ```
 
 **operation: "UPDATE_FIELD", update-field: "AdditionalFile"**
@@ -1704,11 +1691,9 @@ curl -XPOST \
 '{ "name": "example of appending OPeNDAP links",
 	"operation": "APPEND_TO_FIELD",
 	"update-field":"OPeNDAPLink",
-	"updates":[
-             ["granule_ur1", "https://opendap.earthdata.nasa.gov/example"],
+	"updates":[["granule_ur1", "https://opendap.earthdata.nasa.gov/example"],
              ["granule_ur2", "https://on-prem.example.com"],
-             ["granule_ur3", "https://opendap.earthdata.nasa.gov/example-2,https://on-prem.example-2.com"]
-	]
+             ["granule_ur3", "https://opendap.earthdata.nasa.gov/example-2,https://on-prem.example-2.com"]]
 }'
 ```
 
@@ -1738,13 +1723,11 @@ curl -XPOST \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "example of appending S3 links",
-	"operation": "APPEND_TO_FIELD",
-	"update-field":"S3Link",
-	"updates":[
-             ["granule_ur1", "s3://example.com/bucket1"],
-             ["granule_ur2", "s3://example.com/bucket2"],
-             ["granule_ur3", "s3://example.com/bucket3-east,s3://example.com/bucket3-west"]
-	]
+   "operation": "APPEND_TO_FIELD",
+   "update-field":"S3Link",
+   "updates":[["granule_ur1", "s3://example.com/bucket1"],
+              ["granule_ur2", "s3://example.com/bucket2"],
+              ["granule_ur3", "s3://example.com/bucket3-east,s3://example.com/bucket3-west"]]
 }'
 ```
 
@@ -1776,11 +1759,9 @@ curl -XPOST \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "Update type and subtype for links containing the string 'opendap'",
-	"operation": "UPDATE_TYPE",
-	"update-field":"OPeNDAPLink",
-	"updates":[
-             "granule_ur1", "granule_ur2", "granule_ur3"
-	]
+   "operation": "UPDATE_TYPE",
+   "update-field":"OPeNDAPLink",
+   "updates":["granule_ur1", "granule_ur2", "granule_ur3"]
 }'
 ```
 
@@ -1794,21 +1775,21 @@ curl -XPOST \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "Update type and subtype for links containing a subtype matching the supplied value",
-	"operation": "UPDATE_TYPE",
-	"update-field":"OPeNDAPLink",
-	"updates":[
-             ["granule_ur1", "OPENDAP DATA"]
-			 ["granule_ur2", "OPENDAP DATA"]
-			 ["granule_ur3", "DIRECT DOWNLOAD"]
-	]
+   "operation": "UPDATE_TYPE",
+   "update-field":"OPeNDAPLink",
+   "updates":[["granule_ur1", "OPENDAP DATA"],
+              ["granule_ur2", "OPENDAP DATA"],
+              ["granule_ur3", "DIRECT DOWNLOAD"]]
 }'
 ```
 
 **operation: "UPDATE_FIELD", update-field: "OnlineResourceURL"**
+**operation: "UPDATE_FIELD", update-field: "OnlineAccessURL"**
+**operation: "UPDATE_FIELD", update-field: "BrowseImageURL"**
 supported metadata formats:
-  - OnlineResource url in OnlineResources for ECHO10 format
+  - OnlineResource, OnlineAccessURL, and BrowseImageURL, url in all three for ECHO10 format
 
-This update operation will replace the URL value of an OnlineResource element with the OnlineResources of a granule. Multiple URLs may be updated on the same granule.
+This update operation will replace the URL value of one of the three elements with in a granule. Multiple URLs may be updated on the same granule.
 The original value to be replaced and a valid replacement link must be provided.
 
 ``` bash
@@ -1822,16 +1803,149 @@ curl -XPOST \
     "name": "Update OnlineResource URL values",
     "operation": "UPDATE_FIELD",
     "update-field": "OnlineResourceURL",
-    "updates": [
-        {
-            "GranuleUR": "my-gran-ur",
-            "Links": [
-                { "from": "https://old-link", "to": "http://new-link" }
-            ]
-        }
-    ]
+    "updates": [{"GranuleUR": "my-gran-ur",
+                 "Links": [{ "from": "https://old-link", "to": "http://new-link" }]}]
+}'
+or 
+'{
+    "name": "Update Online Access URL values",
+    "operation": "UPDATE_FIELD",
+    "update-field": "OnlineAccessURL",
+    "updates": [{"GranuleUR": "my-gran-ur",
+                 "Links": [{ "from": "https://old-link", "to": "http://new-link" }]}]
+}'
+or
+'{
+    "name": "Update Browse Image URL values",
+    "operation": "UPDATE_FIELD",
+    "update-field": "BrowseImageURL",
+    "updates": [{"GranuleUR": "my-gran-ur",
+                 "Links": [{ "from": "https://old-link", "to": "http://new-link" }]}]
 }'
 ```
+
+Example granule bulk update response:
+```
+{
+ "status" : 200,
+ "task-id": 4
+}
+```
+
+**operation: "APPEND_TO_FIELD", update-field: "OnlineResourceURL"**
+**operation: "APPEND_TO_FIELD", update-field: "OnlineAccessURL"**
+**operation: "APPEND_TO_FIELD", update-field: "BrowseImageURL"**
+supported metadata formats:
+  - OnlineResource, OnlineAccessURL, and BrowseImageURL, url in all three for ECHO10 format
+
+This append operation will append the URL value to the end of one of the three elements with in a granule. Multiple URLs may be appended on the same granule.
+
+``` bash
+curl -XPOST \
+  -H "Cmr-Pretty: true" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{
+    "name": "Append OnlineResource URL values",
+    "operation": "APPEND_TO_FIELD",
+    "update-field": "OnlineResourceURL",
+    "updates": [{"GranuleUR": "my-gran-ur",
+                 "Links": [{ "URL": "http://new-link.com",
+                             "MimeType": "application/pdf",
+                             "Format": "PDF",
+                             "Type": "VIEW RELATED INFORMATION",
+                             "Description": "Some information URL.",
+                             "SizeUnit": "MB",
+                             "Size": 20}]}]
+}'
+or 
+'{
+    "name": "Append Online Access URL values",
+    "operation": "APPEND_TO_FIELD",
+    "update-field": "OnlineAccessURL",
+    "updates": [{"GranuleUR": "my-gran-ur",
+                 "Links": [{ "URL": "http://new-link.com",
+                             "MimeType": "application/x-hdf5",
+                             "Format": "HDF5",
+                             "Type": "GET DATA",
+                             "Description": "Some download dummy URL.",
+                             "SizeUnit": "MB",
+                             "Size": 20}]}]
+}'
+or
+'{
+    "name": "Append Browse Image URL values",
+    "operation": "APPEND_TO_FIELD",
+    "update-field": "BrowseImageURL",
+    "updates": [{"GranuleUR": "my-gran-ur",
+                 "Links": [{ "URL": "http://new-link.com",
+                             "MimeType": "application/jpeg",
+                             "Format": "JPEG",
+                             "Type": "GET RELATED VISUALIZATION",
+                             "Description": "Some image URL.",
+                             "SizeUnit": "MB",
+                             "Size": 20}]}]
+}'
+```
+
+Example granule bulk update response:
+```
+{
+ "status" : 200,
+ "task-id": 4
+}
+```
+
+**operation: "REMOVE_FIELD", update-field: "OnlineResourceURL"**
+**operation: "REMOVE_FIELD", update-field: "OnlineAccessURL"**
+**operation: "REMOVE_FIELD", update-field: "BrowseImageURL"**
+supported metadata formats:
+  - OnlineResource, OnlineAccessURL, and BrowseImageURL, url in all three for ECHO10 format
+
+This remove operation will remove the URL value from one of the three elements with in a granule. Multiple URLs may be removed on the same granule.
+
+``` bash
+curl -XPOST \
+  -H "Cmr-Pretty: true" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
+  -d
+'{
+    "name": "Remove OnlineResource URL values",
+    "operation": "REMOVE_FIELD",
+    "update-field": "OnlineResourceURL",
+    "updates": [{"GranuleUR": "my-gran-ur",
+                 "Links": [{ "URL": "http://new-link.com"}]}]
+}'
+or 
+'{
+    "name": "Remove Online Access URL values",
+    "operation": "REMOVE_FIELD",
+    "update-field": "OnlineAccessURL",
+    "updates": [{"GranuleUR": "my-gran-ur",
+                 "Links": [{ "URL": "http://new-link.com"}]}]
+}'
+or
+'{
+    "name": "Remove Browse Image URL values",
+    "operation": "REMOVE_FIELD",
+    "update-field": "BrowseImageURL",
+    "updates": [{"GranuleUR": "my-gran-ur",
+                 "Links": [{ "URL": "http://new-link.com"}]}]
+}'
+```
+
+Example granule bulk update response:
+```
+{
+ "status" : 200,
+ "task-id": 4
+}
+```
+
 ### <a name="bulk-update-granules-status"></a> Query Granule Bulk Update Status
 #### <a name="bulk-update-granules-status-endpoint"></a> /granule-bulk-update/status
 

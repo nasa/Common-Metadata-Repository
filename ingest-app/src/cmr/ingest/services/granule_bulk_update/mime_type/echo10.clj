@@ -35,8 +35,10 @@
                    (string/join ", " (for [[v freq] (frequencies (map :URL links)) :when (> freq 1)] v))
                    "]")]))
 
-        online-resources (echo10-utils/update-online-resources parsed :url :mime-type url-map)
-        access-urls (echo10-utils/update-online-access-urls parsed :url :mime-type url-map)
+        r-urls (cx/elements-at-path parsed [:OnlineResources :OnlineResource])
+        a-urls (cx/elements-at-path parsed [:OnlineAccessURLs :OnlineAccessURL])
+        online-resources (echo10-utils/update-online-resources r-urls :url :mime-type url-map)
+        access-urls (echo10-utils/update-online-access-urls a-urls :url :mime-type url-map)
 
         updated-metadata (-> parsed
                              (echo10-utils/replace-in-tree :OnlineResources online-resources)

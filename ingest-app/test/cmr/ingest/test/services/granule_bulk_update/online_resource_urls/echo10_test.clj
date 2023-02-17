@@ -1,9 +1,7 @@
-(ns cmr.ingest.services.granule-bulk-update.online-resource-urls.echo10-test
+(ns cmr.ingest.test.services.granule-bulk-update.online-resource-urls.echo10-test
   (:require
-   [clojure.java.io :as io]
-   [clojure.test :refer :all]
    [clojure.string :as string]
-   [cmr.common.util :as util :refer [are3]]
+   [clojure.test :refer :all]
    [cmr.ingest.services.granule-bulk-update.online-resource-url.echo10 :as echo10]))
 
 (def echo10-metadata (string/trim "
@@ -69,14 +67,63 @@
    <DataFormat>NETCDF</DataFormat>
 </Granule>"))
 
-(deftest update-online-resource-urls-test--success
+(def echo10-browse-metadata (string/trim "
+<Granule>
+  <GranuleUR>20020602090000-JPL-L4_GHRSST-SSTfnd-MUR-GLOB-v02.0-fv04.1.nc</GranuleUR>
+  <AssociatedBrowseImageUrls>
+    <ProviderBrowseUrl>
+      <URL>https://link-4.com</URL>
+      <FileSize>20</FileSize>
+      <Description>A test Browse URL 1 for this test.</Description>
+      <MimeType>html/text4</MimeType>
+    </ProviderBrowseUrl>
+    <ProviderBrowseUrl>
+      <URL>https://link-5.com</URL>
+      <FileSize>20</FileSize>
+      <Description>A test Browse URL 2 for this test.</Description>
+      <MimeType>html/text5</MimeType>
+    </ProviderBrowseUrl>
+  </AssociatedBrowseImageUrls>
+</Granule>"))
+
+(deftest update-online-resource-urls-test
   (let [concept {:concept-type :granule
-             :metadata echo10-metadata}
+                 :metadata echo10-metadata}
         urls [{:from "https://link-1.com"
                :to "https://link-1-updated.com"}]
         access-urls [{:from "https://link-3.com" 
                       :to "https://link-3-updated.com"}]
-        access-upated (string/replace echo10-metadata-updated "link-3" "link-3-updated")
-        access-upated (string/replace access-upated "link-1-updated" "link-1")]
-    (is (= echo10-metadata-updated (string/trim (echo10/update-online-resource-url concept urls))))
-    (is (= access-upated (string/trim (echo10/update-online-access-url concept access-urls))))))
+        access-upated (-> echo10-metadata-updated
+                          (string/replace "link-3" "link-3-updated")
+                          (string/replace "link-1-updated" "link-1"))]
+    (is (= echo10-metadata-updated (string/trim (echo10/update-url concept urls [:OnlineResources :OnlineResource]))))
+    (is (= access-upated (string/trim (echo10/update-url concept access-urls [:OnlineAccessURLs :OnlineAccessURL])))))
+
+  (let [concept {:concept-type :granule
+                 :metadata echo10-browse-metadata}
+        browse-urls [{:from "https://link-4.com"
+                      :to "https://link-4-updated.com"}]]
+    (is (string/includes?
+         (echo10/update-url concept browse-urls [:AssociatedBrowseImageUrls :ProviderBrowseUrl])
+         "<URL>https://link-4-updated.com</URL>"))))
+
+(deftest add-online-resource-urls-test
+  (let [concept {:concept-type :granule
+                 :metadata echo10-metadata}
+        browse-urls [{:URL "http://some-test-link.com"
+                     :MimeType "application/test"
+                     :Description "Some dummy URL."
+                     :Size 1}]]
+    (is (string/includes?
+         (string/trim (echo10/add-url concept browse-urls [:AssociatedBrowseImageUrls :ProviderBrowseUrl]))
+         "<URL>http://some-test-link.com</URL>"))))
+
+(deftest remove-browse-resource-urls-test
+  (let [concept {:concept-type :granule
+                 :metadata echo10-browse-metadata}
+        browse-urls [{:URL "https://link-4.com"}]
+        actual (string/trim
+                (echo10/remove-url concept browse-urls [:AssociatedBrowseImageUrls :ProviderBrowseUrl]))]
+    (println actual)
+    (is (string/includes? actual "https://link-5.com"))
+    (is (not (string/includes? actual "https://link-4.com")))))

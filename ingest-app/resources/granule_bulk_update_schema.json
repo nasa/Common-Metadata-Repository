@@ -1,17 +1,43 @@
-{
+{ "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://example.com/object1612966828.json",
+  "title": "Root",
+  "type": "object",
+  "properties": {
+    "name": {
+      "$id": "#root/name",
+      "type": "string",
+      "examples": [
+        "Add OPeNDAP links"
+      ],
+      "pattern": "^.*$"
+    },
+    "operation": {
+      "$ref": "#/definitions/OperationEnum"
+    },
+    "update-field": {
+      "$ref": "#/definitions/UpdateFieldEnum"
+    },
+    "updates": {
+      "$ref": "#/definitions/UpdateArgumentsType"
+    }
+  },
+  "required": ["operation", "update-field", "updates"],
+
   "definitions": {
     "OperationEnum": {
       "type": "string",
       "enum": [
         "APPEND_TO_FIELD",
         "UPDATE_FIELD",
-        "UPDATE_TYPE"
+        "UPDATE_TYPE",
+        "REMOVE_FIELD"
       ]
     },
     "UpdateFieldEnum": {
       "type": "string",
       "enum": [
         "AdditionalFile",
+        "BrowseImageURL",
         "Checksum",
         "Format",
         "MimeType",
@@ -21,6 +47,26 @@
         "S3Link",
         "Size"
       ]
+    },
+    "UpdateArgumentsType": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/UpdateGranuleFilesType"
+          },
+          {
+            "$ref": "#/definitions/UpdateGranuleLinksType"
+          },
+          {
+            "$ref": "#/definitions/UpdateTupleType"
+          },
+          {
+            "type": "string"
+          }
+        ]
+      }
     },
     "UpdateTupleType": {
       "type": "array",
@@ -35,7 +81,7 @@
     },
     "UpdateGranuleFilesType": {
       "type": "object",
-      "minItems": 1,
+      "additionalProperties": false,
       "properties": {
         "GranuleUR": {
           "description": "This field describes the UR of the granule.",
@@ -129,9 +175,53 @@
         "Name"
       ]
     },
+    "LinkType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This set of elements describes a link. This is a super set of ECHO 10 and UMM-G RelatedURLs (ProviderBrowseURL, OnlineResource, OnlineAccessURL).",
+      "properties": {
+        "URL": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Size": {
+          "type": "number"
+        },
+        "SizeUnit": {
+          "type": "string",
+          "enum": ["KB", "MB", "GB", "TB", "PB", "NA"]
+        },
+        "Description": {
+          "type": "string",
+          "minimum": 1,
+          "maximum": 4000
+        },
+        "Type": {
+          "type": "string",
+          "minimum": 1,
+          "maximum": 0
+        },
+        "Subtype": {
+          "type": "string",
+          "minimum": 1,
+          "maximum": 0
+        },
+        "Format": {
+          "type": "string",
+          "minimum": 1,
+          "maximum": 0
+        },
+        "MimeType": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        }
+      }
+    },
     "UpdateGranuleLinksType": {
       "type": "object",
-      "minItems": 1,
+      "additionalItems": false,
       "properties": {
         "GranuleUR": {
           "description": "This field describes the UR of the granule.",
@@ -140,79 +230,12 @@
         "Links": {
           "description": "Allows the provider to add the list of the links to be updated.",
           "type": "array",
-          "items": {"$ref": "#/definitions/LinkType"},
+          "items": {"oneOf": [{"$ref": "#/definitions/UpdateURLType"}, {"$ref": "#/definitions/LinkType"}]},
           "uniqueItems": true,
           "minItems": 1
         }
-      }
-    },
-    "LinkType": {
-      "type": "object",
-      "additionalProperties": false,
-      "description": "This set of elements describes a link, including a URL and MimeType",
-      "properties": {
-        "URL": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 1024
-        },
-        "MimeType": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128
-        }
       },
-      "required": [
-        "URL", "MimeType"
-      ]
-    },
-    "UpdateArgumentsType": {
-      "type": "array",
-      "minItems": 1,
-      "items": {
-        "anyOf": [
-          {
-            "$ref": "#/definitions/UpdateGranuleFilesType"
-          },
-          {
-            "$ref": "#/definitions/UpdateGranuleLinksType"
-          },
-          {
-            "$ref": "#/definitions/UpdateTupleType"
-          },
-          {
-            "type": "string"
-          }
-        ]
-      }
-    }
-  },
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://example.com/object1612966828.json",
-  "title": "Root",
-  "type": "object",
-  "required": [
-    "operation",
-    "update-field",
-    "updates"
-  ],
-  "properties": {
-    "name": {
-      "$id": "#root/name",
-      "type": "string",
-      "examples": [
-        "Add OPeNDAP links"
-      ],
-      "pattern": "^.*$"
-    },
-    "operation": {
-      "$ref": "#/definitions/OperationEnum"
-    },
-    "update-field": {
-      "$ref": "#/definitions/UpdateFieldEnum"
-    },
-    "updates": {
-      "$ref": "#/definitions/UpdateArgumentsType"
+      "required": ["GranuleUR", "Links"]
     }
   }
 }
