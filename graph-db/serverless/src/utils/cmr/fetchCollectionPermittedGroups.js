@@ -12,7 +12,7 @@ import axiosRetry from 'axios-retry'
 // axiosRetry(axios, { retryDelay: axiosRetry.exponentialDelay, retries: 4 })
 // More aggressive wait between call request attempts than from the exponential delay
 axiosRetry(axios, {
-  retryDelay: (retryCount) => retryCount * 500,
+  retryDelay: (retryCount) => retryCount * 600,
   retries: 3
 })
 // exponential delay
