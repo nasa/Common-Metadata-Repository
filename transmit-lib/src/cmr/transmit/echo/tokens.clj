@@ -82,6 +82,7 @@
     401 (errors/throw-service-errors
          :unauthorized
          (let [err (:errors (json/decode body true))]
+           (info (format "Caught 401 error in transmit: [%s]" err))
            (if (string/includes? err "Caught exception") 
              (format "Token %s is invalid" (common-util/scrub-token token))
              err)))
