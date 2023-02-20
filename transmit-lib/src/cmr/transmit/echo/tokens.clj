@@ -81,11 +81,10 @@
                      (common-util/scrub-token token)))))
     401 (errors/throw-service-errors
          :unauthorized
-         (let [err (:errors (json/decode body true))]
-           (info (format "Caught 401 error in transmit: [%s] [%s]" (first err) (string/includes? (first err) "Caught exception")))
-           (if (string/includes? (first err) "Caught exception") 
-             [(format "[Token %s is invalid]" (common-util/scrub-token token))]
-             err)))
+         (let [errs (:errors (json/decode body true))]
+           (if (string/includes? (first errs) "Caught exception") 
+             [(format "Token %s is invalid" (common-util/scrub-token token))]
+             errs)))
 
     404 (errors/throw-service-error
          :unauthorized
