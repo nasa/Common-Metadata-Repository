@@ -116,7 +116,14 @@
     (or
      :update_field:mimetype
      :update_field:onlineresourceurl
-     :update_field:onlineaccessurl) (update->instruction-update-field-links event-type item)
+     :update_field:onlineaccessurl
+     :update_field:browseimageurl
+     :append_to_field:onlineresourceurl
+     :append_to_field:onlineaccessurl
+     :append_to_field:browseimageurl
+     :remove_field:onlineresourceurl
+     :remove_field:onlineaccessurl
+     :remove_field:browseimageurl) (update->instruction-update-field-links event-type item)
     :update_type:opendaplink (update->instruction-update-type-opendaplink event-type item)
     (if-not (vector? item)
       (invalid-update-error event-type)
@@ -321,9 +328,20 @@
     (errors/throw-service-errors
      :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))])))
 
+(defn- validate-links-for-update-mime-type
+  "Validate that the passed in links contain a URL and a MimeType"
+  [links]
+  (doseq [link links]
+    (when (or (nil? (:URL link))
+              (nil? (:MimeType link)))
+      (errors/throw-service-errors
+       :invalid-data
+       ["Each provided link must have a URL and a MimeType property. Please make sure to supply both."]))))
+
 (defn- update-mime-type
   "Add/update mime types for RelatedUrl links in a given granule."
   [context concept links]
+  (validate-links-for-update-mime-type links)
   (condp = (mt/format-key (:format concept))
     :echo10 (mime-type-echo10/update-mime-type concept links)
     :umm-json (update-umm-g-metadata context concept links mime-type-umm-g/update-mime-type)
@@ -359,13 +377,46 @@
           (assoc :revision-date (time-keeper/now))
           (assoc :user-id user-id)))))
 
-(defn- update-granule-concept-online-url
-  [_context concept bulk-update-params user-id fx elem]
-  (let [updated-metadata
+(defn- update-online-url
+  [_context concept bulk-update-params user-id node-path-vector]
+  (let [elem (last node-path-vector)
+        updated-metadata
         (condp = (mt/format-key (:format concept))
-          :echo10 (fx concept (get bulk-update-params :new-value []))
+          :echo10 (online-resource-url-echo10/update-url concept (get bulk-update-params :new-value []) node-path-vector)
           (errors/throw-service-error
            (format "Updating %s is not supported for format [%s]" elem (:format concept))))]
+    (-> concept
+        (assoc :metadata updated-metadata
+               :user-id user-id
+               :revision-date (time-keeper/now))
+        (update :revision-id inc))))
+
+(defn- add-online-url
+  "Figure out which format to work on and add the requested url to the
+  specific granule."
+  [_context concept bulk-update-params user-id node-path-vector]
+  (let [elem (last node-path-vector)
+        updated-metadata
+        (condp = (mt/format-key (:format concept))
+          :echo10 (online-resource-url-echo10/add-url concept (get bulk-update-params :new-value []) node-path-vector)
+          (errors/throw-service-error
+           (format "Adding %s is not supported for format [%s]" elem (:format concept))))]
+    (-> concept
+        (assoc :metadata updated-metadata
+               :user-id user-id
+               :revision-date (time-keeper/now))
+        (update :revision-id inc))))
+
+(defn- remove-online-url
+  "Figure out which format to work on and remove the requested url from the
+  specific granule."
+  [_context concept bulk-update-params user-id node-path-vector]
+  (let [elem (last node-path-vector)
+        updated-metadata
+        (condp = (mt/format-key (:format concept))
+          :echo10 (online-resource-url-echo10/remove-url concept (get bulk-update-params :new-value []) node-path-vector)
+          (errors/throw-service-error
+           (format "Removing %s is not supported for format [%s]" elem (:format concept))))]
     (-> concept
         (assoc :metadata updated-metadata
                :user-id user-id
@@ -429,10 +480,24 @@
 (defn update-granule-concept
   [context concept bulk-update-params user-id]
   (condp = (keyword (:event-type bulk-update-params))
-    :update_field:onlineresourceurl (update-granule-concept-online-url
-                                     context concept bulk-update-params user-id online-resource-url-echo10/update-online-resource-url "OnlineResourceURL")
-    :update_field:onlineaccessurl (update-granule-concept-online-url
-                                   context concept bulk-update-params user-id online-resource-url-echo10/update-online-access-url "OnlineAccessURL")
+    :update_field:onlineresourceurl (update-online-url context concept bulk-update-params user-id
+                                                       [:OnlineResources :OnlineResource])
+    :update_field:onlineaccessurl (update-online-url context concept bulk-update-params user-id
+                                                     [:OnlineAccessURLs :OnlineAccessURL])
+    :update_field:browseimageurl (update-online-url context concept bulk-update-params user-id
+                                                    [:AssociatedBrowseImageUrls :ProviderBrowseUrl])
+    :append_to_field:onlineresourceurl (add-online-url context concept bulk-update-params user-id
+                                                       [:OnlineResources :OnlineResource])
+    :append_to_field:onlineaccessurl (add-online-url context concept bulk-update-params user-id
+                                                     [:OnlineAccessURLs :OnlineAccessURL])
+    :append_to_field:browseimageurl (add-online-url context concept bulk-update-params user-id
+                                                    [:AssociatedBrowseImageUrls :ProviderBrowseUrl])
+    :remove_field:onlineresourceurl (remove-online-url context concept bulk-update-params user-id
+                                                       [:OnlineResources :OnlineResource])
+    :remove_field:onlineaccessurl (remove-online-url context concept bulk-update-params user-id
+                                                     [:OnlineAccessURLs :OnlineAccessURL])
+    :remove_field:browseimageurl (remove-online-url context concept bulk-update-params user-id
+                                                    [:AssociatedBrowseImageUrls :ProviderBrowseUrl])
     :update_field:additionalfile (modify-additional-files context concept bulk-update-params user-id update-additional-files)
     :update_field:checksum (modify-checksum-size-format context concept bulk-update-params user-id update-checksum)
     :update_field:size (modify-checksum-size-format context concept bulk-update-params user-id update-size)
