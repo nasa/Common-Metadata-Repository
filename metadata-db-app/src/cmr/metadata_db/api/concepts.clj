@@ -26,9 +26,10 @@
   ([context params concept-id]
    (get-concept context params concept-id nil))
   ([context params concept-id revision]
-   {:status 200
-    :body (json/generate-string (concept-service/get-concept context concept-id (as-int revision)))
-    :headers rh/json-header}))
+   (let [include-umm-metadata (= "true" (:include_umm_metadata params))]
+     {:status 200
+      :body (json/generate-string (concept-service/get-concept (assoc context :include-umm-metadata include-umm-metadata) concept-id (as-int revision)))
+      :headers rh/json-header})))
 
 (defn- allow-missing?
   "Returns true if the allow_missing parameter is set to true"
@@ -178,9 +179,9 @@
 
     (GET "/provider_holdings" {context :request-context params :params}
       (get-provider-holdings context params))
-    
+
     (GET "/associations/search" {context :request-context params :params}
       (find-associations context params))
-    
+
     (POST "/associations/search" {context :request-context params :params}
       (find-associations context params))))

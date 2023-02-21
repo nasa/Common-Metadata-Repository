@@ -12,7 +12,7 @@
                                  (concepts/concept-id->type concept-id-in-result))]
     ;; For now, not every association in CMR_ASSOCIATIONS table has :generic-association type.
     ;; there are also :variable-association, :service-association and :tool-association.
-    ;; We are working towards making them all :generic-association if possible. 
+    ;; We are working towards making them all :generic-association if possible.
     (if (and concept-type-in-result
              (not=  concept-type concept-type-in-result))
       (c/db-result->concept-map concept-type-in-result db provider-id result)

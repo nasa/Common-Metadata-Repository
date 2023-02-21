@@ -28,14 +28,14 @@
 
   (find-associations
     [db params]
-    "Finds associations by the given parameters 
+    "Finds associations by the given parameters
     :concept-id must present in the parameters.")
-  
-   (find-latest-associations
-    [db params]
-    "Finds the latest associations by the given parameters.
+
+  (find-latest-associations
+   [db params]
+   "Finds the latest associations by the given parameters.
     :concept-id must present in the parameters."))
- 
+
 (defprotocol ConceptsStore
   "Functions for saving and retrieving concepts"
 

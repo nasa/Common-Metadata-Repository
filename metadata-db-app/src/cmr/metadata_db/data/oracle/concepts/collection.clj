@@ -5,6 +5,7 @@
    [cmr.common.date-time-parser :as p]
    [cmr.metadata-db.data.concepts :as concepts]
    [cmr.metadata-db.data.oracle.concepts :as c]
+   [cmr.metadata-db.data.util :as data-util]
    [cmr.oracle.connection :as oracle]))
 
 (defmethod c/db-result->concept-map :collection
@@ -12,6 +13,7 @@
   (some-> (c/db-result->concept-map :default db provider-id result)
           (assoc :concept-type :collection)
           (assoc :user-id (:user_id result))
+          (data-util/metadata->umm-concept db)
           (assoc-in [:extra-fields :short-name] (:short_name result))
           (assoc-in [:extra-fields :version-id] (:version_id result))
           (assoc-in [:extra-fields :entry-id] (:entry_id result))

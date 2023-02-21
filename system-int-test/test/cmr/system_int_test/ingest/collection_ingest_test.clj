@@ -37,12 +37,12 @@
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; Verify a new concept fails ingest when StandardProduct validation fails. 
+;; Verify a new concept fails ingest when StandardProduct validation fails.
 (deftest standard-validation-test
   (ingest/create-provider {:provider-guid "provguid_consortium3" :provider-id "PROV3" :consortiums "geoss"})
   (ingest/create-provider {:provider-guid "provguid_consortium4" :provider-id "PROV4" :consortiums "eosdis geoss"})
   (let [coll3-non-eosdis-consortium (ingest/ingest-concept
-                                     (data-umm-c/collection-concept 
+                                     (data-umm-c/collection-concept
                                       {:provider-id "PROV3"
                                        :StandardProduct true}
                                       :umm-json))
@@ -56,7 +56,7 @@
             (:errors coll3-non-eosdis-consortium)))
      (is (= ["Standard product validation failed: Standard Product cannot be true with the CollectionDataType being one of the following values: NEAR_REAL_TIME, LOW_LATENCY, or EXPEDITED. The CollectionDataType is [NEAR_REAL_TIME]."]
             (:errors coll4-wrong-collection-data-type)))))
-    
+
 ;; Verify a new concept is ingested successfully.
 (deftest collection-ingest-test
   (testing "ingest of a new concept"
@@ -765,7 +765,7 @@
   (testing "Ingest of a json collection with invalid mimetypes. This verifies that we validate mimetypes against kms."
     (let [coll-metadata (slurp (io/resource "CMR-7647/CMR-7647.json"))
           {:keys [status errors]} (ingest/ingest-concept
-                            (ingest/concept :collection "PROV1" "foo" :umm-json coll-metadata))]
+                                   (ingest/concept :collection "PROV1" "foo" :umm-json coll-metadata))]
       (is (= 422 status))
       (is (= [["Related URL Content Type, Type, and Subtype [ContactPerson1: BadURLContentType1>HOME PAGE>] are not a valid set together."]
               ["Related URL Content Type, Type, and Subtype [ContactPerson1: BadURLContentType2>HOME PAGE>] are not a valid set together."]
