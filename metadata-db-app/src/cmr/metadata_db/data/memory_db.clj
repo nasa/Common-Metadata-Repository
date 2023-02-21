@@ -14,7 +14,7 @@
    [cmr.metadata-db.data.oracle.concepts.tag :as tag]
    [cmr.metadata-db.data.oracle.concepts]
    [cmr.metadata-db.data.providers :as providers]
-   [cmr.metadata-db.data.util :refer [INITIAL_CONCEPT_NUM]]
+   [cmr.metadata-db.data.util :as data-util :refer [INITIAL_CONCEPT_NUM]]
    [cmr.metadata-db.services.provider-validation :as pv])
   (:import
    (cmr.common.memory_db.connection MemoryStore)))
@@ -298,7 +298,7 @@
     (concepts->find-result found-concepts params)))
 
 (defn find-associations-by-concept-id
-  "Searches the passed in concepts (which is the in-memory DB) for all associations that 
+  "Searches the passed in concepts (which is the in-memory DB) for all associations that
   involve the passed in concept id."
   [concepts concept-id]
   (util/remove-nils-empty-maps-seqs
@@ -383,6 +383,7 @@
                          (= concept-id (:concept-id c))))
                    @(:concepts-atom db))]
     (->> revisions
+         (map #(data-util/metadata->umm-concept % db))
          (sort-by :revision-id)
          last)))
 
@@ -443,45 +444,45 @@
 (defn save-concept
   [db provider concept]
   {:pre [(:revision-id concept)]}
-
   (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
                      (when (= :variable-association (:concept-type concept))
                        (or (validate-same-provider-variable-association concept)
                            (validate-collection-not-associated-with-another-variable-with-same-name db concept))))]
-   ;; There was a concept id, native id mismatch with earlier concepts
-   error
-   ;; Concept id native id pair was valid
-   (let [{:keys [concept-type provider-id concept-id revision-id]} concept
-         concept (update-in concept
-                            [:revision-date]
-                            #(or % (p/clj-time->date-time-str (tk/now))))
-         ;; Set the created-at time to the current timekeeper time for concepts which have
-         ;; the created-at field and do not already have a :created-at time set.
-         ;; :generic is included for undeclared generic documents which may not specify one
-         ;; of the types in latest-approved-document-types.
-         concepts-with-created-at
-         (into [:collection :granule :service :tool :variable :subscription :generic]
-               (common-generic/latest-approved-document-types))
-         concept (if (some #{concept-type} concepts-with-created-at)
-                   (update-in concept
-                              [:created-at]
-                              #(or % (p/clj-time->date-time-str (tk/now))))
-                   concept)
-         concept (assoc concept :transaction-id (swap! (:next-transaction-id-atom db) inc))
-         concept (if (= concept-type :granule)
-                   (-> concept
-                       (dissoc :user-id)
-                       ;; This is not stored in the real db.
-                       (update-in [:extra-fields] dissoc :parent-entry-title))
-                   concept)]
-     (if (or (nil? revision-id)
-             (get-concept db concept-type provider concept-id revision-id))
-       {:error :revision-id-conflict}
-       (do
-         (swap! (:concepts-atom db) (fn [concepts]
-                                     (after-save db (conj concepts concept)
-                                                 concept)))
-         nil)))))
+    ;; There was a concept id, native id mismatch with earlier concepts
+    error
+    ;; Concept id native id pair was valid
+    (let [{:keys [concept-type provider-id concept-id revision-id]} concept
+          concept (update-in concept
+                             [:revision-date]
+                             #(or % (p/clj-time->date-time-str (tk/now))))
+          ;; Set the created-at time to the current timekeeper time for concepts which have
+          ;; the created-at field and do not already have a :created-at time set.
+          ;; :generic is included for undeclared generic documents which may not specify one
+          ;; of the types in latest-approved-document-types.
+          concepts-with-created-at
+          (into [:collection :granule :service :tool :variable :subscription :generic]
+                (common-generic/latest-approved-document-types))
+          concept (if (some #{concept-type} concepts-with-created-at)
+                    (update-in concept
+                               [:created-at]
+                               #(or % (p/clj-time->date-time-str (tk/now))))
+                    concept)
+          concept (assoc concept :transaction-id (swap! (:next-transaction-id-atom db) inc))
+          concept (if (= concept-type :granule)
+                    (-> concept
+                        (dissoc :user-id)
+                        ;; This is not stored in the real db.
+                        (update-in [:extra-fields] dissoc :parent-entry-title))
+                    concept)]
+
+      (if (or (nil? revision-id)
+              (get-concept db concept-type provider concept-id revision-id))
+        {:error :revision-id-conflict}
+        (do
+          (swap! (:concepts-atom db) (fn [concepts]
+                                      (after-save db (conj concepts concept)
+                                                  concept)))
+          nil)))))
 
 (defn force-delete
   [db concept-type provider concept-id revision-id]
@@ -604,13 +605,13 @@
                                          {:concept-type assoc-type})]
      (let [{:keys [concept-id revision-id extra-fields]} association
            {:keys [associated-concept-id variable-concept-id service-concept-id tool-concept-id]}
-                  extra-fields
+           extra-fields
            referenced-providers
-            (map (fn [cid]
-                   (some-> cid
-                    cc/parse-concept-id
-                    :provider-id))
-                 [associated-concept-id variable-concept-id service-concept-id tool-concept-id])]
+           (map (fn [cid]
+                  (some-> cid
+                   cc/parse-concept-id
+                   :provider-id))
+                [associated-concept-id variable-concept-id service-concept-id tool-concept-id])]
        ;; If the association references the deleted provider through
        ;; either collection or variable/service/tool, delete the association
        (when (some #{(:provider-id provider)} referenced-providers)

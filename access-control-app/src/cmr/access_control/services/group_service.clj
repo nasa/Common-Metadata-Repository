@@ -77,7 +77,7 @@
     (when (not= :access-group concept-type)
       (errors/throw-service-error :bad-request (g-msg/bad-group-concept-id concept-id))))
 
-  (if-let [concept (mdb/get-latest-concept context concept-id false)]
+  (if-let [concept (mdb/get-latest-concept context concept-id)]
     (if (:deleted concept)
       (errors/throw-service-error :not-found (g-msg/group-deleted concept-id))
       concept)

@@ -51,6 +51,18 @@
           (is (= status 200))
           (is (= (:revision-id concept) 3))))
 
+      (testing "get-concept-test-include-umm-metadata"
+        (testing "include_umm_metadata true"
+          (let [{:keys [status concept]} (util/get-concept-by-id-with-query-params concept-id {:include_umm_metadata true})]
+            (is (= "application/vnd.nasa.cmr.umm+json" (:format concept)))
+            (is (= 200 status))
+            (is (= 3 (:revision-id concept)))))
+        (testing "include_umm_metadata false"
+          (let [{:keys [status concept]} (util/get-concept-by-id-with-query-params concept-id {:include_umm_metadata false})]
+            (is (= "application/echo10+xml" (:format concept)))
+            (is (= 200 status))
+            (is (= 3 (:revision-id concept))))))
+
       (testing "get-concept-invalid-concept-id-or-revision-test"
         "Expect a status 4XX if we try to get a concept that doesn't exist or use an improper concept-id."
         (testing "invalid concept-id"

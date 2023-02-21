@@ -246,7 +246,7 @@
   [db concept]
   (let [variable-concept-id (get-in concept [:extra-fields :variable-concept-id])
         associated-concept-id (get-in concept [:extra-fields :associated-concept-id])]
-    (when (and variable-concept-id associated-concept-id))
+    (when (and variable-concept-id associated-concept-id)
       ;; Get all the other variables sharing the same name; not deleted
       ;; and are associated with the same collection.
       (let [stmt [(format "select va.source_concept_identifier
@@ -274,7 +274,7 @@
           {:error :collection-associated-with-variable-same-name
            :error-message (format (str "Variable [%s] and collection [%s] can not be associated "
                                        "because the collection is already associated with another variable [%s] with same name.")
-                                  variable-concept-id associated-concept-id v-concept-id-same-name)}))))
+                                  variable-concept-id associated-concept-id v-concept-id-same-name)})))))
 
 (defn validate-same-provider-variable-association
   "Validates that variable and the collection in the concept being saved are from the same provider.
@@ -674,6 +674,4 @@
         raw-meta-edn (:metadata c)
         _ (println "raw meta:\n" raw-meta-edn)
         meta (read-string raw-meta-edn)]
-    meta)
-
-  )
+    meta))
