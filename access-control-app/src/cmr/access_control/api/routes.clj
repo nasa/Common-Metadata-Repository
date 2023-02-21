@@ -260,69 +260,69 @@
             (reindex-acls ctx))
 
       (if (access-control-config/enable-cmr-groups)
-      (context "/groups" []
-        (OPTIONS "/"
-                 {params :params}
-                 (pv/validate-standard-params params)
-                 (common-routes/options-response))
+        (context "/groups" []
+          (OPTIONS "/"
+                   {params :params}
+                   (pv/validate-standard-params params)
+                   (common-routes/options-response))
 
-        ;; Search for groups
-        (GET "/"
-             {ctx :request-context params :params headers :headers}
-             (search-for-groups ctx headers params))
-
-        ;; Create a group
-        (POST "/"
-              {ctx :request-context params :params headers :headers body :body}
-              (lt-validation/validate-launchpad-token ctx)
-              (pv/validate-create-group-route-params params)
-              (create-group ctx
-                            headers
-                            (slurp body)
-                            (or (:managing-group-id params)
-                                (:managing_group_id params))))
-
-        (context "/:group-id" [group-id]
-          (OPTIONS "/" req (common-routes/options-response))
-          ;; Get a group
+          ;; Search for groups
           (GET "/"
-               {ctx :request-context params :params}
-               (pv/validate-group-route-params params)
-               (get-group ctx group-id))
+               {ctx :request-context params :params headers :headers}
+               (search-for-groups ctx headers params))
 
-          ;; Delete a group
-          (DELETE "/"
-                  {ctx :request-context params :params}
-                  (lt-validation/validate-launchpad-token ctx)
-                  (pv/validate-group-route-params params)
-                  (delete-group ctx group-id))
+          ;; Create a group
+          (POST "/"
+                {ctx :request-context params :params headers :headers body :body}
+                (lt-validation/validate-launchpad-token ctx)
+                (pv/validate-create-group-route-params params)
+                (create-group ctx
+                              headers
+                              (slurp body)
+                              (or (:managing-group-id params)
+                                  (:managing_group_id params))))
 
-          ;; Update a group
-          (PUT "/"
-               {ctx :request-context params :params headers :headers body :body}
-               (lt-validation/validate-launchpad-token ctx)
-               (pv/validate-group-route-params params)
-               (update-group ctx headers (slurp body) group-id))
-
-          (context "/members" []
+          (context "/:group-id" [group-id]
             (OPTIONS "/" req (common-routes/options-response))
+            ;; Get a group
             (GET "/"
                  {ctx :request-context params :params}
                  (pv/validate-group-route-params params)
-                 (get-members ctx group-id))
+                 (get-group ctx group-id))
 
-            (POST "/"
-                  {ctx :request-context params :params headers :headers body :body}
-                  (lt-validation/validate-launchpad-token ctx)
-                  (pv/validate-group-route-params params)
-                  (add-members ctx headers (slurp body) group-id))
-
+            ;; Delete a group
             (DELETE "/"
+                    {ctx :request-context params :params}
+                    (lt-validation/validate-launchpad-token ctx)
+                    (pv/validate-group-route-params params)
+                    (delete-group ctx group-id))
+
+            ;; Update a group
+            (PUT "/"
+                 {ctx :request-context params :params headers :headers body :body}
+                 (lt-validation/validate-launchpad-token ctx)
+                 (pv/validate-group-route-params params)
+                 (update-group ctx headers (slurp body) group-id))
+
+            (context "/members" []
+              (OPTIONS "/" req (common-routes/options-response))
+              (GET "/"
+                   {ctx :request-context params :params}
+                   (pv/validate-group-route-params params)
+                   (get-members ctx group-id))
+
+              (POST "/"
                     {ctx :request-context params :params headers :headers body :body}
                     (lt-validation/validate-launchpad-token ctx)
                     (pv/validate-group-route-params params)
-                    (remove-members ctx headers (slurp body) group-id)))))
-          (context "/groups" []))
+                    (add-members ctx headers (slurp body) group-id))
+
+              (DELETE "/"
+                      {ctx :request-context params :params headers :headers body :body}
+                      (lt-validation/validate-launchpad-token ctx)
+                      (pv/validate-group-route-params params)
+                      (remove-members ctx headers (slurp body) group-id)))))
+        (context "/groups" []))
 
       (context "/acls" []
         (OPTIONS "/"
