@@ -1786,8 +1786,10 @@ curl -XPOST \
 **operation: "UPDATE_FIELD", update-field: "OnlineResourceURL"**
 **operation: "UPDATE_FIELD", update-field: "OnlineAccessURL"**
 **operation: "UPDATE_FIELD", update-field: "BrowseImageURL"**
+**operation: "UPDATE_FIELD", update-field: "RelatedURL"**
 supported metadata formats:
-  - OnlineResource, OnlineAccessURL, and BrowseImageURL, url in all three for ECHO10 format
+  - OnlineResource, OnlineAccessURL, and BrowseImageURL support ECHO10 and UMM-G formats.
+  - RelatedURL supports UMM-G format.
 
 This update operation will replace the URL value of one of the three elements with in a granule. Multiple URLs may be updated on the same granule.
 The original value to be replaced and a valid replacement link must be provided.
@@ -1835,8 +1837,10 @@ Example granule bulk update response:
 **operation: "APPEND_TO_FIELD", update-field: "OnlineResourceURL"**
 **operation: "APPEND_TO_FIELD", update-field: "OnlineAccessURL"**
 **operation: "APPEND_TO_FIELD", update-field: "BrowseImageURL"**
+**operation: "APPEND_TO_FIELD", update-field: "RelatedURL"**
 supported metadata formats:
-  - OnlineResource, OnlineAccessURL, and BrowseImageURL, url in all three for ECHO10 format
+  - OnlineResource, OnlineAccessURL, and BrowseImageURL support ECHO10 and UMM-G formats.
+  - RelatedURL supports UMM-G formats.
 
 This append operation will append the URL value to the end of one of the three elements with in a granule. Multiple URLs may be appended on the same granule.
 
@@ -1901,8 +1905,10 @@ Example granule bulk update response:
 **operation: "REMOVE_FIELD", update-field: "OnlineResourceURL"**
 **operation: "REMOVE_FIELD", update-field: "OnlineAccessURL"**
 **operation: "REMOVE_FIELD", update-field: "BrowseImageURL"**
+**operation: "REMOVE_FIELD", update-field: "RelatedURL"**
 supported metadata formats:
-  - OnlineResource, OnlineAccessURL, and BrowseImageURL, url in all three for ECHO10 format
+  - OnlineResource, OnlineAccessURL, and BrowseImageURL support ECHO10 and UMM-G formats.
+  - RelatedURL supports UMM-G formats.
 
 This remove operation will remove the URL value from one of the three elements with in a granule. Multiple URLs may be removed on the same granule.
 
