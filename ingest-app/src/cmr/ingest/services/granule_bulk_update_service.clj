@@ -490,7 +490,7 @@
   [context concept bulk-update-params user-id xf]
   (let [{:keys [new-value]} bulk-update-params
         ;; invoke the appropriate transform - for checksum, there is only one option (update)
-        updated-concept (xf context concept new-value)
+        updated-concept (xf context concept new-value user-id)
         {updated-metadata :metadata updated-format :format} updated-concept]
     (if-let [err-messages (:errors updated-metadata)]
       (errors/throw-service-errors :invalid-data err-messages)
