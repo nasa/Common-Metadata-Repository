@@ -313,7 +313,7 @@
 
 (defn- update-checksum
   "Add checksum to the given granule concept."
-  [_context concept checksum]
+  [_context concept checksum _user-id]
   (condp = (mt/format-key (:format concept))
     :echo10 (checksum-echo10/update-checksum concept checksum)
     :umm-json (errors/throw-service-errors
@@ -323,7 +323,7 @@
 
 (defn- update-size
   "Add/update size to the given granule concept."
-  [_context concept size]
+  [_context concept size _user-id]
   (condp = (mt/format-key (:format concept))
     :echo10 (size-echo10/update-size concept size)
     (errors/throw-service-errors
@@ -331,7 +331,7 @@
 
 (defn- update-format
   "Add/update format to the given granule concept."
-  [_context concept fmt]
+  [_context concept fmt _user-id]
   (condp = (mt/format-key (:format concept))
     :echo10 (format-echo10/update-format concept fmt)
     (errors/throw-service-errors
@@ -473,7 +473,7 @@
   [context concept bulk-update-params user-id xf]
   (let [{:keys [new-value]} bulk-update-params
         ;; invoke the appropriate transform - for checksum, there is only one option (update)
-        updated-concept (xf context concept new-value)
+        updated-concept (xf context concept new-value user-id)
         {updated-metadata :metadata updated-format :format} updated-concept]
     (if-let [err-messages (:errors updated-metadata)]
       (errors/throw-service-errors :invalid-data err-messages)
