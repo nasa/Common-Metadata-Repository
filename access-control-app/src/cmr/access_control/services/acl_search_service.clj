@@ -180,7 +180,7 @@
 
 (defmethod cp/parameter->condition :permitted-concept-id
  [context concept-type param value options]
- (if-let [concept (mdb2/get-latest-concept context value)]
+ (if-let [concept (mdb2/get-latest-concept context value {:json-stream? true})]
    (pcs/get-permitted-concept-id-conditions context concept)
    (errors/throw-service-error :bad-request (format "permitted_concept_id does not exist."))))
 

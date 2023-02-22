@@ -142,13 +142,14 @@
   * http-options - Other http-options to be sent to clj-http."
   ([context concept-id]
    (get-latest-concept context concept-id nil))
-  ([context concept-id {:keys [raw? http-options]}]
+  ([context concept-id {:keys [raw? http-options json-stream?]}]
    (-> context
        (h/request :metadata-db
                   {:url-fn #(latest-concept-url % concept-id)
                    :method :get
                    :raw? raw?
                    :use-system-token? true
+                   :json-stream? json-stream?
                    :http-options (merge {:accept :json} http-options)})
        finish-parse-concept)))
 
