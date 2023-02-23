@@ -97,6 +97,7 @@
     },
     "MetadataDateType": {
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "Create": {
           "description": "This element represents the creation date of the metadata.",
@@ -197,7 +198,7 @@
       			     "type": "string",
       			     "minLength": 1,
       			     "maxLength": 1024
-    			      }
+    			}
               }
             }
           },
@@ -249,6 +250,7 @@
 
         "DimensionScale": {
           "description": "The characterizes the grid's X, Y, Time, and Other Dimensions.",
+          "additionalProperties": false,
           "type": "object",
           "properties": {
             "0_360_DegreeProjection": {
@@ -274,9 +276,7 @@
           },         
           "required": [
             "X",
-            "Y",
-            "Time",
-            "Other"
+            "Y"
           ],
           "allOf": [
               {"$ref": "#/definitions/DimensionScaleUnitXEnumsCondition"},
@@ -284,10 +284,6 @@
               {"$ref": "#/definitions/DimensionScaleUnitTimeEnumsCondition"},
               {"$ref": "#/definitions/DimensionScaleXUnitPatternDMS"},
               {"$ref": "#/definitions/DimensionScaleYUnitPatternDMS"},
-              {"$ref": "#/definitions/DimensionScaleMeterMinMaxConditionX"},
-              {"$ref": "#/definitions/DimensionScaleMeterMinMaxConditionY"},
-              {"$ref": "#/definitions/DimensionScaleKilometerMinMaxConditionX"},
-              {"$ref": "#/definitions/DimensionScaleKilometerMinMaxConditionY"},
               {"$ref": "#/definitions/DimensionScaleDegreeMinMaxTrueConditionX"},
               {"$ref": "#/definitions/DimensionScaleDegreeMinMaxTrueConditionY"},
               {"$ref": "#/definitions/DimensionScaleHourMinMaxPatternConditionTime"},
@@ -312,7 +308,7 @@
 
     "OrganizationType": {
       "type": "object",
-      "additionalItems": false,
+      "additionalProperties": false,
       "properties": {
         "ShortName": {
           "description": "The unique name of the organization.",
@@ -453,6 +449,7 @@
     "DimensionScaleType": {
       "description": "The elements used for DimensionScale group.",
       "type": "object",
+      "additionalProperties": false,
       "properties": {
         "Minimum": {
           "description": "The lowest value of the element."
@@ -536,7 +533,7 @@
     },
     "AdditionalAttributeType": {
       "type": "object",
-      "additionalItems": false,
+      "additionalProperties": false,
       "properties": {
         "Name": {
           "description": "The name (1 word description) of the additional attribute.",
@@ -672,33 +669,6 @@
       "else": false
     },
     
-    "DimensionScaleMeterMinMaxConditionX": {
-      "$comment": "Checks if the DimensionScale's Unit element value is Meter then sets the minimum value for Minimum and Maximum sub-elements for X.",
-      "if": {"properties": {"X": {"properties": {"Unit": {"const": "Meter"}}}}},
-        "then": {"properties": {"X": {"properties": {"Minimum": {"minimum": 1},
-                "Maximum": {"minimum": 1}}}}}
-    },
-
-    "DimensionScaleMeterMinMaxConditionY": {
-      "$comment": "Checks if the DimensionScale's Unit element value is Meter then sets the minimum value for Minimum and Maximum sub-elements for Y.",
-      "if": {"properties": {"Y": {"properties": {"Unit": {"const": "Meter"}}}}},
-        "then": {"properties": {"Y": {"properties": {"Minimum": {"minimum": 1},
-                "Maximum": {"minimum": 1}}}}}
-    },
-
-    "DimensionScaleKilometerMinMaxConditionX": {
-      "$comment": "Checks if the DimensionScale's Unit element value is Kilometer then sets the minimum value for Minimum and Maximum sub-elements for X.",
-    	"if": {"properties": {"X": {"properties": {"Unit": {"const": "Kilometer"}}}}},
-        "then": {"properties": {"X": {"properties": {"Minimum": {"minimum": 1},
-                "Maximum": {"minimum": 1}}}}}
-    },
-
-    "DimensionScaleKilometerMinMaxConditionY": {
-      "$comment": "Checks if the DimensionScale's Unit element value is Kilometer then sets the minimum value for Minimum and Maximum sub-elements for Y.",
-      "if": {"properties": {"Y": {"properties": {"Unit": {"const": "Kilometer"}}}}},
-        "then": {"properties": {"Y": {"properties": {"Minimum": {"minimum": 1},
-                "Maximum": {"minimum": 1}}}}}
-    },
 
     "DimensionScaleDegreeMinMaxTrueConditionX": {
     	"$comment": "Checks if the DimensionScale's Unit element value is Degree then sets the minimum and maximum values for Minimum and Maximum sub-elements for X.",
@@ -720,23 +690,23 @@
     "DimensionScaleHourMinMaxPatternConditionTime": {
       "$comment": "Checks if the DimensionScale's Unit element value is Hour then set the pattern requirement",
       "if": {"properties": {"Time": {"properties": {"Unit": {"const": "Hour"}}}}},
-        "then": {"properties": {"Time": {"properties": {"Minimum": {"pattern": "^[0-9][0-9](\\.[0-9]{3})?$"},
-        "Maximum": {"pattern": "^[0-9][0-9](\\.[0-9]{3})?$"}}}}}
+        "then": {"properties": {"Time": {"properties": {"Minimum": {"pattern": "^[0-9][0-9](\\.[0-9]{5})?$"},
+        "Maximum": {"pattern": "^[0-9][0-9](\\.[0-9]{5})?$"}}}}}
     },
 
     "DimensionScaleMinutesMinMaxPatternConditionTime": {
       "$comment": "Checks if the DimensionScale's Unit element value is Minutes then set the pattern requirement",
       "if": {"properties": {"Time": {"properties": {"Unit": {"const": "Minutes"}}}}},
-        "then": {"properties": {"Time": {"properties": {"Minimum": {"pattern": "^[0-9][0-9](\\.[0-9]{3})?$"},
-        "Maximum": {"pattern": "^[0-9][0-9](\\.[0-9]{3})?$"}}}}}
+        "then": {"properties": {"Time": {"properties": {"Minimum": {"pattern": "^[0-9][0-9](\\.[0-9]{5})?$"},
+        "Maximum": {"pattern": "^[0-9][0-9](\\.[0-9]{5})?$"}}}}}
     },
 
 
     "DimensionScaleSecondsMinMaxPatternConditionTime": {
       "$comment": "Checks if the DimensionScale's Unit element value is Seconds then set the pattern requirement",
       "if": {"properties": {"Time": {"properties": {"Unit": {"const": "Seconds"}}}}},
-        "then": {"properties": {"Time": {"properties": {"Minimum": {"pattern": "^[0-9][0-9](\\.[0-9]{3})?$"},
-        "Maximum": {"pattern": "^[0-9][0-9](\\.[0-9]{3})?$"}}}}}
+        "then": {"properties": {"Time": {"properties": {"Minimum": {"pattern": "^[0-9][0-9](\\.[0-9]{5})?$"},
+        "Maximum": {"pattern": "^[0-9][0-9](\\.[0-9]{5})?$"}}}}}
     },
 
     "DimensionScaleDateMinMaxPatternConditionTime": {
@@ -763,57 +733,57 @@
     "DimensionScaleXUnitPatternDMS": { 
       "$comment": "Checks the DimensionScale's Unit element values pattern for Degrees-Minutes-Seconds. The value's format ##-##-##.### and Milliseconds are optional.",
       "if": {"properties": {"X": {"properties": {"Unit": {"enum": ["Degrees-Minutes-Seconds"]}}}}},
-      "then": {"properties": {"X": {"properties": {"Minimum": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"},
-        "Maximum": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"}}}}}
+      "then": {"properties": {"X": {"properties": {"Minimum": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}\\.?\\d*?$"},
+        "Maximum": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}\\.?\\d*?$"}}}}}
     },
 
     "DimensionScaleYUnitPatternDMS": { 
       "$comment": "Checks the DimensionScale's Unit element values pattern for Degrees-Minutes-Seconds. The value's format ##-##-##.### and Milliseconds are optional.",
       "if": {"properties": {"Y": {"properties": {"Unit": {"enum": ["Degrees-Minutes-Seconds"]}}}}},
-      "then": {"properties": {"Y": {"properties": {"Minimum": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"},
-        "Maximum": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"}}}}}
+      "then": {"properties": {"Y": {"properties": {"Minimum": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}\\.?\\d*?$"},
+        "Maximum": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}\\.?\\d*?$"}}}}}
     },
 
     "SpatialResolutionUnitPatternDMS": { 
       "$comment": "Checks the SpatialResolution Unit element values pattern for Degrees-Minutes-Seconds. The value's format ##-##-##.### and Milliseconds are optional.",
       "if": {"properties": {"Unit": {"const": "Degrees-Minutes-Seconds"}}},
-      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"},
-        "LatitudeResolution": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"}}}
+      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}\\.?\\d*?$"},
+        "LatitudeResolution": {"pattern": "^[0-9]{2}-[0-9]{2}-[0-9]{2}\\.?\\d*?$"}}}
     },
 
     "SpatialResolutionUnitPatternMinute": { 
       "$comment": "Checks the SpatialResolution Unit element values pattern for Minutes. The value's format ##-##.### and Milliseconds are optional.",
       "if": {"properties": {"Unit": {"const": "Minutes"}}},
-      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"},
-        "LatitudeResolution": {"pattern": "^[0-9]{2}-[0-9]{2}(\\.[0-9]{3})?$"}}}
+      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{2}-[0-9]{2}\\.?\\d*?$"},
+        "LatitudeResolution": {"pattern": "^[0-9]{2}-[0-9]{2}\\.?\\d*?$"}}}
     },
 
     "SpatialResolutionUnitPatternSecond": { 
       "$comment": "Checks the SpatialResolution Unit element values pattern for Seconds. The value's format ##.### and Milliseconds are optional.",
       "if": {"properties": {"Unit": {"const": "Seconds"}}},
-      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{2}(\\.[0-9]{3})?$"},
-        "LatitudeResolution": {"pattern": "^[0-9]{2}(\\.[0-9]{3})?$"}}}
+      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{2}\\.?\\d*?$"},
+        "LatitudeResolution": {"pattern": "^[0-9]{2}\\.?\\d*?$"}}}
     },
 
     "SpatialResolutionUnitPatternDeg": {
       "$comment": "Checks the SpatialResolution Unit element values pattern for Degrees.", 
       "if": {"properties": {"Unit": {"const": "Degree"}}},
-      "then": {"properties": {"LongitudeResolution": {"pattern": "^(360|3[0-5][0-9]|[12][0-9]{1,2}|[1-9][0-9]|[0-9])$"},
-        "LatitudeResolution": {"pattern": "^(180|1[0-7][0-9]|[1-9][0-9]|[0-9])$"}}}
+      "then": {"properties": {"LongitudeResolution": {"pattern": "^(360|3[0-5][0-9]|[12][0-9]{1,2}|[1-9][0-9]|[0-9])\\.?\\d*?$"},
+        "LatitudeResolution": {"pattern": "^(180|1[0-7][0-9]|[1-9][0-9]|[0-9])\\.?\\d*?$"}}}
     },
 
     "SpatialResolutionUnitPatternKM": { 
       "$comment": "Checks the SpatialResolution Unit element values pattern for Kilometer.",
       "if": {"properties": {"Unit": {"const": "Kilometer"}}},
-      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{1,}(\\.[0-9]{3})?$"},
-        "LatitudeResolution": {"pattern": "^[0-9]{1,}(\\.[0-9]{3})?$"}}}
+      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{1,}\\.?\\d*?$"},
+        "LatitudeResolution": {"pattern": "^[0-9]{1,}\\.?\\d*?$"}}}
     },
 
     "SpatialResolutionUnitPatternMeter": {
       "$comment": "Checks the SpatialResolution Unit element values pattern for Meter.", 
       "if": {"properties": {"Unit": {"const": "Meter"}}},
-      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{1,}$"},
-        "LatitudeResolution": {"pattern": "^[0-9]{1,}$"}}}
+      "then": {"properties": {"LongitudeResolution": {"pattern": "^[0-9]{1,}\\.?\\d*?$"},
+        "LatitudeResolution": {"pattern": "^[0-9]{1,}\\.?\\d*?$"}}}
     },  
     
     "ScaleDegreesMinutesSecondsCondition": {
