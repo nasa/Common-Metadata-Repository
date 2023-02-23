@@ -75,26 +75,28 @@ describe('fetchCollectionPermittedGroups', () => {
   test('If the concept_id does not exist CMR returns a 400 error', async () => {
     const consoleMock = jest.spyOn(console, 'log')
     const mockedBody = []
+    const conceptId = 'Not_a_real_Collection'
 
     nock(/local-cmr/)
       .get(/acls/)
       .reply(400, mockedBody)
 
-    const result = await fetchCollectionPermittedGroups('Not_a_real_Collection', 'mock_token')
+    const result = await fetchCollectionPermittedGroups(conceptId, 'mock_token')
 
-    expect(consoleMock).toHaveBeenCalledWith('Could not complete request to acl due to error: Error: Request failed with status code 400')
+    expect(consoleMock).toHaveBeenCalledWith(`Could not complete request to Access Control App to retrieve group information for ${conceptId} due to error: Error: Request failed with status code 400`)
     expect(result).toEqual(mockedBody)
   })
 
   test('If the no token was supplied', async () => {
     const consoleMock = jest.spyOn(console, 'log')
     const mockedBody = []
+    const conceptId = 'Not_a_real_Collection'
 
     nock(/local-cmr/)
       .get(/acls/)
       .reply(400, mockedBody)
-    const result = await fetchCollectionPermittedGroups('Not_a_real_Collection')
-    expect(consoleMock).toHaveBeenCalledWith('Could not complete request to acl due to error: Error: Request failed with status code 400')
+    const result = await fetchCollectionPermittedGroups(conceptId)
+    expect(consoleMock).toHaveBeenCalledWith(`Could not complete request to Access Control App to retrieve group information for ${conceptId} due to error: Error: Request failed with status code 400`)
     expect(result).toEqual(mockedBody)
   })
 
@@ -176,7 +178,7 @@ describe('fetchCollectionPermittedGroups', () => {
 
     const result = await fetchCollectionPermittedGroups('C1708620364-NSIDC_ECS', 'mock_token')
 
-    // The result should be equal to a list of groups ['a', 'b', 'c']
+    // The result should be equal to a list of groups ['group-a', 'group-b', 'group-c']
     const permittedGroups = []
     expect(result).toEqual(permittedGroups)
   })

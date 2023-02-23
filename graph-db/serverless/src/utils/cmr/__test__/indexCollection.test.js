@@ -28,7 +28,7 @@ describe('utils#indexCmrCollection', () => {
           ShortName: 'shortName'
         }
       }
-      const mockedBody = {
+      const mockAclResponse = {
         items: [
           {
             concept_id: 'ACL1376510432-CMR',
@@ -58,7 +58,7 @@ describe('utils#indexCmrCollection', () => {
       }
       nock(/local-cmr/)
         .get(/acls/)
-        .reply(200, mockedBody)
+        .reply(200, mockAclResponse)
 
       // Provide `null` for the gremlin connection to throw an error
       const result = await indexCmrCollection(collectionObj, [], null)
@@ -70,8 +70,8 @@ describe('utils#indexCmrCollection', () => {
       // Error message logged because deleteCmrCollection failed because of null gremlinConnection
       expect(consoleMock.mock.calls[0][0]).toEqual(`Error deleting project vertices only linked to collection [${conceptId}]: Cannot read properties of null (reading 'V')`)
 
-      // Error message logged because addV failed because of null gremlinConnection
-      expect(consoleMock.mock.calls[1][0]).toEqual(`Error indexing collection [${conceptId}]: Cannot read properties of null (reading 'addV')`)
+      // Error message logged because addV failed, first attempt being printed to console
+      expect(consoleMock.mock.calls[1][0]).toEqual(`Error indexing collection into graph database [${conceptId}]: Cannot read properties of null (reading 'addV')`)
     })
   })
 })

@@ -11,9 +11,12 @@ const gremlinStatistics = gremlin.process.statics
 /**
  * Given a collection from the CMR, index it into Gremlin
  * @param {JSON} collectionObj collection object from `items` array in cmr response
+ * @param {JSON} collectionObj List of groups that the collection can be read by from access-control
  * @param {Gremlin Traversal Object} gremlinConnection connection to gremlin server
  * @returns
  */
+
+// eslint-disable-next-line max-len
 export const indexCmrCollection = async (collectionObj, groupList, gremlinConnection) => {
   const {
     meta: {
@@ -34,7 +37,6 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
 
   // Delete the collection first so that we can clean up its related, relatedUrl vertices
   await deleteCmrCollection(conceptId, gremlinConnection)
-
   let collection = null
   try {
     const addVCommand = gremlinConnection.addV('collection')
@@ -54,7 +56,7 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
       addVCommand.property('doi', doiDescription)
     }
 
-    // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
+    // Use `fold` and `coalesce` to check existence of vertex, and create one if none exists.
     collection = await gremlinConnection
       .V()
       .hasLabel('collection')
@@ -66,8 +68,7 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
       )
       .next()
   } catch (error) {
-    console.log(`Error indexing collection [${conceptId}]: ${error.message}`)
-
+    console.log(`Error indexing collection into graph database [${conceptId}]: ${error.message}`)
     return false
   }
 
@@ -92,7 +93,7 @@ export const indexCmrCollection = async (collectionObj, groupList, gremlinConnec
     })
   }
 
-  console.log(`Collection vertex [${collectionId}] indexed for collection [${conceptId}]`)
+  console.log(`Collection vertex [${collectionId}] successfully indexed for collection [${conceptId}]`)
 
   return true
 }

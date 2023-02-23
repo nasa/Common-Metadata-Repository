@@ -120,26 +120,45 @@ describe('indexCmrCollection handler', () => {
     expect(statusCode).toBe(200)
   })
 
-  test('test indexing of a broken collection', async () => {
-    // Pass an error to the response of fetchCmrCollection
+  test('test collection that has an index on CMR but, it is Not stored in db', async () => {
+    const conceptId = 'C123755555-TESTPROV'
     nock(/local-cmr/)
       .get(/collections/)
-      .replyWithError('Error Collection not found', { statusCode: 404 })
+      .reply(200, {
+        hits: 0,
+        took: 6,
+        items: ['Bad Data in here']
+      })
 
-    const event = getEvent('C123755555-TESTPROV', 'concept-update')
+    const event = getEvent(conceptId, 'concept-update')
 
     const consoleMock = jest.spyOn(console, 'log')
 
     const indexed = await indexCmrCollection(event)
 
-    expect(consoleMock).toBeCalledTimes(3)
-    expect(consoleMock).toBeCalledWith('Could not complete request due to error: Error: Error Collection not found')
-    expect(consoleMock).toBeCalledWith('Collection FAILED during indexing process there may be an issue with the collection verify that the collection for the given env: ', 'C123755555-TESTPROV')
-    expect(consoleMock).toBeCalledWith('Error indexing collection, Execption was thrown: ', new Error('Cannot read properties of null (reading \'data\')'))
+    expect(consoleMock).toBeCalledTimes(2)
+
+    expect(consoleMock).toBeCalledWith(`Error indexing collection [${conceptId}], Exception was thrown in index-collection handler TypeError: Cannot read properties of undefined (reading 'concept-id')`)
 
     const { body } = indexed
 
     expect(body).toBe('Successfully indexed 0 collection(s).')
+  })
+
+  test('test unsupported concept type', async () => {
+    const event = getEvent('Z1237293909-TESTPROV', 'concept-update')
+
+    const consoleMock = jest.spyOn(console, 'log')
+
+    const indexed = await indexCmrCollection(event)
+
+    expect(consoleMock).toBeCalledTimes(1)
+    expect(consoleMock).toBeCalledWith('Concept [Z1237293909-TESTPROV] was not a collection and will not be indexed')
+
+    const { body, statusCode } = indexed
+
+    expect(body).toBe('Successfully indexed 0 collection(s).')
+    expect(statusCode).toBe(200)
   })
 
   test('test unsupported event type', async () => {
@@ -151,22 +170,6 @@ describe('indexCmrCollection handler', () => {
 
     expect(consoleMock).toBeCalledTimes(1)
     expect(consoleMock).toBeCalledWith('Action [concept-create] was unsupported for concept [C1237293909-TESTPROV]')
-
-    const { body, statusCode } = indexed
-
-    expect(body).toBe('Successfully indexed 0 collection(s).')
-    expect(statusCode).toBe(200)
-  })
-
-  test('test unsupported concept type', async () => {
-    const event = getEvent('G1237293909-TESTPROV', 'concept-update')
-
-    const consoleMock = jest.spyOn(console, 'log')
-
-    const indexed = await indexCmrCollection(event)
-
-    expect(consoleMock).toBeCalledTimes(1)
-    expect(consoleMock).toBeCalledWith('Concept [G1237293909-TESTPROV] was not a collection and will not be indexed')
 
     const { body, statusCode } = indexed
 
@@ -356,14 +359,14 @@ describe('indexCmrCollection handler', () => {
       }
     )
 
-    // verify the collectionTitle collection vertex and the removed project/relatedUrl/platformInstrument vertex are deleted
+    // verify the collection Title collection vertex and the removed project/relatedUrl/platformInstrument vertex are deleted
     await verifyProjectNotExistInGraphDb(collectionTitle, removedProject)
     await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle,
       { platform: keptPlatform, instruments: [removedInstrument] })
     await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle, { platform: removedPlatform })
     await verifyRelatedUrlNotExistInGraphDb(collectionTitle, removedDocUrl)
 
-    // verify the collection vertext with the new title exist,
+    // verify the collection vertex with the new title exist,
     // verify the project/relatedUrl vertices referenced by another collection exist,
     // and there are correct edges between the collection vertex and the project/relatedUrl vertices
     await verifyProjectExistInGraphDb(anothercollectionTitle, keptProject)

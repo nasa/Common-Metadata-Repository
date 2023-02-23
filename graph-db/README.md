@@ -84,7 +84,7 @@ npm install
 ```
 
 ### Test
-To run the test suite one time run
+To run the test suite one time run (Note: to run all tests you must have the gremlin-sever docker container running)
 ```
 npm run test
 ```

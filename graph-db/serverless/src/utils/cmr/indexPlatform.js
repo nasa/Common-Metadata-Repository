@@ -25,7 +25,7 @@ export const indexPlatform = async (platform, gremlinConnection, collection, con
         await indexInstrument(instrument, gremlinConnection, platformName, collection)
       })
     } else {
-      // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
+      // Use `fold` and `coalesce` to check existence of vertex, and create one if none exists.
       const piVertex = await gremlinConnection
         .V()
         .has('platformInstrument', 'platform', platformName)
