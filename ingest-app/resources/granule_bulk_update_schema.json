@@ -44,6 +44,7 @@
         "OnlineAccessURL",
         "OnlineResourceURL",
         "OPeNDAPLink",
+        "RelatedURL",
         "S3Link",
         "Size"
       ]

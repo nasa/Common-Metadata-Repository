@@ -27,6 +27,7 @@
    [cmr.ingest.services.granule-bulk-update.s3.echo10 :as s3-echo10]
    [cmr.ingest.services.granule-bulk-update.s3.s3-util :as s3-util]
    [cmr.ingest.services.granule-bulk-update.s3.umm-g :as s3-umm-g]
+   [cmr.ingest.services.granule-bulk-update.utils.umm-g :as umm-g-util]
    [cmr.ingest.services.ingest-service :as ingest-service]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.umm-spec.migration.version.core :as vc]
@@ -123,7 +124,10 @@
      :append_to_field:browseimageurl
      :remove_field:onlineresourceurl
      :remove_field:onlineaccessurl
-     :remove_field:browseimageurl) (update->instruction-update-field-links event-type item)
+     :remove_field:browseimageurl
+     :update_field:relatedurl
+     :append_to_field:relatedurl
+     :remove_field:relatedurl) (update->instruction-update-field-links event-type item)
     :update_type:opendaplink (update->instruction-update-type-opendaplink event-type item)
     (if-not (vector? item)
       (invalid-update-error event-type)
@@ -243,7 +247,7 @@
 (defn- update-umm-g-metadata
   "Takes the UMM-G granule concept and update with the given update fn and update-values.
   Returns the granule concept with the updated metadata."
-  [context concept update-values update-umm-g-metadata-fn]
+  [context concept update-values user-id update-umm-g-metadata-fn]
   (let [{:keys [format metadata]} concept
         source-version (umm-spec/umm-json-version :granule format)
         parsed-metadata (json/decode metadata true)
@@ -254,57 +258,62 @@
         updated-metadata (umm-json/umm->json (update-umm-g-metadata-fn context migrated-metadata update-values))
         updated-format (mt/format->mime-type {:format :umm-json
                                               :version target-version})]
-    (assoc concept :metadata updated-metadata :format updated-format)))
+    (-> concept
+        (assoc :metadata updated-metadata
+               :format updated-format
+               :revision-date (time-keeper/now)
+               :user-id user-id)
+        (update :revision-id inc))))
 
 (defn- update-opendap-url
   "Add OPeNDAP url to the given granule concept."
-  [context concept grouped-urls]
+  [context concept grouped-urls user-id]
   (condp = (mt/format-key (:format concept))
     :echo10 (opendap-echo10/update-opendap-url concept grouped-urls)
-    :umm-json (update-umm-g-metadata context concept grouped-urls opendap-umm-g/update-opendap-url)
+    :umm-json (update-umm-g-metadata context concept grouped-urls user-id opendap-umm-g/update-opendap-url)
     (errors/throw-service-errors
      :invalid-data [(format "Adding OPeNDAP url is not supported for format [%s]" (:format concept))])))
 
 (defn- update-opendap-type
   "Updates the opendap type in the provided concepts.
    Note: grouped-urls will be nil for this update, as there is no input needed."
-  [context concept grouped-urls]
+  [context concept grouped-urls user-id]
   (condp = (mt/format-key (:format concept))
     :echo10 (opendap-echo10/update-opendap-type concept grouped-urls)
-    :umm-json (update-umm-g-metadata context concept grouped-urls opendap-umm-g/update-opendap-type)
+    :umm-json (update-umm-g-metadata context concept grouped-urls user-id opendap-umm-g/update-opendap-type)
     (errors/throw-service-errors
      :invalid-data [(format "Updating opendap type is not supported for format [%s]" (:format concept))])))
 
 (defn- append-opendap-url
   "Append OPeNDAP url to the given granule concept."
-  [context concept grouped-urls]
+  [context concept grouped-urls user-id]
   (condp = (mt/format-key (:format concept))
     :echo10 (opendap-echo10/append-opendap-url concept grouped-urls)
-    :umm-json (update-umm-g-metadata context concept grouped-urls opendap-umm-g/append-opendap-url)
+    :umm-json (update-umm-g-metadata context concept grouped-urls user-id opendap-umm-g/append-opendap-url)
     (errors/throw-service-errors
      :invalid-data [(format "Append OPeNDAP url is not supported for format [%s]" (:format concept))])))
 
 (defn- add-s3-url
   "Add s3 url to the given granule concept."
-  [context concept urls]
+  [context concept urls user-id]
   (condp = (mt/format-key (:format concept))
     :echo10 (s3-echo10/update-s3-url concept urls)
-    :umm-json (update-umm-g-metadata context concept urls s3-umm-g/update-s3-url)
+    :umm-json (update-umm-g-metadata context concept urls user-id s3-umm-g/update-s3-url)
     (errors/throw-service-errors
      :invalid-data [(format "Adding s3 urls is not supported for format [%s]" (:format concept))])))
 
 (defn- append-s3-url
   "Add s3 url to the given granule concept."
-  [context concept urls]
+  [context concept urls user-id]
   (condp = (mt/format-key (:format concept))
     :echo10 (s3-echo10/append-s3-url concept urls)
-    :umm-json (update-umm-g-metadata context concept urls s3-umm-g/append-s3-url)
+    :umm-json (update-umm-g-metadata context concept urls user-id s3-umm-g/append-s3-url)
     (errors/throw-service-errors
      :invalid-data [(format "Appending s3 urls is not supported for format [%s]" (:format concept))])))
 
 (defn- update-checksum
   "Add checksum to the given granule concept."
-  [_context concept checksum]
+  [_context concept checksum _user-id]
   (condp = (mt/format-key (:format concept))
     :echo10 (checksum-echo10/update-checksum concept checksum)
     :umm-json (errors/throw-service-errors
@@ -314,7 +323,7 @@
 
 (defn- update-size
   "Add/update size to the given granule concept."
-  [_context concept size]
+  [_context concept size _user-id]
   (condp = (mt/format-key (:format concept))
     :echo10 (size-echo10/update-size concept size)
     (errors/throw-service-errors
@@ -322,7 +331,7 @@
 
 (defn- update-format
   "Add/update format to the given granule concept."
-  [_context concept fmt]
+  [_context concept fmt _user-id]
   (condp = (mt/format-key (:format concept))
     :echo10 (format-echo10/update-format concept fmt)
     (errors/throw-service-errors
@@ -340,19 +349,19 @@
 
 (defn- update-mime-type
   "Add/update mime types for RelatedUrl links in a given granule."
-  [context concept links]
+  [context concept links user-id]
   (validate-links-for-update-mime-type links)
   (condp = (mt/format-key (:format concept))
     :echo10 (mime-type-echo10/update-mime-type concept links)
-    :umm-json (update-umm-g-metadata context concept links mime-type-umm-g/update-mime-type)
+    :umm-json (update-umm-g-metadata context concept links user-id mime-type-umm-g/update-mime-type)
     (errors/throw-service-errors
      :invalid-data [(format "Updating size is not supported for format [%s]" (:format concept))])))
 
 (defn- update-additional-files
   "Update AdditionalFiles in given granule concept."
-  [context concept value]
+  [context concept value user-id]
   (condp = (mt/format-key (:format concept))
-    :umm-json (update-umm-g-metadata context concept value additional-file-umm-g/update-additional-files)
+    :umm-json (update-umm-g-metadata context concept value user-id additional-file-umm-g/update-additional-files)
     (errors/throw-service-errors
      :invalid-data [(format "Updating AdditionalFiles is not supported for format [%s]" (:format concept))])))
 
@@ -365,8 +374,8 @@
   (let [{:keys [new-value]} bulk-update-params
         grouped-urls (opendap-util/validate-url new-value)
         updated-concept (if (= :Type target-field)
-                          (xf context concept new-value)
-                          (xf context concept grouped-urls))
+                          (xf context concept new-value user-id)
+                          (xf context concept grouped-urls user-id))
         {updated-metadata :metadata updated-format :format} updated-concept]
     (if-let [err-messages (:errors updated-metadata)]
       (errors/throw-service-errors :invalid-data err-messages)
@@ -378,50 +387,65 @@
           (assoc :user-id user-id)))))
 
 (defn- update-online-url
-  [_context concept bulk-update-params user-id node-path-vector]
-  (let [elem (last node-path-vector)
-        updated-metadata
-        (condp = (mt/format-key (:format concept))
-          :echo10 (online-resource-url-echo10/update-url concept (get bulk-update-params :new-value []) node-path-vector)
-          (errors/throw-service-error
-           (format "Updating %s is not supported for format [%s]" elem (:format concept))))]
-    (-> concept
-        (assoc :metadata updated-metadata
-               :user-id user-id
-               :revision-date (time-keeper/now))
-        (update :revision-id inc))))
+  "Figure out which format to work on and update the 'from' URL to the 'to' URL."
+  [context concept bulk-update-params user-id node-path-vector]
+  (condp = (mt/format-key (:format concept))
+    :echo10 (online-resource-url-echo10/update-url concept (get bulk-update-params :new-value []) node-path-vector user-id)
+    :umm-json (update-umm-g-metadata context concept (get bulk-update-params :new-value []) user-id umm-g-util/update-urls)
+    (errors/throw-service-error
+     :invalid-data
+     (format "Updating %s is not supported for format [%s]" (last node-path-vector) (:format concept)))))
 
 (defn- add-online-url
   "Figure out which format to work on and add the requested url to the
   specific granule."
-  [_context concept bulk-update-params user-id node-path-vector]
-  (let [elem (last node-path-vector)
-        updated-metadata
-        (condp = (mt/format-key (:format concept))
-          :echo10 (online-resource-url-echo10/add-url concept (get bulk-update-params :new-value []) node-path-vector)
-          (errors/throw-service-error
-           (format "Adding %s is not supported for format [%s]" elem (:format concept))))]
-    (-> concept
-        (assoc :metadata updated-metadata
-               :user-id user-id
-               :revision-date (time-keeper/now))
-        (update :revision-id inc))))
+  [context concept bulk-update-params user-id node-path-vector]
+  (condp = (mt/format-key (:format concept))
+    :echo10 (online-resource-url-echo10/add-url concept (get bulk-update-params :new-value []) node-path-vector user-id)
+    :umm-json (update-umm-g-metadata context concept (get bulk-update-params :new-value []) user-id umm-g-util/append-urls)
+    (errors/throw-service-error
+     :invalid-data
+     (format "Adding %s is not supported for format [%s]" (last node-path-vector) (:format concept)))))
 
 (defn- remove-online-url
   "Figure out which format to work on and remove the requested url from the
   specific granule."
-  [_context concept bulk-update-params user-id node-path-vector]
-  (let [elem (last node-path-vector)
-        updated-metadata
-        (condp = (mt/format-key (:format concept))
-          :echo10 (online-resource-url-echo10/remove-url concept (get bulk-update-params :new-value []) node-path-vector)
-          (errors/throw-service-error
-           (format "Removing %s is not supported for format [%s]" elem (:format concept))))]
-    (-> concept
-        (assoc :metadata updated-metadata
-               :user-id user-id
-               :revision-date (time-keeper/now))
-        (update :revision-id inc))))
+  [context concept bulk-update-params user-id node-path-vector]
+  (condp = (mt/format-key (:format concept))
+    :echo10 (online-resource-url-echo10/remove-url concept (get bulk-update-params :new-value []) node-path-vector user-id)
+    :umm-json (update-umm-g-metadata context concept (get bulk-update-params :new-value []) user-id umm-g-util/remove-urls)
+    (errors/throw-service-error
+     :invalid-data
+     (format "Removing %s is not supported for format [%s]" (last node-path-vector) (:format concept)))))
+
+(defn- update-related-url
+  "Figure out which format to work on and update the 'from' URL to the 'to' URL."
+  [context concept bulk-update-params user-id node-path-vector]
+  (condp = (mt/format-key (:format concept))
+    :umm-json (update-umm-g-metadata context concept (get bulk-update-params :new-value []) user-id umm-g-util/update-urls)
+    (errors/throw-service-error
+     :invalid-data
+     (format "Updating %s is not supported for format [%s]" (last node-path-vector) (:format concept)))))
+
+(defn- add-related-url
+  "Figure out which format to work on and add the requested url to the
+  specific granule."
+  [context concept bulk-update-params user-id node-path-vector]
+  (condp = (mt/format-key (:format concept))
+    :umm-json (update-umm-g-metadata context concept (get bulk-update-params :new-value []) user-id umm-g-util/append-urls)
+    (errors/throw-service-error
+     :invalid-data
+     (format "Adding %s is not supported for format [%s]" (last node-path-vector) (:format concept)))))
+
+(defn- remove-related-url
+  "Figure out which format to work on and remove the requested url from the
+  specific granule."
+  [context concept bulk-update-params user-id node-path-vector]
+  (condp = (mt/format-key (:format concept))
+    :umm-json (update-umm-g-metadata context concept (get bulk-update-params :new-value []) user-id umm-g-util/remove-urls)
+    (errors/throw-service-error
+     :invalid-data
+     (format "Removing %s is not supported for format [%s]" (last node-path-vector) (:format concept)))))
 
 (defn- modify-s3-link*
   "Modify the S3Link data for the given concept with the provided URLs
@@ -432,7 +456,7 @@
   (let [{:keys [new-value]} bulk-update-params
         urls (s3-util/validate-url new-value)
         ;; invoke the appropriate transform
-        updated-concept (xf context concept urls)
+        updated-concept (xf context concept urls user-id)
         {updated-metadata :metadata updated-format :format} updated-concept]
     (if-let [err-messages (:errors updated-metadata)]
       (errors/throw-service-errors :invalid-data err-messages)
@@ -449,7 +473,7 @@
   [context concept bulk-update-params user-id xf]
   (let [{:keys [new-value]} bulk-update-params
         ;; invoke the appropriate transform - for checksum, there is only one option (update)
-        updated-concept (xf context concept new-value)
+        updated-concept (xf context concept new-value user-id)
         {updated-metadata :metadata updated-format :format} updated-concept]
     (if-let [err-messages (:errors updated-metadata)]
       (errors/throw-service-errors :invalid-data err-messages)
@@ -466,7 +490,7 @@
   [context concept bulk-update-params user-id xf]
   (let [{:keys [new-value]} bulk-update-params
         ;; invoke the appropriate transform - for checksum, there is only one option (update)
-        updated-concept (xf context concept new-value)
+        updated-concept (xf context concept new-value user-id)
         {updated-metadata :metadata updated-format :format} updated-concept]
     (if-let [err-messages (:errors updated-metadata)]
       (errors/throw-service-errors :invalid-data err-messages)
@@ -498,6 +522,9 @@
                                                      [:OnlineAccessURLs :OnlineAccessURL])
     :remove_field:browseimageurl (remove-online-url context concept bulk-update-params user-id
                                                     [:AssociatedBrowseImageUrls :ProviderBrowseUrl])
+    :update_field:relatedurl (update-related-url context concept bulk-update-params user-id [:RelatedUrls])
+    :append_to_field:relatedurl (add-related-url context concept bulk-update-params user-id [:RelatedUrls])
+    :remove_field:relatedurl (remove-related-url context concept bulk-update-params user-id [:RelatedUrls])
     :update_field:additionalfile (modify-additional-files context concept bulk-update-params user-id update-additional-files)
     :update_field:checksum (modify-checksum-size-format context concept bulk-update-params user-id update-checksum)
     :update_field:size (modify-checksum-size-format context concept bulk-update-params user-id update-size)
