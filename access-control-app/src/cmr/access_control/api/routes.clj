@@ -37,6 +37,7 @@
   ([data]
    (api-response data true))
   ([data encode?]
+   (println "data: " (json/generate-string data))
    {:status 200
     :body (if encode? (json/generate-string data) data)
     :headers {"Content-Type" mt/json}}))
@@ -115,6 +116,13 @@
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
   (-> (group-service/search-for-groups ctx (dissoc params :token))
       common-routes/search-response))
+
+(defn- zero-hit-response
+  [ctx headers params]
+  (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
+  {:status 404
+   :headers {"CMR-Hits" "0"}
+   :body {:hits 0}})
 
 ;;; ACL Route Functions
 
@@ -322,7 +330,24 @@
                       (lt-validation/validate-launchpad-token ctx)
                       (pv/validate-group-route-params params)
                       (remove-members ctx headers (slurp body) group-id)))))
-        (context "/groups" []))
+        (context "/groups" []
+          (OPTIONS "/"
+                   {params :params}
+                   (pv/validate-standard-params params)
+                   (common-routes/options-response))
+
+          ;; Search for groups returns 0 hits to accomodate legacy searvice code.
+          (GET "/"
+               {ctx :request-context params :params headers :headers}
+               (zero-hit-response ctx headers params))
+          (context "/:group-id" [group-id]
+            (OPTIONS "/" req (common-routes/options-response))
+            ;; Get a group
+            (GET "/"
+                 {ctx :request-context params :params}
+                 (pv/validate-group-route-params params)
+                 {:status 404
+                  :body {:errors ["CMR group search is no longer supported"]}}))))
 
       (context "/acls" []
         (OPTIONS "/"
