@@ -115,6 +115,6 @@
                                               {:headers {"Accept" mt/json
                                                          "Authorization" (transmit-config/echo-system-token)}
                                                :form-params {:id token}})]
-        (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
-                      (common-util/scrub-token token) status))
+        (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s], parsed [%s] and body [%s]"
+                      (common-util/scrub-token token) status parsed body))
         (handle-get-user-id token status parsed body)))))
