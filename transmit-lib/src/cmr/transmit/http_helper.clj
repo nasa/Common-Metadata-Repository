@@ -1,12 +1,14 @@
 (ns cmr.transmit.http-helper
   "Contains helpers for handling making http requests and processing responses."
-  (:require [clj-http.client :as client]
-            [cmr.common.mime-types :as mt]
-            [cheshire.core :as json]
-            [cmr.transmit.config :as config]
-            [cmr.transmit.connection :as conn]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.services.health-helper :as hh]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [cmr.common.log :refer [info]]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.health-helper :as hh]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]))
 
 (defn reset-url
   [conn]
@@ -252,8 +254,8 @@
              {raw?# :raw? token# :token http-options# :http-options} options#
              method# (get options# :method :get)
              token# (or token# (:token context#))
-             headers# (when token# {config/token-header token#})]
-         (request context# ~app-name
+             headers# (when token# {config/token-header token#})
+         result# (request context# ~app-name
                   {:url-fn ~url-fn
                    :method method#
                    :raw? raw?#
@@ -264,7 +266,10 @@
                                           :get {:query-params params#}
                                           ;; POST as form params, no JSON support yet. Sorry.
                                           :post {:form-params params#})
-                                        http-options#)}))))))
+                                        http-options#)})]
+        (info (format "cmr.transmit.http-helper fn-name [%s] url-fn [%s], response [%s]" ~fn-name ~url-fn result#))
+       result#
+)))))
 
 (defmacro defhealther
   "Creates a function that can be used to send get health call for the given app.
