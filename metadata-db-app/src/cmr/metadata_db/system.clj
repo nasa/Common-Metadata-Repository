@@ -21,6 +21,8 @@
    [cmr.metadata-db.services.jobs :as mdb-jobs]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
+   [cmr.efs.config :as efs-config]
+   [cmr.efs.connection :as efs]
    [cmr.transmit.config :as transmit-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
@@ -45,6 +47,9 @@
    (let [sys {:db (assoc (oracle/create-db (config/db-spec connection-pool-name))
                          :result-set-fetch-size
                          (config/result-set-fetch-size))
+              :efs-db (assoc (efs/create-connection)
+                             :result-set-fetch-size
+                             (config/result-set-fetch-size))
               :log (log/create-logger-with-log-level (log-level))
               :web (web/create-web-server (transmit-config/metadata-db-port) routes/make-api)
               :nrepl (nrepl/create-nrepl-if-configured (config/metadata-db-nrepl-port))
