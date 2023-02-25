@@ -64,7 +64,7 @@
 
 ; Group CRUD functions
 (h/defcreator create-group :access-control groups-url)
-(h/defsearcher search-for-groups :access-control groups-url)
+(h/defsearcher1 search-for-groups :access-control groups-url)
 (h/defupdater update-group :access-control group-url)
 (h/defdestroyer delete-group :access-control group-url)
 (h/defgetter get-group :access-control group-url)
