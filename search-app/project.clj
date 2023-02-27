@@ -43,8 +43,8 @@
                  [org.geotools/gt-geojsondatastore "24.6"]
                  [org.geotools.xsd/gt-xsd-kml "27.1"]
                  [org.mozilla/rhino "1.7.12"]
-                 [ring/ring-codec "1.1.3"]
-                 [ring/ring-core "1.9.2"]
+                 [ring/ring-codec "1.2.0"]
+                 [ring/ring-core "1.9.6"]
                  [ring/ring-json "0.5.1"]
                  [selmer "1.12.5"]
                  ;; Temporary inclusion of libraries needed for swagger UI until the dev portal is

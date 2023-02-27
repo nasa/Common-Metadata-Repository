@@ -17,7 +17,7 @@
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
                  [org.pegdown/pegdown "1.6.0"]
-                 [ring/ring-core "1.9.2"]
+                 [ring/ring-core "1.9.6"]
                  [ring/ring-json "0.5.1"]
                  [selmer "1.12.5"]]
   :plugins [[lein-shell "0.5.0"]

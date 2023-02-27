@@ -38,6 +38,7 @@
                  [metosin/ring-http-response "0.9.1"]
                  [org.clojure/clojure "1.9.0"]
                  [org.clojure/data.csv "0.1.4"]
+                 ;; TODO Should these keep up with other dependencies?
                  [ring/ring-core "1.6.3"]
                  [ring/ring-codec "1.1.0"]
                  [ring/ring-defaults "0.3.1"]]
