@@ -15,13 +15,6 @@
       ;; CMR-2520 Remove the following line.
       (assoc :context context)))
 
-(defn context->efs-db
-  [context]
-  (-> context
-      :system
-      :efs-db
-      (assoc :context context)))
-
 (defn is-tombstone?
   "Check to see if an entry is a tombstone (has a :deleted true entry)."
   [concept]

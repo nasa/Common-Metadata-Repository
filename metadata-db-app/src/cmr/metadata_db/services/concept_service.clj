@@ -20,8 +20,7 @@
    [cmr.metadata-db.services.messages :as msg]
    [cmr.metadata-db.services.provider-service :as provider-service]
    [cmr.metadata-db.services.search-service :as search]
-   [cmr.metadata-db.services.util :as util]
-   [cmr.efs.config :as efs-config])
+   [cmr.metadata-db.services.util :as util])
   ;; Required to get code loaded
   ;; XXX This is really awful, and we do it a lot in the CMR. What we've got
   ;;     as a result of this is a leak from implementation into a separate part
@@ -133,12 +132,12 @@
      :user-id user-id
      :format mt/edn
      :metadata (pr-str
-                (cutil/remove-nil-keys
-                 {:variable-concept-id source-concept-id
-                  :originator-id originator-id
-                  :associated-concept-id coll-concept-id
-                  :associated-revision-id coll-revision-id
-                  :data data}))
+                 (cutil/remove-nil-keys
+                   {:variable-concept-id source-concept-id
+                    :originator-id originator-id
+                    :associated-concept-id coll-concept-id
+                    :associated-revision-id coll-revision-id
+                    :data data}))
      :extra-fields {:variable-concept-id source-concept-id
                     :associated-concept-id coll-concept-id
                     :associated-revision-id coll-revision-id}}))
@@ -158,9 +157,9 @@
                       :variable-association (msg/variable-associations-only-system-level
                                              provider-id)
                       :service-association (msg/service-associations-only-system-level
-                                            provider-id)
+                                             provider-id)
                       :tool-association (msg/tool-associations-only-system-level
-                                         provider-id))]
+                                          provider-id))]
         (errors/throw-service-errors :invalid-data [err-msg])))))
 
 (defn- provider-ids-for-validation
@@ -325,7 +324,7 @@
   (when (and (nil? (:coll-concept-id concept))
              (or (nil? previous-concept)
                  (util/is-tombstone? previous-concept)))
-    (cmsg/data-error :invalid-data variable-missing-coll-info-msg (:native-id concept))))
+   (cmsg/data-error :invalid-data variable-missing-coll-info-msg (:native-id concept))))
 
 ;;; this is abstracted here in case we switch to some other mechanism of
 ;;; marking tombstones
@@ -424,7 +423,7 @@
       (let [{:keys [concept-id revision-id message]} ;; delete-variable-association could potentially return message
             (if (= :insert operation)
               (save-concept-in-mdb
-               mdb-context (association->concept-map association))
+                mdb-context (association->concept-map association))
               (delete-variable-association mdb-context native-id))]
         (if (some? message)
           (merge {:associated-item associated-item} message)
@@ -446,10 +445,10 @@
             (= :can-not-associate type) {:errors errors
                                          :associated-item associated-item}
             :else {:errors (format association-unknown-error-message
-                                   (if (= :insert operation) "associate" "dissociate")
-                                   source-concept-type-str
-                                   source-concept-id
-                                   coll-concept-id)}))))))
+                                                 (if (= :insert operation) "associate" "dissociate")
+                                                 source-concept-type-str
+                                                 source-concept-id
+                                                 coll-concept-id)}))))))
 
 (defn- associate-variable
   "Associate variable concept to collection defined by coll-concept-id
@@ -460,51 +459,33 @@
         ;; Conflict validation is removed because we are replacing the old
         ;; association(s) with the new association.
         association (cutil/remove-nil-keys
-                     {:concept-id (:coll-concept-id concept)
-                      :revision-id (:coll-revision-id concept)
-                      :source-concept-id (:concept-id concept)
-                      :user-id (:user-id concept)
-                      :data (:data concept)})]
+                      {:concept-id (:coll-concept-id concept)
+                       :revision-id (:coll-revision-id concept)
+                       :source-concept-id (:concept-id concept)
+                       :user-id (:user-id concept)
+                       :data (:data concept)})]
     ;; context passed from perform-post-commit-association is already a mdb-context.
     (update-variable-association context association :insert)))
 
-(defn get-concept-helper
-  ([context concept-id db]
-   (let [{:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
+(defn get-concept
+  "Get a concept by concept-id."
+  ([context concept-id]
+   (let [db (util/context->db context)
+         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
          provider (provider-service/get-provider-by-id context provider-id true)]
      (or (c/get-concept db concept-type provider concept-id)
          (cmsg/data-error :not-found
                           msg/concept-does-not-exist
                           concept-id))))
-  ([context concept-id revision-id db]
-   (let [{:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
+  ([context concept-id revision-id]
+   (let [db (util/context->db context)
+         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
          provider (provider-service/get-provider-by-id context provider-id true)]
      (or (c/get-concept db concept-type provider concept-id revision-id)
          (cmsg/data-error :not-found
                           msg/concept-with-concept-id-and-rev-id-does-not-exist
                           concept-id
                           revision-id)))))
-
-(defn get-concept
-  "Get a concept by concept-id."
-  ([context concept-id]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (get-concept-helper context concept-id (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (get-concept-helper context concept-id (util/context->efs-db context))))
-  ([context concept-id revision-id]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (get-concept-helper context concept-id revision-id (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (get-concept-helper context concept-id revision-id (util/context->efs-db context)))))
 
 (defn- perform-post-commit-variable-association
   "Performs a post commit variable association. If failed, roll back
@@ -545,8 +526,8 @@
                                         :exclude-metadata true
                                         :latest true})
                   ;; Get all the associations except for the va-concept.
-                 (filter #(not= va-concept-id (:concept-id %)))
-                 (filter #(not (:deleted %))))]
+                  (filter #(not= va-concept-id (:concept-id %)))
+                  (filter #(not (:deleted %))))]
     (doseq [va vas]
       (let [association {:source-concept-id (get-in va [:extra-fields :variable-concept-id])
                          :concept-id (get-in va [:extra-fields :associated-concept-id])
@@ -580,17 +561,17 @@
         ;; Perform post commit constraint checks - don't perform check if deleting concepts
         (when-not (:deleted concept)
           (cc/perform-post-commit-constraint-checks
-           db
-           provider
-           concept
-           rollback-fn))
+            db
+            provider
+            concept
+            rollback-fn))
 
         ; Always perform a transaction-id post commit constraint check.
         (cc/perform-post-commit-transaction-id-constraint-check
-         db
-         provider
-         concept
-         rollback-fn)
+          db
+          provider
+          concept
+          rollback-fn)
 
         ;; Perform post commit variable association
         (if (and (= :variable (:concept-type concept))
@@ -647,125 +628,101 @@
 
 (defn get-concepts
   "Get multiple concepts by concept-id and revision-id. Returns concepts in order requested"
-  ([context concept-id-revision-id-tuples allow-missing?]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (get-concepts context concept-id-revision-id-tuples allow-missing? (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (get-concepts context concept-id-revision-id-tuples allow-missing? (util/context->efs-db context))))
-  ([context concept-id-revision-id-tuples allow-missing? db]
-   (info (format "Getting [%d] concepts by concept-id/revision-id"
-                 (count concept-id-revision-id-tuples)))
-   (let [start (System/currentTimeMillis)
-         parallel-chunk-size (get-in context [:system :parallel-chunk-size])
+  [context concept-id-revision-id-tuples allow-missing?]
+  (info (format "Getting [%d] concepts by concept-id/revision-id"
+                (count concept-id-revision-id-tuples)))
+  (let [start (System/currentTimeMillis)
+        parallel-chunk-size (get-in context [:system :parallel-chunk-size])
+        db (util/context->db context)
         ;; Split the tuples so they can be requested separately for each provider and concept type
-         split-tuples-map (split-concept-id-revision-id-tuples concept-id-revision-id-tuples)
-         split-tuples-map (if allow-missing?
-                            (filter-non-existent-providers db split-tuples-map)
-                            (do
-                              (validate-providers-exist db (keys split-tuples-map))
-                              split-tuples-map))]
+        split-tuples-map (split-concept-id-revision-id-tuples concept-id-revision-id-tuples)
+        split-tuples-map (if allow-missing?
+                           (filter-non-existent-providers db split-tuples-map)
+                           (do
+                             (validate-providers-exist db (keys split-tuples-map))
+                             split-tuples-map))]
 
-     (let [concepts (apply concat
-                           (for [[provider-id concept-type-tuples-map] split-tuples-map
-                                 [concept-type tuples] concept-type-tuples-map]
-                             (let [provider (provider-service/get-provider-by-id
-                                             context provider-id true)]
+    (let [concepts (apply concat
+                          (for [[provider-id concept-type-tuples-map] split-tuples-map
+                                [concept-type tuples] concept-type-tuples-map]
+                            (let [provider (provider-service/get-provider-by-id
+                                            context provider-id true)]
                               ;; Retrieve the concepts for this type and provider id.
-                               (if (and (> parallel-chunk-size 0)
-                                        (< parallel-chunk-size (count tuples)))
+                              (if (and (> parallel-chunk-size 0)
+                                       (< parallel-chunk-size (count tuples)))
                                 ;; retrieving chunks in parallel for faster read performance
-                                 (apply concat
-                                        (cutil/pmap-n-all
+                                (apply concat
+                                       (cutil/pmap-n-all
                                          (partial c/get-concepts db concept-type provider)
                                          parallel-chunk-size
                                          tuples))
-                                 (c/get-concepts db concept-type provider tuples)))))
+                                (c/get-concepts db concept-type provider tuples)))))
           ;; Create a map of tuples to concepts
-           concepts-by-tuple (into {} (for [c concepts] [[(:concept-id c) (:revision-id c)] c]))]
-       (if (or allow-missing? (= (count concepts) (count concept-id-revision-id-tuples)))
+          concepts-by-tuple (into {} (for [c concepts] [[(:concept-id c) (:revision-id c)] c]))]
+      (if (or allow-missing? (= (count concepts) (count concept-id-revision-id-tuples)))
         ;; Return the concepts in the order they were requested
-         (let [millis (- (System/currentTimeMillis) start)]
-           (info (format "Found [%d] concepts in [%d] ms" (count concepts) millis))
-           (keep concepts-by-tuple concept-id-revision-id-tuples))
+        (let [millis (- (System/currentTimeMillis) start)]
+          (info (format "Found [%d] concepts in [%d] ms" (count concepts) millis))
+          (keep concepts-by-tuple concept-id-revision-id-tuples))
         ;; some concepts weren't found
-         (let [missing-concept-tuples (set/difference (set concept-id-revision-id-tuples)
-                                                      (set (keys concepts-by-tuple)))]
-           (errors/throw-service-errors
+        (let [missing-concept-tuples (set/difference (set concept-id-revision-id-tuples)
+                                                     (set (keys concepts-by-tuple)))]
+          (errors/throw-service-errors
             :not-found
             (map (partial apply msg/concept-with-concept-id-and-rev-id-does-not-exist)
-                 missing-concept-tuples))))))))
+                 missing-concept-tuples)))))))
 
 (defn get-latest-concepts
   "Get the latest version of concepts by specifiying a list of concept-ids. Results are
   returned in the order requested"
-  ([context concept-ids allow-missing?]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (get-latest-concepts context concept-ids allow-missing? (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (get-latest-concepts context concept-ids allow-missing? (util/context->efs-db context))))
-  ([context concept-ids allow-missing? db]
-   (info (format "Getting [%d] latest concepts by concept-id" (count concept-ids)))
-   (let [start (System/currentTimeMillis)
-         parallel-chunk-size (get-in context [:system :parallel-chunk-size])
+  [context concept-ids allow-missing?]
+  (info (format "Getting [%d] latest concepts by concept-id" (count concept-ids)))
+  (let [start (System/currentTimeMillis)
+        parallel-chunk-size (get-in context [:system :parallel-chunk-size])
+        db (util/context->db context)
         ;; Split the concept-ids so they can be requested separately for each provider and concept type
-         split-concept-ids-map (split-concept-ids concept-ids)
-         split-concept-ids-map (if allow-missing?
-                                 (filter-non-existent-providers db split-concept-ids-map)
-                                 (do
-                                   (validate-providers-exist db (keys split-concept-ids-map))
-                                   split-concept-ids-map))]
-     (let [concepts (apply concat
-                           (for [[provider-id concept-type-concept-id-map] split-concept-ids-map
-                                 [concept-type cids] concept-type-concept-id-map]
-                             (let [provider (provider-service/get-provider-by-id
-                                             context provider-id true)]
+        split-concept-ids-map (split-concept-ids concept-ids)
+        split-concept-ids-map (if allow-missing?
+                                (filter-non-existent-providers db split-concept-ids-map)
+                                (do
+                                  (validate-providers-exist db (keys split-concept-ids-map))
+                                  split-concept-ids-map))]
+    (let [concepts (apply concat
+                          (for [[provider-id concept-type-concept-id-map] split-concept-ids-map
+                                [concept-type cids] concept-type-concept-id-map]
+                            (let [provider (provider-service/get-provider-by-id
+                                            context provider-id true)]
                               ;; Retrieve the concepts for this type and provider id.
-                               (if (and (> parallel-chunk-size 0)
-                                        (< parallel-chunk-size (count cids)))
+                              (if (and (> parallel-chunk-size 0)
+                                       (< parallel-chunk-size (count cids)))
                                 ;; retrieving chunks in parallel for faster read performance
-                                 (apply concat
-                                        (cutil/pmap-n-all
+                                (apply concat
+                                       (cutil/pmap-n-all
                                          (partial c/get-latest-concepts db concept-type provider)
                                          parallel-chunk-size
                                          cids))
-                                 (c/get-latest-concepts db concept-type provider cids)))))
+                                (c/get-latest-concepts db concept-type provider cids)))))
           ;; Create a map of concept-ids to concepts
-           concepts-by-concept-id (into {} (for [c concepts] [(:concept-id c) c]))]
-       (if (or allow-missing? (= (count concepts) (count concept-ids)))
+          concepts-by-concept-id (into {} (for [c concepts] [(:concept-id c) c]))]
+      (if (or allow-missing? (= (count concepts) (count concept-ids)))
         ;; Return the concepts in the order they were requested
-         (let [millis (- (System/currentTimeMillis) start)]
-           (info (format "Found [%d] concepts in [%d] ms" (count concepts) millis))
-           (keep concepts-by-concept-id concept-ids))
+        (let [millis (- (System/currentTimeMillis) start)]
+          (info (format "Found [%d] concepts in [%d] ms" (count concepts) millis))
+          (keep concepts-by-concept-id concept-ids))
         ;; some concepts weren't found
-         (let [missing-concept-ids (set/difference (set concept-ids)
-                                                   (set (keys concepts-by-concept-id)))]
-           (errors/throw-service-errors
+        (let [missing-concept-ids (set/difference (set concept-ids)
+                                                  (set (keys concepts-by-concept-id)))]
+          (errors/throw-service-errors
             :not-found
             (map msg/concept-does-not-exist
-                 missing-concept-ids))))))))
+                 missing-concept-ids)))))))
 
 (defn get-expired-collections-concept-ids
   "Returns the concept ids of expired collections in the provider."
-  ([context provider-id]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (get-expired-collections-concept-ids context provider-id (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (get-expired-collections-concept-ids context provider-id (util/context->efs-db context))))
-  ([context provider-id db]
-   (let [provider (provider-service/get-provider-by-id context provider-id true)]
-     (distinct (map :concept-id (c/get-expired-concepts db provider :collection))))))
+  [context provider-id]
+  (let [db (util/context->db context)
+        provider (provider-service/get-provider-by-id context provider-id true)]
+    (distinct (map :concept-id (c/get-expired-concepts db provider :collection)))))
 
 (defn- tombstone-associations
   "Tombstone the associations that matches the given search params, Also tombstone
@@ -902,7 +859,7 @@
                           :latest true})]
       ;; create tool association tombstones and queue the tool association delete events
       (tombstone-associations context assoc-type search-params false :tool)))
-  (when (= :generic-association assoc-type)
+   (when (= :generic-association assoc-type)
     (let [search-params1 (cutil/remove-nil-keys
                           {:concept-type assoc-type
                            :source-concept-identifier concept-id
@@ -936,57 +893,49 @@
                              :latest true})]
         ;;For generic associations, conceptn could appear as both source-concept
         ;;and associated-concept so it needs to tombstone additional associations.
-        (tombstone-associations context assoc-type search-params1 false concept-type)
-        (tombstone-associations context assoc-type search-params2 false concept-type)))))
+      (tombstone-associations context assoc-type search-params1 false concept-type)
+      (tombstone-associations context assoc-type search-params2 false concept-type)))))
 
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true
-  ([context concept]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (save-concept-revision context concept (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (save-concept-revision context concept (util/context->efs-db context))))
-  ([context concept db]
-   (cv/validate-tombstone-request concept)
-   (let [{:keys [concept-id revision-id revision-date user-id skip-publication]} concept
-         {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
-         provider (provider-service/get-provider-by-id context provider-id true)
-         _ (validate-system-level-concept concept provider)
-         previous-revision (c/get-concept db concept-type provider concept-id)]
-     (if previous-revision
+  [context concept]
+  (cv/validate-tombstone-request concept)
+  (let [{:keys [concept-id revision-id revision-date user-id skip-publication]} concept
+        {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
+        db (util/context->db context)
+        provider (provider-service/get-provider-by-id context provider-id true)
+        _ (validate-system-level-concept concept provider)
+        previous-revision (c/get-concept db concept-type provider concept-id)]
+    (if previous-revision
       ;; For a concept which is already deleted (i.e. previous revision is a tombstone),
       ;; new revision is created only if the revision id is supplied. We don't want extraneous
       ;; tombstones created which, for example, can happen if multiple delete requests are sent at
       ;; once for the same concept. But if a revision id is sent we need to validate it and store a
       ;; record in the database. The revision id allows a client (including virutal product service)
       ;; to send concept updates and deletions out of order.
-       (if (and (util/is-tombstone? previous-revision) (nil? revision-id))
-         previous-revision
-         (let [metadata (if (cu/generic-concept? concept-type)
-                          (:metadata previous-revision)
-                          "")
-               tombstone (merge previous-revision {:concept-id concept-id
-                                                   :revision-id revision-id
-                                                   :revision-date revision-date
-                                                   :user-id user-id
-                                                   :metadata metadata
-                                                   :deleted true})]
-           (cv/validate-concept tombstone)
-           (validate-concept-revision-id db provider tombstone previous-revision)
-           (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
-                                           (try-to-save db provider context))]
+      (if (and (util/is-tombstone? previous-revision) (nil? revision-id))
+        previous-revision
+        (let [metadata (if (cu/generic-concept? concept-type)
+                         (:metadata previous-revision)
+                         "")
+              tombstone (merge previous-revision {:concept-id concept-id
+                                                  :revision-id revision-id
+                                                  :revision-date revision-date
+                                                  :user-id user-id
+                                                  :metadata metadata
+                                                  :deleted true})]
+          (cv/validate-concept tombstone)
+          (validate-concept-revision-id db provider tombstone previous-revision)
+          (let [revisioned-tombstone (->> (set-or-generate-revision-id db provider tombstone previous-revision)
+                                          (try-to-save db provider context))]
             ;; delete the associated variable associations if applicable
-             (delete-associations context concept-type concept-id nil :variable-association)
+            (delete-associations context concept-type concept-id nil :variable-association)
             ;; delete the associated service associations if applicable
-             (delete-associations context concept-type concept-id nil :service-association)
+            (delete-associations context concept-type concept-id nil :service-association)
             ;; delete the associated tool associations if applicable
-             (delete-associations context concept-type concept-id nil :tool-association)
+            (delete-associations context concept-type concept-id nil :tool-association)
             ;; delete the associated generic associations if applicable
-             (delete-associations context concept-type concept-id nil :generic-association)
+            (delete-associations context concept-type concept-id nil :generic-association)
 
             ;; Missing from this list is tag association, retain these records in case the
             ;; concept is brought back to life (un-tombstoned). This is a feature not a bug
@@ -1013,21 +962,21 @@
             ;; deleted. Given the above comments regarding the need for the tag and variable associations
             ;; to skip the delete event publication, service/tool/generic association delete events should
             ;; still be published.
-             (when (or (not skip-publication)
-                       (= concept-type :generic-association)
-                       (= concept-type :service-association)
-                       (= concept-type :tool-association))
-               (ingest-events/publish-event
-                context (ingest-events/concept-delete-event revisioned-tombstone)))
-             revisioned-tombstone)))
-       (if revision-id
-         (cmsg/data-error :not-found
-                          msg/concept-with-concept-id-and-rev-id-does-not-exist
-                          concept-id
-                          revision-id)
-         (cmsg/data-error :not-found
-                          msg/concept-does-not-exist
-                          concept-id))))))
+            (when (or (not skip-publication)
+                      (= concept-type :generic-association)
+                      (= concept-type :service-association)
+                      (= concept-type :tool-association))
+              (ingest-events/publish-event
+               context (ingest-events/concept-delete-event revisioned-tombstone)))
+            revisioned-tombstone)))
+      (if revision-id
+        (cmsg/data-error :not-found
+                         msg/concept-with-concept-id-and-rev-id-does-not-exist
+                         concept-id
+                         revision-id)
+        (cmsg/data-error :not-found
+                         msg/concept-does-not-exist
+                         concept-id)))))
 
 (defn- publish-service-associations-update-event
   "Publish one concept-update-event for all non-tombstoned service associations for the
@@ -1069,57 +1018,49 @@
 
 ;; false implies creation of a non-tombstone revision
 (defmethod save-concept-revision false
-  ([context concept]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (save-concept-revision context concept (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (save-concept-revision context concept (util/context->efs-db context))))
-  ([context concept db]
-   (trace "concept:" (keys concept))
-   (trace "provider id:" (:provider-id concept))
-   (cv/validate-concept concept)
-   (let [provider-id (or (:provider-id concept)
-                         (when (contains? system-level-concept-types (:concept-type concept)) "CMR"))
+  [context concept]
+  (trace "concept:" (keys concept))
+  (trace "provider id:" (:provider-id concept))
+  (cv/validate-concept concept)
+  (let [db (util/context->db context)
+        provider-id (or (:provider-id concept)
+                        (when (contains? system-level-concept-types (:concept-type concept)) "CMR"))
         ;; Need this for tags/tag-associations since they don't have a provider-id in their
         ;; concept maps, but later processing requires it.
-         concept (assoc concept :provider-id provider-id)
-         provider (provider-service/get-provider-by-id context provider-id true)
-         _ (validate-system-level-concept concept provider)
-         concept (->> concept
-                      (set-or-generate-concept-id db provider)
-                      (set-created-at db provider))
-         {:keys [concept-type concept-id]} concept]
-     (validate-concept-revision-id db provider concept)
+        concept (assoc concept :provider-id provider-id)
+        provider (provider-service/get-provider-by-id context provider-id true)
+        _ (validate-system-level-concept concept provider)
+        concept (->> concept
+                     (set-or-generate-concept-id db provider)
+                     (set-created-at db provider))
+        {:keys [concept-type concept-id]} concept]
+    (validate-concept-revision-id db provider concept)
     ;; validate newly ingested variable contains collection info.
-     (when (= :variable concept-type)
-       (let [previous-concept (c/get-concept db concept-type provider concept-id)]
-         (validate-new-variable-has-collection-info concept previous-concept)))
+    (when (= :variable concept-type)
+      (let [previous-concept (c/get-concept db concept-type provider concept-id)]
+        (validate-new-variable-has-collection-info concept previous-concept)))
 
-     (let [concept (->> concept
-                        (set-or-generate-revision-id db provider)
-                        (set-deleted-flag false)
-                        (try-to-save db provider context))
-           revision-id (:revision-id concept)]
+    (let [concept (->> concept
+                       (set-or-generate-revision-id db provider)
+                       (set-deleted-flag false)
+                       (try-to-save db provider context))
+          revision-id (:revision-id concept)]
       ;; publish tombstone delete event if the previous concept revision is a granule tombstone
-       (when (and (= :granule concept-type)
-                  (> revision-id 1))
-         (let [previous-concept (c/get-concept db concept-type provider concept-id (- revision-id 1))]
-           (when (util/is-tombstone? previous-concept)
-             (ingest-events/publish-tombstone-delete-msg
-              context concept-type concept-id revision-id))))
+      (when (and (= :granule concept-type)
+                 (> revision-id 1))
+        (let [previous-concept (c/get-concept db concept-type provider concept-id (- revision-id 1))]
+          (when (util/is-tombstone? previous-concept)
+            (ingest-events/publish-tombstone-delete-msg
+             context concept-type concept-id revision-id))))
 
       ;; publish service/tool associations update event if applicable, i.e. when the concept is a service/tool,
       ;; so that the collections can be updated in elasticsearch with the updated service/tool info
-       (publish-service-associations-update-event context concept-type concept-id)
-       (publish-tool-associations-update-event context concept-type concept-id)
-       (ingest-events/publish-event
-        context
-        (ingest-events/concept-update-event concept))
-       concept))))
+      (publish-service-associations-update-event context concept-type concept-id)
+      (publish-tool-associations-update-event context concept-type concept-id)
+      (ingest-events/publish-event
+       context
+       (ingest-events/concept-update-event concept))
+      concept)))
 
 (defn- delete-associated-tag-associations
   "Delete the tag associations associated with the given collection revision,
@@ -1166,169 +1107,120 @@
 
 (defn force-delete
   "Remove a revision of a concept from the database completely."
-  ([context concept-id revision-id force?]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (force-delete context concept-id revision-id force? (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (save-concept-revision context concept-id revision-id force? (util/context->efs-db context))))
-  ([context concept-id revision-id force? db]
-   (let [{:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
-         provider (provider-service/get-provider-by-id context provider-id true)
-         concept (c/get-concept db concept-type provider concept-id revision-id)]
-     (if concept
-       (if (and (not force?)
-                (latest-revision? context concept-id revision-id))
-         (errors/throw-service-error
-          :bad-request
-          (format (str "Cannot force delete the latest revision of a concept "
-                       "[%s, %s], use regular delete instead.")
-                  concept-id revision-id))
-         (do
-           (force-delete-cascading-events context concept-type concept-id revision-id)
-           (c/force-delete db concept-type provider concept-id revision-id)))
-       (cmsg/data-error :not-found
-                        msg/concept-with-concept-id-and-rev-id-does-not-exist
-                        concept-id
-                        revision-id))
-     {:concept-id concept-id
-      :revision-id revision-id})))
+  [context concept-id revision-id force?]
+  (let [db (util/context->db context)
+        {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
+        provider (provider-service/get-provider-by-id context provider-id true)
+        concept (c/get-concept db concept-type provider concept-id revision-id)]
+    (if concept
+      (if (and (not force?)
+               (latest-revision? context concept-id revision-id))
+        (errors/throw-service-error
+         :bad-request
+         (format (str "Cannot force delete the latest revision of a concept "
+                      "[%s, %s], use regular delete instead.")
+                 concept-id revision-id))
+        (do
+          (force-delete-cascading-events context concept-type concept-id revision-id)
+          (c/force-delete db concept-type provider concept-id revision-id)))
+      (cmsg/data-error :not-found
+                       msg/concept-with-concept-id-and-rev-id-does-not-exist
+                       concept-id
+                       revision-id))
+    {:concept-id concept-id
+     :revision-id revision-id}))
 
 (defn reset
   "Delete all concepts from the concept store and all providers."
-  ([context]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (reset context (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (reset context (util/context->efs-db context))))
-  ([context db]
-   (provider-service/reset-providers context)
-   (c/reset db)))
+  [context]
+  (provider-service/reset-providers context)
+  (c/reset (util/context->db context)))
 
 (defn get-concept-id
   "Get a concept id for a given concept."
-  ([context concept-type provider-id native-id]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (get-concept-id context concept-type provider-id native-id (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (get-concept-id context concept-type provider-id native-id (util/context->efs-db context))))
-  ([context concept-type provider-id native-id db]
-   (cu/validate-concept-type concept-type)
-   (let [provider (provider-service/get-provider-by-id context provider-id true)
-         concept-id (c/get-concept-id db concept-type provider native-id)]
-     (if concept-id
-       concept-id
-       (cmsg/data-error :not-found
-                        msg/missing-concept-id
-                        concept-type
-                        provider-id
-                        native-id)))))
+  [context concept-type provider-id native-id]
+  (cu/validate-concept-type concept-type)
+  (let [db (util/context->db context)
+        provider (provider-service/get-provider-by-id context provider-id true)
+        concept-id (c/get-concept-id db concept-type provider native-id)]
+    (if concept-id
+      concept-id
+      (cmsg/data-error :not-found
+                       msg/missing-concept-id
+                       concept-type
+                       provider-id
+                       native-id))))
 
 (defn- get-provider-to-collection-map
   "Returns a map of the provider ids to collection concepts that exist in the database."
-  ([context]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (get-provider-to-collection-map context (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (get-provider-to-collection-map context (util/context->efs-db context))))
-  ([context db]
-   (into {} (pmap (fn [{:keys [provider-id] :as provider}]
-                    [provider-id
-                     (->> (c/find-latest-concepts db provider {:provider-id provider-id
-                                                               :concept-type :collection})
-                          (remove :deleted))])
-                  (provider-db/get-providers db)))))
+  [context]
+  (let [db (util/context->db context)]
+    (into {} (pmap (fn [{:keys [provider-id] :as provider}]
+                     [provider-id
+                      (->> (c/find-latest-concepts db provider {:provider-id provider-id
+                                                                :concept-type :collection})
+                           (remove :deleted))])
+                   (provider-db/get-providers db)))))
 
 ;; There's not sufficient integration tests for this. Filed CMR-1579
 (defn get-provider-holdings
   "Gets provider holdings within Metadata DB"
-  ([context]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (get-provider-holdings context (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (get-provider-holdings context (util/context->efs-db context))))
-  ([context db]
-   (let [;; Create a map of provider to collection concepts
-         provider-to-collections (get-provider-to-collection-map context)
+  [context]
+  (let [db (util/context->db context)
+        ;; Create a map of provider to collection concepts
+        provider-to-collections (get-provider-to-collection-map context)
         ;; Get a map of provider id to counts of granules per collection concept id
-         provider-to-count-maps (into {}
-                                      (pmap (fn [{:keys [provider-id] :as provider}]
-                                              [provider-id (c/get-concept-type-counts-by-collection
+        provider-to-count-maps (into {}
+                                     (pmap (fn [{:keys [provider-id] :as provider}]
+                                             [provider-id (c/get-concept-type-counts-by-collection
                                                             db :granule provider)])
-                                            (provider-db/get-providers db)))]
-     (for [[provider-id collections] provider-to-collections
-           collection collections
-           :let [concept-id (:concept-id collection)
-                 granule-count (get-in provider-to-count-maps
-                                       [provider-id concept-id]
-                                       0)]]
-       {:provider-id provider-id
-        :concept-id concept-id
-        :granule-count granule-count
-        :entry-title (get-in collection [:extra-fields :entry-title])}))))
+                                           (provider-db/get-providers db)))]
+    (for [[provider-id collections] provider-to-collections
+          collection collections
+          :let [concept-id (:concept-id collection)
+                granule-count (get-in provider-to-count-maps
+                                      [provider-id concept-id]
+                                      0)]]
+      {:provider-id provider-id
+       :concept-id concept-id
+       :granule-count granule-count
+       :entry-title (get-in collection [:extra-fields :entry-title])})))
 
 (defn delete-expired-concepts
   "Delete concepts that have not been deleted and have a delete-time before now"
-  ([context provider concept-type]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (delete-expired-concepts context provider concept-type (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (delete-expired-concepts context provider concept-type (util/context->efs-db context))))
-  ([context provider concept-type db]
-   (let [;; atom to store concepts to skip on subsequent recursions
-         failed-concept-ids (atom #{})
+  [context provider concept-type]
+  (let [db (util/context->db context)
+        ;; atom to store concepts to skip on subsequent recursions
+        failed-concept-ids (atom #{})
         ;; return expired concepts which have not previously failed
-         get-expired (fn []
-                       (remove
+        get-expired (fn []
+                      (remove
                         #(contains? @failed-concept-ids (:concept-id %))
                         (c/get-expired-concepts db provider concept-type)))]
-     (loop []
-       (when-let [expired-concepts (seq (get-expired))]
-         (info "Deleting expired" (name concept-type) "concepts:" (pr-str (map :concept-id expired-concepts)))
-         (doseq [c expired-concepts]
-           (let [tombstone (-> c
-                               (update-in [:revision-id] inc)
-                               (assoc :deleted true
-                                      :metadata ""
-                                      :revision-date (p/clj-time->date-time-str (time-keeper/now))))]
-             (try
-               (try-to-save db provider context tombstone)
-               (ingest-events/publish-event
-                context (ingest-events/concept-expire-event c))
-               (catch clojure.lang.ExceptionInfo e
+    (loop []
+      (when-let [expired-concepts (seq (get-expired))]
+        (info "Deleting expired" (name concept-type) "concepts:" (pr-str (map :concept-id expired-concepts)))
+        (doseq [c expired-concepts]
+          (let [tombstone (-> c
+                              (update-in [:revision-id] inc)
+                              (assoc :deleted true
+                                     :metadata ""
+                                     :revision-date (p/clj-time->date-time-str (time-keeper/now))))]
+            (try
+              (try-to-save db provider context tombstone)
+              (ingest-events/publish-event
+               context (ingest-events/concept-expire-event c))
+              (catch clojure.lang.ExceptionInfo e
                 ;; Re-throw anything other than a simple conflict.
-                 (when-not (-> e ex-data :type (= :conflict))
-                   (throw e))
+                (when-not (-> e ex-data :type (= :conflict))
+                  (throw e))
                 ;; If an update comes in for one of the items we are
                 ;; deleting, it will result in a conflict, in that
                 ;; case we just want to log a warning and store the
                 ;; failed concept-id in order avoid an infinite loop.
-                 (warn e "Conflict when saving expired concept tombstone")
-                 (swap! failed-concept-ids conj (:concept-id c))))))
-         (recur))))))
+                (warn e "Conflict when saving expired concept tombstone")
+                (swap! failed-concept-ids conj (:concept-id c))))))
+        (recur)))))
 
 (defn- call-force-deletes
   "Calls functions that do the deletion of concepts or that publish events to message queue."
@@ -1349,63 +1241,47 @@
 (defn force-delete-with
   "Continually force deletes concepts using the given function concept-id-revision-id-tuple-finder
   to find concept id revision id tuples to delete. Stops once the function returns an empty set."
-  ([context provider concept-type tombstone-delete? concept-id-revision-id-tuple-finder concept-truncation-batch-size]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (force-delete-with context provider concept-type tombstone-delete? concept-id-revision-id-tuple-finder concept-truncation-batch-size (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (force-delete-with context provider concept-type tombstone-delete? concept-id-revision-id-tuple-finder concept-truncation-batch-size (util/context->efs-db context))))
-  ([context provider concept-type tombstone-delete? concept-id-revision-id-tuple-finder concept-truncation-batch-size db]
-   (loop [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
-     (if (< (count concept-id-revision-id-tuples) concept-truncation-batch-size)
-       (call-force-deletes
-        context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size)
-       (do
-         (call-force-deletes
+  [context provider concept-type tombstone-delete? concept-id-revision-id-tuple-finder concept-truncation-batch-size]
+  (let [db (util/context->db context)]
+    (loop [concept-id-revision-id-tuples (seq (concept-id-revision-id-tuple-finder))]
+      (if (< (count concept-id-revision-id-tuples) concept-truncation-batch-size)
+        (call-force-deletes
           context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size)
-         (recur (seq (concept-id-revision-id-tuple-finder))))))))
+        (do
+          (call-force-deletes
+            context db provider concept-type tombstone-delete? concept-id-revision-id-tuples concept-truncation-batch-size)
+          (recur (seq (concept-id-revision-id-tuple-finder))))))))
 
 (defn delete-old-revisions
   "Delete concepts to keep a fixed number of revisions around. It also deletes old tombstones that
   are older than a fixed number of days and any prior revisions of the deleted tombstone."
-  ([context provider concept-type]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (delete-old-revisions context provider concept-type (util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (delete-old-revisions context provider concept-type (util/context->efs-db context))))
-  ([context provider concept-type db]
-   (let [concept-type-name (str (name concept-type) "s")
-         tombstone-cut-off-date (t/minus (time-keeper/now) (t/days (days-to-keep-tombstone)))]
+  [context provider concept-type]
+  (let [db (util/context->db context)
+        concept-type-name (str (name concept-type) "s")
+        tombstone-cut-off-date (t/minus (time-keeper/now) (t/days (days-to-keep-tombstone)))]
 
     ;; We only want to publish the deleted-tombstone event in the case where a granule tombstone is
     ;; being cleaned up, not when an old revision is being removed, because the case of old revision,
     ;; a deleted-tombstone even would have been published already.
-     (info "Starting deletion of old" concept-type-name "for provider" (:provider-id provider))
-     (force-delete-with
+    (info "Starting deletion of old" concept-type-name "for provider" (:provider-id provider))
+    (force-delete-with
       context provider concept-type false
       #(c/get-old-concept-revisions
-        db
-        provider
-        concept-type
-        (get num-revisions-to-keep-per-concept-type
-             concept-type)
-        concept-truncation-batch-size)
+         db
+         provider
+         concept-type
+         (get num-revisions-to-keep-per-concept-type
+              concept-type)
+         concept-truncation-batch-size)
       concept-truncation-batch-size)
 
-     (info "Starting deletion of tombstoned" concept-type-name "for provider" (:provider-id provider))
-     (force-delete-with
+    (info "Starting deletion of tombstoned" concept-type-name "for provider" (:provider-id provider))
+    (force-delete-with
       context provider concept-type true
       #(c/get-tombstoned-concept-revisions
-        db
-        provider
-        concept-type
-        tombstone-cut-off-date
-        concept-truncation-batch-size)
-      concept-truncation-batch-size))))
+         db
+         provider
+         concept-type
+         tombstone-cut-off-date
+         concept-truncation-batch-size)
+      concept-truncation-batch-size)))

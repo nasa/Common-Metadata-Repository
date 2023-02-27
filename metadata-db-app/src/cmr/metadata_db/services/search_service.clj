@@ -8,8 +8,7 @@
    [cmr.metadata-db.data.concepts :as c]
    [cmr.metadata-db.services.messages :as msg]
    [cmr.metadata-db.services.provider-service :as provider-service]
-   [cmr.metadata-db.services.util :as db-util]
-   [cmr.efs.config :as efs-config]))
+   [cmr.metadata-db.services.util :as db-util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations for find concepts
@@ -100,45 +99,29 @@
 
 (defn- find-cmr-concepts
   "Find tags or tag associations with specific parameters"
-  ([context params]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (find-cmr-concepts context params (db-util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (find-cmr-concepts context params (db-util/context->efs-db context))))
-  ([context params db]
-   (when (or (nil? (:provider-id params))
-             (= "CMR" (:provider-id params)))
-     (let [latest-only? (or (true? (:latest params))
-                            (= "true" (:latest params)))
-           params (dissoc params :latest)]
-       (if latest-only?
-         (c/find-latest-concepts db {:provider-id "CMR"} params)
-         (c/find-concepts db [{:provider-id "CMR"}] params))))))
+  [context params]
+  (when (or (nil? (:provider-id params))
+            (= "CMR" (:provider-id params)))
+    (let [db (db-util/context->db context)
+          latest-only? (or (true? (:latest params))
+                           (= "true" (:latest params)))
+          params (dissoc params :latest)]
+      (if latest-only?
+        (c/find-latest-concepts db {:provider-id "CMR"} params)
+        (c/find-concepts db [{:provider-id "CMR"}] params)))))
 
 (defn- find-provider-concepts
   "Find concepts with specific parameters"
-  ([context params]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (find-provider-concepts context params (db-util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (find-provider-concepts context params (db-util/context->efs-db context))))
-  ([context params db]
-   (let [latest-only? (or (true? (:latest params))
-                          (= "true" (:latest params)))
-         params (dissoc params :latest)
-         providers (find-providers-for-params context params)]
-     (when (seq providers)
-       (if latest-only?
-         (mapcat #(c/find-latest-concepts db % params) providers)
-         (c/find-concepts db providers params))))))
+  [context params]
+  (let [db (db-util/context->db context)
+        latest-only? (or (true? (:latest params))
+                         (= "true" (:latest params)))
+        params (dissoc params :latest)
+        providers (find-providers-for-params context params)]
+    (when (seq providers)
+      (if latest-only?
+        (mapcat #(c/find-latest-concepts db % params) providers)
+        (c/find-concepts db providers params)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Service methods for finding concepts
@@ -169,19 +152,11 @@
 
 (defn find-associations
   "Find associations with specific parameters."
-  ([context params]
-   (when (or
-          (= "efs-off" efs-config/efs-toggle)
-          (= "efs-on" efs-config/efs-toggle))
-     (find-associations context params (db-util/context->db context)))
-   (when (or
-          (= "efs-on" efs-config/efs-toggle)
-          (= "efs-only" efs-config/efs-toggle))
-     (find-associations context params (db-util/context->efs-db context))))
-  ([context params db]
-   (let [latest-only? (or (true? (:latest params))
-                          (= "true" (:latest params)))
-         params (dissoc params :latest)]
-     (if latest-only?
-       (c/find-latest-associations db params)
-       (c/find-associations db params)))))
+  [context params]
+  (let [db (db-util/context->db context)
+        latest-only? (or (true? (:latest params))
+                         (= "true" (:latest params)))
+        params (dissoc params :latest)]
+    (if latest-only?
+      (c/find-latest-associations db params)
+      (c/find-associations db params))))

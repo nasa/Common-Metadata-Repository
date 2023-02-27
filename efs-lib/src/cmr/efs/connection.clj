@@ -1,36 +1,30 @@
 (ns cmr.efs.connection
-  "Contains a record definition that implements the ConcpetStore and Lifecycle protocols
-  backed by an EFS instance."
+  "Contains functions for interacting with the EFS storage instance."
   (:require
    [clj-time.coerce :as cr]
-   [clojure.java.jdbc :as j]
    [cmr.common.config :refer [defconfig]]
-   [cmr.common.date-time-parser :as p]
-   [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.health-helper :as hh]))
 
-(defrecord EfsStore
-           [;; The database spec.
-            spec
-
-   ;; The database pool of connections
-            datasource]
-
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  ;; CMR Component Implementation
-  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-  lifecycle/Lifecycle
-
-  (start [this system]
-    ())
-
-  (stop [this system]
-    ()))
-
-(def create-connection
-  "Returns a record for interfacing with EFS"
+(defn health-fn
+  "Returns the health status of the EFS instance."
   []
-  (->EfsStore nil nil))
+  )
+
+(defn health
+  "Returns the efs health with timeout handling."
+  []
+  ())
+
+(defn save-concept
+  "Saves a concept to EFS"
+  [provider concept-type concept])
+
+(defn get-concept
+  "Gets a concept from EFS"
+  [provider concept-type concept])
+
+(defn delete-concept
+  "Deletes a concept from EFS"
+  [provider concept-type concept])
