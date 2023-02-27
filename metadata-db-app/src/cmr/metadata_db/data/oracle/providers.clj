@@ -3,6 +3,7 @@
   (:require
    [clojure.java.jdbc :as j]
    [clojure.pprint :refer [pprint pp]]
+   [clojure.string :as string]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.util :as cutil]
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
@@ -15,12 +16,13 @@
 
 (defn dbresult->provider
   "Converts a map result from the database to a provider map"
-  [{:keys [provider_id short_name cmr_only small consortiums]}]
+  [{:keys [provider_id short_name cmr_only small consortiums metadata]}]
   (cutil/remove-nil-keys {:provider-id provider_id
                           :short-name short_name
                           :cmr-only (== 1 cmr_only)
                           :small (== 1 small)
-                          :consortiums consortiums}))
+                          :consortiums consortiums
+                          :metadata (if (some? metadata) (-> metadata cutil/gzip-blob->string read-string))}))
 
 (defn- delete-small-provider-concepts
   "Delete all concepts of the given small provider"
@@ -79,35 +81,42 @@
 
 (defn save-provider
   [db provider]
-  (let [{:keys [provider-id short-name cmr-only small consortiums]} provider]
+  (let [{:keys [provider-id short-name cmr-only small consortiums]} provider
+        metadata (get :metadata provider)]
     (j/insert! db
                :providers
-               ["provider_id" "short_name" "cmr_only" "small" "consortiums"]
-               [provider-id short-name (if cmr-only 1 0) (if small 1 0) consortiums])
-    (when (not small)
-      (ct/create-provider-concept-tables db provider))))
+               ["provider_id" "short_name" "cmr_only" "small" "consortiums" "metadata"]
+               [provider-id
+                short-name 0
+                (if cmr-only 1 0)
+                (if small 1 0)
+                consortiums
+                (cutil/string->gzip-base64 metadata)])
+      (when (not small)
+        (ct/create-provider-concept-tables db provider))))
 
 (defn get-providers
-  [db]
-  (map dbresult->provider
+  [db]  (map dbresult->provider
        (j/query db ["SELECT * FROM providers"])))
 
 (defn get-provider
   [db provider-id]
   (first (map dbresult->provider
               (j/query db
-                       [(str "SELECT provider_id, short_name, cmr_only, small, consortiums"
+                       [(str "SELECT provider_id, short_name, cmr_only, small, consortiums, metadata"
                              " FROM providers"
                              " WHERE provider_id = ?")
                         provider-id]))))
 
 (defn update-provider
-  [db {:keys [provider-id short-name cmr-only consortiums]}]
+  [db {:keys [provider-id short-name cmr-only consortiums metadata]}]
   (j/update! db
              :providers
-             {:short_name short-name
-              :cmr_only (if cmr-only 1 0)
-              :consortiums consortiums}
+             {:cmr_only (if cmr-only 1 0)
+              :consortiums consortiums
+              :metadata (-> metadata
+                            pr-str
+                            cutil/string->gzip-bytes)}
              ["provider_id = ?" provider-id]))
 
 (defn delete-provider

@@ -2,8 +2,10 @@
   "Defines the HTTP URL routes for the application."
   (:require
    [cheshire.core :as json]
+   [clojure.string :as string]
    [clojure.walk :as walk]
    [cmr.acl.core :as acl]
+   [cmr.common.config :as config]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.metadata-db.api.route-helpers :as rh]
@@ -32,6 +34,14 @@
   (provider-service/delete-provider context provider-id)
   {:status 204})
 
+(defn- get-provider
+  "Read a provider"
+  [context params provider-id]
+  (let [provider (provider-service/get-provider-by-id context provider-id)]
+    {:status 200
+     :body (json/generate-string provider)
+     :headers rh/json-header}))
+
 (defn- get-providers
   "Get a list of provider ids"
   [context params]
@@ -55,30 +65,28 @@
     ;; create a new provider
     (POST "/" {:keys [request-context params headers body]}
       (acl/verify-ingest-management-permission request-context :update)
-      (let [provider-id (get body "provider-id")
-            short-name (get body "short-name")
-            cmr-only (get body "cmr-only")
-            small (get body "small")
-            consortiums (get body "consortiums")]
+      (let [consortiums (get body "Consortiums")]
         (when consortiums
           (validate-consortiums consortiums))
-        (save-provider request-context params
-                       {:provider-id provider-id
-                        :short-name (or short-name provider-id)
-                        :cmr-only (if (some? cmr-only) cmr-only false)
-                        :small (if (some? small) small false)
-                        :consortiums consortiums})))
+        (save-provider request-context params (walk/keywordize-keys body))))
+
+    ;; read a provider
+    (GET "/:provider-id" {{:keys [provider-id] :as params} :params
+                          request-context :request-context
+                          headers :headers}
+      (acl/verify-ingest-management-permission request-context :read)
+      (get-provider request-context params provider-id))
 
     ;; update a provider
     (PUT "/:provider-id" {{:keys [provider-id] :as params} :params
-                          provider :body
+                          provider-body :body
                           request-context :request-context
                           headers :headers}
-      (when-let [consortiums (get provider "consortiums")]
+      (when-let [consortiums (get provider-body ":Consortiums")]
         (validate-consortiums consortiums))
-      (let [provider (walk/keywordize-keys provider)]
+      (let [provider-map (walk/keywordize-keys provider-body)]
         (acl/verify-ingest-management-permission request-context :update)
-        (update-provider request-context params provider)))
+        (update-provider request-context params provider-map)))
 
     ;; delete a provider
     (DELETE "/:provider-id" {{:keys [provider-id] :as params} :params

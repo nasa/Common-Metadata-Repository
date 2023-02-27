@@ -1,0 +1,306 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "UMM-P",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+      "ProviderId": {
+        "description": "Code name for the provide",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 10,
+        "pattern": "^[A-Z][A-Z0-9_]*$"
+      },
+      "DescriptionOfHolding": {
+        "description": "A brief description of the data held by this provider Note: This field allows lightweight markup language with plain text formatting syntax. Line breaks within the text are preserved.",
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      },
+      "Organizations": {
+        "description": "The tool provider, or organization, or institution responsible for developing, archiving, and/or distributing the web user interface, software, or tool.",
+        "type": "array",
+        "items": {
+            "$ref": "#/definitions/OrganizationType"
+        },
+        "minItems": 1
+      },
+      "ContactPersons": {
+        "description": "This is the contact persons of the downloadable tool or web user interface.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/ContactPersonType"
+        }
+      },
+      "ContactGroups": {
+        "description": "Group(s) to contact at an organization to get information about the web user interface or downloadable tool, including how the group may be contacted.",
+        "type": "array",
+        "items": {
+          "$ref": "#/definitions/ContactGroupType"
+        }
+      },
+      "Consortiums": {
+        "description": "Groups/projects,efforts,tasks the provider participates in.",
+        "type": "array",
+        "items": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16
+        }
+      },
+      "MetadataSpecification": {
+        "description": "Requires the client, or user, to add in schema information into every tool record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
+        "$ref": "#/definitions/MetadataSpecificationType"
+      }
+    },
+    "required": [
+      "ProviderId",
+      "DescriptionOfHolding",
+      "Organizations",
+      "MetadataSpecification"
+    ],
+  "definitions": {
+    "OrganizationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "The organization or institution responsible for developing, archiving, and/or hosting the web user interface or downloadable tool.",
+      "properties": {
+        "Roles": {
+          "description": "This is the roles of the organization.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProviderOrganizationRoleEnum"
+          },
+          "minItems": 1
+        },
+        "ShortName": {
+          "description": "This is the short name of the organization.",
+           "$ref": "#/definitions/ProviderOrganizationShortNameType"
+        },
+        "LongName": {
+          "description": "This is the long name of the organization.",
+           "$ref": "#/definitions/LongNameType"
+        },
+        "URLValue": {
+          "description": "The URL of the organization.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": ["Roles", "ShortName", "URLValue"]
+    },
+    "ContactGroupType": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Roles": {
+          "description": "This is the roles of the downloadable tool or web user interface contact.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ProviderOrganizationRoleEnum"
+          },
+          "minItems": 1
+        },
+        "ContactInformation": {
+          "description": "This is the contact information of the downloadable tool or web user interface contact.",
+          "$ref": "#/definitions/ContactInformationType"
+        },
+        "GroupName": {
+          "description": "This is the contact group name.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        }
+      },
+      "required": ["Roles", "GroupName"]
+    },
+    "ContactPersonType": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "Roles": {
+          "description": "This is the roles of the downloadable tool or web user interface contact.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/ContactRoleEnum"
+          },
+          "minItems": 1
+        },
+        "ContactInformation": {
+          "description": "This is the contact information of the tool contact.",
+          "$ref": "#/definitions/ContactInformationType"
+        },
+        "FirstName": {
+          "description": "First name of the individual.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "MiddleName": {
+          "description": "Middle name of the individual.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "LastName": {
+          "description": "Last name of the individual.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255
+        },
+        "UserName": {
+          "description": "Login Name for the system. This value is for input only and will not be returned",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "writeOnly": true
+        }
+      },
+      "required": ["Roles", "LastName"]
+    },
+    "ContactInformationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Defines the contact information of a downloadable tool or web user interface.",
+      "properties": {
+        "HoursOfService": {
+          "description": "Time period when the contact answers questions or provides services.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "ContactInstruction": {
+          "description": "Supplemental instructions on how or when to contact the responsible party.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "ContactMechanisms": {
+          "description": "Mechanisms of contacting.",
+          "type": "array",
+          "items": {
+             "$ref": "#/definitions/ContactMechanismType"
+          }
+        },
+        "Addresses": {
+          "description": "Contact addresses.",
+          "type": "array",
+          "items": {
+             "$ref": "#/definitions/AddressType"
+          }
+        }
+      }
+    },
+    "ContactMechanismType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Method for contacting the service or tool contact. A contact can be available via phone, email, Facebook, or Twitter.",
+      "properties": {
+        "Type": {
+          "description": "This is the method type for contacting the responsible party - phone, email, Facebook, or Twitter.",
+          "$ref": "#/definitions/ContactMechanismTypeEnum"
+        },
+        "Value": {
+          "description": "This is the contact phone number, email address, Facebook address, or Twitter handle associated with the contact method.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": ["Type", "Value"]
+    },
+    "ProviderOrganizationShortNameType": {
+      "description": "The unique name of the service organization.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 85,
+      "pattern": "[\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=,][\\w\\-&'()\\[\\]/.\"#$%\\^@!*+=, ]{1,84}"
+    },
+    "ProviderOrganizationRoleEnum": {
+      "description": "Defines the possible values of a service provider role.",
+      "type": "string",
+      "enum": ["SERVICE PROVIDER", "DEVELOPER", "PUBLISHER", "AUTHOR", "ORIGINATOR"]
+    },
+    "LongNameType": {
+      "description": "The expanded or long name related to the short name.",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "ContactRoleEnum": {
+      "description": "Defines the possible values of a service provider role.",
+      "type": "string",
+      "enum": ["PROVIDER MANAGMENT", "SERVICE PROVIDER CONTACT", "TECHNICAL CONTACT", "SCIENCE CONTACT", "INVESTIGATOR", "SOFTWARE AUTHOR", "TOOL AUTHOR", "USER SERVICES", "SCIENCE SOFTWARE DEVELOPMENT", "SERVICE PROVIDER"]
+    },
+    "ContactMechanismTypeEnum": {
+      "description": "Defines the possible contact mechanism types.",
+      "type": "string",
+      "enum": ["Direct Line", "Email", "Facebook", "Fax", "Mobile", "Modem", "Primary", "TDD/TTY Phone", "Telephone", "Twitter", "U.S. toll free", "Slack", "Other"]
+    },
+    "AddressType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This entity contains the physical address details for the contact.",
+      "properties": {
+        "StreetAddresses": {
+          "description": "An address line for the street address, used for mailing or physical addresses of organizations or individuals who serve as contacts for the service.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024
+          },
+          "minItems": 0
+        },
+        "City": {
+          "description": "The city portion of the physical address.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "StateProvince": {
+          "description": "The state or province portion of the physical address.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "Country": {
+          "description": "The country of the physical address.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100
+        },
+        "PostalCode": {
+          "description": "The zip or other postal code portion of the physical address.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 20
+        }
+      }
+    },
+    "MetadataSpecificationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object requires any metadata record that is validated by this schema to provide information about the schema.",
+      "properties": {
+        "URL": {
+          "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
+          "type": "string",
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/provider/v1.0.0"]
+        },
+        "Name": {
+          "description": "This element represents the name of the schema.",
+          "type": "string",
+          "enum": ["UMM-P"]
+        },
+        "Version": {
+          "description": "This element represents the version of the schema.",
+          "type": "string",
+          "enum": ["1.0.0"]
+        }
+      },
+      "required": ["URL", "Name", "Version"]
+    }
+  }
+}

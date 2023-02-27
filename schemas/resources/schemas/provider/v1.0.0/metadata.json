@@ -1,0 +1,39 @@
+{
+  "MetadataSpecification": {
+    "Name":"UMM-P",
+    "Version": "1.0.0",
+    "URL": "https://cdn.earthdata.nasa.gov/umm/provider/v1.0.0"},
+  "ProviderId": "TCHERRY_D",
+  "DescriptionOfHolding": "No real data, just a bunch of tests",
+  "Organizations": [
+    {"ShortName": "TCHERRY_D",
+      "LongName": "Thomas Cherry Provider D",
+      "Roles": ["PUBLISHER"],
+      "URLValue": "https://cmr.earthdata.nasa.gov/search"
+    }],
+  "ContactPersons": [{
+    "Roles":["PROVIDER MANAGMENT", "TECHNICAL CONTACT"],
+    "LastName": "Cherry",
+    "UserName": "tcherry",
+    "ContactInformation": {
+      "HoursOfService": "8-5 East Cost time, M-F",
+      "ContactInstruction": "slack works best",
+      "Addresses":[{
+        "StreetAddresses": ["123 Fake Street"],
+        "City": "Springfield",
+        "StateProvince": "DC",
+        "Country": "Merica",
+        "PostalCode" : "90210"
+      }],
+      "ContactMechanisms": [
+        {"Type": "Email", "Value": "thomas.a.cherry@nasa.gov"},
+        {"Type": "Slack", "Value": "tcherry"}
+      ]
+    }
+  }],
+  "ContactGroups": [{
+    "Roles":["DEVELOPER"],
+    "GroupName": "team-search"
+  }],
+  "Consortiums": ["CEOS", "FEDEO", "CWIC"]
+}

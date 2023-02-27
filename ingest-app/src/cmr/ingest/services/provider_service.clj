@@ -39,6 +39,11 @@
         context (ingest-events/provider-create-event (:provider-id provider))))
     response))
 
+(defn read-provider
+  "Read a provider."
+  [context provider-id]
+  (mdb/read-provider context provider-id))
+
 (defn update-provider
   "Update an existing provider."
   [context provider]
