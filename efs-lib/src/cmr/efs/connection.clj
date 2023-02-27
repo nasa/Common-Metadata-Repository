@@ -19,12 +19,12 @@
 
 (defn save-concept
   "Saves a concept to EFS"
-  [provider concept-type concept])
+  [provider concept-type concept-id])
 
 (defn get-concept
   "Gets a concept from EFS"
-  [provider concept-type concept])
+  [provider concept-type concept-id])
 
 (defn delete-concept
   "Deletes a concept from EFS"
-  [provider concept-type concept])
+  [provider concept-type concept-id revision-id])

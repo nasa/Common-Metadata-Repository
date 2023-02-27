@@ -457,7 +457,14 @@
         stmt (su/build (delete table
                                (where `(and (= :concept-id ~concept-id)
                                             (= :revision-id ~revision-id)))))]
-    (j/execute! this stmt)))
+    (when (or
+           (= "efs-on" efs-config/efs-toggle)
+           (= "efs-off" efs-config/efs-toggle))
+      (j/execute! this stmt))
+    (when (or
+           (= "efs-on" efs-config/efs-toggle)
+           (= "efs-only" efs-config/efs-toggle))
+      (efs/delete-concept provider concept-type concept-id revision-id))))
 
 (defn force-delete-by-params
   [db provider params]
