@@ -13,9 +13,7 @@
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.metadata-db.data.util :as db-util :refer [EXPIRED_CONCEPTS_BATCH_SIZE INITIAL_CONCEPT_NUM]]
    [cmr.oracle.connection :as oracle]
-   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]]
-   [cmr.efs.config :as efs-config]
-   [cmr.efs.connection :as efs])
+   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -431,16 +429,8 @@
                           seq-name
                           (string/join "," (repeat (count values) "?")))]
          (trace "Executing" stmt "with values" (pr-str values))
-         ;; Check EFS toggle for where to save concept
-         (when (or
-                (= "efs-on" efs-config/efs-toggle)
-                (= "efs-off" efs-config/efs-toggle))
-           (j/db-do-prepared db stmt values)
-           (after-save conn provider concept))
-         (when (or
-                (= "efs-on" efs-config/efs-toggle)
-                (= "efs-only" efs-config/efs-toggle))
-           (efs/save-concept provider concept-type concept))
+         (j/db-do-prepared db stmt values)
+         (after-save conn provider concept)
          nil)))
     (catch Exception e
       (let [error-message (.getMessage e)
@@ -455,14 +445,7 @@
         stmt (su/build (delete table
                                (where `(and (= :concept-id ~concept-id)
                                             (= :revision-id ~revision-id)))))]
-    (when (or
-           (= "efs-on" efs-config/efs-toggle)
-           (= "efs-only" efs-config/efs-toggle))
-      (efs/delete-concept provider concept-type concept-id revision-id))
-    (when (or
-           (= "efs-on" efs-config/efs-toggle)
-           (= "efs-off" efs-config/efs-toggle))
-      (j/execute! this stmt))))
+    (j/execute! this stmt)))
 
 (defn force-delete-by-params
   [db provider params]

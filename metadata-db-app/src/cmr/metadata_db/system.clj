@@ -21,8 +21,6 @@
    [cmr.metadata-db.services.jobs :as mdb-jobs]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
-   [cmr.efs.config :as efs-config]
-   [cmr.efs.connection :as efs]
    [cmr.transmit.config :as transmit-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
