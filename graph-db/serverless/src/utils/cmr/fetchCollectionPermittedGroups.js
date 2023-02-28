@@ -1,11 +1,18 @@
 import axios from 'axios'
-
+import axiosRetry from 'axios-retry'
 /**
  * Fetch a the permitted groups of a collection from CMR access control
  * @param {String} conceptId Collection concept id from CMR
  * @param {String} token An optional Authorization Token
  * @returns [] An array containing the permitted groups of a collection
  */
+
+// Compensate for any misses to the endpoint
+axiosRetry(axios, {
+  retryDelay: (retryCount) => retryCount * 600,
+  retries: 3
+})
+
 export const fetchCollectionPermittedGroups = async (conceptId, token) => {
   const requestHeaders = {}
   const groups = []
@@ -53,8 +60,7 @@ export const fetchCollectionPermittedGroups = async (conceptId, token) => {
       })
     })
   } catch (error) {
-    console.log(`Could not complete request to acl due to error: ${error}`)
+    console.log(`Could not complete request to Access Control App to retrieve group information for ${conceptId} due to error: ${error}`)
   }
-
   return groups
 }

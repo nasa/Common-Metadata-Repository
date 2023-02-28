@@ -35,7 +35,7 @@ export const indexRelatedUrl = async (
       addVCommand.property('subtype', subtype)
     }
 
-    // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
+    // Use `fold` and `coalesce` to check existence of vertex, and create one if none exists.
     const relatedUrlVertex = await gremlinConnection
       .V()
       .has('relatedUrl', 'url', url)

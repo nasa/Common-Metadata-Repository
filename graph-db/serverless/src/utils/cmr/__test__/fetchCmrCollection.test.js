@@ -51,5 +51,6 @@ describe('fetchCmrCollection', () => {
     expect(result).toBe(null)
 
     expect(consoleMock).toHaveBeenCalledTimes(1)
+    expect(consoleMock).toBeCalledWith('Could not fetch collection C1216257563-LPDAAC_TS1 due to error: Error: Request failed with status code 500')
   })
 })

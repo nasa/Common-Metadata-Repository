@@ -24,11 +24,13 @@ export const fetchPageFromCMR = async ({
   token,
   gremlinConnection,
   providerId,
-  searchAfterNum = 0
+  searchAfterNum = 0,
+  sqsEntryJobCount = 0
 }) => {
   const requestHeaders = {}
 
   console.log(`Fetch collections from CMR, searchAfter #${searchAfterNum}`)
+  console.log(`Total SQS queue job size #${sqsEntryJobCount}`)
 
   if (token) {
     requestHeaders.Authorization = token
@@ -48,19 +50,20 @@ export const fetchPageFromCMR = async ({
     if (sqs == null) {
       sqs = new SQSClient()
     }
-
+    // Send request to CMR
     const cmrCollections = await axios({
       url: fetchUrl,
       method: 'GET',
       headers: requestHeaders
     })
-
+    // Iterate over CMR-pages
     const { data, headers } = cmrCollections
     const { 'cmr-search-after': cmrsearchAfter } = headers
 
     const { feed = {} } = data
     const { entry = [] } = feed
-
+    let currentBatchSize = 0
+    // Split page array into array with sub-arrays of size 10
     const chunkedItems = chunkArray(entry, 10)
 
     if (chunkedItems.length > 0) {
@@ -79,14 +82,16 @@ export const fetchPageFromCMR = async ({
               })
             }
           })
-
+          // Locally we will call indexCmrCollections directly, otherwise send the job to SQS queue
           await indexCmrCollections({ Records: queueBody })
         } else {
           const sqsEntries = []
-
           chunk.forEach((collection) => {
             const { id: conceptId } = collection
 
+            // TODO: Since we already made a call to CMR we may want to pass that information into the event
+            // TODO: it is possible that by passing cmr data in the event the data could be stale by the time
+            // the indexCollection handler picks it up to index it into the graphDb
             sqsEntries.push({
               Id: conceptId,
               MessageBody: JSON.stringify({
@@ -94,6 +99,8 @@ export const fetchPageFromCMR = async ({
                 'concept-id': conceptId
               })
             })
+            // Retrieve the total number of collections being processed in here
+            currentBatchSize += 1
           })
 
           const command = new SendMessageBatchCommand({
@@ -106,17 +113,21 @@ export const fetchPageFromCMR = async ({
       })
     }
 
-    // If we have an active searchAfter and there are more results
+    // If we have an active searchAfter so we aren't on the last page and there are more results
+    // Second argument is to parse integers in base 10
     if (cmrsearchAfter && entry.length === parseInt(process.env.PAGE_SIZE, 10)) {
+      // TODO: Investigate putting in a wait function between calls for each page to allow it to get picked
+      // up by the other lambda and indexed into the graph database
       await fetchPageFromCMR({
         searchAfter: cmrsearchAfter,
         token,
         gremlinConnection,
         providerId,
-        searchAfterNum: (searchAfterNum + 1)
+        searchAfterNum: (searchAfterNum + 1),
+        sqsEntryJobCount: (sqsEntryJobCount + currentBatchSize)
       })
     }
-  } catch (e) {
-    console.log(`Could not complete request due to error: ${e}`)
+  } catch (error) {
+    console.log(`Could not complete request due to an error requesting a page from CMR: ${error}`)
   }
 }

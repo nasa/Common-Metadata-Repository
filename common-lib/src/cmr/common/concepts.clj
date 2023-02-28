@@ -77,17 +77,29 @@
   "Maps a concept type to the concept id prefix"
   (cset/map-invert concept-prefix->concept-type))
 
+(defn pluralize-concept-type-name
+  "Pluralizes the passed in concept keyword/string and returns the string. The compliment
+   function is singularize-concept-type-name"
+  [concept-key]
+  (inf/plural (name concept-key)))
+
+(defn singularize-concept-type-name
+  "Singularize the passed in concept keyword/string and returns the string. The compliment
+   function is pluralize-concept-type-name"
+  [concept-key]
+  (inf/singular (name concept-key)))
+
 (defn pluralize-concept-type
   "Pluralizes the passed in concept keyword/string and returns it. The compliment
    function is singularize-concept-type"
   [concept-key]
-  (keyword (inf/plural (name concept-key))))
+  (keyword (pluralize-concept-type-name concept-key)))
 
 (defn singularize-concept-type
   "Singularize the passed in concept keyword/string and returns it. The compliment
    function is pluralize-concept-type"
   [concept-key]
-  (keyword (inf/singular (name concept-key))))
+  (keyword (singularize-concept-type-name concept-key)))
 
 (def humanizer-native-id
   "The native id of the system level humanizer. There can only be one humanizer in CMR.

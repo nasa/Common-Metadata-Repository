@@ -20,7 +20,7 @@ Data Quality Summary concepts can be created or updated by sending an HTTP PUT w
 ```
     <?xml version="1.0" encoding="UTF-8"?>
     <result>
-        <concept-id>DQ1200000000-PROV1</concept-id>
+        <concept-id>DQS1200000000-PROV1</concept-id>
         <revision-id>1</revision-id>
         <warnings></warnings>
         <existing-errors></existing-errors>
@@ -34,7 +34,7 @@ By passing the option `-H "Accept: application/json"` to `curl`, one may
 get a JSON response:
 
 ```
-    {"concept-id":"DQ1200000000-PROV1","revision-id":1,"warnings":null,"existing-errors":null}
+    {"concept-id":"DQS1200000000-PROV1","revision-id":1,"warnings":null,"existing-errors":null}
 ```
 
 ### <a name="delete-data-quality-summary"></a> Delete a Data Quality Summary
@@ -53,7 +53,7 @@ Data Quality Summary metadata can be deleted by sending an HTTP DELETE to the UR
 ```
     <?xml version="1.0" encoding="UTF-8"?>
     <result>
-        <concept-id>DQ1200000000-PROV1</concept-id>
+        <concept-id>DQS1200000000-PROV1</concept-id>
         <revision-id>2</revision-id>
     </result>
 ```
@@ -61,7 +61,7 @@ Data Quality Summary metadata can be deleted by sending an HTTP DELETE to the UR
 #### Successful Response in JSON
 
 ```
-    {"concept-id":"DQ1200000000-PROV1","revision-id":2,"warnings":null,"existing-errors":null}
+    {"concept-id":"DQS1200000000-PROV1","revision-id":2,"warnings":null,"existing-errors":null}
 ```
 
 Attempting to delete an already deleted record will return
@@ -72,7 +72,7 @@ the following error message
 ```
     <?xml version="1.0" encoding="UTF-8"?>
     <errors>
-        <error>Concept with native-id [sampleNative23Id] and concept-id [DQ1200000000-PROV1] is already deleted.</error>
+        <error>Concept with native-id [sampleNative23Id] and concept-id [DQS1200000000-PROV1] is already deleted.</error>
     </errors>
 ```
 
@@ -80,6 +80,6 @@ the following error message
 
 ```
     "errors": [
-            "Concept with native-id [sampleNative23Id] and concept-id [DQ1200000000-PROV1] is already deleted."
+            "Concept with native-id [sampleNative23Id] and concept-id [DQS1200000000-PROV1] is already deleted."
         ]
 ```

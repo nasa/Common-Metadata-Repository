@@ -36,6 +36,7 @@
     "@aws-sdk/client-ssm": "^3.211.0",
     "array-foreach-async": "^1.0.1",
     "axios": "^0.24.0",
+    "axios-retry": "^3.3.1",
     "gremlin": "~3.4.10",
     "lodash": "^4.17.21",
     "serverless": "^3.24.1",
@@ -57,6 +58,7 @@
   },
   "resolutions": {
     "file-type": "16.5.4",
+    "fast-xml-parser": "4.1.2",
     "luxon": "1.28.1",
     "simple-git": "3.16.0"
   }

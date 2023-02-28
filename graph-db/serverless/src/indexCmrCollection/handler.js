@@ -36,6 +36,7 @@ const indexCmrCollections = async (event) => {
     const { 'concept-id': conceptId, 'revision-id': revisionId, action } = JSON.parse(body)
 
     if (!['collection'].includes(getConceptType(conceptId))) {
+      // SQS queue subscription is to ingest_exchange, which is shared across concepts
       console.log(`Concept [${conceptId}] was not a collection and will not be indexed`)
 
       return
@@ -49,6 +50,7 @@ const indexCmrCollections = async (event) => {
 
     if (getConceptType(conceptId) === 'collection' && action === updateActionType) {
       try {
+        // Retrieve collection records from CMR
         const collection = await fetchCmrCollection(conceptId, token)
 
         const { data = {} } = collection
@@ -61,18 +63,21 @@ const indexCmrCollections = async (event) => {
         } else {
           const [firstCollection] = items
 
+          // TODO: slow down how frequently we are sending responses to the access-control application
+          // since this effects all collection calls that get indexed it may help with the collection problems
+          // await new Promise((rate) => setTimeout(rate, 500))
           // Fetch the permitted groups for this collection from access-control
           const groupList = await fetchCollectionPermittedGroups(conceptId, token)
 
           console.log(`Start indexing concept [${conceptId}], revision-id [${revisionId}]`)
 
+          // Index collection into the graphDb
           await indexCmrCollection(firstCollection, groupList, gremlinConnection)
 
           recordCount += 1
         }
-      } catch (e) {
-        console.log('Collection FAILED during indexing process there may be an issue with the collection verify that the collection for the given env: ', conceptId)
-        console.log('Error indexing collection, Execption was thrown: ', e)
+      } catch (error) {
+        console.log(`Error indexing collection [${conceptId}], Exception was thrown in index-collection handler ${error}`)
       }
     }
     if (getConceptType(conceptId) === 'collection' && action === deleteActionType) {

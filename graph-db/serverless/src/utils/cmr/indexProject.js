@@ -16,7 +16,7 @@ export const indexProject = async (project, gremlinConnection, collection, conce
   } = project
 
   try {
-    // Use `fold` and `coalesce` to check existance of vertex, and create one if none exists.
+    // Use `fold` and `coalesce` to check existence of vertex, and create one if none exists.
     const projectVertex = await gremlinConnection
       .V()
       .has('project', 'name', shortName)
@@ -45,7 +45,7 @@ export const indexProject = async (project, gremlinConnection, collection, conce
     const { value: edgeValue = {} } = projectEdge
     const { id: edgeId } = edgeValue
 
-    console.log(`project edge [${edgeId}] indexed to point to collection [${collection}]`)
+    console.log(`Project edge [${edgeId}] indexed to point to collection [${collection}]`)
   } catch (error) {
     // Log useful information pertaining to the error
     console.log(`Failed to index Project for concept [${conceptId}] ${JSON.stringify(project)}`)

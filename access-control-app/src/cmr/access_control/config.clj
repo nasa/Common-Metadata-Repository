@@ -42,6 +42,10 @@
   "Flag that indicates if we include CMR groups when looking up user SIDs."
   {:default true :type Boolean})
 
+(defconfig enable-cmr-groups
+  "Flag that indicates we allow crud on cmr groups."
+  {:default true :type Boolean})
+
 (defn queue-config
   "Returns the queue configuration for the application."
   []

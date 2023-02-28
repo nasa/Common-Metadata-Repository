@@ -256,7 +256,7 @@ Search After supersedes scrolling. Search After allows the retrieval of all resu
 
 Search After is only supported for parameter queries and JSON queries. All query parameters are available with the exception of the `page_num` and `offset` parameters.
 
-Search After is stateless, it is always resolved against the latest version of the data. Any search against CMR that has results not fully returned in the current request will return a `search-after` value in the `CMR-Search-After` header of the search response. User can then pass this returned value in the `CMR-Search-After` header of the following request to retrieve the next page of result based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` response header. Supplying the new `search-after` value in the following request's `CMR-Search-After` header will retrieve the next page. Similar to regular paging requests in CMR, if an ingest or delete occurs between these `search-after` paging requests, the order of your results may change, causing inconsistent results across pages.
+Search After is stateless, it is always resolved against the latest version of the data. Any search against CMR that has results not fully returned in the current request will return a `search-after` value in the `CMR-Search-After` header of the search response. A user can then pass this returned value in the `CMR-Search-After` header of the following request to retrieve the next page of result based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` response header. Supplying the new `search-after` value in the following request's `CMR-Search-After` header will retrieve the next page. Similar to regular paging requests in CMR, if an ingest or delete occurs between these `search-after` paging requests, the order of your results may change, causing inconsistent results across pages.
 
 The `CMR-Hits` header is useful for determining the number of requests that will be needed to retrieve all the available results.
 
@@ -1489,7 +1489,7 @@ In the case of science keywords, the `fields` property may be used to determine 
  * term
  * variable-level-1
  * variable-level-2
- * varaible-level-3
+ * variable-level-3
  * detailed-variable
 
 There may be gaps within the structure where no associated value exists.
@@ -1646,7 +1646,7 @@ Example: `C123456-LPDAAC_ECS`
 
   Find a collection matching a collection doi value. Note more than one doi value may be supplied.
 
-    curl "%CMR-ENDPOINT%/collections?doi\[\]=doi"
+    curl "%CMR-ENDPOINT%/collections?doi\[\]=doiValue"
 
 #### <a name="c-echo-collection-id"></a> Find collections by echo collection id
 
@@ -1662,11 +1662,11 @@ This searches for collections whose provider matches the given provider short na
 
 #### <a name="c-entry-title"></a> Find collections by entry title
 
-One entry title
+Find collections matching 'entry_title' param value such as DatasetId%204
 
     curl "%CMR-ENDPOINT%/collections?entry_title\[\]=DatasetId%204"
 
-a dataset id (alias for entry title)
+Find collections matching 'dataset_id' param (which is an alias for entry title) value
 
     curl "%CMR-ENDPOINT%/collections?dataset_id\[\]=DatasetId%204"
 
@@ -1684,7 +1684,7 @@ with a entry title pattern
 
 #### <a name="c-entry-id"></a> Find collections by entry id
 
-One entry id
+Find collections matching 'entry_id' param value such as SHORT_V5
 
     curl "%CMR-ENDPOINT%/collections?entry_id\[\]=SHORT_V5"
 
@@ -1726,7 +1726,7 @@ For temporal range search, the default is inclusive on the range boundaries. Thi
 
 The collection's temporal range or the temporal range of the granules in the collection can be searched. `options[temporal][limit_to_granules]=true` will indicate that the temporal search should find collections based on the minimum and maximum values of each collection's granules' temporal range. If a collection does not have any granules it will search the collection's temporal range.
 
-If a temporal range search is performed, the search results will be sorted by the temporal overlap across all ranges provided, with usage score being the tie-breaker. If a keyword search is performed in conjunction with the temporal range search, search results are first sorted by relevancy score, then by temporal overlap, then usage score. If a keyword search is used in conjuction with usage-score sort key, the usage-score will be used instead of relevancy score.
+If a temporal range search is performed, the search results will be sorted by the temporal overlap across all ranges provided, with usage score being the tie-breaker. If a keyword search is performed in conjunction with the temporal range search, search results are first sorted by relevancy score, then by temporal overlap, then usage score. If a keyword search is used in conjunction with usage-score sort key, the usage-score will be used instead of relevancy score.
 
 #### <a name="c-project"></a> Find collections by project
 
@@ -1904,10 +1904,14 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 
 #### <a name="c-granule-data-format"></a> Find collections by format of data in granules
 
-   curl "%CMR-ENDPOINT%/collections?granule_data_format=NetCDF"
+   Find collections matching 'granule_data_format' param value
+    
+    curl "%CMR-ENDPOINT%/collections?granule_data_format=NetCDF"
 
 #### <a name="c-online-only"></a> Find collections by online_only
 
+  Find collections matching 'online_only' param value
+    
     curl "%CMR-ENDPOINT%/collections?online_only=true"
 
 #### <a name="c-downloadable"></a> Find collections by downloadable
