@@ -4,8 +4,7 @@
   ;; Dynamically include extra repositories in the project definition if configured.
   :repositories [["releases" ~extra-repository]]
   :dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [org.clojure/clojure "1.10.0"]
-                 [org.clojure/java.jdbc "0.4.2"]]
+                 [org.clojure/clojure "1.10.0"]]
   :plugins [[lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
   :jvm-opts ^:replace ["-server"
