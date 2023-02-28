@@ -40,7 +40,7 @@
                  [org.eclipse.emf/org.eclipse.emf.ecore "2.23.0"]
                  [org.eclipse.emf/org.eclipse.emf.common "2.21.0"]
                  [org.geotools/gt-shapefile "28.1"]
-                 [org.geotools/gt-geojsondatastore "24.6"]
+                 [org.geotools/gt-geojsondatastore "26.4"]
                  [org.geotools.xsd/gt-xsd-kml "27.1"]
                  [org.mozilla/rhino "1.7.12"]
                  [ring/ring-codec "1.2.0"]
