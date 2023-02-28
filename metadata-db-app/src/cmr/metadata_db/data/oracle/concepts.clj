@@ -441,8 +441,6 @@
                 (= "efs-on" efs-config/efs-toggle)
                 (= "efs-only" efs-config/efs-toggle))
            (efs/save-concept provider concept-type concept))
-         ;; Insert into EFS if toggle is on
-
          nil)))
     (catch Exception e
       (let [error-message (.getMessage e)
@@ -459,12 +457,12 @@
                                             (= :revision-id ~revision-id)))))]
     (when (or
            (= "efs-on" efs-config/efs-toggle)
-           (= "efs-off" efs-config/efs-toggle))
-      (j/execute! this stmt))
+           (= "efs-only" efs-config/efs-toggle))
+      (efs/delete-concept provider concept-type concept-id revision-id))
     (when (or
            (= "efs-on" efs-config/efs-toggle)
-           (= "efs-only" efs-config/efs-toggle))
-      (efs/delete-concept provider concept-type concept-id revision-id))))
+           (= "efs-off" efs-config/efs-toggle))
+      (j/execute! this stmt))))
 
 (defn force-delete-by-params
   [db provider params]
