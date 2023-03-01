@@ -13,7 +13,9 @@
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.metadata-db.data.util :as db-util :refer [EXPIRED_CONCEPTS_BATCH_SIZE INITIAL_CONCEPT_NUM]]
    [cmr.oracle.connection :as oracle]
-   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
+   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]]
+   [cmr.efs.connection :as efs]
+   [cmr.efs.config :as efs-config])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -429,8 +431,15 @@
                           seq-name
                           (string/join "," (repeat (count values) "?")))]
          (trace "Executing" stmt "with values" (pr-str values))
-         (j/db-do-prepared db stmt values)
-         (after-save conn provider concept)
+         (when (or
+                (= "efs-off" efs-config/efs-toggle)
+                (= "efs-on" efs-config/efs-toggle))
+           (j/db-do-prepared db stmt values)
+           (after-save conn provider concept))
+         (when (or
+                (= "efs-on" efs-config/efs-toggle)
+                (= "efs-only" efs-config/efs-toggle))
+           (efs/save-concept provider concept-type (:concept-id concept) concept))
          nil)))
     (catch Exception e
       (let [error-message (.getMessage e)
