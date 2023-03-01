@@ -475,13 +475,48 @@
 ;;; Providers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; The most basic provider metadata needed to create a provider
+(def basic-provider {:ProviderId "REAL_ID"
+                     :DescriptionOfHolding "sample provider, no data"
+                     :Organizations [{:Roles ["ORIGINATOR"]
+                                      :ShortName "REAL_ID"
+                                      :URLValue "https://example.gov"}]
+                     :MetadataSpecification {:Name "UMM-P"
+                                             :URL "https://cdn.earthdata.nasa.gov/umm/provider/v1.0.0"
+                                             "Version" "1.0.0"}
+                     ;;:Consortiums ["one" "two"]
+                     })
+
+(defn minimum-provider->metadata
+  "construct the new provider post document. Allow for the minimal set of inputs
+   by the callers of reset-database-fixture and any of the CRUD functions here."
+  [minimum-provider]
+  (let [provider-id (get minimum-provider :provider-id)
+        short-name (get minimum-provider :short-name provider-id)
+        cmr-only (:cmr-only minimum-provider)
+        small (:small minimum-provider)
+        consortiums (:consortiums minimum-provider)
+        extra-fields (dissoc minimum-provider :provider-id :short-name :cmr-only :small :consortiums)
+        metadata (-> basic-provider
+                     (merge extra-fields)
+                     (assoc :ProviderId provider-id)
+                     (assoc-in [:Organizations 0 :ShortName] short-name))]
+        (util/remove-nil-keys {:provider-id provider-id
+                               :short-name short-name
+                               :cmr-only (if (some? cmr-only) cmr-only false)
+                               :small (if (some? small) small false)
+                               :consortiums (if (some? consortiums) consortiums)
+                               :metadata metadata})))
+
 (defn save-provider
   "Make a POST request to save a provider with JSON encoding of the provider. Returns a map with
   status and a list of error messages."
   [params]
   (let [response (client/post (providers-url)
-                              {:body (json/generate-string
-                                       (util/remove-nil-keys params))
+                              {:body (-> params
+                                         minimum-provider->metadata
+                                         util/remove-nil-keys
+                                         json/generate-string)
                                :content-type :json
                                :accept :json
                                :throw-exceptions false
@@ -509,7 +544,7 @@
   provider-id, short-name, cmr-only and small fields of the provider."
   [params]
   (let [response (client/put (format "%s/%s" (providers-url) (:provider-id params))
-                             {:body (json/generate-string params)
+                             {:body (json/generate-string (minimum-provider->metadata params))
                               :content-type :json
                               :accept :json
                               :as :json
@@ -559,11 +594,19 @@
       (reset-database)
       (doseq [provider providers]
         (let [{:keys [provider-id short-name cmr-only small]} provider
-              short-name (if short-name short-name provider-id)]
-          (save-provider {:provider-id provider-id
-                          :short-name short-name
-                          :cmr-only (if cmr-only true false)
-                          :small (if small true false)})))
+              ;; these are required fields, default them to something, assume
+              ;; other fields are to be passed in which will override the default
+              ;; metadata defined in a template
+              short-name (if short-name short-name provider-id)
+              provider-id (if provider-id provider-id short-name)
+              cmr-only (if cmr-only true false)
+              small (if small true false)
+              provider (assoc provider
+                              :provider-id provider-id
+                              :short-name short-name
+                              :cmr-only cmr-only
+                              :small small)]
+          (save-provider provider)))
       (f)
       (finally
         (side/eval-form `(mdb-config/set-publish-messages! true))))))

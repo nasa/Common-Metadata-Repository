@@ -65,7 +65,7 @@
     ;; create a new provider
     (POST "/" {:keys [request-context params headers body]}
       (acl/verify-ingest-management-permission request-context :update)
-      (let [consortiums (get body "Consortiums")]
+      (let [consortiums (get body "consortiums")]
         (when consortiums
           (validate-consortiums consortiums))
         (save-provider request-context params (walk/keywordize-keys body))))

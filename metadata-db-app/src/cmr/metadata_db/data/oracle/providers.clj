@@ -81,17 +81,18 @@
 
 (defn save-provider
   [db provider]
-  (let [{:keys [provider-id short-name cmr-only small consortiums]} provider
-        metadata (get :metadata provider)]
+  (let [{:keys [provider-id short-name cmr-only small consortiums metadata]} provider
+        metadata (if (some? metadata) (-> metadata pr-str cutil/string->gzip-bytes))]
     (j/insert! db
                :providers
                ["provider_id" "short_name" "cmr_only" "small" "consortiums" "metadata"]
                [provider-id
-                short-name 0
+                short-name
                 (if cmr-only 1 0)
                 (if small 1 0)
                 consortiums
-                (cutil/string->gzip-base64 metadata)])
+                metadata
+                ])
       (when (not small)
         (ct/create-provider-concept-tables db provider))))
 
