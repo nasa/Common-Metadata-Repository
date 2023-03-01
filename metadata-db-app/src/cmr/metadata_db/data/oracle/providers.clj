@@ -98,7 +98,7 @@
 
 (defn get-providers
   [db]  (map dbresult->provider
-       (j/query db ["SELECT * FROM providers"])))
+       (j/query db ["SELECT Provider_Id, Short_Name, CMR_Only, Small, Consortiums FROM providers"])))
 
 (defn get-provider
   [db provider-id]
