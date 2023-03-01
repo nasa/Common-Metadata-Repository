@@ -412,35 +412,28 @@
   [db provider concept]
   (try
     (j/with-db-transaction
-     [conn db]
-     (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
-                        (when (= :variable-association (:concept-type concept))
-                          (or (validate-same-provider-variable-association concept)
-                              (validate-collection-not-associated-with-another-variable-with-same-name db concept))))]
+      [conn db]
+      (if-let [error (or (validate-concept-id-native-id-not-changing db provider concept)
+                         (when (= :variable-association (:concept-type concept))
+                           (or (validate-same-provider-variable-association concept)
+                               (validate-collection-not-associated-with-another-variable-with-same-name db concept))))]
        ;; There was a concept id, native id mismatch with earlier concepts
-       error
+        error
        ;; Concept id native id pair was valid
-       (let [{:keys [concept-type]} concept
-             table (tables/get-table-name provider concept-type)
-             seq-name (str table "_seq")
-             [cols values] (concept->insert-args concept (:small provider))
-             stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
-                               "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL)")
-                          table
-                          (string/join "," cols)
-                          seq-name
-                          (string/join "," (repeat (count values) "?")))]
-         (trace "Executing" stmt "with values" (pr-str values))
-         (when (or
-                (= "efs-off" efs-config/efs-toggle)
-                (= "efs-on" efs-config/efs-toggle))
-           (j/db-do-prepared db stmt values)
-           (after-save conn provider concept))
-         (when (or
-                (= "efs-on" efs-config/efs-toggle)
-                (= "efs-only" efs-config/efs-toggle))
-           (efs/save-concept provider concept-type (:concept-id concept) concept))
-         nil)))
+        (let [{:keys [concept-type]} concept
+              table (tables/get-table-name provider concept-type)
+              seq-name (str table "_seq")
+              [cols values] (concept->insert-args concept (:small provider))
+              stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
+                                "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL)")
+                           table
+                           (string/join "," cols)
+                           seq-name
+                           (string/join "," (repeat (count values) "?")))]
+          (trace "Executing" stmt "with values" (pr-str values))
+          (j/db-do-prepared db stmt values)
+          (after-save conn provider concept)
+          nil)))
     (catch Exception e
       (let [error-message (.getMessage e)
             error-code (if (re-find #"unique constraint.* violated" error-message)
