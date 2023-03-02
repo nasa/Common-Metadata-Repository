@@ -23,8 +23,17 @@
 
 (defn get-concept
   "Gets a concept from EFS"
-  [provider concept-type concept-id])
+  ([provider concept-type concept-id])
+  ([provider concept-type concept-id revision-id]))
+
+(defn get-concepts
+  "Gets a concept from EFS"
+  [provider concept-type concept-id-revision-id-tuples])
 
 (defn delete-concept
   "Deletes a concept from EFS"
   [provider concept-type concept-id revision-id])
+
+(defn delete-concepts
+  "Deletes multiple concepts from EFS"
+  [provider concept-type concept-id-revision-id-tuples])
