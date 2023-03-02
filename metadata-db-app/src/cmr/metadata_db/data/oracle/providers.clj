@@ -102,6 +102,7 @@
 
 (defn get-provider
   [db provider-id]
+  ;; TODO: drop the short_name field and return it here as 'provider_id as short_name'
   (first (map dbresult->provider
               (j/query db
                        [(str "SELECT provider_id, short_name, cmr_only, small, consortiums, metadata"
@@ -111,6 +112,9 @@
 
 (defn update-provider
   [db {:keys [provider-id short-name cmr-only consortiums metadata]}]
+  ;; Ignoring short-name as CMR will no longer support updates on this field as
+  ;; is is always the same as provider id. As of 2023-03-02, all production
+  ;; providers currently match.
   (j/update! db
              :providers
              {:cmr_only (if cmr-only 1 0)

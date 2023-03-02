@@ -1,9 +1,9 @@
 (ns cmr.metadata-db.int-test.provider-crud-test
-  "Contains integration tests for deleting providers. Tests delete with various configurations including
-  checking for proper error handling."
+  "Contains integration tests for CRUD of providers. Tests CRUD with various
+   configurations including checking for proper error handling."
   (:require [clojure.test :refer :all]
-            [cmr.metadata-db.int-test.utility :as util]
-            [cmr.common.util :as u]
+            [cmr.metadata-db.int-test.utility :as i-util]
+            [cmr.common.util :as c-util]
             [cmr.metadata-db.services.messages :as messages]))
 
 ;;; fixtures
@@ -15,11 +15,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (deftest save-provider-test
   (testing "successful saves"
-    (u/are2
+    (cutil/are3
       [provider-map]
       (let [{:keys [status]} (util/save-provider provider-map)]
-        (and (= status 201)
-             (util/verify-provider-was-saved provider-map)))
+        (do
+          (is (= status 201) "Status Check")
+          (is (util/verify-provider-was-saved provider-map) "Save Check")))
+
       "cmr-only false small false"
       {:provider-id "PROV1" :short-name "S1" :cmr-only false :small false}
 
@@ -74,30 +76,31 @@
                     :cmr-only false
                     :small false}
           updated-provider (assoc provider :cmr-only true)]
-      (util/save-provider provider)
-      (is (util/verify-provider-was-saved provider) "before update")
+      (i-util/save-provider provider)
+      (is (i-util/verify-provider-was-saved provider) "before update")
       (util/update-provider updated-provider)
-      (is (util/verify-provider-was-saved updated-provider) "after update")))
+      (is (i-util/verify-provider-was-saved updated-provider) "after update")))
   (testing "cannot modify small field of a provider"
-    (let [{:keys [status errors]} (util/update-provider {:provider-id "PROV1"
+    (let [{:keys [status errors]} (i-util/update-provider {:provider-id "PROV1"
                                                          :short-name "S1"
                                                          :cmr-only true
                                                          :small true})]
       (is (= [400 ["Provider [PROV1] small field cannot be modified."]]
              [status errors]))))
-  (testing "modify short name of a provider without conflict is OK"
+  (testing "ignore request to modify short name of a provider"
     (let [provider {:provider-id "PROV1"
                     :short-name "S5"
                     :cmr-only true
-                    :small false}]
-      (util/update-provider provider)
-      (is (util/verify-provider-was-saved provider))))
+                    :small false}
+          expected (-> provider (assoc :short-name "S1"))]
+      (i-util/update-provider provider)
+      (is (util/verify-provider-was-saved expected) "expected provider to not change")))
   (testing "modify short name of a provider with conflict is not OK"
     (util/save-provider {:provider-id "PROV6"
                          :short-name "S6"
                          :cmr-only false
                          :small false})
-    (let [{:keys [status errors]} (util/update-provider {:provider-id "PROV1"
+    (let [{:keys [status errors]} (i-util/update-provider {:provider-id "PROV1"
                                                          :short-name "S6"
                                                          :cmr-only true
                                                          :small false})]
@@ -108,22 +111,24 @@
                                                :short-name "S2"
                                                :cmr-only true
                                                :small false})))))
-  (testing "update reserved provder is not allowed"
-    (let [{:keys [status errors]} (util/update-provider {:provider-id "SMALL_PROV"
+  (testing "update reserved provider is not allowed"
+    (let [{:keys [status errors]} (i-util/update-provider {:provider-id "SMALL_PROV"
                                                          :short-name "S5"
                                                          :cmr-only false
                                                          :small false})]
       (is (= [400 ["Provider Id [SMALL_PROV] is reserved"]]
              [status errors]))))
   (testing "bad parameters"
-    (is (= 400 (:status (util/update-provider {:provider-id nil
+    (is (= 400 (:status (i-util/update-provider {:provider-id nil
                                                :short-name "S1"
                                                :cmr-only true
-                                               :small false}))))
-    (is (= 400 (:status (util/update-provider {:provider-id "PROV1"
+                                               :small false})))
+        "required provider-id test")
+    (is (= 400 (:status (i-util/update-provider {:provider-id "PROV1"
                                                :short-name "S1"
-                                               :cmr-only nil
-                                               :small false}))))))
+                                               :cmr-only "non-boolean-value"
+                                               :small false})))
+        "cmr-only boolean test")))
 
 (deftest get-providers-test
   (util/save-provider {:provider-id "PROV1"
@@ -133,7 +138,7 @@
   (util/save-provider {:provider-id "PROV2"
                        :cmr-only true
                        :small true})
-  (let [{:keys [status providers]} (util/get-providers)]
+  (let [{:keys [status providers]} (i-util/get-providers)]
     (is (= status 200))
     (is (= [{:provider-id "PROV1" :short-name "S1" :cmr-only false :small false}
             {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small true}]
@@ -141,23 +146,23 @@
 
 (deftest delete-provider-test
   (testing "delete provider"
-    (util/save-provider {:provider-id "PROV1"
+    (i-util/save-provider {:provider-id "PROV1"
                          :short-name "S1"
                          :cmr-only false
                          :small false})
-    (util/save-provider {:provider-id "PROV2"
+    (i-util/save-provider {:provider-id "PROV2"
                          :short-name "S2"
                          :cmr-only false
                          :small true})
-    (util/delete-provider "PROV1")
-    (let [{:keys [status providers]} (util/get-providers)]
+    (i-util/delete-provider "PROV1")
+    (let [{:keys [status providers]} (i-util/get-providers)]
       (is (= status 200))
       (is (= [{:provider-id "PROV2" :short-name "S2" :cmr-only false :small true}] providers))))
   (testing "delete SMALL_PROV provider"
-    (let [{:keys [status errors]} (util/delete-provider "SMALL_PROV")]
+    (let [{:keys [status errors]} (i-util/delete-provider "SMALL_PROV")]
       (is (= [400 ["Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted."]]
              [status errors]))))
   (testing "delete non-existent provider"
-    (let [{:keys [status errors]} (util/delete-provider "NOT_PROV")]
+    (let [{:keys [status errors]} (i-util/delete-provider "NOT_PROV")]
       (is (= [404 ["Provider with provider-id [NOT_PROV] does not exist."]]
              [status errors])))))
