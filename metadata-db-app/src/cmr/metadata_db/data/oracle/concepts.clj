@@ -14,8 +14,8 @@
    [cmr.metadata-db.data.util :as db-util :refer [EXPIRED_CONCEPTS_BATCH_SIZE INITIAL_CONCEPT_NUM]]
    [cmr.oracle.connection :as oracle]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]]
-   [cmr.efs.connection :as efs]
-   [cmr.efs.config :as efs-config])
+   [cmr.efs.config :as efs-config]
+   [cmr.efs.connection :as efs])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -347,21 +347,27 @@
    (j/with-db-transaction
      [conn db]
      (let [table (tables/get-table-name provider concept-type)]
-       (db-result->concept-map concept-type conn (:provider-id provider)
-                               (su/find-one conn (select '[*]
-                                                         (from table)
-                                                         (where `(= :concept-id ~concept-id))
-                                                         (order-by (desc :revision-id))))))))
-  ([db concept-type provider concept-id revision-id]
-   (if revision-id
-     (let [table (tables/get-table-name provider concept-type)]
-       (j/with-db-transaction
-         [conn db]
+       (when (not (= "efs-off" efs-config/efs-toggle))
+         (efs/get-concept provider concept-type concept-id))
+       (when (not (= "efs-only" efs-config/efs-toggle))
          (db-result->concept-map concept-type conn (:provider-id provider)
                                  (su/find-one conn (select '[*]
                                                            (from table)
-                                                           (where `(and (= :concept-id ~concept-id)
-                                                                        (= :revision-id ~revision-id))))))))
+                                                           (where `(= :concept-id ~concept-id))
+                                                           (order-by (desc :revision-id)))))))))
+  ([db concept-type provider concept-id revision-id]
+   (if revision-id
+     (let [table (tables/get-table-name provider concept-type)]
+       (when (not (= "efs-off" efs-config/efs-toggle))
+         (efs/get-concept provider concept-type concept-id revision-id))
+       (when (not (= "efs-only" efs-config/efs-toggle))
+         (j/with-db-transaction
+           [conn db]
+           (db-result->concept-map concept-type conn (:provider-id provider)
+                                   (su/find-one conn (select '[*]
+                                                             (from table)
+                                                             (where `(and (= :concept-id ~concept-id)
+                                                                          (= :revision-id ~revision-id)))))))))
      (get-concept db concept-type provider concept-id))))
 
 (defn get-concepts
@@ -382,11 +388,14 @@
                                      (where `(and (= :c.concept-id :t.concept-id)
                                                   (= :c.revision-id :t.revision-id)))))
 
-              result (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                                 (su/query conn stmt)))
+              result-oracle (when (not (= "efs-only" efs-config/efs-toggle))
+                              (doall (map (partial db-result->concept-map concept-type conn provider-id)
+                                          (su/query conn stmt))))
+              result-efs (when (not (= "efs-off" efs-config/efs-toggle))
+                           (efs/get-concepts provider concept-type concept-id-revision-id-tuples))
               millis (- (System/currentTimeMillis) start)]
-          (debug (format "Getting [%d] concepts took [%d] ms" (count result) millis))
-          result)))
+          (debug (format "Getting [%d] concepts took [%d] ms" (count (if result-oracle result-oracle result-efs)) millis))
+          (if result-oracle result-oracle result-efs))))
     []))
 
 (defn get-latest-concepts
@@ -431,8 +440,11 @@
                            seq-name
                            (string/join "," (repeat (count values) "?")))]
           (trace "Executing" stmt "with values" (pr-str values))
-          (j/db-do-prepared db stmt values)
-          (after-save conn provider concept)
+          (when (not (= "efs-only" efs-config/efs-toggle))
+            (j/db-do-prepared db stmt values)
+            (after-save conn provider concept))
+          (when (not (= "efs-off" efs-config/efs-toggle))
+            (efs/save-concept provider concept-type concept))
           nil)))
     (catch Exception e
       (let [error-message (.getMessage e)
@@ -447,7 +459,10 @@
         stmt (su/build (delete table
                                (where `(and (= :concept-id ~concept-id)
                                             (= :revision-id ~revision-id)))))]
-    (j/execute! this stmt)))
+    (when (not (= "efs-off" efs-config/efs-toggle))
+      (efs/delete-concept provider concept-type concept-id revision-id))
+    (when (not (= "efs-only" efs-config/efs-toggle))
+      (j/execute! this stmt))))
 
 (defn force-delete-by-params
   [db provider params]
@@ -457,16 +472,19 @@
   [db provider concept-type concept-id-revision-id-tuples]
   (let [table (tables/get-table-name provider concept-type)]
     (j/with-db-transaction
-     [conn db]
+      [conn db]
      ;; use a temporary table to insert our values so we can use them in our delete
-     (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+      (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
 
-     (let [stmt [(format "DELETE FROM %s t1 WHERE EXISTS
+      (let [stmt [(format "DELETE FROM %s t1 WHERE EXISTS
                            (SELECT 1 FROM get_concepts_work_area tmp WHERE
                            tmp.concept_id = t1.concept_id AND
                            tmp.revision_id = t1.revision_id)"
-                         table)]]
-       (j/execute! conn stmt)))))
+                          table)]]
+        (when (not (= "efs-off" efs-config/efs-toggle))
+          (efs/delete-concepts provider concept-type concept-id-revision-id-tuples))
+        (when (not (= "efs-only" efs-config/efs-toggle))
+          (j/execute! conn stmt))))))
 
 (defn get-concept-type-counts-by-collection
   [db concept-type provider]
