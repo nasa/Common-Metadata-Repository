@@ -388,13 +388,11 @@
                                      (where `(and (= :c.concept-id :t.concept-id)
                                                   (= :c.revision-id :t.revision-id)))))
 
-              result-oracle (if (not (= "efs-only" efs-config/efs-toggle))
+              result-oracle (when (not (= "efs-only" efs-config/efs-toggle))
                               (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                                          (su/query conn stmt)))
-                              nil)
-              result-efs (if (not (= "efs-off" efs-config/efs-toggle))
-                           (efs/get-concepts provider concept-type concept-id-revision-id-tuples)
-                           nil)
+                                          (su/query conn stmt))))
+              result-efs (when (not (= "efs-off" efs-config/efs-toggle))
+                           (efs/get-concepts provider concept-type concept-id-revision-id-tuples))
               millis (- (System/currentTimeMillis) start)]
           (debug (format "Getting [%d] concepts took [%d] ms" (count (if result-oracle result-oracle result-efs)) millis))
           (if result-oracle result-oracle result-efs))))
