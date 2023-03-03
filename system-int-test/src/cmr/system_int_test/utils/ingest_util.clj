@@ -13,6 +13,7 @@
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.ingest.config :as ingest-config]
+   [cmr.metadata-db.int-test.utility :as md-util]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.provider-holdings :as ph]
    [cmr.system-int-test.system :as s]
@@ -60,7 +61,9 @@
 (defn create-mdb-provider
   "Create the provider with the given provider id in the metadata db"
   [provider]
-  (create-provider-through-url provider (url/create-provider-url)))
+  (create-provider-through-url
+   (md-util/minimum-provider->metadata provider)
+   (url/create-provider-url)))
 
 (defn create-ingest-provider
   "Create the provider with the given provider id through ingest app"
@@ -864,17 +867,17 @@
    (let [{:keys [grant-all-search? grant-all-ingest? grant-all-access-control?]}
          (merge reset-fixture-default-options options)
          providers (if (sequential? providers)
-                       providers
-                       (for [[provider-guid provider-id consortiums] providers]
-                         {:provider-guid provider-guid
-                          :provider-id provider-id
-                          :consortiums consortiums}))]
-      (doseq [provider-map providers]
-        (create-provider
-         provider-map
-         {:grant-all-search? grant-all-search?
-          :grant-all-ingest? grant-all-ingest?
-          :grant-all-access-control? grant-all-access-control?})))))
+                     providers
+                     (for [[provider-guid provider-id consortiums] providers]
+                       {:provider-guid provider-guid
+                        :provider-id provider-id
+                        :consortiums consortiums}))]
+     (doseq [provider-map providers]
+            (create-provider
+             provider-map
+             {:grant-all-search? grant-all-search?
+              :grant-all-ingest? grant-all-ingest?
+              :grant-all-access-control? grant-all-access-control?})))))
 
 (defn setup-providers-with-customized-options
   "Creates the given providers in CMR. Providers can be passed in

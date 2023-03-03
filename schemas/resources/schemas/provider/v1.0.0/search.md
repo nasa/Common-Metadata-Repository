@@ -1,38 +1,32 @@
-### <a name="provider"></a> Grid
+### <a name="provider"></a> Provider
 
 Provider metadata describes a provider of metadata in the CMR. Provider metadata
 is stored in the JSON format [UMM-Provider Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/otherschemas/browse/provider).
 
 #### <a name="searching-for-providers"></a> Searching for providers
 
-Grids can be searched for by sending a request to `%CMR-ENDPOINT%/providers`.
+Providers can be searched for by sending a request to `%CMR-ENDPOINT%/providers`.
 UMM JSON response formats are the only supported format.
 
-Grid search results are not paged.
+Providers search results are not paged.
 <!--
 See [Paging Details](#paging-details) for more information on how to page through Provider search results.
 -->
 
-##### <a name="grid-search-response"></a> Provider Search Response
+##### <a name="provider-search-response"></a> Provider Search Response
 
 ##### JSON
 
 The JSON response includes the following fields.
 
-* hits - How many total Grids were found.
+* hits - How many total Providers were found.
 * took - How long the search took in milliseconds
-* items - a list of the current page of Providers with the following fields
-    * provider\_id
-    * revision\_id
-    * provider\_id
-    * native\_id
-    * name
-    * long\_name
+* items - a list of the Providers
 
 __Example__
 
 ```
-    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/providers.json"
+    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/providers"
 ```
 
 __Sample response__

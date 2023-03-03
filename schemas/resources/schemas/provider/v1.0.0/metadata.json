@@ -1,22 +1,22 @@
 {
   "MetadataSpecification": {
-    "Name":"UMM-P",
+    "Name":"provider",
     "Version": "1.0.0",
-    "URL": "https://cdn.earthdata.nasa.gov/umm/provider/v1.0.0"},
-  "ProviderId": "TCHERRY_D",
-  "DescriptionOfHolding": "No real data, just a bunch of tests",
+    "URL": "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0"},
+  "ProviderId": "MBQ",
+  "DescriptionOfHolding": "Air temperature readings from snitchs durring Quidditch matches.",
   "Organizations": [
-    {"ShortName": "TCHERRY_D",
-      "LongName": "Thomas Cherry Provider D",
+    {"ShortName": "MBQ",
+      "LongName": "Merican Bureau of Quidditch",
       "Roles": ["PUBLISHER"],
-      "URLValue": "https://cmr.earthdata.nasa.gov/search"
+      "URLValue": "https://quidditch.example.gov/"
     }],
+  "Administrators": ["auror.80"],
   "ContactPersons": [{
-    "Roles":["PROVIDER MANAGMENT", "TECHNICAL CONTACT"],
-    "LastName": "Cherry",
-    "UserName": "tcherry",
+    "Roles":["PROVIDER MANAGEMENT", "TECHNICAL CONTACT"],
+    "LastName": "Potter",
     "ContactInformation": {
-      "HoursOfService": "8-5 East Cost time, M-F",
+      "HoursOfService": "8-5 East Coast time, M-F",
       "ContactInstruction": "slack works best",
       "Addresses":[{
         "StreetAddresses": ["123 Fake Street"],
@@ -26,8 +26,8 @@
         "PostalCode" : "90210"
       }],
       "ContactMechanisms": [
-        {"Type": "Email", "Value": "thomas.a.cherry@nasa.gov"},
-        {"Type": "Slack", "Value": "tcherry"}
+        {"Type": "Email", "Value": "harry.potter@example.gov"},
+        {"Type": "Slack", "Value": "auror80"}
       ]
     }
   }],
