@@ -34,4 +34,30 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
-  :aliases {})
+  :aliases {;; Alias to test2junit for consistency with lein-test-out
+            "test-out" ["test2junit"]
+
+            ;; Kaocha test aliases
+            ;; refer to tests.edn for test configuration
+            "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
+            "itest" ["kaocha" "--focus" ":integration"]
+            "utest" ["kaocha" "--focus" ":unit"]
+            "ci-test" ["kaocha" "--profile" ":ci"]
+            "ci-itest" ["itest" "--profile" ":ci"]
+            "ci-utest" ["utest" "--profile" ":ci"]
+
+            ;; Linting aliases
+            "kibit" ["do"
+                     ["with-profile" "lint" "shell" "echo" "== Kibit =="]
+                     ["with-profile" "lint" "kibit"]]
+            ;; Eastwood needs special handling with libs that include oracle
+            ;; drivers in the deps, in particulear:
+            ;;   java.lang.ClassNotFoundException: oracle.dms.console.DMSConsole
+            "eastwood" ["with-profile" "lint" "eastwood"
+                        "{:namespaces [:source-paths] :exclude-namespaces [cmr.oracle.connection]}"]
+            "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
+            "check-deps" ["with-profile" "lint" "ancient" ":all"]
+            "check-sec" ["with-profile" "security" "dependency-check"]
+            "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
+            ;; Placeholder for future docs and enabler of top-level alias
+            "generate-static" ["with-profile" "static" "shell" "echo"]})
