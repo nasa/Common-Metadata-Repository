@@ -28,7 +28,7 @@
   [context]
   (info "Getting provider list.")
   (let [db (mdb-util/context->db context)
-        providers (providers/get-providers db)]
+        providers (map #(dissoc %1 :metadata) (providers/get-providers db))]
     (map util/remove-nil-keys providers)))
 
 (defn get-provider-by-id
