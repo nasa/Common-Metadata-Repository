@@ -441,11 +441,11 @@
                            (string/join "," (repeat (count values) "?")))]
           (trace "Executing" stmt "with values" (pr-str values))
           (when (not (= "efs-only" (efs-config/efs-toggle)))
-            (info "Creating Oracle record with efs-toggle value %s" (efs-config/efs-toggle))
+            (info "Creating Oracle record with efs-toggle value " (efs-config/efs-toggle))
             (j/db-do-prepared db stmt values)
             (after-save conn provider concept))
           (when (not (= "efs-off" (efs-config/efs-toggle)))
-            (info "Creating EFS record with efs-toggle value %s" (efs-config/efs-toggle))
+            (info "Creating EFS record with efs-toggle value " (efs-config/efs-toggle))
             (efs/save-concept provider concept-type concept))
           nil)))
     (catch Exception e
