@@ -2,7 +2,6 @@
   :description "Contains utilities for connecting to and manipulating data in EFS"
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/efs-lib"
   ;; Dynamically include extra repositories in the project definition if configured.
-  :repositories [["releases" ~extra-repository]]
   :dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]]
   :plugins [[lein-shell "0.5.0"]
