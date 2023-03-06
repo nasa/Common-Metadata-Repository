@@ -2,7 +2,6 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.data :as d]
    [clojure.data.xml :as x]
    [clojure.string :as str]
    [clojure.test :refer :all]
@@ -15,18 +14,12 @@
    [cmr.ingest.config :as ingest-config]
    [cmr.metadata-db.int-test.utility :as md-util]
    [cmr.mock-echo.client.echo-util :as echo-util]
-   [cmr.system-int-test.data2.provider-holdings :as ph]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]
-   [cmr.umm-spec.versioning :as umm-versioning]
-   [cmr.umm.echo10.echo10-collection :as c]
-   [cmr.umm.echo10.echo10-core :as echo10]
-   [cmr.umm.echo10.granule :as g])
+   [cmr.umm-spec.versioning :as umm-versioning])
   (:import
    (java.lang NumberFormatException)))
 

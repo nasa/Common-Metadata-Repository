@@ -2,7 +2,6 @@
   "Functions for saving, retrieving, deleting providers."
   (:require
    [clojure.java.jdbc :as j]
-   [clojure.pprint :refer [pprint pp]]
    [clojure.string :as string]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.util :as cutil]

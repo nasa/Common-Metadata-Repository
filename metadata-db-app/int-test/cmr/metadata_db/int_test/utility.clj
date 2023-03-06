@@ -505,7 +505,7 @@
                                :short-name short-name
                                :cmr-only (if (some? cmr-only) cmr-only false)
                                :small (if (some? small) small false)
-                               :consortiums (if (some? consortiums) consortiums)
+                               :consortiums (when (some? consortiums) consortiums)
                                :metadata metadata})))
 
 (defn save-provider

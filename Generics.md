@@ -61,7 +61,7 @@ Creating:
 7. Copy all files to the `schemas` directory under CMR
 8. call `cmr setup <action>`:
 	* `cmr setup dev` will update schemas
-	* `cmr setup schemas` to force copy to all projects and do no other action
+	* ~~`cmr setup schemas` to force copy to all projects and do no other action~~
 	* `(user/reset)` within the repl will also trigger a copy
 
 Updating is much the same as start, create a new version folder, populate it.
