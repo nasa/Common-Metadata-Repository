@@ -70,7 +70,14 @@
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
       (is (= 5 revision-id))
-      (is (mdb/concept-exists-in-mdb? concept-id 5)))))
+      (is (mdb/concept-exists-in-mdb? concept-id 5))))
+  (testing "ingest of a new concept using a launchpad token"
+    (let [concept (data-umm-c/collection-concept {})
+          launchpad-token (echo-util/login-with-launchpad-token (system/context) "user1")
+          {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:token launchpad-token})]
+      (index/wait-until-indexed)
+      (is (mdb/concept-exists-in-mdb? concept-id revision-id))
+      (is (= 1 revision-id)))))
 
 ;; Verify a concept can be ingested twice to get two revisions and ignore_conflict can impact the reindex status.
 (deftest collection-ingest-test

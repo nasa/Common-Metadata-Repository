@@ -46,6 +46,15 @@
        :headers {"content-type" mt/xml}})
     {:status 404 :body "Not found.\n"}))
 
+(defn get-launchpad-user
+  "Processes a request to get a user using their launchpad token."
+  [context token] 
+  (when token
+    (case token
+      "ABC-1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
+      {:status 200 :body {:uid "user1" :first-name "User" :last-name "Name" :email-address "somebody@nasa.gov"}} 
+      {:status 400 :body {:error "Launchpad SSO authentication failed"}})))
+
 (defn get-user-info
   "Returns mock URS info for a user"
   [user-id]
@@ -249,6 +258,12 @@
           (GET "/" {:keys [request-context params] :as request}
             (assert-bearer-token request)
             (get-groups-for-user request-context user-id))))
+      
+      (context "/api/nams" []
+        (POST "/edl_user" {:keys [request-context params] :as request}
+          (println "REQ PARAM:" (:token params))
+          (assert-bearer-token request)
+          (get-launchpad-user request-context (:token params))))
 
       (context "/users" []
         ;; Create a bunch of users all at once
