@@ -481,8 +481,9 @@
                      :Organizations [{:Roles ["ORIGINATOR"]
                                       :ShortName "REAL_ID"
                                       :URLValue "https://example.gov"}]
-                     :MetadataSpecification {:Name "UMM-P"
-                                             :URL "https://cdn.earthdata.nasa.gov/umm/provider/v1.0.0"
+                     :Administrators ["admin1"]
+                     :MetadataSpecification {:Name "provider"
+                                             :URL "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0"
                                              "Version" "1.0.0"}
                      ;;:Consortiums ["one" "two"]
                      })

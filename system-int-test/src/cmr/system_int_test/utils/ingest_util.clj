@@ -12,7 +12,7 @@
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.ingest.config :as ingest-config]
-   [cmr.metadata-db.int-test.utility :as md-util]
+   ;;[cmr.metadata-db.int-test.utility :as md-util]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
@@ -51,17 +51,108 @@
                 :connection-manager (s/conn-mgr)
                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
+;; The most basic provider metadata needed to create a provider
+(def basic-provider {:ProviderId "REAL_ID"
+                     :DescriptionOfHolding "sample provider, no data"
+                     :Organizations [{:Roles ["ORIGINATOR"]
+                                      :ShortName "REAL_ID"
+                                      :URLValue "https://example.gov"}]
+                     :Administrators ["admin1"]
+                     :MetadataSpecification {:Name "provider"
+                                             :URL "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0"
+                                             "Version" "1.0.0"}
+                     ;;:Consortiums ["one" "two"]
+                     })
+
+(defn minimum-provider->metadata
+  "this is an exact copy of what is in cmr.metadata-db.int-test.utility/minimim-provider->metadata"
+  [minimum-provider]
+  ;;(md-util/minimim-provider->metadata provider)
+
+  (let [provider-id (get minimum-provider :provider-id)
+        short-name (get minimum-provider :short-name provider-id)
+        cmr-only (:cmr-only minimum-provider)
+        small (:small minimum-provider)
+        consortiums (:consortiums minimum-provider)
+        consortium-list (when (some? consortiums) (str/split consortiums #" "))
+        extra-fields (dissoc minimum-provider :provider-id :short-name :cmr-only :small :consortiums)
+        metadata (-> basic-provider
+                     (merge extra-fields)
+                     (assoc :ProviderId provider-id :Consortiums consortium-list)
+                     (assoc-in [:Organizations 0 :ShortName] short-name)
+                     (util/remove-nil-keys))]
+    (util/remove-nil-keys {:provider-id provider-id
+                           :short-name short-name
+                           :cmr-only (if (some? cmr-only) cmr-only false)
+                           :small (if (some? small) small false)
+                           :consortiums (when (some? consortiums) consortiums)
+                           :metadata metadata})))
+
+(defn minimum-provider->metadata-only
+  [minimum-provider]
+  (let [data (minimum-provider->metadata minimum-provider)
+        cmr-only (:cmr-only data)
+        small (:small data)
+        consortiums (:consortiums data)
+        metadata (-> (:metadata data)
+                     (assoc :small small
+                            :cmr-only cmr-only)
+                     (util/remove-nil-keys))
+        consort_count (count (:Consortiums metadata))
+        metadata (if (< 0 consort_count) metadata (dissoc metadata :Consortiums))]
+    metadata)
+  )
+
 (defn create-mdb-provider
   "Create the provider with the given provider id in the metadata db"
   [provider]
   (create-provider-through-url
-   (md-util/minimum-provider->metadata provider)
+   (minimum-provider->metadata provider)
    (url/create-provider-url)))
 
 (defn create-ingest-provider
   "Create the provider with the given provider id through ingest app"
   [provider]
-  (create-provider-through-url provider (url/ingest-create-provider-url)))
+  (create-provider-through-url
+   (minimum-provider->metadata-only provider)
+   (url/ingest-create-provider-url)))
+
+(comment
+
+  (reset-fixture)
+  (create-ingest-provider {:provider-id "PROV4"
+                           :short-name "S4"
+                           :cmr-only true
+                           :small false})
+
+
+  (update-ingest-provider {:provider-id "PROV6"
+                           :short-name "S4"
+                           :cmr-only true
+                           :small false
+                           :consortiums "    "})
+
+
+  (minimum-provider->metadata-only {:provider-id "PROV5"
+                                    :short-name "S5"
+                                    :cmr-only true
+                                    :small true
+                                    :consortiums "a b c"})
+
+  (minimum-provider->metadata-only {:provider-id "PROV5"
+                                    :short-name "S5"
+                                    :cmr-only true
+                                    :small true})
+
+  (minimum-provider->metadata {:provider-id "PROV5"
+                               :short-name "S5"
+                               :cmr-only true
+                               :small true
+                               :consortiums "a b c"})
+
+
+  )
+
 
 (defn get-providers-through-url
   [provider-url]
@@ -112,7 +203,7 @@
   [params]
   (client/put (url/ingest-provider-url (:provider-id params))
               {:throw-exceptions false
-               :body (json/generate-string params)
+               :body (json/generate-string (minimum-provider->metadata-only params))
                :content-type :json
                :connection-manager (s/conn-mgr)
                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))

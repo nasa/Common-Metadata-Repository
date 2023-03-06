@@ -73,7 +73,7 @@
       (gcom/validate-metadata-against-schema :provider "1.0.0" true)))
 
 (defn- validate-and-prepare-provider-concept
-  "Validate a provider concept and consruct a map that is usable to the metadata_db
+  "Validate a provider concept and construct a map that is usable to the metadata_db
    service.
    throws error if the metadata is not a valid against the UMM service JSON schema."
   [concept]

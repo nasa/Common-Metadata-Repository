@@ -59,7 +59,8 @@
         "items": {
           "type": "string",
           "minLength": 1,
-          "maxLength": 16
+          "maxLength": 16,
+          "pattern": "^[\\w_]+$"
         },
         "minItems": 1
       },
