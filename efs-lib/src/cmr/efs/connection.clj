@@ -22,7 +22,7 @@
 (defn save-concept
   "Saves a concept to EFS"
   [provider concept-type concept]
-  (let [concept-path (format "%s/%s/%s/%s-%s.r%i.zip" efs-config/efs-directory provider concept-type (:concept-id concept) provider (:revision-id concept))]
+  (let [concept-path (format "%s/%s/%s/%s-%s.r%d.zip" efs-config/efs-directory provider concept-type (:concept-id concept) provider (:revision-id concept))]
     (io/make-parents (io/file concept-path))
     (spit (io/file concept-path) (:metadata concept))))
 
