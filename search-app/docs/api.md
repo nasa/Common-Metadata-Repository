@@ -98,6 +98,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
     * [Granule UR or producer granule id](#g-granule-ur-or-producer-granule-id)
     * [Online only](#g-online-only)
     * [Downloadable](#g-downloadable)
+    * [Browsable](#g-browsable)
     * [Additional attribute](#g-additional-attribute)
     * [Spatial](#g-spatial)
         * [Polygon](#g-polygon)
@@ -1905,16 +1906,18 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
 #### <a name="c-granule-data-format"></a> Find collections by format of data in granules
 
    Find collections matching 'granule_data_format' param value
-    
+
     curl "%CMR-ENDPOINT%/collections?granule_data_format=NetCDF"
 
 #### <a name="c-online-only"></a> Find collections by online_only
 
-  Find collections matching 'online_only' param value
-    
+Find collections matching 'online_only' param value, online_only is a legacy parameter and is an alias of downloadable.
+
     curl "%CMR-ENDPOINT%/collections?online_only=true"
 
 #### <a name="c-downloadable"></a> Find collections by downloadable
+
+A collection is downloadable when it contains at least one RelatedURL that is a DistributionURL of type GETDATA.
 
     curl "%CMR-ENDPOINT%/collections?downloadable=true"
 
@@ -1925,6 +1928,8 @@ Supports ignore_case and the following aliases for "NEAR\_REAL\_TIME": "near\_re
     curl "%CMR-ENDPOINT%/collections?browse_only=true"
 
 #### <a name="c-browsable"></a> Find collections by browsable
+
+A collection is browsable when it contains at least one RelatedURL with a VisualizationURL URLContentType.
 
     curl "%CMR-ENDPOINT%/collections?browsable=true"
 
@@ -2422,11 +2427,21 @@ This condition is encapsulated in a single parameter called readable_granule_nam
 
 #### <a name="g-online-only"></a> Find granules by online_only
 
+The online_only parameter is a legacy parameter and is an alias of downloadable.
+
     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&online_only=true"
 
 #### <a name="g-downloadable"></a> Find granules by downloadable
 
+A granule is downloadable when it contains at least one RelatedURL of type GETDATA.
+
     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&downloadable=true"
+
+#### <a name="g-browsable"></a> Find granules by browsable
+
+A granule is browsable when it contains at least one RelatedURL of type GET RELATED VISUALIZATION.
+
+    curl "%CMR-ENDPOINT%/collections?browsable=true"
 
 #### <a name="g-additional-attribute"></a> Find granules by additional attribute
 
