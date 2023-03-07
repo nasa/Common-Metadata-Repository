@@ -61,7 +61,7 @@
       "items": {
           "$ref": "#/definitions/ServiceKeywordType"
       },
-    "minItems": 1
+      "minItems": 1
     },
     "ServiceOrganizations": {
       "description": "The service provider, or organization, or institution responsible for developing, archiving, and/or distributing the service, software, or tool.",
@@ -69,21 +69,23 @@
       "items": {
           "$ref": "#/definitions/ServiceOrganizationType"
       },
-    "minItems": 1
+      "minItems": 1
     },
     "ContactGroups": {
       "description": "This is the contact groups of the service.",
       "type": "array",
       "items": {
         "$ref": "#/definitions/ContactGroupType"
-      }
+      },
+      "minItems": 1
     },
     "ContactPersons": {
       "description": "This is the contact persons of the service.",
       "type": "array",
       "items": {
         "$ref": "#/definitions/ContactPersonType"
-      }
+      },
+      "minItems": 1
     },
     "ServiceQuality": {
       "description": "Information about the quality of the service, software, or tool, or any quality assurance procedures followed in development.",
@@ -103,7 +105,7 @@
       "items": {
           "$ref": "#/definitions/AncillaryKeywordsType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "ServiceOptions": {
       "description": "This element contains important information about the Unique Resource Locator for the service.",
@@ -115,7 +117,7 @@
       "items": {
           "$ref": "#/definitions/OperationMetadataType"
               },
-      "minItems": 0
+      "minItems": 1
     },
     "MetadataSpecification": {
       "description": "Requires the user to add in schema information into every service record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
@@ -150,7 +152,7 @@
           "items": {
             "$ref": "#/definitions/VariableAggregationTypeEnum"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "SupportedInputProjections": {
           "description": "This element is used to identify the list of supported input projections types.",
@@ -158,7 +160,7 @@
           "items": {
             "$ref": "#/definitions/SupportedProjectionType"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "SupportedOutputProjections": {
           "description": "This element is used to identify the list of supported output projections types.",
@@ -166,7 +168,7 @@
           "items": {
             "$ref": "#/definitions/SupportedProjectionType"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "InterpolationTypes": {
           "description": "This element is used to identify the list of supported interpolation types.",
@@ -174,7 +176,7 @@
           "items": {
             "$ref": "#/definitions/InterpolationTypeEnum"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "SupportedReformattings": {
           "description": "The project element describes the list of format name combinations which explicitly state which re-formatting options are available. These are entered as pairs of values, e.g. if NetCDF-3 -> NetCDF-4 is a valid supported reformatting, these two values would be entered as a pair.",
@@ -449,7 +451,7 @@
     "InterpolationTypeEnum": {
       "description": "This element is used to identify the interpolation type of the variable.",
       "type": "string",
-      "enum": ["Bilinear Interpolation", "Bicubic Interpolation", "Distance-weighted average resampling", "Nearest Neighbor"]
+      "enum": ["Bilinear Interpolation", "Bicubic Interpolation", "Distance-weighted average resampling", "Nearest Neighbor", "Elliptical Weighted Averaging"]
     },
     "SupportedFormatTypeEnum": {
      "description": "This element contains a list of file formats supported by the service.",
@@ -715,14 +717,16 @@
           "type": "array",
           "items": {
              "$ref": "#/definitions/ContactMechanismType"
-          }
+          },
+          "minItems": 1
         },
          "Addresses": {
           "description": "Contact addresses.",
           "type": "array",
           "items": {
              "$ref": "#/definitions/AddressType"
-          }
+          },
+          "minItems": 1
         }
       }
     },
@@ -765,7 +769,7 @@
     "ServiceTypeEnum": {
       "description": "This element is used to identify the type of the service.",
       "type": "string",
-      "enum": ["OPeNDAP", "THREDDS", "WEB SERVICES", "ESI", "ECHO ORDERS", "WCS", "WMS", "WMTS", "EGI - No Processing", "SOFTWARE PACKAGE", "TOOL", "WEB PORTAL", "International Web Portal", "MODEL", "Harmony", "NOT PROVIDED"]
+      "enum": ["OPeNDAP", "THREDDS", "WEB SERVICES", "ESI", "ECHO ORDERS", "WCS", "WMS", "WMTS", "EGI - No Processing", "SOFTWARE PACKAGE", "TOOL", "WEB PORTAL", "International Web Portal", "MODEL", "Harmony", "ArcGIS Image Service", "Web Feature Service", "Web Geoprocessing Service", "NOT PROVIDED"]
     },
     "ServiceQualityType": {
       "type": "object",
@@ -850,7 +854,7 @@
             "minLength": 1,
             "maxLength": 1024
           },
-          "minItems": 0
+          "minItems": 1
         },
         "City": {
           "description": "The city portion of the physical address.",
@@ -926,7 +930,7 @@
           "items": {
             "$ref": "#/definitions/ParameterType"
           },
-          "minItems": 0
+          "minItems": 1
         }
       }
     },
@@ -1238,7 +1242,7 @@
           "items": {
             "$ref": "#/definitions/CoordinatesType"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "SpatialLineStrings": {
           "description": "The spatial extent of the layer, feature type or coverage described by a line string.",
@@ -1246,7 +1250,7 @@
           "items": {
             "$ref": "#/definitions/LineStringType"
           },
-          "minItems": 0
+          "minItems": 1
         },
         "SpatialBoundingBox": {
           "description": "The spatial extent of the layer, feature type or coverage described by a bounding box.",
@@ -1262,7 +1266,7 @@
           "items": {
             "$ref": "#/definitions/CoordinatesType"
           },
-          "minItems": 0
+          "minItems": 1
         }
       }
     },
@@ -1335,7 +1339,7 @@
         "URL": {
           "description": "The web address of the metadata schema used to validate the service record.",
           "type": "string",
-          "enum": ["https://cdn.earthdata.nasa.gov/umm/service/v1.5.0"]
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/service/v1.5.1"]
         },
         "Name": {
           "description": "The name of the metadata schema.",
@@ -1345,7 +1349,7 @@
         "Version": {
           "description": "The version of the metadata schema.",
           "type": "string",
-          "enum": ["1.5.0"]
+          "enum": ["1.5.1"]
         }
       },
       "required": ["URL", "Name", "Version"]

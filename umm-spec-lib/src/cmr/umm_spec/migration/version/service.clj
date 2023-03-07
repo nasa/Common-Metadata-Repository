@@ -552,3 +552,33 @@
   (-> umm-s
       (migrate-related-urls-1_5_0->1_4_1)
       (m-spec/update-version :service "1.4.1")))
+
+(defmethod interface/migrate-umm-version [:service "1.5.0" "1.5.1"]
+  [context umm-s & _]
+  (m-spec/update-version umm-s :service "1.5.1"))
+
+(defn- remove-interpolation-type-1_5_1->1_5_0
+  "Remove the Elliptical Weighted Average from the interpolation types.
+  Return the updated umm-s record."
+  [umm-s]
+  (let [interpolations (get-in umm-s [:ServiceOptions :InterpolationTypes])
+        new-interpolations (when interpolations
+                             (vec (remove #(= "Elliptical Weighted Averaging" %) interpolations)))]
+    (if interpolations
+      (if (seq new-interpolations)
+        (assoc-in umm-s [:ServiceOptions :InterpolationTypes] new-interpolations)
+        (util/dissoc-in umm-s [:ServiceOptions :InterpolationTypes]))
+      umm-s)))
+
+(defmethod interface/migrate-umm-version [:service "1.5.1" "1.5.0"]
+  [context umm-s & _]
+  (def context context)
+  (def umm-s umm-s)
+  (-> umm-s
+      (remove-interpolation-type-1_5_1->1_5_0)
+      (update :Type #(if (or (= % "ArcGIS Image Service")
+                             (= % "Web Feature Service")
+                             (= % "Web Geoprocessing Service"))
+                       "WEB SERVICES"
+                       %))
+      (m-spec/update-version :service "1.5.0")))
