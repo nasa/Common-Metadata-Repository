@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.service.service-search-test
   "This tests searching services."
   (:require
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :refer [are3]]
@@ -589,8 +590,8 @@
         {:accept (mime-types/with-version mime-types/umm-json umm-version/current-service-version)}
 
         "explicit UMM JSON version through suffix"
-        "1.5.0"
-        {:url-extension "umm_json_v1_5_0"})))
+        umm-version/current-service-version
+        {:url-extension (string/replace (format "umm_json_v%s", umm-version/current-service-version)  #"\." "_")})))
 
   (testing "Searching with non-existent UMM JSON version"
     (are3 [options]
