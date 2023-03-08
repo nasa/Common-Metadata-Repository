@@ -24,6 +24,7 @@
    [cmr.ingest.services.provider-service :as provider-service]
    [compojure.core :refer :all]
    [cmr.common.generics :as generics]
+   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]))
 
 (defn- drop-metadata
@@ -68,9 +69,18 @@
   "Validate the provider metadata against a schema, throwing an exception if
    something does not match"
   [concept]
-  (-> concept
-      (json/generate-string)
-      (gcom/validate-metadata-against-schema :provider "1.0.0" true)))
+  (let [results (-> concept
+                    (json/generate-string)
+                    (gcom/validate-metadata-against-schema :provider "1.0.0" false))]
+    (when (some? results) (errors/throw-service-errors :invalid-data results))))
+
+(defn- validate-boolean
+  "Throw an error if one of the boolean inputs to provider does not look boolean"
+  [field name]
+  (when-not (or (nil? field)(true? field) (false? field))
+    (srvc-errors/throw-service-error
+     :invalid-data
+     (format "%s must be either true or false but was [\"%s\"]" name field))))
 
 (defn- validate-and-prepare-provider-concept
   "Validate a provider concept and construct a map that is usable to the metadata_db
@@ -80,9 +90,13 @@
   (let [{:keys [provider-id cmr-only small]} concept
         provider-id (get concept :ProviderId provider-id)
         short-name provider-id ;; every provider does this anyways, so make it official
+        small (:small concept)
+        cmr-only (:cmr-only concept)
         consortiums (string/join " " (get concept :Consortiums ""))
         metadata (-> concept (dissoc :provider-id :cmr-only :small))]
     (validate-provider-metadata metadata)
+    (validate-boolean small "Small")
+    (validate-boolean cmr-only "Cmr Only")
     ;; structure the result in a database friendly map, each key mapping to a
     ;; table column similar to that of a Concept table
     {:provider-id provider-id
@@ -127,6 +141,8 @@
                              request-context :request-context
                              headers :headers}
       (acl/verify-ingest-management-permission request-context :update)
+      ;; delete is still not functioning correctly
+      (cmr.ingest.api.core/verify-provider-exists request-context provider-id)
       (common-enabled/validate-write-enabled request-context "ingest")
       (provider-service/verify-empty-provider request-context provider-id headers)
       (one-result->response-map
@@ -151,10 +167,10 @@
                  :Organizations [{:Roles ["ORIGINATOR"]
                                   :ShortName "REAL_ID"
                                   :URLValue "https://example.gov"}]
-                 :MetadataSpecification {:Name "UMM-P"
-                                         :URL "https://cdn.earthdata.nasa.gov/umm/provider/v1.0.0"
+                 :MetadataSpecification {:Name "provider"
+                                         :URL "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0"
                                          "Version" "1.0.0"}
-                 :Consortiums ["one" "two"]}
+                 :Consortiums ["one" "two" "*-lord!"]}
         metadata (json/generate-string concept)]
     (validate-and-prepare-provider-concept concept))
 

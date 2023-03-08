@@ -65,30 +65,32 @@
                      })
 
 (defn minimum-provider->metadata
-  "this is an exact copy of what is in cmr.metadata-db.int-test.utility/minimim-provider->metadata"
+  "this is an exact copy of what is in cmr.metadata-db.int-test.utility/minimim-provider->metadata.
+   This structure is meant for the metadata-db"
   [minimum-provider]
   ;;(md-util/minimim-provider->metadata provider)
 
   (let [provider-id (get minimum-provider :provider-id)
-        short-name (get minimum-provider :short-name provider-id)
+        short-name provider-id ;(get minimum-provider :short-name provider-id)
         cmr-only (:cmr-only minimum-provider)
         small (:small minimum-provider)
         consortiums (:consortiums minimum-provider)
-        consortium-list (when (some? consortiums) (str/split consortiums #" "))
+        consortium-list (when (some? consortiums) (str/split (str/trim consortiums) #" "))
         extra-fields (dissoc minimum-provider :provider-id :short-name :cmr-only :small :consortiums)
         metadata (-> basic-provider
                      (merge extra-fields)
                      (assoc :ProviderId provider-id :Consortiums consortium-list)
-                     (assoc-in [:Organizations 0 :ShortName] short-name)
+                     (assoc-in [:Organizations 0 :ShortName] (if (some? short-name) short-name "blank"))
                      (util/remove-nil-keys))]
     (util/remove-nil-keys {:provider-id provider-id
                            :short-name short-name
                            :cmr-only (if (some? cmr-only) cmr-only false)
                            :small (if (some? small) small false)
-                           :consortiums (when (some? consortiums) consortiums)
+                           :consortiums (when (not (empty? consortiums)) consortiums)
                            :metadata metadata})))
 
 (defn minimum-provider->metadata-only
+  "This is for ingest"
   [minimum-provider]
   (let [data (minimum-provider->metadata minimum-provider)
         cmr-only (:cmr-only data)
@@ -148,7 +150,7 @@
                                :short-name "S5"
                                :cmr-only true
                                :small true
-                               :consortiums "a b c"})
+                               :consortiums "Group2_1 Group2_3"})
 
 
   )
@@ -903,7 +905,7 @@
    (create-provider provider-map {}))
   ([provider-map options]
    (let [{:keys [provider-guid provider-id short-name small cmr-only consortiums]} provider-map
-         short-name (or short-name (:short-name options) provider-id)
+         short-name provider-id ; (or short-name (:short-name options) provider-id)
          cmr-only (if (some? cmr-only) cmr-only (get options :cmr-only true))
          small (if (some? small) small (get options :small false))
          grant-all-search? (get options :grant-all-search? true)

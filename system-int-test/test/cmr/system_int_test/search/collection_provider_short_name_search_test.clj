@@ -91,27 +91,28 @@
         [coll4]
         "PROV4" ["NoMatch"] {}))
 
-    (testing "search after a provider update"
-      ;; find the collection before provider update
-      (is (d/refs-match?
-            [coll5]
-            (search/find-refs :collection
-                              {:provider-short-name "WillbeUpdated"} {})))
-      ;; update the provider
-      (ingest/update-ingest-provider {:provider-id "PROV5"
-                                      :short-name "Updated PROV5"
-                                      :cmr-only true
-                                      :small false})
-      ;; not finding collection on previous provider-short-name
-      (is (d/refs-match?
-            []
-            (search/find-refs :collection
-                              {:provider-short-name "WillbeUpdated"} {})))
-      ;; find the collection on updated provider-short-name
-      (is (d/refs-match?
-            [coll5]
-            (search/find-refs :collection
-                              {:provider-short-name "Updated PROV5"} {}))))))
+    ;(testing "search after a provider update"
+    ;  ;; find the collection before provider update
+    ;  (is (d/refs-match?
+    ;        [coll5]
+    ;        (search/find-refs :collection
+    ;                          {:provider-short-name "WillbeUpdated"} {})))
+    ;  ;; update the provider
+    ;  (ingest/update-ingest-provider {:provider-id "PROV5"
+    ;                                  :short-name "PROV5"
+    ;                                  :cmr-only true
+    ;                                  :small false})
+    ;  ;; not finding collection on previous provider-short-name
+    ;  (is (d/refs-match?
+    ;        []
+    ;        (search/find-refs :collection
+    ;                          {:provider-short-name "WillbeUpdated"} {})))
+    ;  ;; find the collection on updated provider-short-name
+    ;  (is (d/refs-match?
+    ;        [coll5]
+    ;        (search/find-refs :collection
+    ;                          {:provider-short-name "PROV5"} {}))))
+                              ))
 
 (deftest search-collections-by-provider-short-name-error-cases
   (are2
