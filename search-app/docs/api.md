@@ -126,8 +126,9 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
     * [Provider](#g-provider)
     * [Native Id](#g-native-id)
     * [Short name](#g-short-name)
-    * [Version](#g-version)
-    * [Entry title](#g-entry-title)
+    * [Version (collection)](#g-version)
+    * [Entry Title (collection)](#g-entry-title)
+    * [Entry Id (collection)](#g-entry-id)
     * [Temporal](#g-temporal)
     * [Cycle](#g-cycle)
     * [Passes](#g-passes)
@@ -2731,7 +2732,7 @@ Find granules matching 'short\_name' param value with a pattern.
 
     curl "%CMR-ENDPOINT%/granules?short_name=D*&options[short_name][pattern]=true"
 
-#### <a name="g-version"></a> Find granules by version
+#### <a name="g-version"></a> Find granules by parent collection version
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
@@ -2743,7 +2744,7 @@ Find granules matching the given 'short_name' and any of the 'version' param val
 
     curl "%CMR-ENDPOINT%/granules?short_name=DEM_100M&version=1&version=2"
 
-#### <a name="g-entry-title"></a> Find granules by entry title
+#### <a name="g-entry-title"></a> Find granules by parent collection entry title
 
 This parameter supports `pattern`, `ignore_case` and option `and`.
 
@@ -2752,6 +2753,18 @@ Find granules matching 'entry\_title' param value. The 'entry\_title' here refer
     curl "%CMR-ENDPOINT%/granules?entry_title=DatasetId%204"
 
 See under "Find collections by entry title" for more examples of how to use this parameter.
+
+#### <a name="g-entry-id"></a> Find granules by parent collection entry id
+
+Find granules matching 'entry\_id param value. The 'entry\_id' here refers to the entry id of the collections corresponding to the granules being searched for. Entry Id is the concatenation of short name, an underscore, and version of the corresponding collections.
+
+    curl "%CMR-ENDPOINT%/granules?entry_id\[\]=SHORT_V5"
+
+Multiple collections may be specified
+
+    curl "%CMR-ENDPOINT%/granules?entry_id\[\]=MYCOLLECTION_V1&entry_id\[\]=OTHERCOLLECTION_V2"
+
+See under "Find collections by entry id" for more examples of how to use this parameter.
 
 #### <a name="g-temporal"></a> Find granules with temporal
 
