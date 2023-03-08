@@ -444,8 +444,8 @@
           (when (not (= "efs-only" (efs-config/efs-toggle)))
             (info "Creating Oracle record with efs-toggle value " (efs-config/efs-toggle))
             (info "Time taken for Oracle insertion: " (first (util/time-execution
-                                                              ((j/db-do-prepared db stmt values)
-                                                               (after-save conn provider concept))))))
+                                                              (j/db-do-prepared db stmt values)
+                                                               (after-save conn provider concept)))))
           (when (not (= "efs-off" (efs-config/efs-toggle)))
             (info "Creating EFS record with efs-toggle value " (efs-config/efs-toggle))
             (info "Time taken for EFS insertion: " (first (util/time-execution (efs/save-concept provider concept-type concept))))
