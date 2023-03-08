@@ -50,4 +50,7 @@
             [gran4 gran5] ["AnotherS_V4" "AnotherT_V5" "NON_EXISTENT"] {}
 
             "multiple collections across multiple providers"
-            [gran1 gran3 gran7] ["OneShort_V1" "OneShort_V3" "OneShort_V7"] {}))))
+            [gran1 gran3 gran7] ["OneShort_V1" "OneShort_V3" "OneShort_V7"] {}
+
+            "multiple collections across multiple providers with non-existent collection"
+            [gran6 gran3 gran7] ["AnotherST_V6" "OneShort_V3" "OneShort_V7" "NON_EXISTENT"] {}))))
