@@ -116,6 +116,7 @@
    :created-at :multi-date-range
    :day-night :string
    :downloadable :boolean
+   :entry-id :collection-query
    :entry-title :collection-query
    :equator-crossing-date :equator-crossing-date
    :equator-crossing-longitude :equator-crossing-longitude
