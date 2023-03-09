@@ -18,9 +18,8 @@
   (echo-util/grant-system-ingest-management (system/context) [:read :update] [:read :update])
   (f))
 
-(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"})
+(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
                                     grant-all-generic-permission-fixture]))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -170,3 +169,38 @@
           (is (= 404 (:status result2)) "Second delete did not fail correctly")
           (is (some? (re-matches expected-pattern2 (:body result2)))
               "Response from second delete was wrong"))))))
+
+;; Test that native-id is only unique within the same provider and the same concept-type.
+(deftest test-native-id-uniqueness
+  (let [;;First ingest a Grid concept in PROV1
+        native-id "NativeId"
+        grid1 (gen-util/ingest-generic-document
+               nil "PROV1" native-id :grid gen-util/grid-good :post)
+        grid1-concept-id (:concept-id grid1)
+        grid1-revision-id (:revision-id grid1)
+
+        ;;Then ingest a Grid concept in PROV2 using the same native-id.
+        grid2 (gen-util/ingest-generic-document
+              nil "PROV2" native-id :grid gen-util/grid-good :post)
+        grid2-concept-id (:concept-id grid2)
+        grid2-revision-id (:revision-id grid2)
+
+        ;; Then ingest a data quality summary and a order option concept in PROV2, all using the same native-id
+        dqs2 (gen-util/ingest-generic-document
+              nil "PROV2" native-id :data-quality-summary gen-util/data-quality-summary :post)
+        dqs2-concept-id (:concept-id dqs2)
+        dqs2-revision-id (:revision-id dqs2)
+
+        oo2 (gen-util/ingest-generic-document
+             nil "PROV2" native-id :order-option gen-util/order-option :post)
+        oo2-concept-id (:concept-id oo2)
+        oo2-revision-id (:revision-id oo2)]
+    ;; Verify that the all the above concepts are distinct concepts with their own unique concept-ids
+    ;; and all the above revision-ids are equal to 1.
+    (is (and (not= grid2-concept-id grid1-concept-id)
+             (not= dqs2-concept-id grid1-concept-id)
+             (not= dqs2-concept-id grid2-concept-id)
+             (not= oo2-concept-id dqs2-concept-id)
+             (not= oo2-concept-id grid1-concept-id)
+             (not= oo2-concept-id grid2-concept-id)))
+    (is (= 1 grid1-revision-id grid2-revision-id dqs2-revision-id oo2-revision-id))))
