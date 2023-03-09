@@ -9,7 +9,11 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.services.health-helper :as hh])
   (:import
-   [java.nio.file Files]))
+   (java.nio.file Files
+                  Paths
+                  OpenOption)))
+
+;; ---------------- 
 
 (defn health-fn
   "Returns the health status of the EFS instance."
@@ -27,7 +31,7 @@
   (let [concept-path (format "%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) (:concept-id concept) (:revision-id concept))]
     (info "Saving concept to EFS at path " concept-path)
     (io/make-parents (io/file concept-path))
-    (Files/write concept-path (:metadata concept) nil)))
+    (Files/write (Paths/get concept-path (into-array String [])) (:metadata concept) (into-array OpenOption []))))
 
 (defn get-concept
   "Gets a concept from EFS"
