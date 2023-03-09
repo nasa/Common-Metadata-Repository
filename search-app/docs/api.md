@@ -2756,11 +2756,11 @@ See under "Find collections by entry title" for more examples of how to use this
 
 #### <a name="g-entry-id"></a> Find granules by parent collection entry id
 
-Find granules matching 'entry\_id param value. The 'entry\_id' here refers to the entry id of the collections corresponding to the granules being searched for. Entry Id is the concatenation of short name, an underscore, and version of the corresponding collections.
+Find granules matching 'entry\_id' param value where 'entry\_id' refers to the granule's parent collection. 'entry\_id' is the concatenation of short name, an underscore, and version of the corresponding collection.
 
     curl "%CMR-ENDPOINT%/granules?entry_id\[\]=SHORT_V5"
 
-Multiple collections may be specified
+Multiple collections may be specified.
 
     curl "%CMR-ENDPOINT%/granules?entry_id\[\]=MYCOLLECTION_V1&entry_id\[\]=OTHERCOLLECTION_V2"
 
