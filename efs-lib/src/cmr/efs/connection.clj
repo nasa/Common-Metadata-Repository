@@ -31,8 +31,8 @@
   (let [concept-path (format "%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) (:concept-id concept) (:revision-id concept))]
     (info "Saving concept to EFS at path " concept-path)
     (io/make-parents (io/file concept-path))
-    (info "Typing of path: " (type (Paths/get concept-path (into-array String []))) " metadata: " (type (.getBytes (:metadata concept))) " Options: " (type (into-array OpenOption [])))
-    (Files/write (Paths/get concept-path (into-array String [])) (.getBytes (:metadata concept)) (into-array OpenOption []))))
+    (info "Typing of path: " (type (Paths/get concept-path (into-array String []))) " metadata: " (type (:metadata concept)) " Options: " (type (into-array OpenOption [])))
+    (Files/write (Paths/get concept-path (into-array String [])) (:metadata concept) (into-array OpenOption []))))
 
 (defn get-concept
   "Gets a concept from EFS"
