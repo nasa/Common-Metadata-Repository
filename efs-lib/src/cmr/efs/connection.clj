@@ -13,8 +13,6 @@
                   Paths
                   OpenOption)))
 
-;; ---------------- 
-
 (defn health-fn
   "Returns the health status of the EFS instance."
   []
