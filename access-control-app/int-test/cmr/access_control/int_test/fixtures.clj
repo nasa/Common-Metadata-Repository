@@ -3,6 +3,7 @@
    [clojure.test :as ct]
    [cmr.access-control.config :as access-control-config]
    [cmr.access-control.system :as system]
+   [cmr.access-control.test.provider-util :as prov-util]
    [cmr.access-control.test.util :as test-util :refer [conn-context]]
    [cmr.common-app.test.client-util :as common-client-test-util]
    [cmr.common.jobs :as jobs]
@@ -110,7 +111,7 @@
      (e/grant-system-group-permissions-to-admin-group (conn-context) :create :read)
      (doseq [[provider-guid provider-id] provider-map]
        (mdb/create-provider (assoc (conn-context) :token (config/echo-system-token))
-                            {:provider-id provider-id})
+                            (prov-util/minimum-provider->metadata {:provider-id provider-id}))
        ;; Create provider in mock echo with the guid set to the ID to make things easier to sync up
        (e/create-providers (conn-context) {provider-id provider-id})
        ;; Give full permission to the mock admin user to modify groups for the provider

@@ -11,6 +11,7 @@
    [cmr.common.util :as util]
    [cmr.common.validations.core :as validations]
    [cmr.metadata-db.config :as mdb-config]
+   [cmr.metadata-db.int-test.provider-util :as prov-util]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.transmit.config :as transmit-config]
    [inflections.core :as inf]))
@@ -475,47 +476,13 @@
 ;;; Providers
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-;; The most basic provider metadata needed to create a provider
-(def basic-provider {:ProviderId "REAL_ID"
-                     :DescriptionOfHolding "sample provider, no data"
-                     :Organizations [{:Roles ["ORIGINATOR"]
-                                      :ShortName "REAL_ID"
-                                      :URLValue "https://example.gov"}]
-                     :Administrators ["admin1"]
-                     :MetadataSpecification {:Name "provider"
-                                             :URL "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0"
-                                             "Version" "1.0.0"}
-                     ;;:Consortiums ["one" "two"]
-                     })
-
-(defn minimum-provider->metadata
-  "construct the new provider post document. Allow for the minimal set of inputs
-   by the callers of reset-database-fixture and any of the CRUD functions here."
-  [minimum-provider]
-  (let [provider-id (get minimum-provider :provider-id)
-        short-name (get minimum-provider :short-name provider-id)
-        cmr-only (:cmr-only minimum-provider)
-        small (:small minimum-provider)
-        consortiums (:consortiums minimum-provider)
-        extra-fields (dissoc minimum-provider :provider-id :short-name :cmr-only :small :consortiums)
-        metadata (-> basic-provider
-                     (merge extra-fields)
-                     (assoc :ProviderId provider-id)
-                     (assoc-in [:Organizations 0 :ShortName] short-name))]
-        (util/remove-nil-keys {:provider-id provider-id
-                               :short-name short-name
-                               :cmr-only (if (some? cmr-only) cmr-only false)
-                               :small (if (some? small) small false)
-                               :consortiums (when (some? consortiums) consortiums)
-                               :metadata metadata})))
-
 (defn save-provider
   "Make a POST request to save a provider with JSON encoding of the provider. Returns a map with
   status and a list of error messages."
   [params]
   (let [response (client/post (providers-url)
                               {:body (-> params
-                                         minimum-provider->metadata
+                                         prov-util/minimum-provider->metadata
                                          util/remove-nil-keys
                                          json/generate-string)
                                :content-type :json
@@ -545,7 +512,7 @@
   provider-id, short-name, cmr-only and small fields of the provider."
   [params]
   (let [response (client/put (format "%s/%s" (providers-url) (:provider-id params))
-                             {:body (json/generate-string (minimum-provider->metadata params))
+                             {:body (json/generate-string (prov-util/minimum-provider->metadata params))
                               :content-type :json
                               :accept :json
                               :as :json
