@@ -448,7 +448,7 @@
                                                                (after-save conn provider concept)))))
           (when (not (= "efs-off" (efs-config/efs-toggle)))
             (info "Creating EFS record with efs-toggle value " (efs-config/efs-toggle))
-            (info "Time taken for EFS insertion: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap cols values)))))
+            (info "Time taken for EFS insertion: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))))
             (info (format "Does file exist at %s: %b" (format "%s/%s/%s/%s.r%d.zip" efs-config/efs-directory provider concept-type (:concept-id concept) (:revision-id concept)) (.exists (io/file (format "%s/%s/%s/%s.r%d.zip" efs-config/efs-directory provider concept-type (:concept-id concept) (:revision-id concept)))))))
           nil)))
     (catch Exception e
