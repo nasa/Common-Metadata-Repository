@@ -4,6 +4,7 @@
    [clj-time.coerce :as cr]
    [clojure.java.jdbc :as j]
    [clojure.string :as string]
+   [clojure.java.io :as io]
    [cmr.common.concepts :as common-concepts]
    [cmr.common.date-time-parser :as p]
    [cmr.common.log :refer [debug error info trace warn]]
@@ -442,11 +443,12 @@
           (trace "Executing" stmt "with values" (pr-str values))
           (when (not (= "efs-only" (efs-config/efs-toggle)))
             (info "Creating Oracle record with efs-toggle value " (efs-config/efs-toggle))
-            (j/db-do-prepared db stmt values)
-            (after-save conn provider concept))
+            (info "Time taken for Oracle insertion: " (first (util/time-execution
+                                                              (j/db-do-prepared db stmt values))) " ms"))
           (when (not (= "efs-off" (efs-config/efs-toggle)))
             (info "Creating EFS record with efs-toggle value " (efs-config/efs-toggle))
-            (efs/save-concept provider concept-type concept))
+            (info "Time taken for EFS insertion: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms"))
+          (after-save conn provider concept)
           nil)))
     (catch Exception e
       (let [error-message (.getMessage e)
