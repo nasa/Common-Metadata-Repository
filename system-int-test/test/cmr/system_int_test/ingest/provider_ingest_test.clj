@@ -33,7 +33,6 @@
                   [:read :update]
                   [:read :update])]))
 
-
 (deftest provider-ingest-test
   (testing "create provider and get providers through ingest app"
     (are [provider-id short-name cmr-only small]
@@ -103,12 +102,6 @@
 
             "- two consortiums with an underscore"
             "PROV11" "S11" true true "Group2_1 Group2_3"
-
-            ;"- consortiums with only spaces"
-            ;"PROV12" nil nil nil "    "
-
-            ;"- consortiums with empty string"
-            ;"PROV13" nil nil nil ""
 
             "- consortiums with nil value"
             "PROV14" nil nil nil nil))
@@ -183,20 +176,6 @@
              {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
            (set (ingest/get-ingest-providers))))
 
-   ;; Updating the consortiums to a string of spaces
-   ; (ingest/update-ingest-provider {:provider-id "PROV6"
-   ;                                 :short-name "S6"
-   ;                                 :cmr-only false
-   ;                                 :small false
-   ;                                 :consortiums "   "})
-
-    ;(is (= #{{:provider-id "PROV4" :short-name "PROV4" :cmr-only false :small true}
-    ;         {:provider-id "PROV6" :short-name "PROV6" :cmr-only false :small false}
-    ;         {:provider-id "PROV3" :short-name "PROV3" :cmr-only false :small false}
-    ;         {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
-    ;         {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
-    ;       (set (ingest/get-ingest-providers))))
-
     ;; Updating the consortiums to a value that includes non-alphanumeric, non-underscore and non-space characters will fail
     (let [response (ingest/update-ingest-provider {:provider-id "PROV6"
                                                    :short-name "S6"
@@ -213,18 +192,6 @@
                                                         :short-name "S5"
                                                         :cmr-only true
                                                         :small false})))))
-  ;(testing "update provider with a different small value is invalid"
-  ;  (ingest/create-ingest-provider {:provider-id "PROV5"
-  ;                                  :short-name "S5"
-  ;                                  :cmr-only true
-  ;                                  :small true})
-  ;  (let [response (ingest/update-ingest-provider {:provider-id "PROV5"
-  ;                                                 :short-name "S5"
-  ;                                                 :cmr-only true
-  ;                                                 :small false})
-  ;        {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})]
-  ;    (is (= [400 ["Provider [PROV5] small field cannot be modified."]]
-  ;           [status errors]))))
   (testing "update provider without permission"
     (let [response (client/put (url/ingest-provider-url "PROV1")
                                {:throw-exceptions false

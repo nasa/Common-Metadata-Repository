@@ -12,7 +12,6 @@
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.ingest.config :as ingest-config]
-   ;;[cmr.metadata-db.int-test.utility :as md-util]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
@@ -815,7 +814,7 @@
    (create-provider provider-map {}))
   ([provider-map options]
    (let [{:keys [provider-guid provider-id short-name small cmr-only consortiums]} provider-map
-         short-name provider-id ; (or short-name (:short-name options) provider-id)
+         short-name provider-id ;; no production provider needs this, so make it official
          cmr-only (if (some? cmr-only) cmr-only (get options :cmr-only true))
          small (if (some? small) small (get options :small false))
          grant-all-search? (get options :grant-all-search? true)
@@ -869,11 +868,11 @@
                         :provider-id provider-id
                         :consortiums consortiums}))]
      (doseq [provider-map providers]
-            (create-provider
-             provider-map
-             {:grant-all-search? grant-all-search?
-              :grant-all-ingest? grant-all-ingest?
-              :grant-all-access-control? grant-all-access-control?})))))
+       (create-provider
+        provider-map
+        {:grant-all-search? grant-all-search?
+         :grant-all-ingest? grant-all-ingest?
+         :grant-all-access-control? grant-all-access-control?})))))
 
 (defn setup-providers-with-customized-options
   "Creates the given providers in CMR. Providers can be passed in

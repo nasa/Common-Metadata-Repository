@@ -39,7 +39,7 @@
     (assoc response :body body)))
 
 (defn- result->response-map
-  "Returns the response map of the given result"
+  "Returns the response map of the given result, in the old style, no metadata"
   [result]
   (let [{:keys [status body]} result]
     {:status status
@@ -47,7 +47,9 @@
      :body body}))
 
 (defn- one-result->response-map
-  "Returns the response map of the given result, but this expects there to be just one value"
+  "Returns the response map of the given result, but this expects there to be
+   just one value and it only returns the metadata, see result->response-map for
+   the older return type"
   [result]
   (let [{:keys [status body]} result
         metadata (-> body
@@ -87,9 +89,8 @@
    service.
    throws error if the metadata is not a valid against the UMM service JSON schema."
   [concept]
-  (let [{:keys [provider-id cmr-only small]} concept
-        provider-id (get concept :ProviderId provider-id)
-        short-name provider-id ;; every provider does this anyways, so make it official
+  (let [provider-id (get concept :ProviderId)
+        short-name provider-id ;; every production provider does this anyways, so make it official
         small (:small concept)
         cmr-only (:cmr-only concept)
         consortiums (string/join " " (get concept :Consortiums ""))
@@ -141,7 +142,6 @@
                              request-context :request-context
                              headers :headers}
       (acl/verify-ingest-management-permission request-context :update)
-      ;; delete is still not functioning correctly
       (cmr.ingest.api.core/verify-provider-exists request-context provider-id)
       (common-enabled/validate-write-enabled request-context "ingest")
       (provider-service/verify-empty-provider request-context provider-id headers)
