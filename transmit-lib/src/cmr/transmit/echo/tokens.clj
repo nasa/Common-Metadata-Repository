@@ -12,7 +12,6 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as common-util]
-   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.echo.rest :as r]
    [cmr.transmit.urs :as urs]))
@@ -113,7 +112,7 @@
     (if (and (common-util/is-jwt-token? token)
              (transmit-config/local-edl-verification))
       (verify-edl-token-locally token)
-      (if (lt-validation/is-launchpad-token? token)
+      (if (common-util/is-launchpad-token? token)
         (urs/get-launchpad-user context token)
         (let [[status parsed body] (r/rest-post context "/tokens/get_token_info"
                                                 {:headers {"Accept" mt/json

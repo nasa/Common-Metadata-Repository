@@ -4,7 +4,6 @@
    [cheshire.core :as json]
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :as common-util]
    [cmr.common.services.errors :as svc-errors]
@@ -59,7 +58,7 @@
   "Returns the mock token info for the token with the given token id"
   [context token-id]
   ;; for launchpad token, remove the padding before searching
-  (let [token-id (if lt-validation/is-launchpad-token?
+  (let [token-id (if common-util/is-launchpad-token?
                    (string/replace token-id echo-util/LAUNCHPAD_TOKEN_PADDING "")
                    token-id)
         {:keys [username client_id expires id]} (get-token-or-error context token-id)]

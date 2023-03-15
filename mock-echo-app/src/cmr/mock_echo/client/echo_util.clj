@@ -3,7 +3,6 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.mock-echo-client :as echo-client]
@@ -78,7 +77,7 @@
 (def LAUNCHPAD_TOKEN_PADDING
   "Padding to make a regular token into launchpad token
    (i.e. make it longer than max length of URS token)."
-  (string/join (repeat lt-validation/URS_TOKEN_MAX_LENGTH "Z")))
+  (string/join (repeat util/URS_TOKEN_MAX_LENGTH "Z")))
 
 (defn login-with-launchpad-token
   "Logs in as the specified user and returns the launchpad token.

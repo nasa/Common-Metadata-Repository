@@ -10,7 +10,6 @@
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [inflections "0.13.0"]
-                 [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
