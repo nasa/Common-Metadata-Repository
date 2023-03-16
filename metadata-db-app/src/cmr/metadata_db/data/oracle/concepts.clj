@@ -377,7 +377,8 @@
                                                                                                          (where `(and (= :concept-id ~concept-id)
                                                                                                                       (= :revision-id ~revision-id)))))))))]
        (when (not (= "efs-off" (efs-config/efs-toggle)))
-         (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms."))
+         (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
+         (info "Values gotten from EFS get-concept: " (second efs-concept-get)))
        (when (not (= "efs-only" (efs-config/efs-toggle)))
          (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms."))
        (if oracle-concept-get
@@ -407,7 +408,8 @@
                                                          (doall (map (partial db-result->concept-map concept-type conn provider-id)
                                                                      (su/query conn stmt)))))))]
       (when (not (= "efs-off" (efs-config/efs-toggle)))
-        (info "Runtime of EFS get-concept: " (first efs-concepts-get) " ms."))
+        (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
+        (info "Values gotten from EFS: " (second efs-concepts-get)))
       (when (not (= "efs-only" (efs-config/efs-toggle)))
         (info "Runtime of Oracle get-concept: " (first oracle-concepts-get) " ms."))
       (if oracle-concepts-get
@@ -460,10 +462,10 @@
           (when (not (= "efs-only" (efs-config/efs-toggle)))
             (info "Creating Oracle record with efs-toggle value " (efs-config/efs-toggle))
             (info "Time taken for Oracle insertion: " (first (util/time-execution
-                                                              (j/db-do-prepared db stmt values))) " ms"))
+                                                              (j/db-do-prepared db stmt values))) " ms."))
           (when (not (= "efs-off" (efs-config/efs-toggle)))
             (info "Creating EFS record with efs-toggle value " (efs-config/efs-toggle))
-            (info "Time taken for EFS insertion: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms"))
+            (info "Time taken for EFS insertion: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))
           (after-save conn provider concept)
           nil)))
     (catch Exception e
