@@ -49,7 +49,8 @@
 (defn- one-result->response-map
   "Returns the response map of the given result, but this expects there to be
    just one value and it only returns the metadata, see result->response-map for
-   the older return type"
+   the older return type. However, if there is an error in the response, then the
+   body is returned as is"
   [result]
   (let [{:keys [status body]} result
         metadata (-> body
@@ -58,7 +59,7 @@
                      (json/generate-string))]
     {:status status
      :headers {"Content-Type" (mt/with-utf-8 mt/json)}
-     :body metadata}))
+     :body (if (= status 200) metadata body)}))
 
 (defn read-body
   [headers body-input]
@@ -142,11 +143,10 @@
                              request-context :request-context
                              headers :headers}
       (acl/verify-ingest-management-permission request-context :update)
-      (cmr.ingest.api.core/verify-provider-exists request-context provider-id)
       (common-enabled/validate-write-enabled request-context "ingest")
       (provider-service/verify-empty-provider request-context provider-id headers)
       (one-result->response-map
-        (provider-service/delete-provider request-context provider-id)))
+       (provider-service/delete-provider request-context provider-id)))
 
     ;; get a list of providers, but return in the old format where metadata is in a field
     (GET "/" {:keys [request-context]}

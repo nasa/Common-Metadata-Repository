@@ -1,28 +1,28 @@
 (ns cmr.system-int-test.ingest.provider-ingest-test
   "CMR provider ingest integration test"
   (:require
-    [clj-http.client :as client]
-    [clojure.set :as set]
-    [clojure.test :refer :all]
-    [cmr.access-control.test.util :as access-control]
-    [cmr.common.util :as u]
-    [cmr.mock-echo.client.echo-util :as e]
-    [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.data2.granule :as dg]
-    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-    [cmr.system-int-test.system :as s]
-    [cmr.system-int-test.utils.association-util :as au]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.metadata-db-util :as mdb]
-    [cmr.system-int-test.utils.search-util :as search]
-    [cmr.system-int-test.utils.service-util :as services]
-    [cmr.system-int-test.utils.subscription-util :as subscriptions]
-    [cmr.system-int-test.utils.tool-util :as tools]
-    [cmr.system-int-test.utils.url-helper :as url]
-    [cmr.system-int-test.utils.variable-util :as variables]
-    [cmr.transmit.config :as transmit-config]
-    [cmr.common.util :as util]))
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clojure.set :as set]
+   [clojure.test :refer :all]
+   [cmr.access-control.test.util :as access-control]
+   [cmr.common.util :as u]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.association-util :as au]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.service-util :as services]
+   [cmr.system-int-test.utils.subscription-util :as subscriptions]
+   [cmr.system-int-test.utils.tool-util :as tools]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.system-int-test.utils.variable-util :as variables]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
               (join-fixtures
@@ -425,15 +425,25 @@
 
   (testing "delete non-existent provider"
     (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "NON_EXIST")]
-      (is (= "application/json" content-type))
-      (is (= [422 ["Provider with provider-id [NON_EXIST] does not exist."]]
+      (is (= "application/json;charset=utf-8" content-type))
+      (is (= [404 ["Provider with provider-id [NON_EXIST] does not exist."]]
              [status errors]))))
 
-  ;;(testing "delete SMALL_PROV provider"
-  ;;  (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "SMALL_PROV")]
-  ;;    (is (= "application/json" content-type))
-  ;;    (is (= [400 ["Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted."]]
-  ;;           [status errors]))))
+  (testing "can not create SMALL_PROV provider"
+    ;; You can not delete SMALL_PROV in a test because you can not create this provider
+    (let [{:keys [status headers body]} (ingest/create-ingest-provider {:provider-id "SMALL_PROV"})
+          errors (get (json/parse-string body) "errors")]
+      (is (= [400 "application/json;charset=utf-8"
+              ["Provider Id [SMALL_PROV] is reserved"]]
+             [status (get headers "Content-Type") errors]))))
+
+  ;(testing "delete SMALL_PROV provider"
+  ;  ;; You can not delete SMALL_PROV in a test because you can not create this provider as the test
+  ;  ;; above shows
+  ;  (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "SMALL_PROV")]
+  ;    (is (= "application/json" content-type))
+  ;    (is (= [400 ["Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted."]]
+  ;           [status errors]))))
 
   (testing "delete provider without permission"
     (let [response (client/delete (url/ingest-provider-url "PROV1")
@@ -442,19 +452,19 @@
                                    :query-params {:token "dummy-token"}})]
       (is (= 401 (:status response))))))
 
-;(deftest provider-delete-cascades-to-concepts-test
-;  (doseq [provider [{:provider-id "SMALL" :short-name "SP" :cmr-only true :small true}
-;                    {:provider-id "NOTSMALL" :short-name "NSP"}]]
-;    (ingest/create-ingest-provider provider)
-;    (let [access-group (u/map-keys->kebab-case
-;                        (access-control/create-group
-;                         (transmit-config/echo-system-token)
-;                         {:name "Administrators"
-;                          :description "A Group"
-;                          :provider_id (:provider-id provider)}))]
-;      (is (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group)))
-;      (ingest/delete-ingest-provider (:provider-id provider))
-;      (is (not (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group))))
-;      ;; re-create the provider to ensure nothing has stuck around in the DB)
-;      (ingest/create-ingest-provider provider)
-;      (is (not (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group)))))))
+(deftest provider-delete-cascades-to-concepts-test
+  (doseq [provider [{:provider-id "SMALL" :cmr-only true :small true}
+                    {:provider-id "NOTSMALL"}]]
+    (ingest/create-ingest-provider provider)
+    (let [access-group (u/map-keys->kebab-case
+                        (access-control/create-group
+                         (transmit-config/echo-system-token)
+                         {:name "Administrators"
+                          :description "A Group"
+                          :provider_id (:provider-id provider)}))]
+      (is (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group)))
+      (ingest/delete-ingest-provider (:provider-id provider))
+      (is (not (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group))))
+      ;; re-create the provider to ensure nothing has stuck around in the DB)
+      (ingest/create-ingest-provider provider)
+      (is (not (mdb/concept-exists-in-mdb? (:concept-id access-group) (:revision-id access-group)))))))
