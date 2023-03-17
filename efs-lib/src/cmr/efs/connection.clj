@@ -68,7 +68,7 @@
 (defn get-concepts
   "Gets a group of concepts from EFS"
   [provider concept-type concept-id-revision-id-tuples]
-  (info "Keys in revision tuple: " (keys (first concept-id-revision-id-tuples)))
+  (info "Keys in revision tuple: " (first concept-id-revision-id-tuples))
   (remove nil? (doall (map (fn [tuple] (get-concept provider concept-type (:concept_id tuple) (:revision_id tuple))) concept-id-revision-id-tuples))))
 
 (defn delete-concept
