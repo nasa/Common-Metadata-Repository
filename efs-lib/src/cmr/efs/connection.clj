@@ -48,7 +48,7 @@
 (defn save-concept
   "Saves a concept to EFS"
   [provider concept-type concept]
-  (let [concept-path (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) (:concept-id concept) (:concept-id concept) (:revision-id concept))]
+  (let [concept-path (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) (:concept_id concept) (:concept_id concept) (:revision_id concept))]
     (info "Saving concept to EFS at path " concept-path)
     (io/make-parents (io/file concept-path))
     (Files/write (Paths/get concept-path (into-array String [])) (:metadata concept) (into-array OpenOption []))))
