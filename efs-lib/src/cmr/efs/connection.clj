@@ -55,7 +55,7 @@
   ([provider concept-type concept-id revision-id]
    (let [concept-path (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) concept-id concept-id revision-id)]
      (info "Getting concept from EFS at path " concept-path)
-     {:revision-id revision-id :metadata (Files/readAllBytes concept-path)})))
+     {:revision-id revision-id :metadata (Files/readAllBytes (Paths/get concept-path (into-array String [])))})))
 
 (defn get-concepts
   "Gets a group of concepts from EFS"
