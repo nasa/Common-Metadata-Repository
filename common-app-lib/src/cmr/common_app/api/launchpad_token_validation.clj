@@ -25,7 +25,7 @@
   "Validate the token in request context is a Launchpad Token if launchpad token enforcement
    is turned on. This function should be called on routes that will ingest into CMR.
    Ingest will only be allowed if the user is in the NAMS CMR Ingest group
-   (done in legacy services) and also has the right ACLs which is based on Earthdata Login uid."
+   and also has the right ACLs which is based on Earthdata Login uid."
   [request-context]
   (let [token (:token request-context)]
     (when (and (config/launchpad-token-enforced)

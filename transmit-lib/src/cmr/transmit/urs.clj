@@ -31,9 +31,11 @@
   [conn username]
   (format "%s/api/user_groups/groups_for_user/%s" (conn/root-url conn) username))
 
+;; NOTE the below configuration is as defined by URS - it does require the
+;; token as a URL parameter although it is a POST request.
 (defn- launchpad-validation-url
   [conn username]
-  (format "%s/api/nams/edl_user?token=%s" (conn/root-url conn) username))
+  (format "%s/api/nams/edl_user_uid?token=%s" (conn/root-url conn) username))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions

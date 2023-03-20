@@ -52,7 +52,7 @@
   (when token
     (case token
       "ABC-1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-      {:status 200 :body {:uid "user1" :first-name "User" :last-name "Name" :email-address "somebody@nasa.gov"}} 
+      {:status 200 :body {:uid "user1"}} 
       {:status 400 :body {:error "Launchpad SSO authentication failed"}})))
 
 (defn get-user-info
@@ -260,8 +260,7 @@
             (get-groups-for-user request-context user-id))))
       
       (context "/api/nams" []
-        (POST "/edl_user" {:keys [request-context params] :as request}
-          (println "REQ PARAM:" (:token params))
+        (POST "/edl_user_uid" {:keys [request-context params] :as request}
           (assert-bearer-token request)
           (get-launchpad-user request-context (:token params))))
 
