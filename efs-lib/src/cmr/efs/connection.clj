@@ -67,7 +67,7 @@
             (concept-revision-exists (:provider-id provider) (name concept-type) concept-id revision-id))
      (let [concept-path (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) concept-id concept-id revision-id)]
        (info "Getting concept from EFS at path " concept-path)
-       {:revision-id revision-id :metadata (util/gzip-blob->string (Files/readAllBytes (Paths/get concept-path (into-array String []))))})
+       {:revision-id revision-id :metadata (util/gzip-bytes->string (Files/readAllBytes (Paths/get concept-path (into-array String []))))})
      nil)))
 
 (defn get-concepts
