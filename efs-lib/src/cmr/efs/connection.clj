@@ -5,6 +5,7 @@
    [clojure.string :as str]
    [clj-time.coerce :as cr]
    [cmr.common.log :refer [debug error info trace warn]]
+   [cmr.common.util :as util]
    [cmr.efs.config :as efs-config]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
@@ -66,7 +67,7 @@
             (concept-revision-exists (:provider-id provider) (name concept-type) concept-id revision-id))
      (let [concept-path (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) concept-id concept-id revision-id)]
        (info "Getting concept from EFS at path " concept-path)
-       {:revision-id revision-id :metadata (Files/readAllBytes (Paths/get concept-path (into-array String [])))})
+       {:revision-id revision-id :metadata (util/gzip-blob->string (Files/readAllBytes (Paths/get concept-path (into-array String []))))})
      nil)))
 
 (defn get-concepts
