@@ -2,10 +2,8 @@
   "Defines the HTTP URL routes for the application."
   (:require
    [cheshire.core :as json]
-   [clojure.string :as string]
    [clojure.walk :as walk]
    [cmr.acl.core :as acl]
-   [cmr.common.config :as config]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.metadata-db.api.route-helpers :as rh]

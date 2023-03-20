@@ -437,14 +437,6 @@
               ["Provider Id [SMALL_PROV] is reserved"]]
              [status (get headers "Content-Type") errors]))))
 
-  ;(testing "delete SMALL_PROV provider"
-  ;  ;; You can not delete SMALL_PROV in a test because you can not create this provider as the test
-  ;  ;; above shows
-  ;  (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "SMALL_PROV")]
-  ;    (is (= "application/json" content-type))
-  ;    (is (= [400 ["Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted."]]
-  ;           [status errors]))))
-
   (testing "delete provider without permission"
     (let [response (client/delete (url/ingest-provider-url "PROV1")
                                   {:throw-exceptions false

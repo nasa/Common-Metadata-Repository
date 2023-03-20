@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.int-test.provider-util
-  "Functions related to creating a provider. This code is very very similar to
-   other test utility functions, so keeping this code in a file to make it easy
-   to diff the changes. Different modules load in different order, so a common
+  "Functions related to creating a provider. This code is very similar to other
+   test utility functions, so keeping this code in a file to make it easy to
+   diff the changes. Different modules load in different order, so a common
    locations seams to hard to find.
    This code is similar to the following files:
    * cmr.metadata-db.int-test.utility
@@ -30,7 +30,7 @@
    The output is meant for metadata-db"
   [minimum-provider]
   (let [provider-id (get minimum-provider :provider-id)
-        short-name provider-id ;(get minimum-provider :short-name provider-id)
+        short-name provider-id ;; we no longer need to maintain two versions of the same value
         cmr-only (:cmr-only minimum-provider)
         small (:small minimum-provider)
         consortiums (:consortiums minimum-provider)

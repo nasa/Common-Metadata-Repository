@@ -565,8 +565,8 @@
               ;; these are required fields, default them to something, assume
               ;; other fields are to be passed in which will override the default
               ;; metadata defined in a template
-              short-name (if short-name short-name provider-id)
-              provider-id (if provider-id provider-id short-name)
+              short-name (or short-name provider-id)
+              provider-id (or provider-id short-name)
               cmr-only (if cmr-only true false)
               small (if small true false)
               provider (assoc provider

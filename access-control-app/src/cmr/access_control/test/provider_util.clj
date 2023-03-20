@@ -68,5 +68,5 @@
                             :cmr-only cmr-only)
                      (util/remove-nil-keys))
         consort_count (count (:Consortiums metadata))
-        metadata (if (< 0 consort_count) metadata (dissoc metadata :Consortiums))]
+        metadata (if (zero? consort_count) (dissoc metadata :Consortiums) metadata)]
     metadata))

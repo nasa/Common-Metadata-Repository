@@ -2,7 +2,6 @@
   "Functions for saving, retrieving, deleting providers."
   (:require
    [clojure.java.jdbc :as j]
-   [clojure.string :as string]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.util :as cutil]
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
@@ -111,10 +110,14 @@
                         provider-id]))))
 
 (defn update-provider
-  [db {:keys [provider-id short-name cmr-only consortiums metadata]}]
-  ;; Ignoring short-name as CMR will no longer support updates on this field as
-  ;; is is always the same as provider id. As of 2023-03-02, all production
-  ;; providers currently match.
+  "Update a provider in the database using the supplied provider-id allowing
+   cmr_only, consortiums, and metadata to change. All other fields are not
+   modified.
+
+   Ignoring short-name as CMR will no longer support updates on this
+   field as is is always the same as provider id. As of 2023-03-02, all
+   production providers currently match."
+  [db {:keys [provider-id cmr-only consortiums metadata]}]
   (j/update! db
              :providers
              {:cmr_only (if cmr-only 1 0)

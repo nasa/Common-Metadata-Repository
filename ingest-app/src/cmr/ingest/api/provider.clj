@@ -22,10 +22,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
    [cmr.ingest.services.provider-service :as provider-service]
-   [compojure.core :refer :all]
-   [cmr.common.generics :as generics]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]))
+   [compojure.core :refer :all]))
 
 (defn- drop-metadata
   "Look for and remove metadata field from the body returned by the metadata db
@@ -34,7 +31,7 @@
   (let [body (-> response
                  :body
                  json/parse-string
-                 (as-> metadata (map #(dissoc %1 "metadata") metadata))
+                 (as-> metadata (map #(dissoc % "metadata") metadata))
                  json/generate-string)]
     (assoc response :body body)))
 
@@ -79,11 +76,11 @@
 
 (defn- validate-boolean
   "Throw an error if one of the boolean inputs to provider does not look boolean"
-  [field name]
-  (when-not (or (nil? field)(true? field) (false? field))
+  [field property-name]
+  (when-not (or (nil? field) (true? field) (false? field))
     (srvc-errors/throw-service-error
      :invalid-data
-     (format "%s must be either true or false but was [\"%s\"]" name field))))
+     (format "%s must be either true or false but was [\"%s\"]" property-name field))))
 
 (defn- validate-and-prepare-provider-concept
   "Validate a provider concept and construct a map that is usable to the metadata_db
