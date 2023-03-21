@@ -72,7 +72,7 @@
   (let [results (-> concept
                     (json/generate-string)
                     (gcom/validate-metadata-against-schema :provider "1.0.0" false))]
-    (when (some? results) (errors/throw-service-errors :invalid-data results))))
+    (when (some? results) (srvc-errors/throw-service-errors :invalid-data results))))
 
 (defn- validate-boolean
   "Throw an error if one of the boolean inputs to provider does not look boolean"
