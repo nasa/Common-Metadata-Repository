@@ -3,9 +3,12 @@
   implementations as well as other parts of the CMR. Putting them here
   avoids having to call into an implementation."
   (:require
+   [cheshire.core :as json]
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common.mime-types :as mt]))
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (def EXPIRED_CONCEPTS_BATCH_SIZE
   "The batch size to retrieve expired concepts"
@@ -53,3 +56,21 @@
       (mt/with-version mt/umm-json (or version "1.0")))
     ;; if it's anything else, including "UMM_JSON", use the map lookup
     (get db-format->mime-type-map db-format)))
+
+(defn metadata->umm-concept
+  "Parses native metadata into umm-json and returns concept with new metadata"
+  [{:keys [metadata concept-type format] :as concept} db]
+  (if (or (= format (mt/format->mime-type :umm-json))
+          (not (= :collection concept-type))
+          (not (get-in db [:context :include-umm-metadata])))
+    concept
+    (let [umm-json (->> metadata
+                        (umm-spec/parse-metadata
+                         (assoc (:context db) :ignore-kms-keywords true)
+                         concept-type
+                         format)
+                        util/remove-nils-empty-maps-seqs
+                        json/generate-string)]
+      (-> concept
+          (assoc :metadata umm-json)
+          (assoc :format (mt/format->mime-type :umm-json))))))

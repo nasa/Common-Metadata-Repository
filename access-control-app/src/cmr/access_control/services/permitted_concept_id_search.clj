@@ -137,7 +137,8 @@
 (defmethod get-permitted-concept-id-conditions :collection
   [context concept]
   (let [parsed-metadata (umm-spec/parse-metadata
-                         (assoc context :ignore-kms-keywords true) concept)]
+                         (assoc context :ignore-kms-keywords true)
+                         concept)]
     (gc/and
      (common-qm/string-condition :provider (:provider-id concept))
      (common-qm/boolean-condition :collection-applicable true)

@@ -24,6 +24,7 @@
                  [nasa-cmr/cmr-oracle-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-efs-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-schemas "0.0.1-SNAPSHOT"]
+                 [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]

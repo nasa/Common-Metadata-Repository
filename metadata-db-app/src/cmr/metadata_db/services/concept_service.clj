@@ -525,9 +525,9 @@
                                         :variable-concept-id variable-concept-id
                                         :exclude-metadata true
                                         :latest true})
-                  ;; Get all the associations except for the va-concept.
-                  (filter #(not= va-concept-id (:concept-id %)))
-                  (filter #(not (:deleted %))))]
+                 ;; Get all the associations except for the va-concept.
+                 (filter #(not= va-concept-id (:concept-id %)))
+                 (filter #(not (:deleted %))))]
     (doseq [va vas]
       (let [association {:source-concept-id (get-in va [:extra-fields :variable-concept-id])
                          :concept-id (get-in va [:extra-fields :associated-concept-id])
@@ -859,7 +859,7 @@
                           :latest true})]
       ;; create tool association tombstones and queue the tool association delete events
       (tombstone-associations context assoc-type search-params false :tool)))
-   (when (= :generic-association assoc-type)
+  (when (= :generic-association assoc-type)
     (let [search-params1 (cutil/remove-nil-keys
                           {:concept-type assoc-type
                            :source-concept-identifier concept-id
@@ -893,8 +893,8 @@
                              :latest true})]
         ;;For generic associations, conceptn could appear as both source-concept
         ;;and associated-concept so it needs to tombstone additional associations.
-      (tombstone-associations context assoc-type search-params1 false concept-type)
-      (tombstone-associations context assoc-type search-params2 false concept-type)))))
+        (tombstone-associations context assoc-type search-params1 false concept-type)
+        (tombstone-associations context assoc-type search-params2 false concept-type)))))
 
 ;; true implies creation of tombstone for the revision
 (defmethod save-concept-revision true

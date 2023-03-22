@@ -79,6 +79,11 @@
   [_ {:keys [provider-id]} base-clause]
   (add-provider-clause provider-id base-clause))
 
+(doseq [doseq-concept-type (common-concepts/get-generic-concept-types-array)]
+  (defmethod by-provider doseq-concept-type
+    [_ {:keys [provider-id]} base-clause]
+    (add-provider-clause provider-id base-clause)))
+
 (defmethod by-provider :default
   [_ {:keys [provider-id small]} base-clause]
   (if small
@@ -234,7 +239,12 @@
                                                                      (from table)
                                                                      (where `(= :concept-id ~concept-id))))))]
     (when (and (and concept_id native_id)
-               (or (not= concept_id concept-id) (not= native_id native-id)))
+               (or (and (not= concept_id concept-id)
+                        ;; In case of generic documents, we need to make sure
+                        ;; the concept types are the same.
+                        (= (common-concepts/concept-id->type concept_id)
+                           (common-concepts/concept-id->type concept-id)))
+                   (not= native_id native-id)))
       {:error :concept-id-concept-conflict
        :error-message (format (str "Concept id [%s] and native id [%s] to save do not match "
                                    "existing concepts with concept id [%s] and native id [%s].")
@@ -249,7 +259,7 @@
   [db concept]
   (let [variable-concept-id (get-in concept [:extra-fields :variable-concept-id])
         associated-concept-id (get-in concept [:extra-fields :associated-concept-id])]
-    (when (and variable-concept-id associated-concept-id))
+    (when (and variable-concept-id associated-concept-id)
       ;; Get all the other variables sharing the same name; not deleted
       ;; and are associated with the same collection.
       (let [stmt [(format "select va.source_concept_identifier
@@ -277,7 +287,7 @@
           {:error :collection-associated-with-variable-same-name
            :error-message (format (str "Variable [%s] and collection [%s] can not be associated "
                                        "because the collection is already associated with another variable [%s] with same name.")
-                                  variable-concept-id associated-concept-id v-concept-id-same-name)}))))
+                                  variable-concept-id associated-concept-id v-concept-id-same-name)})))))
 
 (defn validate-same-provider-variable-association
   "Validates that variable and the collection in the concept being saved are from the same provider.
@@ -308,12 +318,21 @@
 
 (defn get-concept-id
   [db concept-type provider native-id]
-  (let [table (tables/get-table-name provider concept-type)]
-    (:concept_id
-     (su/find-one db (select [:concept-id]
-                             (from table)
-                             (where (by-provider concept-type
-                                     provider `(= :native-id ~native-id))))))))
+  (let [table (tables/get-table-name provider concept-type)
+        concept-id (:concept_id
+                    (su/find-one db (select [:concept-id]
+                                            (from table)
+                                            (where (by-provider concept-type
+                                                    provider `(= :native-id ~native-id))))))]
+    ;; In generic document case, they all share the same CMR_GENERIC_DOCUMENTS table,
+    ;; which doesn't contain the concept-type that can be used
+    ;; in the sql constraint. Therefore, we need to make sure the concept-id
+    ;; returned belongs to the same concept-type, so that concepts from different concept types
+    ;; won't be updated on top of each other just because they share the same native-id.
+    (when (and concept-id
+               (= concept-type (common-concepts/concept-id->type concept-id)))
+      concept-id)))
+
 
 (defn get-granule-concept-ids
   [db provider native-id]
@@ -716,6 +735,4 @@
         raw-meta-edn (:metadata c)
         _ (println "raw meta:\n" raw-meta-edn)
         meta (read-string raw-meta-edn)]
-    meta)
-
-  )
+    meta))

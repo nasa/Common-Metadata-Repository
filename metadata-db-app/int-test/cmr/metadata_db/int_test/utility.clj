@@ -156,6 +156,19 @@
       {:status status :concept (parse-concept response)}
       {:status status})))
 
+(defn get-concept-by-id-with-query-params
+  "Make a GET to retrieve a concept by concept-id and query-params map"
+  [concept-id query-params]
+  (let [response (client/get (str (concepts-url) concept-id)
+                             {:accept :json
+                              :throw-exceptions false
+                              :query-params query-params
+                              :connection-manager (conn-mgr)})
+        status (:status response)]
+    (if (= status 200)
+      {:status status :concept (parse-concept response)}
+      {:status status})))
+
 (defn get-concepts
   "Make a POST to retrieve concepts by concept-id and revision."
   ([tuples]

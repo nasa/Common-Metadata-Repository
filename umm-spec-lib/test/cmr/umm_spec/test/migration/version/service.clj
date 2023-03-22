@@ -590,9 +590,20 @@
 
    "Migrating up from 1.4.1 to 1.5.0"
    "1.4.1" "v1.5.0/Service_v1.4.1.json"
-   "1.5.0" "v1.5.0/Service_v1.4.1-to-v1.5.0.json"))
+   "1.5.0" "v1.5.0/Service_v1.4.1-to-v1.5.0.json"
+   
+   ;; ---- 1.5.1 tests ----
+   "Migrating down from 1.5.1 to 1.5.0"
+   "1.5.1" "v1.5.1/Service_v1.5.1.json"
+   "1.5.0" "v1.5.1/Service_v1.5.0.json"
 
+   "Migrating down from 1.5.1 to 1.5.0 with multiple interpolation values."
+   "1.5.1" "v1.5.1/Service_v1.5.1_interp.json"
+   "1.5.0" "v1.5.1/Service_v1.5.0_interp.json"
 
+   "Migrating up from 1.5.0 to 1.5.1"
+   "1.5.0" "v1.5.1/Service_v1.5.0.json"
+   "1.5.1" "v1.5.1/Service_v1.5.0-to-v1.5.1.json"))
 
 (comment
 
