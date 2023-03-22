@@ -1,27 +1,28 @@
 (ns cmr.system-int-test.ingest.provider-ingest-test
   "CMR provider ingest integration test"
   (:require
-    [clj-http.client :as client]
-    [clojure.set :as set]
-    [clojure.test :refer :all]
-    [cmr.access-control.test.util :as access-control]
-    [cmr.common.util :as u]
-    [cmr.mock-echo.client.echo-util :as e]
-    [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.data2.granule :as dg]
-    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-    [cmr.system-int-test.system :as s]
-    [cmr.system-int-test.utils.association-util :as au]
-    [cmr.system-int-test.utils.index-util :as index]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.metadata-db-util :as mdb]
-    [cmr.system-int-test.utils.search-util :as search]
-    [cmr.system-int-test.utils.service-util :as services]
-    [cmr.system-int-test.utils.subscription-util :as subscriptions]
-    [cmr.system-int-test.utils.tool-util :as tools]
-    [cmr.system-int-test.utils.url-helper :as url]
-    [cmr.system-int-test.utils.variable-util :as variables]
-    [cmr.transmit.config :as transmit-config]))
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clojure.set :as set]
+   [clojure.test :refer :all]
+   [cmr.access-control.test.util :as access-control]
+   [cmr.common.util :as u]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.data2.granule :as dg]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.association-util :as au]
+   [cmr.system-int-test.utils.index-util :as index]
+   [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.service-util :as services]
+   [cmr.system-int-test.utils.subscription-util :as subscriptions]
+   [cmr.system-int-test.utils.tool-util :as tools]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.system-int-test.utils.variable-util :as variables]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
               (join-fixtures
@@ -31,7 +32,6 @@
                   {"provguid1" "PROV1" "provguid2" "PROV2"}
                   [:read :update]
                   [:read :update])]))
-
 
 (deftest provider-ingest-test
   (testing "create provider and get providers through ingest app"
@@ -51,11 +51,11 @@
          "PROV8" nil nil nil))
 
   (testing "create provider invalid value"
-    (u/are2
+    (u/are3
       [provider error]
       (let [response (ingest/create-ingest-provider provider)
             {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})]
-        (= [400 [error]] [status errors]))
+        (is (= [422 [error]] [status errors])))
 
       "cmr-only invalid value"
       {:provider-id "PROV9" :short-name "S8" :cmr-only "" :small false}
@@ -103,40 +103,38 @@
             "- two consortiums with an underscore"
             "PROV11" "S11" true true "Group2_1 Group2_3"
 
-            "- consortiums with only spaces"
-            "PROV12" nil nil nil "    "
-
-            "- consortiums with empty string"
-            "PROV13" nil nil nil ""
-
             "- consortiums with nil value"
             "PROV14" nil nil nil nil))
 
   (testing "create provider with invalid consortiums. Fail with validation errors"
-    (u/are3 [provider-id short-name cmr-only small consortiums]
-         (let [provider {:provider-id provider-id
-                         :short-name short-name
-                         :cmr-only cmr-only
-                         :small small
-                         :consortiums consortiums}
-               response (ingest/create-ingest-provider provider)
-               {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})
-               err-msg (format "Invalid consortiums [%s]. Valid consortiums can only contain alphanumeric, underscore and space characters."
-                               consortiums)]
-           (is (= [422 [err-msg]]
-                  [status errors])))
+    (u/are3 [provider-id short-name cmr-only small consortiums expected]
+            (let [provider {:provider-id provider-id
+                            :short-name short-name
+                            :cmr-only cmr-only
+                            :small small
+                            :consortiums consortiums}
+                  response (ingest/create-ingest-provider provider)
+                  {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})]
+              (is (= [422 expected]
+                     [status errors])))
 
             "- consortiums with comma "
             "PROV0F" "S0F" false true "Group1, Group2"
+            ["#/Consortiums/0: string [Group1,] does not match pattern ^[\\w_]+$"]
 
             "- consortiums with semicolon"
             "PROV10" "S10" true true "Group2; Group3"
+            ["#/Consortiums/0: string [Group2;] does not match pattern ^[\\w_]+$"]
 
             "- consortiums with dash"
             "PROV11" "S11" true true "Group2-11 Group2-3"
+            ["#/Consortiums/0: string [Group2-11] does not match pattern ^[\\w_]+$"
+             "#/Consortiums/1: string [Group2-3] does not match pattern ^[\\w_]+$"]
 
             "- consortiums with special characters"
-            "PROV12" "S12" true true "Group! Group$")))
+            "PROV12" "S12" true true "Group! Group$"
+            ["#/Consortiums/0: string [Group!] does not match pattern ^[\\w_]+$"
+             "#/Consortiums/1: string [Group$] does not match pattern ^[\\w_]+$"])))
 
 (deftest update-provider-test
   (testing "creating a provider and changing attributes"
@@ -152,8 +150,10 @@
                                     :short-name "S4"
                                     :cmr-only false
                                     :small true})
-    (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
-             {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
+    ;; CMR no longer support provider-id and short-name differences
+    ;; can not change small either
+    (is (= #{{:provider-id "PROV4" :short-name "PROV4" :cmr-only false :small true}
+             {:provider-id "PROV3" :short-name "PROV3" :cmr-only false :small false}
              {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
              {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
            (set (ingest/get-ingest-providers)))))
@@ -169,23 +169,9 @@
                                     :small false
                                     :consortiums "Consortium_6"})
 
-    (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
-             {:provider-id "PROV6" :short-name "S6" :cmr-only false :small false :consortiums "Consortium_6"}
-             {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
-             {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
-             {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
-           (set (ingest/get-ingest-providers))))
-
-   ;; Updating the consortiums to a string of spaces
-   (ingest/update-ingest-provider {:provider-id "PROV6"
-                                    :short-name "S6"
-                                    :cmr-only false
-                                    :small false
-                                    :consortiums "   "})
-
-    (is (= #{{:provider-id "PROV4" :short-name "S4" :cmr-only false :small true}
-             {:provider-id "PROV6" :short-name "S6" :cmr-only false :small false :consortiums "   "}
-             {:provider-id "PROV3" :short-name "S3" :cmr-only false :small false}
+    (is (= #{{:provider-id "PROV4" :short-name "PROV4" :cmr-only false :small true}
+             {:provider-id "PROV6" :short-name "PROV6" :cmr-only false :small false :consortiums "Consortium_6"}
+             {:provider-id "PROV3" :short-name "PROV3" :cmr-only false :small false}
              {:provider-id "PROV2" :short-name "PROV2" :cmr-only true :small false}
              {:provider-id "PROV1" :short-name "PROV1" :cmr-only true :small false}}
            (set (ingest/get-ingest-providers))))
@@ -197,27 +183,15 @@
                                                    :small false
                                                    :consortiums "Consortium-6"})
           {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})
-          err-msg "Invalid consortiums [Consortium-6]. Valid consortiums can only contain alphanumeric, underscore and space characters."]
-       (is (= [422 [err-msg]]
-              [status errors]))))
+          err-msg "#/Consortiums/0: string [Consortium-6] does not match pattern ^[\\w_]+$"]
+      (is (= [422 [err-msg]]
+             [status errors]))))
 
   (testing "updating a non-existent provider fails"
     (is (= 404 (:status (ingest/update-ingest-provider {:provider-id "PROV5"
                                                         :short-name "S5"
                                                         :cmr-only true
                                                         :small false})))))
-  (testing "update provider with a different small value is invalid"
-    (ingest/create-ingest-provider {:provider-id "PROV5"
-                                    :short-name "S5"
-                                    :cmr-only true
-                                    :small true})
-    (let [response (ingest/update-ingest-provider {:provider-id "PROV5"
-                                                   :short-name "S5"
-                                                   :cmr-only true
-                                                   :small false})
-          {:keys [status errors]} (ingest/parse-ingest-response response {:accept-format :json})]
-      (is (= [400 ["Provider [PROV5] small field cannot be modified."]]
-             [status errors]))))
   (testing "update provider without permission"
     (let [response (client/put (url/ingest-provider-url "PROV1")
                                {:throw-exceptions false
@@ -455,11 +429,13 @@
       (is (= [404 ["Provider with provider-id [NON_EXIST] does not exist."]]
              [status errors]))))
 
-  (testing "delete SMALL_PROV provider"
-    (let [{:keys [status errors content-type]} (ingest/delete-ingest-provider "SMALL_PROV")]
-      (is (= "application/json;charset=utf-8" content-type))
-      (is (= [400 ["Provider [SMALL_PROV] is a reserved provider of CMR and cannot be deleted."]]
-             [status errors]))))
+  (testing "can not create SMALL_PROV provider"
+    ;; You can not delete SMALL_PROV in a test because you can not create this provider
+    (let [{:keys [status headers body]} (ingest/create-ingest-provider {:provider-id "SMALL_PROV"})
+          errors (get (json/parse-string body) "errors")]
+      (is (= [400 "application/json;charset=utf-8"
+              ["Provider Id [SMALL_PROV] is reserved"]]
+             [status (get headers "Content-Type") errors]))))
 
   (testing "delete provider without permission"
     (let [response (client/delete (url/ingest-provider-url "PROV1")
@@ -469,8 +445,8 @@
       (is (= 401 (:status response))))))
 
 (deftest provider-delete-cascades-to-concepts-test
-  (doseq [provider [{:provider-id "SMALL" :short-name "SP" :cmr-only true :small true}
-                    {:provider-id "NOTSMALL" :short-name "NSP"}]]
+  (doseq [provider [{:provider-id "SMALL" :cmr-only true :small true}
+                    {:provider-id "NOTSMALL"}]]
     (ingest/create-ingest-provider provider)
     (let [access-group (u/map-keys->kebab-case
                         (access-control/create-group

@@ -348,9 +348,20 @@
         (format "Failed to create provider status: %s body: %s"
                 status body)))))
 
-(defn update-provider-raw
-  [context {:keys [provider-id] :as provider}]
+(defn-timed read-provider
+  "Reads a provider with the given provider id"
+  [context provider-id]
   (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/providers/" provider-id)]
+    (client/get request-url
+                {:headers {config/token-header (config/echo-system-token)}
+                 :throw-exceptions false})))
+
+(defn update-provider-raw
+  "Update a provider in the database"
+  [context provider]
+  (let [conn (config/context->app-connection context :metadata-db)
+        provider-id (get provider :ProviderId (get provider :provider-id))
         request-url (str (conn/root-url conn) "/providers/" provider-id)]
     (client/put request-url
                 {:body (json/generate-string provider)

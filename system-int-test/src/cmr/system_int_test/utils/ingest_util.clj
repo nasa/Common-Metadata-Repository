@@ -2,7 +2,6 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.data :as d]
    [clojure.data.xml :as x]
    [clojure.string :as str]
    [clojure.test :refer :all]
@@ -14,18 +13,13 @@
    [cmr.common.xml :as cx]
    [cmr.ingest.config :as ingest-config]
    [cmr.mock-echo.client.echo-util :as echo-util]
-   [cmr.system-int-test.data2.provider-holdings :as ph]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
-   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
+   [cmr.system-int-test.utils.provider-util :as prov-util]
    [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]
-   [cmr.umm-spec.versioning :as umm-versioning]
-   [cmr.umm.echo10.echo10-collection :as c]
-   [cmr.umm.echo10.echo10-core :as echo10]
-   [cmr.umm.echo10.granule :as g])
+   [cmr.umm-spec.versioning :as umm-versioning])
   (:import
    (java.lang NumberFormatException)))
 
@@ -60,12 +54,16 @@
 (defn create-mdb-provider
   "Create the provider with the given provider id in the metadata db"
   [provider]
-  (create-provider-through-url provider (url/create-provider-url)))
+  (create-provider-through-url
+   (prov-util/minimum-provider->metadata provider)
+   (url/create-provider-url)))
 
 (defn create-ingest-provider
   "Create the provider with the given provider id through ingest app"
   [provider]
-  (create-provider-through-url provider (url/ingest-create-provider-url)))
+  (create-provider-through-url
+   (prov-util/minimum-provider->metadata-only provider)
+   (url/ingest-create-provider-url)))
 
 (defn get-providers-through-url
   [provider-url]
@@ -116,7 +114,7 @@
   [params]
   (client/put (url/ingest-provider-url (:provider-id params))
               {:throw-exceptions false
-               :body (json/generate-string params)
+               :body (json/generate-string (prov-util/minimum-provider->metadata-only params))
                :content-type :json
                :connection-manager (s/conn-mgr)
                :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
@@ -816,7 +814,7 @@
    (create-provider provider-map {}))
   ([provider-map options]
    (let [{:keys [provider-guid provider-id short-name small cmr-only consortiums]} provider-map
-         short-name (or short-name (:short-name options) provider-id)
+         short-name provider-id ;; no production provider needs this, so make it official
          cmr-only (if (some? cmr-only) cmr-only (get options :cmr-only true))
          small (if (some? small) small (get options :small false))
          grant-all-search? (get options :grant-all-search? true)
@@ -864,17 +862,17 @@
    (let [{:keys [grant-all-search? grant-all-ingest? grant-all-access-control?]}
          (merge reset-fixture-default-options options)
          providers (if (sequential? providers)
-                       providers
-                       (for [[provider-guid provider-id consortiums] providers]
-                         {:provider-guid provider-guid
-                          :provider-id provider-id
-                          :consortiums consortiums}))]
-      (doseq [provider-map providers]
-        (create-provider
-         provider-map
-         {:grant-all-search? grant-all-search?
-          :grant-all-ingest? grant-all-ingest?
-          :grant-all-access-control? grant-all-access-control?})))))
+                     providers
+                     (for [[provider-guid provider-id consortiums] providers]
+                       {:provider-guid provider-guid
+                        :provider-id provider-id
+                        :consortiums consortiums}))]
+     (doseq [provider-map providers]
+       (create-provider
+        provider-map
+        {:grant-all-search? grant-all-search?
+         :grant-all-ingest? grant-all-ingest?
+         :grant-all-access-control? grant-all-access-control?})))))
 
 (defn setup-providers-with-customized-options
   "Creates the given providers in CMR. Providers can be passed in

@@ -30,6 +30,7 @@
   ([context url-path]
    (rest-get context url-path {}))
   ([context url-path options]
+   (warn (format "Using legacy API call to GET %s!!!!!!!!!}" url-path))
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (request-options conn) options)
@@ -47,6 +48,7 @@
   ([context url-path]
    (rest-delete context url-path {}))
   ([context url-path options]
+   (warn (format "Using legacy API call to DELETE %s!!!!!!!!!}" url-path))
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (merge (request-options conn) options)
@@ -59,6 +61,7 @@
   ([context url-path body-obj]
    (rest-post context url-path body-obj {}))
   ([context url-path body-obj options]
+   (warn (format "Using legacy API call to POST %s!!!!!!!!!}" url-path))
    (let [conn (config/context->app-connection context :echo-rest)
          url (format "%s%s" (conn/root-url conn) url-path)
          params (if (some? (:form-params body-obj))

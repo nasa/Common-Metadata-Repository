@@ -104,15 +104,27 @@
   [generic-keyword generic-version]
   (read-schema-file "metadata" generic-keyword generic-version))
 
+(defn validate-metadata-against-schema
+  "Used to validate a metadata document against a schema
+   * raw-json: raw json which may or may not be correct
+   * generic-schema: generic name, such as :grid
+   * version: schema version to check, such the string 1.0.0
+   * throw?: true if errors are to be thrown, false to return
+   Returns: list of errors, nil, or throws errors"
+  ([raw-json generic-schema version]
+   (validate-metadata-against-schema raw-json generic-schema version false))
+  ([raw-json generic-schema version throw?]
+   (let [schema-file (read-schema-file :schema generic-schema version)
+         schema-obj (js-validater/json-string->json-schema schema-file)]
+     (js-validater/validate-json schema-obj raw-json throw?))))
+
 (defn validate-index-against-schema
   "Validate a document, returns an array of errors if there are problems
    Parameters:
    * raw-json, json as a string to validate
    Returns: list of errors or nil"
   [raw-json]
-  (let [schema-file (read-schema-file :schema :index "0.0.1")
-        schema-obj (js-validater/json-string->json-schema schema-file)]
-    (js-validater/validate-json schema-obj raw-json)))
+  (validate-metadata-against-schema raw-json :index "0.0.1"))
 
 (defn approved-generic-concept-prefixes
   "Return the active list of approved generic content types with the defined

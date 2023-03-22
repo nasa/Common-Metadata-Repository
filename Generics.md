@@ -59,10 +59,8 @@ Creating:
 5. Create at least a metadata.json and schema.json file inside the version number.
 6. Commit, Get approved, Merge
 7. Copy all files to the `schemas` directory under CMR
-8. call `cmr setup <action>`:
-	* `cmr setup dev` will update schemas
-	* `cmr setup schemas` to force copy to all projects and do no other action
-	* `(user/reset)` within the repl will also trigger a copy
+8. call `cmr setup dev` to update schemas in all projects and must be called for a change to show up
+	* NOTE: `(user/reset)` within the repl will also trigger a copy of files
 
 Updating is much the same as start, create a new version folder, populate it.
 

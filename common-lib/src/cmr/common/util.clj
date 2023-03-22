@@ -470,9 +470,9 @@
     (catch NumberFormatException _
       false)))
 
-(defn numeric? 
-  "Returns true if the sequence of characters can be converted to a number. 
-   False otherwise. Different from `cmr.common.util/numeric-string?` in that: 
+(defn numeric?
+  "Returns true if the sequence of characters can be converted to a number.
+   False otherwise. Different from `cmr.common.util/numeric-string?` in that:
    1 - more strict, for example returns false for string '0D'.
    2 - accepts any sequence of characters, not just strings."
   [s]
@@ -1082,9 +1082,9 @@
     (read-string s)
     s))
 
-(defn str->num 
+(defn str->num
   "If the string can be converted to a number, return that number, otherwise return nil."
-  [s] 
+  [s]
   (if (numeric? s)
     (safe-read-string s)
     nil))
@@ -1093,3 +1093,9 @@
   "Html escape the given string. it is used to deal with potential xss issues in user input."
   [s]
   (hp-util/escape-html s))
+
+(defn tee
+  "Tee off an input console but do so inline for use in ->"
+  [anything]
+  (println anything)
+  anything)
