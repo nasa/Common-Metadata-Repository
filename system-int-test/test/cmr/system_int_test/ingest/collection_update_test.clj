@@ -747,6 +747,24 @@
         coll2 "2000-05-01T12:00:00Z" "2000-07-01T12:00:00Z"
         ["Found granules later than collection end date [2000-07-01T12:00:00.000Z]. Found 1 granules."]))))
 
+(deftest collection-update-platform-missing-shortname-test
+  ;; CMR-8935 Verify after a collection ingested, update it with a missing platform
+  ;; shortname will not throw 500 error.
+  (let [dif10-coll (d/ingest-concept-with-metadata-file
+                     "CMR-8935/Dif10-Coll-Missing-Plat-ShortName.xml"
+                     {:provider-id "PROV1"
+                      :concept-type :collection
+                      :format-key :dif10
+                      :native-id "dif10-8935"})
+        dif10-coll-update (d/ingest-concept-with-metadata-file
+                            "CMR-8935/Dif10-Coll-Missing-Plat-ShortName.xml"
+                            {:provider-id "PROV1"
+                             :concept-type :collection
+                             :format-key :dif10
+                             :native-id "dif10-8935"})]
+    (is (= 201 (:status dif10-coll)))
+    (is (= 200 (:status dif10-coll-update)))))
+
 (deftest collection-update-platform-test
   (let [;; Platform Terra is the humanized alias of AM-1
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection

@@ -89,7 +89,6 @@
   (let [conn (config/context->app-connection context app-name)
         response-handler (or response-handler default-response-handler)
         connection-params (config/conn-params conn)
-
         ;; Validate that a connection manager is always present. This can cause poor performance if not.
         _ (when-not (:connection-manager connection-params)
             (errors/internal-error! (format "No connection manager created for [%s] in current application" app-name)))

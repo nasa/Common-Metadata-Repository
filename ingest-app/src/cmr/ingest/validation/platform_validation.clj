@@ -14,7 +14,7 @@
   (let [platform-alias-map (get (humanizer-alias-cache/get-humanizer-alias-map context) "platform")
         current-platforms (map :ShortName (:Platforms concept))
         previous-platforms (map :ShortName (:Platforms prev-concept))
-        platform-aliases (mapcat #(get platform-alias-map %) (map str/upper-case current-platforms))
+        platform-aliases (mapcat #(get platform-alias-map %) (map util/safe-uppercase current-platforms))
         ;; Only the deleted ones that are not part of the platform-aliases need to be validated.
         deleted-platform-names (s/difference
                                 (set (map util/safe-lowercase previous-platforms))
