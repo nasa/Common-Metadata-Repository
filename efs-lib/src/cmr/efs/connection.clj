@@ -32,7 +32,6 @@
 (defn concept-revision-exists
   [provider concept-type concept-id revision-id]
   (let [concept-path (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) provider concept-type concept-id concept-id revision-id)]
-    (info "Checking for concept revision at " concept-path)
     (.exists (File. concept-path))))
 
 ;;--------------------- CORE FUNCTIONS ---------------------
@@ -58,22 +57,18 @@
 (defn get-concept
   "Gets a concept from EFS"
   ([provider concept-type concept-id]
-   (info "Get-concept " provider " " concept-type " " concept-id)
    (get-concept provider concept-type concept-id (get-latest-revision (:provider-id provider) (name concept-type) concept-id)))
   ([provider concept-type concept-id revision-id]
-   (info "Get-concept " provider " " concept-type " " concept-id " " revision-id)
-   (info "concept-revision-exists " (concept-revision-exists (:provider-id provider) (name concept-type) concept-id revision-id))
    (if (and revision-id
             (concept-revision-exists (:provider-id provider) (name concept-type) concept-id revision-id))
      (let [concept-path (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) concept-id concept-id revision-id)]
        (info "Getting concept from EFS at path " concept-path)
-       {:revision-id revision-id :metadata (util/gzip-bytes->string (Files/readAllBytes (Paths/get concept-path (into-array String []))))})
+       {:revision-id revision-id :metadata (util/gzip-bytes->string (Files/readAllBytes (Paths/get concept-path (into-array String [])))) :deleted false})
      nil)))
 
 (defn get-concepts
   "Gets a group of concepts from EFS"
   [provider concept-type concept-id-revision-id-tuples]
-  (info "Keys in revision tuple: " (first concept-id-revision-id-tuples))
   (doall (remove nil? (map (fn [tuple] (get-concept provider concept-type (first tuple) (second tuple))) concept-id-revision-id-tuples))))
 
 (defn delete-concept
