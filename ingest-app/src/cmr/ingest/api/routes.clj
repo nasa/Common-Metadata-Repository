@@ -192,6 +192,10 @@
            (variables/delete-variable
             provider-id native-id request)))
        ;; Services
+       (context ["/validate/service/:native-id" :native-id #".*$"] [native-id]
+         (POST "/"
+           request
+           (services/validate-service provider-id native-id request)))
        (context ["/services/:native-id" :native-id #".*$"] [native-id]
          (PUT "/"
            request
@@ -202,6 +206,10 @@
            (services/delete-service
             provider-id native-id request)))
        ;; Tools
+       (context ["/validate/tool/:native-id" :native-id #".*$"] [native-id]
+         (POST "/"
+           request
+           (tools/validate-tool provider-id native-id request)))
        (context ["/tools/:native-id" :native-id #".*$"] [native-id]
          (PUT "/"
            request

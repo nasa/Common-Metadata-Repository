@@ -160,6 +160,20 @@
       (is (= ["#: extraneous key [InvalidField] is not permitted"]
              errors)))))
 
+(deftest service-validation-test
+  (testing "validation of service concept JSON schema with missing field"
+    (let [concept (service-util/make-service-concept {:Type ""})
+          {:keys [status errors]} (ingest/validate-concept concept)]
+      (is (= 400 status))
+      (is (= ["#/Type:  is not a valid enum value"]
+             errors))))
+  (testing "validation of service concept JSON schema with invalid field"
+    (let [concept (service-util/make-service-concept {:InvalidField "xxx"})
+          {:keys [status errors]} (ingest/validate-concept concept)]
+      (is (= 400 status))
+      (is (= ["#: extraneous key [InvalidField] is not permitted"]
+             errors)))))
+
 (deftest service-update-error-test
   (let [supplied-concept-id "S1000-PROV1"
         concept (service-util/make-service-concept
