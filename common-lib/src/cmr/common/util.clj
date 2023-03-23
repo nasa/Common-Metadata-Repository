@@ -1024,7 +1024,6 @@
 
 ;; Note: Similar code exists at gov.nasa.echo.kernel.service.authentication
 (def URS_TOKEN_MAX_LENGTH 100)
-(def BEARER "Bearer ")
 
 ;; TODO - remove legacy token check after legacy token retirement
 (defn is-legacy-token?
