@@ -365,16 +365,18 @@
 (defn get-concept
   ([db concept-type provider concept-id]
    (let [efs-concept-get (when (not (= "efs-off" (efs-config/efs-toggle)))
-                           (util/time-execution (efs/get-concept provider concept-type concept-id)))
+                           (util/time-execution
+                            (efs/get-concept provider concept-type concept-id)))
          oracle-concept-get (when (not (= "efs-only" (efs-config/efs-toggle)))
-                             (util/time-execution (j/with-db-transaction
-                                [conn db]
-                                (let [table (tables/get-table-name provider concept-type)]
-                                  (db-result->concept-map concept-type conn (:provider-id provider)
-                                                          (su/find-one conn (select '[*]
-                                                                                    (from table)
-                                                                                    (where `(= :concept-id ~concept-id))
-                                                                                    (order-by (desc :revision-id)))))))))]
+                              (util/time-execution
+                               (j/with-db-transaction
+                                 [conn db]
+                                 (let [table (tables/get-table-name provider concept-type)]
+                                   (db-result->concept-map concept-type conn (:provider-id provider)
+                                                           (su/find-one conn (select '[*]
+                                                                                     (from table)
+                                                                                     (where `(= :concept-id ~concept-id))
+                                                                                     (order-by (desc :revision-id)))))))))]
      (when (not (= "efs-off" (efs-config/efs-toggle)))
        (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms."))
      (when (not (= "efs-only" (efs-config/efs-toggle)))
@@ -388,13 +390,14 @@
            efs-concept-get (when (not (= "efs-off" (efs-config/efs-toggle)))
                              (util/time-execution (efs/get-concept provider concept-type concept-id revision-id)))
            oracle-concept-get (when (not (= "efs-only" (efs-config/efs-toggle)))
-                                (util/time-execution (j/with-db-transaction
-                                                       [conn db]
-                                                       (db-result->concept-map concept-type conn (:provider-id provider)
-                                                                               (su/find-one conn (select '[*]
-                                                                                                         (from table)
-                                                                                                         (where `(and (= :concept-id ~concept-id)
-                                                                                                                      (= :revision-id ~revision-id)))))))))]
+                                (util/time-execution
+                                 (j/with-db-transaction
+                                   [conn db]
+                                   (db-result->concept-map concept-type conn (:provider-id provider)
+                                                           (su/find-one conn (select '[*]
+                                                                                     (from table)
+                                                                                     (where `(and (= :concept-id ~concept-id)
+                                                                                                  (= :revision-id ~revision-id)))))))))]
        (when (not (= "efs-off" (efs-config/efs-toggle)))
          (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
          (info "Values gotten from EFS get-concept: " (second efs-concept-get)))
@@ -409,23 +412,25 @@
   [db concept-type provider concept-id-revision-id-tuples]
   (if (pos? (count concept-id-revision-id-tuples))
     (let [efs-concepts-get (when (not (= "efs-off" (efs-config/efs-toggle)))
-                             (util/time-execution (efs/get-concepts provider concept-type concept-id-revision-id-tuples)))
+                             (util/time-execution
+                              (efs/get-concepts provider concept-type concept-id-revision-id-tuples)))
           oracle-concepts-get (when (not (= "efs-only" (efs-config/efs-toggle)))
-                                (util/time-execution (j/with-db-transaction
-                                                       [conn db]
+                                (util/time-execution
+                                 (j/with-db-transaction
+                                   [conn db]
                                                        ;; use a temporary table to insert our values so we can use a join to
                                                        ;; pull everything in one select
-                                                       (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+                                   (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
 
-                                                       (let [provider-id (:provider-id provider)
-                                                             table (tables/get-table-name provider concept-type)
-                                                             stmt (su/build (select [:c.*]
-                                                                                    (from (as (keyword table) :c)
-                                                                                          (as :get-concepts-work-area :t))
-                                                                                    (where `(and (= :c.concept-id :t.concept-id)
-                                                                                                 (= :c.revision-id :t.revision-id)))))]
-                                                         (doall (map (partial db-result->concept-map concept-type conn provider-id)
-                                                                     (su/query conn stmt)))))))]
+                                   (let [provider-id (:provider-id provider)
+                                         table (tables/get-table-name provider concept-type)
+                                         stmt (su/build (select [:c.*]
+                                                                (from (as (keyword table) :c)
+                                                                      (as :get-concepts-work-area :t))
+                                                                (where `(and (= :c.concept-id :t.concept-id)
+                                                                             (= :c.revision-id :t.revision-id)))))]
+                                     (doall (map (partial db-result->concept-map concept-type conn provider-id)
+                                                 (su/query conn stmt)))))))]
       (when (not (= "efs-off" (efs-config/efs-toggle)))
         (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
         (info "Values gotten from EFS: " (pr-str (second efs-concepts-get))))
