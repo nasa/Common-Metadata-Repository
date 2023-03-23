@@ -418,8 +418,8 @@
                                 (util/time-execution
                                  (j/with-db-transaction
                                    [conn db]
-                                                       ;; use a temporary table to insert our values so we can use a join to
-                                                       ;; pull everything in one select
+                                   ;; use a temporary table to insert our values so we can use a join to
+                                   ;; pull everything in one select
                                    (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
 
                                    (let [provider-id (:provider-id provider)
