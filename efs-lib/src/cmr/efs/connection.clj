@@ -71,8 +71,12 @@
 
 (defn delete-concept
   "Deletes a concept from EFS"
-  [provider concept-type concept-id revision-id])
+  [provider concept-type concept-id revision-id]
+  (let [concept-path (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) concept-id concept-id revision-id)]
+    (info "Removing concept from EFS")
+    (Files/deleteIfExists (Paths/get concept-path (into-array String [])))))
 
 (defn delete-concepts
   "Deletes multiple concepts from EFS"
-  [provider concept-type concept-id-revision-id-tuples])
+  [provider concept-type concept-id-revision-id-tuples]
+  (map (fn [tuple] (delete-concept provider concept-type (first tuple) (second tuple))) concept-id-revision-id-tuples))
