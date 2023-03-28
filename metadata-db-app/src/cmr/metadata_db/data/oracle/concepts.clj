@@ -486,7 +486,9 @@
           (when (not (= "efs-only" (efs-config/efs-toggle)))
             (info "Time taken for Oracle insertion: " (first (util/time-execution
                                                               (j/db-do-prepared db stmt values))) " ms."))
-          (when (not (= "efs-off" (efs-config/efs-toggle)))
+          (when (and
+                 (not (= "efs-off" (efs-config/efs-toggle)))
+                 (= false (:deleted concept)))
             (info "Time taken for EFS insertion: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))
           (after-save conn provider concept)
           nil)))
