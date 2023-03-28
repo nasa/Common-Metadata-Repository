@@ -3707,3 +3707,67 @@
                                                   :MaximumValue "10.0"}
                                     :Coordinate2 {:MinimumValue "1.5"
                                                   :MaximumValue "10.5"}}]}))
+
+(deftest migrate-1-17-2-to-1-17-3
+  ;; "Test the migration of collections from 1.17.2 to 1.17.3."
+
+  (are3 [expected sample-collection]
+        (let [result (vm/migrate-umm {} :collection "1.17.2" "1.17.3" sample-collection)]
+          (is (= expected result)))
+
+        "Migrating TilingIdentificationSystems Coordinate1/Coordinate2 up"
+        {:TilingIdentificationSystems [{:TilingIdentificationSystemName "Military Grid Reference System",
+                                        :Coordinate1 {:MinimumValue "-100",
+                                                      :MaximumValue "-50"},
+                                        :Coordinate2 {:MinimumValue "50",
+                                                      :MaximumValue "100"}}
+                                       {:TilingIdentificationSystemName "MODIS Tile EASE"
+                                        :Coordinate1 {:MinimumValue 1.0
+                                                      :MaximumValue 10.0}
+                                        :Coordinate2 {:MinimumValue 1.5
+                                                      :MaximumValue 10.5}}]
+         :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.3",
+                                 :Name "UMM-C",
+                                 :Version "1.17.3"}}
+        {:TilingIdentificationSystems [{:TilingIdentificationSystemName "Military Grid Reference System"
+                                        :Coordinate1 {:MinimumValue "-100"
+                                                      :MaximumValue "-50"}
+                                        :Coordinate2 {:MinimumValue "50"
+                                                      :MaximumValue "100"}}
+                                       {:TilingIdentificationSystemName "MODIS Tile EASE"
+                                        :Coordinate1 {:MinimumValue "1.0"
+                                                      :MaximumValue "10.0"}
+                                        :Coordinate2 {:MinimumValue "1.5"
+                                                      :MaximumValue "10.5"}}]}))
+
+(deftest migrate-1-17-3-to-1-17-2
+  ;; "Test the migration of collections from 1.17.3 to 1.17.2."
+
+  (are3 [expected sample-collection]
+        (let [result (vm/migrate-umm {} :collection "1.17.3" "1.17.2" sample-collection)]
+          (is (= expected result)))
+
+        "Migrating TilingIdentificationSystems Coordinate1/Coordinate2 up"
+        {:TilingIdentificationSystems [{:TilingIdentificationSystemName "Military Grid Reference System",
+                                        :Coordinate1 {:MinimumValue "-100",
+                                                      :MaximumValue "-50"},
+                                        :Coordinate2 {:MinimumValue "50",
+                                                      :MaximumValue "100"}}
+                                       {:TilingIdentificationSystemName "MODIS Tile EASE"
+                                        :Coordinate1 {:MinimumValue "1.0"
+                                                      :MaximumValue "10.0"}
+                                        :Coordinate2 {:MinimumValue "1.5"
+                                                      :MaximumValue "10.5"}}]
+         :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.2",
+                                 :Name "UMM-C",
+                                 :Version "1.17.2"}}
+        {:TilingIdentificationSystems [{:TilingIdentificationSystemName "Military Grid Reference System"
+                                        :Coordinate1 {:MinimumValue "-100"
+                                                      :MaximumValue "-50"}
+                                        :Coordinate2 {:MinimumValue "50"
+                                                      :MaximumValue "100"}}
+                                       {:TilingIdentificationSystemName "MODIS Tile EASE"
+                                        :Coordinate1 {:MinimumValue 1.0
+                                                      :MaximumValue 10.0}
+                                        :Coordinate2 {:MinimumValue 1.5
+                                                      :MaximumValue 10.5}}]}))

@@ -1,5 +1,5 @@
 {
-  "$schema": "http://json-schema.org/draft-04/schema#",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "UMM-C",
   "type": "object",
   "additionalProperties": false,
@@ -14,7 +14,7 @@
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/DateType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "DirectoryNames": {
       "description": "Formerly called Internal Directory Name (IDN) Node (IDN_Node). This element has been used historically by the GCMD internally to identify association, responsibility and/or ownership of the dataset, service or supplemental information. Note: This field only occurs in the DIF. When a DIF record is retrieved in the ECHO10 or ISO 19115 formats, this element will not be translated. The controlled vocabulary for directory names is maintained in the Keyword Management System (KMS).",
@@ -22,7 +22,7 @@
       "items": {
         "$ref": "#/definitions/DirectoryNameType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "EntryTitle": {
       "description": "The title of the collection or service described by the metadata.",
@@ -100,7 +100,7 @@
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/ResourceCitationType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "CollectionProgress": {
       "description": "This element describes the production status of the data set. There are five choices for Data Providers: PLANNED refers to data sets to be collected in the future and are thus unavailable at the present time. For Example: The Hydro spacecraft has not been launched, but information on planned data sets may be available. ACTIVE refers to data sets currently in production or data that is continuously being collected or updated. For Example: data from the AIRS instrument on Aqua is being collected continuously. COMPLETE refers to data sets in which no updates or further data collection will be made. For Example: Nimbus-7 SMMR data collection has been completed. DEPRECATED refers to data sets that have been retired, but still can be retrieved. Usually newer products exist that replace the retired data set. NOT APPLICABLE refers to data sets in which a collection progress is not applicable such as a calibration collection. There is a sixth value of NOT PROVIDED that should not be used by a data provider. It is currently being used as a value when a correct translation cannot be done with the current valid values, or when the value is not provided by the data provider.",
@@ -132,7 +132,7 @@
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/PublicationReferenceType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "ISOTopicCategories": {
       "description": "Identifies the topic categories from the EN ISO 19115-1:2014 Geographic Information – Metadata – Part 1: Fundamentals (http://www.isotc211.org/) Topic Category Code List that pertain to this collection, based on the Science Keywords associated with the collection. An ISO Topic Category is a high-level thematic classification to assist in the grouping of and search for available collections. The controlled vocabulary for ISO topic categories is maintained in the Keyword Management System (KMS).",
@@ -142,7 +142,7 @@
         "minLength": 1,
         "maxLength": 4000
       },
-      "minItems": 0
+      "minItems": 1
     },
     "ScienceKeywords": {
       "description": "Controlled Science Keywords describing the collection.  The controlled vocabulary for Science Keywords is maintained in the Keyword Management System (KMS).",
@@ -158,7 +158,7 @@
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/AncillaryKeywordStringType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "AdditionalAttributes": {
       "description": "The data’s distinctive attributes of the collection (i.e. attributes used to describe the unique characteristics of the collection which extend beyond those defined).",
@@ -166,7 +166,7 @@
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/AdditionalAttributeType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "MetadataAssociations": {
       "description": "This element is used to identify other services, collections, visualizations, granules, and other metadata types and resources that are associated with or dependent on the data described by the metadata. This element is also used to identify a parent metadata record if it exists. This usage should be reserved for instances where a group of metadata records are subsets that can be better represented by one parent metadata record, which describes the entire set. In some instances, a child may point to more than one parent. The EntryId is the same as the element described elsewhere in this document where it contains an ID and Version.",
@@ -190,7 +190,7 @@
       "items": {
         "$ref": "#/definitions/PaleoTemporalCoverageType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "TemporalKeywords": {
       "description": "One or more words or phrases that describe the temporal resolution of the dataset.",
@@ -198,18 +198,18 @@
       "items": {
         "$ref": "umm-cmn-json-schema.json#/definitions/KeywordStringType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "SpatialExtent": {
       "$ref": "#/definitions/SpatialExtentType"
     },
     "TilingIdentificationSystems": {
-      "description": "Name of the two-dimensional tiling system for the collection.  Previously called TwoDCoordinateSystem.",
+      "description": "A listing of two-dimensional tiling systems for a collection. These were previously called TwoDCoordinateSystems.",
       "type": "array",
       "items": {
         "$ref": "#/definitions/TilingIdentificationSystemType"
       },
-      "minItems": 0
+      "minItems": 1
     },
     "SpatialInformation": {
       "description": "The reference frame or system in which altitudes (elevations) are given. The information contains the datum name, distance units and encoding method, which provide the definition for the system. This field also stores the characteristics of the reference frame or system from which depths are measured. The additional information in the field is geometry reference data etc.",
@@ -228,7 +228,8 @@
       "type": "array",
       "items": {
         "$ref": "#/definitions/LocationKeywordType"
-      }
+      },
+      "minItems": 1
     },
     "Platforms": {
       "description": "Information about the relevant platform(s) used to acquire the data in the collection. The controlled vocabulary for platform types is maintained in the Keyword Management System (KMS), and includes Spacecraft, Aircraft, Vessel, Buoy, Platform, Station, Network, Human, etc.",
@@ -784,26 +785,52 @@
       "enum": ["CARTESIAN", "GEODETIC", "ORBIT", "NO_SPATIAL"]
     },
     "TilingIdentificationSystemType": {
+      "description": "A two-dimensional tiling system for a collection. There are two types of tiling systems. Those that use alaph-numeric coordinates and those that use numeric coordinates.",
       "type": "object",
-      "additionalProperties": false,
-      "description": "Information about a two-dimensional tiling system related to this collection.",
-      "properties": {
-        "TilingIdentificationSystemName": {
-          "$ref": "#/definitions/TilingIdentificationSystemNameEnum"
+      "oneOf": [{
+        "title": "Tiling Systems that use alpha-numberic coordinates.",
+        "additionalProperties": false,
+        "description": "Information about a two-dimensional tiling system that uses alpha-numeric coordinates related to this collection.",
+        "properties": {
+          "TilingIdentificationSystemName": {
+            "type": "string",
+            "enum": ["Military Grid Reference System"]
+          },
+          "Coordinate1": {
+            "description": "Defines the minimum and maximum values for the first dimension of a two dimensional coordinate system.",
+            "$ref": "#/definitions/TilingCoordinateType"
+          },
+          "Coordinate2": {
+            "description": "Defines the minimum and maximum values for the second dimension of a two dimensional coordinate system.",
+            "$ref": "#/definitions/TilingCoordinateType"
+          }
         },
-        "Coordinate1": {
-          "$ref": "#/definitions/TilingCoordinateType"
+        "required": ["TilingIdentificationSystemName", "Coordinate1", "Coordinate2"]
+      }, {
+        "title": "Tiling Systems that use numeric coordinates.",
+        "additionalProperties": false,
+        "description": "Information about a two-dimensional tiling system that uses numeric coordinates related to this collection.",
+        "properties": {
+          "TilingIdentificationSystemName": {
+            "type": "string",
+            "enum": ["CALIPSO", "MISR", "MODIS Tile EASE", "MODIS Tile SIN", "WELD Alaska Tile", "WELD CONUS Tile", "WRS-1", "WRS-2"]
+          },
+          "Coordinate1": {
+            "description": "Defines the minimum and maximum values for the first dimension of a two dimensional coordinate system.",
+            "$ref": "#/definitions/TilingCoordinateNumericType"
+          },
+          "Coordinate2": {
+            "description": "Defines the minimum and maximum values for the second dimension of a two dimensional coordinate system.",
+            "$ref": "#/definitions/TilingCoordinateNumericType"
+          }
         },
-        "Coordinate2": {
-          "$ref": "#/definitions/TilingCoordinateType"
-        }
-      },
-      "required": ["TilingIdentificationSystemName", "Coordinate1", "Coordinate2"]
+        "required": ["TilingIdentificationSystemName", "Coordinate1", "Coordinate2"]
+      }]
     },
     "TilingCoordinateType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Defines the minimum and maximum value for one dimension of a two dimensional coordinate system.",
+      "description": "Defines the alpha-numeric minimum and maximum values for one dimension of a two dimensional coordinate system.",
       "properties": {
         "MinimumValue": {
           "type": "string",
@@ -817,9 +844,18 @@
         }
       }
     },
-    "TilingIdentificationSystemNameEnum": {
-       "type": "string",
-       "enum": ["CALIPSO", "MISR", "MODIS Tile EASE", "MODIS Tile SIN", "WELD Alaska Tile", "WELD CONUS Tile", "WRS-1", "WRS-2", "Military Grid Reference System"]
+    "TilingCoordinateNumericType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Defines the numeric minimum and maximum values for one dimension of a two dimensional coordinate system.",
+      "properties": {
+        "MinimumValue": {
+          "type": "number"
+        },
+        "MaximumValue": {
+          "type": "number"
+        }
+      }
     },
     "SpatialInformationType": {
       "type": "object",
@@ -1627,7 +1663,7 @@
         "URL": {
           "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
           "type": "string",
-          "enum": ["https://cdn.earthdata.nasa.gov/umm/collection/v1.17.2"]
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/collection/v1.17.3"]
         },
         "Name": {
           "description": "This element represents the name of the schema.",
@@ -1637,7 +1673,7 @@
         "Version": {
           "description": "This element represents the version of the schema.",
           "type": "string",
-          "enum": ["1.17.2"]
+          "enum": ["1.17.3"]
         }
       },
       "required": ["URL", "Name", "Version"]

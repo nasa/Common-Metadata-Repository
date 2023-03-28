@@ -67,8 +67,8 @@
    ;; Suggested usage or purpose for the collection data or service.
    Purpose
 
-   ;; Name of the two-dimensional tiling system for the collection. Previously called
-   ;; TwoDCoordinateSystem.
+   ;; A listing of two-dimensional tiling systems for a collection. These were previously called
+   ;; TwoDCoordinateSystems.
    TilingIdentificationSystems
 
    ;; Describes key bibliographic citations pertaining to the collection.
@@ -335,13 +335,18 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing MetadataSpecificationType)
 
-;; Information about a two-dimensional tiling system related to this collection.
+;; A two-dimensional tiling system for a collection. There are two types of tiling systems. Those
+;; that use alaph-numeric coordinates and those that use numeric coordinates.
 (defrecord TilingIdentificationSystemType
   [
    TilingIdentificationSystemName
 
+   ;; Defines the minimum and maximum values for the first dimension of a two dimensional coordinate
+   ;; system.
    Coordinate1
 
+   ;; Defines the minimum and maximum values for the second dimension of a two dimensional
+   ;; coordinate system.
    Coordinate2
   ])
 (record-pretty-printer/enable-record-pretty-printing TilingIdentificationSystemType)
@@ -394,6 +399,16 @@
    DetailedLocation
   ])
 (record-pretty-printer/enable-record-pretty-printing LocationKeywordType)
+
+;; Defines the numeric minimum and maximum values for one dimension of a two dimensional coordinate
+;; system.
+(defrecord TilingCoordinateNumericType
+  [
+   MinimumValue
+
+   MaximumValue
+  ])
+(record-pretty-printer/enable-record-pretty-printing TilingCoordinateNumericType)
 
 (defrecord LocalCoordinateSystemType
   [
@@ -658,7 +673,8 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ProcessingLevelType)
 
-;; Defines the minimum and maximum value for one dimension of a two dimensional coordinate system.
+;; Defines the alpha-numeric minimum and maximum values for one dimension of a two dimensional
+;; coordinate system.
 (defrecord TilingCoordinateType
   [
    MinimumValue

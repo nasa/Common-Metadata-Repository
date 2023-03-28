@@ -1238,7 +1238,7 @@
                "application/vnd.google-earth.kml+xml", "image/gif", "image/tiff", "image/bmp", "text/csv",
                "text/xml", "application/pdf", "application/x-hdf", "application/xhdf5",
                "application/octet-stream", "application/vnd.google-earth.kmz", "image/jpeg", "image/png",
-               "image/vnd.collada+xml", "text/html", "text/plain", "Not provided"]
+               "image/vnd.collada+xml", "application/x-vnd.iso.19139-2+xml", "text/html", "text/plain", "Not provided"]
     },
     "GetServiceTypeFormatEnum": {
       "type": "string",
