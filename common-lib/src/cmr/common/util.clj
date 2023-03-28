@@ -1022,6 +1022,28 @@
           false))
       false)))
 
+;; Note: Similar code exists at gov.nasa.echo.kernel.service.authentication
+(def URS_TOKEN_MAX_LENGTH 100)
+
+;; TODO - remove legacy token check after legacy token retirement
+(defn is-legacy-token?
+  "There are two uses cases captured by this test, the Legacy token and the
+   new style legacy token made to behave like a legacy token. This function 
+   will not match very short JWT tokens.
+   Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
+  [token]
+  (<= (count token) URS_TOKEN_MAX_LENGTH))
+
+(defn is-launchpad-token?
+  "Returns true if the given token is a launchpad token.
+   If the token is not a Legacy (ECHO), Heritage (EDL+), or JWT (newest) token,
+   then it must be a Launchpad token.
+   Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
+  [token]
+  ;; note: ordered from least expensive to most
+  (not (or (is-legacy-token? token)
+           (is-jwt-token? token))))
+
 (defn human-join
   "Given a vector of strings, return a string joining the elements of the collection with 'separator', except for
   the last two which are joined with \"'separator' 'final-separator' \".

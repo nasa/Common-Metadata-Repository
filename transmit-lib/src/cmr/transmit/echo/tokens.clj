@@ -13,7 +13,8 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as common-util]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.echo.rest :as r]))
+   [cmr.transmit.echo.rest :as r]
+   [cmr.transmit.urs :as urs]))
 
 (defn login
   "Logs into ECHO and returns the token"
@@ -103,7 +104,7 @@
     (r/unexpected-status-error! status body)))
 
 (defn get-user-id
-  "Get the user-id from ECHO for the given token"
+  "Get the user-id from ECHO or Launchpad for the given token"
   [context token]
   (if (transmit-config/echo-system-token? token)
     ;; Short circuit a lookup when we already know who this is.
@@ -111,10 +112,12 @@
     (if (and (common-util/is-jwt-token? token)
              (transmit-config/local-edl-verification))
       (verify-edl-token-locally token)
-      (let [[status parsed body] (r/rest-post context "/tokens/get_token_info"
-                                              {:headers {"Accept" mt/json
-                                                         "Authorization" (transmit-config/echo-system-token)}
-                                               :form-params {:id token}})]
-        (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
-                      (common-util/scrub-token token) status))
-        (handle-get-user-id token status parsed body)))))
+      (if (common-util/is-launchpad-token? token)
+        (urs/get-launchpad-user context token)
+        (let [[status parsed body] (r/rest-post context "/tokens/get_token_info"
+                                                {:headers {"Accept" mt/json
+                                                           "Authorization" (transmit-config/echo-system-token)}
+                                                 :form-params {:id token}})]
+          (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
+                        (common-util/scrub-token token) status))
+          (handle-get-user-id token status parsed body))))))
