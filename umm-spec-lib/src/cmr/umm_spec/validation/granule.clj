@@ -75,9 +75,10 @@
         spatial-representation (spatial-extent->granule-spatial-representation (:parent spatial-coverage))]
     (assoc spatial-coverage
            :geometries
-           ;; If the granule spatial representation is :no-spatial, then just ignore the geometries.
+           ;; If the granule spatial representation is :no-spatial or :orbit, then just ignore the geometries.
            (when (and spatial-representation
-                      (not= :no-spatial spatial-representation))
+                      (not= :no-spatial spatial-representation)
+                      (not= :orbit spatial-representation))
              (map #(umm-s/set-coordinate-system spatial-representation %)
                   geometries)))))
 
