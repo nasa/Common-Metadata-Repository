@@ -84,20 +84,33 @@
 
 (defn- validate-and-prepare-provider-concept
   "Validate a provider concept and construct a map that is usable to the metadata_db
-   service.
+   service. This function will accept two types of providers, Legacy and Modern.
+   A legacy provider is just 4 fields, provider-id, short-name, cmr-only, and small.
+   These fields were sent in by the legacy-services server and will create a
+   provider with no metadata. A Modern provider is defined with a metadata schema
+   and will include lots of fields. Both formats will take short-name, cmr-only,
+   and small but the modern format will strip these out. provider-id is encoded
+   differently in both these formats, legacy will use the cmr style case where as
+   modern will camel case the value. When you strip out all the legacy service
+   fields you should be left with a metadata record. This fact is also used to
+   differentiate between the two styles of posting, an empty record is the legacy
+   style, where as modern will continue to have fields.
+
    throws error if the metadata is not a valid against the UMM service JSON schema."
   [concept]
-  (let [provider-id (get concept :ProviderId)
+  ;; find fields and construct the MetadataDB format
+  (let [provider-id (get concept :ProviderId (get concept :provider-id))
         short-name provider-id ;; every production provider does this anyways, so make it official
         small (:small concept)
         cmr-only (:cmr-only concept)
         consortiums (string/join " " (get concept :Consortiums ""))
-        metadata (-> concept (dissoc :provider-id :cmr-only :small))]
-    (validate-provider-metadata metadata)
+        metadata (-> concept (dissoc :provider-id :short-name :cmr-only :small))]
+    (when-not (empty? metadata) (validate-provider-metadata metadata))
     (validate-boolean small "Small")
     (validate-boolean cmr-only "Cmr Only")
     ;; structure the result in a database friendly map, each key mapping to a
-    ;; table column similar to that of a Concept table
+    ;; table column similar to that of a Concept table. Metadata may be empty
+    ;; for the legacy-services use case
     {:provider-id provider-id
      :short-name short-name
      :cmr-only (if (some? cmr-only) cmr-only false)
