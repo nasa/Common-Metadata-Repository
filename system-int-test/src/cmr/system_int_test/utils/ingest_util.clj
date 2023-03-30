@@ -59,11 +59,20 @@
    (url/create-provider-url)))
 
 (defn create-ingest-provider
-  "Create the provider with the given provider id through ingest app"
+  "Create the provider with the given provider id through ingest app using a template
+   metadata document for the provider metadata."
   [provider]
   (create-provider-through-url
    (prov-util/minimum-provider->metadata-only provider)
    (url/ingest-create-provider-url)))
+
+(defn create-ingest-legacy-services-provider
+  "Create the provider with the given provider id through ingest app, but do not
+   try to expand the provider out into a fully flushed out metadata document.
+   Assume the caller knows what data to send in and just pass it to ingest as is.
+   To post metadata, use (create-ingest-provider) instead."
+  [provider]
+  (create-provider-through-url provider (url/ingest-create-provider-url)))
 
 (defn get-providers-through-url
   [provider-url]
