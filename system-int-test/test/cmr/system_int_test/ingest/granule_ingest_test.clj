@@ -477,7 +477,7 @@
 (deftest CMR-9013-invalid-orbit-data
   (let [coll-metadata (-> "iso-samples/CMR-5129-coll.xml" io/resource slurp)
         invalid-gran-metadata (-> "iso-samples/invalid-CMR-5226-gran.xml" io/resource slurp)]
-    (testing "Invalid geographic description "
+    (testing "Invalid Geometries for ORBIT granule."
       (ingest/ingest-concept
         (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
       (let [{:keys [status errors]} (ingest/ingest-concept
