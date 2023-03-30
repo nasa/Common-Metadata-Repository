@@ -17,6 +17,10 @@
    (java.io File)))
 
 ;;--------------------- UTILITY FUNCTIOINS ---------------------
+(defn make-concept-dir-path
+  [provider concept-type concept-id]
+  (format "%s/%s/%s/%s" (efs-config/efs-directory) provider concept-type concept-id))
+
 (defn get-revision-file-names
   "Returns a listing of revisions of the concept stored on EFS"
   [provider concept-type concept-id]
@@ -39,10 +43,6 @@
   [provider concept-type concept-id]
   (first (sort > (map get-revision-from-filename
                       (get-revision-file-names provider concept-type concept-id)))))
-
-(defn make-concept-dir-path
-  [provider concept-type concept-id]
-  (format "%s/%s/%s/%s" (efs-config/efs-directory) provider concept-type concept-id))
 
 (defn make-concept-path
   ([provider concept-type concept]
