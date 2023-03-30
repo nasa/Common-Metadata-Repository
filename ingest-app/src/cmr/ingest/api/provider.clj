@@ -54,13 +54,9 @@
                      (json/parse-string)
                      (get "metadata")
                      (json/generate-string))]
-    ;; This behavior is because get-provider-by-id in metadata-db does not throw
-    ;; an exception by default for this interface
-    (if (= "null" body)
-      (srvc-errors/throw-service-error :not-found "Provider not found")
-      {:status status
-       :headers {"Content-Type" (mt/with-utf-8 mt/json)}
-       :body (if (= status 200) metadata body)})))
+    {:status status
+     :headers {"Content-Type" (mt/with-utf-8 mt/json)}
+     :body (if (= status 200) metadata body)}))
 
 (defn read-body
   [headers body-input]

@@ -35,7 +35,7 @@
 (defn- get-provider
   "Read a provider"
   [context params provider-id]
-  (let [provider (provider-service/get-provider-by-id context provider-id)]
+  (let [provider (provider-service/get-provider-by-id context provider-id true)]
     {:status 200
      :body (json/generate-string provider)
      :headers rh/json-header}))
