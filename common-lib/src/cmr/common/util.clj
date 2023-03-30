@@ -4,6 +4,7 @@
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.data.codec.base64 :as b64]
+   [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.pprint :refer [pprint print-table]]
    [clojure.reflect :refer [reflect]]
@@ -1079,14 +1080,20 @@
   "If s is a string, call read-string, otherwise returns s."
   [s]
   (if (string? s)
-    (read-string s)
+    ;; clojure.core/read-string can be used to inject runnable code.
+    ;; use clojure.end/read-string instead.  Also since this is  
+    ;; being used to convert to a number, check to see if the result 
+    ;; is a number, and return it, otherwise return nil
+    (let [edn-str (edn/read-string s)]
+      (when (number? edn-str) edn-str))
     s))
 
 (defn str->num
   "If the string can be converted to a number, return that number, otherwise return nil."
   [s]
-  (if (numeric? s)
-    (safe-read-string s)
+  (if (and (string? s)
+           (numeric? s))
+      (safe-read-string s)
     nil))
 
 (defn html-escape
