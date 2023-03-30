@@ -50,6 +50,24 @@
          "PROV7" "S7" nil nil
          "PROV8" nil nil nil))
 
+  (testing "create a legacy-service style provider through the ingest app"
+    ;; ingest/create-ingest-legacy-services-provider does not assume a metadata
+    ;; document and will post the provider as-is!
+    (are [provider-id short-name cmr-only small]
+         (let [provider {:provider-id provider-id
+                         :short-name short-name
+                         :cmr-only cmr-only
+                         :small small}
+               {:keys [status]} (ingest/create-ingest-legacy-services-provider provider)]
+           (and (= 201 status))
+           (= (ingest/get-providers) (ingest/get-ingest-providers)))
+      "PROV9" "S9" false false
+      "PROVA" "SA" true false
+      "PROVB" "SB" false true
+      "PROVC" "SC" true true
+      "PROVD" "SD" nil nil
+      "PROVE" nil nil nil))
+
   (testing "create provider invalid value"
     (u/are3
       [provider error]
