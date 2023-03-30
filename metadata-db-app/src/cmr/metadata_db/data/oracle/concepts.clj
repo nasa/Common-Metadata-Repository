@@ -484,11 +484,11 @@
                            (string/join "," (repeat (count values) "?")))]
           (trace "Executing" stmt "with values" (pr-str values))
           (when (not (= "efs-only" (efs-config/efs-toggle)))
-            (info "Creating Oracle record with efs-toggle value " (efs-config/efs-toggle))
             (info "Time taken for Oracle insertion: " (first (util/time-execution
                                                               (j/db-do-prepared db stmt values))) " ms."))
-          (when (not (= "efs-off" (efs-config/efs-toggle)))
-            (info "Creating EFS record with efs-toggle value " (efs-config/efs-toggle))
+          (when (and
+                 (not (= "efs-off" (efs-config/efs-toggle)))
+                 (= false (:deleted concept)))
             (info "Time taken for EFS insertion: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))
           (after-save conn provider concept)
           nil)))
@@ -504,11 +504,20 @@
   (let [table (tables/get-table-name provider concept-type)
         stmt (su/build (delete table
                                (where `(and (= :concept-id ~concept-id)
-                                            (= :revision-id ~revision-id)))))]
-    (when (not (= "efs-off" (efs-config/efs-toggle)))
-      (efs/delete-concept provider concept-type concept-id revision-id))
-    (when (not (= "efs-only" (efs-config/efs-toggle)))
-      (j/execute! this stmt))))
+                                            (= :revision-id ~revision-id)))))
+        efs-delete (when (not (= "efs-off" (efs-config/efs-toggle)))
+                     (util/time-execution
+                      (efs/delete-concept provider concept-type concept-id revision-id)))
+        oracle-delete (when (not (= "efs-only" (efs-config/efs-toggle)))
+                        (util/time-execution
+                         (j/execute! this stmt)))]
+    (when efs-delete
+      (info "Time taken for EFS delete: " (first efs-delete)))
+    (when oracle-delete
+      (info "Time taken for Oracle delete: " (first oracle-delete)))
+    (if oracle-delete
+      (second oracle-delete)
+      (second efs-delete))))
 
 (defn force-delete-by-params
   [db provider params]
@@ -526,11 +535,20 @@
                            (SELECT 1 FROM get_concepts_work_area tmp WHERE
                            tmp.concept_id = t1.concept_id AND
                            tmp.revision_id = t1.revision_id)"
-                          table)]]
-        (when (not (= "efs-off" (efs-config/efs-toggle)))
-          (efs/delete-concepts provider concept-type concept-id-revision-id-tuples))
-        (when (not (= "efs-only" (efs-config/efs-toggle)))
-          (j/execute! conn stmt))))))
+                          table)]
+            efs-delete (when (not (= "efs-off" (efs-config/efs-toggle)))
+                         (util/time-execution
+                          (efs/delete-concepts provider concept-type concept-id-revision-id-tuples)))
+            oracle-delete (when (not (= "efs-only" (efs-config/efs-toggle)))
+                            (util/time-execution
+                             (j/execute! conn stmt)))]
+        (when efs-delete
+          (info "Time taken for EFS delete: " (first efs-delete)))
+        (when oracle-delete
+          (info "Time taken for Oracle delete: " (first oracle-delete)))
+        (if oracle-delete
+          (second oracle-delete)
+          (second efs-delete))))))
 
 (defn get-concept-type-counts-by-collection
   [db concept-type provider]

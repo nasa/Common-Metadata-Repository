@@ -20,16 +20,35 @@
 (defn get-revision-file-names
   "Returns a listing of revisions of the concept stored on EFS"
   [provider concept-type concept-id]
-  (let [concept-dir-path (format "%s/%s/%s/%s" (efs-config/efs-directory) provider concept-type concept-id)]
+  (let [concept-dir-path (make-concept-dir-path provider concept-type concept-id)]
     (map (fn [file]
            (.getName file))
          (.listFiles (File. concept-dir-path)))))
 
+(defn get-revision-from-filename
+  "Gets the revision number from the filename"
+  [filename]
+  (Integer/parseInt (subs (second (str/split filename #"\.")) 1)))
+
+(defn get-list-of-revisions
+  "Gets simply the revision numbers of the files in sorted order smallest to largest"
+  [provider concept-type concept-id]
+  (sort-by get-revision-from-filename (get-revision-file-names provider concept-type concept-id)))
+
 (defn get-latest-revision
   [provider concept-type concept-id]
-  (first (sort > (map (fn [file-name]
-                        (Integer/parseInt (subs (second (str/split file-name #"\.")) 1)))
+  (first (sort > (map get-revision-from-filename
                       (get-revision-file-names provider concept-type concept-id)))))
+
+(defn make-concept-dir-path
+  [provider concept-type concept-id]
+  (format "%s/%s/%s/%s" (efs-config/efs-directory) provider concept-type concept-id))
+
+(defn make-concept-path
+  ([provider concept-type concept]
+  (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) (:concept_id concept) (:concept_id concept) (:revision_id concept)))
+  ([provider concept-type concept-id revision-id]
+   (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) concept-id concept-id revision-id)))
 
 ;;--------------------- CORE FUNCTIONS ---------------------
 
@@ -46,7 +65,7 @@
 (defn save-concept
   "Saves a concept to EFS"
   [provider concept-type concept]
-  (let [concept-path (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) (:concept_id concept) (:concept_id concept) (:revision_id concept))]
+  (let [concept-path (make-concept-path provider concept-type concept)]
     (info "Saving concept to EFS at path " concept-path)
     (io/make-parents (io/file concept-path))
     (Files/write (Paths/get concept-path (into-array String [])) (:metadata concept) (into-array OpenOption []))))
@@ -57,7 +76,7 @@
    (get-concept provider concept-type concept-id (get-latest-revision (:provider-id provider) (name concept-type) concept-id)))
   ([provider concept-type concept-id revision-id]
    (when revision-id
-     (let [concept-path (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) concept-id concept-id revision-id)]
+     (let [concept-path (make-concept-path provider concept-type concept-id revision-id)]
        (try
          (info "Getting concept from EFS at path " concept-path)
          {:revision-id revision-id :metadata (util/gzip-bytes->string (Files/readAllBytes (Paths/get concept-path (into-array String [])))) :deleted false}
@@ -71,8 +90,12 @@
 
 (defn delete-concept
   "Deletes a concept from EFS"
-  [provider concept-type concept-id revision-id])
+  [provider concept-type concept-id revision-id]
+  (let [concept-path (make-concept-path provider concept-type concept-id revision-id)]
+    (info "Removing concept from EFS")
+    (Files/deleteIfExists (Paths/get concept-path (into-array String [])))))
 
 (defn delete-concepts
   "Deletes multiple concepts from EFS"
-  [provider concept-type concept-id-revision-id-tuples])
+  [provider concept-type concept-id-revision-id-tuples]
+  (map (fn [tuple] (delete-concept provider concept-type (first tuple) (second tuple))) concept-id-revision-id-tuples))
