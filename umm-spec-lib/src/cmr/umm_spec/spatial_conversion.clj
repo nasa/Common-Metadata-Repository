@@ -8,7 +8,8 @@
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.point :as point]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.ring-relations :as rr]))
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]))
 
 (def valid-tile-identification-system-names
   "Valid names for TilingIdentificationSystemName"
@@ -39,12 +40,29 @@
   (when (tile-id-system-name-is-valid? tile-identification-system-name)
     (util/match-enum-case tile-identification-system-name valid-tile-identification-system-names)))
 
+(defn add-tiling-def-rec-type
+  "Add the correct tiling coordinate type depending on the tiling name."
+  [m tiling-name]
+  (if (string/includes? tiling-name "Military Grid Reference System")
+    (umm-c/map->TilingCoordinateType
+     (util/remove-nil-keys
+      {:MinimumValue (:MinimumValue m)
+       :MaximumValue (:MaximumValue m)}))
+    (umm-c/map->TilingCoordinateNumericType
+     (util/remove-nil-keys
+      {:MinimumValue (:MinimumValue m)
+       :MaximumValue (:MaximumValue m)}))))
+
 (defn expected-tiling-id-systems-name
   "Translate TilingIdentificationSystemNames in accordance with UMM Spec v1.10"
   [tiling-identification-systems]
   (->> tiling-identification-systems
        (mapv
         #(update % :TilingIdentificationSystemName translate-tile-id-system-name))
+       (mapv
+        #(update % :Coordinate1 add-tiling-def-rec-type (:TilingIdentificationSystemName %)))
+       (mapv
+        #(update % :Coordinate2 add-tiling-def-rec-type (:TilingIdentificationSystemName %)))
        seq))
 
 (defn filter-and-translate-tiling-id-systems

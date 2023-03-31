@@ -106,12 +106,15 @@
   is the Military Grid System then use strings otherwise the values are numeric."
   [twod-el coord-xpath tiling-id-name]
   (when-let [[coord-el] (select twod-el coord-xpath)]
-    {:MinimumValue (if (string/includes? tiling-id-name "Military Grid Reference System")
-                     (value-of coord-el "MinimumValue")
-                     (util/str->num (value-of coord-el "MinimumValue")))
-     :MaximumValue (if (string/includes? tiling-id-name "Military Grid Reference System")
-                     (value-of coord-el "MaximumValue")
-                     (util/str->num (value-of coord-el "MaximumValue")))}))
+    (if (string/includes? tiling-id-name "Military Grid Reference System")
+      (umm-c/map->TilingCoordinateType
+       (util/remove-nil-keys
+        {:MinimumValue (value-of coord-el "MinimumValue")
+         :MaximumValue (value-of coord-el "MaximumValue")}))
+      (umm-c/map->TilingCoordinateNumericType
+       (util/remove-nil-keys
+        {:MinimumValue (util/str->num (value-of coord-el "MinimumValue"))
+         :MaximumValue (util/str->num (value-of coord-el "MaximumValue"))})))))
 
 (defn parse-tiling
   "Returns a UMM TilingIdentificationSystem map from the given ECHO10 XML document."

@@ -4,6 +4,7 @@
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as iso-xml-parsing-util]))
 
@@ -26,14 +27,22 @@
                    tiling-system-str
                    (re-pattern "c1-min:|c1-max:|c2-min:|c2-max:"))]
     (if (string/includes? tiling-id-system-name "Military Grid Reference System")
-      {:Coordinate1 {:MinimumValue (:c1-min coord-map)
-                     :MaximumValue (:c1-max coord-map)}
-       :Coordinate2 {:MinimumValue (:c2-min coord-map)
-                     :MaximumValue (:c2-max coord-map)}}
-      {:Coordinate1 {:MinimumValue (get-double (:c1-min coord-map))
-                     :MaximumValue (get-double (:c1-max coord-map))}
-       :Coordinate2 {:MinimumValue (get-double (:c2-min coord-map))
-                     :MaximumValue (get-double (:c2-max coord-map))}})))
+      {:Coordinate1 (umm-c/map->TilingCoordinateType
+                     (util/remove-nil-keys
+                      {:MinimumValue (:c1-min coord-map)
+                       :MaximumValue (:c1-max coord-map)}))
+       :Coordinate2 (umm-c/map->TilingCoordinateType
+                     (util/remove-nil-keys
+                      {:MinimumValue (:c2-min coord-map)
+                       :MaximumValue (:c2-max coord-map)}))}
+      {:Coordinate1 (umm-c/map->TilingCoordinateNumericType
+                     (util/remove-nil-keys
+                      {:MinimumValue (get-double (:c1-min coord-map))
+                       :MaximumValue (get-double (:c1-max coord-map))}))
+       :Coordinate2 (umm-c/map->TilingCoordinateNumericType
+                     (util/remove-nil-keys
+                      {:MinimumValue (get-double (:c2-min coord-map))
+                       :MaximumValue (get-double (:c2-max coord-map))}))})))
 
 (defn parse-tiling-system
   [md-data-id-el]

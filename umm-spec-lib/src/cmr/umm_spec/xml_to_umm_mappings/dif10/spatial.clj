@@ -158,12 +158,15 @@
 (defn- parse-tiling-coord
   [twod-el coord-xpath tiling-id-name]
   (when-let [[coord-el] (select twod-el coord-xpath)]
-    {:MinimumValue (if (string/includes? tiling-id-name "Military Grid Reference System")
-                     (value-of coord-el "Minimum_Value")
-                     (util/str->num (value-of coord-el "Minimum_Value")))
-     :MaximumValue (if (string/includes? tiling-id-name "Military Grid Reference System")
-                     (value-of coord-el "Maximum_Value")
-                     (util/str->num (value-of coord-el "Maximum_Value")))}))
+    (if (string/includes? tiling-id-name "Military Grid Reference System")
+      (umm-c/map->TilingCoordinateType
+       (util/remove-nil-keys
+        {:MinimumValue (value-of coord-el "Minimum_Value")
+         :MaximumValue (value-of coord-el "Maximum_Value")}))
+      (umm-c/map->TilingCoordinateNumericType
+       (util/remove-nil-keys
+        {:MinimumValue (util/str->num (value-of coord-el "Minimum_Value"))
+         :MaximumValue (util/str->num (value-of coord-el "Maximum_Value"))})))))
 
 (defn parse-tiling
   "Returns UMM-C TilingIdentificationSystem map from DIF 10 XML document."

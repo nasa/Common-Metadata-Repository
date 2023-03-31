@@ -4,12 +4,12 @@
   "TilingIdentificationSystems" : [ {
     "TilingIdentificationSystemName" : "MODIS Tile EASE",
     "Coordinate1" : {
-      "MinimumValue" : "-100.0",
-      "MaximumValue" : "-50.0"
+      "MinimumValue" : -100.0,
+      "MaximumValue" : -50.0
     },
     "Coordinate2" : {
-      "MinimumValue" : "50.0",
-      "MaximumValue" : "100.0"
+      "MinimumValue" : 50.0,
+      "MaximumValue" : 100.0
     }
   }, {
     "TilingIdentificationSystemName" : "MISR",
