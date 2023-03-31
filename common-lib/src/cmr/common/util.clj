@@ -1081,8 +1081,8 @@
   [s]
   (if (string? s)
     ;; clojure.core/read-string can be used to inject runnable code.
-    ;; use clojure.end/read-string instead.  Also since this is  
-    ;; being used to convert to a number, check to see if the result 
+    ;; use clojure.edn/read-string instead.  Also since this is
+    ;; being used to convert to a number, check to see if the result
     ;; is a number, and return it, otherwise return nil
     (let [edn-str (edn/read-string s)]
       (when (number? edn-str) edn-str))
