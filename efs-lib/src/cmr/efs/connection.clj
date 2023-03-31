@@ -46,9 +46,9 @@
 
 (defn make-concept-path
   ([provider concept-type concept]
-  (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) (:concept_id concept) (:concept_id concept) (:revision_id concept)))
+   (format "%s/%s/%s/%s/%s.r%s.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) (:concept_id concept) (:concept_id concept) (:revision_id concept)))
   ([provider concept-type concept-id revision-id]
-   (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) concept-id concept-id revision-id)))
+   (format "%s/%s/%s/%s/%s.r%s.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) concept-id concept-id revision-id)))
 
 ;;--------------------- CORE FUNCTIONS ---------------------
 
@@ -92,7 +92,7 @@
   "Deletes a concept from EFS"
   [provider concept-type concept-id revision-id]
   (let [concept-path (make-concept-path provider concept-type concept-id revision-id)]
-    (info "Removing concept from EFS")
+    (info "Removing concept from EFS: " concept-path)
     (Files/deleteIfExists (Paths/get concept-path (into-array String [])))))
 
 (defn delete-concepts
