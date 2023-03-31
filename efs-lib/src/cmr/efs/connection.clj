@@ -98,4 +98,5 @@
 (defn delete-concepts
   "Deletes multiple concepts from EFS"
   [provider concept-type concept-id-revision-id-tuples]
+  (info "EFS delete concepts: " concept-id-revision-id-tuples)
   (map (fn [tuple] (delete-concept provider concept-type (first tuple) (second tuple))) concept-id-revision-id-tuples))
