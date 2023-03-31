@@ -1,176 +1,149 @@
-import requests
-import json 
+"""Migrates providers from legacy services REST API into new providers interface"""
+import json
 import os
 import xml.etree.ElementTree as ET
 import re
+import time
+import requests
 
-url_root = "https://cmr.sit.earthdata.nasa.gov"
+URL_ROOT = "https://cmr.sit.earthdata.nasa.gov"
 access_token = os.environ.get('SIT_SYSTEM_TOKEN')
-cmr_ingest_endpoint = "https://cmr.sit.earthdata.nasa.gov/ingest"
+CMR_INGEST_ENDPOINT = "https://cmr.sit.earthdata.nasa.gov/ingest"
+# These are for the Enum values that we must set in the metadata field
+DEFAULT_ORGANIZATION_ROLE = "SERVICE PROVIDER"
+DEFAULT_CONTACT_ROLE = "TECHNICAL CONTACT"
+# provider_migration_report = open("provider_migration_report.txt", "w")
 
-def ingest_provider(provider_metadata):
-    response = requests.post(f"{url_root}/ingest/providers",
-                        data=json.dumps(provider_metadata),
-                        headers={"Authorization": access_token, "User-id": "legacy_migration",
-                        "Content-Type": "application/json"}
-                        )
-    print("Ingest response from provider endpoint", response.content)
-    return response
-
-# TODO parsing
-def retrieve_provider_acls(provider_id):
-    # define the payload to be passed to access control
-    payload_dict = {'provider':provider_id, 'include-full-acl': 'true', 'page_size':'2000'}
-
-    response = requests.post(f"{url_root}/access-control/acls/search",
-    headers={"Authorization": access_token, "User-id": "legacy_migration"},
-    data = payload_dict)
-    print("provider acls response", response.content)
-    return response
-
-
-def get_all_legacy_service_groups():
-    resp = requests.get(f"{url_root}/legacy-services/rest/groups/",
-    headers={"Authorization": access_token, "User-id": "legacy_migration"})
-    root = ET.fromstring(resp.content)
-    return root
-
-def get_provider_group_id(groups_root_node, provider_id):
-    passed_provider_name = str(provider_id) + ' Administrator Group'
-    # resp = requests.get(f"{url_root}/legacy-services/rest/groups/",
-    # headers={"Authorization": access_token, "User-id": "legacy_migration"})
-    # # TODO: If the error is NOT 200 then branch out
-    # root = ET.fromstring(resp.content)
-    provider_group_id = ""
-    for reference in groups_root_node.findall('reference'):
-        provider_name = reference.find('name').text
-        if (provider_name == passed_provider_name):
-            provider_group_id = reference.find('id').text
-            print('This is the group id which matched our provider_id admin group', provider_group_id)
-    return provider_group_id
-
-
-def get_provider_admin_member_guids(provider_group_id):
-    member_guid_arr = []
-    # If we didn't get anything back from the groups return empty array
-    if (len(provider_group_id) < 1):
-        return member_guid_arr
-
-    group_resp = requests.get(f"{url_root}/legacy-services/rest/groups/{provider_group_id}",
-    headers={"Authorization": access_token, "User-id": "legacy_migration"})
-    # Create ET element
-    group_root = ET.fromstring(group_resp.content)
-
-    for member_guids in group_root.findall('member_guids'):
-        member_guid_list = member_guids.findall('member_guid')
-    
-    print(len(member_guid_list))
-    for member_guid in member_guid_list:
-        print(member_guid.text)
-        member_guid_arr.append(member_guid.text)
-    return member_guid_arr
-
+# TODO: Make this an optional thing
+# def ingest_provider(provider_metadata):
+#     response = requests.post(f"{URL_ROOT}/ingest/providers",
+#                         data=json.dumps(provider_metadata),
+#                         headers={"Authorization": access_token, "User-id": "legacy_migration",
+#                         "Content-Type": "application/json"}
+#                         )
+#     print("Ingest response from provider endpoint", response.content)
+#     return response
 
 def is_admin_group(group):
+    """Looks for admin in the name of the group"""
     # if in the name of the text admin comes up anywhere then it is an admin group
     return bool(re.search('admin', group.lower()))
 
 
-# TODO complete this and make it work nicely
-# this may be mute
-# def get_provider_ids_matching_the_use_case(legacy_providers, provider_group_id):
-#     member_guid_arr = []
-#     # If we didn't get anything back from the groups return empty array
-#     if (len(provider_group_id) < 1):
-#         return member_guid_arr
-
-#     group_resp = requests.get(f"{url_root}/legacy-services/rest/groups/{provider_group_id}",
-#     headers={"Authorization": access_token, "User-id": "legacy_migration"})
-#     # Create ET element
-#     group_root = ET.fromstring(group_resp.content)
-
-#     # for member_guids in group_root.findall('member_guids'):
-#     #     member_guid_list = member_guids.findall('member_guid')
-    
-#     current_owner_provider_guid = group_root.find('owner_provider_guid')
-
-
-#     print('The owner provider guid for this provider', current_owner_provider_guid)
-    
-#     for provider in legacy_providers.findall('provider'):
-#         # Id is referring to dataset-id but, in the response it's called id
-#         id = provider.find('id').text
-#         if (current_owner_provider_guid == id):
-#             provider_group_id = provider.find('provider_id').text
-#             print('This is the provider-id which matched our dataset-id' +  current_owner_provider_guid + ' ' + provider_group_id)
-
-#     return member_guid_arr
-    
-
 def get_admin_usernames(member_guid_arr):
+    """Parses the list of member_guids and retrieves the edl usernames though an API call"""
     username_arr = []
     if (len(member_guid_arr) < 1):
         return username_arr
     #TODO: can we do this in one request instead of iterating over each username
     for user_id in member_guid_arr:
         print("User_id being passed in request", user_id)
-        user_resp = requests.get(f"{url_root}/legacy-services/rest/users/{user_id}",
-        headers={"Authorization": access_token, "User-id": "legacy_migration"})
-        user_element = ET.fromstring(user_resp.content)
+        response = requests.get(f"{URL_ROOT}/legacy-services/rest/users/{user_id}",
+        headers={"Authorization": access_token, "User-id": "legacy_migration"},
+        timeout=60)
+        if response.status_code >= 300:
+            print("Failed to Retrieve edl-username for guid" + str(user_id))
+        else:
+            print("Retrieved edl-username for guid", user_id)
+        user_element = ET.fromstring(response.content)
         edl_username = user_element.find('username')
         print('The edl username', edl_username.text)
         username_arr.append(edl_username.text)
     return username_arr
 
 def retrieve_legacy_providers():
-    # Requests all of the providers on legacy-services and their metadata which we will be
-    # re-ingesting into the new providers interface
-    response = user_resp = requests.get(f"{url_root}/legacy-services/rest/providers.json",
-        headers={"Authorization": access_token, "User-id": "legacy_migration"})
-    json_response = response.json()
-    return json_response
+    """Requests all of the providers on legacy-services and their metadata which we will be
+    re-ingesting into the new providers interface"""
+    response = requests.get(f"{URL_ROOT}/legacy-services/rest/providers.json",
+        headers={"Authorization": access_token, "User-id": "legacy_migration"},
+        timeout=60)
+    if response.status_code >= 300:
+        print('Failed to retrieve legacy service providers')
+    else:
+        print('Successfully retrieved legacy service providers')
+    providers = response.json()
+    return providers
 
-# response = requests.get('https://cmr.sit.earthdata.nasa.gov/legacy-services/rest/providers.json')
-
-# retrieve_provider_acls("CMR_ONLY")
-
-
-# response = requests.get(f"{url_root}/legacy-services/rest/providers.json",
-#     headers={"Authorization": access_token, "User-id": "legacy_migration"})
-
-# json_response = response.json()
 # TODO this is using the new api where we pass the owner-id
 def get_groups_by_provider(owner_id):
-    provider_groups = requests.get(f"{url_root}/legacy-services/rest/groups?owner_id={owner_id}",
-    headers={"Authorization": access_token, "User-id": "legacy_migration"})
-    print('these are the providers we specified with owner-id', provider_groups.content)
-    return provider_groups
+    """Requests all groups that belong to a specific provider by passing the owner_id"""
+    response = requests.get(f"{URL_ROOT}/legacy-services/rest/groups?owner_id={owner_id}",
+    headers={"Authorization": access_token, "User-id": "legacy_migration"},
+    timeout=60)
+    if response.status_code >= 300:
+        print("Failed to retrieve groups for the provider with owner guid " + str(owner_id))
+    else:
+        print("Successfully retrieved groups for the provider with owner guid ", owner_id)
+    return response
 
 
 def get_all_provider_guids(provider_groups):
+    """Parses all of the groups of a provider, retrieves administrator member guids"""
     member_guid_arr = []
-    # big_member_guid_list = []
-    # If we didn't get anything back from the groups return empty array
-    # if (len(provider_group_id) < 1):
-    #     return member_guid_arr
-
-    # group_resp = requests.get(f"{url_root}/legacy-services/rest/groups/{provider_group_id}",
-    # headers={"Authorization": access_token, "User-id": "legacy_migration"})
-    # Create ET element
     groups_root = ET.fromstring(provider_groups.content)
     for group in groups_root.findall('group'):
         if(is_admin_group(group.find('name').text)):
-            print('🚀 This group was admin: ', group.find('name').text)
+            # print('🚀 This group was admin: ', group.find('name').text)
             member_guids = group.find('member_guids')
             member_guid_list = member_guids.findall('member_guid')
             for member_guid in member_guid_list:
-                print('🚀 ~ file: migrate.py:160 ~ member_guid:', member_guid.text)
+                # print('🚀 ~ file: migrate.py:160 ~ member_guid:', member_guid.text)
                 member_guid_arr.append(member_guid.text)
     return member_guid_arr
 
+def parse_addresses(provider_contact):
+    """Parses address between old-style format into new schema"""
+    # TODO Addresses are not always in the contacts object
+    address = provider_contact["address"]
+    city = address["city"]
+    country = address["country"]
+    address_metadata = { 'City': city,
+    'Country': country
+    }
+    print('🚀 us format value ',  address["us_format"])
+    # TODO we need to handle this boolean string better
+    if address["us_format"] is True:
+        state = address["state"]
+        postal_code = address["zip"]
+        # set values for new metadata document if available
+        address_metadata["StateProvince"] = state
+        address_metadata["PostalCode"] = postal_code
+    # AddressMetadata.append()
+    # # address = contact["Addresses"]
+    #TODO: Look for street *
+    # TODO worked on this last
+    # street_list = any(key.startswith("street") for key in address)
+    provider_street_keys = {key: val for key, val in address.items()
+       if key.startswith('street')}
+    print('🚀 ~ file: migrate.py:115 ~ street_list:', str(provider_street_keys.values()))
+    # address.findall('street*')
+    print('🚀 this is the address metadata on this document ', str(address_metadata))
+    return address_metadata
 
+def parse_emails(provider_contact):
+    """Parses email fields between old-style format into new schema"""
+    email = provider_contact["email"]
+    print('🚀 this is the email metadata on this document ', str(email))
+    return email
+
+def parse_phones(provider_contact):
+    """Parses phone number fields between old-style format into new schema"""
+    phone_numbers = []
+    phones = provider_contact["phones"]
+    for phone in phones:
+        # Some do not have the number field but, have a phone
+        if phone.get('number'):
+            phone_numbers.append(phone['number'])
+    
+    print('🚀 The phone numbers in the document ', str(phone_numbers))
+    return phone_numbers
+
+# Main
+PROVIDER_MIGRATION_COUNT = 0
+start = time.time()
 json_response = retrieve_legacy_providers()
 
+# TODO remove me I am for testing
 f = open("demofile2.txt", "a")
 provider_migration_report = open("provider_migration_report.txt", "a")
 
@@ -178,11 +151,6 @@ full_response = open("fullResponse.txt", "a")
 
 full_response.write(str(json_response))
 provider_id_list = []
-
-# The new record
-data = {}
-data['key'] = 'value'
-json_data = json.dumps(data)
 
 # Metadata specification for ingesting providers
 # Note that since this script is only meant to be run during the legacy services migration/transition
@@ -192,23 +160,17 @@ metadata_specification = {
                "Version": "1.0.0",
                "URL": "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0"}
 
-# TODO: Pull out all of the data that we want from the response
-
-# TODO have a default role per organization
-# TODO put this line back
-provider_migration_count = 0
-# all_groups = get_all_legacy_service_groups()
-# TODO: parse the groups for the owner_provider_guid and match that to the id in the provider
-print('Migrating' + str(len(json_response)) + ' Providers')
+print('Beginning to Migrate' + str(len(json_response)) + ' Providers')
 
 for provider in json_response:
     provider_id = provider['provider']['provider_id']
+    print('Migrating ' + str(provider_id) + ' provider')
     description_of_holdings = provider['provider']['description_of_holdings']
     # Remove any "\" characters in the description of holdings string
     # TODO This still needs to work to remove characters correctly
     # description_of_holdings=description_of_holdings.replace("\\","")
     re.sub('[^A-Za-z0-9]+', '', description_of_holdings)
-    print('Filtered description of holdings', description_of_holdings)
+    # print('Filtered description of holdings', description_of_holdings)
     search_urls = provider['provider']['discovery_urls']
     org_name = provider['provider']['organization_name']
     contacts = provider['provider']['contacts']
@@ -217,55 +179,82 @@ for provider in json_response:
     
     # The roles in the provider
     # "required": ["Roles", "LastName"]
-    # we can do: addresses 
+    # we can do: addresses
     contact_persons = []
     for contact in contacts:
         contact_person = {}
         contact_person_roles_arr = []
+        contact_mechanisms = []
+        addresses = []
+        phone_contacts = []
         # New provider schema allows for multiple roles per contact old one did not
         contact_person_roles_arr.append(contact['role'])
         # TODO: For now I am hardcoding this because we need to change the schema
         # contact_person['Roles'] = contact_person_roles_arr
-        contact_person["Roles"] = ["PROVIDER MANAGEMENT"]
-
-
+        contact_person["Roles"] = [DEFAULT_CONTACT_ROLE]
         contact_person['LastName'] = contact['last_name']
+        # TODO adding first name
+        contact_person['FirstName'] = contact['first_name']
+
+    # TODO handling address each old style record will only contain one address
+        if contact.get("address"):
+            address = parse_addresses(contact)
+            addresses.append(address)
+
+        if contact.get("email"):
+            email_value = parse_emails(contact)
+            email_contact = {"Type": "Email", "Value": email_value}
+            contact_mechanisms.append(email_contact)
+
+        if contact.get("phones"):
+            # TODO be careful here if there is more than one more
+            # Todo we may not be able to get clarity for this with the schema
+            phone_numbers = parse_phones(contact)
+            for phone_number in phone_numbers:
+                phone_contact = {"Type": "Telephone", "Value": phone_number}
+                # Use the same contact mechanism object as emails
+                contact_mechanisms.append(phone_contact)
+
+        if len(addresses) > 0 or len(contact_mechanisms) > 0 or len(phone_contacts) > 0 :
+            contact_person['ContactInformation'] = {}
+
+        # Addresses are optional if there were any, add them
+        if len(addresses) > 0:
+            # contact_person['ContactInformation'] = {}
+            # We must wrap the contact person with contract information
+            contact_person['ContactInformation']['Addresses'] = addresses
+
+        # If emails or phones were provided add them to the metadata
+        if len(contact_mechanisms) > 0:
+            contact_person['ContactInformation']['ContactMechanisms'] = contact_mechanisms
+
         # Add to contact person to contact_persons arr
         contact_persons.append(contact_person)
         #TODO we need to handle if there are more fields provided
 
 
-    
     # Handle organizations
     organizations = []
     for url in search_urls:
         organization = {}
+        # In all cases on PROD it was found that the provider_id and Shortname were always the same this
+        # will be enforced in the new schema
         organization["ShortName"] = provider_id
         organization["LongName"] = org_name
         organization["URLValue"] = url
         # TODO we are hardcoding this as well because it is not provided by ACL's
         # Consider passing a default argument for the organization roles
-        organization["Roles"]= ["PUBLISHER"]
+        organization["Roles"] = [DEFAULT_ORGANIZATION_ROLE]
         # TODO: if there are any roles add that to the role part we will actually pass this
-        # TOOD: as an argument
         organizations.append(organization)
 
-   # TODO handle the Administrators
-    # print("Provider-id value to be passed", provider_id)
-    # provider_group_id = get_provider_group_id(all_groups, provider_id)
-    # provider_member_guids = get_provider_admin_member_guids(provider_group_id)
-    # adminUsernames = get_admin_usernames(provider_member_guids)
-
+   # Handle the Administrators
     all_the_groups_specific_provider = get_groups_by_provider(provider_owner_guid)
-
     member_guids_specific_provider = get_all_provider_guids(all_the_groups_specific_provider)
-    # print('members of groups for provider ' + str(provider_id) + " with an owner-id of " + str(provider_owner_guid)
-    # + str(member_guids_specific_provider))
     adminUsernames = get_admin_usernames(member_guids_specific_provider)
-    # New way to handle admins
 
-    # TODO remove but, for now add myself as an admin to everything to test ingest
-    if(len(adminUsernames) < 1):
+    # TODO remove but, for now add default as an admin to everyone without admins to test ingest
+    if len(adminUsernames) < 1:
         adminUsernames.append("defaultAdmin")
 
   # Create the new record to be ingested by the new CMR provider interface
@@ -276,19 +265,8 @@ for provider in json_response:
     data["Organizations"] = organizations
     data["Administrators"] = adminUsernames
     data["ContactPersons"] = contact_persons
-        
 
-         
-    # In all cases on PROD it was found that the provider_id and Shortname were always the same
-    # TODO: double check that this is the case
-    
-    # In the new provider interface we are going to make that assumption enforced by the schema
-    # data['Organizations']['ShortName'] = provider_id
-    # # longname in the new schema and organization_name field in legacy are equivalent
-    # data['Organizations']['LongName'] = org_name
-    # # TODO: For every value in discovery_urls create a record for organization
-    # data['Organizations']['URLValue'] = URLValue = search_urls[0]
-     #TODO: figure out consortiums
+    # Dump the new metadata schema
     json_data = json.dumps(data)
 
     # Write to the metadata file
@@ -296,16 +274,19 @@ for provider in json_response:
     provider_metadata_file.write(str(json_data))
     # ingest_provider(json_data)
     provider_id_list.append(json_data)
-    f.write(str(json_data))
-    provider_migration_count += 1
+    # f.write(str(json_data))
+    PROVIDER_MIGRATION_COUNT += 1
     # TODO only try to ingest one for now
 
 # f.write(str(provider_id_list))
 # get the total count of providers
+end = time.time()
+# print(f"Total DataQualitySummary data migration time spent: {end - start} seconds, Succeeded: {success_count}, Failed: {failure_count}")
+provider_migration_report.write(('The total number of providers migrated ' +
+str(PROVIDER_MIGRATION_COUNT) + '\n'))
+provider_migration_report.write(('The total time that the migration took ' +
+str(end - start)+ '\n'))
 
-provider_migration_report.write(('The total number of providers migrated' + str(provider_migration_count)))
-
-# TODO get the provider administrators level group from provider
 
 # TODO: Pass this to the ingest API for the providers
 
