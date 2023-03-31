@@ -4,25 +4,41 @@ import os
 import xml.etree.ElementTree as ET
 import re
 import time
+import sys
 import requests
 
 URL_ROOT = "https://cmr.sit.earthdata.nasa.gov"
+# LOCAL_CMR = "http://localhost:3002/providers/"
+
 access_token = os.environ.get('SIT_SYSTEM_TOKEN')
 CMR_INGEST_ENDPOINT = "https://cmr.sit.earthdata.nasa.gov/ingest"
+
+# To test local ingesting into CMR
+local_cmr_access_token = os.environ.get('localHeader')
 # These are for the Enum values that we must set in the metadata field
 DEFAULT_ORGANIZATION_ROLE = "SERVICE PROVIDER"
 DEFAULT_CONTACT_ROLE = "TECHNICAL CONTACT"
 # provider_migration_report = open("provider_migration_report.txt", "w")
 
+
 # TODO: Make this an optional thing
-# def ingest_provider(provider_metadata):
-#     response = requests.post(f"{URL_ROOT}/ingest/providers",
-#                         data=json.dumps(provider_metadata),
-#                         headers={"Authorization": access_token, "User-id": "legacy_migration",
-#                         "Content-Type": "application/json"}
-#                         )
-#     print("Ingest response from provider endpoint", response.content)
-#     return response
+def ingest_provider(provider_metadata, providerId):
+    """Attempts to ingest metadata into CMR (locally)"""
+    response = requests.post("http://localhost:3002/providers/",
+                        data=provider_metadata,
+                        headers={"Authorization": local_cmr_access_token, "User-id": "legacy_migration",
+                        "Content-Type": "application/json"},
+                        timeout=60
+                        )
+    print("Successfully Ingested metadata into CMR ", response.status_code)
+    # TODO trying to figure out which error code to use
+    if response.status_code >= 300:
+        print("Failed to ingest a record: ", providerId)
+        ingest_error_log = open("./logs/"+str(provider_id)+"_error","w")
+        ingest_error_log.write('Error for provider ' + provider_id + ' ingesting ' + 'due to ' +
+        str(response.content))
+    return response.content
+
 
 def is_admin_group(group):
     """Looks for admin in the name of the group"""
@@ -38,44 +54,44 @@ def get_admin_usernames(member_guid_arr):
     #TODO: can we do this in one request instead of iterating over each username
     for user_id in member_guid_arr:
         print("User_id being passed in request", user_id)
-        response = requests.get(f"{URL_ROOT}/legacy-services/rest/users/{user_id}",
-        headers={"Authorization": access_token, "User-id": "legacy_migration"},
-        timeout=60)
-        if response.status_code >= 300:
-            print("Failed to Retrieve edl-username for guid" + str(user_id))
-        else:
+        try:
+            response = requests.get(f"{URL_ROOT}/legacy-services/rest/users/{user_id}",
+            headers={"Authorization": access_token, "User-id": "legacy_migration"},
+            timeout=80)
+            user_element = ET.fromstring(response.content)
+            edl_username = user_element.find('username')
             print("Retrieved edl-username for guid", user_id)
-        user_element = ET.fromstring(response.content)
-        edl_username = user_element.find('username')
-        print('The edl username', edl_username.text)
-        username_arr.append(edl_username.text)
+            print('The edl username', edl_username.text)
+            username_arr.append(edl_username.text)
+        except requests.exceptions.ConnectionError:
+            print("Failed to Retrieve edl-username for guid" + str(user_id))
+            return None
     return username_arr
 
 def retrieve_legacy_providers():
     """Requests all of the providers on legacy-services and their metadata which we will be
     re-ingesting into the new providers interface"""
-    response = requests.get(f"{URL_ROOT}/legacy-services/rest/providers.json",
-        headers={"Authorization": access_token, "User-id": "legacy_migration"},
-        timeout=60)
-    if response.status_code >= 300:
+    try:
+        response = requests.get(f"{URL_ROOT}/legacy-services/rest/providers.json",
+            headers={"Authorization": access_token, "User-id": "legacy_migration"},
+            timeout=80)
+        providers = response.json()
+    except requests.exceptions.ConnectionError:
         print('Failed to retrieve legacy service providers')
-    else:
-        print('Successfully retrieved legacy service providers')
-    providers = response.json()
+        return None
     return providers
 
 # TODO this is using the new api where we pass the owner-id
 def get_groups_by_provider(owner_id):
     """Requests all groups that belong to a specific provider by passing the owner_id"""
-    response = requests.get(f"{URL_ROOT}/legacy-services/rest/groups?owner_id={owner_id}",
-    headers={"Authorization": access_token, "User-id": "legacy_migration"},
-    timeout=60)
-    if response.status_code >= 300:
+    try:
+        response = requests.get(f"{URL_ROOT}/legacy-services/rest/groups?owner_id={owner_id}",
+        headers={"Authorization": access_token, "User-id": "legacy_migration"},
+        timeout=80)
+    except requests.exceptions.ConnectionError:
         print("Failed to retrieve groups for the provider with owner guid " + str(owner_id))
-    else:
-        print("Successfully retrieved groups for the provider with owner guid ", owner_id)
+        return None
     return response
-
 
 def get_all_provider_guids(provider_groups):
     """Parses all of the groups of a provider, retrieves administrator member guids"""
@@ -87,7 +103,7 @@ def get_all_provider_guids(provider_groups):
             member_guids = group.find('member_guids')
             member_guid_list = member_guids.findall('member_guid')
             for member_guid in member_guid_list:
-                # print('🚀 ~ file: migrate.py:160 ~ member_guid:', member_guid.text)
+                # print('🚀 ~ file: migrate.py:180 ~ member_guid:', member_guid.text)
                 member_guid_arr.append(member_guid.text)
     return member_guid_arr
 
@@ -100,7 +116,7 @@ def parse_addresses(provider_contact):
     address_metadata = { 'City': city,
     'Country': country
     }
-    print('🚀 us format value ',  address["us_format"])
+    # print('🚀 us format value ',  address["us_format"])
     # TODO we need to handle this boolean string better
     if address["us_format"] is True:
         state = address["state"]
@@ -116,14 +132,22 @@ def parse_addresses(provider_contact):
     provider_street_keys = {key: val for key, val in address.items()
        if key.startswith('street')}
     print('🚀 ~ file: migrate.py:115 ~ street_list:', str(provider_street_keys.values()))
+
+    # If street addresses were in the record add them to the new metadata
+    if len(provider_street_keys.values()) > 0:
+        street_addresses = []
+        for street in provider_street_keys.values():
+            street_addresses.append(street)
+        address_metadata["StreetAddresses"] = street_addresses
+
     # address.findall('street*')
-    print('🚀 this is the address metadata on this document ', str(address_metadata))
+    # print('🚀 this is the address metadata on this document ', str(address_metadata))
     return address_metadata
 
 def parse_emails(provider_contact):
     """Parses email fields between old-style format into new schema"""
     email = provider_contact["email"]
-    print('🚀 this is the email metadata on this document ', str(email))
+    # print('🚀 this is the email metadata on this document ', str(email))
     return email
 
 def parse_phones(provider_contact):
@@ -135,13 +159,17 @@ def parse_phones(provider_contact):
         if phone.get('number'):
             phone_numbers.append(phone['number'])
     
-    print('🚀 The phone numbers in the document ', str(phone_numbers))
+    # print('🚀 The phone numbers in the document ', str(phone_numbers))
     return phone_numbers
 
 # Main
 PROVIDER_MIGRATION_COUNT = 0
 start = time.time()
 json_response = retrieve_legacy_providers()
+
+# Bailout if request for providers failed
+if json_response is None:
+    sys.exit("Failed to Retrieve any providers")
 
 # TODO remove me I am for testing
 f = open("demofile2.txt", "a")
@@ -251,6 +279,9 @@ for provider in json_response:
    # Handle the Administrators
     all_the_groups_specific_provider = get_groups_by_provider(provider_owner_guid)
     member_guids_specific_provider = get_all_provider_guids(all_the_groups_specific_provider)
+    if member_guids_specific_provider is None:
+        print('🚀 Could not retrieve the member guids for ', provider_id)
+        
     adminUsernames = get_admin_usernames(member_guids_specific_provider)
 
     # TODO remove but, for now add default as an admin to everyone without admins to test ingest
@@ -269,10 +300,14 @@ for provider in json_response:
     # Dump the new metadata schema
     json_data = json.dumps(data)
 
-    # Write to the metadata file
+
+    # Write to the metadata file to a new metadata file for each provider
     provider_metadata_file = open("./providerMetadata/"+str(provider_id)+"_metadata.json","w")
     provider_metadata_file.write(str(json_data))
-    # ingest_provider(json_data)
+
+    # TODO trying to ingest the record
+    ingest_provider(json_data, provider_id)
+
     provider_id_list.append(json_data)
     # f.write(str(json_data))
     PROVIDER_MIGRATION_COUNT += 1
