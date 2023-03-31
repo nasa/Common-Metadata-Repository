@@ -1,8 +1,8 @@
-## <a name="grid"></a> Grid
+## <a name="provider"></a> Provider
 
 #### <a name="provider-info"></a> /providers/&lt;provider-id&gt;
 
-### <a name="create-grid"></a> POST - Create a Provider
+### <a name="create-provider"></a> POST - Create a Provider
 
 Providers can be created by sending an HTTP POST with the metadata to
 the URL `%CMR-ENDPOINT%/providers`. The response will return the saved metadata.
@@ -17,7 +17,7 @@ The contents of the metadata is passed in the body of the request.
 ```
 
 * Subsequent ingests to an Provider will **not** result in updates to it's metadata.
-* Users must have `INGEST_MANAGMENT`
+* Users must have `INGEST_MANAGEMENT`
 
 #### Successful Response in JSON
 
@@ -25,7 +25,7 @@ The contents of the metadata is passed in the body of the request.
     {...tbd...}
 ```
 
-### <a name="read-grid"></a> GET - Read all Provider
+### <a name="read-provider"></a> GET - Read all Provider
 
 Providers can be read by sending an HTTP GET with no metadata to the URL
 `%CMR-ENDPOINT%/providers`. The response will return the saved metadata for all
@@ -44,7 +44,7 @@ providers.
     {...tbd...}
 ```
 
-### <a name="update-grid"></a> PUT - Update a Provider
+### <a name="update-provider"></a> PUT - Update a Provider
 
 Providers can be updated by sending an HTTP PUT with the metadata to
 the URL `%CMR-ENDPOINT%/providers/\<provider-id\>`. The response will return the saved metadata.
@@ -84,19 +84,19 @@ The contents of the metadata is passed in the body of the request.
     }
 ```
 
-### <a name="delete-grid"></a> DELETE - Delete a Provider
+### <a name="delete-provider"></a> DELETE - Delete a Provider
 
 Not currently allowed. Contact CMR support.
 
 <!--
-Grid metadata can be deleted by sending an HTTP DELETE to the URL
+Provider metadata can be deleted by sending an HTTP DELETE to the URL
 `%CMR-ENDPOINT%/providers`.
 
 ```
     curl -XDELETE \
         -H "Cmr-Pretty: true" \
         -H "Authorization: Bearer XXXX" \
-        %CMR-ENDPOINT%/providers/PROV1/grids/sampleNative23Id"
+        %CMR-ENDPOINT%/providers/PROV1/provider/prov-id-here"
 ```
 
 #### Successful Response in JSON
