@@ -91,7 +91,6 @@
 (defn delete-concept
   "Deletes a concept from EFS"
   [provider concept-type concept-id revision-id]
-  (info "running delete-concept " concept-id " " revision-id)
   (let [concept-path (make-concept-path provider concept-type concept-id revision-id)]
     (info "Removing concept from EFS: " concept-path)
     (Files/deleteIfExists (Paths/get concept-path (into-array String [])))))
@@ -99,5 +98,4 @@
 (defn delete-concepts
   "Deletes multiple concepts from EFS"
   [provider concept-type concept-id-revision-id-tuples]
-  (info "EFS delete concepts: " concept-id-revision-id-tuples)
   (map (fn [tuple] (delete-concept provider concept-type (first tuple) (second tuple))) concept-id-revision-id-tuples))
