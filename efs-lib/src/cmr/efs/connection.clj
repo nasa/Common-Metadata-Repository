@@ -91,7 +91,8 @@
 (defn delete-concept
   "Deletes a concept from EFS"
   [provider concept-type concept-id revision-id]
-  (let [concept-path (make-concept-path provider concept-type concept-id revision-id)]
+  (let [_ (info "Deleting concept with params provider: " provider " concept-type: " concept-type " concept-id: " concept-id " revision-id: " revision-id)
+        concept-path (make-concept-path provider concept-type concept-id revision-id)]
     (info "Removing concept from EFS: " concept-path)
     (Files/deleteIfExists (Paths/get concept-path (into-array String [])))
     revision-id))
