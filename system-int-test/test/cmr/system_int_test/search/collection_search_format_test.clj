@@ -1224,28 +1224,26 @@
 
 (deftest search-with-empty-json
   (let [coll1 (d/ingest "PROV1" (dc/collection))
-        coll-concept-id (:concept-id coll1)]
-    (index/wait-until-indexed)
+        coll-concept-id (:concept-id coll1)
+        _ (index/wait-until-indexed)
+        response1 (client/get
+                    (url/search-url :collection)
+                    {:accept "application/json"
+                     :content-type "application/json"
+                     :body nil
+                     :throw-exceptions false
+                     :connection-manager (s/conn-mgr)})
+        response2 (client/get
+                    (url/search-url :collection)
+                    {:accept "application/json"
+                     :content-type "application/json"
+                     :body ""
+                     :throw-exceptions false
+                     :connection-manager (s/conn-mgr)})]
     (testing "testing collection search with empty json body"
-      (let [response1 (client/get
-                       (url/search-url :collection)
-                       {:accept "application/json"
-                        :content-type "application/json"
-                        :body nil
-                        :throw-exceptions false
-                        :connection-manager (s/conn-mgr)})
-            response2 (client/get
-                             (url/search-url :collection)
-                             {:accept "application/json"
-                              :content-type "application/json"
-                              :body ""
-                              :throw-exceptions false
-                              :connection-manager (s/conn-mgr)})]
-         (is (=
-               422
-               (:status response1)
-               (:status response2)))
-         (is (=
-               "JSON query cannot be empty"
-               (first (:errors (json/decode (:body response1) true)))
-               (first (:errors (json/decode (:body response2) true)))))))))
+      (is (= 422
+             (:status response1)
+             (:status response2)))
+      (is (= "JSON query cannot be empty"
+             (first (:errors (json/decode (:body response1) true)))
+             (first (:errors (json/decode (:body response2) true))))))))
