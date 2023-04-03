@@ -1246,6 +1246,6 @@
                (:status response1)
                (:status response2)))
          (is (=
-               "json query cannot be empty"
+               "JSON query cannot be empty"
                (first (:errors (json/decode (:body response1) true)))
                (first (:errors (json/decode (:body response2) true)))))))))
