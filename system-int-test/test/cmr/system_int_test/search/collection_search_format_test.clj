@@ -1069,7 +1069,7 @@
            (search/get-search-failure-xml-data
              (search/find-concepts-in-format
                "application/echo11+xml" :collection {})))))
-  
+
   (testing "invalid format html escape"
     (is (= {:status 400,
             :errors ["The mime types specified in the accept header [application/html &quot;qss=&quot;QssAttrValue] are not supported."]}
@@ -1221,3 +1221,29 @@
       (is (= ["STAC result format is only supported for granule searches"]
              (:errors response)
              (:errors ext-response))))))
+
+(deftest search-with-empty-json
+  (let [coll1 (d/ingest "PROV1" (dc/collection))
+        coll-concept-id (:concept-id coll1)
+        _ (index/wait-until-indexed)
+        response1 (client/get
+                   (url/search-url :collection)
+                   {:accept "application/json"
+                    :content-type "application/json"
+                    :body nil
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
+        response2 (client/get
+                   (url/search-url :collection)
+                   {:accept "application/json"
+                    :content-type "application/json"
+                    :body ""
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})]
+    (testing "testing collection search with empty json body"
+      (is (= 422
+             (:status response1)
+             (:status response2)))
+      (is (= "JSON query cannot be empty"
+             (first (:errors (json/decode (:body response1) true)))
+             (first (:errors (json/decode (:body response2) true))))))))
