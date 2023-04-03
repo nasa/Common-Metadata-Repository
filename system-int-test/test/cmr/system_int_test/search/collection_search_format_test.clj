@@ -1227,19 +1227,19 @@
         coll-concept-id (:concept-id coll1)
         _ (index/wait-until-indexed)
         response1 (client/get
-                    (url/search-url :collection)
-                    {:accept "application/json"
-                     :content-type "application/json"
-                     :body nil
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})
+                   (url/search-url :collection)
+                   {:accept "application/json"
+                    :content-type "application/json"
+                    :body nil
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})
         response2 (client/get
-                    (url/search-url :collection)
-                    {:accept "application/json"
-                     :content-type "application/json"
-                     :body ""
-                     :throw-exceptions false
-                     :connection-manager (s/conn-mgr)})]
+                   (url/search-url :collection)
+                   {:accept "application/json"
+                    :content-type "application/json"
+                    :body ""
+                    :throw-exceptions false
+                    :connection-manager (s/conn-mgr)})]
     (testing "testing collection search with empty json body"
       (is (= 422
              (:status response1)
