@@ -103,4 +103,4 @@
   (info "Vars of delete " provider " " concept-type " " concept-id-revision-id-tuples)
   (info "Type of concet-tuples " (type concept-id-revision-id-tuples) " Value " concept-id-revision-id-tuples)
   (info "Value of first tuple " (first concept-id-revision-id-tuples) " value of first of first " (first (first concept-id-revision-id-tuples)) " value of second of first " (second (first concept-id-revision-id-tuples)))
-  (map (fn [tuple] (delete-concept provider concept-type (first tuple) (second tuple))) concept-id-revision-id-tuples))
+  (doall (map (fn [tuple] (delete-concept provider concept-type (first tuple) (second tuple))) concept-id-revision-id-tuples)))
