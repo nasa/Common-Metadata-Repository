@@ -49,11 +49,10 @@
 (defn get-launchpad-user
   "Processes a request to get a user using their launchpad token."
   [context token] 
-  (when token
-    (case token
+  (case token
       "ABC-1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
       {:status 200 :body {:uid "user1"}} 
-      {:status 400 :body {:error "Launchpad SSO authentication failed"}})))
+      {:status 400 :body {:error "Launchpad SSO authentication failed"}}))
 
 (defn get-user-info
   "Returns mock URS info for a user"
