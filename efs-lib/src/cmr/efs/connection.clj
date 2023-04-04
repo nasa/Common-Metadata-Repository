@@ -46,9 +46,9 @@
 
 (defn make-concept-path
   ([provider concept-type concept]
-  (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) (:concept_id concept) (:concept_id concept) (:revision_id concept)))
+   (format "%s/%s/%s/%s/%s.r%s.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) (:concept_id concept) (:concept_id concept) (:revision_id concept)))
   ([provider concept-type concept-id revision-id]
-   (format "%s/%s/%s/%s/%s.r%d.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) concept-id concept-id revision-id)))
+   (format "%s/%s/%s/%s/%s.r%s.zip" (efs-config/efs-directory) (:provider-id provider) (name concept-type) concept-id concept-id revision-id)))
 
 ;;--------------------- CORE FUNCTIONS ---------------------
 
@@ -92,10 +92,10 @@
   "Deletes a concept from EFS"
   [provider concept-type concept-id revision-id]
   (let [concept-path (make-concept-path provider concept-type concept-id revision-id)]
-    (info "Removing concept from EFS")
-    (Files/deleteIfExists (Paths/get concept-path (into-array String [])))))
+    (Files/deleteIfExists (Paths/get concept-path (into-array String [])))
+    revision-id))
 
 (defn delete-concepts
   "Deletes multiple concepts from EFS"
   [provider concept-type concept-id-revision-id-tuples]
-  (map (fn [tuple] (delete-concept provider concept-type (first tuple) (second tuple))) concept-id-revision-id-tuples))
+  (doall (map (fn [tuple] (delete-concept provider concept-type (first tuple) (second tuple))) concept-id-revision-id-tuples)))
