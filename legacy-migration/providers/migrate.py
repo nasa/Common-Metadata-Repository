@@ -1,4 +1,5 @@
 """Migrates providers from legacy services REST API into new providers interface"""
+import argparse
 import json
 import os
 import xml.etree.ElementTree as ET
@@ -6,11 +7,14 @@ import re
 import time
 import sys
 import requests
+import logging
+import validators
 
 URL_ROOT = "https://cmr.sit.earthdata.nasa.gov"
 
 access_token = os.environ.get('SIT_SYSTEM_TOKEN')
 CMR_INGEST_ENDPOINT = "https://cmr.sit.earthdata.nasa.gov/ingest"
+CMR_LOCAL_ingest_ENDPOINT = 'http://localhost:3002'
 
 # To test local ingesting into CMR
 local_cmr_access_token = os.environ.get('localHeader')
@@ -18,7 +22,7 @@ local_cmr_access_token = os.environ.get('localHeader')
 # TODO I want more clarity on how to handle these organization and contact roles since there is not an enum accessible substitute in the old format
 DEFAULT_ORGANIZATION_ROLE = "SERVICE PROVIDER"
 DEFAULT_CONTACT_ROLE = "TECHNICAL CONTACT"
-
+ 
 # Metadata specification for ingesting providers
 # It should not be expected this version or schema directories will change
 # within the lifecycle of this migration
@@ -27,9 +31,22 @@ metadata_specification = {
             "Version": "1.0.0",
             "URL": "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0"}
 
+def retrieve_legacy_providers():
+    """Requests all of the providers on legacy-services and their metadata which we will be
+    re-ingesting into the new providers interface"""
+    try:
+        response = requests.get(f"{URL_ROOT}/legacy-services/rest/providers.json",
+            headers={"Authorization": access_token, "User-id": "legacy_migration"},
+            timeout=80)
+        providers = response.json()
+    except requests.exceptions.ConnectionError:
+        print('Failed to retrieve legacy service providers')
+        return None
+    return providers
+
 def ingest_provider(provider_metadata, provider_id):
     """Attempts to ingest metadata into CMR (locally)"""
-    response = requests.post("http://localhost:3002/providers/",
+    response = requests.post(f"{CMR_LOCAL_ingest_ENDPOINT}/providers/",
                         data=provider_metadata,
                         headers={"Authorization": local_cmr_access_token, "User-id": "legacy_migration",
                         "Content-Type": "application/json"},
@@ -49,12 +66,25 @@ def is_admin_group(group):
     # if in the name of the text admin comes up anywhere then it is an admin group
     return bool(re.search('admin', group.lower()))
 
+def convert_to_uri_value(url, provider_id):
+    """Where applicable convert the url in to URI format. For example:
+    www.example.com becomes https://example.com"""
+    # startsWith requires a tuple of strings if you want multiple ORed together
+    if validators.domain(url):
+        # if this is a valid domain ending but, front of URI is missing
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+        return url
+    else:
+        # We will not be able to migrate this provider since we'll want to manually check it's url
+        logging.warning('This url could not be coerced into a valid URI format ' + url + ' for provider ' + provider_id)
+        return url
+
 def get_admin_usernames(member_guid_arr):
     """Parses the list of member_guids and retrieves the edl usernames though an API call"""
     username_arr = []
-    if len(member_guid_arr) < 1:
+    if not member_guid_arr:
         return username_arr
-    #TODO: can we do this in one request instead of iterating over each username
     for user_id in member_guid_arr:
         print("User_id being passed in request", user_id)
         try:
@@ -70,19 +100,6 @@ def get_admin_usernames(member_guid_arr):
             print("Failed to Retrieve edl-username for guid" + str(user_id))
             return None
     return username_arr
-
-def retrieve_legacy_providers():
-    """Requests all of the providers on legacy-services and their metadata which we will be
-    re-ingesting into the new providers interface"""
-    try:
-        response = requests.get(f"{URL_ROOT}/legacy-services/rest/providers.json",
-            headers={"Authorization": access_token, "User-id": "legacy_migration"},
-            timeout=80)
-        providers = response.json()
-    except requests.exceptions.ConnectionError:
-        print('Failed to retrieve legacy service providers')
-        return None
-    return providers
 
 def get_groups_by_provider(owner_id):
     """Requests all groups that belong to a specific provider by passing the owner_id"""
@@ -101,17 +118,15 @@ def get_all_provider_guids(provider_groups):
     groups_root = ET.fromstring(provider_groups.content)
     for group in groups_root.findall('group'):
         if(is_admin_group(group.find('name').text)):
-            # print('🚀 This group was admin: ', group.find('name').text)
+            logging.info('This group was admin:' + group.find('name').text)
             member_guids = group.find('member_guids')
             member_guid_list = member_guids.findall('member_guid')
             for member_guid in member_guid_list:
-                # print('🚀 ~ file: migrate.py:180 ~ member_guid:', member_guid.text)
                 member_guid_arr.append(member_guid.text)
     return member_guid_arr
 
 def parse_addresses(provider_contact):
     """Parses address between old-style format into new schema"""
-    # TODO Addresses are not always in the contacts object
     address = provider_contact["address"]
     city = address["city"]
     country = address["country"]
@@ -120,7 +135,6 @@ def parse_addresses(provider_contact):
     'Country': country
     }
     # print('🚀 us format value ',  address["us_format"])
-    # TODO we need to handle this boolean string better
     if address["us_format"] is True:
         state = address["state"]
         postal_code = address["zip"]
@@ -131,21 +145,19 @@ def parse_addresses(provider_contact):
     # Look for street *
     provider_street_keys = {key: val for key, val in address.items()
        if key.startswith('street')}
-    # print('🚀 ~ file: migrate.py:115 ~ street_list:', str(provider_street_keys.values()))
-
     # If street addresses were in the record add them to the new metadata
     if len(provider_street_keys.values()) > 0:
         street_addresses = []
         for street in provider_street_keys.values():
             street_addresses.append(street)
         address_metadata["StreetAddresses"] = street_addresses
-    # print('🚀 this is the address metadata on this document ', str(address_metadata))
+    logging.info('This is the address metadata on this document ' + str(address_metadata))
     return address_metadata
 
 def parse_emails(provider_contact):
     """Parses email fields between old-style format into new schema"""
     email = provider_contact["email"]
-    # print('🚀 this is the email metadata on this document ', str(email))
+    logging.info('This is the email metadata on this document ' + str(email))
     return email
 
 def parse_phones(provider_contact):
@@ -156,7 +168,7 @@ def parse_phones(provider_contact):
         # Some do not have the number field but, have a phone
         if phone.get('number'):
             phone_numbers.append(phone['number'])
-    # print('🚀 The phone numbers in the document ', str(phone_numbers))
+    logging.info('These are the phone-numbers metadata on this document ' + str(phone_numbers))
     return phone_numbers
 
 def migrate_contact_persons(contacts):
@@ -168,13 +180,10 @@ def migrate_contact_persons(contacts):
         contact_mechanisms = []
         addresses = []
         phone_contacts = []
-        # New provider schema allows for multiple roles per contact old one did not
+        # New provider schema allows for multiple roles per contact old-format did not
         contact_person_roles_arr.append(contact['role'])
-        # TODO: For now I am hardcoding this because we need to change the schema this is an enum so we cannot simply pass it
-        # contact_person['Roles'] = contact_person_roles_arr
         contact_person["Roles"] = [DEFAULT_CONTACT_ROLE]
         contact_person['LastName'] = contact['last_name']
-        # TODO adding first name
         contact_person['FirstName'] = contact['first_name']
 
     # The old-style provider record contains only a single address value
@@ -210,7 +219,6 @@ def migrate_contact_persons(contacts):
         # Add to contact person to contact_persons arr
         contact_persons.append(contact_person)
         return contact_persons
-        #TODO we need to handle if there are more fields provided
 
 def migrate_organizations(search_urls, provider_id,org_name):
     """Parses organization's fields between old-style format into new schema"""
@@ -222,6 +230,8 @@ def migrate_organizations(search_urls, provider_id,org_name):
         # will be enforced in the new schema
         organization["ShortName"] = provider_id
         organization["LongName"] = org_name
+        # Try to massage mostly valid urls into the required schema format
+        url = convert_to_uri_value(url, provider_id)
         organization["URLValue"] = url
         # Consider passing a default argument for the organization roles
         organization["Roles"] = [DEFAULT_ORGANIZATION_ROLE]
@@ -232,22 +242,22 @@ def migrate_administrators(provider_owner_guid, provider_id):
     """Parses admin's fields between old-style format into new schema"""
     all_the_groups_specific_provider = get_groups_by_provider(provider_owner_guid)
     member_guids_specific_provider = get_all_provider_guids(all_the_groups_specific_provider)
-    # TODO: Iron out the pieces
     if member_guids_specific_provider is None:
-        print('🚀 Could not retrieve the member guids for ', provider_id)
+        logging.debug('Could not retrieve the member guids for ' + str(provider_id))
     admin_usernames = get_admin_usernames(member_guids_specific_provider)
     return admin_usernames
 
 def migrate_providers():
     """Migrate the providers"""
+    # pull ingest_flag var from the cmd arg
+    global ingest_flag
+
     provider_migration_count = 0
     json_response = retrieve_legacy_providers()
 
     # Bailout if request for providers failed
     if json_response is None:
         sys.exit("Failed to Retrieve any providers")
-
-    # provider_id_list = []
 
     print('Beginning to Migrate' + str(len(json_response)) + ' Providers')
 
@@ -259,7 +269,7 @@ def migrate_providers():
         # Remove any "\" characters in the description of holdings string
         # TODO item of discussion is the length that we will allow for DOH
         # description_of_holdings=description_of_holdings.replace("\\","")
-        re.sub('[^A-Za-z0-9]+', '', description_of_holdings)
+        re.sub('\w', '', description_of_holdings)
         # print('Filtered description of holdings', description_of_holdings)
         search_urls = provider['provider']['discovery_urls']
         org_name = provider['provider']['organization_name']
@@ -274,8 +284,9 @@ def migrate_providers():
         # Handle the Administrators
         admin_usernames = migrate_administrators(provider_owner_guid,provider_id)
 
-        # TODO A unit of discussion for how to handle cases where admin users is not provided 
-        if len(admin_usernames) < 1:
+        # TODO A unit of discussion for how to handle cases where admin users is not provided
+        if not admin_usernames:
+            logging.debug("We had to create an admin user for " + str(provider_id))
             admin_usernames.append("defaultAdmin")
 
     # Create the new record to be ingested by the new CMR provider interface
@@ -288,14 +299,14 @@ def migrate_providers():
         data["ContactPersons"] = contact_persons
 
         # Dump the new metadata schema
-        json_data = json.dumps(data)
+        json_data = json.dumps(data,indent=4)
 
         # Write to the metadata file to a new metadata file for each provider
         provider_metadata_file = open("./providerMetadata/" + str(provider_id)+"_metadata.json","w", encoding="utf8")
         provider_metadata_file.write(str(json_data))
 
-        # TODO trying to ingest the record we can disable this so that the records are just printed out instead
-        ingest_provider(json_data, provider_id)
+        if INGEST_FLAG:
+            ingest_provider(json_data, provider_id)
 
         #TODO will remove below useful for debugging
         # provider_id_list.append(json_data)
@@ -304,9 +315,20 @@ def migrate_providers():
     # Migration Complete
     print(f'The total number of providers migrated {provider_migration_count}')
 
-# Main:
-start = time.time()
-migrate_providers()
-end = time.time()
-total_time = end - start
-print(f"The total time that the migration took {total_time}")
+def main(ingest_flag):
+    # ingest_flag = args.ingest
+    global INGEST_FLAG
+    INGEST_FLAG = ingest_flag
+    # Begin migration get start/end times
+    start = time.time()
+    migrate_providers()
+    end = time.time()
+    total_time = end - start
+    print(f"The total time that the migration took {total_time}")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-i', '--ingest', action='store_true', help='ingest the provider metadata records')
+    args = parser.parse_args()
+    ingest_flag = args.ingest
+    main(ingest_flag)
