@@ -31,11 +31,9 @@
   [conn username]
   (format "%s/api/user_groups/groups_for_user/%s" (conn/root-url conn) username))
 
-;; NOTE the below configuration is as defined by URS - it does require the
-;; token as a URL parameter although it is a POST request.
 (defn- launchpad-validation-url
-  [conn username]
-  (format "%s/api/nams/edl_user_uid?token=%s" (conn/root-url conn) username))
+  [conn]
+  (format "%s/api/nams/edl_user_uid" (conn/root-url conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
@@ -70,8 +68,9 @@
 (defn get-launchpad-user
   "Returns URS user info associated with a launchpad token"
   [context token]
-  (let [{:keys [status body]} (request-with-auth context {:url-fn #(launchpad-validation-url % token)
-                                                          :method :post :raw? true})]
+  (let [{:keys [status body]} (request-with-auth context {:url-fn #(launchpad-validation-url %)
+                                                          :method :post :raw? true 
+                                                          :http-options {:form-params {:token token}}})]
     (when-not (= 200 status)
       (error (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d].
         EDL error message: [%s]" (common-util/scrub-token token) status (pr-str body)))
@@ -159,4 +158,12 @@
  (login context "foo" "foopass")
  (login context "notexist" "foopass")
  (login context "notexist" "")
- (login context "notexist" nil))
+ (login context "notexist" nil)
+ 
+ ;; when REPL launched with non-local connection configs
+ (def context
+   {:system (config/system-with-connections {} [:urs])})
+ (config/set-urs-relative-root-url! "")
+ (def lptoken "<YOUR LAUNCHPAD TOKEN HERE>")
+ (get-launchpad-user context "badtoken")
+ (get-launchpad-user context lptoken))
