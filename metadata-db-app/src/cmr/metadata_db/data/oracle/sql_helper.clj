@@ -60,10 +60,12 @@
         get-stmt (su/build (select [:concept-id :revision-id]
                                    (from table)
                                    (where (find-params->sql-clause params))))
+        get-values (when (not (= "efs-off" (efs-config/efs-toggle)))
+                     (j/query db get-stmt))
+        _ (info "vales gotten from db for delete by params: " get-values " doall of the same: " (doall get-values))
         stmt (su/build (delete table
                                (where (find-params->sql-clause params))))]
     (when (not (= "efs-off" (efs-config/efs-toggle)))
       (info "Time taken to delete from EFS by params: " (first (util/time-execution
-                                                                (efs/delete-concepts provider concept-type
-                                                                                     (j/query db get-stmt))))))
+                                                                (efs/delete-concepts provider concept-type get-values)))))
     (j/execute! db stmt)))
