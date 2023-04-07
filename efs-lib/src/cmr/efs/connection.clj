@@ -92,6 +92,7 @@
   "Deletes a concept from EFS"
   [provider concept-type concept-id revision-id]
   (let [concept-path (make-concept-path provider concept-type concept-id revision-id)]
+    (info "deleting from EFS concept: " concept-id)
     (Files/deleteIfExists (Paths/get concept-path (into-array String [])))
     revision-id))
 

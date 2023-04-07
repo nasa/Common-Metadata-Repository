@@ -65,5 +65,5 @@
     (when (not (= "efs-off" (efs-config/efs-toggle)))
       (info "Time taken to delete from EFS by params: " (first (util/time-execution
                                                                 (efs/delete-concepts provider concept-type
-                                                                                     (doall (j/query db get-stmt)))))))
+                                                                                     (j/query db get-stmt))))))
     (j/execute! db stmt)))
