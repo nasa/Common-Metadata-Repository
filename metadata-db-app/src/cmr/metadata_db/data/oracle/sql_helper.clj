@@ -13,6 +13,14 @@
    [cmr.common.util :as util])
   (:import cmr.oracle.connection.OracleStore))
 
+;;----------- HELPER FOR EFS DELETE --------------
+(defn efs-concept-delete-helper
+  [revision-concept-tuple]
+  (let
+   [{:keys [concept_id
+            revision_id]} revision-concept-tuple]
+    [concept_id revision_id]))
+
 (defn find-params->sql-clause
   "Converts a parameter map for finding concept types into a sql clause for inclusion in a query. The type
   of value determines the nature of the clause. If the value for a parameter is sequential then a clause
@@ -62,10 +70,10 @@
                                    (where (find-params->sql-clause params))))
         get-values (when (not (= "efs-off" (efs-config/efs-toggle)))
                      (j/query db get-stmt))
-        _ (info "vales gotten from db for delete by params: " get-values " doall of the same: " (doall get-values))
+        _ (info "vales gotten from db for delete by params doall: " (doall get-values))
         stmt (su/build (delete table
                                (where (find-params->sql-clause params))))]
     (when (not (= "efs-off" (efs-config/efs-toggle)))
       (info "Time taken to delete from EFS by params: " (first (util/time-execution
-                                                                (efs/delete-concepts provider concept-type get-values)))))
+                                                                (efs/delete-concepts provider concept-type (map efs-concept-delete-helper get-values))))))
     (j/execute! db stmt)))
