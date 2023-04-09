@@ -5,15 +5,15 @@ import os
 import xml.etree.ElementTree as ET
 import re
 import time
+import string
 import sys
 import requests
 import logging
 import validators
 
 URL_ROOT = "https://cmr.sit.earthdata.nasa.gov"
-
+logging.basicConfig(level=logging.INFO)
 access_token = os.environ.get('SIT_SYSTEM_TOKEN')
-CMR_INGEST_ENDPOINT = "https://cmr.sit.earthdata.nasa.gov/ingest"
 CMR_LOCAL_ingest_ENDPOINT = 'http://localhost:3002'
 
 # To test local ingesting into CMR
@@ -61,6 +61,27 @@ def ingest_provider(provider_metadata, provider_id):
         print("Successfully Ingested metadata into CMR ", response.status_code)
     return response.content
 
+def parse_description_of_holdings(doh):
+    """parses the doh to remove values that we do not need"""
+    doh = doh.strip("\n")
+    # remove the blank spaces at the end
+    doh = doh.strip()
+    ascii_chars = set(string.printable)
+    # filter(lambda x: x in printable, doh)
+    # doh = doh.encode('utf-8')
+    # todo this is still causing some problems parsing non ascii characters
+    # todo remove &#8217 character
+    # output_string = doh.decode('ascii', 'r')
+    doh = ''.join(filter(lambda x: x in ascii_chars, doh))
+    print('this is doh ' + doh + '\n')
+    return doh
+
+def add_consortiums(provider_id):
+
+    """Return the consortiums for a specific provider"""
+    # todo go to the ingest endpoint and parse out the field if it is not empty then add it to the new schema record
+    return
+
 def is_admin_group(group):
     """Looks for admin in the name of the group"""
     # if in the name of the text admin comes up anywhere then it is an admin group
@@ -69,14 +90,23 @@ def is_admin_group(group):
 def convert_to_uri_value(url, provider_id):
     """Where applicable convert the url in to URI format. For example:
     www.example.com becomes https://example.com"""
-    # startsWith requires a tuple of strings if you want multiple ORed together
+    # Get rid of the ending whitespace that is in some of these
+    url = url.strip()
+    if url.endswith('/'):
+        logging.warning('url contained / as an ending char')
+        # If url ends with '/' strip out the ending ex. http://www.example.edu/
+        url = url.strip('/')
+
     if validators.domain(url):
         # if this is a valid domain ending but, front of URI is missing
+        # startsWith requires a tuple of strings if you want multiple ORed together
         if not url.startswith(('http://', 'https://')):
+            # TODO should we https or http?
             url = 'https://' + url
         return url
     else:
         # We will not be able to migrate this provider since we'll want to manually check it's url
+        #todo remove or rephrase this
         logging.warning('This url could not be coerced into a valid URI format ' + url + ' for provider ' + provider_id)
         return url
 
@@ -93,22 +123,24 @@ def get_admin_usernames(member_guid_arr):
             timeout=80)
             user_element = ET.fromstring(response.content)
             edl_username = user_element.find('username')
-            print("Retrieved edl-username for guid", user_id)
-            print('The edl username', edl_username.text)
+            
+            logging.info('Retrieved edl-username for guid: ' + user_id)
+            logging.info('The edl username: ' + edl_username.text)
+            
             username_arr.append(edl_username.text)
         except requests.exceptions.ConnectionError:
             print("Failed to Retrieve edl-username for guid" + str(user_id))
-            return None
+            # return None
     return username_arr
 
 def get_groups_by_provider(owner_id):
     """Requests all groups that belong to a specific provider by passing the owner_id"""
     try:
         response = requests.get(f"{URL_ROOT}/legacy-services/rest/groups?owner_id={owner_id}",
-        headers={"Authorization": access_token, "User-id": "legacy_migration"},
-        timeout=80)
+        headers={"Authorization": access_token, "User-id": "legacy_migration"})
     except requests.exceptions.ConnectionError:
         print("Failed to retrieve groups for the provider with owner guid " + str(owner_id))
+        # TODO Find something better to return
         return None
     return response
 
@@ -134,7 +166,6 @@ def parse_addresses(provider_contact):
     'City': city,
     'Country': country
     }
-    # print('🚀 us format value ',  address["us_format"])
     if address["us_format"] is True:
         state = address["state"]
         postal_code = address["zip"]
@@ -231,6 +262,7 @@ def migrate_organizations(search_urls, provider_id,org_name):
         organization["ShortName"] = provider_id
         organization["LongName"] = org_name
         # Try to massage mostly valid urls into the required schema format
+        # TODO reenable after test
         url = convert_to_uri_value(url, provider_id)
         organization["URLValue"] = url
         # Consider passing a default argument for the organization roles
@@ -240,11 +272,23 @@ def migrate_organizations(search_urls, provider_id,org_name):
 
 def migrate_administrators(provider_owner_guid, provider_id):
     """Parses admin's fields between old-style format into new schema"""
+    emptyAdmins = []
+
     all_the_groups_specific_provider = get_groups_by_provider(provider_owner_guid)
+    if not all_the_groups_specific_provider:
+        logging.warn('Could not the groups for this provider ' + str(provider_id))
+        return emptyAdmins
+
     member_guids_specific_provider = get_all_provider_guids(all_the_groups_specific_provider)
-    if member_guids_specific_provider is None:
-        logging.debug('Could not retrieve the member guids for ' + str(provider_id))
+    if not member_guids_specific_provider:
+        logging.warn('Could not retrieve the member guids for ' + str(provider_id))
+        return emptyAdmins
+
     admin_usernames = get_admin_usernames(member_guids_specific_provider)
+    if not admin_usernames:
+        logging.warn('Could not retrieve the member guids for ' + str(provider_id))
+        return emptyAdmins
+
     return admin_usernames
 
 def migrate_providers():
@@ -269,7 +313,10 @@ def migrate_providers():
         # Remove any "\" characters in the description of holdings string
         # TODO item of discussion is the length that we will allow for DOH
         # description_of_holdings=description_of_holdings.replace("\\","")
-        re.sub('\w', '', description_of_holdings)
+        # todo include this into the lower method
+        # Parse out all of the non ascii characters that are in some description of holdings
+        description_of_holdings = parse_description_of_holdings(description_of_holdings)
+
         # print('Filtered description of holdings', description_of_holdings)
         search_urls = provider['provider']['discovery_urls']
         org_name = provider['provider']['organization_name']
@@ -286,7 +333,7 @@ def migrate_providers():
 
         # TODO A unit of discussion for how to handle cases where admin users is not provided
         if not admin_usernames:
-            logging.debug("We had to create an admin user for " + str(provider_id))
+            logging.info("We had to create an admin user for " + str(provider_id))
             admin_usernames.append("defaultAdmin")
 
     # Create the new record to be ingested by the new CMR provider interface
@@ -308,7 +355,7 @@ def migrate_providers():
         if INGEST_FLAG:
             ingest_provider(json_data, provider_id)
 
-        #TODO will remove below useful for debugging
+        #TODO will remove below useful for infoging
         # provider_id_list.append(json_data)
         provider_migration_count += 1
 
@@ -332,3 +379,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     ingest_flag = args.ingest
     main(ingest_flag)
+    # parse_description_of_holdings("NOAA\u00bfs National Centers for Environmental Information (NCEI) are responsible for hosting and providing access to one of the most significant archives on earth, with comprehensive oceanic, atmospheric, and geophysical data. From the depths of the ocean to the surface of the sun and from million-year-old tree rings to near real-time satellite images, NCEI is the Nation\u00bfs leading authority for environmental information.\n\nBy preserving, stewarding, and maximizing the utility of the Federal government\u00bfs billion-dollar investment in high-quality environmental data, NCEI remains committed to providing products and services to private industry and businesses, local to international governments, academia, as well as the general public. ")
+# By preserving, stewarding, and maximizing the utility of the Federal government&#8217;s billion-dollar investment in high-quality environmental data, NCEI remains committed to providing products and services to private industry and businesses, local to international governments, academia, as well as the general public. '

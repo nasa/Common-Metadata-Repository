@@ -15,11 +15,16 @@ The data calls the legacy services REST api parses those values into metadata do
 * brew install python3
 * export ACCESS_TOKEN=<user_token_for_CMR>
 
-## Run Migration
+## Run Migration Without Ingesting
 
 Copy this ./provider directory locally. Make sure that you are connected to the VPN for SIT and UAT migrations
 
 `python3 migrate.py`
+
+## Run Migration With Ingesting
+
+We pass a flag for the migration script to try to ingest the provider metadata documents into a CMR env
+Note: this ought to be done locally
 
 ## License
 
