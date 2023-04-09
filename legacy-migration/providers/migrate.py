@@ -242,17 +242,17 @@ def migrate_contact_persons(contacts):
                 # Use the same contact mechanism object as emails
                 contact_mechanisms.append(phone_contact)
 
-        if len(addresses) > 0 or len(contact_mechanisms) > 0 or len(phone_contacts) > 0 :
+        if addresses or contact_mechanisms or phone_contacts:
             contact_person['ContactInformation'] = {}
 
         # Addresses are optional if there were any, add them
-        if len(addresses) > 0:
+        if addresses:
             # contact_person['ContactInformation'] = {}
             # We must wrap the contact person with contract information
             contact_person['ContactInformation']['Addresses'] = addresses
 
         # If emails or phones were provided add them to the metadata
-        if len(contact_mechanisms) > 0:
+        if contact_mechanisms:
             contact_person['ContactInformation']['ContactMechanisms'] = contact_mechanisms
 
         # Add to contact person to contact_persons arr

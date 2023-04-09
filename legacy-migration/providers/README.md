@@ -13,7 +13,8 @@ The data calls the legacy services REST api parses those values into metadata do
 
 ## Installation and Environment Variables
 * brew install python3
-* export ACCESS_TOKEN=<user_token_for_CMR>
+* export CMR_<ENV>_TOKEN=<user_token_for_CMR>
+* Install the needed python packages using pip
 
 ## Run Migration Without Ingesting
 
@@ -24,7 +25,9 @@ Copy this ./provider directory locally. Make sure that you are connected to the 
 ## Run Migration With Ingesting
 
 We pass a flag for the migration script to try to ingest the provider metadata documents into a CMR env
-Note: this ought to be done locally
+Note: this ought to be done locally and so a CMR env must be running
+
+`python3 migrate.py --ingest`
 
 ## License
 
