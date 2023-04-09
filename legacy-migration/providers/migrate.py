@@ -36,7 +36,7 @@ def retrieve_legacy_providers():
     re-ingesting into the new providers interface"""
     try:
         response = requests.get(f"{URL_ROOT}/legacy-services/rest/providers.json",
-            headers={"Authorization": access_token, "User-id": "legacy_migration"},
+            headers={"Authorization": access_token, "client-id": "legacy_migration", "User-Agent": "legacy_migration"},
             timeout=80)
         providers = response.json()
     except requests.exceptions.ConnectionError:
@@ -48,7 +48,7 @@ def ingest_provider(provider_metadata, provider_id):
     """Attempts to ingest metadata into CMR (locally)"""
     response = requests.post(f"{CMR_LOCAL_ingest_ENDPOINT}/providers/",
                         data=provider_metadata,
-                        headers={"Authorization": local_cmr_access_token, "User-id": "legacy_migration",
+                        headers={"Authorization": local_cmr_access_token, "client-id": "legacy_migration","User-Agent": "legacy_migration",
                         "Content-Type": "application/json"},
                         timeout=60
                         )
@@ -67,21 +67,32 @@ def parse_description_of_holdings(doh):
     # remove the blank spaces at the end
     doh = doh.strip()
     ascii_chars = set(string.printable)
-    # filter(lambda x: x in printable, doh)
-    # doh = doh.encode('utf-8')
-    # todo this is still causing some problems parsing non ascii characters
-    # todo remove &#8217 character
-    # output_string = doh.decode('ascii', 'r')
+    # Remove non-ascii characters in some of hte provider doh
     doh = ''.join(filter(lambda x: x in ascii_chars, doh))
     print('this is doh ' + doh + '\n')
     return doh
 
 def add_consortiums(provider_id):
-
     """Return the consortiums for a specific provider"""
-    # todo go to the ingest endpoint and parse out the field if it is not empty then add it to the new schema record
-    return
+    # To retrieve consortiums for legacy providers we must parse the entire list of providers
+    response = requests.get(f"{URL_ROOT}/ingest/providers",
+            headers={"Authorization": access_token, "client-id": "legacy_migration", "User-Agent": "legacy_migration"},
+            timeout=80)
 
+    # parse the CMR json response
+    providers = json.loads(response.text)
+
+    for provider in providers:
+        if(provider_id == provider.get("provider-id")):
+            consortiums = provider.get("consortiums")
+            if consortiums:
+                logging.info("Provider" + provider_id + " is in these consortiums: " + consortiums )
+                # The consortium list is a single string split by space in the legacy format
+                consortium_list = consortiums.split()
+                return consortium_list
+            else:
+                return None
+    return None
 def is_admin_group(group):
     """Looks for admin in the name of the group"""
     # if in the name of the text admin comes up anywhere then it is an admin group
@@ -106,8 +117,6 @@ def convert_to_uri_value(url, provider_id):
         return url
     else:
         # We will not be able to migrate this provider since we'll want to manually check it's url
-        #todo remove or rephrase this
-        logging.warning('This url could not be coerced into a valid URI format ' + url + ' for provider ' + provider_id)
         return url
 
 def get_admin_usernames(member_guid_arr):
@@ -119,7 +128,7 @@ def get_admin_usernames(member_guid_arr):
         print("User_id being passed in request", user_id)
         try:
             response = requests.get(f"{URL_ROOT}/legacy-services/rest/users/{user_id}",
-            headers={"Authorization": access_token, "User-id": "legacy_migration"},
+            headers={"Authorization": access_token, "client-id": "legacy_migration", "User-Agent": "legacy_migration"},
             timeout=80)
             user_element = ET.fromstring(response.content)
             edl_username = user_element.find('username')
@@ -137,10 +146,9 @@ def get_groups_by_provider(owner_id):
     """Requests all groups that belong to a specific provider by passing the owner_id"""
     try:
         response = requests.get(f"{URL_ROOT}/legacy-services/rest/groups?owner_id={owner_id}",
-        headers={"Authorization": access_token, "User-id": "legacy_migration"})
+        headers={"Authorization": access_token, "client-id": "legacy_migration", "User-Agent": "legacy_migration"})
     except requests.exceptions.ConnectionError:
         print("Failed to retrieve groups for the provider with owner guid " + str(owner_id))
-        # TODO Find something better to return
         return None
     return response
 
@@ -262,7 +270,6 @@ def migrate_organizations(search_urls, provider_id,org_name):
         organization["ShortName"] = provider_id
         organization["LongName"] = org_name
         # Try to massage mostly valid urls into the required schema format
-        # TODO reenable after test
         url = convert_to_uri_value(url, provider_id)
         organization["URLValue"] = url
         # Consider passing a default argument for the organization roles
@@ -276,17 +283,17 @@ def migrate_administrators(provider_owner_guid, provider_id):
 
     all_the_groups_specific_provider = get_groups_by_provider(provider_owner_guid)
     if not all_the_groups_specific_provider:
-        logging.warn('Could not the groups for this provider ' + str(provider_id))
+        logging.warning('Could not the groups for this provider ' + str(provider_id))
         return emptyAdmins
 
     member_guids_specific_provider = get_all_provider_guids(all_the_groups_specific_provider)
     if not member_guids_specific_provider:
-        logging.warn('Could not retrieve the member guids for ' + str(provider_id))
+        logging.warning('Could not retrieve the member guids for ' + str(provider_id))
         return emptyAdmins
 
     admin_usernames = get_admin_usernames(member_guids_specific_provider)
     if not admin_usernames:
-        logging.warn('Could not retrieve the member guids for ' + str(provider_id))
+        logging.warning('Could not retrieve the member guids for ' + str(provider_id))
         return emptyAdmins
 
     return admin_usernames
@@ -309,12 +316,8 @@ def migrate_providers():
         provider_id = provider['provider']['provider_id']
         print(f"Migrating {provider_id} providers")
         description_of_holdings = provider['provider']['description_of_holdings']
-        
-        # Remove any "\" characters in the description of holdings string
-        # TODO item of discussion is the length that we will allow for DOH
-        # description_of_holdings=description_of_holdings.replace("\\","")
-        # todo include this into the lower method
-        # Parse out all of the non ascii characters that are in some description of holdings
+
+        # prase the description of holding string
         description_of_holdings = parse_description_of_holdings(description_of_holdings)
 
         # print('Filtered description of holdings', description_of_holdings)
@@ -336,7 +339,10 @@ def migrate_providers():
             logging.info("We had to create an admin user for " + str(provider_id))
             admin_usernames.append("defaultAdmin")
 
-    # Create the new record to be ingested by the new CMR provider interface
+        # Handle Consortiums that a provider may be apart of
+        consortiums = add_consortiums(provider_id)
+
+        # Create the new record to be ingested by the new CMR provider interface
         data = {}
         data["MetadataSpecification"]= metadata_specification
         data["ProviderId"] = provider_id
@@ -344,6 +350,10 @@ def migrate_providers():
         data["Organizations"] = organizations
         data["Administrators"] = admin_usernames
         data["ContactPersons"] = contact_persons
+
+        # Add consortiums, an optional field if the provider was in any
+        if consortiums:
+            data["Consortiums"] = consortiums
 
         # Dump the new metadata schema
         json_data = json.dumps(data,indent=4)
@@ -354,9 +364,6 @@ def migrate_providers():
 
         if INGEST_FLAG:
             ingest_provider(json_data, provider_id)
-
-        #TODO will remove below useful for infoging
-        # provider_id_list.append(json_data)
         provider_migration_count += 1
 
     # Migration Complete
@@ -379,5 +386,3 @@ if __name__ == "__main__":
     args = parser.parse_args()
     ingest_flag = args.ingest
     main(ingest_flag)
-    # parse_description_of_holdings("NOAA\u00bfs National Centers for Environmental Information (NCEI) are responsible for hosting and providing access to one of the most significant archives on earth, with comprehensive oceanic, atmospheric, and geophysical data. From the depths of the ocean to the surface of the sun and from million-year-old tree rings to near real-time satellite images, NCEI is the Nation\u00bfs leading authority for environmental information.\n\nBy preserving, stewarding, and maximizing the utility of the Federal government\u00bfs billion-dollar investment in high-quality environmental data, NCEI remains committed to providing products and services to private industry and businesses, local to international governments, academia, as well as the general public. ")
-# By preserving, stewarding, and maximizing the utility of the Federal government&#8217;s billion-dollar investment in high-quality environmental data, NCEI remains committed to providing products and services to private industry and businesses, local to international governments, academia, as well as the general public. '
