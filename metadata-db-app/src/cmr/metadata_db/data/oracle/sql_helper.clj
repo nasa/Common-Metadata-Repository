@@ -13,8 +13,8 @@
    [cmr.common.util :as util])
   (:import cmr.oracle.connection.OracleStore))
 
-;;----------- HELPER FOR EFS DELETE --------------
 (defn efs-concept-delete-helper
+  "A helper function to map SQL returned values to the format required for efs/delete-concepts"
   [revision-concept-tuple]
   (let
    [{:keys [concept_id
