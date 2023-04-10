@@ -70,7 +70,6 @@
                                    (where (find-params->sql-clause params))))
         get-values (when (not (= "efs-off" (efs-config/efs-toggle)))
                      (j/query db get-stmt))
-        _ (info "vales gotten from db for delete by params doall: " (doall get-values))
         stmt (su/build (delete table
                                (where (find-params->sql-clause params))))]
     (when (not (= "efs-off" (efs-config/efs-toggle)))

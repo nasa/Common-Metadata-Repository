@@ -66,7 +66,6 @@
   "Saves a concept to EFS"
   [provider concept-type concept]
   (let [concept-path (make-concept-path provider concept-type concept)]
-    (info "Saving concept to EFS at path " concept-path)
     (io/make-parents (io/file concept-path))
     (Files/write (Paths/get concept-path (into-array String [])) (:metadata concept) (into-array OpenOption []))))
 
@@ -78,7 +77,6 @@
    (when revision-id
      (let [concept-path (make-concept-path provider concept-type concept-id revision-id)]
        (try
-         (info "Getting concept from EFS at path " concept-path)
          {:revision-id revision-id :metadata (util/gzip-bytes->string (Files/readAllBytes (Paths/get concept-path (into-array String [])))) :deleted false}
          (catch Exception e
            (info "Exception returned from EFS get concept at path: " concept-path " Exception value: " e)))))))
