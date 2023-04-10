@@ -378,7 +378,8 @@
                                                                                      (where `(= :concept-id ~concept-id))
                                                                                      (order-by (desc :revision-id)))))))))]
      (when (not (= "efs-off" (efs-config/efs-toggle)))
-       (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms."))
+       (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
+       (info "Value gotten from EFS get-concept: " (second efs-concept-get)))
      (when (not (= "efs-only" (efs-config/efs-toggle)))
        (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms."))
      (if oracle-concept-get
@@ -400,7 +401,7 @@
                                                                                                   (= :revision-id ~revision-id)))))))))]
        (when (not (= "efs-off" (efs-config/efs-toggle)))
          (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
-         (info "Values gotten from EFS get-concept: " (second efs-concept-get)))
+         (info "Value gotten from EFS get-concept: " (second efs-concept-get)))
        (when (not (= "efs-only" (efs-config/efs-toggle)))
          (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms."))
        (if oracle-concept-get

@@ -5,9 +5,21 @@
    [clojure.java.jdbc :as j]
    [clojure.string :as str]
    [cmr.common.services.errors :as errors]
+   [cmr.common.log :refer [debug error info trace warn]]
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
-   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
+   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]]
+   [cmr.efs.config :as efs-config]
+   [cmr.efs.connection :as efs]
+   [cmr.common.util :as util])
   (:import cmr.oracle.connection.OracleStore))
+
+(defn efs-concept-delete-helper
+  "A helper function to map SQL returned values to the format required for efs/delete-concepts"
+  [revision-concept-tuple]
+  (let
+   [{:keys [concept_id
+            revision_id]} revision-concept-tuple]
+    [concept_id revision_id]))
 
 (defn find-params->sql-clause
   "Converts a parameter map for finding concept types into a sql clause for inclusion in a query. The type
@@ -53,6 +65,14 @@
                  (dissoc params :concept-type)
                  (dissoc params :concept-type :provider-id))
         table (ct/get-table-name provider concept-type)
+        get-stmt (su/build (select [:concept-id :revision-id]
+                                   (from table)
+                                   (where (find-params->sql-clause params))))
+        get-values (when (not (= "efs-off" (efs-config/efs-toggle)))
+                     (j/query db get-stmt))
         stmt (su/build (delete table
-                         (where (find-params->sql-clause params))))]
+                               (where (find-params->sql-clause params))))]
+    (when (not (= "efs-off" (efs-config/efs-toggle)))
+      (info "Time taken to delete from EFS by params: " (first (util/time-execution
+                                                                (efs/delete-concepts provider concept-type (map efs-concept-delete-helper get-values))))))
     (j/execute! db stmt)))
