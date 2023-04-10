@@ -92,12 +92,10 @@
   "Deletes a concept from EFS"
   [provider concept-type concept-id revision-id]
   (let [concept-path (make-concept-path provider concept-type concept-id revision-id)]
-    (info "deleting from EFS concept: " concept-id)
     (Files/deleteIfExists (Paths/get concept-path (into-array String [])))
     revision-id))
 
 (defn delete-concepts
   "Deletes multiple concepts from EFS"
   [provider concept-type concept-id-revision-id-tuples]
-  (info "Value of concept-id-revision-id-tuples: " concept-id-revision-id-tuples)
   (doall (map (fn [tuple] (delete-concept provider concept-type (first tuple) (second tuple))) concept-id-revision-id-tuples)))
