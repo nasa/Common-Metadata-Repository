@@ -18,10 +18,10 @@ CMR_LOCAL_ingest_ENDPOINT = 'http://localhost:3002'
 
 # To test local ingesting into CMR
 local_cmr_access_token = os.environ.get('localHeader')
+
 # These are for the Enum values that we must set in the metadata field
-# TODO I want more clarity on how to handle these organization and contact roles since there is not an enum accessible substitute in the old format
-DEFAULT_ORGANIZATION_ROLE = "SERVICE PROVIDER"
-DEFAULT_CONTACT_ROLE = "TECHNICAL CONTACT"
+DEFAULT_ORGANIZATION_ROLE = "PUBLISHER"
+DEFAULT_CONTACT_ROLE = "PROVIDER MANAGEMENT"
  
 # Metadata specification for ingesting providers
 # It should not be expected this version or schema directories will change
@@ -112,7 +112,6 @@ def convert_to_uri_value(url, provider_id):
         # if this is a valid domain ending but, front of URI is missing
         # startsWith requires a tuple of strings if you want multiple ORed together
         if not url.startswith(('http://', 'https://')):
-            # TODO should we https or http?
             url = 'https://' + url
         return url
     else:
@@ -135,8 +134,9 @@ def get_admin_usernames(member_guid_arr):
             
             logging.info('Retrieved edl-username for guid: ' + user_id)
             logging.info('The edl username: ' + edl_username.text)
-            
-            username_arr.append(edl_username.text)
+            # todo if it is unique this is key
+            if edl_username.text not in username_arr:
+                username_arr.append(edl_username.text)
         except requests.exceptions.ConnectionError:
             print("Failed to Retrieve edl-username for guid" + str(user_id))
             # return None
@@ -334,10 +334,10 @@ def migrate_providers():
         # Handle the Administrators
         admin_usernames = migrate_administrators(provider_owner_guid,provider_id)
 
-        # TODO A unit of discussion for how to handle cases where admin users is not provided
         if not admin_usernames:
             logging.info("We had to create an admin user for " + str(provider_id))
-            admin_usernames.append("defaultAdmin")
+            default_admin_user = str(provider_id) + "_Admin"
+            admin_usernames.append(default_admin_user)
 
         # Handle Consortiums that a provider may be apart of
         consortiums = add_consortiums(provider_id)
@@ -359,7 +359,7 @@ def migrate_providers():
         json_data = json.dumps(data,indent=4)
 
         # Write to the metadata file to a new metadata file for each provider
-        provider_metadata_file = open("./providerMetadata/" + str(provider_id)+"_metadata.json","w", encoding="utf8")
+        provider_metadata_file = open("./providerMetadata/" + str(provider_id)+ "_metadata.json","w", encoding="utf8")
         provider_metadata_file.write(str(json_data))
 
         if INGEST_FLAG:
