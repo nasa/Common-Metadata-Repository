@@ -13,8 +13,10 @@ The data calls the legacy services REST api parses those values into metadata do
 
 ## Installation and Environment Variables
 * brew install python3
-* export CMR_<ENV>_TOKEN=<user_token_for_CMR>
+* export CMR_<ENV>_TOKEN=<SYSTEM_TOKEN_FOR_CMR>
 * Install the needed python packages using pip
+
+pip install validators
 
 ## Run Migration Without Ingesting
 
