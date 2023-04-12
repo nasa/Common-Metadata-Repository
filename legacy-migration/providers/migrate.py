@@ -11,12 +11,8 @@ import requests
 import logging
 import validators
 
-# URL_ROOT = "https://cmr.sit.earthdata.nasa.gov"
-
 url_map = { "sit": ".sit", "uat":".uat", "ops":"", "prod": ""}
 token_map = { "sit": "SIT_SYSTEM_TOKEN", "uat":"UAT_SYSTEM_TOKEN", "ops":"OPS_SYSTEM_TOKEN", "prod": "PROD_SYSTEM_TOKEN"}
-
-# access_token = os.environ.get('SIT_SYSTEM_TOKEN')
 
 # used to validate the provider metadata if the ingest flag is on
 CMR_LOCAL_INGEST_ENDPOINT = 'http://localhost:3002'
@@ -27,8 +23,6 @@ local_cmr_access_token = 'mock-echo-system-token'
 # These are for the Enum values that we must set in the metadata field
 DEFAULT_ORGANIZATION_ROLE = "PUBLISHER"
 DEFAULT_CONTACT_ROLE = "PROVIDER MANAGEMENT"
-
-provider_migration_log_file = open("./logs/provider_migration_log_file.txt","w", encoding="utf8")
  
 # Metadata specification for ingesting providers
 # It should not be expected this version or schema directories will change
@@ -37,6 +31,13 @@ metadata_specification = {
             "Name": "provider",
             "Version": "1.0.0",
             "URL": "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0"}
+
+def create_output_dirs():
+    """create the output directories if they are not on the users file-system"""
+    if not os.path.exists("./logs"):
+        os.makedirs("./logs")
+    if not os.path.exists("./providerMetadata"):
+        os.makedirs("./providerMetadata")
 
 def retrieve_legacy_providers():
     """Requests all of the providers on legacy-services and their metadata which we will be
@@ -308,6 +309,7 @@ def migrate_administrators(provider_owner_guid, provider_id):
 
 def migrate_providers():
     """Migrate the providers"""
+    provider_migration_log_file = open("./logs/provider_migration_log_file.txt","w", encoding="utf8")
     # pull ingest_flag var from the cmd arg
     global ingest_flag
 
@@ -380,6 +382,8 @@ def migrate_providers():
 
 def main(cmr_env, ingest_flag, log_level):
     logging.basicConfig( level=log_level.upper() )
+    # Create the output directories if they are not already there
+    create_output_dirs()
     # bad env bailout
     if not cmr_env in url_map:
         logging.warning("env must be sit, uat, or ops/prod")
