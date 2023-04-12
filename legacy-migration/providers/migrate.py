@@ -11,17 +11,24 @@ import requests
 import logging
 import validators
 
-URL_ROOT = "https://cmr.sit.earthdata.nasa.gov"
-logging.basicConfig(level=logging.INFO)
-access_token = os.environ.get('SIT_SYSTEM_TOKEN')
-CMR_LOCAL_ingest_ENDPOINT = 'http://localhost:3002'
+# URL_ROOT = "https://cmr.sit.earthdata.nasa.gov"
 
-# To test local ingesting into CMR
-local_cmr_access_token = os.environ.get('localHeader')
+url_map = { "sit": ".sit", "uat":".uat", "ops":"", "prod": ""}
+token_map = { "sit": "SIT_SYSTEM_TOKEN", "uat":"UAT_SYSTEM_TOKEN", "ops":"OPS_SYSTEM_TOKEN", "prod": "PROD_SYSTEM_TOKEN"}
+
+# access_token = os.environ.get('SIT_SYSTEM_TOKEN')
+
+# used to validate the provider metadata if the ingest flag is on
+CMR_LOCAL_INGEST_ENDPOINT = 'http://localhost:3002'
+
+# To test local ingesting into CMR use the LOCAL system token
+local_cmr_access_token = 'mock-echo-system-token'
 
 # These are for the Enum values that we must set in the metadata field
 DEFAULT_ORGANIZATION_ROLE = "PUBLISHER"
 DEFAULT_CONTACT_ROLE = "PROVIDER MANAGEMENT"
+
+provider_migration_log_file = open("./logs/provider_migration_log_file.txt","w", encoding="utf8")
  
 # Metadata specification for ingesting providers
 # It should not be expected this version or schema directories will change
@@ -46,7 +53,7 @@ def retrieve_legacy_providers():
 
 def ingest_provider(provider_metadata, provider_id):
     """Attempts to ingest metadata into CMR (locally)"""
-    response = requests.post(f"{CMR_LOCAL_ingest_ENDPOINT}/providers/",
+    response = requests.post(f"{CMR_LOCAL_INGEST_ENDPOINT}/providers/",
                         data=provider_metadata,
                         headers={"Authorization": local_cmr_access_token, "client-id": "legacy_migration","User-Agent": "legacy_migration",
                         "Content-Type": "application/json"},
@@ -69,7 +76,7 @@ def parse_description_of_holdings(doh):
     ascii_chars = set(string.printable)
     # Remove non-ascii characters in some of hte provider doh
     doh = ''.join(filter(lambda x: x in ascii_chars, doh))
-    print('this is doh ' + doh + '\n')
+    print('this is description_of_holdings ' + doh + '\n')
     return doh
 
 def add_consortiums(provider_id):
@@ -116,6 +123,7 @@ def convert_to_uri_value(url, provider_id):
         return url
     else:
         # We will not be able to migrate this provider since we'll want to manually check it's url
+        logging.warning("We will not be able to migrate this provider it is not a valid URI providerID: " + str(provider_id))
         return url
 
 def get_admin_usernames(member_guid_arr):
@@ -134,7 +142,7 @@ def get_admin_usernames(member_guid_arr):
             
             logging.info('Retrieved edl-username for guid: ' + user_id)
             logging.info('The edl username: ' + edl_username.text)
-            # todo if it is unique this is key
+            # So we don't get duplicate usernames if there are multiple 'Admin' groups in the provider
             if edl_username.text not in username_arr:
                 username_arr.append(edl_username.text)
         except requests.exceptions.ConnectionError:
@@ -310,7 +318,7 @@ def migrate_providers():
     if json_response is None:
         sys.exit("Failed to Retrieve any providers")
 
-    print('Beginning to Migrate' + str(len(json_response)) + ' Providers')
+    print('Beginning to Migrate ' + str(len(json_response)) + ' Providers')
 
     for provider in json_response:
         provider_id = provider['provider']['provider_id']
@@ -320,7 +328,6 @@ def migrate_providers():
         # prase the description of holding string
         description_of_holdings = parse_description_of_holdings(description_of_holdings)
 
-        # print('Filtered description of holdings', description_of_holdings)
         search_urls = provider['provider']['discovery_urls']
         org_name = provider['provider']['organization_name']
         contacts = provider['provider']['contacts']
@@ -337,6 +344,8 @@ def migrate_providers():
         if not admin_usernames:
             logging.info("We had to create an admin user for " + str(provider_id))
             default_admin_user = str(provider_id) + "_Admin"
+            # Write this provider to the log file
+            provider_migration_log_file.write("This Provider did not have admins: " + str(provider_id) + "\n")
             admin_usernames.append(default_admin_user)
 
         # Handle Consortiums that a provider may be apart of
@@ -369,20 +378,41 @@ def migrate_providers():
     # Migration Complete
     print(f'The total number of providers migrated {provider_migration_count}')
 
-def main(ingest_flag):
-    # ingest_flag = args.ingest
+def main(cmr_env, ingest_flag, log_level):
+    logging.basicConfig( level=log_level.upper() )
+    # bad env bailout
+    if not cmr_env in url_map:
+        logging.warning("env must be sit, uat, or ops/prod")
+        return None
+    # Set global variables
     global INGEST_FLAG
     INGEST_FLAG = ingest_flag
+    global URL_ROOT
+    URL_ROOT = "https://cmr" + url_map.get(cmr_env) + ".earthdata.nasa.gov"
+    global access_token
+    access_token = os.environ.get(token_map.get(cmr_env))
+    logging.info("This is the name of the token we used " + token_map.get(cmr_env))
+    # without a valid system token we must bailout because we won't be authorized to read all providers
+    # and we would not be able to validate against a local-cmr
+    if not access_token:
+        logging.warning("You do not have a value set for your " + token_map.get(cmr_env) +" env var")
+        return None
     # Begin migration get start/end times
     start = time.time()
+    logging.debug("Running in debug logging mode")
+    logging.info("Running migration in the " + cmr_env + " env")
     migrate_providers()
     end = time.time()
     total_time = end - start
-    print(f"The total time that the migration took {total_time}")
+    print(f"The total time that the migration took {total_time} seconds")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('-i', '--ingest', action='store_true', help='ingest the provider metadata records')
+    parser.add_argument('-i', '--ingest', action='store_true', help='boolean to ingest the provider metadata records wont ingest by default if this arg is not included')
+    parser.add_argument( '-log', '--logging', default='INFO', help='Provide logging level. Example --loglevel debug, default=warning')
+    parser.add_argument( '-env', '--environment', default='sit', help='Specify which CMR env we should migrate from i.e. sit, uat, or ops/prod')
     args = parser.parse_args()
     ingest_flag = args.ingest
-    main(ingest_flag)
+    log_level = args.logging
+    cmr_env = args.environment
+    main(cmr_env, ingest_flag, log_level)
