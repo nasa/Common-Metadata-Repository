@@ -79,9 +79,9 @@
                               (util/time-execution
                                (j/execute! db stmt)))]
     (when efs-force-delete
-      (info "Runtime for EFS force-delete-concept-by-params: " (first efs-force-delete)))
+      (info "Runtime of EFS force-delete-concept-by-params: " (first efs-force-delete)))
     (when oracle-force-delete
-      (info "Runtime for Oracle force-delete-concept-by-params: " (first oracle-force-delete)))
+      (info "Runtime of Oracle force-delete-concept-by-params: " (first oracle-force-delete)))
     (if oracle-force-delete
       (second oracle-force-delete)
       (second efs-force-delete))))
