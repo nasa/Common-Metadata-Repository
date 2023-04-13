@@ -436,7 +436,7 @@
         (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
         (info "Values gotten from EFS: " (pr-str (second efs-concepts-get))))
       (when (not (= "efs-only" (efs-config/efs-toggle)))
-        (info "Runtime of Oracle get-concept: " (first oracle-concepts-get) " ms."))
+        (info "Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms."))
       (if oracle-concepts-get
         (second oracle-concepts-get)
         (second efs-concepts-get)))
@@ -485,12 +485,12 @@
                            (string/join "," (repeat (count values) "?")))]
           (trace "Executing" stmt "with values" (pr-str values))
           (when (not (= "efs-only" (efs-config/efs-toggle)))
-            (info "Time taken for Oracle insertion: " (first (util/time-execution
+            (info "Runtime for Oracle save-concept: " (first (util/time-execution
                                                               (j/db-do-prepared db stmt values))) " ms."))
           (when (and
                  (not (= "efs-off" (efs-config/efs-toggle)))
                  (= false (:deleted concept)))
-            (info "Time taken for EFS insertion: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))
+            (info "Runtime for EFS save-concept: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))
           (after-save conn provider concept)
           nil)))
     (catch Exception e
@@ -513,9 +513,9 @@
                         (util/time-execution
                          (j/execute! this stmt)))]
     (when efs-delete
-      (info "Time taken for EFS delete: " (first efs-delete)))
+      (info "Runtime for EFS force-delete: " (first efs-delete)))
     (when oracle-delete
-      (info "Time taken for Oracle delete: " (first oracle-delete)))
+      (info "Runtime for Oracle force-delete: " (first oracle-delete)))
     (if oracle-delete
       (second oracle-delete)
       (second efs-delete))))
@@ -544,9 +544,9 @@
                             (util/time-execution
                              (j/execute! conn stmt)))]
         (when efs-delete
-          (info "Time taken for EFS delete: " (first efs-delete)))
+          (info "Runtime for EFS force-delete-concepts: " (first efs-delete)))
         (when oracle-delete
-          (info "Time taken for Oracle delete: " (first oracle-delete)))
+          (info "Runtime for Oracle force-delete-concepts: " (first oracle-delete)))
         (if oracle-delete
           (second oracle-delete)
           (second efs-delete))))))

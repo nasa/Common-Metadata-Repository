@@ -71,8 +71,17 @@
         get-values (when (not (= "efs-off" (efs-config/efs-toggle)))
                      (j/query db get-stmt))
         stmt (su/build (delete table
-                               (where (find-params->sql-clause params))))]
-    (when (not (= "efs-off" (efs-config/efs-toggle)))
-      (info "Time taken to delete from EFS by params: " (first (util/time-execution
-                                                                (efs/delete-concepts provider concept-type (map efs-concept-delete-helper get-values))))))
-    (j/execute! db stmt)))
+                               (where (find-params->sql-clause params))))
+        efs-force-delete (when (not (= "efs-off" (efs-config/efs-toggle)))
+                           (util/time-execution
+                            (efs/delete-concepts provider concept-type (map efs-concept-delete-helper get-values))))
+        oracle-force-delete (when (not (= "efs-only" (efs-config/efs-toggle)))
+                              (util/time-execution
+                               (j/execute! db stmt)))]
+    (when efs-force-delete
+      (info "Runtime for EFS force-delete-concept-by-params: " (first efs-force-delete)))
+    (when oracle-force-delete
+      (info "Runtime for Oracle force-delete-concept-by-params: " (first oracle-force-delete)))
+    (if oracle-force-delete
+      (second oracle-force-delete)
+      (second efs-force-delete))))
