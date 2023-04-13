@@ -406,3 +406,16 @@
   (if (:RelatedUrls collection)
     (update-in-each-vector collection [:RelatedUrls] replace-existing-related-url-keywords-for-umm-12)
     collection))
+
+(defn migrating-down-to_1_17_2
+  "Change application/x-vnd.iso.19139-2+xml to Not provided for the
+  RelatedUrls/GetService/MimeType element."
+  [related-urls]
+  (vec
+   (for [related-url related-urls
+         :let [service (:GetService related-url)]]
+     (if service
+       (if (= (:MimeType service) "application/x-vnd.iso.19139-2+xml")
+         (assoc-in related-url [:GetService :MimeType] "Not provided")
+         related-url)
+       related-url))))

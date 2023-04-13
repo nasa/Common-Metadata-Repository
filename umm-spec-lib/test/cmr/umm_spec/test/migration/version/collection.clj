@@ -3760,7 +3760,9 @@
                                                       :MaximumValue "10.5"}}]
          :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.2",
                                  :Name "UMM-C",
-                                 :Version "1.17.2"}}
+                                 :Version "1.17.2"}
+         :RelatedUrls [{:GetService {:MimeType "Not provided"}}
+                       {:GetService {:MimeType "application/json"}}]}
         {:TilingIdentificationSystems [{:TilingIdentificationSystemName "Military Grid Reference System"
                                         :Coordinate1 {:MinimumValue "-100"
                                                       :MaximumValue "-50"}
@@ -3770,4 +3772,6 @@
                                         :Coordinate1 {:MinimumValue 1.0
                                                       :MaximumValue 10.0}
                                         :Coordinate2 {:MinimumValue 1.5
-                                                      :MaximumValue 10.5}}]}))
+                                                      :MaximumValue 10.5}}]
+         :RelatedUrls [{:GetService {:MimeType "application/x-vnd.iso.19139-2+xml"}}
+                       {:GetService {:MimeType "application/json"}}]}))

@@ -707,4 +707,5 @@
       (util/update-in-all [:TilingIdentificationSystems :Coordinate1 :MinimumValue] str)
       (util/update-in-all [:TilingIdentificationSystems :Coordinate1 :MaximumValue] str)
       (util/update-in-all [:TilingIdentificationSystems :Coordinate2 :MinimumValue] str)
-      (util/update-in-all [:TilingIdentificationSystems :Coordinate2 :MaximumValue] str)))
+      (util/update-in-all [:TilingIdentificationSystems :Coordinate2 :MaximumValue] str)
+      (update :RelatedUrls related-url/migrating-down-to_1_17_2)))
