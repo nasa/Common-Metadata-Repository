@@ -101,14 +101,29 @@
     {:Type date-type
      :Date date-val}))
 
+(defn- parse-tiling-coord
+  "Parse the minimum and maximum values for a coordinate. If the Tiling System 
+  is the Military Grid System then use strings otherwise the values are numeric."
+  [twod-el coord-xpath tiling-id-name]
+  (when-let [[coord-el] (select twod-el coord-xpath)]
+    (if (string/includes? tiling-id-name "Military Grid Reference System")
+      (umm-c/map->TilingCoordinateType
+       (util/remove-nil-keys
+        {:MinimumValue (value-of coord-el "MinimumValue")
+         :MaximumValue (value-of coord-el "MaximumValue")}))
+      (umm-c/map->TilingCoordinateNumericType
+       (util/remove-nil-keys
+        {:MinimumValue (util/str->num (value-of coord-el "MinimumValue"))
+         :MaximumValue (util/str->num (value-of coord-el "MaximumValue"))})))))
+
 (defn parse-tiling
   "Returns a UMM TilingIdentificationSystem map from the given ECHO10 XML document."
   [doc]
   (let [tiling-id-systems
         (for [sys-el (select doc "/Collection/TwoDCoordinateSystems/TwoDCoordinateSystem")]
          {:TilingIdentificationSystemName (value-of sys-el "TwoDCoordinateSystemName")
-          :Coordinate1 (fields-from (first (select sys-el "Coordinate1")) :MinimumValue :MaximumValue)
-          :Coordinate2 (fields-from (first (select sys-el "Coordinate2")) :MinimumValue :MaximumValue)})]
+          :Coordinate1 (parse-tiling-coord sys-el "Coordinate1" (value-of sys-el "TwoDCoordinateSystemName"))
+          :Coordinate2 (parse-tiling-coord sys-el "Coordinate2" (value-of sys-el "TwoDCoordinateSystemName"))})]
     (filter
      #(spatial-conversion/tile-id-system-name-is-valid?
        (:TilingIdentificationSystemName %))

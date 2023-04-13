@@ -22,8 +22,12 @@
   [field-path value]
   (let [{:keys [MinimumValue MaximumValue]} value
         ;; Collection v1.17.2 converted these fields to strings, convert them back to numbers if needed.
-        MinimumValue (util/str->num MinimumValue)
-        MaximumValue (util/str->num MaximumValue)]
+        MinimumValue (if (string? MinimumValue)
+                       (util/str->num MinimumValue)
+                       MinimumValue)
+        MaximumValue (if (string? MaximumValue)
+                       (util/str->num MaximumValue)
+                       MaximumValue)]
     (when (and MinimumValue MaximumValue (> MinimumValue MaximumValue))
       {field-path [(format "%%s minimum [%s] must be less than or equal to the maximum [%s]."
                            (str MinimumValue) (str MaximumValue))]})))

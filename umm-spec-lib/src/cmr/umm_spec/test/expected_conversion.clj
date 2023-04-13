@@ -338,10 +338,10 @@
                                      :StartCircularLatitude 50.0
                                      :StartCircularLatitudeUnit "Degree"}}
    :TilingIdentificationSystems [{:TilingIdentificationSystemName "MISR"
-                                   :Coordinate1 {:MinimumValue "1.0"
-                                                 :MaximumValue "10.0"}
-                                   :Coordinate2 {:MinimumValue "1.0"
-                                                 :MaximumValue "10.0"}}]
+                                   :Coordinate1 {:MinimumValue 1.0
+                                                 :MaximumValue 10.0}
+                                   :Coordinate2 {:MinimumValue 1.0
+                                                 :MaximumValue 10.0}}]
    :AccessConstraints {:Description "Restriction Comment: Access constraints"
                        :Value "0"}
    :UseConstraints (umm-coll-models/map->UseConstraintsType

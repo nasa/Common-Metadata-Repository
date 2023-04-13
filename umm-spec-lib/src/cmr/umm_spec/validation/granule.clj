@@ -119,19 +119,15 @@
 (defn two-d-coordinates-range-validation
   "Validate that the 2D coordinates in the granule fall within the bounds defined in the collection"
   [field-path two-d-coordinate-system]
-  (let [{{min-1 :MinimumValue max-1 :MaximumValue} :Coordinate1
-         {min-2 :MinimumValue max-2 :MaximumValue} :Coordinate2} (:parent two-d-coordinate-system)
-        ;; Collection v1.17.2 converted these fields to strings, convert them back to numbers if needed
-        min-1 (util/str->num min-1)
-        max-1 (util/str->num max-1)
-        min-2 (util/str->num min-2)
-        max-2 (util/str->num max-2)
-        check-range  (validate-coordinate-within-range field-path two-d-coordinate-system)]
-    (merge
-      (check-range :start-coordinate-1  min-1 max-1)
-      (check-range :end-coordinate-1  min-1 max-1)
-      (check-range :start-coordinate-2  min-2 max-2)
-      (check-range :end-coordinate-2  min-2 max-2))))
+  (when-not (= (:TilingIdentificationSystemName two-d-coordinate-system) "Military Grid Reference System")
+    (let [{{min-1 :MinimumValue max-1 :MaximumValue} :Coordinate1
+           {min-2 :MinimumValue max-2 :MaximumValue} :Coordinate2} (:parent two-d-coordinate-system)
+          check-range  (validate-coordinate-within-range field-path two-d-coordinate-system)]
+      (merge
+       (check-range :start-coordinate-1  min-1 max-1)
+       (check-range :end-coordinate-1  min-1 max-1)
+       (check-range :start-coordinate-2  min-2 max-2)
+       (check-range :end-coordinate-2  min-2 max-2)))))
 
 (defn- projects-reference-collection
   "Validate projects in granule must reference those in the parent collection"
