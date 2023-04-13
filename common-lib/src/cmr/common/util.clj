@@ -1093,7 +1093,7 @@
   [s]
   (if (and (string? s)
            (numeric? s))
-      (safe-read-string s)
+    (safe-read-string s)
     nil))
 
 (defn html-escape
