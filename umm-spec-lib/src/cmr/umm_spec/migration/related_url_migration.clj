@@ -411,11 +411,12 @@
   "Change application/x-vnd.iso.19139-2+xml to Not provided for the
   RelatedUrls/GetService/MimeType element."
   [related-urls]
-  (vec
-   (for [related-url related-urls
-         :let [service (:GetService related-url)]]
-     (if service
-       (if (= (:MimeType service) "application/x-vnd.iso.19139-2+xml")
-         (assoc-in related-url [:GetService :MimeType] "Not provided")
-         related-url)
-       related-url))))
+  (let [urls (for [related-url related-urls
+                   :let [service (:GetService related-url)]]
+               (if service
+                 (if (= (:MimeType service) "application/x-vnd.iso.19139-2+xml")
+                   (assoc-in related-url [:GetService :MimeType] "Not provided")
+                   related-url)
+                 related-url))]
+    (when (seq urls)
+      (vec urls))))

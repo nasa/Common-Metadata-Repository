@@ -3747,7 +3747,7 @@
         (let [result (vm/migrate-umm {} :collection "1.17.3" "1.17.2" sample-collection)]
           (is (= expected result)))
 
-        "Migrating TilingIdentificationSystems Coordinate1/Coordinate2 up"
+        "Migrating TilingIdentificationSystems Coordinate1/Coordinate2 down"
         {:TilingIdentificationSystems [{:TilingIdentificationSystemName "Military Grid Reference System",
                                         :Coordinate1 {:MinimumValue "-100",
                                                       :MaximumValue "-50"},
@@ -3774,4 +3774,10 @@
                                         :Coordinate2 {:MinimumValue 1.5
                                                       :MaximumValue 10.5}}]
          :RelatedUrls [{:GetService {:MimeType "application/x-vnd.iso.19139-2+xml"}}
-                       {:GetService {:MimeType "application/json"}}]}))
+                       {:GetService {:MimeType "application/json"}}]}
+
+        "Migrating nothing down"
+        {:MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.2"
+                                 :Name "UMM-C",
+                                 :Version "1.17.2"}}
+        {}))
