@@ -177,7 +177,7 @@
                  :Organizations [{:Roles ["ORIGINATOR"]
                                   :ShortName "REAL_ID"
                                   :URLValue "https://example.gov"}]
-                 :MetadataSpecification {:Name "provider"
+                 :MetadataSpecification {:Name "Provider"
                                          :URL "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0"
                                          "Version" "1.0.0"}
                  :Consortiums ["one" "two" "*-lord!"]}
