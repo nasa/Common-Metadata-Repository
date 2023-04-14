@@ -15,7 +15,7 @@
         "description": "A brief description of the data held by this provider Note: This field allows lightweight markup language with plain text formatting syntax. Line breaks within the text are preserved.",
         "type": "string",
         "minLength": 1,
-        "maxLength": 1024
+        "maxLength": 2500
       },
       "Organizations": {
         "description": "The data provider, or organization, or institution responsible for all data and metadata submitted to the CMR .",
@@ -30,7 +30,7 @@
         "type": "array",
         "items": {
             "type": "string",
-            "minLength": 4,
+            "minLength": 3,
             "maxLength": 30,
             "$comment": "The pattern is based on the rules found at https://urs.earthdata.nasa.gov/users/new",
             "pattern": "^([\\w.]+)$"
@@ -305,7 +305,7 @@
         "Name": {
           "description": "This element represents the name of the schema.",
           "type": "string",
-          "enum": ["provider"]
+          "enum": ["Provider"]
         },
         "Version": {
           "description": "This element represents the version of the schema.",
