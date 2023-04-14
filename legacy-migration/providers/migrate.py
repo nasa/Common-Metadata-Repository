@@ -1,4 +1,4 @@
-"""Migrates providers from legacy services REST API into new providers interface"""
+"""Migrates providers from legacy services REST API into new providers interface in CMR"""
 import argparse
 import json
 import os
@@ -23,7 +23,7 @@ local_cmr_access_token = 'mock-echo-system-token'
 # These are for the Enum values that we must set in the metadata field
 DEFAULT_ORGANIZATION_ROLE = "PUBLISHER"
 DEFAULT_CONTACT_ROLE = "PROVIDER MANAGEMENT"
- 
+
 # Metadata specification for ingesting providers
 # It should not be expected this version or schema directories will change
 # within the lifecycle of this migration
@@ -34,8 +34,8 @@ metadata_specification = {
 
 def create_output_dirs():
     """create the output directories if they are not on the users file-system"""
-    if not os.path.exists("./logs"):
-        os.makedirs("./logs")
+    if not os.path.exists("./ingest_logs"):
+        os.makedirs("./ingest_logs")
     if not os.path.exists("./providerMetadata"):
         os.makedirs("./providerMetadata")
 
@@ -62,7 +62,7 @@ def ingest_provider(provider_metadata, provider_id):
                         )
     if response.status_code >= 300:
         print("Failed to ingest a record for the provider : ", provider_id)
-        ingest_error_log = open("./logs/"+str(provider_id)+"_error","w" ,encoding="utf8")
+        ingest_error_log = open("./ingest_logs/" + str(provider_id) + "_error","w" ,encoding="utf8")
         ingest_error_log.write('Error for provider ' + provider_id + ' ingesting ' + 'due to ' +
         str(response.content))
     else:
@@ -80,27 +80,48 @@ def parse_description_of_holdings(doh):
     print('this is description_of_holdings ' + doh + '\n')
     return doh
 
+def get_cmr_providers():
+    """Retrieve the providers from cmr"""
+    try:
+        response = requests.get(f"{URL_ROOT}/ingest/providers",
+        headers={"Authorization": access_token, "client-id": "legacy_migration", "User-Agent": "legacy_migration"},
+        timeout=80)
+    except requests.exceptions.ConnectionError:
+        logging.warning("Failed to retrieve providers from CMR in order to get their consortium data")
+        return None
+    return response.text
+
+def get_diff_providers(cmr_providers, legacy_services_providers):
+    """Take the list of all of the providers that are in legacy-services
+    compare those to those in CMR and find the difference"""
+    cmr_providers_set = set()
+    cmr_providers = json.loads(cmr_providers)
+    # Get the provider-ids from the cmr response and then find the disjoint set between the legacy-services providers
+    for cmr_provider in cmr_providers:
+        cmr_providers_set.add(cmr_provider.get("provider-id"))
+    # Find the disjoint sets between the cmr and the legacy services
+    cmr_unique = cmr_providers_set - legacy_services_providers
+    ls_unique = legacy_services_providers - cmr_providers_set
+    provider_set_diff = { "cmr-unique": cmr_unique, "ls-unique": ls_unique }
+    return provider_set_diff
+
 def add_consortiums(provider_id):
     """Return the consortiums for a specific provider"""
-    # To retrieve consortiums for legacy providers we must parse the entire list of providers
-    response = requests.get(f"{URL_ROOT}/ingest/providers",
-            headers={"Authorization": access_token, "client-id": "legacy_migration", "User-Agent": "legacy_migration"},
-            timeout=80)
-
-    # parse the CMR json response
-    providers = json.loads(response.text)
+    # call and parse the CMR json response
+    providers = json.loads(get_cmr_providers())
 
     for provider in providers:
-        if(provider_id == provider.get("provider-id")):
+        if provider_id == provider.get("provider-id"):
             consortiums = provider.get("consortiums")
             if consortiums:
                 logging.info("Provider" + provider_id + " is in these consortiums: " + consortiums )
                 # The consortium list is a single string split by space in the legacy format
                 consortium_list = consortiums.split()
                 return consortium_list
-            else:
-                return None
+        # The provider was found in CMR but, didn't have consortiums
+    logging.warning("Provider: %s was not found in legacy services but, was in CMR", provider_id)
     return None
+
 def is_admin_group(group):
     """Looks for admin in the name of the group"""
     # if in the name of the text admin comes up anywhere then it is an admin group
@@ -124,7 +145,7 @@ def convert_to_uri_value(url, provider_id):
         return url
     else:
         # We will not be able to migrate this provider since we'll want to manually check it's url
-        logging.warning("We will not be able to migrate this provider it is not a valid URI providerID: " + str(provider_id))
+        logging.warning("We will not be able to migrate this provider it is not a valid URI providerID: %s" , str(provider_id))
         return url
 
 def get_admin_usernames(member_guid_arr):
@@ -140,9 +161,8 @@ def get_admin_usernames(member_guid_arr):
             timeout=80)
             user_element = ET.fromstring(response.content)
             edl_username = user_element.find('username')
-            
-            logging.info('Retrieved edl-username for guid: ' + user_id)
-            logging.info('The edl username: ' + edl_username.text)
+            logging.info('Retrieved edl-username for guid: %s', user_id)
+            logging.info('The edl username: %s', edl_username.text)
             # So we don't get duplicate usernames if there are multiple 'Admin' groups in the provider
             if edl_username.text not in username_arr:
                 username_arr.append(edl_username.text)
@@ -166,7 +186,7 @@ def get_all_provider_guids(provider_groups):
     member_guid_arr = []
     groups_root = ET.fromstring(provider_groups.content)
     for group in groups_root.findall('group'):
-        if(is_admin_group(group.find('name').text)):
+        if is_admin_group(group.find('name').text):
             logging.info('This group was admin:' + group.find('name').text)
             member_guids = group.find('member_guids')
             member_guid_list = member_guids.findall('member_guid')
@@ -179,7 +199,7 @@ def parse_addresses(provider_contact):
     address = provider_contact["address"]
     city = address["city"]
     country = address["country"]
-    address_metadata = { 
+    address_metadata = {
     'City': city,
     'Country': country
     }
@@ -199,13 +219,13 @@ def parse_addresses(provider_contact):
         for street in provider_street_keys.values():
             street_addresses.append(street)
         address_metadata["StreetAddresses"] = street_addresses
-    logging.info('This is the address metadata on this document ' + str(address_metadata))
+    logging.info('This is the address metadata on this document %s ', str(address_metadata))
     return address_metadata
 
 def parse_emails(provider_contact):
     """Parses email fields between old-style format into new schema"""
     email = provider_contact["email"]
-    logging.info('This is the email metadata on this document ' + str(email))
+    logging.info('This is the email metadata on this document %s', str(email))
     return email
 
 def parse_phones(provider_contact):
@@ -216,7 +236,7 @@ def parse_phones(provider_contact):
         # Some do not have the number field but, have a phone
         if phone.get('number'):
             phone_numbers.append(phone['number'])
-    logging.info('These are the phone-numbers metadata on this document ' + str(phone_numbers))
+    logging.info('These are the phone-numbers metadata on this document %s', str(phone_numbers))
     return phone_numbers
 
 def migrate_contact_persons(contacts):
@@ -288,31 +308,29 @@ def migrate_organizations(search_urls, provider_id,org_name):
 
 def migrate_administrators(provider_owner_guid, provider_id):
     """Parses admin's fields between old-style format into new schema"""
-    emptyAdmins = []
+    empty_admins = []
 
     all_the_groups_specific_provider = get_groups_by_provider(provider_owner_guid)
     if not all_the_groups_specific_provider:
-        logging.warning('Could not the groups for this provider ' + str(provider_id))
-        return emptyAdmins
+        logging.warning('Could not retrieve the groups for for provider %s', str(provider_id))
+        return empty_admins
 
     member_guids_specific_provider = get_all_provider_guids(all_the_groups_specific_provider)
     if not member_guids_specific_provider:
-        logging.warning('Could not retrieve the member guids for ' + str(provider_id))
-        return emptyAdmins
+        logging.warning('Could not retrieve the member guids for provider : %s', str(provider_id))
+        return empty_admins
 
     admin_usernames = get_admin_usernames(member_guids_specific_provider)
     if not admin_usernames:
-        logging.warning('Could not retrieve the member guids for ' + str(provider_id))
-        return emptyAdmins
+        logging.warning('Could not retrieve the admin username for provider: %s', str(provider_id))
+        return empty_admins
 
     return admin_usernames
 
 def migrate_providers():
     """Migrate the providers"""
-    provider_migration_log_file = open("./logs/provider_migration_log_file.txt","w", encoding="utf8")
-    # pull ingest_flag var from the cmd arg
-    global ingest_flag
-
+    provider_list = set()
+    provider_migration_log_file = open("./provider_migration_log_file.txt","w", encoding="utf8")
     provider_migration_count = 0
     json_response = retrieve_legacy_providers()
 
@@ -324,6 +342,7 @@ def migrate_providers():
 
     for provider in json_response:
         provider_id = provider['provider']['provider_id']
+        provider_list.add(provider_id)
         print(f"Migrating {provider_id} providers")
         description_of_holdings = provider['provider']['description_of_holdings']
 
@@ -336,7 +355,7 @@ def migrate_providers():
         provider_owner_guid = provider['provider']['id']
 
         contact_persons = migrate_contact_persons(contacts)
-        
+
         # Handle organizations
         organizations = migrate_organizations(search_urls,provider_id,org_name)
 
@@ -344,7 +363,7 @@ def migrate_providers():
         admin_usernames = migrate_administrators(provider_owner_guid,provider_id)
 
         if not admin_usernames:
-            logging.info("We had to create an admin user for " + str(provider_id))
+            logging.info("We had to create an admin user for %s", str(provider_id))
             default_admin_user = str(provider_id) + "_Admin"
             # Write this provider to the log file
             provider_migration_log_file.write("This Provider did not have admins: " + str(provider_id) + "\n")
@@ -378,9 +397,17 @@ def migrate_providers():
         provider_migration_count += 1
 
     # Migration Complete
+    diff_prov = get_diff_providers(get_cmr_providers(), provider_list)
+    # write in the report the differences in the providers in CMR vs legacy services
+    provider_migration_log_file.write(str(len(diff_prov.get("cmr-unique"))) + " Providers are in CMR but, not in legacy-services: " + str(diff_prov.get("cmr-unique")) + "\n")
+    provider_migration_log_file.write(str(len(diff_prov.get("ls-unique"))) + " Providers are in legacy-services but, not in CMR: " + str(diff_prov.get("ls-unique")) + "\n")
+    # this is the provider-ids of all the parsed legacy-providers
+    provider_migration_log_file.write(str(len(provider_list)) + " Here is all of the providers we migrated" + str(provider_list))
+
     print(f'The total number of providers migrated {provider_migration_count}')
 
 def main(cmr_env, ingest_flag, log_level):
+    """Executes the migration"""
     logging.basicConfig( level=log_level.upper() )
     # Create the output directories if they are not already there
     create_output_dirs()
@@ -395,16 +422,16 @@ def main(cmr_env, ingest_flag, log_level):
     URL_ROOT = "https://cmr" + url_map.get(cmr_env) + ".earthdata.nasa.gov"
     global access_token
     access_token = os.environ.get(token_map.get(cmr_env))
-    logging.info("This is the name of the token we used " + token_map.get(cmr_env))
+    logging.info("This is the name of the token we used %s", token_map.get(cmr_env))
     # without a valid system token we must bailout because we won't be authorized to read all providers
     # and we would not be able to validate against a local-cmr
     if not access_token:
-        logging.warning("You do not have a value set for your " + token_map.get(cmr_env) +" env var")
+        logging.warning("You do not have a value set for your %s env var", token_map.get(cmr_env))
         return None
     # Begin migration get start/end times
     start = time.time()
     logging.debug("Running in debug logging mode")
-    logging.info("Running migration in the " + cmr_env + " env")
+    logging.info("Running migration in the %s env", cmr_env)
     migrate_providers()
     end = time.time()
     total_time = end - start

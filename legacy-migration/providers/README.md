@@ -22,7 +22,7 @@ Due to needing system tokens to be able to retrieve all provider data please ali
 pip install validators
 
 ## Ingesting into local CMR:
-To validate the generated metadata you must have a running CMR instance. Please see https://github.com/nasa/Common-Metadata-Repository for how to setup CMR and what dependencies are needed. Alternatively you can validate the metadata a different way if you prefer. Note that you should of course reset your CMR between runs where you ingest all of the provider metadata otherwise you will receive errors from CMR that you are trying to ingest duplicate providers.
+To validate the generated metadata you must have a running CMR instance. Please see https://github.com/nasa/Common-Metadata-Repository for how to setup CMR and what dependencies are needed. Alternatively you can validate the metadata a different way if you prefer after it is generated. Note that you should of course reset your CMR between runs where you ingest all of the provider metadata otherwise you will receive errors from CMR that you are trying to ingest duplicate providers.
 
 ## Run Migration Without Ingesting
 
@@ -41,11 +41,12 @@ Note: that if you don't specify an env such as the call below;the default is the
 `python3 migrate.py`
 
 
-## Run Migration With Ingesting
+## Run Migration With Ingesting to validate metadata
 
 We pass a flag for the migration script to try to ingest the provider metadata documents into a CMR env
-Note: this is always done locally for validation purposes and so a CMR env must be running on your machine.
+Note: this is always done locally for validation purposes and so a CMR env/instance must be running on your machine.
 
+The example below would attempt to ingest all of the sit providers from legacy services into your local CMR (sit is default with the env flag)
 `python3 migrate.py --ingest`
 
 
@@ -53,6 +54,10 @@ Note: this is always done locally for validation purposes and so a CMR env must 
 Logging levels for user cmd line output can be specified by passing the --logging or -log flags. Please only use valid logging allowed by the python logging library:
 debug, warning, info, or error. The default logging is info if one is not specified
 
+
+# Migration Report
+After a successful migration, a report file `provider_migration_log_file.txt` will be created
+this contains data on how many legacy-services providers were migrated how many were in CMR but, not in legacy services and vice-versa 
 ## License
 
 Copyright © 2023 NASA
