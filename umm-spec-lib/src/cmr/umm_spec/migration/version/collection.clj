@@ -687,7 +687,6 @@
   [context collection & _]
   ;; if TilingIdentificationSystems Names are any but Military Grid Reference System, 
   ;; Migrate TilingIdentificationSystems/Coordinate1 and Coordinate2 from string to number.
-  (def collection collection)
   (-> collection
       (m-spec/update-version :collection "1.17.3")
       (util/update-in-all [:TilingIdentificationSystems] #(if (= "Military Grid Reference System" (:TilingIdentificationSystemName %))
@@ -700,12 +699,13 @@
 
 (defmethod interface/migrate-umm-version [:collection "1.17.3" "1.17.2"]
   [context collection & _]
-  ;; Remove the EULAIdentifiers field in UseConstraints
-  ;; Migrate TilingIdentificationSystems/Coordinate1 and Coordinate2 down if they are numbers, otherwise remove entire tiling identification system
-  (-> collection
-      (m-spec/update-version :collection "1.17.2")
-      (util/update-in-all [:TilingIdentificationSystems :Coordinate1 :MinimumValue] str)
-      (util/update-in-all [:TilingIdentificationSystems :Coordinate1 :MaximumValue] str)
-      (util/update-in-all [:TilingIdentificationSystems :Coordinate2 :MinimumValue] str)
-      (util/update-in-all [:TilingIdentificationSystems :Coordinate2 :MaximumValue] str)
-      (update :RelatedUrls related-url/migrating-down-to_1_17_2)))
+  ;; Migrate TilingIdentificationSystems/Coordinate1 and Coordinate2 down if they are numbers.
+  ;; Replace a GetService MimeType to a valid value.
+  (util/remove-nils-empty-maps-seqs
+   (-> collection
+       (m-spec/update-version :collection "1.17.2")
+       (util/update-in-all [:TilingIdentificationSystems :Coordinate1 :MinimumValue] str)
+       (util/update-in-all [:TilingIdentificationSystems :Coordinate1 :MaximumValue] str)
+       (util/update-in-all [:TilingIdentificationSystems :Coordinate2 :MinimumValue] str)
+       (util/update-in-all [:TilingIdentificationSystems :Coordinate2 :MaximumValue] str)
+       (update :RelatedUrls related-url/migrating-down-to_1_17_2))))
