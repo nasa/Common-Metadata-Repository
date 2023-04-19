@@ -28,7 +28,7 @@ DEFAULT_CONTACT_ROLE = "PROVIDER MANAGEMENT"
 # It should not be expected this version or schema directories will change
 # within the lifecycle of this migration
 metadata_specification = {
-            "Name": "provider",
+            "Name": "Provider",
             "Version": "1.0.0",
             "URL": "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0"}
 

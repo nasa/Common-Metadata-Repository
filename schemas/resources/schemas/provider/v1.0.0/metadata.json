@@ -1,6 +1,6 @@
 {
   "MetadataSpecification": {
-    "Name":"provider",
+    "Name":"Provider",
     "Version": "1.0.0",
     "URL": "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0"},
   "ProviderId": "MBQ",
