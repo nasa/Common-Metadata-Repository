@@ -16,10 +16,11 @@ The data calls the legacy services REST api parses those values into metadata do
 
 ## Environment Variables
 Due to needing system tokens to be able to retrieve all provider data please align your env variables in the following format where env is either uat, sit, or prod. Alternatively you may use ops instead of prod if you prefer that
-* export CMR_<ENV>_TOKEN=<SYSTEM_TOKEN_FOR_CMR>
+* export <ENV>_SYSTEM_TOKEN=<TOKEN_VALUE>
 
 * Install the needed python packages using pip
 pip install validators
+pip install requests
 
 ## Ingesting into local CMR:
 To validate the generated metadata you must have a running CMR instance. Please see https://github.com/nasa/Common-Metadata-Repository for how to setup CMR and what dependencies are needed. Alternatively you can validate the metadata a different way if you prefer after it is generated. Note that you should of course reset your CMR between runs where you ingest all of the provider metadata otherwise you will receive errors from CMR that you are trying to ingest duplicate providers.
