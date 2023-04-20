@@ -7,6 +7,7 @@
    [clojure.string :as string]
    [cmr.common-app.services.search.query-execution :as query-execution]
    [cmr.common.util :as util]
+   [cmr.common.log :refer [info]]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
@@ -72,7 +73,7 @@
     (v2h/prioritized-range-facet context (get (facets-v2-params->elastic-fields concept-type) facet-field))
 
     :latency
-     (v2h/terms-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)
+    (v2h/terms-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)
 
     ;; else
     (v2h/prioritized-facet (get (facets-v2-params->elastic-fields concept-type) facet-field) size)))
@@ -211,6 +212,7 @@
     (when-let [validator (facets-validator concept-type)]
       (validator context))
     (let [aggs-query (facets-v2-aggregations context concept-type query-params facet-fields-map)]
+      (info "query-execution/pre-process-query-result-feature aggs-query= " aggs-query)
       (assoc query :aggregations aggs-query))))
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2
@@ -219,4 +221,5 @@
         facet-fields (:facet-fields query)
         facet-fields (or facet-fields (facets-v2-params concept-type))
         aggregations (:aggregations elastic-results)]
+    (info "query-execution/post-process-query-result-feature aggregations= " aggregations)
     (assoc query-results :facets (create-v2-facets context concept-type aggregations facet-fields))))
