@@ -63,6 +63,7 @@
   (when-let [range-facets (range-facet-humanizers/get-range-facets context)]
     {:nested {:path field}
      :aggs {:values {:range {:field (prioritized-facet-key field :value)
+                             :shard_size 0
                              :ranges range-facets}
                      :aggs {:priority {:avg {:field (prioritized-facet-key field :priority)}}}}}}))
 

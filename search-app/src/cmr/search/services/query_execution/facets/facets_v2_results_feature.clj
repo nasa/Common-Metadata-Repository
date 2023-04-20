@@ -64,6 +64,7 @@
 
     :two-d-coordinate-system-name
     {:terms {:field (keyword (name (get (facets-v2-params->elastic-fields concept-type) facet-field)))
+             :shard_size 0
              :size size}}
 
     :cycle
