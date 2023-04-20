@@ -4,7 +4,8 @@
    [cmr.spatial.serialize :as srl])
   (:import
    (java.util Map)
-   (org.elasticsearch.script DocReader) 
+   (org.apache.logging.log4j LogManager)
+   (org.elasticsearch.script DocReader)
    (org.elasticsearch.search.lookup FieldLookup
                                     LeafDocLookup
                                     LeafStoredFieldsLookup
@@ -37,17 +38,18 @@
 (defn doc-intersects?
   "Returns true if the doc contains a ring that intersects the ring passed in."
   [^LeafStoredFieldsLookup lookup intersects-fn]
-  ;; Must explicitly return true or false or elastic search will complain
+
   (if-let [ords-info (get-from-fields lookup "ords-info")]
     (let [ords (get-from-fields lookup "ords")
           shapes (srl/ords-info->shapes ords-info ords)]
       (try
+        ;; Must explicitly return true or false or elastic search will complain
         (if (u/any-true? intersects-fn shapes)
           true
           false)
         (catch Throwable t
-          (.printStackTrace t)
-          (throw t))))
+          (.error (LogManager/getLogger "cmr_spatial_script") t)
+          (throw (ex-info "An exception occurred checking for intersections" {:shapes shapes} t)))))
     false))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

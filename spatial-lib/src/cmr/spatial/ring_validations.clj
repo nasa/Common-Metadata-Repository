@@ -58,7 +58,8 @@
         ;; basic ring validation
         (or (seq (concat (ring-closed-validation ring)
                          (pv/duplicate-point-validation (update-in ring [:points] drop-last))
-                         (pv/consecutive-antipodal-points-validation ring)))
+                         (pv/consecutive-antipodal-points-validation ring)
+                         #_(pv/zero-vector-validation ring)))
             ;; Advanced ring validation
             (let [ring (assoc ring :arcs (gr/ring->arcs ring))]
               (or (seq (ring-self-intersection-validation ring))
@@ -74,7 +75,8 @@
     (or (seq (pv/points-in-shape-validation ring))
         ;; basic ring validation
         (or (seq (concat (ring-closed-validation ring)
-                         (pv/duplicate-point-validation (update-in ring [:points] drop-last))))
+                         (pv/duplicate-point-validation (update-in ring [:points] drop-last))
+                         #_(pv/zero-vector-validation ring)))
             ;; Advanced ring validation
             (let [ring (assoc ring :line-segments (cr/ring->line-segments ring))]
               (or (seq (ring-self-intersection-validation ring))

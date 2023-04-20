@@ -301,7 +301,7 @@
 (defmulti shapefile->conditions
   "Converts a shapefile to query conditions based on shapefile format"
   (fn [shapefile-info]
-    (info (format "SHAPEFILE FORMAT: %s" (:contenty-type shapefile-info)))
+    (debug (format "SHAPEFILE FORMAT: %s" (:contenty-type shapefile-info)))
     (if (:in-memory shapefile-info)
       :in-memory
       (:content-type shapefile-info))))

@@ -126,8 +126,9 @@
 
     (catch clojure.lang.ExceptionInfo e
       (when-let [body (:body (ex-data e))]
+        (info "Execute ES query failed due to" body)
+
         (when (re-find #"Trying to create too many scroll contexts" body)
-          (info "Execute ES query failed due to" body)
           (errors/throw-service-error
            :too-many-requests
            "CMR is currently experiencing too many scroll searches to complete this request.
@@ -137,27 +138,31 @@
            Thank you!"))
 
         (when (re-find #"Trying to create too many buckets" body)
-          (info "Execute ES query failed due to" body)
           (errors/throw-service-error
            :payload-too-large
            "The search is creating more buckets than allowed by CMR. Please narrow your search."))
 
         (when (re-find #"maxClauseCount is set to 1024" body)
-          (info "Execute ES query failed due to" body)
           (errors/throw-service-error
            :payload-too-large
            "The search is creating more clauses than allowed by CMR. Please narrow your search."))
-        
+
+        (when (re-find #"Cannot normalize a vector length 0" body)
+          (errors/throw-service-error
+           :bad-request
+           "The search shapefile points are too close together and have too much precision. Please reduce precision or simplify your shapefile."))
+
         (when (and (or (re-find #"\"type\":\"illegal_argument_exception\"" body)
                        (re-find #"\"type\":\"parsing_exception\"" body))
                    (re-find #"search_after" body))
-          (info "Execute ES query failed due to" body)
           (let [err-msg (-> (json/parse-string body true)
                             (get-in [:error :root_cause])
                             str)]
             (errors/throw-service-error
              :bad-request
-             (format "The search failed with error: %s. Please double check your search_after header." err-msg)))))
+             (format "The search failed with error: %s. Please double check your search_after header." err-msg))))
+
+        (throw (ex-info "An unhandled exception occurred" {} e)))
       ;; for other errors, rethrow the exception
       (throw e))))
 
