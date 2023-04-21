@@ -2214,7 +2214,7 @@ The following limits apply to uploaded shapefiles:
 * Shapefiles are limited in size to 1,000,000 bytes.
 * Shapefiles are limited to 500 features
 * Shapefiles are limited to 5000 points.
-* Shapefile geometries with precision greater than 8 significant digits should ensure their points are at least 1 meter apart.
+* Shapefile geometries with precision greater than 7 significant digits should ensure their points are at least 1 meter apart.
 
 Regarding polygon ring winding, ESRI shapefiles **must** follow the ESRI standard, i.e., exterior (boundary) rings are clockwise, and holes are counter-clockwise. GeoJSON **must** follow the RFC7946 specification, i.e., exterior rings are counterclockwise, and holes are clockwise. KML **must** follow the KML 2.2 specification, i.e., _all_ polygon rings are counter-clockwise.
 

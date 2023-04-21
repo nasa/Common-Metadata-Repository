@@ -15,7 +15,7 @@
 (defn parse-str
   "Similar to clojure.data.xml/parse-str. Parses the passed in string to Clojure data structures."
   [s]
-  ;; This also avoids reflection that clnojure.data.xml does.
+  ;; This also avoids reflection that clojure.data.xml does.
   (let [sreader (.createXMLStreamReader cached-xml-input-factory (StringReader. s))]
     (try
       (x/event-tree (#'x/pull-seq sreader))
