@@ -70,10 +70,6 @@
           (indexed-point->-msg-part point1-w-index)
           (indexed-point->-msg-part point2-w-index)))
 
-(defn loss-of-precision-after-transmit-points
-  [points]
-  (format "The shape contained points that overlap and are very close."))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Ring validation messages
 

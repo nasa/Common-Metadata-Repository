@@ -12,7 +12,7 @@
     m))
 
 (defn remove-center-point
-  "Remove :CenterPoint from :BoundingRectangles, :GPolyons and :Lines
+  "Remove :CenterPoint from :BoundingRectangles, :GPolygons and :Lines
   to comply with UMM spec v1.9"
   [spatial-extent]
   (-> spatial-extent
