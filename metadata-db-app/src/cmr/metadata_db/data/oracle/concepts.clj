@@ -434,7 +434,7 @@
                                                  (su/query conn stmt)))))))]
       (when (not (= "efs-off" (efs-config/efs-toggle)))
         (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
-        (info "Values gotten from EFS: " (doall (map pr-str (second efs-concepts-get)))))
+        (info "Values gotten from EFS: " (pr-str (second efs-concepts-get))))
       (when (not (= "efs-only" (efs-config/efs-toggle)))
         (info "Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms."))
       (if oracle-concepts-get
