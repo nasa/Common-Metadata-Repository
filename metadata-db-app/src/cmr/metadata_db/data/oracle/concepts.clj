@@ -401,7 +401,7 @@
                                                                                                   (= :revision-id ~revision-id)))))))))]
        (when (not (= "efs-off" (efs-config/efs-toggle)))
          (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
-         (info "Value gotten from EFS get-concept: " (second efs-concept-get)))
+         (info "Value gotten from EFS get-concept for concept-id " concept-id " and revision-id " revision-id ": " (second efs-concept-get)))
        (when (not (= "efs-only" (efs-config/efs-toggle)))
          (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms."))
        (if oracle-concept-get
@@ -434,7 +434,7 @@
                                                  (su/query conn stmt)))))))]
       (when (not (= "efs-off" (efs-config/efs-toggle)))
         (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
-        (info "Values gotten from EFS: " (pr-str (second efs-concepts-get))))
+        (info "Values gotten from EFS: " (doall (map pr-str (second efs-concepts-get)))))
       (when (not (= "efs-only" (efs-config/efs-toggle)))
         (info "Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms."))
       (if oracle-concepts-get
