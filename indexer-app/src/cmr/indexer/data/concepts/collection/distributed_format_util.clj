@@ -4,7 +4,7 @@
   (:require
    [clojure.string :as string]))
 
-(defn- remove-emtpy-strings
+(defn- remove-empty-strings
   "Remove empty strings from the passed in vector"
   [vector]
   (into []
@@ -117,7 +117,7 @@
   (if (string/includes? formats ",")
     (-> formats
       (string/split #", *")
-      remove-emtpy-strings)
+      remove-empty-strings)
     formats))
 
 (defn parse-distribution-formats-split-by-comma
@@ -181,5 +181,5 @@
                    (parse-distribution-formats-split-by-semicolon))]
       (if (instance? String result)
         (vector result)
-        (remove-emtpy-strings result)))
+        (remove-empty-strings result)))
     []))

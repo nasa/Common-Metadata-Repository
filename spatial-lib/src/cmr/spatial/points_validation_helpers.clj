@@ -4,8 +4,33 @@
             [primitive-math]
             [cmr.spatial.validation :as v]
             [cmr.spatial.messages :as msg]
-            [cmr.spatial.point :as p]))
+            [cmr.spatial.arc :refer [arc]]
+            [cmr.spatial.point :as p]
+            [cmr.spatial.vector :as cmr-vector]))
 (primitive-math/use-primitive-operators)
+
+(def elasticsearch-rounding-precision
+  "The number of decimal points Elasticsearch can store after conversion to and from ordinates.
+  See [[cmr.spatial.serialize/multiplication-factor]] for additional information."
+  7)
+
+(defn points->pairs
+  "Returns a sequence of pairs where there is an overlap between the entries for each couple.
+  Applies a transform if presented with one to each member of the pair.
+  Separate from [[clojure.core/partition]]"
+  ([points]
+   (points->pairs points identity))
+  ([points xform]
+   (let [modified-points (map xform points)]
+     (conj (for [idx (range (dec (count points)))]
+             (vector (nth modified-points idx)
+                     (nth modified-points (inc idx))))))))
+
+(defn points->es-rounded-pairs
+  "Returns a sequence of point pairs rounded to ES precision where there is an overlap between
+  the entries for each couple."
+  [points]
+  (points->pairs points (partial p/round-point elasticsearch-rounding-precision)))
 
 (defn points-in-shape-validation
   "Validates the individual points of a shape"
@@ -20,7 +45,7 @@
   map of rounded points to list of index, point pairs."
   [points]
   (reduce (fn [m [i point]]
-            (let [rounded (p/round-point 8 point)]
+            (let [rounded (p/round-point elasticsearch-rounding-precision point)]
               (update-in m [rounded] conj [i point])))
           {}
           (map-indexed vector points)))

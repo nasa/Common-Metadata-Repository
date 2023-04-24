@@ -179,7 +179,7 @@
           feature-list (ArrayList.)]
       (try
         (util/while-let [feature (.parse parser)]
-          (when (> (feature-point-count feature) 0)
+          (when (pos? (feature-point-count feature))
             (.add feature-list feature)))
         (simplify-data filename feature-list mt/kml)
         (finally
@@ -264,4 +264,3 @@
              default-format-fn request type errors e)
                 ;; re-throw non-service errors
             (throw e)))))))
-

@@ -1,5 +1,6 @@
 (ns cmr.spatial.test.geodetic-ring
   (:require [clojure.test :refer :all]
+            [cmr.common.util :refer [are3]]
             [cmr.common.test.test-check-ext :refer [defspec]]
             [clojure.test.check.properties :refer [for-all]]
             [clojure.test.check.generators :as gen]
@@ -39,62 +40,63 @@
                                                -45.19377 68.63509]))))))
 
   (testing "invalid rings"
-    (are [ords msgs] (= (seq msgs) (seq (v/validate (rr/ords->ring :geodetic ords))))
+    (are3 [ords msgs] (= (seq msgs) (seq (v/validate (rr/ords->ring :geodetic ords))))
 
-         ;; invalid point
+         "invalid point"
          [0 0, 181 0, 0 1, 0 0]
          [(msg/shape-point-invalid 1 (msg/point-lon-invalid 181))]
 
-         ;; multiple invalid points and point parts
+         "multiple invalid points and point parts"
          [0 0, 181 91, 0 92, 0 0]
          [(msg/shape-point-invalid 1 (msg/point-lon-invalid 181))
           (msg/shape-point-invalid 1 (msg/point-lat-invalid 91))
           (msg/shape-point-invalid 2 (msg/point-lat-invalid 92))]
 
-         ;; Ring not closed
+         "Ring not closed"
          [0 0, 1 0, 0 1]
          [(msg/ring-not-closed)]
 
-         ;; Duplicate points
+         "Duplicate points"
          [0 0, 1 0, 1 0, 0 1, 0 0]
          [(msg/duplicate-points [[1 (p/point 1 0)] [2 (p/point 1 0)]])]
 
-         ;; duplicate non consecutive points
+         "duplicate non consecutive points"
          [0 0, 1 0, 4 5, 1 0, 0 1, 0 0]
          [(msg/duplicate-points [[1 (p/point 1 0)] [3 (p/point 1 0)]])]
 
-         ;; Multiple duplicate points
+         "Multiple duplicate points"
          [0 0, 1 0, 4 5, 1 0, 0 0, 4 5 0 1, 0 0]
          [(msg/duplicate-points [[0 (p/point 0 0)] [4 (p/point 0 0)]])
           (msg/duplicate-points [[1 (p/point 1 0)] [3 (p/point 1 0)]])
           (msg/duplicate-points [[2 (p/point 4 5)] [5 (p/point 4 5)]])]
 
-         ;; very very close points
+         "very very close points"
          [0 0, 1 1, 1 1.000000001, 0 1, 0 0]
          [(msg/duplicate-points [[1 (p/point 1 1)] [2 (p/point 1 1.000000001)]])]
 
-         ;; Not too close
+         "Not too close"
          [0 0, 1 1, 1 1.00000001, 0 1, 0 0]
          []
 
-         ;; No consecutive antipodal points
+         "No consecutive antipodal points"
          [0 0, 45 0, -135 0, 0 0]
          [(msg/consecutive-antipodal-points [1 (p/point 45 0)] [2 (p/point -135 0)])]
 
-         ;; Multiple consecutive antipodal points
+         "Multiple consecutive antipodal points"
          [0 0, 45 0, -135 0, 45 0, 0 0]
          [(msg/duplicate-points [[1 (p/point 45 0)] [3 (p/point 45 0)]])
           (msg/consecutive-antipodal-points [1 (p/point 45 0)] [2 (p/point -135 0)])
           (msg/consecutive-antipodal-points [2 (p/point -135 0)] [3 (p/point 45 0)])]
 
-         ;; non consecutive antipodal points are allowed
+         "non consecutive antipodal points are allowed"
          [0 0, 45 0, 180 0, -135 0, 0 0]
          []
 
-         ;; Self intersection
+         "Self intersection"
          [0 0, -1.07 3.05, 6 5, 2 5, 0 0]
          [(msg/ring-self-intersections [(p/point 1.5055573678910719 3.768366191776642)])]
 
+         "points out of order"
          [0 0, 4 0, 6 5, 4.97 -1.77, 0 0]
          [(msg/ring-points-out-of-order)])))
 
@@ -249,5 +251,3 @@
 
    :starts-on-am3 {:ords [-176.17,0.46 180,0.75 180,-5 -177.38,-3.92 -176.17,0.46]
                    :bounds (m/mbr -180 0.75 -176.17 -5)}})
-
-

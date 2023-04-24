@@ -2,7 +2,8 @@
   (:import
    (cmr.elasticsearch.plugins SpatialScript)
    (java.util Map)
-   (org.elasticsearch.script DocReader) 
+   (org.apache.logging.log4j LogManager)
+   (org.elasticsearch.script DocReader)
    (org.elasticsearch.common.xcontent.support XContentMapValues)
    (org.elasticsearch.search.lookup SearchLookup))
   (:require
@@ -56,15 +57,14 @@
     (first (srl/ords-info->shapes ords-info ords))))
 
 (defn get-intersects-fn [script-params]
-  (try
-    (let [params (extract-params script-params)
-          shape (params->spatial-shape params)
-          intersects-fn (relations/shape->intersects-fn shape)]
-      (assert-required-parameters params)
-      intersects-fn)
-    (catch Throwable e
-      (.printStackTrace e)
-      (throw e))))
+  (let [params (extract-params script-params)
+        shape (params->spatial-shape params)]
+    (assert-required-parameters params)
+    (try
+      (relations/shape->intersects-fn shape)
+      (catch Exception e
+        (.error (LogManager/getLogger "cmr_spatial_lfactory") (format "Unable to create intersects function for shapes [%s]" (pr-str shape)) e)
+        (throw (ex-info "An exception occurred creating intersects-fn" {:shape shape :params params} e))))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;                    End factory helper functions                           ;;

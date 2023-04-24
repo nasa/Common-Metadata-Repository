@@ -50,5 +50,5 @@
                  (json/decode true)
                  (:hits))))
       ;; The humanizer fixture contains a Humanizer with NetCDF-4 assigned NetCDF.
-      ;; Check to see that the humanizer exits for the data format.
+      ;; Check to see that the humanizer exists for the data format.
       (is (string/includes? (search/get-humanizers-report) "NetCDF-4,NetCDF")))))

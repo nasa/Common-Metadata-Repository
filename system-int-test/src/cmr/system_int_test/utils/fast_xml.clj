@@ -6,7 +6,8 @@
    [clojure.data.xml :as x])
   (:import
    (java.io StringReader)
-   (com.sun.xml.internal.stream XMLInputFactoryImpl)))
+   (com.sun.xml.internal.stream XMLInputFactoryImpl)
+   (javax.xml.stream XMLStreamException)))
 
 (def ^XMLInputFactoryImpl cached-xml-input-factory
   (#'x/new-xml-input-factory {:coalescing true}))
@@ -16,7 +17,10 @@
   [s]
   ;; This also avoids reflection that clojure.data.xml does.
   (let [sreader (.createXMLStreamReader cached-xml-input-factory (StringReader. s))]
-    (x/event-tree (#'x/pull-seq sreader))))
+    (try
+      (x/event-tree (#'x/pull-seq sreader))
+      (catch XMLStreamException e
+        (throw (ex-info "Failed parsing XML" {:xml s} e))))))
 
 (comment
 

@@ -75,7 +75,7 @@
   (set-value
     [this key value]
     (swap! cache-atom assoc key value))
-  
+
   (cache-size
    [_]
    (reduce + 0 (map :size (vals @cache-atom)))))
@@ -364,7 +364,7 @@
                         ;; search mechanism where some items just might not be found.
                         (doall (metadata-db/get-latest-concepts mdb-context concept-ids true)))
          ;; Filtering deleted concepts
-         [t2 concepts] (u/time-execution (doall (filter #(not (:deleted %)) concepts)))]
+         [t2 concepts] (u/time-execution (doall (remove :deleted concepts)))]
      (if skip-acls?
        ;; Convert concepts to results without acl enforcment
        (let [[t3 concepts] (u/time-execution

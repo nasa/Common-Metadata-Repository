@@ -44,7 +44,7 @@
     (testing "Success"
       (are3 [params]
         (let [response (search/find-refs :granule params)]
-          (is (= 0 (:hits response))
+          (is (zero? (:hits response))
               (pr-str response)))
         "All granules no spatial is allowed"
         {}
@@ -126,8 +126,8 @@
         make-gran (fn [ur & shapes]
                     (let [shapes (map (partial umm-s/set-coordinate-system :geodetic) shapes)]
                       (d/ingest "PROV1" (dg/granule-with-umm-spec-collection geodetic-coll geodetic-coll-cid
-                                                    {:granule-ur ur
-                                                     :spatial-coverage (apply dg/spatial shapes)}))))
+                                                                             {:granule-ur ur
+                                                                              :spatial-coverage (apply dg/spatial shapes)}))))
         whole-world (make-gran "whole-world" (m/mbr -180 90 180 -90))
         excessive-amount-of-points (slurp (io/resource "large-line-param.txt"))]
     (index/wait-until-indexed)
@@ -173,13 +173,13 @@
         make-gran (fn [ur & shapes]
                     (let [shapes (map (partial umm-s/set-coordinate-system :geodetic) shapes)]
                       (d/ingest "PROV1" (dg/granule-with-umm-spec-collection geodetic-coll geodetic-coll-cid
-                                                    {:granule-ur ur
-                                                     :spatial-coverage (apply dg/spatial shapes)}))))
+                                                                             {:granule-ur ur
+                                                                              :spatial-coverage (apply dg/spatial shapes)}))))
         make-cart-gran (fn [ur & shapes]
                          (let [shapes (map (partial umm-s/set-coordinate-system :cartesian) shapes)]
                            (d/ingest "PROV1" (dg/granule-with-umm-spec-collection cartesian-coll cartesian-coll-cid
-                                                         {:granule-ur ur
-                                                          :spatial-coverage (apply dg/spatial shapes)}))))
+                                                                                  {:granule-ur ur
+                                                                                   :spatial-coverage (apply dg/spatial shapes)}))))
 
         ;; Lines
         normal-line (make-gran "normal-line" (l/ords->line-string :geodetic [22.681 -8.839, 18.309 -11.426, 22.705 -6.557]))
@@ -234,16 +234,15 @@
     (index/wait-until-indexed)
     (testing "line searches"
       (are [ords items]
-        (let [found (search/find-refs
-                     :granule
-                     {:line (codec/url-encode (l/ords->line-string :geodetic ords))
-                      :provider "PROV1"
-                      :page-size 50})
-              matches? (d/refs-match? items found)]
-          (when-not matches?
-            (println "Expected:" (->> items (map :granule-ur) sort pr-str))
-            (println "Actual:" (->> found :refs (map :name) sort pr-str)))
-          matches?)
+           (let [found (search/find-refs
+                        :granule
+                        {:line (codec/url-encode (l/ords->line-string :geodetic ords))
+                         :provider "PROV1"
+                         :page-size 50})
+                 matches? (d/refs-match? items found)]
+             (is (true? matches?)
+                 (str "Expected:" (->> items (map :granule-ur) sort pr-str)
+                      "\nActual:" (->> found :refs (map :name) sort pr-str))))
 
         ;; normal two points
         [-24.28,-12.76,10,10] [whole-world polygon-with-holes normal-poly normal-brs]
@@ -269,14 +268,14 @@
 
     (testing "point searches"
       (are [lon_lat items]
-        (let [found (search/find-refs :granule {:point (codec/url-encode (apply p/point lon_lat))
-                                                :provider "PROV1"
-                                                :page-size 50})
-              matches? (d/refs-match? items found)]
-          (when-not matches?
-            (println "Expected:" (->> items (map :granule-ur) sort pr-str))
-            (println "Actual:" (->> found :refs (map :name) sort pr-str)))
-          matches?)
+           (let [found (search/find-refs :granule {:point (codec/url-encode (apply p/point lon_lat))
+                                                   :provider "PROV1"
+                                                   :page-size 50})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
 
         ;; north pole
         [0 90] [whole-world north-pole on-np touches-np]
@@ -319,14 +318,14 @@
 
     (testing "bounding rectangle searches"
       (are [wnes items]
-        (let [found (search/find-refs :granule {:bounding-box (codec/url-encode (apply m/mbr wnes))
-                                                :provider "PROV1"
-                                                :page-size 50})
-              matches? (d/refs-match? items found)]
-          (when-not matches?
-            (println "Expected:" (->> items (map :granule-ur) sort pr-str))
-            (println "Actual:" (->> found :refs (map :name) sort pr-str)))
-          matches?)
+           (let [found (search/find-refs :granule {:bounding-box (codec/url-encode (apply m/mbr wnes))
+                                                   :provider "PROV1"
+                                                   :page-size 50})
+                 matches? (d/refs-match? items found)]
+             (when-not matches?
+               (println "Expected:" (->> items (map :granule-ur) sort pr-str))
+               (println "Actual:" (->> found :refs (map :name) sort pr-str)))
+             matches?)
 
         [-23.43 5 25.54 -6.31] [whole-world polygon-with-holes normal-poly normal-brs]
 
@@ -365,13 +364,12 @@
 
     (testing "polygon searches"
       (are [ords items]
-        (let [found (search/find-refs :granule {:polygon (apply search-poly ords)
-                                                :provider "PROV1"})
-              matches? (d/refs-match? items found)]
-          (when-not matches?
-            (println "Expected:" (->> items (map :granule-ur) sort pr-str))
-            (println "Actual:" (->> found :refs (map :name) sort pr-str)))
-          matches?)
+           (let [found (search/find-refs :granule {:polygon (apply search-poly ords)
+                                                   :provider "PROV1"})
+                 matches? (d/refs-match? items found)]
+             (is (true? matches?)
+               (str "Expected:" (->> items (map :granule-ur) sort pr-str)
+                    "\nActual:" (->> found :refs (map :name) sort pr-str))))
 
         [20.16,-13.7,21.64,12.43,12.47,11.84,-22.57,7.06,20.16,-13.7]
         [whole-world normal-poly normal-brs polygon-with-holes normal-line normal-line-cart]
@@ -439,13 +437,12 @@
 
     (testing "valid circle searches"
       (are [lon-lat-radius items]
-        (let [found (search/find-refs :granule {:circle lon-lat-radius
-                                                :provider "PROV1"})
-              matches? (d/refs-match? items found)]
-          (when-not matches?
-            (println "Expected:" (->> items (map :granule-ur) sort pr-str))
-            (println "Actual:" (->> found :refs (map :name) sort pr-str)))
-          matches?)
+           (let [found (search/find-refs :granule {:circle lon-lat-radius
+                                                   :provider "PROV1"})
+                 matches? (d/refs-match? items found)]
+             (is (true? matches?)
+                 (str "Expected:" (->> items (map :granule-ur) sort pr-str)
+                      "\nActual:" (->> found :refs (map :name) sort pr-str))))
 
         ;; single circle
         "0,0,1000" [whole-world polygon-with-holes]
@@ -468,31 +465,31 @@
         ["0,0,1000" "0,89,1000" "0,89,1000000"] [whole-world]))
 
     (testing "ORed spatial search"
-       (let [poly-coordinates ["-16.79,-12.71,-6.32,-10.95,-5.74,-6.11,-15.18,-7.63,-16.79,-12.71"
-                               "0.53,39.23,21.57,59.8,-112.21,84.48,-13.37,40.91,0.53,39.23"]
-             poly-refs (search/find-refs
+      (let [poly-coordinates ["-16.79,-12.71,-6.32,-10.95,-5.74,-6.11,-15.18,-7.63,-16.79,-12.71"
+                              "0.53,39.23,21.57,59.8,-112.21,84.48,-13.37,40.91,0.53,39.23"]
+            poly-refs (search/find-refs
+                       :granule
+                       {:provider "PROV1"
+                        :polygon poly-coordinates
+                        "options[spatial][or]" "true"})
+            bbox-refs (search/find-refs
+                       :granule
+                       {:provider "PROV1"
+                        :bounding-box ["166.11,-19.14,-166.52,53.04"
+                                       "23.59,-15.47,25.56,-4"]
+                        "options[spatial][or]" "true"})
+            combined-refs (search/find-refs
+                           :granule
+                           {:provider "PROV1"
+                            :circle "179.8,41,100000"
+                            :bounding-box "166.11,-19.14,-166.52,53.04"
+                            "options[spatial][or]" "true"})
+            anded-refs (search/find-refs
                         :granule
                         {:provider "PROV1"
-                         :polygon poly-coordinates
-                         "options[spatial][or]" "true"})
-             bbox-refs (search/find-refs
-                        :granule
-                        {:provider "PROV1"
-                         :bounding-box ["166.11,-19.14,-166.52,53.04"
-                                        "23.59,-15.47,25.56,-4"]
-                         "options[spatial][or]" "true"})
-             combined-refs (search/find-refs
-                            :granule
-                            {:provider "PROV1"
-                             :circle "179.8,41,100000"
-                             :bounding-box "166.11,-19.14,-166.52,53.04"
-                             "options[spatial][or]" "true"})
-             anded-refs (search/find-refs
-                         :granule
-                         {:provider "PROV1"
-                          :circle "179.8,41,100000"
-                          :bounding-box "166.11,-19.14,-166.52,53.04"
-                          "options[spatial][or]" "false"})]
+                         :circle "179.8,41,100000"
+                         :bounding-box "166.11,-19.14,-166.52,53.04"
+                         "options[spatial][or]" "false"})]
         (is (d/refs-match? [across-am-poly whole-world across-am-br am-point very-wide-cart]
                            combined-refs))
         (is (d/refs-match? [wide-north on-np normal-poly very-wide-cart whole-world normal-brs]
@@ -514,12 +511,12 @@
 
     (testing "AQL spatial search"
       (are [type ords items]
-        (let [refs (search/find-refs-with-aql :granule [{type ords}] {:dataCenterId "PROV1"})
-              result (d/refs-match? items refs)]
-          (when-not result
-            (println "Expected:" (pr-str (map :entry-title items)))
-            (println "Actual:" (pr-str (map :name (:refs refs)))))
-          result)
+           (let [refs (search/find-refs-with-aql :granule [{type ords}] {:dataCenterId "PROV1"})
+                 result (d/refs-match? items refs)]
+             (when-not result
+               (println "Expected:" (pr-str (map :entry-title items)))
+               (println "Actual:" (pr-str (map :name (:refs refs)))))
+             result)
         :polygon [20.16,-13.7,21.64,12.43,12.47,11.84,-22.57,7.06,20.16,-13.7]
         [whole-world normal-poly normal-brs polygon-with-holes normal-line normal-line-cart]
 
@@ -579,8 +576,8 @@
         make-gran (fn [ur & shapes]
                     (let [shapes (map (partial umm-s/set-coordinate-system :geodetic) shapes)]
                       (d/ingest "PROV1" (dg/granule-with-umm-spec-collection geodetic-coll geodetic-coll-cid
-                                                    {:granule-ur ur
-                                                     :spatial-coverage (apply dg/spatial shapes)}))))
+                                                                             {:granule-ur ur
+                                                                              :spatial-coverage (apply dg/spatial shapes)}))))
         no-lr (make-gran "no-lr" (polygon 0.0 0.0, -179.9998 -89.9999, 0.0 -89.9999, 0.0 0.0))]
 
     ;; This particular polygon is problematic. We can't find an interial rectangle for it. So we
@@ -604,10 +601,10 @@
       [no-lr])
 
     (are3 [ords items]
-       (let [response (search/find-refs :granule {:polygon (apply search-poly ords)
-                                                  :provider "PROV1"})]
-         (is (= 0 (:hits response))
-             (pr-str response)))
+      (let [response (search/find-refs :granule {:polygon (apply search-poly ords)
+                                                 :provider "PROV1"})]
+        (is (zero? (:hits response))
+            (pr-str response)))
 
       "search against the box that does not intersect with the polygon unmatching case"
       [1 1, 2 1, 2 2, 1 2, 1 1]
