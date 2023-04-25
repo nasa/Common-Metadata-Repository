@@ -316,7 +316,9 @@
    :AccessConstraints (dif-util/parse-access-constraints doc sanitize?)
    :UseConstraints (parse-use-constraints doc sanitize?)
    :Platforms (for [platform (select doc "/DIF/Platform")]
-                {:ShortName (value-of platform "Short_Name")
+                {:ShortName (if sanitize?
+                              (or (value-of platform "Short_Name") su/not-provided)
+                              (value-of platform "Short_Name"))
                  :LongName (value-of platform "Long_Name")
                  :Type (without-default-value-of platform "Type")
                  :Characteristics (parse-characteristics platform)
@@ -381,7 +383,7 @@
                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
                                         umm-spec-versioning/current-collection-version),
                              :Name "UMM-C"
-                             :Version umm-spec-versioning/current-collection-version})}) 
+                             :Version umm-spec-versioning/current-collection-version})})
 
 (defn dif10-xml-to-umm-c
   "Returns UMM-C collection record from DIF10 collection XML document. The :sanitize? option
