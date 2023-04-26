@@ -84,7 +84,12 @@
 (defn get-concepts
   "Gets a group of concepts from EFS"
   [provider concept-type concept-id-revision-id-tuples]
-  (map (fn [tuple] (get-concept provider concept-type (first tuple) (second tuple))) concept-id-revision-id-tuples))
+  (map (fn [tuple] (get-concept provider concept-type (nth tuple 0) (nth tuple 1))) concept-id-revision-id-tuples))
+
+(defn get-concepts-small-table
+  "Gets a group of concepts from EFS using provider-id, concept-id, revision-id tuples"
+  [concept-type provider-concept-revision-tuples]
+  (map (fn [tuple] (get-concept (nth tuple 0) concept-type (nth tuple 1) (nth tuple 2))) provider-concept-revision-tuples))
 
 (defn delete-concept
   "Deletes a concept from EFS"

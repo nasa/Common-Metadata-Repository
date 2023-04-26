@@ -56,6 +56,13 @@
          (cons `and comparisons))
        (first comparisons)))))
 
+(defn gen-concept-revision-id-sql-by-params
+  [table params]
+  (su/build (select [:concept-id :revision-id]
+                    (from table)
+                    (when-not (empty? params)
+                      (where (find-params->sql-clause params))))))
+
 (defn force-delete-concept-by-params
   "Delete the concepts based on params. concept-type and provider-id must be one of the params.
   This function is moved from the concepts namespace to avoid cyclic inclusion issue."
@@ -65,9 +72,7 @@
                  (dissoc params :concept-type)
                  (dissoc params :concept-type :provider-id))
         table (ct/get-table-name provider concept-type)
-        get-stmt (su/build (select [:concept-id :revision-id]
-                                   (from table)
-                                   (where (find-params->sql-clause params))))
+        get-stmt (gen-concept-revision-id-sql-by-params table params)
         get-values (when (not (= "efs-off" (efs-config/efs-toggle)))
                      (j/query db get-stmt))
         stmt (su/build (delete table

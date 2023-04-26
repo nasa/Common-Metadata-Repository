@@ -12,7 +12,9 @@
    [cmr.metadata-db.data.oracle.concept-tables :as tables]
    [cmr.metadata-db.data.oracle.concepts :as oc]
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
-   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
+   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]]
+   [cmr.efs.config :as efs-config]
+   [cmr.efs.connection :as efs])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -188,12 +190,26 @@
         params (params->sql-params concept-type
                                    providers
                                    (assoc params :provider-id (map :provider-id providers)))
-        stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
-    (j/with-db-transaction
-      [conn db]
-      (doall
-        (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
-              (su/query conn stmt))))))
+        stmt (gen-find-concepts-in-table-sql concept-type table fields params) 
+        concept-ids-revision-ids (when (not (= "efs-off" (efs-config/efs-toggle)))
+                                   (j/query db (gen-find-concepts-in-table-sql concept-type table [:provider_id :concept_id :revision_id] params)))
+        oracle-results (when (not (= "efs-only" (efs-config/efs-toggle)))
+                         (util/time-execution
+                          (j/with-db-transaction
+                            [conn db]
+                            (doall
+                             (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
+                                   (su/query conn stmt))))))
+        efs-results (when (not (= "efs-off" (efs-config/efs-toggle)))
+                      (util/time-execution
+                       (efs/get-concepts-small-table concept-type concept-ids-revision-ids)))]
+    (when efs-results
+      (info "Runtime of EFS find-concepts-in-table(small-table): " (first efs-results)))
+    (when oracle-results
+      (info "Runtime of Oracle find-concepts-in-table(small-table): " (first oracle-results)))
+    (if oracle-results
+      (second oracle-results)
+      (second efs-results))))
 
 ;; Execute a query against a normal (not small) provider table
 (defmethod find-concepts-in-table :default
@@ -213,17 +229,31 @@
                      (assoc :association-type
                             (get-in association-concept-type->generic-association [concept-type :association_type])))
                  params)
-        stmt (gen-find-concepts-in-table-sql concept-type table fields params)]
-    (j/with-db-transaction
-      [conn db]
-      ;; doall is necessary to force result retrieval while inside transaction - otherwise
-      ;; connection closed errors will occur
-      (doall (mapv (fn [result]
-                    (oc/db-result->concept-map concept-type conn
-                                               (or (:provider_id result)
-                                                   (:provider-id (first providers)))
-                                               result))
-                   (su/query conn stmt))))))
+        stmt (gen-find-concepts-in-table-sql concept-type table fields params)
+        concept-ids-revision-ids (when (not (= "efs-off" (efs-config/efs-toggle)))
+                                   (j/query db (gen-find-concepts-in-table-sql concept-type table [:provider_id :concept_id :revision_id] params)))
+        oracle-results (when (not (= "efs-only" (efs-config/efs-toggle)))
+                         (util/time-execution
+                          (j/with-db-transaction
+                            [conn db]
+                          ;; doall is necessary to force result retrieval while inside transaction - otherwise
+                          ;; connection closed errors will occur
+                            (doall (mapv (fn [result]
+                                           (oc/db-result->concept-map concept-type conn
+                                                                      (or (:provider_id result)
+                                                                          (:provider-id (first providers)))
+                                                                      result))
+                                         (su/query conn stmt))))))
+        efs-results (when (not (= "efs-off" (efs-config/efs-toggle)))
+                      (util/time-execution
+                       (efs/get-concepts providers concept-type concept-ids-revision-ids)))]
+    (when efs-results
+      (info "Runtime of EFS find-concepts-in-table: " (first efs-results)))
+    (when oracle-results
+      (info "Runtime of Oracle find-concepts-in-table: " (first oracle-results)))
+    (if oracle-results
+      (second oracle-results)
+      (second efs-results))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -261,9 +291,25 @@
                        stmt (su/build (select [:*]
                                               (from table)
                                               (where (cons `and conditions))))
-                       batch-result (su/query db stmt)]
-                   (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
-                         batch-result))))
+                       batch-result (su/query db stmt)
+                       concept-revision-id-stmt (su/build (select [:concept_id :revision_id]
+                                                                  (from table)
+                                                                  (where (cons `and conditions))))
+                       concept-revision-batch-result (su/query db concept-revision-id-stmt)
+                       oracle-results (when (not (= "efs-only" efs-config/efs-toggle))
+                                        (util/time-execution
+                                         (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
+                                               batch-result)))
+                       efs-results (when (not (= "efs-off" efs-config/efs-toggle))
+                                    (util/time-execution
+                                     (efs/get-concepts provider concept-type concept-revision-batch-result)))]
+                   (when efs-results
+                     (info "Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results)))
+                   (when oracle-results
+                     (info "Runtime of Oracle find-concepts-in-batches(find-batch): " (first oracle-results)))
+                   (if oracle-results
+                     (second oracle-results)
+                     (second efs-results)))))
              (lazy-find
                [start-index]
                (let [batch (find-batch start-index)]
@@ -297,7 +343,7 @@
                                      start-index
                                      (+ start-index batch-size)))
                      id-constraint (format "id >= %s and id < %s"
-                                           start-index (+ start-index batch-size))
+                                           start-index (+ start-index batch-size)) 
                      batch-result (su/query db [(append-stmt stmt id-constraint)])]
 
                  (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
