@@ -414,7 +414,7 @@
   (if (pos? (count concept-id-revision-id-tuples))
     (let [efs-concepts-get (when (not (= "efs-off" (efs-config/efs-toggle)))
                              (util/time-execution
-                              (efs/get-concepts provider concept-type concept-id-revision-id-tuples)))
+                              (doall (efs/get-concepts provider concept-type concept-id-revision-id-tuples))))
           oracle-concepts-get (when (not (= "efs-only" (efs-config/efs-toggle)))
                                 (util/time-execution
                                  (j/with-db-transaction
