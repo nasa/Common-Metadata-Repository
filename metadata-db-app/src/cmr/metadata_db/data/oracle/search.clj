@@ -204,9 +204,9 @@
                       (util/time-execution
                        (efs/get-concepts-small-table concept-type concept-ids-revision-ids)))]
     (when efs-results
-      (info "Runtime of EFS find-concepts-in-table(small-table): " (first efs-results)))
+      (info "Runtime of EFS find-concepts-in-table(small-table): " (first efs-results) " ms.\nValues gotten from EFS: " (second efs-results)))
     (when oracle-results
-      (info "Runtime of Oracle find-concepts-in-table(small-table): " (first oracle-results)))
+      (info "Runtime of Oracle find-concepts-in-table(small-table): " (first oracle-results) " ms."))
     (if oracle-results
       (second oracle-results)
       (second efs-results))))
@@ -248,9 +248,9 @@
                       (util/time-execution
                        (efs/get-concepts providers concept-type concept-ids-revision-ids)))]
     (when efs-results
-      (info "Runtime of EFS find-concepts-in-table: " (first efs-results)))
+      (info "Runtime of EFS find-concepts-in-table: " (first efs-results) " ms.\nValues gotten from EFS: " (second efs-results)))
     (when oracle-results
-      (info "Runtime of Oracle find-concepts-in-table: " (first oracle-results)))
+      (info "Runtime of Oracle find-concepts-in-table: " (first oracle-results) " ms."))
     (if oracle-results
       (second oracle-results)
       (second efs-results))))
@@ -304,9 +304,9 @@
                                     (util/time-execution
                                      (efs/get-concepts provider concept-type concept-revision-batch-result)))]
                    (when efs-results
-                     (info "Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results)))
+                     (info "Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results) " ms.\nValues gotten from EFS: " (second efs-results)))
                    (when oracle-results
-                     (info "Runtime of Oracle find-concepts-in-batches(find-batch): " (first oracle-results)))
+                     (info "Runtime of Oracle find-concepts-in-batches(find-batch): " (first oracle-results) " ms."))
                    (if oracle-results
                      (second oracle-results)
                      (second efs-results)))))
