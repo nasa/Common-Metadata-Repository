@@ -306,7 +306,8 @@
                                     (util/time-execution
                                      (efs/get-concepts provider concept-type concept-revision-batch-result)))]
                    (when efs-results
-                     (info "Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results) " ms.\nValues gotten from EFS: " (second efs-results)))
+                     (info "Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results) " ms.")
+                     (info "Values gotten from EFS: " (second efs-results)))
                    (when oracle-results
                      (info "Runtime of Oracle find-concepts-in-batches(find-batch): " (first oracle-results) " ms."))
                    (if oracle-results
