@@ -202,7 +202,7 @@
                                    (su/query conn stmt))))))
         efs-results (when (not (= "efs-off" (efs-config/efs-toggle)))
                       (util/time-execution
-                       (doall (efs/get-concepts-small-table concept-type concept-ids-revision-ids))))]
+                       (doall (efs/get-concepts-small-table concept-type (map sh/efs-concept-helper concept-ids-revision-ids)))))]
     (when efs-results
       (info "Runtime of EFS find-concepts-in-table(small-table): " (first efs-results) " ms.")
       (info "Values from EFS: " (pr-str (second efs-results))))
@@ -247,7 +247,7 @@
                                          (su/query conn stmt))))))
         efs-results (when (not (= "efs-off" (efs-config/efs-toggle)))
                       (util/time-execution
-                       (doall (efs/get-concepts providers concept-type concept-ids-revision-ids))))]
+                       (doall (efs/get-concepts providers concept-type (map sh/efs-concept-helper concept-ids-revision-ids)))))]
     (when efs-results
       (info "Runtime of EFS find-concepts-in-table: " (first efs-results) " ms.")
       (info "Values from EFS: " (pr-str (second efs-results))))
@@ -304,7 +304,7 @@
                                                batch-result)))
                        efs-results (when (not (= "efs-off" efs-config/efs-toggle))
                                     (util/time-execution
-                                     (doall (efs/get-concepts provider concept-type concept-revision-batch-result))))]
+                                     (doall (efs/get-concepts provider concept-type (map sh/efs-concept-helper concept-revision-batch-result)))))]
                    (when efs-results
                      (info "Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results) " ms.")
                      (info "Values from EFS: " (pr-str (second efs-results))))

@@ -13,13 +13,16 @@
    [cmr.common.util :as util])
   (:import cmr.oracle.connection.OracleStore))
 
-(defn efs-concept-delete-helper
-  "A helper function to map SQL returned values to the format required for efs/delete-concepts"
+(defn efs-concept-helper
+  "A helper function to map SQL returned values to the format required for EFS operations"
   [revision-concept-tuple]
   (let
-   [{:keys [concept_id
+   [{:keys [provider_id
+            concept_id
             revision_id]} revision-concept-tuple]
-    [concept_id revision_id]))
+    (if provider_id
+      [provider_id concept_id revision_id]
+      [concept_id revision_id])))
 
 (defn find-params->sql-clause
   "Converts a parameter map for finding concept types into a sql clause for inclusion in a query. The type
@@ -79,7 +82,7 @@
                                (where (find-params->sql-clause params))))
         efs-force-delete (when (not (= "efs-off" (efs-config/efs-toggle)))
                            (util/time-execution
-                            (efs/delete-concepts provider concept-type (map efs-concept-delete-helper get-values))))
+                            (efs/delete-concepts provider concept-type (map efs-concept-helper get-values))))
         oracle-force-delete (when (not (= "efs-only" (efs-config/efs-toggle)))
                               (util/time-execution
                                (j/execute! db stmt)))]
