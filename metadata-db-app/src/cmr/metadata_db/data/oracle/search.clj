@@ -202,9 +202,10 @@
                                    (su/query conn stmt))))))
         efs-results (when (not (= "efs-off" (efs-config/efs-toggle)))
                       (util/time-execution
-                       (efs/get-concepts-small-table concept-type concept-ids-revision-ids)))]
+                       (doall (efs/get-concepts-small-table concept-type concept-ids-revision-ids))))]
     (when efs-results
-      (info "Runtime of EFS find-concepts-in-table(small-table): " (first efs-results) " ms."))
+      (info "Runtime of EFS find-concepts-in-table(small-table): " (first efs-results) " ms.")
+      (info "Values from EFS: " (pr-str (second efs-results))))
     (when oracle-results
       (info "Runtime of Oracle find-concepts-in-table(small-table): " (first oracle-results) " ms."))
     (if oracle-results
@@ -246,9 +247,10 @@
                                          (su/query conn stmt))))))
         efs-results (when (not (= "efs-off" (efs-config/efs-toggle)))
                       (util/time-execution
-                       (efs/get-concepts providers concept-type concept-ids-revision-ids)))]
+                       (doall (efs/get-concepts providers concept-type concept-ids-revision-ids))))]
     (when efs-results
-      (info "Runtime of EFS find-concepts-in-table: " (first efs-results) " ms."))
+      (info "Runtime of EFS find-concepts-in-table: " (first efs-results) " ms.")
+      (info "Values from EFS: " (pr-str (second efs-results))))
     (when oracle-results
       (info "Runtime of Oracle find-concepts-in-table: " (first oracle-results) " ms."))
     (if oracle-results
@@ -302,9 +304,10 @@
                                                batch-result)))
                        efs-results (when (not (= "efs-off" efs-config/efs-toggle))
                                     (util/time-execution
-                                     (efs/get-concepts provider concept-type concept-revision-batch-result)))]
+                                     (doall (efs/get-concepts provider concept-type concept-revision-batch-result))))]
                    (when efs-results
-                     (info "Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results) " ms."))
+                     (info "Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results) " ms.")
+                     (info "Values from EFS: " (pr-str (second efs-results))))
                    (when oracle-results
                      (info "Runtime of Oracle find-concepts-in-batches(find-batch): " (first oracle-results) " ms."))
                    (if oracle-results
