@@ -232,7 +232,7 @@
                  params)
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)
         concept-ids-revision-ids (when (not (= "efs-off" (efs-config/efs-toggle)))
-                                   (j/query db (gen-find-concepts-in-table-sql concept-type table [:provider_id :concept_id :revision_id] params)))
+                                   (j/query db (gen-find-concepts-in-table-sql concept-type table [:concept_id :revision_id] params)))
         oracle-results (when (not (= "efs-only" (efs-config/efs-toggle)))
                          (util/time-execution
                           (j/with-db-transaction
