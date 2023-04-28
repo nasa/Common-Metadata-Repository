@@ -15,7 +15,7 @@ exports.TIMEOUT_INTERVAL =  strToInt (process.env.EXTERNAL_REQUEST_TIMEOUT) || 1
 
 const CMR_ROOT = process.env.CMR_ROOT;
 // CMR operational envirionments uses internal LB as CMR root, so we use http, not https
-const CMR_ROOT_URL = `http://${CMR_ROOT}`;
+const CMR_ROOT_URL = `https://${CMR_ROOT}`;
 
 /* CMR ENVIRONMENT VARIABLES */
 exports.CMR_ENVIRONMENT = process.env.CMR_ENVIRONMENT;

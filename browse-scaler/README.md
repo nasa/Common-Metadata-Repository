@@ -45,6 +45,13 @@ curl -XPOST \
 	-d @./event_C1000001740-NSIDC_ECS.json
 ```
 
+working: 
+```
+curl -XPOST \
+	"http://localhost:9000/2015-03-31/functions/function/invocations" \
+	-d @./event_C1200382534-CMR_ONLY.json
+```
+
 # Invoking
 
 This function can be invoked with the following routes:

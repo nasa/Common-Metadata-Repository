@@ -1,7 +1,8 @@
+const axios = require('axios');
 const fetch = require('node-fetch');
 const { getSecureParam } = require('./util');
-const config = require ('./config');
-const { setValue, getValue } = require ('./in-memory-cache')
+const config = require('./config');
+const { setValue, getValue } = require('./in-memory-cache');
 
 /**
  * getAuthorizationToken: Fetch token for CMR requests
@@ -11,7 +12,7 @@ const { setValue, getValue } = require ('./in-memory-cache')
  */
 const getAuthorizationToken = async () => {
   console.log('Fetching Echo-Token [' + config.CMR_ENVIRONMENT + '] from store');
-  let authorizationToken = getValue('CMR_ECHO_SYSTEM_TOKEN')
+  let authorizationToken = getValue('CMR_ECHO_SYSTEM_TOKEN');
 
   if (!authorizationToken) {
     authorizationToken = await getSecureParam(
@@ -39,13 +40,15 @@ exports.getAuthorizationToken = getAuthorizationToken;
  */
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
   const token = config.CMR_ECHO_TOKEN || await getAuthorizationToken();
+  // console.log('🚀 ~ file: cmr.js:42 ~ fetchConceptFromCMR ~ token:', token);
   const response = await fetch(cmrEndpoint + conceptId, {
     method: 'GET',
     headers: {
       'Authorization': token
     }
   })
-      .then(res => res.json())
+      .then(res => res.json()
+      )
       .then(json => {
         if (json.errors) {
           throw new Error(`The following errors occurred: ${json.errors}`);
@@ -59,6 +62,63 @@ const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
   return response;
 };
 
+
+/**
+ * Parse and return the array of data from the nested response body
+ * @param {Object} jsonResponse HTTP response from the CMR endpoint
+ */
+const parseJsonBody = jsonResponse => {
+  const { data } = jsonResponse;
+  console.log('🚀 ~ file: cmr.js:72 ~ parseJsonBody ~ data:', data);
+
+  const { feed } = data;
+  console.log('🚀 ~ file: cmr.js:75 ~ parseJsonBody ~ feed:', feed);
+
+  const { entry } = feed;
+  console.log('🚀 ~ file: cmr.js:78 ~ parseJsonBody ~ entry:', entry);
+
+  const [granule] = entry;
+  console.log('🚀 ~ file: cmr.js:81 ~ parseJsonBody ~ granule:', granule);
+
+  return granule;
+};
+
+/**
+ * Fetch a single collection from CMR search
+ * @param {String} conceptId Collection concept id from CMR
+ * @param {String} token An optional Echo Token
+ * @returns [{JSON}] An array of UMM JSON collection results
+ */
+
+const fetchCmrGranule = async conceptId => {
+  const requestHeaders = {};
+  const token = config.CMR_ECHO_TOKEN || await getAuthorizationToken();
+  if (token) {
+    requestHeaders.Authorization = token;
+  }
+
+  let response;
+  try {
+    console.log(`🍕 ${config.CMR_ROOT_URL}/search/granules.json?concept_id=${conceptId}`);
+    response = await axios({
+      url: `${config.CMR_ROOT_URL}/search/granules.json?concept_id=${conceptId}`,
+      method: 'GET',
+      headers: requestHeaders,
+      json: true
+    });
+  } catch (error) {
+    console.log(`Could not fetch granule ${conceptId} due to error: ${error}`);
+    return null;
+  }
+  return parseJsonBody(response);
+  // console.log('🚀 ~ file: cmr.js:97 ~ fetchCmrGranule ~ response:', response);
+  // const { feed = {} } = response;
+  // console.log('🚀 ~ file: cmr.js:92 ~ fetchCmrGranule ~ feed:', feed);
+  // const { entry = {} } = feed;
+  // console.log('🚀 ~ file: cmr.js:93 ~ fetchCmrGranule ~ entry:', entry);
+  // return entry;
+};
+
 /**
  * getBrowseImageFromConcept: Given a CMR concept, marshall the JSON and
  * filter any associated links to find browse images associated with the concept
@@ -67,18 +127,31 @@ const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
  */
 exports.getBrowseImageFromConcept = async concept => {
   if (!concept) {
-    console.error ('No concept provided to getBrowseImageFromConcept');
+    console.error('No concept provided to getBrowseImageFromConcept');
     return;
   }
   try {
     const { links } = concept;
     const imgRegex = /\b(browse#)$/;
+    const newImageRegex = /\bhttps?:\/\/\S+\.(?:png|jpe?g|gif|bmp)\b/;
+    // todo
+    const imageUrls = links.filter(link => newImageRegex.test(link.href));
+    console.debug(`🍥 all links from metadata ${JSON.stringify(imageUrls)}`);
+
     const imgurl = links.filter(link => imgRegex.test(link.rel))[0];
 
-    //console.debug(`links from metadata ${JSON.stringify(links)}`);
-    //console.debug(`image link from metadata ${JSON.stringify(imgurl)}`);
-    if (imgurl && imgurl.href) {
-      return imgurl.href;
+    console.debug(`🐸links from metadata ${JSON.stringify(links)}`);
+    console.debug(`❤️ image link from metadata ${JSON.stringify(imgurl)}`);
+    console.log('≈ ~ file: cmr.js:83 ~ imgurl.href:', imgurl.href);
+    
+    // if (imageUrls.includes())
+    // if (imgurl && imgurl.href) {
+    //   // eslint-disable-next-line consistent-return
+    //   return imgurl.href;
+    // }
+    if (imageUrls) {
+      // eslint-disable-next-line consistent-return
+      return imageUrls[0];
     }
   } catch (err) {
     console.error(`Could not get image from concept: ${err}`);
@@ -92,7 +165,8 @@ exports.getBrowseImageFromConcept = async concept => {
  * return the first of any links found in the first granule associated with said collection
  */
 exports.getGranuleLevelBrowseImage = async conceptId => {
-  const granuleConcept = await fetchConceptFromCMR(conceptId, config.CMR_GRANULE_URL);
+  // const granuleConcept = await fetchConceptFromCMR(conceptId, config.CMR_GRANULE_URL);
+  const granuleConcept = await fetchCmrGranule(conceptId);
   const granuleImagery = await this.getBrowseImageFromConcept(granuleConcept);
 
   return granuleImagery;
@@ -107,6 +181,7 @@ exports.getGranuleLevelBrowseImage = async conceptId => {
  */
 exports.getCollectionLevelBrowseImage = async collectionId => {
   const collectionConcept = await fetchConceptFromCMR(collectionId, config.CMR_COLLECTION_URL);
+  console.log('🚀 ~ file: cmr.js:112 ~ collectionConcept:', collectionConcept);
   const collectionImagery = await this.getBrowseImageFromConcept(collectionConcept);
   if (collectionImagery) {
     return collectionImagery;
