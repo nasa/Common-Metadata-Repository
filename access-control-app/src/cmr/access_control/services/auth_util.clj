@@ -6,12 +6,12 @@
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
+   [cmr.common.util :as util :refer [defn-timed]]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.echo.tokens :as echo-tokens]
    [cmr.transmit.urs :as urs]))
 
-(defn get-sids
+(defn-timed get-sids
   "Returns a seq of sids for the given username string or user type keyword
    for use in checking permissions against acls."
   ([context]

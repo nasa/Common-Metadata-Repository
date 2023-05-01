@@ -12,8 +12,7 @@
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.relations :as r]
    [cmr.spatial.ring-relations :as rr]
-   [cmr.system-int-test.data2.granule :as dg]
-   [cmr.system-int-test.utils.fast-xml :as fx])
+   [cmr.system-int-test.data2.granule :as dg])
   (:import
    (cmr.spatial.mbr Mbr)
    (cmr.umm.umm_granule UmmGranule)
@@ -80,7 +79,7 @@
 (defn parse-kml-results
   "Takes kml as a string and returns expected items which will contain a name and a list of shapes"
   [kml-string]
-  (map placemark-elem->item (cx/elements-at-path (fx/parse-str kml-string) [:Document :Placemark])))
+  (map placemark-elem->item (cx/elements-at-path (x/parse-str kml-string) [:Document :Placemark])))
 
 (defmulti shape->kml-representation
   "Converts a CMR spatial shape into the KML representation of that shape"
@@ -160,18 +159,3 @@
   [expected-granules collections actual-result]
   (clojure.test/is (= (granules->expected-kml expected-granules collections)
                       (results-for-comparison actual-result))))
-
-(comment
-
-  (def sample-kml (slurp "/Users/jgilman/Desktop/sample_cmr.kml"))
-
-  (parse-kml-results sample-kml)
-
-  (def placemarks
-    (cx/elements-at-path (fx/parse-str sample-kml) [:Document :Placemark]))
-
-  (first placemarks)
-
-  (some-> (cx/element-at-path p [:MultiGeometry]))
-
-  (-> p :content))

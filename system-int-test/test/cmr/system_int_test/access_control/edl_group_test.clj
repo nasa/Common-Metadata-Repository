@@ -63,7 +63,7 @@
     token)))
 
 (deftest toggle-cmr-group-sids
-  (mock-urs-client/create-users (u/conn-context) [{:username "edl-group-user1" 
+  (mock-urs-client/create-users (u/conn-context) [{:username "edl-group-user1"
                                                    :password "edl-group-user1-pass"}])
   (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
   (let [cmr-group (:concept_id

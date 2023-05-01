@@ -31,7 +31,6 @@
    [cmr.system-int-test.data2.provider-holdings :as ph]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-util]
-   [cmr.system-int-test.utils.fast-xml :as fx]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]
    [cmr.umm.dif.dif-collection]
@@ -86,10 +85,10 @@
          tuples [[(str attribute "[name]") name]
                  [(str attribute "[type]") type]]]
      (cond
-       (and (not (empty? max-value)) (not (empty? min-value)))
+       (and (seq max-value) (seq min-value))
        (into tuples [[(str attribute "[minValue]") min-value]
                      [(str attribute "[maxValue]") max-value]])
-       (not (empty? max-value))
+       (seq max-value)
        (conj tuples [(str attribute "[maxValue]") max-value])
 
        max-value ;; max-value is empty but not nil
@@ -137,7 +136,7 @@
 (defn safe-parse-error-xml
   [xml]
   (try
-    (cx/strings-at-path (fx/parse-str xml) [:error])
+    (cx/strings-at-path (x/parse-str xml) [:error])
     (catch Exception e
       (.printStackTrace e)
       [xml])))
@@ -471,7 +470,7 @@
           scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
           search-after (get-in response [:headers routes/SEARCH_AFTER_HEADER])
           body (:body response)
-          parsed (fx/parse-str body)
+          parsed (x/parse-str body)
           hits (cx/long-at-path parsed [:hits])
           metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
@@ -512,7 +511,7 @@
     (let [format-mime-type (mime-types/format->mime-type format-key)
           response (find-concepts-in-format format-mime-type concept-type params options)
           body (:body response)
-          parsed (fx/parse-str body)
+          parsed (x/parse-str body)
            ;; First we parse out the metadata and tags from each result, then we parse tags out.
           metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
@@ -520,7 +519,7 @@
                        (let [{{:keys [concept-id]} :attrs} result
                              tags (when-let [tags-metadata (second (str/split metadata #"<tags>"))]
                                     (->> (cx/elements-at-path
-                                          (fx/parse-str (str "<tags>" tags-metadata)) [:tag])
+                                          (x/parse-str (str "<tags>" tags-metadata)) [:tag])
                                          (map da/xml-elem->tag)
                                          (into {})))]
                          [concept-id tags]))
@@ -535,7 +534,7 @@
 
 (defmethod parse-reference-response :default
   [_ response]
-  (let [parsed (-> response :body fx/parse-str)
+  (let [parsed (-> response :body x/parse-str)
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
         scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
@@ -563,7 +562,7 @@
 
 (defmethod parse-reference-response true
   [_ response]
-  (let [parsed (-> response :body fx/parse-str)
+  (let [parsed (-> response :body x/parse-str)
         references-type (get-in parsed [:attrs :type])
         refs (map (fn [ref-elem]
                     (util/remove-nil-keys
@@ -588,7 +587,7 @@
 (defn- parse-echo-facets-response
   "Returns the parsed facets by parsing the given facets according to catalog-rest facets format"
   [response]
-  (let [parsed (-> response :body fx/parse-str)]
+  (let [parsed (-> response :body x/parse-str)]
     (f/parse-echo-facets-xml parsed)))
 
 (defn- parse-refs-response
@@ -821,10 +820,10 @@
   3-arity from path."
   ([response elements-path]
    (map #(get-in % [:attrs :concept-id])
-        (cx/elements-at-path (fx/parse-str response) elements-path)))
+        (cx/elements-at-path (x/parse-str response) elements-path)))
   ([response elements-path concept-id-path]
    (map #(cx/string-at-path % concept-id-path)
-        (cx/elements-at-path (fx/parse-str response) elements-path))))
+        (cx/elements-at-path (x/parse-str response) elements-path))))
 
 (defn search-concept-ids-in-format
   "Call search in format and return concept-ids from those results."

@@ -183,8 +183,7 @@
   [provider-id granule]
   (let [frbt (dg/psa "FullResolutionThermalBrowseAvailable" ["YES"])
         frbv (dg/psa "FullResolutionVisibleBrowseAvailable" ["YES"])]
-    (-> granule
-        (assoc :product-specific-attributes [frbt frbv]))))
+    (assoc granule :product-specific-attributes [frbt frbv])))
 
 (defn ingest-source-granule
   [provider-id concept & options]

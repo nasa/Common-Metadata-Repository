@@ -689,7 +689,7 @@
   (testing "invalid xml"
     (is (= [(str "Exception while parsing invalid XML: "
                  "Line 24 - cvc-complex-type.2.4.a: Invalid content"
-                 " was found starting with element 'XXXX'. One of"
+                 " was found starting with element '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":XXXX}'. One of"
                  " '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Science_Keywords,"
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":ISO_Topic_Category,"
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Ancillary_Keyword,"

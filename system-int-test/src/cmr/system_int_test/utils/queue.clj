@@ -27,10 +27,10 @@
   [queue-broker queue-name]
   (Thread/sleep 2000)
   (loop [msg-count (queue-message-count "cmr_index")]
-    (when (> msg-count 0)
-      (do (debug "Queue has" msg-count " messages")
-        (Thread/sleep 100)
-        (recur (queue-message-count "cmr_index"))))))
+    (when (pos? msg-count)
+      (debug "Queue has" msg-count " messages")
+      (Thread/sleep 100)
+      (recur (queue-message-count "cmr_index")))))
 
 (defn wait-for-index-queue
   "Wait until the index queue is empty"

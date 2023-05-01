@@ -13,7 +13,7 @@
                  [org.clojure/clojure "1.9.0"]
                  [org.clojure/core.async "0.4.474"]]
   :profiles {:ubercompile {:aot :all}
-             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+             :security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]

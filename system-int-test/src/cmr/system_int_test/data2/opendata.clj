@@ -150,16 +150,21 @@
   [opendata-results-map]
   (update-in opendata-results-map [:results :dataset]
              (fn [dataset]
-               (into #{} (for [field dataset]
-                           ;; Dissoc title from distribtion.
-                           ;; mimic-ingest-retrieve-metadata-conversion
-                           ;; is returning a umm-lib representation after generating
-                           ;; and parsing metadata. This is an issue with retrieving
-                           ;; the correct URLContentType and will cause this test
-                           ;; to fail since the url-content-type is not retrieved/in
-                           ;; the umm-lib model.
-                           (->> (assoc field :distribution (mapv #(dissoc % :title) (:distribution field)))
-                                (util/map-values #(if (sequential? %) (set %) %))))))))
+               (set
+                (for [field dataset]
+                  ;; Dissoc title from distribtion.
+                  ;; mimic-ingest-retrieve-metadata-conversion
+                  ;; is returning a umm-lib representation after generating
+                  ;; and parsing metadata. This is an issue with retrieving
+                  ;; the correct URLContentType and will cause this test
+                  ;; to fail since the url-content-type is not retrieved/in
+                  ;; the umm-lib model.
+                  (util/map-values
+                   #(if (sequential? %) (set %) %)
+                   (assoc
+                    field
+                    :distribution
+                    (mapv #(dissoc % :title) (:distribution field)))))))))
 
 (defn assert-collection-opendata-results-match
   "Returns true if the opendata results are for the expected items.

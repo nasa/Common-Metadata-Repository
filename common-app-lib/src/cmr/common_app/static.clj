@@ -153,24 +153,29 @@
    [ring.util.request :as request]
    [selmer.parser :as selmer])
   (:import
-   (org.pegdown Extensions PegDownProcessor)))
+   com.vladsch.flexmark.html.HtmlRenderer
+   com.vladsch.flexmark.parser.Parser
+   (com.vladsch.flexmark.profile.pegdown Extensions PegdownOptionsAdapter)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions & Constants
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(def markdown-processor-options
+  (PegdownOptionsAdapter/flexmarkOptions (int (bit-or Extensions/AUTOLINKS
+                                                      Extensions/HARDWRAPS
+                                                      Extensions/TABLES
+                                                      Extensions/FENCED_CODE_BLOCKS))
+                                         (into-array com.vladsch.flexmark.util.misc.Extension [])))
+
 (defn md->html
-  "Given markdown and an optional markdown processor, converts it to HTML.
-  If a processor is not provided, one will be created."
-  ([markdown]
-   (let [processor (PegDownProcessor.
-                    (int (bit-or Extensions/AUTOLINKS
-                                 Extensions/HARDWRAPS
-                                 Extensions/TABLES
-                                 Extensions/FENCED_CODE_BLOCKS)))]
-     (md->html processor markdown)))
-  ([processor markdown]
-   (.markdownToHtml processor markdown)))
+  "Convert markdown to HTML."
+  [markdown]
+  (let [parser (.build (Parser/builder markdown-processor-options))
+        renderer (.build (HtmlRenderer/builder markdown-processor-options))]
+    (->> markdown
+        (.parse parser)
+        (.render renderer))))
 
 (defn- read-generic-markdown
   "Reads the file-name mark-down for all concepts"

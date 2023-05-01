@@ -4,7 +4,7 @@
   {:version "3.2.10"
    :hash "411c604a716104f7f5a326abfad32de9cea10f15f987bec45cf86f315e9e63a0"})
 
-(def redis-version "6")
+(def redis-version "7")
 
 (defproject nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handling cacheing with the CMR."
@@ -14,13 +14,12 @@
                  [org.clojure/clojure "1.10.0"]
                  [org.testcontainers/testcontainers "1.17.2"]]
   :plugins [[lein-exec "0.3.7"]
-            [lein-shell "0.5.0"]
-            [test2junit "1.3.3"]]
+            [lein-shell "0.5.0"]]
   :resource-paths ["resources"]
   :global-vars {*warn-on-reflection* true}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:exclusions [[org.clojure/tools.nrepl]]
@@ -62,8 +61,6 @@
                      ["with-profile" "lint" "shell" "echo" "== Kibit =="]
                      ["with-profile" "lint" "kibit"]]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
-            ;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration

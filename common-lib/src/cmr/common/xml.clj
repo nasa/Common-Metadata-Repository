@@ -188,11 +188,16 @@
         registry (DOMImplementationRegistry/newInstance)
         ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
         writer (.createLSSerializer impl)
-        dom-config (.getDomConfig writer)
-        output (.createLSOutput impl)]
-    (.setParameter dom-config "format-pretty-print" true)
-    (.setParameter dom-config "xml-declaration" keep-declaration)
-    (.setCharacterStream output (new StringWriter))
-    (.setEncoding output "UTF-8")
+        dom-config (doto (.getDomConfig writer)
+                     (.setParameter "format-pretty-print" true)
+                     (.setParameter "xml-declaration" keep-declaration))
+        output (doto (.createLSOutput impl)
+                 (.setCharacterStream (StringWriter.))
+                 (.setEncoding "UTF-8"))]
     (.write writer document output)
-    (str (.getCharacterStream output))))
+    ;; manual massage to handle newer JDK 9 and later behavior with missing newlines
+    (-> (str (.getCharacterStream output))
+        (as-> data (if keep-declaration
+                     (string/replace-first data #">" ">\n")
+                     data))
+        (string/replace #"\s+xmlns:" "\n    xmlns:"))))

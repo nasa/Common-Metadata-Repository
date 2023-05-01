@@ -356,14 +356,14 @@
                                        ;; this is to cause validation error for iso-smap format
                                        (str/replace "gmd:DS_Series" "XXXX")))
           {:keys [status errors]} (ingest/ingest-concept invalid-granule)]
-      (is (= [400 validation-errors] [status errors])))
+      (is (= [400 validation-errors] [status errors]) (prn-str errors)))
 
     "ECHO10 invalid datetime format"
     :echo10 ["Exception while parsing invalid XML: Line 1 - cvc-datatype-valid.1.2.1: 'A.000Z' is not a valid value for 'dateTime'."
              "Exception while parsing invalid XML: Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'BeginningDateTime' is not valid."]
 
     "ISO SMAP invalid datetime format"
-    :iso-smap ["Exception while parsing invalid XML: Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]
+    :iso-smap ["Exception while parsing invalid XML: Line 1 - cvc-elt.1.a: Cannot find the declaration of element 'XXXX'."]
 
     "UMM-G invalid datetime format"
     :umm-json ["#/TemporalExtent/RangeDateTime/BeginningDateTime: [A.000Z] is not a valid date-time. Expected [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.[0-9]{1,9}Z, yyyy-MM-dd'T'HH:mm:ss[+-]HH:mm, yyyy-MM-dd'T'HH:mm:ss.[0-9]{1,9}[+-]HH:mm]"
@@ -497,7 +497,7 @@
         (ingest/concept :collection "PROV1" "foo" :iso19115 coll-metadata))
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata))]
-         (is (= 422 status)) 
+         (is (= 422 status))
          (is (= ["Spatial validation error: Unsupported gmd:description inside gmd:EX_GeographicDescription - The supported ones are: OrbitParameters and OrbitCalculatedSpatialDomains"] (:errors (first errors))))))))
 
 (deftest CMR-5216-invalid-iso-smap-ocsd-values-test

@@ -13,14 +13,14 @@ Search API provides access to this metadata.
 - Search
   - Allows the user to search by collections, granules, and concepts with a
     myriad of different query types
-  - API Docs: https://cmr.earthdata.nasa.gov/search/site/search_api_docs.html
+  - [Search API Docs](https://cmr.earthdata.nasa.gov/search/site/search_api_docs.html)
 
 - Ingest
   - Ingest refers to the process of validating, inserting, updating, or
     deleting metadata in the CMR system. It affects only the metadata for the
     specific Data Partner. The CMR allows Data Partners to ingest metadata.
     records through a RESTful API
-  - API Docs: https://cmr.earthdata.nasa.gov/ingest/site/ingest_api_docs.html
+  - [Ingest API Docs](https://cmr.earthdata.nasa.gov/ingest/site/ingest_api_docs.html)
 
 - Access Control
   - Access Control Lists (ACLs) are the mechanism which grants users
@@ -32,34 +32,22 @@ Search API provides access to this metadata.
   - Two quick examples of a CMR ACL could be:
     - All registered users have READ access to ASTER data
     - A provider's operations team may ingest data for that provider
-  - API Docs: https://cmr.earthdata.nasa.gov/access-control/site/access_control_api_docs.html
-
-## Our Development Environment
-
-- Mac OSX
-- Atom: https://atom.io/
-- Proto-Repl: https://atom.io/packages/proto-repl
-  - Installed and configured according to this guide: https://git.io/atom_clojure_setup
+  - [Access Control API Docs](https://cmr.earthdata.nasa.gov/access-control/site/access_control_api_docs.html)
 
 ## Prerequisites
 
-- Java 1.8.0 (a.k.a. JAVA8) only; higher versions are not currently supported.
-- Leiningen (https://leiningen.org) 2.5.1 or above.
-  - We've had success with Homebrew and with the install script on the
-    Leiningen website.
-- Ruby (used to support two legacy apps)
-- Maven (https://maven.apache.org/install.html)
-    - Mac OS X devs can use `brew install maven`
-    - Linux devs can use `sudo apt-get install maven`
-- GCC and libc
+- Java 17
+- Leiningen
+- Maven
+- `gcc` and `libc`
 - Docker
 
 ## Obtaining the Code
 
 You can get the CMR source code by cloning the repository from GitHub:
 
-```
-$ git clone git@github.com:nasa/Common-Metadata-Repository.git cmr
+``` sh
+git clone https://github.com/nasa/Common-Metadata-Repository.git cmr
 ```
 
 ## Building and Running the CMR
@@ -67,9 +55,9 @@ $ git clone git@github.com:nasa/Common-Metadata-Repository.git cmr
 The CMR is a system consisting of many services. The services can run
 individually or in a single process. Running in a single process makes
 local development easier because it avoids having to start many different
-processes. The dev-system project allows the CMR to run from a single REPL
-or Jar file. If you're developing a client against the CMR you can build and
-run the entire CMR with no external dependencies from this Jar file and use
+processes. The `dev-system` project allows the CMR to run from a single REPL
+or JAR file. If you are developing a client against the CMR you can build and
+run the entire CMR with no external dependencies from this JAR file and use
 that instance for local testing. The sections below contain instructions for
 running the CMR as a single process or as many processes.
 
@@ -79,38 +67,20 @@ This project has its own tool that is able to do everything from initial setup t
 running builds and tests on the CI/CD infrastructure. To use the tool
 as we do below, be sure to run the following from the top-level CMR directory:
 
-```
+```sh
 export PATH=$PATH:`pwd`/bin
 source resources/shell/cmr-bash-autocomplete
 ```
 
-(If you use a system shell not compatible with Bash, we'll accept a PR with
-auto-complete for it.)
+(If you use a system shell not compatible with Bash, we accept Pull Requests for
+new shells with auto-complete.)
 
 To make this change permanent:
 
-```
+```sh
 echo "export PATH=\$PATH:`pwd`/bin" >> ~/.profile
 echo "source `pwd`/resources/shell/cmr-bash-autocomplete" >> ~/.profile
 ```
-
-#### Oracle Dependencies
-
-Even if you're not going to develop against a local Oracle database,
-you still need to have the Oracle libraries locally installed to use the
-CMR.
-
-Here are the steps to do so:
-
-1. Ensure you have installed on your system the items listed above in the
-   "Prerequisites" section.
-1. Download the Oracle JDBC JAR files into `./oracle-lib/support` by
-   following instructions in `./oracle-lib/README.md`. (The CMR must have these
-   libraries to build but it does not depend on Oracle DB when running
-   locally. It uses a local in-memory database by default.) If you're reading this
-   guide on the web, [here is a handy link to the instructions.](https://github.com/nasa/Common-Metadata-Repository/tree/master/oracle-lib)
-1. With the JAR files downloaded to the proper location, you're now ready
-   to install them for use by the CMR:" `cmr install oracle-libs`
 
 #### Building and Running CMR Dev System in a REPL with CMR CLI tool
 
@@ -128,11 +98,11 @@ Here are the steps to do so:
 3. `cmr start repl`
 4. Once given a Clojure prompt, run `(reset)`
 
-Note that the `reset` action could potentially take a while, not only due to
+Note that the `reset` action may take a while, not only due to
 the code reloading for a large number of namespaces, but for bootstrapping
 services as well as starting up worker threads.
 
-#### Building and Running CMR Dev System from a Jar
+#### Building and Running CMR Dev System from a JAR
 
 Assuming you have already run the above steps (namely `cmr setup dev`), to
 build and run the default CMR development system (`dev-system`) from a
@@ -147,7 +117,7 @@ environment variables
 
 #### Building and Running separate CMR Applications
 
-The following will build every application but will put each jar into the
+The following will build every application but will put each JAR into the
 appropriate `target` directory for each application. The command shown in step
 3 is an example. For the proper command to start up each application, see the
 `Applications` section below. Note: You only need to complete steps 1 and 2 once.
@@ -155,7 +125,7 @@ appropriate `target` directory for each application. The command shown in step
 1. `cmr build uberjar APP`
 2. `cmr run uberjar APP`
 
-Where `APP` is any supported CMR app. You can touble-tap the `TAB` key on
+Where `APP` is any supported CMR app. You can double-tap the `TAB` key on
 your keyboard to get the `cmr` tool to show you the list of available apps
 after entering `uberjar` in each step above.
 
@@ -306,7 +276,7 @@ see the docstring for `run-suites` in `dev-system/dev/user.clj`.
 It will contain usage instructions
 #### Testing in the CI Environment
 
-Throughout the modules, in the `project.clj` files there are additional `lein` aliseses for
+Throughout the modules, in the `project.clj` files there are additional `lein` aliases for
 executing the tests in the CI/CD environment. They are
 * ci-itest
 * ci-utest
@@ -318,7 +288,7 @@ kaocha test runner.
 In the CI environment, color is omitted, and certain tests that require an internal memory
 database are excluded. The aliases may be used locally as well.
 
-To see the differnce in detail, inspect the `tests.edn` files for each module to see the
+To see the difference in detail, inspect the `tests.edn` files for each module to see the
 profile in use in the CI environment. Kaocha supports the use of profiles so more may
 be added as necessary.
 
@@ -351,7 +321,7 @@ applications, as well as several libraries and support applications.
     Note that ECHO and URS provide user access as an external dependency.
     The mock-echo application implements both of the necessary interfaces
     for local testing.
-  - Main method: cmr.access_control.runner
+  - Main method: `cmr.access_control.runner`
 
 - bootstrap-app
   - Contains APIs for performing various bulk actions in the CMR
@@ -361,21 +331,21 @@ applications, as well as several libraries and support applications.
 - dev-system
   - An app that combines the separate microservices of the CMR into a single
   application. We use this to simplify development
-  - Main method: cmr.dev_system.runner
+  - Main method: `cmr.dev_system.runner`
 
 - indexer-app
   - This handles indexing collections, granules, and tags in Elasticsearch
-  - Maintains the set of indexes in elasticsearch for each concept
-  - Main method: cmr.indexer.runner
+  - Maintains the set of indexes in Elasticsearch for each concept
+  - Main method: `cmr.indexer.runner`
 
 - ingest-app
   - The Ingest app handles collaborating with metadata db and indexer systems.
   This maintains the lifecycle of concepts coming into the CMR
-  - Main method: cmr.ingest.runner
+  - Main method: `cmr.ingest.runner`
 
 - search-app
   - Provides a public search API for concepts in the CMR
-  - Main method: cmr.search.runner
+  - Main method: `cmr.search.runner`
 
 - search-relevancy-test
   - Tests to measure and report the effectiveness of CMR's search relevancy algorithm
@@ -445,9 +415,9 @@ applications, as well as several libraries and support applications.
 
 ## Further Reading
 
-- CMR Client Partner User Guide: https://wiki.earthdata.nasa.gov/display/ED/CMR+Client+Partner+User+Guide
-- CMR Data Partner User Guide: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide
+- [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/ED/CMR+Client+Partner+User+Guide)
+- [CMR Data Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide)
 
 ## License
 
-Copyright © 2014-2022 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
+Copyright © 2014-2023 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.

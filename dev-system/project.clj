@@ -56,8 +56,7 @@
                            [ring/ring-codec "1.1.1"]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
-            [lein-shell "0.5.0"]
-            [test2junit "1.3.3"]]
+            [lein-shell "0.5.0"]]
   :resource-paths ["resources"]
   :repl-options {:init-ns user
                  :timeout 600000
@@ -71,14 +70,14 @@
                                         ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
                                         ; "-Dorg.eclipse.jetty.LEVEL=INFO"
                                         ; "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
-  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
              :dev-dependencies {:exclusions [[org.clojure/tools.nrepl]]
                                 :dependencies [[criterium "0.4.4"]
                                                [debugger "0.2.0"]
-                                               [drift "1.5.3"]
+                                               [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
                                                [org.clojars.gjahad/debug-repl "0.3.3"]
                                                [org.clojure/tools.namespace "0.2.11"]
                                                [org.clojure/tools.nrepl "0.2.13"]
@@ -131,12 +130,8 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
-  :aliases {
-            ;; Creates the checkouts directory to the local projects
+  :aliases {;; Creates the checkouts directory to the local projects
             "create-checkouts" ~create-checkouts-commands
-            ;; Alias to test2junit for consistency with lein-test-out
-            "test-out"
-            ["test2junit"]
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration

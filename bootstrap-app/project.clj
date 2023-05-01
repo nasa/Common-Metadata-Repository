@@ -36,14 +36,13 @@
                  [ring/ring-codec "1.1.3"]
                  [ring/ring-core "1.9.6"]
                  [ring/ring-json "0.5.1"]]
-  :plugins [[drift "1.5.3"]
+  :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
             [lein-exec "0.3.7"]
-            [lein-shell "0.5.0"]
-            [test2junit "1.3.3"]]
+            [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
@@ -75,8 +74,6 @@
             "migrate" ["migrate" "-c" "config.bootstrap-migrate-config/app-migrate-config"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
-            ;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
