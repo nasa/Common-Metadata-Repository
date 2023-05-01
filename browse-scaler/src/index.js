@@ -38,11 +38,10 @@ const getImageUrlFromConcept = async (conceptId, conceptType, imageSrc) => {
   }
 
   if (conceptType === 'granules') {
-    console.log('Calling granules');
     return getGranuleLevelBrowseImage(conceptId, imageSrc);
   }
   if (conceptType === 'datasets') {
-    return await getCollectionLevelBrowseImage(conceptId);
+    return getCollectionLevelBrowseImage(conceptId);
   }
 
   console.error(
@@ -61,7 +60,6 @@ const getImageUrlFromConcept = async (conceptId, conceptType, imageSrc) => {
  * @returns {JSON} server response object
  */
 const resizeImageFromConceptId = async (conceptType, conceptId, height, width, imageSrc) => {
-  console.log('🚀 ~ file: index.js:64 ~ resizeImageFromConceptId ~ imageSrc:', imageSrc);
   // If the imageSrc is empty then that will be the cache for the default image
   // todo there may be one copy of the cached image in that case
   const cacheKey = `${conceptId}-${height}-${width}-${imageSrc}`;
@@ -73,19 +71,15 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width, i
 
   // If given an image url, fetch the image and resize. If no valid image
   // exists, return the not found response
-  // const imageUrl = await withTimeout(
-  //   config.TIMEOUT_INTERVAL,
-  //   getImageUrlFromConcept(conceptId, conceptType)
-  // );
-  const imageUrl = await getImageUrlFromConcept(conceptId, conceptType, imageSrc);
+  const imageUrl = await withTimeout(
+    config.TIMEOUT_INTERVAL,
+    getImageUrlFromConcept(conceptId, conceptType, imageSrc)
+  );
   // If the url is not `null`, `undefined`, or an empty string try to grab the image and resize it
   if (imageUrl) {
-    console.log('🐨 I have the image url', imageUrl);
-    // const imageBuffer = await withTimeout(config.TIMEOUT_INTERVAL, slurpImageIntoBuffer(imageUrl));
-    const imageBuffer = await slurpImageIntoBuffer(imageUrl);
-    console.log('🚀 ~ file: index.js:80 ~ resizeImageFromConceptId ~ imageBuffer:', imageBuffer);
+    const imageBuffer = await withTimeout(config.TIMEOUT_INTERVAL, slurpImageIntoBuffer(imageUrl));
+    // todo we need to be consistent either use axios or use the timeout feature
     if (imageBuffer) {
-      console.log('I have the image buffer', imageBuffer);
       const thumbnail = await resizeImage(imageBuffer, height, width);
       if (thumbnail) {
         cacheImage(cacheKey, thumbnail);
@@ -141,7 +135,6 @@ exports.handler = async event => {
   const args = parseArguments(event);
   const { conceptType, conceptId, w, h, imageSrc = '' } = args;
   console.log(`Attempting to resize browse image for concept: ${JSON.stringify(args)}`);
-  // const resizedImage = await resizeImageFromConceptId(args.conceptType, args.conceptId, args.h, args.w);
   const resizedImage = await resizeImageFromConceptId(conceptType, conceptId, h, w, imageSrc);
   return resizedImage;
 };

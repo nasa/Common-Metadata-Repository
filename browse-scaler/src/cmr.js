@@ -66,17 +66,9 @@ const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
  */
 const parseJsonBody = jsonResponse => {
   const { data } = jsonResponse;
-  console.log('🚀 ~ file: cmr.js:72 ~ parseJsonBody ~ data:', data);
-
   const { feed } = data;
-  console.log('🚀 ~ file: cmr.js:75 ~ parseJsonBody ~ feed:', feed);
-
   const { entry } = feed;
-  console.log('🚀 ~ file: cmr.js:78 ~ parseJsonBody ~ entry:', entry);
-
   const [granule] = entry;
-  console.log('🚀 ~ file: cmr.js:81 ~ parseJsonBody ~ granule:', granule);
-
   return granule;
 };
 
@@ -96,7 +88,6 @@ const fetchCmrGranule = async conceptId => {
 
   let response;
   try {
-    console.log(`🍕 ${config.CMR_ROOT_URL}/search/granules.json?concept_id=${conceptId}`);
     response = await axios({
       url: `${config.CMR_ROOT_URL}/search/granules.json?concept_id=${conceptId}`,
       method: 'GET',
@@ -109,12 +100,6 @@ const fetchCmrGranule = async conceptId => {
     return null;
   }
   return parseJsonBody(response);
-  // console.log('🚀 ~ file: cmr.js:97 ~ fetchCmrGranule ~ response:', response);
-  // const { feed = {} } = response;
-  // console.log('🚀 ~ file: cmr.js:92 ~ fetchCmrGranule ~ feed:', feed);
-  // const { entry = {} } = feed;
-  // console.log('🚀 ~ file: cmr.js:93 ~ fetchCmrGranule ~ entry:', entry);
-  // return entry;
 };
 
 /**
@@ -129,51 +114,21 @@ exports.getBrowseImageFromConcept = async (concept, imageSrc) => {
     return;
   }
   try {
-    console.log('🚀 ~ file: cmr.js:127 ~ exports.getBrowseImageFromConcept= ~ imageSrc:', imageSrc)
     const { links } = concept;
     const imgRegex = /\b(browse#)$/;
-    const newImageRegex = /\bhttps?:\/\/\S+\.(?:png|jpe?g|gif|bmp)\b/;
-    // todo
     const imageUrls = links.filter(link => imgRegex.test(link.rel));
-    console.debug(`🍥 all links from metadata ${JSON.stringify(imageUrls)}`);
-
-    // const imgurl = links.filter(link => imgRegex.test(link.rel))[0];
-
-    // console.debug(`🐸links from metadata ${JSON.stringify(links)}`);
-    // console.debug(`❤️ image link from metadata ${JSON.stringify(imgurl)}`);
-    // console.log('≈ ~ file: cmr.js:83 ~ imgurl.href:', imgurl.href);
-
-    // if (imageUrls.includes(imageSrc)) {
-    //   const specifiedImage = imageUrls[imageUrls.indexOf(imageSrc)];
-    //   console.log(`🏋️ ${specifiedImage}`);
-    //   // eslint-disable-next-line consistent-return
-    //   return specifiedImage;
-    // }
-
+    // console.debug(`🚀 links from metadata ${JSON.stringify(links)}`);
+    // console.debug(`🚀 image link from metadata ${JSON.stringify(imageUrls)}`);
     const searchImage = imageUrls.find(image => image.href === imageSrc);
 
     if (searchImage) {
-      console.log(
-        ' we found 🚀 ~ file: cmr.js:157 ~ exports.getBrowseImageFromConcept= ~ searchImage:',
-        searchImage.href
-      );
+      console.log('The searched image was in the metadata', searchImage.href);
       // eslint-disable-next-line consistent-return
       return searchImage.href;
     }
 
-    // // eslint-disable-next-line consistent-return
-    // imageUrls.forEach(image => {
-    //   if (image.href === imageSrc) {
-    //     return image.href;
-    //   }
-    // });
-
-    // if (imgurl && imgurl.href) {
-    //   // eslint-disable-next-line consistent-return
-    //   return imgurl.href;
-    // }
     if (imageUrls) {
-      // if no image was specified return 0th index
+      // if the searched image was not found return 0th index image
       // eslint-disable-next-line consistent-return
       return imageUrls[0].href;
     }
@@ -205,7 +160,6 @@ exports.getGranuleLevelBrowseImage = async (conceptId, imageSrc) => {
  */
 exports.getCollectionLevelBrowseImage = async collectionId => {
   const collectionConcept = await fetchConceptFromCMR(collectionId, config.CMR_COLLECTION_URL);
-  console.log('🚀 ~ file: cmr.js:112 ~ collectionConcept:', collectionConcept);
   const collectionImagery = await this.getBrowseImageFromConcept(collectionConcept);
   if (collectionImagery) {
     return collectionImagery;

@@ -4,7 +4,7 @@ Nodejs application to return thumbnails for NASA's Earthdata Search
 
 # Building
 
-**NOTE**: because Sharp uses C++ extensions, it must be built in a docker container to run on AWS (unless your machine is also linux). If you are on a mac machine you may need to install sharp using: `npm uninstall sharp` and then re-install it using: `npm install --platform=linux --arch=x64 sharp`
+**NOTE**: because Sharp uses C++ extensions, it must be built in a docker container to run on AWS (unless your machine is also linux). If you are on a mac machine you may need to un-install sharp using: `npm uninstall sharp` and then re-install it using: `npm install --platform=linux --arch=x64 sharp`
 
 You can do this by running `docker-compose up --build` from the `browse-scaler/src` directory.
 
@@ -81,3 +81,31 @@ For granules:
 ```https://cmr.earthdata.nasa.gov/browse-scaler/browse_images/granules/<GRANULE-ID>?h=<HEIGHT>&w=<WIDTH>```
 
 **Note**: the collection endpoint will check the first available granule for relevant browse imagery before showing the `image-not-found` response
+
+Creating events locally:
+ to test events locally there are three required parameters `path, h, w`
+ path is either datasets/<coll-concept-id> for collections and granules/<granule-concept-id> for granules. 'h' refers to what the height of the returned image should be in pixels and 'w' is the width in pixels for the returned image. There is also an optional fourth arg which specifies which granule image should be used. This is for cases where there are multiple browsable images in a granule metadata's links. This will match exactly the passed in granule image; if it is in the record it will return that image otherwise it will return the first browsable image that can be found. If there are none of course, we will return the default 'image cannot be found'.
+
+An example of a granule event. This will fetch the browse image for teh granule in the path if it exists. 
+{
+    "path": "granules/G1200460416-ESA",
+    "queryStringParameters": {
+        "h ": 85,
+        "w": 85
+    }
+}
+
+Example of a granule event passing a specified image
+{
+    "path": "granules/G1200460416-ESA",
+    "queryStringParameters": {
+        "h ": 85,
+        "w": 85,
+        "imageSrc":"https://airsl2.gesdisc.eosdis.nasa.gov/data/Aqua_AIRS_Level2/AIRH2CCF.006/2002/243/AIRS.2002.08.31.028.L2.CC_H.v6.0.12.0.G14101130602.hdf.jpg"
+    }
+}
+
+
+
+
+
