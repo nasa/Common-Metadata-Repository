@@ -30,7 +30,7 @@ const buildResponse = image => {
  * 'dataset' refers to collections
  * @returns {String} image url or null
  */
-const getImageUrlFromConcept = async (conceptId, conceptType) => {
+const getImageUrlFromConcept = async (conceptId, conceptType, imageSrc) => {
   console.log(`Concept id: ${conceptId}`);
 
   if (!conceptId) {
@@ -39,7 +39,7 @@ const getImageUrlFromConcept = async (conceptId, conceptType) => {
 
   if (conceptType === 'granules') {
     console.log('Calling granules');
-    return getGranuleLevelBrowseImage(conceptId);
+    return getGranuleLevelBrowseImage(conceptId, imageSrc);
   }
   if (conceptType === 'datasets') {
     return await getCollectionLevelBrowseImage(conceptId);
@@ -48,6 +48,7 @@ const getImageUrlFromConcept = async (conceptId, conceptType) => {
   console.error(
     `Unable to fetch imagery for concept-type: ${conceptType} on concept-id ${conceptId}`
   );
+  return null;
 };
 
 /**
@@ -59,8 +60,11 @@ const getImageUrlFromConcept = async (conceptId, conceptType) => {
  * @param {Integer} width
  * @returns {JSON} server response object
  */
-const resizeImageFromConceptId = async (conceptType, conceptId, height, width) => {
-  const cacheKey = `${conceptId}-${height}-${width}`;
+const resizeImageFromConceptId = async (conceptType, conceptId, height, width, imageSrc) => {
+  console.log('🚀 ~ file: index.js:64 ~ resizeImageFromConceptId ~ imageSrc:', imageSrc);
+  // If the imageSrc is empty then that will be the cache for the default image
+  // todo there may be one copy of the cached image in that case
+  const cacheKey = `${conceptId}-${height}-${width}-${imageSrc}`;
   const imageFromCache = await getImageFromCache(cacheKey);
   if (imageFromCache) {
     console.log(`Returning cached image ${cacheKey}`);
@@ -73,7 +77,7 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width) =
   //   config.TIMEOUT_INTERVAL,
   //   getImageUrlFromConcept(conceptId, conceptType)
   // );
-  const imageUrl = await getImageUrlFromConcept(conceptId, conceptType);
+  const imageUrl = await getImageUrlFromConcept(conceptId, conceptType, imageSrc);
   // If the url is not `null`, `undefined`, or an empty string try to grab the image and resize it
   if (imageUrl) {
     console.log('🐨 I have the image url', imageUrl);
@@ -118,7 +122,8 @@ const parseArguments = event => {
     conceptType: pathParams[0],
     conceptId: pathParams.pop(),
     h: event.queryStringParameters.h,
-    w: event.queryStringParameters.w
+    w: event.queryStringParameters.w,
+    imageSrc: event.queryStringParameters.imageSrc
   };
 
   if (!args.conceptId) {
@@ -134,7 +139,9 @@ const parseArguments = event => {
 
 exports.handler = async event => {
   const args = parseArguments(event);
+  const { conceptType, conceptId, w, h, imageSrc = '' } = args;
   console.log(`Attempting to resize browse image for concept: ${JSON.stringify(args)}`);
-  const resizedImage = await resizeImageFromConceptId(args.conceptType, args.conceptId, args.h, args.w);
+  // const resizedImage = await resizeImageFromConceptId(args.conceptType, args.conceptId, args.h, args.w);
+  const resizedImage = await resizeImageFromConceptId(conceptType, conceptId, h, w, imageSrc);
   return resizedImage;
 };

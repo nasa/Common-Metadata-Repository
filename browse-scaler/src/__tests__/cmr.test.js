@@ -1,8 +1,10 @@
-const { getBrowseImageFromConcept,
-        getCollectionLevelBrowseImage,
-        getGranuleLevelBrowseImage,
-        getEchoToken } = require('../cmr');
-const config = require ('../config');
+const {
+  getBrowseImageFromConcept,
+  getCollectionLevelBrowseImage,
+  getGranuleLevelBrowseImage,
+  getEchoToken
+} = require('../cmr');
+const config = require('../config');
 
 const nock = require ('nock');
 const AWS = require('aws-sdk-mock');
@@ -11,6 +13,7 @@ const collectionWithBrowse = require('./C179003030-ORNL_DAAC.json');
 const collectionWithoutBrowse = require('./C1214587974-SCIOPS.json');
 
 const granuleWithBrowse = require('./C1711961296-LPCLOUD_granules.json');
+const granuleWithBrowseMultipleImages = require('./G1200460416-ESA.json');
 const granuleWithoutBrowse = require('./C179003030-ORNL_DAAC_granules.json');
 
 const invalidCollectionIdResponse = require('./C000000000-MISSING_NO.json');
@@ -33,6 +36,31 @@ describe('Metadata wrangling', () => {
         const imageUrl = await getBrowseImageFromConcept(granuleWithoutBrowse.feed.entry[0]);
         expect(imageUrl).toBeUndefined();
     });
+
+    test('Get image url from granule with browse url', async () => {
+        const imageUrl = await getBrowseImageFromConcept(granuleWithBrowse.feed.entry[0]);
+        expect(imageUrl).toBe('https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/ASTGTM.003/ASTGTMV003_N03E008.1.jpg');
+    });
+
+    test('Get image url from granule with browse url specified image', async () => {
+    const imageSrc =
+      'https://eoimages.gsfc.nasa.gov/images/imagerecords/151000/151261/atlanticbloom_amo_2023110_lrg.jpg';
+    const imageUrl = await getBrowseImageFromConcept(
+      granuleWithBrowseMultipleImages.feed.entry[0],
+      imageSrc
+    );
+    expect(imageUrl).toBe(
+      'https://eoimages.gsfc.nasa.gov/images/imagerecords/151000/151261/atlanticbloom_amo_2023110_lrg.jpg'
+    );
+  });
+  test('Get image url from granule with browse url specified image default image', async () => {
+    const imageUrl = await getBrowseImageFromConcept(
+      granuleWithBrowseMultipleImages.feed.entry[0],
+      ''
+    );
+    expect(imageUrl).toBe(
+      'https://airsl2.gesdisc.eosdis.nasa.gov/data/Aqua_AIRS_Level2/AIRH2CCF.006/2002/243/AIRS.2002.08.31.028.L2.CC_H.v6.0.12.0.G14101130602.hdf.jpg');
+  });
 });
 
 describe ('getCollectionLevelBrowseImage', () => {
@@ -67,7 +95,7 @@ describe ('getGranuleLevelBrowseImage', () => {
               .reply (200, granuleWithBrowse);
 
         test ('returns imagery url', async () => {
-            const res = await getGranuleLevelBrowseImage ('G1716133754-LPCLOUD');
+            const res = await getGranuleLevelBrowseImage ('G1716133754-LPCLOUD', '');
             expect (res).toBe ('https://data.lpdaac.earthdatacloud.nasa.gov/lp-prod-public/ASTGTM.003/ASTGTMV003_N03E008.1.jpg');
         });
     });
@@ -78,7 +106,7 @@ describe ('getGranuleLevelBrowseImage', () => {
               .reply (404, granuleWithoutBrowse);
 
         test ('handles 404', async () => {
-            const res = await getGranuleLevelBrowseImage ('foo');
+            const res = await getGranuleLevelBrowseImage ('foo', '');
             expect (res).toBeUndefined ()
         });
     });

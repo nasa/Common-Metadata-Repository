@@ -54,7 +54,7 @@ exports.slurpImageIntoBuffer = async imageUrl => {
         );
       })
       .catch(error => {
-        console.error(`😪 Could not slurp image from url ${imageUrl}: ${error}`);
+        console.error(`Could not slurp image from url ${imageUrl}: ${error}`);
         return null;
       });
 
