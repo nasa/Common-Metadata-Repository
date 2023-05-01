@@ -34,23 +34,23 @@
             "WestBoundingCoordinate": 90.0,
             "SpatialResolution": {
                 "Unit": "Degree",
-                "LongitudeResolution": "359.009",
-                "LatitudeResolution": "89.1"
+                "LongitudeResolution": "0.0005",
+                "LatitudeResolution": "90.000"
             }
         },
         "DimensionScale": {
             "0_360_DegreeProjection": true,
             "X":
             {
-                "Minimum": "-359-00-00.009",
-                "Maximum": "359-00-00.009",
+                "Minimum": "-360-00-00.000",
+                "Maximum": "360-00-00.00",
                 "Unit": "Degrees-Minutes-Seconds",
                 "Resolution": 0.125
             },
             "Y":
             {
-                "Minimum": "-89-00-00.1",
-                "Maximum": "89-00-00.1",
+                "Minimum": "-360-00-00.000",
+                "Maximum": "360-00-00.00",
                 "Unit": "Degrees-Minutes-Seconds",
                 "Resolution": 0.5
             },
