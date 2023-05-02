@@ -2,6 +2,7 @@
   (:require
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
+   [cmr.common.util :as common-util]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
    [cmr.transmit.http-helper :as http-helper]
@@ -29,6 +30,10 @@
 (defn- groups-for-user-url
   [conn username]
   (format "%s/api/user_groups/groups_for_user/%s" (conn/root-url conn) username))
+
+(defn- launchpad-validation-url
+  [conn]
+  (format "%s/api/nams/edl_user_uid" (conn/root-url conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
@@ -59,6 +64,21 @@
                                                assoc
                                                "Authorization"
                                                (str "Bearer " (get-bearer-token context)))))
+
+(defn get-launchpad-user
+  "Returns URS user info associated with a launchpad token"
+  [context token]
+  (let [{:keys [status body]} (request-with-auth context {:url-fn #(launchpad-validation-url %)
+                                                          :method :post :raw? true 
+                                                          :http-options {:form-params {:token token}}})]
+    (when-not (= 200 status)
+      (error (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d].
+        EDL error message: [%s]" (common-util/scrub-token token) status (pr-str body)))
+      (errors/throw-service-error
+       :unauthorized
+       (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d]."
+               (common-util/scrub-token token) status)))
+    (:uid body)))
 
 (defn user-exists?
   "Returns true if the given user exists in URS"
@@ -138,4 +158,12 @@
  (login context "foo" "foopass")
  (login context "notexist" "foopass")
  (login context "notexist" "")
- (login context "notexist" nil))
+ (login context "notexist" nil)
+ 
+ ;; when REPL launched with non-local connection configs
+ (def context
+   {:system (config/system-with-connections {} [:urs])})
+ (config/set-urs-relative-root-url! "")
+ (def lptoken "<YOUR LAUNCHPAD TOKEN HERE>")
+ (get-launchpad-user context "badtoken")
+ (get-launchpad-user context lptoken))

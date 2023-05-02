@@ -4,22 +4,22 @@
   "TilingIdentificationSystems" : [ {
     "TilingIdentificationSystemName" : "MODIS Tile EASE",
     "Coordinate1" : {
-      "MinimumValue" : "-100.0",
-      "MaximumValue" : "-50.0"
+      "MinimumValue" : -100.0,
+      "MaximumValue" : -50.0
     },
     "Coordinate2" : {
-      "MinimumValue" : "50.0",
-      "MaximumValue" : "100.0"
+      "MinimumValue" : 50.0,
+      "MaximumValue" : 100.0
     }
   }, {
     "TilingIdentificationSystemName" : "MISR",
     "Coordinate1" : {
-      "MinimumValue" : "-100.0",
-      "MaximumValue" : "-50.0"
+      "MinimumValue" : -100.0,
+      "MaximumValue" : -50.0
     },
     "Coordinate2" : {
-      "MinimumValue" : "50.0",
-      "MaximumValue" : "100.0"
+      "MinimumValue" : 50.0,
+      "MaximumValue" : 100.0
     }
   } ],
   "CollectionCitations" : [ {
@@ -621,9 +621,9 @@
     } ]
   } ],
   "MetadataSpecification" : {
-    "URL" : "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.2",
+    "URL" : "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.3",
     "Name" : "UMM-C",
-    "Version" : "1.17.2"
+    "Version" : "1.17.3"
   },
   "ArchiveAndDistributionInformation" : {
     "FileDistributionInformation" : [ {

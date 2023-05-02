@@ -147,7 +147,7 @@
                           hrs/humanizer-report-generator-job])}]
     (transmit-config/system-with-connections
      sys
-     [:indexer :echo-rest :metadata-db :kms :access-control])))
+     [:indexer :echo-rest :metadata-db :kms :access-control :urs])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

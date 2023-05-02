@@ -303,7 +303,7 @@ Setting the `scroll` parameter to `defer` will not return any search results wit
 
 When all the results have been returned subsequent calls using the same `CMR-Scroll-Id` header will return an empty list.
 
-Important note: Clients using scrolling (especially via programmatic api or scripts) should explicitly invoke [`clear scroll session`] (#clear-scroll) to release the scroll session when they are finished. This will end the scroll session and free up system resources.
+Important note: Clients using scrolling (especially via programmatic API or scripts) should explicitly invoke [`clear scroll session`] (#clear-scroll) to release the scroll session when they are finished. This will end the scroll session and free up system resources.
 
 #### <a name="parameter-options"></a> Parameter Options
 
@@ -315,7 +315,7 @@ where parameter is the URL parameter whose behavior is to be affected, value is 
 
  * `ignore_case` - if set to true, the search will be case insensitive and if set to false, the search will be case sensitive. Defaults to true.
  * `pattern` - if set to true, the search will treat the value provided for the parameter as a pattern with wild-cards, in which '\*' matches zero or more characters and '?' matches any single character. For example, `platform[]=AB?D*&options[platform][pattern]=true` would match 'ABAD123', 'ABCD12', 'ABeD', etc. Defaults to false. **NOTE:** Patterns with leading wildcards, like "\*ODIS", are computationally expensive. The CMR limits the maximum number of patterns with a leading wildcard per query to 5.
- * `and` - if set to true and if multiple values are listed for the param, the concepts must have ALL of these values in order to match. The default is `false` which means concepts with ANY of the values match. This option only applies to fields which may be multivalued; these are documented here.
+ * `and` - if set to true and if multiple values are listed for the param, the concepts must have ALL of these values in order to match. The default is `false` which means concepts with ANY of the values match. This option only applies to fields which may be multi-valued; these are documented here.
  * `or` - this option only applies to granule attributes or science-keywords searches. If set to true, the collection/granule will match when any of the grouped search condition is matched. The default is false.
 
 ##### <a name="collection-result-features"></a> Collection Result Feature Parameters
@@ -452,7 +452,7 @@ Important to note, dataCenter corresponds to the provider id while organizations
 | time:end                                   | end time of the metadata                                                                                             |
 | link                                       | online access and online resource urls associated with the metadata                                                  |
 | echo:orbit (granules only)                 | orbit info of the metadata                                                                                           |
-| echo:orbitCalSpatialDomain (granules only) | orbit calculated spatial domain nfo of the metadata                                                                  |
+| echo:orbitCalSpatialDomain (granules only) | orbit calculated spatial domain info of the metadata                                                                  |
 | echo:coordinateSystem                      | coordinate system info of the metadata                                                                               |
 | echo:orbitParameters (collections only)    | fields related to the satellite orbit (startCircularLatitude, numberOfOrbits, inclinationAngle, period, swathWidth) |
 | georss:point                               | spatial point info of the metadata                                                                                   |
@@ -1940,7 +1940,7 @@ Keyword searches are case insensitive and support wild cards ? and *, in which '
 string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
 
 The following searches on "alpha", "beta" and "g?mma" individually and returns the collections that contain all these individual words
-in the keyword fields that are indexed. Note: these words don't have to exist in the same keyword field, but they have to exsit as a
+in the keyword fields that are indexed. Note: these words don't have to exist in the same keyword field, but they have to exist as a
 space (or one of special character delimiter CMR uses) delimited word.
 
     curl "%CMR-ENDPOINT%/collections?keyword=alpha%20beta%20g?mma"
@@ -2202,11 +2202,11 @@ This parameter supports the and/or option as shown below.
 
     curl "%CMR-ENDPOINT%/collections?circle[]=-87.629717,41.878112,1000&circle[]=-75,41.878112,1000&options[circle][or]=true"
 
-Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are AND'd in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon.
+Note: A query could consist of multiple spatial parameters of different types, two bounding boxes and a polygon for example. If multiple spatial parameters are present, all the parameters irrespective of their type are ANDed in a query. So, if a query contains two bounding boxes and a polygon for example, it will return only those collections which intersect both the bounding boxes and the polygon.
 
 #### <a name="c-shapefile"></a> Find collections by shapefile
 
-A shapefile can be uploaded with a query to restrict results to those that overlap the geometry in the shapefile. Note that unlike the spatial parameters, geometry in the shapefile is OR'd together, not AND'd. So if a collection overlaps _any_ of the geometry in the shapefile it will match. Note also that the `shapefile` parameter supports shapefiles containing polygons with holes.
+A shapefile can be uploaded with a query to restrict results to those that overlap the geometry in the shapefile. Note that unlike the spatial parameters, geometry in the shapefile is ORed together, not ANDed. So if a collection overlaps _any_ of the geometry in the shapefile it will match. Note also that the `shapefile` parameter supports shapefiles containing polygons with holes.
 
 Currently the only supported shapefile formats are ESRI, KML, and GeoJSON. For ESRI all the sub-files (*.shp, *.shx, etc.) must be uploaded in a single zip file.
 
@@ -2214,6 +2214,7 @@ The following limits apply to uploaded shapefiles:
 * Shapefiles are limited in size to 1,000,000 bytes.
 * Shapefiles are limited to 500 features
 * Shapefiles are limited to 5000 points.
+* Shapefile geometries with precision greater than 7 significant digits should ensure their points are at least 1 meter apart.
 
 Regarding polygon ring winding, ESRI shapefiles **must** follow the ESRI standard, i.e., exterior (boundary) rings are clockwise, and holes are counter-clockwise. GeoJSON **must** follow the RFC7946 specification, i.e., exterior rings are counterclockwise, and holes are clockwise. KML **must** follow the KML 2.2 specification, i.e., _all_ polygon rings are counter-clockwise.
 
@@ -2495,8 +2496,7 @@ The polygon parameter could be either "polygon", for single polygon search:
 
    curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon=10,10,30,10,30,20,10,20,10,10"
 
-or "polygon[]", for single or multiple polygon search. It supports the and/or option as shown below. Default option is "and", i.e. it wi
-ll match both the first polygon and the second polygon.
+or "polygon[]", for single or multiple polygon search. It supports the and/or option as shown below. Default option is "and", i.e. it will match both the first polygon and the second polygon.
 
     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[]=10,10,30,10,30,20,10,20,10,10"
 
@@ -2504,7 +2504,7 @@ ll match both the first polygon and the second polygon.
 
     curl "%CMR-ENDPOINT%/granules?collection_concept_id=%CMR-EXAMPLE-COLLECTION-ID%&polygon[]=10,10,30,10,30,20,10,20,10,10&polygon[]=11,11,31,11,31,21,11,21,11,11&options[polygon][or]=true"
 
-Note: if you use "polygon" for multiple polygon search, it won't work because only the last polyon parameter will take effect.
+Note: if you use "polygon" for multiple polygon search, it won't work because only the last polygon parameter will take effect.
 
 ##### <a name="g-bounding-box"></a> Bounding Box
 
@@ -2532,7 +2532,7 @@ As with collections, a shapefile can be uploaded to find granules that overlap t
 
 #### <a name="g-shapefile-simplification"></a> Simplifying shapefiles during granule search
 
-As with collections, an uplodaed shapefile can be simplified by setting the `simplfiy-shapefile` parameter to `true`. See [Simplifying shapefiles during collection search](#c-shapefile-simplification) for more details.
+As with collections, an uploaded shapefile can be simplified by setting the `simplify-shapefile` parameter to `true`. See [Simplifying shapefiles during collection search](#c-shapefile-simplification) for more details.
 
     curl -XPOST "%CMR-ENDPOINT%/granules" -F "simplify-shapefile=true" -F "shapefile=@africa.zip;type=application/shapefile+zip" -F "provider=PROV1"
 
@@ -3034,7 +3034,7 @@ Version 2 facets are enabled by setting the `include_facets=v2` parameter in eit
 
 Hierarchical Facet requests include any or all parts of the hierarchical structure using the `&parameter[set][subfield]=value` notation where:
 
-* **set**: Field group number denoting related hierachical subfields where all subfields for one facet use the same number. Values start with 0.
+* **set**: Field group number denoting related hierarchical subfields where all subfields for one facet use the same number. Values start with 0.
 * **subfield**: Field name in the hierarchical facet as defined by KMS. ie: Platforms uses Basis, Category, Sub_Category, Short_Name
 * **value**: facet value. ie Platform Basis has a `Air-based Platforms` value.
 
@@ -3457,7 +3457,7 @@ An administrator with system object INGEST\_MANAGEMENT\_ACL update permission ca
 
 Tiles are geographic regions formed by splitting the world into rectangular regions in a projected coordinate system such as Sinusoidal Projection based off an Authalic Sphere. CMR supports searching of tiles which fall within a geographic region defined by a given input geometry. Currently, only tiles in MODIS Integerized Sinusoidal Grid(click [here](https://lpdaac.usgs.gov/products/modis_products_table/modis_overview) for more details on the grid) can be searched. The input geometry could be either a minimum bounding rectangle or one of point, line or polygon in spherical coordinates. The input coordinates are to be supplied in the same format as in granule and collection spatial searches (See under "Find granules by Spatial").
 
-A query could consist of multiple spatial parameters, two points and a bounding box for example. All the spatial parameters are OR'd in a query meaning a query will return all the tiles which intersect at-least one of the given geometries.
+A query could consist of multiple spatial parameters, two points and a bounding box for example. All the spatial parameters are ORed in a query meaning a query will return all the tiles which intersect at-least one of the given geometries.
 
 Here are some examples:
 Find the tiles which intersect a polygon.
@@ -4298,7 +4298,7 @@ Examples of sorting by long_name in descending (reverse alphabetical) and ascend
 
 #### <a name="variable-access-control"></a> Variable Access Control
 
-Access to variable and variable association is granted through the provider via the INGEST_MANAGMENT_ACL. Users can only create, update, or delete a variable if they are granted the appropriate permission. Associating and dissociating collections with a variable is considered an update.
+Access to variable and variable association is granted through the provider via the INGEST_MANAGEMENT_ACL. Users can only create, update, or delete a variable if they are granted the appropriate permission. Associating and dissociating collections with a variable is considered an update.
 
 ### <a name="service"></a> Service
 
@@ -4492,7 +4492,7 @@ Content-Type: application/vnd.nasa.cmr.umm_results+json;version=1.1; charset=utf
         "OnlineResource": {
           "Linkage": "https://nsidc.org/cgi-bin/atlas_north",
           "Name": "NSIDC WCS Service for the Northern Hemisphere",
-          "Description": "NSIDC WCS Service, tlas of the Cryosphere: Northern Hemisphere"
+          "Description": "NSIDC WCS Service, atlas of the Cryosphere: Northern Hemisphere"
         },
         "ServiceOptions": {
           "SubsetType": [
@@ -4623,7 +4623,7 @@ Content-Length: 168
 ]
 ```
 
-On occassions when service association cannot be processed at all due to invalid input, service association request will return a failure status code with the appropriate error message.
+On occasions when service association cannot be processed at all due to invalid input, service association request will return a failure status code with the appropriate error message.
 
 #### <a name="service-dissociation"></a> Service Dissociation
 
@@ -4682,7 +4682,7 @@ On occasions when service dissociation cannot be processed at all due to invalid
 ### <a name="tool"></a> Tool
 
 UMM-T provides metadata to support the User Interface/User Experience (UI/UX)-driven approach to Tools. Specifically, when a user wants to know the tools available for a specific collection and makes selections via the Earthdata Search UI, options are presented showing what operating systems or languages are supported.
-The UMM-T model in MMT enables the population of the tool options, either web user interface or downloadable tool options are surfaced in the UI to support these selections. Each UMM-T record contains metadata for tools and other information such as contact groups or contact persons, tool keywords, and supported inouts and outputs.
+The UMM-T model in MMT enables the population of the tool options, either web user interface or downloadable tool options are surfaced in the UI to support these selections. Each UMM-T record contains metadata for tools and other information such as contact groups or contact persons, tool keywords, and supported inputs and outputs.
 
 #### <a name="searching-for-tools"></a> Searching for Tools
 
@@ -4718,8 +4718,8 @@ The following fields are indexed for keyword (free text) search:
 * Tool name
 * Tool long name
 * Tool version
-* Tool keywords (category, term, spcific term, topic)
-* Tool organizations (short and long names, roles, urlvalue)
+* Tool keywords (category, term, specific term, topic)
+* Tool organizations (short and long names, roles, url-value)
 * Contact persons (first names, contacts last names, roles)
 * Contact groups (group name, roles)
 * RelatedURL (description, subtype, type, URL, URL content type)
@@ -5009,7 +5009,7 @@ Content-Length: 168
 ]
 ```
 
-On occassions when tool association cannot be processed at all due to invalid input, tool association request will return a failure status code with the appropriate error message.
+On occasions when tool association cannot be processed at all due to invalid input, tool association request will return a failure status code with the appropriate error message.
 
 #### <a name="tool-dissociation"></a> Tool Dissociation
 

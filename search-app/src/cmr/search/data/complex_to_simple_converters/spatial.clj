@@ -143,7 +143,7 @@
   (let [orbits-runtime (get-in context [:system orbits/system-key])]
     (gc/or-conds
      (map (fn [lat-range-lon-range]
-            (let [lat-range (first (first lat-range-lon-range))
+            (let [lat-range  (ffirst lat-range-lon-range)
                   [asc-lat-ranges desc-lat-ranges] (orbits/denormalize-latitude-range
                                                     orbits-runtime
                                                     (first lat-range)

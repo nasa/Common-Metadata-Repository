@@ -161,7 +161,7 @@
   [headers]
   (and (false? (allow-all-granule-params-flag))
        (or (not (some? (get headers "client-id")))
-           (not (= "true" (get headers (string/lower-case (allow-all-gran-header))))))))
+           (not= "true" (get headers (string/lower-case (allow-all-gran-header)))))))
 
 (defn- handle-all-granule-params
   "Throws error if all granule params needs to be rejected."
@@ -248,9 +248,7 @@
                   short-scroll-id (format "%s, scroll-id: %s." log-message short-scroll-id)
                   search-after (format "%s, search-after: %s." log-message search-after)
                   :else (format "%s." log-message)))
-        search-params (if cached-search-params
-                        cached-search-params
-                        (lp/process-legacy-psa params))
+        search-params (or cached-search-params (lp/process-legacy-psa params))
         _ (handle-granule-search-params headers concept-type search-params short-scroll-id)
 
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]
@@ -382,7 +380,7 @@
 
 (def routes-regex
   "Appends the generic concepts dynamically loaded to the non-generic concepts to match possible routes general form: (?:(?:granules)|...(?:data-quality-summaries)"
-  (re-pattern (str "(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services)|" 
+  (re-pattern (str "(?:(?:granules)|(?:collections)|(?:variables)|(?:subscriptions)|(?:tools)|(?:services)|"
                    common-generic/plural-generic-concept-types-reg-ex
                    ")(?:\\..+)?")))
 

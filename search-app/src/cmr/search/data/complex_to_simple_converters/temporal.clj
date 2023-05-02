@@ -89,7 +89,7 @@
         start-date (or start-date h/earliest-start-date-joda-time)]
     (if (or start-date end-date)
       (let [end-year (if end-date (t/year end-date) (t/year (tk/now)))
-            start-day (if start-day start-day 1)
+            start-day (or start-day 1)
             conditions (map
                          #(simple-conditions-for-year
                             % start-date end-date start-day end-day end-year limit-to-granules concept-type)

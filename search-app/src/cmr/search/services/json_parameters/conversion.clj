@@ -112,6 +112,8 @@
   "Perform all validations against the provided JSON query."
   [concept-type json-query]
   (concept-type-validation concept-type)
+  (when-not json-query
+    (errors/throw-service-errors :invalid-data ["JSON query cannot be empty"]))
   (when-let [errors (seq (js/validate-json (concept-type->json-query-schema concept-type) json-query))]
     (errors/throw-service-errors :bad-request errors)))
 

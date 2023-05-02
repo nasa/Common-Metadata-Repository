@@ -29,7 +29,7 @@
 
     (not (.equals "spatial" script-source))
     (throw (new IllegalArgumentException
-                (format "Uknown script name %s" script-source)))
+                (format "Unknown script name %s" script-source)))
 
     :else
     (-> context .factoryClazz (.cast (new SpatialScriptFactory)))))

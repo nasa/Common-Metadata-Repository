@@ -1,0 +1,39 @@
+{
+  "MetadataSpecification": {
+    "Name":"Provider",
+    "Version": "1.0.0",
+    "URL": "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0"},
+  "ProviderId": "MBQ",
+  "DescriptionOfHolding": "Air temperature readings from snitchs durring Quidditch matches.",
+  "Organizations": [
+    {"ShortName": "MBQ",
+      "LongName": "Merican Bureau of Quidditch",
+      "Roles": ["PUBLISHER"],
+      "URLValue": "https://quidditch.example.gov/"
+    }],
+  "Administrators": ["auror.80"],
+  "ContactPersons": [{
+    "Roles":["PROVIDER MANAGEMENT", "TECHNICAL CONTACT"],
+    "LastName": "Potter",
+    "ContactInformation": {
+      "HoursOfService": "8-5 East Coast time, M-F",
+      "ContactInstruction": "slack works best",
+      "Addresses":[{
+        "StreetAddresses": ["123 Fake Street"],
+        "City": "Springfield",
+        "StateProvince": "DC",
+        "Country": "Merica",
+        "PostalCode" : "90210"
+      }],
+      "ContactMechanisms": [
+        {"Type": "Email", "Value": "harry.potter@example.gov"},
+        {"Type": "Slack", "Value": "auror80"}
+      ]
+    }
+  }],
+  "ContactGroups": [{
+    "Roles":["DEVELOPER"],
+    "GroupName": "team-search"
+  }],
+  "Consortiums": ["CEOS", "FEDEO", "CWIC"]
+}

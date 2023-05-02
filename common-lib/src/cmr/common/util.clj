@@ -4,6 +4,7 @@
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clojure.data.codec.base64 :as b64]
+   [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.pprint :refer [pprint print-table]]
    [clojure.reflect :refer [reflect]]
@@ -470,9 +471,9 @@
     (catch NumberFormatException _
       false)))
 
-(defn numeric? 
-  "Returns true if the sequence of characters can be converted to a number. 
-   False otherwise. Different from `cmr.common.util/numeric-string?` in that: 
+(defn numeric?
+  "Returns true if the sequence of characters can be converted to a number.
+   False otherwise. Different from `cmr.common.util/numeric-string?` in that:
    1 - more strict, for example returns false for string '0D'.
    2 - accepts any sequence of characters, not just strings."
   [s]
@@ -1022,6 +1023,28 @@
           false))
       false)))
 
+;; Note: Similar code exists at gov.nasa.echo.kernel.service.authentication
+(def URS_TOKEN_MAX_LENGTH 100)
+
+;; TODO - remove legacy token check after legacy token retirement
+(defn is-legacy-token?
+  "There are two uses cases captured by this test, the Legacy token and the
+   new style legacy token made to behave like a legacy token. This function 
+   will not match very short JWT tokens.
+   Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
+  [token]
+  (<= (count token) URS_TOKEN_MAX_LENGTH))
+
+(defn is-launchpad-token?
+  "Returns true if the given token is a launchpad token.
+   If the token is not a Legacy (ECHO), Heritage (EDL+), or JWT (newest) token,
+   then it must be a Launchpad token.
+   Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
+  [token]
+  ;; note: ordered from least expensive to most
+  (not (or (is-legacy-token? token)
+           (is-jwt-token? token))))
+
 (defn human-join
   "Given a vector of strings, return a string joining the elements of the collection with 'separator', except for
   the last two which are joined with \"'separator' 'final-separator' \".
@@ -1079,13 +1102,19 @@
   "If s is a string, call read-string, otherwise returns s."
   [s]
   (if (string? s)
-    (read-string s)
+    ;; clojure.core/read-string can be used to inject runnable code.
+    ;; use clojure.edn/read-string instead.  Also since this is
+    ;; being used to convert to a number, check to see if the result
+    ;; is a number, and return it, otherwise return nil
+    (let [edn-str (edn/read-string s)]
+      (when (number? edn-str) edn-str))
     s))
 
-(defn str->num 
+(defn str->num
   "If the string can be converted to a number, return that number, otherwise return nil."
-  [s] 
-  (if (numeric? s)
+  [s]
+  (if (and (string? s)
+           (numeric? s))
     (safe-read-string s)
     nil))
 
@@ -1093,3 +1122,9 @@
   "Html escape the given string. it is used to deal with potential xss issues in user input."
   [s]
   (hp-util/escape-html s))
+
+(defn tee
+  "Tee off an input console but do so inline for use in ->"
+  [anything]
+  (println anything)
+  anything)

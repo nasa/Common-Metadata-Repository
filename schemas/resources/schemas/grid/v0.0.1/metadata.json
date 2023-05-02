@@ -11,7 +11,7 @@
     "GridDefinition": {
         "CoordinateReferenceSystemID": {
             "Type": "EPSG",
-            "Code": "EPSG:4326",
+			"Code": "EPSG:4326",
             "Title": "WGS84 - World Geodetic System 1984, used in GPS - EPSG:4326",
             "URL": "https://epsg.io/4326"
         },
@@ -33,25 +33,25 @@
             "SouthBoundingCoordinate": -90.0,
             "WestBoundingCoordinate": 90.0,
             "SpatialResolution": {
-                "Unit": "Meter",
-                "LongitudeResolution": "10.0001",
-                "LatitudeResolution": "14.0001"
+                "Unit": "Degree",
+                "LongitudeResolution": "0.0005",
+                "LatitudeResolution": "90.000"
             }
         },
         "DimensionScale": {
-            "0_360_DegreeProjection": false,
+            "0_360_DegreeProjection": true,
             "X":
             {
-                "Minimum": 98.0330,
-                "Maximum": 98.0330,
-                "Unit": "Meter",
+                "Minimum": "-360-00-00.000",
+                "Maximum": "360-00-00.00",
+                "Unit": "Degrees-Minutes-Seconds",
                 "Resolution": 0.125
             },
             "Y":
             {
-                "Minimum": 98.0330,
-                "Maximum": 98.0330,
-                "Unit": "Meter",
+                "Minimum": "-360-00-00.000",
+                "Maximum": "360-00-00.00",
+                "Unit": "Degrees-Minutes-Seconds",
                 "Resolution": 0.5
             },
             "Time":

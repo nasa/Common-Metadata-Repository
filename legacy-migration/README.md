@@ -1,4 +1,4 @@
-# Legacy Serivce Migration
+# Legacy Service Migration
 
 Legacy Service Migration holds the migration scripts for migrating ordering related data from CMR Legacy Service to CMR. 
 
@@ -19,7 +19,7 @@ The data is read from Legacy Service tables in Oracle and ingested into CMR via 
 * export ACCESS_TOKEN=<user_token_for_CMR>
 
 ## Run Migration
-Make sure you can access Oracle database (via tunnel to localhost:1521) in the corresponding CMR envirionment that you want to perform the migration.
+Make sure you can access Oracle database (via tunnel to localhost:1521) in the corresponding CMR environment that you want to perform the migration.
 
 `python3 migrate.py`
 
@@ -27,4 +27,4 @@ By default, OrderOptionDefinitions and ServiceOptionDefinitions will not be inge
 
 ## License
 
-Copyright © 2022 NASA
+Copyright © 2023 NASA

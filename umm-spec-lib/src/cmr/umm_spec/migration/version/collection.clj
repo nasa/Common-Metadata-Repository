@@ -222,7 +222,7 @@
     collection))
 
 (defn- migrate-tiling-id-systems-down
-  "Migrate one TilingIdentificationSystem down if all coordinates' min and max values convert form string to number, 
+  "Migrate one TilingIdentificationSystem down if all coordinates' min and max values convert from string to number, 
    otherwise remove entire tiling identification system (return nil)"
   [element]
   (when (and (util/str->num (get-in element [:Coordinate1 :MinimumValue]))
@@ -682,3 +682,30 @@
                        (util/update-in-all [:TilingIdentificationSystems] migrate-tiling-id-systems-down)
                        (update :TilingIdentificationSystems util/remove-nils-empty-maps-seqs))
                    coll))))
+
+(defmethod interface/migrate-umm-version [:collection "1.17.2" "1.17.3"]
+  [context collection & _]
+  ;; if TilingIdentificationSystems Names are any but Military Grid Reference System, 
+  ;; Migrate TilingIdentificationSystems/Coordinate1 and Coordinate2 from string to number.
+  (-> collection
+      (m-spec/update-version :collection "1.17.3")
+      (util/update-in-all [:TilingIdentificationSystems] #(if (= "Military Grid Reference System" (:TilingIdentificationSystemName %))
+                                                            %
+                                                            (-> %
+                                                                (update-in [:Coordinate1 :MinimumValue] util/str->num)
+                                                                (update-in [:Coordinate1 :MaximumValue] util/str->num)
+                                                                (update-in [:Coordinate2 :MinimumValue] util/str->num)
+                                                                (update-in [:Coordinate2 :MaximumValue] util/str->num))))))
+
+(defmethod interface/migrate-umm-version [:collection "1.17.3" "1.17.2"]
+  [context collection & _]
+  ;; Migrate TilingIdentificationSystems/Coordinate1 and Coordinate2 down if they are numbers.
+  ;; Replace a GetService MimeType to a valid value.
+  (util/remove-nils-empty-maps-seqs
+   (-> collection
+       (m-spec/update-version :collection "1.17.2")
+       (util/update-in-all [:TilingIdentificationSystems :Coordinate1 :MinimumValue] str)
+       (util/update-in-all [:TilingIdentificationSystems :Coordinate1 :MaximumValue] str)
+       (util/update-in-all [:TilingIdentificationSystems :Coordinate2 :MinimumValue] str)
+       (util/update-in-all [:TilingIdentificationSystems :Coordinate2 :MaximumValue] str)
+       (update :RelatedUrls related-url/migrating-down-to_1_17_2))))

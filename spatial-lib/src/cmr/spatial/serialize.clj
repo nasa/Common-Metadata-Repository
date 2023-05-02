@@ -74,13 +74,13 @@
 (defprotocol SerializeConversions
   (shape->stored-ords
     [shape]
-    "Converts a spatial shape into ta list of maps containing a shape type and ordinates  to store in the search index")
+    "Converts a spatial shape into a list of maps containing a shape type and ordinates  to store in the search index")
   (shape->mbr
     [shape]
     "Converts a spatial shape into it's minimum bounding rectangle")
   (shape->lr
     [shape]
-    "Determins the largest interior rectangle of a shape"))
+    "Determines the largest interior rectangle of a shape"))
 
 (extend-protocol SerializeConversions
 
@@ -186,7 +186,7 @@
 
     :cartesian-line-string
     (l/ords->line-string :cartesian (mapv stored->ordinate ords))
-    (throw (Exception. (str "Uknown ords shape type " (pr-str type))))))
+    (throw (Exception. (str "Unknown ords shape type " (pr-str type))))))
 
 (def shape-type->integer
   "Converts a shape type into an integer for storage"

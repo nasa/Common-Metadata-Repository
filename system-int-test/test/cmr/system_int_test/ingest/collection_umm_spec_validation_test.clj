@@ -456,7 +456,6 @@
             "ISO MENDS invalid character in SingleDateTimes"
             :iso19115 invalid-char-single-umm "[1993-07-29S] is not a valid datetime"))))
 
-
 (deftest umm-spec-direct-distribution-info-validation-tests
   (testing "Invalid Direct Distribution Information "
     (let [invalid-nil-region-umm (assoc (data-umm-c/collection)
@@ -485,7 +484,7 @@
                                                               :allow-failure? true
                                                               :validate-umm-c true})]
           (is (= error-code (:status response)))
-          (is (string/includes? (first (:errors response))  error-message)))
+          (is (some #(string/includes? % error-message) (:errors response))))
 
         "DIF10 nil Region is invalid"
         :dif10 400 invalid-nil-region-umm "Invalid content was found starting with element 'S3BucketAndObjectPrefixName"
@@ -506,10 +505,10 @@
         :iso19115 422 invalid-region-umm "DirectDistributionInformation/Region: hello is not a valid enum value"
 
         "DIF10 bad URL is invalid"
-        :dif10 422 invalid-url-umm "[hello] is not a valid URL"
+        :dif10 422 invalid-url-umm "[hello] is not a valid URI"
 
         "ECHO10 bad URL is invalid"
-        :echo10 422 invalid-url-umm "[hello] is not a valid URL"
+        :echo10 422 invalid-url-umm "[hello] is not a valid URI"
 
         "ISO 19115 bad URL is invalid"
-        :iso19115 422 invalid-url-umm "[hello] is not a valid URL"))))
+        :iso19115 422 invalid-url-umm "[hello] is not a valid URI"))))

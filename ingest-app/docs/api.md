@@ -34,11 +34,15 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
         * [PUT - Update a variable.](#create-update-variable)
         * [DELETE - Delete a variable.](#delete-variable)
 * [Services](#service)
-    * [/providers/\<provider-id>/services/\<native-id>](#service-endpoint)
+    * [/providers/\<provider-id>/validate/service/\<native-id>](#validate-service-endpoint)
+        * [POST - Validate service metadata.](#validate-service)
+    * [/providers/\<provider-id>/services/\<native-id>](#create-delete-service-endpoint)
         * [PUT - Create or update a service.](#create-update-service)
         * [DELETE - Delete a service.](#delete-service)
 * [Tools](#tool)
-    * [/providers/\<provider-id>/tools/\<native-id>](#tool-endpoint)
+    * [/providers/\<provider-id>/validate/tool/\<native-id>](#validate-tool-endpoint)
+        * [POST - Validate tool metadata.](#validate-tool)
+    * [/providers/\<provider-id>/tools/\<native-id>](#create-delete-tool-endpoint)
         * [PUT - Create or update a tool.](#create-update-tool)
         * [DELETE - Delete a tool.](#delete-tool)
 * [Subscriptions](#subscription)
@@ -811,9 +815,53 @@ curl -XDELETE \
 
     {"concept-id":"V1200000012-PROV1","revision-id":2}
 ## <a name="service"></a> Service
+### <a name="validate-service"></a> Validate Service
+#### <a name="validate-service-endpoint"></a> /providers/&lt;provider-id&gt;/validate/service/&lt;native-id&gt;
 
-#### <a name="service-endpoint"></a> /providers/&lt;provider-id&gt;/services/&lt;native-id&gt;
+Service metadata can be validated without having to ingest it. The validation performed is schema validation. It returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
+
+```
+curl -XPOST -H "Content-type: application/vnd.nasa.cmr.umm+json" \
+  -H "Authorization: Bearer XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/validate/service/sampleNativeId15 \
+  -d \
+"{
+  \"Name\": \"GESDISC_HL2SS\",
+  \"LongName\": \"Harmony Level 2 Subsetting Service (HL2SS) for GES DISC\",
+  \"Version\": \"1.3.1\",
+  \"Type\": \"Harmony\",
+  \"Description\": \"Endpoint for subsetting L2 Subsetter via Harmony\",
+  \"URL\": {
+    \"Description\": \"PROJECT HOME PAGE\",
+    \"URLValue\": \"https://harmony.earthdata.nasa.gov\"
+  },
+  \"ServiceKeywords\": [
+    {
+      \"ServiceCategory\": \"EARTH SCIENCE SERVICES\",
+      \"ServiceTopic\": \"DATA MANAGEMENT/DATA HANDLING\",
+      \"ServiceTerm\": \"SUBSETTING/SUPERSETTING\"
+    }
+  ],
+  \"ServiceOrganizations\": [
+    {
+      \"Roles\": [
+        \"ORIGINATOR\"
+      ],
+      \"ShortName\": \"NASA/JPL/PODAAC\",
+      \"LongName\": \"Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA\"
+    }
+  ],
+  \"MetadataSpecification\": {
+    \"URL\": \"https://cdn.earthdata.nasa.gov/umm/service/v1.5.0\",
+    \"Name\": \"UMM-S\",
+    \"Version\": \"1.5.0\"
+  }
+}"
+
+```
+
 ### <a name="create-update-service"></a> Create / Update a Service
+#### <a name="create-delete-service-endpoint"></a> /providers/&lt;provider-id&gt;/services/&lt;native-id&gt;
 
 Service concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/services/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
@@ -899,9 +947,51 @@ curl -XDELETE \
 
     {"concept-id":"S1200000015-PROV1","revision-id":2}
 ## <a name="tool"></a> Tool
+### <a name="validate-tool"></a> Validate Tool
+#### <a name="validate-tool-endpoint"></a> /providers/&lt;provider-id&gt;/validate/tool/&lt;native-id&gt;
 
-#### <a name="tool-endpoint"></a> /providers/&lt;provider-id&gt;/tools/&lt;native-id&gt;
+Tool metadata can be validated without having to ingest it. The validation performed is schema validation. It returns status code 200 on successful validation, status code 400 with a list of validation errors on failed validation.
+
+```
+curl -XPOST -H "Content-type: application/vnd.nasa.cmr.umm+json" \
+  -H "Authorization: Bearer XXXX" \
+  %CMR-ENDPOINT%/providers/PROV1/validate/tool/sampleNativeId15 \
+  -d \
+"{
+  \"Name\": \"GESDISC_HL2SS\",
+  \"LongName\": \"Harmony Level 2 Subsetting Service (HL2SS) for GES DISC\",
+  \"Version\": \"1.3.1\",
+  \"Type\": \"Harmony\",
+  \"Description\": \"Endpoint for subsetting L2 Subsetter via Harmony\",
+  \"URL\": {
+    \"Description\": \"PROJECT HOME PAGE\",
+    \"URLValue\": \"https://harmony.earthdata.nasa.gov\"
+  },
+  \"ToolKeywords\": [
+    {
+      \"ToolCategory\": \"EARTH SCIENCE SERVICES\",
+      \"ToolTopic\": \"DATA MANAGEMENT/DATA HANDLING\"
+    }
+  ],
+  \"Organizations\": [
+    {
+      \"Roles\": [
+        \"ORIGINATOR\"
+      ],
+      \"ShortName\": \"NASA/JPL/PODAAC\",
+      \"LongName\": \"Physical Oceanography Distributed Active Archive Center, Jet Propulsion Laboratory, NASA\"
+    }
+  ],
+  \"MetadataSpecification\": {
+    \"URL\": \"https://cdn.earthdata.nasa.gov/umm/tool/v1.0\",
+    \"Name\": \"UMM-T\",
+    \"Version\": \"1.0\"
+  }
+}"
+
+```
 ### <a name="create-update-tool"></a> Create / Update a Tool
+#### <a name="create-delete-tool-endpoint"></a> /providers/&lt;provider-id&gt;/tools/&lt;native-id&gt;
 
 Tool concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/providers/<provider-id>/tools/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id).
 
@@ -921,14 +1011,13 @@ curl -XPUT \
     \"Description\": \"PROJECT HOME PAGE\",
     \"URLValue\": \"https://harmony.earthdata.nasa.gov\"
   },
-  \"ServiceKeywords\": [
+  \"ToolKeywords\": [
     {
-      \"ServiceCategory\": \"EARTH SCIENCE SERVICES\",
-      \"ServiceTopic\": \"DATA MANAGEMENT/DATA HANDLING\",
-      \"ServiceTerm\": \"SUBSETTING/SUPERSETTING\"
+      \"ToolCategory\": \"EARTH SCIENCE SERVICES\",
+      \"ToolTopic\": \"DATA MANAGEMENT/DATA HANDLING\"
     }
   ],
-  \"ServiceOrganizations\": [
+  \"Organizations\": [
     {
       \"Roles\": [
         \"ORIGINATOR\"
@@ -938,9 +1027,9 @@ curl -XPUT \
     }
   ],
   \"MetadataSpecification\": {
-    \"URL\": \"https://cdn.earthdata.nasa.gov/umm/service/v1.5.0\",
-    \"Name\": \"UMM-S\",
-    \"Version\": \"1.5.0\"
+    \"URL\": \"https://cdn.earthdata.nasa.gov/umm/tool/v1.0\",
+    \"Name\": \"UMM-T\",
+    \"Version\": \"1.0\"
   }
 }"
 ```

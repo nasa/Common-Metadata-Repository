@@ -142,7 +142,7 @@
     [{:x 1} {:y 2}] [{} {:x 1} {:a nil :b {:c nil}} {:y 2}]))
 
 (deftest remove-nils-empty-maps-seqs
-  (testing "Remove nils, empty maps, emtpy vectors, and empty sequences test"
+  (testing "Remove nils, empty maps, empty vectors, and empty sequences test"
     (is (= {:c {:y 5 :m ["1" "2"] :z 4 :t [{:e "1"} {:h "50"}] :u '(1 "2")} :b 1}
            (util/remove-nils-empty-maps-seqs {:a nil
                                               :b 1

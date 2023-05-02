@@ -4,6 +4,7 @@
   (:require
    [clj-time.core :as t]
    [clojure.java.io :as io]
+   [clojure.string :as string]
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as ext :refer [checking checking-with-seed]]
@@ -192,6 +193,27 @@
     (testing (str format " to :umm-json")
       (is (empty? (generate-and-validate-xml :collection :umm-json umm-c-record))))))
 
+(defn- trim-tiling-system-value
+  "Removes the white space that the record generator sometimes creates
+  for tiling identification coordination values. The spaces are not valid values
+  and are removed during translation."
+  [value]
+  (when value
+    (if (string? value)
+      (string/trim value)
+      value)))
+
+(defn- trim-tiling-system-values
+  "Calls function to removes the white space that the record generator sometimes creates
+  for tiling identification coordination values. The spaces are not valid values
+  and are removed during translation."
+  [umm]
+  (-> umm
+      (update-in-all [:TilingIdentificationSystems :Coordinate1 :MinimumValue] trim-tiling-system-value)
+      (update-in-all [:TilingIdentificationSystems :Coordinate1 :MaximumValue] trim-tiling-system-value)
+      (update-in-all [:TilingIdentificationSystems :Coordinate2 :MinimumValue] trim-tiling-system-value)
+      (update-in-all [:TilingIdentificationSystems :Coordinate2 :MaximumValue] trim-tiling-system-value)))
+
 ;; This test starts with a umm record where the values of the record
 ;; are generated with different values every time. This test takes the
 ;; UMM record and converts it into another supported format, then converts it back
@@ -224,35 +246,15 @@
           ;; Collection version 1.17.2 changes yet to be implemented in echo10, iso. 
           ;; 1. For now, EULAIdentifiers needs to exist (as nil) if UseConstraints exists, 
           ;; because it gets added back in (as nil) when round-tripping.
-          ;; 2. TilingIdentificationSystems>Coordinate1/2>Min/MaxValue set back to number rather than string;
-          ;; needs to be set afterward (for expected/actual) as well.
           umm-record (if (and (seq (:UseConstraints umm-record))
                               (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap)))
                        (update-in umm-record [:UseConstraints] assoc :EULAIdentifiers nil)
                        umm-record)
-          umm-record (if (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap))
-                       (-> umm-record
-                           (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MinimumValue 100)
-                           (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MaximumValue -100)
-                           (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MinimumValue 1.5)
-                           (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MaximumValue -1.5))
-                       umm-record)
+          umm-record (trim-tiling-system-values umm-record)
+
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
-          expected (if (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap))
-                     (-> expected
-                         (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MinimumValue 100)
-                         (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MaximumValue -100)
-                         (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MinimumValue 1.5)
-                         (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MaximumValue -1.5))
-                     expected)
-          actual (if (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap))
-                   (-> actual
-                       (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MinimumValue 100)
-                       (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MaximumValue -100)
-                       (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MinimumValue 1.5)
-                       (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MaximumValue -1.5))
-                   actual)
+
           expected (util/remove-nil-keys expected)
           actual (util/remove-nil-keys actual)
           ;; Change fields to sets for comparison
@@ -288,29 +290,11 @@
                               (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap)))
                        (update-in umm-record [:UseConstraints] assoc :EULAIdentifiers nil)
                        umm-record)
-          umm-record (if (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap))
-                       (-> umm-record
-                           (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MinimumValue 100)
-                           (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MaximumValue -100)
-                           (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MinimumValue 1.5)
-                           (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MaximumValue -1.5))
-                       umm-record)
+          umm-record (trim-tiling-system-values umm-record)
+
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
-          expected (if (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap))
-                     (-> expected
-                         (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MinimumValue 100)
-                         (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MaximumValue -100)
-                         (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MinimumValue 1.5)
-                         (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MaximumValue -1.5))
-                     expected)
-          actual (if (or (= metadata-format :echo10) (= metadata-format :iso19115) (= metadata-format :iso-smap))
-                   (-> actual
-                       (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MinimumValue 100)
-                       (update-in-all [:TilingIdentificationSystems :Coordinate1] assoc :MaximumValue -100)
-                       (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MinimumValue 1.5)
-                       (update-in-all [:TilingIdentificationSystems :Coordinate2] assoc :MaximumValue -1.5))
-                   actual)
+
           expected (util/remove-nil-keys expected)
           actual (util/remove-nil-keys actual)
           ;; Change fields to sets for comparison

@@ -11,6 +11,7 @@
    [cmr.common.util :as util]
    [cmr.common.validations.core :as validations]
    [cmr.metadata-db.config :as mdb-config]
+   [cmr.metadata-db.int-test.provider-util :as prov-util]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.transmit.config :as transmit-config]
    [inflections.core :as inf]))
@@ -493,8 +494,10 @@
   status and a list of error messages."
   [params]
   (let [response (client/post (providers-url)
-                              {:body (json/generate-string
-                                       (util/remove-nil-keys params))
+                              {:body (-> params
+                                         prov-util/minimum-provider->metadata
+                                         util/remove-nil-keys
+                                         json/generate-string)
                                :content-type :json
                                :accept :json
                                :throw-exceptions false
@@ -522,7 +525,7 @@
   provider-id, short-name, cmr-only and small fields of the provider."
   [params]
   (let [response (client/put (format "%s/%s" (providers-url) (:provider-id params))
-                             {:body (json/generate-string params)
+                             {:body (json/generate-string (prov-util/minimum-provider->metadata params))
                               :content-type :json
                               :accept :json
                               :as :json
@@ -572,11 +575,19 @@
       (reset-database)
       (doseq [provider providers]
         (let [{:keys [provider-id short-name cmr-only small]} provider
-              short-name (if short-name short-name provider-id)]
-          (save-provider {:provider-id provider-id
-                          :short-name short-name
-                          :cmr-only (if cmr-only true false)
-                          :small (if small true false)})))
+              ;; these are required fields, default them to something, assume
+              ;; other fields are to be passed in which will override the default
+              ;; metadata defined in a template
+              short-name (or short-name provider-id)
+              provider-id (or provider-id short-name)
+              cmr-only (if cmr-only true false)
+              small (if small true false)
+              provider (assoc provider
+                              :provider-id provider-id
+                              :short-name short-name
+                              :cmr-only cmr-only
+                              :small small)]
+          (save-provider provider)))
       (f)
       (finally
         (side/eval-form `(mdb-config/set-publish-messages! true))))))

@@ -106,7 +106,7 @@
       (debug (format "Source axis order: [%s]" (CRS/getAxisOrder src-crs)))
       (debug (format "Destination CRS: [%s]" (.getName EPSG-4326-CRS)))
       (debug (format "Destination axis order: [%s]" (CRS/getAxisOrder EPSG-4326-CRS)))
-      ; If we find a transform use it to transform the geometry, 
+      ; If we find a transform use it to transform the geometry,
       ; otherwise send an error message
       (if-let [transform (try
                            (CRS/findMathTransform src-crs EPSG-4326-CRS false)
@@ -140,7 +140,7 @@
   (let [point-count (features-point-count features)]
     (cond
       (= point-count 0) "Shapefile has no points"
-      (> point-count (max-shapefile-points)) 
+      (> point-count (max-shapefile-points))
           (format "Number of points in shapefile exceeds the limit of %d"
             (max-shapefile-points))
       :else nil)))
@@ -198,7 +198,7 @@
         conditions))))
 
 (defn error-if
-  "Throw a service error with the given message if `f` applied to `item` is true. 
+  "Throw a service error with the given message if `f` applied to `item` is true.
   Otherwise just return `item`. Removes the temporary file/directory `temp-file` first."
   [item f message ^File temp-file]
   (if (f item)
@@ -249,7 +249,7 @@
           feature-source (.getFeatureSource data-store)
           features (.getFeatures feature-source)
           ;; Fail fast
-          _ (when (or (nil? features) 
+          _ (when (or (nil? features)
                       (nil? (.getSchema features))
                       (.isEmpty features))
               (errors/throw-service-error :bad-request "Shapefile has no features"))
@@ -260,7 +260,7 @@
           (let [feature (.next iterator)]
             (.add feature-list feature)))
         (features->conditions feature-list mt/geojson)
-        (finally 
+        (finally
           (.close iterator)
           (-> data-store .getFeatureReader .close)
           (.delete file))))
@@ -301,7 +301,7 @@
 (defmulti shapefile->conditions
   "Converts a shapefile to query conditions based on shapefile format"
   (fn [shapefile-info]
-    (info (format "SHAPEFILE FORMAT: %s" (:contenty-type shapefile-info)))
+    (debug (format "SHAPEFILE FORMAT: %s" (:contenty-type shapefile-info)))
     (if (:in-memory shapefile-info)
       :in-memory
       (:content-type shapefile-info))))

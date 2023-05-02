@@ -28,6 +28,20 @@
       (is (= 5 revision-id))
       (is (mdb/concept-exists-in-mdb? concept-id 5)))))
 
+(deftest tool-validation-test
+  (testing "validation of tool concept JSON schema with missing field"
+    (let [concept (tool-util/make-tool-concept {:Type ""})
+          {:keys [status errors]} (ingest/validate-concept concept)]
+      (is (= 400 status))
+      (is (= ["#/Type:  is not a valid enum value"]
+             errors))))
+  (testing "validation of tool concept JSON schema with invalid field"
+    (let [concept (tool-util/make-tool-concept {:InvalidField "xxx"})
+          {:keys [status errors]} (ingest/validate-concept concept)]
+      (is (= 400 status))
+      (is (= ["#: extraneous key [InvalidField] is not permitted"]
+             errors)))))
+
 ;; Verify that the accept header works
 (deftest tool-ingest-accept-header-response-test
   (let [supplied-concept-id "TL1000-PROV1"]

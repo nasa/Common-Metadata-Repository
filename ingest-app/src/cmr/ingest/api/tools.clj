@@ -5,6 +5,7 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.util :as util]
    [cmr.ingest.api.core :as api-core]
    [cmr.ingest.services.ingest-service :as ingest]
    [cmr.ingest.validation.validation :as v]))
@@ -17,6 +18,20 @@
     (v/validate-concept-request concept)
     (v/validate-concept-metadata concept)
     concept))
+
+(defn validate-tool
+  [provider-id native-id request]
+  (let [{:keys [body content-type params headers request-context]} request
+        concept (api-core/body->concept! :tool provider-id native-id body content-type headers)]
+    (api-core/verify-provider-exists request-context provider-id)
+    (info (format "Validating Tool %s from client %s"
+                  (api-core/concept->loggable-string concept) (:client-id request-context)))
+    (let [validate-response (validate-and-prepare-tool-concept concept)]
+      (api-core/generate-validate-response
+       headers
+       (util/remove-nil-keys
+        (select-keys (api-core/format-and-contextualize-warnings-existing-errors validate-response)
+                     [:warnings :existing-errors]))))))
 
 (defn ingest-tool
   "Processes a request to create or update a tool."
