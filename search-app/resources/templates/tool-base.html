@@ -1,0 +1,44 @@
+{% extends "templates/search-base.html" %}
+
+{% block title %}CMR Preview{% endblock %}
+
+{% block head-pre-css %}
+<script defer src="{{ preview-root }}/plugin/metadata-preview.{{ preview-version }}.js"></script>
+<link href="{{ preview-root }}/plugin/metadata-preview.{{ preview-version }}.min.css" rel="stylesheet" type="text/css">
+{% endblock %}
+
+{% block main-content %}
+<div id="metadata-preview">
+  <p>Fetching Tool...</p>
+</div>
+{% endblock %}
+
+{% block body-end %}
+<script>
+  // Callback to set the page title when a tool is successfully loaded
+  function onSearchComplete(data) {
+    var tool = data.tool;
+
+    if (tool && tool.title) {
+      document.title = tool.title;
+    }
+  }
+
+  // Ensure scripts have loaded before initializing the preview plugin
+  document.addEventListener("DOMContentLoaded", function() {
+    // Get the element where the content should be displayed
+    const element = document.getElementById('metadata-preview');
+
+    // Initialize the preview plugin with `.init(config, element)`
+    const config = {
+      conceptId: "{{ concept-id }}",
+      conceptType: 'tool',
+      conceptUrlTemplate: '/search/concepts/{conceptId}.html',
+      token: "{{ token }}",
+      onSearchComplete: onSearchComplete
+    }
+
+    MetadataPreview.init(config, element);
+  });
+</script>
+{% endblock %}

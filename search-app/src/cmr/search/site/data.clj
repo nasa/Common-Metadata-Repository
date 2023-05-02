@@ -237,6 +237,15 @@
          :preview-root (metadata-preview-root)
          :preview-version (metadata-preview-version)))
 
+(defn get-tool
+  "Provide tool data that will be rendered on tool landing page."
+  [context concept-id]
+  (assoc (base-page context)
+         :concept-id concept-id
+         :token (:token context)
+         :preview-root (str (metadata-preview-root) "/tools")
+         :preview-version (metadata-preview-version)))
+
 (defn get-directory-links
   "Provide the list of links that will be rendered on the top-level directory
   page."
