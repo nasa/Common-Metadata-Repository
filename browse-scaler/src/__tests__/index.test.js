@@ -1,20 +1,20 @@
-const nock = require('nock');
-const { handler } = require('../index');
-const config = require('../config');
+import nock from 'nock';
+import { handler } from '../index.js';
+import { CMR_ROOT_URL } from '../config.js';
 
-const collectionWithBrowse = require('./C179003030-ORNL_DAAC.json');
-const collectionWithoutBrowse = require('./C1214587974-SCIOPS.json');
+import collectionWithBrowse from './__mocks__/C179003030-ORNL_DAAC.js';
+import collectionWithoutBrowse from './__mocks__/C1214587974-SCIOPS.js';
 
-const granuleWithBrowse = require('./C1711961296-LPCLOUD_granules.json');
-const granuleWithBrowseMultipleImages = require('./G1200460416-ESA.json');
-const granuleWithoutBrowse = require('./C179003030-ORNL_DAAC_granules.json');
+import granuleWithBrowse from './__mocks__/C1711961296-LPCLOUD_granules.js';
+import granuleWithBrowseMultipleImages from './__mocks__/G1200460416-ESA.js';
+// import granuleWithoutBrowse from './C179003030-ORNL_DAAC_granules.json';
 
-const invalidCollectionIdResponse = require('./C000000000-MISSING_NO.json');
-const invalidGranuleIdResponse = require('./G000000000-MISSING_NO.json');
+// import invalidCollectionIdResponse from './C000000000-MISSING_NO.json';
+// import invalidGranuleIdResponse from './G000000000-MISSING_NO.json';
 
 describe('handler functions', () => {
   describe('get collection(dataset) imagery', () => {
-    nock(config.CMR_ROOT_URL)
+    nock(CMR_ROOT_URL)
       .get(/search\/collections\.json/)
       .reply(200, collectionWithBrowse);
 
@@ -31,7 +31,7 @@ describe('handler functions', () => {
   });
 
   describe('get granule imagery', () => {
-    nock(config.CMR_ROOT_URL)
+    nock(CMR_ROOT_URL)
       .get(/search\/collections\.json/)
       .reply(200, collectionWithoutBrowse)
       .get(/search\/granules\.json/)
@@ -50,7 +50,7 @@ describe('handler functions', () => {
   });
 
   describe('get granule imagery', () => {
-    nock(config.CMR_ROOT_URL)
+    nock(CMR_ROOT_URL)
       .get(/search\/granules\.json/)
       .reply(200, granuleWithBrowseMultipleImages);
 

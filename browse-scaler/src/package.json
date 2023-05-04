@@ -5,8 +5,9 @@
   "readme": "Serverless image resizing",
   "license": "Apache-2.0",
   "main": "index.js",
+  "type": "module",
   "dependencies": {
-    "aws-sdk": "^2.1354.0",
+    "@aws-sdk/client-ssm": "^3.211.0",
     "axios": "^0.24.0",
     "node-fetch": "^2.6.7",
     "redis": "^2.8.0",
@@ -14,12 +15,13 @@
   },
   "scripts": {
     "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
-    "test": "jest --coverage",
+    "test": "node --experimental-vm-modules ./node_modules/.bin/jest",
     "ci-test": "jest --coverage --config jest.config.junit_output.js",
     "local-test": "jest --config jest.config.js",
     "lint": "./node_modules/.bin/eslint \"*.js\""
   },
   "devDependencies": {
+    "@babel/preset-env": "^7.14.5",
     "aws-sdk-mock": "^5.2.1",
     "eslint": "^5.16.0",
     "eslint-config-airbnb": "^17.1.1",

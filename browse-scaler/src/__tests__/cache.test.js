@@ -1,27 +1,30 @@
-const cache = require('../cache');
-const { readFile } = require('../util');
+import { cacheImage, getImageFromCache } from '../cache.js';
+import { readFile } from '../util.js';
+
+// import redis from 'redis-mock';
+// jest.mock('redis', () => redis);
 
 describe('cache tests', () => {
   test('data round trip', async () => {
     const imgData = await readFile('__tests__/stars.jpg');
-    cache.cacheImage('someData', imgData);
+    cacheImage('someData', imgData);
 
-    const res = await cache.getImageFromCache('someData');
+    const res = await getImageFromCache('someData');
 
     expect(res).toStrictEqual(imgData);
   });
 
   test('"null" string entry', async () => {
-    cache.cacheImage('itsnull', 'null');
+    cacheImage('itsnull', 'null');
 
-    const res = await cache.getImageFromCache('itsnull');
+    const res = await getImageFromCache('itsnull');
 
     // the actual string null
     expect(res.toString()).toBe('null');
   });
 
   test('key does not exist', async () => {
-    const res = await cache.getImageFromCache('idontexist');
+    const res = await getImageFromCache('idontexist');
     expect(res).toBe(null);
   });
 });

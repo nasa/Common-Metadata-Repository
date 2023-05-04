@@ -1,18 +1,33 @@
-const fetch = require('node-fetch');
-const AWS = require('aws-sdk');
-const fs = require('fs');
-const config = require('./config');
+import { SSMClient } from '@aws-sdk/client-ssm';
 
-AWS.config.update({ region: config.AWS_REGION });
+// const fetch = require('node-fetch');
 
-const ssm = new AWS.SSM();
+import fetch from 'node-fetch';
+
+import fs from 'fs';
+
+// const fs = require('fs');
+import { AWS_REGION } from './config.js';
+// const config = require('./config');
+
+let ssm;
+
+// AWS.config.update({ region: config.AWS_REGION });
+
+// const ssm = new AWS.SSM();
+
+if (!ssm) {
+  ssm = new SSMClient({
+    region: AWS_REGION
+  });
+}
 
 /**
  * getParam: Given token name, retrieve it from Parameter Store
  * @param {String} param name of parameter to fetch
  * @returns {JSON} server response object from Parameter Store
  */
-exports.getSecureParam = async param => {
+export const getSecureParam = async param => {
   const request = await ssm
     .getParameter({
       Name: param,
@@ -28,7 +43,7 @@ exports.getSecureParam = async param => {
  * @param {Integer} millis the maximum allowed length for the promise to run
  * @param {Promise} promise the promise that does the actual work
  */
-exports.withTimeout = (millis, promise) => {
+export const withTimeout = (millis, promise) => {
   // create two promises: one that does the actual work,
   // and one that will reject them after a given number of milliseconds
   // eslint-disable-next-line prefer-promise-reject-errors
@@ -45,7 +60,7 @@ exports.withTimeout = (millis, promise) => {
  * @param {String} imageUrl link to an image pulled from the metadata of a CMR concept
  * @returns {Buffer<Image>} the image contained in a buffer
  */
-exports.slurpImageIntoBuffer = async imageUrl => {
+export const slurpImageIntoBuffer = async imageUrl => {
   const thumbnail = await fetch(imageUrl)
     .then(response => {
       if (response.ok) {
@@ -64,6 +79,7 @@ exports.slurpImageIntoBuffer = async imageUrl => {
   return thumbnail;
 };
 
+// TODO based on the readme we should be able to get rid of this now that we are node 18
 /**
  * This replicates the functionality of promise based readFile function
  * In the node12 fs/promises does not exist yet,
@@ -72,7 +88,7 @@ exports.slurpImageIntoBuffer = async imageUrl => {
  * const fs = require('fs/promises')
  * const buffer = await fs.readFile('<filename>');
  */
-exports.readFile = async f => {
+export const readFile = async f => {
   return new Promise((resolve, reject) => {
     fs.readFile(f, (err, data) => {
       if (err) {

@@ -1,22 +1,35 @@
-const axios = require('axios');
-const fetch = require('node-fetch');
-const { getSecureParam } = require('./util');
-const config = require('./config');
-const { setValue, getValue } = require('./in-memory-cache');
+// const axios = require('axios');
 
+import axios from 'axios';
+import fetch from 'node-fetch';
+import { setValue, getValue } from './in-memory-cache.js';
+import { getSecureParam } from './util.js';
+import {
+  CMR_ENVIRONMENT,
+  CMR_ECHO_TOKEN,
+  CMR_GRANULE_URL,
+  CMR_COLLECTION_URL,
+  CMR_ROOT_URL,
+  TIMEOUT_INTERVAL
+} from './config.js';
+
+// const fetch = require('node-fetch');
+// const { setValue, getValue } = require('./in-memory-cache');
+// const { getSecureParam } = require('./util');
+// const config = require('./config');
 /**
  * getAuthorizationToken: Fetch token for CMR requests
  * @returns {String} ECHO Token for CMR requests
  * @throws {Error} If no token is found. CMR will not return anything
  * if no token is supplied.
  */
-const getAuthorizationToken = async () => {
-  console.log(`Fetching Echo-Token [${config.CMR_ENVIRONMENT}] from store`);
+export const getAuthorizationToken = async () => {
+  console.log(`Fetching Echo-Token [${CMR_ENVIRONMENT}] from store`);
   let authorizationToken = getValue('CMR_ECHO_SYSTEM_TOKEN');
 
   if (!authorizationToken) {
     authorizationToken = await getSecureParam(
-      `/${config.CMR_ENVIRONMENT}/browse-scaler/CMR_ECHO_SYSTEM_TOKEN`
+      `/${CMR_ENVIRONMENT}/browse-scaler/CMR_ECHO_SYSTEM_TOKEN`
     );
 
     if (!authorizationToken) {
@@ -29,7 +42,7 @@ const getAuthorizationToken = async () => {
   return authorizationToken;
 };
 
-exports.getAuthorizationToken = getAuthorizationToken;
+// exports.getAuthorizationToken = getAuthorizationToken;
 
 /**
  * fetchConceptFromCMR: Given a concept id, fetch the metadata supplied by
@@ -39,7 +52,7 @@ exports.getAuthorizationToken = getAuthorizationToken;
  * @returns {JSON} the collection associated with the supplied id
  */
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
-  const token = config.CMR_ECHO_TOKEN || (await getAuthorizationToken());
+  const token = CMR_ECHO_TOKEN || (await getAuthorizationToken());
   const response = await fetch(cmrEndpoint + conceptId, {
     method: 'GET',
     headers: {
@@ -73,15 +86,14 @@ const parseJsonBody = jsonResponse => {
 };
 
 /**
- * Fetch a single collection from CMR search
- * @param {String} conceptId Collection concept id from CMR
- * @param {String} token An optional Echo Token
- * @returns [{JSON}] An array of UMM JSON collection results
+ * Fetch a single Granule record from CMR search
+ * @param {String} conceptId Granule concept id from CMR
+ * @returns [{JSON}] An array of json granule results
  */
 
 const fetchCmrGranule = async conceptId => {
   const requestHeaders = {};
-  const token = config.CMR_ECHO_TOKEN || (await getAuthorizationToken());
+  const token = CMR_ECHO_TOKEN || (await getAuthorizationToken());
   if (token) {
     requestHeaders.Authorization = token;
   }
@@ -89,11 +101,11 @@ const fetchCmrGranule = async conceptId => {
   let response;
   try {
     response = await axios({
-      url: `${config.CMR_ROOT_URL}/search/granules.json?concept_id=${conceptId}`,
+      url: `${CMR_ROOT_URL}/search/granules.json?concept_id=${conceptId}`,
       method: 'GET',
       headers: requestHeaders,
       json: true,
-      timeout: config.TIMEOUT_INTERVAL
+      timeout: TIMEOUT_INTERVAL
     });
   } catch (error) {
     console.log(`Could not fetch granule ${conceptId} due to error: ${error}`);
@@ -106,9 +118,10 @@ const fetchCmrGranule = async conceptId => {
  * getBrowseImageFromConcept: Given a CMR concept, marshall the JSON and
  * filter any associated links to find browse images associated with the concept
  * @param {JSON} concept the JSON metadata associated with a CMR concept
+ * @param {string} imageSrc optional argument that specifies which image should be chosen defaults to empty str
  * @returns {String} the image url if one is found, or null if none is found
  */
-exports.getBrowseImageFromConcept = async (concept, imageSrc) => {
+export const getBrowseImageFromConcept = async (concept, imageSrc) => {
   if (!concept) {
     console.error('No concept provided to getBrowseImageFromConcept');
     return;
@@ -117,8 +130,8 @@ exports.getBrowseImageFromConcept = async (concept, imageSrc) => {
     const { links } = concept;
     const imgRegex = /\b(browse#)$/;
     const imageUrls = links.filter(link => imgRegex.test(link.rel));
-    // console.debug(`🚀 links from metadata ${JSON.stringify(links)}`);
-    // console.debug(`🚀 image link from metadata ${JSON.stringify(imageUrls)}`);
+    console.debug(`🚀 links from metadata ${JSON.stringify(links)}`);
+    console.debug(`🚀 image link from metadata ${JSON.stringify(imageUrls)}`);
     const searchImage = imageUrls.find(image => image.href === imageSrc);
 
     if (searchImage) {
@@ -140,13 +153,13 @@ exports.getBrowseImageFromConcept = async (concept, imageSrc) => {
 /**
  * getGranuleLevelBrowseImage: Given a or collection id, get the first associated granule
  * @param {String} conceptId CMR concept-id. This can be a collection _or_ granule id
+ * @param {string} imageSrc optional argument that specifies which image should be chosen defaults to empty str
  * @returns {String} the first of any image links found. If a collection id is supplied, this will
  * return the first of any links found in the first granule associated with said collection
  */
-exports.getGranuleLevelBrowseImage = async (conceptId, imageSrc) => {
-  // const granuleConcept = await fetchConceptFromCMR(conceptId, config.CMR_GRANULE_URL);
+export const getGranuleLevelBrowseImage = async (conceptId, imageSrc) => {
   const granuleConcept = await fetchCmrGranule(conceptId);
-  const granuleImagery = await this.getBrowseImageFromConcept(granuleConcept, imageSrc);
+  const granuleImagery = await getBrowseImageFromConcept(granuleConcept, imageSrc);
 
   return granuleImagery;
 };
@@ -158,18 +171,15 @@ exports.getGranuleLevelBrowseImage = async (conceptId, imageSrc) => {
  * @param {String} collectionId CMR concept id
  * @returns {String} browse image url, if any are found. Return null if not
  */
-exports.getCollectionLevelBrowseImage = async collectionId => {
-  const collectionConcept = await fetchConceptFromCMR(collectionId, config.CMR_COLLECTION_URL);
-  const collectionImagery = await this.getBrowseImageFromConcept(collectionConcept);
+export const getCollectionLevelBrowseImage = async collectionId => {
+  const collectionConcept = await fetchConceptFromCMR(collectionId, CMR_COLLECTION_URL);
+  const collectionImagery = await getBrowseImageFromConcept(collectionConcept);
   if (collectionImagery) {
     return collectionImagery;
   }
 
-  const firstGranuleFromCollection = await fetchConceptFromCMR(
-    collectionId,
-    config.CMR_GRANULE_URL
-  );
-  const granuleImagery = await this.getBrowseImageFromConcept(firstGranuleFromCollection);
+  const firstGranuleFromCollection = await fetchConceptFromCMR(collectionId, CMR_GRANULE_URL);
+  const granuleImagery = await getBrowseImageFromConcept(firstGranuleFromCollection);
 
   return granuleImagery;
 };

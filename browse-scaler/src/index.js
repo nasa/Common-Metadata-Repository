@@ -1,9 +1,23 @@
-const { resizeImage, notFound } = require('./resize');
-const { getCollectionLevelBrowseImage, getGranuleLevelBrowseImage } = require('./cmr');
-const { cacheImage, getImageFromCache } = require('./cache');
-const { withTimeout, slurpImageIntoBuffer } = require('./util');
+// const { resizeImage, notFound } = require('./resize');
 
-const config = require('./config');
+import { resizeImage, notFound } from './resize.js';
+
+// const { getCollectionLevelBrowseImage, getGranuleLevelBrowseImage } = require('./cmr');
+
+import { getCollectionLevelBrowseImage, getGranuleLevelBrowseImage } from './cmr.js';
+
+// const { cacheImage, getImageFromCache } = require('./cache');
+
+import { cacheImage, getImageFromCache } from './cache.js';
+
+// const { withTimeout, slurpImageIntoBuffer } = require('./util');
+
+import { withTimeout, slurpImageIntoBuffer } from './util.js';
+
+// const config = require('./config');
+
+// eslint-disable-next-line import/extensions
+import { TIMEOUT_INTERVAL } from './config.js';
 
 /**
  * buildResponse: assembles response body to avoid code duplication
@@ -27,6 +41,7 @@ const buildResponse = image => {
  * given concept type to extract image url from metadata
  * @param {String} conceptId CMR concept id
  * @param {String} conceptType CMR concept type
+ * @param {string} imageSrc optional argument that specifies which image should be chosen defaults to empty str
  * 'dataset' refers to collections
  * @returns {String} image url or null
  */
@@ -61,7 +76,7 @@ const getImageUrlFromConcept = async (conceptId, conceptType, imageSrc) => {
  */
 const resizeImageFromConceptId = async (conceptType, conceptId, height, width, imageSrc) => {
   // If the imageSrc is empty then that will be the cache for the default image
-  // todo there may be one copy of the cached image in that case
+  // TODO there may be one copy of the cached image in that case
   const cacheKey = `${conceptId}-${height}-${width}-${imageSrc}`;
   const imageFromCache = await getImageFromCache(cacheKey);
   if (imageFromCache) {
@@ -72,13 +87,13 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width, i
   // If given an image url, fetch the image and resize. If no valid image
   // exists, return the not found response
   const imageUrl = await withTimeout(
-    config.TIMEOUT_INTERVAL,
+    TIMEOUT_INTERVAL,
     getImageUrlFromConcept(conceptId, conceptType, imageSrc)
   );
   // If the url is not `null`, `undefined`, or an empty string try to grab the image and resize it
   if (imageUrl) {
-    const imageBuffer = await withTimeout(config.TIMEOUT_INTERVAL, slurpImageIntoBuffer(imageUrl));
-    // todo we need to be consistent either use axios or use the timeout feature
+    const imageBuffer = await withTimeout(TIMEOUT_INTERVAL, slurpImageIntoBuffer(imageUrl));
+    // TODO we need to be consistent either use axios or use the timeout feature
     if (imageBuffer) {
       const thumbnail = await resizeImage(imageBuffer, height, width);
       if (thumbnail) {
@@ -131,7 +146,13 @@ const parseArguments = event => {
   return args;
 };
 
-exports.handler = async event => {
+/**
+ * handler: execute the event task
+ * object
+ * @param {JSON} event
+ * @returns {JSON} Response containing encoded image
+ */
+export const handler = async event => {
   const args = parseArguments(event);
   const { conceptType, conceptId, w, h, imageSrc = '' } = args;
   console.log(`Attempting to resize browse image for concept: ${JSON.stringify(args)}`);

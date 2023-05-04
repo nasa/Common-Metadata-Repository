@@ -1,7 +1,0 @@
-{
-    "path": "datasets/C1000001740-NSIDC_ECS",
-    "queryStringParameters": {
-        "h ": 85,
-        "w": 85
-    }
-}

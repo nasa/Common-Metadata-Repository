@@ -1,15 +1,25 @@
-const InMemoryCache = (function(){
-    const _data = {};
+const data = {};
 
-    function getInstance() {
-        return _data;
-    }
+// const InMemoryCache = (function() {
+//   const _data = {};
 
-    return {
-      getInstance: getInstance
-    };
-  }());
+//   function getInstance() {
+//     return _data;
+//   }
 
-exports.setValue = (key, value) => { InMemoryCache.getInstance() [key] = value;}
+//   return {
+//     getInstance
+//   };
+// })();
 
-exports.getValue = (key) => { return InMemoryCache.getInstance() [key]}
+const getInstance = () => {
+  return data;
+};
+
+export const setValue = (key, value) => {
+  getInstance()[key] = value;
+};
+
+export const getValue = key => {
+  return getInstance()[key];
+};

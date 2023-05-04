@@ -1,13 +1,11 @@
 /* REDIS */
-const redis = require('redis');
-const config = require ('./config');
-const { REDIS_URL,
-    REDIS_PORT,
-    REDIS_KEY_EXPIRE_SECONDS} = require ('./config');
+// const redis = require('redis');
+import redis from 'redis';
+import { promisify } from 'util';
+import { REDIS_URL, REDIS_PORT, REDIS_KEY_EXPIRE_SECONDS } from './config.js';
+// const { promisify } = require('util');
 
-const { promisify } = require('util');
-
-const Cache = (function (cfg) {
+export const Cache = (function(cfg) {
   // redis singleton
   let instance;
 
@@ -17,8 +15,9 @@ const Cache = (function (cfg) {
    */
   function getInstance() {
     if (!instance) {
-      instance = redis.createClient({
-        return_buffers: true,
+      instance = redis
+        .createClient({
+          return_buffers: true,
         host: cfg.REDIS_URL,
         port: cfg.REDIS_PORT
       }).on("error", (err) => {
@@ -26,20 +25,19 @@ const Cache = (function (cfg) {
         instance.quit();
       });
     }
-
     return instance;
   }
   return { getInstance };
-}) ({REDIS_PORT, REDIS_URL});
+})({ REDIS_PORT, REDIS_URL });
 
-exports.Cache = Cache;
+// exports.Cache = Cache;
 
 /**
  * cacheImage: Puts the given image in cache. This does not return anything.
  * @param {String} key This is what you use to get the image later
  * @param {Buffer<Image>} image This is what you want the key to get
  */
-exports.cacheImage = (key, image, expiration = REDIS_KEY_EXPIRE_SECONDS) => {
+export const cacheImage = (key, image, expiration = REDIS_KEY_EXPIRE_SECONDS) => {
   Cache.getInstance().set(key, image, 'EX', expiration, err => {
     if (err) {
       console.error(`Unable to cache image ${key}: ${err}`);
@@ -52,11 +50,12 @@ exports.cacheImage = (key, image, expiration = REDIS_KEY_EXPIRE_SECONDS) => {
  * @param {String} key Which image do you want? This is typically ${concept-id}-${height}-${width}
  * @returns {Buffer<Image>} the image associated with given cache key or null if none is found
  */
-exports.getImageFromCache = async key => {
-  let client = Cache.getInstance();
-  return promisify(client.get).bind(client)(key)
+export const getImageFromCache = async key => {
+  const client = Cache.getInstance();
+  return promisify(client.get)
+    .bind(client)(key)
     .catch(err => {
-      console.error(`Unable to retrieve image ${key} from Redis.`);
+      console.error(`Unable to retrieve image ${key} from Redis due to error ${err}`);
       return null;
     })
     .then(image => {
