@@ -86,13 +86,17 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width, i
 
   // If given an image url, fetch the image and resize. If no valid image
   // exists, return the not found response
-  const imageUrl = await withTimeout(
-    TIMEOUT_INTERVAL,
-    getImageUrlFromConcept(conceptId, conceptType, imageSrc)
-  );
+  // const imageUrl = await withTimeout(
+  //   TIMEOUT_INTERVAL,
+  //   getImageUrlFromConcept(conceptId, conceptType, imageSrc)
+  // );
+  const imageUrl = await getImageUrlFromConcept(conceptId, conceptType, imageSrc);
+  console.log('🚀 ~ file: index.js:94 ~ resizeImageFromConceptId ~ imageUrl:', imageUrl);
   // If the url is not `null`, `undefined`, or an empty string try to grab the image and resize it
   if (imageUrl) {
-    const imageBuffer = await withTimeout(TIMEOUT_INTERVAL, slurpImageIntoBuffer(imageUrl));
+    // const imageBuffer = await withTimeout(TIMEOUT_INTERVAL, slurpImageIntoBuffer(imageUrl));
+    const imageBuffer = await slurpImageIntoBuffer(imageUrl);
+    console.log('🚀 ~ file: index.js:99 ~ resizeImageFromConceptId ~ imageBuffer:', imageBuffer)
     // TODO we need to be consistent either use axios or use the timeout feature
     if (imageBuffer) {
       const thumbnail = await resizeImage(imageBuffer, height, width);
