@@ -34,7 +34,7 @@
                  [org.clojure/tools.reader "1.3.2"]
                  [potemkin "0.4.5"]
                  [ring/ring-codec "1.1.3"]
-                 [ring/ring-core "1.9.2"]
+                 [ring/ring-core "1.9.6"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[drift "1.5.3"]
             [lein-exec "0.3.7"]
