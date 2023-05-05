@@ -40,7 +40,8 @@
                  [org.clojure/test.check "0.9.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
-                 ;;these dependencies should be updated in tandem with the ring dependiences below
+                 ;; These dependencies should be updated in tandem with the ring dependiences below.
+                 ;; To find the corresponding versions, see: https://clojars.org/ring/ring-core/versions/1.9.6
                  [org.eclipse.jetty/jetty-http "9.4.48.v20220622"]
                  [org.eclipse.jetty/jetty-io "9.4.48.v20220622"]
                  [org.eclipse.jetty/jetty-servlets "9.4.48.v20220622"]
