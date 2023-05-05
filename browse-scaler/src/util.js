@@ -29,7 +29,7 @@ if (!ssm) {
  */
 export const getSecureParam = async param => {
   const request = await ssm
-    .getParameter({
+    .GetParameter({
       Name: param,
       WithDecryption: true
     })
