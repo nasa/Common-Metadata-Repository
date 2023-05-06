@@ -30,6 +30,9 @@ Socioeconomic Data and Applications Center (SEDAC). http://dx.doi.org/10.7927/H4
 			<RestrictionFlag>0</RestrictionFlag>
 			<UseConstraints>
 				<Description>There are no use constraints or legal constraints in using this data set.</Description>
+                                <EULAIdentifier>EchoId1</EULAIdentifier>
+                                <EULAIdentifier>EchoId2</EULAIdentifier>
+                                <EULAIdentifier>EchoId3</EULAIdentifier>
 				<LicenseURL>
 					<URL>https://somelicenseurl.org</URL>
 					<Description>This is the License URL for this data set.</Description>

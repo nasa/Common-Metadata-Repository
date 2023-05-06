@@ -25,6 +25,19 @@
           license-value (second (string/split value label-pattern))]
       license-value)))
 
+(defn- get-eula-identifiers
+  "Get the EULAIdentifiers." 
+  [other-constraints-list eula-id-label]
+  (when-let [eula-identifiers (map #(when-let [value (value-of % "gco:CharacterString")]
+                                      (when-let [label (string/replace (first (string/split value #":")) #" " "")]
+                                        (when (= eula-id-label (string/lower-case label))
+                                          ;; in case the eula-id values contain ":".
+                                          (let [label-pattern (re-pattern (str (first (string/split value #":")) ":"))
+                                                eula-id-value (second (string/split value label-pattern))]
+                                            eula-id-value))))
+                                   other-constraints-list)]
+    (seq (remove nil? eula-identifiers))))
+
 (defn- get-description-value
   "Get description value from the list of gmd:useLimitation values.
    Pick the first that doesn't start with Restriction Comment:."
@@ -36,6 +49,8 @@
                          description-list)]
     (su/truncate value su/USECONSTRAINTS_MAX sanitize?)))
 
+
+
 (defn- get-use-constraints
   "Get the use constraints."
   [constraints-list sanitize?]
@@ -43,6 +58,7 @@
     (let [description-list (select constraints "gmd:useLimitation")
           other-constraints-list (select constraints "gmd:otherConstraints")
           description (get-description-value description-list sanitize?)
+          eula-identifiers (get-eula-identifiers other-constraints-list "eulaidentifier")
           free-and-open (let [fo (get-license-value other-constraints-list "freeandopendata")]
                           (when fo
                             (string/trim fo)))
@@ -53,6 +69,7 @@
                             [(umm-coll-models/map->UseConstraintsType
                                {:Description (when description
                                                description)
+                                :EULAIdentifiers eula-identifiers
                                 :FreeAndOpenData (when (or (= free-and-open "true")
                                                            (= free-and-open "false"))
                                                    (Boolean/valueOf free-and-open))
@@ -69,7 +86,7 @@
   "Parse the use constraints from XML resource constraint.
    constraints-xpath is:
    /gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints.
-   We want to find the first Description, the first LicenseUrl, the first LicenseText, and the
+   We want to find all the EUAIdentifiers, the first Description, the first LicenseUrl, the first LicenseText, and the
    first FreeAndOpenData and then return UseConstraints
    as one of the combinations in the following order, if the values exist:
    {:Description first-desc :LicenseUrl first-lic-url}, {:Description first-desc :LicenseText first-lic-text},
@@ -77,6 +94,11 @@
   [doc constraints-xpath sanitize?]
   (let [constraints-list (seq (select doc constraints-xpath))
         use-constraints-list (get-use-constraints constraints-list sanitize?)
+        eula-identifiers (->> use-constraints-list
+                              (map :EULAIdentifiers)
+                              (remove nil?)
+                              flatten
+                              seq) 
         first-description (:Description (some #(when (:Description %) %) use-constraints-list))
         first-license-url (:LicenseURL (some #(when (:LicenseURL %) %) use-constraints-list))
         first-license-text (:LicenseText (some #(when (:LicenseText %) %) use-constraints-list))
@@ -84,6 +106,7 @@
     (when (or first-description (some? first-free-and-open) first-license-url first-license-text)
       (umm-coll-models/map->UseConstraintsType
         {:Description first-description
+         :EULAIdentifiers eula-identifiers
          :FreeAndOpenData first-free-and-open
          :LicenseURL first-license-url
          :LicenseText (when-not first-license-url

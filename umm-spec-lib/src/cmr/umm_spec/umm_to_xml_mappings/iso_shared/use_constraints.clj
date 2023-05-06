@@ -8,6 +8,7 @@
         value (get-in c [:AccessConstraints :Value])
         use-constraints (:UseConstraints c)
         uc-description (:Description use-constraints)
+        eula-identifiers (:EULAIdentifiers use-constraints)
         free-and-open (:FreeAndOpenData use-constraints)
         license-url (:LicenseURL use-constraints)
         license-text (:LicenseText use-constraints)]
@@ -36,6 +37,10 @@
         (when license-text
           [:gmd:otherConstraints
             [:gco:CharacterString (str "LicenseText:" license-text)]])
+        (when (seq eula-identifiers)
+          (for [id eula-identifiers]
+            [:gmd:otherConstraints
+              [:gco:CharacterString (str "EULAIdentifier:" id)]]))
         (when (some? free-and-open)
           [:gmd:otherConstraints
             [:gco:CharacterString (str "FreeAndOpenData:" free-and-open)]])
