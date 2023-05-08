@@ -50,12 +50,5 @@ export const slurpImageIntoBuffer = async imageUrl => {
  */
 // TODO: We should remove this from SC it is only being used for tests
 export const readFile = async f => {
-  return new Promise((resolve, reject) => {
-    fs.readFile(f, (err, data) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(data);
-    });
-  });
+  return fs.promises.readFile(f);
 };

@@ -4,8 +4,7 @@ Nodejs application to return thumbnails for NASA's Earthdata Search
 
 # Building
 
-**NOTE**: because Sharp uses C++ extensions, it must be built in a Docker container to run on AWS (unless your machine is also linux). If you are using macOs
-you may need to un-install sharp using: `npm uninstall sharp` and then re-install it using: `npm install --platform=linux --arch=x64 sharp`
+**NOTE**: because Sharp uses C++ extensions, it must be built in a Docker container to run on AWS (unless your machine is also linux). If you are using macOs you may need to un-install sharp using: `npm uninstall sharp` and then re-install it using: `npm install --platform=linux --arch=x64 sharp` in order to be able to run against the docker container locally.
 
 You can do this by running `docker-compose up --build` from the `browse-scaler/src` directory.
 

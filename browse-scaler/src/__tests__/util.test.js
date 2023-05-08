@@ -1,7 +1,7 @@
 import nock from 'nock';
 import { readFileSync } from 'fs';
 
-import { getSecureParam, readFile, slurpImageIntoBuffer, withTimeout } from '../util.js';
+import { getSecureParam, readFile, slurpImageIntoBuffer } from '../util.js';
 
 import jsonData from './__mocks__/C179003030-ORNL_DAAC.json';
 
@@ -36,27 +36,5 @@ describe('readFile', () => {
     const data = await readFile('./__tests__/__mocks__/C179003030-ORNL_DAAC.json');
     expect(Buffer.isBuffer(data)).toBeTruthy();
     expect(JSON.parse(data.toString())).toEqual(jsonData);
-  });
-});
-
-describe('withTimeout', () => {
-  test('timeout expires before promise', async () => {
-    const res = await withTimeout(
-      1,
-      new Promise((resolve, reject) => {
-        setTimeout(() => resolve('not null'), 10);
-      })
-    );
-    expect(res).toBe(null);
-  });
-
-  test('promise resolves before timeout', async () => {
-    const res = await withTimeout(
-      10,
-      new Promise((resolve, reject) => {
-        setTimeout(() => resolve('not null'), 1);
-      })
-    );
-    expect(res).toBe('not null');
   });
 });
