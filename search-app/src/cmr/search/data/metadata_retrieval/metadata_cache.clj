@@ -259,7 +259,7 @@
                          (metadata-transformer/transform-concepts context concepts target-format))
           [t3 concepts] (u/time-execution
                          (concepts-without-xml-processing-inst concepts))]
-      (debug "fetch of " (count concept-tuples) " concepts:"
+      (info "fetch of " (count concept-tuples) " concepts:"
              "get-concepts:" t1 "metadata-transformer/transform-concepts:" t2
              "remove-xml-processing-instructions:" t3)
       concepts)))
