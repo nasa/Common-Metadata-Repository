@@ -9,7 +9,7 @@
                  [com.fasterxml.jackson.core/jackson-core "2.13.2"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
-                 [com.github.everit-org.json-schema/org.everit.json.schema "1.14.1"]
+                 [com.github.everit-org.json-schema/org.everit.json.schema "1.14.2"]
                  [org.clojure/clojure "1.10.0"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :global-vars {*warn-on-reflection* true}
