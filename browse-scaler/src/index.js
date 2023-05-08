@@ -72,6 +72,7 @@ const getImageUrlFromConcept = async (conceptId, conceptType, imageSrc) => {
  * @param {String} conceptId
  * @param {Integer} height
  * @param {Integer} width
+ * @param {string} imageSrc optional argument that specifies which image should be chosen defaults to empty str
  * @returns {JSON} server response object
  */
 const resizeImageFromConceptId = async (conceptType, conceptId, height, width, imageSrc) => {

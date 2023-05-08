@@ -11,7 +11,7 @@ function strToInt(strVal, radix = 10) {
   return intValue;
 }
 
-export const TIMEOUT_INTERVAL = 15000;
+export const TIMEOUT_INTERVAL = process.env.TIMEOUT_INTERVAL || 10000;
 
 const { CMR_ROOT } = process.env;
 // CMR operational environments uses internal LB as CMR root, so we use http, not https

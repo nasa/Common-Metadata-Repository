@@ -28,12 +28,10 @@ if (!ssm) {
  * @returns {JSON} server response object from Parameter Store
  */
 export const getSecureParam = async param => {
-  const request = await ssm
-    .GetParameter({
-      Name: param,
-      WithDecryption: true
-    })
-    .promise();
+  const request = await ssm.GetParameter({
+    Name: param,
+    WithDecryption: true
+  });
   return request.Parameter.Value;
 };
 
@@ -47,6 +45,7 @@ export const withTimeout = (millis, promise) => {
   // create two promises: one that does the actual work,
   // and one that will reject them after a given number of milliseconds
   // eslint-disable-next-line prefer-promise-reject-errors
+  console.log(`Running function with timeout for ${millis}`);
   const timeout = new Promise((resolve, reject) => setTimeout(() => reject(null), millis));
   // eslint-disable-next-line no-unused-vars
   return Promise.race([promise, timeout]).then(
