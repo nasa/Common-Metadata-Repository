@@ -53,6 +53,8 @@ export const getAuthorizationToken = async () => {
  */
 const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
   const token = CMR_ECHO_TOKEN || (await getAuthorizationToken());
+  console.log('🚀 ~ file: cmr.js:55 ~ fetchConceptFromCMR ~ cmrEndpoint:', cmrEndpoint);
+  console.log('🚀 ~ file: cmr.js:57 ~ fetchConceptFromCMR ~ conceptId:', conceptId);
   const response = await fetch(cmrEndpoint + conceptId, {
     method: 'GET',
     headers: {
@@ -114,6 +116,29 @@ const fetchCmrGranule = async conceptId => {
   return parseJsonBody(response);
 };
 
+const fetchCmrCollection = async conceptId => {
+  const requestHeaders = {};
+  const token = CMR_ECHO_TOKEN || (await getAuthorizationToken());
+  if (token) {
+    requestHeaders.Authorization = token;
+  }
+
+  let response;
+  try {
+    response = await axios({
+      url: `${CMR_ROOT_URL}/search/collections.json?concept_id=${conceptId}`,
+      method: 'GET',
+      headers: requestHeaders,
+      json: true,
+      timeout: TIMEOUT_INTERVAL
+    });
+  } catch (error) {
+    console.log(`Could not fetch collection ${conceptId} due to error: ${error}`);
+    return null;
+  }
+  return parseJsonBody(response);
+};
+
 /**
  * getBrowseImageFromConcept: Given a CMR concept, marshall the JSON and
  * filter any associated links to find browse images associated with the concept
@@ -159,7 +184,15 @@ export const getBrowseImageFromConcept = async (concept, imageSrc) => {
  */
 export const getGranuleLevelBrowseImage = async (conceptId, imageSrc) => {
   const granuleConcept = await fetchCmrGranule(conceptId);
+  console.log(
+    '🚀 ~ file: cmr.js:187 ~ getGranuleLevelBrowseImage ~ granuleConcept:',
+    granuleConcept
+  );
   const granuleImagery = await getBrowseImageFromConcept(granuleConcept, imageSrc);
+  console.log(
+    '🚀 ~ file: cmr.js:189 ~ getGranuleLevelBrowseImage ~ granuleImagery:',
+    granuleImagery
+  );
 
   return granuleImagery;
 };
@@ -179,6 +212,7 @@ export const getCollectionLevelBrowseImage = async collectionId => {
   }
 
   const firstGranuleFromCollection = await fetchConceptFromCMR(collectionId, CMR_GRANULE_URL);
+  // const firstGranuleFromCollection = await fetchCmrGranule(collectionId);
   const granuleImagery = await getBrowseImageFromConcept(firstGranuleFromCollection);
 
   return granuleImagery;

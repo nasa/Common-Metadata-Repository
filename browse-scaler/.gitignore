@@ -1,0 +1,13 @@
+# OS Files
+.DS_Store
+
+# typical event outputs
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.tiff
+*.txt
+
+# VSCode Settings
+.vscode
