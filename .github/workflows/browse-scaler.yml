@@ -24,7 +24,8 @@ jobs:
         working-directory: browse-scaler/src
     
     paths-ignore:
-     - '__tests__/__mocks__/**'
+     - '/__mocks__/**'
+
     steps:
     - uses: actions/checkout@v2
 
