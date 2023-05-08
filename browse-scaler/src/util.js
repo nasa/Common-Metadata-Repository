@@ -1,21 +1,9 @@
 import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
-
-// const fetch = require('node-fetch');
-
-// import fetch from 'node-fetch';
-
 import fs from 'fs';
-
-// const fs = require('fs');
 import axios from 'axios';
 import { AWS_REGION, TIMEOUT_INTERVAL } from './config.js';
-// const config = require('./config');
 
 let ssm;
-
-// AWS.config.update({ region: config.AWS_REGION });
-
-// const ssm = new AWS.SSM();
 
 if (!ssm) {
   ssm = new SSMClient({
@@ -30,56 +18,9 @@ if (!ssm) {
  */
 export const getSecureParam = async param => {
   const command = new GetParameterCommand({ Name: param, WithDecryption: true });
-  // const request = await ssm.GetParameter({
-  //   Name: param,
-  //   WithDecryption: true
-  // });
   const request = await ssm.send(command);
   return request.Parameter.Value;
 };
-
-// /**
-//  * withTimeout: Meant to alleviate image URLs that cannot resolve. Races two promises
-//  * to keep from waiting too long for a given request. This is mostly used for slurpImageIntoBuffer
-//  * @param {Integer} millis the maximum allowed length for the promise to run
-//  * @param {Promise} promise the promise that does the actual work
-//  */
-export const withTimeout = (millis, promise) => {
-  // create two promises: one that does the actual work,
-  // and one that will reject them after a given number of milliseconds
-  // eslint-disable-next-line prefer-promise-reject-errors
-  console.log(`Running function with timeout for ${millis}`);
-  const timeout = new Promise((resolve, reject) => setTimeout(() => reject(null), millis));
-  // eslint-disable-next-line no-unused-vars
-  return Promise.race([promise, timeout]).then(
-    value => value,
-    value => null
-  );
-};
-
-/**
- * slurpImageIntoBuffer: fetches images from a given url using the fetch API
- * @param {String} imageUrl link to an image pulled from the metadata of a CMR concept
- * @returns {Buffer<Image>} the image contained in a buffer
- */
-// export const slurpImageIntoBuffer = async imageUrl => {
-//   const thumbnail = await fetch(imageUrl)
-//     .then(response => {
-//       if (response.ok) {
-//         console.log(`${imageUrl} - ${response.url}: ${response.status}`);
-//         return response.buffer();
-//       }
-//       return Promise.reject(
-//         new Error(`Failed to fetch ${response.url}: ${response.status} ${response.statusText}`)
-//       );
-//     })
-//     .catch(error => {
-//       console.error(`Could not slurp image from url ${imageUrl}: ${error}`);
-//       return null;
-//     });
-
-//   return thumbnail;
-// };
 
 export const slurpImageIntoBuffer = async imageUrl => {
   try {
@@ -92,15 +33,13 @@ export const slurpImageIntoBuffer = async imageUrl => {
     });
     console.log(`${imageUrl} - ${response.url}: ${response.status}`);
     return response.data;
-    // Buffer.from(response.data, 'binary').toString('base64');
-    // return Buffer.from(response.data, 'binary').toString('base64');
   } catch (error) {
     console.error(`Could not slurp image from url ${imageUrl}: ${error}`);
     return null;
   }
 };
 
-// TODO based on the readme we should be able to get rid of this now that we are node 18
+// // TODO based on the readme we should be able to get rid of this now that we are node 18
 /**
  * This replicates the functionality of promise based readFile function
  * In the node12 fs/promises does not exist yet,
@@ -109,6 +48,7 @@ export const slurpImageIntoBuffer = async imageUrl => {
  * const fs = require('fs/promises')
  * const buffer = await fs.readFile('<filename>');
  */
+// TODO: We should remove this from SC it is only being used for tests
 export const readFile = async f => {
   return new Promise((resolve, reject) => {
     fs.readFile(f, (err, data) => {

@@ -1,22 +1,8 @@
-// const axios = require('axios');
-
 import axios from 'axios';
-import fetch from 'node-fetch';
 import { setValue, getValue } from './in-memory-cache.js';
 import { getSecureParam } from './util.js';
-import {
-  CMR_ENVIRONMENT,
-  CMR_ECHO_TOKEN,
-  CMR_GRANULE_URL,
-  CMR_COLLECTION_URL,
-  CMR_ROOT_URL,
-  TIMEOUT_INTERVAL
-} from './config.js';
+import { CMR_ENVIRONMENT, CMR_ECHO_TOKEN, CMR_ROOT_URL, TIMEOUT_INTERVAL } from './config.js';
 
-// const fetch = require('node-fetch');
-// const { setValue, getValue } = require('./in-memory-cache');
-// const { getSecureParam } = require('./util');
-// const config = require('./config');
 /**
  * getAuthorizationToken: Fetch token for CMR requests
  * @returns {String} ECHO Token for CMR requests
@@ -40,39 +26,6 @@ export const getAuthorizationToken = async () => {
   }
 
   return authorizationToken;
-};
-
-// exports.getAuthorizationToken = getAuthorizationToken;
-
-/**
- * fetchConceptFromCMR: Given a concept id, fetch the metadata supplied by
- * the elasticsearch JSON response
- * @param {String} conceptId A collection or granule concept-id
- * @param {String} cmrEndpoint The collection or granule search URL
- * @returns {JSON} the collection associated with the supplied id
- */
-const fetchConceptFromCMR = async (conceptId, cmrEndpoint) => {
-  const token = CMR_ECHO_TOKEN || (await getAuthorizationToken());
-  console.log('🚀 ~ file: cmr.js:55 ~ fetchConceptFromCMR ~ cmrEndpoint:', cmrEndpoint);
-  console.log('🚀 ~ file: cmr.js:57 ~ fetchConceptFromCMR ~ conceptId:', conceptId);
-  const response = await fetch(cmrEndpoint + conceptId, {
-    method: 'GET',
-    headers: {
-      Authorization: token
-    }
-  })
-    .then(res => res.json())
-    .then(json => {
-      if (json.errors) {
-        throw new Error(`The following errors occurred: ${json.errors}`);
-      } else {
-        return json.feed.entry[0];
-      }
-    })
-    .catch(error => {
-      console.log(`Could not find concept ${conceptId}: ${error}`);
-    });
-  return response;
 };
 
 /**
@@ -165,6 +118,13 @@ export const getBrowseImageFromConcept = async (concept, imageSrc) => {
       return searchImage.href;
     }
 
+    // submitted a request for specific img but, it was not found return the default image
+    if (!searchImage && imageSrc) {
+      console.error(`Requested image was not found for url: ${imageSrc}`);
+      // eslint-disable-next-line consistent-return
+      return null;
+    }
+
     if (imageUrls) {
       // if the searched image was not found return 0th index image
       // eslint-disable-next-line consistent-return
@@ -184,15 +144,7 @@ export const getBrowseImageFromConcept = async (concept, imageSrc) => {
  */
 export const getGranuleLevelBrowseImage = async (conceptId, imageSrc) => {
   const granuleConcept = await fetchCmrGranule(conceptId);
-  console.log(
-    '🚀 ~ file: cmr.js:187 ~ getGranuleLevelBrowseImage ~ granuleConcept:',
-    granuleConcept
-  );
   const granuleImagery = await getBrowseImageFromConcept(granuleConcept, imageSrc);
-  console.log(
-    '🚀 ~ file: cmr.js:189 ~ getGranuleLevelBrowseImage ~ granuleImagery:',
-    granuleImagery
-  );
 
   return granuleImagery;
 };
@@ -205,14 +157,18 @@ export const getGranuleLevelBrowseImage = async (conceptId, imageSrc) => {
  * @returns {String} browse image url, if any are found. Return null if not
  */
 export const getCollectionLevelBrowseImage = async collectionId => {
-  const collectionConcept = await fetchConceptFromCMR(collectionId, CMR_COLLECTION_URL);
+  // const collectionConcept = await fetchConceptFromCMR(collectionId, CMR_COLLECTION_URL);
+  const collectionConcept = await fetchCmrCollection(collectionId);
   const collectionImagery = await getBrowseImageFromConcept(collectionConcept);
   if (collectionImagery) {
     return collectionImagery;
   }
-
-  const firstGranuleFromCollection = await fetchConceptFromCMR(collectionId, CMR_GRANULE_URL);
-  // const firstGranuleFromCollection = await fetchCmrGranule(collectionId);
+  console.log(
+    `No collection imagery found for collection ${collectionId} trying to retrieve first granule imagery`
+  );
+  // pull image from the first available granule
+  // passing a coll concept-id to granules endpoint returns granules assoc to coll
+  const firstGranuleFromCollection = await fetchCmrGranule(collectionId);
   const granuleImagery = await getBrowseImageFromConcept(firstGranuleFromCollection);
 
   return granuleImagery;

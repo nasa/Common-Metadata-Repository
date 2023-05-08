@@ -1,9 +1,7 @@
 /* REDIS */
-// const redis = require('redis');
 import redis from 'redis';
 import { promisify } from 'util';
 import { REDIS_URL, REDIS_PORT, REDIS_KEY_EXPIRE_SECONDS } from './config.js';
-// const { promisify } = require('util');
 
 export const Cache = (function(cfg) {
   // redis singleton

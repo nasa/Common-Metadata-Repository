@@ -1,22 +1,7 @@
-// const { resizeImage, notFound } = require('./resize');
-
 import { resizeImage, notFound } from './resize.js';
-
-// const { getCollectionLevelBrowseImage, getGranuleLevelBrowseImage } = require('./cmr');
-
 import { getCollectionLevelBrowseImage, getGranuleLevelBrowseImage } from './cmr.js';
-
-// const { cacheImage, getImageFromCache } = require('./cache');
-
 import { cacheImage, getImageFromCache } from './cache.js';
-
-// const { withTimeout, slurpImageIntoBuffer } = require('./util');
-
 import { slurpImageIntoBuffer } from './util.js';
-
-// const config = require('./config');
-
-// eslint-disable-next-line import/extensions
 
 /**
  * buildResponse: assembles response body to avoid code duplication
@@ -84,18 +69,10 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width, i
     return buildResponse(imageFromCache);
   }
 
-  // If given an image url, fetch the image and resize. If no valid image
-  // exists, return the not found response
-  // const imageUrl = await withTimeout(
-  //   TIMEOUT_INTERVAL,
-  //   getImageUrlFromConcept(conceptId, conceptType, imageSrc)
-  // );
   const imageUrl = await getImageUrlFromConcept(conceptId, conceptType, imageSrc);
   // If the url is not `null`, `undefined`, or an empty string try to grab the image and resize it
   if (imageUrl) {
-    // const imageBuffer = await withTimeout(TIMEOUT_INTERVAL, slurpImageIntoBuffer(imageUrl));
     const imageBuffer = await slurpImageIntoBuffer(imageUrl);
-    // TODO we need to be consistent either use axios or use the timeout feature
     if (imageBuffer) {
       const thumbnail = await resizeImage(imageBuffer, height, width);
       if (thumbnail) {

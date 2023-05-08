@@ -1,4 +1,3 @@
-// const { getValue, setValue } = require('../in-memory-cache');
 import { setValue, getValue } from '../in-memory-cache';
 
 describe('testing in memory token cache', () => {

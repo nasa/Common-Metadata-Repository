@@ -1,16 +1,12 @@
 import nock from 'nock';
 import { handler } from '../index.js';
 import { CMR_ROOT_URL } from '../config.js';
-
+// Mock collections
 import collectionWithBrowse from './__mocks__/C179003030-ORNL_DAAC.js';
 import collectionWithoutBrowse from './__mocks__/C1214587974-SCIOPS.js';
-
+// Mock Granules
 import granuleWithBrowse from './__mocks__/C1711961296-LPCLOUD_granules.js';
 import granuleWithBrowseMultipleImages from './__mocks__/G1200460416-ESA.js';
-// import granuleWithoutBrowse from './C179003030-ORNL_DAAC_granules.json';
-
-// import invalidCollectionIdResponse from './C000000000-MISSING_NO.json';
-// import invalidGranuleIdResponse from './G000000000-MISSING_NO.json';
 
 describe('handler functions', () => {
   describe('get collection(dataset) imagery', () => {

@@ -1,49 +1,19 @@
 import nock from 'nock';
-// import fs from 'fs';
 import {
   getBrowseImageFromConcept,
   getCollectionLevelBrowseImage,
   getGranuleLevelBrowseImage
 } from '../cmr.js';
 import { CMR_ROOT_URL } from '../config.js';
-
+// Mock Collections
 import collectionWithBrowse from './__mocks__/C179003030-ORNL_DAAC.js';
 import collectionWithoutBrowse from './__mocks__/C1214587974-SCIOPS.js';
 import granuleWithBrowse from './__mocks__/C1711961296-LPCLOUD_granules.js';
+import invalidCollectionIdResponse from './__mocks__/C000000000-MISSING_NO.js';
+// Mock Granules
 import granuleWithBrowseMultipleImages from './__mocks__/G1200460416-ESA.js';
 import granuleWithoutBrowse from './__mocks__/C179003030-ORNL_DAAC_granules.js';
-import invalidCollectionIdResponse from './__mocks__/C000000000-MISSING_NO.js';
 import invalidGranuleIdResponse from './__mocks__/G000000000-MISSING_NO.js';
-// import { feed as _feed } from './C1214587974-SCIOPS.json';
-
-// const { collectionWithBrowse } = JSON.parse(fs.readFileSync(`${__dirname}/C179003030-ORNL_DAAC.json`));
-
-// const { collectionWithoutBrowse } = require('./C1214587974-SCIOPS.json');
-
-// const { collectionWithoutBrowse } = JSON.parse(fs.readFileSync(`${__dirname}/C1214587974-SCIOPS.json`));
-
-// const collectionWithBrowse = require('./C179003030-ORNL_DAAC.json');
-// const { granuleWithBrowse } = JSON.parse(fs.readFileSync(`${__dirname}/C1711961296-LPCLOUD_granules.json`));
-
-// const granuleWithBrowse = require('./C1711961296-LPCLOUD_granules.json');
-
-// const { granuleWithBrowseMultipleImages } = JSON.parse(fs.readFileSync(`${__dirname}/G1200460416-ESA.json`));
-
-// const granuleWithBrowseMultipleImages = require('./G1200460416-ESA.json');
-
-// const { granuleWithoutBrowse } = JSON.parse(
-//   fs.readFileSync(`${__dirname}/C179003030-ORNL_DAAC_granules.json`)
-// );
-
-// const granuleWithoutBrowse = require('./C179003030-ORNL_DAAC_granules.json');
-
-// const { invalidCollectionIdResponse } = JSON.parse(fs.readFileSync(`${__dirname}/C000000000-MISSING_NO.json`));
-
-// // const invalidCollectionIdResponse = require('./C000000000-MISSING_NO.json');
-
-// const { invalidGranuleIdResponse } = JSON.parse(fs.readFileSync(`${__dirname}/G000000000-MISSING_NO.json`));
-
-// const invalidGranuleIdResponse = require('./G000000000-MISSING_NO.json');
 
 describe('Metadata wrangling', () => {
   test('Get image url from collection with browse url', async () => {
@@ -83,12 +53,19 @@ describe('Metadata wrangling', () => {
       'https://eoimages.gsfc.nasa.gov/images/imagerecords/151000/151261/atlanticbloom_amo_2023110_lrg.jpg'
     );
   });
-  test('Get image url from granule with browse url specified image default image', async () => {
+
+  test('Ensure we get the first image url from granule record when the imageSrc was not specified', async () => {
     const { feed } = granuleWithBrowseMultipleImages;
     const imageUrl = await getBrowseImageFromConcept(feed.entry[0], '');
     expect(imageUrl).toBe(
       'https://airsl2.gesdisc.eosdis.nasa.gov/data/Aqua_AIRS_Level2/AIRH2CCF.006/2002/243/AIRS.2002.08.31.028.L2.CC_H.v6.0.12.0.G14101130602.hdf.jpg'
     );
+  });
+
+  test('Ensure we get the default image if an image that was not in the granule was specified', async () => {
+    const { feed } = granuleWithBrowseMultipleImages;
+    const imageUrl = await getBrowseImageFromConcept(feed.entry[0], 'https://blah.png');
+    expect(imageUrl).toBe(null);
   });
 });
 

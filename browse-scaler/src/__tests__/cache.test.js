@@ -1,9 +1,8 @@
 import { cacheImage, getImageFromCache } from '../cache.js';
 import { readFile } from '../util.js';
 
-// import redis from 'redis-mock';
-// jest.mock('redis', () => redis);
-
+// TODO: We should actually mock redis
+// TODO: Right now we require a real instance to be up to pass test
 describe('cache tests', () => {
   test('data round trip', async () => {
     const imgData = await readFile('__tests__/stars.jpg');

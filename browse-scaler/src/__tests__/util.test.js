@@ -1,6 +1,4 @@
 import nock from 'nock';
-// const AWSMock = require('aws-sdk-mock');
-// const AWS = require('aws-sdk');
 import { readFileSync } from 'fs';
 
 import { getSecureParam, readFile, slurpImageIntoBuffer, withTimeout } from '../util.js';
