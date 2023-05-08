@@ -1,4 +1,4 @@
-import { SSMClient } from '@aws-sdk/client-ssm';
+import { SSMClient, GetParameterCommand } from '@aws-sdk/client-ssm';
 
 // const fetch = require('node-fetch');
 
@@ -29,10 +29,12 @@ if (!ssm) {
  * @returns {JSON} server response object from Parameter Store
  */
 export const getSecureParam = async param => {
-  const request = await ssm.GetParameter({
-    Name: param,
-    WithDecryption: true
-  });
+  const command = new GetParameterCommand({ Name: param, WithDecryption: true });
+  // const request = await ssm.GetParameter({
+  //   Name: param,
+  //   WithDecryption: true
+  // });
+  const request = await ssm.send(command);
   return request.Parameter.Value;
 };
 
