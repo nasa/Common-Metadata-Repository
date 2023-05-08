@@ -22,7 +22,9 @@ jobs:
     defaults:
       run:
         working-directory: browse-scaler/src
-
+    
+    paths-ignore:
+     - '__tests__/__mocks__/**'
     steps:
     - uses: actions/checkout@v2
 
@@ -38,7 +40,7 @@ jobs:
 
     - run: npm install
 
-    - run: npm run ci-test -- --detectOpenHandles --forceExit
+    - run: npm run ci-test
 
     - uses: codecov/codecov-action@v2
       with:
