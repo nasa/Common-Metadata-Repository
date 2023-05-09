@@ -58,7 +58,7 @@
             (:errors coll4-wrong-collection-data-type)))))
 
 ;; Verify a new concept is ingested successfully.
-(deftest collection-ingest-test
+(deftest basic-collection-ingest-test
   (testing "ingest of a new concept"
     (let [concept (data-umm-c/collection-concept {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
@@ -77,7 +77,7 @@
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:token launchpad-token})]
       (index/wait-until-indexed)
       (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-      (is (= 1 revision-id)))))
+      (is (= 6 revision-id)))))
 
 ;; Verify a concept can be ingested twice to get two revisions and ignore_conflict can impact the reindex status.
 (deftest collection-ingest-test

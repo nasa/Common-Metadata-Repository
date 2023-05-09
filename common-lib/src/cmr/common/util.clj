@@ -1029,7 +1029,7 @@
 ;; TODO - remove legacy token check after legacy token retirement
 (defn is-legacy-token?
   "There are two uses cases captured by this test, the Legacy token and the
-   new style legacy token made to behave like a legacy token. This function 
+   new style legacy token made to behave like a legacy token. This function
    will not match very short JWT tokens.
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
   [token]

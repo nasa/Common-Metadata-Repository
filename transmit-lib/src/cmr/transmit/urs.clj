@@ -69,7 +69,7 @@
   "Returns URS user info associated with a launchpad token"
   [context token]
   (let [{:keys [status body]} (request-with-auth context {:url-fn #(launchpad-validation-url %)
-                                                          :method :post :raw? true 
+                                                          :method :post :raw? true
                                                           :http-options {:form-params {:token token}}})]
     (when-not (= 200 status)
       (error (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d].
@@ -78,7 +78,7 @@
        :unauthorized
        (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d]."
                (common-util/scrub-token token) status)))
-    (:uid body)))
+    (select-keys body [:lp-token-expires-in :uid])))
 
 (defn user-exists?
   "Returns true if the given user exists in URS"
@@ -159,7 +159,7 @@
  (login context "notexist" "foopass")
  (login context "notexist" "")
  (login context "notexist" nil)
- 
+
  ;; when REPL launched with non-local connection configs
  (def context
    {:system (config/system-with-connections {} [:urs])})
