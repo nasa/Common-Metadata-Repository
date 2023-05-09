@@ -641,6 +641,17 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           <xs:documentation>This sub-element if true, describes to end users and machines that this collection's data is free of charge and open for any use the user sees fit.</xs:documentation>
         </xs:annotation>
       </xs:element>
+      <xs:element name="EULAIdentifier" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Allows an End User License Agreement to be associated with a collection. This allows a service to check if an end user has accepted a EULA for this collection (data set) before it will allow data to be downloaded or used.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1" />
+              <xs:maxLength value="40" />
+            </xs:restriction>
+          </xs:simpleType>
+      </xs:element>
       <xs:choice minOccurs="0">
         <xs:element name="LicenseURL" type="OnlineResource"/>
         <xs:element name="LicenseText">
