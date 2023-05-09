@@ -86,7 +86,7 @@
   "Parse the use constraints from XML resource constraint.
    constraints-xpath is:
    /gmi:MI_Metadata/gmd:identificationInfo/gmd:MD_DataIdentification/gmd:resourceConstraints/gmd:MD_LegalConstraints.
-   We want to find all the EUAIdentifiers, the first Description, the first LicenseUrl, the first LicenseText, and the
+   We want to find all the EULAIdentifiers, the first Description, the first LicenseUrl, the first LicenseText, and the
    first FreeAndOpenData and then return UseConstraints
    as one of the combinations in the following order, if the values exist:
    {:Description first-desc :LicenseUrl first-lic-url}, {:Description first-desc :LicenseText first-lic-text},
