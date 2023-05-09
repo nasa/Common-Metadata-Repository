@@ -23,7 +23,8 @@
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
-   [cmr.transmit.config :as transmit-config]))
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]))
 
 (defconfig access-control-nrepl-port
   "Port to listen for nREPL connections"
@@ -96,7 +97,8 @@
                       :providers (mem-cache/create-in-memory-cache :ttl {} {:ttl (hours->ms 12)})
                       gf/group-cache-key (gf/create-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
-                      common-health/health-cache-key (common-health/create-health-cache)}
+                      common-health/health-cache-key (common-health/create-health-cache)
+                      launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)}
 
              :public-conf (public-conf)
              :relative-root-url (transmit-config/access-control-relative-root-url)

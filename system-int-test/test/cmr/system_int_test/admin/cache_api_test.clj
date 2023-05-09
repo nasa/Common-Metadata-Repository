@@ -9,57 +9,12 @@
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.cache-util :refer :all]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url]))
 
 (use-fixtures :each (ingest/reset-fixture
                      {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"}))
-
-(defn list-caches-for-app
-  "Gets a list of the caches for the given url."
-  [url token]
-  (let [response (client/request {:url url
-                                  :method :get
-                                  :query-params {:token token}
-                                  :connection-manager (s/conn-mgr)
-                                  :throw-exceptions false})
-        status (:status response)]
-
-    ;; Make sure the status returned is success
-    (when (not= status 200)
-      (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
-    (json/decode (:body response) true)))
-
-(defn- list-cache-keys
-  "Gets a list of the cache keys for the given cache at the given url."
-  [url cache-name token]
-  (let [full-url (str url "/" cache-name)
-        response (client/request {:url full-url
-                                  :method :get
-                                  :query-params {:token token}
-                                  :connection-manager (s/conn-mgr)
-                                  :throw-exceptions false})
-        status (:status response)]
-    ;; Make sure the status returned is success
-    (when (not= status 200)
-      (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
-    (json/decode (:body response) true)))
-
-(defn get-cache-value
-  "Gets the value for a given key from the given cache. Checks that the retruend status code
-  matches the expected status code."
-  [url cache-name cache-key token expected-status]
-  (let [full-url (str url "/" cache-name "/" cache-key)
-        response (client/request {:url full-url
-                                  :method :get
-                                  :query-params {:token token}
-                                  :connection-manager (s/conn-mgr)
-                                  :throw-exceptions false})
-        status (:status response)]
-    ;; Make sure the returend status matches the expected-status
-    (when (not= status expected-status)
-      (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
-    (json/decode (:body response) true)))
 
 (deftest cache-apis
   ;; login as a member of group 1
@@ -89,6 +44,7 @@
                                       "health"
                                       "humanizer-alias-cache"
                                       "xsl-transformer-templates"
+                                      "launchpad-user"
                                       "kms"
                                       "providers"
                                       "token-imp"
@@ -101,6 +57,7 @@
                                               "group-ids-guids"
                                               "health"
                                               "providers"
+                                              "launchpad-user"
                                               "write-enabled"]
         (url/search-read-caches-url) ["acls"
                                       "collections-for-gran-acls"
@@ -111,6 +68,7 @@
                                       "humanizer-range-facet-cache"
                                       "humanizer-report-cache"
                                       "index-names"
+                                      "launchpad-user"
                                       "kms"
                                       "metadata-cache"
                                       "scroll-id-cache"
@@ -267,7 +225,7 @@
           :service "properties"
           :tool "properties"
           :subscription "properties"}
-         (zipmap 
+         (zipmap
           (reduce (fn [data, item] (conj data (keyword (str "generic-" (name item)))))
                   []
                   (keys (common-config/approved-pipeline-documents)))

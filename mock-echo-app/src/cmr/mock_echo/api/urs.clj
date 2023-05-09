@@ -48,10 +48,10 @@
 
 (defn get-launchpad-user
   "Processes a request to get a user using their launchpad token."
-  [context token] 
+  [context token]
   (case token
       "ABC-1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-      {:status 200 :body {:uid "user1"}} 
+      {:status 200 :body {:uid "user1" :lp-token-expires-in 1600}}
       {:status 400 :body {:error "Launchpad SSO authentication failed"}}))
 
 (defn get-user-info
@@ -257,7 +257,7 @@
           (GET "/" {:keys [request-context params] :as request}
             (assert-bearer-token request)
             (get-groups-for-user request-context user-id))))
-      
+
       (context "/api/nams" []
         (POST "/edl_user_uid" {:keys [request-context params] :as request}
           (assert-bearer-token request)
