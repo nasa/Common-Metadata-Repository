@@ -22,9 +22,6 @@ jobs:
     defaults:
       run:
         working-directory: browse-scaler/src
-    
-    paths-ignore:
-     - '__mocks__/**'
 
     steps:
     - uses: actions/checkout@v2

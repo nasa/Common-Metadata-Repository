@@ -5,15 +5,17 @@ import {
   getGranuleLevelBrowseImage
 } from '../cmr.js';
 import { CMR_ROOT_URL } from '../config.js';
+
 // Mock Collections
-import collectionWithBrowse from './__mocks__/C179003030-ORNL_DAAC.js';
-import collectionWithoutBrowse from './__mocks__/C1214587974-SCIOPS.js';
-import granuleWithBrowse from './__mocks__/C1711961296-LPCLOUD_granules.js';
-import invalidCollectionIdResponse from './__mocks__/C000000000-MISSING_NO.js';
+import collectionWithBrowse from './mock_responses/C179003030-ORNL_DAAC.json' assert {type: 'json'};
+import collectionWithoutBrowse from './mock_responses/C1214587974-SCIOPS.json' assert {type: 'json'};
+import granuleWithBrowse from './mock_responses/C1711961296-LPCLOUD_granules.json' assert {type: 'json'};
+import invalidCollectionIdResponse from './mock_responses/C000000000-MISSING_NO.json' assert {type: 'json'};
+
 // Mock Granules
-import granuleWithBrowseMultipleImages from './__mocks__/G1200460416-ESA.js';
-import granuleWithoutBrowse from './__mocks__/C179003030-ORNL_DAAC_granules.js';
-import invalidGranuleIdResponse from './__mocks__/G000000000-MISSING_NO.js';
+import granuleWithBrowseMultipleImages from './mock_responses/G1200460416-ESA.json' assert {type: 'json'};
+import granuleWithoutBrowse from './mock_responses/C179003030-ORNL_DAAC_granules.json' assert {type: 'json'};
+import invalidGranuleIdResponse from './mock_responses/G000000000-MISSING_NO.json' assert {type: 'json'};
 
 describe('Metadata wrangling', () => {
   test('Get image url from collection with browse url', async () => {

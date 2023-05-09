@@ -28,8 +28,6 @@ export const Cache = (function(cfg) {
   return { getInstance };
 })({ REDIS_PORT, REDIS_URL });
 
-// exports.Cache = Cache;
-
 /**
  * cacheImage: Puts the given image in cache. This does not return anything.
  * @param {String} key This is what you use to get the image later
@@ -65,4 +63,13 @@ export const getImageFromCache = async key => {
       console.log(`image ${key} is not in cache`);
       return null;
     });
+};
+
+/**
+ * closeInstance: Closes connection to redis cache
+ */
+export const closeInstance = () => {
+  const builtInstance = Cache.getInstance();
+  builtInstance.quit();
+  return null;
 };

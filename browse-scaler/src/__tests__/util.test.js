@@ -3,7 +3,7 @@ import { readFileSync } from 'fs';
 
 import { getSecureParam, readFile, slurpImageIntoBuffer } from '../util.js';
 
-import jsonData from './__mocks__/C179003030-ORNL_DAAC.json';
+import jsonData from './mock_responses/C179003030-ORNL_DAAC.json' assert {type: 'json'};
 
 describe('slurpImageIntoBuffer', () => {
   const starsData = readFileSync('./__tests__/stars.jpg');
@@ -33,7 +33,7 @@ describe('getSecureParam', () => {
 
 describe('readFile', () => {
   test('returns file content', async () => {
-    const data = await readFile('./__tests__/__mocks__/C179003030-ORNL_DAAC.json');
+    const data = await readFile('./__tests__/mock_responses/C179003030-ORNL_DAAC.json');
     expect(Buffer.isBuffer(data)).toBeTruthy();
     expect(JSON.parse(data.toString())).toEqual(jsonData);
   });
