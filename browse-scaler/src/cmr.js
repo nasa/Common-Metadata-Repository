@@ -36,8 +36,8 @@ const parseJsonBody = jsonResponse => {
   const { data } = jsonResponse;
   const { feed } = data;
   const { entry } = feed;
-  const [granule] = entry;
-  return granule;
+  const [conceptMetadata] = entry;
+  return conceptMetadata;
 };
 
 /**
@@ -45,7 +45,6 @@ const parseJsonBody = jsonResponse => {
  * @param {String} conceptId Granule concept id from CMR
  * @returns [{JSON}] An array of json granule results
  */
-
 const fetchCmrGranule = async conceptId => {
   const requestHeaders = {};
   const token = CMR_ECHO_TOKEN || (await getAuthorizationToken());
@@ -69,6 +68,11 @@ const fetchCmrGranule = async conceptId => {
   return parseJsonBody(response);
 };
 
+/**
+ * Fetch a single Collection record from CMR search
+ * @param {String} conceptId Granule concept id from CMR
+ * @returns [{JSON}] An array of json collection results
+ */
 const fetchCmrCollection = async conceptId => {
   const requestHeaders = {};
   const token = CMR_ECHO_TOKEN || (await getAuthorizationToken());
