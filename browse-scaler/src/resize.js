@@ -1,4 +1,4 @@
-const sharp = require('sharp');
+import sharp from 'sharp';
 
 /**
  * resizeImage: Resize a given image to a given height and width
@@ -7,7 +7,7 @@ const sharp = require('sharp');
  * @param {Integer} width How wide do you want the image to be?
  * @return {Buffer<Image>} This will give you a resized image or null
  */
-exports.resizeImage = async (image, height, width) => {
+export const resizeImage = async (image, height, width) => {
   // If an image needs to be resized, it is because it was not available
   // in cache, so we will always want to cache that image
   try {
@@ -34,10 +34,10 @@ exports.resizeImage = async (image, height, width) => {
  * notFound: No image available? This will pull the svg file and return it as a Buffer
  * @return {Buffer<Image>} This is what you show the user when an image cannot be found or resized
  */
-exports.notFound = async () => {
-  const notFound = await sharp('image-unavailable.svg')
+export const notFound = async () => {
+  const notFoundImage = await sharp('image-unavailable.svg')
     .toFormat('png')
     .toBuffer();
   console.log(`Image not found. Using default image`);
-  return notFound;
+  return notFoundImage;
 };

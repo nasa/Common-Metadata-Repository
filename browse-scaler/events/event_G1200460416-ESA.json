@@ -1,7 +1,8 @@
 {
-    "path": "datasets/C1000001740-NSIDC_ECS",
+    "path": "granules/G1200460416-ESA",
     "queryStringParameters": {
         "h ": 85,
         "w": 85
     }
 }
+

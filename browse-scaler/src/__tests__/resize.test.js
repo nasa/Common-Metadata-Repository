@@ -1,6 +1,14 @@
-const fs = require('fs');
-const sharp = require('sharp');
-const { resizeImage, notFound } = require('../resize');
+import sharp from 'sharp';
+import { dirname } from 'path';
+import fs from 'fs';
+import { resizeImage, notFound } from '../resize.js';
+import { fileURLToPath } from 'url';
+
+// Needed to resolve an issue with ES6 and fs
+// https://stackoverflow.com/questions/41602075/cannot-find-file-in-node-even-though-it-has-correct-path
+const __filename = fileURLToPath(import.meta.url);
+
+const __dirname = dirname(__filename);
 
 describe('Image resizing', () => {
   test('Images are resized as expected', async () => {

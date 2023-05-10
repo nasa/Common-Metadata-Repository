@@ -1,8 +1,14 @@
 {
+  "env": {
+    "jest": true
+  },
   "extends": ["airbnb", "prettier"],
   "plugins": ["prettier"],
   "rules": {
     "prettier/prettier": ["error"],
-    "no-console": "off"
+    "no-console": "off",
+    "import/extensions":"off",
+     // Allow files with no default export
+     "import/prefer-default-export": "off"
   }
 }

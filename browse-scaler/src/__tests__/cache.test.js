@@ -1,27 +1,32 @@
-const cache = require ('../cache');
-const { readFile } = require ('../util');
+import { cacheImage, getImageFromCache, closeInstance } from '../cache.js';
+import { readFile } from '../util.js';
 
-describe ('cache tests', () => {
-    test ('data round trip', async () => {
-        const imgData = await readFile ('__tests__/stars.jpg');
-        cache.cacheImage ('someData', imgData);
+// TODO: We should actually mock redis
+// TODO: Right now we require a real instance to be up to pass test
+// Needed function to close connection for tests opening redis connection to avoid open handles
+afterAll(() => closeInstance());
 
-        const res = await cache.getImageFromCache ('someData');
+describe('cache tests', () => {
+  test('data round trip', async () => {
+    const imgData = await readFile('__tests__/stars.jpg');
+    cacheImage('someData', imgData);
 
-        expect (res).toStrictEqual (imgData);
-    });
+    const res = await getImageFromCache('someData');
 
-    test ('\"null\" string entry', async () => {
-        cache.cacheImage ('itsnull', 'null');
+    expect(res).toStrictEqual(imgData);
+  });
 
-        const res = await cache.getImageFromCache ('itsnull');
+  test('"null" string entry', async () => {
+    cacheImage('itsnull', 'null');
 
-        // the actual string null
-        expect (res.toString ()).toBe ('null');
-    });
+    const res = await getImageFromCache('itsnull');
 
-    test ('key does not exist', async () => {
-        const res = await cache.getImageFromCache ('idontexist');
-        expect (res).toBe (null);
-    });
+    // the actual string null
+    expect(res.toString()).toBe('null');
+  });
+
+  test('key does not exist', async () => {
+    const res = await getImageFromCache('idontexist');
+    expect(res).toBe(null);
+  });
 });

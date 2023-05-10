@@ -2443,7 +2443,7 @@ A granule is downloadable when it contains at least one RelatedURL of type GETDA
 
 A granule is browsable when it contains at least one RelatedURL of type GET RELATED VISUALIZATION.
 
-    curl "%CMR-ENDPOINT%/collections?browsable=true"
+    curl "%CMR-ENDPOINT%/granules?browsable=true&provider=PROV1"
 
 #### <a name="g-additional-attribute"></a> Find granules by additional attribute
 
