@@ -112,8 +112,8 @@ export const getBrowseImageFromConcept = async (concept, imageSrc) => {
     const { links } = concept;
     const imgRegex = /\b(browse#)$/;
     const imageUrls = links.filter(link => imgRegex.test(link.rel));
-    console.debug(`🚀 links from metadata ${JSON.stringify(links)}`);
-    console.debug(`🚀 image link from metadata ${JSON.stringify(imageUrls)}`);
+    // console.debug(`🚀 links from metadata ${JSON.stringify(links)}`);
+    // console.debug(`🚀 image link from metadata ${JSON.stringify(imageUrls)}`);
     const searchImage = imageUrls.find(image => image.href === imageSrc);
 
     if (searchImage) {
