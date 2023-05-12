@@ -34,7 +34,8 @@
                                           ;; in case the eula-id values contain ":".
                                           (let [label-pattern (re-pattern (str (first (string/split value #":")) ":"))
                                                 eula-id-value (second (string/split value label-pattern))]
-                                            eula-id-value))))
+                                            (when eula-id-value
+                                              (string/trim eula-id-value))))))
                                    other-constraints-list)]
     (seq (remove nil? eula-identifiers))))
 
