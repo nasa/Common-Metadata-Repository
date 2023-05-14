@@ -45,6 +45,7 @@
                                       "humanizer-alias-cache"
                                       "xsl-transformer-templates"
                                       "launchpad-user"
+                                      "urs"
                                       "kms"
                                       "providers"
                                       "token-imp"
@@ -58,6 +59,7 @@
                                               "health"
                                               "providers"
                                               "launchpad-user"
+                                              "urs"
                                               "write-enabled"]
         (url/search-read-caches-url) ["acls"
                                       "collections-for-gran-acls"
@@ -69,6 +71,7 @@
                                       "humanizer-report-cache"
                                       "index-names"
                                       "launchpad-user"
+                                      "urs"
                                       "kms"
                                       "metadata-cache"
                                       "scroll-id-cache"

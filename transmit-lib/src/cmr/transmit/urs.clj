@@ -1,5 +1,7 @@
 (ns cmr.transmit.urs
   (:require
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as common-util]
@@ -36,9 +38,22 @@
   (format "%s/api/nams/edl_user_uid" (conn/root-url conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Request functions
+;; URS cache functions
 
-(defn- get-bearer-token
+(def urs-cache-key
+  "The cache key for a urs cache."
+  :urs)
+
+(def URS_CACHE_TIME
+  "The number of milliseconds CMR client bearer token information will be cached."
+  (* 24 60 60 1000))
+
+(defn create-urs-cache
+  "Creates a cache for which CMR client bearer tokens are stored in memory."
+  []
+  (mem-cache/create-in-memory-cache :ttl {} {:ttl URS_CACHE_TIME}))
+
+(defn- get-bearer-token-fn
   "Get CMR_SSO_APP token from EDL."
   [context]
   (let [{:keys [status body]} (http-helper/request
@@ -55,6 +70,16 @@
        (format "Cannot get CMR_SSO_APP token in EDL. Failed with status code [%d]."
                status)))
     (:access_token body)))
+
+(defn get-bearer-token
+  "Get the CMR client bearer token from from the cache."
+  [context]
+  (if-let [cache (cache/context->cache context urs-cache-key)]
+    (cache/get-value cache :cmr (fn [] (get-bearer-token-fn context)))
+    (get-bearer-token-fn context)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Request functions
 
 (defn- request-with-auth
   "Retrieve CMR URS authentication info and submit request."

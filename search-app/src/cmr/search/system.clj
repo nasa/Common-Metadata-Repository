@@ -29,7 +29,8 @@
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as hgocrf]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]))
+   [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
+   [cmr.transmit.urs :as urs]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
 
@@ -123,6 +124,7 @@
                       ;; already refreshes the cache. Since we use a consistent cache, the search
                       ;; application will also pick up the updated KMS keywords.
                       launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
+                      urs/urs-cache-key (urs/create-urs-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
                       search/scroll-id-cache-key (search/create-scroll-id-cache)
                       search/scroll-first-page-cache-key (search/create-scroll-first-page-cache)
