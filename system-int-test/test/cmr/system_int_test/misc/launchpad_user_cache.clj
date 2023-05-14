@@ -2,6 +2,7 @@
   (:require
    [clj-time.core :as t]
    [clojure.test :refer :all]
+   [cmr.mock-echo.api.urs :as mock-urs]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as system]
@@ -37,7 +38,14 @@
                       200))
                "user1"))
 
-        (testing "Launchpad token cache value mantains expiration date"
+        (is (= mock-urs/mock-urs-token (cache-util/get-cache-value
+                                        (url/ingest-read-caches-url)
+                                        "urs"
+                                        "cmr"
+                                        transmit-config/mock-echo-system-token
+                                        200)))
+
+        (testing "Launchpad token cache value maintains expiration date"
           (dev-sys-util/advance-time! 20)
           (let [expiration-time (:expiration-time (cache-util/get-cache-value
                                                    (url/ingest-read-caches-url)
@@ -60,4 +68,14 @@
                 (index/wait-until-indexed)
                 (is (= 401 (:status resp)))
                 (is (= ["Launchpad token (partially redacted) [ABC-1ZZZZZXXXZZZZZ] has expired."] (:errors resp)))
-                (is (not= expiration-time (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token)))))))))))
+                (is (not= expiration-time (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token)))))
+
+            (testing "urs cache clears after 24 hours"
+              (dev-sys-util/advance-time! (* 60 60 24))
+              (is (= {:error "missing key [:cmr] for cache [urs]"}
+                     (cache-util/get-cache-value
+                      (url/ingest-read-caches-url)
+                      "urs"
+                      "cmr"
+                      transmit-config/mock-echo-system-token
+                      404))))))))))
