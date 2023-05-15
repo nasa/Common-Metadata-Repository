@@ -19,7 +19,8 @@
 
 (deftest launchpad-user-cache-test
   (testing "launchpad cache initial value"
-    (let [launchpad-token (echo-util/login-with-launchpad-token (system/context) "user1")]
+    (let [launchpad-token (echo-util/login-with-launchpad-token (system/context) "user1")
+          token-key (hash launchpad-token)]
       (is (empty? (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token)))
       (let [concept (data-umm-c/collection-concept {})
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:token launchpad-token})]
@@ -31,7 +32,7 @@
         (is (= (:uid (cache-util/get-cache-value
                       (url/ingest-read-caches-url)
                       "launchpad-user"
-                      launchpad-token
+                      token-key
                       transmit-config/mock-echo-system-token
                       200))
                "user1"))
@@ -41,7 +42,7 @@
           (let [expiration-time (:expiration-time (cache-util/get-cache-value
                                                    (url/ingest-read-caches-url)
                                                    "launchpad-user"
-                                                   launchpad-token
+                                                   token-key
                                                    transmit-config/mock-echo-system-token
                                                    200))]
             (ingest/ingest-concept concept {:token launchpad-token})
@@ -50,11 +51,13 @@
             (is (= expiration-time (:expiration-time (cache-util/get-cache-value
                                                       (url/ingest-read-caches-url)
                                                       "launchpad-user"
-                                                      launchpad-token
+                                                      token-key
                                                       transmit-config/mock-echo-system-token
                                                       200))))
             (testing "token cache value expires"
               (dev-sys-util/advance-time! 2000)
-              (ingest/ingest-concept concept {:token launchpad-token})
-              (index/wait-until-indexed)
-              (is (not= expiration-time (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token))))))))))
+              (let [resp (ingest/ingest-concept concept {:token launchpad-token})]
+                (index/wait-until-indexed)
+                (is (= 401 (:status resp)))
+                (is (= ["Launchpad token (partially redacted) [ABC-1ZZZZZXXXZZZZZ] has expired."] (:errors resp)))
+                (is (not= expiration-time (cache-util/list-cache-keys (url/ingest-read-caches-url) "launchpad-user" transmit-config/mock-echo-system-token)))))))))))
