@@ -78,7 +78,7 @@
        :unauthorized
        (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d]."
                (common-util/scrub-token token) status)))
-    (select-keys body [:lp-token-expires-in :uid])))
+    (select-keys body [:lp_token_expires_in :uid])))
 
 (defn user-exists?
   "Returns true if the given user exists in URS"

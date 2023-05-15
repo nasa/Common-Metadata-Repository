@@ -51,7 +51,7 @@
   [context token]
   (case token
       "ABC-1ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ"
-      {:status 200 :body {:uid "user1" :lp-token-expires-in 1600}}
+      {:status 200 :body {:uid "user1" :lp_token_expires_in 1600}}
       {:status 400 :body {:error "Launchpad SSO authentication failed"}}))
 
 (defn get-user-info
