@@ -190,7 +190,7 @@
         params (params->sql-params concept-type
                                    providers
                                    (assoc params :provider-id (map :provider-id providers)))
-        stmt (gen-find-concepts-in-table-sql concept-type table fields params) 
+        stmt (gen-find-concepts-in-table-sql concept-type table fields params)
         concept-ids-revision-ids (when (not (= "efs-off" (efs-config/efs-toggle)))
                                    (j/query db (gen-find-concepts-in-table-sql concept-type table [:provider_id :concept_id :revision_id] params)))
         oracle-results (when (not (= "efs-only" (efs-config/efs-toggle)))
@@ -209,7 +209,11 @@
     (when oracle-results
       (info "Runtime of Oracle find-concepts-in-table(small-table): " (first oracle-results) " ms."))
     (if oracle-results
-      (second oracle-results)
+      (if (not (= "efs-off" (efs-config/efs-toggle)))
+        (map (fn [oracle-concept]
+               (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-results)))))
+             (second oracle-results))
+        (second oracle-results))
       (second efs-results))))
 
 ;; Execute a query against a normal (not small) provider table
@@ -254,7 +258,11 @@
     (when oracle-results
       (info "Runtime of Oracle find-concepts-in-table: " (first oracle-results) " ms."))
     (if oracle-results
-      (second oracle-results)
+      (if (not (= "efs-off" (efs-config/efs-toggle)))
+        (map (fn [oracle-concept]
+               (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-results)))))
+             (second oracle-results))
+        (second oracle-results))
       (second efs-results))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -311,7 +319,11 @@
                    (when oracle-results
                      (info "Runtime of Oracle find-concepts-in-batches(find-batch): " (first oracle-results) " ms."))
                    (if oracle-results
-                     (second oracle-results)
+                     (if (not (= "efs-off" (efs-config/efs-toggle)))
+                       (map (fn [oracle-concept]
+                              (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-results)))))
+                            (second oracle-results))
+                       (second oracle-results))
                      (second efs-results)))))
              (lazy-find
                [start-index]

@@ -382,7 +382,9 @@
      (when (not (= "efs-only" (efs-config/efs-toggle)))
        (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms."))
      (if oracle-concept-get
-       (second oracle-concept-get)
+       (if (not (= "efs-off" (efs-config/efs-toggle)))
+         (assoc (second oracle-concept-get) :metadata (:metadata (second efs-concept-get)))
+         (second oracle-concept-get))
        (second efs-concept-get))))
   ([db concept-type provider concept-id revision-id]
    (if revision-id
@@ -435,7 +437,11 @@
       (when (not (= "efs-only" (efs-config/efs-toggle)))
         (info "Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms."))
       (if oracle-concepts-get
-        (second oracle-concepts-get)
+        (if (not (= "efs-off" (efs-config/efs-toggle)))
+          (map (fn [oracle-concept]
+                 (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-concepts-get)))))
+               (second oracle-concepts-get))
+          (second oracle-concepts-get))
         (second efs-concepts-get)))
     []))
 

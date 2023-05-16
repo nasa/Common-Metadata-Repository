@@ -77,19 +77,27 @@
    (when revision-id
      (let [concept-path (make-concept-path provider concept-type concept-id revision-id)]
        (try
-         {:revision-id revision-id :metadata (util/gzip-bytes->string (Files/readAllBytes (Paths/get concept-path (into-array String [])))) :deleted false}
+         {:concept-id concept-id :revision-id revision-id :metadata (util/gzip-bytes->string (Files/readAllBytes (Paths/get concept-path (into-array String [])))) :deleted false}
          (catch Exception e
            (info "Exception returned from EFS get concept at path: " concept-path " Exception value: " e)))))))
 
 (defn get-concepts
   "Gets a group of concepts from EFS"
   [provider concept-type concept-id-revision-id-tuples]
-  (map (fn [tuple] (get-concept provider concept-type (nth tuple 0) (nth tuple 1))) concept-id-revision-id-tuples))
+  (into (array-map)
+        (map (fn [tuple]
+               (let [concept-data (get-concept provider concept-type (nth tuple 0) (nth tuple 1))]
+                 [(keyword (str (nth tuple 0) "_" (nth tuple 1))) concept-data]))
+             concept-id-revision-id-tuples)))
 
 (defn get-concepts-small-table
   "Gets a group of concepts from EFS using provider-id, concept-id, revision-id tuples"
   [concept-type provider-concept-revision-tuples]
-  (map (fn [tuple] (get-concept (nth tuple 0) concept-type (nth tuple 1) (nth tuple 2))) provider-concept-revision-tuples))
+  (into (array-map)
+        (map (fn [tuple]
+               (let [concept-data (get-concept (nth tuple 0) concept-type (nth tuple 1) (nth tuple 2))]
+                 [(keyword (str (nth tuple 1) (nth tuple 2))) concept-data]))
+             provider-concept-revision-tuples)))
 
 (defn delete-concept
   "Deletes a concept from EFS"
