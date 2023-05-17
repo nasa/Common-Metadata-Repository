@@ -1,5 +1,6 @@
 (ns cmr.access-control.services.auth-util
   (:require
+   [cmr.common.util :as util :refer [defn-timed]]
    [cmr.access-control.config :as access-control-config]
    [cmr.acl.core :as acl]
    [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -11,7 +12,7 @@
    [cmr.transmit.echo.tokens :as echo-tokens]
    [cmr.transmit.urs :as urs]))
 
-(defn get-sids
+(defn-timed get-sids
   "Returns a seq of sids for the given username string or user type keyword
    for use in checking permissions against acls."
   ([context]

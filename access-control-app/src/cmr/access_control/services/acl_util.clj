@@ -94,7 +94,7 @@
         response (qe/execute-query context query)]
     (mapv #(edn/read-string (util/gzip-base64->string (:acl-gzip-b64 %))) (:items response))))
 
-(defn get-acl-concepts-by-identity-type-and-target
+(defn-timed get-acl-concepts-by-identity-type-and-target
   "Returns ACLs with given identity-type string and target string.
    Valid identity types are defined in cmr.access-control.data.access-control-index.
    Valid targets can be found in cmr.access-control.data.acl-schema."

@@ -14,17 +14,17 @@
    [cmr.access-control.services.messages :as msg]
    [cmr.access-control.services.parameter-validation :as pv]
    [cmr.acl.core :as acl]
-   [cmr.common.cache :as cache]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.services.search.elastic-search-index :as common-esi]
-   [cmr.common-app.services.search.params :as cp]
    [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.common-app.services.search.params :as cp]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer [info debug]]
+   [cmr.common.log :refer [info]]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
+   [cmr.common.util :as util :refer [defn-timed]]
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.metadata-db :as mdb1]
    [cmr.transmit.metadata-db2 :as mdb]
@@ -237,7 +237,7 @@
   [acl]
   (-> acl :provider-identity :target (= schema/ingest-management-acl-target)))
 
-(defn- concept-permissions-granted-by-acls
+(defn-timed concept-permissions-granted-by-acls
   "Returns the set of permission keywords (:read, :order, and :update) granted on concept
    to the seq of group guids by seq of acls."
   [concept sids acls]
@@ -257,7 +257,7 @@
      (concat catalog-item-permissions
              ingest-management-permissions))))
 
-(defn- add-acl-enforcement-fields
+(defn-timed add-acl-enforcement-fields
   "Adds all fields necessary for comparing concept map against ACLs."
   [context concept]
   (let [concept (acl-matchers/add-acl-enforcement-fields-to-concept concept)]
@@ -267,15 +267,15 @@
                        (mdb/get-latest-concept context parent-id)))
       concept)))
 
-(defn get-catalog-item-permissions
+(defn-timed get-catalog-item-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
   [context username-or-type concept-ids]
   (let [sids (auth-util/get-sids context username-or-type)
         acls (concat
-               (acl-util/get-acl-concepts-by-identity-type-and-target
-                context index/provider-identity-type-name schema/ingest-management-acl-target)
-               (acl-util/get-acl-concepts-by-identity-type-and-target
-                context index/catalog-item-identity-type-name nil))]
+              (acl-util/get-acl-concepts-by-identity-type-and-target
+               context index/provider-identity-type-name schema/ingest-management-acl-target)
+              (acl-util/get-acl-concepts-by-identity-type-and-target
+               context index/catalog-item-identity-type-name nil))]
     (into {}
           (for [concept (mdb1/get-latest-concepts context concept-ids)
                 :let [concept-with-acl-fields (add-acl-enforcement-fields context concept)]]
@@ -338,7 +338,8 @@
           (for [group-id target-group-ids]
             [group-id (group-permissions-granted-by-acls group-id sids acls)]))))
 
-(defn get-permissions
+
+(defn-timed get-permissions
   "Returns result of permissions check for the given parameters."
   [context params]
   (let [params (-> params
