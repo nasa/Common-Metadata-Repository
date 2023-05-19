@@ -5,7 +5,8 @@
   (:require
    [cmr.common.services.errors :as errors]
    [cmr.ingest.data.ingest-events :as ingest-events]
-   [cmr.transmit.metadata-db :as mdb]))
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.common.util :as util]))
 
 (defn verify-empty-provider
   "Throws error if provider still has collections."
@@ -42,7 +43,8 @@
 (defn read-provider
   "Read a provider."
   [context provider-id]
-  (mdb/read-provider context provider-id))
+  (println "💀 Getting read-provider output from mdb on ingest")
+  (util/tee (mdb/read-provider context provider-id)))
 
 (defn update-provider
   "Update an existing provider."

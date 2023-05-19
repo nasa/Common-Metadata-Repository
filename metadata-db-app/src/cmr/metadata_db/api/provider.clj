@@ -35,6 +35,7 @@
 (defn- get-provider
   "Read a provider"
   [context params provider-id]
+  (println "🍙returning the get-provider func in metadatadb")
   (let [provider (provider-service/get-provider-by-id context provider-id true)]
     {:status 200
      :body (json/generate-string provider)
@@ -43,7 +44,7 @@
 (defn- get-providers
   "Get a list of provider ids"
   [context params]
-  (let [providers (provider-service/get-providers context)]
+  (let [providers (provider-service/get-providers context params)]
     {:status 200
      :body (json/generate-string providers)
      :headers rh/json-header}))

@@ -241,7 +241,7 @@
     (concat associations-source associations-dest)))
 
 (defn get-generic-associations-for-concept
-  "Get all the generic associationse (including tombstones) for a concept."
+  "Get all the generic associations (including tombstones) for a concept."
   [context concept]
   (get-generic-associations-by-concept-id
    context (:concept-id concept) (:revision-id concept)))
@@ -357,6 +357,15 @@
                 {:headers {config/token-header (config/echo-system-token)}
                  :throw-exceptions false})))
 
+(defn-timed read-providers
+  "Reads all providers"
+  [context]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/providers")]
+    (client/get request-url
+                {:headers {config/token-header (config/echo-system-token)}
+                 :throw-exceptions false})))
+
 (defn update-provider-raw
   "Update a provider in the database"
   [context provider]
@@ -399,13 +408,16 @@
                                :headers (ch/context->http-headers context)
                                :throw-exceptions false}))))
 
+
 (defn-timed get-providers
   "Returns the list of provider ids configured in the metadata db"
   [context]
   (let [{:keys [status body]} (get-providers-raw context)
         status (int status)]
+    (println "🚀 This is the response from metadata-db get providers " (json/decode body true))
     (case status
       200 (json/decode body true)
+      (println "🚀 This is the response from metadata-db get providers "(json/decode body true))
       ;; default
       (errors/internal-error! (format "Failed to get providers status: %s body: %s" status body)))))
 

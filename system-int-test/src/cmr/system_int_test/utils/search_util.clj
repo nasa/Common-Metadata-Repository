@@ -12,6 +12,7 @@
    [clojure.test :refer :all]
    [clojure.walk]
    [cmr.common-app.api.routes :as routes]
+   [cmr.search.api.providers :as provider]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.concepts :as cs]
    [cmr.common.mime-types :as mime-types]
@@ -718,6 +719,19 @@
         :results (ph/parse-provider-holdings format-key echo-compatible? body)}
        response))))
 
+(defn find-providers
+  ([]
+  (find-providers ""))
+  ([provider-id]
+  ;; todo read the styling guide for how to space this out
+  (let [response (client/get (str (url/search-provider-url) "/" provider-id) {:connection-manager (s/conn-mgr) :throw-exceptions false})]
+    (if (= 200 (:status response))
+      {:status (:status response)
+       :results (json/decode (:body response))}
+      response))))
+
+;; todo find a specific provider
+
 (defn find-tiles
   "Returns the tiles that are found by searching with the input params"
   [params]
@@ -890,3 +904,9 @@
                            #(first (shuffle (range -180 180))))
                (repeatedly n
                            #(first (shuffle (range -90 90)))))))
+
+
+(
+ comment
+ (find-providers)
+)

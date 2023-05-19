@@ -7,8 +7,9 @@
    [cmr.metadata-db.data.providers :as providers]
    [cmr.metadata-db.services.messages :as msg]
    [cmr.metadata-db.services.provider-validation :as pv]
-   [cmr.metadata-db.services.util :as mdb-util]))
-
+   [cmr.metadata-db.services.util :as mdb-util]
+   [ring.middleware.params :as params]))
+;; todo should this call the index application?
 (defn create-provider
   "Save a provider and setup concept tables in the database."
   [context {:keys [provider-id short-name] :as provider}]
@@ -25,11 +26,31 @@
 (defn get-providers
   "Get the list of providers.
   Returns a clojure.lang.APersistentMap$ValSeq; list of maps"
-  [context]
-  (info "Getting provider list.")
+  [context params]
+  (println "🚀 Getting provider list." params)
   (let [db (mdb-util/context->db context)
-        providers (map #(dissoc % :metadata) (providers/get-providers db))]
+        ;; todo put this back providers (map #(dissoc % :metadata) (providers/get-providers db))
+        providers (providers/get-providers db)]
     (map util/remove-nil-keys providers)))
+
+;; (defn read-providers
+;;  "Get list of providers including the metadata"
+;;  [context params]
+;;    (println "🚀 Getting provider list." params)
+;; (let [db (mdb-util/context->db context)
+;;         ;; todo put this back providers (map #(dissoc % :metadata) (providers/get-providers db))
+;;       providers (providers/get-providers db)]
+;;   (map util/remove-nil-keys providers)))
+
+;; (defn get-provider
+;;   "Get the list of providers.
+;;   Returns a clojure.lang.APersistentMap$ValSeq; list of maps"
+;;   [context c]
+;;   (info "🚀 Getting provider list.")
+;;   (let [db (mdb-util/context->db context)
+;;         ;; todo put this back providers (map #(dissoc % :metadata) (providers/get-providers db))
+;;         providers (providers/get-providers db)]
+;;     (map util/remove-nil-keys providers)))
 
 (defn get-provider-by-id
   "Returns the provider with the given provider-id, raise error when provider does not exist based

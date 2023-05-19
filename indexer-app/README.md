@@ -188,7 +188,7 @@ An uncaught error such as indexer dying or running out of memory will be handled
 
 ##### Alerts
 
-The indexer has a background job that monitors the RabbitMQ message queue size and logs it. If the message queue size exceeds the configured size (CMR_INDEXER_WARN_QUEUE_SIZE) we will log extra infomation that splunk can detect. We will add a splunk alert to look for the log mesage indicating the queue size has exceeded threshhold and email CMR Operations.
+The indexer has a background job that monitors the RabbitMQ message queue size and logs it. If the message queue size exceeds the configured size (CMR_INDEXER_WARN_QUEUE_SIZE) we will log extra information that splunk can detect. We will add a splunk alert to look for the log message indicating the queue size has exceeded threshold and email CMR Operations.
 
 ## Sample outputs
 

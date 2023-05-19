@@ -172,7 +172,7 @@
         (lp/replace-science-keywords-or-option concept-type)
         (psn/replace-provider-short-names context)
         (pv/validate-parameters concept-type))))
-
+;; todo use this function to search against the provider-endpoint
 (defn make-concepts-query
   "Utility function for generating an elastic-ready query."
   ([context concept-type params]

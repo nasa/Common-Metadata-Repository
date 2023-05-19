@@ -32,6 +32,23 @@
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
+(def ^:private component-order
+  "Defines the order to start the components."
+  [:log
+   :caches
+   orbits-runtime/system-key
+   :search-index
+   :scheduler
+   :web
+   :nrepl])
+
+(def system-holder
+  "Required for jobs"
+  (atom nil))
+
+(defconfig log-level
+  "App logging level"
+  {:default "info"})
 
 (defconfig search-public-protocol
   "The protocol to use for public access to the search application.
@@ -60,15 +77,11 @@
   more details."
   {:default 3003
    :type Long})
-
+;; todo move this to the config
 (defconfig search-nrepl-port
   "Port to listen for nREPL connections"
   {:default nil
    :parser cfg/maybe-long})
-
-(defconfig log-level
-  "App logging level"
-  {:default "info"})
 
 (defn public-conf
   "Public search configuration used for generating proper link URLs in dynamic
@@ -80,20 +93,6 @@
    :host (search-public-host)
    :port (search-public-port)
    :relative-root-url (transmit-config/search-relative-root-url)})
-
-(def ^:private component-order
-  "Defines the order to start the components."
-  [:log
-   :caches
-   orbits-runtime/system-key
-   :search-index
-   :scheduler
-   :web
-   :nrepl])
-
-(def system-holder
-  "Required for jobs"
-  (atom nil))
 
 (defn create-system
   "Returns a new instance of the whole application."
@@ -159,7 +158,7 @@
   (let [started-system (-> this
                            (update-in [:embedded-systems :metadata-db] mdb-system/start)
                            (common-sys/start component-order))]
-    (info "search System started")
+    (info "😶‍🌫️ search System started")
     started-system))
 
 (defn stop
