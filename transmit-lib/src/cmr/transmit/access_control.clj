@@ -133,12 +133,14 @@
   [context user-token]
   (let [token (:token context)
         headers (when token {config/token-header token})]
-    (h/request context :access-control
+    (println "get-current-sids here with token" user-token)
+    (cmr.common.log/error "get-current-sids")
+    (cmr.common.util/tee (h/request context :access-control
                {:url-fn current-sids-url
-                :method :get
-                :http-options {:query-params {:user-token user-token}
+                :method :post
+                :http-options {:body (format "user-token=%s" user-token)
                                :headers headers
-                               :accept :json}})))
+                               :accept :json}}))))
 
 ;;; ACL Functions
 
