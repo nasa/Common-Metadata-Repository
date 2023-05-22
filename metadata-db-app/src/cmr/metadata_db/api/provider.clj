@@ -110,5 +110,5 @@
     ;; get a list of providers
     (GET "/" {:keys [request-context params]}
       ;; (println "The request context passed into metadata api🤡" request-context)
-      (println "The params passed into metadata api🤡" params)
+      ;; (println "The params passed into metadata api🤡" params)
       (get-providers request-context params))))

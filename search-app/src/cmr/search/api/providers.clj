@@ -101,14 +101,14 @@
     (GET "/:provider-id" {{:keys [provider-id] :as params} :params
                           request-context :request-context
                           headers :headers}
-      (println "🚀 Retrieving specific provider from search EP")
+      ;; (println "🚀 Retrieving specific provider from search EP")
       ;; (println "🚀 Provider-id value" provider-id)
       ;; (provider-service/read-provider request-context provider-id)
       (one-result->response-map (pull-metadata-single-provider (provider-service/read-provider request-context provider-id))))
 
     ;; Return the list of all providers
     (GET "/" {:keys [request-context]}
-      (def my-context request-context)
+      ;; (def my-context request-context)
       ;; (println "🚀The request context" (str request-context))
-      (println "🚀 All providers endpoint")
+      ;; (println "🚀 All providers endpoint")
       (one-result->response-map (pull-metadata (provider-service/get-providers-raw request-context))))))

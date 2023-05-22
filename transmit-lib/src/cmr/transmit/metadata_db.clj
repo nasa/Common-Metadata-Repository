@@ -426,10 +426,10 @@
   [context]
   (let [{:keys [status body]} (get-providers-raw context)
         status (int status)]
-    (println "🚀 This is the response from metadata-db get providers " (json/decode body true))
+    ;; (println "🚀 This is the response from metadata-db get providers " (json/decode body true))
     (case status
       200 (json/decode body true)
-      (println "🚀 This is the response from metadata-db get providers "(json/decode body true))
+      ;; (println "🚀 This is the response from metadata-db get providers "(json/decode body true))
       ;; default
       (errors/internal-error! (format "Failed to get providers status: %s body: %s" status body)))))
 
