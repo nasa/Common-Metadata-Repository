@@ -904,9 +904,3 @@
                            #(first (shuffle (range -180 180))))
                (repeatedly n
                            #(first (shuffle (range -90 90)))))))
-
-
-(
- comment
- (find-providers)
-)

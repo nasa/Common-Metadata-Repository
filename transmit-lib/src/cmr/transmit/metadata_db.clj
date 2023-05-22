@@ -18,7 +18,8 @@
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
    [cmr.transmit.metadata-db2 :as mdb2]
-   [ring.util.codec :as codec]))
+   [ring.util.codec :as codec]
+   [cmr.transmit.http-helper :as h]))
 
 (defn-timed get-concept
   "Retrieve the concept with the given concept and revision-id"
@@ -408,6 +409,17 @@
                                :headers (ch/context->http-headers context)
                                :throw-exceptions false}))))
 
+(defn get-all-providers
+  "Returns the list of provider ids configured in the metadata db,
+  returns the raw response coming back from metadata-db"
+  [context]
+  (def mycontext context)
+  (println "passing all providers with special parameter in new made up func 👻")
+  (let [request-url (fn [conn] (str (conn/root-url conn) "/providers"))]
+    ;; Using http/helper pass "meta" arg to retrieve provider metadata
+    (h/request context :metadata-db {:url-fn request-url 
+                                     :method :get 
+                                     :http-options {:query-params {"meta" "true"}}})))
 
 (defn-timed get-providers
   "Returns the list of provider ids configured in the metadata db"

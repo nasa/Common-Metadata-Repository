@@ -98,9 +98,7 @@
         ;; Provider holdings
         providers-api/holdings-routes
 
-        ;; TODO this is where we want to mess around
-        ;; Add search context for providers
-
+        ;; Add routes for providers
         providers-api/provider-api-routes
 
         ;; Add routes for autocomplete

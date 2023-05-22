@@ -409,11 +409,6 @@
 (defmethod get-service-associations :service
   [context concept]
   (meta-db/get-associations-for-service context concept))
-
-;; (defmethod get-providers :provider
-;;   [context concept]
-;;   (meta-db/get-providers context))
-
 (defmulti get-tool-associations
   "Returns the tool associations of the concept"
   (fn [context concept]
@@ -452,11 +447,6 @@
    association concept indexes the associated collection concept."
   (fn [context concept parsed-concept options]
     (:concept-type concept)))
-
-(defn index-provider
-  [provider-id]
-  ;; todo make some call to elastic to create an index
-  )
 
 (defmethod index-concept :default
   [context concept parsed-concept options]
@@ -746,7 +736,7 @@
      ;; Null is sent in as the elastic version because we don't want to set a version for this
      ;; delete. The concept is going to be gone now and should never be indexed again.
      elastic-options)))
-;; todo this should be renamed it does not delete the provider it deletes provider contents
+
 (defn delete-provider
   "Delete all the concepts within the given provider"
   [context provider-id]

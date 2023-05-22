@@ -8,7 +8,7 @@
     [db provider]
     "Saves a provider and returns the provider id. If the provider already
     exists then an exception is thrown.")
-  ;; todo return the list of all providers
+
   (get-providers
     [db]
     "Get a sequence of all the providers.")

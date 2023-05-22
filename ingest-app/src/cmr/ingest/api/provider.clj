@@ -165,8 +165,6 @@
       (result->response-map
        (drop-metadata
         (provider-service/get-providers-raw request-context))))))
-    ;;  (GET "/" {:keys [request-context]}
-    ;;     (provider-service/get-providers-raw request-context))))
 
 (comment
 

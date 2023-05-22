@@ -9,9 +9,7 @@
    [cmr.search.api.core :as core-api]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
-   [cmr.common.util :as util]
-   [compojure.core :refer :all]
-   [cmr.transmit.metadata-db2 :as mdb2]))
+   [compojure.core :refer :all]))
 ;; todo remove unused imports
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Constants
@@ -51,14 +49,14 @@
   "Look for and remove metadata field from the body returned by the metadata db
    service, as it is not needed in the legacy responses."
   [response]
+  (def my-response response)
+  (println "Response in pull meta-data 🤖" response)
+  (println "body in pull meta-data 🤖" (:body response))
   (let [new-body (-> response
-                     :body
-                     (json/parse-string true)
                      (as-> body (map :metadata body))
-                     json/generate-string)]
-    (assoc response :body new-body)))
-;; if errors use that otherwise use the metadata
-;;                   (when (not (nil? (:errors (:body response)))) (println "🐝 The error case happened"))
+                     json/generate-string)
+        new-response {}]
+    (assoc new-response :body new-body)))
 
 (defn- pull-metadata-single-provider
  [response]
@@ -86,17 +84,6 @@
     {:status status
      :headers {"Content-Type" (mt/with-utf-8 mt/json)}
      :body body}))
-
-;; (defn- format-raw-response
-;;   "Look for and remove metadata field from the body returned by the metadata db
-;;    service, as it is not needed in the legacy responses."
-;;   [response]
-;;   (println "🚀body in format raaw")
-;;   (let [body (-> response
-;;                  :body
-;;                  json/parse-string
-;;                  json/generate-string)]
-;;     (assoc response :body body)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions

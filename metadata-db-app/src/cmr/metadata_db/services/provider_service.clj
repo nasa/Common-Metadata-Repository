@@ -8,8 +8,9 @@
    [cmr.metadata-db.services.messages :as msg]
    [cmr.metadata-db.services.provider-validation :as pv]
    [cmr.metadata-db.services.util :as mdb-util]
-   [ring.middleware.params :as params]))
-;; todo should this call the index application?
+   [ring.middleware.params :as params]
+   [cmr.common.api.context :as context]))
+
 (defn create-provider
   "Save a provider and setup concept tables in the database."
   [context {:keys [provider-id short-name] :as provider}]
@@ -28,29 +29,13 @@
   Returns a clojure.lang.APersistentMap$ValSeq; list of maps"
   [context params]
   (println "🚀 Getting provider list." params)
+  (def my-context context)
   (let [db (mdb-util/context->db context)
-        ;; todo put this back providers (map #(dissoc % :metadata) (providers/get-providers db))
-        providers (providers/get-providers db)]
+        _(println "🚀 meta flag value" (:meta params))
+        ;; todo put this back providers
+        providers (if (:meta params) (providers/get-providers db)
+                      (map #(dissoc % :metadata) (providers/get-providers db)))]
     (map util/remove-nil-keys providers)))
-
-;; (defn read-providers
-;;  "Get list of providers including the metadata"
-;;  [context params]
-;;    (println "🚀 Getting provider list." params)
-;; (let [db (mdb-util/context->db context)
-;;         ;; todo put this back providers (map #(dissoc % :metadata) (providers/get-providers db))
-;;       providers (providers/get-providers db)]
-;;   (map util/remove-nil-keys providers)))
-
-;; (defn get-provider
-;;   "Get the list of providers.
-;;   Returns a clojure.lang.APersistentMap$ValSeq; list of maps"
-;;   [context c]
-;;   (info "🚀 Getting provider list.")
-;;   (let [db (mdb-util/context->db context)
-;;         ;; todo put this back providers (map #(dissoc % :metadata) (providers/get-providers db))
-;;         providers (providers/get-providers db)]
-;;     (map util/remove-nil-keys providers)))
 
 (defn get-provider-by-id
   "Returns the provider with the given provider-id, raise error when provider does not exist based
