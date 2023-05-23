@@ -1,8 +1,12 @@
-FROM clojure:openjdk-17-lein
+FROM eclipse-temurin:17
 
-RUN apt update && apt install -y \
-curl \
-netbase \
-unzip \
-zip \
-&& rm -rf /var/lib/apt/lists/*
+RUN apt update \
+ && DEBIAN_FRONTEND=noninteractive \
+    apt install --assume-yes \
+      clojure \
+      curl \
+      leiningen \
+      netbase \
+      unzip \
+      zip \
+ && rm -rf /var/lib/apt/lists/*
