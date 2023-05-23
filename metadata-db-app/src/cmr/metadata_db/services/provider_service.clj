@@ -28,10 +28,7 @@
   ([context] (get-providers context nil))
   ([context params]
    (info "Getting provider list.")
-  ;; (println "🚀 Getting provider list." params)
-  ;; (def my-context context)
   (let [db (mdb-util/context->db context)
-        ;; _(println "🚀 meta flag value" (:meta params))
         providers (if (:meta params) (providers/get-providers db)
                       (map #(dissoc % :metadata) (providers/get-providers db)))]
     (map util/remove-nil-keys providers))))

@@ -12,7 +12,6 @@
    [clojure.test :refer :all]
    [clojure.walk]
    [cmr.common-app.api.routes :as routes]
-   [cmr.search.api.providers :as provider]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.concepts :as cs]
    [cmr.common.mime-types :as mime-types]
@@ -720,17 +719,15 @@
        response))))
 
 (defn find-providers
+  "Returns the metadata for all providers using search endpoint or metadata for a specific provider"
   ([]
   (find-providers ""))
   ([provider-id]
-  ;; todo read the styling guide for how to space this out
   (let [response (client/get (str (url/search-provider-url) "/" provider-id) {:connection-manager (s/conn-mgr) :throw-exceptions false})]
     (if (= 200 (:status response))
       {:status (:status response)
        :results (json/decode (:body response))}
       response))))
-
-;; todo find a specific provider
 
 (defn find-tiles
   "Returns the tiles that are found by searching with the input params"

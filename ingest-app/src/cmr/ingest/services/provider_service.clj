@@ -42,7 +42,6 @@
 (defn read-provider
   "Read a provider."
   [context provider-id]
-  (println "💀 Getting read-provider output from mdb on ingest")
   (mdb/read-provider context provider-id))
 
 (defn update-provider

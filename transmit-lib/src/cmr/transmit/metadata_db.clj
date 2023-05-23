@@ -410,11 +410,9 @@
                                :throw-exceptions false}))))
 
 (defn get-all-providers
-  "Returns the list of provider ids configured in the metadata db,
-  returns the raw response coming back from metadata-db"
+  "Returns the list of provider ids configured in the metadata db, including
+   the metadata for each given provider by passing meta argument to metadatadb app"
   [context]
-  (def mycontext context)
-  (println "passing all providers with special parameter in new made up func 👻")
   (let [request-url (fn [conn] (str (conn/root-url conn) "/providers"))]
     ;; Using http/helper pass "meta" arg to retrieve provider metadata
     (h/request context :metadata-db {:url-fn request-url 
@@ -426,10 +424,8 @@
   [context]
   (let [{:keys [status body]} (get-providers-raw context)
         status (int status)]
-    ;; (println "🚀 This is the response from metadata-db get providers " (json/decode body true))
     (case status
       200 (json/decode body true)
-      ;; (println "🚀 This is the response from metadata-db get providers "(json/decode body true))
       ;; default
       (errors/internal-error! (format "Failed to get providers status: %s body: %s" status body)))))
 

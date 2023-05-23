@@ -54,7 +54,6 @@
                      (json/parse-string)
                      (get "metadata")
                      (json/generate-string))]
-    (println "🧠 This is metadata in one response INGEST" metadata)
     {:status status
      :headers {"Content-Type" (mt/with-utf-8 mt/json)}
      :body (if (= status 200) metadata body)}))
@@ -135,7 +134,6 @@
     (GET "/:provider-id" {{:keys [provider-id] :as params} :params
                           request-context :request-context
                           headers :headers}
-      (println "Running ingest get provider")
       (one-result->response-map (provider-service/read-provider request-context provider-id)))
 
     ;; update an existing provider

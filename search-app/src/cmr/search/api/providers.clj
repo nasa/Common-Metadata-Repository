@@ -5,12 +5,12 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
-   [cmr.search.services.provider-service :as provider-service]
    [cmr.search.api.core :as core-api]
+   [cmr.search.services.provider-service :as provider-service]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.services.result-format-helper :as rfh]
    [compojure.core :refer :all]))
-;; todo remove unused imports
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Constants
 
@@ -49,9 +49,6 @@
   "Look for and remove metadata field from the body returned by the metadata db
    service, as it is not needed in the legacy responses."
   [response]
-  (def my-response response)
-  (println "Response in pull meta-data 🤖" response)
-  (println "body in pull meta-data 🤖" (:body response))
   (let [new-body (-> response
                      (as-> body (map :metadata body))
                      json/generate-string)
@@ -60,13 +57,11 @@
 
 (defn- pull-metadata-single-provider
  [response]
-  (def my-response-error response)
 (let [new-body (-> response
                    :body
                    (json/parse-string true)
                    (:metadata)
                    json/generate-string)]
-  (println "this is the new body 🚀" new-body)
   (if (not= (:status response) 200)
         (assoc response :body (json/parse-string (:body response) true))
         (assoc response :body new-body))))
@@ -77,10 +72,8 @@
    the older return type. However, if there is an error in the response, then the
    body is returned as is"
   [result]
-  (println "🐸 Result before it goes into one-amp func" result)
   (let [{:keys [status body]} result]
     
-    (println "🧠 This is metadata in one response" body)
     {:status status
      :headers {"Content-Type" (mt/with-utf-8 mt/json)}
      :body body}))
@@ -101,14 +94,8 @@
     (GET "/:provider-id" {{:keys [provider-id] :as params} :params
                           request-context :request-context
                           headers :headers}
-      ;; (println "🚀 Retrieving specific provider from search EP")
-      ;; (println "🚀 Provider-id value" provider-id)
-      ;; (provider-service/read-provider request-context provider-id)
       (one-result->response-map (pull-metadata-single-provider (provider-service/read-provider request-context provider-id))))
 
     ;; Return the list of all providers
     (GET "/" {:keys [request-context]}
-      ;; (def my-context request-context)
-      ;; (println "🚀The request context" (str request-context))
-      ;; (println "🚀 All providers endpoint")
       (one-result->response-map (pull-metadata (provider-service/get-providers-raw request-context))))))

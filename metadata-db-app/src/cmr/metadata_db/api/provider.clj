@@ -8,8 +8,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.metadata-db.api.route-helpers :as rh]
    [cmr.metadata-db.services.provider-service :as provider-service]
-   [compojure.core :refer :all]
-   [ring.middleware.params :as params]))
+   [compojure.core :refer :all]))
 
 (defn- save-provider
   "Save a provider."
@@ -36,7 +35,6 @@
 (defn- get-provider
   "Read a provider"
   [context params provider-id]
-  (println "🍙returning the get-provider func in metadatadb")
   (let [provider (provider-service/get-provider-by-id context provider-id true)]
     {:status 200
      :body (json/generate-string provider)
@@ -50,14 +48,6 @@
      :body (json/generate-string providers)
      :headers rh/json-header}))
 
-;; (defn- get-providers-all
-;;   "Get a list of provider ids"
-;;   [context params]
-;;   (let [providers (provider-service/get-providers-all context params)]
-;;     {:status 200
-;;      :body (json/generate-string providers)
-;;      :headers rh/json-header}))
-
 (defn- validate-consortiums
   "Throws error if consortiums contain anything other than alphabet, numbers,
   underscores and spaces. Spaces are used as delimiters."
@@ -69,11 +59,6 @@
 
 (def provider-api-routes
   (context "/providers" []
-
-  ;;   (GET "/all" {:keys [request-context params]}
-  ;; (println "All routes was called 😈")
-  ;; (get-providers-all request-context params))
-
     ;; create a new provider
     (POST "/" {:keys [request-context params headers body]}
       (acl/verify-ingest-management-permission request-context :update)
@@ -109,6 +94,4 @@
 
     ;; get a list of providers
     (GET "/" {:keys [request-context params]}
-      ;; (println "The request context passed into metadata api🤡" request-context)
-      ;; (println "The params passed into metadata api🤡" params)
       (get-providers request-context params))))

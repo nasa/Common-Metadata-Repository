@@ -409,6 +409,7 @@
 (defmethod get-service-associations :service
   [context concept]
   (meta-db/get-associations-for-service context concept))
+
 (defmulti get-tool-associations
   "Returns the tool associations of the concept"
   (fn [context concept]
