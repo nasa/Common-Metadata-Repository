@@ -439,11 +439,6 @@
    so that it aligns with what index-concept :default expects."
   [context concept]
   (let [combined-assocs (meta-db/find-associations context concept)
-        ;; in-memory db returns variable-collection association in an additional [].
-        combined-assocs (map #(if (and (sequential? %) (= 1 (count %)))
-                                (first %)
-                                %)
-                             combined-assocs)
         grouped-assocs (group-by :concept-type combined-assocs)
         new-key-map (into {} (map #(create-association-map-keys %) (keys grouped-assocs)))]
     (cset/rename-keys grouped-assocs new-key-map)))
