@@ -381,19 +381,18 @@
         (OPTIONS "/" [] (common-routes/options-response))
 
         (GET "/"
-          {:keys [request-context headers params]}
+          {:keys [request-context params]}
 
           (when (access-control-config/enable-sids-get)
             (do
-              (println "responding to /GET current-sids")
               (error (format "client [%s] Using GET instead of POST when requesting current sids"
                             (:client-id request-context)))
               (get-current-sids request-context params))))
 
-        (POST "/" {:keys [request-context params]}
-          (do
-            (println "responding to /POST current-sids")
-            (cmr.common.util/tee (get-current-sids request-context params)))))
+        (POST "/" {:keys [request-context body]}
+            (get-current-sids request-context (-> (slurp body)
+                                                  (json/parse-string true)
+                                                  (clojure.walk/keywordize-keys)))))
 
       (context "/s3-buckets" []
         (OPTIONS "/" [] (common-routes/options-response))
