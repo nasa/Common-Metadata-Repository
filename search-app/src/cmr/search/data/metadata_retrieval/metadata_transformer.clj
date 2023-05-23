@@ -124,12 +124,17 @@
 (defmethod transform-with-strategy :umm-lib
   [context concept _ target-formats]
   (let [{concept-mime-type :format, metadata :metadata} concept
-        umm (legacy/parse-concept context concept)]
-    (reduce (fn [translated-map target-format]
-              (assoc translated-map target-format
-                     (legacy/generate-metadata context umm target-format)))
-            {}
-            target-formats)))
+        [t1 umm] (u/time-execution (legacy/parse-concept context concept))
+        [t2 result] (u/time-execution (reduce (fn [translated-map target-format]
+                                                (assoc translated-map target-format
+                                                       (legacy/generate-metadata context umm target-format)))
+                                              {}
+                                              target-formats))]
+    (info "transform-with-strategy umm-lib: "
+          "legacy/parse-concept time: " t1
+          "reduce w/ legacy/generate-metadata time: " t2
+          "concept-mime-type: " concept-mime-type)
+    result))
 
 (defmethod transform-with-strategy :granule-umm-g-to-iso
   [context concept _ target-formats]
@@ -147,19 +152,23 @@
 (defmethod transform-with-strategy :migrate-umm-json
   [context concept _ target-formats]
   (let [{concept-mime-type :format, metadata :metadata, concept-type :concept-type} concept
-        source-version (umm-spec/umm-json-version concept-type concept-mime-type)]
-    (reduce (fn [translated-map target-format]
-              (assoc translated-map target-format
-                     (umm-json/umm->json
-                       (u/remove-nils-empty-maps-seqs
-                         (vm/migrate-umm context
-                                         concept-type
-                                         source-version
-                                         (umm-spec/umm-json-version concept-type
-                                                                    target-format)
-                                         (json/decode metadata true))))))
-            {}
-            target-formats)))
+        source-version (umm-spec/umm-json-version concept-type concept-mime-type)
+        [t result] (u/time-execution (reduce (fn [translated-map target-format]
+                                               (assoc translated-map target-format
+                                                      (umm-json/umm->json
+                                                       (u/remove-nils-empty-maps-seqs
+                                                        (vm/migrate-umm context
+                                                                        concept-type
+                                                                        source-version
+                                                                        (umm-spec/umm-json-version concept-type
+                                                                                                   target-format)
+                                                                        (json/decode metadata true))))))
+                                             {}
+                                             target-formats))]
+    (info "transform-with-strategy migrate-umm-json: "
+          "time: " t
+          "concept-mime-type: " concept-mime-type)
+    result))
 
 (defn transform-to-multiple-formats
   "Transforms the concept into multiple different formats. Returns a map of target format to metadata."
@@ -189,6 +198,7 @@
     (let [strategy (transform-strategy concept target-format)
           target-format-result-map (transform-with-strategy
                                     context concept strategy [target-format])]
+      (info "transform-strategy: " strategy)
       (get target-format-result-map target-format))))
 
 (defn transform-concepts
