@@ -404,7 +404,7 @@
                  "The revision [%d] of concept [%s] represents a deleted concept and does not contain metadata."
                  revision-id
                  concept-id)]))
-        [t2 concept] (u/time-execution (acl-match/add-acl-enforcement-fields-to-concept concept))
+        [t2 concept] (u/time-execution (acl-match/add-acl-enforcement-fields-to-concept context concept))
         [t3 [concept]] (u/time-execution (acl-service/filter-concepts context [concept]))
         ;; format concept
         [t4 [concept]] (u/time-execution

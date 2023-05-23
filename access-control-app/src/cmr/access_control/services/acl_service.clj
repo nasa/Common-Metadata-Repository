@@ -260,12 +260,18 @@
 (defn- add-acl-enforcement-fields
   "Adds all fields necessary for comparing concept map against ACLs."
   [context concept]
-  (let [concept (acl-matchers/add-acl-enforcement-fields-to-concept concept)]
-    (if-let [parent-id (:collection-concept-id concept)]
+  (let [concept (acl-matchers/add-acl-enforcement-fields-to-concept context concept)]
+    (if-let [parent-collection (:parent-collection concept)]
       (assoc concept :parent-collection
                      (acl-matchers/add-acl-enforcement-fields-to-concept
-                       (mdb/get-latest-concept context parent-id)))
+                       context parent-collection))
       concept)))
+
+(defn add-parent-collection-to-concept
+  [concept parent-concepts]
+  (let [parent-id (get-in concept [:extra-fields :parent-collection-id])
+        parent (first (filter #(= parent-id (:concept-id %)) parent-concepts))]
+    (assoc concept :parent-collection parent)))
 
 (defn get-catalog-item-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
@@ -275,9 +281,13 @@
                (acl-util/get-acl-concepts-by-identity-type-and-target
                 context index/provider-identity-type-name schema/ingest-management-acl-target)
                (acl-util/get-acl-concepts-by-identity-type-and-target
-                context index/catalog-item-identity-type-name nil))]
+                context index/catalog-item-identity-type-name nil))
+        concepts (mdb1/get-latest-concepts context concept-ids)
+        parent-concepts (mdb1/get-latest-concepts context (remove nil? (map #(get-in % [:extra-fields :parent-collection-id]) concepts)))
+        concepts-with-parents (map #(add-parent-collection-to-concept % parent-concepts) concepts)]
+
     (into {}
-          (for [concept (mdb1/get-latest-concepts context concept-ids)
+          (for [concept concepts-with-parents
                 :let [concept-with-acl-fields (add-acl-enforcement-fields context concept)]]
             [(:concept-id concept)
              (concept-permissions-granted-by-acls concept-with-acl-fields sids acls)]))))

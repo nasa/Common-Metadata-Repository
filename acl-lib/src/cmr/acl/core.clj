@@ -13,11 +13,16 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.transmit.access-control :as access-control]
-   [cmr.transmit.config :as transmit-config]))
+   [cmr.transmit.config :as transmit-config]
+   [cmr.umm-spec.umm-spec-core :as umm-spec-core]))
 
 (def BROWSER_CLIENT_ID "browser")
 (def CURL_CLIENT_ID "curl")
 (def UNKNOWN_CLIENT_ID "unknown")
+
+(def collection-field-constraints-cache-key
+  "The cache key for a urs cache."
+  :collection-field-constraints)
 
 (defconfig allow-echo-token
   "Flag that indicates if we accept the 'Echo-Token' header."
@@ -144,6 +149,15 @@
   "The number of milliseconds token information will be cached."
   (* 5 60 1000))
 
+(def CONCEPT_MAP_CACHE_TIME
+  "The number of milliseconds token information will be cached."
+  (* 5 60 1000))
+
+(defn create-access-constraints-cache
+  "Creates a cache for access constraint mapping."
+  []
+  (mem-cache/create-in-memory-cache :ttl {} {:ttl CONCEPT_MAP_CACHE_TIME}))
+
 (defn create-token-imp-cache
   "Creates a cache for which tokens have ingest management permission."
   []
@@ -153,6 +167,18 @@
   "Creates a cache for which tokens have subscription management permission."
   []
   (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
+
+(defn get-acl-enforcement-collection-fields-fn
+  [concept]
+  {:AccessConstraints (umm-spec-core/parse-concept-access-value concept)
+   :TemporalExtents (umm-spec-core/parse-concept-temporal concept)})
+
+(defn get-acl-enforcement-collection-fields
+  [context concept]
+  (let [concept-id-key (keyword (:concept-id concept))]
+    (if-let [cache (cache/context->cache context collection-field-constraints-cache-key)]
+      (cache/get-value cache concept-id-key (fn [] (get-acl-enforcement-collection-fields-fn concept)))
+      (get-acl-enforcement-collection-fields-fn concept))))
 
 (defn get-permitting-acls
   "Gets ACLs for the current user of the given object identity type and target that grant the given

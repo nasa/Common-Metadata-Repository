@@ -5,9 +5,13 @@
    [clj-time.format :as f]
    [clojure.set :as set]
    [clojure.string :as str]
+   [cmr.acl.core :as acl-core]
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.cache-spec :as cache-spec]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as u :refer [update-in-each]]
+   [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.umm-spec.legacy :as legacy]
    [cmr.umm-spec.time :as umm-time]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core]
@@ -142,22 +146,22 @@
 (defmulti add-acl-enforcement-fields-to-concept
   "Adds the fields necessary to enforce ACLs to the concept. Temporal and access value are relatively
   expensive to extract so they are lazily associated. The values won't be evaluated until needed."
-  (fn [concept]
+  (fn [context concept]
     (:concept-type concept)))
 
 (defmethod add-acl-enforcement-fields-to-concept :default
-  [concept]
+  [context concept]
   concept)
 
 (defmethod add-acl-enforcement-fields-to-concept :collection
-  [concept]
-  (-> concept
-      (u/lazy-assoc :AccessConstraints (umm-spec-core/parse-concept-access-value concept))
-      (u/lazy-assoc :TemporalExtents (umm-spec-core/parse-concept-temporal concept))
-      (assoc :EntryTitle (get-in concept [:extra-fields :entry-title]))))
+  [context concept]
+  (let [concept-map (acl-core/get-acl-enforcement-collection-fields context concept)]
+    (-> concept
+        (merge concept-map)
+        (assoc :EntryTitle (get-in concept [:extra-fields :entry-title])))))
 
 (defmethod add-acl-enforcement-fields-to-concept :granule
-  [concept]
+  [context concept]
   (-> concept
       (u/lazy-assoc :access-value (legacy/parse-concept-access-value concept))
       (u/lazy-assoc :temporal (legacy/parse-concept-temporal concept))
@@ -165,5 +169,5 @@
 
 (defn add-acl-enforcement-fields
   "Adds the fields necessary to enforce ACLs to the concepts."
-  [concepts]
+  [context concepts]
   (mapv add-acl-enforcement-fields-to-concept concepts))
