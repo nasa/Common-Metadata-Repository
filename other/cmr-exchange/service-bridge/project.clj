@@ -53,7 +53,6 @@
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]
                  [org.clojure/java.classpath "0.3.0"]
-                 [org.geotools/gt-geometry "24.6"]
                  [org.geotools/gt-referencing "24.6"]
                  [org.yaml/snakeyaml "1.31"]
                  [ring/ring-core "1.7.1"]
@@ -70,7 +69,7 @@
         cmr.opendap.core]
   :profiles {:ubercompile {:aot :all
                            :source-paths ["test"]}
-             :security {:plugins [[com.livingsocial/lein-dependency-check "1.1.2"]]
+             :security {:plugins [[com.livingsocial/lein-dependency-check "1.4.0"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
@@ -80,7 +79,6 @@
                                      [com.google.javascript/closure-compiler-unshaded]
                                      ;; The following is excluded because it stomps on twig's logger
                                      [org.slf4j/slf4j-simple]]}
-             :geo {:dependencies [[gov.nasa.earthdata/cmr-exchange-geo "0.1.0"]]}
              :system {:dependencies [[clojusc/system-manager "0.3.0"]]}
              :local {:dependencies [[org.clojure/tools.namespace "0.3.0" :exclusions [org.clojure/tools.reader]]
                                     [proto-repl "0.3.1"]]
@@ -148,17 +146,14 @@
             "repl" ["do"
                     ["clean"]
                     ["with-profile" "+local,+system" "repl"]]
-            "repl-geo" ["do"
-                        ["clean"]
-                        ["with-profile" "+local,+system,+geo" "repl"]]
             "version" ["do"
                        ["version"]
                        ["shell" "echo" "-n" "CMR Service-Bridge: "]
                        ["project-version"]]
-            "ubercompile" ["with-profile" "+system,+geo,+local,+security" "compile"]
-            "uberjar" ["with-profile" "+system,+geo" "uberjar"]
-            "uberjar-aot" ["with-profile" "+system,+geo,+ubercompile,+security" "uberjar"]
-            "check-vers" ["with-profile" "+lint,+system,+geo,+security" "ancient" "check" ":all"]
+            "ubercompile" ["with-profile" "+system,+local,+security" "compile"]
+            "uberjar" ["with-profile" "+system" "uberjar"]
+            "uberjar-aot" ["with-profile" "+system,+ubercompile,+security" "uberjar"]
+            "check-vers" ["with-profile" "+lint,+system,+security" "ancient" "check" ":all"]
             "check-jars" ["with-profile" "+lint" "do"
                           ["deps" ":tree"]
                           ["deps" ":plugin-tree"]]
@@ -172,8 +167,6 @@
                     ["kibit"]]
             "ltest" ["with-profile" "+test,+system,+local" "ltest"]
             "junit" ["with-profile" "+test,+system,+local" "test2junit"]
-            "ltest-with-geo" ["with-profile" "+test,+system,+geo,+local" "ltest"]
-            "junit-with-geo" ["with-profile" "+test,+system,+geo,+local" "test2junit"]
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
@@ -187,12 +180,12 @@
             "ci-utest" ["utest" "--profile" ":ci"]
 
             ;; Security
-            "check-sec" ["with-profile" "+system,+geo,+local,+security" "do"
+            "check-sec" ["with-profile" "+system,+local,+security" "do"
                          ["clean"]
                          ["dependency-check"]]
             ;; Documentation and static content
-            "codox" ["with-profile" "+docs,+system,+geo" "codox"]
-            "marginalia" ["with-profile" "+docs,+system,+geo"
+            "codox" ["with-profile" "+docs,+system" "codox"]
+            "marginalia" ["with-profile" "+docs,+system"
                           "marg" "--dir" "resources/public/docs/service-bridge/docs/current/marginalia"
                           "--file" "index.html"
                           "--name" "CMR integration with external services"]
@@ -231,7 +224,7 @@
                           ["build"]
                           ["docs"]]
             ;; Publishing
-            "publish" ["with-profile" "+system,+security,+geo" "do"
+            "publish" ["with-profile" "+system,+security" "do"
                        ["clean"]
                        ["build-jar"]
                        ["deploy" "clojars"]]
