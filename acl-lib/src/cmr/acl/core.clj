@@ -170,8 +170,10 @@
 
 (defn get-acl-enforcement-collection-fields-fn
   [concept]
-  {:AccessConstraints (umm-spec-core/parse-concept-access-value concept)
-   :TemporalExtents (umm-spec-core/parse-concept-temporal concept)})
+  {:AccessConstraints (when-not (= "" (:metadata concept))
+                        (umm-spec-core/parse-concept-access-value concept))
+   :TemporalExtents (when-not (= "" (:metadata concept))
+                        (umm-spec-core/parse-concept-temporal concept))})
 
 (defn get-acl-enforcement-collection-fields
   [context concept]
