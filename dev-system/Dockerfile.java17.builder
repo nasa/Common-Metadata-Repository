@@ -1,8 +1,8 @@
 FROM eclipse-temurin:17
 
-RUN apt update \
+RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive \
-    apt install --assume-yes \
+    apt-get install --assume-yes \
       clojure \
       curl \
       leiningen \
