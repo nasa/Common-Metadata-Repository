@@ -7,6 +7,7 @@
    [clojure.string :as str]
    [cmr.acl.core :as acl-core]
    [cmr.common.cache :as cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.cache.cache-spec :as cache-spec]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
@@ -19,6 +20,10 @@
 
 (def ^:private supported-collection-identifier-keys
   #{:entry-titles :access-value :temporal :concept-ids})
+
+(def collection-field-constraints-cache-key
+  "The cache key for a urs cache."
+  :collection-field-constraints)
 
 (defmulti matches-access-value-filter?
  "Returns true if the umm item matches the access-value filter"
@@ -89,6 +94,20 @@
  [concept-type umm-temporal temporal-filter]
  (umm-lib-acl-matchers/matches-temporal-filter? concept-type umm-temporal temporal-filter))
 
+(defn get-acl-enforcement-collection-fields-fn
+  [concept]
+  {:AccessConstraints (when-not (= "" (:metadata concept))
+                        (umm-spec-core/parse-concept-access-value concept))
+   :TemporalExtents (when-not (= "" (:metadata concept))
+                        (umm-spec-core/parse-concept-temporal concept))})
+
+(defn get-acl-enforcement-collection-fields
+  [context concept]
+  (let [concept-id-key (keyword (:concept-id concept))]
+    (if-let [cache (cache/context->cache context collection-field-constraints-cache-key)]
+      (cache/get-value cache concept-id-key (fn [] (get-acl-enforcement-collection-fields-fn concept)))
+      (get-acl-enforcement-collection-fields-fn concept))))
+
 (defn coll-matches-collection-identifier?
   "Returns true if the collection matches the collection identifier"
   [coll coll-id]
@@ -155,7 +174,7 @@
 
 (defmethod add-acl-enforcement-fields-to-concept :collection
   [context concept]
-  (let [concept-map (acl-core/get-acl-enforcement-collection-fields context concept)]
+  (let [concept-map (get-acl-enforcement-collection-fields context concept)]
     (-> concept
         (merge concept-map)
         (assoc :EntryTitle (get-in concept [:extra-fields :entry-title])))))
