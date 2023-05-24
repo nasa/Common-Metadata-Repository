@@ -170,4 +170,4 @@
 (defn add-acl-enforcement-fields
   "Adds the fields necessary to enforce ACLs to the concepts."
   [context concepts]
-  (mapv add-acl-enforcement-fields-to-concept concepts))
+  (mapv add-acl-enforcement-fields-to-concept context concepts))

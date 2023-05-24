@@ -376,7 +376,7 @@
          concepts)
 
        ;; Convert concepts to results with acl enforcment
-       (let [[t3 concepts] (u/time-execution (acl-match/add-acl-enforcement-fields concepts))
+       (let [[t3 concepts] (u/time-execution (acl-match/add-acl-enforcement-fields context concepts))
              [t4 concepts] (u/time-execution (acl-service/filter-concepts context concepts))
              [t5 concepts] (u/time-execution
                             (metadata-transformer/transform-concepts

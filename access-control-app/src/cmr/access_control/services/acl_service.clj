@@ -24,7 +24,7 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer [info debug]]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
+   [cmr.common.util :as util :refer [defn-timed]]
    [cmr.transmit.echo.tokens :as tokens]
    [cmr.transmit.metadata-db :as mdb1]
    [cmr.transmit.metadata-db2 :as mdb]
@@ -273,7 +273,7 @@
         parent (first (filter #(= parent-id (:concept-id %)) parent-concepts))]
     (assoc concept :parent-collection parent)))
 
-(defn get-catalog-item-permissions
+(defn-timed get-catalog-item-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
   [context username-or-type concept-ids]
   (let [sids (auth-util/get-sids context username-or-type)
