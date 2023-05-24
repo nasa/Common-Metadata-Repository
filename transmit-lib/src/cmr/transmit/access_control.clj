@@ -134,7 +134,7 @@
   (let [token (:token context)
         headers (-> token
                     (when {config/token-header token})
-                    (as-> item (merge {:client-id "cmr-access-control"} item)))
+                    (as-> item (merge {:client-id "cmr-internal"} item)))
         body (json/generate-string {:user-token user-token})]
     (h/request context :access-control
                {:url-fn current-sids-url
