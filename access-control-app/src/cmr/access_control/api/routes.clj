@@ -312,10 +312,10 @@
                    (get-members ctx group-id))
 
               (POST "/"
-                   {ctx :request-context params :params headers :headers body :body}
-                   (lt-validation/validate-launchpad-token ctx)
-                   (pv/validate-group-route-params params)
-                   (add-members ctx headers (slurp body) group-id))
+                    {ctx :request-context params :params headers :headers body :body}
+                    (lt-validation/validate-launchpad-token ctx)
+                    (pv/validate-group-route-params params)
+                    (add-members ctx headers (slurp body) group-id))
 
               (DELETE "/"
                       {ctx :request-context params :params headers :headers body :body}
@@ -326,9 +326,9 @@
 
       (context "/acls" []
         (OPTIONS "/"
-                {params :params}
-                (pv/validate-standard-params params)
-                (common-routes/options-response))
+                 {params :params}
+                 (pv/validate-standard-params params)
+                 (common-routes/options-response))
 
         ;; Search for ACLs with either GET or POST
         (GET "/"
@@ -374,8 +374,8 @@
              (get-permissions ctx params))
 
         (POST "/"
-             {ctx :request-context headers :headers params :params}
-             (get-permissions ctx params)))
+              {ctx :request-context headers :headers params :params}
+              (get-permissions ctx params)))
 
       (context "/current-sids" []
         (OPTIONS "/" [] (common-routes/options-response))
