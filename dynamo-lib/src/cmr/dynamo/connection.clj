@@ -1,10 +1,11 @@
 (ns cmr.dynamo.connection
   "Contains functions for interacting with the DynamoDB storage instance"
   (:require [cmr.common.config :as cfg :refer [defconfig]]
-            [taoensso.faraday :as far]))
+            [taoensso.faraday :as far]
+            [cmr.dynamo.config :as dynamo-config]))
 
 (def connection-options 
-  {:endpoint "http://dynamodb.us-east-1.amazonaws.com"})
+  {:endpoint (dynamo-config/dynamo-url)})
 
 (defn save-concept
   [concept])
