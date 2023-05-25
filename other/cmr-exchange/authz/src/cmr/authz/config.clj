@@ -20,7 +20,11 @@
 
         (or (= service :echo)
             (= service :echo-rest))
-        [:echo :rest]))
+        [:echo :rest]
+
+        (or (= service :edl)
+            (= service :edl-rest))
+            [:edl :rest]))
 
 (defn service->base-url
   [service]

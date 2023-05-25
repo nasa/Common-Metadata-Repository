@@ -64,7 +64,8 @@
 
 (defn json-errors
   [body]
-  (:errors (:body (parse-json-result body))))
+  (or (:errors (parse-json-result body))
+      (seq (remove nil? [(:error (parse-json-result body))]))))
 
 (defn parse-xml-body
   [body]
@@ -174,6 +175,7 @@
    (log/debug "Handling client response ...")
    (log/trace "headers:" headers)
    (log/trace "body:" body)
+   (log/trace "status:" status)
    (cond error
          (do
            (log/error error)
