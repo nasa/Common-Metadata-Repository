@@ -101,7 +101,11 @@ For an example, the following means version 1.16.2 of the UMM JSON format:
 Note: For all values of `Content-Type`, data sent using POST or PUT should not be URL encoded.
 
 #### <a name="authorization-header"></a> Authorization Header
-All Ingest API operations require specifying a token obtained from [Earthdata Login (EDL)](https://urs.earthdata.nasa.gov). The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the documentation [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token).
+All Ingest API operations require specifying an EDL bearer token or a Launchpad token. 
+
+An EDL Bearer token can be obtained from [Earthdata Login (EDL)](https://urs.earthdata.nasa.gov). The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the documentation [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token).
+
+An example for generating a Launchpad token can he found [here](https://wiki.earthdata.nasa.gov/display/CMR/Example+Code+for+Requesting+Launchpad+Token). The token should be specified using the `Authorization` header followed by the Launchpad token. More information on getting access to Launchpad tokens can be found on [this guide](https://wiki.earthdata.nasa.gov/display/CMR/Launchpad+Authentication+User%27s+Guide)
 
 #### <a name="accept-header"></a> Accept Header
 
@@ -375,7 +379,7 @@ Collection metadata can be validated without having to ingest it. The validation
 
 ```
 curl -XPOST -H "Content-type: application/echo10+xml" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/validate/collection/sampleNativeId15 \
   -d \
 "<Collection>
@@ -402,7 +406,7 @@ Note: we now provide progressive collection update feature through a new configu
 ```
 curl -XPUT \
   -H "Content-type: application/echo10+xml" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15 \
   -d \
 "<Collection>
@@ -438,7 +442,7 @@ curl -XPUT \
 Collection metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT%/providers/<provider-id>/collections/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
 	curl -XDELETE \
-  		-H "Authorization: Bearer XXXX" \
+  		-H "Authorization:  XXXX" \
   		%CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
 
 Note: When a collection is deleted, all the associations will be deleted, also called tombstoned (tombstoned means to mark record as ready to be deleted but the actual deletion is scheduled for latter) too. With the new requirement that a variable can not exist without an association with a collection, since each variable can only be associated with one collection, all the variables associated with the deleted collection will be deleted too.
@@ -502,7 +506,7 @@ Granule metadata can be created or updated by sending an HTTP PUT with the metad
 
     curl -XPUT \
       -H "Content-type: application/echo10+xml" \
-      -H "Authorization: Bearer XXXX" \
+      -H "Authorization:  XXXX" \
       %CMR-ENDPOINT%/providers/PROV1/granules/sampleGranuleNativeId33 \
       -d \
     "<Granule>
@@ -534,7 +538,7 @@ Granule metadata can be created or updated by sending an HTTP PUT with the metad
 Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT%/providers/<provider-id>/granules/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
     curl -XDELETE \
-      -H "Authorization: Bearer XXXX" \
+      -H "Authorization:  XXXX" \
       %CMR-ENDPOINT%/providers/PROV1/granules/sampleGranuleNativeId33
 
 #### Successful Response in XML
@@ -583,7 +587,7 @@ Only Variable, no Data:
 ```
 curl -XPUT \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/collections/C1200000005-PROV1/1/variables/sampleVariableNativeId33 \
   -d \
 "{
@@ -634,7 +638,7 @@ Both Variable and Data:
 ```
 curl -XPUT \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/collections/C1200000005-PROV1/1/variables/sampleVariableNativeId33 \
   -d \
 "{\"content\":
@@ -728,7 +732,7 @@ Variable concept can continue to be updated by sending an HTTP PUT with the meta
 ```
 curl -XPUT \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/variables/sampleVariableNativeId33 \
   -d \
 "{
@@ -797,7 +801,7 @@ Variable concept can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 
 ```
 curl -XDELETE \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/variables/sampleVariableNativeId33
 ```
 
@@ -822,7 +826,7 @@ Service metadata can be validated without having to ingest it. The validation pe
 
 ```
 curl -XPOST -H "Content-type: application/vnd.nasa.cmr.umm+json" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/validate/service/sampleNativeId15 \
   -d \
 "{
@@ -868,7 +872,7 @@ Service concept can be created or updated by sending an HTTP PUT with the metada
 ```
 curl -XPUT \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/services/service123 \
   -d \
 "{
@@ -929,7 +933,7 @@ Service metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPO
 
 ```
 curl -XDELETE \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/services/service123
 ```
 
@@ -954,7 +958,7 @@ Tool metadata can be validated without having to ingest it. The validation perfo
 
 ```
 curl -XPOST -H "Content-type: application/vnd.nasa.cmr.umm+json" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/validate/tool/sampleNativeId15 \
   -d \
 "{
@@ -998,7 +1002,7 @@ Tool concept can be created or updated by sending an HTTP PUT with the metadata 
 ```
 curl -XPUT \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/tools/tool123 \
   -d \
 "{
@@ -1056,7 +1060,7 @@ get a JSON response:
 Tool metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-ENDPOINT%/providers/<provider-id>/tools/<native-id>`. The response will include the [concept id](#concept-id) and the [revision id](#revision-id) of the tombstone.
 
 	curl -XDELETE \
-  		-H "Authorization: Bearer XXXX" \
+  		-H "Authorization:  XXXX" \
   		%CMR-ENDPOINT%/providers/PROV1/tools/tool123
 
 #### Successful Response in XML
@@ -1119,7 +1123,7 @@ PUT requests should be used for updating subscriptions. Creation of subscription
 ```
 curl -XPUT \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/subscriptions/subscription123 \
   -d \
 "{\"Name\": \"someSubscription\",
@@ -1131,7 +1135,7 @@ curl -XPUT \
 ```
 curl -XPOST \
   -H "Content-type: application/vnd.nasa.cmr.umm+json" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/subscriptions \
   -d \
 "{\"Name\": \"someSubscription\",
@@ -1163,7 +1167,7 @@ Subscription metadata can be deleted by sending an HTTP DELETE to the URL `%CMR-
 
 ```
 curl -XDELETE \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/subscriptions/subscription123
 ```
 
@@ -1371,7 +1375,7 @@ Example: Initiate a bulk update of 3 collections. Find platforms that have Type 
 curl -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json"
-  -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections \
+  -H "Authorization:  XXXX" %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections \
   -d
 '{"concept-ids": ["C1200000005-PROV1","C1200000006-PROV1","C1200000007-PROV1"],
   "name": "TEST NAME",
@@ -1403,7 +1407,7 @@ Example
 
 ```
 curl \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   -H "Cmr-Pretty:true" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections/status
 
@@ -1446,7 +1450,7 @@ Example: Collection statuses with 1 failure, 1 skip and 1 warnings
 
 ```
 curl \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   -H "Cmr-Pretty:true" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/collections/status/25
 
@@ -1525,7 +1529,7 @@ Example: Add/update OPeNDAP url for 3 granules under PROV1.
 curl -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json"
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "example of adding OPeNDAP link",
@@ -1560,7 +1564,7 @@ Example: Add/update checksum for 3 granules under PROV1. Granules 1 and 2 only r
 curl -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json"
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "example of updating granule checksums",
@@ -1593,7 +1597,7 @@ Example: Add/update size values for 3 granules under PROV1. Granules 1 receives 
 curl -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json"
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "Example of updating sizes",
@@ -1624,7 +1628,7 @@ To update DataFormat, simply supply a new string value - the example below shows
 curl -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json"
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "Example of updating format",
@@ -1658,7 +1662,7 @@ In ECHO10, MimeType for either OnlineResource or OnlineAccessURL links can be up
 curl -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json"
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "Example of updating RelatedUrl MimeTypes",
@@ -1704,7 +1708,7 @@ This type of Bulk Granule Updates has a unique format for its `updates` - for ea
 curl -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json"
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{
@@ -1774,7 +1778,7 @@ URLs matching the pattern: `https://opendap.*.earthdata.nasa.gov/*` will be dete
 curl -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "example of appending OPeNDAP links",
@@ -1808,7 +1812,7 @@ If the URL passed to the update is already associated with the granule, the URL 
 curl -XPOST \
   -H "Cmr-Pretty:true" \
   -H "Content-Type: application/json" \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules \
   -d
 '{ "name": "example of appending S3 links",
@@ -2055,7 +2059,7 @@ Example:
 
 ```
 curl \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   -H "Cmr-Pretty:true" \
   %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules/status
 
@@ -2111,7 +2115,7 @@ Example of granule bulk update task status:
 
 ```
 curl \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   -H "Cmr-Pretty:true" \
   %CMR-ENDPOINT%/granule-bulk-update/status/3?show_granules=true&show_request=true
 ```
@@ -2141,5 +2145,5 @@ By default the bulk granule update jobs are checked for completion every 5 minut
 
 ```
 curl -XPOST \
-  -H "Authorization: Bearer XXXX" \
+  -H "Authorization:  XXXX" \
   %CMR-ENDPOINT%/granule-bulk-update/status

@@ -237,7 +237,7 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
  * `scroll` - A boolean flag (true/false) that allows all results to be retrieved efficiently. `page_size` is supported with `scroll` while `page_num` and `offset` are not. If `scroll` is `true` then the first call of a scroll session sets the page size; `page_size` is ignored on subsequent calls.
  * `sort_key` - Indicates one or more fields to sort on. Described below
  * `pretty` - return formatted results if set to true
- * `token` - specifies a user/guest token from EDL to use to authenticate yourself. This can also be specified as the header Authorization with a 'Bearer' prefix
+ * `token` - specifies a user/guest token from EDL or Launchpad to use to authenticate yourself. EDL tokens can be specified as a header with the `Authorization: Bearer` prefix. Launchpad tokens can be specified as the header with `Authorization:`. 
  * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
 
 #### <a name="paging-details"></a> Paging Details
@@ -342,6 +342,8 @@ These are query parameters that control what extra data is included with collect
     * `curl -H "Accept: application/xml" -i "%CMR-ENDPOINT%/collections"`
   * `Authorization: Bearer` - specifies an EDL bearer token to use to authenticate yourself.
     * `curl -H "Authorization: Bearer <access_token>" -i "%CMR-ENDPOINT%/collections"`
+  * `Authorization:` - specifies a Launchpad token to use to authenticate yourself.
+    * `curl -H "Authorization: <launchpad_token>" -i "%CMR-ENDPOINT%/collections"`
   * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
   * `X-Request-Id` - This provides standard X-Request-Id support to allow user to pass in some random ID which will be logged on the server side for debugging purpose.
   * `CMR-Request-Id` - This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems.
@@ -399,7 +401,7 @@ The HTML response format is intended to be used only in a web browser to view a 
 ```
 %CMR-ENDPOINT%/concepts/<concept-id>
 ```
-For private collection, an EDL bearer token can be used to grant permission. e.g.
+For private collection, an EDL bearer token or a Launchpad token can be used to grant permission. e.g.
 
 ```
 %CMR-ENDPOINT%/concepts/<concept-id>?token=EDL-xxxxxx
@@ -3404,7 +3406,7 @@ Humanizers define the rules that are used by CMR to provide humanized values for
 
 #### <a name="updating-humanizers"></a> Updating Humanizers
 
-Humanizers can be updated with a JSON representation of the humanizer rules to `%CMR-ENDPOINT%/humanizers` along with a valid EDL bearer token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
+Humanizers can be updated with a JSON representation of the humanizer rules to `%CMR-ENDPOINT%/humanizers` along with a valid EDL bearer token or Launchpad token. The response will contain a concept id and revision id identifying the set of humanizer instructions.
 
 ```
 curl -XPUT -i -H "Content-Type: application/json" -H "Authorization: Bearer XXXXX" %CMR-ENDPOINT%/humanizers -d \
@@ -5343,7 +5345,7 @@ Community usage metrics are metrics showing how many times a particular version 
 
 #### <a name="updating-community-usage-metrics"></a> Updating Community Usage Metrics
 
-Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid EDL bearer token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR. The comprehensive parameter accepts a boolean value, true will cause a lookup verification on each line, false will try and short cut the lookup by checking first against the current metrics humanizer, defaults to false.
+Community usage metrics can be updated using the `%CMR-ENDPOINT%/community-usage-metrics` endpoint with a valid EDL bearer token or Launchpad token. The content is a CSV file obtained from the EMS. The 'Product', 'Version', and 'Hosts' columns are parsed from the CSV file and stored as 'short-name', 'version', and 'access-count' respectively in the CMR. Entries with the same Product (short-name) and Version will have the access count aggregated to form a total access count for that collection and version, stored as one entry in the CMR. The comprehensive parameter accepts a boolean value, true will cause a lookup verification on each line, false will try and short cut the lookup by checking first against the current metrics humanizer, defaults to false.
 
 Note that when sending the data, use the --data-binary option so that the linebreaks in the CSV data are not removed. See the example below.
 
