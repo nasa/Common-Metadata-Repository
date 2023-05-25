@@ -21,6 +21,8 @@
                                         "indexer-app"
                                         "ingest-app"
                                         "metadata-db-app"
+                                        "dynamo-lib"
+                                        "efs-lib"
                                         "search-app"
                                         "virtual-product-app"
                                         "es-spatial-plugin"
