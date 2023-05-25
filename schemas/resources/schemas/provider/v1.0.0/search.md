@@ -23,7 +23,7 @@ The JSON response includes the following fields.
 * took - How long the search took in milliseconds
 * items - a list of the Providers
 
-Request the list of all providers with their metadata
+Request the list of all providers with their metadata.
 
 __Example__
 
@@ -78,7 +78,7 @@ __Sample response__
   }
 }]
 ```
-Request metadata for a specific provider
+Request metadata for a specific provider.
 
 __Example__
 

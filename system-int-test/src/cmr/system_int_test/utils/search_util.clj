@@ -719,9 +719,9 @@
        response))))
 
 (defn find-providers
-  "Returns the metadata for all providers using search endpoint or metadata for a specific provider"
+  "Return the metadata for all providers using search endpoint or metadata for a specific provider."
   ([]
-  (find-providers ""))
+  (find-providers nil))
   ([provider-id]
   (let [response (client/get (str (url/search-provider-url) "/" provider-id) {:connection-manager (s/conn-mgr) :throw-exceptions false})]
     (if (= 200 (:status response))

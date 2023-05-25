@@ -417,7 +417,7 @@
     ;; Using http/helper pass "meta" arg to retrieve provider metadata
     (h/request context :metadata-db {:url-fn request-url 
                                      :method :get 
-                                     :http-options {:query-params {"meta" "true"}}})))
+                                     :http-options {:query-params {:meta true}}})))
 
 (defn-timed get-providers
   "Returns the list of provider ids configured in the metadata db"

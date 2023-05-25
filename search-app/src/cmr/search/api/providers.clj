@@ -46,37 +46,45 @@
      :body provider-holdings-formatted}))
 
 (defn- pull-metadata
-  "Look for and remove metadata field from the body returned by the metadata db
-   service, as it is not needed in the legacy responses."
+  "Look for and pull up the metadata field from the body returned by the metadata db
+  from search app we want to promote this as the response."
   [response]
-  (let [new-body (-> response
+  ;; response passed through timing function index [0] time index [1] result
+  (let [time-taken (first response)
+        response-body (second response)
+        hits (count response-body)
+        provider-metadata (-> response-body
                      (as-> body (map :metadata body))
                      json/generate-string)
         new-response {}]
-    (assoc new-response :body new-body)))
+    (assoc new-response :hits hits :took time-taken :items (json/parse-string provider-metadata true))))
 
 (defn- pull-metadata-single-provider
+  "Look for and remove metadata field from the body returned by the metadata db for a
+  specific provider from search app we want to promote this as the response."
  [response]
-(let [new-body (-> response
+  ;; response passed through timing function index [0] time index [1] result
+(let [time-taken (first response)
+      response-body (second response)
+      hits 1
+      provider-metadata (-> response-body
                    :body
                    (json/parse-string true)
                    (:metadata)
-                   json/generate-string)]
-  (if (not= (:status response) 200)
-        (assoc response :body (json/parse-string (:body response) true))
-        (assoc response :body new-body))))
+                   json/generate-string)
+      new-response {}]
+  (if (not= (:status response-body) 200)
+        (json/parse-string (:body response-body) true)
+        (assoc new-response :hits hits :took time-taken :items [(json/parse-string provider-metadata)]))))
 
 (defn- one-result->response-map
   "Returns the response map of the given result, but this expects there to be
-   just one value and it only returns the metadata, see result->response-map for
-   the older return type. However, if there is an error in the response, then the
-   body is returned as is"
+  just one value and it only returns the metadata however, if there is an error in the response, 
+  then the body is returned as is."
   [result]
-  (let [{:keys [status body]} result]
-    
-    {:status status
-     :headers {"Content-Type" (mt/with-utf-8 mt/json)}
-     :body body}))
+  (let [{:keys [status]} result
+        response {:headers {"Content-Type" (mt/with-utf-8 mt/json)} :body result}]
+    response))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions
@@ -94,8 +102,15 @@
     (GET "/:provider-id" {{:keys [provider-id] :as params} :params
                           request-context :request-context
                           headers :headers}
-      (one-result->response-map (pull-metadata-single-provider (provider-service/read-provider request-context provider-id))))
+      (->> provider-id
+           (provider-service/read-provider request-context)
+           (pull-metadata-single-provider)
+           (one-result->response-map)))
 
     ;; Return the list of all providers
     (GET "/" {:keys [request-context]}
-      (one-result->response-map (pull-metadata (provider-service/get-providers-raw request-context))))))
+      (->> request-context
+           (provider-service/get-providers-raw)
+           (pull-metadata)
+           (one-result->response-map)))))
+
