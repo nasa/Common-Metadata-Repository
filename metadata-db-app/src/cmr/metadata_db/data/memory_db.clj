@@ -302,7 +302,7 @@
   involve the passed in concept id."
   [concepts concept-id]
   (util/remove-nils-empty-maps-seqs
-   (merge
+   (concat
     (concepts/search-with-params concepts {:associated-concept-id concept-id})
     (concepts/search-with-params concepts {:tool-concept-id concept-id})
     (concepts/search-with-params concepts {:service-concept-id concept-id})
