@@ -50,12 +50,7 @@
             ;; Linting aliases
             "kibit" ["do"
                      ["with-profile" "lint" "shell" "echo" "== Kibit =="]
-                     ["with-profile" "lint" "kibit"]]
-            ;; Eastwood needs special handling with libs that include oracle
-            ;; drivers in the deps, in particulear:
-            ;;   java.lang.ClassNotFoundException: oracle.dms.console.DMSConsole
-            "eastwood" ["with-profile" "lint" "eastwood"
-                        "{:namespaces [:source-paths] :exclude-namespaces [cmr.oracle.connection]}"]
+                     ["with-profile" "lint" "kibit"]] 
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]

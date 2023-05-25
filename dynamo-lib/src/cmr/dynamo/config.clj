@@ -7,5 +7,5 @@
    {:default "meta-metadata"})
 
 (defconfig dynamo-toggle
-  "Three-way toggle for DynamoDB functionality. 'dynamo-off' uses only Oracle, 'dynamo-on' uses both Oracle and EFS, and 'dynamo-only' uses only EFS"
+  "Three-way toggle for DynamoDB functionality. 'dynamo-off' uses only Oracle with EFS, 'dynamo-on' uses both Oracle and DynamoDB with EFS, and 'dynamo-only' uses only DynamoDB with EFS"
   {:default "dynamo-off"})

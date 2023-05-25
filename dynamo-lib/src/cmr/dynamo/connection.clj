@@ -7,8 +7,7 @@
   {:endpoint "http://dynamodb.us-east-1.amazonaws.com"})
 
 (defn save-concept
-  [concept]
-  )
+  [concept])
 
 (defn get-concept
   "Gets a concept from DynamoDB"
