@@ -22,7 +22,7 @@
   #{:entry-titles :access-value :temporal :concept-ids})
 
 (def collection-field-constraints-cache-key
-  "The cache key for a urs cache."
+  "The cache key for a URS cache."
   :collection-field-constraints)
 
 (defmulti matches-access-value-filter?

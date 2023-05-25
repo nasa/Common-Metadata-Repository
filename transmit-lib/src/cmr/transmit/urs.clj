@@ -41,7 +41,7 @@
 ;; URS cache functions
 
 (def urs-cache-key
-  "The cache key for a urs cache."
+  "The cache key for a URS cache."
   :urs)
 
 (def URS_CACHE_TIME

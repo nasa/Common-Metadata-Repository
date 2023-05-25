@@ -24,7 +24,7 @@
   {:default true :type Boolean})
 
 (def collection-field-constraints-cache-key
-  "The cache key for a urs cache."
+  "The cache key for a URS cache."
   :collection-field-constraints)
 
 (defn non-empty-string
@@ -163,7 +163,7 @@
   (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
 
 (defn create-access-constraints-cache
-  "Creates a cache for access constraint mapping."
+  "Create a cache for access constraint mapping."
   []
   (mem-cache/create-in-memory-cache :ttl {} {:ttl CONCEPT_MAP_CACHE_TIME}))
 
