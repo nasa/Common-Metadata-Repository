@@ -80,7 +80,7 @@
 (defmethod handle-indexing-event [:concept-delete :collection]
   [context {:keys [concept-id revision-id]}]
   (let [concept-map (mdb/get-concept context concept-id revision-id)
-        collection-concept (acl-matchers/add-acl-enforcement-fields-to-concept concept-map)]
+        collection-concept (acl-matchers/add-acl-enforcement-fields-to-concept context concept-map)]
     (doseq [acl-concept (acl-service/get-all-acl-concepts context)
             :let [parsed-acl (acl-service/get-parsed-acl acl-concept)
                   catalog-item-id (:catalog-item-identity parsed-acl)

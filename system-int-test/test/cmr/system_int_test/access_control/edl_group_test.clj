@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.access-control.edl-group-test
   (:require
    [cheshire.core :as json]
+   [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.config :as access-control-config]
@@ -12,6 +13,9 @@
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]))
 
@@ -62,8 +66,17 @@
     (u/conn-context)
     token)))
 
+(defn assert-cache-state
+  "Checks that the state of the cache is what we expected"
+  [collections-to-formats]
+  (let [expected (into {} (for [[coll format-keys] collections-to-formats]
+                            [(:concept-id coll)
+                             {:revision-id (:revision-id coll)
+                              :cached-formats (set format-keys)}]))]
+   (is (= expected (search/collection-metadata-cache-state)))))
+
 (deftest toggle-cmr-group-sids
-  (mock-urs-client/create-users (u/conn-context) [{:username "edl-group-user1" 
+  (mock-urs-client/create-users (u/conn-context) [{:username "edl-group-user1"
                                                    :password "edl-group-user1-pass"}])
   (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
   (let [cmr-group (:concept_id
@@ -124,7 +137,18 @@
                                                    :native-id %
                                                    :short-name %})
         coll1 (save-prov1-collection "coll1")
-        gran1 (u/save-granule coll1)]
+        gran1 (u/save-granule coll1)
+        cfc-url (str (url/access-control-read-caches-url) "/collection-field-constraints")
+        response (client/request {:url cfc-url
+                                  :method :get
+                                  :query-params {:token "mock-echo-system-token"}
+                                  :connection-manager (s/conn-mgr)
+                                  :throw-exceptions false})
+        cfc-cache (:body response)]
+
+    (testing "collection-field-constraints cache is empty"
+      (is (= "null" cfc-cache)))
+
     (testing "permissions granted to a edl group"
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
       (create-acl {:group_permissions [{:permissions [:read]
@@ -138,7 +162,15 @@
            (get-permissions user gran1))
         :guest []
         :registered []
-        "edl-group-user1" ["read"]))))
+        "edl-group-user1" ["read"]))
+    (testing "collection-field-constraints is populated after permissions endpoint is hit"
+      (let  [response (client/request {:url cfc-url
+                                       :method :get
+                                       :query-params {:token "mock-echo-system-token"}
+                                       :connection-manager (s/conn-mgr)
+                                       :throw-exceptions false})
+             cfc-cache (:body response)]
+        (is (string/includes? cfc-cache coll1))))))
 
 (deftest collection-provider-level-permission-check-test
   (let [coll1 (u/save-collection {:provider-id "PROV1"

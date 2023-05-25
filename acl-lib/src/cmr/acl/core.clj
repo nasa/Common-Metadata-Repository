@@ -23,6 +23,10 @@
   "Flag that indicates if we accept the 'Echo-Token' header."
   {:default true :type Boolean})
 
+(def collection-field-constraints-cache-key
+  "The cache key for a URS cache."
+  :collection-field-constraints)
+
 (defn non-empty-string
   [s]
   (when-not (str/blank? s) s))
@@ -140,6 +144,10 @@
   "The cache key for the token to subscription management permission cache."
   :token-smp)
 
+(def CONCEPT_MAP_CACHE_TIME
+  "The number of milliseconds token information will be cached."
+  (* 5 60 1000))
+
 (def TOKEN_IMP_CACHE_TIME
   "The number of milliseconds token information will be cached."
   (* 5 60 1000))
@@ -153,6 +161,11 @@
   "Creates a cache for which tokens have subscription management permission."
   []
   (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
+
+(defn create-access-constraints-cache
+  "Create a cache for access constraint mapping."
+  []
+  (mem-cache/create-in-memory-cache :ttl {} {:ttl CONCEPT_MAP_CACHE_TIME}))
 
 (defn get-permitting-acls
   "Gets ACLs for the current user of the given object identity type and target that grant the given

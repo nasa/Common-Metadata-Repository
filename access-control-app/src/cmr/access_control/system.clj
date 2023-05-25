@@ -10,6 +10,7 @@
    [cmr.access-control.test.bootstrap :as bootstrap]
    [cmr.access-control.routes :as routes]
    [cmr.acl.acl-fetcher :as af]
+   [cmr.acl.core :as acl]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
@@ -97,6 +98,7 @@
                                         [:system-object :provider-object :single-instance-object])
                       :providers (mem-cache/create-in-memory-cache :ttl {} {:ttl (hours->ms 12)})
                       gf/group-cache-key (gf/create-cache)
+                      acl/collection-field-constraints-cache-key (acl/create-access-constraints-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
                       launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)

@@ -60,7 +60,8 @@
                                               "providers"
                                               "launchpad-user"
                                               "urs"
-                                              "write-enabled"]
+                                              "write-enabled"
+                                              "collection-field-constraints"]
         (url/search-read-caches-url) ["acls"
                                       "collections-for-gran-acls"
                                       "has-granules-map"
