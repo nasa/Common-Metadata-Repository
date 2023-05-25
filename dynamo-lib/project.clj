@@ -50,7 +50,8 @@
             ;; Linting aliases
             "kibit" ["do"
                      ["with-profile" "lint" "shell" "echo" "== Kibit =="]
-                     ["with-profile" "lint" "kibit"]] 
+                     ["with-profile" "lint" "kibit"]]
+            "eastwood" ["with-profile" "lint" "eastwood"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]
