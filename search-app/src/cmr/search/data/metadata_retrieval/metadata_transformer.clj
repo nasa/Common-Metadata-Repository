@@ -133,7 +133,8 @@
     (info "transform-with-strategy umm-lib: "
           "legacy/parse-concept time: " t1
           "reduce w/ legacy/generate-metadata time: " t2
-          "concept-mime-type: " concept-mime-type)
+          "concept-mime-type: " concept-mime-type
+          "num-concepts: " (:num-concepts concept))
     result))
 
 (defmethod transform-with-strategy :granule-umm-g-to-iso
@@ -167,7 +168,9 @@
                                              target-formats))]
     (info "transform-with-strategy migrate-umm-json: "
           "time: " t
-          "concept-mime-type: " concept-mime-type)
+          "concept-mime-type: " concept-mime-type
+          "concept-type: " concept-type
+          "num-concepts: " (:num-concepts concept))
     result))
 
 (defn transform-to-multiple-formats
@@ -214,5 +217,5 @@
                            :format (mt/format->mime-type target-format))
                     (assoc concept 
                            :format (mt/format->mime-type target-format) 
-                           :metadata (transform context concept target-format))))
+                           :metadata (transform context (assoc concept :num-concepts (count concepts)) target-format))))
                 concepts)))

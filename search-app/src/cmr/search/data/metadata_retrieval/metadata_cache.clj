@@ -262,6 +262,7 @@
       (info "fetch of " (count concept-tuples) " concepts:"
             "target-format:" target-format
              "get-concepts:" t1 "metadata-transformer/transform-concepts:" t2
+            "concept-type: " (-> concepts first :concept-type)
              "remove-xml-processing-instructions:" t3)
       concepts)))
 
