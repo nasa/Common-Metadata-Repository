@@ -380,13 +380,14 @@
       (context "/current-sids" []
         (OPTIONS "/" [] (common-routes/options-response))
 
-        (when (access-control-config/enable-sids-get)
+        (if (access-control-config/enable-sids-get)
           (GET "/"
                {:keys [request-context params]}
                (do
                  (error (format "client [%s] Using GET instead of POST when requesting current sids"
                                 (:client-id request-context)))
-                 (get-current-sids request-context params))))
+                 (get-current-sids request-context params)))
+          {:status 404})
 
         (POST "/"
               {:keys [request-context body]}
