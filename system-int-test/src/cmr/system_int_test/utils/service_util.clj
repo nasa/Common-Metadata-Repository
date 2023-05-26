@@ -241,7 +241,7 @@
   [token query expected-colls]
   (let [{:keys [status body]} (search-for-service-associations (assoc query :latest true))
         colls (->> body
-                   (filter #(= false (:deleted %)))
+                   (filter #(false? (:deleted %)))
                    (map #(get-in % [:extra-fields :associated-concept-id])))]
     (is (= 200 status))
     (is (= (set (map :concept-id expected-colls))
@@ -289,10 +289,12 @@
                                       (get-in expected-fields [:service-features :esi]))
                           :harmony (merge handler/base-has-features
                                           (get-in expected-fields [:service-features :harmony]))}
-        expected-fields (-> (merge handler/base-has-features
-                                   {:has-variables (some? (seq var-concept-ids))}
-                                   expected-fields)
-                            (assoc :service-features service-features))]
+        expected-fields (assoc
+                         (merge
+                          handler/base-has-features
+                          {:has-variables (some? (seq var-concept-ids))}
+                          expected-fields)
+                         :service-features service-features)]
     (assert-collection-atom-result coll expected-fields)
     (assert-collection-json-result coll expected-fields serv-concept-ids var-concept-ids)))
 

@@ -84,7 +84,6 @@ docker run \
 -p <SERVICE_PORT>:<SERVICE_PORT> \
 -e "CMR_URS_PASSWORD=<PASSWORD>" \
 -e "CMR_SYS_DBA_PASSWORD=<PASSWORD>" \
--e "CMR_ORACLE_JAR_REPO=<URL_FOR_MAVEN_REPO>" \
 -e "CMR_INGEST_PASSWORD=<PASSWORD>" \
 -e "CMR_BOOTSTRAP_PASSWORD=<PASSWORD>" \
 -e "CMR_METADATA_DB_PASSWORD=<PASSWORD> \
@@ -93,6 +92,8 @@ docker run \
 
 Where `<IMAGE_ID>` is the ID returned from the `docker build` command.
 
+The `dev-system` service additionally requires `-v /var/run/docker.sock:/var/run/docker.sock` to be passed as an argument to the docker container.
+
 ## License
 
-Copyright © 2014-2021 NASA
+Copyright © 2014-2023 NASA

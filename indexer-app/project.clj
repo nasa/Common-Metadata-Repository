@@ -17,13 +17,12 @@
                  [org.clojure/tools.nrepl "0.2.13"]
                  [ring/ring-core "1.9.6"]
                  [ring/ring-json "0.5.1"]]
-  :plugins [[lein-shell "0.5.0"]
-            [test2junit "1.3.3"]]
+  :plugins [[lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :test-paths ["test" "int-test"]
-  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
@@ -52,8 +51,6 @@
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
-            ;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
@@ -64,7 +61,6 @@
             "ci-itest" ["itest" "--profile" ":ci"]
             "ci-utest" ["utest" "--profile" ":ci"]
 
-            "int-test-out" ["with-profile" "+integration-tests" "test2junit"]
             ;; Linting aliases
             "kibit" ["do"
                      ["with-profile" "lint" "shell" "echo" "== Kibit =="]

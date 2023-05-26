@@ -26,7 +26,6 @@
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.kml :as dk]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.fast-xml :as fx]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
@@ -352,7 +351,7 @@
         (are [mime-type xml?]
              (let [response (search/retrieve-concept (:concept-id c1-echo) nil {:accept mime-type})
                    err-msg (if xml?
-                             (cx/string-at-path (fx/parse-str (:body response)) [:error])
+                             (cx/string-at-path (x/parse-str (:body response)) [:error])
                              (first (:errors (json/decode (:body response) true))))]
                (and (= 400 (:status response))
                     (= (str "The mime types specified in the accept header [" mime-type "] are not supported.") err-msg)))

@@ -379,7 +379,7 @@
         search-items (:items search-result)
         echo10-concept-ids (map :concept-id echo10-items)
         echo10-search-items (filter #(some #{(:concept-id %)} echo10-concept-ids) search-items)
-        non-echo10-search-items (filter #(not (some #{(:concept-id %)} echo10-concept-ids)) search-items)]
+        non-echo10-search-items (filter #(not-any? #{(:concept-id %)} echo10-concept-ids) search-items)]
     (and (echo10-coverted-iso-mends-metadata-match? echo10-items echo10-search-items)
          (items-match? format-key non-echo10-items non-echo10-search-items
                        {:format-item (partial remove-metadata-ids)}))))

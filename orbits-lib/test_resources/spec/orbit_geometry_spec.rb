@@ -5,7 +5,7 @@ require 'orbits/orbit_geometry'
 
 
 describe Orbits::OrbitGeometry do
-  
+
   context "#ground_track" do
     describe "ground track returns correct latitude" do
 
@@ -17,7 +17,7 @@ describe Orbits::OrbitGeometry do
           orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 34.4675).lat.should be_between(0,82)
           orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 48.935).lat.should be_close_to 0
           orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 58.935).lat.should be_between(-82,0)
-          orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 73.4025).lat.should be_close_to -82
+          orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 73.4025).lat.should be_close_to(-82)
           orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 83.4025).lat.should be_between(-82,0)
           orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 97.87).lat.should be_close_to 0
         end
@@ -31,7 +31,7 @@ describe Orbits::OrbitGeometry do
           orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 34.4675).lat.should be_between(0,82)
           orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 48.935).lat.should be_close_to 0
           orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 58.935).lat.should be_between(-82,0)
-          orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 73.4025).lat.should be_close_to -82
+          orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 73.4025).lat.should be_close_to(-82)
           orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 83.4025).lat.should be_between(-82,0)
           orbit_geometry.ground_track(-71.2686, orbit_num * 97.87 + 97.87).lat.should be_close_to 0
         end
@@ -58,29 +58,29 @@ describe Orbits::OrbitGeometry do
         orbit_geometry.ground_track(-158.1, 98.88/2).lon.should be_close_to 9.54
         orbit_geometry.ground_track(-158.1, 98.88).lon.should be_close_to 177.16
         orbit_geometry.ground_track(177.19, 98.88).lon.should be_close_to 152.43
-        orbit_geometry.ground_track(152.43, 98.88/2).lon.should be_close_to -39.9
+        orbit_geometry.ground_track(152.43, 98.88/2).lon.should be_close_to(-39.9)
       end
 
       it "returns correct longitude for prograde orbit" do
         orbit_geometry1 = Orbits::OrbitGeometry.new(Orbits::Orbit.new(98.15, 98.88, 1450.0, -90, 0.5))
         orbit_geometry2 = Orbits::OrbitGeometry.new(Orbits::Orbit.new(81.85, 98.88, 1450.0, -90, 0.5))
         orbit_geometry1.ground_track(-158.1, 98.88/2).lon.should be_close_to orbit_geometry2.ground_track(-158.1, 98.88/2).lon
-        orbit_geometry2.ground_track(-158.1, 98.88/10).lon.should  > orbit_geometry2.ground_track(-158.1, 0).lon
-        orbit_geometry1.ground_track(-158.1, 98.88/4).lon.should_not == orbit_geometry2.ground_track(-158.1, 98.88/4).lon
+        orbit_geometry2.ground_track(-158.1, 98.88/10).lon.should be > orbit_geometry2.ground_track(-158.1, 0).lon
+        orbit_geometry1.ground_track(-158.1, 98.88/4).lon.should_not be == orbit_geometry2.ground_track(-158.1, 98.88/4).lon
         orbit_geometry1.ground_track(-158.1, 98.88).lon.should be_close_to orbit_geometry2.ground_track(-158.1, 98.88).lon
       end
 
       it "returns correct longitude for polar orbit" do
-        orbit = orbit_geometry = Orbits::OrbitGeometry.new(Orbits::Orbit.new(90.0, 90, 2.0, -50.0, 0.25))
-        orbit_geometry.ground_track(0,10).lon.should be_close_to -((360.0/Orbits::SOLAR_DAY_S) * 10 * 60 % 360)
-        orbit_geometry.ground_track(0,16).lon.should be_close_to -((360.0/Orbits::SOLAR_DAY_S) * 16 * 60 % 360)
-        orbit_geometry.ground_track(0,22.5).lon.should be_close_to -5.625
+        orbit_geometry = Orbits::OrbitGeometry.new(Orbits::Orbit.new(90.0, 90, 2.0, -50.0, 0.25))
+        orbit_geometry.ground_track(0,10).lon.should be_close_to(-((360.0/Orbits::SOLAR_DAY_S) * 10 * 60 % 360))
+        orbit_geometry.ground_track(0,16).lon.should be_close_to(-((360.0/Orbits::SOLAR_DAY_S) * 16 * 60 % 360))
+        orbit_geometry.ground_track(0,22.5).lon.should be_close_to( -5.625)
         orbit_geometry.ground_track(0,23).lon.should be_close_to 180 - ((360.0/Orbits::SOLAR_DAY_S) * 23 * 60 % 360)
         orbit_geometry.ground_track(0,30).lon.should be_close_to 180 - ((360.0/Orbits::SOLAR_DAY_S) * 30 * 60 % 360)
-        orbit_geometry.ground_track(0,67.5).lon.should be_close_to -16.875
+        orbit_geometry.ground_track(0,67.5).lon.should be_close_to(-16.875)
       end
     end
-  end 
+  end
 
   context "#along_track_swath_edges", :focus => true do
     describe "ground track swath edges returns correct values" do
@@ -107,7 +107,7 @@ describe Orbits::OrbitGeometry do
 
 
     def assert_equal_kml(orbit_geometry, longitude_crossing, start_time, end_time,file_name)
-      actual_kml = generate_kml(file_name, start_time,end_time) do |minute| 
+      actual_kml = generate_kml(file_name, start_time,end_time) do |minute|
         edge = orbit_geometry.along_track_swath_edges(longitude_crossing, minute)
         "<LineString><tessellate>1</tessellate><coordinates>#{edge[0].lon},#{edge[0].lat} #{edge[1].lon},#{edge[1].lat}</coordinates></LineString>\n"
       end
@@ -116,7 +116,7 @@ describe Orbits::OrbitGeometry do
       expected_kml.should be == actual_kml
     end
 
-    def generate_kml(name, start_time, end_time, &block)
+    def generate_kml(name, start_time, end_time, &_block)
     	swath_lines = ""
     	(start_time..end_time).each {|minute| swath_lines += yield(minute)}
     	kml =<<stop

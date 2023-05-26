@@ -477,38 +477,38 @@
                                    :S3CredentialsAPIEndpoint "hello"
                                    :S3CredentialsAPIDocumentationURL "hello"})]
 
-      (are3 [format error-code collection error-message]
+      (are3 [format error-code collection error-matcher]
         (let [response (data-core/ingest-umm-spec-collection "PROV1"
                                                              collection
                                                              {:format format
                                                               :allow-failure? true
                                                               :validate-umm-c true})]
           (is (= error-code (:status response)))
-          (is (some #(string/includes? % error-message) (:errors response))))
+          (is (re-find error-matcher (prn-str (:errors response)))))
 
         "DIF10 nil Region is invalid"
-        :dif10 400 invalid-nil-region-umm "Invalid content was found starting with element 'S3BucketAndObjectPrefixName"
+        :dif10 400 invalid-nil-region-umm #".*(Invalid content was found starting with element).*(:S3BucketAndObjectPrefixName).*"
 
         "ECHO10 nil Region is invalid"
-        :echo10 400 invalid-nil-region-umm "Invalid content was found starting with element 'S3BucketAndObjectPrefixName"
+        :echo10 400 invalid-nil-region-umm #".*(Invalid content was found starting with element).*(S3BucketAndObjectPrefixName).*"
 
         "ISO 19115 nil Region is invalid"
-        :iso19115 422 invalid-nil-region-umm "#/DirectDistributionInformation: required key [Region] not found"
+        :iso19115 422 invalid-nil-region-umm #".*(#/DirectDistributionInformation: required key \[Region\] not found).*"
 
         "DIF10 bad Region is invalid"
-        :dif10 400 invalid-region-umm "Value 'hello' is not facet-valid with respect to enumeration"
+        :dif10 400 invalid-region-umm #"Value 'hello' is not facet-valid with respect to enumeration"
 
         "ECHO10 bad Region is invalid"
-        :echo10 400 invalid-region-umm "Value 'hello' is not facet-valid with respect to enumeration"
+        :echo10 400 invalid-region-umm #"Value 'hello' is not facet-valid with respect to enumeration"
 
         "ISO 19115 bad Region is invalid"
-        :iso19115 422 invalid-region-umm "DirectDistributionInformation/Region: hello is not a valid enum value"
+        :iso19115 422 invalid-region-umm #"DirectDistributionInformation/Region: hello is not a valid enum value"
 
         "DIF10 bad URL is invalid"
-        :dif10 422 invalid-url-umm "[hello] is not a valid URI"
+        :dif10 422 invalid-url-umm #"\[hello\] is not a valid URI"
 
         "ECHO10 bad URL is invalid"
-        :echo10 422 invalid-url-umm "[hello] is not a valid URI"
+        :echo10 422 invalid-url-umm #"\[hello\] is not a valid URI"
 
         "ISO 19115 bad URL is invalid"
-        :iso19115 422 invalid-url-umm "[hello] is not a valid URI"))))
+        :iso19115 422 invalid-url-umm #"\[hello\] is not a valid URI"))))

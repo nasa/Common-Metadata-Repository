@@ -55,19 +55,18 @@
   :repositories [["osgeo" "https://download.osgeo.org/webdav/geotools"]
                  ["geo" "https://repo.osgeo.org/repository/release"]
                  ["geo-snapshot" "https://repo.osgeo.org/repository/snapshot"]]
-  :plugins [[lein-exec "0.3.7"]
-            [test2junit "1.3.3"]]
+  :plugins [[lein-exec "0.3.7"]]
   :repl-options {:init-ns user
                  :timeout 120000}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
              :dev {:exclusions [[org.clojure/tools.nrepl]]
                    :dependencies [[criterium "0.4.4"]
-                                  [drift "1.5.3"]
+                                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
@@ -109,8 +108,6 @@
                                "run" "-m" "cmr.search.site.static" "all"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
-            ;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration

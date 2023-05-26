@@ -25,7 +25,8 @@
    (java.util Arrays)
    (net.jpountz.lz4 LZ4Compressor LZ4SafeDecompressor LZ4FastDecompressor LZ4Factory)))
 
-(defmacro are2
+(defmacro ^{:deprecated true
+            :superseded-by "are3"} are2
   "DEPRECATED. Use are3 instead.
 
    Based on the are macro from clojure.test. Checks multiple assertions with a
@@ -207,14 +208,13 @@
              ~@timed-arity-body
              (finally
                (let [elapsed# (- (System/currentTimeMillis) start#)]
-                 ;; CMR-3792. making defn-timed debug messages configurable
-                 (when (= true (cfg/defn-timed-debug))
+                 (when (true? (cfg/defn-timed-debug))
                    (info
                      (format
                        "Timed function %s/%s took %d ms."
                        ~ns-str ~fn-name-str elapsed#)))))))))))
 
-(defn build-validator
+(defn ^{:deprecated true} build-validator
   "Creates a function that will call f with it's arguments. If f returns any
   errors then it will throw a service error of the type given.
 
@@ -225,7 +225,7 @@
       (when (seq errors)
         (errors/throw-service-errors error-type errors)))))
 
-(defn apply-validations
+(defn ^{:deprecated true} apply-validations
   "Given a list of validation functions, applies the arguments to each
   validation, concatenating all errors and returning them. As such, validation
   functions are expected to only return a list; if the list is empty, it is
@@ -240,7 +240,7 @@
           []
           validations))
 
-(defn compose-validations
+(defn ^{:deprecated true} compose-validations
   "Creates a function that will compose together a list of validation functions
   into a single function that will perform all validations together.
 

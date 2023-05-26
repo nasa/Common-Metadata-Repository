@@ -1,0 +1,22 @@
+name: CMR Checks
+
+on:
+  pull_request:
+    branches: [ master, main ]
+
+jobs:
+  cloc:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Remove non-CMR directories
+        run: |
+          rm -rf browse-scaler
+          rm -rf graph-db
+          rm -rf legacy-migration
+          rm -rf other
+          rm -rf system-validation-test
+          rm -rf tea-config-generator
+          rm -rf token-service-client
+      - name: Count Lines of Code (cloc)
+        uses: djdefi/cloc-action@5

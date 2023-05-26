@@ -14,12 +14,11 @@
                  [ring/ring-core "1.9.6"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[lein-exec "0.3.7"]
-            [lein-shell "0.5.0"]
-            [test2junit "1.3.3"]]
+            [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:exclusions [[org.clojure/tools.nrepl]]
@@ -48,10 +47,7 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
-  :aliases {;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]
-
-            ;; Kaocha test aliases
+  :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["kaocha" "--focus" ":integration"]

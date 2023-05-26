@@ -270,13 +270,6 @@ case "$COMMAND" in
                 PROJECT=$3
                 show_log_tail_proj $PROJECT
                 ;;
-            log-test)
-                PROJECT=$3
-                show_log_test_proj $PROJECT
-                ;;
-            log-tests)
-                show_log_tests $PROJECT
-                ;;
             port-process)
                 PORT=$3
                 show_port_process $PORT

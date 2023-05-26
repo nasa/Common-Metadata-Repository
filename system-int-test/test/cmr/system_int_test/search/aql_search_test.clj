@@ -16,7 +16,7 @@
 
 (deftest aql-validation-test
   (testing "invalid against AQL schema"
-    (is (= {:errors [(msg/invalid-aql "Exception while parsing invalid XML: Line 1 - cvc-elt.1: Cannot find the declaration of element 'foo'.")]
+    (is (= {:errors [(msg/invalid-aql "Exception while parsing invalid XML: Line 1 - cvc-elt.1.a: Cannot find the declaration of element 'foo'.")]
             :status 400}
            (search/find-refs-with-aql-string "<foo/>")))
     (is (= {:errors [(msg/invalid-aql "Exception while parsing invalid XML: Line 1 - Content is not allowed in prolog.")]

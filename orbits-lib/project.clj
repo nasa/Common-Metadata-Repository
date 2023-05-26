@@ -1,7 +1,6 @@
 (def jruby-version
-  "The version of JRuby to use. This is the same as used in the collection renderer
-   java package to prevent classpath issues"
-  "9.3.3.0")
+  "The version of JRuby to use."
+  "9.4.0.0")
 
 (def dev-gem-install-path
   "The directory within this library where Ruby gems are installed for development time dependencies."
@@ -12,12 +11,11 @@
   :dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
                  [org.jruby/jruby-complete ~jruby-version]]
-  :plugins [[lein-shell "0.5.0"]
-            [test2junit "1.3.3"]]
+  :plugins [[lein-shell "0.5.0"]]
   :resource-paths ["resources"]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
@@ -55,8 +53,6 @@
             "clean-gems" ["shell" "rm" "-rf" ~dev-gem-install-path]
             "install" ["do" "clean," "deps," "clean-gems," "install-gems," "install"]
             "install!" "install"
-            ;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
