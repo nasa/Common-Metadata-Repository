@@ -212,7 +212,7 @@
 (defconfig defn-timed-debug
   "This sets the switch for the logging of the debug info from defn-timed macro.
    If it is set to true, the debug info will be logged."
-  {:default true
+  {:default false
    :type Boolean})
 
 (defconfig approved-pipeline-documents

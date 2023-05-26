@@ -41,10 +41,3 @@
         queue-name (config/index-queue-name)]
     (wait-for-queue queue-broker queue-name)
     (debug "index queue is empty")))
-
-(comment
-
-  (queue-message-count "")
-
-
-  )
