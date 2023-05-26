@@ -173,6 +173,9 @@
 (defn- get-current-sids
   "Returns a Ring response with the current user's sids"
   [request-context params]
+  (print "p params:" params "\n")
+  (error "e params:" params "\n")
+  (def mypramas params)
   (pv/validate-current-sids-params params)
   (let [result (acl-service/get-current-sids request-context params)]
     {:status 200
@@ -391,9 +394,7 @@
 
         (POST "/"
               {:keys [request-context body]}
-              (get-current-sids request-context (-> (slurp body)
-                                                    (json/parse-string true)
-                                                    (clojure.walk/keywordize-keys)))))
+              (get-current-sids request-context (json/parse-string (slurp body) true))))
 
       (context "/s3-buckets" []
         (OPTIONS "/" [] (common-routes/options-response))
