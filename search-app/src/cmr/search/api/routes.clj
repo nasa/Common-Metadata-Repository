@@ -98,6 +98,9 @@
         ;; Provider holdings
         providers-api/holdings-routes
 
+        ;; Add routes for providers
+        providers-api/provider-api-routes
+
         ;; Add routes for autocomplete
         autocomplete-api/autocomplete-api-routes
 

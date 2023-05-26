@@ -717,6 +717,17 @@
         :results (ph/parse-provider-holdings format-key echo-compatible? body)}
        response))))
 
+(defn find-providers
+  "Return the metadata for all providers using search endpoint or metadata for a specific provider."
+  ([]
+  (find-providers nil))
+  ([provider-id]
+  (let [response (client/get (str (url/search-provider-url) "/" provider-id) {:connection-manager (s/conn-mgr) :throw-exceptions false})]
+    (if (= 200 (:status response))
+      {:status (:status response)
+       :results (json/decode (:body response))}
+      response))))
+
 (defn find-tiles
   "Returns the tiles that are found by searching with the input params"
   [params]

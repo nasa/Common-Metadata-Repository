@@ -18,7 +18,8 @@
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
    [cmr.transmit.metadata-db2 :as mdb2]
-   [ring.util.codec :as codec]))
+   [ring.util.codec :as codec]
+   [cmr.transmit.http-helper :as h]))
 
 (defn-timed get-concept
   "Retrieve the concept with the given concept and revision-id"
@@ -241,7 +242,7 @@
     (concat associations-source associations-dest)))
 
 (defn get-generic-associations-for-concept
-  "Get all the generic associationse (including tombstones) for a concept."
+  "Get all the generic associations (including tombstones) for a concept."
   [context concept]
   (get-generic-associations-by-concept-id
    context (:concept-id concept) (:revision-id concept)))
@@ -357,6 +358,15 @@
                 {:headers {config/token-header (config/echo-system-token)}
                  :throw-exceptions false})))
 
+(defn-timed read-providers
+  "Reads all providers"
+  [context]
+  (let [conn (config/context->app-connection context :metadata-db)
+        request-url (str (conn/root-url conn) "/providers")]
+    (client/get request-url
+                {:headers {config/token-header (config/echo-system-token)}
+                 :throw-exceptions false})))
+
 (defn update-provider-raw
   "Update a provider in the database"
   [context provider]
@@ -398,6 +408,16 @@
                               {:accept :json
                                :headers (ch/context->http-headers context)
                                :throw-exceptions false}))))
+
+(defn get-all-providers
+  "Returns the list of provider ids configured in the metadata db, including
+  the metadata for each given provider by passing meta argument to metadatadb app"
+  [context]
+  (let [request-url (fn [conn] (str (conn/root-url conn) "/providers"))]
+    ;; Using http/helper pass "meta" arg to retrieve provider metadata
+    (h/request context :metadata-db {:url-fn request-url 
+                                     :method :get 
+                                     :http-options {:query-params {:meta true}}})))
 
 (defn-timed get-providers
   "Returns the list of provider ids configured in the metadata db"

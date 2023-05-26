@@ -25,11 +25,15 @@
 (defn get-providers
   "Get the list of providers.
   Returns a clojure.lang.APersistentMap$ValSeq; list of maps"
-  [context]
-  (info "Getting provider list.")
+  ([context] (get-providers context nil))
+  ([context params]
+   (info "Getting provider list.")
   (let [db (mdb-util/context->db context)
-        providers (map #(dissoc % :metadata) (providers/get-providers db))]
-    (map util/remove-nil-keys providers)))
+        providers (providers/get-providers db)
+        providers (if (:meta params)
+                    providers
+                    (map #(dissoc % :metadata) providers))]
+    (map util/remove-nil-keys providers))))
 
 (defn get-provider-by-id
   "Returns the provider with the given provider-id, raise error when provider does not exist based
