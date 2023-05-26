@@ -36,7 +36,11 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 
 #### <a name="authorization-header"></a> Authorization Header
 
-All Access Control API operations require specifying a token obtained from [Earthdata Login (EDL)](https://urs.earthdata.nasa.gov). The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the documentation [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token).
+All Access Control API operations require specifying a token.
+
+An EDL token can be obtained from [Earthdata Login (EDL)](https://urs.earthdata.nasa.gov). The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the documentation [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token).
+
+An example for generating a Launchpad token can he found [here](https://wiki.earthdata.nasa.gov/display/CMR/Example+Code+for+Requesting+Launchpad+Token). The token should be specified using the `Authorization:` header followed by the Launchpad token. More information on getting access to Launchpad tokens can be found on [this guide](https://wiki.earthdata.nasa.gov/display/CMR/Launchpad+Authentication+User%27s+Guide)
 
 #### <a name="cmr-revision-id-header"></a> Cmr-Revision-Id Header
 
@@ -124,7 +128,7 @@ ACLs are uniquely identified by their identity. There can only be one ACL to a s
 
 ### <a name="create-acl"></a> Create ACL
 
-ACLs are created by POSTing a JSON representation of an ACL to `%CMR-ENDPOINT%/acls` along with a valid EDL bearer token. The response will contain a concept id identifying the ACL along with the ACL revision id.
+ACLs are created by POSTing a JSON representation of an ACL to `%CMR-ENDPOINT%/acls` along with a valid EDL bearer token or Launchpad token. The response will contain a concept id identifying the ACL along with the ACL revision id.
 
 #### Creating an ACL
 
@@ -227,7 +231,7 @@ For system, provider, and single instance identities, the grantable permissions 
 
 ### <a name="search-acls"></a> Search ACLs
 
-ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`, or a POST to `%CMR-ENDPOINT%/acls/search`. A valid EDL bearer token is required to search ACLs. If no token is supplied then guest permissions are used.
+ACLs can be searched for by sending a GET request to `%CMR-ENDPOINT%/acls`, or a POST to `%CMR-ENDPOINT%/acls/search`. A valid EDL bearer token or Launchpad token is required to search ACLs. If no token is supplied then guest permissions are used.
 
 ##### ACL Search Parameters
 

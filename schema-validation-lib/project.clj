@@ -2,20 +2,19 @@
   :description "Provides json schema validation code"
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/schema-validation-lib"
   :plugins [[lein-exec "0.3.7"]
-            [lein-shell "0.5.0"]
-            [test2junit "1.3.3"]]
+            [lein-shell "0.5.0"]]
   :exclusions [[chesire]]
   :dependencies [[cheshire "5.10.0"]
                  [com.fasterxml.jackson.core/jackson-core "2.13.2"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
-                 [com.github.everit-org.json-schema/org.everit.json.schema "1.14.1"]
+                 [com.github.everit-org.json-schema/org.everit.json.schema "1.14.2"]
                  [org.clojure/clojure "1.10.0"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :global-vars {*warn-on-reflection* true}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/test.check "1.1.0"]
@@ -44,10 +43,7 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
-  :aliases {;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]
-
-            ;; Kaocha test aliases
+  :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["kaocha" "--focus" ":integration"]

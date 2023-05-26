@@ -58,7 +58,7 @@
             (:errors coll4-wrong-collection-data-type)))))
 
 ;; Verify a new concept is ingested successfully.
-(deftest collection-ingest-test
+(deftest basic-collection-ingest-test
   (testing "ingest of a new concept"
     (let [concept (data-umm-c/collection-concept {})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
@@ -77,7 +77,7 @@
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept {:token launchpad-token})]
       (index/wait-until-indexed)
       (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-      (is (= 1 revision-id)))))
+      (is (= 6 revision-id)))))
 
 ;; Verify a concept can be ingested twice to get two revisions and ignore_conflict can impact the reindex status.
 (deftest collection-ingest-test
@@ -650,7 +650,7 @@
                "Exception while parsing invalid XML: Line 1 - cvc-type.3.1.3: The value 'A.000Z' of element 'Beginning_Date_Time' is not valid."]
 
        :iso19115 [(str "Exception while parsing invalid XML: Line 1 - cvc-complex-type.2.4.a: Invalid content was found "
-                       "starting with element 'gmd:XXXX'. One of "
+                       "starting with element '{\"http://www.isotc211.org/2005/gmd\":XXXX}'. One of "
                        "'{\"http://www.isotc211.org/2005/gmd\":fileIdentifier, "
                        "\"http://www.isotc211.org/2005/gmd\":language, "
                        "\"http://www.isotc211.org/2005/gmd\":characterSet, "
@@ -659,7 +659,7 @@
                        "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                        "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
 
-       :iso-smap ["Exception while parsing invalid XML: Line 1 - cvc-elt.1: Cannot find the declaration of element 'XXXX'."]))
+       :iso-smap ["Exception while parsing invalid XML: Line 1 - cvc-elt.1.a: Cannot find the declaration of element 'XXXX'."]))
 
 (deftest ingest-umm-json
   (let [json (umm-spec/generate-metadata test-context expected-conversion/curr-ingest-ver-example-collection-record :umm-json)

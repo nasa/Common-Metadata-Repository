@@ -218,10 +218,10 @@
 
 (deftest validate-xml
   (testing "valid xml"
-    (is (= 0 (count (g/validate-xml sample-granule-xml)))))
+    (is (zero? (count (g/validate-xml sample-granule-xml)))))
   (testing "invalid xml"
     (is (= [(str "Exception while parsing invalid XML: Line 7 - cvc-complex-type.2.4.a: Invalid content was found "
-                 "starting with element 'gmd:XXXX'. One of "
+                 "starting with element '{\"http://www.isotc211.org/2005/gmd\":XXXX}'. One of "
                  "'{\"http://www.isotc211.org/2005/gmd\":fileIdentifier, "
                  "\"http://www.isotc211.org/2005/gmd\":language, "
                  "\"http://www.isotc211.org/2005/gmd\":characterSet, "

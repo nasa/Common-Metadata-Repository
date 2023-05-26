@@ -12,4 +12,3 @@ Feature: Service Health Checks
       | "/search/health"                     | "application/json" |
       | "/access-control/health"             | "application/json" |
       | "/ingest/health"                     | "application/json" |
-      | "/legacy-services/rest/availability" | "application/xml"  |

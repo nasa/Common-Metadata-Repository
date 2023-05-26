@@ -14,7 +14,7 @@
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [compojure "1.6.1"]
-                 [drift "1.5.3"]
+                 [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [instaparse "1.4.10"]
                  [inflections "0.13.0"]
@@ -39,15 +39,14 @@
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]
                  [ring/ring-codec "1.1.3"]
-                 [ring/ring-core "1.9.2"]
+                 [ring/ring-core "1.9.6"]
                  [ring/ring-json "0.5.1"]]
-  :plugins [[drift "1.5.3"]
-            [lein-exec "0.3.7"]
-            [test2junit "1.3.3"]]
+  :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
+            [lein-exec "0.3.7"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
@@ -87,8 +86,6 @@
             "drop-user" ["exec" "-p" "./support/drop_user.clj"]
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs) (shutdown-agents))"]
-            ;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration

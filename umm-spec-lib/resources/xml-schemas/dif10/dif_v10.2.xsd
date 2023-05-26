@@ -1592,7 +1592,7 @@ History:
                 <xs:simpleType>
                     <xs:restriction base="xs:string">
                         <xs:minLength value="1" />
-                        <xs:maxLength value="4000" />
+                        <xs:maxLength value="40" />
                     </xs:restriction>
                 </xs:simpleType>
             </xs:element>

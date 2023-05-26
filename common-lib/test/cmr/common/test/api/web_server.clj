@@ -26,10 +26,12 @@
   (fn [request]
     (if (= (:uri request) "/short")
       {:status 200
-       :headers {"Content-Type" "application/xml; charset=utf-8"}
+       :headers {"Content-Type" "application/xml; charset=utf-8"
+                 "Content-Length" (str (count short-body))}
        :body short-body}
       {:status 200
-       :headers {"Content-Type" "application/xml; charset=utf-8"}
+       :headers {"Content-Type" "application/xml; charset=utf-8"
+                 "Content-Length" (str (count long-body))}
        :body long-body})))
 
 (defn routes-fn-return-body

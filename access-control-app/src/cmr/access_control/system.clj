@@ -10,6 +10,7 @@
    [cmr.access-control.test.bootstrap :as bootstrap]
    [cmr.access-control.routes :as routes]
    [cmr.acl.acl-fetcher :as af]
+   [cmr.acl.core :as acl]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
@@ -23,7 +24,9 @@
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
-   [cmr.transmit.config :as transmit-config]))
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
+   [cmr.transmit.urs :as urs]))
 
 (defconfig access-control-nrepl-port
   "Port to listen for nREPL connections"
@@ -95,8 +98,11 @@
                                         [:system-object :provider-object :single-instance-object])
                       :providers (mem-cache/create-in-memory-cache :ttl {} {:ttl (hours->ms 12)})
                       gf/group-cache-key (gf/create-cache)
+                      acl/collection-field-constraints-cache-key (acl/create-access-constraints-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
-                      common-health/health-cache-key (common-health/create-health-cache)}
+                      common-health/health-cache-key (common-health/create-health-cache)
+                      launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
+                      urs/urs-cache-key (urs/create-urs-cache)}
 
              :public-conf (public-conf)
              :relative-root-url (transmit-config/access-control-relative-root-url)

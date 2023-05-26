@@ -127,4 +127,3 @@ describe "Coordinate" do
     Orbits::Coordinate.phi_theta(0, -3 * pi).theta.should be_close_to -pi
   end
 end
-

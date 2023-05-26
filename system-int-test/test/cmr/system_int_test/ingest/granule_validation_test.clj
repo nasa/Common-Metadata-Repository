@@ -94,7 +94,7 @@
           (assert-validation-errors
             400
             [(msg/invalid-parent-collection-for-validation
-               "Exception while parsing invalid XML: Line 1 - cvc-elt.1: Cannot find the declaration of element 'Granule'.")]
+               "Exception while parsing invalid XML: Line 1 - cvc-elt.1.a: Cannot find the declaration of element 'Granule'.")]
             (d/item->concept (dg/granule-with-umm-spec-collection collection (:concept-id collection)))
             (assoc coll-concept :metadata invalid-granule-xml)))
 

@@ -704,8 +704,8 @@
   (testing "valid xml"
     (is (empty? (c/validate-xml valid-collection-xml))))
   (testing "invalid xml"
-    (is (= [(str "Exception while parsing invalid XML: " 
-                 "Line 18 - cvc-complex-type.2.4.a: Invalid content was found starting with element 'XXXX'. "
+    (is (= [(str "Exception while parsing invalid XML: "
+                 "Line 18 - cvc-complex-type.2.4.a: Invalid content was found starting with element '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":XXXX}'. "
                  "One of '{\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Center_URL, "
                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Data_Set_ID, "
                  "\"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Personnel}' is expected.")]

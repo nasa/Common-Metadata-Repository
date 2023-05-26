@@ -40,29 +40,29 @@
                  [org.clojure/test.check "0.9.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.clojure/tools.reader "1.3.2"]
-                 ;;these dependencies should be updated in tandem with the ring dependiences below
-                 [org.eclipse.jetty/jetty-http "9.4.39.v20210325"]
-                 [org.eclipse.jetty/jetty-io "9.4.39.v20210325"]
-                 [org.eclipse.jetty/jetty-servlets "9.4.39.v20210325"]
-                 [org.eclipse.jetty/jetty-util "9.4.39.v20210325"]
+                 ;; These dependencies should be updated in tandem with the ring dependencies below.
+                 ;; To find the corresponding versions, see: https://clojars.org/ring/ring-core/versions/1.9.6
+                 [org.eclipse.jetty/jetty-http "9.4.48.v20220622"]
+                 [org.eclipse.jetty/jetty-io "9.4.48.v20220622"]
+                 [org.eclipse.jetty/jetty-servlets "9.4.48.v20220622"]
+                 [org.eclipse.jetty/jetty-util "9.4.48.v20220622"]
                  ;; load jts core lib first to make sure it is available for shapefile integration,
                  ;; otherwise ES referenced 1.15.0 version will be mistakenly picked for shapefile
                  [org.locationtech.jts/jts-core "1.18.2"]
                  [org.ow2.asm/asm "7.0"]
                  [potemkin "0.4.5"]
-                 [ring/ring-core "1.9.2"]
-                 [ring/ring-jetty-adapter "1.9.2"]
+                 [ring/ring-core "1.9.6"]
+                 [ring/ring-jetty-adapter "1.9.6"]
                  [ring/ring-json "0.5.1"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :plugins [[lein-exec "0.3.7"]
-            [lein-shell "0.5.0"]
-            [test2junit "1.3.3"]]
+            [lein-shell "0.5.0"]]
   :global-vars {*warn-on-reflection* true}
   ;; The ^replace is done to disable the tiered compilation for accurate benchmarks
   ;; See https://github.com/technomancy/leiningen/wiki/Faster
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
-  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
@@ -99,10 +99,7 @@
              :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
                                      [lambdaisland/kaocha-cloverage "1.0.75"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
-  :aliases {;; Alias to test2junit for consistency with lein-test-out
-            "test-out" ["test2junit"]
-
-            ;; Kaocha test aliases
+  :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["kaocha" "--focus" ":integration"]

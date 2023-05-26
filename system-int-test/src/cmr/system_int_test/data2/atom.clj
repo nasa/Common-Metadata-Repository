@@ -18,7 +18,6 @@
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.facets :as facets]
    [cmr.system-int-test.data2.granule :as dg]
-   [cmr.system-int-test.utils.fast-xml :as fx]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.umm.collection.entry-id :as eid]
    [cmr.umm.echo10.spatial :as echo-s]
@@ -208,7 +207,7 @@
 (defn parse-atom-result
   "Returns an atom result in map from an atom xml"
   [concept-type xml]
-  (let [xml-struct (fx/parse-str xml)]
+  (let [xml-struct (x/parse-str xml)]
     (util/remove-nil-keys
       {:id (cx/string-at-path xml-struct [:id])
        :title (cx/string-at-path xml-struct [:title])

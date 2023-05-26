@@ -1,5 +1,7 @@
 (ns cmr.transmit.urs
   (:require
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as common-util]
@@ -36,9 +38,22 @@
   (format "%s/api/nams/edl_user_uid" (conn/root-url conn)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Request functions
+;; URS cache functions
 
-(defn- get-bearer-token
+(def urs-cache-key
+  "The cache key for a URS cache."
+  :urs)
+
+(def URS_CACHE_TIME
+  "The number of milliseconds CMR client bearer token information will be cached."
+  (* 24 60 60 1000))
+
+(defn create-urs-cache
+  "Creates a cache for which CMR client bearer tokens are stored in memory."
+  []
+  (mem-cache/create-in-memory-cache :ttl {} {:ttl URS_CACHE_TIME}))
+
+(defn- get-bearer-token-fn
   "Get CMR_SSO_APP token from EDL."
   [context]
   (let [{:keys [status body]} (http-helper/request
@@ -56,6 +71,16 @@
                status)))
     (:access_token body)))
 
+(defn get-bearer-token
+  "Get the CMR client bearer token from from the cache."
+  [context]
+  (if-let [cache (cache/context->cache context urs-cache-key)]
+    (cache/get-value cache :cmr (fn [] (get-bearer-token-fn context)))
+    (get-bearer-token-fn context)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Request functions
+
 (defn- request-with-auth
   "Retrieve CMR URS authentication info and submit request."
   [context request]
@@ -69,7 +94,7 @@
   "Returns URS user info associated with a launchpad token"
   [context token]
   (let [{:keys [status body]} (request-with-auth context {:url-fn #(launchpad-validation-url %)
-                                                          :method :post :raw? true 
+                                                          :method :post :raw? true
                                                           :http-options {:form-params {:token token}}})]
     (when-not (= 200 status)
       (error (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d].
@@ -78,7 +103,7 @@
        :unauthorized
        (format "Cannot get info for Launchpad token (partially redacted) [%s] in URS. Failed with status code [%d]."
                (common-util/scrub-token token) status)))
-    (:uid body)))
+    (select-keys body [:lp_token_expires_in :uid])))
 
 (defn user-exists?
   "Returns true if the given user exists in URS"
@@ -159,7 +184,7 @@
  (login context "notexist" "foopass")
  (login context "notexist" "")
  (login context "notexist" nil)
- 
+
  ;; when REPL launched with non-local connection configs
  (def context
    {:system (config/system-with-connections {} [:urs])})

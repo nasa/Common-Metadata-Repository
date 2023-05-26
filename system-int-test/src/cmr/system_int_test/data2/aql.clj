@@ -52,8 +52,7 @@
   ([range-value]
    (generate-range-element :range range-value))
   ([range-elem-name [min-val max-val]]
-   (let [options (-> {:lower min-val :upper max-val}
-                     u/remove-nil-keys)]
+   (let [options (u/remove-nil-keys {:lower min-val :upper max-val})]
      (x/element range-elem-name options))))
 
 (defn- generate-keyword-element
@@ -131,7 +130,7 @@
   "Returns the two d coordinate element for the given index and coordinate"
   [idx coord]
   (let [elem-key (keyword (str "coordinate" idx))
-        coord (if coord coord "")]
+        coord (or coord "")]
     (if (sequential? coord)
       (x/element elem-key {}
                  (generate-range-element :range coord))
@@ -280,4 +279,3 @@
                                    (x/element condition-elem-name {}
                                               (generate-element condition)))
                                  conditions))))))
-

@@ -81,46 +81,6 @@ function install_local_spatial_plugin () {
   unzip cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip)
 }
 
-function mvn_oralib_install () {
-    JAR=$1
-    ARTIFACT_ID=$2
-
-    mvn install:install-file \
-        -Dfile=$JAR \
-        -DartifactId=$ARTIFACT_ID \
-        -Dversion=$ORACLE_VERSION \
-        -DgroupId=$ORACLE_GROUP_ID \
-        -Dpackaging=jar \
-        -DcreateChecksum=true
-}
-
-function install_oracle_libs () {
-    LIB_DIR=$CMR_DIR/oracle-lib/support
-    EXIT=false
-    for JAR in $LIB_DIR/ojdbc8.jar $LIB_DIR/ons.jar $LIB_DIR/ucp.jar
-    do
-        if ! [ -e "$JAR" ] ; then
-            echo
-            required_file_not_found $JAR
-            EXIT=true
-        fi
-    done
-    if [ "$EXIT" = "true" ]; then
-        echo
-        echo "One or more of the required Oracle library JAR files was not"
-        echo "found. Be sure to review the instructions in the following"
-        echo "location, and then try again:"
-        echo
-        echo "    $CMR_DIR/oracle-lib/README.md"
-        echo
-        exit 127
-    fi
-    echo "Installing Oracle jars into local maven repository ..."
-    mvn_oralib_install $LIB_DIR/ojdbc8.jar ojdbc8 $ORACLE_VERSION
-    mvn_oralib_install $LIB_DIR/ons.jar ons $ORACLE_VERSION
-    mvn_oralib_install $LIB_DIR/ucp.jar ucp $ORACLE_VERSION
-}
-
 function install_orbits_gems () {
     # Orbit gems are only a test time dependency so the library doesn't need
     # to be reinstalled.

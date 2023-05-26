@@ -47,17 +47,17 @@
                            [org.clojure/clojure "1.10.0"]
                            [org.clojure/tools.reader "1.3.2"]
                            [ring/ring-codec "1.1.3"]
-                           [ring/ring-core "1.9.2"]
+                           [ring/ring-core "1.9.6"]
                            [ring/ring-json "0.5.1"]]
                          project-dependencies)
-  :plugins [[lein-exec "0.3.7"]
-            [lein-shell "0.5.0"]
-            [test2junit "1.3.3"]]
+  :plugins [[lein-modules "0.3.11"]
+            [lein-exec "0.3.7"]
+            [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
   :test-paths ["test" "int-test"]
-  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.1.1"]]
+  :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:exclusions [[org.clojure/tools.nrepl]]
@@ -101,8 +101,6 @@
             ;; Prints out documentation on configuration environment variables.
             "env-config-docs" ["exec" "-ep" "(do (use 'cmr.common.config) (print-all-configs-docs))"]
             "create-checkouts" ~create-checkouts-commands
-            ;; Alias to test2junit for consistency with lein-test-out.
-            "test-out" ["test2junit"]
 
             ;; Kaocha test aliases
             ;; refer to tests.edn for test configuration

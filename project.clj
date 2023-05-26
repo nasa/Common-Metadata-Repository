@@ -15,7 +15,7 @@
 (defproject nasa-cmr/cmr "0.1.0-SNAPSHOT"
   :description "Top level project to support all CMR libraries and applications."
   :plugins [[lein-modules "0.3.11"]
-            [lein-shell "0.4.0"]]
+            [lein-shell "0.5.0"]]
   :profiles {:uberjar {:modules {:dirs ["access-control-app"
                                         "bootstrap-app"
                                         "indexer-app"
@@ -27,6 +27,38 @@
                                         "virtual-product-app"
                                         "es-spatial-plugin"
                                         "dev-system"]}}}
+  :modules {:dirs [;; Libraries and Resources
+                   "acl-lib"
+                   "common-app-lib"
+                   "common-lib"
+                   "elastic-utils-lib"
+                   "es-spatial-plugin"
+                   "message-queue-lib"
+                   "oracle-lib"
+                   "orbits-lib"
+                   "redis-utils-lib"
+                   "schema-validation-lib"
+                   "schemas"
+                   "site-templates"
+                   "spatial-lib"
+                   "system-int-test"
+                   "transmit-lib"
+                   "umm-lib"
+                   "umm-spec-lib"
+
+                   ;; Services
+                   "access-control-app"
+                   "bootstrap-app"
+                   "indexer-app"
+                   "ingest-app"
+                   "metadata-db-app"
+                   "mock-echo-app"
+                   "search-app"
+                   "virtual-product-app"
+
+                   ;; Related apps
+                   "dev-system"
+                   "search-relevancy-test"]}
   :aliases {"kibit"
             ["modules" "kibit"]
             "eastwood"

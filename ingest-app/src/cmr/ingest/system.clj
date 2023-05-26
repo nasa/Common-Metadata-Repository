@@ -28,7 +28,9 @@
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.oracle.connection :as oracle]
-   [cmr.transmit.config :as transmit-config]))
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
+   [cmr.transmit.urs :as urs]))
 
 (def ^:private component-order
   "Defines the order to start the components."
@@ -110,7 +112,9 @@
                        kf/kms-cache-key (kf/create-kms-cache)
                        common-health/health-cache-key (common-health/create-health-cache)
                        common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
-                       humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache)}
+                       humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache)
+                       launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
+                       urs/urs-cache-key (urs/create-urs-cache)}
               :public-conf (public-conf)
               :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
      (transmit-config/system-with-connections

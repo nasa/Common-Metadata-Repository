@@ -17,23 +17,24 @@
     [cmr.umm-spec.util :as u]))
 
 (def sample-umm-var
-  (-> {:Name "A newfangled, brand-new, immensely longer variable name, much larger than the old name so we can be sure that everything works as expected."
-       :LongName "A long UMM-Var name"
-       :Definition "Defines the variable"
-       :Units "m"
-       :DataType "float32"
-       :Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land" :Size 3 :Type "OTHER"})]
-       :Sets [(umm-v/map->SetType {:Name "Data_Fields" :Type "Science" :Size 2 :Index 2})]
-       :Scale 1.0
-       :Offset 0.0
-       :FillValues [(umm-v/map->FillValueType {:Value -9999.0, :Type "SCIENCE_FILLVALUE"})]
-       :VariableType "COORDINATE"
-       :VariableSubType "LONGITUDE"
-       :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
-                          {:Category "sk-A"
-                           :Topic "sk-B"
-                           :Term "sk-C"})]}
-      (m-spec/update-version :variable ver/current-variable-version)))
+  (m-spec/update-version
+   {:Name "A newfangled, brand-new, immensely longer variable name, much larger than the old name so we can be sure that everything works as expected."
+    :LongName "A long UMM-Var name"
+    :Definition "Defines the variable"
+    :Units "m"
+    :DataType "float32"
+    :Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land" :Size 3 :Type "OTHER"})]
+    :Sets [(umm-v/map->SetType {:Name "Data_Fields" :Type "Science" :Size 2 :Index 2})]
+    :Scale 1.0
+    :Offset 0.0
+    :FillValues [(umm-v/map->FillValueType {:Value -9999.0, :Type "SCIENCE_FILLVALUE"})]
+    :VariableType "COORDINATE"
+    :VariableSubType "LONGITUDE"
+    :ScienceKeywords [(umm-cmn/map->ScienceKeywordType
+                       {:Category "sk-A"
+                        :Topic "sk-B"
+                        :Term "sk-C"})]}
+   :variable ver/current-variable-version))
 
 (defn variable
   "Returns a UmmVar from the given attribute map."

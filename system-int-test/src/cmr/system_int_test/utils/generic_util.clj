@@ -34,13 +34,13 @@
                    {"Accept" "application/json"
                     transmit-config/token-header token}
                    {"Accept" "application/json"})]
-     (-> {:method method
-          :url (url-helper/ingest-generic-crud-url concept-type provider-id native-id)
-          :connection-manager (sys/conn-mgr)
-          :body (when document (json/generate-string document))
-          :throw-exceptions false
-          :headers headers}
-         (client/request)))))
+     (client/request
+      {:method method
+       :url (url-helper/ingest-generic-crud-url concept-type provider-id native-id)
+       :connection-manager (sys/conn-mgr)
+       :body (when document (json/generate-string document))
+       :throw-exceptions false
+       :headers headers}))))
 
 (defn ingest-generic-document
   "A wrapper function for generic-request, and returns the concept ingested."

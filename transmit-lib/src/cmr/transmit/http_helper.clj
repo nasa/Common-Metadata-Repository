@@ -49,6 +49,7 @@
   [{:keys [status body] :as resp}]
   (cond
     (<= 200 status 299) body
+    (= status 401) (errors/throw-service-errors :unauthorized (:errors body))
     (= status 404) nil
     :else (errors/internal-error!
             (format "Received unexpected status code %s with response %s"

@@ -1,5 +1,5 @@
 (ns cmr.search.test.services.parameter-converters.shapefile
-  (:require 
+  (:require
     [clj-time.core :as t]
     [clojure.java.io :as io]
     [clojure.test :refer :all]
@@ -78,9 +78,9 @@
       (catch Exception e
         (is (= "Incomplete shapefile: missing .shp file"
                (.getMessage e)))))))
-               
 
-;; See https://epsg.io/transform and https://spatialreference.org/ for test cases and independently 
+
+;; See https://epsg.io/transform and https://spatialreference.org/ for test cases and independently
 ;; verified transform values
 
 (deftest transform-crs
@@ -89,13 +89,13 @@
         ^Point point (.createPoint geometry-factory coord)]
 
     (testing "failure case - World Equidistant Cylindrical (Sphere)"
-      (let [crs (CRS/decode "EPSG:3786" true)] 
+      (let [crs (CRS/decode "EPSG:3786" true)]
         (try
           (shapefile/transform-to-epsg-4326 point crs)
           (catch Exception e
-            (is (= (.getMessage e) 
+            (is (= (.getMessage e)
                  "Cannot transform source CRS [EPSG:World Equidistant Cylindrical (Sphere)] to WGS 84"))))))
-          
+
     (testing "successful cases"
       (are3 [crs-code force-lon-first coords]
         (let [crs (CRS/decode crs-code force-lon-first)
@@ -103,12 +103,12 @@
               x (.getX transformed-point)
               y (.getY transformed-point)]
           (is (= coords [x y])))
-        
+
         "Pseudo Mercator"
         "EPSG:3857" true [8.983152841195215E-5 2.874608909118022E-4]
-        
+
         "Arctic"
-        "EPSG:6125" false [-90.0927568294979 -64.17838193594663]
-        
+        "EPSG:6125" false [-90.09275682949793 -64.17838193594662]
+
         "UTM ZONE 11N"
         "EPSG:2955" false [-121.48866759617566 2.8851809782082726E-4]))))

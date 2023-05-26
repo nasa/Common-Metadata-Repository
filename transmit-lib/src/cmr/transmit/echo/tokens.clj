@@ -14,6 +14,7 @@
    [cmr.common.util :as common-util]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.echo.rest :as r]
+   [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
    [cmr.transmit.urs :as urs]))
 
 (defn login
@@ -83,7 +84,7 @@
     401 (errors/throw-service-errors
          :unauthorized
          (let [errs (:errors (json/decode body true))]
-           (if (string/includes? (first errs) "Caught exception") 
+           (if (string/includes? (first errs) "Caught exception")
              [(format "Token %s is invalid" (common-util/scrub-token token))]
              errs)))
 
@@ -113,7 +114,7 @@
              (transmit-config/local-edl-verification))
       (verify-edl-token-locally token)
       (if (common-util/is-launchpad-token? token)
-        (urs/get-launchpad-user context token)
+        (:uid (launchpad-user-cache/get-launchpad-user context token))
         (let [[status parsed body] (r/rest-post context "/tokens/get_token_info"
                                                 {:headers {"Accept" mt/json
                                                            "Authorization" (transmit-config/echo-system-token)}

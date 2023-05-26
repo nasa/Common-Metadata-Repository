@@ -3,6 +3,7 @@
   (:require
     [clj-http.client :as client]
     [clojure.data.csv :as csv]
+    [clojure.data.xml :as x]
     [clojure.java.io :as io]
     [clojure.string :as str]
     [clojure.test :refer :all]
@@ -11,7 +12,6 @@
     [cmr.common.mime-types :as mt]
     [cmr.common.xml :as cx]
     [cmr.system-int-test.system :as s]
-    [cmr.system-int-test.utils.fast-xml :as fx]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
     [cmr.system-int-test.utils.url-helper :as url]
@@ -27,22 +27,9 @@
 
 (def context (lkt/setup-context-for-test))
 
-(def write-errors-to-file
-  true)
-
-(def CSV_FILENAME
-  "ops_umm_translation_errors.csv")
-
-(def CSV_HEADER
-  ["Provider Id" "Concept Id" "Entry Title" "Errors"])
-
 (def starting-page-num
   "The starting page-num to retrieve collections for the translation test."
   1)
-
-(def translation-search-page-size
-  "The page-size used to retrieve collections for the translation test."
-  100)
 
 (def validation-search-page-size
   "The page-size used to retrieve collections for the translation test."
@@ -90,33 +77,6 @@
     "C1214595389-SCIOPS" ;;Line 108 - cvc-datatype-valid.1.2.1: 'IPY  http://ipy.antarcticanz.govt.nz/projects/southern-victoria-land-geology/' is not a valid value for 'anyURI'.
     "C1214608487-SCIOPS" ;;Line 303 - cvc-datatype-valid.1.2.1: 'Scanned images: http://atlas.gc.ca/site/english/maps/archives' is not a valid value for 'anyURI'.
     "C1214603723-SCIOPS"}) ;;Line 132 - cvc-datatype-valid.1.2.1: '<http://sofia.usgs.gov/projects/workplans12/jem.html>' is not a valid value for 'anyURI'.
-
-    ;; The following collections failed ingest validation, but not xml schema validation.
-    ;; I have changed the validation from ingest validation to xml validation, so we don't
-    ;; need to skip them now.
-    ;; All these collections failed ingest validation due to discrepancy between umm-lib and
-    ;; umm-spec-lib. i.e. the iso-smap tiling is not supported in umm-lib. We have decided to push
-    ;; this off until later. It will become obsolete once we switch to umm-spec-lib for ingest
-    ;; validation. See CMR-1869.
-    ; "C4695156-LARC_ASDC"
-    ; "C5520300-LARC_ASDC"
-    ; "C7244490-LARC_ASDC"
-    ; "C1000000240-LARC_ASDC"
-    ; "C5511253-LARC_ASDC"
-    ; "C7146790-LARC_ASDC"
-    ; "C7271330-LARC_ASDC"
-    ; "C1000000260-LARC_ASDC"
-    ; "C5920490-LARC_ASDC"
-    ; "C5784291-LARC_ASDC"
-    ; "C7092790-LARC_ASDC"
-    ; "C4695163-LARC_ASDC"
-    ; "C5784292-LARC_ASDC"
-    ; "C7299610-LARC_ASDC"
-    ; "C1000000300-LARC_ASDC"
-    ; "C5862870-LARC_ASDC"
-    ; "C5784310-LARC_ASDC"
-
-
 
 (def valid-formats
   "Valid metadata formats that is supported by CMR."
@@ -249,7 +209,7 @@
                               {:query-params {:concept-id concept-id}
                                :connection-manager (s/conn-mgr)})
          body (:body response)
-         parsed (fx/parse-str body)
+         parsed (x/parse-str body)
          metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
                      (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
          result (first (cx/elements-at-path parsed [:result]))
@@ -270,7 +230,7 @@
                                                :page_num page-num}
                                 :connection-manager (s/conn-mgr)})
           body (:body response)
-          parsed (fx/parse-str body)
+          parsed (x/parse-str body)
           metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))]
       (map (fn [result metadata]
@@ -299,40 +259,12 @@
         (recur (+ page-num 1) all-results)
         all-results))))
 
-;; Comment out this test so that it will not be run as part of the build.
-#_(deftest ops-collections-translation
-   (testing "Translate OPS collections into various supported metadata formats and make sure they pass validation."
-     (loop [page-num starting-page-num]
-       (let [colls (get-collections translation-search-page-size page-num)]
-         (info "Translating collections on page-num: " page-num)
-         (doseq [coll colls]
-           (verify-translation-via-schema-validation coll))
-         ;; We will turn on ingest validation later when ingest is backed by umm-spec-lib
-         ; (verify-translation-via-ingest-validation coll))
-         (when (>= (count colls) translation-search-page-size)
-           (recur (+ page-num 1)))))
-     (info "Finished OPS collections translation.")))
-
 (defn- validation-result->row
   "Take a validation result and return a row formatted for CSV"
   [result]
   (let [{:keys [provider-id concept-id entry-title errors]} result
         error-string (str/join "; " errors)]
     [provider-id concept-id entry-title error-string]))
-
-#_(deftest ops-collections-validation
-   (testing "get-collections the current collections in ops against the current UMM schema"
-     (def results (get-ops-collections-umm-validation-errors))
-     (let [rows (cons CSV_HEADER
-                      (map validation-result->row (flatten results)))
-           string-writer (StringWriter.)]
-       (if write-errors-to-file
-         (with-open [out-file (io/writer CSV_FILENAME)]
-           (csv/write-csv out-file rows))
-         (do
-           (csv/write-csv string-writer rows)
-           (def error-csv (str string-writer)))))
-    (info "Finished OPS collections translation.")))
 
 (comment
  ;; Translate and validate a specific collection by concept-id

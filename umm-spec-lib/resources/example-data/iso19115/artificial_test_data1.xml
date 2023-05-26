@@ -883,6 +883,15 @@ Cite as: Forgy Coleman, C. and US DOC; NOAA; NESDIS; National Oceanographic Data
                      <gmd:MD_RestrictionCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
                    </gmd:useConstraints>
                    <gmd:otherConstraints>
+                      <gco:CharacterString>EULAIdentifier: IsoId1</gco:CharacterString>
+                   </gmd:otherConstraints>
+                   <gmd:otherConstraints>
+                      <gco:CharacterString>EULAIdentifier: IsoId2</gco:CharacterString>
+                   </gmd:otherConstraints>
+                   <gmd:otherConstraints>
+                      <gco:CharacterString>EULAIdentifier: IsoId3</gco:CharacterString>
+                   </gmd:otherConstraints>
+                   <gmd:otherConstraints>
                       <gco:CharacterString>licenseURL: https://www.nasa.examplelicenseurl.gov</gco:CharacterString>
                    </gmd:otherConstraints>
                    <gmd:otherConstraints>
@@ -898,6 +907,15 @@ Cite as: Forgy Coleman, C. and US DOC; NOAA; NESDIS; National Oceanographic Data
                    <gmd:useConstraints>
                      <gmd:MD_RestrictionCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#MD_RestrictionCode" codeListValue="otherRestrictions">otherRestrictions</gmd:MD_RestrictionCode>
                    </gmd:useConstraints>
+                   <gmd:otherConstraints>
+                      <gco:CharacterString>EULAIdentifier: IsoId4</gco:CharacterString>
+                   </gmd:otherConstraints>
+                   <gmd:otherConstraints>
+                      <gco:CharacterString>EULAIdentifier: IsoId5</gco:CharacterString>
+                   </gmd:otherConstraints>
+                   <gmd:otherConstraints>
+                      <gco:CharacterString>EULAIdentifier: IsoId6</gco:CharacterString>
+                   </gmd:otherConstraints>
                    <gmd:otherConstraints>
                       <gco:CharacterString>LicenseUrl: https://www.nasa.examplelicenseurl.gov2</gco:CharacterString>
                    </gmd:otherConstraints>
