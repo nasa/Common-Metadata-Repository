@@ -180,7 +180,7 @@ The ingest application will publish messages for the indexer application to cons
 
 ##### Caught Error in the Indexer
 
-If an error occurs in the indexer either because Elasticsearch is unavailable or an unexpected error occurs during indexing CMR team will catch that error. The message will be placed on a Wait Queue as described in the message-queue-lib README. CMR team will use an exponential backoff to retry after a set period of time. After the message has been successfully queued on the wait queue the indexer will acknowledge the message.
+If an error occurs in the indexer either because Elasticsearch is unavailable or an unexpected error occurs during indexing the CMR team will catch that error. The message will be placed on a Wait Queue as described in the message-queue-lib README. The CMR team will use an exponential backoff to retry after a set period of time. After the message has been successfully queued on the wait queue the indexer will acknowledge the message.
 
 ##### Uncaught Error in the Indexer
 
@@ -188,7 +188,7 @@ An uncaught error such as indexer dying or running out of memory will be handled
 
 ##### Alerts
 
-The indexer has a background job that monitors the RabbitMQ message queue size and logs it. If the message queue size exceeds the configured size (CMR_INDEXER_WARN_QUEUE_SIZE) CMR team will log extra information that splunk can detect. CMR team will add a splunk alert to look for the log message indicating the queue size has exceeded threshold and email CMR Operations.
+The indexer has a background job that monitors the RabbitMQ message queue size and logs it. If the message queue size exceeds the configured size (CMR_INDEXER_WARN_QUEUE_SIZE) the CMR team will log extra information that splunk can detect. The CMR team will add a splunk alert to look for the log message indicating the queue size has exceeded threshold and email CMR Operations.
 
 ## Sample outputs
 

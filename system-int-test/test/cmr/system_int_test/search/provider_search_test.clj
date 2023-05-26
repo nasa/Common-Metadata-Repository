@@ -1,12 +1,10 @@
 (ns cmr.system-int-test.search.provider-search-test
   "Integration tests for providers search"
   (:require
-   [cheshire.core :as json]
    [clojure.walk :as walk]
    [clojure.test :refer :all]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]
-   [cmr.metadata-db.data.providers :as providers]))
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"

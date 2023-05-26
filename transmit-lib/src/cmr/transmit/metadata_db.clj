@@ -411,7 +411,7 @@
 
 (defn get-all-providers
   "Returns the list of provider ids configured in the metadata db, including
-   the metadata for each given provider by passing meta argument to metadatadb app"
+  the metadata for each given provider by passing meta argument to metadatadb app"
   [context]
   (let [request-url (fn [conn] (str (conn/root-url conn) "/providers"))]
     ;; Using http/helper pass "meta" arg to retrieve provider metadata

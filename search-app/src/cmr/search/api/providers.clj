@@ -54,8 +54,8 @@
         response-body (second response)
         hits (count response-body)
         provider-metadata (-> response-body
-                     (as-> body (map :metadata body))
-                     json/generate-string)
+                              (as-> body (map :metadata body))
+                              json/generate-string)
         new-response {}]
     (assoc new-response :hits hits :took time-taken :items (json/parse-string provider-metadata true))))
 
@@ -68,10 +68,10 @@
       response-body (second response)
       hits 1
       provider-metadata (-> response-body
-                   :body
-                   (json/parse-string true)
-                   (:metadata)
-                   json/generate-string)
+                            :body 
+                            (json/parse-string true)
+                            (:metadata)
+                            json/generate-string)
       new-response {}]
   (if (not= (:status response-body) 200)
         (json/parse-string (:body response-body) true)
