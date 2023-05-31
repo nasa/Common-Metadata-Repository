@@ -192,19 +192,19 @@
                                    providers
                                    (assoc params :provider-id (map :provider-id providers)))
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)
-        concept-ids-revision-ids (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        concept-ids-revision-ids (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                    (j/query db (gen-find-concepts-in-table-sql concept-type table [:provider_id :concept_id :revision_id] params)))
-        oracle-results (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        oracle-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                          (util/time-execution
                           (j/with-db-transaction
                             [conn db]
                             (doall
                              (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
                                    (su/query conn stmt))))))
-        efs-results (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        efs-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                       (util/time-execution
                        (doall (efs/get-concepts-small-table concept-type (map sh/efs-concept-helper concept-ids-revision-ids)))))
-        dynamo-results (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                          (util/time-execution
                           ()))]
     (when efs-results
@@ -215,7 +215,7 @@
     (when dynamo-results
       (info "Runtime of DynamoDB find-concepts-in-table(small-table): " (first dynamo-results) " ms."))
     (if oracle-results
-      (if (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+      (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (map (fn [oracle-concept]
                (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-results)))))
              (second oracle-results))
@@ -241,9 +241,9 @@
                             (get-in association-concept-type->generic-association [concept-type :association_type])))
                  params)
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)
-        concept-ids-revision-ids (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        concept-ids-revision-ids (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                    (j/query db (gen-find-concepts-in-table-sql concept-type table [:concept_id :revision_id] params)))
-        oracle-results (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        oracle-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                          (util/time-execution
                           (j/with-db-transaction
                             [conn db]
@@ -255,10 +255,10 @@
                                                                           (:provider-id (first providers)))
                                                                       result))
                                          (su/query conn stmt))))))
-        efs-results (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        efs-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                       (util/time-execution
                        (doall (efs/get-concepts providers concept-type (map sh/efs-concept-helper concept-ids-revision-ids)))))
-        dynamo-results (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                          (util/time-execution
                           ()))]
     (when efs-results
@@ -267,7 +267,7 @@
     (when oracle-results
       (info "Runtime of Oracle find-concepts-in-table: " (first oracle-results) " ms."))
     (if oracle-results
-      (if (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+      (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (map (fn [oracle-concept]
                (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-results)))))
              (second oracle-results))
@@ -315,14 +315,14 @@
                                                                   (from table)
                                                                   (where (cons `and conditions))))
                        concept-revision-batch-result (su/query db concept-revision-id-stmt)
-                       oracle-results (when (not (= "dynamo-only" (dynamo-config/dynamo-toggle)))
+                       oracle-results (when (not= "dynamo-only" (dynamo-config/dynamo-toggle)))
                                         (util/time-execution
                                          (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
                                                batch-result)))
-                       efs-results (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+                       efs-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle)))
                                     (util/time-execution
                                      (doall (efs/get-concepts provider concept-type (map sh/efs-concept-helper concept-revision-batch-result)))))
-                       dynamo-results (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+                       dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle)))
                                         (util/time-execution
                                          ()))]
                    (when efs-results
@@ -333,7 +333,7 @@
                    (when dynamo-results
                      (info "Runtime of DynamoDB find-concepts-in-batches(find-batch): " (first dynamo-results) " ms."))
                    (if oracle-results
-                     (if (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+                     (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                        (map (fn [oracle-concept]
                               (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-results)))))
                             (second oracle-results))

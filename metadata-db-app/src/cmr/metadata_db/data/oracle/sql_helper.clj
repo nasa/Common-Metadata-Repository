@@ -77,17 +77,17 @@
                  (dissoc params :concept-type :provider-id))
         table (ct/get-table-name provider concept-type)
         get-stmt (gen-concept-revision-id-sql-by-params table params)
-        get-values (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        get-values (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                      (j/query db get-stmt))
         stmt (su/build (delete table
                                (where (find-params->sql-clause params))))
-        efs-force-delete (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        efs-force-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                            (util/time-execution
                             (efs/delete-concepts provider concept-type (map efs-concept-helper get-values))))
-        oracle-force-delete (when (not (= "dynamo-only" (dynamo-config/dynamo-toggle)))
+        oracle-force-delete (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                               (util/time-execution
                                (j/execute! db stmt)))
-        dynamo-force-delete (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        dynamo-force-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                               (util/time-execution
                                ()))]
     (when efs-force-delete

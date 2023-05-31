@@ -365,10 +365,10 @@
 
 (defn get-concept
   ([db concept-type provider concept-id]
-   (let [efs-concept-get (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+   (let [efs-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                            (util/time-execution
                             (efs/get-concept provider concept-type concept-id)))
-         oracle-concept-get (when (not (= "dynamo-only" (dynamo-config/dynamo-toggle)))
+         oracle-concept-get (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                               (util/time-execution
                                (j/with-db-transaction
                                  [conn db]
@@ -378,26 +378,26 @@
                                                                                      (from table)
                                                                                      (where `(= :concept-id ~concept-id))
                                                                                      (order-by (desc :revision-id)))))))))
-         dynamo-concept-get (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+         dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                               (util/time-execution
                                ()))]
-     (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+     (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
        (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.\nValue gotten from EFS get-concept: " (second efs-concept-get)))
-     (when (not (= "dynamo-only" (dynamo-config/dynamo-toggle)))
+     (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
        (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms."))
-     (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+     (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
        (info "Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms.\nValue gotten from DynamoDB get-concept: " (second dynamo-concept-get)))
      (if oracle-concept-get
-       (if (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+       (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (assoc (second oracle-concept-get) :metadata (:metadata (second efs-concept-get)))
          (second oracle-concept-get))
        (second dynamo-concept-get))))
   ([db concept-type provider concept-id revision-id]
    (if revision-id
      (let [table (tables/get-table-name provider concept-type)
-           efs-concept-get (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+           efs-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                              (util/time-execution (efs/get-concept provider concept-type concept-id revision-id)))
-           oracle-concept-get (when (not (= "dynamo-only" (dynamo-config/dynamo-toggle)))
+           oracle-concept-get (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
                                  (j/with-db-transaction
                                    [conn db]
@@ -406,17 +406,17 @@
                                                                                      (from table)
                                                                                      (where `(and (= :concept-id ~concept-id)
                                                                                                   (= :revision-id ~revision-id)))))))))
-           dynamo-concept-get (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+           dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
                                  ()))]
-       (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms."))
-       (when (not (= "dynamo-only" (dynamo-config/dynamo-toggle)))
+       (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
          (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms."))
-       (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (info "Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms."))
        (if oracle-concept-get
-         (if (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+         (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
            (assoc (second oracle-concept-get) :metadata (:metadata (second efs-concept-get)))
            (second oracle-concept-get))
          (second dynamo-concept-get)))
@@ -425,10 +425,10 @@
 (defn get-concepts
   [db concept-type provider concept-id-revision-id-tuples]
   (if (pos? (count concept-id-revision-id-tuples))
-    (let [efs-concepts-get (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+    (let [efs-concepts-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                              (util/time-execution
                               (doall (efs/get-concepts provider concept-type concept-id-revision-id-tuples))))
-          oracle-concepts-get (when (not (= "dynamo-only" (dynamo-config/dynamo-toggle)))
+          oracle-concepts-get (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
                                  (j/with-db-transaction
                                    [conn db]
@@ -445,17 +445,17 @@
                                                                              (= :c.revision-id :t.revision-id)))))]
                                      (doall (map (partial db-result->concept-map concept-type conn provider-id)
                                                  (su/query conn stmt)))))))
-          dynamo-concepts-get (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+          dynamo-concepts-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
                                  ()))]
-      (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms."))
-      (when (not (= "dynamo-only" (dynamo-config/dynamo-toggle)))
+      (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
         (info "Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms."))
-      (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (info "Runtime of DynamoDB get-concepts: " (first dynamo-concepts-get) " ms."))
       (if oracle-concepts-get
-        (if (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
           (map (fn [oracle-concept]
                  (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-concepts-get)))))
                (second oracle-concepts-get))
@@ -505,14 +505,14 @@
                            seq-name
                            (string/join "," (repeat (count values) "?")))]
           (trace "Executing" stmt "with values" (pr-str values))
-          (when (not (= "dynamo-only" (dynamo-config/dynamo-toggle)))
+          (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
             (info "Runtime of Oracle save-concept: " (first (util/time-execution
                                                              (j/db-do-prepared db stmt values))) " ms."))
-          (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+          (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
             (info "Runtime of DynamoDB save-concept: " (first (util/time-execution
                                                                ()))))
           (when (and
-                 (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+                 (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                  (= false (:deleted concept)))
             (info "Runtime of EFS save-concept: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))
           (after-save conn provider concept)
@@ -530,13 +530,13 @@
         stmt (su/build (delete table
                                (where `(and (= :concept-id ~concept-id)
                                             (= :revision-id ~revision-id)))))
-        efs-delete (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        efs-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                      (util/time-execution
                       (efs/delete-concept provider concept-type concept-id revision-id)))
-        oracle-delete (when (not (= "dynamo-only" (dynamo-config/dynamo-toggle)))
+        oracle-delete (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                         (util/time-execution
                          (j/execute! this stmt)))
-        dynamo-delete (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+        dynamo-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                         (util/time-execution
                          ()))]
     (when efs-delete
@@ -566,13 +566,13 @@
                            tmp.concept_id = t1.concept_id AND
                            tmp.revision_id = t1.revision_id)"
                           table)]
-            efs-delete (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+            efs-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                          (util/time-execution
                           (efs/delete-concepts provider concept-type concept-id-revision-id-tuples)))
-            oracle-delete (when (not (= "dynamo-only" (dynamo-config/dynamo-toggle)))
+            oracle-delete (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                             (util/time-execution
                              (j/execute! conn stmt)))
-            dynamo-delete (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+            dynamo-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                             (util/time-execution
                              ()))]
         (when efs-delete
