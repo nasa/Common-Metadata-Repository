@@ -134,7 +134,10 @@
           "legacy/parse-concept time: " t1
           "reduce w/ legacy/generate-metadata time: " t2
           "concept-mime-type: " concept-mime-type
-          "num-concepts: " (:num-concepts concept))
+          "parent request num-concepts: " (:num-concepts concept)
+          "target-formats: " target-formats
+          "provider: " (:provider-id concept)
+          "metadata length: " (count metadata))
     result))
 
 (defmethod transform-with-strategy :granule-umm-g-to-iso
@@ -170,7 +173,11 @@
           "time: " t
           "concept-mime-type: " concept-mime-type
           "concept-type: " concept-type
-          "num-concepts: " (:num-concepts concept))
+          "parent request num-concepts: " (:num-concepts concept)
+          "target-formats: " target-formats
+          "source version: " source-version
+          "provider: " (:provider-id concept)
+          "metadata length: " (count metadata))
     result))
 
 (defn transform-to-multiple-formats
