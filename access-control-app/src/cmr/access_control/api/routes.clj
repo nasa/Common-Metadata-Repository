@@ -173,6 +173,9 @@
 (defn- get-current-sids
   "Returns a Ring response with the current user's sids"
   [request-context params]
+  (print "p params:" params "\n")
+  (error "e params:" params "\n")
+  (def mypramas params)
   (pv/validate-current-sids-params params)
   (let [result (acl-service/get-current-sids request-context params)]
     {:status 200
@@ -380,8 +383,18 @@
       (context "/current-sids" []
         (OPTIONS "/" [] (common-routes/options-response))
 
-        (GET "/" {:keys [request-context params]}
-             (get-current-sids request-context params)))
+        (if (access-control-config/enable-sids-get)
+          (GET "/"
+               {:keys [request-context params]}
+               (do
+                 (error (format "client [%s] Using GET instead of POST when requesting current sids"
+                                (:client-id request-context)))
+                 (get-current-sids request-context params)))
+          {:status 404})
+
+        (POST "/"
+              {:keys [request-context body]}
+              (get-current-sids request-context (json/parse-string (slurp body) true))))
 
       (context "/s3-buckets" []
         (OPTIONS "/" [] (common-routes/options-response))

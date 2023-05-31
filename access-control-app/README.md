@@ -36,6 +36,15 @@ Update elasticsearch mappings to the latest version:
 
     curl -v -XPOST -H "Echo-Token: XXXX" http://localhost:3011/db-migrate
 
+## Searching for sids
+
+Searching for a user's sids:
+
+    curl -XPOST \
+        -H "Content-Type: application/json" \
+        -d '{"user-token": "XXXX"}' \
+        http://localhost:3011/current-sids
+
 ***
 
 ## License
