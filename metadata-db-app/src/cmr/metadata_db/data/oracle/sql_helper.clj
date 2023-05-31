@@ -8,6 +8,7 @@
    [cmr.common.log :refer [debug error info trace warn]]
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]]
+   [cmr.dynamo.config :as dynamo-config]
    [cmr.efs.config :as efs-config]
    [cmr.efs.connection :as efs]
    [cmr.common.util :as util])
@@ -76,20 +77,25 @@
                  (dissoc params :concept-type :provider-id))
         table (ct/get-table-name provider concept-type)
         get-stmt (gen-concept-revision-id-sql-by-params table params)
-        get-values (when (not (= "efs-off" (efs-config/efs-toggle)))
+        get-values (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
                      (j/query db get-stmt))
         stmt (su/build (delete table
                                (where (find-params->sql-clause params))))
-        efs-force-delete (when (not (= "efs-off" (efs-config/efs-toggle)))
+        efs-force-delete (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
                            (util/time-execution
                             (efs/delete-concepts provider concept-type (map efs-concept-helper get-values))))
-        oracle-force-delete (when (not (= "efs-only" (efs-config/efs-toggle)))
+        oracle-force-delete (when (not (= "dynamo-only" (dynamo-config/dynamo-toggle)))
                               (util/time-execution
-                               (j/execute! db stmt)))]
+                               (j/execute! db stmt)))
+        dynamo-force-delete (when (not (= "dynamo-off" (dynamo-config/dynamo-toggle)))
+                              (util/time-execution
+                               ()))]
     (when efs-force-delete
       (info "Runtime of EFS force-delete-concept-by-params: " (first efs-force-delete)))
     (when oracle-force-delete
       (info "Runtime of Oracle force-delete-concept-by-params: " (first oracle-force-delete)))
+    (when dynamo-force-delete
+      (info "Runtime of DynamoDB force-delete-concept-by-params: " (first dynamo-force-delete)))
     (if oracle-force-delete
       (second oracle-force-delete)
-      (second efs-force-delete))))
+      (second dynamo-force-delete))))
