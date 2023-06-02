@@ -20,7 +20,7 @@
 
    ;; The session-id to be used for subsequent scroll requests
    scroll-id
-   
+
    ;; The search-after value for search-after requests
    search-after
 
