@@ -382,11 +382,10 @@
                               (util/time-execution
                                ()))]
      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-       (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.\nValue gotten from EFS get-concept: " (second efs-concept-get)))
+       (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.\nValue gotten from EFS get-concept: " (second efs-concept-get))
+       (info "Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms.\nValue gotten from DynamoDB get-concept: " (second dynamo-concept-get)))
      (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
        (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms."))
-     (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-       (info "Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms.\nValue gotten from DynamoDB get-concept: " (second dynamo-concept-get)))
      (if oracle-concept-get
        (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (assoc (second oracle-concept-get) :metadata (:metadata (second efs-concept-get)))
@@ -410,11 +409,10 @@
                                 (util/time-execution
                                  ()))]
        (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-         (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms."))
+         (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
+         (info "Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms."))
        (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
          (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms."))
-       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-         (info "Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms."))
        (if oracle-concept-get
          (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
            (assoc (second oracle-concept-get) :metadata (:metadata (second efs-concept-get)))
@@ -449,11 +447,10 @@
                                 (util/time-execution
                                  ()))]
       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-        (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms."))
+        (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
+        (info "Runtime of DynamoDB get-concepts: " (first dynamo-concepts-get) " ms."))
       (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
         (info "Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms."))
-      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-        (info "Runtime of DynamoDB get-concepts: " (first dynamo-concepts-get) " ms."))
       (if oracle-concepts-get
         (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
           (map (fn [oracle-concept]
