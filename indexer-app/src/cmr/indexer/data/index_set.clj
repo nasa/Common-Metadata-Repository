@@ -483,6 +483,7 @@
           :associated-difs m/string-field-mapping
           :associated-difs-lowercase m/string-field-mapping
           :coordinate-system (m/not-indexed m/string-field-mapping)
+          :eula-identifiers (m/not-indexed m/string-field-mapping)
 
           ;; mappings added for opendata
           :insert-time (m/not-indexed m/string-field-mapping)
@@ -795,7 +796,7 @@
    :user-id (m/doc-values m/string-field-mapping)
    :revision-date (m/doc-values m/date-field-mapping)
    :metadata-format (m/doc-values m/string-field-mapping)
-   ;; associations with the service stored as EDN gzipped and base64 encoded for retrieving purpose 
+   ;; associations with the service stored as EDN gzipped and base64 encoded for retrieving purpose
    :associations-gzip-b64 m/binary-field-mapping})
 
 (defmapping tool-mapping :tool
@@ -876,78 +877,78 @@
    "
   [extra-granule-indexes]
   (let [set-of-indexes {:name "cmr-base-index-set"
-               :id index-set-id
-               :create-reason "indexer app requires this index set"
-               :collection {:indexes
-                            [;; This index contains the latest revision of each collection and
-                             ;; is used for normal searches.
-                             {:name "collections-v2"
-                              :settings collection-setting-v2}
-                             ;; This index contains all the revisions (including tombstones) and
-                             ;; is used for all-revisions searches.
-                             {:name "all-collection-revisions"
-                              :settings collection-setting-v1}]
-                            :mapping collection-mapping}
-               :deleted-granule {:indexes
-                                 [{:name "deleted_granules"
-                                   :settings deleted-granule-setting}]
-                                 :mapping deleted-granule-mapping}
-               :granule {:indexes
-                         (cons {:name "small_collections"
-                                :settings granule-settings-for-small-collections-index}
-                               (for [idx extra-granule-indexes]
-                                 {:name idx
-                                  :settings granule-settings-for-individual-indexes}))
-                         ;; This specifies the settings for new granule indexes that contain data for a single collection
-                         ;; This allows the index set application to know what settings to use when creating
-                         ;; a new granule index.
-                         :individual-index-settings granule-settings-for-individual-indexes
-                         :mapping granule-mapping}
-               :tag {:indexes
-                     [{:name "tags"
-                       :settings tag-setting}]
-                     :mapping tag-mapping}
-               :variable {:indexes
-                          [{:name "variables"
-                            :settings variable-setting}
-                           ;; This index contains all the revisions (including tombstones) and
-                           ;; is used for all-revisions searches.
-                           {:name "all-variable-revisions"
-                            :settings variable-setting}]
-                          :mapping variable-mapping}
-               :autocomplete {:indexes
-                              [{:name "autocomplete"
-                                :settings autocomplete-settings}]
-                              :mapping autocomplete-mapping}
-               :service {:indexes
-                         [{:name "services"
-                           :settings service-setting}
-                          ;; This index contains all the revisions (including tombstones) and
-                          ;; is used for all-revisions searches.
-                          {:name "all-service-revisions"
-                           :settings service-setting}]
-                         :mapping service-mapping}
-               :tool {:indexes
-                      [{:name "tools"
-                        :settings tool-setting}
-                       ;; This index contains all the revisions (including tombstones) and
-                       ;; is used for all-revisions searches.
-                       {:name "all-tool-revisions"
-                        :settings tool-setting}]
-                      :mapping tool-mapping}
-               :subscription {:indexes
-                              [{:name "subscriptions"
-                                :settings subscription-setting}
+                        :id index-set-id
+                        :create-reason "indexer app requires this index set"
+                        :collection {:indexes
+                                     [;; This index contains the latest revision of each collection and
+                                      ;; is used for normal searches.
+                                      {:name "collections-v2"
+                                       :settings collection-setting-v2}
+                                      ;; This index contains all the revisions (including tombstones) and
+                                      ;; is used for all-revisions searches.
+                                      {:name "all-collection-revisions"
+                                       :settings collection-setting-v1}]
+                                     :mapping collection-mapping}
+                        :deleted-granule {:indexes
+                                          [{:name "deleted_granules"
+                                            :settings deleted-granule-setting}]
+                                          :mapping deleted-granule-mapping}
+                        :granule {:indexes
+                                  (cons {:name "small_collections"
+                                         :settings granule-settings-for-small-collections-index}
+                                        (for [idx extra-granule-indexes]
+                                          {:name idx
+                                           :settings granule-settings-for-individual-indexes}))
+                                  ;; This specifies the settings for new granule indexes that contain data for a single collection
+                                  ;; This allows the index set application to know what settings to use when creating
+                                  ;; a new granule index.
+                                  :individual-index-settings granule-settings-for-individual-indexes
+                                  :mapping granule-mapping}
+                        :tag {:indexes
+                              [{:name "tags"
+                                :settings tag-setting}]
+                              :mapping tag-mapping}
+                        :variable {:indexes
+                                   [{:name "variables"
+                                     :settings variable-setting}
+                                    ;; This index contains all the revisions (including tombstones) and
+                                    ;; is used for all-revisions searches.
+                                    {:name "all-variable-revisions"
+                                     :settings variable-setting}]
+                                   :mapping variable-mapping}
+                        :autocomplete {:indexes
+                                       [{:name "autocomplete"
+                                         :settings autocomplete-settings}]
+                                       :mapping autocomplete-mapping}
+                        :service {:indexes
+                                  [{:name "services"
+                                    :settings service-setting}
+                                   ;; This index contains all the revisions (including tombstones) and
+                                   ;; is used for all-revisions searches.
+                                   {:name "all-service-revisions"
+                                    :settings service-setting}]
+                                  :mapping service-mapping}
+                        :tool {:indexes
+                               [{:name "tools"
+                                 :settings tool-setting}
                                 ;; This index contains all the revisions (including tombstones) and
                                 ;; is used for all-revisions searches.
-                               {:name "all-subscription-revisions"
-                                :settings subscription-setting}]
-                              :mapping subscription-mapping}}]
+                                {:name "all-tool-revisions"
+                                 :settings tool-setting}]
+                               :mapping tool-mapping}
+                        :subscription {:indexes
+                                       [{:name "subscriptions"
+                                         :settings subscription-setting}
+                                         ;; This index contains all the revisions (including tombstones) and
+                                         ;; is used for all-revisions searches.
+                                        {:name "all-subscription-revisions"
+                                         :settings subscription-setting}]
+                                       :mapping subscription-mapping}}]
 
                ;; merge into the set of indexes all the configured generic documents
-               {:index-set (reduce (fn [data addition] (merge data addition))
-                                   set-of-indexes
-                                   (index-set-gen/generic-mappings-generator))}))
+       {:index-set (reduce (fn [data addition] (merge data addition))
+                           set-of-indexes
+                           (index-set-gen/generic-mappings-generator))}))
 
 (defn index-set->extra-granule-indexes
   "Takes an index set and returns the extra granule indexes that are configured"
