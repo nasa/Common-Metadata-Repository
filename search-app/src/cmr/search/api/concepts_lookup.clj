@@ -54,6 +54,7 @@
               mt/xml
               mt/umm-json}
    :tool #{mt/any
+           mt/html
            mt/xml
            mt/umm-json}
    :subscription #{mt/any
@@ -114,9 +115,14 @@
           ;; XML means native in this case
           result-format (if (= result-format :xml) :native result-format)]
       (if (= :html result-format)
-        (core-api/search-response ctx
-                                  {:results (:body (pages/collection-page ctx concept-id))
-                                   :result-format :html})
+        (let [concept-type (concepts/concept-id->type concept-id)]
+          (if (= concept-type :tool)
+            (core-api/search-response ctx
+                                      {:results (:body (pages/tool-page ctx concept-id))
+                                       :result-format :html})
+            (core-api/search-response ctx
+                                      {:results (:body (pages/collection-page ctx concept-id))
+                                       :result-format :html})))
         (if revision-id
           (find-concept-by-concept-id* ctx result-format concept-id revision-id)
           (find-concept-by-concept-id* ctx result-format concept-id))))))
