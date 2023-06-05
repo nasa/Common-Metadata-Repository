@@ -380,7 +380,7 @@
                                                                                      (order-by (desc :revision-id)))))))))
          dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                               (util/time-execution
-                               ()))]
+                               ))]
      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
        (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.\nValue gotten from EFS get-concept: " (second efs-concept-get))
        (info "Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms.\nValue gotten from DynamoDB get-concept: " (second dynamo-concept-get)))
@@ -407,7 +407,7 @@
                                                                                                   (= :revision-id ~revision-id)))))))))
            dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
-                                 ()))]
+                                 ))]
        (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
          (info "Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms."))
@@ -445,7 +445,7 @@
                                                  (su/query conn stmt)))))))
           dynamo-concepts-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
-                                 ()))]
+                                 ))]
       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
         (info "Runtime of DynamoDB get-concepts: " (first dynamo-concepts-get) " ms."))
@@ -507,7 +507,7 @@
                                                              (j/db-do-prepared db stmt values))) " ms."))
           (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
             (info "Runtime of DynamoDB save-concept: " (first (util/time-execution
-                                                               ()))))
+                                                               ))))
           (when (and
                  (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                  (= false (:deleted concept)))
@@ -535,7 +535,7 @@
                          (j/execute! this stmt)))
         dynamo-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                         (util/time-execution
-                         ()))]
+                         ))]
     (when efs-delete
       (info "Runtime of EFS force-delete: " (first efs-delete) " ms."))
     (when oracle-delete
@@ -571,7 +571,7 @@
                              (j/execute! conn stmt)))
             dynamo-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                             (util/time-execution
-                             ()))]
+                             ))]
         (when efs-delete
           (info "Runtime of EFS force-delete-concepts: " (first efs-delete) " ms."))
         (when oracle-delete
