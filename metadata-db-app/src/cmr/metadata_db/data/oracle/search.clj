@@ -315,14 +315,14 @@
                                                                   (from table)
                                                                   (where (cons `and conditions))))
                        concept-revision-batch-result (su/query db concept-revision-id-stmt)
-                       oracle-results (when (not= "dynamo-only" (dynamo-config/dynamo-toggle)))
+                       oracle-results (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                                         (util/time-execution
                                          (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
                                                batch-result)))
-                       efs-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle)))
+                       efs-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                     (util/time-execution
                                      (doall (efs/get-concepts provider concept-type (map sh/efs-concept-helper concept-revision-batch-result)))))
-                       dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle)))
+                       dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                         (util/time-execution
                                          ()))]
                    (when efs-results
