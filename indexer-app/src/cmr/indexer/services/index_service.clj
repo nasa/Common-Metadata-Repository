@@ -445,7 +445,7 @@
 
 (defmulti index-concept
   "Index the given concept with the parsed umm record. Indexing tag association and variable
-   association concept indexes the associated collection conept."
+   association concept indexes the associated collection concept."
   (fn [context concept parsed-concept options]
     (:concept-type concept)))
 

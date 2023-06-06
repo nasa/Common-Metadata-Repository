@@ -28,6 +28,7 @@
 ;; The URLs returned by these functions have no trailing slash:
 (def get-access-control-url #(get-service-url % :access-control))
 (def get-echo-rest-url #(get-service-url % :echo-rest))
+(def get-edl-rest-url #(get-service-url % :edl-rest))
 
 (defn cache-dumpfile
   [system]
@@ -45,12 +46,24 @@
   [system]
   (* (get-in (get-cfg system) [:auth-caching :ttl :minutes]) ; minutes
      60 ; seconds
-     1000 ; milliseconds
-     ))
+     1000)) ; milliseconds
 
 (defn cache-type
   [system]
   (get-in (get-cfg system) [:auth-caching :type]))
+
+(defn get-jwt-public-key
+  [system]
+  (get-in (get-cfg system) [:auth-caching :jwt-public-key]))
+
+(defn get-edl-username
+  [system]
+  (get-in (get-cfg system) [:cmr :edl :username]))
+
+(defn get-edl-password
+  [system]
+  (get-in (get-cfg system) [:cmr :edl :password]))
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;   Component Lifecycle Implementation   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

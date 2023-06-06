@@ -406,6 +406,10 @@
   []
   (format "http://localhost:%s/provider_holdings" (transmit-config/search-port)))
 
+(defn search-provider-url
+  []
+  (format "http://localhost:%s/providers" (transmit-config/search-port)))
+
 (defn search-keywords-url
   "Returns the URL for retrieving controlled keywords."
   ([keyword-scheme]

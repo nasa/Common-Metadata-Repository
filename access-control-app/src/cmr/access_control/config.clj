@@ -46,6 +46,10 @@
   "Flag that indicates we allow crud on cmr groups."
   {:default true :type Boolean})
 
+(defconfig enable-sids-get
+  "Feature toggle to enable the GET verb for /current-sids - remove after all clients have been migrated"
+  {:default true :type Boolean})
+
 (defn queue-config
   "Returns the queue configuration for the application."
   []

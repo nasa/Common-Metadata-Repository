@@ -4,7 +4,7 @@
 
 (def error-code 403)
 (def no-permissions "You do not have permissions to access that resource.")
-(def token-required "An ECHO token is required to access this resource.")
+(def token-required "A valid token is required to access this resource.")
 
 (def status-map
   "This is a lookup data structure for how HTTP status/error codes map to CMR

@@ -132,13 +132,15 @@
   "Gets a list of the SIDs for the specified token (used for assigning permissions via ACLs)."
   [context user-token]
   (let [token (:token context)
-        headers (when token {config/token-header token})]
+        headers (-> token
+                    (when {config/token-header token})
+                    (as-> item (merge {:client-id "cmr-internal"
+                                       :content-type "application/json"} item)))
+        body (json/generate-string {:user-token user-token})]
     (h/request context :access-control
                {:url-fn current-sids-url
-                :method :get
-                :http-options {:query-params {:user-token user-token}
-                               :headers headers
-                               :accept :json}})))
+                :method :post
+                :http-options {:body body :headers headers :accept :json}})))
 
 ;;; ACL Functions
 

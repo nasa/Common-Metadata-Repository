@@ -22,6 +22,12 @@
   ([req field value]
    (assoc-in req [:headers field] value)))
 
+(defn add-basic-auth
+  ([user pass]
+   (add-basic-auth {} user pass))
+  ([req user pass]
+   (assoc req :basic-auth [user pass])))
+
 (defn add-accept
   ([value]
    (add-accept {} value))
