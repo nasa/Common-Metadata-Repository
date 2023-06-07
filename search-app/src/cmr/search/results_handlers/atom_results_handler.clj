@@ -71,7 +71,8 @@
                      "consortiums"
                      "service-features-gzip-b64"
                      "associations-gzip-b64"
-                     "_score"]
+                     "_score"
+                     "eula-identifiers"]
         atom-fields (if (contains? (set (:result-features query)) :tags)
                       (conj atom-fields trf/stored-tags-field)
                       atom-fields)]
@@ -168,6 +169,7 @@
           cloud-hosted :cloud-hosted
           platforms :platforms
           consortiums :consortium
+          eula-identifiers :eula-identifiers
           service-features-gzip-b64 :service-features-gzip-b64
           associations-gzip-b64 :associations-gzip-b64} :_source} elastic-result
         start-date (acl-rhh/parse-elastic-datetime start-date)
@@ -224,7 +226,8 @@
             :service-features (gzip-b64-str->service-features service-features-gzip-b64)
             :associations (some-> associations-gzip-b64
                                   util/gzip-base64->string
-                                  edn/read-string)}
+                                  edn/read-string)
+            :eula-identifiers eula-identifiers}
            (acl-rhh/parse-elastic-item :collection elastic-result))))
 
 (defn- granule-elastic-result->query-result-item

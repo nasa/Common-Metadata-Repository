@@ -108,7 +108,7 @@
                 shapes points boxes polygons lines granule-count has-granules has-granules-or-cwic
                 has-variables has-formats has-transforms has-spatial-subsetting
                 has-temporal-subsetting cloud-hosted orbit-parameters highlighted-summary-snippets
-                organizations service-features associations consortiums]} json-entry]
+                organizations service-features associations consortiums eula-identifiers]} json-entry]
     (util/remove-nil-keys
       {:id id
        :consortiums consortiums
@@ -147,7 +147,8 @@
        :tags (when (seq tags) tags)
        :service-features service-features
        :associations (when (seq associations)
-                       (util/map-values set associations))})))
+                       (util/map-values set associations))
+       :eula_identifiers eula-identifiers})))
 
 (defmethod json-entry->entry :granule
   [concept-type json-entry]

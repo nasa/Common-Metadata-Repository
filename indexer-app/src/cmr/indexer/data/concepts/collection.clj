@@ -502,7 +502,8 @@
             :horizontal-data-resolutions {:value horizontal-data-resolutions
                                           :priority 0}
 
-            :s3-bucket-and-object-prefix-names s3-bucket-and-object-prefix-names}
+            :s3-bucket-and-object-prefix-names s3-bucket-and-object-prefix-names
+            :eula-identifiers (get-in collection [:UseConstraints :EULAIdentifiers])}
 
            (variable-service-tool-associations->elastic-docs
             context variable-associations service-associations tool-associations)
