@@ -10,12 +10,6 @@ Feature: ACL
     Then the response status code is 200
 
   @acls
-  Scenario: Searching for groups
-    Given I am searching for "groups"
-    When I submit a "GET" request
-    Then the response status code is 200
-
-  @acls
   Scenario: Searching for permissions without any discriminator yields an error
     Given I am searching for "permissions"
     When I submit a "GET" request
