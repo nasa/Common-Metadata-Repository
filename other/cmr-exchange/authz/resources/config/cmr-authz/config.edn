@@ -1,11 +1,5 @@
 {:auth-caching
- {:jwt-public-key "{
-      \"kty\": \"RSA\",
-      \"n\": \"3LopSyeoSZZGorSPjk4mMbR0ybVSLvfrONGSGXCNXE6ScX9Y1QC_zV8fVeh4XO8tYDi9CgzqK3Nhjsd5KI0ZzTI8Lf52tyr7OzebZXGZpMvyvdp59wlbPL4WFkIHvWFpgypSrTQIRENKaYW_yQB9srq6JpUx14aRG5TpiBuPqgnGM-qBqPvLq5LX9kVhqbV46TuZd9uPn_gISut7A7K3Y5S24DZd3ebxXPap1cn6-mIY30QG5oYmVlMZxdVPhnTzjj4ZNsfyKSRKq3F_UapEr4ynhr-ONgj8HyozyFqTpUn3o8pKAMVaOEfZmRlqb3jnQknbcsJ9fNxmWUUZr_PysQ\",
-      \"e\": \"AQAB\",
-      \"kid\": \"edljwtpubkey_sit\"
-}"
-   :init {}
+ {:init {}
    :ttl
     {:minutes 60}
    :lru
@@ -19,8 +13,13 @@
   	   :relative
   	     {:root
   	       {:url "/access-control"}}}}
-   :edl
-   {:rest
+   :edl {:jwt {:public {:key "{
+      \"kty\": \"RSA\",
+      \"n\": \"3LopSyeoSZZGorSPjk4mMbR0ybVSLvfrONGSGXCNXE6ScX9Y1QC_zV8fVeh4XO8tYDi9CgzqK3Nhjsd5KI0ZzTI8Lf52tyr7OzebZXGZpMvyvdp59wlbPL4WFkIHvWFpgypSrTQIRENKaYW_yQB9srq6JpUx14aRG5TpiBuPqgnGM-qBqPvLq5LX9kVhqbV46TuZd9uPn_gISut7A7K3Y5S24DZd3ebxXPap1cn6-mIY30QG5oYmVlMZxdVPhnTzjj4ZNsfyKSRKq3F_UapEr4ynhr-ONgj8HyozyFqTpUn3o8pKAMVaOEfZmRlqb3jnQknbcsJ9fNxmWUUZr_PysQ\",
+      \"e\": \"AQAB\",
+      \"kid\": \"edljwtpubkey_sit\"
+}"}}
+    :rest
     {:protocol "https"
      :host "sit.urs.earthdata.nasa.gov"}}
    :echo
