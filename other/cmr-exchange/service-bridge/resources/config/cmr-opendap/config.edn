@@ -75,7 +75,7 @@
                      :reducer-factory cmr.plugin.jar.core/create-has-plugin-type-reducer}
           :registry {:default {:plugin-name "CMR-Plugin"
                                :plugin-type "service-bridge-app"
-                               ;; The fowllowing needs to be an in-JAR path to a plugin's config file,
+                               ;; The following needs to be an in-JAR path to a plugin's config file,
                                ;; which will be read once its plugin has been identifed as a plugin of
                                ;; the desired name/type.
                                :config-file "config/cmr-plugin/config.edn"}
