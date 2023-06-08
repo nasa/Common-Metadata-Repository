@@ -155,7 +155,7 @@
         (while (.hasNext iterator)
           (let [feature (.next iterator)]
             (.add feature-list feature)))
-            (simplify-data filename feature-list mt/shapefile)
+        (simplify-data filename feature-list mt/shapefile)
         (finally
           (.close iterator)
           (-> data-store .getFeatureReader .close)
