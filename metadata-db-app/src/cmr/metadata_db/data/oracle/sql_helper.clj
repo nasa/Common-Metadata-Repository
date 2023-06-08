@@ -89,7 +89,7 @@
                                (j/execute! db stmt)))
         dynamo-force-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                               (util/time-execution
-                               ()))]
+                               ))]
     (when efs-force-delete
       (info "Runtime of EFS force-delete-concept-by-params: " (first efs-force-delete)))
     (when oracle-force-delete
