@@ -194,7 +194,7 @@
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)
         concept-ids-revision-ids (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                    (j/query db (gen-find-concepts-in-table-sql concept-type table [:provider_id :concept_id :revision_id] params)))
-        oracle-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+        oracle-results (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                          (util/time-execution
                           (j/with-db-transaction
                             [conn db]
@@ -243,7 +243,7 @@
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)
         concept-ids-revision-ids (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                    (j/query db (gen-find-concepts-in-table-sql concept-type table [:concept_id :revision_id] params)))
-        oracle-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+        oracle-results (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                          (util/time-execution
                           (j/with-db-transaction
                             [conn db]
