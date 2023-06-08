@@ -37,7 +37,6 @@
     "sinon": "^11.1.2"
   },
   "resolutions": {
-    "node-fetch": "3.2.10",
-    "fast-xml-parser": "4.2.4"
+    "node-fetch": "3.2.10"
   }
 }
