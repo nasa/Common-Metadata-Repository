@@ -58,7 +58,7 @@
              {:user_type (name user)}
              {:user_id user})))))
 
-(defn get-current-sids
+(defn- get-current-sids
   "For given token, returns list of sids."
   [token]
   (json/parse-string
@@ -90,19 +90,20 @@
     (testing "Both EDL and CMR group sids are turned on"
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-cmr-group-sids! true))
-      (is (= (set (get-current-sids token)) (set ["registered" cmr-group "group-id-1" "group-id-2"]))))
+      (is (= (set ["registered" cmr-group "group-id-1" "group-id-2"])
+             (set (get-current-sids token)))))
     (testing "Both EDL and CMR group sids are turned off"
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! false))
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-cmr-group-sids! false))
-      (is (= (get-current-sids token) ["registered"])))
+      (is (= ["registered"] (get-current-sids token))))
     (testing "EDL sids are on and CMR group sids are off"
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! true))
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-cmr-group-sids! false))
-      (is (= (set (get-current-sids token)) (set ["registered" "group-id-1" "group-id-2"]))))
+      (is (= (set ["registered" "group-id-1" "group-id-2"]) (set (get-current-sids token)))))
     (testing "EDL sids are off and CMR group sids are on"
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-edl-groups! false))
       (dev-sys-util/eval-in-dev-sys `(access-control-config/set-enable-cmr-group-sids! true))
-      (is (= (set (get-current-sids token)) (set ["registered" cmr-group]))))))
+      (is (= (set ["registered" cmr-group]) (set (get-current-sids token)))))))
 
 (deftest collection-simple-catalog-item-identity-permission-check-test
   (let [save-prov1-collection #(u/save-collection {:provider-id "PROV1"

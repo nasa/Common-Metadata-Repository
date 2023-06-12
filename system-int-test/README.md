@@ -19,7 +19,7 @@ lein itest --skip-meta :oracle
 
 The skips will exclude tests that will not have any assertions
 
-_Kaocha will complain if a test is excuted with no assertions._
+_Kaocha will complain if a test is executed with no assertions._
 
 ## Test Groups
 
@@ -40,7 +40,7 @@ This is for local development.
 
 `tests.none.edn` is for the CI environment to exclude system-int-tests when appropriate.
 
-The groupings may be selected by setting the `CMR_TEST_GROUP` enviroment variable, 
+The groupings may be selected by setting the `CMR_TEST_GROUP` environment variable, 
 e.g. `EXPORT CMR_TEST_GROUP="tests.group1.edn"` where the value is the name of the file to use.
 
 ## License

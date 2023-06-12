@@ -36,16 +36,16 @@
     (let [response @(httpc/get (format "http://localhost:%s/service-bridge/ping"
                                        (test-system/http-port)))]
       (is (= 403 (:status response)))
-      (is (= {:errors ["An ECHO token is required to access this resource."]}
+      (is (= {:errors ["A valid token is required to access this resource."]}
              (response/parse-json-result (:body response))))))
   (testing "v2 routes that don't exist in v1 ..."
     (let [response @(httpc/get (format "http://localhost:%s/service-bridge/cache"
                                        (test-system/http-port))
-                                (-> {}
-                                    (request/add-token-header
-                                     (util/get-sit-token))
-                                    (request/add-accept
-                                     "application/vnd.cmr-service-bridge.v1+json")))]
+                               (-> {}
+                                   (request/add-token-header
+                                    (util/get-sit-token))
+                                   (request/add-accept
+                                    "application/vnd.cmr-service-bridge.v1+json")))]
       (is (= 404 (:status response)))))
   (testing "v2 routes ..."
     #_(let [response @(httpc/get (format "http://localhost:%s/service-bridge/cache/auth"
@@ -55,7 +55,7 @@
                                      (util/get-sit-token))
                                     (request/add-accept
                                      "application/vnd.cmr-service-bridge.v2+json")))]
-      (is (= 200 (:status response))))
+       (is (= 200 (:status response))))
     ;; XXX This test is currently failing; this has happened before with soft references
     ;;     see the code comment above cmr.http.kit.response/soft-reference->json! ...
     #_(let [response @(httpc/get (format "http://localhost:%s/service-bridge/cache/concept"
@@ -65,7 +65,7 @@
                                      (util/get-sit-token))
                                     (request/add-accept
                                      "application/vnd.cmr-service-bridge.v2+json")))]
-      (is (= 200 (:status response))))))
+       (is (= 200 (:status response))))))
 
 (deftest testing-routes
   (is 401

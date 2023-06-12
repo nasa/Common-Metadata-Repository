@@ -23,6 +23,8 @@ The JSON response includes the following fields.
 * took - How long the search took in milliseconds
 * items - a list of the Providers
 
+Request the list of all providers with their metadata.
+
 __Example__
 
 ```
@@ -32,42 +34,79 @@ __Example__
 __Sample response__
 
 ```
-    {
-      "MetadataSpecification": {
-        "Name":"UMM-P",
-        "Version": "1.0.0",
-        "URL": "https://cdn.earthdata.nasa.gov/umm/provider/v1.0.0"},
-      "ProviderId": "MATRIX_A",
-      "DescriptionOfHolding": "No real data, just a bunch of tests",
-      "Organizations": [
-        {"ShortName": "MATRIX_A",
-          "LongName": "Matrix instance A",
-          "Roles": ["PUBLISHER"],
-          "URLValue": "https://cmr.earthdata.nasa.gov/search"
-        }],
-      "ContactPersons": [{
-        "Roles":["PROVIDER MANAGMENT", "TECHNICAL CONTACT"],
-        "LastName": "Smith",
-        "ContactInformation": {
-          "HoursOfService": "8-5 East Coast time, M-F",
-          "ContactInstruction": "slack works best",
-          "Addresses":[{
-            "StreetAddresses": ["123 Fake Street"],
-            "City": "Springfield",
-            "StateProvince": "DC",
-            "Country": "USA",
-            "PostalCode" : "90210"
-          }],
-          "ContactMechanisms": [
-            {"Type": "Email", "Value": "agent.smith@example.gov"},
-            {"Type": "Slack", "Value": "asmith"}
-          ]
-        }
-      }],
-      "ContactGroups": [{
-        "Roles":["DEVELOPER"],
-        "GroupName": "team-search"
-      }],
-      "Consortiums": ["CEOS", "FEDEO", "CWIC"]
-    }
+[ {
+  "ProviderId" : "PROV1",
+  "DescriptionOfHolding" : "sample provider, no data",
+  "Organizations" : [ {
+    "Roles" : [ "ORIGINATOR" ],
+    "ShortName" : "PROV1",
+    "URLValue" : "https://example.gov"
+  } ],
+  "Administrators" : [ "admin1" ],
+  "MetadataSpecification" : {
+    "Name" : "Provider",
+    "URL" : "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0",
+    "Version" : "1.0.0"
+  }
+}, {
+  "ProviderId" : "PROV2",
+  "DescriptionOfHolding" : "sample provider, no data",
+  "Organizations" : [ {
+    "Roles" : [ "ORIGINATOR" ],
+    "ShortName" : "PROV2",
+    "URLValue" : "https://example.gov"
+  } ],
+  "Administrators" : [ "admin1" ],
+  "MetadataSpecification" : {
+    "Name" : "Provider",
+    "URL" : "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0",
+    "Version" : "1.0.0"
+  }
+}, {
+  "ProviderId" : "PROV3",
+  "DescriptionOfHolding" : "sample provider, no data",
+  "Organizations" : [ {
+    "Roles" : [ "ORIGINATOR" ],
+    "ShortName" : "PROV3",
+    "URLValue" : "https://example.gov"
+  } ],
+  "Administrators" : [ "admin1" ],
+  "MetadataSpecification" : {
+    "Name" : "Provider",
+    "URL" : "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0",
+    "Version" : "1.0.0"
+  }
+}]
 ```
+Request metadata for a specific provider.
+
+__Example__
+
+```
+    curl -H "Cmr-Pretty: true" "%CMR-ENDPOINT%/providers/<provider-id>"
+```
+
+__Sample response__
+
+{
+    "ProviderId": "PROV1",
+    "DescriptionOfHolding": "sample provider, no data",
+    "Organizations": [
+        {
+            "Roles": [
+                "ORIGINATOR"
+            ],
+            "ShortName": "PROV1",
+            "URLValue": "https://example.gov"
+        }
+    ],
+    "Administrators": [
+        "admin1"
+    ],
+    "MetadataSpecification": {
+        "Name": "Provider",
+        "URL": "https://cdn.earthdata.nasa.gov/schemas/provider/v1.0.0",
+        "Version": "1.0.0"
+    }
+}
+

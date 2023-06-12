@@ -12,7 +12,7 @@
 ;; Authorization
 
 (def no-permissions "You do not have permissions to access that resource.")
-(def token-required "An ECHO token is required to access this resource.")
+(def token-required "A valid token is required to access this resource.")
 
 ;; OUS - General
 

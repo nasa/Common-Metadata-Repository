@@ -55,7 +55,7 @@
     (caching/lookup
      system
      (token/user-id-key token)
-     #(token/->user (config/get-echo-rest-url system) token))
+     #(token/->user system token))
     (catch Exception e
       (log/error e)
       {:errors (base-errors/exception-data e)})))
@@ -131,7 +131,7 @@
   (if-let [user-token (token/extract request)]
     (let [user-lookup (cached-user system user-token)
           errors (:errors user-lookup)]
-      (log/debug "ECHO token provided; proceeding ...")
+      (log/debug "Token provided; proceeding ...")
       (log/trace "user-lookup:" user-lookup)
       (if errors
         (do
@@ -156,7 +156,7 @@
                                    user-token
                                    user-lookup)))))
     (do
-      (log/warn "ECHO token not provided for protected resource")
+      (log/warn "Valid token not provided for protected resource")
       (response/not-allowed errors/token-required))))
 
 (defn check-route-access

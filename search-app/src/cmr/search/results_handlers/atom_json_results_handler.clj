@@ -52,7 +52,7 @@
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters highlighted-summary-snippets tags organizations
                 has-variables has-formats has-transforms has-spatial-subsetting has-temporal-subsetting
-                cloud-hosted platforms consortiums service-features associations]} reference
+                cloud-hosted platforms consortiums service-features associations eula-identifiers]} reference
         shape-result (atom-spatial/shapes->json shapes)
         granule-count (get granule-counts-map id 0)
         result (merge {:id id
@@ -93,7 +93,8 @@
                        :tags tags
                        :service_features service-features
                        :associations (rs-util/build-association-concept-id-list associations :collection)
-                       :association_details (rs-util/build-association-details (rs-util/replace-snake-keys associations) :collection)}
+                       :association_details (rs-util/build-association-details (rs-util/replace-snake-keys associations) :collection)
+                       :eula_identifiers eula-identifiers}
                       shape-result)]
     ;; remove entries with nil value
     (util/remove-nil-keys result)))
@@ -175,4 +176,4 @@
 
   (defmethod qs/single-result->response [concept-type :json]
     [context query results]
-    (single-result->response  context query results)))
+    (single-result->response context query results)))

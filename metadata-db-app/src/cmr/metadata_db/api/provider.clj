@@ -43,7 +43,7 @@
 (defn- get-providers
   "Get a list of provider ids"
   [context params]
-  (let [providers (provider-service/get-providers context)]
+  (let [providers (provider-service/get-providers context params)]
     {:status 200
      :body (json/generate-string providers)
      :headers rh/json-header}))
@@ -59,7 +59,6 @@
 
 (def provider-api-routes
   (context "/providers" []
-
     ;; create a new provider
     (POST "/" {:keys [request-context params headers body]}
       (acl/verify-ingest-management-permission request-context :update)

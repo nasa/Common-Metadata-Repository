@@ -70,5 +70,5 @@
                              (test-system/http-port)
                              collection-id))]
       (is (= 403 (:status response)))
-      (is (= {:errors ["An ECHO token is required to access this resource."]}
+      (is (= {:errors ["A valid token is required to access this resource."]}
              (response/parse-json-result (:body response)))))))
