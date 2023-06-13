@@ -11,7 +11,8 @@
    [cmr.dynamo.config :as dynamo-config]
    [cmr.efs.config :as efs-config]
    [cmr.efs.connection :as efs]
-   [cmr.common.util :as util])
+   [cmr.common.util :as util]
+   [cmr.dynamo.connection :as dynamo])
   (:import cmr.oracle.connection.OracleStore))
 
 (defn efs-concept-helper
@@ -89,7 +90,7 @@
                                (j/execute! db stmt)))
         dynamo-force-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                               (util/time-execution
-                               ))]
+                               (dynamo/delete-concepts params)))]
     (when efs-force-delete
       (info "Runtime of EFS force-delete-concept-by-params: " (first efs-force-delete)))
     (when oracle-force-delete

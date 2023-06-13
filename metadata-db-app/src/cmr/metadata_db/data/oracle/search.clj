@@ -15,7 +15,8 @@
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]]
    [cmr.dynamo.config :as dynamo-config]
    [cmr.efs.config :as efs-config]
-   [cmr.efs.connection :as efs])
+   [cmr.efs.connection :as efs]
+   [cmr.dynamo.connection :as dynamo])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -206,7 +207,7 @@
                        (doall (efs/get-concepts-small-table concept-type (map sh/efs-concept-helper concept-ids-revision-ids)))))
         dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                          (util/time-execution
-                          ()))]
+                          (doall (dynamo/get-concepts-small-table params))))]
     (when efs-results
       (info "Runtime of EFS find-concepts-in-table(small-table): " (first efs-results) " ms.")
       (info "Values from EFS: " (pr-str (second efs-results))))
@@ -260,7 +261,7 @@
                        (doall (efs/get-concepts providers concept-type (map sh/efs-concept-helper concept-ids-revision-ids)))))
         dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                          (util/time-execution
-                          ()))]
+                          (doall (dynamo/get-concepts params))))]
     (when efs-results
       (info "Runtime of EFS find-concepts-in-table: " (first efs-results) " ms.")
       (info "Values from EFS: " (pr-str (second efs-results))))
@@ -324,7 +325,7 @@
                                      (doall (efs/get-concepts provider concept-type (map sh/efs-concept-helper concept-revision-batch-result)))))
                        dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                         (util/time-execution
-                                         ()))]
+                                         (doall (dynamo/get-concepts params))))]
                    (when efs-results
                      (info "Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results) " ms.")
                      (info "Values from EFS: " (pr-str (second efs-results))))
