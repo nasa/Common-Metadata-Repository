@@ -39,8 +39,8 @@
 
 (defn get-concepts-small-table
   "Gets a group of concepts from DynamoDB using provider-id, concept-id, revision-id tuples"
-  [provider-concept-revision-tuples]
-  (map (fn [batch] (far/batch-get-item connection-options {(dynamo-config/dynamo-table) {:prim-kvs (vec batch)}})) (partition-all 100 (map provider-concept-revision-tuple->key provider-concept-revision-tuples))))
+  [params]
+  (info "Params for searching DynamoDB small-table: " params))
 
 (defn delete-concept
   "Deletes a concept from DynamoDB"
