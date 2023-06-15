@@ -61,6 +61,7 @@
                    mt/xml
                    mt/umm-json}
    :variable #{mt/any
+               mt/html
                mt/xml
                mt/umm-json}}
    (generate-generic-supported-concept-id-retrieval-mime-types)))
@@ -116,10 +117,16 @@
           result-format (if (= result-format :xml) :native result-format)]
       (if (= :html result-format)
         (let [concept-type (concepts/concept-id->type concept-id)]
-          (if (= concept-type :tool)
+          (cond
+            (= concept-type :tool)
             (core-api/search-response ctx
                                       {:results (:body (pages/tool-page ctx concept-id))
                                        :result-format :html})
+            (= concept-type :variable)
+            (core-api/search-response ctx
+                                      {:results (:body (pages/variable-page ctx concept-id))
+                                       :result-format :html})
+            :else
             (core-api/search-response ctx
                                       {:results (:body (pages/collection-page ctx concept-id))
                                        :result-format :html})))

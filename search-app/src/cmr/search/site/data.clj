@@ -228,17 +228,8 @@
                      :stac-docs-url stac-docs-url
                      :static-cloudstac-url static-cloudstac-url)))
 
-(defn get-collection
-  "Provide collection data that will be rendered on collection landing page."
-  [context concept-id]
-  (assoc (base-page context)
-         :concept-id concept-id
-         :token (:token context)
-         :preview-root (metadata-preview-root)
-         :preview-version (metadata-preview-version)))
-
-(defn get-tool
-  "Provide tool data that will be rendered on tool landing page."
+(defn get-concept
+  "Provide concept data that will be rendered on concept landing page."
   [context concept-id]
   (assoc (base-page context)
          :concept-id concept-id
