@@ -3,8 +3,9 @@
 {% block title %}CMR Preview{% endblock %}
 
 {% block head-pre-css %}
-<script defer src="{{ preview-root }}/plugin/metadata-preview.{{ preview-version }}.js"></script>
-<link href="{{ preview-root }}/plugin/metadata-preview.{{ preview-version }}.css" rel="stylesheet" type="text/css">
+//replace {{ preview-version }} with MMT-3263-10 temporarily for testing purpose.
+<script defer src="{{ preview-root }}/plugin/metadata-preview.MMT-3263-10.js"></script>
+<link href="{{ preview-root }}/plugin/metadata-preview.MMT-3263-10.min.css" rel="stylesheet" type="text/css">
 {% endblock %}
 
 {% block main-content %}
