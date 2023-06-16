@@ -454,9 +454,9 @@
         (info "Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms."))
       (if oracle-concepts-get
         (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-          (map (fn [oracle-concept]
+          (doall (map (fn [oracle-concept]
                  (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-concepts-get)))))
-               (second oracle-concepts-get))
+               (second oracle-concepts-get)))
           (second oracle-concepts-get))
         (second dynamo-concepts-get)))
     []))

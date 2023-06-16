@@ -217,9 +217,9 @@
       (info "Runtime of DynamoDB find-concepts-in-table(small-table): " (first dynamo-results) " ms."))
     (if oracle-results
       (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-        (map (fn [oracle-concept]
+        (doall (map (fn [oracle-concept]
                (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-results)))))
-             (second oracle-results))
+             (second oracle-results)))
         (second oracle-results))
       (second dynamo-results))))
 
@@ -269,9 +269,9 @@
       (info "Runtime of Oracle find-concepts-in-table: " (first oracle-results) " ms."))
     (if oracle-results
       (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-        (map (fn [oracle-concept]
+        (doall (map (fn [oracle-concept]
                (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-results)))))
-             (second oracle-results))
+             (second oracle-results)))
         (second oracle-results))
       (second dynamo-results))))
 
@@ -335,9 +335,9 @@
                      (info "Runtime of DynamoDB find-concepts-in-batches(find-batch): " (first dynamo-results) " ms."))
                    (if oracle-results
                      (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-                       (map (fn [oracle-concept]
+                       (doall (map (fn [oracle-concept]
                               (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-results)))))
-                            (second oracle-results))
+                            (second oracle-results)))
                        (second oracle-results))
                      (second dynamo-results)))))
              (lazy-find
