@@ -223,8 +223,7 @@
   {:default {:grid ["0.0.1"]
              :data-quality-summary ["1.0.0"]
              :order-option ["1.0.0"]
-             :service-entry ["1.0.0"]
-             :service-option ["1.0.0"]}
+             :collection-draft ["1.0.0"]}
    :parser #(json/parse-string % true)})
 
 (defconfig approved-pipeline-documentation

@@ -110,14 +110,23 @@
     :always-case-sensitive #{}
     :disallow-pattern #{}}))
 
-;; TODO: Generic work: multiple values need to be pulled from config files
-(doseq [concept-type (cc/get-generic-concept-types-array)]
+(doseq [concept-type (cc/get-generic-non-draft-concept-types-array)]
   (defmethod cpv/params-config concept-type
     [_]
     (cpv/merge-params-config
      cpv/basic-params-config
      {:single-value #{:keyword :all-revisions}
       :multiple-value #{:name :provider :native-id :concept-id :id}
+      :always-case-sensitive #{}
+      :disallow-pattern #{}})))
+
+(doseq [concept-type (cc/get-draft-concept-types-array)]
+  (defmethod cpv/params-config concept-type
+    [_]
+    (cpv/merge-params-config
+     cpv/basic-params-config
+     {:single-value #{:keyword :all-revisions}
+      :multiple-value #{:short-name :name :provider :native-id :concept-id :platform :project}
       :always-case-sensitive #{}
       :disallow-pattern #{}})))
 
@@ -278,13 +287,24 @@
   {:q cpv/string-param-options
    :type cpv/string-plus-or-options})
 
-(doseq [concept-type (cc/get-generic-concept-types-array)]
+(doseq [concept-type (cc/get-generic-non-draft-concept-types-array)]
   (defmethod cpv/valid-parameter-options concept-type
     [_]
     {:name cpv/string-param-options
      :native-id cpv/string-param-options
      :provider cpv/string-param-options
      :id cpv/string-param-options}))
+
+(doseq [concept-type (cc/get-draft-concept-types-array)]
+  (defmethod cpv/valid-parameter-options concept-type
+    [_]
+    {:short-name cpv/string-plus-and-options
+     :name cpv/string-plus-and-options
+     :native-id cpv/string-param-options
+     :provider cpv/string-param-options
+     :platform cpv/string-plus-and-options
+     :project cpv/string-plus-and-options
+     :keyword cpv/pattern-option}))
 
 (defmethod cpv/valid-query-level-params :collection
   [_]

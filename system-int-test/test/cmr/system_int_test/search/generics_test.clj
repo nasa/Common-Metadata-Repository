@@ -87,7 +87,8 @@
       (doseq [dir dir-list]
         (let [file (json/parse-string (slurp (io/resource dir)) true)
               native-id (format "Generic-Test-%s" (UUID/randomUUID))
-              name (:Name file)
+              name (or (:Name file)
+                       (:ShortName file))
               plural-concept-type-name (inf/plural concept-type-string)
               generic-requester (partial gen-util/generic-request nil "PROV1" native-id concept-type-string)
               good-generic-requester (partial generic-requester file)
