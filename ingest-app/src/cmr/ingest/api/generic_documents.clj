@@ -57,6 +57,14 @@
    :tool-draft :umm-t
    :variable-draft :umm-var})
 
+(defn is-draft-concept?
+  "This function checks to see if the concept to be ingested or updated
+  is a draft concept."
+  [request]
+  (let [route-params (:route-params request)
+        concept-type (concept-type->singular route-params)]
+    (string/includes? (name concept-type) "draft")))
+
 (defn prepare-generic-document
   "Prepares a document to be ingested so that search can retrieve the contents.
    Throws exceptions if something goes wrong, returns a map otherwise."
@@ -76,7 +84,8 @@
         spec-key (csk/->kebab-case-keyword (:Name specification ""))
         spec-version (:Version specification)
         document-name (or (:Name document)
-                          (:ShortName document))]
+                          (:ShortName document)
+                          (when (is-draft-concept? request) "Draft"))]
     (if (and (not= concept-type spec-key)
              (not= (concept-type concept->spec-map) spec-key))
       (throw UnsupportedOperationException)
@@ -137,14 +146,6 @@
                                         ;; dissoc it so that it remains the same as the
                                         ;; original code.
                                         (dissoc save-concept-result :name)))))
-
-(defn is-draft-concept?
-  "This function checks to see if the concept to be ingested or updated
-  is a draft concept."
-  [request]
-  (let [route-params (:route-params request)
-        concept-type (concept-type->singular route-params)]
-    (string/includes? (name concept-type) "draft")))
 
 (defn create-generic-document
   "Check a document for fitness to be ingested, and then ingest it. Records can
