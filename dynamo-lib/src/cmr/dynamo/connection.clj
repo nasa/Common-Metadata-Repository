@@ -1,6 +1,8 @@
 (ns cmr.dynamo.connection
   "Contains functions for interacting with the DynamoDB storage instance"
-  (:require [cmr.common.config :as cfg :refer [defconfig]]
+  (:require [clojure.string :as str]
+            [cmr.common.config :as cfg :refer [defconfig]]
+            [cmr.common.services.errors :as errors]
             [cmr.common.log :refer [debug error info trace warn]]
             [taoensso.faraday :as far]
             [cmr.dynamo.config :as dynamo-config]))
@@ -12,6 +14,28 @@
 (defn provider-concept-revision-tuple->key
   [tuple]
   {:concept-id (nth tuple 1) :revision-id (nth tuple 2)})
+
+(defn find-params->dynamo-clause
+  ([params]
+   (find-params->dynamo-clause params false))
+  ([params or?]
+   ;; Validate parameter names as a sanity check to prevent sql injection
+   (let [valid-param-name #"^[a-zA-Z][a-zA-Z0-9_\-]*$"]
+     (when-let [invalid-names (seq (filter #(not (re-matches valid-param-name (name %))) (keys params)))]
+       (errors/internal-error! (format "Attempting to search with invalid parameter names [%s]"
+                                       (str/join ", " invalid-names)))))
+   (let [comparisons (for [[k v] params]
+                       (cond
+                         (sequential? v) (let [val (seq v)]
+                                           `(~k [:in ~val]))
+                         (map? v) (let [{:keys [value comparator]} v]
+                                    `(~k [(map-comparator ~comparator) ~value]))
+                         :else `(= ~k ~v)))]
+     (if (> (count comparisons) 1)
+       (if or?
+         (cons `or comparisons)
+         (cons `and comparisons))
+       (first comparisons)))))
 
 (def connection-options 
   {:endpoint (dynamo-config/dynamo-url)})
@@ -35,11 +59,17 @@
 (defn get-concepts
   "Gets a group of concepts from DynamoDB based on search parameters"
   [params]
+  ;; (if (:include-all params)
+  ;;   (far/scan connection-options {:attr-conds (find-params->dynamo-clause (dissoc params :include-all))})
+  ;;   (far/scan connection-options {:attr-conds (find-params->dynamo-clause (dissoc params :include-all)) }))
   (info "Params for searching DynamoDB: " params))
 
 (defn get-concepts-small-table
   "Gets a group of concepts from DynamoDB using provider-id, concept-id, revision-id tuples"
   [params]
+  ;; (if (:include-all params)
+  ;;   ()
+  ;;   ())
   (info "Params for searching DynamoDB small-table: " params))
 
 (defn delete-concept
