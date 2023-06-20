@@ -36,7 +36,7 @@
         (assoc this :redis redis)
         (catch Exception e
           (error "Redis failed to start.")
-          (error "Dumping logs:\n" (.getLogs redis))
+          (debug "Dumping logs:\n" (.getLogs redis))
           (throw (ex-info "Redis failure" {:exception e}))))))
 
   (stop

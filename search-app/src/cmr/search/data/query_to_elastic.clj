@@ -266,6 +266,7 @@
   (defmethod q2e/field->lowercase-field-mappings concept-type
     [_]
     {:short-name :name-lowercase
+     :name :name-lowercase
      :provider :provider-id-lowercase
      :native-id :native-id-lowercase
      :platform :platform-lowercase

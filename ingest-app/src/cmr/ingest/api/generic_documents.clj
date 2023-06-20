@@ -51,7 +51,7 @@
   [route-params]
   (common-concepts/singularize-concept-type (:concept-type route-params)))
 
-(def concept->spec-map
+(def draft-concept->spec-map
   {:collection-draft :umm-c
    :service-draft :umm-s
    :tool-draft :umm-t
@@ -87,7 +87,7 @@
                           (:ShortName document)
                           (when (is-draft-concept? request) "Draft"))]
     (if (and (not= concept-type spec-key)
-             (not= (concept-type concept->spec-map) spec-key))
+             (not= (concept-type draft-concept->spec-map) spec-key))
       (throw UnsupportedOperationException)
       {:concept (assoc {}
                        :metadata raw-document

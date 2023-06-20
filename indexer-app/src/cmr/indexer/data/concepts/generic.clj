@@ -71,7 +71,7 @@
 
 (defn field->index
   "Functions which convert a part of metadata to a name-value which can be added
-  to an index document. This defmulti is directed by looking for an :Indexer
+  to an index document. This function is directed by looking for an :Indexer
   value in settings and assuming :default if it is not set.
   Usage:
   settings - json configuration for one field
