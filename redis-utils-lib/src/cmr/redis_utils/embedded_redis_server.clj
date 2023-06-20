@@ -10,7 +10,7 @@
 
 (def ^:private redis-image
   "Official redis image."
-  "redis:7")
+  "docker.io/redis:bullseye")
 
 (defn- build-redis
   "Setup redis docker image"

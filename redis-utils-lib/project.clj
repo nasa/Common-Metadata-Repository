@@ -4,7 +4,7 @@
   {:version "3.2.10"
    :hash "411c604a716104f7f5a326abfad32de9cea10f15f987bec45cf86f315e9e63a0"})
 
-(def redis-version "7")
+(def redis-version "bullseye")
 
 (defproject nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handling cacheing with the CMR."
@@ -50,7 +50,7 @@
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
-            "pull-docker-images" ["shell" "docker" "pull" ~(str "redis:" redis-version)]
+            "pull-docker-images" ["shell" "docker" "pull" ~(str "docker.io/redis:" redis-version)]
 
             "install!" "install"
 
