@@ -41,7 +41,7 @@
 
   (stop
     [this system]
-    (let [redis (:redis this)]
+    (when-let [redis (:redis this)]
       (.stop redis))))
 
 (defn create-redis-server
