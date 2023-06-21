@@ -54,7 +54,7 @@
 
 (defn get-jwt-public-key
   [system]
-  (get-in (get-cfg system) [:auth-caching :jwt-public-key]))
+  (get-in (get-cfg system) [:cmr :edl :jwt :public :key]))
 
 (defn get-edl-username
   [system]
