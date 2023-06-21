@@ -18,8 +18,8 @@
    [cmr.transmit.metadata-db :as meta-db]))
 
 (defn field->index-complex-field
-  ;; This is an example of a complex indexer which takes a list of sub fields and
-  ;; combines them into one field"
+  "This is an example of a complex indexer which takes a list of sub fields and
+  combines them into one field"
   [settings data]
   (let [field-list (get settings :Field ".")
         field-data (get-in data (gen-util/jq->list field-list keyword) {})
@@ -40,9 +40,9 @@
      (keyword field-name-lower) field-value-lower}))
 
 (defn field->index-simple-array-field
-  ;; The gets the a sub field of an array element and puts those values
-  ;; into a list so that each value can be searched on one of two indexes:
-  ;; the literal case, another is all lower case."
+  "The gets the a sub field of an array element and puts those values
+  into a list so that each value can be searched on one of two indexes:
+  the literal case, another is all lower case."
   [settings data]
   (let [field-list (get settings :Field ".")
         field-data (get-in data (gen-util/jq->list field-list keyword) {})
@@ -59,8 +59,8 @@
      (keyword field-name-lower) value-lower}))
 
 (defn field->index-default-field
-  ;; The default indexer which will map one metadata field to two indexes. One is
-  ;; with the literal case, another is all lower case"
+  "The default indexer which will map one metadata field to two indexes. One is
+  with the literal case, another is all lower case"
   [settings data]
   (let [field-name (util/safe-lowercase (:Name settings))
         field-name-lower (str field-name "-lowercase")

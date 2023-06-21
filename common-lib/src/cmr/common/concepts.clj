@@ -28,15 +28,13 @@
            []
            (common-generic/approved-generic-concept-prefixes))))
 
-(defn get-generic-non-draft-concept-types-array
+(def get-generic-non-draft-concept-types-array
   "Gets all of the generic concept types that are not drafts."
-  []
   (vec
    (filter #(not (string/includes? % "draft")) (get-generic-concept-types-array))))
 
-(defn get-draft-concept-types-array
+(def get-draft-concept-types-array
   "Gets all of the generic concept types that are drafts."
-  []
   (vec
    (filter #(string/includes? % "draft") (get-generic-concept-types-array))))
 
