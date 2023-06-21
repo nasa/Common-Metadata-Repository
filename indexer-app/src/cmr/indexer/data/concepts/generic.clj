@@ -158,7 +158,7 @@
                 (into data (if (string? value)
                              (vector value)
                              value))))
-            (sequence nil)
+            '()
             sub-fields)))
 
 (defn- parsed-draft-concept->elastic-doc
