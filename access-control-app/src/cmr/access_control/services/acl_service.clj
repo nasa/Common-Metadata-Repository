@@ -237,51 +237,71 @@
   [acl]
   (-> acl :provider-identity :target (= schema/ingest-management-acl-target)))
 
-(defn- concept-permissions-granted-by-acls
+(defn-timed concept-permissions-granted-by-acls
   "Returns the set of permission keywords (:read, :order, and :update) granted on concept
    to the seq of group guids by seq of acls."
   [concept sids acls]
-  (let [provider-acls (filter #(provider-acl? (:provider-id concept) %) acls)
+  (let [[catalog-item-acls ingest-management-acls] acls
+        provider-id (:provider-id concept)
         ;; When a user has UPDATE on the provider's INGEST_MANAGEMENT_ACL target, then they have UPDATE and
         ;; DELETE permission on all of the provider's catalog items.
         ingest-management-permissions (when (some #(acl/acl-matches-sids-and-permission? sids "update" %)
-                                                  (filter ingest-management-acl? provider-acls))
+                                                  (get ingest-management-acls provider-id))
                                         [:update :delete])
         ;; The remaining catalog item ACLs can only grant READ or ORDER permission.
-        catalog-item-acls (filter :catalog-item-identity provider-acls)
         catalog-item-permissions (for [permission [:read :order]
                                        :when (some #(grants-concept-permission? % permission concept sids)
-                                                   catalog-item-acls)]
+                                                   (get catalog-item-acls provider-id))]
                                    permission)]
     (set
      (concat catalog-item-permissions
              ingest-management-permissions))))
 
-(defn- add-acl-enforcement-fields
+(defn-timed add-acl-enforcement-fields
   "Adds all fields necessary for comparing concept map against ACLs."
   [context concept]
   (let [concept (acl-matchers/add-acl-enforcement-fields-to-concept context concept)]
     (if-let [parent-collection (:parent-collection concept)]
-      (assoc concept :parent-collection
-                     (acl-matchers/add-acl-enforcement-fields-to-concept
-                       context parent-collection))
-      concept)))
+      (-> concept
+          (assoc :parent-collection
+                 (acl-matchers/add-acl-enforcement-fields-to-concept
+                  context parent-collection))
+          (dissoc :metadata))
+      (dissoc concept :metadata))))
 
-(defn add-parent-collection-to-concept
+(defn-timed add-parent-collection-to-concept
   [concept parent-concepts]
   (let [parent-id (get-in concept [:extra-fields :parent-collection-id])
         parent (first (filter #(= parent-id (:concept-id %)) parent-concepts))]
     (assoc concept :parent-collection parent)))
 
+(defn- prepare-permission-acls
+  [acls]
+  (let [provider-acls (group-by (fn [acl]
+                                  (or (get-in acl [:catalog-item-identity :provider-id])
+                                      (get-in acl [:provider-identity :provider-id])))
+                                acls)
+        catalog-item-acls (reduce
+                           (fn [provider-map provider]
+                             (assoc provider-map provider (filter :catalog-item-identity (get provider-map provider))))
+                           provider-acls
+                           (keys provider-acls))
+        ingest-management-acls (reduce
+                                (fn [provider-map provider]
+                                  (assoc provider-map provider (filter ingest-management-acl? (get provider-map provider))))
+                                provider-acls
+                                (keys provider-acls))]
+    [catalog-item-acls ingest-management-acls]))
+
 (defn-timed get-catalog-item-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
   [context username-or-type concept-ids]
   (let [sids (auth-util/get-sids context username-or-type)
-        acls (concat
-               (acl-util/get-acl-concepts-by-identity-type-and-target
-                context index/provider-identity-type-name schema/ingest-management-acl-target)
-               (acl-util/get-acl-concepts-by-identity-type-and-target
-                context index/catalog-item-identity-type-name nil))
+        acls (prepare-permission-acls (concat
+                                       (acl-util/get-acl-concepts-by-identity-type-and-target
+                                        context index/provider-identity-type-name schema/ingest-management-acl-target)
+                                       (acl-util/get-acl-concepts-by-identity-type-and-target
+                                        context index/catalog-item-identity-type-name nil)))
         concepts (mdb1/get-latest-concepts context (distinct concept-ids))
         parent-concepts (mdb1/get-latest-concepts context (distinct (remove nil? (map #(get-in % [:extra-fields :parent-collection-id]) concepts))))
         concepts-with-parents (map #(add-parent-collection-to-concept % parent-concepts) concepts)]

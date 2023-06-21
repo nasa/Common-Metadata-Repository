@@ -7,8 +7,9 @@
    [clojure.string :as str]
    [cmr.acl.core :as acl-core]
    [cmr.common.cache :as cache]
-   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.cache.cache-spec :as cache-spec]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.common.log :refer [info debug warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as u :refer [update-in-each]]
@@ -181,10 +182,15 @@
 
 (defmethod add-acl-enforcement-fields-to-concept :granule
   [context concept]
-  (-> concept
-      (u/lazy-assoc :access-value (legacy/parse-concept-access-value concept))
-      (u/lazy-assoc :temporal (legacy/parse-concept-temporal concept))
-      (assoc :collection-concept-id (get-in concept [:extra-fields :parent-collection-id]))))
+  (let [deleted? (:deleted concept)]
+    (as-> concept concept
+          (if-not deleted?
+            (u/lazy-assoc concept :access-value (legacy/parse-concept-access-value concept))
+            concept)
+          (if-not deleted?
+            (u/lazy-assoc concept :temporal (legacy/parse-concept-temporal concept))
+            concept)
+          (assoc concept :collection-concept-id (get-in concept [:extra-fields :parent-collection-id])))))
 
 (defn add-acl-enforcement-fields
   "Adds the fields necessary to enforce ACLs to the concepts."
