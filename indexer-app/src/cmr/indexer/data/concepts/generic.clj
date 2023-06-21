@@ -198,13 +198,13 @@
              configs)]
     (assoc doc :keyword (get-draft-keywords configs doc))))
 
-(doseq [concept-type (concepts/get-generic-non-draft-concept-types-array)]
+(doseq [concept-type concepts/get-generic-non-draft-concept-types-array]
   (defmethod esearch/parsed-concept->elastic-doc concept-type
     ;; Public function called by the indexer framework when a document is needed.
     [context concept parsed-concept]
     (parsed-concept->elastic-doc context concept parsed-concept)))
 
-(doseq [concept-type (concepts/get-draft-concept-types-array)]
+(doseq [concept-type concepts/get-draft-concept-types-array]
   (defmethod esearch/parsed-concept->elastic-doc concept-type
     ;; Public function called by the indexer framework when a document is needed.
     [context concept parsed-concept]

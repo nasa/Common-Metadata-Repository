@@ -256,13 +256,13 @@
    :name "subscription-name-lowercase"
    :type "subscription-type-lowercase"})
 
-(doseq [concept-type (concepts/get-generic-non-draft-concept-types-array)]
+(doseq [concept-type concepts/get-generic-non-draft-concept-types-array]
   (defmethod q2e/field->lowercase-field-mappings concept-type
     [_]
     {:provider :provider-id-lowercase
      :native-id :native-id-lowercase}))
 
-(doseq [concept-type (concepts/get-draft-concept-types-array)]
+(doseq [concept-type concepts/get-draft-concept-types-array]
   (defmethod q2e/field->lowercase-field-mappings concept-type
     [_]
     {:short-name :name-lowercase

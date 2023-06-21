@@ -110,7 +110,7 @@
     :always-case-sensitive #{}
     :disallow-pattern #{}}))
 
-(doseq [concept-type (cc/get-generic-non-draft-concept-types-array)]
+(doseq [concept-type cc/get-generic-non-draft-concept-types-array]
   (defmethod cpv/params-config concept-type
     [_]
     (cpv/merge-params-config
@@ -120,7 +120,7 @@
       :always-case-sensitive #{}
       :disallow-pattern #{}})))
 
-(doseq [concept-type (cc/get-draft-concept-types-array)]
+(doseq [concept-type cc/get-draft-concept-types-array]
   (defmethod cpv/params-config concept-type
     [_]
     (cpv/merge-params-config
@@ -287,7 +287,7 @@
   {:q cpv/string-param-options
    :type cpv/string-plus-or-options})
 
-(doseq [concept-type (cc/get-generic-non-draft-concept-types-array)]
+(doseq [concept-type cc/get-generic-non-draft-concept-types-array]
   (defmethod cpv/valid-parameter-options concept-type
     [_]
     {:name cpv/string-param-options
@@ -295,7 +295,7 @@
      :provider cpv/string-param-options
      :id cpv/string-param-options}))
 
-(doseq [concept-type (cc/get-draft-concept-types-array)]
+(doseq [concept-type cc/get-draft-concept-types-array]
   (defmethod cpv/valid-parameter-options concept-type
     [_]
     {:short-name cpv/string-plus-and-options

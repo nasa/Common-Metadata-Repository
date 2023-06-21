@@ -198,7 +198,7 @@
    :concept-id :string
    :keyword :keyword})
 
-(doseq [concept-type (cc/get-generic-non-draft-concept-types-array)]
+(doseq [concept-type cc/get-generic-non-draft-concept-types-array]
   (defmethod common-params/param-mappings concept-type
     [_]
     {:name :string
@@ -207,7 +207,7 @@
      :native-id :string
      :concept-id :string}))
 
-(doseq [concept-type (cc/get-draft-concept-types-array)]
+(doseq [concept-type cc/get-draft-concept-types-array]
   (defmethod common-params/param-mappings concept-type
     [_]
     {:short-name :string
