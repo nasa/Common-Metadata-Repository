@@ -18,7 +18,7 @@ For example `jest cmr.test.js` will run that test file. Test output is produced 
 
 # Testing locally
 
-The lambda can be executed locally using Docker and the amazon/aws-lambda-nodejs:18 image. Run the following in `browse-scaler root directory` (It must be run on the root dir if you get an error `Error: Cannot find module 'index'` it is likely that you tried to start it up in the `/src` dir) to start the lambda in docker and listening on host port 9000. In order ot have active cache you must spin up your own redis docker container. This can be done with: `docker container run -p 6379:6379 redis:7` note if this is not installed on your machine initially, docker will pull down the image.
+The lambda can be executed locally using Docker and the amazon/aws-lambda-nodejs:18 image. Run the following in `browse-scaler root directory` (It must be run on the root dir if you get an error `Error: Cannot find module 'index'` it is likely that you tried to start it up in the `/src` dir) to start the lambda in docker and listening on host port 9000. In order ot have active cache you must spin up your own redis docker container. This can be done with: `docker container run -p 6379:6379 redis:bullseye-7` note if this is not installed on your machine initially, docker will pull down the image.
 
 ```
 docker run --rm \
