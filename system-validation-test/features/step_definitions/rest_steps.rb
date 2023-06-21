@@ -153,8 +153,29 @@ Given('I use/add extension {string}') do |extension|
   @url_extension = extension
 end
 
-Given('I use/add url path {string}') do |path|
+Given('I use url path {string}') do |path|
   @url_path = path
+end
+
+Given('I add url path {string}') do |path|
+  @url_path ||= ''
+  @url_path = @url_path.concat(path)
+end
+
+Given('I use the {string} endpoint') do |endpoint|
+  case endpoint
+  when 'provider', 'providers'
+    @url_path = 'providers/'.dup
+  when 'collection', 'collections'
+    @url_path = 'collections/'.dup
+  when 'subscription', 'subscriptions'
+    @url_path = 'subscriptions/'.dup
+  end
+end
+
+Given('I add the environment variable {string} to the url path') do |variable|
+  environmentVariable = ENV[variable]
+  @url_path = @url_path.concat(environmentVariable)
 end
 
 Given(/^I (want|ask for|request) (an? )?"(\w+)"( (response|returned))?$/) do |_, _, format, _|

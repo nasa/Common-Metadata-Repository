@@ -1,6 +1,6 @@
 (ns cmr.search.services.parameters.converters.geojson
   "Contains functions to sanitize geojson files so they don't break our parsing"
-  (:require 
+  (:require
     [cheshire.core :as json]
     [clojure.java.io :as io]
     [clojure.string :as str]
@@ -14,13 +14,14 @@
     [cmr.search.services.parameters.converters.geometry :as geo]
     [cmr.common.util :as util]))
 
-
 (defn- remove-features-with-no-geometry
-  "Removes featgures that have null geometry value"
+  "Removes features that have null geometry value"
   [geojson]
   (let [features (get geojson "features" [])
         geom-features (filter #(get % "geometry") features)]
-     (assoc geojson "features" geom-features)))
+    (if (seq geom-features)
+      (assoc geojson "features" geom-features)
+      (errors/throw-service-error :bad-request "Shapefile has no features"))))
 
 (def geojson-sanitizers
   "Functions that sanitize geojson files (represented as Clojure data structures"
@@ -36,7 +37,3 @@
                               geojson
                               geojson-sanitizers)]
     (json/generate-stream sanitized-map (io/writer file))))
-  
-  
-  
-  
