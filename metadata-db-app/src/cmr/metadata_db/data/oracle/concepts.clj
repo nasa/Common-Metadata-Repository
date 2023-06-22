@@ -381,7 +381,8 @@
                                                                                      (order-by (desc :revision-id)))))))))
          dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                               (util/time-execution
-                               (dynamo/get-concept concept-id)))]
+                               (db-result->concept-map concept-type nil (:provider-id provider)
+                                                       (first (dynamo/get-concept concept-id)))))]
      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
        (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
        (info "Output from EFS get-concept: " (second efs-concept-get))
@@ -411,7 +412,8 @@
                                                                                                   (= :revision-id ~revision-id)))))))))
            dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
-                                 (dynamo/get-concept concept-id revision-id)))]
+                                 (db-result->concept-map concept-type nil (:provider-id provider)
+                                                         (first (dynamo/get-concept concept-id)))))]
        (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
          (info "Output of EFS get-concept: " (second efs-concept-get))
@@ -517,7 +519,7 @@
                                                              (j/db-do-prepared db stmt values))) " ms."))
           (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
             (info "Runtime of DynamoDB save-concept: " (first (util/time-execution
-                                                               (dynamo/save-concept concept)))))
+                                                               (dynamo/save-concept (concept->insert-args concept (:small provider)))))))
           (when (and
                  (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                  (= false (:deleted concept)))

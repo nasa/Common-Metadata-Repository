@@ -54,7 +54,7 @@
 (defn get-concepts-provided
   "Gets a group of concepts from DynamoDB"
   [concept-id-revision-id-tuples]
-  (map (fn [batch] (far/batch-get-item connection-options {(dynamo-config/dynamo-table) {:prim-kvs (vec batch)}})) (partition-all 100 (map concept-revision-tuple->key concept-id-revision-id-tuples))))
+  (doall (map (fn [batch] (far/batch-get-item connection-options {(dynamo-config/dynamo-table) {:prim-kvs (vec batch)}})) (partition-all 100 (map concept-revision-tuple->key concept-id-revision-id-tuples)))))
 
 (defn get-concepts
   "Gets a group of concepts from DynamoDB based on search parameters"
@@ -80,7 +80,7 @@
 (defn delete-concepts-provided
   "Deletes multiple concepts from DynamoDB"
   [concept-id-revision-id-tuples]
-  (map (fn [batch] (far/batch-write-item connection-options {(dynamo-config/dynamo-table) {:delete (vec batch)}})) (partition-all 25 (map concept-revision-tuple->key concept-id-revision-id-tuples))))
+  (doall (map (fn [batch] (far/batch-write-item connection-options {(dynamo-config/dynamo-table) {:delete (vec batch)}})) (partition-all 25 (map concept-revision-tuple->key concept-id-revision-id-tuples)))))
 
 (defn delete-concepts
   "Deletes multiple concepts from DynamoDB by search parameters"
