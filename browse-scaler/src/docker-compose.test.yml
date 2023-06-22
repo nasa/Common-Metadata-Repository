@@ -2,7 +2,7 @@ version: '3'
 
 services:
   redis:
-    image: redis:7
+    image: redis:7-bullseye
   browse-scaler-cicd:
     image: browse-scaler:test-cicd
     build:
