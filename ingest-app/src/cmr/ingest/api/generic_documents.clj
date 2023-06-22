@@ -3,8 +3,7 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clojure.java.io :as jio]
-   [clojure.set :as set]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.generics :as gconfig]
@@ -12,13 +11,11 @@
    [cmr.common.config :as cfg]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :refer [defn-timed]]
+   [cmr.common.util :as util :refer [defn-timed]]
    [cmr.ingest.api.core :as api-core]
-   [cmr.ingest.services.messages :as messages]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
-   [cmr.schema-validation.json-schema :as js-validater]
-   [cmr.common.util :as util]))
+   [cmr.schema-validation.json-schema :as js-validater]))
 
 (defn disabled-for-ingest?
   "Determine if a generic schema is disabled for ingest
@@ -54,6 +51,20 @@
   [route-params]
   (common-concepts/singularize-concept-type (:concept-type route-params)))
 
+(def draft-concept->spec-map
+  {:collection-draft :umm-c
+   :service-draft :umm-s
+   :tool-draft :umm-t
+   :variable-draft :umm-var})
+
+(defn is-draft-concept?
+  "This function checks to see if the concept to be ingested or updated
+  is a draft concept."
+  [request]
+  (let [route-params (:route-params request)
+        concept-type (concept-type->singular route-params)]
+    (string/includes? (name concept-type) "draft")))
+
 (defn prepare-generic-document
   "Prepares a document to be ingested so that search can retrieve the contents.
    Throws exceptions if something goes wrong, returns a map otherwise."
@@ -71,8 +82,12 @@
         document (json/parse-string raw-document true)
         specification (:MetadataSpecification document)
         spec-key (csk/->kebab-case-keyword (:Name specification ""))
-        spec-version (:Version specification)]
-    (if (not= concept-type spec-key)
+        spec-version (:Version specification)
+        document-name (or (:Name document)
+                          (:ShortName document)
+                          (when (is-draft-concept? request) "Draft"))]
+    (if (and (not= concept-type spec-key)
+             (not= (concept-type draft-concept->spec-map) spec-key))
       (throw UnsupportedOperationException)
       {:concept (assoc {}
                        :metadata raw-document
@@ -81,7 +96,7 @@
                        :format (str "application/vnd.nasa.cmr.umm+json;version=" spec-version)
                        :native-id native-id
                        :user-id (api-core/get-user-id request-context headers)
-                       :extra-fields {:document-name (:Name document)
+                       :extra-fields {:document-name document-name
                                       :schema spec-key})
        :spec-key spec-key
        :spec-version spec-version
@@ -142,10 +157,10 @@
   [request]
   (let [res (prepare-generic-document request)
         headers (:headers request)
-        {:keys [spec-key spec-version provider-id native-id request-context concept]} res
-        metadata (:metadata concept)
-        metadata-json (json/generate-string concept)]
-    (validate-document-against-schema spec-key spec-version metadata)
+        {:keys [spec-key spec-version request-context concept]} res
+        metadata (:metadata concept)]
+    (when-not (is-draft-concept? request)
+      (validate-document-against-schema spec-key spec-version metadata))
     (ingest-document request-context concept headers)))
 
 (defn read-generic-document
@@ -166,7 +181,8 @@
         headers (:headers request)
         {:keys [spec-key spec-version request-context concept]} res
         metadata (:metadata concept)]
-    (validate-document-against-schema spec-key spec-version metadata)
+    (when-not (is-draft-concept? request)
+      (validate-document-against-schema spec-key spec-version metadata))
     (ingest-document request-context concept headers)))
 
 (defn delete-generic-document

@@ -158,7 +158,8 @@
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
   (defmethod q2e/concept-type->field-mappings concept-type
     [_]
-    {:provider :provider-id}))
+    {:provider :provider-id
+     :short-name :name}))
 
 (defmethod q2e/elastic-field->query-field-mappings :autocomplete
   [_]
@@ -255,12 +256,21 @@
    :name "subscription-name-lowercase"
    :type "subscription-type-lowercase"})
 
-;; TODO Generic work - this would be nice to put into a configuration file.
-(doseq [concept-type (concepts/get-generic-concept-types-array)]
+(doseq [concept-type concepts/get-generic-non-draft-concept-types-array]
   (defmethod q2e/field->lowercase-field-mappings concept-type
     [_]
     {:provider :provider-id-lowercase
      :native-id :native-id-lowercase}))
+
+(doseq [concept-type concepts/get-draft-concept-types-array]
+  (defmethod q2e/field->lowercase-field-mappings concept-type
+    [_]
+    {:short-name :name-lowercase
+     :name :name-lowercase
+     :provider :provider-id-lowercase
+     :native-id :native-id-lowercase
+     :platform :platform-lowercase
+     :project :project-lowercase}))
 
 (defn- doc-values-lowercase-field-name
   "Returns the doc-values field-name for the given field."
