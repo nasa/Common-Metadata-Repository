@@ -173,9 +173,6 @@
 (defn- get-current-sids
   "Returns a Ring response with the current user's sids"
   [request-context params]
-  (print "p params:" params "\n")
-  (error "e params:" params "\n")
-  (def mypramas params)
   (pv/validate-current-sids-params params)
   (let [result (acl-service/get-current-sids request-context params)]
     {:status 200
