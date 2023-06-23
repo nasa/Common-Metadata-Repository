@@ -43,7 +43,7 @@
 (defn save-concept
   [concept]
   (info "Concept passed to dynamo/save-concept: " concept)
-  (far/put-item connection-options (dynamo-config/dynamo-table) (dissoc concept :metadata)))
+  (far/put-item connection-options (dynamo-config/dynamo-table) concept))
 
 (defn get-concept
   "Gets a concept from DynamoDB"

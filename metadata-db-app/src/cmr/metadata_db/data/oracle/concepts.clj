@@ -519,7 +519,7 @@
                                                              (j/db-do-prepared db stmt values))) " ms."))
           (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
             (info "Runtime of DynamoDB save-concept: " (first (util/time-execution
-                                                               (dynamo/save-concept (zipmap (map keyword cols) values))))))
+                                                               (dynamo/save-concept (dissoc concept :metadata :created-at :revision-date))))))
           (when (and
                  (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                  (= false (:deleted concept)))
