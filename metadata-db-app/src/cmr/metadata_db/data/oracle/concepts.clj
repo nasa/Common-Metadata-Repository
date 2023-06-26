@@ -459,8 +459,8 @@
                                  (doall (map (fn [concept] 
                                                (if concept
                                                  (db-result->concept-map concept-type nil (:provider-id provider) concept)
-                                                 nil))))
-                                 (dynamo/get-concepts-provided concept-id-revision-id-tuples)))]
+                                                 nil))
+                                             (dynamo/get-concepts-provided concept-id-revision-id-tuples)))))]
       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
         (info "Output of EFS get-concepts: " (second efs-concepts-get))
