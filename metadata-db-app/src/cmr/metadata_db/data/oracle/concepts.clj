@@ -139,6 +139,22 @@
                              :deleted (not= (int deleted) 0)
                              :transaction-id transaction_id}))))
 
+(defn db-result->concept-map-dynamo
+  [concept-type provider-id result]
+  (when result
+    (let [{:keys [native_id
+                  concept_id
+                  format
+                  revision_id
+                  deleted]} result]
+      (util/remove-nil-keys {:concept-type concept-type
+                             :native-id native_id
+                             :concept-id concept_id
+                             :provider-id provider-id
+                             :format (db-util/db-format->mime-type format)
+                             :revision-id (int revision_id)
+                             :deleted (not= (int deleted) 0)}))))
+
 (defn concept->common-insert-args
   "Converts a concept into a set of insert arguments that is common for all provider concept types."
   [concept]
@@ -382,7 +398,7 @@
          dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                               (util/time-execution
                                (if-let [get-result (first (dynamo/get-concept concept-id))]
-                                 (db-result->concept-map concept-type nil (:provider-id provider) get-result)
+                                 (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result)
                                  nil)))]
      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
        (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
@@ -414,7 +430,7 @@
            dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
                                  (if-let [get-result (first (dynamo/get-concept concept-id))]
-                                   (db-result->concept-map concept-type nil (:provider-id provider) get-result)
+                                   (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result)
                                    nil)))]
        (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
@@ -458,7 +474,7 @@
                                 (util/time-execution
                                  (doall (map (fn [concept] 
                                                (if concept
-                                                 (db-result->concept-map concept-type nil (:provider-id provider) concept)
+                                                 (db-result->concept-map-dynamo concept-type (:provider-id provider) concept)
                                                  nil))
                                              (dynamo/get-concepts-provided concept-id-revision-id-tuples)))))]
       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
