@@ -142,17 +142,17 @@
 (defn db-result->concept-map-dynamo
   [concept-type provider-id result]
   (when result
-    (let [{:keys [native_id
-                  concept_id
+    (let [{:keys [native-id
+                  concept-id
                   format
-                  revision_id
+                  revision-id
                   deleted]} result]
       (util/remove-nil-keys {:concept-type concept-type
-                             :native-id native_id
-                             :concept-id concept_id
+                             :native-id native-id
+                             :concept-id concept-id
                              :provider-id provider-id
                              :format (db-util/db-format->mime-type format)
-                             :revision-id (int revision_id)
+                             :revision-id (int revision-id)
                              :deleted (not= (int deleted) 0)}))))
 
 (defn concept->common-insert-args
