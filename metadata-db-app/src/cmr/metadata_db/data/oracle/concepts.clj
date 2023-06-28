@@ -153,7 +153,7 @@
                              :provider-id provider-id
                              :format (db-util/db-format->mime-type format)
                              :revision-id (int revision-id)
-                             :deleted (not= (int deleted) 0)}))))
+                             :deleted deleted}))))
 
 (defn concept->common-insert-args
   "Converts a concept into a set of insert arguments that is common for all provider concept types."
