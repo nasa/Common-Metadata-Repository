@@ -397,9 +397,8 @@
                                                                                      (order-by (desc :revision-id)))))))))
          dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                               (util/time-execution
-                               (if-let [get-result (first (dynamo/get-concept concept-id))]
-                                 (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result)
-                                 nil)))]
+                               (when-let [get-result (dynamo/get-concept concept-id)]
+                                 (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))]
      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
        (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
        (info "Output from EFS get-concept: " (second efs-concept-get))
@@ -430,9 +429,8 @@
                                                                                                   (= :revision-id ~revision-id)))))))))
            dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
-                                 (if-let [get-result (first (dynamo/get-concept concept-id))]
-                                   (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result)
-                                   nil)))]
+                                 (when-let [get-result (dynamo/get-concept concept-id)]
+                                   (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))]
        (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
          (info "Output of EFS get-concept: " (second efs-concept-get))

@@ -48,9 +48,9 @@
 (defn get-concept
   "Gets a concept from DynamoDB"
   ([concept-id]
-   (far/query connection-options (dynamo-config/dynamo-table) {:concept-id [:eq concept-id]} {:order :desc :limit 1}))
+   (first (far/query connection-options (dynamo-config/dynamo-table) {:concept-id [:eq concept-id]} {:order :desc :limit 1})))
   ([concept-id revision-id]
-   (far/get-item connection-options (dynamo-config/dynamo-table) {:concept-id [:eq concept-id] :revision-id [:eq revision-id]})))
+   (far/get-item connection-options (dynamo-config/dynamo-table) {:concept-id concept-id :revision-id revision-id})))
 
 (defn get-concepts-provided
   "Gets a group of concepts from DynamoDB"
