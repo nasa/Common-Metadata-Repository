@@ -473,9 +473,8 @@
           dynamo-concepts-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
                                  (doall (map (fn [concept] 
-                                               (if concept
-                                                 (db-result->concept-map-dynamo concept-type (:provider-id provider) concept)
-                                                 nil))
+                                               (when concept
+                                                 (db-result->concept-map-dynamo concept-type (:provider-id provider) concept)))
                                              (dynamo/get-concepts-provided concept-id-revision-id-tuples)))))]
       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
