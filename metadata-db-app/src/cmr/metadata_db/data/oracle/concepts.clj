@@ -429,7 +429,7 @@
                                                                                                   (= :revision-id ~revision-id)))))))))
            dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
-                                 (when-let [get-result (dynamo/get-concept concept-id)]
+                                 (when-let [get-result (dynamo/get-concept concept-id revision-id)]
                                    (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))]
        (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
