@@ -408,11 +408,9 @@
      (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
        (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms.")
        (info "Output from Oracle get-concept: " (second oracle-concept-get)))
-     (if dynamo-concept-get
-       (merge (second dynamo-concept-get) (second efs-concept-get))
-       (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-         (merge (second oracle-concept-get) (second efs-concept-get))
-         (second oracle-concept-get)))))
+     (if oracle-concept-get
+       (second oracle-concept-get)
+       (merge (second dynamo-concept-get) (second efs-concept-get)))))
   ([db concept-type provider concept-id revision-id]
    (if revision-id
      (let [table (tables/get-table-name provider concept-type)
@@ -440,11 +438,9 @@
        (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
          (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms.")
          (info "Output of Oracle get-concept: " (second oracle-concept-get)))
-       (if dynamo-concept-get
-         (merge (second dynamo-concept-get) (second efs-concept-get))
-         (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-           (merge (second oracle-concept-get) (second efs-concept-get))
-           (second oracle-concept-get))))
+       (if oracle-concept-get
+         (second oracle-concept-get)
+         (merge (second dynamo-concept-get) (second efs-concept-get))))
      (get-concept db concept-type provider concept-id))))
 
 (defn get-concepts
@@ -483,14 +479,10 @@
         (info "Output of DynamoDB get-concepts: " (second dynamo-concepts-get)))
       (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
         (info "Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms.")
-        (info "Output of Oracle get-concepts: " (second oracle-concepts-get))) 
-      (if dynamo-concepts-get
-        (merge (second dynamo-concepts-get) (second efs-concepts-get))
-        (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-          (doall (map (fn [oracle-concept]
-                 (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-concepts-get)))))
-               (second oracle-concepts-get)))
-          (second oracle-concepts-get))))
+        (info "Output of Oracle get-concepts: " (second oracle-concepts-get)))
+      (if oracle-concepts-get
+        (second oracle-concepts-get)
+        (merge (second dynamo-concepts-get) (second efs-concepts-get))))
     []))
 
 (defn get-latest-concepts
