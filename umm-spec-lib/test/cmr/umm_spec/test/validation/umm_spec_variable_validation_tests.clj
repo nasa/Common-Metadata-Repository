@@ -15,6 +15,7 @@
           :Dimensions
           :FillValues
           :IndexRanges
+          :InstanceInformation
           :LongName
           :MeasurementIdentifiers
           :MetadataSpecification
