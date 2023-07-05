@@ -151,7 +151,7 @@
                              :native-id native-id
                              :concept-id concept-id
                              :provider-id provider-id
-                             :format (db-util/db-format->mime-type format)
+                             :format (when format (db-util/db-format->mime-type format))
                              :revision-id (int revision-id)
                              :deleted deleted}))))
 
