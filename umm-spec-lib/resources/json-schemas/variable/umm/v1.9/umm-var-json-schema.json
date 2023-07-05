@@ -128,6 +128,10 @@
       },
       "minItems": 1
     },
+    "InstanceInformation": {
+      "description": "Describes a store (zarr) where a variable has been separated from its original data files and saved as its own entity.",
+      "$ref": "#/definitions/InstanceInformationType"
+    },
     "MetadataSpecification": {
       "description": "Requires the client, or user, to add in schema information into every variable record. It includes the schema's name, version, and URL location. The information is controlled through enumerations at the end of this schema.",
       "$ref": "#/definitions/MetadataSpecificationType"
@@ -495,6 +499,84 @@
       },
       "required": ["URLContentType", "Type", "URL"]
     },
+    "InstanceInformationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This object describes a store for a variable instance. A variable instance is when the variable is extracted from the original data files and stored somewhere.",
+      "properties": {
+        "URL": {
+          "description": "The internet location of the variable instance store.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "Format": {
+          "description": "Describes the format of the URL's data content so that users and applications know how to read and use the content. At this point in time, an industry standard mime-type does not exist, so a mime-type element will not be included. The controlled vocabulary for formats is maintained in the Keyword Management System (KMS): https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/DataFormat?gtm_scheme=DataFormat",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80
+        },
+        "Description": {
+          "description": "Brief description of the store or any other useful information about the store.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "DirectDistributionInformation": {
+          "description": "This element allows end users to get direct access to data products that are stored in the Amazon Web Service (AWS) S3 buckets. The sub elements include S3 credentials end point and a documentation URL as well as bucket prefix names and an AWS region.",
+          "$ref": "#/definitions/DirectDistributionInformationType"
+        },
+        "ChunkingInformation": {
+          "description": "Description of the chunking strategy for the store. Chunking information such as the chunk sizes should be documented.",
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": ["URL", "Format"]
+    },
+    "DirectDistributionInformationType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "This element allows end users to get direct access to data products that are stored in the Amazon Web Service (AWS) S3 buckets. The sub elements include S3 credentials end point and a documentation URL as well as bucket prefix names and an AWS region.",
+      "properties": {
+        "Region": {
+          "description": "Defines the possible values for the Amazon Web Service US Regions where the data product resides.",
+          "$ref": "#/definitions/DirectDistributionInformationRegionEnum"
+        },
+        "S3BucketAndObjectPrefixNames": {
+          "description": "Defines the possible values for the Amazon Web Service US S3 bucket and/or object prefix names.",
+          "type": "array",
+          "items": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1024,
+            "pattern": "[!-~]{1,1024}"
+          },
+          "minItems": 1
+        },
+        "S3CredentialsAPIEndpoint": {
+          "description": "Defines the URL where the credentials are stored.",
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "S3CredentialsAPIDocumentationURL": {
+          "description": "Defines the URL where the credential documentation are stored.",
+          "type": "string",
+          "format": "uri",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "required": ["Region", "S3CredentialsAPIEndpoint", "S3CredentialsAPIDocumentationURL"]
+    },
+    "DirectDistributionInformationRegionEnum": {
+      "description": "Defines the possible values for the Amazon Web Service US Regions where the data product resides.",
+      "type": "string",
+      "enum": ["us-east-1", "us-east-2", "us-west-1", "us-west-2"]
+    },
     "MetadataSpecificationType": {
       "type": "object",
       "additionalProperties": false,
@@ -503,7 +585,7 @@
         "URL": {
           "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
           "type": "string",
-          "enum": ["https://cdn.earthdata.nasa.gov/umm/variable/v1.8.2"]
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/variable/v1.9"]
         },
         "Name": {
           "description": "This element represents the name of the schema.",
@@ -513,7 +595,7 @@
         "Version": {
           "description": "This element represents the version of the schema.",
           "type": "string",
-          "enum": ["1.8.2"]
+          "enum": ["1.9"]
         }
       },
       "required": ["URL", "Name", "Version"]

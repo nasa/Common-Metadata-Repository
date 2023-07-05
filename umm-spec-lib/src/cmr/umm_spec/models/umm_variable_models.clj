@@ -5,6 +5,10 @@
 
 (defrecord UMM-Var
   [
+   ;; Describes a store (zarr) where a variable has been separated from its original data files and
+   ;; saved as its own entity.
+   InstanceInformation
+
    ;; Valid ranges of variable data values.
    ValidRanges
 
@@ -145,6 +149,34 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing SamplingIdentifierType)
 
+;; This object describes a store for a variable instance. A variable instance is when the variable
+;; is extracted from the original data files and stored somewhere.
+(defrecord InstanceInformationType
+  [
+   ;; The internet location of the variable instance store.
+   URL
+
+   ;; Describes the format of the URL's data content so that users and applications know how to read
+   ;; and use the content. At this point in time, an industry standard mime-type does not exist, so
+   ;; a mime-type element will not be included. The controlled vocabulary for formats is maintained
+   ;; in the Keyword Management System (KMS):
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/DataFormat?gtm_scheme=DataFormat
+   Format
+
+   ;; Brief description of the store or any other useful information about the store.
+   Description
+
+   ;; This element allows end users to get direct access to data products that are stored in the
+   ;; Amazon Web Service (AWS) S3 buckets. The sub elements include S3 credentials end point and a
+   ;; documentation URL as well as bucket prefix names and an AWS region.
+   DirectDistributionInformation
+
+   ;; Description of the chunking strategy for the store. Chunking information such as the chunk
+   ;; sizes should be documented.
+   ChunkingInformation
+  ])
+(record-pretty-printer/enable-record-pretty-printing InstanceInformationType)
+
 ;; Enables specification of Earth science keywords related to the collection. The Earth Science
 ;; keywords are chosen from a controlled keyword hierarchy maintained in the Keyword Management
 ;; System (KMS). The valid values can be found at the KMS website:
@@ -166,6 +198,27 @@
    DetailedVariable
   ])
 (record-pretty-printer/enable-record-pretty-printing ScienceKeywordType)
+
+;; This element allows end users to get direct access to data products that are stored in the Amazon
+;; Web Service (AWS) S3 buckets. The sub elements include S3 credentials end point and a
+;; documentation URL as well as bucket prefix names and an AWS region.
+(defrecord DirectDistributionInformationType
+  [
+   ;; Defines the possible values for the Amazon Web Service US Regions where the data product
+   ;; resides.
+   Region
+
+   ;; Defines the possible values for the Amazon Web Service US S3 bucket and/or object prefix
+   ;; names.
+   S3BucketAndObjectPrefixNames
+
+   ;; Defines the URL where the credentials are stored.
+   S3CredentialsAPIEndpoint
+
+   ;; Defines the URL where the credential documentation are stored.
+   S3CredentialsAPIDocumentationURL
+  ])
+(record-pretty-printer/enable-record-pretty-printing DirectDistributionInformationType)
 
 ;; Valid range data value of a variable: minimum and maximum values. For example, '-100, 5000'.
 (defrecord ValidRangeType

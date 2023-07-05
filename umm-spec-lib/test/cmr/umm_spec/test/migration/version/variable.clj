@@ -622,3 +622,34 @@
                      (dissoc :RelatedURLs))
         actual (migrate-variable "1.8.2" "1.8.1" vc-1-8-2)]
     (is (= vc-1-8-1 actual) "Document Match")))
+
+(def variable-concept-1-9
+  (-> variable-concept-1-8-2
+      (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/variable/v1.9"
+                                     :Name "UMM-Var"
+                                     :Version "1.9"})
+      (assoc :InstanceInformation
+             {:URL "s3://prod-giovanni-cache.s3.us-west-2.amazonaws.com/zarr/GPM_3IMERGHH_06_precipitationCal"
+              :Format "Zarr"
+              :Description "GPM_3IMERGHH_06_precipitationCal variable zarr store. Other brief end user information can go here."
+              :DirectDistributionInformation
+              {:Region "us-west-2"
+               :S3BucketAndObjectPrefixNames ["prod-giovanni-cache" "zarr/GPM_3IMERGHH_06_precipitationCal"]
+               :S3CredentialsAPIEndpoint "https://api.giovanni.earthdata.nasa.gov/s3credentials"
+               :S3CredentialsAPIDocumentationURL "https://disc.gsfc.nasa.gov/information/documents?title=In-region%20Direct%20S3%20Zarr%20Cache%20Access"}
+              :ChunkingInformation "Chunk size for this example is 1MB. It is optimized for time series."})))
+
+(deftest migrate-1-8-2->1-9
+  ;; Only MetadataSpecification's version is updated.
+  (let [vc-1-9 (-> variable-concept-1-8-2
+                   (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/variable/v1.9"
+                                                  :Name "UMM-Var"
+                                                  :Version "1.9"}))
+        actual (migrate-variable "1.8.2" "1.9" variable-concept-1-8-2)]
+    (is (= vc-1-9 actual) "Document Match")))
+
+(deftest migrate-1-9->1-8-2
+  ;; InstanceInformation is removed.
+  ;; MetadataSpecification version is converted.
+  (let [actual (migrate-variable "1.9" "1.8.2" variable-concept-1-9)]
+    (is (= variable-concept-1-8-2 actual) "Document Match")))
