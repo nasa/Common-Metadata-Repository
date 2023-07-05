@@ -55,7 +55,9 @@
   {:collection-draft :umm-c
    :service-draft :umm-s
    :tool-draft :umm-t
-   :variable-draft :umm-var})
+   :variable-draft :umm-var
+   :data-quality-summary-draft :data-quality-summary
+   :order-option-draft :order-option})
 
 (defn is-draft-concept?
   "This function checks to see if the concept to be ingested or updated
