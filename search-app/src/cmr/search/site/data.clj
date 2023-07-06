@@ -228,8 +228,8 @@
                      :stac-docs-url stac-docs-url
                      :static-cloudstac-url static-cloudstac-url)))
 
-(defn get-concept
-  "Provide concept data that will be rendered on concept landing page."
+(defn get-collection
+  "Provide collection data that will be rendered on collection landing page."
   [context concept-id]
   (assoc (base-page context)
          :concept-id concept-id

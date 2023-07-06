@@ -105,23 +105,7 @@
   (common-pages/render-html
    context
    "templates/collection-base.html"
-   (data/get-concept context concept-id)))
-
-(defn tool-page
-  "Prepare the tool landing page."
-  [context concept-id]
-  (common-pages/render-html
-   context
-   "templates/tool-base.html"
-   (data/get-concept context concept-id)))
-
-(defn variable-page
-  "Prepare the variable landing page."
-  [context concept-id]
-  (common-pages/render-html
-   context
-   "templates/variable-base.html"
-   (data/get-concept context concept-id)))
+   (data/get-collection context concept-id)))
 
 (defn csw-retirement
   "Prepare the CSW not found page."
