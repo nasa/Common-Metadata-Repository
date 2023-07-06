@@ -7,7 +7,7 @@
   "main": "index.js",
   "type": "module",
   "dependencies": {
-    "@aws-sdk/client-ssm": "^3.341.0",
+    "@aws-sdk/client-ssm": "^3.363.0",
     "axios": "^0.24.0",
     "node-fetch": "^2.6.7",
     "redis": "^2.8.0",
