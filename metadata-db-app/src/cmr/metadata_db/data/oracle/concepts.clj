@@ -152,7 +152,7 @@
                              :concept-id concept-id
                              :provider-id provider-id
                              :format (when format (db-util/db-format->mime-type format))
-                             :revision-id (int revision-id)
+                             :revision-id (when revision-id (int revision-id))
                              :deleted deleted}))))
 
 (defn concept->common-insert-args
