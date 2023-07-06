@@ -240,7 +240,9 @@
             "options[native-id][pattern]=true"))
             ;; Test for legacy documents but, some generics do not have a guid-id
             ;; Searching for a generic without an Id, namely grids will result in matching all grids
-            (if guid-id
+            ;; Id is not a valid search parameter for draft records.
+            (if (and guid-id
+                     (not (string/includes? concept-type-string "draft")))
               (testing "Testing id (GUID), the identifier that was assigned from legacy system in the parameter search"
               (are3 [plural-concept-type-name search-parameter concept-id-parameter options-flag]
                 (let [results (search-request plural-concept-type-name (str search-parameter "=" concept-id-parameter (if options-flag (str "&" options-flag) (str ""))))

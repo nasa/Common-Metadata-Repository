@@ -224,7 +224,11 @@
              :data-quality-summary ["1.0.0"]
              :order-option ["1.0.0"]
              :collection-draft ["1.0.0"]
-             :tool-draft ["1.0.0"]}
+             :tool-draft ["1.0.0"]
+             :service-draft ["1.0.0"]
+             :variable-draft ["1.0.0"]
+             :data-quality-summary-draft ["1.0.0"]
+             :order-option-draft ["1.0.0"]}
    :parser #(json/parse-string % true)})
 
 (defconfig approved-pipeline-documentation
