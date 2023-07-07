@@ -4,13 +4,14 @@
             [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.common.services.errors :as errors]
             [cmr.common.log :refer [debug error info trace warn]]
+            [cmr.common.util :as util]
             [taoensso.faraday :as far]
             [cmr.dynamo.config :as dynamo-config]))
 
 (defn concept-revision-tuple->key
   "Extracts data from a tuple structured as (concept-id, revision-id) into an associative array that can be used to query DynamoDB"
-  [tuple]
-  {:concept-id (first tuple) :revision-id (second tuple)})
+  [[concept-id revision-id]]
+  {:concept-id concept-id :revision-id revision-id})
 
 (def connection-options 
   {:endpoint (dynamo-config/dynamo-url)})
@@ -31,7 +32,7 @@
 (defn get-concepts-provided
   "Gets a group of concepts from DynamoDB. DynamoDB imposes a 100 batch limit on batch-get-item so that is applied here"
   [concept-id-revision-id-tuples]
-  (remove nil? (doall (map (fn [batch] (far/batch-get-item connection-options {(dynamo-config/dynamo-table) {:prim-kvs (vec batch)}})) (partition-all 100 (map concept-revision-tuple->key concept-id-revision-id-tuples))))))
+  (util/remove-nils-empty-maps-seqs (doall (map (fn [batch] (far/batch-get-item connection-options {(dynamo-config/dynamo-table) {:prim-kvs (vec batch)}})) (partition-all 100 (map concept-revision-tuple->key concept-id-revision-id-tuples))))))
 
 (defn get-concepts
   "Gets a group of concepts from DynamoDB based on search parameters"

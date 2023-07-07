@@ -92,11 +92,11 @@
                               (util/time-execution
                                (dynamo/delete-concepts params)))]
     (when efs-force-delete
-      (info "Runtime of EFS force-delete-concept-by-params: " (first efs-force-delete)))
+      (info "ORT Runtime of EFS force-delete-concept-by-params: " (first efs-force-delete)))
     (when oracle-force-delete
-      (info "Runtime of Oracle force-delete-concept-by-params: " (first oracle-force-delete)))
+      (info "ORT Runtime of Oracle force-delete-concept-by-params: " (first oracle-force-delete)))
     (when dynamo-force-delete
-      (info "Runtime of DynamoDB force-delete-concept-by-params: " (first dynamo-force-delete)))
+      (info "ORT Runtime of DynamoDB force-delete-concept-by-params: " (first dynamo-force-delete)))
     (if oracle-force-delete
       (second oracle-force-delete)
       (second dynamo-force-delete))))
