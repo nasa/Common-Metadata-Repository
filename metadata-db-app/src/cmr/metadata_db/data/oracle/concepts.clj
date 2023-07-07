@@ -476,12 +476,12 @@
         (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
         (info "Output of EFS get-concepts: " (second efs-concepts-get))
         (info "Runtime of DynamoDB get-concepts: " (first dynamo-concepts-get) " ms.")
-        (info "Output of DynamoDB get-concepts: " (second dynamo-concepts-get)))
+        (info "Output of DynamoDB get-concepts: " (second (doall dynamo-concepts-get))))
       (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
         (info "Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms.")
-        (info "Output of Oracle get-concepts: " (second oracle-concepts-get)))
+        (info "Output of Oracle get-concepts: " (second (doall oracle-concepts-get))))
       (if dynamo-concepts-get
-        (merge (second dynamo-concepts-get) (second oracle-concepts-get))
+        ((second dynamo-concepts-get))
         (second oracle-concepts-get)))
     []))
 
