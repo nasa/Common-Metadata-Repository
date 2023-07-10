@@ -12,6 +12,7 @@
   :dependencies [[cheshire "5.10.0"]
                  [clj-http "3.11.0"]
                  [clj-time "0.15.1"]
+                 [com.amazonaws/aws-java-sdk-core "1.12.487"]
                  [com.fasterxml.jackson.core/jackson-core "2.13.2"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [compojure "1.6.1"]

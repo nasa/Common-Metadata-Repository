@@ -17,7 +17,8 @@
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]]
    [cmr.efs.config :as efs-config]
    [cmr.efs.connection :as efs]
-   [cmr.dynamo.config :as dynamo-config])
+   [cmr.dynamo.config :as dynamo-config]
+   [cmr.dynamo.connection :as dynamo])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -137,6 +138,22 @@
                                            (oracle/oracle-timestamp->str-time db created_at))
                              :deleted (not= (int deleted) 0)
                              :transaction-id transaction_id}))))
+
+(defn db-result->concept-map-dynamo
+  [concept-type provider-id result]
+  (when result
+    (let [{:keys [native-id
+                  concept-id
+                  format
+                  revision-id
+                  deleted]} result]
+      (util/remove-nil-keys {:concept-type concept-type
+                             :native-id native-id
+                             :concept-id concept-id
+                             :provider-id provider-id
+                             :format (when format (db-util/db-format->mime-type format))
+                             :revision-id (when revision-id (int revision-id))
+                             :deleted deleted}))))
 
 (defn concept->common-insert-args
   "Converts a concept into a set of insert arguments that is common for all provider concept types."
@@ -380,17 +397,20 @@
                                                                                      (order-by (desc :revision-id)))))))))
          dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                               (util/time-execution
-                               ))]
+                               (when-let [get-result (dynamo/get-concept concept-id)]
+                                 (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))]
      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-       (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.\nValue gotten from EFS get-concept: " (second efs-concept-get))
-       (info "Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms.\nValue gotten from DynamoDB get-concept: " (second dynamo-concept-get)))
+       (info "ORT Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
+       (info "Output from EFS get-concept: " (second efs-concept-get))
+       (info "ORT Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms.")
+       (info "Output from DynamoDB get-concept: " (second dynamo-concept-get))
+       (info "Output of Dynamo + EFS: " (merge (second dynamo-concept-get) (second efs-concept-get)))) 
      (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
-       (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms."))
-     (if oracle-concept-get
-       (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-         (assoc (second oracle-concept-get) :metadata (:metadata (second efs-concept-get)))
-         (second oracle-concept-get))
-       (second dynamo-concept-get))))
+       (info "ORT Runtime of Oracle get-concept: " (first oracle-concept-get) " ms.")
+       (info "Output from Oracle get-concept: " (second oracle-concept-get)))
+     (if dynamo-concept-get
+       (merge (second dynamo-concept-get) (second efs-concept-get))
+       (second oracle-concept-get))))
   ([db concept-type provider concept-id revision-id]
    (if revision-id
      (let [table (tables/get-table-name provider concept-type)
@@ -407,17 +427,20 @@
                                                                                                   (= :revision-id ~revision-id)))))))))
            dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
-                                 ))]
+                                 (when-let [get-result (dynamo/get-concept concept-id revision-id)]
+                                   (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))]
        (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-         (info "Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
-         (info "Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms."))
+         (info "ORT Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
+         (info "Output of EFS get-concept: " (second efs-concept-get))
+         (info "ORT Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms.")
+         (info "Output of DynamoDB get-concept: " (second dynamo-concept-get))
+         (info "Output of Dynamo + EFS: " (merge (second dynamo-concept-get) (second efs-concept-get))))
        (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
-         (info "Runtime of Oracle get-concept: " (first oracle-concept-get) " ms."))
-       (if oracle-concept-get
-         (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-           (assoc (second oracle-concept-get) :metadata (:metadata (second efs-concept-get)))
-           (second oracle-concept-get))
-         (second dynamo-concept-get)))
+         (info "ORT Runtime of Oracle get-concept: " (first oracle-concept-get) " ms.")
+         (info "Output of Oracle get-concept: " (second oracle-concept-get)))
+       (if dynamo-concept-get
+         (merge (second dynamo-concept-get) (second efs-concept-get))
+         (second oracle-concept-get)))
      (get-concept db concept-type provider concept-id))))
 
 (defn get-concepts
@@ -445,19 +468,21 @@
                                                  (su/query conn stmt)))))))
           dynamo-concepts-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
-                                 ))]
+                                 (doall (map (fn [concept] 
+                                               (when concept
+                                                 (db-result->concept-map-dynamo concept-type (:provider-id provider) concept)))
+                                             (dynamo/get-concepts-provided concept-id-revision-id-tuples)))))]
       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-        (info "Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
-        (info "Runtime of DynamoDB get-concepts: " (first dynamo-concepts-get) " ms."))
+        (info "ORT Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
+        (info "Output of EFS get-concepts: " (second efs-concepts-get))
+        (info "ORT Runtime of DynamoDB get-concepts: " (first dynamo-concepts-get) " ms.")
+        (info "Output of DynamoDB get-concepts: " (second (doall dynamo-concepts-get))))
       (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
-        (info "Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms."))
-      (if oracle-concepts-get
-        (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-          (map (fn [oracle-concept]
-                 (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-concepts-get)))))
-               (second oracle-concepts-get))
-          (second oracle-concepts-get))
-        (second dynamo-concepts-get)))
+        (info "ORT Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms.")
+        (info "Output of Oracle get-concepts: " (second (doall oracle-concepts-get))))
+      (if dynamo-concepts-get
+        ((second dynamo-concepts-get))
+        (second oracle-concepts-get)))
     []))
 
 (defn get-latest-concepts
@@ -503,15 +528,15 @@
                            (string/join "," (repeat (count values) "?")))]
           (trace "Executing" stmt "with values" (pr-str values))
           (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
-            (info "Runtime of Oracle save-concept: " (first (util/time-execution
+            (info "ORT Runtime of Oracle save-concept: " (first (util/time-execution
                                                              (j/db-do-prepared db stmt values))) " ms."))
           (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-            (info "Runtime of DynamoDB save-concept: " (first (util/time-execution
-                                                               ))))
+            (info "ORT Runtime of DynamoDB save-concept: " (first (util/time-execution
+                                                               (dynamo/save-concept concept)))))
           (when (and
                  (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                  (= false (:deleted concept)))
-            (info "Runtime of EFS save-concept: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))
+            (info "ORT Runtime of EFS save-concept: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))
           (after-save conn provider concept)
           nil)))
     (catch Exception e
@@ -535,13 +560,16 @@
                          (j/execute! this stmt)))
         dynamo-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                         (util/time-execution
-                         ))]
+                         (dynamo/delete-concept concept-id revision-id)))]
     (when efs-delete
-      (info "Runtime of EFS force-delete: " (first efs-delete) " ms."))
+      (info "ORT Runtime of EFS force-delete: " (first efs-delete) " ms.")
+      (info "Output of EFS force-delete: " (second efs-delete)))
     (when oracle-delete
-      (info "Runtime of Oracle force-delete: " (first oracle-delete) " ms."))
+      (info "ORT Runtime of Oracle force-delete: " (first oracle-delete) " ms.")
+      (info "Output of Oracle force-delete: " (second oracle-delete)))
     (when dynamo-delete
-      (info "Runtime of DynamoDB force-delete: " (first dynamo-delete) " ms."))
+      (info "ORT Runtime of DynamoDB force-delete: " (first dynamo-delete) " ms.")
+      (info "Output of DynamoDB force-delete: " (second dynamo-delete)))
     (if oracle-delete
       (second oracle-delete)
       (second dynamo-delete))))
@@ -571,13 +599,16 @@
                              (j/execute! conn stmt)))
             dynamo-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                             (util/time-execution
-                             ))]
+                             (dynamo/delete-concepts-provided concept-id-revision-id-tuples)))]
         (when efs-delete
-          (info "Runtime of EFS force-delete-concepts: " (first efs-delete) " ms."))
+          (info "ORT Runtime of EFS force-delete-concepts: " (first efs-delete) " ms.")
+          (info "Output from EFS force-delete-concepts: " (second efs-delete)))
         (when oracle-delete
-          (info "Runtime of Oracle force-delete-concepts: " (first oracle-delete) " ms."))
+          (info "ORT Runtime of Oracle force-delete-concepts: " (first oracle-delete) " ms.")
+          (info "Output from Oracle force-delete-concepts: " (second oracle-delete)))
         (when dynamo-delete
-          (info "Runtime of DynamoDB force-delete-concepts: " (first dynamo-delete) " ms."))
+          (info "ORT Runtime of DynamoDB force-delete-concepts: " (first dynamo-delete) " ms.")
+          (info "Output from DynamoDB force-delete-concepts: " (second dynamo-delete)))
         (if oracle-delete
           (second oracle-delete)
           (second dynamo-delete))))))
