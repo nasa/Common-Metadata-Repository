@@ -257,10 +257,26 @@
      (concat catalog-item-permissions
              ingest-management-permissions))))
 
+(defn- enforcement-fields-applicable?
+  "Checks provider catalog-item acls for granule concept to confirm if any acls apply temporal or access-value restrictions."
+  [concept acls]
+  (if (:deleted concept)
+    false
+    (some #(as-> % value
+                 (:catalog-item-identity value)
+                 (select-keys value [:granule-identifier :collection-identifier])
+                 (vals value)
+                 (mapcat keys value)
+                 (some #{:access-value :temporal} value))
+          (get (first acls) (:provider-id concept)))))
+
 (defn-timed add-acl-enforcement-fields
   "Adds all fields necessary for comparing concept map against ACLs."
-  [context concept]
-  (let [concept (acl-matchers/add-acl-enforcement-fields-to-concept context concept)]
+  [context concept acls]
+  (let [concept (acl-matchers/add-acl-enforcement-fields-to-concept context
+                                                                    ;; If no acls exist in the provider that govern enforcement fields,
+                                                                    ;; set deleted to true to avoid parsing the granule metadata
+                                                                    (assoc concept :deleted (not (enforcement-fields-applicable? concept acls))))]
     (if-let [parent-collection (:parent-collection concept)]
       (-> concept
           (assoc :parent-collection
@@ -276,6 +292,8 @@
     (assoc concept :parent-collection parent)))
 
 (defn- prepare-permission-acls
+  "Group acls by provider, return catalog-item acl and ingest management acl maps seperately.  We do this to avoid
+  filtering the same list of acls repeatidly for permission requests related to large granule count orders of the same provider."
   [acls]
   (let [provider-acls (group-by (fn [acl]
                                   (or (get-in acl [:catalog-item-identity :provider-id])
@@ -308,7 +326,7 @@
 
     (into {}
           (for [concept concepts-with-parents
-                :let [concept-with-acl-fields (add-acl-enforcement-fields context concept)]]
+                :let [concept-with-acl-fields (add-acl-enforcement-fields context concept acls)]]
             [(:concept-id concept)
              (concept-permissions-granted-by-acls concept-with-acl-fields sids acls)]))))
 
