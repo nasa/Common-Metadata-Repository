@@ -53,7 +53,9 @@
    Definition
 
    ;; Controlled Science Keywords describing the measurements/variables. The controlled vocabulary
-   ;; for Science Keywords is maintained in the Keyword Management System (KMS).
+   ;; for Science Keywords is maintained in the Keyword Management System (KMS). The valid values
+   ;; can be found at the KMS website:
+   ;; https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords?format=csv.
    ScienceKeywords
 
    ;; The name of a variable.
@@ -160,7 +162,7 @@
    ;; and use the content. At this point in time, an industry standard mime-type does not exist, so
    ;; a mime-type element will not be included. The controlled vocabulary for formats is maintained
    ;; in the Keyword Management System (KMS):
-   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/DataFormat?gtm_scheme=DataFormat
+   ;; https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/DataFormat
    Format
 
    ;; Brief description of the store or any other useful information about the store.

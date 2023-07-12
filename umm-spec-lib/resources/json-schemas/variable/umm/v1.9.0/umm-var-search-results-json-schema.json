@@ -4,7 +4,7 @@
     "ItemType": {
       "type": "object",
       "additionalProperties": false,
-      "description": "Represents a single item found in search results. It contains some metadata about the item found along with the UMM representing the item. umm won't be present if the item represents a tombstone.",
+      "description": "Represents a single item found in search results. It contains some metadata about the item found along with the UMM representing the item. UMM won't be present if the item represents a tombstone.",
       "properties": {
         "meta": {
           "$ref": "#/definitions/MetaType"

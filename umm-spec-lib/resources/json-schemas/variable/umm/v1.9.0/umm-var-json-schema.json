@@ -37,7 +37,7 @@
     "Units": {
       "description": "The units associated with a variable.",
       "type": "string",
-      "minLength": 0,
+      "minLength": 1,
       "maxLength": 100
     },
     "DataType": {
@@ -105,7 +105,7 @@
       "minItems": 0
     },
     "ScienceKeywords": {
-      "description": "Controlled Science Keywords describing the measurements/variables. The controlled vocabulary for Science Keywords is maintained in the Keyword Management System (KMS).",
+      "description": "Controlled Science Keywords describing the measurements/variables. The controlled vocabulary for Science Keywords is maintained in the Keyword Management System (KMS). The valid values can be found at the KMS website: https://gcmdservices.gsfc.nasa.gov/kms/concepts/concept_scheme/sciencekeywords?format=csv.",
       "type": "array",
       "items": {
         "$ref": "#/definitions/ScienceKeywordType"
@@ -204,6 +204,7 @@
         "MeasurementContextMediumURI": {
           "description": "This element contains the URI for the context/medium.",
           "type": "string",
+          "format": "uri",
           "minLength": 1,
           "maxLength": 4000
         },
@@ -216,6 +217,7 @@
         "MeasurementObjectURI": {
           "description": "This element contains the URI for the object which was measured.",
           "type": "string",
+          "format": "uri",
           "minLength": 1,
           "maxLength": 4000
         },
@@ -244,6 +246,7 @@
         "MeasurementQuantityURI": {
           "description": "This element contains the URI for the quantity which was measured.",
           "type": "string",
+          "format": "uri",
           "minLength": 1,
           "maxLength": 4000
         }
@@ -481,6 +484,7 @@
         "URL": {
           "description": "The URL for the relevant web page (e.g., the URL of the responsible organization's home page, the URL of the colormap server, etc.).",
           "type": "string",
+          "format": "uri",
           "minLength": 1,
           "maxLength": 1024
         },
@@ -507,11 +511,12 @@
         "URL": {
           "description": "The internet location of the variable instance store.",
           "type": "string",
+          "format": "uri",
           "minLength": 1,
           "maxLength": 1024
         },
         "Format": {
-          "description": "Describes the format of the URL's data content so that users and applications know how to read and use the content. At this point in time, an industry standard mime-type does not exist, so a mime-type element will not be included. The controlled vocabulary for formats is maintained in the Keyword Management System (KMS): https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/DataFormat?gtm_scheme=DataFormat",
+          "description": "Describes the format of the URL's data content so that users and applications know how to read and use the content. At this point in time, an industry standard mime-type does not exist, so a mime-type element will not be included. The controlled vocabulary for formats is maintained in the Keyword Management System (KMS): https://gcmd.earthdata.nasa.gov/KeywordViewer/scheme/DataFormat",
           "type": "string",
           "minLength": 1,
           "maxLength": 80
@@ -585,7 +590,7 @@
         "URL": {
           "description": "This element represents the URL where the schema lives. The schema can be downloaded.",
           "type": "string",
-          "enum": ["https://cdn.earthdata.nasa.gov/umm/variable/v1.9"]
+          "enum": ["https://cdn.earthdata.nasa.gov/umm/variable/v1.9.0"]
         },
         "Name": {
           "description": "This element represents the name of the schema.",
@@ -595,7 +600,7 @@
         "Version": {
           "description": "This element represents the version of the schema.",
           "type": "string",
-          "enum": ["1.9"]
+          "enum": ["1.9.0"]
         }
       },
       "required": ["URL", "Name", "Version"]
