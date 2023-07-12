@@ -625,9 +625,9 @@
 
 (def variable-concept-1-9
   (-> variable-concept-1-8-2
-      (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/variable/v1.9"
+      (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/variable/v1.9.0"
                                      :Name "UMM-Var"
-                                     :Version "1.9"})
+                                     :Version "1.9.0"})
       (assoc :InstanceInformation
              {:URL "s3://prod-giovanni-cache.s3.us-west-2.amazonaws.com/zarr/GPM_3IMERGHH_06_precipitationCal"
               :Format "Zarr"
@@ -642,14 +642,14 @@
 (deftest migrate-1-8-2->1-9
   ;; Only MetadataSpecification's version is updated.
   (let [vc-1-9 (-> variable-concept-1-8-2
-                   (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/variable/v1.9"
+                   (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/variable/v1.9.0"
                                                   :Name "UMM-Var"
-                                                  :Version "1.9"}))
-        actual (migrate-variable "1.8.2" "1.9" variable-concept-1-8-2)]
+                                                  :Version "1.9.0"}))
+        actual (migrate-variable "1.8.2" "1.9.0" variable-concept-1-8-2)]
     (is (= vc-1-9 actual) "Document Match")))
 
 (deftest migrate-1-9->1-8-2
   ;; InstanceInformation is removed.
   ;; MetadataSpecification version is converted.
-  (let [actual (migrate-variable "1.9" "1.8.2" variable-concept-1-9)]
+  (let [actual (migrate-variable "1.9.0" "1.8.2" variable-concept-1-9)]
     (is (= variable-concept-1-8-2 actual) "Document Match")))
