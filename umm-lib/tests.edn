@@ -1,6 +1,8 @@
 #kaocha/v1
 {:tests [{:id :unit
-          :ns-patterns ["cmr.umm.test*" "-test$"]}]
+          :ns-patterns ["cmr.umm.test.unit*" "-test$"]}
+         {:id :perf
+          :ns-patterns ["cmr.umm.test.perf*" "-test$"]}]
 
  :plugins [:kaocha.plugin.alpha/info
            :kaocha.plugin/cloverage
