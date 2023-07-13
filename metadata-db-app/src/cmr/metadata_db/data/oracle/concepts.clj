@@ -481,7 +481,7 @@
         (info "ORT Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms.")
         (info "Output of Oracle get-concepts: " (second (doall oracle-concepts-get))))
       (if dynamo-concepts-get
-        ((second dynamo-concepts-get))
+        (second dynamo-concepts-get)
         (second oracle-concepts-get)))
     []))
 
