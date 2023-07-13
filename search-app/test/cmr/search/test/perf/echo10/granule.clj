@@ -216,14 +216,14 @@
 ;;            0.005))))
 
 ;; context concept target-format
-(deftest parse-granule-perf
+(deftest parse-granule-with-metadata-transformer-test
   (testing "parse granule performance out"
     (is (< (first (:mean (let [result (criterium/benchmark (metadata-transformer/transform nil echo10-concept :umm-json) {:verbose true})]
                            (criterium/report-result result {:verbose true})
                            result)))
            0.005))))
 
-(deftest parse-granule-umm-lib-perf
+(deftest parse-granule-with-umm-lib-test
   (testing "parse granule umm-lib performance out"
     (is (< (first (:mean (let [result (criterium/benchmark (g/parse-granule all-fields-granule-xml) {:verbose true})]
                            (criterium/report-result result {:verbose true})
