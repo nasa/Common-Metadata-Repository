@@ -1,4 +1,4 @@
-(ns cmr.umm.test.start-end-date
+(ns cmr.umm.test.unit.start-end-date
   "Tests for temporal to start-date/end-date conversion"
   (:require
    [clj-time.core :as t]

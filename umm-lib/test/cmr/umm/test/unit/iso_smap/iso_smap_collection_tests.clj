@@ -1,4 +1,4 @@
-(ns cmr.umm.test.iso-smap.iso-smap-collection-tests
+(ns cmr.umm.test.unit.iso-smap.iso-smap-collection-tests
   "Tests parsing and generating SMAP ISO Collection XML."
   (:require [clojure.test :refer :all]
             [cmr.common.test.test-check-ext :refer [defspec]]
@@ -17,7 +17,7 @@
             [cmr.umm.umm-spatial :as umm-s]
             [cmr.umm.iso-smap.iso-smap-core :as iso]
             [clj-time.format :as f]
-            [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
+            [cmr.umm.test.unit.echo10.echo10-collection-tests :as test-echo10]
             [cmr.common.test.test-check-ext :as ext :refer [checking]]))
 
 (defn- spatial-coverage->expected-parsed

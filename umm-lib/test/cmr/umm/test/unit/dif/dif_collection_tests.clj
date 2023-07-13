@@ -1,4 +1,4 @@
-(ns cmr.umm.test.dif.dif-collection-tests
+(ns cmr.umm.test.unit.dif.dif-collection-tests
   "Tests parsing and generating DIF Collection XML."
   (:require [clojure.test :refer :all]
 
@@ -19,7 +19,7 @@
             [cmr.umm.umm-collection :as umm-c]
             [cmr.umm.dif.dif-core :as dif]
             [cmr.spatial.mbr :as m]
-            [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
+            [cmr.umm.test.unit.echo10.echo10-collection-tests :as test-echo10]
             [cmr.umm.validation.validation-core :as v]
             [cmr.common.test.test-check-ext :as ext :refer [checking]])
   (:import cmr.spatial.mbr.Mbr))

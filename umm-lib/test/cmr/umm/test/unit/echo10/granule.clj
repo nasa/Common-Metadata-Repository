@@ -1,10 +1,12 @@
-(ns cmr.umm.test.echo10.granule
+(ns cmr.umm.test.unit.echo10.granule
   "Tests parsing and generating ECHO10 Granule XML."
   (:require
    [clojure.string :as string]
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :refer [for-all]]
+
+   [criterium.core :as criterium]
 
    ; [clojure.test.check.clojure-test :refer [defspec]]
    ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
@@ -14,10 +16,11 @@
    [cmr.common.xml :as cx]
    [cmr.umm.echo10.granule :as g]
    [cmr.umm.echo10.echo10-core :as echo10]
-   [cmr.umm.test.echo10.echo10-collection-tests :as tc]
+   [cmr.umm.test.unit.echo10.echo10-collection-tests :as tc]
    [cmr.umm.test.generators.granule :as gran-gen]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-g]))
+
 
 (defn- data-granule->expected
   "Returns the expected data-granule for comparison with the parsed record."
@@ -409,7 +412,6 @@
     (is (= expected-temporal (g/parse-temporal all-fields-granule-xml))))
   (testing "parse access value"
     (is (= 5.3 (g/parse-access-value all-fields-granule-xml)))))
-
 
 (def valid-granule-xml-w-datasetid
   "<Granule>

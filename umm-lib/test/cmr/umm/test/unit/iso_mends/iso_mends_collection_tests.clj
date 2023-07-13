@@ -1,4 +1,4 @@
-(ns cmr.umm.test.iso-mends.iso-mends-collection-tests
+(ns cmr.umm.test.unit.iso-mends.iso-mends-collection-tests
   "Tests parsing and generating ISO Collection XML."
   (:require
    [clojure.java.io :as io]
@@ -19,7 +19,7 @@
    [cmr.umm.echo10.echo10-core :as echo10]
    [cmr.umm.iso-mends.iso-mends-collection :as c]
    [cmr.umm.iso-mends.iso-mends-core :as iso]
-   [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
+   [cmr.umm.test.unit.echo10.echo10-collection-tests :as test-echo10]
    [cmr.umm.test.generators.collection :as coll-gen]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-spatial :as umm-s]))

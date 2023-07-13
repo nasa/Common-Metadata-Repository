@@ -1,4 +1,4 @@
-(ns cmr.umm.test.echo10.related-url
+(ns cmr.umm.test.unit.echo10.related-url
   "Tests functions for granule related urls"
   (:require
    [clojure.test :refer :all]

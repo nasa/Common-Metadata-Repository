@@ -1,4 +1,4 @@
-(ns cmr.umm.test.dif10.dif10-collection-tests
+(ns cmr.umm.test.unit.dif10.dif10-collection-tests
   "Tests parsing and generating DIF 10 Collection XML."
   (:require [clojure.test :refer :all]
             [cmr.common.test.test-check-ext :refer [defspec]]
@@ -18,7 +18,7 @@
             [cmr.spatial.mbr :as m]
             [cmr.umm.dif10.collection.platform :as platform]
             [cmr.umm.dif10.collection.personnel :as personnel]
-            [cmr.umm.test.echo10.echo10-collection-tests :as test-echo10]
+            [cmr.umm.test.unit.echo10.echo10-collection-tests :as test-echo10]
             [cmr.umm.collection.product-specific-attribute :as psa]
             [cmr.common.test.test-check-ext :as ext :refer [checking]])
   (:import cmr.spatial.mbr.Mbr))

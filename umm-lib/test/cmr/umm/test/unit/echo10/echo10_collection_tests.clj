@@ -1,4 +1,4 @@
-(ns cmr.umm.test.echo10.echo10-collection-tests
+(ns cmr.umm.test.unit.echo10.echo10-collection-tests
   "Tests parsing and generating ECHO10 Collection XML."
   (:require
    ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.

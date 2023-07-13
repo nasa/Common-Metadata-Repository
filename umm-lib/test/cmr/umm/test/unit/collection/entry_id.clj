@@ -1,4 +1,4 @@
-(ns cmr.umm.test.collection.entry-id
+(ns cmr.umm.test.unit.collection.entry-id
   "Test construction of entry-id and normalizing version-id"
   (:require [clojure.test :refer :all]
             [cmr.umm.umm-collection :as c]

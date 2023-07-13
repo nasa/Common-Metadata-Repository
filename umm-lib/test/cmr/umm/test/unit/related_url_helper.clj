@@ -1,4 +1,4 @@
-(ns cmr.umm.test.related-url-helper
+(ns cmr.umm.test.unit.related-url-helper
   "Tests functions that categorize related urls."
   (:require
    [clojure.test :refer :all]

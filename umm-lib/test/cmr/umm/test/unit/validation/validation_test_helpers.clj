@@ -1,4 +1,4 @@
-(ns cmr.umm.test.validation.validation-test-helpers
+(ns cmr.umm.test.unit.validation.validation-test-helpers
   (:require [cmr.common.date-time-parser :as dtp]
             [cmr.umm.umm-collection :as c]))
 

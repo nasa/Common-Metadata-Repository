@@ -1,4 +1,4 @@
-(ns cmr.umm.test.iso-smap.granule
+(ns cmr.umm.test.unit.iso-smap.granule
   "Tests parsing and generating SMAP ISO Granule XML."
   (:require
    [clojure.java.io :as io]

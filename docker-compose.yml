@@ -1,0 +1,13 @@
+version: '3'
+services:
+  db:
+    image: gvenzl/oracle-xe:latest
+    ports:
+      - "1521:1521"
+    environment:
+      - ORACLE_PASSWORD=oracle
+  main:
+    build: .
+    command: bash
+    depends_on:
+      - db

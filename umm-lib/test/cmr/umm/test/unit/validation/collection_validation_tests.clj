@@ -1,9 +1,9 @@
-(ns cmr.umm.test.validation.collection-validation-tests
+(ns cmr.umm.test.unit.validation.collection-validation-tests
   "This has tests for UMM validations."
   (:require [clojure.test :refer :all]
             [cmr.umm.validation.validation-core :as v]
             [cmr.umm.umm-collection :as c]
-            [cmr.umm.test.validation.validation-test-helpers :as helpers]
+            [cmr.umm.test.unit.validation.validation-test-helpers :as helpers]
             [cmr.spatial.mbr :as m]
             [cmr.spatial.point :as p]
             [cmr.common.services.errors :as e]

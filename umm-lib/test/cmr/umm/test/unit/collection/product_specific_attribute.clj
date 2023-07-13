@@ -1,4 +1,4 @@
-(ns cmr.umm.test.collection.product-specific-attribute
+(ns cmr.umm.test.unit.collection.product-specific-attribute
   "Tests parsing product specific attribute components"
   (:require [clojure.test :refer :all]
             [cmr.umm.collection.product-specific-attribute :as psa]
