@@ -178,16 +178,10 @@
                         :measured-parameters (mp/xml-elem->MeasuredParameters xml-struct)
                         :product-specific-attributes (psa/xml-elem->ProductSpecificAttributeRefs xml-struct)})))
 
-
 (defn parse-granule
   "Parses ECHO10 XML into a UMM Granule record."
   [xml]
   (xml-elem->Granule (x/parse-str xml)))
-
-;; (defn parse-granule-new
-;;   "Parses ECHO10 XML into a UMM Granule record."
-;;   [xml]
-;;   (xml-elem->Granule (x/parse-str xml)))
 
 (defn parse-temporal
   "Parses the XML and extracts the temporal data."

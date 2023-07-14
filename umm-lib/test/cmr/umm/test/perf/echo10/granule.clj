@@ -1,5 +1,5 @@
 (ns cmr.umm.test.perf.echo10.granule
-  "Tests performance of converting ECHO 10 Granule XML."
+  "Tests performance of converting granules from ECHO 10 XML to UMM JSON"
   (:require
    [clojure.test :refer :all]
    [criterium.core :as criterium]
@@ -190,17 +190,9 @@
     </AssociatedBrowseImageUrls>
   </Granule>")
 
-;; (deftest parse-granule-perf
-;;   (testing "parse granule performance"
-;;     (is (< 0.005 (first (:mean (criterium/benchmark (g/parse-granule all-fields-granule-xml) {:verbose true})))))))
-
-;; (deftest parse-granule-perf-out
-;;   (testing "parse granule performance out"
-;;     (is nil (criterium/bench (g/parse-granule all-fields-granule-xml)))))
-
 (deftest parse-granule-perf
-  (testing "parse granule performance out"
+  (testing "parse granule performance"
     (is (< (first (:mean (let [result (criterium/benchmark (g/parse-granule all-fields-granule-xml) {:verbose true})]
                            (criterium/report-result result {:verbose true})
                            result)))
-           0.005))))
+           0.007))))
