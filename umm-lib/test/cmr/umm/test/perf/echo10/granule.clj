@@ -190,7 +190,7 @@
     </AssociatedBrowseImageUrls>
   </Granule>")
 
-(deftest parse-granule-perf
+(deftest parse-granule-perf-test
   (testing "parse granule performance"
     (is (< (first (:mean (let [result (criterium/benchmark (g/parse-granule all-fields-granule-xml) {:verbose true})]
                            (criterium/report-result result {:verbose true})

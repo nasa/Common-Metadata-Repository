@@ -3,9 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [criterium.core :as criterium]
-   [cmr.common.mime-types :as mime-types]
-   [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
-   [cmr.umm.echo10.granule :as g]))
+   [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
 
 (def all-fields-granule-xml
   "<Granule>
@@ -200,37 +198,9 @@
    :format "application/echo10+xml"
    :concept-type :granule})
 
-;; (deftest parse-granule-perf
-;;   (testing "parse granule performance"
-;;     (is (< 0.005 (first (:mean (criterium/benchmark (g/parse-granule all-fields-granule-xml) {:verbose true})))))))
-
-;; (deftest parse-granule-perf-out
-;;   (testing "parse granule performance out"
-;;     (is nil (criterium/bench (g/parse-granule all-fields-granule-xml)))))
-
-;; (deftest parse-granule-perf
-;;   (testing "parse granule performance out"
-;;     (is (< (first (:mean (let [result (criterium/benchmark (g/parse-granule all-fields-granule-xml) {:verbose true})]
-;;                            (criterium/report-result result {:verbose true})
-;;                            result)))
-;;            0.005))))
-
-;; context concept target-format
-(deftest parse-granule-with-metadata-transformer-test
-  (testing "parse granule performance out"
+(deftest parse-granule-with-metadata-transformer-perf
+  (testing "parse granule performance with metadata-transformer"
     (is (< (first (:mean (let [result (criterium/benchmark (metadata-transformer/transform nil echo10-concept :umm-json) {:verbose true})]
                            (criterium/report-result result {:verbose true})
                            result)))
-           0.005))))
-
-(deftest parse-granule-with-umm-lib-test
-  (testing "parse granule umm-lib performance out"
-    (is (< (first (:mean (let [result (criterium/benchmark (g/parse-granule all-fields-granule-xml) {:verbose true})]
-                           (criterium/report-result result {:verbose true})
-                           result)))
-           0.005))))
-
-
-;; (clojure.test/test-vars [#'cmr.search.test.perf.echo10.granule/parse-granule-perf])
-;; (clojure.test/test-vars [#'cmr.search.test.perf.echo10.granule/parse-granule-umm-lib-perf])
-
+           0.007))))

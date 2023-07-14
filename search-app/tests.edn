@@ -1,6 +1,6 @@
 #kaocha/v1
 {:tests [{:id :unit
-          :ns-patterns ["cmr.search.test*" "-test$"]}
+          :ns-patterns ["cmr.search.test.unit*" "-test$"]}
          {:id :perf
           :ns-patterns ["cmr.search.test.perf*" "-test$"]}]
 
