@@ -408,9 +408,9 @@
      (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
        (info "ORT Runtime of Oracle get-concept: " (first oracle-concept-get) " ms.")
        (info "Output from Oracle get-concept: " (second oracle-concept-get)))
-     (if dynamo-concept-get
-       (merge (second dynamo-concept-get) (second efs-concept-get))
-       (second oracle-concept-get))))
+     (if oracle-concept-get
+       (second oracle-concept-get)
+       (merge (second dynamo-concept-get) (second efs-concept-get)))))
   ([db concept-type provider concept-id revision-id]
    (if revision-id
      (let [table (tables/get-table-name provider concept-type)
@@ -438,9 +438,9 @@
        (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
          (info "ORT Runtime of Oracle get-concept: " (first oracle-concept-get) " ms.")
          (info "Output of Oracle get-concept: " (second oracle-concept-get)))
-       (if dynamo-concept-get
-         (merge (second dynamo-concept-get) (second efs-concept-get))
-         (second oracle-concept-get)))
+       (if oracle-concept-get
+         (second oracle-concept-get)
+         (merge (second dynamo-concept-get) (second efs-concept-get))))
      (get-concept db concept-type provider concept-id))))
 
 (defn get-concepts
@@ -480,9 +480,9 @@
       (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
         (info "ORT Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms.")
         (info "Output of Oracle get-concepts: " (second (doall oracle-concepts-get))))
-      (if dynamo-concepts-get
-        (second dynamo-concepts-get)
-        (second oracle-concepts-get)))
+      (if oracle-concepts-get
+        (second oracle-concepts-get)
+        (second dynamo-concepts-get)))
     []))
 
 (defn get-latest-concepts
