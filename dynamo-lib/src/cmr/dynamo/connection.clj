@@ -58,7 +58,7 @@
   [concept-id-revision-id-tuples]
   (doall (map (fn [batch] (far/batch-write-item connection-options 
                                                 {(dynamo-config/dynamo-table) {:delete (vec batch)}})) 
-              (partition-all batch-write-size (map concept-revision-tuple->key concept-id-revision-id-tuples)))))
+              (distinct (partition-all batch-write-size (map concept-revision-tuple->key concept-id-revision-id-tuples))))))
 
 (defn delete-concepts
   "Deletes multiple concepts from DynamoDB by search parameters"
