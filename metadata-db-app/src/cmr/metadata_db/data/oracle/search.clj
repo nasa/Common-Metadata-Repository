@@ -207,7 +207,10 @@
                        (doall (efs/get-concepts-small-table concept-type (map sh/efs-concept-helper concept-ids-revision-ids)))))
         dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                          (util/time-execution
-                          (doall (dynamo/get-concepts-small-table params))))]
+                          (doall (dynamo/get-concepts-small-table params))))
+        aurora-results (when (not= "aurora-toggle" (aurora-config/aurora-toggle))
+                         (util/time-execution
+                          ()))]
     (when efs-results
       (info "ORT Runtime of EFS find-concepts-in-table(small-table): " (first efs-results) " ms.")
       (info "Values from EFS: " (pr-str (second efs-results))))
@@ -215,6 +218,8 @@
       (info "ORT Runtime of Oracle find-concepts-in-table(small-table): " (first oracle-results) " ms."))
     (when dynamo-results
       (info "ORT Runtime of DynamoDB find-concepts-in-table(small-table): " (first dynamo-results) " ms."))
+    (when aurora-results
+      (info "ORT Runtime of Aurora find-concepts-in-table(small-table): " (first aurora-results) " ms."))
     (if oracle-results
       (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (doall (map (fn [oracle-concept]
@@ -261,12 +266,17 @@
                        (doall (efs/get-concepts providers concept-type (map sh/efs-concept-helper concept-ids-revision-ids)))))
         dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                          (util/time-execution
-                          (doall (dynamo/get-concepts params))))]
+                          (doall (dynamo/get-concepts params))))
+        aurora-results (when (not= "aurora-toggle" (aurora-config/aurora-toggle))
+                         (util/time-execution
+                          ()))]
     (when efs-results
       (info "ORT Runtime of EFS find-concepts-in-table: " (first efs-results) " ms.")
       (info "Values from EFS: " (pr-str (second efs-results))))
     (when oracle-results
       (info "ORT Runtime of Oracle find-concepts-in-table: " (first oracle-results) " ms."))
+    (when aurora-results
+      (info "ORT Runtime of Aurora find-concepts-in-table: " (first aurora-results) " ms."))
     (if oracle-results
       (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (doall (map (fn [oracle-concept]
@@ -325,7 +335,10 @@
                                      (doall (efs/get-concepts provider concept-type (map sh/efs-concept-helper concept-revision-batch-result)))))
                        dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                         (util/time-execution
-                                         (doall (dynamo/get-concepts params))))]
+                                         (doall (dynamo/get-concepts params))))
+                       aurora-results (when (not= "aurora-toggle" (aurora-config/aurora-toggle))
+                                        (util/time-execution
+                                         ()))]
                    (when efs-results
                      (info "ORT Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results) " ms.")
                      (info "Values from EFS: " (pr-str (second efs-results))))
@@ -333,6 +346,8 @@
                      (info "ORT Runtime of Oracle find-concepts-in-batches(find-batch): " (first oracle-results) " ms."))
                    (when dynamo-results
                      (info "ORT Runtime of DynamoDB find-concepts-in-batches(find-batch): " (first dynamo-results) " ms."))
+                   (when aurora-results
+                     (info "ORT Runtime of Aurora find-concepts-in-batches(find-batch): " (first aurora-results) " ms."))
                    (if oracle-results
                      (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                        (doall (map (fn [oracle-concept]
