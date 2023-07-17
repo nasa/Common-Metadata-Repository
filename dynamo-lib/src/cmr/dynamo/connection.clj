@@ -56,6 +56,7 @@
 (defn delete-concepts-provided
   "Deletes multiple concepts from DynamoDB using batch-write-item, which has a 25 item batch limit imposed by DynamoDB"
   [concept-id-revision-id-tuples]
+  (info "DEBUG DELETE_CONCEPTS: " concept-id-revision-id-tuples)
   (doall (map (fn [batch] (far/batch-write-item connection-options 
                                                 {(dynamo-config/dynamo-table) {:delete (vec batch)}})) 
               (distinct (partition-all batch-write-size (map concept-revision-tuple->key concept-id-revision-id-tuples))))))
