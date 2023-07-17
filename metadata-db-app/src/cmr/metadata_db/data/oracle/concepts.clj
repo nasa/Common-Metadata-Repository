@@ -6,6 +6,7 @@
    [clojure.string :as string]
    [clojure.java.io :as io]
    [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as aurora]
    [cmr.common.concepts :as common-concepts]
    [cmr.common.date-time-parser :as p]
    [cmr.common.log :refer [debug error info trace warn]]
@@ -402,7 +403,7 @@
                                  (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))
          aurora-concept-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                               (util/time-execution
-                               ()))]
+                               (aurora/get-concept provider concept-type concept-id)))]
      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
        (info "ORT Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
        (info "Output from EFS get-concept: " (second efs-concept-get))
@@ -438,7 +439,7 @@
                                    (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))
            aurora-concept-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                 (util/time-execution
-                                 ()))]
+                                 (aurora/get-concept provider concept-type concept-id revision-id)))]
        (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (info "ORT Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
          (info "Output of EFS get-concept: " (second efs-concept-get))
@@ -487,7 +488,7 @@
                                              (dynamo/get-concepts-provided concept-id-revision-id-tuples)))))
           aurora-concepts-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                 (util/time-execution
-                                 ()))]
+                                 (aurora/get-concepts provider concept-type concept-id-revision-id-tuples)))]
       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (info "ORT Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
         (info "Output of EFS get-concepts: " (second efs-concepts-get))
@@ -554,7 +555,7 @@
                                                                (dynamo/save-concept concept)))))
           (when (not= "aurora-off" (aurora-config/aurora-toggle))
             (info "ORT Runtime of Aurora save-concept: " (first (util/time-execution
-                                                                 ()))))
+                                                                 (aurora/save-concept concept)))))
           (when (and
                  (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                  (= false (:deleted concept)))
@@ -585,7 +586,7 @@
                          (dynamo/delete-concept concept-id revision-id)))
         aurora-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
                         (util/time-execution
-                         ()))]
+                         (aurora/delete-concept provider concept-type concept-id revision-id)))]
     (when efs-delete
       (info "ORT Runtime of EFS force-delete: " (first efs-delete) " ms.")
       (info "Output of EFS force-delete: " (second efs-delete)))
@@ -630,7 +631,7 @@
                              (dynamo/delete-concepts-provided concept-id-revision-id-tuples)))
             aurora-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
                             (util/time-execution
-                             ()))]
+                             (aurora/delete-concepts provider concept-type concept-id-revision-id-tuples)))]
         (when efs-delete
           (info "ORT Runtime of EFS force-delete-concepts: " (first efs-delete) " ms.")
           (info "Output from EFS force-delete-concepts: " (second efs-delete)))

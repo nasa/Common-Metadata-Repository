@@ -43,7 +43,9 @@
 (defn get-concept
   "Gets a concept from Aurora Postgres"
   ([provider concept-type concept-id]
-   (info "Made a call to aurora.connection/get-concept")))
+   (info "Made a call to aurora.connection/get-concept"))
+  ([provider concept-type concept-id revision-id]
+   (info "Made a call to aurora.connection/get-concept with revision-id")))
 
 (defn get-concepts
   "Gets a group of concepts from Aurora Postgres"

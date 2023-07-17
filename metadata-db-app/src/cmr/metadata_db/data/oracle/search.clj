@@ -5,6 +5,8 @@
    [clojure.java.jdbc :as j]
    [clojure.set :as set]
    [clojure.string :as string]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as aurora] 
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.concepts :as cc]
    [cmr.common.util :as util]
@@ -210,7 +212,7 @@
                           (doall (dynamo/get-concepts-small-table params))))
         aurora-results (when (not= "aurora-toggle" (aurora-config/aurora-toggle))
                          (util/time-execution
-                          ()))]
+                          (aurora/get-concepts-small-table concept-type concept-ids-revision-ids)))]
     (when efs-results
       (info "ORT Runtime of EFS find-concepts-in-table(small-table): " (first efs-results) " ms.")
       (info "Values from EFS: " (pr-str (second efs-results))))
@@ -269,7 +271,7 @@
                           (doall (dynamo/get-concepts params))))
         aurora-results (when (not= "aurora-toggle" (aurora-config/aurora-toggle))
                          (util/time-execution
-                          ()))]
+                          (aurora/get-concepts providers concept-type concept-ids-revision-ids)))]
     (when efs-results
       (info "ORT Runtime of EFS find-concepts-in-table: " (first efs-results) " ms.")
       (info "Values from EFS: " (pr-str (second efs-results))))
@@ -338,7 +340,7 @@
                                          (doall (dynamo/get-concepts params))))
                        aurora-results (when (not= "aurora-toggle" (aurora-config/aurora-toggle))
                                         (util/time-execution
-                                         ()))]
+                                         (aurora/get-concepts provider concept-type concept-revision-batch-result)))]
                    (when efs-results
                      (info "ORT Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results) " ms.")
                      (info "Values from EFS: " (pr-str (second efs-results))))
