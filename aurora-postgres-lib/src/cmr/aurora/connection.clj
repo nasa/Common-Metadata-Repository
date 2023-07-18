@@ -27,7 +27,7 @@
 
 (defn execute-query
   [sql-query]
-  (with-open [conn (DriverManager/getConnection connection-string (db-properties
+  (with-open [conn (DriverManager/getConnection (aurora-config/db-url-primary) (db-properties
                                                                    aurora-config/aurora-db-user
                                                                    aurora-config/aurora-db-password))
               stmt (.createStatement conn)
