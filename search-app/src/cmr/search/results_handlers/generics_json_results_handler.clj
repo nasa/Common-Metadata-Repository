@@ -6,7 +6,6 @@
    [clojure.string :as string]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :as log :refer [debug]]
-   [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]

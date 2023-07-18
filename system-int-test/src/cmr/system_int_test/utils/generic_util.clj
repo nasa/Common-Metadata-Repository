@@ -32,8 +32,10 @@
   ([token provider-id native-id concept-type document method]
    (let [headers (if token
                    {"Accept" "application/json"
+                    "Content-Type" "application/vnd.nasa.cmr.umm+json"
                     transmit-config/token-header token}
-                   {"Accept" "application/json"})]
+                   {"Accept" "application/json"
+                    "Content-Type" "application/vnd.nasa.cmr.umm+json"})]
      (client/request
       {:method method
        :url (url-helper/ingest-generic-crud-url concept-type provider-id native-id)
