@@ -5,6 +5,8 @@
    [clojure.java.jdbc :as j]
    [clojure.string :as string]
    [clojure.java.io :as io]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as aurora]
    [cmr.common.concepts :as common-concepts]
    [cmr.common.date-time-parser :as p]
    [cmr.common.log :refer [debug error info trace warn]]
@@ -398,7 +400,10 @@
          dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                               (util/time-execution
                                (when-let [get-result (dynamo/get-concept concept-id)]
-                                 (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))]
+                                 (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))
+         aurora-concept-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
+                              (util/time-execution
+                               (aurora/get-concept provider concept-type concept-id)))]
      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
        (info "ORT Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
        (info "Output from EFS get-concept: " (second efs-concept-get))
@@ -408,6 +413,9 @@
      (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
        (info "ORT Runtime of Oracle get-concept: " (first oracle-concept-get) " ms.")
        (info "Output from Oracle get-concept: " (second oracle-concept-get)))
+     (when (not= "aurora-off" (aurora-config/aurora-toggle))
+       (info "ORT Runtime of Aurora get-concept: " (first aurora-concept-get) " ms.")
+       (info "Output from Aurora get-concept: " (second aurora-concept-get)))
      (if oracle-concept-get
        (second oracle-concept-get)
        (merge (second dynamo-concept-get) (second efs-concept-get)))))
@@ -428,7 +436,10 @@
            dynamo-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
                                  (when-let [get-result (dynamo/get-concept concept-id revision-id)]
-                                   (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))]
+                                   (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))
+           aurora-concept-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
+                                (util/time-execution
+                                 (aurora/get-concept provider concept-type concept-id revision-id)))]
        (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (info "ORT Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
          (info "Output of EFS get-concept: " (second efs-concept-get))
@@ -438,6 +449,9 @@
        (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
          (info "ORT Runtime of Oracle get-concept: " (first oracle-concept-get) " ms.")
          (info "Output of Oracle get-concept: " (second oracle-concept-get)))
+       (when (not= "aurora-off" (aurora-config/aurora-toggle))
+         (info "ORT Runtime of Aurora get-concept: " (first aurora-concept-get) " ms.")
+         (info "Output of Aurora get-concept: " (second aurora-concept-get)))
        (if oracle-concept-get
          (second oracle-concept-get)
          (merge (second dynamo-concept-get) (second efs-concept-get))))
@@ -471,7 +485,10 @@
                                  (doall (map (fn [concept] 
                                                (when concept
                                                  (db-result->concept-map-dynamo concept-type (:provider-id provider) concept)))
-                                             (dynamo/get-concepts-provided concept-id-revision-id-tuples)))))]
+                                             (dynamo/get-concepts-provided concept-id-revision-id-tuples)))))
+          aurora-concepts-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
+                                (util/time-execution
+                                 (aurora/get-concepts provider concept-type concept-id-revision-id-tuples)))]
       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (info "ORT Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
         (info "Output of EFS get-concepts: " (second efs-concepts-get))
@@ -480,6 +497,9 @@
       (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
         (info "ORT Runtime of Oracle get-concepts: " (first oracle-concepts-get) " ms.")
         (info "Output of Oracle get-concepts: " (second (doall oracle-concepts-get))))
+      (when (not= "aurora-off" (aurora-config/aurora-toggle))
+        (info "ORT Runtime of Aurora get-concepts: " (first aurora-concepts-get) " ms.")
+        (info "Output of Aurora get-concepts: " (second aurora-concepts-get)))
       (if oracle-concepts-get
         (second oracle-concepts-get)
         (second dynamo-concepts-get)))
@@ -533,6 +553,9 @@
           (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
             (info "ORT Runtime of DynamoDB save-concept: " (first (util/time-execution
                                                                (dynamo/save-concept concept)))))
+          (when (not= "aurora-off" (aurora-config/aurora-toggle))
+            (info "ORT Runtime of Aurora save-concept: " (first (util/time-execution
+                                                                 (aurora/save-concept concept)))))
           (when (and
                  (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                  (= false (:deleted concept)))
@@ -560,7 +583,10 @@
                          (j/execute! this stmt)))
         dynamo-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                         (util/time-execution
-                         (dynamo/delete-concept concept-id revision-id)))]
+                         (dynamo/delete-concept concept-id revision-id)))
+        aurora-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
+                        (util/time-execution
+                         (aurora/delete-concept provider concept-type concept-id revision-id)))]
     (when efs-delete
       (info "ORT Runtime of EFS force-delete: " (first efs-delete) " ms.")
       (info "Output of EFS force-delete: " (second efs-delete)))
@@ -570,6 +596,9 @@
     (when dynamo-delete
       (info "ORT Runtime of DynamoDB force-delete: " (first dynamo-delete) " ms.")
       (info "Output of DynamoDB force-delete: " (second dynamo-delete)))
+    (when aurora-delete
+      (info "ORT Runtime of Aurora force-delete: " (first aurora-delete) " ms.")
+      (info "Output of Aurora force-delete: " (second aurora-delete)))
     (if oracle-delete
       (second oracle-delete)
       (second dynamo-delete))))
@@ -599,7 +628,10 @@
                              (j/execute! conn stmt)))
             dynamo-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                             (util/time-execution
-                             (dynamo/delete-concepts-provided concept-id-revision-id-tuples)))]
+                             (dynamo/delete-concepts-provided concept-id-revision-id-tuples)))
+            aurora-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
+                            (util/time-execution
+                             (aurora/delete-concepts provider concept-type concept-id-revision-id-tuples)))]
         (when efs-delete
           (info "ORT Runtime of EFS force-delete-concepts: " (first efs-delete) " ms.")
           (info "Output from EFS force-delete-concepts: " (second efs-delete)))
@@ -609,6 +641,9 @@
         (when dynamo-delete
           (info "ORT Runtime of DynamoDB force-delete-concepts: " (first dynamo-delete) " ms.")
           (info "Output from DynamoDB force-delete-concepts: " (second dynamo-delete)))
+        (when aurora-delete
+          (info "ORT Runtime of Aurora force-delete-concepts: " (first aurora-delete) " ms.")
+          (info "Output from Aurora force-delete-concepts: " (second aurora-delete)))
         (if oracle-delete
           (second oracle-delete)
           (second dynamo-delete))))))

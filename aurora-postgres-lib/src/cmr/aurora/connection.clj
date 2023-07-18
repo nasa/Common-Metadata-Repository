@@ -37,28 +37,32 @@
 
 (defn save-concept
   "Saves a concept to Aurora Postgres"
-  [concept])
+  [concept]
+  (info "Made a call to aurora.connection/save-concept"))
 
 (defn get-concept
   "Gets a concept from Aurora Postgres"
-  ([provider concept-type concept-id]))
+  ([provider concept-type concept-id]
+   (info "Made a call to aurora.connection/get-concept"))
+  ([provider concept-type concept-id revision-id]
+   (info "Made a call to aurora.connection/get-concept with revision-id")))
 
 (defn get-concepts
   "Gets a group of concepts from Aurora Postgres"
   [provider concept-type concept-id-revision-id-tuples]
-  ())
+  (info "Made a call to aurora.connection/get-concepts"))
 
 (defn get-concepts-small-table
   "Gets a group of concepts from Aurora Postgres using provider-id, concept-id, revision-id tuples"
   [concept-type provider-concept-revision-tuples]
-  ())
+  (info "Made a call to aurora.connection/get-concepts-small-table"))
 
 (defn delete-concept
   "Deletes a concept from Aurora Postgres"
   [provider concept-type concept-id revision-id]
-  ())
+  (info "Made a call to aurora.connection/delete-concept"))
 
 (defn delete-concepts
   "Deletes multiple concepts from Aurora Postgres"
   [provider concept-type concept-id-revision-id-tuples]
-  ())
+  (info "Made a call to aurora.connection/delete-concepts"))

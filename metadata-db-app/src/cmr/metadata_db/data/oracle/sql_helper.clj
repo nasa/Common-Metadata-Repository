@@ -4,6 +4,8 @@
    [clj-time.format :as time-format]
    [clojure.java.jdbc :as j]
    [clojure.string :as str]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as aurora]
    [cmr.common.services.errors :as errors]
    [cmr.common.log :refer [debug error info trace warn]]
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
@@ -90,13 +92,18 @@
                                (j/execute! db stmt)))
         dynamo-force-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                               (util/time-execution
-                               (dynamo/delete-concepts params)))]
+                               (dynamo/delete-concepts params)))
+        aurora-force-delete (when (not= "aurora-toggle" (aurora-config/aurora-toggle))
+                              (util/time-execution
+                               (aurora/delete-concepts provider concept-type get-values)))]
     (when efs-force-delete
       (info "ORT Runtime of EFS force-delete-concept-by-params: " (first efs-force-delete)))
     (when oracle-force-delete
       (info "ORT Runtime of Oracle force-delete-concept-by-params: " (first oracle-force-delete)))
     (when dynamo-force-delete
       (info "ORT Runtime of DynamoDB force-delete-concept-by-params: " (first dynamo-force-delete)))
+    (when aurora-force-delete
+      (info "ORT Runtime of Aurora force-delete-concept-by-params: " (first aurora-force-delete)))
     (if oracle-force-delete
       (second oracle-force-delete)
       (second dynamo-force-delete))))
