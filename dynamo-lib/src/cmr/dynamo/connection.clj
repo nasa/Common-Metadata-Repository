@@ -65,5 +65,5 @@
   "Deletes multiple concepts from DynamoDB by search parameters"
   [params]
   (when (:parent-collection-id params)
-    (far/batch-write-item connection-options {(dynamo-config/dynamo-table) {:delete (far/query connection-options (dynamo-config/dynamo-table) {:concept-id [:eq (:parent-collection-id params)]})}}))
+    (far/batch-write-item connection-options {(dynamo-config/dynamo-table) {:delete (far/query connection-options (dynamo-config/dynamo-table) {:concept-id [:eq (:parent-collection-id params)]} {:return [:concept-id :revision-id]})}}))
   (info "Params for deleting from DynamoDB: " params))
