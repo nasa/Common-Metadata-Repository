@@ -93,7 +93,7 @@
         dynamo-force-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                               (util/time-execution
                                (dynamo/delete-concepts params)))
-        aurora-force-delete (when (not= "aurora-toggle" (aurora-config/aurora-toggle))
+        aurora-force-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
                               (util/time-execution
                                (aurora/delete-concepts provider concept-type get-values)))]
     (when efs-force-delete

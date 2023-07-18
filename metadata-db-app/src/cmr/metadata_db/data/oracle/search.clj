@@ -210,7 +210,7 @@
         dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                          (util/time-execution
                           (doall (dynamo/get-concepts-small-table params))))
-        aurora-results (when (not= "aurora-toggle" (aurora-config/aurora-toggle))
+        aurora-results (when (not= "aurora-off" (aurora-config/aurora-toggle))
                          (util/time-execution
                           (aurora/get-concepts-small-table concept-type concept-ids-revision-ids)))]
     (when efs-results
@@ -269,7 +269,7 @@
         dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                          (util/time-execution
                           (doall (dynamo/get-concepts params))))
-        aurora-results (when (not= "aurora-toggle" (aurora-config/aurora-toggle))
+        aurora-results (when (not= "aurora-off" (aurora-config/aurora-toggle))
                          (util/time-execution
                           (aurora/get-concepts providers concept-type concept-ids-revision-ids)))]
     (when efs-results
@@ -338,7 +338,7 @@
                        dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                         (util/time-execution
                                          (doall (dynamo/get-concepts params))))
-                       aurora-results (when (not= "aurora-toggle" (aurora-config/aurora-toggle))
+                       aurora-results (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                         (util/time-execution
                                          (aurora/get-concepts provider concept-type concept-revision-batch-result)))]
                    (when efs-results
