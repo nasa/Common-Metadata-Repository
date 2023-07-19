@@ -7,7 +7,7 @@
     [cmr.common.util :refer [are3]]
     [cmr.search.models.query :as query]
     [cmr.search.services.query-walkers.update-field-resolver :as update-field-resolver]
-    [cmr.search.test.models.helpers :as query-helper]))
+    [cmr.search.test.unit.models.helpers :as query-helper]))
 
 (deftest update-field-resolver-has-field-test
   (are3 [query-condition renamed-condition]

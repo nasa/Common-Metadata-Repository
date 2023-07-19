@@ -5,7 +5,7 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.revision-format-map :as r]
-   [cmr.search.test.data.metadata-retrieval.test-metadata :as tm]
+   [cmr.search.test.unit.data.metadata-retrieval.test-metadata :as tm]
    [cmr.umm-spec.test.expected-conversion :as expected-conversion]
    [digest :as digest]))
 

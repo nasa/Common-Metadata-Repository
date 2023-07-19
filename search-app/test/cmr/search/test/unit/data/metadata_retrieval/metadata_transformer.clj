@@ -3,7 +3,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
-   [cmr.search.test.data.metadata-retrieval.test-metadata :as tm]))
+   [cmr.search.test.unit.data.metadata-retrieval.test-metadata :as tm]))
 
 (def original-transform-strategy metadata-transformer/transform-strategy)
 

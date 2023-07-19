@@ -6,7 +6,7 @@
   [cmr.common-app.services.search.query-model :as qm]
   [cmr.search.models.query :as query]
   [cmr.search.services.query-walkers.temporal-range-extractor :as range-extractor]
-  [cmr.search.test.models.helpers :as query-helper]))
+  [cmr.search.test.unit.models.helpers :as query-helper]))
 
 (deftest extract-temporal-range-test
   (let [query (qm/query {:condition

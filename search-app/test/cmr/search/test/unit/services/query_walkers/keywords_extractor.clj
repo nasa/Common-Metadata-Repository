@@ -3,7 +3,7 @@
   [clojure.test :refer :all]
   [cmr.common-app.services.search.query-model :as qm]
   [cmr.search.services.query-walkers.keywords-extractor :as ke]
-  [cmr.search.test.models.helpers :as h :refer :all]))
+  [cmr.search.test.unit.models.helpers :as h :refer :all]))
 
 (defn keyword-cond
   [text]
