@@ -6,7 +6,7 @@
    [cmr.common-app.services.search.results-model :as r]
    [cmr.search.models.query :as q]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-   [cmr.search.test.models.helpers :refer :all]
+   [cmr.search.test.unit.models.helpers :refer :all]
    [cmr.spatial.point :as p]))
 
 (defn spatial-cond

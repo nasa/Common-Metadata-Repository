@@ -3,7 +3,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.search.data.metadata-retrieval.metadata-cache :as mc]
-   [cmr.search.test.data.metadata-retrieval.revision-format-map :as rfm]))
+   [cmr.search.test.unit.data.metadata-retrieval.revision-format-map :as rfm]))
 
 (def get-cached-metadata-in-format #'mc/get-cached-metadata-in-format)
 

@@ -1,7 +1,7 @@
 (ns cmr.search.test.unit.services.query-walkers.collection-query-resolver
   (:require [clojure.test :refer :all]
             [cmr.search.services.query-walkers.collection-query-resolver :as c]
-            [cmr.search.test.models.helpers :refer :all]
+            [cmr.search.test.unit.models.helpers :refer :all]
             [clojure.string :as str]
             [cmr.search.models.query :as q]
             [cmr.common-app.services.search.query-model :as cqm]
@@ -195,4 +195,3 @@
                                (coll-query-cond (other 3))
                                (or-conds (coll-query-cond (other 4))
                                          (coll-query-cond (other 5))))))))))
-

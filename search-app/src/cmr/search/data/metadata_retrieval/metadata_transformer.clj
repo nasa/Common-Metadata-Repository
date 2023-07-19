@@ -202,7 +202,7 @@
                     ;; A deleted or generic concept needs no transformation.
                     (assoc concept
                            :format (mt/format->mime-type target-format))
-                    (assoc concept 
-                           :format (mt/format->mime-type target-format) 
+                    (assoc concept
+                           :format (mt/format->mime-type target-format)
                            :metadata (transform context concept target-format))))
                 concepts)))
