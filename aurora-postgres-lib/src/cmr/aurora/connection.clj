@@ -11,6 +11,8 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.services.health-helper :as hh])
   (:import
+   com.zaxxer.hikari.HikariDataSource
+   software.amazon.jdbc.ds.AwsWrapperDataSource
    java.sql.DriverManager
    java.util.Properties))
 
@@ -24,6 +26,28 @@
     ;; Configuring connection properties for the Aurora JDBC Wrapper.
     (.setProperty "wrapperPlugins" "failover,efm")
     (.setProperty "wrapperLogUnclosedConnections" "true")))
+
+(defn pool
+  [spec]
+  (let [{:keys [classname
+                subprotocol
+                subname
+                user
+                password
+                connection-pool-name
+                fcf-enabled
+                ons-config]} spec]
+    (doto (HikariDataSource.)
+      (.setMaximumPoolSize 10)
+      (.setIdleTimeout 500)
+      (.setUsername user)
+      (.setPassword password)
+      (.setDataSourceClassName (.getName (.AwsWrapperDataSource class)))
+      (.addDataSourceProperty "jdbcProtocol" "jdbc:postgresql:")
+      (.addDataSourceProperty "serverName" (aurora-config/db-url-primary))
+      (.addDataSourceProperty "serverPort" "5432")
+      (.addDataSourceProperty "database" "postgres")
+      (.addDataSourceProperty "targetDataSourceClassName" "org.postgresql.ds.PGSimpleDataSource"))))
 
 (defn execute-query
   [sql-query]

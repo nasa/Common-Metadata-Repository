@@ -6,7 +6,8 @@
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/java.jdbc "0.4.2"]
                  [org.postgresql/postgresql "42.6.0"]
-                 [software.amazon.jdbc/aws-advanced-jdbc-wrapper "2.1.2"]]
+                 [software.amazon.jdbc/aws-advanced-jdbc-wrapper "2.1.2"]
+                 [com.zaxxer/hikaricp "5.0.1"]]
   :plugins [[lein-shell "0.5.0"]
             [test2junit "1.3.3"]]
   :jvm-opts ^:replace ["-server"
