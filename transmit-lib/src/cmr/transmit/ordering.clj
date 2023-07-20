@@ -1,7 +1,7 @@
 (ns cmr.transmit.ordering
   "Handle all communications to the CMR-Ordering application, a graphql app which
    processes orders for Earthdata Search and CMR. This application needs to know
-   when CMR has changed a proveder so that it can download the latest provider
+   when CMR has changed a provider so that it can download the latest provider
    list"
 
   (:require
