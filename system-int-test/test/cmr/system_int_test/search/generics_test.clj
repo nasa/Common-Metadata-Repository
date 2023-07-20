@@ -384,7 +384,7 @@
         (testing "Check that test the document ingested before going forward with tests"
           (is (= 201 (:status post-results)) "failed to ingest test record"))
 
-        (testing "Testing generics name parameter search"
+        (testing "Testing draft collection generic name parameter search"
           (are3 [plural-concept-type-name search-parameter name-parameter options-flag]
                 (let [results (search-request plural-concept-type-name (str search-parameter "=" name-parameter (if options-flag (str "&" options-flag) (str ""))))
                       status (:status results)
