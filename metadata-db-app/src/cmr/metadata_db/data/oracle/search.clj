@@ -223,11 +223,7 @@
     (when aurora-results
       (info "ORT Runtime of Aurora find-concepts-in-table(small-table): " (first aurora-results) " ms."))
     (if oracle-results
-      (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-        (doall (map (fn [oracle-concept]
-               (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-results)))))
-             (second oracle-results)))
-        (second oracle-results))
+      (second oracle-results)
       (second dynamo-results))))
 
 ;; Execute a query against a normal (not small) provider table
@@ -280,11 +276,7 @@
     (when aurora-results
       (info "ORT Runtime of Aurora find-concepts-in-table: " (first aurora-results) " ms."))
     (if oracle-results
-      (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-        (doall (map (fn [oracle-concept]
-               (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-results)))))
-             (second oracle-results)))
-        (second oracle-results))
+      (second oracle-results)
       (second dynamo-results))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -351,11 +343,7 @@
                    (when aurora-results
                      (info "ORT Runtime of Aurora find-concepts-in-batches(find-batch): " (first aurora-results) " ms."))
                    (if oracle-results
-                     (if (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-                       (doall (map (fn [oracle-concept]
-                              (assoc oracle-concept :metadata (:metadata ((keyword (str (:concept-id oracle-concept) "_" (:revision-id oracle-concept))) (second efs-results)))))
-                            (second oracle-results)))
-                       (second oracle-results))
+                     (second oracle-results)
                      (second dynamo-results)))))
              (lazy-find
                [start-index]
