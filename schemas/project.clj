@@ -5,9 +5,11 @@
             :name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[org.clojure/clojure "1.10.0"]]
+  :plugins [[lein-shell "0.5.0"]]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
+
              :test {:plugins [[lein-shell "0.5.0"]]}}
 
   :aliases {;; Kaocha test aliases
@@ -18,7 +20,7 @@
             "ci-test" ["kaocha"]
             "ci-itest" ["itest"]
             "ci-utest" ["utest"]
-
+            "lint" ["shell" "echo" "lint is NOT supported for this project"]
             ;; The following aliases are needed for the CMR build process.
             "generate-static" ["with-profile" "+test" "shell" "echo" "NO OP"]
             "check-sec" ["with-profile" "security" "dependency-check"]})
