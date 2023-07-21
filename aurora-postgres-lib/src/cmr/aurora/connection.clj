@@ -43,10 +43,10 @@
       (.setUsername user)
       (.setPassword password)
       (.setDataSourceClassName (.getName (.AwsWrapperDataSource class)))
-      (.addDataSourceProperty "jdbcProtocol" "jdbc:postgresql:")
+      (.addDataSourceProperty "jdbcProtocol" "jdbc:aws-wrapper:postgresql:")
       (.addDataSourceProperty "serverName" (aurora-config/db-url-primary))
       (.addDataSourceProperty "serverPort" "5432")
-      (.addDataSourceProperty "database" "postgres")
+      (.addDataSourceProperty "database" (aurora-config/aurora-db-name))
       (.addDataSourceProperty "targetDataSourceClassName" "org.postgresql.ds.PGSimpleDataSource"))))
 
 (defn execute-query
