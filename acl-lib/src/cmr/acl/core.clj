@@ -224,6 +224,13 @@
   (has-management-permission?
     context permission-type object-identity-type provider-id "INGEST_MANAGEMENT_ACL"))
 
+(defn has-provider-context-permission?
+  "Returns true if the user identified by the token in the cache has been granted
+  PROVIDER_CONTEXT permission in ECHO ACLS for the given permission type."
+  [context permission-type object-identity-type provider-id]
+  (has-management-permission?
+    context permission-type object-identity-type provider-id "PROVIDER_CONTEXT"))
+
 (defn- verify-management-permission
   "Verifies the current user has been granted the permission in permission-fn in ECHO ACLs"
   [context permission-type object-identity-type provider-id cache-key permission-fn]
@@ -301,3 +308,19 @@
     provider-id
     token-imp-cache-key
     has-ingest-management-permission?))
+
+(defn verify-provider-context-permission
+  "Verifies the current user has been granted PROVIDER_CONTEXT acl.
+  permission in ECHO ACLs"
+  ([context]
+   (verify-provider-context-permission context :read :system-object nil))
+  ([context permission-type]
+   (verify-provider-context-permission context permission-type :system-object nil))
+  ([context permission-type object-identity-type provider-id]
+   (verify-management-permission-for-provider
+     context
+     permission-type
+     object-identity-type
+     provider-id
+     token-imp-cache-key
+     has-provider-context-permission?)))

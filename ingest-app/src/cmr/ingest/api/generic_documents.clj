@@ -107,8 +107,11 @@
         concept-type (concept-type->singular route-params)
         _ (lt-validation/validate-launchpad-token request-context)
         _ (api-core/verify-provider-exists request-context provider-id)
-        _ (acl/verify-ingest-management-permission
-           request-context :update :provider-object provider-id)
+        _ (if-not (is-draft-concept? request)
+            (acl/verify-ingest-management-permission
+             request-context :update :provider-object provider-id)
+            (acl/verify-provider-context-permission
+             request-context :read :provider-object provider-id))
         raw-document (slurp (:body request))
         content-type (get headers "content-type")
         {:keys [spec-key spec-version document-name format]}
@@ -217,11 +220,16 @@
    if successful with the concept id and revision number. A 404 status is returned if the concept has
    already been deleted."
   [request]
-  (let [{:keys [route-params params]} request
+  (let [{:keys [route-params request-context params]} request
         provider-id (or (:provider params)
                         (:provider-id route-params))
         native-id (:native-id route-params)
-        concept-type (concept-type->singular route-params)]
+        concept-type (concept-type->singular route-params)
+        _ (if-not (is-draft-concept? request)
+            (acl/verify-ingest-management-permission
+             request-context :update :provider-object provider-id)
+            (acl/verify-provider-context-permission
+             request-context :read :provider-object provider-id))]
     (api-core/delete-concept concept-type provider-id native-id request)))
 
 (defn crud-generic-document

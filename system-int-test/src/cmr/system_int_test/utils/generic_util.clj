@@ -7,6 +7,7 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
+   [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as sys]
    [cmr.system-int-test.utils.url-helper :as url-helper]
    [cmr.transmit.config :as transmit-config]))
@@ -25,6 +26,26 @@
                       (jio/resource)
                       (slurp)
                       (json/parse-string true)))
+
+(def collection-draft (-> "schemas/collection-draft/v1.0.0/metadata.json"
+                          (jio/resource)
+                          (slurp)
+                          (json/parse-string true)))
+
+(defn grant-all-drafts-fixture
+  "A test fixture that grants all users the ability to create and modify drafts."
+  [providers guest-permissions registered-permissions]
+  (fn [f]
+    (let [providers (for [[provider-guid provider-id] providers]
+                      {:provider-guid provider-guid
+                       :provider-id provider-id})]
+      (doseq [provider-map providers]
+        ;; grant PROVIDER_CONTEXT permission for each provider.
+        (echo-util/grant-provider-context (sys/context)
+                                          (:provider-id provider-map)
+                                          guest-permissions
+                                          registered-permissions)))
+    (f)))
 
 (defn generic-request
   "This function will make a request to one of the generic URLs using the provided

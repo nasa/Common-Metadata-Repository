@@ -19,7 +19,13 @@
   (f))
 
 (use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
-                                    grant-all-generic-permission-fixture]))
+                                    grant-all-generic-permission-fixture
+                                    ;;allow draft ingest permission for guest on PROV1, but not on PROV2.
+                                    (gen-util/grant-all-drafts-fixture {"provguid1" "PROV1"}
+                                                                       [:read]
+                                                                       [:read])]))
+
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Tests
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -204,3 +210,15 @@
              (not= oo2-concept-id grid1-concept-id)
              (not= oo2-concept-id grid2-concept-id)))
     (is (= 1 grid1-revision-id grid2-revision-id dqs2-revision-id oo2-revision-id))))
+
+;; Test that collection-draft can not be ingested without PROVIDER_CONTEXT acl for the provider.
+(deftest test-collection-draft-ingest-permission
+  ;; Drafts have permissions to ingest on PROV1, but not on PROV2.
+  (let [native-id "NativeId"
+        coll-draft (gen-util/ingest-generic-document
+                    nil "PROV1" native-id :collection-draft gen-util/collection-draft :post)
+        coll-draft-np (gen-util/ingest-generic-document
+                       nil "PROV2" native-id :collection-draft gen-util/collection-draft :post)]
+    (is (= (:errors coll-draft) nil))
+    (is (= (:errors coll-draft-np) ["You do not have permission to perform that action."]))))
+     
