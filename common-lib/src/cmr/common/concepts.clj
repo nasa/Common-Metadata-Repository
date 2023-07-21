@@ -38,6 +38,24 @@
   (vec
    (filter #(string/includes? % "draft") (get-generic-concept-types-array))))
 
+(defn get-concept-type-of-draft
+  "Gets the concept type of the document that is contained in the draft."
+  [draft-concept-type]
+  (let [draft-concept-type-name (when draft-concept-type
+                                  (name draft-concept-type))
+        concept-type-name (when draft-concept-type-name
+                            (re-find #".+?(?=-draft)" draft-concept-type-name))]
+    (when concept-type-name
+      (keyword concept-type-name))))
+
+(defn is-draft-concept?
+  "Determines if the passed in concept type is a draft concept or not."
+  [concept-type]
+  (let [concept-type-name (when concept-type
+                            (name concept-type))]
+    (when concept-type-name
+      (string/includes? concept-type-name "draft"))))
+
 (defn generic-concept?
   "Return true if the passed in concept is a generic concept"
   [concept]

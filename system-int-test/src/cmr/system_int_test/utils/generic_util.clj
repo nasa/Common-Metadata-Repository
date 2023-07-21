@@ -4,7 +4,9 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.java.io :as jio]
+   [clojure.string :as string]
    [clojure.test :refer :all]
+   [cmr.common.mime-types :as mt]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as sys]
    [cmr.system-int-test.utils.url-helper :as url-helper]
@@ -51,15 +53,22 @@
   ([token provider-id native-id concept-type]
    (generic-request token provider-id native-id concept-type nil :get))
   ([token provider-id native-id concept-type document method]
+   (generic-request token provider-id native-id concept-type document method mt/umm-json))
+  ([token provider-id native-id concept-type document method mime-type]
    (let [headers (if token
-                   {"Accept" "application/json"
+                   {"Accept" mt/json
+                    "Content-Type" mime-type
                     transmit-config/token-header token}
-                   {"Accept" "application/json"})]
+                   {"Accept" mt/json
+                    "Content-Type" mime-type})]
      (client/request
       {:method method
        :url (url-helper/ingest-generic-crud-url concept-type provider-id native-id)
        :connection-manager (sys/conn-mgr)
-       :body (when document (json/generate-string document))
+       :body (when document
+               (if (string/includes? mime-type "json")
+                 (json/generate-string document)
+                 document))
        :throw-exceptions false
        :headers headers}))))
 

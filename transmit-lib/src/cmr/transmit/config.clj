@@ -13,7 +13,6 @@
   between public and private communications."
   (:require
    [camel-snake-kebab.core :as csk]
-   [cheshire.core :as json]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.util :as util]
    [cmr.transmit.connection :as conn]))
@@ -36,6 +35,10 @@
 (def local-system-test-password
   "The test user's password"
   "Password101")
+
+(def cmr-client-id
+  "A client id to use as a header when communicating to other CMR services"
+  "cmr-internal")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -87,6 +90,8 @@
 (def-app-conn-config indexer {:port 3004})
 (def-app-conn-config ingest {:port 3002})
 (def-app-conn-config kms {:port 2999, :relative-root-url "/kms"})
+;; nothing is here, no respones is needed at this time
+(def-app-conn-config ordering {:port 2999, :relative-root-url "/ordering/api"})
 (def-app-conn-config metadata-db {:port 3001})
 ;; CMR open search is 3010
 (def-app-conn-config search {:port 3003})
@@ -243,6 +248,10 @@
          :host (kms-host)
          :port (kms-port)
          :context (kms-relative-root-url)}
+   :ordering {:protocol (ordering-protocol)
+              :host (ordering-host)
+              :port (ordering-port)
+              :context (ordering-relative-root-url)}
    :urs {:protocol (urs-protocol)
          :host (urs-host)
          :port (urs-port)

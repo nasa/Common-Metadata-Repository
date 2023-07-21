@@ -13,9 +13,10 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.ingest.api.core :as api-core]
+   [cmr.schema-validation.json-schema :as js-validater]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
-   [cmr.schema-validation.json-schema :as js-validater]))
+   [cmr.umm-spec.umm-spec-core :as spec]))
 
 (defn disabled-for-ingest?
   "Determine if a generic schema is disabled for ingest
@@ -65,7 +66,35 @@
   [request]
   (let [route-params (:route-params request)
         concept-type (concept-type->singular route-params)]
-    (string/includes? (name concept-type) "draft")))
+    (common-concepts/is-draft-concept? concept-type)))
+
+(defn pull-metadata-specific-information
+  "This function depending on the format of the document will get information
+  needed to save the document to the database. Any supported record format is
+  also supported for draft records."
+  [context concept-type content-type raw-document]
+  (if (string/includes? content-type "json")
+    (let [document (json/parse-string raw-document true)
+          specification (:MetadataSpecification document)
+          spec-key (csk/->kebab-case-keyword (:Name specification ""))
+          spec-version (:Version specification)
+          document-name (or (:Name document)
+                            (:ShortName document)
+                            (when (common-concepts/is-draft-concept? concept-type) "Draft"))]
+      {:spec-key spec-key
+       :spec-version spec-version
+       :document-name document-name
+       :format (str "application/vnd.nasa.cmr.umm+json;version=" spec-version)})
+    (if (common-concepts/is-draft-concept? concept-type)
+      (let [draft-concept-type (common-concepts/get-concept-type-of-draft concept-type)
+            sanitized-collection (spec/parse-metadata context draft-concept-type content-type raw-document)]
+        {:spec-key concept-type
+         :spec-version nil
+         :format content-type
+         :document-name (or (:ShortName sanitized-collection)
+                            (:Name sanitized-collection)
+                            "Draft")})
+      {})))
 
 (defn prepare-generic-document
   "Prepares a document to be ingested so that search can retrieve the contents.
@@ -84,21 +113,17 @@
             (acl/verify-provider-context-permission
              request-context :read :provider-object provider-id))
         raw-document (slurp (:body request))
-        document (json/parse-string raw-document true)
-        specification (:MetadataSpecification document)
-        spec-key (csk/->kebab-case-keyword (:Name specification ""))
-        spec-version (:Version specification)
-        document-name (or (:Name document)
-                          (:ShortName document)
-                          (when (is-draft-concept? request) "Draft"))]
+        content-type (get headers "content-type")
+        {:keys [spec-key spec-version document-name format]}
+         (pull-metadata-specific-information request-context concept-type content-type raw-document)]
     (if (and (not= concept-type spec-key)
              (not= (concept-type draft-concept->spec-map) spec-key))
-      (throw UnsupportedOperationException)
+      (throw (UnsupportedOperationException. (format "%s version %s is not supported." spec-key spec-version)))
       {:concept (assoc {}
                        :metadata raw-document
                        :provider-id provider-id
                        :concept-type concept-type
-                       :format (str "application/vnd.nasa.cmr.umm+json;version=" spec-version)
+                       :format format
                        :native-id native-id
                        :user-id (api-core/get-user-id request-context headers)
                        :extra-fields {:document-name document-name
