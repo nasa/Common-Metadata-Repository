@@ -195,4 +195,5 @@
     (is (< (first (:mean (let [result (criterium/benchmark (g/parse-granule all-fields-granule-xml) {:verbose true})]
                            (criterium/report-result result {:verbose true})
                            result)))
+           ;; Arbitrarily defined performance requirement value.
            0.007))))

@@ -203,4 +203,5 @@
     (is (< (first (:mean (let [result (criterium/benchmark (metadata-transformer/transform nil echo10-concept :umm-json) {:verbose true})]
                            (criterium/report-result result {:verbose true})
                            result)))
+           ;; Arbitrarily defined performance requirement value.
            0.007))))
