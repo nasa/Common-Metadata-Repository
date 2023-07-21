@@ -5,9 +5,6 @@
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :refer [for-all]]
-
-   [criterium.core :as criterium]
-
    ; [clojure.test.check.clojure-test :refer [defspec]]
    ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
    [cmr.common.test.test-check-ext :refer [defspec]]
@@ -20,7 +17,6 @@
    [cmr.umm.test.generators.granule :as gran-gen]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-g]))
-
 
 (defn- data-granule->expected
   "Returns the expected data-granule for comparison with the parsed record."
@@ -77,9 +73,9 @@
   (let [xml (echo10/umm->echo10-xml my-gran)]
     (and
      (> (count xml) 0)
-     (= 0 (count (g/validate-xml xml)))))
+     (= 0 (count (g/validate-xml xml))))))
 
-  )
+
 
 (def all-fields-granule-xml
   "<Granule>
