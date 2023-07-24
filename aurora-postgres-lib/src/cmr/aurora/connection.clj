@@ -13,47 +13,35 @@
   (:import
    com.zaxxer.hikari.HikariDataSource
    software.amazon.jdbc.ds.AwsWrapperDataSource
-   java.sql.DriverManager
-   java.util.Properties))
-
-(defn db-properties
-  [username password]
-  (doto (Properties.)
-    ;; Configuring connection properties for the underlying JDBC driver.
-    (.setProperty "user" username)
-    (.setProperty "password" password)
-    (.setProperty "loginTimeout" "100")
-    ;; Configuring connection properties for the Aurora JDBC Wrapper.
-    (.setProperty "wrapperPlugins" "failover,efm")
-    (.setProperty "wrapperLogUnclosedConnections" "true")))
+   java.sql.DriverManager))
 
 (defn pool
   [spec]
   (let [{:keys [classname
                 subprotocol
-                subname
                 user
                 password
-                connection-pool-name
-                fcf-enabled
-                ons-config]} spec]
+                connection-pool-name]} spec]
     (doto (HikariDataSource.)
-      (.setMaximumPoolSize 10)
+      (.setMaximumPoolSize 100)
       (.setIdleTimeout 500)
+      (.setPoolName connection-pool-name)
       (.setUsername user)
       (.setPassword password)
-      (.setDataSourceClassName (.getName (.AwsWrapperDataSource class)))
-      (.addDataSourceProperty "jdbcProtocol" "jdbc:aws-wrapper:postgresql:")
+      (.setDataSourceClassName (.getName AwsWrapperDataSource))
+      (.addDataSourceProperty "jdbcProtocol" subprotocol)
       (.addDataSourceProperty "serverName" (aurora-config/db-url-primary))
       (.addDataSourceProperty "serverPort" "5432")
       (.addDataSourceProperty "database" (aurora-config/aurora-db-name))
-      (.addDataSourceProperty "targetDataSourceClassName" "org.postgresql.ds.PGSimpleDataSource"))))
+      (.addDataSourceProperty "targetDataSourceClassName" classname))))
+
+(defn aurora-pool
+  []
+  (pool {:classname "org.postgresql.ds.PGSimpleDataSource" :subprotocol "jdbc:aws-wrapper:postgresql:" :user (aurora-config/aurora-db-user) :password (aurora-config/aurora-db-password) :connection-pool-name "AuroraPool"}))
 
 (defn execute-query
   [sql-query]
-  (with-open [conn (DriverManager/getConnection (aurora-config/db-url-primary) (db-properties
-                                                                   aurora-config/aurora-db-user
-                                                                   aurora-config/aurora-db-password))
+  (with-open [conn (.getConnection aurora-pool)
               stmt (.createStatement conn)
               res (.executeQuery stmt sql-query)]
     ;; return query result
