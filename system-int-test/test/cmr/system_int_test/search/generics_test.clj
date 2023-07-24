@@ -28,8 +28,11 @@
   (f))
 
 (use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"})
-                                    grant-all-generic-permission-fixture]))
-
+                                    grant-all-generic-permission-fixture
+                                    ;;allow draft ingest permission for guest on PROV1, but not on PROV2.
+                                    (gen-util/grant-all-drafts-fixture {"provguid1" "PROV1"}
+                                                                       [:read]
+                                                                       [:read])]))
 (defn search-request
   "This function will make a request to one of the generic URLs using the provided
    provider and native id"
