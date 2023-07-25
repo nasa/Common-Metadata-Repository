@@ -106,7 +106,7 @@
       {:ok? false
        :problem (format "Received %d from availability check. %s" status-code (:body response))})))
 
-(defn health
+(defn- health
   "Returns the echo-rest health with timeout handling."
   [context]
   (hh/get-health #(health-fn context)))
