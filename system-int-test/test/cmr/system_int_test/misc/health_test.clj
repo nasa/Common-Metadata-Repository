@@ -68,7 +68,6 @@
 (deftest ^:oracle indexer-health-test
   (s/only-with-real-database
     (is (= [200 {:elastic_search {:ok? true}
-                 :echo {:ok? true}
                  :message-queue {:ok? true}
                  :metadata-db good-metadata-db-health}]
            (get-app-health (url/indexer-health-url))))))
@@ -76,7 +75,6 @@
 (deftest ^:oracle ingest-health-test
   (s/only-with-real-database
     (is (= [200 {:oracle {:ok? true}
-                 :echo {:ok? true}
                  :metadata-db good-metadata-db-health
                  :message-queue {:ok? true}
                  :indexer good-indexer-health}]
@@ -84,8 +82,7 @@
 
 (deftest ^:oracle search-health-test
   (s/only-with-real-database
-    (is (= [200 {:echo {:ok? true}
-                 :internal-metadata-db good-metadata-db-health
+    (is (= [200 {:internal-metadata-db good-metadata-db-health
                  :indexer good-indexer-health}]
            (get-app-health (url/search-health-url))))))
 
@@ -105,6 +102,5 @@
 
 (deftest ^:oracle access-control-health-test
   (s/only-with-real-database
-    (is (= [200 {:echo {:ok? true}
-                 :metadata-db good-metadata-db-health}]
+    (is (= [200 {:metadata-db good-metadata-db-health}]
            (get-app-health (url/access-control-health-url))))))
