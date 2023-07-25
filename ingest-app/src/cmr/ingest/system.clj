@@ -100,6 +100,7 @@
                                  (cache-info/create-log-cache-info-job "ingest")))
               :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                        acl/token-smp-cache-key (acl/create-token-smp-cache)
+                       acl/token-pc-cache-key (acl/create-token-pc-cache)
                        ;; Caches a map of tokens to the security identifiers
                        context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
                        context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
