@@ -120,6 +120,7 @@
                       coll-cache/cache-key (coll-cache/create-cache)
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
+                      acl/token-pc-cache-key (acl/create-token-pc-cache)
                       ;; Note that search does not have a job to refresh the KMS cache. The indexer
                       ;; already refreshes the cache. Since we use a consistent cache, the search
                       ;; application will also pick up the updated KMS keywords.
