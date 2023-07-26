@@ -24,7 +24,6 @@
                 connection-pool-name]} spec]
     (doto (HikariDataSource.)
       (.setMaximumPoolSize 100)
-      (.setIdleTimeout 500)
       (.setPoolName connection-pool-name)
       (.setUsername user)
       (.setPassword password)
