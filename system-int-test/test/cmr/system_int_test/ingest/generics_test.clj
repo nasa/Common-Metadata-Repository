@@ -220,5 +220,5 @@
         coll-draft-np (gen-util/ingest-generic-document
                        nil "PROV2" native-id :collection-draft gen-util/collection-draft :post)]
     (is (= (:errors coll-draft) nil))
-    (is (= (:errors coll-draft-np) ["You do not have permission to perform that action."]))))
+    (is (= (:errors coll-draft-np) ["You do not have PROVIDER_CONTEXT permission to perform that action."]))))
      

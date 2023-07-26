@@ -53,7 +53,8 @@
                                       "token-sid"
                                       "token-user-id"
                                       "token-user-ids"
-                                      "write-enabled"]
+                                      "write-enabled"
+                                      "token-pc"]
         (url/access-control-read-caches-url) ["acls"
                                               "group-ids-guids"
                                               "health"
@@ -81,7 +82,8 @@
                                       "token-sid"
                                       "token-user-id"
                                       "write-enabled"
-                                      "xsl-transformer-templates"])
+                                      "xsl-transformer-templates"
+                                      "token-pc"])
       ;; CMR-4337 - bootstrap
       #_(s/only-with-real-database
          (testing "list caches for bootstrap"
