@@ -97,6 +97,7 @@
 (defn health-fn
   "Returns the availability status of echo-rest by calling its availability endpoint"
   [context]
+  (warn "Code is still calling the echo health check")
   (let [conn (config/context->app-connection context :echo-rest)
         url (format "%s%s" (conn/root-url conn) "/availability")
         response (get-rest-health url)
@@ -106,7 +107,7 @@
       {:ok? false
        :problem (format "Received %d from availability check. %s" status-code (:body response))})))
 
-(defn health
+(defn- health
   "Returns the echo-rest health with timeout handling."
   [context]
   (hh/get-health #(health-fn context)))

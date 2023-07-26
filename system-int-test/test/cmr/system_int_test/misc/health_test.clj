@@ -6,8 +6,6 @@
    [clojure.test :refer :all]
    [clojure.string :as str]
    [cmr.common-app.test.side-api :as side]
-   [cmr.common.time-keeper :as tk]
-   [cmr.elastic-utils.connect :as es-util]
    [cmr.search.routes :as routes]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.url-helper :as url]))
@@ -30,14 +28,12 @@
 (def good-indexer-health
   {:ok? true
    :dependencies {:elastic_search {:ok? true}
-                  :echo {:ok? true}
                   :message-queue {:ok? true}
                   :metadata-db good-metadata-db-health}})
 
 (def good-ingest-health
   {:ok? true
    :dependencies {:oracle {:ok? true}
-                  :echo {:ok? true}
                   :metadata-db good-metadata-db-health
                   :message-queue {:ok? true}
                   :indexer good-indexer-health}})
@@ -68,7 +64,6 @@
 (deftest ^:oracle indexer-health-test
   (s/only-with-real-database
     (is (= [200 {:elastic_search {:ok? true}
-                 :echo {:ok? true}
                  :message-queue {:ok? true}
                  :metadata-db good-metadata-db-health}]
            (get-app-health (url/indexer-health-url))))))
@@ -76,7 +71,6 @@
 (deftest ^:oracle ingest-health-test
   (s/only-with-real-database
     (is (= [200 {:oracle {:ok? true}
-                 :echo {:ok? true}
                  :metadata-db good-metadata-db-health
                  :message-queue {:ok? true}
                  :indexer good-indexer-health}]
@@ -84,8 +78,7 @@
 
 (deftest ^:oracle search-health-test
   (s/only-with-real-database
-    (is (= [200 {:echo {:ok? true}
-                 :internal-metadata-db good-metadata-db-health
+    (is (= [200 {:internal-metadata-db good-metadata-db-health
                  :indexer good-indexer-health}]
            (get-app-health (url/search-health-url))))))
 
@@ -105,6 +98,5 @@
 
 (deftest ^:oracle access-control-health-test
   (s/only-with-real-database
-    (is (= [200 {:echo {:ok? true}
-                 :metadata-db good-metadata-db-health}]
+    (is (= [200 {:metadata-db good-metadata-db-health}]
            (get-app-health (url/access-control-health-url))))))
