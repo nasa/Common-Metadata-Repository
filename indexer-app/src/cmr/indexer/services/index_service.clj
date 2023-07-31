@@ -24,7 +24,6 @@
    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.message-queue.services.queue :as queue]
-   [cmr.transmit.echo.rest :as rest]
    [cmr.transmit.metadata-db :as meta-db]
    [cmr.transmit.metadata-db2 :as meta-db2]
    [cmr.transmit.search :as search]
@@ -824,7 +823,6 @@
 (def health-check-fns
   "A map of keywords to functions to be called for health checks"
   {:elastic_search #(es-util/health % :db)
-   :echo rest/health
    :metadata-db meta-db2/get-metadata-db-health
    :message-queue (fn [context]
                     (when-let [qb (get-in context [:system :queue-broker])]

@@ -11,7 +11,7 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.tokenss :as tokens]
    [cmr.transmit.tag :as tt]))
 
 (defn grant-all-tag-fixture

@@ -15,7 +15,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :refer [defn-timed] :as util]
-   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.tokenss :as tokens]
    [cmr.transmit.metadata-db :as mdb1]
    [cmr.transmit.metadata-db2 :as mdb]))
 

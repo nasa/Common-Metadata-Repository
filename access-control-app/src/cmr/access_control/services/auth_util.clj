@@ -8,7 +8,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.echo.tokens :as echo-tokens]
+   [cmr.transmit.tokenss :as echo-tokens]
    [cmr.transmit.urs :as urs]))
 
 (defn-timed get-sids

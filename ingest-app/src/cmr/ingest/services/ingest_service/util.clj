@@ -13,7 +13,6 @@
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.oracle.connection :as conn]
    [cmr.redis-utils.redis :as redis]
-   [cmr.transmit.echo.rest :as rest]
    [cmr.transmit.indexer :as indexer]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]))
@@ -39,7 +38,6 @@
 (def health-check-fns
   "A map of keywords to functions to be called for health checks"
   {:oracle #(conn/health (pah/context->db %))
-   :echo rest/health
    :metadata-db mdb2/get-metadata-db-health
    :indexer indexer/get-indexer-health
    :message-queue #(queue-protocol/health (get-in % [:system :queue-broker]))})

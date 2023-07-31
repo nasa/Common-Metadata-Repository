@@ -9,8 +9,7 @@
    [cmr.mock-echo.client.mock-urs-client :as urs-client]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as config]
-   [cmr.transmit.echo.conversion :as c]
-   [cmr.transmit.echo.tokens :as tokens]))
+   [cmr.transmit.tokenss :as tokens]))
 
 (defn reset
   "Resets the mock echo."

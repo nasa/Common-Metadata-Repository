@@ -25,18 +25,11 @@
    [cmr.common.log :refer [info debug]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
-   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.tokenss :as tokens]
    [cmr.transmit.metadata-db :as mdb1]
    [cmr.transmit.metadata-db2 :as mdb]
    [cmr.transmit.urs :as urs]
    [cmr.umm-spec.acl-matchers :as acl-matchers]))
-
-(defn- context->user-id
-  "Returns user id of the token in the context. Throws an error if no token is provided"
-  [context]
-  (if-let [token (:token context)]
-    (tokens/get-user-id context (:token context))
-    (errors/throw-service-error :unauthorized msg/token-required)))
 
 (defn- fetch-acl-concept
   "Fetches the latest version of ACL concept by concept id. Handles unknown concept ids by

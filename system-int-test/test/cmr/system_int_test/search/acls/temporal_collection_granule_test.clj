@@ -19,8 +19,7 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.transmit.config :as tc]
-   [cmr.transmit.echo.conversion :as echo-conversion]))
+   [cmr.transmit.config :as tc]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"}

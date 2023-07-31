@@ -13,7 +13,7 @@
    [cmr.ingest.api.translation :as ingest-translation-api]
    [cmr.message-queue.test.queue-broker-side-api :as queue-broker-side-api]
    [cmr.search.data.elastic-search-index :as es]
-   [cmr.transmit.echo.acls :as echo-acls]
+   [cmr.transmit.access-control :as ac]
    [compojure.core :refer :all]
    [compojure.route :as route]
 
@@ -45,7 +45,7 @@
   [system]
   (let [indexer-cached-acls (deref (get-in system [:apps :indexer :caches :acls]))
         search-cached-acls (deref (get-in system [:apps :search :caches :acls]))
-        actual-acls (echo-acls/get-acls-by-types (app-context system :indexer) [:catalog-item])
+        actual-acl (ac/search-for-acls (app-context system :indexer) {:identity-type :catalog-item :reference false})
         coll-permitted-groups (es/get-collection-permitted-groups (app-context system :search))
         result {:collection-permitted-groups coll-permitted-groups}]
 
