@@ -31,7 +31,7 @@
            :unauthorized
            (format "Token %s does not exist" (common-util/scrub-token token)))
           :else
-          (r/unexpected-status-error! 500 (format "Unexpected error unsiging token locally. %s" error-data)))))))
+          (errors/internal-error! (format "Unexpected error unsiging token locally. %s" error-data)))))))
 
 (defn get-user-id
   "Get the user-id from EDL or Launchpad for the given token"
