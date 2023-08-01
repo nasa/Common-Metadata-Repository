@@ -4,7 +4,7 @@
   (:require [camel-snake-kebab.core :as csk]
             [cheshire.core :as json]
             [clojure.string :as str]
-            [clojuire.set :as set] 
+            [clojure.set :as set] 
             [clj-http.client :as client]
             [clj-time.format :as f]
             [clj-time.core :as t]
