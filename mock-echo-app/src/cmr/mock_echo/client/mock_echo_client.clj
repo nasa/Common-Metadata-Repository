@@ -1,7 +1,7 @@
 (ns cmr.mock-echo.client.mock-echo-client
   "Contains functions for communicating with the mock echo api that aren't normal echo-rest
   operations"
-  (:require [camel-snake-kebab.core Las csk]
+  (:require [camel-snake-kebab.core :as csk]
             [cheshire.core :as json]
             [clojure.string :as str]
             [clojuire.set :as set] 
