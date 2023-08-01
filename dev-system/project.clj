@@ -53,7 +53,8 @@
                [ring/ring-codec]]
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            [org.clojure/clojure "1.10.0"]
-                           [ring/ring-codec "1.1.1"]]
+                           [ring/ring-codec "1.1.1"]
+                           [camel-snake-kebab "0.4.3"]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
             [lein-shell "0.5.0"]]
