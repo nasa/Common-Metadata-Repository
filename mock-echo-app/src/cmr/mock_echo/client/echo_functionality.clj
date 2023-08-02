@@ -40,6 +40,10 @@
      (format "Unexpected status %d from response. body: %s" status "Token does not exist")
      (format "Unexpected status %d from response. body: %s" status (pr-str body)))))
 
+(defn gateway-timeout-error!
+  []
+  (errors/throw-service-errors :gateway-timeout ["A gateway timeout occurred, please try your request again later."]))
+
 (defn rest-post
   "Makes a post request to echo-rest. Returns a tuple of status, the parsed body, and the body."
   ([context url-path body-obj]
