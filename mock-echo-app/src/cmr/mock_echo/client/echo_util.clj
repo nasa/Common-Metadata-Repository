@@ -9,7 +9,7 @@
    [cmr.mock-echo.client.mock-urs-client :as urs-client]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as config]
-   [cmr.transmit.tokens :as tokens]))
+   [cmr.mock-echo.client.echo-functionality :as echo-func]))
 
 (defn reset
   "Resets the mock echo."
@@ -49,7 +49,7 @@
 (defn login-guest
   "Logs in as a guest and returns the token"
   [context]
-  (tokens/login-guest context))
+  (echo-func/login-guest context))
 
 (defn login
   "Logs in as the specified user and returns the token. No password needed because mock echo
@@ -66,12 +66,12 @@
        (doseq [group-concept-id group-concept-ids]
            (add-user-to-group context group-concept-id user (config/echo-system-token)))
        (echo-client/login-with-group-access context user "password" group-concept-ids))
-     (tokens/login context user "password"))))
+     (echo-func/login context user "password"))))
 
 (defn logout
   "Logs out the specified token."
   [context token]
-  (tokens/logout context token))
+  (echo-func/logout context token))
 
 (def LAUNCHPAD_TOKEN_PADDING
   "Padding to make a regular token into launchpad token
