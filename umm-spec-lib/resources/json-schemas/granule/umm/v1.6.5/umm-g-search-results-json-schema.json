@@ -1,0 +1,89 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "definitions": {
+    "ItemType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "Represents a single item found in search results. It contains some metadata about the item found along with the UMM representing the item. umm won't be present if the item represents a tombstone.",
+      "properties": {
+        "meta": {
+          "$ref": "#/definitions/MetaType"
+        },
+        "umm": {
+          "$ref": "umm-g-json-schema.json"
+        }
+      },
+      "required": ["meta"]
+    },
+    "MetaType": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "CMR level metadata about the item found. This represents data not found in the actual metadata.",
+      "properties": {
+        "provider-id": {
+          "description": "The identity of the provider in the CMR",
+          "type": "string",
+          "minLength": 1,
+          "pattern": "[A-Z0-9_]+"
+        },
+        "concept-type": {
+          "description": "The type of item found.",
+          "type": "string",
+          "enum": ["granule"]
+        },
+        "native-id": {
+          "description": "The id used by the provider to identify this item during ingest.",
+          "type": "string",
+          "minLength": 1
+        },
+        "concept-id": {
+          "description": "The concept id of the item found.",
+          "$ref": "#/definitions/ConceptIdType"
+        },
+        "revision-id": {
+          "description": "A number >= 1 that indicates which revision of the item.",
+          "type": "number"
+        },
+        "revision-date": {
+          "description": "The date this revision was created. This would be the creation or update date of the item in the CMR.",
+          "format": "date-time",
+          "type": "string"
+        },
+        "format": {
+          "description": "The mime type of the original metadata",
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "required": ["provider-id", "concept-type", "native-id", "concept-id", "revision-id", "revision-date", "format"]
+    },
+    "ConceptIdType": {
+      "description": "The concept id of a concept.",
+      "type": "string",
+      "minLength": 4,
+      "pattern": "[A-Z]+\\d+-[A-Z0-9_]+"
+    }
+  },
+  "title": "UMM JSON Granule Search Results",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "hits": {
+      "description": "The total number of items that matched the search.",
+      "type": "number"
+    },
+    "took": {
+      "description": "How long the search took in milliseconds from the time the CMR received the request until it had generated the response. This does not include network traffic time to send the request or return the response.",
+      "type": "number"
+    },
+    "items": {
+      "description": "The list of items matching the result in this page.",
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/ItemType"
+      },
+      "minItems": 0
+    }
+  },
+  "required": ["hits", "took", "items"]
+}
