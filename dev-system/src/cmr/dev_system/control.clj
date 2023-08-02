@@ -45,7 +45,7 @@
   [system]
   (let [indexer-cached-acls (deref (get-in system [:apps :indexer :caches :acls]))
         search-cached-acls (deref (get-in system [:apps :search :caches :acls]))
-        actual-acl (ac/search-for-acls (app-context system :indexer) {:identity-type :catalog-item :reference false})
+        actual-acls (ac/search-for-acls (app-context system :indexer) {:identity-type :catalog-item :reference false})
         coll-permitted-groups (es/get-collection-permitted-groups (app-context system :search))
         result {:collection-permitted-groups coll-permitted-groups}]
 
