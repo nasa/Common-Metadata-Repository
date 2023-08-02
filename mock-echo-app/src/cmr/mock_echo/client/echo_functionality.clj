@@ -149,3 +149,33 @@
       util/remove-nil-keys
       util/map-keys->snake_case
       (#(hash-map :acl %))))
+
+
+(defn login
+  "Logs into ECHO and returns the token"
+  ([context username password]
+   (login context username password "CMR Internal" "127.0.0.1"))
+  ([context username password client-id user-ip-address]
+   (let [token-info {:token {:username username
+                             :password password
+                             :client_id client-id
+                             :user_ip_address user-ip-address}}
+         [status parsed body] (rest-post context "/tokens" token-info)]
+     (case status
+       201 (get-in parsed [:token :id])
+       504 (gateway-timeout-error!)
+
+       ;; default
+       (unexpected-status-error! status body)))))
+
+(defn logout
+  "Logs out of ECHO"
+  [context token]
+  (let [[status body] (rest-delete context (str "/tokens/" token))]
+    (when-not (= 200 status)
+      (unexpected-status-error! status body))))
+
+(defn login-guest
+  "Logs in as a guest and returns the token."
+  [context]
+  (login context "guest" "guest-password"))
