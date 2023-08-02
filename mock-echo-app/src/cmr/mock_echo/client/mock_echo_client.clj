@@ -16,6 +16,23 @@
             [cmr.transmit.connection :as conn]
             [schema.core :as s]))
 
+
+(defn request-options
+  [conn]
+  (merge
+   (config/conn-params conn)
+   {:accept :json
+    :throw-exceptions false
+    :headers {"Authorization" (config/echo-system-token)}
+     ;; Overrides the socket timeout from conn-params
+    :socket-timeout (config/echo-http-socket-timeout)}))
+
+(defn post-options
+  [conn body-obj]
+  (merge (request-options conn)
+         {:content-type :json
+          :body (json/encode body-obj)}))
+
 (defn unexpected-status-error!
   [status body]
   (errors/internal-error!
