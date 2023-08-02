@@ -30,7 +30,7 @@
                                 :provider_id provider-id}})
         [status] (echo-func/rest-post context "/providers" providers)]
     (when-not (= status 201)
-      (unexpected-status-error! status nil))))
+      (echo-func/unexpected-status-error! status nil))))
 
 (defn create-acl
   "Creates an ACL in mock echo. Takes cmr style acls. Returns the acl with the guid"
