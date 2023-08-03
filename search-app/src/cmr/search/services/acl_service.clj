@@ -1,7 +1,6 @@
 (ns cmr.search.services.acl-service
   "Performs ACL related tasks for the search application"
   (:require
-   [clojure.string :as string]
    [cmr.common.api.context :as context-util]
    [cmr.common.concepts :as cc]
    [cmr.search.services.acls.acl-helper :as acl-helper]
@@ -39,7 +38,7 @@
 ;; generic concepts currently have no catalog item ACLs, so return `true` for all ACL checks
 ;; except for draft concepts which checks provider object ACL PROVIDER_CONTEXT.
 (doseq [concept-type (cc/get-generic-concept-types-array)]
-  (if (string/includes? (name concept-type) "draft")
+  (if (cc/is-draft-concept? concept-type)
     (defmethod acls-match-concept? concept-type
       [context acls concept]
       (let [pc-acls (acl-helper/get-pc-acls-applicable-to-token context)]
@@ -130,6 +129,8 @@
                            concept-type
                            (-> concepts first :concept_id cc/concept-id->type))
             applicable-field (concept-type->applicable-field concept-type)
+            ;; Note: This applicable-acls is only used for collections and granules acl matching.
+            ;; For other concept types, it is not being used.
             applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)]
         (doall (remove nil? (pmap (fn [concept]
                                     (when (acls-match-concept? context applicable-acls concept)

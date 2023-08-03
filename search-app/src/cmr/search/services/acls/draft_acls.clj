@@ -1,7 +1,6 @@
 (ns cmr.search.services.acls.draft-acls
   "Contains functions for manipulating draft acls"
   (:require
-   [clojure.string :as string]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
@@ -10,7 +9,7 @@
    [cmr.transmit.config :as tc]))
 
 (doseq [concept-type (cc/get-generic-concept-types-array)]
-  (when (string/includes? (name concept-type) "draft")
+  (when (cc/is-draft-concept? concept-type)
     (defmethod qe/add-acl-conditions-to-query concept-type
       [context query]
       ;; return unmodified query if the context has a system token
