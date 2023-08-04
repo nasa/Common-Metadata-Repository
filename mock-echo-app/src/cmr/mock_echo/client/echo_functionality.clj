@@ -165,7 +165,9 @@
                              :password password
                              :client_id client-id
                              :user_ip_address user-ip-address}}
-         [status parsed body] (rest-post context "/tokens" token-info)]
+         _ (warn "Calling rest-post from login func")
+         [status parsed body] (rest-post context "/tokens" token-info)
+         _ (warn (format "called rest-post from login func, with status: %s body: %s parsed: %s" status body parsed))]
      (case status
        201 (get-in parsed [:token :id])
        504 (gateway-timeout-error!)
