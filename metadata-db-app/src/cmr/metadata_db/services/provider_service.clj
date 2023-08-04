@@ -9,6 +9,7 @@
    [cmr.metadata-db.services.provider-validation :as pv]
    [cmr.metadata-db.services.util :as mdb-util]))
 
+;; Prototype Runs will involve creating just 1 provider, which neither Oracle nor Aurora will have at that time.
 (defn create-provider
   "Save a provider and setup concept tables in the database."
   [context {:keys [provider-id short-name] :as provider}]

@@ -141,6 +141,32 @@
                              :deleted (not= (int deleted) 0)
                              :transaction-id transaction_id}))))
 
+;; this needs to be called within a jdbc transaction and can't be in aurora lib bc cyclic dependencies
+(defn db-result->concept-map-aurora
+  [concept-type db provider-id result]
+  (when result
+    (let [{:keys [native_id
+                  concept_id
+                  metadata
+                  format
+                  revision_id
+                  revision_date
+                  created_at
+                  deleted
+                  transaction_id]} result]
+      (util/remove-nil-keys {:concept-type concept-type
+                             :native-id native_id
+                             :concept-id concept_id
+                             :provider-id provider-id
+                             :metadata (when metadata (util/gzip-blob->string metadata))
+                             :format (db-util/db-format->mime-type format)
+                             :revision-id (int revision_id)
+                             :revision-date (aurora/db-timestamp->str-time db revision_date)
+                             :created-at (when created_at
+                                           (aurora/db-timestamp->str-time db created_at))
+                             :deleted (not= (int deleted) 0)
+                             :transaction-id transaction_id}))))
+
 (defn db-result->concept-map-dynamo
   [concept-type provider-id result]
   (when result
@@ -403,7 +429,11 @@
                                  (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))
          aurora-concept-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                               (util/time-execution
-                               (aurora/get-concept provider concept-type concept-id)))]
+                               (j/with-db-transaction
+                                 [conn (aurora/db-connection)]
+                                 (let [table (tables/get-table-name provider concept-type)]
+                                   (db-result->concept-map-aurora concept-type conn (:provider-id provider)
+                                                                  (aurora/get-concept conn table concept-id))))))]
      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
        (info "ORT Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
        (info "Output from EFS get-concept: " (second efs-concept-get))
@@ -439,7 +469,10 @@
                                    (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))
            aurora-concept-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                 (util/time-execution
-                                 (aurora/get-concept provider concept-type concept-id revision-id)))]
+                                 (j/with-db-transaction
+                                   [conn (aurora/db-connection)]
+                                   (db-result->concept-map-aurora concept-type conn (:provider-id provider)
+                                                                  (aurora/get-concept conn table concept-id revision-id)))))]
        (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (info "ORT Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
          (info "Output of EFS get-concept: " (second efs-concept-get))
@@ -488,7 +521,17 @@
                                              (dynamo/get-concepts-provided concept-id-revision-id-tuples)))))
           aurora-concepts-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                 (util/time-execution
-                                 (aurora/get-concepts provider concept-type concept-id-revision-id-tuples)))]
+                                 (j/with-db-transaction
+                                   [conn (aurora/db-connection)]
+                                    ;; use a temporary table to insert our values so we can use a join to
+                                    ;; pull everything in one select
+                                   (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+
+                                   (let [provider-id (:provider-id provider)
+                                         table (tables/get-table-name provider concept-type)
+                                         stmt (aurora/gen-get-concepts-sql-with-temp-table table)]
+                                     (doall (map (partial db-result->concept-map-aurora concept-type conn provider-id)
+                                                 (aurora/get-concepts conn stmt)))))))]
       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (info "ORT Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
         (info "Output of EFS get-concepts: " (second efs-concepts-get))
@@ -548,18 +591,20 @@
                            (string/join "," (repeat (count values) "?")))]
           (trace "Executing" stmt "with values" (pr-str values))
           (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
-            (info "ORT Runtime of Oracle save-concept: " (first (util/time-execution
-                                                             (j/db-do-prepared db stmt values))) " ms."))
+            (info "ORT Runtime of Oracle save-concept: " (first (util/time-execution)
+                                                             (j/db-do-prepared db stmt values))) " ms.")
           (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-            (info "ORT Runtime of DynamoDB save-concept: " (first (util/time-execution
-                                                               (dynamo/save-concept concept)))))
+            (info "ORT Runtime of DynamoDB save-concept: " (first (util/time-execution)
+                                                               (dynamo/save-concept concept))))
           (when (not= "aurora-off" (aurora-config/aurora-toggle))
-            (info "ORT Runtime of Aurora save-concept: " (first (util/time-execution
-                                                                 (aurora/save-concept concept)))))
-          (when (and
-                 (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-                 (= false (:deleted concept)))
-            (info "ORT Runtime of EFS save-concept: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))
+            (info "ORT Runtime of Aurora save-concept: " (first (util/time-execution 
+                                                                 (j/db-do-prepared (aurora/db-connection)
+                                                                                   (aurora/save-concept table cols seq-name)
+                                                                                   values)))
+                  (when (and
+                         (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+                         (= false (:deleted concept)))
+                    (info "ORT Runtime of EFS save-concept: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))))
           (after-save conn provider concept)
           nil)))
     (catch Exception e
@@ -586,7 +631,8 @@
                          (dynamo/delete-concept concept-id revision-id)))
         aurora-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
                         (util/time-execution
-                         (aurora/delete-concept provider concept-type concept-id revision-id)))]
+                         (j/execute! (aurora/db-connection)
+                                     (aurora/delete-concept table concept-id revision-id))))]
     (when efs-delete
       (info "ORT Runtime of EFS force-delete: " (first efs-delete) " ms.")
       (info "Output of EFS force-delete: " (second efs-delete)))
@@ -631,6 +677,9 @@
                              (dynamo/delete-concepts-provided concept-id-revision-id-tuples)))
             aurora-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
                             (util/time-execution
+                             (save-concepts-to-tmp-table (aurora/db-connection) concept-id-revision-id-tuples)
+                             (j/execute! (aurora/db-connection) stmt)
+                             ;; this is actually the same as oracle but leaving this to grab the print
                              (aurora/delete-concepts provider concept-type concept-id-revision-id-tuples)))]
         (when efs-delete
           (info "ORT Runtime of EFS force-delete-concepts: " (first efs-delete) " ms.")

@@ -10,7 +10,9 @@
    [cmr.metadata-db.data.oracle.collection-table :as ct]
    [cmr.metadata-db.data.oracle.granule-table :as gt]
    [cmr.metadata-db.services.provider-validation :as pv]
-   [inflections.core :as inf]))
+   [inflections.core :as inf]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as aurora]))
 
 (def all-provider-concept-types
   "All the concept types that have tables for each (non-small) provider"
@@ -124,7 +126,13 @@
   (info "Creating concept tables for provider [" (:provider-id provider) "]")
   (doseq [concept-type all-provider-concept-types]
     (create-concept-table db provider concept-type)
-    (create-concept-table-id-sequence db provider concept-type)))
+    (create-concept-table-id-sequence db provider concept-type))
+  (when (not= "aurora-off" (aurora-config/aurora-toggle))
+    (info "Creating concept tables for provider [" (:provider-id provider) "] in Aurora")
+    (doseq [concept-type all-provider-concept-types]
+      ;; the SQL for creating these tables should work for Postgres as well
+      (create-concept-table (aurora/db-connection) provider concept-type)
+      (create-concept-table-id-sequence (aurora/db-connection) provider concept-type))))
 
 (defn delete-provider-concept-tables
   "Delete the concept tables associated with the given provider."

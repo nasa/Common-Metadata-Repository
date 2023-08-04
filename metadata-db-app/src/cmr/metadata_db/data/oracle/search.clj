@@ -212,7 +212,12 @@
                           (doall (dynamo/get-concepts-small-table params))))
         aurora-results (when (not= "aurora-off" (aurora-config/aurora-toggle))
                          (util/time-execution
-                          (aurora/get-concepts-small-table concept-type concept-ids-revision-ids)))]
+                          ;; passing stmt as is for now in case the sql syntax might be compatible for this one
+                          (j/with-db-transaction
+                            [conn (aurora/db-connection)]
+                            (doall
+                             (mapv #(oc/db-result->concept-map-aurora concept-type conn (:provider_id %) %)
+                                   (aurora/get-concepts-small-table conn stmt))))))]
     (when efs-results
       (info "ORT Runtime of EFS find-concepts-in-table(small-table): " (first efs-results) " ms.")
       (info "Values from EFS: " (pr-str (second efs-results))))
@@ -267,7 +272,16 @@
                           (doall (dynamo/get-concepts params))))
         aurora-results (when (not= "aurora-off" (aurora-config/aurora-toggle))
                          (util/time-execution
-                          (aurora/get-concepts providers concept-type concept-ids-revision-ids)))]
+                          (j/with-db-transaction
+                            [conn (aurora/db-connection)]
+                          ;; doall is necessary to force result retrieval while inside transaction - otherwise
+                          ;; connection closed errors will occur
+                            (doall (mapv (fn [result]
+                                           (oc/db-result->concept-map-aurora concept-type conn
+                                                                      (or (:provider_id result)
+                                                                          (:provider-id (first providers)))
+                                                                      result))
+                                         (aurora/get-concepts conn stmt))))))] ;; stmt generated SQL should be compatible with Aurora as well here
     (when efs-results
       (info "ORT Runtime of EFS find-concepts-in-table: " (first efs-results) " ms.")
       (info "Values from EFS: " (pr-str (second efs-results))))
@@ -315,7 +329,7 @@
                        stmt (su/build (select [:*]
                                               (from table)
                                               (where (cons `and conditions))))
-                       batch-result (su/query db stmt)
+                       ;; batch-result (su/query db stmt)
                        concept-revision-id-stmt (su/build (select [:concept_id :revision_id]
                                                                   (from table)
                                                                   (where (cons `and conditions))))
@@ -323,7 +337,7 @@
                        oracle-results (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                                         (util/time-execution
                                          (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
-                                               batch-result)))
+                                               (su/query db stmt))))
                        efs-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
                                     (util/time-execution
                                      (doall (efs/get-concepts provider concept-type (map sh/efs-concept-helper concept-revision-batch-result)))))
@@ -332,7 +346,10 @@
                                          (doall (dynamo/get-concepts params))))
                        aurora-results (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                         (util/time-execution
-                                         (aurora/get-concepts provider concept-type concept-revision-batch-result)))]
+                                         (j/with-db-transaction [conn (aurora/db-connection)]
+                                           (mapv (partial oc/db-result->concept-map-aurora concept-type conn provider-id)
+                                                ;; stmt generated SQL should be compatible with Aurora as well here
+                                                 (aurora/get-concepts (aurora/db-connection) stmt)))))]
                    (when efs-results
                      (info "ORT Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results) " ms.")
                      (info "Values from EFS: " (pr-str (second efs-results))))

@@ -5,7 +5,9 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as conn]
-   [cmr.message-queue.config :as rmq-conf]))
+   [cmr.message-queue.config :as rmq-conf]
+   [cmr.aurora.connection :as aurora]
+   [cmr.aurora.config :as aurora-config]))
 
 (defconfig metadata-db-username
   "The database username"
@@ -30,6 +32,19 @@
    (oracle-config/db-ons-config)
    (metadata-db-username)
    (metadata-db-password)))
+
+(defn pg-db-spec
+  [connection-pool-name]
+  (aurora/db-spec
+   connection-pool-name
+   (aurora-config/db-url-primary)
+   (metadata-db-username)
+   (metadata-db-password)
+   (aurora-config/aurora-db-name)))
+
+(defonce pooled-db (delay (aurora/make-prototype-pool pg-db-spec)))
+
+(defn pg-db-connection [] @pooled-db)
 
 (defconfig parallel-chunk-size
   "Gets the number of concepts that should be processed in each thread of get-concepts."

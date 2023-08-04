@@ -8,25 +8,30 @@
 
 (defconfig aurora-db-name
   "Aurora database name"
-  {:default "metadata_db"})
+  {:default "cmrcdb"})
 
 (defconfig db-url-primary
-  "Primary db url (for writes and reads)"
-  {:default (str "jdbc:aws-wrapper:postgresql://localhost:5432/" aurora-db-name)})
+  "Primary db endpoint (for writes and reads)"
+  {:default "localhost"})
 
 (defconfig db-url-secondary
   "Secondary db url (for reads only)
    Note that for local development this is the same as db-url-primary since there is no local Aurora cluster mock-up."
-  {:default (str "jdbc:aws-wrapper:postgresql://localhost:5432/" aurora-db-name)})
+  {:default "localhost"})
+
+(defn db-connection-str
+  "Returns the connection string for the given postgres db endpoint"
+  [host]
+  (str "jdbc:aws-wrapper:postgresql://" host ":5432/" aurora-db-name))
 
 (defconfig aurora-db-user
-  "Aurora database user"
-  {:default "admin"})
+  "Aurora database master user"
+  {:default "postgres"})
 
 (defconfig aurora-db-password
-  "Aurora database password"
+  "Aurora database master password"
   {:default "admin"})
 
 (defconfig aurora-toggle
   "Three-way toggle for Aurora functionality. 'aurora-off' uses only Oracle, 'aurora-on' uses both Oracle and Aurora, and 'aurora-only' uses only Aurora"
-  {:default "aurora-off"})
+  {:default "aurora-on"})

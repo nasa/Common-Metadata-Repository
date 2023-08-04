@@ -8,7 +8,9 @@
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.metadata-db.data.providers :as p]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc
-                                        delete as]])
+                                        delete as]]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as aurora])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -92,7 +94,21 @@
                 metadata
                 ])
       (when (not small)
-        (ct/create-provider-concept-tables db provider))))
+        (ct/create-provider-concept-tables db provider))
+    (when (not= "aurora-off" (aurora-config/aurora-toggle))
+      (info "Saving provider to Aurora")
+      (j/insert! (aurora/db-connection)
+                 :providers
+                 ["provider_id" "short_name" "cmr_only" "small" "consortiums" "metadata"]
+                 [provider-id
+                  short-name
+                  (if cmr-only 1 0)
+                  (if small 1 0)
+                  consortiums
+                  metadata])
+      (when (not small)
+        (info "Saving provider tables to Aurora")
+        (ct/create-provider-concept-tables (aurora/db-connection) provider)))))
 
 (defn get-providers
   "Get all providers but return it in the older minimal format"
