@@ -55,7 +55,7 @@
          params (if (some? (:form-params body-obj))
                   (merge (request-options conn) body-obj)
                   (merge (post-options conn body-obj) options))
-         _ (warn (format "Using legacy API call to POST %s with params: ") params)
+         _ (warn (format "Using legacy API call to POST %s with params: %s" url params))
          response (client/post url params)
          {:keys [status body headers]} response
          parsed (when (.startsWith ^String (get headers "Content-Type" "") "application/json")
