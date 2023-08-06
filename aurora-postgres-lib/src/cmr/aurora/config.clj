@@ -34,4 +34,4 @@
 
 (defconfig aurora-toggle
   "Three-way toggle for Aurora functionality. 'aurora-off' uses only Oracle, 'aurora-on' uses both Oracle and Aurora, and 'aurora-only' uses only Aurora"
-  {:default "aurora-on"})
+  {:default "aurora-off"})
