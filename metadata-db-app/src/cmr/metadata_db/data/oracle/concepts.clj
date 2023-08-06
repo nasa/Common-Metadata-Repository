@@ -592,11 +592,11 @@
                            (string/join "," (repeat (count values) "?")))]
           (trace "Executing" stmt "with values" (pr-str values))
           (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
-            (info "ORT Runtime of Oracle save-concept: " (first (util/time-execution)
-                                                             (j/db-do-prepared db stmt values))) " ms.")
+            (info "ORT Runtime of Oracle save-concept: " (first (util/time-execution
+                                                                 (j/db-do-prepared db stmt values)))) " ms.")
           (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
-            (info "ORT Runtime of DynamoDB save-concept: " (first (util/time-execution)
-                                                               (dynamo/save-concept concept))))
+            (info "ORT Runtime of DynamoDB save-concept: " (first (util/time-execution
+                                                                   (dynamo/save-concept concept)))))
           (when (not= "aurora-off" (aurora-config/aurora-toggle))
             (info "ORT Runtime of Aurora save-concept: " (first (util/time-execution 
                                                                  (j/db-do-prepared (config/pg-db-connection)
