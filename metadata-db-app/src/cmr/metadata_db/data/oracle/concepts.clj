@@ -20,7 +20,8 @@
    [cmr.efs.config :as efs-config]
    [cmr.efs.connection :as efs]
    [cmr.dynamo.config :as dynamo-config]
-   [cmr.dynamo.connection :as dynamo])
+   [cmr.dynamo.connection :as dynamo]
+   [cmr.metadata-db.config :as config])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -430,7 +431,7 @@
          aurora-concept-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                               (util/time-execution
                                (j/with-db-transaction
-                                 [conn (aurora/db-connection)]
+                                 [conn (config/pg-db-connection)]
                                  (let [table (tables/get-table-name provider concept-type)]
                                    (db-result->concept-map-aurora concept-type conn (:provider-id provider)
                                                                   (aurora/get-concept conn table concept-id))))))]
@@ -470,7 +471,7 @@
            aurora-concept-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                 (util/time-execution
                                  (j/with-db-transaction
-                                   [conn (aurora/db-connection)]
+                                   [conn (config/pg-db-connection)]
                                    (db-result->concept-map-aurora concept-type conn (:provider-id provider)
                                                                   (aurora/get-concept conn table concept-id revision-id)))))]
        (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
@@ -522,7 +523,7 @@
           aurora-concepts-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                 (util/time-execution
                                  (j/with-db-transaction
-                                   [conn (aurora/db-connection)]
+                                   [conn (config/pg-db-connection)]
                                     ;; use a temporary table to insert our values so we can use a join to
                                     ;; pull everything in one select
                                    (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
@@ -598,7 +599,7 @@
                                                                (dynamo/save-concept concept))))
           (when (not= "aurora-off" (aurora-config/aurora-toggle))
             (info "ORT Runtime of Aurora save-concept: " (first (util/time-execution 
-                                                                 (j/db-do-prepared (aurora/db-connection)
+                                                                 (j/db-do-prepared (config/pg-db-connection)
                                                                                    (aurora/save-concept table cols seq-name)
                                                                                    values)))
                   (when (and
@@ -631,7 +632,7 @@
                          (dynamo/delete-concept concept-id revision-id)))
         aurora-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
                         (util/time-execution
-                         (j/execute! (aurora/db-connection)
+                         (j/execute! (config/pg-db-connection)
                                      (aurora/delete-concept table concept-id revision-id))))]
     (when efs-delete
       (info "ORT Runtime of EFS force-delete: " (first efs-delete) " ms.")
@@ -677,8 +678,8 @@
                              (dynamo/delete-concepts-provided concept-id-revision-id-tuples)))
             aurora-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
                             (util/time-execution
-                             (save-concepts-to-tmp-table (aurora/db-connection) concept-id-revision-id-tuples)
-                             (j/execute! (aurora/db-connection) stmt)
+                             (save-concepts-to-tmp-table (config/pg-db-connection) concept-id-revision-id-tuples)
+                             (j/execute! (config/pg-db-connection) stmt)
                              ;; this is actually the same as oracle but leaving this to grab the print
                              (aurora/delete-concepts provider concept-type concept-id-revision-id-tuples)))]
         (when efs-delete

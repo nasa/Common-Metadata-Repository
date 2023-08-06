@@ -18,7 +18,8 @@
    [cmr.dynamo.config :as dynamo-config]
    [cmr.efs.config :as efs-config]
    [cmr.efs.connection :as efs]
-   [cmr.dynamo.connection :as dynamo])
+   [cmr.dynamo.connection :as dynamo]
+   [cmr.metadata-db.config :as config])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -214,7 +215,7 @@
                          (util/time-execution
                           ;; passing stmt as is for now in case the sql syntax might be compatible for this one
                           (j/with-db-transaction
-                            [conn (aurora/db-connection)]
+                            [conn (config/pg-db-connection)]
                             (doall
                              (mapv #(oc/db-result->concept-map-aurora concept-type conn (:provider_id %) %)
                                    (aurora/get-concepts-small-table conn stmt))))))]
@@ -273,7 +274,7 @@
         aurora-results (when (not= "aurora-off" (aurora-config/aurora-toggle))
                          (util/time-execution
                           (j/with-db-transaction
-                            [conn (aurora/db-connection)]
+                            [conn (config/pg-db-connection)]
                           ;; doall is necessary to force result retrieval while inside transaction - otherwise
                           ;; connection closed errors will occur
                             (doall (mapv (fn [result]
@@ -346,10 +347,10 @@
                                          (doall (dynamo/get-concepts params))))
                        aurora-results (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                         (util/time-execution
-                                         (j/with-db-transaction [conn (aurora/db-connection)]
+                                         (j/with-db-transaction [conn (config/pg-db-connection)]
                                            (mapv (partial oc/db-result->concept-map-aurora concept-type conn provider-id)
                                                 ;; stmt generated SQL should be compatible with Aurora as well here
-                                                 (aurora/get-concepts (aurora/db-connection) stmt)))))]
+                                                 (aurora/get-concepts (config/pg-db-connection) stmt)))))]
                    (when efs-results
                      (info "ORT Runtime of EFS find-concepts-in-batches(find-batch): " (first efs-results) " ms.")
                      (info "Values from EFS: " (pr-str (second efs-results))))

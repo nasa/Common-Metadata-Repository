@@ -10,7 +10,8 @@
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc
                                         delete as]]
    [cmr.aurora.config :as aurora-config]
-   [cmr.aurora.connection :as aurora])
+   [cmr.aurora.connection :as aurora]
+   [cmr.metadata-db.config :as config])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -97,7 +98,7 @@
         (ct/create-provider-concept-tables db provider))
     (when (not= "aurora-off" (aurora-config/aurora-toggle))
       (info "Saving provider to Aurora")
-      (j/insert! (aurora/db-connection)
+      (j/insert! (config/pg-db-connection)
                  :providers
                  ["provider_id" "short_name" "cmr_only" "small" "consortiums" "metadata"]
                  [provider-id
@@ -108,7 +109,7 @@
                   metadata])
       (when (not small)
         (info "Saving provider tables to Aurora")
-        (ct/create-provider-concept-tables (aurora/db-connection) provider)))))
+        (ct/pg-create-provider-concept-tables (config/pg-db-connection) provider)))))
 
 (defn get-providers
   "Get all providers but return it in the older minimal format"

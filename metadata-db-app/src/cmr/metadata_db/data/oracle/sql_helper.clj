@@ -14,7 +14,8 @@
    [cmr.efs.config :as efs-config]
    [cmr.efs.connection :as efs]
    [cmr.common.util :as util]
-   [cmr.dynamo.connection :as dynamo])
+   [cmr.dynamo.connection :as dynamo]
+   [cmr.metadata-db.config :as config])
   (:import cmr.oracle.connection.OracleStore))
 
 (defn efs-concept-helper
@@ -95,7 +96,7 @@
                                (dynamo/delete-concepts params)))
         aurora-force-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
                               (util/time-execution
-                               (j/execute! (aurora/db-connection) stmt)
+                               (j/execute! (config/pg-db-connection) stmt)
                                ;; this is actually the same as oracle but leaving this to grab the print
                                (aurora/delete-concepts provider concept-type get-values)))]
     (when efs-force-delete

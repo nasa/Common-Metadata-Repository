@@ -7,7 +7,8 @@
    [cmr.oracle.connection :as conn]
    [cmr.message-queue.config :as rmq-conf]
    [cmr.aurora.connection :as aurora]
-   [cmr.aurora.config :as aurora-config]))
+   [cmr.aurora.config :as aurora-config]
+   [cmr.common.lifecycle :as lifecycle]))
 
 (defconfig metadata-db-username
   "The database username"
@@ -42,9 +43,10 @@
    (metadata-db-password)
    (aurora-config/aurora-db-name)))
 
-(defonce pooled-db (delay (aurora/make-prototype-pool pg-db-spec)))
+;; this db connection method for prototype use only
+(def pooled-pg-db (delay (aurora/make-prototype-pool (pg-db-spec "Metadata DB"))))
 
-(defn pg-db-connection [] @pooled-db)
+(defn pg-db-connection [] @pooled-pg-db)
 
 (defconfig parallel-chunk-size
   "Gets the number of concepts that should be processed in each thread of get-concepts."
