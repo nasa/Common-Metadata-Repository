@@ -8,7 +8,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.tokens :as echo-tokens]
+   [cmr.transmit.tokens :as tokens]
    [cmr.transmit.urs :as urs]))
 
 (defn-timed get-sids
@@ -17,7 +17,7 @@
   ([context]
    (let [token (:token context)
          user (if token (or (util/get-real-or-lazy context :user-id)
-                            (echo-tokens/get-user-id context token))
+                            (tokens/get-user-id context token))
                         "guest")]
      (get-sids context user)))
   ([context username-or-type]
@@ -47,7 +47,7 @@
   [context]
   (if-let [token (:token context)]
     ;; TODO we need to cache token->sids cache like in search
-    (let [user-id (echo-tokens/get-user-id context token)
+    (let [user-id (tokens/get-user-id context token)
           sids (get-sids context user-id)]
       (assoc context :sids sids))
     (assoc context :sids [:guest])))

@@ -174,7 +174,8 @@
   "Returns a Ring response with the current user's sids"
   [request-context params]
   (pv/validate-current-sids-params params)
-  (let [result (acl-service/get-current-sids request-context params)]
+  (let [_ (warn "call to get-current-sids with request-context: " request-context " and params: " params)
+        result (acl-service/get-current-sids request-context params)]
     {:status 200
      :body (json/generate-string result)}))
 
