@@ -17,9 +17,9 @@
 
 (def ^:private umm-g-metadata-specification
   "Defines the current UMM-G MetadataSpecification"
-  {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4"
+  {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.5"
    :Name "UMM-G"
-   :Version "1.6.4"})
+   :Version "1.6.5"})
 
 (defn- get-date-by-type
   "Returns the date of the given type from the given provider dates"

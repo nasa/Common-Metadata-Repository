@@ -2,10 +2,10 @@
   "This contains functions for interacting with the access control API."
   (:require
    [cheshire.core :as json]
-   [clojure.string :as string]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
-   [cmr.transmit.http-helper :as h]))
+   [cmr.transmit.http-helper :as h]
+   [cmr.transmit.config :as transmit-config]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -134,7 +134,7 @@
   (let [token (:token context)
         headers (-> token
                     (when {config/token-header token})
-                    (as-> item (merge {:client-id "cmr-internal"
+                    (as-> item (merge {:client-id transmit-config/cmr-client-id
                                        :content-type "application/json"} item)))
         body (json/generate-string {:user-token user-token})]
     (h/request context :access-control

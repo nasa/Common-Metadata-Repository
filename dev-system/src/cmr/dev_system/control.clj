@@ -95,6 +95,16 @@
            :headers {"Content-Type" "application/csv; charset=utf-8"}}
           (route/not-found "KMS resource not found\n"))))
 
+    ;; Retrive Ordering resources
+    (POST "/ordering/:filename" [filename]
+      (let [resource (io/resource (str "ordering_examples/" filename))]
+        (info (format "Responding to ordering request for [%s]" filename))
+        (if resource
+          {:status 200
+           :body (slurp resource)
+           :headers {"Content-Type" "application/csv; charset=utf-8"}}
+          (route/not-found "ordering resource not found\n"))))
+
     ;; For debugging. Gets the state of the world in relations to ACLs and what's indexed
     (GET "/acl-state" []
       {:status 200

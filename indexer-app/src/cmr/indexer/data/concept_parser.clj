@@ -3,6 +3,7 @@
   (:require 
    [cheshire.core :as json]
    [clojure.edn :as edn]
+   [clojure.string :as string]
    [cmr.common.concepts :as concepts]
    [cmr.umm-spec.umm-spec-core :as umm]
    [cmr.umm-spec.legacy :as umm-legacy]))
@@ -57,10 +58,25 @@
   [context concept]
   (edn/read-string (:metadata concept)))
 
-(doseq [concept-type (concepts/get-generic-concept-types-array)]
+(doseq [concept-type concepts/get-generic-non-draft-concept-types-array]
   (defmethod parse-concept concept-type
     [context concept]
     (json/parse-string (:metadata concept) true)))
+
+(doseq [concept-type concepts/get-draft-concept-types-array]
+  (defmethod parse-concept concept-type
+    [context concept]
+    ;; If the draft record is a json record, then parse it,
+    ;; otherwise figure out what the draft record concept type is
+    ;; and let the parsing code parse it to umm-c.
+    (if (string/includes? (:format concept) "json")
+      (json/parse-string (:metadata concept) true)
+      (let [concept-type (:concept-type concept)]
+        (if (concepts/is-draft-concept? concept-type)
+          (let [draft-concept-type (concepts/get-concept-type-of-draft concept-type)
+                concept (assoc concept :concept-type draft-concept-type)]
+            (umm/parse-metadata context concept))
+          (umm/parse-metadata context concept))))))
 
 (defmethod parse-concept :default
  [context concept]

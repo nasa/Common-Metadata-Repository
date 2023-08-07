@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.edn :as edn]
+   [clojure.string :as string]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :as log :refer [debug]]
    [cmr.common.util :as util]
@@ -13,7 +14,8 @@
    [cmr.metadata-db.services.concept-service :as metadata-db]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.results-handlers.results-handler-util :as rs-util]
-   [cmr.search.results-handlers.umm-json-results-helper :as results-helper]))
+   [cmr.search.results-handlers.umm-json-results-helper :as results-helper]
+   [cmr.umm-spec.umm-spec-core :as umm]))
 
 (defn- fetch-metadata
   "Fetches metadata from Metadata DB for the given concept tuples."
@@ -42,8 +44,17 @@
         items (mapv (fn [elastic-result concept]
                       (if (:deleted concept)
                         {:meta (results-helper/elastic-result->meta concept-type elastic-result)}
-                        (results-helper/elastic-result+metadata->umm-json-item
-                         concept-type elastic-result (:metadata concept))))
+                        (let [metadata (:metadata concept)
+                              metadata (if (string/includes? (:format concept) "json")
+                                         metadata
+                                         (let [concept-type (:concept-type concept)]
+                                           (if (concepts/is-draft-concept? concept-type)
+                                             (let [draft-concept-type (concepts/get-concept-type-of-draft concept-type)
+                                                   concept (assoc concept :concept-type draft-concept-type)]
+                                               (json/encode (umm/parse-metadata context concept)))
+                                             (json/encode (umm/parse-metadata context concept)))))]
+                          (results-helper/elastic-result+metadata->umm-json-item
+                           concept-type elastic-result metadata))))
                     elastic-matches
                     concepts)]
     (results/map->Results {:hits hits

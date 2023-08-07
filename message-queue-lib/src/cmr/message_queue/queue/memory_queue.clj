@@ -175,13 +175,13 @@
       (println "Handling" (pr-str msg) "from queue" queue-name)
       {:status :success})
 
-    (queue/subscribe running-qb "a" (partial message-handler "a"))
-    (queue/subscribe running-qb "b" (partial message-handler "b"))
-    (queue/subscribe running-qb "c" (partial message-handler "c")))
+    (queue-protocol/subscribe running-qb "a" (partial message-handler "a"))
+    (queue-protocol/subscribe running-qb "b" (partial message-handler "b"))
+    (queue-protocol/subscribe running-qb "c" (partial message-handler "c")))
 
-  (queue/publish-to-queue running-qb "a" {:id 1})
-  (queue/publish-to-queue running-qb "b" {:id 2})
-  (queue/publish-to-queue running-qb "c" {:id 3})
+  (queue-protocol/publish-to-queue running-qb "a" {:id 1})
+  (queue-protocol/publish-to-queue running-qb "b" {:id 2})
+  (queue-protocol/publish-to-queue running-qb "c" {:id 3})
 
-  (queue/publish-to-exchange running-qb "e1" {:id 4})
-  (queue/publish-to-exchange running-qb "e2" {:id 5}))
+  (queue-protocol/publish-to-exchange running-qb "e1" {:id 4})
+  (queue-protocol/publish-to-exchange running-qb "e2" {:id 5}))

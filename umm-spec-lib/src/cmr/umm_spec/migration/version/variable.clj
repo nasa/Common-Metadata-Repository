@@ -258,3 +258,18 @@
                                                    (assoc % :Size -1)
                                                    %))
       (m-spec/update-version :variable "1.8.1")))
+
+;; migrations for 1.9.0 **********************************************************
+
+(defmethod interface/migrate-umm-version [:variable "1.8.2" "1.9.0"]
+  [_context umm-v & _]
+  ;; update the MetadataSpecification
+  (-> umm-v
+      (m-spec/update-version :variable "1.9.0")))
+
+(defmethod interface/migrate-umm-version [:variable "1.9.0" "1.8.2"]
+  [_context umm-v & _]
+  ;; Update the MetadataSpecification and remove InstanceInformation
+  (-> umm-v
+      (dissoc :InstanceInformation)
+      (m-spec/update-version :variable "1.8.2")))

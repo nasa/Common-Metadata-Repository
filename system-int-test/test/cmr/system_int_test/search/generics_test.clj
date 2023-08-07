@@ -8,6 +8,7 @@
    [clojure.test :refer :all]
    [cmr.common.config :as cfg]
    [cmr.common.generics :as generics]
+   [cmr.common.mime-types :as mt]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as system]
@@ -15,6 +16,7 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url-helper]
    [cmr.system-int-test.utils.generic-util :as gen-util]
+   [cmr.umm-spec.umm-spec-core :as spec]
    [inflections.core :as inf])
   (:import
    [java.util UUID]))
@@ -25,9 +27,12 @@
   (echo-util/grant-system-ingest-management (system/context) [:read :update] [:read :update])
   (f))
 
-(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1"})
-                                    grant-all-generic-permission-fixture]))
-
+(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
+                                    grant-all-generic-permission-fixture
+                                    ;;allow draft ingest permission for guest on PROV1, but not on PROV2.
+                                    (gen-util/grant-all-drafts-fixture {"provguid1" "PROV1"}
+                                                                       [:read]
+                                                                       [:read])]))
 (defn search-request
   "This function will make a request to one of the generic URLs using the provided
    provider and native id"
@@ -87,7 +92,8 @@
       (doseq [dir dir-list]
         (let [file (json/parse-string (slurp (io/resource dir)) true)
               native-id (format "Generic-Test-%s" (UUID/randomUUID))
-              name (:Name file)
+              name (or (:Name file)
+                       (:ShortName file))
               plural-concept-type-name (inf/plural concept-type-string)
               generic-requester (partial gen-util/generic-request nil "PROV1" native-id concept-type-string)
               good-generic-requester (partial generic-requester file)
@@ -239,7 +245,9 @@
             "options[native-id][pattern]=true"))
             ;; Test for legacy documents but, some generics do not have a guid-id
             ;; Searching for a generic without an Id, namely grids will result in matching all grids
-            (if guid-id
+            ;; Id is not a valid search parameter for draft records.
+            (if (and guid-id
+                     (not (string/includes? concept-type-string "draft")))
               (testing "Testing id (GUID), the identifier that was assigned from legacy system in the parameter search"
               (are3 [plural-concept-type-name search-parameter concept-id-parameter options-flag]
                 (let [results (search-request plural-concept-type-name (str search-parameter "=" concept-id-parameter (if options-flag (str "&" options-flag) (str ""))))
@@ -355,3 +363,181 @@
 
                    "explicit UMM JSON version through suffix"
                    (format "application/vnd.nasa.cmr.umm+json;version=%s" (generics/current-generic-version (keyword concept-type-string))))))))))
+
+;; Test that generic draft collections non json records can be ingested and searched.
+(deftest all-generic-non-json-collection-draft-search-results-test
+  (let [dif10-file {mt/dif10 (slurp (io/resource "CMR-5138-DIF10-DataDates-Provided.xml"))}
+        echo10-file {mt/echo10 (slurp (io/resource "echo10-samples/collection.echo10"))}
+        iso-file {mt/iso19115 (slurp (io/resource "iso-samples/5216_IsoMends_Collection.xml"))}
+        files (concat dif10-file echo10-file iso-file)]
+    (doseq [file files]
+      (let [mime-type (first file)
+            metadata (second file)
+            sanitized-collection (cmr.umm-spec.umm-spec-core/parse-metadata {:ignore-kms-keywords true} :collection mime-type metadata)
+            name (:ShortName sanitized-collection)
+            native-id (format "Generic-Test-%s" (UUID/randomUUID))
+            concept-type-string "collection-draft"
+            post-results (gen-util/generic-request nil "PROV1" native-id concept-type-string metadata :put mime-type)
+            body (json/parse-string (:body post-results) true)
+            concept-id (:concept-id body)
+            revision-id (:revision-id body)
+            plural-concept-type-name (inf/plural concept-type-string)]
+        (index/wait-until-indexed)
+
+        (testing "Check that test the document ingested before going forward with tests"
+          (is (= 201 (:status post-results)) "failed to ingest test record"))
+
+        (testing "Testing draft collection generic name parameter search"
+          (are3 [plural-concept-type-name search-parameter name-parameter options-flag]
+                (let [results (search-request plural-concept-type-name (str search-parameter "=" name-parameter (if options-flag (str "&" options-flag) (str ""))))
+                      status (:status results)
+                      body (:body results)]
+                  (is (string/includes? body name) "record not found")
+                  (is (= 200 status) "wrong http status"))
+
+                "Name exact match"
+                (inf/plural concept-type-string)
+                "name"
+                name
+                nil
+
+                "Upper case name ignore case true (default)"
+                (inf/plural concept-type-string)
+                "name"
+                (string/upper-case name)
+                "options[name][ignore-case]=true"))
+
+        (testing "Testing generics concept-id parameter search"
+          (are3 [plural-concept-type-name search-parameter concept-id-parameter options-flag]
+                (let [results (search-request plural-concept-type-name (str search-parameter "=" concept-id-parameter (if options-flag (str "&" options-flag) (str ""))))
+                      status (:status results)
+                      body (:body results)]
+                  (is (string/includes? body name) "record not found")
+                  (is (= 200 status) "wrong http status"))
+
+                "Test concept-id parameter search"
+                (inf/plural concept-type-string)
+                "concept-id"
+                concept-id
+                nil))
+
+        (testing "Test that generics can use XML search results."
+          (let [results (search-request plural-concept-type-name (str "name=" name))
+                status (:status results)
+                body (:body results)]
+            (is (string/includes? body name) "record not found")
+            (is (= 200 status) "wrong http status")))
+
+        (testing "Test that generics can use JSON search results."
+          (let [results (search-request (str plural-concept-type-name ".json") (str "name=" name))
+                status (:status results)
+                body (json/parse-string (:body results) true)]
+            (is (some? (:concept_id (first (:items body)))) "no concept id")
+            (is (= 200 status) "wrong http status")))
+
+        (testing "Test that generics can use UMM_JSON search results."
+          (let [results (search-request (str plural-concept-type-name ".umm_json") (str "name=" name))
+                status (:status results)
+                body (json/parse-string (:body results) true)]
+            (is (some? (:meta (first (:items body)))) "did not find a meta element")
+            (is (= 200 status) "wrong http status")))
+
+        (testing "Test that generics will work with concept searches."
+          (let [results (search-request (format "concepts/%s" concept-id) "")
+                status (:status results)]
+            (is (= 200 status) "wrong http status")))
+
+        (testing "Test that generics will work with concept and revision searches."
+          (let [results (search-request (format "concepts/%s/%s" concept-id revision-id) "")
+                status (:status results)]
+            (is (= 200 status) "wrong http status")))))))
+
+;; Test that generic draft collections can not be searched on PROV2 that doesn't grant guest PROVIDER_CONTEXT read permission .
+(deftest all-generic-non-acl-collection-draft-search-results-test
+  (let [dif10-file {mt/dif10 (slurp (io/resource "CMR-5138-DIF10-DataDates-Provided.xml"))}
+        echo10-file {mt/echo10 (slurp (io/resource "echo10-samples/collection.echo10"))}
+        iso-file {mt/iso19115 (slurp (io/resource "iso-samples/5216_IsoMends_Collection.xml"))}
+        files (concat dif10-file echo10-file iso-file)]
+    (doseq [file files]
+      (let [mime-type (first file)
+            metadata (second file)
+            sanitized-collection (cmr.umm-spec.umm-spec-core/parse-metadata {:ignore-kms-keywords true} :collection mime-type metadata)
+            name (:ShortName sanitized-collection)
+            native-id (format "Generic-Test-%s" (UUID/randomUUID))
+            concept-type-string "collection-draft"
+            ;; need to use the system token in order to ingest on PROV2 that doesn't have PROVIDER_CONTEXT permission for the guest.
+            post-results (gen-util/generic-request "mock-echo-system-token" "PROV2" native-id concept-type-string metadata :put mime-type)
+            body (json/parse-string (:body post-results) true)
+            concept-id (:concept-id body)
+            revision-id (:revision-id body)
+            plural-concept-type-name (inf/plural concept-type-string)]
+        (index/wait-until-indexed)
+
+        (testing "Check that test the document ingested before going forward with tests"
+          (is (= 201 (:status post-results)) "failed to ingest test record"))
+
+        (testing "Testing draft collection generic name parameter search"
+          (are3 [plural-concept-type-name search-parameter name-parameter options-flag]
+                (let [results (search-request plural-concept-type-name (str search-parameter "=" name-parameter (if options-flag (str "&" options-flag) (str ""))))
+                      status (:status results)
+                      body (:body results)]
+                  ;; records shouldn't be found because no acl permission.
+                  (is (not (string/includes? body name)) "record found")
+                  (is (= 200 status) "wrong http status"))
+
+                "Name exact match"
+                (inf/plural concept-type-string)
+                "name"
+                name
+                nil
+
+                "Upper case name ignore case true (default)"
+                (inf/plural concept-type-string)
+                "name"
+                (string/upper-case name)
+                "options[name][ignore-case]=true"))
+
+        (testing "Testing generics concept-id parameter search"
+          (are3 [plural-concept-type-name search-parameter concept-id-parameter options-flag]
+                (let [results (search-request plural-concept-type-name (str search-parameter "=" concept-id-parameter (if options-flag (str "&" options-flag) (str ""))))
+                      status (:status results)
+                      body (:body results)]
+                  (is (not (string/includes? body name)) "record found")
+                  (is (= 200 status) "wrong http status"))
+
+                "Test concept-id parameter search"
+                (inf/plural concept-type-string)
+                "concept-id"
+                concept-id
+                nil))
+
+        (testing "Test that generics can use XML search results."
+          (let [results (search-request plural-concept-type-name (str "name=" name))
+                status (:status results)
+                body (:body results)]
+            (is (not (string/includes? body name)) "record found")
+            (is (= 200 status) "wrong http status")))
+
+        (testing "Test that generics can use JSON search results."
+          (let [results (search-request (str plural-concept-type-name ".json") (str "name=" name))
+                status (:status results)
+                body (json/parse-string (:body results) true)]
+            (is (not (some? (:concept_id (first (:items body))))) "found concept id")
+            (is (= 200 status) "wrong http status")))
+
+        (testing "Test that generics can use UMM_JSON search results."
+          (let [results (search-request (str plural-concept-type-name ".umm_json") (str "name=" name))
+                status (:status results)
+                body (json/parse-string (:body results) true)]
+            (is (not (some? (:meta (first (:items body))))) "found a meta element")
+            (is (= 200 status) "wrong http status")))
+
+        (testing "Test that generics will work with concept searches."
+          (let [results (search-request (format "concepts/%s" concept-id) "")
+                status (:status results)]
+            (is (= 404 status) "wrong http status")))
+
+        (testing "Test that generics will work with concept and revision searches."
+          (let [results (search-request (format "concepts/%s/%s" concept-id revision-id) "")
+                status (:status results)]
+            (is (= 404 status) "wrong http status")))))))

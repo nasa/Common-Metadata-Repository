@@ -103,7 +103,8 @@
     (let [containers (:containers this)
           ^FixedHostPortGenericContainer node (:elasticsearch containers)
           ^FixedHostPortGenericContainer kibana (:kibana containers)]
-      (.stop node)
+      (when node
+        (.stop node))
       (when-let [data-dir (get-in this [:opts :data-dir])]
         (util/delete-recursively (:data-dir this)))
       (when kibana
