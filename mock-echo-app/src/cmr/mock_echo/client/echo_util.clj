@@ -65,8 +65,8 @@
      (do
        (doseq [group-concept-id group-concept-ids]
            (add-user-to-group context group-concept-id user (config/echo-system-token)))
-       (echo-client/login-with-group-access context user "password" group-concept-ids))
-     (echo-func/login context user "password"))))
+       (echo-client/login-with-group-access context user "Pass0" group-concept-ids))
+     (echo-func/login context user "Pass0"))))
 
 (defn logout
   "Logs out the specified token."
