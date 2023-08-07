@@ -775,7 +775,7 @@
 
     (testing "Generic associations can not be made between collection and service,tool and variables."
       (let [ response (association-util/generic-associate-by-concept-ids-revision-ids
-                       token coll-concept-id nil [{:concept-id "SE1234-PROV1"} {:concept-id "V1234-PROV1"} {:concept-id "S1234-PROV1"} {:concept-id "TL1234-PROV1"}])]
+                       token coll-concept-id nil [{:concept-id "V1234-PROV1"} {:concept-id "S1234-PROV1"} {:concept-id "TL1234-PROV1"}])]
         (is (= 422 (:status response)))
         (is (some? (re-find #"The following concept ids \[\(\"V1234-PROV1\" \"S1234-PROV1\" \"TL1234-PROV1\"\)\] can not be associated with concept id \[C\d*-PROV1\] because collection/\[service\|tool\|variable\] associations are not supported by the new generic association api."
                             (first (:errors response))))

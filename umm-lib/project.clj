@@ -58,6 +58,7 @@
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]
             "itest" ["kaocha" "--focus" ":integration"]
+            "ptest" ["kaocha" "--focus" ":perf"]
             "utest" ["kaocha" "--focus" ":unit"]
             "ci-test" ["kaocha" "--profile" ":ci"]
             "ci-itest" ["itest" "--profile" ":ci"]

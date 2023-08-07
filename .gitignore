@@ -35,6 +35,7 @@ schema-validation-lib/build.xml
 /target
 pom.xml
 browse-scaler/src/*.zip
+cmr-exchange/*/target
 
 ###############################
 ### macOS

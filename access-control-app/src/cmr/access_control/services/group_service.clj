@@ -22,7 +22,6 @@
     [cmr.common.util :as u]
     [cmr.common.validations.core :as v]
     [cmr.transmit.config :as transmit-config]
-    [cmr.transmit.echo.rest :as rest]
     [cmr.transmit.echo.tokens :as tokens]
     [cmr.transmit.metadata-db2 :as mdb]
     [cmr.transmit.urs :as urs])
@@ -425,9 +424,7 @@
 (defn health
   "Returns the health state of the app."
   [context]
-  (let [echo-rest-health (rest/health context)
-        metadata-db-health (mdb/get-metadata-db-health context)
-        ok? (every? :ok? [echo-rest-health metadata-db-health])]
+  (let [metadata-db-health (mdb/get-metadata-db-health context)
+        ok? (every? :ok? [metadata-db-health])]
     {:ok? ok?
-     :dependencies {:echo echo-rest-health
-                    :metadata-db metadata-db-health}}))
+     :dependencies {:metadata-db metadata-db-health}}))

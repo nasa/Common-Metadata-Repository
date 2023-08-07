@@ -3,8 +3,7 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clojure.java.io :as jio]
-   [clojure.set :as set]
+   [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common.generics :as gconfig]
@@ -12,13 +11,12 @@
    [cmr.common.config :as cfg]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :refer [defn-timed]]
+   [cmr.common.util :as util :refer [defn-timed]]
    [cmr.ingest.api.core :as api-core]
-   [cmr.ingest.services.messages :as messages]
+   [cmr.schema-validation.json-schema :as js-validater]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
-   [cmr.schema-validation.json-schema :as js-validater]
-   [cmr.common.util :as util]))
+   [cmr.umm-spec.umm-spec-core :as spec]))
 
 (defn disabled-for-ingest?
   "Determine if a generic schema is disabled for ingest
@@ -54,6 +52,50 @@
   [route-params]
   (common-concepts/singularize-concept-type (:concept-type route-params)))
 
+(def draft-concept->spec-map
+  {:collection-draft :umm-c
+   :service-draft :umm-s
+   :tool-draft :umm-t
+   :variable-draft :umm-var
+   :data-quality-summary-draft :data-quality-summary
+   :order-option-draft :order-option})
+
+(defn is-draft-concept?
+  "This function checks to see if the concept to be ingested or updated
+  is a draft concept."
+  [request]
+  (let [route-params (:route-params request)
+        concept-type (concept-type->singular route-params)]
+    (common-concepts/is-draft-concept? concept-type)))
+
+(defn pull-metadata-specific-information
+  "This function depending on the format of the document will get information
+  needed to save the document to the database. Any supported record format is
+  also supported for draft records."
+  [context concept-type content-type raw-document]
+  (if (string/includes? content-type "json")
+    (let [document (json/parse-string raw-document true)
+          specification (:MetadataSpecification document)
+          spec-key (csk/->kebab-case-keyword (:Name specification ""))
+          spec-version (:Version specification)
+          document-name (or (:Name document)
+                            (:ShortName document)
+                            (when (common-concepts/is-draft-concept? concept-type) "Draft"))]
+      {:spec-key spec-key
+       :spec-version spec-version
+       :document-name document-name
+       :format (str "application/vnd.nasa.cmr.umm+json;version=" spec-version)})
+    (if (common-concepts/is-draft-concept? concept-type)
+      (let [draft-concept-type (common-concepts/get-concept-type-of-draft concept-type)
+            sanitized-collection (spec/parse-metadata context draft-concept-type content-type raw-document)]
+        {:spec-key concept-type
+         :spec-version nil
+         :format content-type
+         :document-name (or (:ShortName sanitized-collection)
+                            (:Name sanitized-collection)
+                            "Draft")})
+      {})))
+
 (defn prepare-generic-document
   "Prepares a document to be ingested so that search can retrieve the contents.
    Throws exceptions if something goes wrong, returns a map otherwise."
@@ -65,23 +107,26 @@
         concept-type (concept-type->singular route-params)
         _ (lt-validation/validate-launchpad-token request-context)
         _ (api-core/verify-provider-exists request-context provider-id)
-        _ (acl/verify-ingest-management-permission
-           request-context :update :provider-object provider-id)
+        _ (if-not (is-draft-concept? request)
+            (acl/verify-ingest-management-permission
+             request-context :update :provider-object provider-id)
+            (acl/verify-provider-context-permission
+             request-context :read :provider-object provider-id))
         raw-document (slurp (:body request))
-        document (json/parse-string raw-document true)
-        specification (:MetadataSpecification document)
-        spec-key (csk/->kebab-case-keyword (:Name specification ""))
-        spec-version (:Version specification)]
-    (if (not= concept-type spec-key)
-      (throw UnsupportedOperationException)
+        content-type (get headers "content-type")
+        {:keys [spec-key spec-version document-name format]}
+         (pull-metadata-specific-information request-context concept-type content-type raw-document)]
+    (if (and (not= concept-type spec-key)
+             (not= (concept-type draft-concept->spec-map) spec-key))
+      (throw (UnsupportedOperationException. (format "%s version %s is not supported." spec-key spec-version)))
       {:concept (assoc {}
                        :metadata raw-document
                        :provider-id provider-id
                        :concept-type concept-type
-                       :format (str "application/vnd.nasa.cmr.umm+json;version=" spec-version)
+                       :format format
                        :native-id native-id
                        :user-id (api-core/get-user-id request-context headers)
-                       :extra-fields {:document-name (:Name document)
+                       :extra-fields {:document-name document-name
                                       :schema spec-key})
        :spec-key spec-key
        :spec-version spec-version
@@ -142,10 +187,10 @@
   [request]
   (let [res (prepare-generic-document request)
         headers (:headers request)
-        {:keys [spec-key spec-version provider-id native-id request-context concept]} res
-        metadata (:metadata concept)
-        metadata-json (json/generate-string concept)]
-    (validate-document-against-schema spec-key spec-version metadata)
+        {:keys [spec-key spec-version request-context concept]} res
+        metadata (:metadata concept)]
+    (when-not (is-draft-concept? request)
+      (validate-document-against-schema spec-key spec-version metadata))
     (ingest-document request-context concept headers)))
 
 (defn read-generic-document
@@ -166,7 +211,8 @@
         headers (:headers request)
         {:keys [spec-key spec-version request-context concept]} res
         metadata (:metadata concept)]
-    (validate-document-against-schema spec-key spec-version metadata)
+    (when-not (is-draft-concept? request)
+      (validate-document-against-schema spec-key spec-version metadata))
     (ingest-document request-context concept headers)))
 
 (defn delete-generic-document
@@ -174,11 +220,16 @@
    if successful with the concept id and revision number. A 404 status is returned if the concept has
    already been deleted."
   [request]
-  (let [{:keys [route-params params]} request
+  (let [{:keys [route-params request-context params]} request
         provider-id (or (:provider params)
                         (:provider-id route-params))
         native-id (:native-id route-params)
-        concept-type (concept-type->singular route-params)]
+        concept-type (concept-type->singular route-params)
+        _ (if-not (is-draft-concept? request)
+            (acl/verify-ingest-management-permission
+             request-context :update :provider-object provider-id)
+            (acl/verify-provider-context-permission
+             request-context :read :provider-object provider-id))]
     (api-core/delete-concept concept-type provider-id native-id request)))
 
 (defn crud-generic-document

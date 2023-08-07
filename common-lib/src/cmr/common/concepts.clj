@@ -1,7 +1,7 @@
 (ns cmr.common.concepts
   "This contains utility functions and vars related to concepts in the CMR"
   (:require [clojure.set :as cset]
-            [clojure.string :as str]
+            [clojure.string :as string]
             [cmr.common.util :as util]
             [cmr.common.generics :as common-generic]
             [cmr.common.services.errors :as errors]
@@ -27,6 +27,34 @@
    (reduce (fn [coll, item] (conj coll (modifier-func (key item))))
            []
            (common-generic/approved-generic-concept-prefixes))))
+
+(def get-generic-non-draft-concept-types-array
+  "Gets all of the generic concept types that are not drafts."
+  (vec
+   (filter #(not (string/includes? % "draft")) (get-generic-concept-types-array))))
+
+(def get-draft-concept-types-array
+  "Gets all of the generic concept types that are drafts."
+  (vec
+   (filter #(string/includes? % "draft") (get-generic-concept-types-array))))
+
+(defn get-concept-type-of-draft
+  "Gets the concept type of the document that is contained in the draft."
+  [draft-concept-type]
+  (let [draft-concept-type-name (when draft-concept-type
+                                  (name draft-concept-type))
+        concept-type-name (when draft-concept-type-name
+                            (re-find #".+?(?=-draft)" draft-concept-type-name))]
+    (when concept-type-name
+      (keyword concept-type-name))))
+
+(defn is-draft-concept?
+  "Determines if the passed in concept type is a draft concept or not."
+  [concept-type]
+  (let [concept-type-name (when concept-type
+                            (name concept-type))]
+    (when concept-type-name
+      (string/includes? concept-type-name "draft"))))
 
 (defn generic-concept?
   "Return true if the passed in concept is a generic concept"
@@ -114,10 +142,10 @@
    ;;use :collection-concept-id in place of param when validating collection-concept-id
    (concept-id-validation :concept-id concept-id))
   ([param concept-id]
-   (let [valid-prefixes (str/join "|" (keys concept-prefix->concept-type))
+   (let [valid-prefixes (string/join "|" (keys concept-prefix->concept-type))
          regex (re-pattern (str "(" valid-prefixes ")\\d+-[A-Za-z0-9_]+"))]
      (when-not (re-matches regex concept-id)
-       [(format "%s [%s] is not valid." (-> param name str/capitalize) (util/html-escape concept-id))]))))
+       [(format "%s [%s] is not valid." (-> param name string/capitalize) (util/html-escape concept-id))]))))
 
 (def validate-concept-id
   "Validates a concept-id and throws an error if invalid"
@@ -151,7 +179,7 @@
   "Returns the concept prefix (C,G, AG, etc.) for a given concept-id."
   [concept-id]
   (-> concept-id
-      (str/split #"\d" 2)
+      (string/split #"\d" 2)
       first))
 
 (defn build-concept-id

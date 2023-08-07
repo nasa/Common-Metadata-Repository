@@ -17,13 +17,14 @@
 
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions
-                  {:granule ["1.4" "1.5" "1.6" "1.6.1" "1.6.2" "1.6.3" "1.6.4"]}}
+                  {:granule ["1.4" "1.5" "1.6" "1.6.1" "1.6.2" "1.6.3" "1.6.4" "1.6.5"]}}
     (is (= [] (#'vm/version-steps :granule "1.5" "1.5")))
     (is (= [["1.4" "1.5"]] (#'vm/version-steps :granule "1.4" "1.5")))
     (is (= [["1.5" "1.4"]] (#'vm/version-steps :granule "1.5" "1.4")))
     (is (= [["1.4" "1.5"] ["1.5" "1.6"]] (#'vm/version-steps :granule "1.4" "1.6")))
     (is (= [["1.4" "1.5"] ["1.5" "1.6"] ["1.6" "1.6.1"]] (#'vm/version-steps :granule "1.4" "1.6.1")))
-    (is (= [["1.6.1" "1.6.2"] ["1.6.2" "1.6.3"] ["1.6.3" "1.6.4"]] (#'vm/version-steps :granule "1.6.1" "1.6.4")))))
+    (is (= [["1.6.1" "1.6.2"] ["1.6.2" "1.6.3"] ["1.6.3" "1.6.4"]] (#'vm/version-steps :granule "1.6.1" "1.6.4")))
+    (is (= [["1.6.4" "1.6.5"]] (#'vm/version-steps :granule "1.6.4" "1.6.5")))))
 
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-g-generator)
@@ -708,6 +709,26 @@
      :Name "UMM-G"
      :Version "1.6.4"}
     :DataGranule {:ArchiveAndDistributionInformation [{:Format "ASCII"} {:Format "ComicSans"}]}
+    :PGEVersionClass {:PGEName "A PGE Name"
+                      :PGEVersion "1234567890"}
+    :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                   :Type "GET SERVICE"
+                   :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+                   :MimeType "APPEARS"
+                   :Format "Future-Type"}   ;; this was a bad format
+                  {:URL "s3://amazon.something.com/get-data"
+                   :Type "GET DATA VIA DIRECT ACCESS"
+                   :Format "NETCDF-4"       ;; this has always been a valid format
+                   :MimeType "application/x-netcdf"}]})
+
+(def granule-1-6-5
+  {:MetadataSpecification
+    {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.5"
+     :Name "UMM-G"
+     :Version "1.6.5"}
+    :DataGranule {:ArchiveAndDistributionInformation [{:Format "ASCII"} {:Format "ComicSans"}]}
+    :PGEVersionClass {:PGEName "A PGE Name"
+                      :PGEVersion "12345678901234567890123456789012345678901234567890"}
     :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
                    :Type "GET SERVICE"
                    :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
@@ -743,3 +764,23 @@
     (is (= "Not provided" (:Format (second arch-info))) "New keyword not mappable")
     (is (= "Not provided" (:Format (first urls))) "New URL format is not mappable")
     (is (= "NETCDF-4" (:Format (second urls))) "Old URL format should be mappable")))
+
+(deftest migrate-1-6-4-up-to-1-6-5
+  (let [converted (vm/migrate-umm {} :granule "1.6.4" "1.6.5" granule-1-6-4)]
+    (is (= {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.5"
+            :Name "UMM-G"
+            :Version "1.6.5"}
+           (:MetadataSpecification converted))
+        "Specification must be 1.6.5")
+    (is (= {:PGEName "A PGE Name" :PGEVersion "1234567890"}
+           (:PGEVersionClass converted)))))
+
+(deftest migrate-1-6-5-down-to-1-6-4
+  (let [converted (vm/migrate-umm {} :granule "1.6.5" "1.6.4" granule-1-6-5)]
+    (is (= {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4"
+            :Name "UMM-G"
+            :Version "1.6.4"}
+           (:MetadataSpecification converted))
+        "Specification must be 1.6.4")
+    (is (= {:PGEName "A PGE Name" :PGEVersion "1234567890"}
+           (:PGEVersionClass converted)))))

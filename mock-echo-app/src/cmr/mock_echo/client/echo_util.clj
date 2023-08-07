@@ -102,6 +102,11 @@
   "An ACL for managing access to subscription functions."
   "SUBSCRIPTION_MANAGEMENT")
 
+;; Provider context acl
+(def provider-context
+  "An ACL for managing access to draft ingest functions."
+  "PROVIDER_CONTEXT")
+
 (def tag-acl
   "An ACL for managing access to tag modification functions."
   "TAG_GROUP")
@@ -381,6 +386,18 @@
            :user_type :guest}]
          :system_identity
          {:target ingest-management-acl}))
+
+(defn grant-provider-context
+  "Creates an ACL in mock echo granting provider context ACL for guests and registered users."
+  [context provider-guid guest-permissions registered-permissions]
+  (grant context
+         [{:permissions registered-permissions
+           :user_type :registered}
+          {:permissions guest-permissions
+           :user_type :guest}]
+         :provider_identity
+         {:target provider-context
+          :provider_id provider-guid}))
 
 (defn grant-all-variable
   "Creates an ACL in mock echo granting registered users ability to do all

@@ -5,7 +5,8 @@
   (:require
    [cmr.common.services.errors :as errors]
    [cmr.ingest.data.ingest-events :as ingest-events]
-   [cmr.transmit.metadata-db :as mdb]))
+   [cmr.transmit.metadata-db :as mdb]
+   [cmr.transmit.ordering :as ordering]))
 
 (defn verify-empty-provider
   "Throws error if provider still has collections."
@@ -35,8 +36,9 @@
   [context provider]
   (let [response (mdb/create-provider-raw context provider)]
     (when (successful? response)
+      (ordering/notify-ordering context)
       (ingest-events/publish-provider-event
-        context (ingest-events/provider-create-event (:provider-id provider))))
+       context (ingest-events/provider-create-event (:provider-id provider))))
     response))
 
 (defn read-provider
@@ -49,6 +51,7 @@
   [context provider]
   (let [response (mdb/update-provider-raw context provider)]
     (when (successful? response)
+      (ordering/notify-ordering context)
       (ingest-events/publish-provider-event
         context (ingest-events/provider-update-event (:provider-id provider))))
     response))
@@ -58,6 +61,7 @@
   [context provider-id]
   (let [response (mdb/delete-provider-raw context provider-id)]
     (when (successful? response)
+      (ordering/notify-ordering context)
       (ingest-events/publish-provider-event
         context (ingest-events/provider-delete-event provider-id)))
     response))

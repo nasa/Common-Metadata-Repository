@@ -22,6 +22,16 @@
         sids (util/lazy-get context :sids)]
     (filter (partial acl/acl-matches-sids-and-permission? sids :read) esm-acls)))
 
+(defn get-pc-acls-applicable-to-token
+  "Retrieves the PROVIDER_CONTEXT ACLs that are applicable to the current user.
+  i.e. grant read permission to the current user."
+  [context]
+  (let [acls (af/get-acls context [:provider-object])
+        ;; only get PROVIDER_CONTEXT ACLS
+        pc-acls (filter #(= "PROVIDER_CONTEXT" (get-in % [:provider-identity :target])) acls)
+        sids (util/lazy-get context :sids)]
+    (filter (partial acl/acl-matches-sids-and-permission? sids :read) pc-acls)))
+
 (defn has-system-read-permission?
   "Returns true if the current user has system Ingest Management read permission
   which is needed to see all collection subscriptions."

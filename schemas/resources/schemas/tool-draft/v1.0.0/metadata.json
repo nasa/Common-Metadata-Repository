@@ -1,0 +1,142 @@
+{
+  "URL": {
+    "URLContentType": "DistributionURL",
+    "Type": "GOTO WEB TOOL",
+    "Subtype": "MAP VIEWER",
+    "Description": "Testing",
+    "URLValue": "www.maptest.com"
+  },
+  "MetadataSpecification": {
+    "URL": "https://cdn.earthdata.nasa.gov/umm/tool/v1.2.0",
+    "Name": "UMM-T",
+    "Version": "1.2.0"
+  },
+  "Name": "Francell Testing Tools Implementation",
+  "LongName": "Testing",
+  "VersionDescription": "Testing",
+  "RelatedURLs": [
+    {
+      "Description": "test",
+      "URLContentType": "DistributionURL",
+      "Type": "GET CAPABILITIES",
+      "Subtype": "OpenSearch",
+      "URL": "test.com"
+    }
+  ],
+  "SupportedOperatingSystems": [
+    {
+      "OperatingSystemName": "Test OS",
+      "OperatingSystemVersion": "Version2"
+    }
+  ],
+  "SupportedInputFormats": [
+    "HDF5"
+  ],
+  "ToolKeywords": [
+    {
+      "ToolCategory": "EARTH SCIENCE SERVICES",
+      "ToolTopic": "DATA ANALYSIS AND VISUALIZATION",
+      "ToolTerm": "CALIBRATION/VALIDATION",
+      "ToolSpecificTerm": "VALIDATION"
+    },
+    {
+      "ToolCategory": "EARTH SCIENCE SERVICES",
+      "ToolTopic": "DATA MANAGEMENT/DATA HANDLING",
+      "ToolTerm": "CATALOGING"
+    },
+    {
+      "ToolCategory": "EARTH SCIENCE SERVICES",
+      "ToolTopic": "DATA MANAGEMENT/DATA HANDLING",
+      "ToolTerm": "DATA CUSTOMIZATION",
+      "ToolSpecificTerm": "RESAMPLING"
+    },
+    {
+      "ToolCategory": "EARTH SCIENCE SERVICES",
+      "ToolTopic": "HAZARDS MANAGEMENT",
+      "ToolTerm": "HAZARDS PLANNING"
+    },
+    {
+      "ToolCategory": "EARTH SCIENCE SERVICES",
+      "ToolTopic": "HAZARDS MANAGEMENT",
+      "ToolTerm": "HAZARD MAPPING",
+      "ToolSpecificTerm": "METEOROLOGICAL HAZARDS MAPPING"
+    },
+    {
+      "ToolCategory": "EARTH SCIENCE SERVICES",
+      "ToolTopic": "ENVIRONMENTAL ADVISORIES",
+      "ToolTerm": "HYDROLOGICAL ADVISORIES",
+      "ToolSpecificTerm": "WATER RESOURCES"
+    }
+  ],
+  "Organizations": [
+    {
+      "Roles": [
+        "SERVICE PROVIDER"
+      ],
+      "ShortName": "52N",
+      "LongName": "52 North",
+      "URLValue": "http://52north.org"
+    }
+  ],
+  "ContactPersons": [
+    {
+      "Roles": [
+        "PUBLISHER"
+      ],
+      "LastName": "Tester"
+    }
+  ],
+  "PotentialAction": {
+    "Target": {
+      "HttpMethod": [
+        "POST"
+      ],
+      "UrlTemplate": "Test template",
+      "Type": "EntryPoint",
+      "Description": "Test"
+    },
+    "Type": "ConsumeAction"
+  },
+  "Version": "1",
+  "LastUpdatedDate": "2023-03-17T00:00:00.000Z",
+  "Description": "Testing Tool",
+  "DOI": "test.doi",
+  "Type": "Web Portal",
+  "SupportedOutputFormats": [
+    "HDF-EOS2"
+  ],
+  "Quality": {
+    "Lineage": "test",
+    "QualityFlag": "Reviewed",
+    "Traceability": "test trace"
+  },
+  "SupportedBrowsers": [
+    {
+      "BrowserName": "Test browser",
+      "BrowserVersion": "3"
+    }
+  ],
+  "SupportedSoftwareLanguages": [
+    {
+      "SoftwareLanguageName": "Test language",
+      "SoftwareLanguageVersion": "22"
+    }
+  ],
+  "AccessConstraints": "Test access",
+  "UseConstraints": {
+    "LicenseURL": "TestLicenase.com",
+    "LicenseText": "Test License"
+  },
+  "ContactGroups": [
+    {
+      "Roles": [
+        "PUBLISHER"
+      ],
+      "GroupName": "Test group",
+      "ContactInformation": {
+        "ServiceHours": "9 to 5",
+        "ContactInstruction": "email"
+      }
+    }
+  ]
+}
