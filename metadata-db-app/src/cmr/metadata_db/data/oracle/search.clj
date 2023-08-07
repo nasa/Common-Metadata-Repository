@@ -196,7 +196,7 @@
                                    providers
                                    (assoc params :provider-id (map :provider-id providers)))
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)
-        concept-ids-revision-ids (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+        concept-ids-revision-ids (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
                                    (j/query db (gen-find-concepts-in-table-sql concept-type table [:provider_id :concept_id :revision_id] params)))
         oracle-results (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                          (util/time-execution
@@ -205,7 +205,7 @@
                             (doall
                              (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
                                    (su/query conn stmt))))))
-        efs-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+        efs-results (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
                       (util/time-execution
                        (doall (efs/get-concepts-small-table concept-type (map sh/efs-concept-helper concept-ids-revision-ids)))))
         dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
@@ -251,7 +251,7 @@
                             (get-in association-concept-type->generic-association [concept-type :association_type])))
                  params)
         stmt (gen-find-concepts-in-table-sql concept-type table fields params)
-        concept-ids-revision-ids (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+        concept-ids-revision-ids (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
                                    (j/query db (gen-find-concepts-in-table-sql concept-type table [:concept_id :revision_id] params)))
         oracle-results (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                          (util/time-execution
@@ -265,7 +265,7 @@
                                                                           (:provider-id (first providers)))
                                                                       result))
                                          (su/query conn stmt))))))
-        efs-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+        efs-results (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
                       (util/time-execution
                        (doall (efs/get-concepts providers concept-type (map sh/efs-concept-helper concept-ids-revision-ids)))))
         dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
@@ -339,7 +339,7 @@
                                         (util/time-execution
                                          (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
                                                (su/query db stmt))))
-                       efs-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+                       efs-results (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
                                     (util/time-execution
                                      (doall (efs/get-concepts provider concept-type (map sh/efs-concept-helper concept-revision-batch-result)))))
                        dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
