@@ -117,16 +117,15 @@
           result-format (if (= result-format :xml) :native result-format)]
       (if (= :html result-format)
         (let [concept-type (concepts/concept-id->type concept-id)]
-          (cond
-            (= concept-type :tool)
+          (condp = concept-type
+            :tool
             (core-api/search-response ctx
                                       {:results (:body (pages/tool-page ctx concept-id))
                                        :result-format :html})
-            (= concept-type :variable)
+            :variable
             (core-api/search-response ctx
                                       {:results (:body (pages/variable-page ctx concept-id))
                                        :result-format :html})
-            :else
             (core-api/search-response ctx
                                       {:results (:body (pages/collection-page ctx concept-id))
                                        :result-format :html})))
