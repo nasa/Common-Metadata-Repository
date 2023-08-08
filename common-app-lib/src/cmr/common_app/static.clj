@@ -183,9 +183,9 @@
        (md->html)
        (selmer/render {})))
 
-(defn parse-out-env [relative-root-url]
+(defn parse-out-env [cmr-host]
   (let [regex-pattern #"cmr\.(.*?)\.earthdata\.nasa\.gov"
-        matches (re-find regex-pattern relative-root-url)]
+        matches (re-find regex-pattern cmr-host)]
     ;; if there is an env add the env + `.` to complete URL otherwise
     ;; just return the "." char to complete the URL
     (if (not (nil? matches))
@@ -257,7 +257,7 @@
         (when-let [resource (site-resource page)]
           (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)
                 site-example-provider (get site-provider-map (headers "host") "PROV1")
-                cmr-env (parse-out-env (:cmr-root-url (util/get-env)))
+                cmr-env (parse-out-env (headers "host"))
                 cmr-example-collection-id (str "C1234567-" site-example-provider)
                 doc-type (nth (re-find #"/(.*)/" (str page)) 1)
                 generic-doc-body (read-generic-markdown doc-type)
