@@ -8,7 +8,7 @@
 
   ## Markdown Support
 
-  This namespace provides a few untility functions for converting Markdown
+  This namespace provides a few utility functions for converting Markdown
   (and Markdown files) to HTML. The converted string data may then be used in
   templates. Note that if you are using Selmer templates, you will need to
   'pipe' the converted HTML string data to the `safe` Selmer filter so that
@@ -141,12 +141,11 @@
   (:require
    [clojure.java.io :as io]
    [clojure.string :as string]
+   [cmr.common.util :as util]
    [cmr.common-app.api.routes :as cr]
    [cmr.common-app.config :as config]
    [cmr.common-app.site.pages :as pages]
-   [cmr.common.generics :as gconfig]
    [cmr.common.generics-documentation :as gdocs]
-   [compojure.handler :as handler]
    [compojure.route :as route]
    [compojure.core :refer :all]
    [ring.util.response :as response]
@@ -183,6 +182,15 @@
   (->  (gdocs/all-generic-docs file-name)
        (md->html)
        (selmer/render {})))
+
+(defn parse-out-env [relative-root-url]
+  (let [regex-pattern #"cmr\.(.*?)\.earthdata\.nasa\.gov"
+        matches (re-find regex-pattern relative-root-url)]
+    ;; if there is an env add the env + `.` to complete URL otherwise
+    ;; just return the "." char to complete the URL
+    (if (not (nil? matches))
+      (str (second matches) ".")
+      ".")))
 
 (defn- read-generic-markdown-toc
   "Reads the file-name mark-down for all concepts"
@@ -249,6 +257,7 @@
         (when-let [resource (site-resource page)]
           (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)
                 site-example-provider (get site-provider-map (headers "host") "PROV1")
+                cmr-env (parse-out-env (:cmr-root-url (util/get-env)))
                 cmr-example-collection-id (str "C1234567-" site-example-provider)
                 doc-type (nth (re-find #"/(.*)/" (str page)) 1)
                 generic-doc-body (read-generic-markdown doc-type)
@@ -264,6 +273,7 @@
                        (string/replace "%GENERIC-TABLE-OF-CONTENTS%" generic-doc-toc)
                        (string/replace "%GENERIC-DOCS%" generic-doc-body)
                        (string/replace "%CMR-ENDPOINT%" cmr-root)
+                       (string/replace "%CMR-ENV%" cmr-env)
                        (string/replace "%CMR-RELEASE-VERSION%" (config/release-version))
                        (string/replace "%CMR-EXAMPLE-COLLECTION-ID%" cmr-example-collection-id)
                        (string/replace "%ALL-GENERIC-DOCUMENT-VERSIONS%" generic-versions))})))
