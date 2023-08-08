@@ -72,5 +72,5 @@
   (let [stmt (with [:inner stmt]
                    (select ['*]
                            (from :inner)
-                           (where '(= :ROWNUM 1))))]
+                           (s/limit 1)))]
     (first (query db (build stmt)))))
