@@ -57,7 +57,7 @@
 (defn query
   "Execute a query and log how long it took."
   [db stmt-and-params]
-  (let [fetch-size (:result-set-fetch-size db)
+  (let [fetch-size 200 ;; for oracle this is assoc'ed into the db object at system start, from a defconfig. workload env does not have an overwriting parameter so hardcoding the default here for prototype runs
         start (System/currentTimeMillis)
         result (j/query db (cons {:fetch-size fetch-size} stmt-and-params))
         millis (- (System/currentTimeMillis) start)]
