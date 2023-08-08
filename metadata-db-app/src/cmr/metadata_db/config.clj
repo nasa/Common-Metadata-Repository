@@ -40,7 +40,7 @@
    connection-pool-name
    (aurora-config/db-url-primary)
    (metadata-db-username)
-   (metadata-db-password)
+   "oracle" ;; this is a workaround for the prototype run, because for some reason the 'setup db' process is not using the correct password.
    (aurora-config/aurora-db-name)))
 
 ;; this db connection method for prototype use only
