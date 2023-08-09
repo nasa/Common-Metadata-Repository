@@ -8,6 +8,7 @@
    [clj-http.client :as client]
    [clojure.string :as string]
    [cmr.common.date-time-parser :as date-time-parser]
+   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as common-util]
