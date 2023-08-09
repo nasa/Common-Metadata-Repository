@@ -12,7 +12,8 @@
    [cmr.aurora.sql-utils :as su :refer [insert values select from where with order-by desc delete as]]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
-   [cmr.common.services.health-helper :as hh])
+   [cmr.common.services.health-helper :as hh]
+   [sqlingvo.core :as s])
   (:import
    com.zaxxer.hikari.HikariDataSource
    software.amazon.jdbc.ds.AwsWrapperDataSource
@@ -136,7 +137,7 @@
 
 (defn save-concept
   "Saves a concept to Aurora Postgres"
-  [table cols seq-name ]
+  [table cols seq-name values]
   (info "Made a call to aurora.connection/save-concept")
   (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
                "(NEXTVAL('%s'),%s,NEXTVAL('GLOBAL_TRANSACTION_ID_SEQ'))")
@@ -152,19 +153,31 @@
    (su/find-one conn (select '[*]
                              (from table)
                              (where `(= :concept-id ~concept-id))
-                             (order-by (desc :revision-id)))))
+                             (order-by (desc :revision-id))
+                             (s/limit 1))))
   ([conn table concept-id revision-id]
    (info "Made a call to aurora.connection/get-concept with revision-id")
    (su/find-one conn (select '[*]
                              (from table)
                              (where `(and (= :concept-id ~concept-id)
-                                          (= :revision-id ~revision-id)))))))
+                                          (= :revision-id ~revision-id)))
+                             (s/limit 1)))))
 
 (defn get-concepts
   "Gets a group of concepts from Aurora Postgres"
   [conn stmt]
   (info "Made a call to aurora.connection/get-concepts")
   (su/query conn stmt))
+
+(defn create-temp-table
+  "Creates temporary work area used in get-concepts functions. Call from within a transaction,
+   as Postgres deletes temporary tables at the end of a session"
+  [conn]
+  (info "Creating get_concepts_work_area temporary table")
+  (j/query conn "CREATE TEMP TABLE IF NOT EXISTS get_concepts_work_area
+                  (concept_id VARCHAR(255),
+                  revision_id INTEGER)
+                  ON COMMIT DELETE ROWS"))
 
 (defn gen-get-concepts-sql-with-temp-table
   "To generate the SQL statement for getting a group of concepts using the temp table method"
@@ -206,7 +219,6 @@
 
 (defmethod pg-timestamp->clj-time java.sql.Timestamp
   [db ^java.sql.Timestamp pt]
-  (println "GOT TIMESTAMP TYPE: java.sql.Timestamp")
   (let [cal (java.util.Calendar/getInstance)
         ^java.util.TimeZone gmt-tz (java.util.TimeZone/getTimeZone "GMT")]
     (.setTimeZone cal gmt-tz)
@@ -222,6 +234,6 @@
 
 (defn db-timestamp->str-time
   "Converts database timestamp instance into a string representation of the time. 
-   Must be called within a with-db-transaction block with the connection"
+   Must be called within a with-db-transaction block with the connection -- TODO"
   [db ot]
-  (p/clj-time->date-time-str (pg-timestamp->clj-time db ot)))
+  (p/clj-time->date-time-str (cr/from-sql-time ot)))

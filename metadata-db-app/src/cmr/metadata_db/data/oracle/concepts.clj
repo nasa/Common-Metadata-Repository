@@ -159,7 +159,7 @@
                              :native-id native_id
                              :concept-id concept_id
                              :provider-id provider-id
-                             :metadata (when metadata (util/gzip-blob->string metadata))
+                             :metadata (when metadata (util/gzip-bytes->string metadata))
                              :format (db-util/db-format->mime-type format)
                              :revision-id (int revision_id)
                              :revision-date (aurora/db-timestamp->str-time db revision_date)
@@ -526,6 +526,7 @@
                                 (util/time-execution
                                  (j/with-db-transaction
                                    [conn (config/pg-db-connection)]
+                                   (aurora/create-temp-table conn)
                                     ;; use a temporary table to insert our values so we can use a join to
                                     ;; pull everything in one select
                                    (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
@@ -592,8 +593,16 @@
                            table
                            (string/join "," cols)
                            seq-name
-                           (string/join "," (repeat (count values) "?")))]
-          (trace "Executing" stmt "with values" (pr-str values))
+                           (string/join "," (repeat (count values) "?"))) 
+              ;; replace instances of 'false' with 0 and 'true' with 1 for Postgres 'deleted' column
+              pg-values (map #(if (boolean? %) (if % 1 0) %) values)
+              pg-stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
+                                   "(NEXTVAL('%s'),%s,NEXTVAL('GLOBAL_TRANSACTION_ID_SEQ'))")
+                              table
+                              (string/join "," cols)
+                              seq-name
+                              (string/join "," (repeat (count pg-values) "?")))]
+          (trace "Executing" stmt "with values" (pr-str pg-values))
           (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
             (info "ORT Runtime of Oracle save-concept: " (first (util/time-execution
                                                                  (j/db-do-prepared db stmt values)))) " ms.")
@@ -601,14 +610,14 @@
             (info "ORT Runtime of DynamoDB save-concept: " (first (util/time-execution
                                                                    (dynamo/save-concept concept)))))
           (when (not= "aurora-off" (aurora-config/aurora-toggle))
-            (info "ORT Runtime of Aurora save-concept: " (first (util/time-execution 
+            (info "ORT Runtime of Aurora save-concept: " (first (util/time-execution
                                                                  (j/db-do-prepared (config/pg-db-connection)
-                                                                                   (aurora/save-concept table cols seq-name)
-                                                                                   values)))
-                  (when (and
-                         (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
-                         (= false (:deleted concept)))
-                    (info "ORT Runtime of EFS save-concept: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))))
+                                                                                   pg-stmt
+                                                                                   pg-values)))))
+          (when (and
+                 (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
+                 (= false (:deleted concept)))
+            (info "ORT Runtime of EFS save-concept: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))
           (after-save conn provider concept)
           nil)))
     (catch Exception e
@@ -680,11 +689,13 @@
                             (util/time-execution
                              (dynamo/delete-concepts-provided concept-id-revision-id-tuples)))
             aurora-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
+                            ;; this is actually roughly the same as oracle 
                             (util/time-execution
-                             (save-concepts-to-tmp-table (config/pg-db-connection) concept-id-revision-id-tuples)
-                             (j/execute! (config/pg-db-connection) stmt)
-                             ;; this is actually the same as oracle but leaving this to grab the print
-                             (aurora/delete-concepts provider concept-type concept-id-revision-id-tuples)))]
+                             (j/with-db-transaction
+                               [conn (config/pg-db-connection)]
+                               (aurora/create-temp-table conn)
+                               (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+                               (j/execute! conn stmt))))]
         (when efs-delete
           (info "ORT Runtime of EFS force-delete-concepts: " (first efs-delete) " ms.")
           (info "Output from EFS force-delete-concepts: " (second efs-delete)))

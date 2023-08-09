@@ -69,8 +69,4 @@
 (defn find-one
   "Finds and returns the first item found from a select statment."
   [db stmt]
-  (let [stmt (with [:inner stmt]
-                   (select ['*]
-                           (from :inner)
-                           (s/limit 1)))]
-    (first (query db (build stmt)))))
+  (first (query db (build stmt))))
