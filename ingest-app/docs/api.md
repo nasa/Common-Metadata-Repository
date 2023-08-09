@@ -1589,7 +1589,7 @@ Example granule bulk update response:
 Supported metadata formats:
   - <DataGranuleSizeInBytes> and <SizeMBDataGranule> inside <DataGranule> element for ECHO10 format
 
-To update DataGranuleSizeInBytes, input an integer value, such as `22`. To update SizeMBDataGranule, input a double (decimal) value, such as `52.235`. If a file has an flat number value, such as exactly `25MB`, this should be input as `25.0`. Both values can be updated at once by supplying two values, comma seperated, as seen below. If more than one integer value, more than one double value, or any extraneous values are supplied, the granule update will fail.
+To update DataGranuleSizeInBytes, input an integer value, such as `22`. To update SizeMBDataGranule, input a double (decimal) value, such as `52.235`. If a file has an flat number value, such as exactly `25MB`, this should be input as `25.0`. Both values can be updated at once by supplying two values, comma separated, as seen below. If more than one integer value, more than one double value, or any extraneous values are supplied, the granule update will fail.
 
 Example: Add/update size values for 3 granules under PROV1. Granules 1 receives an update to `DataGranuleSizeInBytes`, granule 2 receives an update to `SizeMBDataGranule`, and granule 3 receives an update to both values.
 

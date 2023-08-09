@@ -965,27 +965,6 @@
         (pprint))
    :ok))
 
-(defn get-env
-  "Get the system environment currently available to Clojure.
-
-  Example usage:
-  ```
-  (show-env)
-  (show-env keyword)
-  (show-env (comp keyword string/lower-case))
-  ```"
-  ([]
-      (get-env (fn [k-str] (csk/->kebab-case-keyword (keyword k-str)))))
-  ([key-fn]
-   (get-env key-fn (constantly true)))
-  ([key-fn filter-fn]
-   (get-env key-fn filter-fn (System/getenv)))
-  ([key-fn filter-fn data]
-   (->> data
-        (filter filter-fn)
-        (map (fn [[k v]] [(key-fn k) v]))
-        (into {}))))
-
 (defn show-cmr-env
   "Show just the system environment variables with the `CMR_` prefix."
   []
