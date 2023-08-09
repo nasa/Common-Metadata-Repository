@@ -37,6 +37,14 @@
           :else
           (errors/internal-error! (format "Unexpected error unsiging token locally. %s" error-data)))))))
 
+(defn unexpected-status-error!
+  [status body]
+  (errors/internal-error!
+   ; Don't print potentially sensitive information
+   (if (re-matches #".*token .* does not exist.*" body)
+     (format "Unexpected status %d from response. body: %s" status "Token does not exist")
+     (format "Unexpected status %d from response. body: %s" status (pr-str body)))))
+
 (defn handle-get-user-id
   [token status parsed body]
   (case (int status)
@@ -105,14 +113,6 @@
          parsed (when (.startsWith ^String (get headers "Content-Type" "") "application/json")
                   (json/decode body true))]
      [status parsed body])))
-
-(defn unexpected-status-error!
-  [status body]
-  (errors/internal-error!
-   ; Don't print potentially sensitive information
-   (if (re-matches #".*token .* does not exist.*" body)
-     (format "Unexpected status %d from response. body: %s" status "Token does not exist")
-     (format "Unexpected status %d from response. body: %s" status (pr-str body)))))
 
 (defn get-user-id
   "Get the user-id from EDL or Launchpad for the given token"
