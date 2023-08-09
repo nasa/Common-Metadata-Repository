@@ -5632,10 +5632,10 @@ curl -XDELETE \
 ```
 
 ### <a name="cmr-graphql"></a> CMR-Graphql
-The CMR has a GraphQL API which can be queried with requets to %GRAPHQL-ENDPOINT%. The GraphQL API provides an alternative query language for the CMR REST API. The [cmr-graphql](https://github.com/nasa/cmr-graphql) API can retrieve individually requested fields from resources. For example a request with a list of specified fields from a collection would return the values for those fields but, not any other fields on the usual collections response from CMR. The [cmr-graphql](https://github.com/nasa/cmr-graphql) can retrive data from multiple resources from a single client request so in a single request, data from multiple resources such as the CMR REST API or the [cmr-graphDb](https://github.com/nasa/Common-Metadata-Repository/tree/master/graph-db) instance within a single client request.
+The CMR has a GraphQL API which can be queried with requests to [%GRAPHQL-ENDPOINT%](%GRAPHQL-ENDPOINT%). The GraphQL API provides an alternative query language for the CMR REST API. The [cmr-graphql](https://github.com/nasa/cmr-graphql) API can retrieve individually requested fields from resources. For example a request with a list of specified fields from a collection would return the values for those fields but, not any other fields on the usual collections response from CMR. The [cmr-graphql](https://github.com/nasa/cmr-graphql) can retrive data from multiple resources from a single client request so in a single request, data from multiple resources such as the CMR REST API or the [cmr-graphDb](https://github.com/nasa/Common-Metadata-Repository/tree/master/graph-db) instance within a single client request.
 
 ### <a name="apollo-studio"></a> Navigating Apollo Studio
-Navigating to %GRAPHQL-ENDPOINT% on the browser providers an interface through the Apollo Studio services on which the CMR API can be queried. The User interface providers autocomplete, concept schema definitions, and request/response handling using the GraphQL language.
+Navigating to [%GRAPHQL-ENDPOINT%](%GRAPHQL-ENDPOINT%) on the browser providers an interface through the Apollo Studio services on which the CMR API can be queried. The User interface providers autocomplete, concept schema definitions, and request/response handling using the GraphQL language.
 
 ### <a name="cmr-graphql-programmatic-requests"></a> Programmatic requests to CMR-Graphql
 
@@ -5705,7 +5705,7 @@ __Response__
 
 
 
- __Example: Retrieving variables associated to specified collection with a limit of 2__
+ __Example: Retrieving variables associated to specified collection with a limit for variables returned__
 
  ```
  curl -XPOST '%GRAPHQL-ENDPOINT%' \
