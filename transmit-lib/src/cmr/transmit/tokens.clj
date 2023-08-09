@@ -13,6 +13,7 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as common-util]
    [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.connection :as conn]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]))
 
 (defn verify-edl-token-locally
