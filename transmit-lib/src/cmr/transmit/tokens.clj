@@ -5,12 +5,12 @@
    [buddy.sign.jwt :as jwt]
    [cheshire.core :as json]
    [clj-time.core :as t]
+   [clj-http.client :as client]
    [clojure.string :as string]
    [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as common-util]
-   [cmr.mock-echo.client.echo-util :as echo-functionality]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]))
 
@@ -72,6 +72,40 @@
     ;; default
     (echo-functionality/unexpected-status-error! status body)))
 
+(defn request-options
+  [conn]
+  (merge
+   (transmit-config/conn-params conn)
+   {:accept :json
+    :throw-exceptions false
+    :headers {"Authorization" (transmit-config/echo-system-token)}
+     ;; Overrides the socket timeout from conn-params
+    :socket-timeout (transmit-config/echo-http-socket-timeout)}))
+
+(defn post-options
+  [conn body-obj]
+  (merge (request-options conn)
+         {:content-type :json
+          :body (json/encode body-obj)}))
+
+(defn rest-post
+  "Makes a post request to echo-rest. Returns a tuple of status, the parsed body, and the body."
+  ([context url-path body-obj]
+   (rest-post context url-path body-obj {}))
+  ([context url-path body-obj options]
+   (warn (format "Using legacy API call to POST %s!!!!!!!!!}" url-path))
+   (let [conn (transmit-config/context->app-connection context :echo-rest)
+         url (format "%s%s" (conn/root-url conn) url-path)
+         params (if (some? (:form-params body-obj))
+                  (merge (request-options conn) body-obj)
+                  (merge (post-options conn body-obj) options))
+         _ (warn (format "Using legacy API call to POST %s with params: %s" url params))
+         response (client/post url params)
+         {:keys [status body headers]} response
+         parsed (when (.startsWith ^String (get headers "Content-Type" "") "application/json")
+                  (json/decode body true))]
+     [status parsed body])))
+
 (defn get-user-id
   "Get the user-id from EDL or Launchpad for the given token"
   [context token]
@@ -83,7 +117,7 @@
       (verify-edl-token-locally token)
       (if (common-util/is-launchpad-token? token)
         (:uid (launchpad-user-cache/get-launchpad-user context token))
-        (let [[status parsed body] (echo-functionality/rest-post context "/tokens/get_token_info"
+        (let [[status parsed body] (rest-post context "/tokens/get_token_info"
                                                     {:headers {"Accept" mt/json
                                                                "Authorization" (transmit-config/echo-system-token)}
                                                      :form-params {:id token}})]
