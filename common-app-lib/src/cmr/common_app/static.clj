@@ -8,7 +8,7 @@
 
   ## Markdown Support
 
-  This namespace provides a few utility functions for converting Markdown
+  This namespace provides utility functions for converting Markdown
   (and Markdown files) to HTML. The converted string data may then be used in
   templates. Note that if you are using Selmer templates, you will need to
   'pipe' the converted HTML string data to the `safe` Selmer filter so that
