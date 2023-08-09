@@ -5671,7 +5671,7 @@ __Response__
     -H "content-type: application/json" \
     -H "Authorization: XXXXX" \
     -d '{
-        "query": "query ($params: CollectionsInput) {\n  collections(params: $params) {\n    items {\n      conceptId\n      services {\n        items {\n          conceptId\n        }\n      }\n    }\n  }\n}",
+        "query": "query ($params: CollectionsInput) {collections(params: $params) {items {conceptId services {items {conceptId}}}}}",
         "variables": {
             "params": {
                 "conceptId": "C1200000000-PROV1"
@@ -5712,7 +5712,7 @@ __Response__
     -H "content-type: application/json" \
     -H "Authorization: XXXXX" \
     -d '{
-    "query": "query ($params: CollectionsInput, $variablesParams2: VariablesInput) {\n  collections(params: $params) {\n    items {\n      variables(params: $variablesParams2) {\n        items {\n          conceptId\n        }\n      }\n    }\n  }\n}",
+    "query": "query ($params: CollectionsInput) {collections(params: $params){items{conceptId services{items{conceptId}}}}}",
     "variables": {
         "params": {
             "limit": 2,
