@@ -70,7 +70,7 @@
     504 (errors/throw-service-errors :gateway-timeout ["A gateway timeout occurred, please try your request again later."])
 
     ;; default
-    (echo-functionality/unexpected-status-error! status body)))
+    (unexpected-status-error! status body)))
 
 (defn request-options
   [conn]
@@ -105,6 +105,14 @@
          parsed (when (.startsWith ^String (get headers "Content-Type" "") "application/json")
                   (json/decode body true))]
      [status parsed body])))
+
+(defn unexpected-status-error!
+  [status body]
+  (errors/internal-error!
+   ; Don't print potentially sensitive information
+   (if (re-matches #".*token .* does not exist.*" body)
+     (format "Unexpected status %d from response. body: %s" status "Token does not exist")
+     (format "Unexpected status %d from response. body: %s" status (pr-str body)))))
 
 (defn get-user-id
   "Get the user-id from EDL or Launchpad for the given token"
