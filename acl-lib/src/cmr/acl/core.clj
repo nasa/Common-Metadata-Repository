@@ -144,6 +144,10 @@
   "The cache key for the token to subscription management permission cache."
   :token-smp)
 
+(def token-pc-cache-key
+  "The cache key for the token to provider context permission cache."
+  :token-pc)
+
 (def CONCEPT_MAP_CACHE_TIME
   "The number of milliseconds token information will be cached."
   (* 5 60 1000))
@@ -159,6 +163,11 @@
 
 (defn create-token-smp-cache
   "Creates a cache for which tokens have subscription management permission."
+  []
+  (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
+
+(defn create-token-pc-cache
+  "Creates a cache for which tokens have provider context  permission."
   []
   (mem-cache/create-in-memory-cache :ttl {} {:ttl TOKEN_IMP_CACHE_TIME}))
 
@@ -265,9 +274,13 @@
                           ;; No token cache so directly check permission.
                           (has-permission-fn))]
     (when-not has-permission?
-      (errors/throw-service-error
-        :unauthorized
-        "You do not have permission to perform that action."))))
+      (if (= cache-key token-pc-cache-key)
+        (errors/throw-service-error
+          :unauthorized
+          "You do not have PROVIDER_CONTEXT permission to perform that action.")
+        (errors/throw-service-error
+          :unauthorized
+          "You do not have permission to perform that action.")))))
 
 (defn verify-subscription-management-permission
   "Verifies the current user has been granted SUBSCRIPTION_MANAGEMENT
@@ -322,5 +335,5 @@
      permission-type
      object-identity-type
      provider-id
-     token-imp-cache-key
+     token-pc-cache-key
      has-provider-context-permission?)))

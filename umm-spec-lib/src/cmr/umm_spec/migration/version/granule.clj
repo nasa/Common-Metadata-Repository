@@ -137,6 +137,15 @@
     (assoc related-url :Type "GET DATA")
     related-url))
 
+(defn truncate-pge-version-size
+  "This function truncates the PGEVersion size to 10 characters, if it has more
+  than 10 characters."
+  [pge-version-class]
+  (when-let [pge-version (:PGEVersion pge-version-class)]
+    (if (> (count pge-version) 10)
+      (assoc pge-version-class :PGEVersion (subs pge-version 0 10)) 
+      pge-version-class)))
+      
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
  ;;; Granule Migration Implementations
 
@@ -259,3 +268,18 @@
   [context granule & _]
   (-> granule
       (m-spec/update-version :granule "1.6.4")))
+
+;; v1.6.5 migrations
+
+(defmethod interface/migrate-umm-version [:granule "1.6.5" "1.6.4"]
+  ;; truncate PGEVersion to 10 characters if it has more than 10
+  ;; characters long.
+  [context g & _]
+  (-> g
+      (update :PGEVersionClass truncate-pge-version-size)
+      (m-spec/update-version :granule "1.6.4")))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.4" "1.6.5"]
+  [context g & _]
+  (-> g
+      (m-spec/update-version :granule "1.6.5")))

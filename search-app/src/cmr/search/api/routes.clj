@@ -53,6 +53,7 @@
    ;; ACL support - required here to avoid circular dependencies
    [cmr.search.services.acls.collection-acls]
    [cmr.search.services.acls.granule-acls]
+   [cmr.search.services.acls.draft-acls]
    [cmr.search.services.acls.subscription-acls]))
 
 (defn build-routes [system]

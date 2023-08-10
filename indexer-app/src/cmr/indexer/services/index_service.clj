@@ -428,7 +428,7 @@
 
 (defn create-association-map-keys
   "Creates the association map keys that lists out all of the different association types.
-  For example, this function changes the named concept type from variable-association to a 
+  For example, this function changes the named concept type from variable-association to a
   key of :variable-associations."
   [key-str]
   {key-str (keyword (inf/plural key-str))})
@@ -583,7 +583,7 @@
 (defmethod index-concept :service-association
   [context concept parsed-concept options]
   (index-associated-collection context concept options)
-  (index-associated-concept context 
+  (index-associated-concept context
                             (get-in concept [:extra-fields :service-concept-id])
                             options))
 

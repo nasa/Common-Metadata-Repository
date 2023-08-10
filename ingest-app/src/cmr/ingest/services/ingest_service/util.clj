@@ -12,7 +12,6 @@
    [cmr.ingest.data.provider-acl-hash :as pah]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
    [cmr.oracle.connection :as conn]
-   [cmr.redis-utils.redis :as redis]
    [cmr.transmit.indexer :as indexer]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]))

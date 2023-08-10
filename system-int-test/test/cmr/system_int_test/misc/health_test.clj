@@ -6,8 +6,6 @@
    [clojure.test :refer :all]
    [clojure.string :as str]
    [cmr.common-app.test.side-api :as side]
-   [cmr.common.time-keeper :as tk]
-   [cmr.elastic-utils.connect :as es-util]
    [cmr.search.routes :as routes]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.url-helper :as url]))

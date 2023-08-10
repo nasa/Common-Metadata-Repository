@@ -36,10 +36,16 @@
   true)
 
 ;; generic concepts currently have no catalog item ACLs, so return `true` for all ACL checks
+;; except for draft concepts which checks provider object ACL PROVIDER_CONTEXT.
 (doseq [concept-type (cc/get-generic-concept-types-array)]
-  (defmethod acls-match-concept? concept-type
-    [context acls concept]
-    true))
+  (if (cc/is-draft-concept? concept-type)
+    (defmethod acls-match-concept? concept-type
+      [context acls concept]
+      (let [pc-acls (acl-helper/get-pc-acls-applicable-to-token context)]
+        (some #(= (:provider-id concept) (get-in % [:provider-identity :provider-id])) pc-acls)))
+    (defmethod acls-match-concept? concept-type
+      [context acls concept]
+      true)))
 
 ;; subscriptions checks provider object ACLs, not catalog item ACLs
 (defmethod acls-match-concept? :subscription
@@ -116,7 +122,15 @@
       ;;return all concepts if running with the system token
       concepts
       (let [acls (acl-helper/get-acls-applicable-to-token context)
-            applicable-field (-> concepts first :concept-type concept-type->applicable-field)
+            ;; drafts don't contain concept-type field, so we will need to derive it from concept-id
+            ;; collections don't contain concept_id or concept-id fields, but they do contain concept-type field.
+            concept-type (-> concepts first :concept-type)
+            concept-type (if concept-type
+                           concept-type
+                           (-> concepts first :concept_id cc/concept-id->type))
+            applicable-field (concept-type->applicable-field concept-type)
+            ;; Note: This applicable-acls is only used for collections and granules acl matching.
+            ;; For other concept types, it is not being used.
             applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)]
         (doall (remove nil? (pmap (fn [concept]
                                     (when (acls-match-concept? context applicable-acls concept)
