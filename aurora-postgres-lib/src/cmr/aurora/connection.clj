@@ -171,10 +171,10 @@
 
 (defn create-temp-table
   "Creates temporary work area used in get-concepts functions. Call from within a transaction,
-   as Postgres deletes temporary tables at the end of a session"
+   note that Postgres deletes temporary tables at the end of a session"
   [conn]
   (info "Creating get_concepts_work_area temporary table")
-  (j/query conn "CREATE TEMP TABLE IF NOT EXISTS get_concepts_work_area
+  (j/db-do-prepared conn "CREATE TEMP TABLE IF NOT EXISTS get_concepts_work_area
                   (concept_id VARCHAR(255),
                   revision_id INTEGER)
                   ON COMMIT DELETE ROWS"))

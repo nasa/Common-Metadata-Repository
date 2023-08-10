@@ -95,10 +95,9 @@
                               (util/time-execution
                                (dynamo/delete-concepts params)))
         aurora-force-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
+                              ;; this is actually the same as oracle
                               (util/time-execution
-                               (j/execute! (config/pg-db-connection) stmt)
-                               ;; this is actually the same as oracle but leaving this to grab the print
-                               (aurora/delete-concepts provider concept-type get-values)))]
+                               (j/execute! (config/pg-db-connection) stmt)))]
     (when efs-force-delete
       (info "ORT Runtime of EFS force-delete-concept-by-params: " (first efs-force-delete)))
     (when oracle-force-delete
