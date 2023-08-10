@@ -30,14 +30,12 @@
 (def good-indexer-health
   {:ok? true
    :dependencies {:elastic_search {:ok? true}
-                  :echo {:ok? true}
                   :message-queue {:ok? true}
                   :metadata-db good-metadata-db-health}})
 
 (def good-ingest-health
   {:ok? true
    :dependencies {:oracle {:ok? true}
-                  :echo {:ok? true}
                   :metadata-db good-metadata-db-health
                   :message-queue {:ok? true}
                   :indexer good-indexer-health}})
