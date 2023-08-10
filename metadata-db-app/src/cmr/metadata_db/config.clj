@@ -34,7 +34,7 @@
    (metadata-db-username)
    (metadata-db-password)))
 
-(defn pg-db-spec
+(defn pg-db-spec-primary
   [connection-pool-name]
   (aurora/db-spec
    connection-pool-name
@@ -43,10 +43,23 @@
    (metadata-db-password)
    (aurora-config/aurora-db-name)))
 
-;; this db connection method for prototype use only
-(def pooled-pg-db (delay (aurora/make-prototype-pool (pg-db-spec "Metadata DB"))))
+(defn pg-db-spec-secondary
+  [connection-pool-name]
+  (aurora/db-spec
+   connection-pool-name
+   (aurora-config/db-url-secondary)
+   (metadata-db-username)
+   (metadata-db-password)
+   (aurora-config/aurora-db-name)))
 
-(defn pg-db-connection [] @pooled-pg-db)
+;; this db connection method for prototype use only
+(def pooled-pg-db-primary (delay (aurora/make-prototype-pool (pg-db-spec-primary "Metadata DB Primary"))))
+
+(defn pg-db-connection-primary [] @pooled-pg-db-primary)
+
+(def pooled-pg-db-secondary (delay (aurora/make-prototype-pool (pg-db-spec-secondary "Metadata DB Read"))))
+
+(defn pg-db-connection-secondary [] @pooled-pg-db-secondary)
 
 (defconfig parallel-chunk-size
   "Gets the number of concepts that should be processed in each thread of get-concepts."

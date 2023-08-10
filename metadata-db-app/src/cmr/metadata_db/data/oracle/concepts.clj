@@ -431,7 +431,7 @@
          aurora-concept-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                               (util/time-execution
                                (j/with-db-transaction
-                                 [conn (config/pg-db-connection)]
+                                 [conn (config/pg-db-connection-secondary)]
                                  (let [table (tables/get-table-name provider concept-type)]
                                    (db-result->concept-map-aurora concept-type conn (:provider-id provider)
                                                                   (aurora/get-concept conn table concept-id))))))]
@@ -472,7 +472,7 @@
            aurora-concept-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                 (util/time-execution
                                  (j/with-db-transaction
-                                   [conn (config/pg-db-connection)]
+                                   [conn (config/pg-db-connection-secondary)]
                                    (db-result->concept-map-aurora concept-type conn (:provider-id provider)
                                                                   (aurora/get-concept conn table concept-id revision-id)))))]
        (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
@@ -525,7 +525,7 @@
           aurora-concepts-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                 (util/time-execution
                                  (j/with-db-transaction
-                                   [conn (config/pg-db-connection)]
+                                   [conn (config/pg-db-connection-primary)]
                                    (aurora/create-temp-table conn)
                                     ;; use a temporary table to insert our values so we can use a join to
                                     ;; pull everything in one select
@@ -611,7 +611,7 @@
                                                                    (dynamo/save-concept concept)))))
           (when (not= "aurora-off" (aurora-config/aurora-toggle))
             (info "ORT Runtime of Aurora save-concept: " (first (util/time-execution
-                                                                 (j/db-do-prepared (config/pg-db-connection)
+                                                                 (j/db-do-prepared (config/pg-db-connection-primary)
                                                                                    pg-stmt
                                                                                    pg-values)))))
           (when (and
@@ -644,7 +644,7 @@
                          (dynamo/delete-concept concept-id revision-id)))
         aurora-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
                         (util/time-execution
-                         (j/execute! (config/pg-db-connection)
+                         (j/execute! (config/pg-db-connection-primary)
                                      (aurora/delete-concept table concept-id revision-id))))]
     (when efs-delete
       (info "ORT Runtime of EFS force-delete: " (first efs-delete) " ms.")
@@ -692,7 +692,7 @@
                             ;; this is actually roughly the same as oracle 
                             (util/time-execution
                              (j/with-db-transaction
-                               [conn (config/pg-db-connection)]
+                               [conn (config/pg-db-connection-primary)]
                                (aurora/create-temp-table conn)
                                (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
                                (j/execute! conn stmt))))]

@@ -97,7 +97,7 @@
         aurora-force-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
                               ;; this is actually the same as oracle
                               (util/time-execution
-                               (j/execute! (config/pg-db-connection) stmt)))]
+                               (j/execute! (config/pg-db-connection-primary) stmt)))]
     (when efs-force-delete
       (info "ORT Runtime of EFS force-delete-concept-by-params: " (first efs-force-delete)))
     (when oracle-force-delete
