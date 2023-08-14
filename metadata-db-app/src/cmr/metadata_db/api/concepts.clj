@@ -118,6 +118,15 @@
      :body (json/generate-string {:revision-id revision-id})
      :headers rh/json-header}))
 
+(defn- force-delete-draft
+  "Permanently remove a draft concept from the database."
+  [context params concept-id revision-id]
+  (let [{:keys [concept-id]} (concept-service/force-delete-draft
+                                context concept-id revision-id)]
+    {:status 200
+     :body (json/generate-string {:concept-id concept-id})
+     :headers rh/json-header}))
+
 (defn- get-concept-id
   "Get the concept id for a given concept."
   [context params concept-type provider-id native-id]
@@ -153,6 +162,10 @@
       (POST "/" {:keys [request-context params body]}
         (save-concept-revision request-context params body))
       ;; mark a concept as deleted (add a tombstone) specifying the revision the tombstone should have
+      ;; remove a draft from the database
+      (DELETE "/force-delete-draft/:concept-id" {{:keys [concept-id] :as params} :params
+                                                 request-context :request-context}
+        (force-delete-draft request-context params concept-id nil))
       (DELETE "/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
                                            request-context :request-context}
         (delete-concept request-context params concept-id revision-id))

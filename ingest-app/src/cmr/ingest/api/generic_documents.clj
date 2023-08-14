@@ -230,7 +230,9 @@
              request-context :update :provider-object provider-id)
             (acl/verify-provider-context-permission
              request-context :read :provider-object provider-id))]
-    (api-core/delete-concept concept-type provider-id native-id request)))
+    (if (is-draft-concept? request)
+      (api-core/delete-draft concept-type provider-id native-id request)
+      (api-core/delete-concept concept-type provider-id native-id request))))
 
 (defn crud-generic-document
   "This function checks for required parameters. If they don't exist then throw an error, otherwise send the request

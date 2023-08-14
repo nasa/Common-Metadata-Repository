@@ -221,4 +221,18 @@
                        nil "PROV2" native-id :collection-draft gen-util/collection-draft :post)]
     (is (= (:errors coll-draft) nil))
     (is (= (:errors coll-draft-np) ["You do not have PROVIDER_CONTEXT permission to perform that action."]))))
-     
+
+;; Test that collection-draft is removed from database when deleted.
+(deftest test-collection-draft-removed-from-database-on-delete
+  ;; Drafts have permissions to ingest on PROV1, but not on PROV2.
+  (let [native-id "NativeId"
+        coll-draft (gen-util/ingest-generic-document
+                    nil "PROV1" native-id :collection-draft gen-util/collection-draft :post)
+        result1 (gen-util/ingest-generic-document
+                    nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete) 
+        result2 (gen-util/ingest-generic-document
+                    nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete)]
+    ;;The first delete removes the draft from database completely and returns concept-id.
+    ;;The second delete will not say the draft is already deleted because it no longer exists in the database
+    (is (= result1 {:concept-id "CD1200000011-PROV1", :warnings nil, :existing-errors nil}))
+    (is (= result2 {:errors ["CollectionDraft with native id [NativeId] in provider [PROV1] does not exist."]})))) 

@@ -1130,6 +1130,22 @@
     {:concept-id concept-id
      :revision-id revision-id}))
 
+(defn force-delete-draft
+  "Remove a draft concept from the database completely."
+  [context concept-id revision-id]
+  (let [db (util/context->db context)
+        {:keys [concept-type provider-id]} (cu/parse-concept-id concept-id)
+        provider (provider-service/get-provider-by-id context provider-id true)
+        concept (c/get-concept db concept-type provider concept-id revision-id)]
+    (if concept
+      (do
+        (c/force-delete-draft db concept-type provider concept-id))
+      (cmsg/data-error :not-found
+                       msg/concept-with-concept-id-and-rev-id-does-not-exist
+                       concept-id
+                       revision-id))
+    {:concept-id concept-id}))
+
 (defn reset
   "Delete all concepts from the concept store and all providers."
   [context]

@@ -83,6 +83,10 @@
     [db concept-type provider concept-id revision-id]
     "Remove a revision of a concept from the database completely.")
 
+  (force-delete-draft
+    [db concept-type provider concept-id]
+    "Remove a draft concept from the database completely.")
+
   (force-delete-concepts
     [db provider concept-type concept-id-revision-id-tuples]
     "Remove concept revisions given by concept-id/revision-id tuples.")

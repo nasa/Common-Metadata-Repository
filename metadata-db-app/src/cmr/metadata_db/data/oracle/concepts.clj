@@ -466,6 +466,13 @@
                                             (= :revision-id ~revision-id)))))]
     (j/execute! this stmt)))
 
+(defn force-delete-draft
+  [this concept-type provider concept-id]
+  (let [table (tables/get-table-name provider concept-type)
+        stmt (su/build (delete table
+                               (where `(= :concept-id ~concept-id))))]
+    (j/execute! this stmt)))
+
 (defn force-delete-by-params
   [db provider params]
   (sh/force-delete-concept-by-params db provider params))
@@ -664,6 +671,7 @@
    :get-transactions-for-concept get-transactions-for-concept
    :save-concept save-concept
    :force-delete force-delete
+   :force-delete-draft force-delete-draft
    :force-delete-by-params force-delete-by-params
    :force-delete-concepts force-delete-concepts
    :get-concept-type-counts-by-collection get-concept-type-counts-by-collection
