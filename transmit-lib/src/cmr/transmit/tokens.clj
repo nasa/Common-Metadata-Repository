@@ -1,50 +1,21 @@
-(ns cmr.transmit.echo.tokens
-  "Contains functions for working with tokens using the echo-rest api."
+(ns cmr.transmit.tokens
+  "Contains functions for working with tokens"
   (:require
    [buddy.core.keys :as buddy-keys]
    [buddy.sign.jwt :as jwt]
    [cheshire.core :as json]
    [clj-time.core :as t]
+   [clj-http.client :as client]
    [clojure.string :as string]
    [cmr.common.date-time-parser :as date-time-parser]
-   [cmr.common.log :refer [info]]
+   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as common-util]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.echo.rest :as r]
-   [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
-   [cmr.transmit.urs :as urs]))
-
-(defn login
-  "Logs into ECHO and returns the token"
-  ([context username password]
-   (login context username password "CMR Internal" "127.0.0.1"))
-  ([context username password client-id user-ip-address]
-   (let [token-info {:token {:username username
-                             :password password
-                             :client_id client-id
-                             :user_ip_address user-ip-address}}
-         [status parsed body] (r/rest-post context "/tokens" token-info)]
-     (case status
-       201 (get-in parsed [:token :id])
-       504 (r/gateway-timeout-error!)
-
-       ;; default
-       (r/unexpected-status-error! status body)))))
-
-(defn logout
-  "Logs out of ECHO"
-  [context token]
-  (let [[status body] (r/rest-delete context (str "/tokens/" token))]
-    (when-not (= 200 status)
-      (r/unexpected-status-error! status body))))
-
-(defn login-guest
-  "Logs in as a guest and returns the token."
-  [context]
-  (login context "guest" "guest-password"))
+   [cmr.transmit.connection :as conn]
+   [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]))
 
 (defn verify-edl-token-locally
   "Uses the EDL public key to verify jwt tokens locally."
@@ -66,8 +37,16 @@
           (errors/throw-service-error
            :unauthorized
            (format "Token %s does not exist" (common-util/scrub-token token)))
-         :else
-         (r/unexpected-status-error! 500 (format "Unexpected error unsiging token locally. %s" error-data)))))))
+          :else
+          (errors/internal-error! (format "Unexpected error unsiging token locally. %s" error-data)))))))
+
+(defn unexpected-status-error!
+  [status body]
+  (errors/internal-error!
+   ; Don't print potentially sensitive information
+   (if (re-matches #".*token .* does not exist.*" body)
+     (format "Unexpected status %d from response. body: %s" status "Token does not exist")
+     (format "Unexpected status %d from response. body: %s" status (pr-str body)))))
 
 (defn handle-get-user-id
   [token status parsed body]
@@ -102,10 +81,44 @@
     504 (errors/throw-service-errors :gateway-timeout ["A gateway timeout occurred, please try your request again later."])
 
     ;; default
-    (r/unexpected-status-error! status body)))
+    (unexpected-status-error! status body)))
+
+(defn request-options
+  [conn]
+  (merge
+   (transmit-config/conn-params conn)
+   {:accept :json
+    :throw-exceptions false
+    :headers {"Authorization" (transmit-config/echo-system-token)}
+     ;; Overrides the socket timeout from conn-params
+    :socket-timeout (transmit-config/echo-http-socket-timeout)}))
+
+(defn post-options
+  [conn body-obj]
+  (merge (request-options conn)
+         {:content-type :json
+          :body (json/encode body-obj)}))
+
+(defn rest-post
+  "Makes a post request to echo-rest. Returns a tuple of status, the parsed body, and the body."
+  ([context url-path body-obj]
+   (rest-post context url-path body-obj {}))
+  ([context url-path body-obj options]
+   (warn (format "Using legacy API call to POST %s!!!!!!!!!}" url-path))
+   (let [conn (transmit-config/context->app-connection context :echo-rest)
+         url (format "%s%s" (conn/root-url conn) url-path)
+         params (if (some? (:form-params body-obj))
+                  (merge (request-options conn) body-obj)
+                  (merge (post-options conn body-obj) options))
+         _ (warn (format "Using legacy API call to POST %s with params: %s" url params))
+         response (client/post url params)
+         {:keys [status body headers]} response
+         parsed (when (.startsWith ^String (get headers "Content-Type" "") "application/json")
+                  (json/decode body true))]
+     [status parsed body])))
 
 (defn get-user-id
-  "Get the user-id from ECHO or Launchpad for the given token"
+  "Get the user-id from EDL or Launchpad for the given token"
   [context token]
   (if (transmit-config/echo-system-token? token)
     ;; Short circuit a lookup when we already know who this is.
@@ -115,10 +128,10 @@
       (verify-edl-token-locally token)
       (if (common-util/is-launchpad-token? token)
         (:uid (launchpad-user-cache/get-launchpad-user context token))
-        (let [[status parsed body] (r/rest-post context "/tokens/get_token_info"
-                                                {:headers {"Accept" mt/json
-                                                           "Authorization" (transmit-config/echo-system-token)}
-                                                 :form-params {:id token}})]
-          (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
-                        (common-util/scrub-token token) status))
-          (handle-get-user-id token status parsed body))))))
+        (let [[status parsed body] (rest-post context "/tokens/get_token_info"
+                                                    {:headers {"Accept" mt/json
+                                                               "Authorization" (transmit-config/echo-system-token)}
+                                                     :form-params {:id token}})]
+              (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
+                            (common-util/scrub-token token) status))
+              (handle-get-user-id token status parsed body))))))

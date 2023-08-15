@@ -9,7 +9,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.services.humanizers.humanizer-messages :as msg]
-   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.tokens :as tokens]
    [cmr.transmit.metadata-db :as mdb]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

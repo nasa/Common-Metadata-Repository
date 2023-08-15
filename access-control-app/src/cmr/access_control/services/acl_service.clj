@@ -25,7 +25,7 @@
    [cmr.common.log :refer [info debug]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
-   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.tokens :as tokens]
    [cmr.transmit.metadata-db :as mdb1]
    [cmr.transmit.metadata-db2 :as mdb]
    [cmr.transmit.urs :as urs]

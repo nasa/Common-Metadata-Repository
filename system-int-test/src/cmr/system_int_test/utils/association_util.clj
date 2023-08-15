@@ -8,7 +8,7 @@
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.transmit.association :as transmit-assoc]
    [cmr.transmit.generic-association :as transmit-generic-assoc]
-   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.tokens :as tokens]
    [cmr.umm-spec.versioning :as versioning]))
 
 (defn generic-associate-by-concept-ids-revision-ids

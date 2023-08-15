@@ -17,7 +17,7 @@
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.transmit.config :as transmit-config]
-   [cmr.transmit.echo.tokens :as tokens]
+   [cmr.transmit.tokens :as tokens]
    [cmr.common.util :as util]
    [ring.util.codec :as ring-codec])
   (:import

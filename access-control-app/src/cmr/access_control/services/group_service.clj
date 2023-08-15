@@ -22,7 +22,7 @@
     [cmr.common.util :as u]
     [cmr.common.validations.core :as v]
     [cmr.transmit.config :as transmit-config]
-    [cmr.transmit.echo.tokens :as tokens]
+    [cmr.transmit.tokens :as tokens]
     [cmr.transmit.metadata-db2 :as mdb]
     [cmr.transmit.urs :as urs])
   ;; Must be required to be available at runtime
