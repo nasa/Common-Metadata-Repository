@@ -19,6 +19,7 @@
                  [instaparse "1.4.10"]
                  [inflections "0.13.0"]
                  [markdown-clj "1.10.5"]
+                 [nasa-cmr/cmr-aurora-postgres-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"]

@@ -7,7 +7,7 @@
   []
   (println "cmr.ingest.migrations.002-create-provider-acl-hash-table up...")
   (j/db-do-commands (config/db) "CREATE TABLE CMR_INGEST.provider_acl_hash (
-                              acl_hashes VARCHAR2(2000) NOT NULL)"))
+                              acl_hashes VARCHAR(2000) NOT NULL)"))
 
 (defn down
   "Migrates the database down from version 2."

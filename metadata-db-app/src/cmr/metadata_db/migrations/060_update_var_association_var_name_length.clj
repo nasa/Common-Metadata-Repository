@@ -9,7 +9,7 @@
   ;; The variable_name field actually saves the native-id of the variable in the association
   ;; It is temporary. We didn't change the name of the field to native_id as we will eventaully
   ;; change this to concept_id later as described in CMR-4254
-  (h/sql "alter table METADATA_DB.cmr_variable_associations modify variable_name VARCHAR(1030)"))
+  (h/sql "alter table METADATA_DB.cmr_variable_associations alter column variable_name type VARCHAR(1030)"))
 
 
 (defn down

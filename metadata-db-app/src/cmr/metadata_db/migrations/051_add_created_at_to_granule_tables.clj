@@ -8,7 +8,7 @@
 (defn- add-created-at
   []
   (doseq [t (h/get-granule-tablenames)]
-    (h/sql (format "alter table %s add created_at TIMESTAMP WITH TIME ZONE" t))))
+    (h/sql (format "alter table %s add column created_at TIMESTAMP WITH TIME ZONE" t))))
 
 (defn- drop-created-at
   []

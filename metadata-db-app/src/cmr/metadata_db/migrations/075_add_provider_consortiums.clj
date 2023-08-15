@@ -14,7 +14,7 @@
    fine for todays requirments and future additions."
   []
   (println "cmr.metadata-db.migrations.075-add-provider-consortiums up...")
-  (helper/sql "alter table METADATA_DB.providers add consortiums VARCHAR2(64)"))
+  (helper/sql "alter table METADATA_DB.providers add column consortiums VARCHAR(64)"))
 
 (defn down
   "Migrates the database down from version 75. Only need to drop the new field."

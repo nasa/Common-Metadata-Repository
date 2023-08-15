@@ -20,7 +20,7 @@
   "Migrates the database up to version 78."
   []
   (println "cmr.metadata-db.migrations.078-update-subscription-table up...")
-  (helper/sql "alter table cmr_subscriptions add subscription_type VARCHAR2(64)")
+  (helper/sql "alter table cmr_subscriptions add column subscription_type VARCHAR(64)")
   (populate-new-column)
   (recreate-subscription-index))
 

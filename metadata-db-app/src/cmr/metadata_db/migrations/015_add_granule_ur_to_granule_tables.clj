@@ -8,7 +8,7 @@
   []
   (println "cmr.metadata-db.migrations.015-add-granule-ur-to-granule-tables up...")
   (doseq [t (h/get-regular-provider-granule-tablenames)]
-    (h/sql (format "alter table %s add granule_ur VARCHAR(250)" t))
+    (h/sql (format "alter table %s add column granule_ur VARCHAR(250)" t))
     (h/sql (format "CREATE INDEX idx_%s_ur ON %s(granule_ur)" t t))))
 
 (defn down

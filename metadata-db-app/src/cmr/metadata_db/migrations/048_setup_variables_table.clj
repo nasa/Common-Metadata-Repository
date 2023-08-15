@@ -3,14 +3,14 @@
    [config.mdb-migrate-helper :as h]))
 
 (def ^:private variables-column-sql
-  "id NUMBER,
+  "id INTEGER,
   concept_id VARCHAR(255) NOT NULL,
   native_id VARCHAR(1030) NOT NULL,
-  metadata BLOB NOT NULL,
+  metadata BYTEA NOT NULL,
   format VARCHAR(255) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
-  revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+  revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   deleted INTEGER DEFAULT 0 NOT NULL,
   user_id VARCHAR(30),
   variable_name VARCHAR(20),
@@ -20,12 +20,10 @@
 (def ^:private variables-constraint-sql
   (str "CONSTRAINT variables_pk PRIMARY KEY (id), "
        ;; Unique constraint on native id and revision id
-       "CONSTRAINT variables_con_rev UNIQUE (native_id, revision_id)
-       USING INDEX (create unique index variables_ucr_i ON cmr_variables (native_id, revision_id)), "
+       "CONSTRAINT variables_con_rev UNIQUE (native_id, revision_id), "
 
        ;; Unique constraint on concept id and revision id
-       "CONSTRAINT variables_cid_rev UNIQUE (concept_id, revision_id)
-       USING INDEX (create unique index variables_cri ON cmr_variables (concept_id, revision_id))"))
+       "CONSTRAINT variables_cid_rev UNIQUE (concept_id, revision_id)"))
 
 (defn- create-variables-table
   []

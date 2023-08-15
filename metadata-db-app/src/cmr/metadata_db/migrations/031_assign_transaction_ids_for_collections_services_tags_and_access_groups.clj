@@ -31,7 +31,7 @@
     (doseq [table (h/get-concept-tablenames :collection :service :tag :access-group)
             row (h/query (format (str "SELECT id FROM %s WHERE transaction_id = 0 "
                                         "ORDER BY concept_id ASC, revision_id ASC FOR UPDATE") table))]
-        (h/sql (format "UPDATE %s SET transaction_id=MIGRATION_TRANSACTION_ID_SEQ.NEXTVAL WHERE id=%d"
+        (h/sql (format "UPDATE %s SET transaction_id=nextval('MIGRATION_TRANSACTION_ID_SEQ') WHERE id=%d"
                        table (long (:id row)))))))
 
 (defn down

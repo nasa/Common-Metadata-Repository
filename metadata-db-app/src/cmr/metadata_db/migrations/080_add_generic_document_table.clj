@@ -6,7 +6,7 @@
   []
   (h/sql
    "CREATE TABLE METADATA_DB.cmr_generic_documents (
-    id NUMBER,
+    id INTEGER,
     concept_id VARCHAR(255) NOT NULL,
     native_id VARCHAR(1030) NOT NULL,
     provider_id VARCHAR(10) NOT NULL,
@@ -14,10 +14,10 @@
     schema VARCHAR(255) NOT NULL,
     format VARCHAR(255) NOT NULL,
     mime_type VARCHAR(255) NOT NULL,
-    metadata BLOB NOT NULL,
+    metadata BYTEA NOT NULL,
     revision_id INTEGER DEFAULT 1 NOT NULL,
-    revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+    revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted INTEGER DEFAULT 0 NOT NULL,
     user_id VARCHAR(30),
     transaction_id INTEGER DEFAULT 0 NOT NULL,
@@ -25,8 +25,7 @@
     CONSTRAINT generic_doc_pk PRIMARY KEY (id),
 
     CONSTRAINT gen_doc_cid_rev UNIQUE (concept_id, revision_id)
-    USING INDEX (create unique index generic_cri
-    ON cmr_generic_documents (concept_id, revision_id)))"))
+    )"))
 
 (defn- create-generic-document-indices
   []

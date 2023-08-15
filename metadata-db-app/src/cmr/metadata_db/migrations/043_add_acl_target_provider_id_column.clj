@@ -4,7 +4,7 @@
 (defn up
   []
   (h/sql
-    "ALTER TABLE cmr_acls ADD target_provider_id VARCHAR(10)"))
+    "ALTER TABLE cmr_acls ADD COLUMN target_provider_id VARCHAR(10)"))
 
 (defn down
   []

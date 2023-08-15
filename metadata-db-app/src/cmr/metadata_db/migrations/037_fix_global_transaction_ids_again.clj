@@ -15,8 +15,7 @@
   (h/sql (format "CREATE SEQUENCE METADATA_DB.MIGRATION_TRANSACTION_ID_SEQ
                            START WITH %s
                            INCREMENT BY 1
-                           CACHE 400
-                           ORDER"
+                           CACHE 400"
                  ;; This is the only important difference from 036:
                  (inc v/MAX_REVISION_ID)))
 
@@ -25,7 +24,7 @@
   (doseq [table (h/get-concept-tablenames :collection :service :tag :tag-association :access-group)
           row (h/query (format "SELECT id FROM %s ORDER BY concept_id ASC, revision_id ASC" table))]
     (h/sql (format "UPDATE %s
-                    SET transaction_id = METADATA_DB.MIGRATION_TRANSACTION_ID_SEQ.NEXTVAL
+                    SET transaction_id = nextval('METADATA_DB.MIGRATION_TRANSACTION_ID_SEQ')
                     WHERE id = %s"
                    table
                    (:id row)))))

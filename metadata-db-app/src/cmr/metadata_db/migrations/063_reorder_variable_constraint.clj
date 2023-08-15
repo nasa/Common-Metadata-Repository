@@ -11,9 +11,7 @@
   []
   (h/sql (str "ALTER TABLE METADATA_DB.cmr_variables "
               "ADD CONSTRAINT variables_con_n_r_p "
-              "UNIQUE (provider_id, native_id, revision_id) "
-              "USING INDEX (CREATE UNIQUE INDEX variables_idx_n_r_p "
-              "ON cmr_variables (provider_id, native_id, revision_id))")))
+              "UNIQUE (provider_id, native_id, revision_id) ")))
 
 (defn- re-add-old-constraint
   []

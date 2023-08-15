@@ -20,6 +20,7 @@
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [compojure "1.6.1"]
+                 [nasa-cmr/cmr-aurora-postgres-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-indexer-app "0.1.0-SNAPSHOT"]

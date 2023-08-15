@@ -6,7 +6,8 @@
   "Migrates the database up to version 58."
   []
   (println "cmr.metadata-db.migrations.058-update-variable-name-length up...")
-  (h/sql "alter table METADATA_DB.cmr_variables modify variable_name VARCHAR(80) NOT NULL"))
+  (h/sql "alter table METADATA_DB.cmr_variables alter column variable_name type VARCHAR(80)")
+  (h/sql "alter table METADATA_DB.cmr_variables alter column variable_name set NOT NULL"))
 
 
 (defn down

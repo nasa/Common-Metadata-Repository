@@ -1,5 +1,5 @@
 (ns cmr.metadata-db.migrations.066-add-default-to-created-at-in-granule-tables
-  "Add default value SYSTIMESTAMP to created_at column in granule tables."
+  "Add default value CURRENT_TIMESTAMP to created_at column in granule tables."
   (:require
    [config.mdb-migrate-helper :as h]))
 
@@ -7,7 +7,7 @@
   []
   (doseq [t (h/get-granule-tablenames)]
     (h/sql 
-      (format "alter table %s modify created_at DEFAULT SYSTIMESTAMP" 
+      (format "alter table %s alter column created_at set DEFAULT CURRENT_TIMESTAMP"
               t))))
 
 (defn- drop-default-from-created-at

@@ -7,16 +7,16 @@
   []
   (println "cmr.metadata-db.migrations.007-create-sync-work-table up...")
   (h/sql "CREATE TABLE METADATA_DB.sync_work (
-         id NUMBER NOT NULL,
+         id INTEGER NOT NULL,
          concept_id VARCHAR(255) NOT NULL,
-         revision_id NUMBER,
+         revision_id INTEGER,
          primary key (id),
          constraint unique_concept_id unique (concept_id))")
 
   (h/sql "CREATE TABLE METADATA_DB.sync_delete_work (
          concept_id VARCHAR(255) NOT NULL,
-         revision_id NUMBER,
-         deleted NUMBER)"))
+         revision_id INTEGER,
+         deleted INTEGER)"))
 
 (defn down
   []

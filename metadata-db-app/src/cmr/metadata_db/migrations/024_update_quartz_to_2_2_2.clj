@@ -7,7 +7,7 @@
   []
   (println "cmr.metadata-db.migrations.024-update-quartz-to-2-2-2 up...")
   (j/db-do-commands (config/db)
-                    "ALTER TABLE QRTZ_FIRED_TRIGGERS ADD SCHED_TIME NUMBER(13) DEFAULT 0 NOT NULL"))
+                    "ALTER TABLE QRTZ_FIRED_TRIGGERS ADD COLUMN SCHED_TIME BIGINT DEFAULT 0 NOT NULL"))
 
 (defn down
   "Migrates the database down from version 24."

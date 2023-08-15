@@ -10,7 +10,7 @@
   ;; So we just wipe out the existing variable associations and start over
   (h/sql "TRUNCATE TABLE METADATA_DB.cmr_variable_associations")
   (h/sql "ALTER TABLE METADATA_DB.cmr_variable_associations DROP COLUMN variable_name")
-  (h/sql "ALTER TABLE METADATA_DB.cmr_variable_associations ADD variable_concept_id VARCHAR(255) NOT NULL"))
+  (h/sql "ALTER TABLE METADATA_DB.cmr_variable_associations ADD COLUMN variable_concept_id VARCHAR(255) NOT NULL"))
 
 (defn down
   "Migrates the database down from version 61."

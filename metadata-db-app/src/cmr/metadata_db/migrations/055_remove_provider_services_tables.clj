@@ -30,18 +30,18 @@
   [provider]
   (format
    "CREATE TABLE %s_SERVICES (
-    id NUMBER,
+    id INTEGER,
     concept_id VARCHAR(255) NOT NULL,
     native_id VARCHAR(1030) NOT NULL,
-    metadata BLOB NOT NULL,
+    metadata BYTEA NOT NULL,
     format VARCHAR(255) NOT NULL,
     revision_id INTEGER DEFAULT 1 NOT NULL,
-    revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+    revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted INTEGER DEFAULT 0 NOT NULL,
     entry_id VARCHAR(255) NOT NULL,
     entry_title VARCHAR(1030) NOT NULL,
     delete_time TIMESTAMP WITH TIME ZONE,
-    user_id VARCHAR(30) NULL,
+    user_id VARCHAR(30),
     provider_id VARCHAR(255) NOT NULL,
     CONSTRAINT %s_services_pk PRIMARY KEY (id),
     CONSTRAINT %s_services_con_rev

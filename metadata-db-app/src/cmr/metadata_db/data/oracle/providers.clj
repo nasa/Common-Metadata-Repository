@@ -10,7 +10,7 @@
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc
                                         delete as]])
   (:import
-   (cmr.oracle.connection OracleStore)))
+   (cmr.aurora.connection PostgresStore)))
 
 (defn dbresult->provider
   "Converts a map result from the database to a provider map"
@@ -144,7 +144,7 @@
    :delete-provider delete-provider
    :reset-providers reset-providers})
 
-(extend OracleStore
+(extend PostgresStore
         p/ProvidersStore
         behaviour)
 

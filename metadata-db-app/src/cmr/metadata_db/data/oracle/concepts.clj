@@ -15,7 +15,7 @@
    [cmr.oracle.connection :as oracle]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import
-   (cmr.oracle.connection OracleStore)))
+   (cmr.aurora.connection PostgresStore)))
 
 (defn safe-max
   "Return the maximimum of two numbers, treating nil as the lowest possible number"
@@ -672,7 +672,7 @@
    :get-tombstoned-concept-revisions get-tombstoned-concept-revisions
    :get-old-concept-revisions get-old-concept-revisions})
 
-(extend OracleStore
+(extend PostgresStore
         concepts/ConceptsStore
         behaviour)
 

@@ -7,7 +7,7 @@
   []
   (println "cmr.metadata-db.migrations.046-add-primary-key-to-providers up...")
   (h/sql "alter table providers drop constraint unique_provider_id")
-  (h/sql "alter table providers add constraint providers_pk primary key (provider_id)"))
+  (h/sql "alter table providers add primary key (provider_id)"))
 
 (defn down
   "Migrates the database down from version 46."

@@ -7,6 +7,8 @@
    [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as aurora]
    [drift.builder :refer [incremental-migration-number-generator]])
   (:import
    (java.sql SQLException)))
@@ -18,15 +20,16 @@
   []
   (when-not @db-atom
     (reset! db-atom (lifecycle/start
-                      (oracle/create-db (mdb-config/db-spec "metadata-db-migrations")) nil)))
+                      (aurora/create-db (mdb-config/db-spec "metadata-db-migrations")) nil)))
   @db-atom)
 
 (defn- maybe-create-schema-table
   "Creates the schema table if it doesn't already exist."
   [args]
+  (println "Creating schema table if it doesn't already exist.")
   ;; wrap in a try-catch since there is not easy way to check for the existence of the DB
   (try
-    (j/db-do-commands (db) "CREATE TABLE METADATA_DB.schema_version (version INTEGER NOT NULL, created_at TIMESTAMP(9) WITH TIME ZONE DEFAULT sysdate NOT NULL)")
+    (j/db-do-commands (db) "CREATE TABLE METADATA_DB.schema_version (version INTEGER NOT NULL, created_at TIMESTAMP(9) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL)")
     (catch SQLException e
       ;; 17081 is the error code we get if the table exists and sometimes we also get
       ;; error message for Universal Connection Pool already exists in the Universal Connection Pool Manager

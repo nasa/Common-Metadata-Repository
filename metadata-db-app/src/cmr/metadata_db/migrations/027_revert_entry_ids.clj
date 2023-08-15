@@ -9,7 +9,7 @@
   (println "cmr.metadata-db.migrations.027-revert-entry-ids up...")
   (doseq [t (h/get-collection-tablenames)]
     (println (str "Table: " t))
-    (h/sql (format "update %s set entry_id = short_name || '_' || version_id where version_id != 'Not provided'" t))))
+    (h/sql (format "update %s set entry_id = concat(short_name, '_', version_id) where version_id != 'Not provided'" t))))
 
 
 (defn down

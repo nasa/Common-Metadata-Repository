@@ -7,7 +7,7 @@
   []
   (println "cmr.metadata-db.migrations.088-add-meta-to-provider up...")
   (try
-    (mh/sql "alter table METADATA_DB.PROVIDERS ADD metadata BLOB")
+    (mh/sql "alter table METADATA_DB.PROVIDERS ADD COLUMN metadata BYTEA")
     (catch java.sql.BatchUpdateException e
       ;; If the table already has this column we can ignore the error. This could
       ;; happen if a migration was moved down, then back up.

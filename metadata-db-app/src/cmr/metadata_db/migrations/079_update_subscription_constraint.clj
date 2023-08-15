@@ -7,8 +7,7 @@
   []
   (println "cmr.metadata-db.migrations.079-update-subscription-constraint up...")
   (h/sql "ALTER TABLE cmr_subscriptions DROP CONSTRAINT subscriptions_con_npr")
-  (h/sql "ALTER TABLE cmr_subscriptions ADD CONSTRAINT subscriptions_nid_rid UNIQUE (native_id, revision_id)
-  USING INDEX (create unique index subscriptions_unri ON cmr_subscriptions (native_id, revision_id))"))
+  (h/sql "ALTER TABLE cmr_subscriptions ADD CONSTRAINT subscriptions_nid_rid UNIQUE (native_id, revision_id)"))
 
 (defn down
   "Migrates the database down from version 79."

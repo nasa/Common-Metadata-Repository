@@ -4,17 +4,24 @@
             [drift.execute :as drift]
             [cmr.oracle.user :as o]
             [cmr.oracle.config :as oracle-config]
+            [cmr.aurora.config :as aurora-config]
+            [cmr.aurora.user :as a]
             [cmr.ingest.config :as ingest-config]
             [config.ingest-migrate-config :as mc]
             [cmr.oracle.sql-utils :as su])
   (:gen-class))
 
-(defn create-user
+#_(defn create-user
   []
-  (let [db (oracle-config/sys-dba-db-spec)]
+  (let [db (aurora-config/sys-dba-db-spec)]
     (su/ignore-already-exists-errors
       "CMR_INGEST user"
       (o/create-user db (ingest-config/ingest-username) (ingest-config/ingest-password)))))
+
+(defn create-user
+  []
+  (let [db (aurora-config/sys-dba-db-spec)]
+    (a/create-user db (ingest-config/ingest-username) (ingest-config/ingest-password))))
 
 (defn drop-user
   []

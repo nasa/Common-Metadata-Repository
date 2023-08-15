@@ -14,10 +14,10 @@
     (h/sql (format "update %s set version_id = 'Not provided' where version_id is null" t))
 
     ;; Version id does not allow null values anymore
-    (h/sql (format "alter table %s modify (VERSION_ID not null)" t))
+    (h/sql (format "ALTER TABLE %s ALTER COLUMN VERSION_ID SET NOT NULL" t))
 
     (h/sql (format "update %s set entry_id = short_name where version_id = 'Not provided'" t))
-    (h/sql (format "update %s set entry_id = short_name || '_' || version_id where version_id != 'Not provided'" t))))
+    (h/sql (format "update %s set entry_id = concat(short_name, '_', version_id) where version_id != 'Not provided'" t))))
 
 
 (defn down

@@ -6,13 +6,13 @@
 
 (def create-service-sql
   "CREATE TABLE small_prov_services (
-    id NUMBER,
+    id INTEGER,
     concept_id VARCHAR(255) NOT NULL,
     native_id VARCHAR(1030) NOT NULL,
-    metadata BLOB NOT NULL,
+    metadata BYTEA NOT NULL,
     format VARCHAR(255) NOT NULL,
     revision_id INTEGER DEFAULT 1 NOT NULL,
-    revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+    revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
     deleted INTEGER DEFAULT 0 NOT NULL,
     entry_id VARCHAR(255) NOT NULL,
     entry_title VARCHAR(1030) NOT NULL,
@@ -21,13 +21,10 @@
     provider_id VARCHAR(255) NOT NULL,
     CONSTRAINT small_prov_services_pk PRIMARY KEY (id),
     CONSTRAINT small_prov_services_con_rev
-      UNIQUE (provider_id, native_id, revision_id)
-      USING INDEX (create unique index small_prov_services_ucr_i
-                          ON small_prov_services(provider_id, native_id, revision_id)),
+      UNIQUE (provider_id, native_id, revision_id),
     CONSTRAINT small_prov_services_cid_rev
       UNIQUE (concept_id, revision_id)
-      USING INDEX (create unique index small_prov_services_cri
-                          ON small_prov_services(concept_id, revision_id)))")
+   )")
 
 (def create-serv-seq-sql "CREATE SEQUENCE small_prov_services_seq")
 

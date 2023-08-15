@@ -28,7 +28,7 @@
   "Migrates the database up to version 45."
   []
   (println "cmr.metadata-db.migrations.045-insert-initial-humanizer-concept up...")
-  (h/sql "DELETE cmr_humanizers")
+  (h/sql "DELETE FROM cmr_humanizers")
   (insert-humanizer))
 
 (defn down

@@ -5,6 +5,7 @@
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.oracle.connection :as oracle]
+   [cmr.aurora.connection :as aurora]
    [drift.builder :as drift-builder])
   (:import
    (java.sql SQLException)))
@@ -16,7 +17,7 @@
   []
   (when-not @bootstrap-db-atom
     (reset! bootstrap-db-atom (lifecycle/start
-                                (oracle/create-db (bootstrap-config/db-spec "bootstrap-migrations"))
+                                (aurora/create-db (bootstrap-config/db-spec "bootstrap-migrations"))
                                 nil)))
   @bootstrap-db-atom)
 
@@ -25,7 +26,7 @@
   [args]
   ;; wrap in a try-catch since there is not easy way to check for the existence of the DB
   (try
-    (j/db-do-commands (db) "CREATE TABLE CMR_BOOTSTRAP.schema_version (version INTEGER NOT NULL, created_at TIMESTAMP(9) WITH TIME ZONE DEFAULT sysdate NOT NULL)")
+    (j/db-do-commands (db) "CREATE TABLE CMR_BOOTSTRAP.schema_version (version INTEGER NOT NULL, created_at TIMESTAMP(9) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL)")
     (catch SQLException e
       ;; 17081 is the error code we get if the table exists and sometimes we also get
       ;; error message for Universal Connection Pool already exists in the Universal Connection Pool Manager

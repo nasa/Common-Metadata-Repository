@@ -17,12 +17,13 @@
                               revision_id INTEGER DEFAULT 0 NOT NULL,
                               deleted INTEGER DEFAULT 0 NOT NULL,
                               CONSTRAINT unique_concept_revision
-                              UNIQUE (concept_type, provider_id, native_id, revision_id)
-                              USING INDEX (create unique index ucr_index on concept(concept_type, provider_id, native_id, revision_id)),
+                              UNIQUE (concept_type, provider_id, native_id, revision_id),
                               CONSTRAINT unique_concept_id_revision
-                              UNIQUE (concept_id, revision_id)
-                              USING INDEX (create unique index cid_rev_indx on concept(concept_id, revision_id)))")
-  (h/sql "CREATE INDEX concept_id_indx ON METADATA_DB.concept(concept_id)"))
+                              UNIQUE (concept_id, revision_id))")
+  (h/sql "CREATE UNIQUE INDEX ucr_index
+                              ON METADATA_DB.concept (concept_type, provider_id, native_id, revision_id)")
+  (h/sql "CREATE UNIQUE INDEX cid_rev_indx
+                              ON METADATA_DB.concept (concept_id, revision_id)"))
 
 (defn down
   "Migrates the database down from version 1."

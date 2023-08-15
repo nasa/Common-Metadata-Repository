@@ -4,28 +4,26 @@
             [config.mdb-migrate-helper :as h]))
 
 (def ^:private tag-assocs-column-sql
-  "id NUMBER,
+  "id INTEGER,
   concept_id VARCHAR(255) NOT NULL,
   native_id VARCHAR(1500) NOT NULL,
-  metadata BLOB NOT NULL,
+  metadata BYTEA NOT NULL,
   format VARCHAR(255) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
   associated_concept_id VARCHAR(255) NOT NULL,
   associated_revision_id INTEGER NOT NULL,
-  revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+  revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   deleted INTEGER DEFAULT 0 NOT NULL,
   user_id VARCHAR(30),
-  transaction_id NUMBER DEFAULT 0 NOT NULL")
+  transaction_id INTEGER DEFAULT 0 NOT NULL")
 
 (def ^:private tag-assocs-constraint-sql
-  (str "CONSTRAINT tag_assocs_pk PRIMARY KEY (id), "
+  (str  "CONSTRAINT tag_assocs_pk PRIMARY KEY (id), "
         ;; Unique constraint on native id and revision id
-        "CONSTRAINT tag_assocs_con_rev UNIQUE (native_id, revision_id)
-         USING INDEX (create unique index tag_assocs_ucr_i ON cmr_tag_associations (native_id, revision_id)), "
+        "CONSTRAINT tag_assocs_con_rev UNIQUE (native_id, revision_id), "
 
         ;; Unique constraint on concept id and revision id
-        "CONSTRAINT tag_assocs_cid_rev UNIQUE (concept_id, revision_id)
-         USING INDEX (create unique index tag_assocs_cri ON cmr_tag_associations (concept_id, revision_id))"))
+        "CONSTRAINT tag_assocs_cid_rev UNIQUE (concept_id, revision_id)"))
 
 (defn- create-tag-associations-table
   []

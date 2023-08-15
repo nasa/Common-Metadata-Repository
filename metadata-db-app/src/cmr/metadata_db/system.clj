@@ -21,6 +21,8 @@
    [cmr.metadata-db.services.jobs :as mdb-jobs]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as aurora]
    [cmr.transmit.config :as transmit-config]))
 
 ;; Design based on http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts
@@ -42,7 +44,7 @@
   ([]
    (create-system "metadata-db"))
   ([connection-pool-name]
-   (let [sys {:db (assoc (oracle/create-db (config/db-spec connection-pool-name))
+   (let [sys {:db (assoc (aurora/create-db (config/db-spec connection-pool-name))
                          :result-set-fetch-size
                          (config/result-set-fetch-size))
               :log (log/create-logger-with-log-level (log-level))

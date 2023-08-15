@@ -3,14 +3,14 @@
    [config.mdb-migrate-helper :as h]))
 
 (def ^:private tools-column-sql
-  "id NUMBER,
+  "id INTEGER,
   concept_id VARCHAR(255) NOT NULL,
   native_id VARCHAR(1030) NOT NULL,
-  metadata BLOB NOT NULL,
+  metadata BYTEA NOT NULL,
   format VARCHAR(255) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
-  revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+  revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   deleted INTEGER DEFAULT 0 NOT NULL,
   user_id VARCHAR(30),
   tool_name VARCHAR(80),
@@ -20,12 +20,10 @@
 (def ^:private tools-constraint-sql
   (str "CONSTRAINT tools_pk PRIMARY KEY (id), "
        ;; Unique constraint on native id and revision id
-       "CONSTRAINT tools_con_pnr UNIQUE (provider_id, native_id, revision_id)
-       USING INDEX (create unique index tools_idx_pnr ON cmr_tools (provider_id, native_id, revision_id)), "
+       "CONSTRAINT tools_con_pnr UNIQUE (provider_id, native_id, revision_id), "
 
        ;; Unique constraint on concept id and revision id
-       "CONSTRAINT tools_con_cr UNIQUE (concept_id, revision_id)
-       USING INDEX (create unique index tools_idx_cr ON cmr_tools (concept_id, revision_id))"))
+       "CONSTRAINT tools_con_cr UNIQUE (concept_id, revision_id)"))
 
 (defn- create-tools-table
   []

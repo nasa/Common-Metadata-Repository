@@ -5,6 +5,8 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as conn]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as pg-conn]
    [cmr.message-queue.config :as rmq-conf]))
 
 (defconfig metadata-db-username
@@ -21,15 +23,14 @@
   {:default "DEV_52_CATALOG_REST"})
 
 (defn db-spec
-  "Returns a db spec populated with config information that can be used to connect to oracle"
+  "Returns a db spec populated with config information that can be used to connect to db as metadata user"
   [connection-pool-name]
-  (conn/db-spec
+  (pg-conn/db-spec
    connection-pool-name
-   (oracle-config/db-url)
-   (oracle-config/db-fcf-enabled)
-   (oracle-config/db-ons-config)
+   (aurora-config/db-url-primary)
    (metadata-db-username)
-   (metadata-db-password)))
+   (metadata-db-password)
+   (aurora-config/aurora-db-name)))
 
 (defconfig parallel-chunk-size
   "Gets the number of concepts that should be processed in each thread of get-concepts."

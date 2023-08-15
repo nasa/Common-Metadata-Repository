@@ -10,7 +10,7 @@
   (doseq [table (h/get-concept-tablenames :collection :granule :service :tag :access-group)]
     (h/sql
      (format "LOCK TABLE %s IN EXCLUSIVE MODE" table)
-     (format "ALTER TABLE %s ADD transaction_id INTEGER DEFAULT 0 NOT NULL" table))))
+     (format "ALTER TABLE %s ADD COLUMN transaction_id INTEGER DEFAULT 0 NOT NULL" table))))
 
 (defn down
   "Migrates the database down from version 29."

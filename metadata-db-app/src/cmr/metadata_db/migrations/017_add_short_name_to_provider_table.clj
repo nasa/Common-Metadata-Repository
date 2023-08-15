@@ -8,9 +8,9 @@
   "Migrates the database up to version 17."
   []
   (println "cmr.metadata-db.migrations.017-add-short-name-to-provider-table up...")
-  (h/sql "alter table providers add short_name VARCHAR(128)")
+  (h/sql "alter table providers add column short_name VARCHAR(128)")
   (h/sql "update providers set short_name = provider_id")
-  (h/sql "alter table providers modify short_name VARCHAR(128) NOT NULL")
+  (h/sql "alter table providers alter column short_name SET NOT NULL")
   (h/sql "create unique index provider_sn_index on providers(short_name)"))
 
 (defn down

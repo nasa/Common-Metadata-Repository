@@ -7,7 +7,7 @@
   "Migrates the database up to version 23."
   []
   (println "cmr.metadata-db.migrations.023-remove-small-provider-services-user-id-not-null-constraint up...")
-  (h/sql "alter table small_prov_services modify user_id null"))
+  (h/sql "alter table small_prov_services alter column user_id drop not null"))
 
 (defn down
   "Migrates the database down from version 23."

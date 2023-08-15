@@ -7,7 +7,7 @@
   "Migrates the database up to version 20."
   []
   (println "cmr.metadata-db.migrations.020-rename-tags-table up...")
-  (h/sql "RENAME tags_seq TO cmr_tags_seq")
+  (h/sql "ALTER SEQUENCE tags_seq RENAME TO cmr_tags_seq")
   (h/sql "ALTER TABLE tags RENAME TO cmr_tags"))
 
 (defn down

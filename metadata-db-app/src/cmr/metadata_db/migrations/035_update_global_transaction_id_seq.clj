@@ -6,8 +6,9 @@
 (defn up
   []
   (println "cmr.metadata-db.migrations.035-update-global-transaction-id-seq up...")
-  (h/sql "ALTER SEQUENCE metadata_db.global_transaction_id_seq ORDER")
-  (h/sql "ALTER SEQUENCE metadata_db.migration_transaction_id_seq ORDER"))
+  ;; Sequences are already ordered by default in Postgres
+  #_(h/sql "ALTER SEQUENCE metadata_db.global_transaction_id_seq ORDER")
+  #_(h/sql "ALTER SEQUENCE metadata_db.migration_transaction_id_seq ORDER"))
 
 (defn down
   []

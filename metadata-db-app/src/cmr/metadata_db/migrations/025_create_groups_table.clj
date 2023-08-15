@@ -4,26 +4,24 @@
             [config.mdb-migrate-helper :as h]))
 
 (def ^:private groups-column-sql
-  "id NUMBER,
+  "id INTEGER,
   concept_id VARCHAR(255) NOT NULL,
   native_id VARCHAR(1030) NOT NULL,
   provider_id VARCHAR(10),
-  metadata BLOB NOT NULL,
+  metadata BYTEA NOT NULL,
   format VARCHAR(255) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
-  revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+  revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   deleted INTEGER DEFAULT 0 NOT NULL,
   user_id VARCHAR(30)")
 
 (def ^:private groups-constraint-sql
   (str "CONSTRAINT cmr_groups_pk PRIMARY KEY (id), "
        ;; Unique constraint on provider-id, native id and revision id
-       "CONSTRAINT cmr_groups_pnid_rev UNIQUE (provider_id, native_id, revision_id)
-       USING INDEX (create unique index cmr_groups_nr_i ON cmr_groups (provider_id, native_id, revision_id)), "
+       "CONSTRAINT cmr_groups_pnid_rev UNIQUE (provider_id, native_id, revision_id), "
 
        ;; Unique constraint on provider-id, concept id and revision id
-       "CONSTRAINT cmr_groups_pcid_rev UNIQUE (provider_id, concept_id, revision_id)
-       USING INDEX (create unique index cmr_groups_cr_i ON cmr_groups (provider_id, concept_id, revision_id))"))
+       "CONSTRAINT cmr_groups_pcid_rev UNIQUE (provider_id, concept_id, revision_id)"))
 
 (defn- create-groups-table
   []

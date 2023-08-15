@@ -14,7 +14,7 @@
   (h/sql "TRUNCATE TABLE METADATA_DB.cmr_variables")
   (h/sql "TRUNCATE TABLE METADATA_DB.cmr_variable_associations")
   (h/sql (str "ALTER TABLE METADATA_DB.cmr_variables "
-              "ADD provider_id VARCHAR(10) NOT NULL")))
+              "ADD COLUMN provider_id VARCHAR(10) NOT NULL")))
 
 (defn down
   "Migrates the database down from version 59 to 58."

@@ -13,8 +13,8 @@
   (println "cmr.metadata-db.migrations.034-generate-tag-associations-from-tags up...")
   (println (str "Changing cmr_tag_associations.associated_revision_id to allow NULL because "
                 "associated revision ids should be optional on tag associations."))
-  (h/sql "alter table cmr_tag_associations modify (associated_revision_id NULL)")
-  (h/sql "alter table cmr_tag_associations add tag_key varchar(1030) NOT NULL")
+  (h/sql "alter table cmr_tag_associations alter column associated_revision_id drop NOT NULL")
+  (h/sql "alter table cmr_tag_associations add column tag_key varchar(1030) NOT NULL")
   (h/sql "CREATE INDEX tag_assoc_tkri ON cmr_tag_associations (tag_key, revision_id)")
   (let [context {:system {:db (config/db)}}]
     (doseq [{:keys [concept_id revision_id]} (h/query "select concept_id, max(revision_id) as revision_id from cmr_tags group by concept_id")]

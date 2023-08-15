@@ -7,7 +7,7 @@
 (defn- add-created-at 
   []
   (doseq [t (h/get-collection-tablenames)]
-    (h/sql (format "alter table %s add created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL" t))
+    (h/sql (format "alter table %s add column created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL" t))
     (h/sql (format "CREATE INDEX %s_c_i ON %s(created_at)" t t))))
 
 (defn- revision-date-query-sql

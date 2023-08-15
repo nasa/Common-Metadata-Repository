@@ -4,7 +4,9 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.message-queue.config :as queue-config]
    [cmr.oracle.config :as oracle-config]
-   [cmr.oracle.connection :as conn]))
+   [cmr.oracle.connection :as conn]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as pg-conn]))
 
 (defconfig bootstrap-username
   "Defines the bootstrap database username."
@@ -15,15 +17,14 @@
   {})
 
 (defn db-spec
-  "Returns a db spec populated with config information that can be used to connect to oracle"
+  "Returns a db spec populated with config information that can be used to connect to postgres"
   [connection-pool-name]
-  (conn/db-spec
-    connection-pool-name
-    (oracle-config/db-url)
-    (oracle-config/db-fcf-enabled)
-    (oracle-config/db-ons-config)
-    (bootstrap-username)
-    (bootstrap-password)))
+  (pg-conn/db-spec
+   connection-pool-name
+   (aurora-config/db-url-primary)
+   (bootstrap-username)
+   (bootstrap-password)
+   (aurora-config/aurora-db-name)))
 
 (defconfig bootstrap-nrepl-port
   "Port to listen for nREPL connections"

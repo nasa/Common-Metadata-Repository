@@ -13,9 +13,7 @@
   []
   (h/sql (str "ALTER TABLE METADATA_DB.cmr_services "
               "ADD CONSTRAINT services_con_p_n_r "
-              "UNIQUE (native_id, revision_id, provider_id) "
-              "USING INDEX (CREATE UNIQUE INDEX services_idx_p_n_r "
-              "ON cmr_services (provider_id, native_id, revision_id))")))
+              "UNIQUE (native_id, revision_id, provider_id) ")))
 
 (defn- drop-new-constraint
   []
@@ -39,7 +37,7 @@
   ;; be null, so:
   (h/sql "TRUNCATE TABLE METADATA_DB.cmr_services")
   (h/sql (str "ALTER TABLE METADATA_DB.cmr_services "
-              "ADD provider_id VARCHAR(10) NOT NULL"))
+              "ADD COLUMN provider_id VARCHAR(10) NOT NULL"))
   (drop-old-constraint)
   (add-new-constraint))
 

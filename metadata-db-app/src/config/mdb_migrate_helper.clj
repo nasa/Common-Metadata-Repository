@@ -110,7 +110,7 @@
   [sequence-name]
   (let [result (j/query
                  (config/db)
-                 ["select count(*) as c from all_sequences where sequence_owner='METADATA_DB' and sequence_name=upper(?)" sequence-name])
+                 ["select count(*) as c from information_schema.sequences where sequence_schema='metadata_db' and UPPER(sequence_name) = UPPER(?)" sequence-name])
         seq-count (:c (first result))]
     (not= 0 (int seq-count))))
 
@@ -119,6 +119,6 @@
   []
   (let [result (j/query
                  (config/db)
-                 "select count(*) as c from all_sequences where sequence_name='CONCEPT_ID_SEQ'")
+                 "select count(*) as c from information_schema.sequences where sequence_name='CONCEPT_ID_SEQ'")
         seq-count (:c (first result))]
     (= 0 (int seq-count))))

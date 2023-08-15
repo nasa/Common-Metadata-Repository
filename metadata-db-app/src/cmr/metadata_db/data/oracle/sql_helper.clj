@@ -7,7 +7,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
-  (:import cmr.oracle.connection.OracleStore))
+  (:import cmr.aurora.connection.PostgresStore))
 
 (defn find-params->sql-clause
   "Converts a parameter map for finding concept types into a sql clause for inclusion in a query. The type

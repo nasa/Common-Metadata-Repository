@@ -14,7 +14,7 @@
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
   (:import
-   (cmr.oracle.connection OracleStore)))
+   (cmr.aurora.connection PostgresStore)))
 
 (def association-concept-type->generic-association
   "Mapping of various association concept types to columns needed for migration to CMR_ASSOCIATIONS table."
@@ -374,6 +374,6 @@
    :find-associations find-associations
    :find-latest-associations find-latest-associations})
 
-(extend OracleStore
+(extend PostgresStore
         c/ConceptSearch
         behaviour)

@@ -27,6 +27,7 @@
                                         "dev-system"]}}}
   :modules {:dirs [;; Libraries and Resources
                    "acl-lib"
+                   "aurora-postgres-lib"
                    "common-app-lib"
                    "common-lib"
                    "elastic-utils-lib"

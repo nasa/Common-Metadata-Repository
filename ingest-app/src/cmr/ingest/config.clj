@@ -5,7 +5,9 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.message-queue.config :as queue-config]
    [cmr.oracle.config :as oracle-config]
-   [cmr.oracle.connection :as conn]))
+   [cmr.oracle.connection :as conn]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as pg-conn]))
 
 (defconfig progressive-update-enabled
   "Flag for whether or not collection progressive update is enabled."
@@ -78,13 +80,12 @@
 (defn db-spec
   "Returns a db spec populated with config information that can be used to connect to oracle"
   [connection-pool-name]
-  (conn/db-spec
-    connection-pool-name
-    (oracle-config/db-url)
-    (oracle-config/db-fcf-enabled)
-    (oracle-config/db-ons-config)
-    (ingest-username)
-    (ingest-password)))
+  (pg-conn/db-spec
+   connection-pool-name
+   (aurora-config/db-url-primary)
+   (ingest-username)
+   (ingest-password)
+   (aurora-config/aurora-db-name)))
 
 (defconfig ingest-queue-name
   "The queue containing provider events like 'index provider collections'."

@@ -6,17 +6,25 @@
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.sql-utils :as su]
    [cmr.oracle.user :as o]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.user :as a]
    [config.bootstrap-migrate-config :as mc]
    [drift.execute :as drift])
   (:gen-class))
 
-(defn create-user
+#_(defn create-user
   []
   (let [db (oracle-config/sys-dba-db-spec)]
     (su/ignore-already-exists-errors
       "CMR_BOOTSTRAP user"
       (o/create-user
         db (bootstrap-config/bootstrap-username) (bootstrap-config/bootstrap-password)))))
+
+(defn create-user
+  []
+  (let [db (aurora-config/sys-dba-db-spec)]
+    (a/create-user
+     db (bootstrap-config/bootstrap-username) (bootstrap-config/bootstrap-password))))
 
 (defn drop-user
   []

@@ -4,26 +4,24 @@
             [config.mdb-migrate-helper :as h]))
 
 (def ^:private acls-column-sql
-  "id NUMBER,
+  "id INTEGER,
   concept_id VARCHAR(255) NOT NULL,
   native_id VARCHAR(1030) NOT NULL,
   provider_id VARCHAR(10),
-  metadata BLOB NOT NULL,
+  metadata BYTEA NOT NULL,
   format VARCHAR(255) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
-  revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+  revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   deleted INTEGER DEFAULT 0 NOT NULL,
   user_id VARCHAR(30)")
 
 (def ^:private acls-constraint-sql
   (str "CONSTRAINT cmr_acls_pk PRIMARY KEY (id), "
        ;; Unique constraint on provider-id, native id and revision id
-       "CONSTRAINT cmr_acls_pnid_rev UNIQUE (provider_id, native_id, revision_id)
-       USING INDEX (create unique index cmr_acls_nr_i ON cmr_acls (provider_id, native_id, revision_id)), "
+       "CONSTRAINT cmr_acls_pnid_rev UNIQUE (provider_id, native_id, revision_id), "
 
        ;; Unique constraint on provider-id, concept id and revision id
-       "CONSTRAINT cmr_acls_pcid_rev UNIQUE (provider_id, concept_id, revision_id)
-       USING INDEX (create unique index cmr_acls_cr_i ON cmr_acls (provider_id, concept_id, revision_id))"))
+       "CONSTRAINT cmr_acls_pcid_rev UNIQUE (provider_id, concept_id, revision_id)"))
 
 (defn- create-acls-table
   []

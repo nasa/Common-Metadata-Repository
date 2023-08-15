@@ -12,23 +12,23 @@
     (j/db-do-commands trans-conn "CREATE TABLE CMR_INGEST.bulk_update_task_status_new (
                                   TASK_ID VARCHAR(255) NOT NULL,
                                   PROVIDER_ID  VARCHAR(10) NOT NULL,
-                                  REQUEST_JSON_BODY  BLOB NOT NULL,
+                                  REQUEST_JSON_BODY BYTEA NOT NULL,
                                   STATUS VARCHAR(20),
-                                  STATUS_MESSAGE   VARCHAR(255),
-                                  CREATED_AT TIMESTAMP(9) WITH TIME ZONE DEFAULT sysdate NOT NULL)")
+                                  STATUS_MESSAGE VARCHAR(255),
+                                  CREATED_AT TIMESTAMP(9) WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL)")
     (j/db-do-commands trans-conn "CREATE TABLE CMR_INGEST.bulk_update_coll_status_new (
                                   TASK_ID VARCHAR(255) NOT NULL,
                                   CONCEPT_ID VARCHAR(255) NOT NULL,
                                   STATUS VARCHAR(20),
-                                  STATUS_MESSAGE  VARCHAR(500),
+                                  STATUS_MESSAGE VARCHAR(500),
                                   ACTION_TAKEN INTEGER DEFAULT 0 NOT NULL)")
     (j/db-do-commands trans-conn "INSERT INTO CMR_INGEST.bulk_update_task_status_new(
                                   TASK_ID, PROVIDER_ID, REQUEST_JSON_BODY, STATUS, STATUS_MESSAGE)
-                                  SELECT to_char(TASK_ID), PROVIDER_ID, REQUEST_JSON_BODY, STATUS, STATUS_MESSAGE
+                                  SELECT CAST(TASK_ID AS TEXT), PROVIDER_ID, REQUEST_JSON_BODY, STATUS, STATUS_MESSAGE
                                   FROM CMR_INGEST.bulk_update_task_status")
     (j/db-do-commands trans-conn "INSERT INTO CMR_INGEST.bulk_update_coll_status_new(
                                   TASK_ID, CONCEPT_ID, STATUS, STATUS_MESSAGE)
-                                  SELECT to_char(TASK_ID), CONCEPT_ID, STATUS, STATUS_MESSAGE
+                                  SELECT CAST(TASK_ID AS TEXT), CONCEPT_ID, STATUS, STATUS_MESSAGE
                                   FROM CMR_INGEST.bulk_update_coll_status")
     (j/db-do-commands trans-conn "DROP TABLE CMR_INGEST.bulk_update_coll_status")
     (j/db-do-commands trans-conn "DROP TABLE CMR_INGEST.bulk_update_task_status")
@@ -55,7 +55,7 @@
     (j/db-do-commands trans-conn "CREATE TABLE CMR_INGEST.bulk_update_task_status_old (
                                   TASK_ID NUMBER NOT NULL,
                                   PROVIDER_ID  VARCHAR(10) NOT NULL,
-                                  REQUEST_JSON_BODY  BLOB NOT NULL,
+                                  REQUEST_JSON_BODY BYTEA NOT NULL,
                                   STATUS VARCHAR(20),
                                   STATUS_MESSAGE   VARCHAR(255))")
     (j/db-do-commands trans-conn "CREATE TABLE CMR_INGEST.bulk_update_coll_status_old (

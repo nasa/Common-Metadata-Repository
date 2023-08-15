@@ -3,13 +3,13 @@
    [config.mdb-migrate-helper :as h]))
 
 (def ^:private subscriptions-column-sql-069
-  "id NUMBER,
+  "id INTEGER,
   concept_id VARCHAR(255) NOT NULL,
   native_id VARCHAR(1030) NOT NULL,
-  metadata BLOB NOT NULL, 
-  format VARCHAR(255) NOT NULL, 
+  metadata BYTEA NOT NULL,
+  format VARCHAR(255) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
-  revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+  revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   deleted INTEGER DEFAULT 0 NOT NULL,
   description VARCHAR(255) NOT NULL,
   user_id VARCHAR(30) NOT NULL,
@@ -38,14 +38,14 @@
 
 
 (def ^:private subscriptions-column-sql
-  "id NUMBER,
+  "id INTEGER,
   concept_id VARCHAR(255) NOT NULL,
   native_id VARCHAR(1030) NOT NULL,
-  metadata BLOB NOT NULL,
+  metadata BYTEA NOT NULL,
   format VARCHAR(255) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
-  revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+  revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   deleted INTEGER DEFAULT 0 NOT NULL,
   user_id VARCHAR(30),
   provider_id VARCHAR(10) NOT NULL,
@@ -57,14 +57,11 @@
 
 (def ^:private subscriptions-constraint-sql
   (str "CONSTRAINT subscriptions_pk PRIMARY KEY (id), "
-
        ;; Unique constraint on native id, revision id and provider id
-       "CONSTRAINT subscriptions_con_npr UNIQUE (native_id, revision_id, provider_id)
-       USING INDEX (create unique index subscriptions_idx_npr ON cmr_subscriptions (native_id, revision_id, provider_id)), "
+       "CONSTRAINT subscriptions_con_npr UNIQUE (native_id, revision_id, provider_id), "
 
        ;; Unique constraint on concept id and revision id
-       "CONSTRAINT subscriptions_con_cr UNIQUE (concept_id, revision_id)
-       USING INDEX (create unique index subscriptions_idx_cr ON cmr_subscriptions (concept_id, revision_id))"))
+       "CONSTRAINT subscriptions_con_cr UNIQUE (concept_id, revision_id)"))
 
 (defn- create-subscriptions-table
   []

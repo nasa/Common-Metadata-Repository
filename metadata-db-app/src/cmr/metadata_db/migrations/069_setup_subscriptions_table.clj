@@ -4,13 +4,13 @@
             [config.mdb-migrate-helper :as h]))
 
 (def ^:private subscriptions-column-sql
-  "id NUMBER,
+  "id INTEGER,
   concept_id VARCHAR(255) NOT NULL,
   native_id VARCHAR(1030) NOT NULL,
-  metadata BLOB NOT NULL,
+  metadata BYTEA NOT NULL,
   format VARCHAR(255) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
-  revision_date TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL,
+  revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
   deleted INTEGER DEFAULT 0 NOT NULL,
   description VARCHAR(255) NOT NULL,
   user_id VARCHAR(30) NOT NULL,
@@ -22,12 +22,10 @@
   (str "CONSTRAINT subscriptions_pk PRIMARY KEY (id), "
 
        ;; Unique constraint on native id and revision id
-       "CONSTRAINT subscriptions_nid_rid UNIQUE (native_id, revision_id)
-       USING INDEX (create unique index subscriptions_unri ON cmr_subscriptions (native_id, revision_id)), "
+       "CONSTRAINT subscriptions_nid_rid UNIQUE (native_id, revision_id), "
 
        ;; Unique constraint on concept id and revision id
-       "CONSTRAINT subscriptions_cid_rid UNIQUE (concept_id, revision_id)
-       USING INDEX (create unique index subscriptions_ucri ON cmr_subscriptions (concept_id, revision_id))"))
+       "CONSTRAINT subscriptions_cid_rid UNIQUE (concept_id, revision_id)"))
 
 (defn- create-subscriptions-table
   []

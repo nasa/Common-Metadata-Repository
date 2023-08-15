@@ -18,7 +18,7 @@
   ;; We're storing the provider acl hash as a compressed value.
   (drop-provider-acl-hash-table)
   (j/db-do-commands (config/db) "CREATE TABLE CMR_INGEST.provider_acl_hash (
-                                acl_hashes BLOB NOT NULL)"))
+                                acl_hashes BYTEA NOT NULL)"))
 
 (defn down
   "Migrates the database down from version 3."
@@ -26,4 +26,4 @@
   (println "cmr.ingest.migrations.003-update-provider-acl-hash-table down...")
   (drop-provider-acl-hash-table)
   (j/db-do-commands (config/db) "CREATE TABLE CMR_INGEST.provider_acl_hash (
-                                acl_hashes VARCHAR2(2000) NOT NULL)"))
+                                acl_hashes VARCHAR(2000) NOT NULL)"))
