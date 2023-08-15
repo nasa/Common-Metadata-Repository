@@ -215,7 +215,7 @@
   {:default false
    :type Boolean})
 
-(defconfig cmr-graphql-endpoint
+(defconfig graphql-endpoint
   "The endpoint for the cmr-graphql API"
   {:default "https://graphql.earthdata.nasa.gov/api"
    :type String})

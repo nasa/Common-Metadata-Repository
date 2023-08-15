@@ -248,7 +248,7 @@
         (when-let [resource (site-resource page)]
           (let [cmr-root (str public-protocol "://" (headers "host") relative-root-url)
                 site-example-provider (get site-provider-map (headers "host") "PROV1")
-                graphql-endpoint (cfg/cmr-graphql-endpoint)
+                graphql-endpoint (cfg/graphql-endpoint)
                 cmr-example-collection-id (str "C1234567-" site-example-provider)
                 doc-type (nth (re-find #"/(.*)/" (str page)) 1)
                 generic-doc-body (read-generic-markdown doc-type)
