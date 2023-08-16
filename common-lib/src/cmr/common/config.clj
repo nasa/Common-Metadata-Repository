@@ -215,6 +215,11 @@
   {:default false
    :type Boolean})
 
+(defconfig graphql-endpoint
+  "The endpoint for the cmr-graphql API"
+  {:default "https://graphql.earthdata.nasa.gov/api"
+   :type String})
+
 (defconfig approved-pipeline-documents
   "This is the feature toggle for the new document pipeline prototype, as well as serving as
    the base truth list of approved document types. For tests to process, grid is required,

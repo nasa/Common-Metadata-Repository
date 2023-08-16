@@ -2,8 +2,6 @@
   "The functions of this namespace are specifically responsible for returning
   ready-to-serve pages."
   (:require
-   [cheshire.core :as json]
-   [clj-http.client :as client]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.static :as static]
    [cmr.common.log :refer :all]
@@ -13,7 +11,7 @@
    [cmr.search.site.util :as util])
   (:gen-class))
 
-;; Contextual data that is used for static content in the absense of a system
+;; Contextual data that is used for static content in the absence of a system
 ;; context, e.g., when run from the command line.
 (defrecord StaticContext
   [;; the application which is being run with the context, e.g., :search
