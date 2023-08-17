@@ -516,7 +516,7 @@
           "$ref": "#/definitions/TrackType"
         }
       },
-      "oneOf": [{
+      "anyOf": [{
         "required": ["Geometry"]
       }, {
         "required": ["Orbit"]
@@ -713,7 +713,7 @@
           "minItems": 1
         }
       },
-      "required": ["Cycle", "Passes"]
+      "required": ["Cycle"]
     },
     "TrackPassTileType": {
       "type": "object",
