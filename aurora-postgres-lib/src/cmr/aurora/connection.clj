@@ -1,9 +1,10 @@
 (ns cmr.aurora.connection
   "Contains functions for interacting with the Aurora DB cluster."
   (:require
-   [clojure.java.io :as io]
+   [clojure.java.jdbc :as j]
    [clojure.string :as str]
    [clj-time.coerce :as cr]
+   [cmr.common.date-time-parser :as p]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug error info trace warn]]
    [cmr.common.util :as util]
@@ -96,6 +97,17 @@
 ;; Prototype Work
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+;; the following db connection pool method was from the prototype, it is an 
+;; alternative to the PostgresStore component/atom, not appropriate for production. 
+;; How to use it:
+;; (def pooled-pg-db (delay (aurora/make-prototype-pool (aurora/db-spec "connection pool name"))))
+;; (defn pg-db-connection [] @pooled-pg-db)        ;; this is what you pass to jdbc lib, e.g.:
+;; (jdbc/query (pg-db-connection) ["select * from some_table limit 10"])
+(defn make-prototype-pool
+  [spec]
+  (let [cpds (pool spec)]
+    {:datasource cpds}))
+
 (defn execute-query
   [pool sql-query]
   (with-open [conn (.getConnection pool)
@@ -104,34 +116,43 @@
     ;; return query result
     (.next res)))
 
-(defn save-concept
-  "Saves a concept to Aurora Postgres"
-  [concept]
-  (info "Made a call to aurora.connection/save-concept"))
+(defn create-temp-table
+  "Creates temporary work area used in get-concepts and force-delete-concepts-by-params functions. 
+   Call from within a transaction, note that Postgres deletes temporary tables at the end of a session"
+  [conn]
+  (info "Creating get_concepts_work_area temporary table")
+  (j/db-do-prepared conn "CREATE TEMP TABLE IF NOT EXISTS get_concepts_work_area
+                  (concept_id VARCHAR(255),
+                  revision_id INTEGER)
+                  ON COMMIT DELETE ROWS"))
 
-(defn get-concept
-  "Gets a concept from Aurora Postgres"
-  ([provider concept-type concept-id]
-   (info "Made a call to aurora.connection/get-concept"))
-  ([provider concept-type concept-id revision-id]
-   (info "Made a call to aurora.connection/get-concept with revision-id")))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PostgreSQL Timestamp Conversion Utils
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defn get-concepts
-  "Gets a group of concepts from Aurora Postgres"
-  [provider concept-type concept-id-revision-id-tuples]
-  (info "Made a call to aurora.connection/get-concepts"))
+(defmulti pg-timestamp->clj-time ;; TODO - add timezone adjusting logic if necessary
+  "Converts PostgreSQL timestamp types into clj-time. Must be called within
+  a with-db-transaction block with the connection"
+  (fn [db pt]
+    (type pt)))
 
-(defn get-concepts-small-table
-  "Gets a group of concepts from Aurora Postgres using provider-id, concept-id, revision-id tuples"
-  [concept-type provider-concept-revision-tuples]
-  (info "Made a call to aurora.connection/get-concepts-small-table"))
+(defmethod pg-timestamp->clj-time java.sql.Timestamp ;; this is the one that executes but code needs work
+  [db ^java.sql.Timestamp pt]
+  (let [cal (java.util.Calendar/getInstance)
+        ^java.util.TimeZone gmt-tz (java.util.TimeZone/getTimeZone "GMT")]
+    (.setTimeZone cal gmt-tz)
+    (cr/from-sql-time (.timestampValue pt cal))))
 
-(defn delete-concept
-  "Deletes a concept from Aurora Postgres"
-  [provider concept-type concept-id revision-id]
-  (info "Made a call to aurora.connection/delete-concept"))
+(defmethod pg-timestamp->clj-time org.postgresql.util.PGTimestamp ;; might execute ?
+  [db ^org.postgresql.util.PGTimestamp pt]
+  (println "GOT TIMESTAMP TYPE: org.postgresql.util.PGTimestamp")
+  (let [cal (java.util.Calendar/getInstance)
+        ^java.util.TimeZone gmt-tz (java.util.TimeZone/getTimeZone "GMT")]
+    (.setTimeZone cal gmt-tz)
+    (cr/from-sql-time (.timestampValue pt cal))))
 
-(defn delete-concepts
-  "Deletes multiple concepts from Aurora Postgres"
-  [provider concept-type concept-id-revision-id-tuples]
-  (info "Made a call to aurora.connection/delete-concepts"))
+(defn db-timestamp->str-time ;; fall through; lacking manual timezone adjustment
+  "Converts database timestamp instance into a string representation of the time. 
+   Must be called within a with-db-transaction block with the connection -- TODO"
+  [db ot]
+  (p/clj-time->date-time-str (cr/from-sql-time ot)))

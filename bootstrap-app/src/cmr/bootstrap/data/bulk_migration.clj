@@ -88,7 +88,7 @@
    (let [dataset-table (mu/catalog-rest-table system provider-id :collection)
          collection-table (mu/full-metadata-db-concept-table system provider-id :collection)
          stmt (format (str "INSERT INTO %s (id, concept_id, native_id, metadata, format, short_name, "
-                           "version_id, entry_title, delete_time, revision_date, entry_id) SELECT %s_seq.NEXTVAL,"
+                           "version_id, entry_title, delete_time, revision_date, entry_id) SELECT NEXTVAL('%s_seq'),"
                            "echo_collection_id, dataset_id, compressed_xml, xml_mime_type, short_name,"
                            "version_id, dataset_id, delete_time, ingest_updated_at,
                            (short_name || '_' || version_id)"
@@ -120,7 +120,7 @@
         granule-mdb-table (mu/full-metadata-db-concept-table system provider-id :granule)
         stmt (format (str "INSERT INTO %s (id, concept_id, native_id, parent_collection_id, "
                           "metadata, format, delete_time, revision_date, granule_ur) "
-                          "SELECT %s_seq.NEXTVAL, echo_granule_id, granule_ur, '%s', "
+                          "SELECT NEXTVAL('%s_seq'), echo_granule_id, granule_ur, '%s', "
                           "compressed_xml, xml_mime_type, delete_time, ingest_updated_at, "
                           "granule_ur "
                           "FROM %s WHERE dataset_record_id = %d and %s")

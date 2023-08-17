@@ -19,7 +19,7 @@
     format VARCHAR(255) NOT NULL,
     revision_id INTEGER DEFAULT 1 NOT NULL,
     revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-    deleted INTEGER DEFAULT 0 NOT NULL,
+    deleted BOOLEAN DEFAULT FALSE NOT NULL,
     short_name VARCHAR(85) NOT NULL,
     version_id VARCHAR(80),
     entry_id VARCHAR(255) NOT NULL,
@@ -43,7 +43,7 @@
      format VARCHAR(255) NOT NULL,
      revision_id INTEGER DEFAULT 1 NOT NULL,
      revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-     deleted INTEGER DEFAULT 0 NOT NULL,
+     deleted BOOLEAN DEFAULT FALSE NOT NULL,
      delete_time TIMESTAMP WITH TIME ZONE,
      granule_ur VARCHAR(250),
      provider_id VARCHAR(255) NOT NULL,
@@ -63,7 +63,7 @@
   "Migrates the database up to version 16."
   []
   (println "cmr.metadata-db.migrations.016-add-small-to-provider-table up...")
-  (h/sql "alter table providers add column small INTEGER DEFAULT 0 NOT NULL")
+  (h/sql "alter table providers add column small BOOLEAN DEFAULT FALSE NOT NULL")
   ;; Create the SMALL_PROV tables and sequence
   (h/sql create-collection-sql)
   (h/sql create-coll-seq-sql)

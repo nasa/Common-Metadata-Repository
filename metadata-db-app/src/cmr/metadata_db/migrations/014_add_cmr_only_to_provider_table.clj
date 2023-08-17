@@ -8,7 +8,7 @@
   "Migrates the database up to version 14."
   []
   (println "cmr.metadata-db.migrations.014-add-cmr-only-to-provider-table up...")
-  (h/sql "alter table providers add column cmr_only INTEGER DEFAULT 0 NOT NULL"))
+  (h/sql "alter table providers add column cmr_only BOOLEAN DEFAULT FALSE NOT NULL"))
 
 (defn down
   "Migrates the database down from version 14."

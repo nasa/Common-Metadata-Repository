@@ -15,7 +15,7 @@
                               metadata VARCHAR(4000) NOT NULL,
                               format VARCHAR(255) NOT NULL,
                               revision_id INTEGER DEFAULT 0 NOT NULL,
-                              deleted INTEGER DEFAULT 0 NOT NULL,
+                              deleted BOOLEAN DEFAULT FALSE NOT NULL,
                               CONSTRAINT unique_concept_revision
                               UNIQUE (concept_type, provider_id, native_id, revision_id),
                               CONSTRAINT unique_concept_id_revision

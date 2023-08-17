@@ -6,7 +6,8 @@
    [cmr.metadata-db.data.concepts :as concepts]
    [cmr.metadata-db.data.oracle.concepts :as c]
    [cmr.metadata-db.data.util :as data-util]
-   [cmr.oracle.connection :as oracle]))
+   [cmr.oracle.connection :as oracle]
+   [cmr.aurora.connection :as aurora]))
 
 (defmethod c/db-result->concept-map :collection
   [concept-type db provider-id result]
@@ -20,7 +21,7 @@
           (assoc-in [:extra-fields :entry-title] (:entry_title result))
           (assoc-in [:extra-fields :delete-time]
                     (when (:delete_time result)
-                      (oracle/oracle-timestamp->str-time db (:delete_time result))))))
+                      (aurora/db-timestamp->str-time db (:delete_time result))))))
 
 (defmethod c/concept->insert-args [:collection false]
   [concept _]

@@ -5,7 +5,8 @@
    [cmr.common.util :as util]
    [cmr.metadata-db.data.oracle.concepts :as c]
    [cmr.metadata-db.data.util :as db-util]
-   [cmr.oracle.connection :as oracle]))
+   [cmr.oracle.connection :as oracle]
+   [cmr.aurora.connection :as aurora]))
 
 (doseq [doseq-concept-type (cc/get-generic-concept-types-array)]
   (defmethod c/db-result->concept-map doseq-concept-type
@@ -28,13 +29,13 @@
                                :native-id native_id
                                :concept-id concept_id
                                :provider-id provider_id
-                               :metadata (when metadata (util/gzip-blob->string metadata))
+                               :metadata (when metadata (util/gzip-bytes->string metadata))
                                :format (db-util/db-format->mime-type format)
                                :revision-id (int revision_id)
-                               :revision-date (oracle/oracle-timestamp->str-time db revision_date)
+                               :revision-date (aurora/db-timestamp->str-time db revision_date)
                                :created-at (when created_at
-                                             (oracle/oracle-timestamp->str-time db created_at))
-                               :deleted (not= (int deleted) 0)
+                                             (aurora/db-timestamp->str-time db created_at))
+                               :deleted deleted
                                :transaction-id transaction_id
                                :user-id user_id
                                :extra-fields {:document-name document_name

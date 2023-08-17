@@ -21,7 +21,7 @@
     (let [{:keys [id metadata deleted native_id]} result
           deleted (= 1 (long deleted))
           metadata (-> metadata
-                       (util/gzip-blob->string)
+                       (util/gzip-bytes->string)
                        (edn/read-string))
           ;; Some rows may already have a tag-key instead of namespace and value.
           {:keys [namespace value tag-key]} metadata

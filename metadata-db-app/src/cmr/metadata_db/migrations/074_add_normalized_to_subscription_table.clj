@@ -11,7 +11,7 @@
    migration version 1 will be used."
   [result]
   (-> (:metadata result)
-        util/gzip-blob->string
+        util/gzip-bytes->string
         (as-> % (json/parse-string %, true))
         :Query
         sub-common/normalize-parameters))

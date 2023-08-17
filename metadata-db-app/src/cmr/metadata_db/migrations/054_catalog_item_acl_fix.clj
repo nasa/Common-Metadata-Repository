@@ -29,7 +29,7 @@
     (let [{:keys [id metadata deleted]} result
           deleted (= 1 (long deleted))
           metadata (-> metadata
-                       (util/gzip-blob->string)
+                       (util/gzip-bytes->string)
                        (edn/read-string))
           {{:keys [collection-identifier collection-applicable granule-applicable provider-id]} :catalog-item-identity} metadata
           concept-ids (if (or collection-applicable granule-applicable)

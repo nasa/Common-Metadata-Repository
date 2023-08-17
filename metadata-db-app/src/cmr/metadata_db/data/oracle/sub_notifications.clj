@@ -4,7 +4,8 @@
    [clj-time.coerce :as cr]
    [clojure.java.jdbc :as j]
    [cmr.common.time-keeper :as t] ;; don't use clj-time
-   [cmr.oracle.connection :as oracle]))
+   [cmr.oracle.connection :as oracle]
+   [cmr.aurora.connection :as aurora]))
 
 ; A note about prepared statments, with j/query using ? and [] is the same as
 ; j/db-do-prepared. Do not use the string format function with %s as this could
@@ -16,12 +17,12 @@
   (let [{:keys [subscription_concept_id last_notified_at]} data]
     (j/with-db-transaction [conn db]
       {:subscription-concept-id subscription_concept_id
-       :last-notified-at (oracle/oracle-timestamp->str-time conn last_notified_at)})))
+       :last-notified-at (aurora/db-timestamp->str-time conn last_notified_at)})))
 
 (defn subscription-exists?
   "Check to see if the subscription exists"
   [db subscription-id]
-  (let [sql (str "SELECT concept_id FROM cmr_subscriptions WHERE concept_id = ? FETCH FIRST 1 ROWS ONLY")
+  (let [sql (str "SELECT concept_id FROM cmr_subscriptions WHERE concept_id = ? LIMIT 1")
         result (j/query db [sql subscription-id])]
     (pos? (count result))))
 
@@ -31,7 +32,7 @@
   (let [sql (str "SELECT subscription_concept_id "
                        "FROM cmr_sub_notifications "
                        "WHERE subscription_concept_id = ?"
-                       "FETCH FIRST 1 ROWS ONLY")
+                       "LIMIT 1")
         result (j/query db [sql subscription-id])]
    (= (count result) 1)))
 
@@ -49,7 +50,7 @@
   [db subscription-id]
   (let [sql (str "INSERT INTO cmr_sub_notifications"
                  "(id, subscription_concept_id)"
-                 "VALUES (cmr_sub_notifications_seq.nextval, ?)")]
+                 "VALUES (NEXTVAL('cmr_sub_notifications_seq'), ?)")]
   (j/db-do-prepared db sql [subscription-id])))
 
 (defn update-sub-notification

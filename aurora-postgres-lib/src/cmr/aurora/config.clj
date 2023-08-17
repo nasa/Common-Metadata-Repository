@@ -31,11 +31,7 @@
 
 (defconfig aurora-db-password
   "Aurora database master password"
-  {:default "admin"})
-
-(defconfig aurora-toggle
-  "Three-way toggle for Aurora functionality. 'aurora-off' uses only Oracle, 'aurora-on' uses both Oracle and Aurora, and 'aurora-only' uses only Aurora"
-  {:default "aurora-off"})
+  {:default "admin"}) ;; TODO -- remove me
 
 (defn sys-dba-db-spec
   []

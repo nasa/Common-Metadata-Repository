@@ -10,7 +10,8 @@
    [cmr.ingest.config :as config]
    [cmr.oracle.connection]
    [cmr.oracle.connection :as oracle]
-   [cmr.oracle.sql-utils :as su]))
+   [cmr.oracle.sql-utils :as su]
+   [cmr.aurora.connection :as aurora]))
 
 (defn- generate-failed-msg
   "Generate the FAILED part of the status message."
@@ -68,7 +69,7 @@
 
 ;; Extends the BulkUpdateStore to the oracle store so it will work with oracle.
 (extend-protocol BulkUpdateStore
-  cmr.oracle.connection.OracleStore
+  cmr.aurora.connection.PostgresStore
 
   (get-provider-bulk-update-status
    [db provider-id]
@@ -80,10 +81,10 @@
                                     (su/where `(= :provider-id ~provider-id))
                                     (su/order-by (su/desc `(+ :task-id 0)))))
           ;; Note: the column selected out of the database is created_at, instead of created-at.
-          statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
+          statuses (doall (map #(update % :created_at (partial aurora/db-timestamp->str-time conn))
                                (su/query conn stmt)))
           statuses (map util/map-keys->kebab-case statuses)]
-      (map #(update % :request-json-body util/gzip-blob->string)
+      (map #(update % :request-json-body util/gzip-bytes->string)
            statuses))))
 
   (get-bulk-update-task-status
@@ -97,8 +98,8 @@
                                     (su/where `(and (= :task-id ~task-id)
                                                     (= :provider-id ~provider-id)))))
             util/map-keys->kebab-case
-            (update :request-json-body util/gzip-blob->string)
-            (update :created-at (partial oracle/oracle-timestamp->str-time conn)))))
+            (update :request-json-body util/gzip-bytes->string)
+            (update :created-at (partial aurora/db-timestamp->str-time conn)))))
 
   (get-bulk-update-task-collection-status
    [db task-id]
@@ -121,7 +122,7 @@
    ;; In a transaction, add one row to the task status table and for each concept
    (j/with-db-transaction
     [conn db]
-    (let [task-id (:nextval (first (su/query db ["SELECT task_id_seq.NEXTVAL FROM DUAL"])))
+    (let [task-id (:nextval (first (su/query db ["SELECT NEXTVAL('task_id_seq')"])))
           statement (str "INSERT INTO bulk_update_task_status "
                          "(task_id, provider_id, name, request_json_body, status)"
                          "VALUES (?, ?, ?, ?, ?)")
@@ -181,7 +182,7 @@
    [db]
    (su/run-sql db "DELETE FROM bulk_update_coll_status")
    (su/run-sql db "DELETE FROM bulk_update_task_status")
-   (su/run-sql db "ALTER SEQUENCE task_id_seq restart start with 1")))
+   (su/run-sql db "ALTER SEQUENCE task_id_seq restart with 1")))
 
 (defn context->db
   [context]

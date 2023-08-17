@@ -16,7 +16,7 @@
   (h/sql "CREATE TABLE METADATA_DB.sync_delete_work (
          concept_id VARCHAR(255) NOT NULL,
          revision_id INTEGER,
-         deleted INTEGER)"))
+         deleted BOOLEAN)"))
 
 (defn down
   []

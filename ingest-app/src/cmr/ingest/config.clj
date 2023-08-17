@@ -78,7 +78,7 @@
   {})
 
 (defn db-spec
-  "Returns a db spec populated with config information that can be used to connect to oracle"
+  "Returns a db spec populated with config information that can be used to connect to postgres"
   [connection-pool-name]
   (pg-conn/db-spec
    connection-pool-name

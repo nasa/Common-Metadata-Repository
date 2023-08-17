@@ -48,6 +48,17 @@
   "Required for jobs"
   (atom nil))
 
+;; below is workaround because regular component start for aurora db is not working
+(def db-atom (atom nil))
+
+(defn db
+  "Lazily connects to the database and caches it"
+  []
+  (when-not @db-atom
+    (reset! db-atom (lifecycle/start
+                     (aurora/create-db (bootstrap-config/db-spec "bootstrap-pool")) nil)))
+  @db-atom)
+
 (defn create-system
   "Returns a new instance of the whole application."
   []
@@ -71,7 +82,8 @@
              :synchronous-dispatcher (dispatch/create-backend :sync)
              :message-queue-dispatcher (dispatch/create-backend :message-queue)
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
-             :db (aurora/create-db (bootstrap-config/db-spec "bootstrap-pool"))
+             ;; :db (aurora/create-db (bootstrap-config/db-spec "bootstrap-pool")) ;; BUG -- not starting correctly
+             :db (db)
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (bootstrap-config/bootstrap-nrepl-port))
              :relative-root-url (transmit-config/bootstrap-relative-root-url)

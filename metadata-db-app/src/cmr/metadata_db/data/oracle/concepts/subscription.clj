@@ -3,13 +3,14 @@
   (:require
    [cmr.metadata-db.data.oracle.concepts :as concepts]
    [cmr.metadata-db.data.oracle.sub-notifications :as sub-notifs]
-   [cmr.oracle.connection :as oracle]))
+   [cmr.oracle.connection :as oracle]
+   [cmr.aurora.connection :as aurora]))
 
 (defn add-last-notified-at-if-present
   [subscription db-result db]
   (if-let [last-notified (:last_notified_at db-result)]
     (assoc-in subscription [:extra-fields :last-notified-at]
-              (oracle/oracle-timestamp->str-time db last-notified))
+              (aurora/db-timestamp->str-time db last-notified))
     subscription))
 
 (defmethod concepts/db-result->concept-map :subscription

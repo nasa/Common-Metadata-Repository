@@ -17,7 +17,7 @@
           deleted (= 1 (long deleted))
           ;;Remove bad parts of metadata string
           metadata (-> metadata
-                       util/gzip-blob->string
+                       util/gzip-bytes->string
                        (string/replace #"Executing.*\n" "")
                        (string/replace #"entry_title.*\n" "")
                        edn/read-string)

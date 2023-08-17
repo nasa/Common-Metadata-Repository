@@ -39,7 +39,7 @@
                    " provider_id, user_id, service_name, deleted,"
                    " format, revision_id, concept_id, metadata) "
                    "VALUES "
-                   "(GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL,CURRENT_TIMESTAMP,"
+                   "(NEXTVAL('GLOBAL_TRANSACTION_ID_SEQ'),CURRENT_TIMESTAMP,"
                    "CURRENT_TIMESTAMP,?,?,?,?,?,?,?,?,?,?)")
           values [internal-id (str (java.util.UUID/randomUUID)) "GES_DISC"
                   "cmr-edsc-stubber" (:Name edn-data) 0 "application/json" 1

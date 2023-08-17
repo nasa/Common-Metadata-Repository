@@ -13,7 +13,7 @@
   associated_concept_id VARCHAR(255) NOT NULL,
   associated_revision_id INTEGER NOT NULL,
   revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  deleted INTEGER DEFAULT 0 NOT NULL,
+  deleted BOOLEAN DEFAULT FALSE NOT NULL,
   user_id VARCHAR(30),
   transaction_id INTEGER DEFAULT 0 NOT NULL")
 

@@ -58,7 +58,7 @@
             ;; drivers in the deps, in particulear:
             ;;   java.lang.ClassNotFoundException: oracle.dms.console.DMSConsole
             "eastwood" ["with-profile" "lint" "eastwood"
-                        "{:namespaces [:source-paths] :exclude-namespaces [cmr.oracle.connection]}"]
+                        "{:namespaces [:source-paths] :exclude-namespaces [cmr.aurora.connection]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]

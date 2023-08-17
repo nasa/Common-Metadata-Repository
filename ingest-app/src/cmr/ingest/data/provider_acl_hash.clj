@@ -6,7 +6,8 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.util :refer [defn-timed] :as util]
-   [cmr.oracle.connection]))
+   [cmr.oracle.connection]
+   [cmr.aurora.connection]))
 
 (defprotocol AclHashStore
   "Defines a protocol for storing the acl hashes as a string."
@@ -15,7 +16,7 @@
 
 ;; Extends the AclHashStore to the oracle store so it will work with oracle.
 (extend-protocol AclHashStore
-  cmr.oracle.connection.OracleStore
+  cmr.aurora.connection.PostgresStore
 
   (save-acl-hash
     [db acl-hash]
@@ -32,7 +33,7 @@
     (some-> (j/query db ["select acl_hashes from provider_acl_hash"])
             first
             :acl_hashes
-            util/gzip-blob->string)))
+            util/gzip-bytes->string)))
 
 (defn context->db
   [context]

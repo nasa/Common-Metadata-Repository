@@ -12,10 +12,10 @@
                               JOB_GROUP VARCHAR(200) NOT NULL,
                               DESCRIPTION VARCHAR(250),
                               JOB_CLASS_NAME VARCHAR(250) NOT NULL,
-                              IS_DURABLE CHAR(1) NOT NULL,
-                              IS_NONCONCURRENT CHAR(1) NOT NULL,
-                              IS_UPDATE_DATA CHAR(1) NOT NULL,
-                              REQUESTS_RECOVERY CHAR(1) NOT NULL,
+                              IS_DURABLE BOOLEAN NOT NULL,
+                              IS_NONCONCURRENT BOOLEAN NOT NULL,
+                              IS_UPDATE_DATA BOOLEAN NOT NULL,
+                              REQUESTS_RECOVERY BOOLEAN NOT NULL,
                               JOB_DATA BYTEA,
                               CONSTRAINT QRTZ_JOB_DETAILS_PK PRIMARY KEY (SCHED_NAME,JOB_NAME,JOB_GROUP)
                               )")
@@ -78,8 +78,8 @@
                               LONG_PROP_2 BIGINT,
                               DEC_PROP_1 NUMERIC(13,4),
                               DEC_PROP_2 NUMERIC(13,4),
-                              BOOL_PROP_1 CHAR(1),
-                              BOOL_PROP_2 CHAR(1),
+                              BOOL_PROP_1 BOOLEAN,
+                              BOOL_PROP_2 BOOLEAN,
                               CONSTRAINT QRTZ_SIMPROP_TRIG_PK PRIMARY KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP),
                               CONSTRAINT QRTZ_SIMPROP_TRIG_TO_TRIG_FK FOREIGN KEY (SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
                               REFERENCES QRTZ_TRIGGERS(SCHED_NAME,TRIGGER_NAME,TRIGGER_GROUP)
@@ -119,8 +119,8 @@
                               STATE VARCHAR(16) NOT NULL,
                               JOB_NAME VARCHAR(200),
                               JOB_GROUP VARCHAR(200),
-                              IS_NONCONCURRENT CHAR(1),
-                              REQUESTS_RECOVERY CHAR(1),
+                              IS_NONCONCURRENT BOOLEAN,
+                              REQUESTS_RECOVERY BOOLEAN,
                               CONSTRAINT QRTZ_FIRED_TRIGGER_PK PRIMARY KEY (SCHED_NAME,ENTRY_ID)
                               )")
 

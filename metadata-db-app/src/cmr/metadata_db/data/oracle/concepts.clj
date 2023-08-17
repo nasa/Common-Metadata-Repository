@@ -13,7 +13,8 @@
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.metadata-db.data.util :as db-util :refer [EXPIRED_CONCEPTS_BATCH_SIZE INITIAL_CONCEPT_NUM]]
    [cmr.oracle.connection :as oracle]
-   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
+   [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]]
+   [cmr.aurora.connection :as aurora])
   (:import
    (cmr.aurora.connection PostgresStore)))
 
@@ -125,13 +126,13 @@
                              :native-id native_id
                              :concept-id concept_id
                              :provider-id provider-id
-                             :metadata (when metadata (util/gzip-blob->string metadata))
+                             :metadata (when metadata (util/gzip-bytes->string metadata))
                              :format (db-util/db-format->mime-type format)
                              :revision-id (int revision_id)
-                             :revision-date (oracle/oracle-timestamp->str-time db revision_date)
+                             :revision-date (aurora/db-timestamp->str-time db revision_date)
                              :created-at (when created_at
-                                           (oracle/oracle-timestamp->str-time db created_at))
-                             :deleted (not= (int deleted) 0)
+                                           (aurora/db-timestamp->str-time db created_at))
+                             :deleted deleted
                              :transaction-id transaction_id}))))
 
 (defn concept->common-insert-args
@@ -185,6 +186,7 @@
   (let [start (System/currentTimeMillis)]
     (j/with-db-transaction
       [conn db]
+      (aurora/create-temp-table conn)
       ;; use a temporary table to insert our values so we can use a join to
       ;; pull everything in one select
       (apply j/insert! conn
@@ -270,7 +272,7 @@
                                   cmr_variables v
                            where  va.revision_id = latestva.maxrev
                            and    va.concept_id = latestva.concept_id
-                           and    va.deleted = 0
+                           and    va.deleted = false
                            and    va.source_concept_identifier = v.concept_id
                            and    va.source_concept_identifier != '%s'
                            and    va.associated_concept_id = '%s'
@@ -308,7 +310,7 @@
 (defn generate-concept-id
   [db concept]
   (let [{:keys [concept-type provider-id]} concept
-        seq-num (:nextval (first (su/query db ["SELECT concept_id_seq.NEXTVAL FROM DUAL"])))]
+        seq-num (:nextval (first (su/query db ["SELECT nextval('concept_id_seq')"])))]
     (common-concepts/build-concept-id {:concept-type concept-type
                                        :provider-id provider-id
                                        :sequence-number (biginteger seq-num)})))
@@ -338,25 +340,25 @@
         stmt (if small
                [(format "select /*+ LEADING(b a) USE_NL(b a) INDEX(a SMALL_PROV_GRANULES_CID_REV) */
                          a.concept_id, a.parent_collection_id, a.deleted
-                         from %s a,
-                         (select concept_id, max(revision_id) revision_id
+                         from %s a
+                         join (select concept_id, max(revision_id) revision_id
                          from %s where provider_id = '%s'
                          and native_id = '%s' group by concept_id) b
-                         where a.concept_id = b.concept_id
+                         on a.concept_id = b.concept_id
                          and a.revision_id = b.revision_id"
                         table table provider-id native-id)]
                [(format "select /*+ LEADING(b a) USE_NL(b a) INDEX(a %s_GRANULES_CID_REV) */
                          a.concept_id, a.parent_collection_id, a.deleted
-                         from %s a,
-                         (select /*+INDEX(%s,%s_UCR_I)*/
+                         from %s a
+                         join (select /*+INDEX(%s,%s_UCR_I)*/
                          concept_id, max(revision_id) revision_id
                          from %s where native_id = '%s' group by concept_id) b
-                         where a.concept_id = b.concept_id
+                         on a.concept_id = b.concept_id
                          and a.revision_id = b.revision_id"
                         provider-id table table table table native-id)])
         result (first (su/query db stmt))
         {:keys [concept_id parent_collection_id deleted]} result
-        deleted (when deleted (= 1 (int deleted)))]
+        deleted (identity deleted)]
     [concept_id parent_collection_id deleted]))
 
 (defn get-concept
@@ -387,6 +389,7 @@
     (let [start (System/currentTimeMillis)]
       (j/with-db-transaction
         [conn db]
+        (aurora/create-temp-table conn)
         ;; use a temporary table to insert our values so we can use a join to
         ;; pull everything in one select
         (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
@@ -442,7 +445,7 @@
              seq-name (str table "_seq")
              [cols values] (concept->insert-args concept (:small provider))
              stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
-                               "(%s.NEXTVAL,%s,GLOBAL_TRANSACTION_ID_SEQ.NEXTVAL)")
+                               "(NEXTVAL('%s'),%s,NEXTVAL('GLOBAL_TRANSACTION_ID_SEQ'))")
                           table
                           (string/join "," cols)
                           seq-name
@@ -475,6 +478,7 @@
   (let [table (tables/get-table-name provider concept-type)]
     (j/with-db-transaction
      [conn db]
+      (aurora/create-temp-table conn)
      ;; use a temporary table to insert our values so we can use them in our delete
      (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
 
@@ -491,19 +495,19 @@
         {:keys [provider-id small]} provider
         stmt (if small
                [(format "select count(1) concept_count, a.parent_collection_id
-                        from %s a,
-                        (select concept_id, max(revision_id) revision_id
+                        from %s a
+                        join (select concept_id, max(revision_id) revision_id
                         from %s where provider_id = '%s' group by concept_id) b
-                        where  a.deleted = 0
+                        on     a.deleted = false
                         and    a.concept_id = b.concept_id
                         and    a.revision_id = b.revision_id
                         group by a.parent_collection_id"
                         table table provider-id)]
                [(format "select count(1) concept_count, a.parent_collection_id
-                        from %s a,
-                        (select concept_id, max(revision_id) revision_id
+                        from %s a
+                        join (select concept_id, max(revision_id) revision_id
                         from %s group by concept_id) b
-                        where  a.deleted = 0
+                        on     a.deleted = false
                         and    a.concept_id = b.concept_id
                         and    a.revision_id = b.revision_id
                         group by a.parent_collection_id"
@@ -543,47 +547,49 @@
          {:keys [provider-id small]} provider
          stmt (if small
                 [(format "select *
-                           from %s outer,
-                           ( select a.concept_id, a.revision_id
+                           from %s outer
+                           join ( select a.concept_id, a.revision_id
                            from (select concept_id, max(revision_id) as revision_id
                            from %s
                            where provider_id = '%s'
-                           and deleted = 0
+                           and deleted = false
                            and   delete_time is not null
-                           and   delete_time < systimestamp
+                           and   delete_time < CURRENT_TIMESTAMP
                            group by concept_id
-                           ) a,
-                           (select concept_id, max(revision_id) as revision_id
+                           ) a
+                           join (select concept_id, max(revision_id) as revision_id
                            from %s
                            where provider_id = '%s'
                            group by concept_id
                            ) b
-                           where a.concept_id = b.concept_id
+                           on    a.concept_id = b.concept_id
                            and   a.revision_id = b.revision_id
-                           and   rowNum <= %d
+                           order by a.concept_id, a.revision_id
+                           limit %d
                            ) inner
-                           where outer.concept_id = inner.concept_id
+                           on    outer.concept_id = inner.concept_id
                            and   outer.revision_id = inner.revision_id"
                          table table provider-id table provider-id EXPIRED_CONCEPTS_BATCH_SIZE)]
                 [(format "select *
-                           from %s outer,
-                           ( select a.concept_id, a.revision_id
+                           from %s outer
+                           join ( select a.concept_id, a.revision_id
                            from (select concept_id, max(revision_id) as revision_id
                            from %s
-                           where deleted = 0
+                           where deleted = false
                            and   delete_time is not null
-                           and   delete_time < systimestamp
+                           and   delete_time < CURRENT_TIMESTAMP
                            group by concept_id
-                           ) a,
-                           (select concept_id, max(revision_id) as revision_id
+                           ) a
+                           join (select concept_id, max(revision_id) as revision_id
                            from %s
                            group by concept_id
                            ) b
-                           where a.concept_id = b.concept_id
+                           on    a.concept_id = b.concept_id
                            and   a.revision_id = b.revision_id
-                           and   rowNum <= %d
+                           order by a.concept_id, a.revision_id
+                           limit %d
                            ) inner
-                           where outer.concept_id = inner.concept_id
+                           on    outer.concept_id = inner.concept_id
                            and   outer.revision_id = inner.revision_id"
                          table table table EXPIRED_CONCEPTS_BATCH_SIZE)])]
      (doall (map (partial db-result->concept-map concept-type conn (:provider-id provider))
@@ -600,14 +606,14 @@
          sql (if small
                (format "select t1.concept_id, t1.revision_id from %s t1 inner join
                          (select concept_id, revision_id from %s
-                         where provider_id = '%s' and DELETED = 1 and REVISION_DATE < ?
-                         FETCH FIRST %d ROWS ONLY) t2
+                         where provider_id = '%s' and DELETED = true and REVISION_DATE < ?
+                         ORDER BY concept_id, revision_id LIMIT %d) t2
                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
                        table table provider-id limit)
                (format "select t1.concept_id, t1.revision_id from %s t1 inner join
                          (select concept_id, revision_id from %s
-                         where DELETED = 1 and REVISION_DATE < ?
-                         FETCH FIRST %d ROWS ONLY) t2
+                         where DELETED = true and REVISION_DATE < ?
+                         ORDER BY concept_id, revision_id LIMIT %d) t2
                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
                        table table limit))
          stmt [sql (cr/to-sql-time tombstone-cut-off-date)]
@@ -631,12 +637,12 @@
                 [(format "select concept_id, revision_id from %s
                            where concept_id in
                            (select concept_id from %s where provider_id = '%s' group by
-                           concept_id having count(*) > %d FETCH FIRST %d ROWS ONLY)"
+                           concept_id having count(*) > %d order by concept_id, revision_id limit %d)"
                          table table provider-id max-revisions limit)]
                 [(format "select concept_id, revision_id from %s
                            where concept_id in
                            (select concept_id from %s group by
-                           concept_id having count(*) > %d FETCH FIRST %d ROWS ONLY)"
+                           concept_id having count(*) > %d order by concept_id, revision_id limit %d)"
                          table table max-revisions limit)])
          result (su/query conn stmt)
          ;; create a map of concept-ids to sequences of all returned revisions

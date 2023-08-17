@@ -28,7 +28,7 @@
     (let [{:keys [id metadata deleted]} result
           deleted (= 1 (long deleted))
           metadata (-> metadata
-                       (util/gzip-blob->string)
+                       (util/gzip-bytes->string)
                        (edn/read-string))
           {{:keys [collection-identifier collection-applicable provider-id]} :catalog-item-identity} metadata
           concept-ids (if collection-applicable

@@ -2,6 +2,7 @@
   "A map of the other development projects to their versions"
   {:cmr-access-control-app "0.1.0-SNAPSHOT"
    :cmr-acl-lib "0.1.0-SNAPSHOT"
+   :cmr-aurora-postgres-lib "0.1.0-SNAPSHOT"
    :cmr-bootstrap-app "0.1.0-SNAPSHOT"
    :cmr-common-app-lib "0.1.0-SNAPSHOT"
    :cmr-common-lib "0.1.1-SNAPSHOT"

@@ -10,7 +10,7 @@
 
 (defmethod granule-column-sql false
   [provider]
-  (str "id SERIAL PRIMARY KEY,
+  (str "id INTEGER,
        concept_id VARCHAR(255) NOT NULL,
        native_id VARCHAR(250) NOT NULL,
        parent_collection_id VARCHAR(255) NOT NULL,
@@ -18,7 +18,7 @@
        format VARCHAR(255) NOT NULL,
        revision_id INTEGER DEFAULT 1 NOT NULL,
        revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-       deleted INTEGER DEFAULT 0 NOT NULL,
+       deleted BOOLEAN DEFAULT FALSE NOT NULL,
        delete_time TIMESTAMP WITH TIME ZONE,"
 
        ;; Note that the granule_ur column allows NULL because we do not
@@ -42,7 +42,8 @@
 
 (defmethod granule-constraint-sql false
   [provider table-name]
-  (format (str
+  (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
+               
                ;; Unique constraint on native id and revision id
                "CONSTRAINT %s_con_rev
                UNIQUE (native_id, revision_id), "
@@ -51,11 +52,13 @@
                "CONSTRAINT %s_cid_rev
                UNIQUE (concept_id, revision_id)")
           table-name
+          table-name
           table-name))
 
 (defmethod granule-constraint-sql true
   [provider table-name]
-  (format (str
+  (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
+               
                ;; Unique constraint on native id and revision id
                "CONSTRAINT %s_con_rev
                UNIQUE (provider_id, native_id, revision_id), "
@@ -63,6 +66,7 @@
                ;; Unique constraint on concept id and revision id
                "CONSTRAINT %s_cid_rev
                UNIQUE (concept_id, revision_id)")
+          table-name
           table-name
           table-name))
 

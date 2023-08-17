@@ -17,10 +17,10 @@
   [{:keys [provider_id short_name cmr_only small consortiums metadata]}]
   (cutil/remove-nil-keys {:provider-id provider_id
                           :short-name short_name
-                          :cmr-only (== 1 cmr_only)
-                          :small (== 1 small)
+                          :cmr-only cmr_only
+                          :small small
                           :consortiums consortiums
-                          :metadata (if (some? metadata) (-> metadata cutil/gzip-blob->string read-string))}))
+                          :metadata (if (some? metadata) (-> metadata cutil/gzip-bytes->string read-string))}))
 
 (defn- delete-small-provider-concepts
   "Delete all concepts of the given small provider"
@@ -86,8 +86,8 @@
                ["provider_id" "short_name" "cmr_only" "small" "consortiums" "metadata"]
                [provider-id
                 short-name
-                (if cmr-only 1 0)
-                (if small 1 0)
+                cmr-only
+                small
                 consortiums
                 metadata
                 ])
@@ -120,7 +120,7 @@
   [db {:keys [provider-id cmr-only consortiums metadata]}]
   (j/update! db
              :providers
-             {:cmr_only (if cmr-only 1 0)
+             {:cmr_only cmr-only
               :consortiums consortiums
               :metadata (-> metadata
                             pr-str

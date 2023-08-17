@@ -45,7 +45,7 @@
   [oracle-store]
   (try
     (if (= [{:a 1M}]
-           (j/query oracle-store "select 1 a from dual"))
+           (j/query oracle-store "select 1"))
       {:ok? true}
       {:ok? false :problem "Could not select data from database."})
     (catch Exception e

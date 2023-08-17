@@ -92,7 +92,7 @@
    ;; Job Store
    "jobStore.misfireThreshold"  "60000"
    "jobStore.class"  "org.quartz.impl.jdbcjobstore.JobStoreTX"
-   "jobStore.driverDelegateClass"  "org.quartz.impl.jdbcjobstore.oracle.OracleDelegate"
+   "jobStore.driverDelegateClass"  "org.quartz.impl.jdbcjobstore.PostgreSQLDelegate"
    "jobStore.useProperties"  "false"
    "jobStore.dataSource"  "myDS"
    "jobStore.tablePrefix"  "QRTZ_"
@@ -100,9 +100,9 @@
    "jobStore.clusterCheckinInterval"  "20000"
 
    ;; Data sources
-   "dataSource.myDS.driver"  "oracle.jdbc.OracleDriver"
+   "dataSource.myDS.driver"  "org.postgresql.Driver"
    "dataSource.myDS.maxConnections"  "5"
-   "dataSource.myDS.validationQuery" "select 0 from dual"})
+   "dataSource.myDS.validationQuery" "select 1"})
 
 (defn- configure-quartz-clustering-system-properties
   "Configures system properties so that quartz can use the database. This is
@@ -116,7 +116,7 @@
   (let [{{:keys [subprotocol subname user password]} :spec} db]
     (System/setProperty
       "org.quartz.dataSource.myDS.URL"
-      (str "jdbc:" subprotocol ":" subname))
+      "jdbc:postgresql://localhost:5432/cmrcdb") ;; TODO 
     (System/setProperty "org.quartz.dataSource.myDS.user" user)
     (System/setProperty "org.quartz.dataSource.myDS.password" password)))
 
@@ -162,6 +162,7 @@
   "Attempts to schedule a job. Swallows the exception if there is an error.
   Returns true if the job was successfully scheduled and false otherwise."
   [scheduler job-key quartz-job trigger]
+  (println quartz-job)
   (try
     ;; We delete existing jobs and recreate them
     (when (qs/get-job scheduler job-key)

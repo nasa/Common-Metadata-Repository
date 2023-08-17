@@ -10,7 +10,8 @@
    [cmr.common.util :refer [defn-timed] :as util]
    [cmr.ingest.config :as config]
    [cmr.oracle.connection :as oracle]
-   [cmr.oracle.sql-utils :as sql-utils]))
+   [cmr.oracle.sql-utils :as sql-utils]
+   [cmr.aurora.connection :as aurora]))
 
 (defn- generate-failed-msg
  "Generate the FAILED part of the status message."
@@ -81,7 +82,7 @@
 
 ;; Extends the GranBulkUpdateStore to the oracle store so it will work with oracle.
 (extend-protocol GranBulkUpdateStore
-  cmr.oracle.connection.OracleStore
+  cmr.aurora.connection.PostgresStore
 
   (get-granule-tasks-by-provider-id
    [db provider-id]
@@ -95,10 +96,10 @@
                  (sql-utils/where `(= :provider-id ~provider-id))
                  (sql-utils/order-by (sql-utils/desc `(+ :task-id 0)))))
           ;; Note: the column selected out of the database is created_at, instead of created-at.
-          statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
+          statuses (doall (map #(update % :created_at (partial aurora/db-timestamp->str-time conn))
                                (sql-utils/query conn stmt)))
           statuses (map util/map-keys->kebab-case statuses)]
-      (map #(update % :request-json-body util/gzip-blob->string)
+      (map #(update % :request-json-body util/gzip-bytes->string)
            statuses))))
 
   (get-granule-task-by-task-id
@@ -112,8 +113,8 @@
               (sql-utils/from "granule_bulk_update_tasks")
               (sql-utils/where `(= :task-id ~task-id))))
             util/map-keys->kebab-case
-            (update :request-json-body util/gzip-blob->string)
-            (update :created-at (partial oracle/oracle-timestamp->str-time conn)))))
+            (update :request-json-body util/gzip-bytes->string)
+            (update :created-at (partial aurora/db-timestamp->str-time conn)))))
 
   (get-bulk-update-task-granule-status
    [db task-id]
@@ -138,7 +139,7 @@
    ;; In a transaction, add one row to the task status table and for each concept
    (jdbc/with-db-transaction
     [conn db]
-    (let [task-id (:nextval (first (sql-utils/query db ["SELECT GRAN_TASK_ID_SEQ.NEXTVAL FROM DUAL"])))
+    (let [task-id (:nextval (first (sql-utils/query db ["SELECT NEXTVAL('GRAN_TASK_ID_SEQ')"])))
           statement (str "INSERT INTO granule_bulk_update_tasks "
                          "(task_id, provider_id, name, request_json_body, status, user_id, created_at)"
                          "VALUES (?, ?, ?, ?, ?, ?, ?)")
@@ -188,7 +189,7 @@
    [db]
    (sql-utils/run-sql db "DELETE FROM bulk_update_gran_status")
    (sql-utils/run-sql db "DELETE FROM granule_bulk_update_tasks")
-   (sql-utils/run-sql db "ALTER SEQUENCE gran_task_id_seq restart start with 1")))
+   (sql-utils/run-sql db "ALTER SEQUENCE gran_task_id_seq restart with 1")))
 
 (defn context->db
  "Return the path to the database from a given context"

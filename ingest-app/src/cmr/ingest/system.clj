@@ -31,7 +31,8 @@
    [cmr.aurora.connection :as aurora]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
-   [cmr.transmit.urs :as urs]))
+   [cmr.transmit.urs :as urs]
+   [cmr.common.lifecycle :as lifecycle])) ;; lifecycle added here for db atom workaround only
 
 (def ^:private component-order
   "Defines the order to start the components."
@@ -84,6 +85,17 @@
    :port (ingest-public-port)
    :relative-root-url (transmit-config/ingest-relative-root-url)})
 
+;; below is workaround because regular component start for postgres db is not working
+(def db-atom (atom nil))
+
+(defn db
+  "Lazily connects to the database and caches it"
+  [connection-pool-name]
+  (when-not @db-atom
+    (reset! db-atom (lifecycle/start
+                     (aurora/create-db (config/db-spec connection-pool-name)) nil)))
+  @db-atom)
+
 (defn create-system
   "Returns a new instance of the whole application."
   ([]
@@ -92,7 +104,8 @@
    (let [sys {:log (log/create-logger-with-log-level (log-level))
               :web (web/create-web-server (transmit-config/ingest-port) routes/handlers)
               :nrepl (nrepl/create-nrepl-if-configured (config/ingest-nrepl-port))
-              :db (aurora/create-db (config/db-spec connection-pool-name))
+              ;; :db (aurora/create-db (config/db-spec connection-pool-name)) ;; BUG -- not starting correctly 
+              :db (db connection-pool-name)
               :scheduler (jobs/create-clustered-scheduler
                            `system-holder :db
                            (conj (ingest-jobs/jobs)

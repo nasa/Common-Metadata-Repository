@@ -8,7 +8,7 @@
    [sqlingvo.db :as sdb]
    [sqlingvo.util :as su]))
 
-(def db-vendor (sdb/oracle))
+(def db-vendor (sdb/postgresql))
 
 ;; Wrap sqlingvo core functions for uniform access
 (def select
@@ -57,7 +57,7 @@
 (defn query
   "Execute a query and log how long it took."
   [db stmt-and-params]
-  (let [fetch-size (:result-set-fetch-size db)
+  (let [fetch-size 200
         start (System/currentTimeMillis)
         result (j/query db (cons {:fetch-size fetch-size} stmt-and-params))
         millis (- (System/currentTimeMillis) start)]
@@ -66,14 +66,21 @@
       (warn (format "Query execution took [%d] ms, SQL: %s" millis (first stmt-and-params))))
     result))
 
+;; this was the fix attempt, throwing sql error
+;; (defn find-one
+;;   "Finds and returns the first item found from a select statment."
+;;   [db stmt]
+;;   (let [stmt (with [:inner stmt]
+;;                    (select ['*]
+;;                            (from :inner)
+;;                            (s/limit 1)))]           ;; this is fix -- rownum changed to limit
+;;     (first (query db (build stmt)))))
+
+;; workaround -- this still works because of the use of the redundant 'first'
 (defn find-one
   "Finds and returns the first item found from a select statment."
   [db stmt]
-  (let [stmt (with [:inner stmt]
-                   (select ['*]
-                           (from :inner)
-                           (where '(= :ROWNUM 1))))]
-    (first (query db (build stmt)))))
+  (first (query db (build stmt))))
 
 (defmacro ignore-already-exists-errors
   "Used to make SQL calls where an error indicating that an object already exists can be safely
@@ -83,6 +90,25 @@
      (do
        ~@body)
      (catch Exception e#
-       (if (re-find #"(ORA-00955|ORA-01920):" (.getMessage e#))
+       (if (re-find #"(ORA-00955|ORA-01920):" (.getMessage e#)) ;; TODO - change to postgres codes, put back in create-user funcs etc.
          (info (str ~object-name " already exists, ignoring error."))
          (throw e#)))))
+
+(comment
+  
+  (s/sql (select [:concept-id]
+                 (from "prov5_collections")
+                 (where `(= :native-id ~"testcoll03"))
+                 (s/limit 1)))
+  
+  ;; this does appear to return valid postgresql, why did find-one throw a sql error?
+  ;; org.postgresql.util.PSQLException: ERROR: syntax error at or near "inner"
+  (let [stt (select [:concept-id]
+                    (from "prov5_collections")
+                    (where `(= :native-id ~"testcoll03")))]
+    (s/sql (with [:inner stt]
+                 (select ['*]
+                         (from :inner)
+                         (s/limit 1)))))
+  
+  )

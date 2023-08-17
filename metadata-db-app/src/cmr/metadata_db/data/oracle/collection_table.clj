@@ -10,14 +10,14 @@
 
 (defmethod collection-column-sql false
   [provider]
-  "id SERIAL PRIMARY KEY,
+  "id INTEGER,
   concept_id VARCHAR(255) NOT NULL,
   native_id VARCHAR(1030) NOT NULL,
   metadata BYTEA NOT NULL,
   format VARCHAR(255) NOT NULL,
   revision_id INTEGER DEFAULT 1 NOT NULL,
   revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
-  deleted INTEGER DEFAULT 0 NOT NULL,
+  deleted BOOLEAN DEFAULT FALSE NOT NULL,
   short_name VARCHAR(85) NOT NULL,
   version_id VARCHAR(80),
   entry_id VARCHAR(255) NOT NULL,
@@ -40,7 +40,8 @@
 
 (defmethod collection-constraint-sql false
   [provider table-name]
-  (format (str
+  (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
+               
                ;; Unique constraint on native id and revision id
                "CONSTRAINT %s_con_rev
                UNIQUE (native_id, revision_id), "
@@ -49,18 +50,21 @@
                "CONSTRAINT %s_cid_rev
                UNIQUE (concept_id, revision_id)")
           table-name
+          table-name
           table-name))
 
 (defmethod collection-constraint-sql true
   [provider table-name]
-  (format (str
-            ;; Unique constraint on provider id, native id and revision id
-            "CONSTRAINT %s_con_rev
-            UNIQUE (provider_id, native_id, revision_id), "
+  (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
-            ;; Unique constraint on concept id and revision id
-            "CONSTRAINT %s_cid_rev
-            UNIQUE (concept_id, revision_id)")
+               ;; Unique constraint on provider id, native id and revision id
+               "CONSTRAINT %s_con_rev
+               UNIQUE (provider_id, native_id, revision_id), "
+
+               ;; Unique constraint on concept id and revision id
+               "CONSTRAINT %s_cid_rev
+               UNIQUE (concept_id, revision_id)")
+          table-name
           table-name
           table-name))
 
