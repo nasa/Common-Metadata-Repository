@@ -169,6 +169,11 @@
         "AllowMultipleValues": false
       }
     },
+    "Aggregation": {
+      "Concatenate": {
+        "ConcatenateDefault": true
+      }
+    },
     "SupportedInputProjections": [{
       "ProjectionName":"Geographic",
       "ProjectionAuthority":"4326"
@@ -177,7 +182,7 @@
       "ProjectionName":"Geographic",
       "ProjectionAuthority":"ep"
     }],
-    "InterpolationTypes": ["Bilinear Interpolation", "Elliptical Weighted Averaging"],
+    "InterpolationTypes": ["Elliptical Weighted Averaging"],
     "SupportedReformattings": [{
       "SupportedInputFormat": "HDF5",
       "SupportedOutputFormats": ["GEOTIFFFLOAT32","GEOTIFFINT16", "COG"]
@@ -209,7 +214,6 @@
 	    "DataResource": {
 	      "DataResourceIdentifier":"Aqua_AIRS_Level3/AIRX3STD.006",
 	      "DataResourceSourceType":"Collection",
-	      "DataResourceSpatialType":"BOUNDING_BOX",
 	      "DataResourceSpatialExtent": {
 	        "SpatialBoundingBox": {
 	          "CRSIdentifier":"EPSG:4326",
@@ -250,8 +254,8 @@
     }
   }],
   "MetadataSpecification": {
-    "URL": "https://cdn.earthdata.nasa.gov/umm/service/v1.5.1",
+    "URL": "https://cdn.earthdata.nasa.gov/umm/service/v1.5.2",
     "Name": "UMM-S",
-    "Version": "1.5.1"
+    "Version": "1.5.2"
   }
 }

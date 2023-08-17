@@ -554,7 +554,7 @@
       (m-spec/update-version :service "1.4.1")))
 
 (defmethod interface/migrate-umm-version [:service "1.5.0" "1.5.1"]
-  [context umm-s & _]
+  [_context umm-s & _]
   (m-spec/update-version umm-s :service "1.5.1"))
 
 (defn- remove-interpolation-type-1_5_1->1_5_0
@@ -571,9 +571,7 @@
       umm-s)))
 
 (defmethod interface/migrate-umm-version [:service "1.5.1" "1.5.0"]
-  [context umm-s & _]
-  (def context context)
-  (def umm-s umm-s)
+  [_context umm-s & _]
   (-> umm-s
       (remove-interpolation-type-1_5_1->1_5_0)
       (update :Type #(if (or (= % "ArcGIS Image Service")
@@ -582,3 +580,42 @@
                        "WEB SERVICES"
                        %))
       (m-spec/update-version :service "1.5.0")))
+
+(defmethod interface/migrate-umm-version [:service "1.5.2" "1.5.1"]
+  [_context umm-s & _]
+  (-> umm-s
+      (util/dissoc-in [:ServiceOptions :Aggregation])
+      (m-spec/update-version :service "1.5.1")))
+
+(defn get-first-data-resource-spatial-extent
+  "Given the UMM-S version 1.5.1 take the first spatial extent and put 
+  it into the version 1.5.2 record and drop the rest. There should only be
+  one. As of 8/17/2023 there are no records that contain more than 1, but the
+  earlier schemas allowed more than 1."
+  [data-resource-spatial-extent]
+  (cond
+    (:SpatialPoints data-resource-spatial-extent)
+    {:SpatialPoints (:SpatialPoints data-resource-spatial-extent)}
+
+    (:SpatialLineStrings data-resource-spatial-extent)
+    {:SpatialLineStrings (:SpatialLineStrings data-resource-spatial-extent)}
+
+    (:SpatialBoundingBox data-resource-spatial-extent)
+    {:SpatialBoundingBox(:SpatialBoundingBox data-resource-spatial-extent)}
+
+    (:GeneralGrid data-resource-spatial-extent)
+    {:GeneralGrid (:GeneralGrid data-resource-spatial-extent)}
+
+    (:SpatialPolygons data-resource-spatial-extent)
+    {:SpatialPolygons (:SpatialPolygons data-resource-spatial-extent)}))
+
+(defmethod interface/migrate-umm-version [:service "1.5.1" "1.5.2"]
+  [_context umm-s & _]
+  (let [operation-metadata
+        (for [op-metadata-item (:OperationMetadata umm-s)]
+          (-> op-metadata-item
+              (update-in [:CoupledResource :DataResource :DataResourceSpatialExtent] get-first-data-resource-spatial-extent)
+              (util/dissoc-in [:CoupledResource :DataResource :DataResourceSpatialType])))]
+    (-> umm-s
+        (assoc :OperationMetadata operation-metadata)
+        (m-spec/update-version :service "1.5.2"))))

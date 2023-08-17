@@ -207,6 +207,9 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing ServiceKeywordType)
 
+;; The spatial extent of the coverage available from the service. These are coordinate pairs which
+;; describe either the point, line string, or polygon representing the spatial extent. The bounding
+;; box is described by the west, south, east and north ordinates
 (defrecord DataResourceSpatialExtentType
   [
    ;; The spatial extent of the layer, feature type or coverage described by a point.
@@ -246,6 +249,16 @@
    NorthBoundingCoordinate
   ])
 (record-pretty-printer/enable-record-pretty-printing SpatialBoundingBoxType)
+
+;; This element describes what kinds of aggregations the service allows. When services pull data
+;; files, this option allows the service to put the result data into as few files as possible.
+(defrecord AggregationType
+  [
+   ;; The presence of this element describes that a service can concatenate data along a newly
+   ;; created dimension.
+   Concatenate
+  ])
+(record-pretty-printer/enable-record-pretty-printing AggregationType)
 
 ;; This element contains the name of the chained operation(s) made possible via this service.
 (defrecord CoupledResourceType
@@ -406,6 +419,15 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing LineStringType)
 
+;; The presence of this element describes that a service can concatenate data along a newly created
+;; dimension.
+(defrecord ConcatenateType
+  [
+   ;; This element describes whether the default behavior of the service is to concatenate.
+   ConcatenateDefault
+  ])
+(record-pretty-printer/enable-record-pretty-printing ConcatenateType)
+
 (defrecord DataResourceTemporalExtentType
   [
    ;; Points in time representing the temporal extent of the layer or coverage.
@@ -446,9 +468,6 @@
    ;; The unit of the temporal resolution of the layer, feature type or coverage available from the
    ;; service.
    TemporalResolutionUnit
-
-   ;; The spatial extent of the layer, feature type or coverage available from the service.
-   DataResourceSpatialType
 
    ;; The spatial resolution of the layer, feature type or coverage available from the service.
    SpatialResolution
@@ -676,6 +695,10 @@
    ;; This element is used to identify the set of supported subsetting capabilities, Spatial,
    ;; Temporal, and Variable.
    Subset
+
+   ;; This element describes what kinds of aggregations the service allows. When services pull data
+   ;; files, this option allows the service to put the result data into as few files as possible.
+   Aggregation
 
    ;; This element is used to identify the list of supported methods of variable aggregation.
    VariableAggregationSupportedMethods

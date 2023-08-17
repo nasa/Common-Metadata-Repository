@@ -177,7 +177,7 @@
       "ProjectionName":"Geographic",
       "ProjectionAuthority":"ep"
     }],
-    "InterpolationTypes": ["Bilinear Interpolation", "Elliptical Weighted Averaging"],
+    "InterpolationTypes": ["Elliptical Weighted Averaging"],
     "SupportedReformattings": [{
       "SupportedInputFormat": "HDF5",
       "SupportedOutputFormats": ["GEOTIFFFLOAT32","GEOTIFFINT16", "COG"]
@@ -209,7 +209,6 @@
 	    "DataResource": {
 	      "DataResourceIdentifier":"Aqua_AIRS_Level3/AIRX3STD.006",
 	      "DataResourceSourceType":"Collection",
-	      "DataResourceSpatialType":"BOUNDING_BOX",
 	      "DataResourceSpatialExtent": {
 	        "SpatialBoundingBox": {
 	          "CRSIdentifier":"EPSG:4326",
