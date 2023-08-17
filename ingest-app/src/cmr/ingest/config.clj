@@ -85,7 +85,7 @@
    (aurora-config/db-url-primary)
    (ingest-username)
    (ingest-password)
-   (aurora-config/aurora-db-name)))
+   (aurora-config/postgres-db-name)))
 
 (defconfig ingest-queue-name
   "The queue containing provider events like 'index provider collections'."

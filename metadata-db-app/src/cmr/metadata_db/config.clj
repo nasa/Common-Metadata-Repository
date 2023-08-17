@@ -30,7 +30,7 @@
    (aurora-config/db-url-primary)
    (metadata-db-username)
    (metadata-db-password)
-   (aurora-config/aurora-db-name)))
+   (aurora-config/postgres-db-name)))
 
 (defconfig parallel-chunk-size
   "Gets the number of concepts that should be processed in each thread of get-concepts."

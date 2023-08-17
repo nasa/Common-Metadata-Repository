@@ -24,7 +24,7 @@
    (aurora-config/db-url-primary)
    (bootstrap-username)
    (bootstrap-password)
-   (aurora-config/aurora-db-name)))
+   (aurora-config/postgres-db-name)))
 
 (defconfig bootstrap-nrepl-port
   "Port to listen for nREPL connections"

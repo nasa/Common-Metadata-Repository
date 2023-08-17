@@ -44,7 +44,7 @@
   [db user password]
   (let [replacer (partial replace-values {"CMR_USER" user
                                           "CMR_PASSWORD" password
-                                          "DATABASE_NAME" (config/aurora-db-name)
+                                          "DATABASE_NAME" (config/postgres-db-name)
                                           "SCHEMA" user})
         create-user-sql (replacer create-user-sql-template)
         default-schema-sqls (map replacer create-schema-make-default-templates)

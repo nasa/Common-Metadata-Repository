@@ -7,7 +7,7 @@
   "Aurora cluster name"
   {:default "cmr-aurora-cluster"})
 
-(defconfig aurora-db-name
+(defconfig postgres-db-name
   "Aurora database name"
   {:default "cmrcdb"})
 
@@ -23,14 +23,14 @@
 (defn db-connection-str
   "Returns the connection string for the given postgres db endpoint"
   [host]
-  (str "jdbc:aws-wrapper:postgresql://" host ":5432/" aurora-db-name))
+  (str "jdbc:aws-wrapper:postgresql://" host ":5432/" postgres-db-name))
 
-(defconfig aurora-db-user
-  "Aurora database master user"
+(defconfig master-db-user
+  "Postgres database master user"
   {:default "postgres"})
 
-(defconfig aurora-db-password
-  "Aurora database master password"
+(defconfig master-db-password
+  "Postgres database master password"
   {:default "admin"}) ;; TODO -- remove me
 
 (defn sys-dba-db-spec
@@ -38,6 +38,6 @@
   (conn/db-spec
     "pg-sys-dba-connection-pool"
     (db-url-primary)
-    (aurora-db-user)
-    (aurora-db-password)
-    (aurora-db-name)))
+    (master-db-user)
+    (master-db-password)
+    (postgres-db-name)))
