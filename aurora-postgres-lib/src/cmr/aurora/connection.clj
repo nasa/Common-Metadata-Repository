@@ -60,7 +60,7 @@
    (aurora-config/db-url-primary)
    (aurora-config/master-db-user)
    (aurora-config/master-db-password)
-   (aurora-config/aurora-db-name)))
+   (aurora-config/postgres-db-name)))
 
 (defrecord PostgresStore
            [;; The database spec.

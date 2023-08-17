@@ -41,7 +41,7 @@
    (aurora-config/db-url-primary)
    (metadata-db-username)
    (metadata-db-password)
-   (aurora-config/aurora-db-name)))
+   (aurora-config/postgres-db-name)))
 
 (defn pg-db-spec-secondary
   [connection-pool-name]
@@ -50,7 +50,7 @@
    (aurora-config/db-url-secondary)
    (metadata-db-username)
    (metadata-db-password)
-   (aurora-config/aurora-db-name)))
+   (aurora-config/postgres-db-name)))
 
 ;; this db connection method for prototype use only
 (def pooled-pg-db-primary (delay (aurora/make-prototype-pool (pg-db-spec-primary "Metadata DB Primary"))))

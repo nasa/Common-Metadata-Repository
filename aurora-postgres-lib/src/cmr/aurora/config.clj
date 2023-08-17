@@ -6,7 +6,7 @@
   "Aurora cluster name"
   {:default "cmr-aurora-cluster"})
 
-(defconfig aurora-db-name
+(defconfig postgres-db-name
   "Aurora database name"
   {:default "cmrcdb"})
 
@@ -22,7 +22,7 @@
 (defn db-connection-str
   "Returns the connection string for the given postgres db endpoint"
   [host]
-  (str "jdbc:aws-wrapper:postgresql://" host ":5432/" aurora-db-name))
+  (str "jdbc:aws-wrapper:postgresql://" host ":5432/" postgres-db-name))
 
 (defconfig master-db-user
   "Postgres database master user"
