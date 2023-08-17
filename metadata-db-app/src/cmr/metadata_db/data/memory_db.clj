@@ -495,6 +495,16 @@
                       (= revision-id (:revision-id c)))))
            %)))
 
+(defn force-delete-draft
+  [db concept-type provider concept-id]
+  (swap! (:concepts-atom db)
+         #(filter
+           (fn [c]
+            (not (and (= concept-type (:concept-type c))
+                      (= (:provider-id provider) (:provider-id c))
+                      (= concept-id (:concept-id c)))))
+           %)))
+
 (defn force-delete-concepts
   [db provider concept-type concept-id-revision-id-tuples]
   (doseq [[concept-id revision-id] concept-id-revision-id-tuples]
@@ -561,6 +571,7 @@
    :get-transactions-for-concept get-transactions-for-concept
    :save-concept save-concept
    :force-delete force-delete
+   :force-delete-draft force-delete-draft
    :force-delete-concepts force-delete-concepts
    :get-concept-type-counts-by-collection get-concept-type-counts-by-collection
    :reset reset
