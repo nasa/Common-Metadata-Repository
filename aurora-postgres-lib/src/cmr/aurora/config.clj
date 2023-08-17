@@ -24,12 +24,12 @@
   [host]
   (str "jdbc:aws-wrapper:postgresql://" host ":5432/" aurora-db-name))
 
-(defconfig aurora-db-user
-  "Aurora database master user"
+(defconfig master-db-user
+  "Postgres database master user"
   {:default "postgres"})
 
-(defconfig aurora-db-password
-  "Aurora database master password"
+(defconfig master-db-password
+  "Postgres database master password"
   {:default "admin"})
 
 (defconfig aurora-toggle

@@ -53,17 +53,13 @@
       (.addDataSourceProperty "database" dbname)
       (.addDataSourceProperty "targetDataSourceClassName" classname))))
 
-;; (defn aurora-pool
-;;   []
-;;   (pool {:classname "org.postgresql.ds.PGSimpleDataSource" :subprotocol "jdbc:aws-wrapper:postgresql:" :user (aurora-config/aurora-db-user) :password (aurora-config/aurora-db-password) :connection-pool-name "AuroraPool"}))
-
 (defn sys-dba-db-spec
   []
   (db-spec
    "pg-sys-dba-connection-pool"
    (aurora-config/db-url-primary)
-   (aurora-config/aurora-db-user)
-   (aurora-config/aurora-db-password)
+   (aurora-config/master-db-user)
+   (aurora-config/master-db-password)
    (aurora-config/aurora-db-name)))
 
 (defrecord PostgresStore
