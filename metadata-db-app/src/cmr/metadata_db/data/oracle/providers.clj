@@ -8,7 +8,10 @@
    [cmr.metadata-db.data.oracle.sql-helper :as sh]
    [cmr.metadata-db.data.providers :as p]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc
-                                        delete as]])
+                                        delete as]]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as aurora]
+   [cmr.metadata-db.config :as config])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -81,6 +84,20 @@
   [db provider]
   (let [{:keys [provider-id short-name cmr-only small consortiums metadata]} provider
         metadata (if (some? metadata) (-> metadata pr-str cutil/string->gzip-bytes))]
+    (when (not= "aurora-off" (aurora-config/aurora-toggle))
+      (info "Saving provider to Aurora")
+      (j/insert! (config/pg-db-connection-primary)
+                 :providers
+                 ["provider_id" "short_name" "cmr_only" "small" "consortiums" "metadata"]
+                 [provider-id
+                  short-name
+                  (if cmr-only 1 0)
+                  (if small 1 0)
+                  consortiums
+                  metadata])
+      (when (not small)
+        (info "Saving provider tables to Aurora")
+        (ct/pg-create-provider-concept-tables (config/pg-db-connection-primary) provider)))
     (j/insert! db
                :providers
                ["provider_id" "short_name" "cmr_only" "small" "consortiums" "metadata"]

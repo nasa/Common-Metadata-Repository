@@ -20,7 +20,8 @@
    [cmr.efs.config :as efs-config]
    [cmr.efs.connection :as efs]
    [cmr.dynamo.config :as dynamo-config]
-   [cmr.dynamo.connection :as dynamo])
+   [cmr.dynamo.connection :as dynamo]
+   [cmr.metadata-db.config :as config])
   (:import
    (cmr.oracle.connection OracleStore)))
 
@@ -138,6 +139,32 @@
                              :revision-date (oracle/oracle-timestamp->str-time db revision_date)
                              :created-at (when created_at
                                            (oracle/oracle-timestamp->str-time db created_at))
+                             :deleted (not= (int deleted) 0)
+                             :transaction-id transaction_id}))))
+
+;; this needs to be called within a jdbc transaction and can't be in aurora lib bc cyclic dependencies
+(defn db-result->concept-map-aurora
+  [concept-type db provider-id result]
+  (when result
+    (let [{:keys [native_id
+                  concept_id
+                  metadata
+                  format
+                  revision_id
+                  revision_date
+                  created_at
+                  deleted
+                  transaction_id]} result]
+      (util/remove-nil-keys {:concept-type concept-type
+                             :native-id native_id
+                             :concept-id concept_id
+                             :provider-id provider-id
+                             :metadata (when metadata (util/gzip-bytes->string metadata))
+                             :format (db-util/db-format->mime-type format)
+                             :revision-id (int revision_id)
+                             :revision-date (aurora/db-timestamp->str-time db revision_date)
+                             :created-at (when created_at
+                                           (aurora/db-timestamp->str-time db created_at))
                              :deleted (not= (int deleted) 0)
                              :transaction-id transaction_id}))))
 
@@ -384,7 +411,7 @@
 
 (defn get-concept
   ([db concept-type provider concept-id]
-   (let [efs-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+   (let [efs-concept-get (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
                            (util/time-execution
                             (efs/get-concept provider concept-type concept-id)))
          oracle-concept-get (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
@@ -403,13 +430,18 @@
                                  (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))
          aurora-concept-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                               (util/time-execution
-                               (aurora/get-concept provider concept-type concept-id)))]
-     (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+                               (j/with-db-transaction
+                                 [conn (config/pg-db-connection-secondary)]
+                                 (let [table (tables/get-table-name provider concept-type)]
+                                   (db-result->concept-map-aurora concept-type conn (:provider-id provider)
+                                                                  (aurora/get-concept conn table concept-id))))))]
+     (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
        (info "ORT Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
-       (info "Output from EFS get-concept: " (second efs-concept-get))
+       (info "Output from EFS get-concept: " (second efs-concept-get)))
+     (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
        (info "ORT Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms.")
        (info "Output from DynamoDB get-concept: " (second dynamo-concept-get))
-       (info "Output of Dynamo + EFS: " (merge (second dynamo-concept-get) (second efs-concept-get)))) 
+       (info "Output of Dynamo + EFS: " (merge (second dynamo-concept-get) (second efs-concept-get))))
      (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
        (info "ORT Runtime of Oracle get-concept: " (first oracle-concept-get) " ms.")
        (info "Output from Oracle get-concept: " (second oracle-concept-get)))
@@ -422,7 +454,7 @@
   ([db concept-type provider concept-id revision-id]
    (if revision-id
      (let [table (tables/get-table-name provider concept-type)
-           efs-concept-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+           efs-concept-get (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
                              (util/time-execution (efs/get-concept provider concept-type concept-id revision-id)))
            oracle-concept-get (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
                                 (util/time-execution
@@ -439,10 +471,14 @@
                                    (db-result->concept-map-dynamo concept-type (:provider-id provider) get-result))))
            aurora-concept-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                 (util/time-execution
-                                 (aurora/get-concept provider concept-type concept-id revision-id)))]
-       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+                                 (j/with-db-transaction
+                                   [conn (config/pg-db-connection-secondary)]
+                                   (db-result->concept-map-aurora concept-type conn (:provider-id provider)
+                                                                  (aurora/get-concept conn table concept-id revision-id)))))]
+       (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
          (info "ORT Runtime of EFS get-concept: " (first efs-concept-get) " ms.")
-         (info "Output of EFS get-concept: " (second efs-concept-get))
+         (info "Output of EFS get-concept: " (second efs-concept-get)))
+       (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
          (info "ORT Runtime of DynamoDB get-concept: " (first dynamo-concept-get) " ms.")
          (info "Output of DynamoDB get-concept: " (second dynamo-concept-get))
          (info "Output of Dynamo + EFS: " (merge (second dynamo-concept-get) (second efs-concept-get))))
@@ -460,7 +496,7 @@
 (defn get-concepts
   [db concept-type provider concept-id-revision-id-tuples]
   (if (pos? (count concept-id-revision-id-tuples))
-    (let [efs-concepts-get (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+    (let [efs-concepts-get (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
                              (util/time-execution
                               (doall (efs/get-concepts provider concept-type concept-id-revision-id-tuples))))
           oracle-concepts-get (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
@@ -488,10 +524,22 @@
                                              (dynamo/get-concepts-provided concept-id-revision-id-tuples)))))
           aurora-concepts-get (when (not= "aurora-off" (aurora-config/aurora-toggle))
                                 (util/time-execution
-                                 (aurora/get-concepts provider concept-type concept-id-revision-id-tuples)))]
-      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+                                 (j/with-db-transaction
+                                   [conn (config/pg-db-connection-primary)]
+                                   (aurora/create-temp-table conn)
+                                    ;; use a temporary table to insert our values so we can use a join to
+                                    ;; pull everything in one select
+                                   (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+
+                                   (let [provider-id (:provider-id provider)
+                                         table (tables/get-table-name provider concept-type)
+                                         stmt (aurora/gen-get-concepts-sql-with-temp-table table)]
+                                     (doall (map (partial db-result->concept-map-aurora concept-type conn provider-id)
+                                                 (aurora/get-concepts conn stmt)))))))]
+      (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
         (info "ORT Runtime of EFS get-concepts: " (first efs-concepts-get) " ms.")
-        (info "Output of EFS get-concepts: " (second efs-concepts-get))
+        (info "Output of EFS get-concepts: " (second efs-concepts-get)))
+      (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
         (info "ORT Runtime of DynamoDB get-concepts: " (first dynamo-concepts-get) " ms.")
         (info "Output of DynamoDB get-concepts: " (second (doall dynamo-concepts-get))))
       (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
@@ -545,19 +593,29 @@
                            table
                            (string/join "," cols)
                            seq-name
-                           (string/join "," (repeat (count values) "?")))]
-          (trace "Executing" stmt "with values" (pr-str values))
+                           (string/join "," (repeat (count values) "?"))) 
+              ;; replace instances of 'false' with 0 and 'true' with 1 for Postgres 'deleted' column
+              pg-values (map #(if (boolean? %) (if % 1 0) %) values)
+              pg-stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
+                                   "(NEXTVAL('%s'),%s,NEXTVAL('GLOBAL_TRANSACTION_ID_SEQ'))")
+                              table
+                              (string/join "," cols)
+                              seq-name
+                              (string/join "," (repeat (count pg-values) "?")))]
+          (trace "Executing" stmt "with values" (pr-str pg-values))
           (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
             (info "ORT Runtime of Oracle save-concept: " (first (util/time-execution
-                                                             (j/db-do-prepared db stmt values))) " ms."))
+                                                                 (j/db-do-prepared db stmt values)))) " ms.")
           (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
             (info "ORT Runtime of DynamoDB save-concept: " (first (util/time-execution
-                                                               (dynamo/save-concept concept)))))
+                                                                   (dynamo/save-concept concept)))))
           (when (not= "aurora-off" (aurora-config/aurora-toggle))
             (info "ORT Runtime of Aurora save-concept: " (first (util/time-execution
-                                                                 (aurora/save-concept concept)))))
+                                                                 (j/db-do-prepared (config/pg-db-connection-primary)
+                                                                                   pg-stmt
+                                                                                   pg-values)))))
           (when (and
-                 (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+                 (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
                  (= false (:deleted concept)))
             (info "ORT Runtime of EFS save-concept: " (first (util/time-execution (efs/save-concept provider concept-type (zipmap (map keyword cols) values)))) " ms."))
           (after-save conn provider concept)
@@ -575,7 +633,7 @@
         stmt (su/build (delete table
                                (where `(and (= :concept-id ~concept-id)
                                             (= :revision-id ~revision-id)))))
-        efs-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+        efs-delete (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
                      (util/time-execution
                       (efs/delete-concept provider concept-type concept-id revision-id)))
         oracle-delete (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
@@ -586,7 +644,8 @@
                          (dynamo/delete-concept concept-id revision-id)))
         aurora-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
                         (util/time-execution
-                         (aurora/delete-concept provider concept-type concept-id revision-id)))]
+                         (j/execute! (config/pg-db-connection-primary)
+                                     (aurora/delete-concept table concept-id revision-id))))]
     (when efs-delete
       (info "ORT Runtime of EFS force-delete: " (first efs-delete) " ms.")
       (info "Output of EFS force-delete: " (second efs-delete)))
@@ -620,7 +679,7 @@
                            tmp.concept_id = t1.concept_id AND
                            tmp.revision_id = t1.revision_id)"
                           table)]
-            efs-delete (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+            efs-delete (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
                          (util/time-execution
                           (efs/delete-concepts provider concept-type concept-id-revision-id-tuples)))
             oracle-delete (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
@@ -630,8 +689,13 @@
                             (util/time-execution
                              (dynamo/delete-concepts-provided concept-id-revision-id-tuples)))
             aurora-delete (when (not= "aurora-off" (aurora-config/aurora-toggle))
+                            ;; this is actually roughly the same as oracle 
                             (util/time-execution
-                             (aurora/delete-concepts provider concept-type concept-id-revision-id-tuples)))]
+                             (j/with-db-transaction
+                               [conn (config/pg-db-connection-primary)]
+                               (aurora/create-temp-table conn)
+                               (save-concepts-to-tmp-table conn concept-id-revision-id-tuples)
+                               (j/execute! conn stmt))))]
         (when efs-delete
           (info "ORT Runtime of EFS force-delete-concepts: " (first efs-delete) " ms.")
           (info "Output from EFS force-delete-concepts: " (second efs-delete)))

@@ -10,7 +10,10 @@
    [cmr.metadata-db.data.oracle.collection-table :as ct]
    [cmr.metadata-db.data.oracle.granule-table :as gt]
    [cmr.metadata-db.services.provider-validation :as pv]
-   [inflections.core :as inf]))
+   [inflections.core :as inf]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.aurora.connection :as aurora]
+   [cmr.metadata-db.config :as config]))
 
 (def all-provider-concept-types
   "All the concept types that have tables for each (non-small) provider"
@@ -118,6 +121,31 @@
                                  (gt/granule-constraint-sql provider table-name)))
     (gt/create-granule-indexes db provider table-name)))
 
+(defmulti pg-create-concept-table
+  "Create a table to hold concepts of a given type."
+  (fn [db provider concept-type]
+    concept-type))
+
+(defmethod pg-create-concept-table :collection
+  [db provider concept-type]
+  (let [table-name (get-table-name provider :collection)]
+    (info "Creating table [" table-name "]")
+    (j/db-do-commands db (format "CREATE TABLE %s (%s, %s)"
+                                 table-name
+                                 (ct/pg-collection-column-sql provider)
+                                 (ct/pg-collection-constraint-sql provider table-name)))
+    (ct/create-collection-indexes db provider table-name)))
+
+(defmethod pg-create-concept-table :granule
+  [db provider concept-type]
+  (let [table-name (get-table-name provider :granule)]
+    (info "Creating table [" table-name "]")
+    (j/db-do-commands db (format "CREATE TABLE %s (%s, %s)"
+                                 table-name
+                                 (gt/pg-granule-column-sql provider)
+                                 (gt/pg-granule-constraint-sql provider table-name)))
+    (gt/create-granule-indexes db provider table-name)))
+
 (defn create-provider-concept-tables
   "Create all the concept tables for the given provider."
   [db provider]
@@ -125,6 +153,15 @@
   (doseq [concept-type all-provider-concept-types]
     (create-concept-table db provider concept-type)
     (create-concept-table-id-sequence db provider concept-type)))
+
+(defn pg-create-provider-concept-tables
+  "Create all the concept tables for the given provider in Postgres."
+  [pg-db provider]
+  (info "Creating Postgres concept tables for provider [" (:provider-id provider) "]")
+  (doseq [concept-type all-provider-concept-types]
+    (pg-create-concept-table pg-db provider concept-type)
+    ;; these should be same syntax as Oracle
+    (create-concept-table-id-sequence pg-db provider concept-type)))
 
 (defn delete-provider-concept-tables
   "Delete the concept tables associated with the given provider."

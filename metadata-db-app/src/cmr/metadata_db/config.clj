@@ -5,7 +5,10 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as conn]
-   [cmr.message-queue.config :as rmq-conf]))
+   [cmr.message-queue.config :as rmq-conf]
+   [cmr.aurora.connection :as aurora]
+   [cmr.aurora.config :as aurora-config]
+   [cmr.common.lifecycle :as lifecycle]))
 
 (defconfig metadata-db-username
   "The database username"
@@ -30,6 +33,33 @@
    (oracle-config/db-ons-config)
    (metadata-db-username)
    (metadata-db-password)))
+
+(defn pg-db-spec-primary
+  [connection-pool-name]
+  (aurora/db-spec
+   connection-pool-name
+   (aurora-config/db-url-primary)
+   (metadata-db-username)
+   (metadata-db-password)
+   (aurora-config/postgres-db-name)))
+
+(defn pg-db-spec-secondary
+  [connection-pool-name]
+  (aurora/db-spec
+   connection-pool-name
+   (aurora-config/db-url-secondary)
+   (metadata-db-username)
+   (metadata-db-password)
+   (aurora-config/postgres-db-name)))
+
+;; this db connection method for prototype use only
+(def pooled-pg-db-primary (delay (aurora/make-prototype-pool (pg-db-spec-primary "Metadata DB Primary"))))
+
+(defn pg-db-connection-primary [] @pooled-pg-db-primary)
+
+(def pooled-pg-db-secondary (delay (aurora/make-prototype-pool (pg-db-spec-secondary "Metadata DB Read"))))
+
+(defn pg-db-connection-secondary [] @pooled-pg-db-secondary)
 
 (defconfig parallel-chunk-size
   "Gets the number of concepts that should be processed in each thread of get-concepts."

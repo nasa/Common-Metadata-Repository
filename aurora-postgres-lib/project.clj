@@ -7,6 +7,7 @@
                  [org.clojure/java.jdbc "0.4.2"]
                  [org.postgresql/postgresql "42.6.0"]
                  [software.amazon.jdbc/aws-advanced-jdbc-wrapper "2.2.2"]
+                 [sqlingvo "0.7.15"]
                  [com.zaxxer/HikariCP "5.0.1"]]
   :plugins [[lein-shell "0.5.0"]
             [test2junit "1.3.3"]]

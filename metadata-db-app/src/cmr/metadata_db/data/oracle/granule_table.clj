@@ -130,3 +130,74 @@
   (create-common-gran-indexes db table-name)
   (j/db-do-commands db (format "CREATE INDEX idx_%s_pur ON %s(provider_id, granule_ur)"
                                table-name table-name)))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Prototype Work
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+(defmulti pg-granule-column-sql
+  "Returns the sql to define provider granule columns"
+  (fn [provider]
+    (:small provider)))
+
+(defmethod pg-granule-column-sql false
+  [provider]
+  (str "id INTEGER,
+       concept_id VARCHAR(255) NOT NULL,
+       native_id VARCHAR(250) NOT NULL,
+       parent_collection_id VARCHAR(255) NOT NULL,
+       metadata BYTEA NOT NULL,
+       format VARCHAR(255) NOT NULL,
+       revision_id INTEGER DEFAULT 1 NOT NULL,
+       revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,
+       deleted INTEGER DEFAULT 0 NOT NULL,
+       delete_time TIMESTAMP WITH TIME ZONE,"
+
+       ;; Note that the granule_ur column allows NULL because we do not
+       ;; populate the granule_ur column as part of the initial
+       ;; migration. We should change the column to NOT NULL once it is
+       ;; fully populated.
+       "granule_ur VARCHAR(250),
+        transaction_id INTEGER DEFAULT 0 NOT NULL,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL"))
+
+(defmethod pg-granule-column-sql true
+  [provider]
+  ;; For small provider granule table, there is an extra provider_id column
+  (str (granule-column-sql {:small false})
+       ",provider_id VARCHAR(255) NOT NULL"))
+
+(defmulti pg-granule-constraint-sql
+  "Returns the sql to define constraint on provider granule table"
+  (fn [provider table-name]
+    (:small provider)))
+
+(defmethod pg-granule-constraint-sql false
+  [provider table-name]
+  (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
+
+               ;; Unique constraint on native id and revision id
+               "CONSTRAINT %s_con_rev
+               UNIQUE (native_id, revision_id), "
+
+               ;; Unique constraint on concept id and revision id
+               "CONSTRAINT %s_cid_rev
+               UNIQUE (concept_id, revision_id)")
+          table-name
+          table-name
+          table-name))
+
+(defmethod pg-granule-constraint-sql true
+  [provider table-name]
+  (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
+
+               ;; Unique constraint on native id and revision id
+               "CONSTRAINT %s_con_rev
+               UNIQUE (provider_id, native_id, revision_id), "
+
+               ;; Unique constraint on concept id and revision id
+               "CONSTRAINT %s_cid_rev
+               UNIQUE (concept_id, revision_id)")
+          table-name
+          table-name
+          table-name))
