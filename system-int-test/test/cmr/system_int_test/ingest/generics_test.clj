@@ -241,7 +241,7 @@
                     nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete) 
         result2 (gen-util/ingest-generic-document
                     nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete)]
-    ;;Verify that searching for the concept from elastic search won't return anything.
+    ;;Verify that searching for the concept from elastic search does return result.
     (is (= search-status 200))
     (is (string/includes? search-body "<hits>1</hits>"))
 
