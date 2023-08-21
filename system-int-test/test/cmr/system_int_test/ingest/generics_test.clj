@@ -11,6 +11,7 @@
    [cmr.system-int-test.search.generics-test :as search-generics-test]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.generic-util :as gen-util]
+   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]))
 
 (defn grant-all-generic-permission-fixture
@@ -229,20 +230,29 @@
   (let [native-id "NativeId"
         coll-draft (gen-util/ingest-generic-document
                     nil "PROV1" native-id :collection-draft gen-util/collection-draft :post)
-        concept-id (:concept-id coll-draft) 
+        concept-id (:concept-id coll-draft)
+        _ (index/wait-until-indexed)
+        ;; search for the draft from elastic search should return result
+        search-result (search-generics-test/search-request "collection-drafts" (str "concept_id=" concept-id))
+        search-status (:status search-result)
+        search-body (:body search-result)
+        ;; deleting draft should delete from database completely.
         result1 (gen-util/ingest-generic-document
                     nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete) 
         result2 (gen-util/ingest-generic-document
                     nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete)]
+    ;;Verify that searching for the concept from elastic search won't return anything.
+    (is (= search-status 200))
+    (is (string/includes? search-body "<hits>1</hits>"))
+
     ;;The first delete removes the draft from database completely and returns concept-id.
     ;;The second delete will not say the draft is already deleted because it no longer exists in the database
     (is (= result1 {:concept-id concept-id, :revision-id nil,:warnings nil, :existing-errors nil}))
     (is (= result2 {:errors ["CollectionDraft with native id [NativeId] in provider [PROV1] does not exist."]}))
 
-    ;;Verify that searching for the concept from elastic search won't return anything.
+    ;;Verify that searching for the concept from elastic search won't return anything after the delete.
     (let [result (search-generics-test/search-request "collection-drafts" (str "concept_id=" concept-id))
           status (:status result)
           body (:body result)]
       (is (= status 200))
-      (is (string/includes? body "<hits>0</hits>")))
-)) 
+      (is (string/includes? body "<hits>0</hits>")))))
