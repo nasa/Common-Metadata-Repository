@@ -140,9 +140,7 @@
           :errors ["[Geometries] must be provided when the parent collection's GranuleSpatialRepresentation is CARTESIAN"]}]
 
         collection-with-orbit granule-with-geometry
-        [{:path [:spatial-coverage :geometries]
-          :errors ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is ORBIT"]}
-         {:path [:spatial-coverage :orbit]
+        [{:path [:spatial-coverage :orbit]
           :errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"]}]
 
         collection-with-no-spatial granule-with-geometry

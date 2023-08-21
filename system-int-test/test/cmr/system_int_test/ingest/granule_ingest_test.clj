@@ -483,9 +483,7 @@
       (let [{:keys [status errors]} (ingest/ingest-concept
                                       (ingest/concept :granule "PROV1" "foo" :iso-smap invalid-gran-metadata))]
          (is (= 422 status))
-         (is (= [{:errors ["[Geometries] cannot be set when the parent collection's GranuleSpatialRepresentation is ORBIT"],
-                  :path ["SpatialCoverage" "Geometries"]}
-                 {:errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"],
+         (is (= [{:errors ["[Orbit] must be provided when the parent collection's GranuleSpatialRepresentation is ORBIT"],
                   :path ["SpatialCoverage" "Orbit"]}]
                 errors))))))
 

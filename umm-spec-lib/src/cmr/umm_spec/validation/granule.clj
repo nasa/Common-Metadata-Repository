@@ -64,8 +64,7 @@
                               (is-not-allowed :geometries)]
                  (:geodetic :cartesian) [(is-required :geometries)
                                          (is-not-allowed :orbit)]
-                 :orbit [(is-not-allowed :geometries)
-                         (is-required :orbit)])]
+                 :orbit [ (is-required :orbit)])]
     (apply merge (remove nil? errors))))
 
 (defn set-geometries-spatial-representation

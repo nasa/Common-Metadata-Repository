@@ -145,9 +145,9 @@
     (let [{:keys [geometries orbit]} spatial-coverage]
       (x/element :Spatial {}
                  (x/element :HorizontalSpatialDomain {}
-                            (if geometries
-                              (s/generate-geometry-xml geometries)
-                              (s/generate-orbit-xml orbit)))))))
+                            (if orbit
+                              (s/generate-orbit-xml orbit)
+                              (s/generate-geometry-xml geometries)))))))
 
 (defn xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed Collection Content XML structure"
