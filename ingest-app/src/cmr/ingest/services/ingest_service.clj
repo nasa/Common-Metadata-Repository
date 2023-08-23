@@ -14,7 +14,6 @@
   [cmr.ingest.services.ingest-service.util
    ;; Public utility functions
    delete-concept
-   delete-draft
    fix-ingest-concept-format
    health
    reset]

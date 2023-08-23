@@ -469,7 +469,7 @@
        (format "Save concept failed. MetadataDb app response status code: %s response: %s"
                status response)))))
 
-(defn-timed delete-draft 
+(defn-timed delete-draft
   "delete a draft in metadata db"
   [context concept]
   (let [conn (config/context->app-connection context :metadata-db)

@@ -8,8 +8,10 @@
    [cmr.common.config :as config]
    [cmr.common.generics :as gcfg]
    [cmr.ingest.api.generic-documents :as gdocs]
+   [cmr.system-int-test.search.generics-test :as search-generics-test]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.generic-util :as gen-util]
+   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]))
 
 (defn grant-all-generic-permission-fixture
@@ -222,17 +224,37 @@
     (is (= (:errors coll-draft) nil))
     (is (= (:errors coll-draft-np) ["You do not have PROVIDER_CONTEXT permission to perform that action."]))))
 
-;; Test that collection-draft is removed from database when deleted.
-(deftest test-collection-draft-removed-from-database-on-delete
+;; Test that collection-draft is removed from database and elastic search when deleted.
+(deftest test-collection-draft-removed-from-database-and-elastic-on-delete
   ;; Drafts have permissions to ingest on PROV1, but not on PROV2.
   (let [native-id "NativeId"
         coll-draft (gen-util/ingest-generic-document
                     nil "PROV1" native-id :collection-draft gen-util/collection-draft :post)
+        concept-id (:concept-id coll-draft)
+        _ (index/wait-until-indexed)
+        ;; search for the draft from elastic search should return result
+        search-result (search-generics-test/search-request "collection-drafts" (str "concept_id=" concept-id))
+        search-status (:status search-result)
+        search-body (:body search-result)
+        ;; deleting draft should delete from database completely.
         result1 (gen-util/ingest-generic-document
-                    nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete) 
+                    nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete)
+        ;; Removal from database happens after the index is deleted.
+        _ (index/wait-until-indexed)
         result2 (gen-util/ingest-generic-document
                     nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete)]
+    ;;Verify that searching for the concept from elastic search does return result.
+    (is (= search-status 200))
+    (is (string/includes? search-body "<hits>1</hits>"))
+
     ;;The first delete removes the draft from database completely and returns concept-id.
     ;;The second delete will not say the draft is already deleted because it no longer exists in the database
-    (is (= result1 {:concept-id "CD1200000011-PROV1", :warnings nil, :existing-errors nil}))
-    (is (= result2 {:errors ["CollectionDraft with native id [NativeId] in provider [PROV1] does not exist."]})))) 
+    (is (= result1 {:concept-id concept-id, :revision-id 2,:warnings nil, :existing-errors nil}))
+    (is (= result2 {:errors ["CollectionDraft with native id [NativeId] in provider [PROV1] does not exist."]}))
+
+    ;;Verify that searching for the concept from elastic search won't return anything after the delete.
+    (let [result (search-generics-test/search-request "collection-drafts" (str "concept_id=" concept-id))
+          status (:status result)
+          body (:body result)]
+      (is (= status 200))
+      (is (string/includes? body "<hits>0</hits>")))))

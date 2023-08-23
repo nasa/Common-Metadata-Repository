@@ -330,23 +330,3 @@
                                (ingest/delete-concept
                                 request-context
                                 concept-attribs)))))
-
-(defn delete-draft
-  "Delete the given draft by its concept type, provider id and native id."
-  [concept-type provider-id native-id request]
-  (let [{:keys [request-context params headers]} request
-        concept-attribs (-> {:provider-id provider-id
-                             :native-id native-id
-                             :concept-type concept-type}
-                            (set-revision-id headers)
-                            (set-user-id request-context headers))]
-    (lt-validation/validate-launchpad-token request-context)
-    (common-enabled/validate-write-enabled request-context "ingest")
-    (verify-provider-exists request-context provider-id)
-    (info (format "Deleting %s %s from client %s"
-                  (name concept-type) (pr-str concept-attribs) (:client-id request-context)))
-    (generate-ingest-response headers
-                              (format-and-contextualize-warnings-existing-errors
-                               (ingest/delete-draft
-                                request-context
-                                concept-attribs)))))

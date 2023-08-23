@@ -74,26 +74,6 @@
           {:keys [revision-id]} (mdb/save-concept context concept)]
       {:concept-id concept-id, :revision-id revision-id})))
 
-(defn-timed delete-draft
-  "Delete a draft from mdb and indexer. Throws a 404 error if the draft does not exist."
-  [context concept-attribs]
-  (let [{:keys [concept-type provider-id native-id]} concept-attribs
-        existing-concept (first (mdb/find-concepts context
-                                                   {:provider-id provider-id
-                                                    :native-id native-id
-                                                    :exclude-metadata true
-                                                    :latest true}
-                                                   concept-type))
-        concept-id (:concept-id existing-concept)]
-    (when-not concept-id
-      (errors/throw-service-error
-        :not-found (cmsg/invalid-native-id-msg concept-type provider-id native-id)))
-    (let [concept (-> concept-attribs
-                      (dissoc :provider-id :native-id)
-                      (assoc :concept-id concept-id :deleted true))
-          {:keys [concept-id]} (mdb/delete-draft context concept)]
-      {:concept-id concept-id})))
-
 (defn concept-json->concept
   "Returns the concept for the given concept JSON string.
   This is a temporary function and will be replaced by the UMM parse-metadata function once
