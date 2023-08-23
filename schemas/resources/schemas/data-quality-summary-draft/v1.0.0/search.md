@@ -8,7 +8,7 @@ Data Quality Summary Drafts can be searched for by sending a request to `%CMR-EN
 
 Data Quality Summary Draft search results are paged. See [Paging Details](#paging-details) for more information on how to page through Data Quality Summary Draft search results.
 
-##### <a name="data-quality-summary-draft search-params"></a> Data Quality Summary Draft Search Parameters
+##### <a name="data-quality-summary-draft-search-params"></a> Data Quality Summary Draft Search Parameters
 
 The following parameters are supported when searching for Data Quality Summary Drafts.
 
