@@ -251,6 +251,7 @@
     (is (= result2 {:errors ["CollectionDraft with native id [NativeId] in provider [PROV1] does not exist."]}))
 
     ;;Verify that searching for the concept from elastic search won't return anything after the delete.
+    (index/wait-until-indexed)
     (let [result (search-generics-test/search-request "collection-drafts" (str "concept_id=" concept-id))
           status (:status result)
           body (:body result)]

@@ -7,6 +7,7 @@
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.metadata-db.api.route-helpers :as rh]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.metadata-db.services.messages :as msg]
@@ -91,7 +92,7 @@
     ;;CMR-9261 Delete the draft from database, instead of tombstone it.
     (if (and (:deleted concept)
              (common-concepts/is-draft-concept? (:concept-type concept)))
-      (let [_ (Thread/sleep 1000) ;;sleep 1s for delete-event to be published.
+      (let [_ (qb-side-api/wait-for-terminal-states)
             {:keys [concept-id]}
             (concept-service/force-delete-draft context concept-id revision-id)]
         {:status 201
