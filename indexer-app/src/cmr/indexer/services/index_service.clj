@@ -679,7 +679,10 @@
               (dg/index-deleted-granule context concept concept-id revision-id elastic-version elastic-options))
             ;; propagate collection deletion to granules
             (when (= :collection concept-type)
-              (cascade-collection-delete context concept-mapping-types concept-id revision-id))))))))
+              (cascade-collection-delete context concept-mapping-types concept-id revision-id)))))
+      ;; For draft concept, after the index is deleted, remove it from database.
+      (when (cs/is-draft-concept? concept-type)
+        (meta-db/delete-draft context concept)))))
 
 (defn- index-association-concept
   "Index the association concept identified by the given concept-id and revision-id."

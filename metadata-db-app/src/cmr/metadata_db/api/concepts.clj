@@ -3,11 +3,9 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as str]
-   [cmr.common.concepts :as common-concepts]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.metadata-db.api.route-helpers :as rh]
    [cmr.metadata-db.services.concept-service :as concept-service]
    [cmr.metadata-db.services.messages :as msg]
@@ -89,22 +87,13 @@
         ;; get variable-association and associated-item when applicable.
         {:keys [concept-id revision-id variable-association associated-item]}
         (concept-service/save-concept-revision context concept)]
-    ;;CMR-9261 Delete the draft from database, instead of tombstone it.
-    (if (and (:deleted concept)
-             (common-concepts/is-draft-concept? (:concept-type concept)))
-      (let [_ (qb-side-api/wait-for-terminal-states)
-            {:keys [concept-id]}
-            (concept-service/force-delete-draft context concept-id revision-id)]
-        {:status 201
-         :body (json/generate-string {:concept-id concept-id})
-         :headers rh/json-header})
-      {:status 201
-       :body (json/generate-string (util/remove-nil-keys
-                                    {:revision-id revision-id
-                                     :concept-id concept-id
-                                     :variable-association variable-association
-                                     :associated-item associated-item}))
-       :headers rh/json-header})))
+    {:status 201
+     :body (json/generate-string (util/remove-nil-keys
+                                  {:revision-id revision-id
+                                   :concept-id concept-id
+                                   :variable-association variable-association
+                                   :associated-item associated-item}))
+     :headers rh/json-header}))
 
 (defn- delete-concept
   "Mark a concept as deleted (create a tombstone)."
@@ -127,6 +116,15 @@
                                 context concept-id (as-int revision-id) force?)]
     {:status 200
      :body (json/generate-string {:revision-id revision-id})
+     :headers rh/json-header}))
+
+(defn- force-delete-draft
+  "Permanently remove a draft concept from the database."
+  [context params concept-id revision-id]
+  (let [{:keys [concept-id]} (concept-service/force-delete-draft
+                              context concept-id revision-id)]
+    {:status 200
+     :body (json/generate-string {:concept-id concept-id})
      :headers rh/json-header}))
 
 (defn- get-concept-id
@@ -163,6 +161,10 @@
       ;; saves a concept
       (POST "/" {:keys [request-context params body]}
         (save-concept-revision request-context params body))
+      ;; remove a draft from the database
+      (DELETE "/force-delete-draft/:concept-id" {{:keys [concept-id] :as params} :params
+                                                 request-context :request-context}
+        (force-delete-draft request-context params concept-id nil))
       ;; mark a concept as deleted (add a tombstone) specifying the revision the tombstone should have
       (DELETE "/:concept-id/:revision-id" {{:keys [concept-id revision-id] :as params} :params
                                            request-context :request-context}

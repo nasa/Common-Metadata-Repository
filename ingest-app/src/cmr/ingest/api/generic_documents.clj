@@ -217,10 +217,10 @@
 
 (defn delete-generic-document
   "Deletes a generic document in elasticsearch. Creates a tombstone in the database for non-draft
-   document. Delete all revisions from database for draft document. Returns a 201
-   if successful with the concept id and revision number for non-draft document. Returns a 200
-   if successful with the concept id for draft document. A 404 status is returned if the concept has
-   already been deleted."
+   document. Delete all revisions from database for draft document.
+   Returns a 201 if successful with the concept id and revision number for non-draft document.
+   Returns a 200 if successful with the concept id and revision number for draft document.
+   A 404 status is returned if the concept has already been deleted or removed from database."
   [request]
   (let [{:keys [route-params request-context params]} request
         provider-id (or (:provider params)

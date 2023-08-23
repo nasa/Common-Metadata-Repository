@@ -238,7 +238,9 @@
         search-body (:body search-result)
         ;; deleting draft should delete from database completely.
         result1 (gen-util/ingest-generic-document
-                    nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete) 
+                    nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete)
+        ;; Removal from database happens after the index is deleted.
+        _ (index/wait-until-indexed)
         result2 (gen-util/ingest-generic-document
                     nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete)]
     ;;Verify that searching for the concept from elastic search does return result.
@@ -247,11 +249,10 @@
 
     ;;The first delete removes the draft from database completely and returns concept-id.
     ;;The second delete will not say the draft is already deleted because it no longer exists in the database
-    (is (= result1 {:concept-id concept-id, :revision-id nil,:warnings nil, :existing-errors nil}))
+    (is (= result1 {:concept-id concept-id, :revision-id 2,:warnings nil, :existing-errors nil}))
     (is (= result2 {:errors ["CollectionDraft with native id [NativeId] in provider [PROV1] does not exist."]}))
 
     ;;Verify that searching for the concept from elastic search won't return anything after the delete.
-    (index/wait-until-indexed)
     (let [result (search-generics-test/search-request "collection-drafts" (str "concept_id=" concept-id))
           status (:status result)
           body (:body result)]
