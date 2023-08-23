@@ -56,9 +56,7 @@
   {:collection-draft :umm-c
    :service-draft :umm-s
    :tool-draft :umm-t
-   :variable-draft :umm-var
-   :data-quality-summary-draft :data-quality-summary
-   :order-option-draft :order-option})
+   :variable-draft :umm-var})
 
 (defn is-draft-concept?
   "This function checks to see if the concept to be ingested or updated
@@ -117,7 +115,8 @@
         {:keys [spec-key spec-version document-name format]}
          (pull-metadata-specific-information request-context concept-type content-type raw-document)]
     (if (and (not= concept-type spec-key)
-             (not= (concept-type draft-concept->spec-map) spec-key))
+             (not= (concept-type draft-concept->spec-map) spec-key)
+             (not= (common-concepts/get-concept-type-of-draft concept-type) spec-key))
       (throw (UnsupportedOperationException. (format "%s version %s is not supported." spec-key spec-version)))
       {:concept (assoc {}
                        :metadata raw-document
