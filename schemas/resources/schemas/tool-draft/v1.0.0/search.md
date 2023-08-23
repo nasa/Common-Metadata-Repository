@@ -81,9 +81,9 @@ __Sample response__
 
 The JSON response includes the following fields.
 
-* hits - How many total Order Options were found.
+* hits - How many total records were found.
 * took - How long the search took in milliseconds
-* items - a list of the current page of Order Options with the following fields
+* items - a list of the current page of records with the following fields
   * concept\_id
   * revision\_id
   * provider\_id
@@ -183,7 +183,7 @@ By default, Tool Draft results are sorted by name, then by provider-id.
 
 One or more sort keys can be specified using the sort_key[] parameter. The order used impacts searching. Fields can be prepended with a - to sort in descending order. Ascending order is the default but + (Note: + must be URL encoded as %2B) can be used to explicitly request ascending.
 
-##### Valid Order Option Sort Keys
+##### Valid Tool Sort Keys
 
 * name
 * provider
