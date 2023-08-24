@@ -114,6 +114,8 @@
         content-type (get headers "content-type")
         {:keys [spec-key spec-version document-name format]}
          (pull-metadata-specific-information request-context concept-type content-type raw-document)]
+    ;; Check to see if the passed in record contains the MetadataSpecification/Name field and its
+    ;; value matches that from the concept name in the route parameters.
     (if (and (not= concept-type spec-key)
              (not= (concept-type draft-concept->spec-map) spec-key)
              (not= (common-concepts/get-concept-type-of-draft concept-type) spec-key))
