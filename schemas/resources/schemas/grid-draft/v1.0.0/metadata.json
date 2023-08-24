@@ -1,0 +1,118 @@
+{
+    "MetadataSpecification": {
+        "URL": "https://cdn.earthdata.nasa.gov/generic/grid/v0.0.1",
+        "Name": "Grid",
+        "Version": "0.0.1"
+    },
+    "Name": "Grid-A7-v1",
+    "LongName": "Grid A-7 version 1.0",
+    "Version": "v1.0",
+    "Description": "A sample grid",
+    "GridDefinition": {
+        "CoordinateReferenceSystemID": {
+            "Type": "EPSG",
+			"Code": "EPSG:4326",
+            "Title": "WGS84 - World Geodetic System 1984, used in GPS - EPSG:4326",
+            "URL": "https://epsg.io/4326"
+        },
+        "DimensionSize": {
+            "Height": 1,
+            "Width": 1,
+            "Time": 2,
+            "Other": {
+                "Name": "Other Dimension Size",
+                "Value": "42",
+                "Description": "Details about the other dimension size."
+            }
+        },
+
+        "SpatialConstraint": {
+            "0_360_DegreeProjection": true,
+            "NorthBoundingCoordinate": 90.0,
+            "EastBoundingCoordinate": 0.0,
+            "SouthBoundingCoordinate": -90.0,
+            "WestBoundingCoordinate": 90.0,
+            "SpatialResolution": {
+                "Unit": "Degree",
+                "LongitudeResolution": "0.0005",
+                "LatitudeResolution": "90.000"
+            }
+        },
+        "DimensionScale": {
+            "0_360_DegreeProjection": true,
+            "X":
+            {
+                "Minimum": "-360-00-00.000",
+                "Maximum": "360-00-00.00",
+                "Unit": "Degrees-Minutes-Seconds",
+                "Resolution": 0.125
+            },
+            "Y":
+            {
+                "Minimum": "-360-00-00.000",
+                "Maximum": "360-00-00.00",
+                "Unit": "Degrees-Minutes-Seconds",
+                "Resolution": 0.5
+            },
+            "Time":
+            {
+                "Minimum": "2020-01-01T00:00:00.001Z",
+                "Maximum": "2020-01-30T23:59:59Z",
+                "Unit": "DateTime",
+                "Resolution": 0.125
+            },
+            "Other":
+            {
+                "Minimum": 0,
+                "Maximum": 44,
+                "Unit": "Meter",
+                "Resolution": 0.5
+            }
+        },
+
+        "Distortion": {
+            "Description": "Distortion around the grid edge",
+            "Percent": 31
+        },
+        "Uniform-Grid": true,
+        "Bounded-Grid": true
+    },
+    "Organization": {
+        "ShortName": "NASA/GSFC/SED/ESD/GCDC/GESDISC",
+        "LongName": "Goddard Earth Sciences Data and Information Services Center (formerly Goddard DAAC), Global Change Data Center, Earth Sciences Division, Science and Exploration Directorate, Goddard Space Flight Center, NASA",
+        "RelatedURLs": [
+            {
+                "URL": "https://example.gov",
+                "URLContentType": "C-Type",
+                "Type": "Type"
+            }
+        ],
+        "ContactMechanisms": [
+            {
+                "Type": "Email",
+                "Value": "who@example.gov"
+            },{
+                "Type": "Email",
+                "Value": "you@example.gov"
+            }
+        ]
+    },
+    "MetadataDate": {"Create": "2022-04-20T08:00:00Z"},
+    "RelatedURLs": [
+        {
+            "URL": "https://example.gov",
+            "URLContentType": "C-Type",
+            "Type": "Type"
+        },{
+            "URL": "https://example.gov/two",
+            "Description": "Details about the URL or page",
+            "URLContentType": "C-Type",
+            "Type": "Type"
+        }
+    ],
+    "AdditionalAttribute": {
+        "Name": "attribute-1",
+        "Description": "Sample",
+        "DataType": "STRING"
+    }
+}
