@@ -594,15 +594,20 @@
                            (string/join "," cols)
                            seq-name
                            (string/join "," (repeat (count values) "?"))) 
-              ;; replace instances of 'false' with 0 and 'true' with 1 for Postgres 'deleted' column
-              pg-values (map #(if (boolean? %) (if % 1 0) %) values)
+              ;; if set to not use metadata column in Aurora database, then remove it and replace with nil
+              pg-values (if (aurora-config/aurora-metadata?)
+                          values
+                          (map #(if (or (string? %) (number? %) (boolean? %) (nil? %)) % nil) values))
+              ;; postgres does not convert boolean to integer automatically on insert like oracle does.
+              ;; 'irl' we will make this a boolean column bc postgres supports that data type.
+              pg-values (map #(if (boolean? %) (if % 1 0) %) pg-values)
               pg-stmt (format (str "INSERT INTO %s (id, %s, transaction_id) VALUES "
                                    "(NEXTVAL('%s'),%s,NEXTVAL('GLOBAL_TRANSACTION_ID_SEQ'))")
                               table
                               (string/join "," cols)
                               seq-name
                               (string/join "," (repeat (count pg-values) "?")))]
-          (trace "Executing" stmt "with values" (pr-str pg-values))
+          (trace "Executing" pg-stmt "with values" (pr-str pg-values))
           (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))
             (info "ORT Runtime of Oracle save-concept: " (first (util/time-execution
                                                                  (j/db-do-prepared db stmt values)))) " ms.")
