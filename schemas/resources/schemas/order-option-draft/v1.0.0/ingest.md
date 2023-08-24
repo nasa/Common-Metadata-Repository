@@ -26,7 +26,7 @@ Order Option Draft concepts can be created or updated by sending an HTTP PUT wit
         <existing-errors></existing-errors>
     </result>
 ```
-Subsequent ingests to the Oder Option Draft record will result in updates to it's metadata as well as increment the revision-id of the record.
+Subsequent ingests to the Order Option Draft record will result in updates to it's metadata as well as increment the revision-id of the record.
 
 #### Successful Response in JSON
 
