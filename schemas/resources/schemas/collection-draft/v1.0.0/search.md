@@ -1,6 +1,6 @@
 ### <a name="collection-draft"></a> Collection Draft
 
-Collection Drafts are draft records that describe a data set.Collection metadata is stored in the JSON format [UMM-Collection Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/collection).
+Collection Drafts are draft records that describe a data set. Collection metadata is stored in the JSON format [UMM-Collection Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/collection).
 
 #### <a name="searching-for-collection-drafts"></a> Searching for Collection Drafts
 
