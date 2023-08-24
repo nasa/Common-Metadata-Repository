@@ -81,9 +81,9 @@ __Sample response__
 
 The JSON response includes the following fields.
 
-* hits - How many total Order Options were found.
+* hits - How many total records were found.
 * took - How long the search took in milliseconds
-* items - a list of the current page of Order Options with the following fields
+* items - a list of the current page of records with the following fields
   * concept\_id
   * revision\_id
   * provider\_id
@@ -117,7 +117,7 @@ __Sample response__
 
 ##### UMM JSON
 
-The UMM JSON response contains meta-metadata of the Variable Draft, the UMM fields and the associations field if applicable. [To search over specific versions of UMM](#umm-json). 
+The UMM JSON response contains meta-metadata of the Grid Draft, the UMM fields and the associations field if applicable. [To search over specific versions of UMM](#umm-json).
 
 __Example__
 
