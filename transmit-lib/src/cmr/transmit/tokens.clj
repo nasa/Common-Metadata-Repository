@@ -71,6 +71,11 @@
          :unauthorized
          (format "Token %s does not exist" (common-util/scrub-token token)))
 
+    ;; legacy services endpoint is shutdown, so we will recieve a 301 when querying token info.
+    301 (errors/throw-service-error
+         :unauthorized
+         (format "Token %s does not exist" (common-util/scrub-token token)))
+
     ;; catalog-rest returns 401 when echo-rest returns 400 for expired token, we do the same in CMR
     400 (errors/throw-service-errors :unauthorized (:errors (json/decode body true)))
 
@@ -128,10 +133,11 @@
       (verify-edl-token-locally token)
       (if (common-util/is-launchpad-token? token)
         (:uid (launchpad-user-cache/get-launchpad-user context token))
+        ;; Legacy services has been shut down, we still use a mock for tests, we will leave this here and handle the 301.
         (let [[status parsed body] (rest-post context "/tokens/get_token_info"
                                                     {:headers {"Accept" mt/json
                                                                "Authorization" (transmit-config/echo-system-token)}
                                                      :form-params {:id token}})]
-              (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
-                            (common-util/scrub-token token) status))
-              (handle-get-user-id token status parsed body))))))
+             (info (format "get_token_info call on token [%s] (partially redacted) returned with status [%s]"
+                           (common-util/scrub-token token) status))
+             (handle-get-user-id token status parsed body))))))

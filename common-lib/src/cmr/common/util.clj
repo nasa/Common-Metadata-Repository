@@ -1009,7 +1009,9 @@
     (if (some? (re-find #"[A-Za-z0-9=_-]+\.[A-Za-z0-9=_-]+\.[:A-Za-z0-9=_-]+" token))
       (let [token-parts (string/split token #"\.")
             token-header (first token-parts)
-            header-raw (String. (.decode (java.util.Base64/getDecoder) token-header))]
+            header-raw (try
+                         (String. (.decode (java.util.Base64/getDecoder) token-header))
+                         (catch java.lang.IllegalArgumentException e false))]
         ;; don't parse the data unless it is really needed to prevent unnecessary
         ;; processing. Check first to see if the data looks like JSON
         (if (and (string/starts-with? header-raw "{")
