@@ -597,7 +597,7 @@
               ;; if set to not use metadata column in Aurora database, then remove it and replace with nil
               pg-values (if (aurora-config/aurora-metadata?)
                           values
-                          (map #(if (or (string? %) (number? %) (boolean? %) (nil? %)) % nil) values))
+                          (map #(if (bytes? %) nil %) values))
               ;; postgres does not convert boolean to integer automatically on insert like oracle does.
               ;; 'irl' we will make this a boolean column bc postgres supports that data type.
               pg-values (map #(if (boolean? %) (if % 1 0) %) pg-values)
