@@ -39,9 +39,11 @@ GEM
     multi_json (1.15.0)
     multi_test (1.1.0)
     multi_xml (0.6.0)
-    nokogiri (1.13.10)
+    nokogiri (1.15.4-arm64-darwin)
       racc (~> 1.4)
-    racc (1.6.1)
+    nokogiri (1.15.4-x86_64-linux)
+      racc (~> 1.4)
+    racc (1.7.1)
     rspec (3.12.0)
       rspec-core (~> 3.12.0)
       rspec-expectations (~> 3.12.0)
@@ -60,12 +62,13 @@ GEM
 
 PLATFORMS
   arm64-darwin-21
+  x86_64-linux
 
 DEPENDENCIES
   cucumber
   httparty
   jsonpath
-  nokogiri (>= 1.13.10)
+  nokogiri (= 1.15.4)
   rspec
 
 BUNDLED WITH
