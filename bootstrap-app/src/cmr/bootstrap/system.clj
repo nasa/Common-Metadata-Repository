@@ -28,6 +28,7 @@
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.system :as mdb-system]
+   [cmr.metadata-db.services.util :as mdb-util]
    [cmr.oracle.connection :as oracle]
    [cmr.transmit.config :as transmit-config]))
 
@@ -70,7 +71,7 @@
              :synchronous-dispatcher (dispatch/create-backend :sync)
              :message-queue-dispatcher (dispatch/create-backend :message-queue)
              :catalog-rest-user (mdb-config/catalog-rest-db-username)
-             :db (oracle/create-db (bootstrap-config/db-spec "bootstrap-pool"))
+             :db (mdb-util/create-db (bootstrap-config/db-spec "bootstrap-pool"))
              :web (web/create-web-server (transmit-config/bootstrap-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (bootstrap-config/bootstrap-nrepl-port))
              :relative-root-url (transmit-config/bootstrap-relative-root-url)

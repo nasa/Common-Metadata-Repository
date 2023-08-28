@@ -27,6 +27,7 @@
    [cmr.ingest.services.jobs :as ingest-jobs]
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
+   [cmr.metadata-db.services.util :as mdb-util]
    [cmr.oracle.connection :as oracle]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
@@ -91,7 +92,7 @@
    (let [sys {:log (log/create-logger-with-log-level (log-level))
               :web (web/create-web-server (transmit-config/ingest-port) routes/handlers)
               :nrepl (nrepl/create-nrepl-if-configured (config/ingest-nrepl-port))
-              :db (oracle/create-db (config/db-spec connection-pool-name))
+              :db (mdb-util/create-db (config/db-spec connection-pool-name))
               :scheduler (jobs/create-clustered-scheduler
                            `system-holder :db
                            (conj (ingest-jobs/jobs)

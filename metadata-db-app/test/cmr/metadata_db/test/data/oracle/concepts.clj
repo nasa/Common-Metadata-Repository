@@ -12,6 +12,7 @@
    [cmr.metadata-db.data.oracle.concepts :as c]
    [cmr.metadata-db.data.oracle.concepts.collection]
    [cmr.metadata-db.data.oracle.concepts.granule]
+   [cmr.metadata-db.services.util :as mdb-util]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle])
   (:import
@@ -38,7 +39,7 @@
 ;; This test is commented out until CMR-1303 is resolved
 #_(deftest db-result->concept-map-test
    (let [db (->> (mdb-config/db-spec "metadata-db-test")
-                 oracle/create-db
+                 mdb-util/create-db
                  (#(lifecycle/start % nil)))]
      (try
        (j/with-db-transaction

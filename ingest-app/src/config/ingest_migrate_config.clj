@@ -6,6 +6,7 @@
    [cmr.ingest.config :as ingest-config]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
+   [cmr.metadata-db.services.util :as mdb-util]
    [drift.builder :refer [incremental-migration-number-generator]])
   (:import
    (java.sql SQLException)))
@@ -17,7 +18,7 @@
   []
   (when-not @db-atom
     (reset! db-atom (lifecycle/start
-                      (oracle/create-db (ingest-config/db-spec "ingest-migrations")) nil)))
+                      (mdb-util/create-db (ingest-config/db-spec "ingest-migrations")) nil)))
   @db-atom)
 
 

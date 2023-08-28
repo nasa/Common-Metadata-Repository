@@ -5,6 +5,7 @@
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.oracle.connection :as oracle]
+   [cmr.metadata-db.services.util :as mdb-util]
    [drift.builder :as drift-builder])
   (:import
    (java.sql SQLException)))
@@ -16,7 +17,7 @@
   []
   (when-not @bootstrap-db-atom
     (reset! bootstrap-db-atom (lifecycle/start
-                                (oracle/create-db (bootstrap-config/db-spec "bootstrap-migrations"))
+                                (mdb-util/create-db (bootstrap-config/db-spec "bootstrap-migrations"))
                                 nil)))
   @bootstrap-db-atom)
 

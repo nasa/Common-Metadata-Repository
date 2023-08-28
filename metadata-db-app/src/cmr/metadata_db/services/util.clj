@@ -1,7 +1,9 @@
 (ns cmr.metadata-db.services.util
   "Utility methods for concepts."
   (:require [cmr.metadata-db.services.messages :as msg]
-            [cmr.common.util :as util]))
+            [cmr.common.util :as util]
+            [cmr.metadata-db.config :as config]
+            [cmr.oracle.connection :as oracle]))
 
 ;;; Utility methods
 (defn context->db
@@ -19,3 +21,9 @@
   "Check to see if an entry is a tombstone (has a :deleted true entry)."
   [concept]
   (:deleted concept))
+
+(defn create-db
+  "Calling the correct create-db function for the currently configured database system"
+  [spec]
+  (case (config/metadata-db-system)
+    "oracle" (oracle/create-db spec)))

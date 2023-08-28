@@ -19,6 +19,7 @@
    [cmr.metadata-db.api.routes :as routes]
    [cmr.metadata-db.config :as config]
    [cmr.metadata-db.services.jobs :as mdb-jobs]
+   [cmr.metadata-db.services.util :as mdb-util]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
    [cmr.transmit.config :as transmit-config]))
@@ -42,7 +43,7 @@
   ([]
    (create-system "metadata-db"))
   ([connection-pool-name]
-   (let [sys {:db (assoc (oracle/create-db (config/db-spec connection-pool-name))
+   (let [sys {:db (assoc (mdb-util/create-db (config/db-spec connection-pool-name))
                          :result-set-fetch-size
                          (config/result-set-fetch-size))
               :log (log/create-logger-with-log-level (log-level))
