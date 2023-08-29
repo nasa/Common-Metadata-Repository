@@ -1,6 +1,6 @@
 ### <a name="variable-draft"></a> Variable Draft
 
-Variable Drafts are draft records that inform users about the variables that are available in a collection when working with data files. Variable metadata is stored in the JSON format [UMM-Service Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/variable).
+Variable Drafts are draft records that inform users about the variables that are available in a collection when working with data files. Variable metadata is stored in the JSON format [UMM-Variable Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/variable).
 
 #### <a name="searching-for-variable-drafts"></a> Searching for Variable Drafts
 
