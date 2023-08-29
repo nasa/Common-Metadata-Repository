@@ -1,6 +1,6 @@
 ### <a name="tool-draft"></a> Tool Draft
 
-Tool Drafts are draft records that inform users about the tools that are available to a collection when working with data files. Tool metadata is stored in the JSON format [UMM-Service Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/tool).
+Tool Drafts are draft records that inform users about the tools that are available to a collection when working with data files. Tool metadata is stored in the JSON format [UMM-Tool Schema](https://git.earthdata.nasa.gov/projects/EMFD/repos/unified-metadata-model/browse/tool).
 
 #### <a name="searching-for-tool-drafts"></a> Searching for Tool Drafts
 
