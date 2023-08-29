@@ -146,7 +146,7 @@
        concept_id VARCHAR(255) NOT NULL,
        native_id VARCHAR(250) NOT NULL,
        parent_collection_id VARCHAR(255) NOT NULL,
-       metadata BYTEA NOT NULL,
+       metadata BYTEA,
        format VARCHAR(255) NOT NULL,
        revision_id INTEGER DEFAULT 1 NOT NULL,
        revision_date TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP NOT NULL,

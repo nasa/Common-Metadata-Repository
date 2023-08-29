@@ -32,6 +32,10 @@
   "Postgres database master password"
   {:default "admin"})
 
-(defconfig aurora-toggle
+(defconfig aurora-toggle ;; prototype only
   "Three-way toggle for Aurora functionality. 'aurora-off' uses only Oracle, 'aurora-on' uses both Oracle and Aurora, and 'aurora-only' uses only Aurora"
   {:default "aurora-off"})
+
+(defconfig aurora-metadata? ;; prototype only
+  "Whether or not to populate the metadata column in the Aurora database."
+  {:default false :type Boolean})
