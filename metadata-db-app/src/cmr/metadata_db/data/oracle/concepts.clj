@@ -595,7 +595,7 @@
                            seq-name
                            (string/join "," (repeat (count values) "?"))) 
               ;; if set to not use metadata column in Aurora database, then remove it and replace with nil
-              pg-values (if (aurora-config/aurora-metadata?)
+              pg-values (if (aurora-config/aurora-metadata)
                           values
                           (map #(when-not (bytes? %) %) values))
               ;; postgres does not convert boolean to integer automatically on insert like oracle does.
