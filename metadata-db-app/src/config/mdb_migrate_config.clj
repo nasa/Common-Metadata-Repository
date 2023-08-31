@@ -5,6 +5,7 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.data.oracle.concept-tables :as concept-tables]
+   [cmr.metadata-db.services.util :as mdb-util]
    [cmr.oracle.config :as oracle-config]
    [cmr.oracle.connection :as oracle]
    [drift.builder :refer [incremental-migration-number-generator]])
@@ -18,7 +19,7 @@
   []
   (when-not @db-atom
     (reset! db-atom (lifecycle/start
-                      (oracle/create-db (mdb-config/db-spec "metadata-db-migrations")) nil)))
+                      (mdb-util/create-db (mdb-config/db-spec "metadata-db-migrations")) nil)))
   @db-atom)
 
 (defn- maybe-create-schema-table

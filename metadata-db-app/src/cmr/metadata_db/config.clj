@@ -16,6 +16,10 @@
   "The database password"
   {})
 
+(defconfig metadata-db-system
+  "The backend system being used for metadata-db"
+  {:default "oracle"})
+
 (defconfig catalog-rest-db-username
   "The catalog rest db username"
   {:default "DEV_52_CATALOG_REST"})
