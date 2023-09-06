@@ -85,7 +85,9 @@
                      (j/query db get-stmt))
         stmt (su/build (delete table
                                (where (find-params->sql-clause params))))
-        efs-force-delete (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
+        efs-force-delete (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+                                   (and (not= "aurora-off" (aurora-config/aurora-toggle))
+                                        (not (aurora-config/aurora-metadata))))
                            (util/time-execution
                             (efs/delete-concepts provider concept-type (map efs-concept-helper get-values))))
         oracle-force-delete (when (not= "dynamo-only" (dynamo-config/dynamo-toggle))

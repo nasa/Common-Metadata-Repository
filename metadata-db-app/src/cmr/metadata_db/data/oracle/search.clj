@@ -205,7 +205,9 @@
                             (doall
                              (mapv #(oc/db-result->concept-map concept-type conn (:provider_id %) %)
                                    (su/query conn stmt))))))
-        efs-results (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
+        efs-results (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+                              (and (not= "aurora-off" (aurora-config/aurora-toggle))
+                                   (not (aurora-config/aurora-metadata))))
                       (util/time-execution
                        (doall (efs/get-concepts-small-table concept-type (map sh/efs-concept-helper concept-ids-revision-ids)))))
         dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
@@ -265,7 +267,9 @@
                                                                           (:provider-id (first providers)))
                                                                       result))
                                          (su/query conn stmt))))))
-        efs-results (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
+        efs-results (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+                              (and (not= "aurora-off" (aurora-config/aurora-toggle))
+                                   (not (aurora-config/aurora-metadata))))
                       (util/time-execution
                        (doall (efs/get-concepts providers concept-type (map sh/efs-concept-helper concept-ids-revision-ids)))))
         dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
@@ -339,7 +343,9 @@
                                         (util/time-execution
                                          (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
                                                (su/query db stmt))))
-                       efs-results (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle)) (not= "aurora-off" (aurora-config/aurora-toggle)))
+                       efs-results (when (or (not= "dynamo-off" (dynamo-config/dynamo-toggle))
+                                             (and (not= "aurora-off" (aurora-config/aurora-toggle))
+                                                  (not (aurora-config/aurora-metadata))))
                                     (util/time-execution
                                      (doall (efs/get-concepts provider concept-type (map sh/efs-concept-helper concept-revision-batch-result)))))
                        dynamo-results (when (not= "dynamo-off" (dynamo-config/dynamo-toggle))
