@@ -54,6 +54,11 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
         * [DELETE - Delete a subscription.](#delete-subscription)
         * [Subscription Access Control](#subscription-access-control)
 * %GENERIC-TABLE-OF-CONTENTS%
+* [Publish Drafts](#publish-drafts)
+    * [/publish/\<non-variable-draft-concept-id\>/\<native-id\>](#publish-non-variable-draft-endpoint)
+        * [PUT - Publish a non variable draft.](#publish-non-variable-draft)
+    * [/collections/\<collection-concept-id\>/\<collection-revision-id\>/variables/\<native-id\>/publish/\<variable-draft-concept-id\>](#publish-variable-draft-endpoint)
+        * [PUT - Publish a variable draft.](#publish-variable-draft)
 * [Translations](#translate-collection)
     * [/translate/collection](#translate-collection-endpoint)
         * [POST - Translate collection metadata.](#translate-collection)
@@ -1192,6 +1197,35 @@ Ingest permissions for granule subscriptions are granted through the provider vi
 For lack of a better ACL, ingest permissions for collection subscription are granted through the SYSTEM OBJECT TAG_GROUP ACL update permission.
 
 %GENERIC-DOCS%
+
+## <a name="publish-drafts"></a> Publish Drafts 
+### <a name="publish-non-variable-draft"></a> Publish Non Variable Draft 
+#### <a name="publish-non-variable-draft-endpoint"></a> /publish/&lt;non-variable-draft-concept-id&gt;/&lt;native-id&gt;
+
+Non variable drafts can be published, i.e. ingested into CMR as non variable concept, through non variable draft publishing endpoint.
+
+Example: Publish non variable draft OOD1200000005-PROV1 using native-id orderoption1. Note: if Content-Type is passed in, use it, otherwise use the format stored in the database for OOD1200000005-PROV1.  
+
+```
+curl -XPUT \
+     -H "Authorization:  XXXX" \ 
+     -H "Content-Type:application/vnd.nasa.cmr.umm+json" \
+     %CMR-ENDPOINT%/publish/OOD1200000005-PROV1/orderoption1
+```
+### <a name="publish-variable-draft"></a> Publish Variable Draft 
+#### <a name="publish-variable-draft-endpoint"></a> /collections/&lt;collection-concept-id&gt;/&lt;collection-revision-id&gt;/variables/&lt;native-id&gt;/publish/&lt;variable-draft-concept-id&gt; 
+
+Variable drafts can be published, i.e. ingested into CMR as variable concept, through variable draft publishing endpoint.
+
+Example: Publish variable draft VD1200000008-PROV1 using native-id var1. Note: if Content-Type is passed in, use it, otherwise use the format stored in the database for VD1200000008-PROV1. 
+
+```
+curl -XPUT \
+     -H "Authorization:  XXXX" \
+     -H "Content-Type:application/vnd.nasa.cmr.umm+json;version=1.8.1" \
+     %CMR-ENDPOINT%/collections/C1200000009-PROV1/1/variables/var1/publish/VD1200000008-PROV1
+```
+
 ## <a name="translate-collection"></a> Translate Collection Metadata
 #### <a name="translate-collection-endpoint"></a> /translate/collection
 
