@@ -240,7 +240,7 @@
         ;; deleting draft should delete from database completely.
         result1 (gen-util/ingest-generic-document
                     nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete)
-        ;; Removal from database happens after the index is deleted.   
+        ;; Removal from database happens after the index is deleted.
         _ (index/wait-until-indexed)
         result2 (gen-util/ingest-generic-document
                     nil "PROV1" native-id :collection-draft gen-util/collection-draft :delete)]
@@ -252,7 +252,7 @@
     ;;The second delete will not say the draft is already deleted because it no longer exists in the database
     (is (= result1 {:concept-id concept-id, :revision-id 2,:warnings nil, :existing-errors nil}))
     (is (= result2 {:errors ["CollectionDraft with native id [NativeId] in provider [PROV1] does not exist."]}))
-    
+
     ;;Verify that searching for the concept from elastic search won't return anything after the delete.
     (let [result (search-generics-test/search-request "collection-drafts" (str "concept_id=" concept-id))
           status (:status result)
@@ -288,15 +288,15 @@
         ;; deleting the draft should fail. 
         draft-delete-result (gen-util/ingest-generic-document
                              nil "PROV1" cd-native-id :collection-draft gen-util/collection-draft :delete)]
-    ;;Verify that searching for the published collection from elastic search does return result.
+    ;; Verify that searching for the published collection from elastic search does return result.
     (is (= search-coll-status 200))
     (is (string/includes? search-coll-body "<hits>1</hits>"))
 
-    ;;Verify that searching for the draft from elastic search returns nothing
+    ;; Verify that searching for the draft from elastic search returns nothing
     (is (= search-draft-status 200))
     (is (string/includes? search-draft-body "<hits>0</hits>"))
  
-    ;;The draft delete result should indicate the draft does not exist. 
+    ;; The draft delete result should indicate the draft does not exist. 
     (is (= draft-delete-result {:errors ["CollectionDraft with native id [CD-NativeId] in provider [PROV1] does not exist."]}))))
 
 ;; Test that generic-doc draft can be published
@@ -327,15 +327,15 @@
         ;; deleting the draft should fail. 
         draft-delete-result (gen-util/ingest-generic-document
                              nil "PROV1" od-native-id :order-option-draft gen-util/order-option-draft :delete)]
-    ;;Verify that searching for the published order-option from elastic search does return result.
+    ;; Verify that searching for the published order-option from elastic search does return result.
     (is (= search-oo-status 200))
     (is (string/includes? search-oo-body "<hits>1</hits>"))
   
-    ;;Verify that searching for the draft from elastic search returns nothing
+    ;; Verify that searching for the draft from elastic search returns nothing
     (is (= search-draft-status 200))
     (is (string/includes? search-draft-body "<hits>0</hits>"))
 
-    ;;The draft delete result should indicate the draft does not exist.
+    ;; The draft delete result should indicate the draft does not exist.
     (is (= draft-delete-result {:errors ["OrderOptionDraft with native id [OD-NativeId] in provider [PROV1] does not exist."]}))))
 
 ;; Test that variable draft can be published
@@ -371,13 +371,13 @@
         ;; deleting the draft should fail.
         draft-delete-result (gen-util/ingest-generic-document
                              nil "PROV1" vd-native-id :variable-draft gen-util/variable-draft :delete)]
-    ;;Verify that searching for the published variable from elastic search does return result.
+    ;; Verify that searching for the published variable from elastic search does return result.
     (is (= search-va-status 200))
     (is (string/includes? search-va-body "<hits>1</hits>"))
 
-    ;;Verify that searching for the draft from elastic search returns nothing
+    ;; Verify that searching for the draft from elastic search returns nothing
     (is (= search-draft-status 200))
     (is (string/includes? search-draft-body "<hits>0</hits>"))
 
-    ;;The draft delete result should indicate the draft does not exist.
+    ;; The draft delete result should indicate the draft does not exist.
     (is (= draft-delete-result {:errors ["VariableDraft with native id [VD-NativeId] in provider [PROV1] does not exist."]}))))

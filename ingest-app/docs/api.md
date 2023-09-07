@@ -450,7 +450,7 @@ Collection metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPO
   		-H "Authorization:  XXXX" \
   		%CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
 
-Note: When a collection is deleted, all the associations that are associated with the collection and the granules that are contained in the collection will be deleted, also called tombstoned (tombstoned means to mark record as ready to be deleted but the actual deletion is scheduled for latter) too. With the new requirement that a variable can not exist without an association with a collection, since each variable can only be associated with one collection, all the variables associated with the deleted collection will be deleted too.
+Note: When a collection is deleted, all the associations on that collection and the granules in the collection will be deleted, also called tombstoned (tombstoned means to mark record as ready to be deleted but the actual deletion is scheduled for latter) too. With the new requirement that a variable can not exist without an association with a collection, since each variable can only be associated with one collection, all the variables associated with the deleted collection will be deleted too.
 
 #### Successful Response in XML
 
@@ -1202,7 +1202,7 @@ For lack of a better ACL, ingest permissions for collection subscription are gra
 ### <a name="publish-non-variable-draft"></a> Publish Non Variable Draft 
 #### <a name="publish-non-variable-draft-endpoint"></a> /publish/&lt;non-variable-draft-concept-id&gt;/&lt;native-id&gt;
 
-Non variable drafts can be published, i.e. ingested into CMR as non variable concept, through non variable draft publishing endpoint.
+Non variable drafts can be published, i.e. ingested into CMR as non variable concept, through the non variable draft publishing endpoint.
 
 Example: Publish non variable draft OOD1200000005-PROV1 using native-id orderoption1. Note: if Content-Type is passed in, use it, otherwise use the format stored in the database for OOD1200000005-PROV1.  
 
@@ -1227,7 +1227,7 @@ curl -XPUT \
 ### <a name="publish-variable-draft"></a> Publish Variable Draft 
 #### <a name="publish-variable-draft-endpoint"></a> /collections/&lt;collection-concept-id&gt;/&lt;collection-revision-id&gt;/variables/&lt;native-id&gt;/publish/&lt;variable-draft-concept-id&gt; 
 
-Variable drafts can be published, i.e. ingested into CMR as variable concept, through variable draft publishing endpoint.
+Variable drafts can be published, i.e. ingested into CMR as variable concept, through the variable draft publishing endpoint.
 
 Example: Publish variable draft VD1200000008-PROV1 using native-id var1. Note: if Content-Type is passed in, use it, otherwise use the format stored in the database for VD1200000008-PROV1. 
 
