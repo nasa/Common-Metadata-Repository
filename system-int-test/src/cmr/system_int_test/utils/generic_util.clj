@@ -32,6 +32,16 @@
                           (slurp)
                           (json/parse-string true)))
 
+(def order-option-draft (-> "schemas/order-option-draft/v1.0.0/metadata.json"
+                            (jio/resource)
+                            (slurp)
+                            (json/parse-string true)))
+
+(def variable-draft (-> "schemas/variable-draft/v1.0.0/metadata.json"
+                        (jio/resource)
+                        (slurp)
+                        (json/parse-string true)))
+
 (defn grant-all-drafts-fixture
   "A test fixture that grants all users the ability to create and modify drafts."
   [providers guest-permissions registered-permissions]

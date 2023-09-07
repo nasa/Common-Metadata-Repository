@@ -13,10 +13,23 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.ingest.api.core :as api-core]
+   [cmr.ingest.api.collections :as collections]
+   [cmr.ingest.api.services :as services]
+   [cmr.ingest.api.tools :as tools]
+   [cmr.ingest.api.variables :as variables]
    [cmr.schema-validation.json-schema :as js-validater]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.transmit.metadata-db2 :as mdb2]
    [cmr.umm-spec.umm-spec-core :as spec]))
+
+(defn string->stream
+  "Used to construct request body using the metadata string
+  retrieved from database when publishing a draft concept."
+  ([s] (string->stream s "UTF-8"))
+  ([s encoding]
+   (-> s
+       (.getBytes encoding)
+       (java.io.ByteArrayInputStream.))))
 
 (defn disabled-for-ingest?
   "Determine if a generic schema is disabled for ingest
@@ -234,6 +247,117 @@
             (acl/verify-provider-context-permission
              request-context :read :provider-object provider-id))]
     (api-core/delete-concept concept-type provider-id native-id request)))
+
+(defn- extract-info-from-concept-id 
+  "Extract concept info from concept-id."
+  [concept-id]
+  (let [draft-concept-type (common-concepts/concept-id->type concept-id)
+        provider-id (common-concepts/concept-id->provider-id concept-id)
+        ;; get the concept type of the document that is contained in the draft
+        ;; :collection is the concept type of the document that is contained in :collection-draft
+        concept-type-in-draft (common-concepts/get-concept-type-of-draft draft-concept-type)]
+    {:draft-concept-type draft-concept-type
+     :provider-id provider-id
+     :concept-type-in-draft concept-type-in-draft}))
+
+(defn- get-info-from-metadata-db
+  "Get information from metadata db."
+  [request concept-id provider-id concept-type]
+  (let [content-type-passed-in (:content-type request)
+        context (:request-context request)
+        search-result (mdb/get-latest-concept context concept-id)
+        draft-native-id (:native-id search-result)
+        metadata (:metadata search-result)
+        format (:format search-result)
+        _ (when-not (and metadata format)
+            (errors/throw-service-error
+             :bad-request
+             (format "Concept-id [%s] does not exist." concept-id)))
+        content-type (if content-type-passed-in
+                       content-type-passed-in
+                       format)
+        body (string->stream metadata)
+        request (-> request
+                    (assoc :body body :content-type content-type)
+                    (assoc-in [:headers "content-type"] content-type)
+                    (assoc-in [:route-params :provider-id] provider-id)
+                    (assoc-in [:params :provider-id] provider-id)
+                    (assoc-in [:route-params :concept-type] concept-type)
+                    (assoc-in [:params :concept-type] concept-type))]
+    {:native-id draft-native-id
+     :request request}))
+
+(defn publish-non-variable-draft
+  "Publish a non-variable draft concept. i.e. Ingest the corresponding concept
+  and delete the draft."
+  [request concept-id native-id]
+  (let [{:keys [draft-concept-type provider-id concept-type-in-draft]}
+        (extract-info-from-concept-id concept-id)]
+    ;; If draft-concept-type is not a non-variable draft, throw error.
+    (when-not (and (common-concepts/is-draft-concept? draft-concept-type)
+                   (not= :variable-draft draft-concept-type))
+      (errors/throw-service-error
+       :bad-request
+       (format "Only non-variable draft can be published in this route. concept-id [%s] does not belong to a non-variable draft concept" concept-id)))
+
+    ;;Get info from metadata-db. 
+    (let [info (get-info-from-metadata-db request concept-id provider-id concept-type-in-draft)
+          request (:request info)
+          draft-native-id (:native-id info)
+          ;;publish the concept-type-in-draft
+          publish-result (case concept-type-in-draft
+                           :collection (collections/ingest-collection provider-id native-id request)
+                           :tool (tools/ingest-tool provider-id native-id request)
+                           :service (services/ingest-service provider-id native-id request)
+                           (create-generic-document request))]
+      (if (= 201 (:status publish-result))
+        ;;construct request to delete the draft.
+        (let [delete-request (-> request
+                                 (assoc-in [:route-params :native-id] draft-native-id)
+                                 (assoc-in [:route-params :concept-type] draft-concept-type)
+                                 (assoc-in [:params :native-id] draft-native-id)
+                                 (assoc-in [:params :concept-type] draft-concept-type))
+              delete-result (delete-generic-document delete-request)]
+          (if (= 200 (:status delete-result))
+            publish-result
+            (errors/throw-service-error
+             :bad-request
+             (format "Publishing draft is successful with info [%s]. Deleting draft failed with info [%s]."
+                     (:body publish-result) (:body delete-result)))))
+        publish-result))))
+    
+(defn publish-variable-draft
+  "Publish a variable draft concept. i.e. Ingest the corresponding variable and
+  delete the variable draft."
+  [provider-id native-id request coll-concept-id coll-revision-id var-draft-id]
+  (let [{:keys [draft-concept-type provider-id concept-type-in-draft]}           
+        (extract-info-from-concept-id var-draft-id) ]
+    ;; If concept-id is not a variable draft, throw error.
+    (when-not (= :variable-draft draft-concept-type)
+      (errors/throw-service-error
+       :bad-request
+       (format "Only variable draft can be published in this route. concept-id [%s] does not belong to a variable draft concept" var-draft-id)))
+
+    ;; Get information from metadata-db. 
+    (let [info (get-info-from-metadata-db request var-draft-id provider-id concept-type-in-draft)
+          request (:request info)
+          draft-native-id (:native-id info)
+          publish-result (variables/ingest-variable provider-id native-id request coll-concept-id coll-revision-id)]
+      (if (= 201 (:status publish-result))
+        ;;construct request to delete the draft.
+        (let [delete-request (-> request
+                                 (assoc-in [:route-params :native-id] draft-native-id)
+                                 (assoc-in [:route-params :concept-type] draft-concept-type)
+                                 (assoc-in [:params :native-id] draft-native-id)
+                                 (assoc-in [:params :concept-type] draft-concept-type))
+              delete-result (delete-generic-document delete-request)]
+          (if (= 200 (:status delete-result))
+            publish-result
+            (errors/throw-service-error
+             :bad-request
+             (format "Publishing draft is successful with info [%s]. Deleting draft failed with info [%s]."
+                     (:body publish-result) (:body delete-result)))))
+        publish-result)))) 
 
 (defn crud-generic-document
   "This function checks for required parameters. If they don't exist then throw an error, otherwise send the request

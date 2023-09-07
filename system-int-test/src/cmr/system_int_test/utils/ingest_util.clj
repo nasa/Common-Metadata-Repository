@@ -395,6 +395,46 @@
          params (merge params (when accept-format {:accept accept-format}))]
      (parse-ingest-response (client/request params) options))))
 
+(defn publish-non-variable-draft 
+  "Publish a non-variable draft and return a map with status, concept-id, and revision-id"
+  [draft-concept-id native-id options]
+  (let [{:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id test-existing-errors]} options
+        method (get options :method :put)
+        headers (util/remove-nil-keys {"Cmr-Validate-Keywords" validate-keywords
+                                       "Cmr-Validate-Umm-C" validate-umm-c
+                                       "Cmr-Test-Existing-Errors" test-existing-errors
+                                       "Authorization" token
+                                       "User-Id" user-id
+                                       "Client-Id" client-id
+                                       "CMR-Request-Id" cmr-request-id
+                                       "X-Request-Id" x-request-id})
+        params {:method method 
+                :url (url/publish-non-variable-draft-url draft-concept-id native-id)
+                :headers headers
+                :throw-exceptions false
+                :connection-manager (s/conn-mgr)}]
+    (parse-ingest-response (client/request params) options)))
+
+(defn publish-variable-draft
+  "Publish a variable draft."
+  [coll-id coll-revision-id native-id variable-draft-id options]
+   (let [{:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id test-existing-errors]} options
+         method (get options :method :put)
+         headers (util/remove-nil-keys {"Cmr-Validate-Keywords" validate-keywords
+                                        "Cmr-Validate-Umm-C" validate-umm-c
+                                        "Cmr-Test-Existing-Errors" test-existing-errors
+                                        "Authorization" token
+                                        "User-Id" user-id
+                                        "Client-Id" client-id
+                                        "CMR-Request-Id" cmr-request-id
+                                        "X-Request-Id" x-request-id})
+         params {:method method
+                 :url (url/publish-variable-draft-url coll-id coll-revision-id native-id variable-draft-id)
+                 :headers headers
+                 :throw-exceptions false
+                 :connection-manager (s/conn-mgr)}]
+     (parse-ingest-response (client/request params) options)))
+
 ;; Temporary function, this calls the subscription routes under the ingest root url, will be removed in CMR-8270
 (defn ingest-subscription-concept
   "Ingest a concept and return a map with status, concept-id, and revision-id"
