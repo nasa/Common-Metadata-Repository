@@ -1212,6 +1212,18 @@ curl -XPUT \
      -H "Content-Type:application/vnd.nasa.cmr.umm+json" \
      %CMR-ENDPOINT%/publish/OOD1200000005-PROV1/orderoption1
 ```
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?><result>
+    <concept-id>OO1200000006-PROV1</concept-id>
+    <revision-id>1</revision-id>
+    <warnings></warnings>
+    <existing-errors></existing-errors>
+</result>
+
+```
+
 ### <a name="publish-variable-draft"></a> Publish Variable Draft 
 #### <a name="publish-variable-draft-endpoint"></a> /collections/&lt;collection-concept-id&gt;/&lt;collection-revision-id&gt;/variables/&lt;native-id&gt;/publish/&lt;variable-draft-concept-id&gt; 
 
@@ -1224,6 +1236,23 @@ curl -XPUT \
      -H "Authorization:  XXXX" \
      -H "Content-Type:application/vnd.nasa.cmr.umm+json;version=1.8.1" \
      %CMR-ENDPOINT%/collections/C1200000009-PROV1/1/variables/var1/publish/VD1200000008-PROV1
+```
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?><result>
+    <concept-id>V1200000010-PROV1</concept-id>
+    <revision-id>1</revision-id>
+    <variable-association>
+        <concept-id>VA1200000011-CMR</concept-id>
+        <revision-id>1</revision-id>
+    </variable-association>
+    <associated-item>
+        <concept-id>C1200000009-PROV1</concept-id>
+        <revision-id>1</revision-id>
+    </associated-item>
+</result>
+
 ```
 
 ## <a name="translate-collection"></a> Translate Collection Metadata
