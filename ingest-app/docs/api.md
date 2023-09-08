@@ -54,6 +54,11 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
         * [DELETE - Delete a subscription.](#delete-subscription)
         * [Subscription Access Control](#subscription-access-control)
 * %GENERIC-TABLE-OF-CONTENTS%
+* [Publish Drafts](#publish-drafts)
+    * [/publish/\<non-variable-draft-concept-id\>/\<native-id\>](#publish-non-variable-draft-endpoint)
+        * [PUT - Publish all draft records except for variables.](#publish-non-variable-draft)
+    * [/collections/\<collection-concept-id\>/\<collection-revision-id\>/variables/\<native-id\>/publish/\<variable-draft-concept-id\>](#publish-variable-draft-endpoint)
+        * [PUT - Publish a variable draft.](#publish-variable-draft)
 * [Translations](#translate-collection)
     * [/translate/collection](#translate-collection-endpoint)
         * [POST - Translate collection metadata.](#translate-collection)
@@ -445,7 +450,7 @@ Collection metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPO
   		-H "Authorization:  XXXX" \
   		%CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
 
-Note: When a collection is deleted, all the associations will be deleted, also called tombstoned (tombstoned means to mark record as ready to be deleted but the actual deletion is scheduled for latter) too. With the new requirement that a variable can not exist without an association with a collection, since each variable can only be associated with one collection, all the variables associated with the deleted collection will be deleted too.
+Note: When a collection is deleted, all the associations on that collection and the granules in the collection will be deleted, also called tombstoned (tombstoned means to mark record as ready to be deleted but the actual deletion is scheduled for latter) too. With the new requirement that a variable can not exist without an association with a collection, since each variable can only be associated with one collection, all the variables associated with the deleted collection will be deleted too.
 
 #### Successful Response in XML
 
@@ -1192,6 +1197,64 @@ Ingest permissions for granule subscriptions are granted through the provider vi
 For lack of a better ACL, ingest permissions for collection subscription are granted through the SYSTEM OBJECT TAG_GROUP ACL update permission.
 
 %GENERIC-DOCS%
+
+## <a name="publish-drafts"></a> Publish Drafts 
+### <a name="publish-non-variable-draft"></a> Publish Non Variable Draft 
+#### <a name="publish-non-variable-draft-endpoint"></a> /publish/&lt;non-variable-draft-concept-id&gt;/&lt;native-id&gt;
+
+All drafts can be published, i.e. ingested into the CMR as a new concept through the publishing endpoints. This specific endpoint publishes all draft records except for variables drafts. Variable drafts can be published through the next described endpoint.
+
+Example: With the exception of variable drafts, publish a draft record such as an order option with the order option draft concept id of OOD1200000005-PROV1 and a new native-id of orderoption1 for the record to be published. Note: The CMR will use the HTTP header Content-Type if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record.
+
+```
+curl -XPUT \
+     -H "Authorization:  XXXX" \ 
+     -H "Content-Type:application/vnd.nasa.cmr.umm+json" \
+     %CMR-ENDPOINT%/publish/OOD1200000005-PROV1/orderoption1
+```
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?><result>
+    <concept-id>OO1200000006-PROV1</concept-id>
+    <revision-id>1</revision-id>
+    <warnings></warnings>
+    <existing-errors></existing-errors>
+</result>
+
+```
+
+### <a name="publish-variable-draft"></a> Publish Variable Draft 
+#### <a name="publish-variable-draft-endpoint"></a> /collections/&lt;collection-concept-id&gt;/&lt;collection-revision-id&gt;/variables/&lt;native-id&gt;/publish/&lt;variable-draft-concept-id&gt; 
+
+Variable drafts can be published, i.e. ingested into CMR as variable concept, through the variable draft publishing endpoint.
+
+Example: Publish variable draft VD1200000008-PROV1 using native-id var1. Note: The CMR will use the HTTP header Content-Type if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. 
+
+```
+curl -XPUT \
+     -H "Authorization:  XXXX" \
+     -H "Content-Type:application/vnd.nasa.cmr.umm+json;version=1.8.1" \
+     %CMR-ENDPOINT%/collections/C1200000009-PROV1/1/variables/var1/publish/VD1200000008-PROV1
+```
+#### Successful Response in XML
+
+```
+<?xml version="1.0" encoding="UTF-8"?><result>
+    <concept-id>V1200000010-PROV1</concept-id>
+    <revision-id>1</revision-id>
+    <variable-association>
+        <concept-id>VA1200000011-CMR</concept-id>
+        <revision-id>1</revision-id>
+    </variable-association>
+    <associated-item>
+        <concept-id>C1200000009-PROV1</concept-id>
+        <revision-id>1</revision-id>
+    </associated-item>
+</result>
+
+```
+
 ## <a name="translate-collection"></a> Translate Collection Metadata
 #### <a name="translate-collection-endpoint"></a> /translate/collection
 

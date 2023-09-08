@@ -214,6 +214,13 @@
        (str url "/" (codec/url-encode native-id))
        url))))
 
+(defn publish-non-variable-draft-url
+  [draft-concept-id native-id]
+  (format "http://localhost:%s/publish/%s/%s"
+          (transmit-config/ingest-port)
+          (codec/url-encode draft-concept-id)
+          (codec/url-encode native-id)))
+
 (defn ingest-subscription-url
   ([]
    (ingest-subscription-url nil))
@@ -238,6 +245,21 @@
              (transmit-config/ingest-port)
              (codec/url-encode coll-id)
              (codec/url-encode native-id)))))
+
+(defn publish-variable-draft-url
+  [coll-id coll-revision-id native-id variable-draft-id]
+  (if coll-revision-id
+    (format "http://localhost:%s/collections/%s/%s/variables/%s/publish/%s"
+            (transmit-config/ingest-port)
+            (codec/url-encode coll-id)
+            (codec/url-encode coll-revision-id)
+            (codec/url-encode native-id)
+            (codec/url-encode variable-draft-id))
+    (format "http://localhost:%s/collections/%s/variables/%s/publish/%s"
+            (transmit-config/ingest-port)
+            (codec/url-encode coll-id)
+            (codec/url-encode native-id)
+            (codec/url-encode variable-draft-id))))
 
 (defn validate-url
   [provider-id type native-id]

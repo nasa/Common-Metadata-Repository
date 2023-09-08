@@ -8,6 +8,7 @@
    [cmr.common.config :as config]
    [cmr.common.generics :as gcfg]
    [cmr.ingest.api.generic-documents :as gdocs]
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.search.generics-test :as search-generics-test]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.generic-util :as gen-util]
@@ -258,3 +259,125 @@
           body (:body result)]
       (is (= status 200))
       (is (string/includes? body "<hits>0</hits>")))))
+
+;; Test that collection-draft can be published
+;; and the draft is removed from metadatadb.
+(deftest test-collection-draft-publishing
+  ;; Drafts have permissions to ingest on PROV1, but not on PROV2.
+  (let [;; Ingest a collection draft
+        cd-native-id "CD-NativeId"
+        coll-native-id "COLL-NativeId"
+        coll-draft (gen-util/ingest-generic-document
+                    nil "PROV1" cd-native-id :collection-draft gen-util/collection-draft :post)
+        cd-concept-id (:concept-id coll-draft)
+        coll-published (ingest/publish-non-variable-draft
+                        cd-concept-id coll-native-id nil)
+        coll-concept-id (:concept-id coll-published)
+
+        _ (index/wait-until-indexed)
+        ;; search for the published collection from elastic search should return result.
+        search-coll-result (search-generics-test/search-request "collections" (str "concept_id=" coll-concept-id))
+        search-coll-status (:status search-coll-result)
+        search-coll-body (:body search-coll-result)
+
+        ;; search for the draft from elastic search should return nothing.
+        search-draft-result (search-generics-test/search-request "collection-drafts" (str "concept_id=" cd-concept-id))
+        search-draft-status (:status search-draft-result)
+        search-draft-body (:body search-draft-result)
+       
+        ;; deleting the draft should fail. 
+        draft-delete-result (gen-util/ingest-generic-document
+                             nil "PROV1" cd-native-id :collection-draft gen-util/collection-draft :delete)]
+    ;; Verify that searching for the published collection from elastic search does return result.
+    (is (= search-coll-status 200))
+    (is (string/includes? search-coll-body "<hits>1</hits>"))
+
+    ;; Verify that searching for the draft from elastic search returns nothing
+    (is (= search-draft-status 200))
+    (is (string/includes? search-draft-body "<hits>0</hits>"))
+ 
+    ;; The draft delete result should indicate the draft does not exist. 
+    (is (= draft-delete-result {:errors ["CollectionDraft with native id [CD-NativeId] in provider [PROV1] does not exist."]}))))
+
+;; Test that generic-doc draft can be published
+;; and the draft is removed from metadatadb.
+(deftest test-generic-draft-publishing
+  ;; Drafts have permissions to ingest on PROV1, but not on PROV2.
+  (let [;; Ingest a order-option draft
+        od-native-id "OD-NativeId"
+        oo-native-id "OO-NativeId"
+        oo-draft (gen-util/ingest-generic-document
+                  nil "PROV1" od-native-id :order-option-draft gen-util/order-option-draft :post)
+        od-concept-id (:concept-id oo-draft)
+        oo-published (ingest/publish-non-variable-draft 
+                      od-concept-id oo-native-id nil)
+        oo-concept-id (:concept-id oo-published)
+                                                                       
+        _ (index/wait-until-indexed)                                   
+        ;; search for the published order-option from elastic search should return result.
+        search-oo-result (search-generics-test/search-request "order-options" (str "concept_id=" oo-concept-id))
+        search-oo-status (:status search-oo-result)
+        search-oo-body (:body search-oo-result)
+
+        ;; search for the draft from elastic search should return nothing.
+        search-draft-result (search-generics-test/search-request "order-option-drafts" (str "concept_id=" od-concept-id))
+        search-draft-status (:status search-draft-result)
+        search-draft-body (:body search-draft-result)
+       
+        ;; deleting the draft should fail. 
+        draft-delete-result (gen-util/ingest-generic-document
+                             nil "PROV1" od-native-id :order-option-draft gen-util/order-option-draft :delete)]
+    ;; Verify that searching for the published order-option from elastic search does return result.
+    (is (= search-oo-status 200))
+    (is (string/includes? search-oo-body "<hits>1</hits>"))
+  
+    ;; Verify that searching for the draft from elastic search returns nothing
+    (is (= search-draft-status 200))
+    (is (string/includes? search-draft-body "<hits>0</hits>"))
+
+    ;; The draft delete result should indicate the draft does not exist.
+    (is (= draft-delete-result {:errors ["OrderOptionDraft with native id [OD-NativeId] in provider [PROV1] does not exist."]}))))
+
+;; Test that variable draft can be published
+;; and the draft is removed from metadatadb.
+(deftest test-variable-draft-publishing
+  ;; Drafts have permissions to ingest on PROV1, but not on PROV2.
+  (let [;; Ingest a collection to be associated with the variable.
+        concept (data-umm-c/collection-concept {})
+        {:keys [concept-id revision-id]} (ingest/ingest-concept concept)
+        ;; Ingest a variable draft
+        vd-native-id "VD-NativeId"
+        va-native-id "VA-NativeId"
+        va-draft (gen-util/ingest-generic-document
+                  nil "PROV1" vd-native-id :variable-draft gen-util/variable-draft :post)
+        vd-concept-id (:concept-id va-draft)
+
+        _ (index/wait-until-indexed)
+        va-published (ingest/publish-variable-draft
+                      concept-id revision-id va-native-id vd-concept-id nil)
+        va-concept-id (:concept-id va-published)
+
+        _ (index/wait-until-indexed)
+        ;; search for the published variable from elastic search should return result.
+        search-va-result (search-generics-test/search-request "variables" (str "concept_id=" va-concept-id))
+        search-va-status (:status search-va-result)
+        search-va-body (:body search-va-result)
+
+        ;; search for the draft from elastic search should return nothing.
+        search-draft-result (search-generics-test/search-request "variable-drafts" (str "concept_id=" vd-concept-id))
+        search-draft-status (:status search-draft-result)
+        search-draft-body (:body search-draft-result)
+
+        ;; deleting the draft should fail.
+        draft-delete-result (gen-util/ingest-generic-document
+                             nil "PROV1" vd-native-id :variable-draft gen-util/variable-draft :delete)]
+    ;; Verify that searching for the published variable from elastic search does return result.
+    (is (= search-va-status 200))
+    (is (string/includes? search-va-body "<hits>1</hits>"))
+
+    ;; Verify that searching for the draft from elastic search returns nothing
+    (is (= search-draft-status 200))
+    (is (string/includes? search-draft-body "<hits>0</hits>"))
+
+    ;; The draft delete result should indicate the draft does not exist.
+    (is (= draft-delete-result {:errors ["VariableDraft with native id [VD-NativeId] in provider [PROV1] does not exist."]}))))
