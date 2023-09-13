@@ -1,7 +1,8 @@
 (ns cmr.metadata-db.data.oracle.collection-table
   "Contains helper functions to create collection table."
   (:require
-   [clojure.java.jdbc :as j]))
+   [clojure.java.jdbc :as j]
+   [cmr.metadata-db.data.util :as util]))
 
 (defmulti collection-column-sql
   "Returns the sql to define provider collection columns"
@@ -40,6 +41,7 @@
 
 (defmethod collection-constraint-sql false
   [provider table-name]
+  (util/validate-table-name table-name)
   (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
                ;; Unique constraint on native id and revision id
@@ -63,6 +65,7 @@
 
 (defmethod collection-constraint-sql true
   [provider table-name]
+  (util/validate-table-name table-name)
   (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
             ;; Unique constraint on provider id, native id and revision id
@@ -91,6 +94,7 @@
 
 (defmethod create-collection-indexes false
   [db _ table-name]
+  (util/validate-table-name table-name)
   (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
                                table-name
                                table-name))
@@ -113,6 +117,7 @@
 
 (defmethod create-collection-indexes true
   [db _ table-name]
+  (util/validate-table-name table-name)
   (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
                                table-name
                                table-name))
