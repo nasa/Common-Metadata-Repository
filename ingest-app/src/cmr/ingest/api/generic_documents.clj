@@ -310,8 +310,7 @@
                            :tool (tools/ingest-tool provider-id native-id request)
                            :service (services/ingest-service provider-id native-id request)
                            (create-generic-document request))]
-      (if (or (= 201 (:status publish-result))
-              (= 200 (:status publish-result)))
+      (if (contains? #{200 201} (:status publish-result))
         ;;construct request to delete the draft.
         (let [delete-request (-> request
                                  (assoc-in [:route-params :native-id] draft-native-id)
@@ -344,8 +343,7 @@
           request (:request info)
           draft-native-id (:native-id info)
           publish-result (variables/ingest-variable provider-id native-id request coll-concept-id coll-revision-id)]
-      (if (or (= 201 (:status publish-result))
-              (= 200 (:status publish-result)))
+      (if (contains? #{200 201} (:status publish-result))
         ;;construct request to delete the draft.
         (let [delete-request (-> request
                                  (assoc-in [:route-params :native-id] draft-native-id)
