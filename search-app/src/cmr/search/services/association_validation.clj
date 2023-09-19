@@ -481,7 +481,7 @@
   (let [concept-ids (concat [(:concept-id concept)] (map :concept-id associations))
         concept-types (map #(concepts/concept-id->type %) concept-ids)
         supported-concept-types (set (concat [:collection :variable :service :tool]
-                                             (concepts/get-generic-concept-types-array)))
+                                             concepts/get-generic-non-draft-concept-types-array))
         non-supported-types (remove nil? 
                                     (map #(when-not (contains? supported-concept-types %) %)
                                          concept-types))]
