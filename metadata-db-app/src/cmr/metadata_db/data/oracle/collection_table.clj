@@ -1,7 +1,7 @@
 (ns cmr.metadata-db.data.oracle.collection-table
   "Contains helper functions to create collection table."
   (:require
-   [clojure.java.jdbc :as j]
+   [clojure.java.jdbc :as jdbc]
    [cmr.metadata-db.data.util :as util]))
 
 (defmulti collection-column-sql
@@ -95,44 +95,44 @@
 (defmethod create-collection-indexes false
   [db _ table-name]
   (util/validate-table-name table-name)
-  (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
                                table-name
                                table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_snv_i ON %s (short_name, version_id)"
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_snv_i ON %s (short_name, version_id)"
                                table-name
                                table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_eid_i ON %s (entry_id)"
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_eid_i ON %s (entry_id)"
                                table-name
                                table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_et_i ON %s (entry_title)"
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_et_i ON %s (entry_title)"
                                table-name
                                table-name))
   ;; Need this for transaction-id post commit check
-  (j/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
                                table-name
                                table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_c_i ON %s (created_at)"
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_c_i ON %s (created_at)"
                                table-name
                                table-name)))
 
 (defmethod create-collection-indexes true
   [db _ table-name]
   (util/validate-table-name table-name)
-  (j/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_crdi ON %s (concept_id, revision_id, deleted, delete_time)"
                                table-name
                                table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_p_s_i ON %s (provider_id, short_name, version_id)"
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_p_s_i ON %s (provider_id, short_name, version_id)"
                                table-name
                                table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_p_ed_i ON %s (provider_id, entry_id)"
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_p_ed_i ON %s (provider_id, entry_id)"
                                table-name
                                table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_p_et_i ON %s (provider_id, entry_title)"
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_p_et_i ON %s (provider_id, entry_title)"
                                table-name
                                table-name))
   ;; Need this for transaction-id post commit check
-  (j/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
                                 table-name
                                 table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_c_i ON %s (created_at)"
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_c_i ON %s (created_at)"
                                table-name)))
