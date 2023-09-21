@@ -74,3 +74,9 @@
       (-> concept
           (assoc :metadata umm-json)
           (assoc :format (mt/format->mime-type :umm-json))))))
+
+(defn validate-table-name
+  "Checks if table name is valid, throws error if not valid"
+  [table-name]
+  (when-not (re-matches #"^[a-zA-Z0-9_]*$" table-name)
+    (throw (ex-info "Table name is not valid. Can only have alphanumeric and underscore chars." {:invalid-table table-name}))))
