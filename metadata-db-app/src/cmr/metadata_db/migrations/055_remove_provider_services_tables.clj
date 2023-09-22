@@ -25,6 +25,7 @@
     (h/sql (format "drop table %s" table-name))
     (h/sql (format "drop sequence %s" sequence-name))))
 
+;;FIXME
 (defn- create-service-table-for-provider-sql
   "Returns the SQL to create a service table for a provider."
   [provider]
