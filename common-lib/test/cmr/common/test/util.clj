@@ -11,6 +11,22 @@
    [cmr.common.test.test-check-ext :as gen-ext :refer [defspec]]
    [cmr.common.util :as util :refer [defn-timed]]))
 
+;;;;; HELPER DEFINITIONS
+
+(def valid-tile-identification-system-names
+  "Valid names for TilingIdentificationSystemName"
+  ["CALIPSO"
+   "MISR"
+   "MODIS Tile EASE"
+   "MODIS Tile SIN"
+   "WELD Alaska Tile"
+   "WELD CONUS Tile"
+   "WRS-1"
+   "WRS-2"
+   "Military Grid Reference System"])
+
+;;;;;; TESTS
+
 (deftest test-sequence->fn
   (testing "vector of values"
     (let [f (util/sequence->fn [1 2 3])]
@@ -44,20 +60,42 @@
 (deftest are2-test
   (testing "Normal use"
     (util/are2
-      [x y] (= x y)
-      "The most basic case with 1"
-      2 (+ 1 1)
-      "A more complicated test"
-      4 (* 2 2))))
+     [x y] (= x y)
+     "The most basic case with 1"
+     2 (+ 1 1)
+     "A more complicated test"
+     4 (* 2 2)))
+  (testing "Empty call"
+    (util/are2
+     [] true)))
 
 (deftest are3-test
   (testing "Normal use"
     (util/are3
-      [x y] (is (= x y))
-      "The most basic case with 1"
-      2 (+ 1 1)
-      "A more complicated test"
-      4 (* 2 2))))
+     [x y] (is (= x y))
+     "The most basic case with 1"
+     2 (+ 1 1)
+     "A more complicated test"
+     4 (* 2 2)))
+  (testing "Empty call"
+    (util/are3
+     [] true)))
+
+(deftest trunc-test
+  (testing "Truncate string"
+    (is (= "Str" (util/trunc "String" 3))))
+  (testing "Truncate nothing"
+    (is (= nil (util/trunc nil 5)))))
+
+(deftest match-enum-case-test
+  (testing "Normal use"
+    (is (= "CALIPSO" (util/match-enum-case "cAlIpSo" valid-tile-identification-system-names)))))
+
+(deftest nil-if-value-test
+  (testing "True case"
+    (is (= nil (util/nil-if-value "foo" "foo"))))
+  (testing "False case"
+    (is (= "foo" (util/nil-if-value "bar" "foo")))))
 
 (defn-timed test-timed-multi-arity
   "The doc string"
