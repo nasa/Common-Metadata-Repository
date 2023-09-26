@@ -1,9 +1,7 @@
 (ns cmr.metadata-db.migrations.055-remove-provider-services-tables
   (:require
     [config.mdb-migrate-helper :as h]
-    [config.mdb-migrate-config :as config]
-    [cmr.metadata-db.services.provider-validation :as pv]
-    [cmr.common.validations.core :as core]))
+    [cmr.metadata-db.services.provider-validation :as pv]))
 
 (defn- get-services-table-name
   "Returns a provider specific services table-name. Needed in this migration because the

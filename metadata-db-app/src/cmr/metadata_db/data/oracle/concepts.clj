@@ -249,14 +249,11 @@
        :existing-concept-id concept_id
        :existing-native-id native_id})))
 
-;; FIXME TEST
-;; I don't understand what an association is and when is it used?
 (defn validate-collection-not-associated-with-another-variable-with-same-name
   "Validates that collection in the concept is not associated with a different
   variable, which has the same name as the variable in the concept.
   Returns nil if valid and an error response if invalid."
   [db concept]
-  (println "CHANGED ----------")
   (let [variable-concept-id (get-in concept [:extra-fields :variable-concept-id])
         associated-concept-id (get-in concept [:extra-fields :associated-concept-id])]
     (when (and variable-concept-id associated-concept-id)
@@ -332,6 +329,7 @@
     (when (and concept-id
                (= concept-type (common-concepts/concept-id->type concept-id)))
       concept-id)))
+
 
 (defn get-granule-concept-ids
   [db provider native-id]
@@ -655,10 +653,6 @@
                                              (update-in memo [concept_id] conj revision_id)))
                                          {}
                                          result)]
-      (println stmt)
-      (println result)
-      (println "concept map thing")
-      (println concept-id-rev-ids-map)
       ;; generate tuples of concept-id/revision-id to remove
       (reduce-kv (fn [memo concept-id rev-ids]
                    (apply merge memo (map (fn [revision-id]
