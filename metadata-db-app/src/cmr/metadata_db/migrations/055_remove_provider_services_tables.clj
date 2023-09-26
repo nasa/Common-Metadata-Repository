@@ -1,7 +1,9 @@
 (ns cmr.metadata-db.migrations.055-remove-provider-services-tables
   (:require
     [config.mdb-migrate-helper :as h]
-    [config.mdb-migrate-config :as config]))
+    [config.mdb-migrate-config :as config]
+    [cmr.metadata-db.services.provider-validation :as pv]
+    [cmr.common.validations.core :as core]))
 
 (defn- get-services-table-name
   "Returns a provider specific services table-name. Needed in this migration because the
@@ -25,10 +27,10 @@
     (h/sql (format "drop table %s" table-name))
     (h/sql (format "drop sequence %s" sequence-name))))
 
-;;FIXME
 (defn- create-service-table-for-provider-sql
   "Returns the SQL to create a service table for a provider."
-  [provider]
+  [provider-id]
+  (pv/validate-provider-id provider-id)
   (format
    "CREATE TABLE %s_SERVICES (
     id NUMBER,
@@ -53,7 +55,7 @@
       UNIQUE (concept_id, revision_id)
       USING INDEX (create unique index %s_services_cri
                           ON %s_services(concept_id, revision_id)))"
-   provider provider provider provider provider provider provider provider))
+   provider-id provider-id provider-id provider-id provider-id provider-id provider-id provider-id))
 
 (defn down
   "Migrates the database down from version 55."

@@ -256,7 +256,7 @@
   variable, which has the same name as the variable in the concept.
   Returns nil if valid and an error response if invalid."
   [db concept]
-  (println "CHANGED validate-collection-not-associated-with-another-variable-with-same-name ----------")
+  (println "CHANGED ----------")
   (let [variable-concept-id (get-in concept [:extra-fields :variable-concept-id])
         associated-concept-id (get-in concept [:extra-fields :associated-concept-id])]
     (when (and variable-concept-id associated-concept-id)

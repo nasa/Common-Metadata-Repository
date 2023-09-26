@@ -83,3 +83,11 @@
   [provider]
   (v/validate! provider-validations provider))
 
+(defn validate-provider-id
+  "Validated the provider id only. Throwns an exception with validation errors if the provider is invalid."
+  [provider-id]
+  (v/validate! {:provider-id (v/first-failing provider-id-length-validation
+                                              field-blank-validation
+                                              provider-id-format-validation
+                                              provider-id-reserved-validation)}
+               {:provider-id provider-id}))
