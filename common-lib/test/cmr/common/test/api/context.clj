@@ -2,12 +2,13 @@
   "This tests capabilities of the API context utilities."
   (:require
    [clojure.test :refer :all]
+   [cmr.common.util :as util]
    [cmr.common.api.context :as context]))
 
 (deftest request-context-test
   (let [system {:foo "bar"}
         request-id "request-test"]
-    (is (= {:system {:foo "bar"} :request "request-test"} (context/request-context system request-id)))))
+    (is (= {:system {:foo "bar"} :request {:request-id "request-test"}} (context/request-context system request-id)))))
 
 (deftest context->request-id-test
   (let [context {:request {:request-id "request-test"}}]
@@ -15,10 +16,11 @@
 
 (deftest context->http-headers-test
   (let [context {:request {:request-id "request-test"}}]
-    (is (= {"cmr-request=id" "request-test"} (context/context->http-headers context)))))
+    (is (= {"cmr-request-id" "request-test"} (context/context->http-headers context)))))
 
 (deftest context->user-id-test
   (let [context-1 {:request {:request-id "request-test"} :user-id "test-user"}
-        context-2 {:request {:request-id "request-test"} :token "test-token" :user-id "test-user"}
+        context-2 {:request {:request-id "request-test"} :token "test-token"}
+        context-3 (util/lazy-assoc context-2 :user-id "test-user")
         msg "No token test"]
-    (is (= "test-user" (context/context->user-id context-2)))))
+    (is (= "test-user" (context/context->user-id context-3)))))
