@@ -610,32 +610,30 @@
                          where provider_id = ? and DELETED = 1 and REVISION_DATE < ?
                          FETCH FIRST %d ROWS ONLY) t2
                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
-                          table table limit) provider-id (cr/to-sql-time tombstone-cut-off-date)]
-                 [(format "select t1.concept_id, t1.revision_id from %s t1 inner join
+                        table table limit) provider-id (cr/to-sql-time tombstone-cut-off-date)]
+               [(format "select t1.concept_id, t1.revision_id from %s t1 inner join
                          (select concept_id, revision_id from %s
                          where DELETED = 1 and REVISION_DATE < ?
                          FETCH FIRST %d ROWS ONLY) t2
                          on t1.concept_id = t2.concept_id and t1.REVISION_ID <= t2.revision_id"
                           table table limit) (cr/to-sql-time tombstone-cut-off-date)])
-          result (su/query conn stmt)]
-      ;; create tuples of concept-id/revision-id to remove
-      (doall (map (fn [{:keys [concept_id revision_id]}]
-                    [concept_id revision_id])
-                  result)))))
+         result (su/query conn stmt)]
+     ;; create tuples of concept-id/revision-id to remove
+     (doall (map (fn [{:keys [concept_id revision_id]}]
+                   [concept_id revision_id])
+                 result)))))
 
-;; how to attach to external repl??
 (defn get-old-concept-revisions
   [this provider concept-type max-revisions limit]
-  (println "CHANGE HAS BEEN MADE ####")
   (j/with-db-transaction
-    [conn this]
-    (let [table (tables/get-table-name provider concept-type)
-          {:keys [provider-id small]} provider
-          ;; This will return the concepts that have more than 'max-revisions' revisions.
-          ;; Note: the 'where rownum' clause limits the number of concept-ids that are returned,
-          ;; not the number of concept-id/revision-id pairs. All revisions are returned for
-          ;; each returned concept-id.
-          stmt (if small
+   [conn this]
+   (let [table (tables/get-table-name provider concept-type)
+         {:keys [provider-id small]} provider
+         ;; This will return the concepts that have more than 'max-revisions' revisions.
+         ;; Note: the 'where rownum' clause limits the number of concept-ids that are returned,
+         ;; not the number of concept-id/revision-id pairs. All revisions are returned for
+         ;; each returned concept-id.
+         stmt (if small
                 [(format "select concept_id, revision_id from %s
                            where concept_id in
                            (select concept_id from %s where provider_id = ? group by
@@ -646,21 +644,21 @@
                            (select concept_id from %s group by
                            concept_id having count(*) > ? FETCH FIRST ? ROWS ONLY)"
                          table table) max-revisions limit])
-          result (su/query conn stmt)
-          ;; create a map of concept-ids to sequences of all returned revisions
-          concept-id-rev-ids-map (reduce (fn [memo concept-map]
-                                           (let [{:keys [concept_id revision_id]} concept-map]
-                                             (update-in memo [concept_id] conj revision_id)))
-                                         {}
-                                         result)]
-      ;; generate tuples of concept-id/revision-id to remove
-      (reduce-kv (fn [memo concept-id rev-ids]
-                   (apply merge memo (map (fn [revision-id]
-                                            [concept-id revision-id])
-                                          ;; only add tuples for old revisions
-                                          (truncate-highest rev-ids max-revisions))))
-                 []
-                 concept-id-rev-ids-map))))
+         result (su/query conn stmt)
+         ;; create a map of concept-ids to sequences of all returned revisions
+         concept-id-rev-ids-map (reduce (fn [memo concept-map]
+                                          (let [{:keys [concept_id revision_id]} concept-map]
+                                            (update-in memo [concept_id] conj revision_id)))
+                                        {}
+                                        result)]
+     ;; generate tuples of concept-id/revision-id to remove
+     (reduce-kv (fn [memo concept-id rev-ids]
+                  (apply merge memo (map (fn [revision-id]
+                                           [concept-id revision-id])
+                                         ;; only add tuples for old revisions
+                                         (truncate-highest rev-ids max-revisions))))
+                []
+                concept-id-rev-ids-map))))
 
 (def behaviour
   {:generate-concept-id generate-concept-id
