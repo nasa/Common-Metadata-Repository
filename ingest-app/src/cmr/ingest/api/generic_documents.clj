@@ -87,7 +87,8 @@
   (if (string/includes? content-type "json")
     (let [document (json/parse-string raw-document true)
           specification (:MetadataSpecification document)
-          spec-key (csk/->kebab-case-keyword (:Name specification ""))
+          spec-key (when (:Name specification)
+                     (csk/->kebab-case-keyword (:Name specification)))
           spec-version (:Version specification)
           document-name (or (:Name document)
                             (:ShortName document)
@@ -129,10 +130,15 @@
          (pull-metadata-specific-information request-context concept-type content-type raw-document)]
     ;; Check to see if the passed in record contains the MetadataSpecification/Name field and its
     ;; value matches that from the concept name in the route parameters.
-    (if (and (not= concept-type spec-key)
-             (not= (concept-type draft-concept->spec-map) spec-key)
-             (not= (common-concepts/get-concept-type-of-draft concept-type) spec-key))
-      (throw (UnsupportedOperationException. (format "%s version %s is not supported." spec-key spec-version)))
+    (if (or (not spec-key)
+            (and (not= concept-type spec-key)
+                 (not= (concept-type draft-concept->spec-map) spec-key)
+                 (not= (common-concepts/get-concept-type-of-draft concept-type) spec-key)))
+      (errors/throw-service-error
+       :invalid-data
+       (if-not spec-key
+         "MetadataSpecification is missing"
+         (str spec-key " version " spec-version " are not supported")))
       {:concept (assoc {}
                        :metadata raw-document
                        :provider-id provider-id
