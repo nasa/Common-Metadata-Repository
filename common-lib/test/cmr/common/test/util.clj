@@ -64,10 +64,7 @@
      "The most basic case with 1"
      2 (+ 1 1)
      "A more complicated test"
-     4 (* 2 2)))
-  (testing "Empty call"
-    (util/are2
-     [] true)))
+     4 (* 2 2))))
 
 (deftest are3-test
   (testing "Normal use"
@@ -76,7 +73,10 @@
      "The most basic case with 1"
      2 (+ 1 1)
      "A more complicated test"
-     4 (* 2 2))))
+     4 (* 2 2)))
+  (testing "Empty call"
+    (util/are3
+     [] true)))
 
 (deftest trunc-test
   (testing "Truncate string"
