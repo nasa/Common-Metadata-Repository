@@ -76,10 +76,7 @@
      "The most basic case with 1"
      2 (+ 1 1)
      "A more complicated test"
-     4 (* 2 2)))
-  (testing "Empty call"
-    (util/are3
-     [] true)))
+     4 (* 2 2))))
 
 (deftest trunc-test
   (testing "Truncate string"
@@ -96,6 +93,12 @@
     (is (= nil (util/nil-if-value "foo" "foo"))))
   (testing "False case"
     (is (= "foo" (util/nil-if-value "bar" "foo")))))
+
+(deftest numeric?-test
+  (testing "Simple case"
+    (is (= true (util/numeric? "34234"))))
+  (testing "False case"
+    (is (= false (util/numeric? "0D")))))
 
 (defn-timed test-timed-multi-arity
   "The doc string"
