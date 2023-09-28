@@ -2,7 +2,6 @@
   "Defines the API for search-by-concept in the CMR."
   (:require
    [cheshire.core :as json]
-   [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.walk :as walk]
    [cmr.common-app.api.launchpad-token-validation :refer [get-token-type]]

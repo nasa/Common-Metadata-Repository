@@ -662,6 +662,8 @@ Content-Type: application/json;charset=ISO-8859-1
 * And one of:
   * `user_id` - The user whose permissions will be computed.
   * `user_type` - Either "guest" or "registered".
+  * `page_size` - Size of page desired, only supported with concept_id.
+  * `page_num` - Page number desired, only supported with concept_id.
 
 ### <a name="get-s3-buckets"></a> User Access to S3 Buckets
 

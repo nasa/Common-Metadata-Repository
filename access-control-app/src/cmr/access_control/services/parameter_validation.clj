@@ -1,7 +1,9 @@
 (ns cmr.access-control.services.parameter-validation
   (:require
+   [camel-snake-kebab.core :as csk]
    [clojure.string :as str]
    [cmr.access-control.data.acl-schema :as acl-schema]
+   [cmr.common-app.services.search.parameter-validation :as pv]
    [cmr.common.concepts :as cc]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]))
@@ -86,6 +88,39 @@
          (> (count target) 1))
     ["Only one target can be specified."]))
 
+(defn- page-num-upper-bound-validation
+  "Validates that the :page-num parameter in the given params map is a valid
+  page number, considering the upper bound defined by the :concept-id count and
+  the :page-size parameter.
+
+  The function calculates the valid upper bound for the page number based on
+  the number of concept IDs and the page size. It then compares the provided
+  page number (:page-num) with the calculated upper bound. If the page number
+  exceeds the upper bound, an error message is returned. If the :page-num
+  parameter is not a valid number, nil is returned.
+
+  Example:
+  (page-num-upper-bound-validation _ {:concept-id [1 2 3]
+                                      :page-size 10
+                                      :page-num 15})
+  Returns: [\"page_num must be a number less than or equal to 2\"]
+  "
+  [_ params]
+  (when-let [concept-ids (seq (:concept-id params))]
+    (try
+      (let [page-size (or (pv/get-ivalue-from-params params :page-size) pv/max-page-size)
+            valid-upper-bound (-> concept-ids
+                                  count
+                                  (/ page-size)
+                                  Math/ceil
+                                  int)]
+        (when-let [page-num-i (pv/get-ivalue-from-params params :page-num)]
+          (when (and (> valid-upper-bound 0)
+                     (< valid-upper-bound page-num-i))
+            [(format "page_num must be a number less than or equal to %s" valid-upper-bound)])))
+      (catch NumberFormatException e
+            nil))))
+
 (def ^:private get-permissions-validations
   "Defines validations for get permissions parameters and values"
   [single-target-validation
@@ -96,11 +131,20 @@
    target-group-ids-validation
    concept_ids-validation])
 
+(defn validate-page-size-and-num
+  "Validates the page size and page number parameters in the given request parameters map."
+  [params]
+  (let [params (util/map-keys->kebab-case params)]
+    (when-let [errors (seq (mapcat #(% nil params) [pv/page-size-validation
+                                                    pv/page-num-validation
+                                                    page-num-upper-bound-validation]))]
+      (errors/throw-service-errors :bad-request errors))))
+
 (defn validate-get-permission-params
   "Throws service errors if any invalid params or values are found."
   [params]
   (validate-params
-   params :system_object :concept_id :user_id :user_type :provider :target :target_group_id)
+   params :system_object :concept_id :user_id :user_type :provider :target :target_group_id :page_size :page_num)
   (when-let [errors (seq (mapcat #(% params) get-permissions-validations))]
     (errors/throw-service-errors :bad-request errors)))
 

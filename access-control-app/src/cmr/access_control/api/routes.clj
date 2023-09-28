@@ -17,6 +17,7 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.services.search.parameter-validation :as cpv]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.cache :as cache]
    [cmr.common.log :refer (debug info warn error)]
@@ -163,12 +164,60 @@
   (-> (acl-search/search-for-acls ctx params)
       common-routes/search-response))
 
-(defn- get-permissions
-  "Returns a Ring response with the requested permission check results."
-  [ctx params]
-  (let [result (acl-service/get-permissions ctx params)]
+(defn- get-page
+  "Extracts a specific page from a vector of values based on the given page size and page number."
+  [vector page-size page-num]
+  (if (vector? vector)
+    (let [total-items (count vector)
+          start-index (min (* (dec page-num) page-size) (- total-items 0))
+          end-index (min (* page-num page-size) total-items)]
+      (subvec vector start-index end-index))
+    vector))
+
+(defn get-permissions
+  "Formats a response for retrieving permissions based on the given parameters. When concept_id is present,
+  only a chunk of the concept_id vector will be processed according to page_size and page_num."
+  [context params headers]
+  (-> params
+      (select-keys [:page_size :page_num :concept_id])
+      util/map-keys->kebab-case
+      pv/validate-page-size-and-num)
+  (let [start-time (System/currentTimeMillis)
+        {:keys [concept_id system_object target target_group_id page_size page_num]} params
+        client-id (:client-id context)
+        ;; Default and max page_size is 2000
+        page_size (if (and page_size
+                           (> (util/safe-read-string page_size) 0))
+                    (min (util/safe-read-string page_size) cpv/max-page-size)
+                    cpv/max-page-size)
+        ;; Default page_num is 1
+        page_num (if page_num
+                   (util/safe-read-string page_num)
+                   1)
+        ;; If concept_id is present, get the correct page and assoc that into params
+        params (if concept_id
+                 (do
+                   (info (format "get-permission called on concept_ids with page_size %s, page_num %s, with client-id %s"
+                                 page_size
+                                 page_num
+                                 client-id))
+                   (assoc params :concept_id (get-page concept_id page_size page_num)))
+                 (do
+                   (info (format "get-permission called with params %s, with client-id %s"
+                                 params
+                                 client-id))
+                   params))
+        response (acl-service/get-permissions context params)
+        total-took (- (System/currentTimeMillis) start-time)
+        headers {common-routes/CORS_CUSTOM_EXPOSED_HEADER "CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Took"
+                 common-routes/HITS_HEADER (if (vector? concept_id)
+                                             (str (count concept_id))
+                                             "1")
+                 common-routes/TOOK_HEADER (str total-took)}]
     {:status 200
-     :body (json/generate-string result)}))
+     :headers headers
+     :body (json/generate-string response)}))
+
 
 (defn- get-current-sids
   "Returns a Ring response with the current user's sids"
@@ -370,12 +419,12 @@
         (OPTIONS "/" [] (common-routes/options-response))
 
         (GET "/"
-             {ctx :request-context params :params}
-             (get-permissions ctx params))
+             {ctx :request-context headers :headers params :params}
+             (get-permissions ctx params headers))
 
         (POST "/"
               {ctx :request-context headers :headers params :params}
-              (get-permissions ctx params)))
+              (get-permissions ctx params headers)))
 
       (context "/current-sids" []
         (OPTIONS "/" [] (common-routes/options-response))

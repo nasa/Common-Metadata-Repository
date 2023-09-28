@@ -35,16 +35,68 @@
         coll3 (save-basic-collection "coll3")
         coll4 (save-basic-collection "coll4")
         post-data-body (str "user_type=guest"
-                         "&concept_id=" coll1
-                         "&concept_id=" coll2
-                         "&concept_id=" coll3
-                         "&concept_id=" coll4)]
-    (testing "permissions endpoint allows post request"
+                            "&concept_id=" coll1
+                            "&concept_id=" coll2
+                            "&concept_id=" coll3
+                            "&concept_id=" coll4)
+        permissions-url (ac/acl-permission-url
+                         (transmit-config/context->app-connection
+                          (u/conn-context)
+                          :access-control))]
+
+    (testing "page size and page num"
       (let [permissions-url (ac/acl-permission-url
-                                         (transmit-config/context->app-connection
-                                          (u/conn-context)
-                                          :access-control))
-            post-response (client/post permissions-url
+                             (transmit-config/context->app-connection
+                              (u/conn-context)
+                              :access-control))
+            bad-page-num (str post-data-body "&page_num=-3&page_size=1")
+            bad-page-num2 (str post-data-body "&page_num=foo&page_size=1")
+            bad-page-num3 (str post-data-body "&page_num=3")
+            good-page-num (str post-data-body "&page_num=2&page_size=2")
+            bad-page-size (str post-data-body "&page_num=2&page_size=-3")
+            bad-page-size2 (str post-data-body "&page_num=1&page_size=foo")
+            good-page-size (str post-data-body "&page_num=1&page_size=3")]
+
+        (are3
+          [post-data-body expected-response]
+          (let [post-response (client/post permissions-url
+                                           {:throw-exceptions false
+                                            :basic-auth ["user" "pass"]
+                                            :body post-data-body
+                                            :content-type "application/x-www-form-urlencoded"})]
+            (is (= expected-response
+                   (:body post-response))))
+
+          "non int page_num"
+          bad-page-num2
+          "{\"errors\":[\"page_num must be a number greater than or equal to 1\"]}"
+
+          "non int page_size"
+          bad-page-size2
+          "{\"errors\":[\"page_size must be a number between 0 and 2000\"]}"
+
+          "page_num less than 0"
+          bad-page-num
+          "{\"errors\":[\"page_num must be a number greater than or equal to 1\"]}"
+
+          "page_num too high"
+          bad-page-num3
+          "{\"errors\":[\"page_num must be a number less than or equal to 1\"]}"
+
+          "page_size less than 0"
+          bad-page-size
+          "{\"errors\":[\"page_size must be a number between 0 and 2000\"]}"
+
+          "valid page_size"
+          good-page-size
+          "{\"C1200000010-PROV1\":[],\"C1200000011-PROV1\":[],\"C1200000012-PROV1\":[]}"
+
+          "valid page_num"
+          good-page-num
+          "{\"C1200000012-PROV1\":[],\"C1200000013-PROV1\":[]}")))
+
+    (testing "permissions endpoint allows post request"
+      (let [post-response (client/post permissions-url
                             {:basic-auth ["user" "pass"]
                              :body post-data-body
                              :content-type "application/x-www-form-urlencoded"})
@@ -53,7 +105,6 @@
                                             "concept_id" [coll1 coll2 coll3 coll4]}})
             post-body (get post-response :body)
             get-body (get get-response :body)]
-
         (is (= get-body post-body))))))
 
 (deftest multi-provider-permissions-test
