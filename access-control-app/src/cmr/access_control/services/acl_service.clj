@@ -386,7 +386,7 @@
           (for [group-id target-group-ids]
             [group-id (group-permissions-granted-by-acls group-id sids acls)]))))
 
-(defn-timed get-permissions
+(defn get-permissions
   "Returns result of permissions check for the given parameters."
   [context params]
   (let [params (-> params

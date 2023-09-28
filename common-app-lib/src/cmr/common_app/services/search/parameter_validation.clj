@@ -97,7 +97,7 @@
       [(format "Parameter %s must take value of true or false but was [%s]"
                (csk/->snake_case_string param) value)])))
 
-(defn- get-ivalue-from-params
+(defn get-ivalue-from-params
   "Get a value from the params as an Integer or nil value. Throws NumberFormatException
   if the value cannot be converted to an Integer."
   [params value-keyword]
