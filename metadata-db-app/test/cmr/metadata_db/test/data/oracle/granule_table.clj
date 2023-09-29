@@ -19,21 +19,22 @@
             "CONSTRAINT 1234tablename___pk PRIMARY KEY (id), CONSTRAINT 1234tablename___con_rev\n               UNIQUE (native_id, revision_id)\n               USING INDEX (create unique index 1234tablename___ucr_i\n               ON 1234tablename__ (native_id, revision_id)), CONSTRAINT 1234tablename___cid_rev\n               UNIQUE (concept_id, revision_id)\n               USING INDEX (create unique index 1234tablename___cri\n               ON 1234tablename__ (concept_id, revision_id))"))
   (testing "invalid table name"
     (are3 [table-name]
-          (let [non-small-provider {:provider-id "PROV1", :short-name "test provider", :cmr-only false, :small false}]
+          (let [non-small-provider {:provider-id "PROV1" :short-name "test provider" :cmr-only false :small false}]
             (is (thrown? Exception (gt/granule-constraint-sql non-small-provider table-name))))
 
           "invalid table name"
           "=table_name--;"
-          true
 
           "invalid table name 2"
           "table_; DELETE"
-          true)))
+
+          "sql injection is rejected"
+          "small_provider' OR '1' = '1' -- ")))
 
 (deftest granule-constraint-sql-true-test
   (testing "valid table name"
     (are3 [table-name query]
-          (let [small-provider {:provider-id "PROV1", :short-name "test provider", :cmr-only false, :small true}]
+          (let [small-provider {:provider-id "PROV1" :short-name "test provider" :cmr-only false, :small true}]
             (is (= query (gt/granule-constraint-sql small-provider table-name))))
 
           "valid table name"
@@ -45,16 +46,14 @@
           "CONSTRAINT 1234tablename___pk PRIMARY KEY (id), CONSTRAINT 1234tablename___con_rev\n               UNIQUE (provider_id, native_id, revision_id)\n               USING INDEX (create unique index 1234tablename___ucr_i\n               ON 1234tablename__ (provider_id, native_id, revision_id)), CONSTRAINT 1234tablename___cid_rev\n               UNIQUE (concept_id, revision_id)\n               USING INDEX (create unique index 1234tablename___cri\n               ON 1234tablename__ (concept_id, revision_id))"))
   (testing "invalid table name"
     (are3 [table-name]
-          (let [small-provider {:provider-id "PROV1", :short-name "test provider", :cmr-only false, :small true}]
+          (let [small-provider {:provider-id "PROV1" :short-name "test provider" :cmr-only false :small true}]
             (is (thrown? Exception (gt/granule-constraint-sql small-provider table-name))))
 
           "invalid table name"
           "=table_name--;"
-          true
 
           "invalid table name 2"
-          "table_; DELETE"
-          true)))
+          "table_; DELETE")))
 
 (deftest create-common-gran-indexes
   (testing "invalid table name"
@@ -64,25 +63,21 @@
 
           "invalid table name"
           "=table_name--;"
-          true
 
           "invalid table name 2"
-          "table_; DELETE"
-          true)))
+          "table_; DELETE")))
 
 (deftest create-granule-indexes-true-test
   (testing "invalid table name"
     (are3 [table-name]
-          (let [small-provider {:provider-id "PROV1", :short-name "test provider", :cmr-only false, :small true}]
+          (let [small-provider {:provider-id "PROV1" :short-name "test provider" :cmr-only false :small true}]
             (is (thrown? Exception (gt/create-granule-indexes nil small-provider table-name))))
 
           "invalid table name"
           "=table_name--;"
-          true
 
           "invalid table name 2"
-          "table_; DELETE"
-          true)))
+          "table_; DELETE")))
 
 (deftest create-granule-indexes-false-test
   (testing "invalid table name"
@@ -92,8 +87,6 @@
 
           "invalid table name"
           "=table_name--;"
-          true
 
           "invalid table name 2"
-          "table_; DELETE"
-          true)))
+          "table_; DELETE")))
