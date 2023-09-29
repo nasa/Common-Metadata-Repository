@@ -177,7 +177,7 @@
 (defn get-permissions
   "Formats a response for retrieving permissions based on the given parameters. When concept_id is present,
   only a chunk of the concept_id vector will be processed according to page_size and page_num."
-  [context params headers]
+  [context params]
   (-> params
       (select-keys [:page_size :page_num :concept_id])
       util/map-keys->kebab-case
@@ -420,11 +420,11 @@
 
         (GET "/"
              {ctx :request-context headers :headers params :params}
-             (get-permissions ctx params headers))
+             (get-permissions ctx params))
 
         (POST "/"
               {ctx :request-context headers :headers params :params}
-              (get-permissions ctx params headers)))
+              (get-permissions ctx params)))
 
       (context "/current-sids" []
         (OPTIONS "/" [] (common-routes/options-response))

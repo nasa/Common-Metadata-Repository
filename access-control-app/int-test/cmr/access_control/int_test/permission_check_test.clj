@@ -55,7 +55,8 @@
             good-page-num (str post-data-body "&page_num=2&page_size=2")
             bad-page-size (str post-data-body "&page_num=2&page_size=-3")
             bad-page-size2 (str post-data-body "&page_num=1&page_size=foo")
-            good-page-size (str post-data-body "&page_num=1&page_size=3")]
+            good-page-size (str post-data-body "&page_num=1&page_size=3")
+            zero-page-size (str post-data-body "&page_size=0")]
 
         (are3
           [post-data-body expected-response]
@@ -90,6 +91,10 @@
           "valid page_size"
           good-page-size
           "{\"C1200000010-PROV1\":[],\"C1200000011-PROV1\":[],\"C1200000012-PROV1\":[]}"
+
+          "zero page_size"
+          zero-page-size
+          "{\"C1200000010-PROV1\":[],\"C1200000011-PROV1\":[],\"C1200000012-PROV1\":[],\"C1200000013-PROV1\":[]}"
 
           "valid page_num"
           good-page-num
