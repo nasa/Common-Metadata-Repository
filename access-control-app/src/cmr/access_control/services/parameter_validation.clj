@@ -108,18 +108,23 @@
   [_ params]
   (when-let [concept-ids (seq (:concept-id params))]
     (try
-      (let [page-size (or (pv/get-ivalue-from-params params :page-size) pv/max-page-size)
-            valid-upper-bound (-> concept-ids
-                                  count
-                                  (/ page-size)
-                                  Math/ceil
-                                  int)]
-        (when-let [page-num-i (pv/get-ivalue-from-params params :page-num)]
+      (when-let [page-num-i (pv/get-ivalue-from-params params :page-num)]
+        (let [page-size (or (pv/get-ivalue-from-params params :page-size) pv/max-page-size)
+              page-size (if (= 0 page-size)
+                          pv/max-page-size
+                          page-size)
+              valid-upper-bound (-> concept-ids
+                                    count
+                                    (/ page-size)
+                                    Math/ceil
+                                    int)]
           (when (and (> valid-upper-bound 0)
                      (< valid-upper-bound page-num-i))
             [(format "page_num must be a number less than or equal to %s" valid-upper-bound)])))
+      (catch java.lang.ArithmeticException e
+        nil)
       (catch NumberFormatException e
-            nil))))
+        nil))))
 
 (def ^:private get-permissions-validations
   "Defines validations for get permissions parameters and values"
@@ -134,11 +139,10 @@
 (defn validate-page-size-and-num
   "Validates the page size and page number parameters in the given request parameters map."
   [params]
-  (let [params (util/map-keys->kebab-case params)]
-    (when-let [errors (seq (mapcat #(% nil params) [pv/page-size-validation
-                                                    pv/page-num-validation
-                                                    page-num-upper-bound-validation]))]
-      (errors/throw-service-errors :bad-request errors))))
+  (when-let [errors (seq (mapcat #(% nil params) [pv/page-size-validation
+                                                      pv/page-num-validation
+                                                      page-num-upper-bound-validation]))]
+    (errors/throw-service-errors :bad-request errors)))
 
 (defn validate-get-permission-params
   "Throws service errors if any invalid params or values are found."
