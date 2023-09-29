@@ -497,3 +497,15 @@
 
     ;; The draft delete result should indicate the draft does not exist.
     (is (= draft-delete-result {:errors ["VariableDraft with native id [VD-NativeId] in provider [PROV1] does not exist."]}))))
+
+;; Test that a Generic Doc can not be ingested when MetadataSpecification is missing
+;; and a proper message is returned 
+(deftest test-generic-doc-ingest-with-missing-specification
+  (let [;; Ingest a order-option concept
+        oo-native-id "OO-NativeId"
+        oo-without-specification (dissoc gen-util/order-option :MetadataSpecification)
+        oo-ingest-response (gen-util/ingest-generic-document
+                            nil "PROV1" oo-native-id :order-option oo-without-specification :post)]
+    (is (= ["The MetadataSpecification schema element is missing from the record being ingested."]
+           (:errors oo-ingest-response)))))
+       

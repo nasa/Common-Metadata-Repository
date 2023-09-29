@@ -137,7 +137,7 @@
       (errors/throw-service-error
        :invalid-data
        (if-not spec-key
-         "MetadataSpecification is missing"
+         "The MetadataSpecification schema element is missing from the record being ingested."
          (str spec-key " version " spec-version " are not supported")))
       {:concept (assoc {}
                        :metadata raw-document
