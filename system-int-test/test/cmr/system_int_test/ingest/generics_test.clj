@@ -501,11 +501,19 @@
 ;; Test that a Generic Doc can not be ingested when MetadataSpecification is missing
 ;; and a proper message is returned 
 (deftest test-generic-doc-ingest-with-missing-specification
-  (let [;; Ingest a order-option concept
-        oo-native-id "OO-NativeId"
+  (let [;; Ingest two order-option concept
+        oo-native-id1 "OO-NativeId1"
+        oo-native-id2 "OO-NativeId2"
         oo-without-specification (dissoc gen-util/order-option :MetadataSpecification)
-        oo-ingest-response (gen-util/ingest-generic-document
-                            nil "PROV1" oo-native-id :order-option oo-without-specification :post)]
+        oo-with-wrong-specification (assoc gen-util/order-option
+                                           :MetadataSpecification
+                                           {:Name "Wrong Order Option",
+                                            :Version "1.0.0",
+                                            :URL "https://cdn.earthdata.nasa.gov/generics/order-option/v1.0.0"})
+        oo-ingest-response1 (gen-util/ingest-generic-document nil "PROV1" oo-native-id1 :order-option oo-without-specification :post)
+        oo-ingest-response2 (gen-util/ingest-generic-document nil "PROV1" oo-native-id2 :order-option oo-with-wrong-specification :post)]
     (is (= ["The MetadataSpecification schema element is missing from the record being ingested."]
-           (:errors oo-ingest-response)))))
+           (:errors oo-ingest-response1)))
+    (is (= [":wrong-order-option version 1.0.0 are not supported"] 
+           (:errors oo-ingest-response2)))))
        
