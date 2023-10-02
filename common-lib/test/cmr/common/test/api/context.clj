@@ -6,21 +6,23 @@
    [cmr.common.api.context :as context]))
 
 (deftest request-context-test
-  (let [system {:foo "bar"}
-        request-id "request-test"]
-    (is (= {:system {:foo "bar"} :request {:request-id "request-test"}} (context/request-context system request-id)))))
+  (testing "Normal usage with supplied request-id"
+    (let [system {:foo "bar"}
+          request-id "request-test"]
+      (is (= {:system {:foo "bar"} :request {:request-id "request-test"}} (context/request-context system request-id))))))
 
 (deftest context->request-id-test
-  (let [context {:request {:request-id "request-test"}}]
-    (is (= "request-test" (context/context->request-id context)))))
+  (testing "Normal usage, pulling request-id from the context"
+    (let [context {:request {:request-id "request-test"}}]
+      (is (= "request-test" (context/context->request-id context))))))
 
 (deftest context->http-headers-test
-  (let [context {:request {:request-id "request-test"}}]
-    (is (= {"cmr-request-id" "request-test"} (context/context->http-headers context)))))
+  (testing "Normal usage, creating HTTP header map"
+    (let [context {:request {:request-id "request-test"}}]
+      (is (= {"cmr-request-id" "request-test"} (context/context->http-headers context))))))
 
 (deftest context->user-id-test
-  (let [context-1 {:request {:request-id "request-test"} :user-id "test-user"}
-        context-2 {:request {:request-id "request-test"} :token "test-token"}
-        context-3 (util/lazy-assoc context-2 :user-id "test-user")
-        msg "No token test"]
-    (is (= "test-user" (context/context->user-id context-3)))))
+  (testing "Normal usage, pulling user-id from the context"
+    (let [context-temp {:request {:request-id "request-test"} :token "test-token"}
+          context (util/lazy-assoc context-temp :user-id "test-user")]
+      (is (= "test-user" (context/context->user-id context))))))
