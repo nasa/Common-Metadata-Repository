@@ -169,7 +169,7 @@
   [vector page-size page-num]
   (if (vector? vector)
     (let [total-items (count vector)
-          start-index (min (* (dec page-num) page-size) (- total-items 0))
+          start-index (min (* (dec page-num) page-size) total-items)
           end-index (min (* page-num page-size) total-items)]
       (subvec vector start-index end-index))
     vector))
