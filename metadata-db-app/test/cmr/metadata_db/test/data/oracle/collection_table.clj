@@ -1,8 +1,8 @@
 (ns cmr.metadata-db.test.data.oracle.collection-table
   (:require
-    [clojure.test :refer :all]
-    [cmr.metadata-db.data.oracle.collection-table :as ct]
-    [cmr.common.util :as util :refer [are3]]))
+   [clojure.test :refer :all]
+   [cmr.metadata-db.data.oracle.collection-table :as ct]
+   [cmr.common.util :as util :refer [are3]]))
 
 (deftest collection-constraint-sql-false-test
   (testing "valid table name"

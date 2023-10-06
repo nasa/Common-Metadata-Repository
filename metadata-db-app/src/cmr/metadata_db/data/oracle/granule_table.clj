@@ -1,8 +1,8 @@
 (ns cmr.metadata-db.data.oracle.granule-table
   "Contains helper functions to create granule table."
   (:require
-    [clojure.java.jdbc :as jdbc]
-    [cmr.metadata-db.data.util :as util]))
+   [clojure.java.jdbc :as jdbc]
+   [cmr.metadata-db.data.util :as util]))
 
 (defmulti granule-column-sql
   "Returns the sql to define provider granule columns"
