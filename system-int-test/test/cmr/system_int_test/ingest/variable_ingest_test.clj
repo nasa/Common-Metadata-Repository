@@ -174,37 +174,37 @@
           {status :status} (variable-util/ingest-variable-with-association concept opts)]
       (is (= 401 status)))))
 
- (deftest update-concept-with-new-user-from-token
-   (are3 [ingest-header1 expected-user-id1
-          ingest-header2 expected-user-id2
-          ingest-header3 expected-user-id3]
-     (let [{token1 :token} ingest-header1
-           coll1-PROV1 (data-core/ingest-umm-spec-collection
-                        "PROV1"
-                        (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
-                        {:token token1})
-           _ (index/wait-until-indexed)
-           concept (variable-util/make-variable-concept
-                    {}
-                    {:coll-concept-id (:concept-id coll1-PROV1)})
-           {:keys [concept-id revision-id]} (variable-util/ingest-variable-with-association
-                                             concept
-                                             (merge variable-util/default-opts
-                                                    ingest-header1))]
-       (ingest/ingest-concept concept (merge variable-util/default-opts
-                                             ingest-header2))
-       (ingest/ingest-concept concept (merge variable-util/default-opts
-                                             ingest-header3))
-       (ingest/assert-user-id concept-id revision-id expected-user-id1)
-       (ingest/assert-user-id concept-id (inc revision-id) expected-user-id2)
-       (ingest/assert-user-id concept-id (inc (inc revision-id)) expected-user-id3))
-     "user id from token"
-     (variable-util/setup-update-acl
-      (s/context) "PROV1" "user1" "update-group") "user1"
-     (variable-util/setup-update-acl
-      (s/context) "PROV1" "user2" "update-group") "user2"
-     (variable-util/setup-update-acl
-      (s/context) "PROV1" "user3" "update-group") "user3"))
+(deftest update-concept-with-new-user-from-token
+  (are3 [ingest-header1 expected-user-id1
+         ingest-header2 expected-user-id2
+         ingest-header3 expected-user-id3]
+    (let [{token1 :token} ingest-header1
+          coll1-PROV1 (data-core/ingest-umm-spec-collection
+                       "PROV1"
+                       (data-umm-c/collection {:EntryTitle "E1" :ShortName "S1"})
+                       {:token token1})
+          _ (index/wait-until-indexed)
+          concept (variable-util/make-variable-concept
+                   {}
+                   {:coll-concept-id (:concept-id coll1-PROV1)})
+          {:keys [concept-id revision-id]} (variable-util/ingest-variable-with-association
+                                            concept
+                                            (merge variable-util/default-opts
+                                                   ingest-header1))]
+      (ingest/ingest-concept concept (merge variable-util/default-opts
+                                            ingest-header2))
+      (ingest/ingest-concept concept (merge variable-util/default-opts
+                                            ingest-header3))
+      (ingest/assert-user-id concept-id revision-id expected-user-id1)
+      (ingest/assert-user-id concept-id (inc revision-id) expected-user-id2)
+      (ingest/assert-user-id concept-id (inc (inc revision-id)) expected-user-id3))
+    "user id from token"
+    (variable-util/setup-update-acl
+     (s/context) "PROV1" "user1" "update-group") "user1"
+    (variable-util/setup-update-acl
+     (s/context) "PROV1" "user2" "update-group") "user2"
+    (variable-util/setup-update-acl
+     (s/context) "PROV1" "user3" "update-group") "user3"))
 
 ;; XXX write `update-concept-with-new-user-from-user-id`
     ; "user id from user-id header"
