@@ -341,10 +341,10 @@
                          from %s a,
                          (select concept_id, max(revision_id) revision_id
                          from %s where provider_id = ?
-                         and native_id = '%s' group by concept_id) b
+                         and native_id = ? group by concept_id) b
                          where a.concept_id = b.concept_id
                          and a.revision_id = b.revision_id"
-                        table table native-id) provider-id]
+                        table table) provider-id native-id]
                [(format "select /*+ LEADING(b a) USE_NL(b a) INDEX(a %s_GRANULES_CID_REV) */
                          a.concept_id, a.parent_collection_id, a.deleted
                          from %s a,
