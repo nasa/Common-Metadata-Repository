@@ -208,7 +208,8 @@
     (let [strategy (transform-strategy concept target-format)
           target-format-result-map (transform-with-strategy
                                     context concept strategy [target-format])]
-      (info (format "transform: target-format: [%s] transform-strategy: [%s]"
+      (info (format "transform: concept: [%s] target-format: [%s] transform-strategy: [%s]"
+                    (:concept-id concept)
                     target-format
                     strategy))
       (get target-format-result-map target-format))))
