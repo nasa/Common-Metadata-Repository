@@ -208,7 +208,9 @@
     (let [strategy (transform-strategy concept target-format)
           target-format-result-map (transform-with-strategy
                                     context concept strategy [target-format])]
-      (info "transform-strategy: " strategy)
+      (info (format "transform: target-format: [%s] transform-strategy: [%s]"
+                    target-format
+                    strategy))
       (get target-format-result-map target-format))))
 
 (defn transform-concepts
@@ -224,5 +226,7 @@
                            :format (mt/format->mime-type target-format))
                     (assoc concept
                            :format (mt/format->mime-type target-format)
-                            :metadata (transform context (assoc concept :num-concepts (count concepts)) target-format))))
+                           :metadata (transform context
+                                                (assoc concept :num-concepts (count concepts))
+                                                target-format))))
                 concepts)))

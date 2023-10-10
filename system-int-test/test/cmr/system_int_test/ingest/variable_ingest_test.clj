@@ -174,8 +174,6 @@
           {status :status} (variable-util/ingest-variable-with-association concept opts)]
       (is (= 401 status)))))
 
-;; fix this test ???
-
  (deftest update-concept-with-new-user-from-token
    (are3 [ingest-header1 expected-user-id1
           ingest-header2 expected-user-id2
