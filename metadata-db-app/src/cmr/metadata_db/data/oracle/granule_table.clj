@@ -1,7 +1,8 @@
 (ns cmr.metadata-db.data.oracle.granule-table
   "Contains helper functions to create granule table."
   (:require
-   [clojure.java.jdbc :as j]))
+   [clojure.java.jdbc :as jdbc]
+   [cmr.metadata-db.data.util :as util]))
 
 (defmulti granule-column-sql
   "Returns the sql to define provider granule columns"
@@ -42,6 +43,7 @@
 
 (defmethod granule-constraint-sql false
   [provider table-name]
+  (util/validate-table-name table-name)
   (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
                ;; Unique constraint on native id and revision id
@@ -65,6 +67,7 @@
 
 (defmethod granule-constraint-sql true
   [provider table-name]
+  (util/validate-table-name table-name)
   (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
                ;; Unique constraint on native id and revision id
@@ -90,27 +93,28 @@
   [db table-name]
   ;; can't create constraint with column of datatype TIME/TIMESTAMP WITH TIME ZONE
   ;; so we create the index separately from the create table statement
-  (j/db-do-commands db (format "CREATE INDEX %s_crddr ON %s (concept_id, revision_id, deleted, delete_time, revision_date)"
-                               table-name
-                               table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_pcid ON %s (parent_collection_id)"
-                               table-name
-                               table-name))
-  (j/db-do-commands db (format "CREATE INDEX %s_pcr ON %s (parent_collection_id, concept_id, revision_id)"
-                               table-name
-                               table-name))
+  (util/validate-table-name table-name)
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_crddr ON %s (concept_id, revision_id, deleted, delete_time, revision_date)"
+                                  table-name
+                                  table-name))
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_pcid ON %s (parent_collection_id)"
+                                  table-name
+                                  table-name))
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_pcr ON %s (parent_collection_id, concept_id, revision_id)"
+                                  table-name
+                                  table-name))
   ;; Need this for transaction-id post commit check
-  (j/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
-                                table-name
-                                table-name))
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
+                                  table-name
+                                  table-name))
 
   ;; This index is needed when bulk indexing granules within a collection
-  (j/db-do-commands db (format "CREATE INDEX %s_cpk ON %s (parent_collection_id, id)"
-                               table-name
-                               table-name))
+  (jdbc/db-do-commands db (format "CREATE INDEX %s_cpk ON %s (parent_collection_id, id)"
+                                  table-name
+                                  table-name))
 
   ;; This index makes it faster to find counts by collection of undeleted granules for metadata db holdings
-  (j/db-do-commands
+  (jdbc/db-do-commands
     db (format "create index %s_pdcr on %s (parent_collection_id, deleted, concept_id, revision_id)"
                table-name
                table-name)))
@@ -122,11 +126,13 @@
 
 (defmethod create-granule-indexes false
   [db provider table-name]
+  (util/validate-table-name table-name)
   (create-common-gran-indexes db table-name)
-  (j/db-do-commands db (format "CREATE INDEX idx_%s_ur ON %s(granule_ur)" table-name table-name)))
+  (jdbc/db-do-commands db (format "CREATE INDEX idx_%s_ur ON %s(granule_ur)" table-name table-name)))
 
 (defmethod create-granule-indexes true
   [db provider table-name]
+  (util/validate-table-name table-name)
   (create-common-gran-indexes db table-name)
-  (j/db-do-commands db (format "CREATE INDEX idx_%s_pur ON %s(provider_id, granule_ur)"
-                               table-name table-name)))
+  (jdbc/db-do-commands db (format "CREATE INDEX idx_%s_pur ON %s(provider_id, granule_ur)"
+                                  table-name table-name)))
