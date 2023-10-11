@@ -259,9 +259,11 @@
                          (metadata-transformer/transform-concepts context concepts target-format))
           [t3 concepts] (u/time-execution
                          (concepts-without-xml-processing-inst concepts))]
-      (debug "fetch of " (count concept-tuples) " concepts:"
-             "get-concepts:" t1 "metadata-transformer/transform-concepts:" t2
-             "remove-xml-processing-instructions:" t3)
+      (info "fetch of " (count concept-tuples) " concepts:"
+            "target-format:" target-format
+            "get-concepts:" t1 "metadata-transformer/transform-concepts:" t2
+            "concept-type: " (-> concepts first :concept-type)
+            "remove-xml-processing-instructions:" t3)
       concepts)))
 
 (defn- get-cached-metadata-in-format
