@@ -10,7 +10,7 @@
    [cmr.schema-validation.json-schema :as js-validater]
    [inflections.core :as inf]))
 
-(defn approved-generic?
+(defn- approved-generic*
   "Check to see if a requested generic is on the approved list.
    Parameters:
    * schema: schema keyword like :grid
@@ -20,7 +20,15 @@
   (when (and schema version)
     (some #(= version %) (schema (cfg/approved-pipeline-documents)))))
 
-(defn latest-approved-documents
+(def approved-generic?
+  "Check to see if a requested generic is on the approved list.
+   Parameters:
+   * schema: schema keyword like :grid
+   * version: string like 0.0.1
+   Returns: true if schema and version are supported, nil otherwise"
+  (memoize approved-generic*))
+
+(defn- latest-approved-documents*
   "Return a map of all the configured approved generics and the latest version
    string for each one.
    Return {:doc-type \"1.2.3\"}"
@@ -29,6 +37,12 @@
             (assoc data (first item) (last (second item))))
           {}
           (cfg/approved-pipeline-documents)))
+
+(def latest-approved-documents
+  "Cached - Return a map of all the configured approved generics and the latest version
+  string for each one.
+  Return {:doc-type \"1.2.3\"}"
+  (memoize latest-approved-documents*))
 
 (def documents-all-versions
   "Return the list of all versions of the generic documents in the system"
@@ -49,7 +63,7 @@
   []
   (keys (latest-approved-documents)))
 
-(defn read-schema-file
+(defn- read-schema-file*
   "Return the specific schema given the schema keyword name and version number.
    Throw an error if the file can't be read.
    Parameters:
@@ -73,6 +87,16 @@
                generic-version
                (format "schemas/%s/v%s/%s.json" (name generic-keyword) generic-version (name file-name))
                (.getMessage e))))))
+
+(def read-schema-file
+  "Cached - Return the specific schema given the schema keyword name and version number.
+   Throw an error if the file can't be read.
+   Parameters:
+   * file-name: [metadata | index | schema]
+   * generic-keyword: [:grid | ...]
+   * generic-version: 0.0.1
+   Returns: string"
+  (memoize read-schema-file*))
 
 (defn read-schema-index
   "Return the schema index configuration file given the schema name and version
@@ -126,7 +150,7 @@
   [raw-json]
   (validate-metadata-against-schema raw-json :index "0.0.1"))
 
-(defn approved-generic-concept-prefixes
+(defn- approved-generic-concept-prefixes*
   "Return the active list of approved generic content types with the defined
    prefix in the :SubConceptType field found in the index.json file. If field is
    not defined, then X is used.
@@ -143,6 +167,14 @@
                        (get (json/parse-string index-raw true) :SubConceptType "X")))))
           {}
           (latest-approved-documents)))
+
+(def approved-generic-concept-prefixes
+  "Cached - Return the active list of approved generic content types with the defined
+   prefix in the :SubConceptType field found in the index.json file. If field is
+   not defined, then X is used.
+   Parameters: none, based off approved-documents?
+   Return: {doc-type \"concept-prefix\"}"
+  (memoize approved-generic-concept-prefixes*))
 
 (def generic-concept-types-reg-ex
   "Creates a regular expression for all of the generic concepts. Used to create API endpoints."
