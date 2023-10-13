@@ -516,8 +516,8 @@
       }
     },
     "DoiType": {
-      "type": "object",
       "oneOf": [{
+        "type": "object",
         "title": "DOI is available",
         "additionalProperties": false,
         "description": "This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. For those that want to specify that a DOI is not applicable or unknown for their record, use the second option.",
@@ -535,6 +535,7 @@
         },
         "required": ["DOI"]
       }, {
+        "type": "object",
         "title": "DOI is not available or applicable",
         "additionalProperties": false,
         "description": "This element stores the fact that the DOI (Digital Object Identifier) is not applicable or is unknown.",

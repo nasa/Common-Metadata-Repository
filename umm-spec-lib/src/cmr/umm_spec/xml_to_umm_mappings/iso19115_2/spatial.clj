@@ -121,7 +121,8 @@
     (iso-xml-parsing-util/convert-iso-description-string-to-map
      orbit-string
      (re-pattern
-      "SwathWidth:|SwathWidthUnit:|Period:|OrbitPeriod:|OrbitPeriodUnit:|InclinationAngle:|InclinationAngleUnit:|StartCircularLatitude:|StartCircularLatitudeUnit:|NumberOfOrbits:"))))
+      "SwathWidth:|SwathWidthUnit:|Period:|OrbitPeriod:|OrbitPeriodUnit:|InclinationAngle:|InclinationAngleUnit:|StartCircularLatitude:|StartCircularLatitudeUnit:|NumberOfOrbits:")
+     '(:SwathWidth :Period :OrbitPeriod :InclinationAngle :StartCircularLatitude :NumberOfOrbits))))
 
 (defn- parse-orbit-parameters-foot-prints
   "Parse orbit parameter foot prints from the ISO XML document. Foot prints are encoded in an ISO
@@ -132,8 +133,9 @@
     (for [orbit-foot-print orbit-foot-prints
           :let [ofp-string (value-of (clojure.data.xml/emit-str orbit-foot-print) "CharacterString")
                 ofp-map (iso-xml-parsing-util/convert-iso-description-string-to-map
-                          ofp-string
-                          (re-pattern "Footprint:|FootprintUnit:|Description:"))]
+                         ofp-string
+                         (re-pattern "Footprint:|FootprintUnit:|Description:")
+                         '(:Footprint))]
           :when (not-empty ofp-map)]
       ofp-map)))
 
@@ -317,8 +319,7 @@
               (:code parsed-xml)
               horizontal-resolution-description-string-field-re-pattern
               horizontal-resolution-keys-represent-numbers)
-            (ummify-horizontal-resolution horizontal-res-key-name)
-            util/remove-nil-keys)})))
+            (ummify-horizontal-resolution horizontal-res-key-name))})))
 
 (defn- group-same-structures
   "This function groups a list of maps together based on a passed in key."
@@ -333,40 +334,47 @@
   (let [horizontal-data-resolutions (select doc horizontal-data-resolutions-xpath)
         list-of-maps (for [horizontal-data-resolution horizontal-data-resolutions]
                        (get-single-resolution-umm-structure horizontal-data-resolution))
-        json-horizontal-data-resolutions
-          (util/remove-nil-keys
-            (umm-c/map->HorizontalDataResolutionType
-              {:VariesResolution (first
-                                   (group-same-structures :VariesResolution list-of-maps))
-               :PointResolution (first
-                                  (group-same-structures :PointResolution list-of-maps))
-               :NonGriddedResolutions (seq
-                                        (group-same-structures :NonGriddedResolutions list-of-maps))
-               :NonGriddedRangeResolutions (seq
-                                             (group-same-structures :NonGriddedRangeResolutions list-of-maps))
-               :GriddedResolutions (seq
-                                     (group-same-structures :GriddedResolutions list-of-maps))
-               :GriddedRangeResolutions (seq
-                                          (group-same-structures :GriddedRangeResolutions list-of-maps))
-               :GenericResolutions (seq (group-same-structures :GenericResolutions list-of-maps))}))]
+        varies (when-let [v (first (group-same-structures :VariesResolution list-of-maps))]
+                 {:VariesResolution v})
+        point (when-let [p (first (group-same-structures :PointResolution list-of-maps))]
+                {:PointResolution p})
+        non-grid (when-let [g (seq (group-same-structures :NonGriddedResolutions list-of-maps))]
+                   {:NonGriddedResolutions g})
+        non-grid-range (when-let [g (seq (group-same-structures :NonGriddedRangeResolutions list-of-maps))]
+                         {:NonGriddedRangeResolutions g})
+        grid (when-let [g (seq (group-same-structures :GriddedResolutions list-of-maps))]
+               {:GriddedResolutions g})
+        grid-range (when-let [g (seq (group-same-structures :GriddedRangeResolutions list-of-maps))]
+                     {:GriddedRangeResolutions g})
+        gen (when-let [g (seq (group-same-structures :GenericResolutions list-of-maps))]
+              {:GenericResolutions g})
+        json-horizontal-data-resolutions (seq (merge {} varies point non-grid non-grid-range grid grid-range gen))]
     (when-not (empty? json-horizontal-data-resolutions)
-      json-horizontal-data-resolutions)))
+      (umm-c/map->HorizontalDataResolutionType json-horizontal-data-resolutions))))
 
 (defn- parse-horizontal-spatial-domain
   "Parse the horizontal domain from the ISO XML document. Horizontal domains are encoded in an ISO XML"
   [doc extent-info sanitize?]
-  (let [description-string (value-of doc res-and-coord-desc-xpath)
-        m (when description-string
-            (iso-xml-parsing-util/convert-iso-description-string-to-map description-string (re-pattern "Description:")))
-        description (:Description m)]
-    (util/remove-nil-keys
-     {:Geometry (parse-geometry doc extent-info sanitize?)
-      :ZoneIdentifier (value-of doc zone-identifier-xpath)
-      :ResolutionAndCoordinateSystem (util/remove-nil-keys
-                                      {:Description (iso-util/safe-trim description)
-                                       :GeodeticModel (parse-geodetic-model doc)
-                                       :LocalCoordinateSystem (parse-local-coord-sys doc)
-                                       :HorizontalDataResolution (parse-horizontal-data-resolutions doc)})})))
+  (let [description (when-let [ds (value-of doc res-and-coord-desc-xpath)]
+                      {:Description (-> ds
+                                        (iso-xml-parsing-util/convert-iso-description-string-to-map (re-pattern "Description:"))
+                                        (:Description)
+                                        (iso-util/safe-trim))})
+        geodetic-model (when-let [geo (parse-geodetic-model doc)]
+                         {:GeodeticModel geo})
+        local-coord-sys (when-let [coord (parse-local-coord-sys doc)]
+                          {:LocalCoordinateSystem coord})
+        hor-res (when-let [hr (parse-horizontal-data-resolutions doc)]
+                  {:HorizontalDataResolution hr})
+        resolution (when (or description geodetic-model local-coord-sys hor-res)
+                     {:ResolutionAndCoordinateSystem (umm-c/map->ResolutionAndCoordinateSystemType
+                                                      (merge {} description geodetic-model local-coord-sys hor-res))})
+        geometry (when-let [g (parse-geometry doc extent-info sanitize?)]
+                   {:Geometry g})
+        zone (when-let [z (value-of doc zone-identifier-xpath)]
+               {:ZoneIdentifier z})]
+    (when (or geometry zone resolution)
+      (merge {} geometry zone resolution))))
 
 (defn parse-spatial
   "Returns UMM SpatialExtentType map from ISO XML document."
@@ -378,23 +386,24 @@
      :HorizontalSpatialDomain (parse-horizontal-spatial-domain doc extent-info sanitize?)
      :VerticalSpatialDomains (spatial-conversion/drop-invalid-vertical-spatial-domains
                               (parse-vertical-domains doc))
-     :OrbitParameters (as->(parse-orbit-parameters doc) op
-                           ;; OrbitPeriod could be either in :Period or OrbitPeriod
-                           (if (:Period op)
-                             (assoc op :OrbitPeriod (:Period op))
-                             op)
-                           ;; add the assumed units if the corresponding fields exist but the corresponding units don't.
-                           (if (and (:SwathWidth op) (not (:SwathWidthUnit op)))
-                             (assoc op :SwathWidthUnit "Kilometer")
-                             op)
-                           (if (and (:OrbitPeriod op) (not (:OrbitPeriodUnit op)))
-                             (assoc op :OrbitPeriodUnit "Decimal Minute")
-                             op)
-                           (if (:InclinationAngle op)
-                             (assoc op :InclinationAngleUnit "Degree")
-                             op)
-                           (if (:StartCircularLatitude op)
-                             (assoc op :StartCircularLatitudeUnit "Degree")
-                             op)
-                           (dissoc op :Period)
-                           (assoc op :Footprints (parse-orbit-parameters-foot-prints doc)))}))
+     :OrbitParameters (when-let [op (parse-orbit-parameters doc)]
+                        (as-> op op
+                          ;; OrbitPeriod could be either in :Period or OrbitPeriod
+                          (if (:Period op)
+                            (assoc op :OrbitPeriod (:Period op))
+                            op)
+                          ;; add the assumed units if the corresponding fields exist but the corresponding units don't.
+                          (if (and (:SwathWidth op) (not (:SwathWidthUnit op)))
+                            (assoc op :SwathWidthUnit "Kilometer")
+                            op)
+                          (if (and (:OrbitPeriod op) (not (:OrbitPeriodUnit op)))
+                            (assoc op :OrbitPeriodUnit "Decimal Minute")
+                            op)
+                          (if (:InclinationAngle op)
+                            (assoc op :InclinationAngleUnit "Degree")
+                            op)
+                          (if (:StartCircularLatitude op)
+                            (assoc op :StartCircularLatitudeUnit "Degree")
+                            op)
+                          (dissoc op :Period)
+                          (assoc op :Footprints (parse-orbit-parameters-foot-prints doc))))}))

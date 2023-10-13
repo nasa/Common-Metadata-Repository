@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.test.iso19115-expected-conversion
   "ISO 19115 specific expected conversion functionality"
   (:require
-    [clj-time.core :as t]
     [clj-time.format :as f]
     [clojure.string :as string]
     [cmr.common.util :as util :refer [update-in-each]]
@@ -9,22 +8,16 @@
     [cmr.umm-spec.date-util :as date-util]
     [cmr.umm-spec.iso19115-2-util :as iso-util]
     [cmr.umm-spec.json-schema :as js]
-    [cmr.umm-spec.location-keywords :as lk]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as cmn]
-    [cmr.umm-spec.related-url :as ru-gen]
     [cmr.umm-spec.spatial-conversion :as spatial-conversion]
     [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
     [cmr.umm-spec.test.iso-shared :as iso-shared]
-    [cmr.umm-spec.test.location-keywords-helper :as lkt]
-    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
     [cmr.umm-spec.url :as url]
     [cmr.umm-spec.util :as su]
-    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
-    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
-    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact]))
+    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
 
 (defn- propagate-first
   "Returns coll with the first element's value under k assoc'ed to each element in coll.
@@ -72,13 +65,6 @@
              (update-in [:PublicationDate] conversion-util/date-time->date)
              (update :ISBN su/format-isbn)
              (update :OnlineResource expected-online-resource)))))
-
-(defn- expected-iso-19115-2-distributions
-  "Returns the expected ISO19115-2 distributions for comparison."
-  [distributions]
-  (some->> distributions
-           su/remove-empty-records
-           vec))
 
 (defn expected-iso-19115-2-related-urls
   [related-urls]
@@ -340,33 +326,34 @@
 
 (defn update-horizontal-data-resolutions
   "Add the type and remove nil keys in HorizontalDataResolution."
-  [c]
-  (if (seq (get-in c [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]))
-    (-> c
-        (util/update-in-each
-          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :NonGriddedResolutions]
-          util/remove-nil-keys)
-        (util/update-in-each
-          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :NonGriddedRangeResolutions]
-          util/remove-nil-keys)
-        (util/update-in-each
-          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :GenericResolutions]
-          util/remove-nil-keys)
-        (util/update-in-each
-          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :GriddedResolutions]
-          util/remove-nil-keys)
-        (util/update-in-each
-          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution :GriddedRangeResolutions]
-          util/remove-nil-keys)
-        ;; The order here is important because calling umm-c/map->HorizontalDataResolutionType will put back the nil values if
-        ;; remove-nil-keys is called first.
-        (update-in
-          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
-          umm-c/map->HorizontalDataResolutionType)
-        (update-in
-          [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :HorizontalDataResolution]
-          util/remove-nil-keys))
-    c))
+  [horizontal-data-resolution]
+  (-> horizontal-data-resolution
+      (util/update-in-each [:NonGriddedResolutions] umm-c/map->HorizontalDataResolutionNonGriddedType)
+      (util/update-in-each [:NonGriddedRangeResolutions] umm-c/map->HorizontalDataResolutionNonGriddedRangeType)
+      (util/update-in-each [:GenericResolutions] umm-c/map->HorizontalDataGenericResolutionType)
+      (util/update-in-each [:GriddedResolutions] umm-c/map->HorizontalDataResolutionGriddedType)
+      (util/update-in-each [:GriddedRangeResolutions] umm-c/map->HorizontalDataResolutionGriddedRangeType)
+      umm-c/map->HorizontalDataResolutionType))
+
+(defn expected-horizontal-spatial-domain
+  [horizontal-spatial-domain]
+  (let [res (:ResolutionAndCoordinateSystem horizontal-spatial-domain)]
+    (if res
+      (as-> res res
+        (if (:Description res)
+          (update res :Description iso-util/safe-trim)
+          res)
+        (if (:GeodeticModel res)
+          (update res :GeodeticModel expected-geodetic-model)
+          res)
+        (if (:LocalCoordinateSystem res)
+          (update res :LocalCoordinateSystem expected-local-coordinate-system)
+          res)
+        (if (:HorizontalDataResolution res)
+          (update res :HorizontalDataResolution update-horizontal-data-resolutions)
+          res)
+        (assoc horizontal-spatial-domain :ResolutionAndCoordinateSystem res))
+      horizontal-spatial-domain)))
 
 (defn umm-expected-conversion-iso19115
   [umm-coll]
@@ -408,8 +395,5 @@
       (update :DOI iso-shared/expected-doi)
       (update :UseConstraints iso-shared/expected-use-constraints)
       (update :ArchiveAndDistributionInformation iso-shared/expected-archive-dist-info)
-      (update-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :Description] iso-util/safe-trim)
-      (update-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel] expected-geodetic-model)
-      (update-in [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem :LocalCoordinateSystem] expected-local-coordinate-system)
-      (update-horizontal-data-resolutions)
+      (update-in [:SpatialExtent :HorizontalSpatialDomain] expected-horizontal-spatial-domain)
       js/parse-umm-c))
