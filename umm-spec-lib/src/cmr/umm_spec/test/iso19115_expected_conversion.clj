@@ -337,23 +337,22 @@
 
 (defn expected-horizontal-spatial-domain
   [horizontal-spatial-domain]
-  (let [res (:ResolutionAndCoordinateSystem horizontal-spatial-domain)]
-    (if res
-      (as-> res res
-        (if (:Description res)
-          (update res :Description iso-util/safe-trim)
-          res)
-        (if (:GeodeticModel res)
-          (update res :GeodeticModel expected-geodetic-model)
-          res)
-        (if (:LocalCoordinateSystem res)
-          (update res :LocalCoordinateSystem expected-local-coordinate-system)
-          res)
-        (if (:HorizontalDataResolution res)
-          (update res :HorizontalDataResolution update-horizontal-data-resolutions)
-          res)
-        (assoc horizontal-spatial-domain :ResolutionAndCoordinateSystem res))
-      horizontal-spatial-domain)))
+  (if-let [res (:ResolutionAndCoordinateSystem horizontal-spatial-domain)]
+    (as-> res res
+      (if (:Description res)
+        (update res :Description iso-util/safe-trim)
+        res)
+      (if (:GeodeticModel res)
+        (update res :GeodeticModel expected-geodetic-model)
+        res)
+      (if (:LocalCoordinateSystem res)
+        (update res :LocalCoordinateSystem expected-local-coordinate-system)
+        res)
+      (if (:HorizontalDataResolution res)
+        (update res :HorizontalDataResolution update-horizontal-data-resolutions)
+        res)
+      (assoc horizontal-spatial-domain :ResolutionAndCoordinateSystem res))
+    horizontal-spatial-domain))
 
 (defn umm-expected-conversion-iso19115
   [umm-coll]
