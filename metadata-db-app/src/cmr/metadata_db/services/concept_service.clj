@@ -165,13 +165,13 @@
 (defn- provider-ids-for-validation
   "Returns the set of provider-ids for validation purpose. It is a list of existing provider ids
   and 'CMR', which is reserved for tags / tag associations."
-  [db]
-  (set (conj (map :provider-id (provider-db/get-providers db)) "CMR")))
+  [providers]
+  (set (conj (map :provider-id providers) "CMR")))
 
 (defn- validate-providers-exist
   "Validates that all of the providers in the list exist."
-  [db provider-ids]
-  (let [existing-provider-ids (provider-ids-for-validation db)
+  [provider-ids providers]
+  (let [existing-provider-ids (provider-ids-for-validation providers)
         unknown-providers (set/difference (set provider-ids) existing-provider-ids)]
     (when (> (count unknown-providers) 0)
       (errors/throw-service-error :not-found (msg/providers-do-not-exist unknown-providers)))))
@@ -622,9 +622,17 @@
 
 (defn- filter-non-existent-providers
   "Removes providers that don't exist from a map of provider-ids to values."
-  [db provider-id-map]
-  (let [existing-provider-ids (provider-ids-for-validation db)]
+  [provider-id-map providers]
+  (let [existing-provider-ids (provider-ids-for-validation providers)]
     (into {} (filter (comp existing-provider-ids first) provider-id-map))))
+
+(defn- get-provider-by-id
+  "Returns the provider from the past in list of providers with the given provider-id,
+  raise error when provider does not exist based on the throw-error flag"
+  [provider-id providers]
+  (if-let [provider (first (filter #(= provider-id (:provider-id %)) providers))]
+    provider
+    (errors/throw-service-error :not-found (msg/provider-does-not-exist provider-id))))
 
 (defn get-concepts
   "Get multiple concepts by concept-id and revision-id. Returns concepts in order requested"
@@ -634,31 +642,30 @@
   (let [start (System/currentTimeMillis)
         parallel-chunk-size (get-in context [:system :parallel-chunk-size])
         db (util/context->db context)
+        providers (provider-db/get-providers db)
         ;; Split the tuples so they can be requested separately for each provider and concept type
         split-tuples-map (split-concept-id-revision-id-tuples concept-id-revision-id-tuples)
         split-tuples-map (if allow-missing?
-                           (filter-non-existent-providers db split-tuples-map)
+                           (filter-non-existent-providers split-tuples-map providers)
                            (do
-                             (validate-providers-exist db (keys split-tuples-map))
-                             split-tuples-map))]
-
-    (let [concepts (apply concat
-                          (for [[provider-id concept-type-tuples-map] split-tuples-map
-                                [concept-type tuples] concept-type-tuples-map]
-                            (let [provider (provider-service/get-provider-by-id
-                                            context provider-id true)]
-                              ;; Retrieve the concepts for this type and provider id.
-                              (if (and (> parallel-chunk-size 0)
-                                       (< parallel-chunk-size (count tuples)))
-                                ;; retrieving chunks in parallel for faster read performance
-                                (apply concat
-                                       (cutil/pmap-n-all
-                                         (partial c/get-concepts db concept-type provider)
-                                         parallel-chunk-size
-                                         tuples))
-                                (c/get-concepts db concept-type provider tuples)))))
-          ;; Create a map of tuples to concepts
-          concepts-by-tuple (into {} (for [c concepts] [[(:concept-id c) (:revision-id c)] c]))]
+                             (validate-providers-exist (keys split-tuples-map) providers)
+                             split-tuples-map))
+        concepts (apply concat
+                        (for [[provider-id concept-type-tuples-map] split-tuples-map
+                              [concept-type tuples] concept-type-tuples-map
+                              :let [provider (get-provider-by-id provider-id providers)]]
+                            ;; Retrieve the concepts for this type and provider id.
+                            (if (and (> parallel-chunk-size 0)
+                                     (< parallel-chunk-size (count tuples)))
+                              ;; retrieving chunks in parallel for faster read performance
+                              (apply concat
+                                     (cutil/pmap-n-all
+                                      (partial c/get-concepts db concept-type provider)
+                                      parallel-chunk-size
+                                      tuples))
+                              (c/get-concepts db concept-type provider tuples))))
+                  ;; Create a map of tuples to concepts
+        concepts-by-tuple (into {} (for [c concepts] [[(:concept-id c) (:revision-id c)] c]))]
       (if (or allow-missing? (= (count concepts) (count concept-id-revision-id-tuples)))
         ;; Return the concepts in the order they were requested
         (let [millis (- (System/currentTimeMillis) start)]
@@ -670,7 +677,7 @@
           (errors/throw-service-errors
             :not-found
             (map (partial apply msg/concept-with-concept-id-and-rev-id-does-not-exist)
-                 missing-concept-tuples)))))))
+                 missing-concept-tuples))))))
 
 (defn get-latest-concepts
   "Get the latest version of concepts by specifiying a list of concept-ids. Results are
@@ -680,30 +687,30 @@
   (let [start (System/currentTimeMillis)
         parallel-chunk-size (get-in context [:system :parallel-chunk-size])
         db (util/context->db context)
+        providers (provider-db/get-providers db)
         ;; Split the concept-ids so they can be requested separately for each provider and concept type
         split-concept-ids-map (split-concept-ids concept-ids)
         split-concept-ids-map (if allow-missing?
-                                (filter-non-existent-providers db split-concept-ids-map)
+                                (filter-non-existent-providers split-concept-ids-map providers)
                                 (do
-                                  (validate-providers-exist db (keys split-concept-ids-map))
-                                  split-concept-ids-map))]
-    (let [concepts (apply concat
-                          (for [[provider-id concept-type-concept-id-map] split-concept-ids-map
-                                [concept-type cids] concept-type-concept-id-map]
-                            (let [provider (provider-service/get-provider-by-id
-                                            context provider-id true)]
-                              ;; Retrieve the concepts for this type and provider id.
-                              (if (and (> parallel-chunk-size 0)
-                                       (< parallel-chunk-size (count cids)))
-                                ;; retrieving chunks in parallel for faster read performance
-                                (apply concat
-                                       (cutil/pmap-n-all
-                                         (partial c/get-latest-concepts db concept-type provider)
-                                         parallel-chunk-size
-                                         cids))
-                                (c/get-latest-concepts db concept-type provider cids)))))
-          ;; Create a map of concept-ids to concepts
-          concepts-by-concept-id (into {} (for [c concepts] [(:concept-id c) c]))]
+                                  (validate-providers-exist (keys split-concept-ids-map) providers)
+                                  split-concept-ids-map))
+        concepts (apply concat
+                        (for [[provider-id concept-type-concept-id-map] split-concept-ids-map
+                              [concept-type cids] concept-type-concept-id-map
+                              :let [provider (get-provider-by-id provider-id providers)]]
+                            ;; Retrieve the concepts for this type and provider id.
+                            (if (and (> parallel-chunk-size 0)
+                                     (< parallel-chunk-size (count cids)))
+                              ;; retrieving chunks in parallel for faster read performance
+                              (apply concat
+                                     (cutil/pmap-n-all
+                                      (partial c/get-latest-concepts db concept-type provider)
+                                      parallel-chunk-size
+                                      cids))
+                              (c/get-latest-concepts db concept-type provider cids))))
+                  ;; Create a map of concept-ids to concepts
+        concepts-by-concept-id (into {} (for [c concepts] [(:concept-id c) c]))]
       (if (or allow-missing? (= (count concepts) (count concept-ids)))
         ;; Return the concepts in the order they were requested
         (let [millis (- (System/currentTimeMillis) start)]
@@ -715,7 +722,7 @@
           (errors/throw-service-errors
             :not-found
             (map msg/concept-does-not-exist
-                 missing-concept-ids)))))))
+                 missing-concept-ids))))))
 
 (defn get-expired-collections-concept-ids
   "Returns the concept ids of expired collections in the provider."

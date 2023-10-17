@@ -2,6 +2,7 @@
   "This contains functions for interacting with the metadata db API. It uses the newer transmit namespace
   style that concepts, and access control use"
   (:require
+   [cmr.common.api.context :as context]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
    [cmr.transmit.http-helper :as h]
@@ -49,6 +50,13 @@
   (when concept
     (update-in concept [:concept-type] keyword)))
 
+(defn include-request-id
+  "Includes the request id of the caller in the http request, so that it is easier to
+  trace logs from one app to the next for the same request."
+  [context http-options]
+  (merge http-options {(symbol context/REQUEST_ID_HEADER) (context/context->request-id context)})
+  )
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
 (h/defresetter reset :metadata-db)
@@ -76,9 +84,9 @@
                 {:url-fn providers-url
                  :method :get
                  :raw? raw?
-                 :http-options (merge {:accept :json
-                                       :headers headers}
-                                      http-options)}))))
+                 :http-options (include-request-id context (merge {:accept :json
+                                                                   :headers headers}
+                                                                  http-options))}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Concept functions
@@ -95,7 +103,7 @@
                               :method :get
                               :raw? raw?
                               :use-system-token? true
-                              :http-options (merge {:accept :json} http-options)})]
+                              :http-options (include-request-id context (merge {:accept :json} http-options))})]
      (if raw?
        response
        (:concept-id response)))))
@@ -115,7 +123,7 @@
                   :method :get
                   :raw? raw?
                   :use-system-token? true
-                  :http-options (merge {:accept :json} http-options params)})
+                  :http-options (include-request-id context (merge {:accept :json} http-options params))})
       finish-parse-concept)))
 
 (defn get-concept
@@ -132,7 +140,7 @@
                    :method :get
                    :raw? raw?
                    :use-system-token? true
-                   :http-options (merge {:accept :json} http-options)})
+                   :http-options (include-request-id context (merge {:accept :json} http-options))})
        finish-parse-concept)))
 
 (defn get-latest-concept
@@ -149,7 +157,7 @@
                    :method :get
                    :raw? raw?
                    :use-system-token? true
-                   :http-options (merge {:accept :json} http-options)})
+                   :http-options (include-request-id context (merge {:accept :json} http-options))})
        finish-parse-concept)))
 
 ;; Defines health check function
