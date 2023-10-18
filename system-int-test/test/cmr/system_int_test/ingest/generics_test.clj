@@ -46,9 +46,10 @@
 (deftest validate-json-test
   (testing
    "Test that approved-generic? approves configured Generic document types"
-    (with-redefs [config/approved-pipeline-documents (fn [] {:grids ["1.0.0"]})]
-      (is (true? (gcfg/approved-generic? :grids "1.0.0")) "Grids should be an approved format")
-      (is (not (gcfg/approved-generic? :grid "0.0.1")) "CMR is using default configuration")
+    ;; In actuality tests can not change generic configruations because the code
+    ;; now uses memoize for performance reasons. All Generic settings are set once
+    (with-redefs [config/approved-pipeline-documents (fn [] {:grid ["0.0.1"]})]
+      (is (true? (gcfg/approved-generic? :grid "0.0.1")) "CMR is using default configuration")
       (is (not (gcfg/approved-generic? :fake "a.b.c")) "A fake type was incorectly approved")))
   (testing
    "Verify that a document can be validated as approved schema."
@@ -285,8 +286,8 @@
         search-draft-result (search-generics-test/search-request "collection-drafts" (str "concept_id=" cd-concept-id))
         search-draft-status (:status search-draft-result)
         search-draft-body (:body search-draft-result)
-       
-        ;; deleting the draft should fail. 
+
+        ;; deleting the draft should fail.
         draft-delete-result (gen-util/ingest-generic-document
                              nil "PROV1" cd-native-id :collection-draft gen-util/collection-draft :delete)]
     ;; Verify that searching for the published collection from elastic search does return result.
@@ -296,8 +297,8 @@
     ;; Verify that searching for the draft from elastic search returns nothing
     (is (= search-draft-status 200))
     (is (string/includes? search-draft-body "<hits>0</hits>"))
- 
-    ;; The draft delete result should indicate the draft does not exist. 
+
+    ;; The draft delete result should indicate the draft does not exist.
     (is (= draft-delete-result {:errors ["CollectionDraft with native id [CD-NativeId] in provider [PROV1] does not exist."]}))))
 
 ;; Test that generic-doc draft can be published
@@ -310,11 +311,11 @@
         oo-draft (gen-util/ingest-generic-document
                   nil "PROV1" od-native-id :order-option-draft gen-util/order-option-draft :post)
         od-concept-id (:concept-id oo-draft)
-        oo-published (ingest/publish-non-variable-draft 
+        oo-published (ingest/publish-non-variable-draft
                       od-concept-id oo-native-id nil)
         oo-concept-id (:concept-id oo-published)
-                                                                       
-        _ (index/wait-until-indexed)                                   
+
+        _ (index/wait-until-indexed)
         ;; search for the published order-option from elastic search should return result.
         search-oo-result (search-generics-test/search-request "order-options" (str "concept_id=" oo-concept-id))
         search-oo-status (:status search-oo-result)
@@ -324,14 +325,14 @@
         search-draft-result (search-generics-test/search-request "order-option-drafts" (str "concept_id=" od-concept-id))
         search-draft-status (:status search-draft-result)
         search-draft-body (:body search-draft-result)
-       
-        ;; deleting the draft should fail. 
+
+        ;; deleting the draft should fail.
         draft-delete-result (gen-util/ingest-generic-document
                              nil "PROV1" od-native-id :order-option-draft gen-util/order-option-draft :delete)]
     ;; Verify that searching for the published order-option from elastic search does return result.
     (is (= search-oo-status 200))
     (is (string/includes? search-oo-body "<hits>1</hits>"))
-  
+
     ;; Verify that searching for the draft from elastic search returns nothing
     (is (= search-draft-status 200))
     (is (string/includes? search-draft-body "<hits>0</hits>"))
@@ -499,7 +500,7 @@
     (is (= draft-delete-result {:errors ["VariableDraft with native id [VD-NativeId] in provider [PROV1] does not exist."]}))))
 
 ;; Test that a Generic Doc can not be ingested when MetadataSpecification is missing
-;; and a proper message is returned 
+;; and a proper message is returned
 (deftest test-generic-doc-ingest-with-missing-specification
   (let [;; Ingest two order-option concept
         oo-native-id1 "OO-NativeId1"
@@ -514,6 +515,5 @@
         oo-ingest-response2 (gen-util/ingest-generic-document nil "PROV1" oo-native-id2 :order-option oo-with-wrong-specification :post)]
     (is (= ["The MetadataSpecification schema element is missing from the record being ingested."]
            (:errors oo-ingest-response1)))
-    (is (= [":wrong-order-option version 1.0.0 are not supported"] 
+    (is (= [":wrong-order-option version 1.0.0 are not supported"]
            (:errors oo-ingest-response2)))))
-       
