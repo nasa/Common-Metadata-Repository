@@ -76,9 +76,9 @@
                 {:url-fn providers-url
                  :method :get
                  :raw? raw?
-                 :http-options (merge {:accept :json
-                                       :headers headers}
-                                      http-options)}))))
+                 :http-options (h/include-request-id context (merge {:accept :json
+                                                                   :headers headers}
+                                                                  http-options))}))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Concept functions
@@ -95,7 +95,7 @@
                               :method :get
                               :raw? raw?
                               :use-system-token? true
-                              :http-options (merge {:accept :json} http-options)})]
+                              :http-options (h/include-request-id context (merge {:accept :json} http-options))})]
      (if raw?
        response
        (:concept-id response)))))
@@ -115,7 +115,7 @@
                   :method :get
                   :raw? raw?
                   :use-system-token? true
-                  :http-options (merge {:accept :json} http-options params)})
+                  :http-options (h/include-request-id context (merge {:accept :json} http-options params))})
       finish-parse-concept)))
 
 (defn get-concept
@@ -132,7 +132,7 @@
                    :method :get
                    :raw? raw?
                    :use-system-token? true
-                   :http-options (merge {:accept :json} http-options)})
+                   :http-options (h/include-request-id context (merge {:accept :json} http-options))})
        finish-parse-concept)))
 
 (defn get-latest-concept
@@ -149,7 +149,7 @@
                    :method :get
                    :raw? raw?
                    :use-system-token? true
-                   :http-options (merge {:accept :json} http-options)})
+                   :http-options (h/include-request-id context (merge {:accept :json} http-options))})
        finish-parse-concept)))
 
 ;; Defines health check function

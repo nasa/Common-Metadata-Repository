@@ -1,6 +1,7 @@
 (ns cmr.transmit.http-helper
   "Contains helpers for handling making http requests and processing responses."
   (:require [clj-http.client :as client]
+            [cmr.common.api.context :as context]
             [cmr.common.mime-types :as mt]
             [cheshire.core :as json]
             [cmr.transmit.config :as config]
@@ -103,6 +104,12 @@
                               {:headers {config/token-header (config/echo-system-token)}})
                             http-options)))]
     (response-handler request response)))
+
+(defn include-request-id
+  "Includes the request id of the caller in the http request, so that it is easier to
+  trace logs from one app to the next for the same request."
+  [context http-options]
+  (merge http-options {(symbol context/REQUEST_ID_HEADER) (context/context->request-id context)}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; CRUD Macros

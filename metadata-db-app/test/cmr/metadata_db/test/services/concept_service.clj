@@ -1,18 +1,13 @@
 (ns cmr.metadata-db.test.services.concept-service
   "Contains unit tests for service layer methods and associated utility methods."
   (:require
-   [clojure.string :as str]
    [clojure.test :refer :all]
-   [clojure.test.check :as tc]
-   [clojure.test.check.generators :as gen]
-   [clojure.test.check.properties :as prop]
    [cmr.common.test.test-util :as tu]
    [cmr.metadata-db.data.concepts :as c]
    [cmr.metadata-db.data.memory-db :as memory]
    [cmr.metadata-db.services.concept-service :as cs]
    [cmr.metadata-db.services.messages :as messages]
-   [cmr.metadata-db.services.provider-validation :as pv]
-   [cmr.metadata-db.services.util :as util])
+   [cmr.metadata-db.services.provider-validation :as pv])
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -164,3 +159,33 @@
         ;; run it again, this time without the conflict...
         (cs/delete-expired-concepts {:system {:db db}} {:provider-id "PROV1"} :collection)
         (is (empty? (c/get-expired-concepts db {:provider-id "PROV1"} :collection)))))))
+
+(def providers
+  (list {:provider-id "CMR" :short-name "CMR" :system-level? true :cmr-only true :small false}
+        {:provider-id "REG_PROV" :short-name "REG_PROV" :cmr-only false :small false}
+        {:provider-id "SMAL_PROV" :short-name "SMAL_PROV" :cmr-only false :small true}))
+
+(deftest concept-service-provider-test
+  (let [provider-ids (map :provider-id providers)]
+    (testing "Testing validate-providers-exist - the providers exist."
+      (is (nil? (#'cs/validate-providers-exist provider-ids providers))))
+
+    (testing "Testing validate-providers-exist - a provider does not exist."
+      (tu/assert-exception-thrown-with-errors
+       :not-found
+       [(messages/providers-do-not-exist ["hello"])]
+       (#'cs/validate-providers-exist (conj provider-ids "hello") providers)))
+
+    (testing "Regroup concepts and filter out providers that don't exist in the concept id map."
+      (let [concept-ids (list "G1200000003-REG_PROV"
+                              "AG1200000005-REG_PROV"
+                              "C1200000001-SMAL_PROV"
+                              "C1200000002-SMAL_PROV"
+                              "C12-HELLO_PROV")
+            split-concept-ids-map (cs/split-concept-ids concept-ids)]
+        (is (= {"REG_PROV"
+                {:granule '("G1200000003-REG_PROV")
+                 :access-group '("AG1200000005-REG_PROV")}
+                "SMAL_PROV"
+                {:collection '("C1200000002-SMAL_PROV" "C1200000001-SMAL_PROV")}}
+                (#'cs/filter-non-existent-providers split-concept-ids-map providers)))))))
