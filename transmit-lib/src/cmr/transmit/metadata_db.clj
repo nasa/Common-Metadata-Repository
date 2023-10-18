@@ -55,7 +55,7 @@
                                            {:accept :json
                                             :headers (ch/context->http-headers context)
                                             :throw-exceptions false
-                                            :http-options (mdb2/include-request-id context {})}))
+                                            :http-options (h/include-request-id context {})}))
          status (int (:status response))
          body (json/decode (:body response))]
      (case status
@@ -89,7 +89,7 @@
                                              :accept :json
                                              :throw-exceptions false
                                              :headers (ch/context->http-headers context)
-                                             :http-options (mdb2/include-request-id context {})}))
+                                             :http-options (h/include-request-id context {})}))
          status (int (:status response))]
      (case status
        404
@@ -122,7 +122,7 @@
                                              :accept :json
                                              :throw-exceptions false
                                              :headers (ch/context->http-headers context)
-                                             :http-options (mdb2/include-request-id context {})}))
+                                             :http-options (h/include-request-id context {})}))
          status (int (:status response))]
      (case status
        404
@@ -151,7 +151,7 @@
                                :form-params params
                                :headers (ch/context->http-headers context)
                                :throw-exceptions false
-                               :http-options (mdb2/include-request-id context {})}))))
+                               :http-options (h/include-request-id context {})}))))
 
 (defn find-concepts
   "Searches metadata db for concepts matching the given parameters."
@@ -263,7 +263,7 @@
                                :form-params params
                                :headers (ch/context->http-headers context)
                                :throw-exceptions false
-                               :http-options (mdb2/include-request-id context {})}))))
+                               :http-options (h/include-request-id context {})}))))
 
 (defn find-associations
   "Searches metadata db for associations matching the given parameters.
@@ -325,7 +325,7 @@
                                            :query-params {:provider provider-id}
                                            :headers (ch/context->http-headers context)
                                            :throw-exceptions false
-                                           :http-options (mdb2/include-request-id context {})}))
+                                           :http-options (h/include-request-id context {})}))
         {:keys [status body]} response
         status (int status)]
     (case status
@@ -345,7 +345,7 @@
                   :content-type :json
                   :headers {config/token-header (config/echo-system-token)}
                   :throw-exceptions false
-                  :http-options (mdb2/include-request-id context {})})))
+                  :http-options (h/include-request-id context {})})))
 
 (defn-timed create-provider
   "Create the provider with the given provider id"
@@ -364,7 +364,7 @@
     (client/get request-url
                 {:headers {config/token-header (config/echo-system-token)}
                  :throw-exceptions false
-                 :http-options (mdb2/include-request-id context {})})))
+                 :http-options (h/include-request-id context {})})))
 
 (defn-timed read-providers
   "Reads all providers"
@@ -374,7 +374,7 @@
     (client/get request-url
                 {:headers {config/token-header (config/echo-system-token)}
                  :throw-exceptions false
-                 :http-options (mdb2/include-request-id context {})})))
+                 :http-options (h/include-request-id context {})})))
 
 (defn update-provider-raw
   "Update a provider in the database"
@@ -387,7 +387,7 @@
                  :content-type :json
                  :headers {config/token-header (config/echo-system-token)}
                  :throw-exceptions false
-                 :http-options (mdb2/include-request-id context {})})))
+                 :http-options (h/include-request-id context {})})))
 
 (defn delete-provider-raw
   "Delete the provider with the matching provider-id from the CMR metadata repo,
@@ -397,7 +397,7 @@
         request-url (str (conn/root-url conn) "/providers/" provider-id)]
     (client/delete request-url {:throw-exceptions false
                                 :headers {config/token-header (config/echo-system-token)}
-                                :http-options (mdb2/include-request-id context {})})))
+                                :http-options (h/include-request-id context {})})))
 
 (defn-timed delete-provider
   "Delete the provider with the matching provider-id from the CMR metadata repo."
@@ -419,7 +419,7 @@
                               {:accept :json
                                :headers (ch/context->http-headers context)
                                :throw-exceptions false
-                               :http-options (mdb2/include-request-id context {})}))))
+                               :http-options (h/include-request-id context {})}))))
 
 (defn get-all-providers
   "Returns the list of provider ids configured in the metadata db, including
@@ -429,7 +429,7 @@
     ;; Using http/helper pass "meta" arg to retrieve provider metadata
     (h/request context :metadata-db {:url-fn request-url 
                                      :method :get 
-                                     :http-options (mdb2/include-request-id context {:query-params {:meta true}})})))
+                                     :http-options (h/include-request-id context {:query-params {:meta true}})})))
 
 (defn-timed get-providers
   "Returns the list of provider ids configured in the metadata db"
@@ -454,7 +454,7 @@
                                 :accept :json
                                 :throw-exceptions false
                                 :headers (ch/context->http-headers context)
-                                :http-options (mdb2/include-request-id context {})}))
+                                :http-options (h/include-request-id context {})}))
         status (int (:status response))
         ;; For CMR-4841 - log the first 255 characters of the response body if
         ;; the parsing of the html throws exception.
@@ -497,7 +497,7 @@
                                   :accept :json
                                   :throw-exceptions false
                                   :headers (ch/context->http-headers context)
-                                  :http-options (mdb2/include-request-id context {})}))
+                                  :http-options (h/include-request-id context {})}))
         status (int (:status response))
         ;; For CMR-4841 - log the first 255 characters of the response body if
         ;; the parsing of the html throws exception.
