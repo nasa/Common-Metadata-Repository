@@ -133,18 +133,18 @@
   "Returns UMM-C spatial map from DIF 10 XML document."
   [doc]
   (let [[spatial] (select doc "/DIF/Spatial_Coverage")
-        [o] (select spatial "Orbit_Parameters")]
+        [orbit-parameters] (select spatial "Orbit_Parameters")]
       {:SpatialCoverageType (dif10-spatial-type->umm-spatial-type (value-of spatial "Spatial_Coverage_Type"))
        :GranuleSpatialRepresentation (value-of spatial "Granule_Spatial_Representation")
        :HorizontalSpatialDomain      (parse-horizontal-spatial-domains doc)
        :VerticalSpatialDomains       (spatial-conversion/convert-vertical-spatial-domains-from-xml
                                       (select spatial "Vertical_Spatial_Info"))
-       :OrbitParameters              (when o
-                                       (as->{:SwathWidth (util/safe-read-string (value-of o "Swath_Width"))
-                                             :OrbitPeriod (util/safe-read-string (value-of o "Period"))
-                                             :InclinationAngle (util/safe-read-string (value-of o "Inclination_Angle"))
-                                             :NumberOfOrbits (util/safe-read-string (value-of o "Number_Of_Orbits"))
-                                             :StartCircularLatitude (util/safe-read-string (value-of o "Start_Circular_Latitude"))} op
+       :OrbitParameters              (when orbit-parameters
+                                       (as->{:SwathWidth (util/safe-read-string (value-of orbit-parameters "Swath_Width"))
+                                             :OrbitPeriod (util/safe-read-string (value-of orbit-parameters "Period"))
+                                             :InclinationAngle (util/safe-read-string (value-of orbit-parameters "Inclination_Angle"))
+                                             :NumberOfOrbits (util/safe-read-string (value-of orbit-parameters "Number_Of_Orbits"))
+                                             :StartCircularLatitude (util/safe-read-string (value-of orbit-parameters "Start_Circular_Latitude"))} op
                                              ;; Add assumed units for the corresponding fields.
                                              (if (:SwathWidth op)
                                                (assoc op :SwathWidthUnit "Kilometer")

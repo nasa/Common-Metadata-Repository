@@ -369,10 +369,10 @@
         resolution (when (or description geodetic-model local-coord-sys hor-res)
                      {:ResolutionAndCoordinateSystem (umm-c/map->ResolutionAndCoordinateSystemType
                                                       (merge {} description geodetic-model local-coord-sys hor-res))})
-        geometry (when-let [g (parse-geometry doc extent-info sanitize?)]
-                   {:Geometry g})
-        zone (when-let [z (value-of doc zone-identifier-xpath)]
-               {:ZoneIdentifier z})]
+        geometry (when-let [geom (parse-geometry doc extent-info sanitize?)]
+                   {:Geometry geom})
+        zone (when-let [zne (value-of doc zone-identifier-xpath)]
+               {:ZoneIdentifier zne})]
     (when (or geometry zone resolution)
       (merge {} geometry zone resolution))))
 

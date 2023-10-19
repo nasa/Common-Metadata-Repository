@@ -114,12 +114,12 @@
      :HorizontalSpatialDomain      (parse-horizontal-spatial-domain doc)
      :VerticalSpatialDomains       (spatial-conversion/convert-vertical-spatial-domains-from-xml
                                     (select spatial "VerticalSpatialDomain"))
-     :OrbitParameters              (when-let [[o] (select spatial "OrbitParameters")]
-                                     (as-> {:SwathWidth (util/safe-read-string (value-of o "SwathWidth"))
-                                            :OrbitPeriod (util/safe-read-string (value-of o "Period"))
-                                            :InclinationAngle (util/safe-read-string (value-of o "InclinationAngle"))
-                                            :NumberOfOrbits (util/safe-read-string (value-of o "NumberOfOrbits"))
-                                            :StartCircularLatitude (util/safe-read-string (value-of o "StartCircularLatitude"))} op
+     :OrbitParameters              (when-let [[orbit-parameters] (select spatial "OrbitParameters")]
+                                     (as-> {:SwathWidth (util/safe-read-string (value-of orbit-parameters "SwathWidth"))
+                                            :OrbitPeriod (util/safe-read-string (value-of orbit-parameters "Period"))
+                                            :InclinationAngle (util/safe-read-string (value-of orbit-parameters "InclinationAngle"))
+                                            :NumberOfOrbits (util/safe-read-string (value-of orbit-parameters "NumberOfOrbits"))
+                                            :StartCircularLatitude (util/safe-read-string (value-of orbit-parameters "StartCircularLatitude"))} op
                                          ;; Add assumed units for the corresponding fields.
                                          ;; Replace :Period with :OrbitPeriod.
                                          (if (:SwathWidth op)
