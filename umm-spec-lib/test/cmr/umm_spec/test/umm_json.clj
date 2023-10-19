@@ -209,13 +209,12 @@
 
   (testing "UMM-C with parsing errors"
     (let [umm-c (json-schema/parse-umm-c
-                 {:SpatialExtent {:OrbitParameters {:NumberOfOrbits "foo"
-                                                    :SwathWidth "123"}}
+                 {:SpatialExtent {:OrbitParameters {:NumberOfOrbits 1
+                                                    :SwathWidth 123}}
                                  :TemporalExtents [{:SingleDateTimes ["nonsense"
                                                                       "2000-01-01T00:00:00.000Z"]}]})
           orbit-params (-> umm-c :SpatialExtent :OrbitParameters)]
-      (is (= 123.0 (:SwathWidth orbit-params)))
-      (is (= {:NumberOfOrbits "Could not parse number value: foo"} (:_errors orbit-params)))
+      (is (= 123 (:SwathWidth orbit-params)))
       (is (= [nil (time/date-time 2000 1 1)]
              (-> umm-c :TemporalExtents first :SingleDateTimes)))
       (is (= {:SingleDateTimes ["Could not parse date-time value: nonsense" nil]}
@@ -223,13 +222,12 @@
 
   (testing "UMM-C with no parsing errors"
     (let [umm-c (json-schema/parse-umm-c
-                 {:SpatialExtent {:OrbitParameters {:NumberOfOrbits "30"
-                                                    :SwathWidth "123"}}
+                 {:SpatialExtent {:OrbitParameters {:NumberOfOrbits 30
+                                                    :SwathWidth 123}}
                                  :TemporalExtents [{:SingleDateTimes ["2000-01-01T00:00:00.000Z"
                                                                       "2005-01-01T00:00:00.000Z"]}]})
           orbit-params (-> umm-c :SpatialExtent :OrbitParameters)]
-      (is (= 123.0 (:SwathWidth orbit-params)))
-      (is (= nil (:_errors orbit-params)))
+      (is (= 123 (:SwathWidth orbit-params)))
       (is (= [(time/date-time 2000) (time/date-time 2005)]
              (-> umm-c :TemporalExtents first :SingleDateTimes)))
       (is (= nil

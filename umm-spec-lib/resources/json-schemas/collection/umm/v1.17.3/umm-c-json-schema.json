@@ -310,6 +310,7 @@
       "description": "This element defines how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes license text, license URL, or any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
       "oneOf": [{
         "type": "object",
+        "title": "Description without License URL or Text.",
         "additionalProperties": false,
         "description": "This element defines how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes license text, license URL, or any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
         "properties": {
@@ -331,12 +332,13 @@
         "required": ["Description"]
       }, {
         "type": "object",
+        "title": "License URL",
         "additionalProperties": false,
         "description": "This element defines how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes license text, license URL, or any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
         "properties": {
           "Description": {
             "$ref": "#/definitions/UseConstraintsDescType"
-          },
+            },
           "LicenseURL": {
             "description": "This element holds the URL and associated information to access the License on the web. If this element is used the LicenseText element cannot be used.",
             "$ref": "umm-cmn-json-schema.json#/definitions/OnlineResourceType"
@@ -356,6 +358,7 @@
         "required": ["LicenseURL"]
       }, {
         "type": "object",
+        "title": "License Text",
         "additionalProperties": false,
         "description": "This element defines how the data may or may not be used after access is granted to assure the protection of privacy or intellectual property. This includes license text, license URL, or any special restrictions, legal prerequisites, terms and conditions, and/or limitations on using the data set. Data providers may request acknowledgement of the data from users and claim no responsibility for quality and completeness of data.",
         "properties": {
@@ -717,68 +720,165 @@
       "required": ["Footprint", "FootprintUnit"]
     },
     "OrbitParametersType": {
-      "type": "object",
-      "additionalProperties": false,
       "description": "Orbit parameters for the collection used by the Orbital Backtrack Algorithm.",
-      "properties": {
-        "SwathWidth": {
-          "description": "Total observable width of the satellite sensor nominally measured at the equator.",
-          "type": "number"
-        },
-        "SwathWidthUnit": {
-          "description": "The SwathWidth value's unit.",
-          "type": "string",
-          "enum": ["Kilometer", "Meter"]
-        },
-        "Footprints" : {
-          "description": "A list of instrument footprints or field of views. A footprint holds the largest width of the described footprint as measured on the earths surface along with the width's unit. An optional description element exists to be able to distinguish between the footprints, if that is desired. This element is optional. If this element is used at least 1 footprint must exist in the list.",
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/FootprintType"
+      "oneOf":[{
+        "type": "object",
+        "title": "Orbit parameters with just swath",
+        "additionalProperties": false,
+        "properties": {
+          "SwathWidth": {
+            "description": "Total observable width of the satellite sensor nominally measured at the equator.",
+            "type": "number"
           },
-          "minItems": 1
+          "SwathWidthUnit": {
+            "description": "The SwathWidth value's unit.",
+            "type": "string",
+            "enum": ["Kilometer", "Meter"]
+          },
+          "OrbitPeriod": {
+            "description": "The time in decimal minutes the satellite takes to make one full orbit.",
+            "type": "number"
+          },
+          "OrbitPeriodUnit": {
+            "description": "The Orbit Period value's unit.",
+            "type": "string",
+            "enum": ["Decimal Minute"]
+          },
+          "InclinationAngle": {
+            "description": "The heading of the satellite as it crosses the equator on the ascending pass. This is the same as (180-declination) and also the same as the highest latitude achieved by the satellite.",
+            "type": "number"
+          },
+          "InclinationAngleUnit": {
+            "description": "The InclinationAngle value's unit.",
+            "type": "string",
+            "enum": ["Degree"]
+          },
+          "NumberOfOrbits": {
+            "description": "The number of full orbits composing each granule. This may be a fraction of an orbit.",
+            "type": "number"
+          },
+          "StartCircularLatitude": {
+            "description": "The latitude start of the orbit relative to the equator. This is used by the backtrack search algorithm to treat the orbit as if it starts from the specified latitude. This is optional and will default to 0 if not specified.",
+            "type": "number"
+          },
+          "StartCircularLatitudeUnit": {
+            "description": "The StartCircularLatitude value's unit.",
+            "type": "string",
+            "enum": ["Degree"]
+          }
         },
-        "OrbitPeriod": {
-          "description": "The time in decimal minutes the satellite takes to make one full orbit.",
-          "type": "number"
-        },
-        "OrbitPeriodUnit": {
-          "description": "The Orbit Period value's unit.",
-          "type": "string",
-          "enum": ["Decimal Minute"]
-        },
-        "InclinationAngle": {
-          "description": "The heading of the satellite as it crosses the equator on the ascending pass. This is the same as (180-declination) and also the same as the highest latitude achieved by the satellite.",
-          "type": "number"
-        },
-        "InclinationAngleUnit": {
-          "description": "The InclinationAngle value's unit.",
-          "type": "string",
-          "enum": ["Degree"]
-        },
-        "NumberOfOrbits": {
-          "description": "The number of full orbits composing each granule. This may be a fraction of an orbit.",
-          "type": "number"
-        },
-        "StartCircularLatitude": {
-          "description": "The latitude start of the orbit relative to the equator. This is used by the backtrack search algorithm to treat the orbit as if it starts from the specified latitude. This is optional and will default to 0 if not specified.",
-          "type": "number"
-        },
-        "StartCircularLatitudeUnit": {
-          "description": "The StartCircularLatitude value's unit.",
-          "type": "string",
-          "enum": ["Degree"]
+        "required": ["SwathWidth", "SwathWidthUnit", "OrbitPeriod", "OrbitPeriodUnit", "InclinationAngle", "InclinationAngleUnit", "NumberOfOrbits"],
+        "dependencies": {
+          "StartCircularLatitude": ["StartCircularLatitudeUnit"]
         }
-      },
-      "anyOf": [{
-        "required": ["SwathWidth", "SwathWidthUnit"]
       }, {
-        "required": ["Footprints"]
-      }],
-      "required": ["OrbitPeriod", "OrbitPeriodUnit", "InclinationAngle", "InclinationAngleUnit", "NumberOfOrbits"],
-      "dependencies": {
-        "StartCircularLatitude": ["StartCircularLatitudeUnit"]
-      }
+        "type": "object",
+        "title": "Orbit parameters with just footprints",
+        "additionalProperties": false,
+        "properties": {
+          "Footprints" : {
+            "description": "A list of instrument footprints or field of views. A footprint holds the largest width of the described footprint as measured on the earths surface along with the width's unit. An optional description element exists to be able to distinguish between the footprints, if that is desired. This element is optional. If this element is used at least 1 footprint must exist in the list.",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/FootprintType"
+            },
+            "minItems": 1
+          },
+          "OrbitPeriod": {
+            "description": "The time in decimal minutes the satellite takes to make one full orbit.",
+            "type": "number"
+          },
+          "OrbitPeriodUnit": {
+            "description": "The Orbit Period value's unit.",
+            "type": "string",
+            "enum": ["Decimal Minute"]
+          },
+          "InclinationAngle": {
+            "description": "The heading of the satellite as it crosses the equator on the ascending pass. This is the same as (180-declination) and also the same as the highest latitude achieved by the satellite.",
+            "type": "number"
+          },
+          "InclinationAngleUnit": {
+            "description": "The InclinationAngle value's unit.",
+            "type": "string",
+            "enum": ["Degree"]
+          },
+          "NumberOfOrbits": {
+            "description": "The number of full orbits composing each granule. This may be a fraction of an orbit.",
+            "type": "number"
+          },
+          "StartCircularLatitude": {
+            "description": "The latitude start of the orbit relative to the equator. This is used by the backtrack search algorithm to treat the orbit as if it starts from the specified latitude. This is optional and will default to 0 if not specified.",
+            "type": "number"
+          },
+          "StartCircularLatitudeUnit": {
+            "description": "The StartCircularLatitude value's unit.",
+            "type": "string",
+            "enum": ["Degree"]
+          }
+        },
+        "required": ["Footprints", "OrbitPeriod", "OrbitPeriodUnit", "InclinationAngle", "InclinationAngleUnit", "NumberOfOrbits"],
+        "dependencies": {
+          "StartCircularLatitude": ["StartCircularLatitudeUnit"]
+        }
+      }, {
+        "type": "object",
+        "title": "Orbit parameters with both swathwidth and footprints",
+        "additionalProperties": false,
+        "properties": {
+          "SwathWidth": {
+            "description": "Total observable width of the satellite sensor nominally measured at the equator.",
+            "type": "number"
+          },
+          "SwathWidthUnit": {
+            "description": "The SwathWidth value's unit.",
+            "type": "string",
+            "enum": ["Kilometer", "Meter"]
+          },
+          "Footprints" : {
+            "description": "A list of instrument footprints or field of views. A footprint holds the largest width of the described footprint as measured on the earths surface along with the width's unit. An optional description element exists to be able to distinguish between the footprints, if that is desired. This element is optional. If this element is used at least 1 footprint must exist in the list.",
+            "type": "array",
+            "items": {
+              "$ref": "#/definitions/FootprintType"
+            },
+            "minItems": 1
+          },
+          "OrbitPeriod": {
+            "description": "The time in decimal minutes the satellite takes to make one full orbit.",
+            "type": "number"
+          },
+          "OrbitPeriodUnit": {
+            "description": "The Orbit Period value's unit.",
+            "type": "string",
+            "enum": ["Decimal Minute"]
+          },
+          "InclinationAngle": {
+            "description": "The heading of the satellite as it crosses the equator on the ascending pass. This is the same as (180-declination) and also the same as the highest latitude achieved by the satellite.",
+            "type": "number"
+          },
+          "InclinationAngleUnit": {
+            "description": "The InclinationAngle value's unit.",
+            "type": "string",
+            "enum": ["Degree"]
+          },
+          "NumberOfOrbits": {
+            "description": "The number of full orbits composing each granule. This may be a fraction of an orbit.",
+            "type": "number"
+          },
+          "StartCircularLatitude": {
+            "description": "The latitude start of the orbit relative to the equator. This is used by the backtrack search algorithm to treat the orbit as if it starts from the specified latitude. This is optional and will default to 0 if not specified.",
+            "type": "number"
+          },
+          "StartCircularLatitudeUnit": {
+            "description": "The StartCircularLatitude value's unit.",
+            "type": "string",
+            "enum": ["Degree"]
+          }
+        },
+        "required": ["SwathWidth", "SwathWidthUnit", "Footprints", "OrbitPeriod", "OrbitPeriodUnit", "InclinationAngle", "InclinationAngleUnit", "NumberOfOrbits"],
+        "dependencies": {
+          "StartCircularLatitude": ["StartCircularLatitudeUnit"]
+        }
+      }]
     },
     "GranuleSpatialRepresentationEnum": {
       "type": "string",
@@ -786,8 +886,8 @@
     },
     "TilingIdentificationSystemType": {
       "description": "A two-dimensional tiling system for a collection. There are two types of tiling systems. Those that use alaph-numeric coordinates and those that use numeric coordinates.",
-      "type": "object",
       "oneOf": [{
+        "type": "object",
         "title": "Tiling Systems that use alpha-numberic coordinates.",
         "additionalProperties": false,
         "description": "Information about a two-dimensional tiling system that uses alpha-numeric coordinates related to this collection.",
@@ -807,6 +907,7 @@
         },
         "required": ["TilingIdentificationSystemName", "Coordinate1", "Coordinate2"]
       }, {
+        "type": "object",
         "title": "Tiling Systems that use numeric coordinates.",
         "additionalProperties": false,
         "description": "Information about a two-dimensional tiling system that uses numeric coordinates related to this collection.",
@@ -948,8 +1049,9 @@
     },
     "ResolutionAndCoordinateSystemType": {
       "description": "This class defines the horizontal spatial extents coordinate system and the data product's horizontal data resolution. The horizontal data resolution is defined as the smallest horizontal distance between successive elements of data in a dataset. This is synonymous with terms such as ground sample distance, sample spacing and pixel size. It is to be noted that the horizontal data resolution could be different in the two horizontal dimensions. Also, it is different from the spatial resolution of an instrument, which is the minimum distance between points that an instrument can see as distinct.",
-      "type": "object",
       "oneOf": [{
+        "type": "object",
+        "title": "Description of the Resolution",
         "additionalProperties": false,
         "properties": {
           "Description": {
@@ -963,6 +1065,8 @@
         },
         "required": ["GeodeticModel"]
       }, {
+        "type": "object",
+        "title": "Horizontal Data Resolution Information",
         "additionalProperties": false,
         "properties": {
           "Description": {
@@ -980,6 +1084,8 @@
         },
         "required": ["HorizontalDataResolution"]
       }, {
+        "type": "object",
+        "title": "Local Coordinate System Information",
         "additionalProperties": false,
         "properties": {
           "Description": {
@@ -1353,6 +1459,7 @@
       "description": "This element defines a single archive artifact which a data provider would like to inform an end user that it exists.",
       "anyOf": [{
         "type": "object",
+        "title": "Total collection file size for archive",
         "additionalProperties": false,
         "properties": {
           "Format": {
@@ -1399,6 +1506,7 @@
         }
       }, {
         "type": "object",
+        "title": "Calculate collection file size by start date for archive",
         "additionalProperties": false,
         "properties": {
           "Format": {
@@ -1446,6 +1554,7 @@
       "description": "This element defines a single artifact that is distributed by the data provider. This element only includes the distributable artifacts that can be obtained by the user without the user having to invoke a service. These should be documented in the UMM-S specification.",
       "anyOf": [{
         "type": "object",
+        "title": "Total collection file size for distribution",
         "additionalProperties": false,
         "properties": {
           "Format": {
@@ -1506,6 +1615,7 @@
         }
       }, {
         "type": "object",
+        "title": "Calculate collection file size by start date for distribution",
         "additionalProperties": false,
         "properties": {
           "Format": {

@@ -111,18 +111,18 @@
            NumberOfOrbits StartCircularLatitude StartCircularLatitudeUnit]}]
   (let [main-string (format "OrbitPeriod: %s OrbitPeriodUnit: %s
                              InclinationAngle: %s InclinationAngleUnit: %s NumberOfOrbits: %s"
-                            (util/double->string OrbitPeriod)
+                            OrbitPeriod
                             OrbitPeriodUnit
-                            (util/double->string InclinationAngle)
+                            InclinationAngle
                             InclinationAngleUnit
-                            (util/double->string NumberOfOrbits))
+                            NumberOfOrbits)
         sw-string (when SwathWidth
                     (format "SwathWidth: %s SwathWidthUnit: %s "
-                            (util/double->string SwathWidth)
+                            SwathWidth
                             SwathWidthUnit))
         scl-string (when StartCircularLatitude
                      (format " StartCircularLatitude: %s StartCircularLatitudeUnit: %s"
-                             (util/double->string StartCircularLatitude)
+                             StartCircularLatitude
                              StartCircularLatitudeUnit))]
     (str sw-string main-string scl-string)))
 
@@ -198,7 +198,6 @@
                       (get-in c [:SpatialExtent :HorizontalSpatialDomain :ResolutionAndCoordinateSystem
                                  :HorizontalDataResolution]))
         resolutions (flatten (map #(package-horizontal-data-resolutions %) resolutions))]
-    (def resolutions resolutions)
     (for [[id res] (map-indexed vector resolutions)]
       (assoc res :Count id))))
 

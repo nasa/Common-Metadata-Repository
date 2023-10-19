@@ -58,21 +58,24 @@
    returns a map of key-values where any values where the key is in the number-key-list has been
    converted to a number."
   [map number-key-list]
-  (when (and (not (nil? map))
-             (not (empty? map)))
-    (into {}
-          (for [[k v] map]
-            (try
-              (if (and (some #(= k %) number-key-list)
-                       (not (nil? v)))
-                (let [string-number (re-find #"-?\d+\.?\d+|-?\.?\d+" v)]
-                  (if (string/includes? string-number ".")
-                    {k (Double/parseDouble string-number)}
-                    {k (Long/parseLong string-number)}))
-                {k v})
-              (catch Exception e
-                (errors/throw-service-error
-                 :invalid-data (format "Error parsing the field %s with value %s" k v))))))))
+    (when (and (not (nil? map))
+               (not (empty? map)))
+      (if (or (nil? number-key-list)
+              (empty? number-key-list))
+        map
+      (into {}
+            (for [[k v] map]
+              (try
+                (if (and (some #(= k %) number-key-list)
+                         (not (nil? v)))
+                  (let [string-number (re-find #"-?\d+\.?\d+|-?\.?\d+" v)]
+                    (if (string/includes? string-number ".")
+                      {k (Double/parseDouble string-number)}
+                      {k (Long/parseLong string-number)}))
+                  {k v})
+                (catch Exception e
+                  (errors/throw-service-error
+                   :invalid-data (format "Error parsing the field %s with value %s" k v)))))))))
 
 (defn convert-iso-description-string-to-map
   "Convert Description string to a map, removing fields that are empty or nil.

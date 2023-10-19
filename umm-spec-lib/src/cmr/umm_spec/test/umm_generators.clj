@@ -145,7 +145,7 @@
 (defmethod schema-type->generator "object"
   [schema type-name schema-type]
   (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf
-                                :anyOf :allOf :if :then :else :not :dependencies :$id} schema-type)
+                                :anyOf :allOf :if :then :else :not :dependencies :$id :title} schema-type)
   (if-let [one-of (:oneOf schema-type)]
     (object-one-of->generator schema type-name schema-type)
     ;; else

@@ -115,42 +115,49 @@
         [geom] (select spatial-coverage "Geometry")
         horizontal-data-resolutions (parse-horizontal-data-resolutions doc)
         local-coordinate-sys (parse-local-coord-system spatial-coverage)
-        geodetic-model (parse-geodetic-model spatial-coverage)]
+        geodetic-model (parse-geodetic-model spatial-coverage)
+        resolution (if (or geodetic-model
+                           local-coordinate-sys
+                           horizontal-data-resolutions)
+                     {:ResolutionAndCoordinateSystem {:GeodeticModel geodetic-model
+                                                      :LocalCoordinateSystem local-coordinate-sys
+                                                      :HorizontalDataResolution horizontal-data-resolutions}}
+                     {:ResolutionAndCoordinateSystem nil})]
     (util/remove-nil-keys
+     (merge
       {:Geometry (parse-geometry geom)
-       :ZoneIdentifier (value-of spatial-coverage "Zone_Identifier")
-       :ResolutionAndCoordinateSystem {:GeodeticModel geodetic-model
-                                       :LocalCoordinateSystem local-coordinate-sys
-                                       :HorizontalDataResolution horizontal-data-resolutions}})))
+       :ZoneIdentifier (value-of spatial-coverage "Zone_Identifier")}
+       resolution))))
 
 (defn parse-spatial
   "Returns UMM-C spatial map from DIF 10 XML document."
   [doc]
-  (let [[spatial] (select doc "/DIF/Spatial_Coverage")]
-    {:SpatialCoverageType (dif10-spatial-type->umm-spatial-type (value-of spatial "Spatial_Coverage_Type"))
-     :GranuleSpatialRepresentation (value-of spatial "Granule_Spatial_Representation")
-     :HorizontalSpatialDomain      (parse-horizontal-spatial-domains doc)
-     :VerticalSpatialDomains       (spatial-conversion/convert-vertical-spatial-domains-from-xml
-                                    (select spatial "Vertical_Spatial_Info"))
-     :OrbitParameters             (let [[o] (select spatial "Orbit_Parameters")]
-                                     (as->{:SwathWidth (value-of o "Swath_Width")
-                                           :OrbitPeriod (value-of o "Period")
-                                           :InclinationAngle (value-of o "Inclination_Angle")
-                                           :NumberOfOrbits (value-of o "Number_Of_Orbits")
-                                           :StartCircularLatitude (value-of o "Start_Circular_Latitude")} op
-                                           ;; Add assumed units for the corresponding fields.
-                                           (if (:SwathWidth op)
-                                             (assoc op :SwathWidthUnit "Kilometer")
-                                             op)
-                                           (if (:OrbitPeriod op)
-                                             (assoc op :OrbitPeriodUnit "Decimal Minute")
-                                             op)
-                                           (if (:InclinationAngle op)
-                                             (assoc op :InclinationAngleUnit "Degree")
-                                             op)
-                                           (if (:StartCircularLatitude op)
-                                             (assoc op :StartCircularLatitudeUnit "Degree")
-                                             op)))}))
+  (let [[spatial] (select doc "/DIF/Spatial_Coverage")
+        [orbit-parameters] (select spatial "Orbit_Parameters")]
+      {:SpatialCoverageType (dif10-spatial-type->umm-spatial-type (value-of spatial "Spatial_Coverage_Type"))
+       :GranuleSpatialRepresentation (value-of spatial "Granule_Spatial_Representation")
+       :HorizontalSpatialDomain      (parse-horizontal-spatial-domains doc)
+       :VerticalSpatialDomains       (spatial-conversion/convert-vertical-spatial-domains-from-xml
+                                      (select spatial "Vertical_Spatial_Info"))
+       :OrbitParameters              (when orbit-parameters
+                                       (as->{:SwathWidth (util/safe-read-string (value-of orbit-parameters "Swath_Width"))
+                                             :OrbitPeriod (util/safe-read-string (value-of orbit-parameters "Period"))
+                                             :InclinationAngle (util/safe-read-string (value-of orbit-parameters "Inclination_Angle"))
+                                             :NumberOfOrbits (util/safe-read-string (value-of orbit-parameters "Number_Of_Orbits"))
+                                             :StartCircularLatitude (util/safe-read-string (value-of orbit-parameters "Start_Circular_Latitude"))} op
+                                             ;; Add assumed units for the corresponding fields.
+                                             (if (:SwathWidth op)
+                                               (assoc op :SwathWidthUnit "Kilometer")
+                                               op)
+                                             (if (:OrbitPeriod op)
+                                               (assoc op :OrbitPeriodUnit "Decimal Minute")
+                                               op)
+                                             (if (:InclinationAngle op)
+                                               (assoc op :InclinationAngleUnit "Degree")
+                                               op)
+                                             (if (:StartCircularLatitude op)
+                                               (assoc op :StartCircularLatitudeUnit "Degree")
+                                               op)))}))
 
 (def tiling-system-xpath
   "/DIF/Spatial_Coverage/Spatial_Info/TwoD_Coordinate_System")
