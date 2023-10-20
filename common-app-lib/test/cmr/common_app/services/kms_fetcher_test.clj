@@ -7,8 +7,6 @@
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.kms :as trans-kms]))
 
-;; this test cannot be run as a unit test in bamboo.
-(comment
 (deftest validate-getting-kms-keywords-test
   (let [sys (transmit-config/system-with-connections
              {:caches {fetcher/kms-cache-key (mem-cache/create-in-memory-cache)}}
@@ -32,4 +30,3 @@
       (let [context (assoc context :testing-for-nil-keyword-scheme-value true)]
         (#'fetcher/refresh-kms-cache context)
         (is (some? (:projects (cache/get-value kms-cache fetcher/kms-cache-key))))))))
-)
