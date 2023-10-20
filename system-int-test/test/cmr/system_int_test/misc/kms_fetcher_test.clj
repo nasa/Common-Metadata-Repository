@@ -1,4 +1,4 @@
-(ns cmr.common-app.services.kms-fetcher-test
+(ns cmr.system-int-test.misc.kms-fetcher-test
   (:require
    [clojure.test :refer :all]
    [cmr.common.cache :as cache]
