@@ -51,6 +51,7 @@
               mt/umm-json
               mt/stac}
    :service #{mt/any
+              mt/html
               mt/xml
               mt/umm-json}
    :tool #{mt/any
@@ -118,6 +119,10 @@
       (if (= :html result-format)
         (let [concept-type (concepts/concept-id->type concept-id)]
           (condp = concept-type
+            :service
+            (core-api/search-response ctx
+                                      {:results (:body (pages/service-page ctx concept-id))
+                                       :result-format :html})
             :tool
             (core-api/search-response ctx
                                       {:results (:body (pages/tool-page ctx concept-id))

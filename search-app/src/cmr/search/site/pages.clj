@@ -107,6 +107,14 @@
    "templates/collection-base.html"
    (data/get-concept context concept-id)))
 
+(defn service-page
+  "Prepare the service landing page."
+  [context concept-id]
+  (common-pages/render-html
+   context
+   "templates/service-base.html"
+   (data/get-concept context concept-id)))
+
 (defn tool-page
   "Prepare the tool landing page."
   [context concept-id]
