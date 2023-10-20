@@ -3,11 +3,14 @@
    [clojure.test :refer :all]
    [cmr.common.cache :as cache]
    [cmr.common-app.services.kms-fetcher :as fetcher]
-   [cmr.indexer.system :as idx-sys]
+   [cmr.transmit.config :as transmit-config]
    [cmr.transmit.kms :as trans-kms]))
 
 (deftest validate-getting-kms-keywords-test
-  (let [context {:system (idx-sys/create-system)}
+  (let [sys (transmit-config/system-with-connections
+             {:caches {fetcher/kms-cache-key (fetcher/create-kms-cache)}}
+             [:kms])
+        context {:system sys}
         kms-cache (cache/context->cache context fetcher/kms-cache-key)
         _  (#'fetcher/refresh-kms-cache context)
         kms-map (cache/get-value kms-cache fetcher/kms-cache-key)]

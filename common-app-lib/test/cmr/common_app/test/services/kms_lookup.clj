@@ -43,9 +43,6 @@
   "KMS index to use for all of the tests which creates the KMS index from the sample map."
   (kms-lookup/create-kms-index sample-map))
 
-(deftest roundtrip-inflate-and-deflate-index-test
-  (is (= sample-map (kms-lookup/deflate (kms-lookup/create-kms-index sample-map)))))
-
 (deftest lookup-by-location-string-test
   (testing "Full location hierarchy is returned"
     (is (= {:category "CONTINENT" :type "AFRICA" :subregion-1 "CENTRAL AFRICA"

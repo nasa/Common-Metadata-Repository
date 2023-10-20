@@ -78,7 +78,8 @@
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}
-             :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job])
+             :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
+                                                               (kf/refresh-kms-cache-job "bootstrap-kms-cache-refresh")])
              :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms
                                                   :indexer :access-control])))

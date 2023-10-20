@@ -276,7 +276,7 @@
              {:mock-echo echo-component
               :access-control (create-access-control-app queue-broker)
               :metadata-db (create-metadata-db-app db-component queue-broker)
-              :bootstrap (when-not db-component (create-bootstrap-app queue-broker))
+              :bootstrap (create-bootstrap-app queue-broker)
               :indexer (create-indexer-app queue-broker)
               :ingest (create-ingest-app db queue-broker)
               :search (create-search-app db-component queue-broker)
