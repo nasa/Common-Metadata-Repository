@@ -13,20 +13,17 @@
                      {...}]}
          :providers [...]}"
   (:require
-    [clojure.string :as str]
-    [cmr.common-app.services.kms-lookup :as kms-lookup]
-    [cmr.common.cache :as cache]
-    [cmr.common.cache.deflating-cache :as deflating-cache]
-    [cmr.common.cache.fallback-cache :as fallback-cache]
-    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-    [cmr.common.config :refer [defconfig]]
-    [cmr.common.jobs :refer [def-stateful-job]]
-    [cmr.common.log :as log :refer [debug info warn error]]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.util :as util]
-    [cmr.redis-utils.redis-cache :as redis-cache]
-    [cmr.transmit.cache.consistent-cache :as consistent-cache]
-    [cmr.transmit.kms :as kms]))
+   [cmr.common-app.services.kms-lookup :as kms-lookup]
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.deflating-cache :as deflating-cache]
+   [cmr.common.cache.fallback-cache :as fallback-cache]
+   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.common.config :refer [defconfig]]
+   [cmr.common.jobs :refer [def-stateful-job]]
+   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.redis-utils.redis-cache :as redis-cache]
+   [cmr.transmit.cache.consistent-cache :as consistent-cache]
+   [cmr.transmit.kms :as kms]))
 
 (def nested-fields-mappings
   "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
@@ -78,10 +75,16 @@
   "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way
   as used in the KMS cache."
   [context]
-  (kms-lookup/create-kms-index
-   (into {}
-         (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
-           [keyword-scheme (kms/get-keywords-for-keyword-scheme context keyword-scheme)]))))
+  (let [kms-cache (cache/context->cache context kms-cache-key)
+        kms-cache-value (cache/get-value kms-cache kms-cache-key)]
+    (kms-lookup/create-kms-index
+     (into {}
+           (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
+             ;; if the keyword-scheme-value is nil that means we could not get the KMS keywords
+             ;; in this case use the cached value value instead so that we dont wipe out the cache.
+             (if-let [keyword-scheme-value (kms/get-keywords-for-keyword-scheme context keyword-scheme)]
+               [keyword-scheme keyword-scheme-value]
+               [keyword-scheme (get kms-cache-value keyword-scheme)]))))))
 
 (defn get-kms-index
   "Retrieves the GCMD keywords map from the cache."

@@ -205,7 +205,6 @@
    subregion-4, but KMS has already implemented it. This allows the CMR to use either the subregion-3
    or subregion-4 KMS output."
   [keyword-scheme keyword-entries]
-  (def keyword-entries keyword-entries)
   (if (= keyword-scheme :spatial-keywords)
     (map #(dissoc % :subregion-4) keyword-entries)
     keyword-entries))
@@ -301,9 +300,10 @@
    :category \"Earth Observation Satellites\" :basis \"Space-based Platforms\"} ..."
   [context keyword-scheme]
   {:pre (some? (keyword-scheme keyword-scheme->field-names))}
-  (when-not (= keyword-scheme :spatial-keywords-old)
+  (when-not (or (= keyword-scheme :spatial-keywords-old)
+                (:testing-for-nil-keyword-scheme-value context))
     (let [keywords
-           (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
+          (parse-entries-from-csv keyword-scheme (get-by-keyword-scheme context keyword-scheme))]
       (info (format "Found %s keywords for %s" (count (keys keywords)) (name keyword-scheme)))
       keywords)))
 
