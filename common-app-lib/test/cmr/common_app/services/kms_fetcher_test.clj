@@ -2,6 +2,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.cache :as cache]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common-app.services.kms-fetcher :as fetcher]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.kms :as trans-kms]))
@@ -10,7 +11,7 @@
 (comment
 (deftest validate-getting-kms-keywords-test
   (let [sys (transmit-config/system-with-connections
-             {:caches {fetcher/kms-cache-key (fetcher/create-kms-cache)}}
+             {:caches {fetcher/kms-cache-key (mem-cache/create-in-memory-cache)}}
              [:kms])
         context {:system sys}
         kms-cache (cache/context->cache context fetcher/kms-cache-key)
