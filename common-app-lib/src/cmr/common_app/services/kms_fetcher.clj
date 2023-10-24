@@ -52,24 +52,12 @@
   "The key used to store the KMS cache in the system cache map."
   :kms)
 
-(defconfig kms-cache-consistent-timeout-seconds
-  "The number of seconds between when the KMS cache should check with redis for consistence"
-  {:default 3600
-   :type Long})
-
 (defn create-kms-cache
   "Used to create the cache that will be used for caching KMS keywords. All applications caching
   KMS keywords should use the same fallback cache to ensure functionality even if GCMD KMS becomes
   unavailable."
   []
-  (stl-cache/create-single-thread-lookup-cache
-    (fallback-cache/create-fallback-cache
-      (consistent-cache/create-consistent-cache
-       {:hash-timeout-seconds (kms-cache-consistent-timeout-seconds)})
-      (deflating-cache/create-deflating-cache
-        (redis-cache/create-redis-cache)
-        kms-lookup/create-kms-index
-        kms-lookup/deflate))))
+  (redis-cache/create-redis-cache))
 
 (defn- fetch-gcmd-keywords-map
   "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way
@@ -112,9 +100,8 @@
 
 (defn refresh-kms-cache-job
   "The singleton job that refreshes the KMS cache. The keywords are infrequently updated by the
-  GCMD team. They update the CSV file which we read from every 6 hours. I arbitrarily chose 2 hours
-  so that we are never more than 8 hours from the time a keyword is updated."
+  GCMD team, usually once a week."
   [job-key]
   {:job-type RefreshKmsCacheJob
    :job-key job-key
-   :interval 7200})
+   :daily-at-hour-and-minute [02 00]})
