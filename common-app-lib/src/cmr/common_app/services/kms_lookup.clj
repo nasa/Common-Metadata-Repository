@@ -37,7 +37,8 @@
    :iso-topic-categories [:iso-topic-category]
    :granule-data-format [:format]
    :mime-type [:mime-type]
-   :related-urls [:url-content-type :type :subtype]})
+   :related-urls [:url-content-type :type :subtype]
+   :processing-levels [:processing-level]})
 
 (def kms-scheme->fields-for-umm-var-lookup
   "Maps the KMS keyword scheme to the list of fields that should be matched when comparing fields

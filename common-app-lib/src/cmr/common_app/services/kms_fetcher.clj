@@ -41,8 +41,9 @@
    :concepts [:short-name]
    :iso-topic-categories [:iso-topic-category]
    :related-urls [:url-content-type :type :subtype]
-   :granule-data-format [:short-name :uuid]
-   :mime-type [:mime-type :uuid]})
+   :granule-data-format [:short-name]
+   :mime-type [:mime-type]
+   :processing-levels [:processing-level]})
 
 (def FIELD_NOT_PRESENT
   "A string to indicate that a field is not present within a KMS keyword."

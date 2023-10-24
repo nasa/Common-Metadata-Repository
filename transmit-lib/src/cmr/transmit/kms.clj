@@ -41,7 +41,8 @@
    :iso-topic-categories :uuid
    :related-urls :uuid
    :granule-data-format :uuid
-   :mime-type :uuid})
+   :mime-type :uuid
+   :processing-levels :uuid})
 
 (comment
  "The following map contains code used for trasitioning CMR from SIT->UAT->PROD
@@ -89,7 +90,8 @@
    :iso-topic-categories "isotopiccategory?format=csv"
    :related-urls "rucontenttype?format=csv"
    :granule-data-format "dataformat?format=csv"
-   :mime-type "mimetype?format=csv"})
+   :mime-type "mimetype?format=csv"
+   :processing-levels "productlevelid?format=csv"})
 
 (defn- keyword-scheme->kms-resource
   "This is the primary way to get KMS URL resource locations. This function will
@@ -116,7 +118,8 @@
    :iso-topic-categories [:iso-topic-category :uuid]
    :related-urls [:url-content-type :type :subtype :uuid]
    :granule-data-format [:short-name :long-name :uuid]
-   :mime-type [:mime-type :uuid]})
+   :mime-type [:mime-type :uuid]
+   :processing-levels [:processing-level :uuid]})
 
 (def keyword-scheme->expected-field-names
   "Maps each keyword scheme to the expected field names to be returned by KMS. We changed
@@ -127,7 +130,8 @@
           :spatial-keywords [:location-category :location-type :location-subregion-1
                              :location-subregion-2 :location-subregion-3 :location-subregion-4 :uuid]
           :spatial-keywords-old [:location-category :location-type :location-subregion-1
-                             :location-subregion-2 :location-subregion-3 :uuid]}))
+                             :location-subregion-2 :location-subregion-3 :uuid]
+          :processing-levels [:product-level-id :uuid]}))
 
 (def keyword-scheme->required-field
   "Maps each keyword scheme to a field that must be present for a keyword to be valid."
