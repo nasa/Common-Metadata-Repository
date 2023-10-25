@@ -11,7 +11,8 @@
 (defprotocol CmrHashCache
   "Defines a protocol used for caching data using hashes."
   (get-map
-   [cache key])
+   [cache key]
+   "Returns the entire hash map from the cache for the given cache named by the passed in key.")
   
   (get-keys
     [cache key]
