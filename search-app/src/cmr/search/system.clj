@@ -19,6 +19,7 @@
    [cmr.common.system :as common-sys]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.orbits.orbits-runtime :as orbits-runtime]
+   [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
@@ -109,7 +110,7 @@
              :web (web-server/create-web-server (transmit-config/search-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
-             :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
+             :caches {idx/index-cache-name (redis-cache/create-redis-cache)
                       af/acl-cache-key (af/create-acl-cache [:catalog-item :system-object :provider-object])
                       ;; Caches a map of tokens to the security identifiers
                       context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
