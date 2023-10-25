@@ -1018,8 +1018,8 @@
                  (string/ends-with? header-raw "}"))
           (try
             (if-let [header-data (json/parse-string header-raw true)]
-              (and (= "JWT" (:typ header-data))
-                   (= "Earthdata Login" (:origin header-data)))
+              (and (contains? header-data :kid)
+                   (contains? header-data :alg))
               false)
             (catch com.fasterxml.jackson.core.JsonParseException e false))
           false))

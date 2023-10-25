@@ -28,7 +28,7 @@
           matching-key (first (filter #(= token-kid (get % :kid)) jwks-list))
           public-key (buddy-keys/jwk->public-key matching-key)
           decrypted-token (jwt/unsign bearer-stripped-token public-key {:alg :rs256})]
-      (:uid decrypted-token))
+      (:uid decrypted-token (:username decrypted-token)))
     (catch clojure.lang.ExceptionInfo ex
       (let [error-data (ex-data ex)]
         (cond
