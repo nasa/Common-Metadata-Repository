@@ -38,19 +38,17 @@
    :default (* 900 1000)})
 
 (defn create-scroll-id-cache
-  "Returns a single-threaded cache backed by Redis. This cache is used to store a map of cmr scroll-ids to ES scroll-ids 
+  "Returns a cache backed by Redis. This cache is used to store a map of cmr scroll-ids to ES scroll-ids 
    in a consistent way acrosss all instances of search."
   []
-  (stl-cache/create-single-thread-lookup-cache
-   (redis-cache/create-redis-cache {:ttl (/ (scroll-id-cache-ttl) 1000)})))
+  (redis-cache/create-redis-cache {:ttl (/ (scroll-id-cache-ttl) 1000)}))
 
 (defn create-scroll-first-page-cache
-  "Returns a single-threaded cache backed by Redis. This cache is used to store a map of cmr scroll-ids to the first 
+  "Returns a cache backed by Redis. This cache is used to store a map of cmr scroll-ids to the first 
    page of results in a consistent way acrosss all instances of search. This is used to support scrolling with
    sessions intitiated with a HEAD, GET, or POS request."
   []
-  (stl-cache/create-single-thread-lookup-cache
-   (redis-cache/create-redis-cache {:ttl (/ (scroll-first-page-cache-ttl) 1000)})))
+  (redis-cache/create-redis-cache {:ttl (/ (scroll-first-page-cache-ttl) 1000)}))
 
 (defn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
