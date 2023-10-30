@@ -10,7 +10,7 @@
   "Defines a protocol used for caching data."
   (get-keys
     [cache]
-    "Returns the list of keys for the given cache. The keys are conveted to non-keyword strings.")
+    "Returns the list of keys for the given cache. The keys are converted to non-keyword strings.")
 
   (get-value
     [cache key]
@@ -27,7 +27,7 @@
   (set-value
     [cache key value]
     "Associates the value in the cache with the given key.")
-  
+
   (cache-size
    [cache]
    "Returns the size of the cache in bytes."))

@@ -7,7 +7,14 @@
             [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.common-app.services.search.query-model :as q]
             [cmr.common-app.services.search.query-execution :as qe]
-            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]))
+            [cmr.redis-utils.redis-cache :as redis-cache]
+            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+            [cmr.common.util :as u]
+            [clojure.pprint :as pp]))
+
+;; No other file reads this cache
+(def cache-key
+  :collections-for-gran-acls)
 
 (def initial-cache-state
   "The initial cache state."
@@ -16,10 +23,9 @@
 (defn create-cache
   "Creates a new empty collections cache."
   []
-  (mem-cache/create-in-memory-cache))
-
-(def cache-key
-  :collections-for-gran-acls)
+  ;;(mem-cache/create-in-memory-cache)
+  (println "loading redis cache for collections")
+  (redis-cache/create-redis-cache {:keys-to-track :collections-for-gran-acls :ttl (* 15 60)}))
 
 (defn- fetch-collections
   "Executes a query that will fetch all of the collection information needed for caching."
@@ -48,6 +54,7 @@
                                            [[provider-id EntryTitle] coll]))]
     ;; We could reduce the amount of memory here if needed by only fetching the collections that
     ;; have granules.
+    (println "🚀 - have collections" (first collections))
     {:by-concept-id by-concept-id
      :by-provider-id-entry-title by-provider-id-entry-title}))
 
@@ -58,7 +65,10 @@
   [context]
   (let [cache (cache/context->cache context cache-key)
         collections-map (fetch-collections-map context)]
-    (cache/set-value cache :collections collections-map)))
+    ;;(println "serial:" (pr-str collections-map))
+    ;;(print "round:" (clojure.edn/read-string (pr-str collections-map)))
+    ;;(println "api:" (redis-cache/serialize collections-map))
+    (cache/set-value cache cache-key collections-map)))
 
 (defn- get-collections-map
   "Gets the cached value."
@@ -66,7 +76,7 @@
   (let [coll-cache (cache/context->cache context cache-key)
         collection-map (cache/get-value
                          coll-cache
-                         :collections
+                         cache-key
                          (fn [] (fetch-collections-map context)))]
     (if (empty? collection-map)
       (errors/internal-error! "Collections were not in cache.")
@@ -76,6 +86,7 @@
   "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
   Also allows provider-id and entry-title to be used."
   ([context concept-id]
+   (println "🚀 - collections-cache/get-collection with" concept-id)
    (let [by-concept-id (:by-concept-id (get-collections-map context))]
      (when-not (by-concept-id concept-id)
        (info (format "Collection with id %s not found in cache. Manually triggering cache refresh"
@@ -94,3 +105,37 @@
   {:job-type RefreshCollectionsCacheForGranuleAclsJob
    ;; 15 minutes
    :interval (* 15 60)})
+
+(comment
+
+  (get-collection cmr.search.services.acl-service/mycontext "C1200000026-TCHERRY.json")
+
+  (let [system {:system (get-in user/system [:apps :search])}
+        cache (cache/context->cache system cache-key)
+        ;updated (refresh-cache system)
+        obj (get-in cache [:by-concept-id "C1200000026-TCHERRY"])
+        data (cache/get-value cache cache-key)]
+    (println "obj:" obj)
+    (clojure.pprint/pprint data)
+    ;(println "updated:" updated)
+    (println (cmr.common.util/get-real-or-lazy obj :AccessConstraints))
+    ;(cmr.common.util/get-real-or-lazy obj :TemporalExtents)
+    ;updated
+    ;updated
+    cache
+    )
+
+
+  (let [context {:system (get-in user/system [:apps :search])}
+        cache (cache/context->cache context cache-key)
+        collections-map (fetch-collections-map context)]
+    (println "map:" collections-map)
+    ;;(println "orig:" (keys (get-in collections-map [:by-concept-id "C1200000026-TCHERRY"])))
+    ;;(println "serial:" (pr-str collections-map))
+    ;;(print "round:" (clojure.edn/read-string (pr-str collections-map)))
+    ;;(println "sapi:" (redis-cache/serialize collections-map))
+
+    ;;(cache/set-value cache cache-key collections-map)
+    (cache/get-value cache cache-key)
+    cache
+    ))
