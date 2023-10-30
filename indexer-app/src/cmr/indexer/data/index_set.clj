@@ -758,7 +758,7 @@
    ;; DEPRECATED integer type is no longer sufficient for this field
    :concept-seq-id (m/doc-values m/int-field-mapping)
 
-   ;; This is used explicitly for sorting. The values take up less space in the fielddata cache.
+   ;; This is used explicitly for sorting. The values take up less space in the field data cache.
    :concept-seq-id-long (m/doc-values m/unsigned-long-field-mapping)
    :native-id (m/doc-values m/string-field-mapping)
    :native-id-lowercase (m/doc-values m/string-field-mapping)
@@ -767,6 +767,7 @@
    :variable-name (m/doc-values m/string-field-mapping)
    :variable-name-lowercase (m/doc-values m/string-field-mapping)
    :measurement (m/doc-values m/string-field-mapping)
+   :definition (m/doc-values m/string-field-mapping)
    :measurement-lowercase (m/doc-values m/string-field-mapping)
    :keyword m/text-field-mapping
    :deleted (m/doc-values m/bool-field-mapping)
@@ -774,8 +775,10 @@
    :revision-date (m/doc-values m/date-field-mapping)
    :metadata-format (m/doc-values m/string-field-mapping)
    :measurement-identifiers measurement-identifiers-mapping
-   ;; associations with the variable stored as EDN gzipped and base64 encoded for retrieving purpose
-   :associations-gzip-b64 m/binary-field-mapping})
+   ;; associations and fields where the variables are stored as EDN gzipped and base64 encoded for retrieving purpose
+   :associations-gzip-b64 m/binary-field-mapping
+   :science-keywords-gzip-b64 m/binary-field-mapping
+   :instance-information-gzip-b64 m/binary-field-mapping})
 
 (defmapping service-mapping :service
   "Defines the elasticsearch mapping for storing services. These are the
@@ -873,7 +876,7 @@
        :indexes [{:name '' :settings {<shards and replicas>}}]
        :mapping {:properties{:example {:type 'keyword'}}}}}}
    Note: Indexes normally have two items, the all revisions index and the normal index
-   Note: Most mappings include a litaral case version and a lowercase version
+   Note: Most mappings include a literal case version and a lowercase version
    "
   [extra-granule-indexes]
   (let [set-of-indexes {:name "cmr-base-index-set"
