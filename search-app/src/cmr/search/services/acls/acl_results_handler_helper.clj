@@ -41,20 +41,26 @@
   (let [{{entry-title :entry-title
           provider-id :provider-id
           access-value :access-value
-          start-date :start-date
-          end-date :end-date} :_source} elastic-result
-        start-date (parse-elastic-datetime start-date)
-        end-date (parse-elastic-datetime end-date)]
-
+          start-date1 :start-date
+          end-date1 :end-date} :_source} elastic-result
+        start-date (parse-elastic-datetime start-date1)
+        end-date (parse-elastic-datetime end-date1)
+        ]
+    (println "raw dates in parse elastic item" start-date1 end-date1)
     (-> {:concept-type concept-type
          :provider-id provider-id
          :EntryTitle entry-title}
-        (u/lazy-assoc :AccessConstraints {:Value access-value})
-        (u/lazy-assoc :TemporalExtents
-                      (let [start-date (parse-elastic-datetime start-date)
-                            end-date (parse-elastic-datetime end-date)]
-                        [{:RangeDateTimes (when start-date [{:BeginningDateTime start-date
-                                                             :EndingDateTime end-date}])}])))))
+        (assoc :AccessConstraints {:Value access-value})
+        ;;(u/lazy-assoc :AccessConstraints {:Value access-value})
+        (assoc :TemporalExtents [{:RangeDateTimes (when start-date [{:BeginningDateTime start-date1
+                                                                     :EndingDateTime end-date1}])}])
+        ;(u/lazy-assoc :TemporalExtents
+        ;              (let [start-date (parse-elastic-datetime start-date)
+        ;                    end-date (parse-elastic-datetime end-date)]
+        ;                [{:RangeDateTimes (when start-date [{:BeginningDateTime start-date
+        ;                                                     :EndingDateTime end-date}])}]))
+
+        )))
 
 (defmethod parse-elastic-item :granule
   [concept-type elastic-result]

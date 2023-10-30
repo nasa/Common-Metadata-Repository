@@ -102,7 +102,7 @@
   (set-value
     [this key value]
     (swap! cache-atom assoc key value))
-  
+
   (cache-size
    [_]
    (reduce + 0 (map size-in-bytes (vals @cache-atom)))))
