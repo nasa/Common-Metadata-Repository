@@ -269,7 +269,7 @@
 (defn- get-info-from-metadata-db
   "Get information from metadata db."
   [request concept-id provider-id concept-type]
-  (let [content-type-passed-in (:content-type request)
+  (let [format-passed-in (:format request)
         context (:request-context request)
         search-result (mdb/get-latest-concept context concept-id)
         draft-native-id (:native-id search-result)
@@ -279,8 +279,8 @@
             (errors/throw-service-error
              :bad-request
              (format "Concept-id [%s] does not exist." concept-id)))
-        content-type (if content-type-passed-in
-                       content-type-passed-in
+        content-type (if format-passed-in
+                       format-passed-in
                        format)
         body (string->stream metadata)
         request (-> request
@@ -364,6 +364,42 @@
              (format "Publishing draft is successful with info [%s]. Deleting draft failed with info [%s]."
                      (:body publish-result) (:body delete-result)))))
         publish-result)))) 
+
+(defn publish-draft
+  "Publish a draft concept, i.e. ingest the corresponding concept and delete the draft."
+  [request concept-id native-id]
+  (let [{:keys [draft-concept-type provider-id concept-type-in-draft]}
+        (extract-info-from-concept-id concept-id)
+        content-type (:content-type request)
+        body (:body request)
+        body-map (when body
+                   (if (= "application/x-www-form-urlencoded" content-type)
+                     ;; this happens when the body is used but the content-type is not provided.
+                     (errors/throw-service-error
+                      :bad-request
+                      (format "To publish a draft [%s] with a body, a json Content-Type header needs to be provided." concept-id))
+                     (try
+                       (cheshire.core/parse-string (string/trim (slurp body)))
+                       (catch Exception e
+                         (errors/throw-service-error
+                          :bad-request
+                          (format "The json body for publishing draft contains the following error [%s]." (.getMessage e)))))))
+        ;; associate the "format" in the body to the request and use it to publish the draft. If the format is not provided,
+        ;; in the body, the original format for the draft in the database will be used.
+        request (assoc request :format (get body-map "format"))]
+    (if (common-concepts/is-draft-concept? draft-concept-type)
+      (if (= :variable-draft draft-concept-type)
+        (let [coll-concept-id (get body-map "collection-concept-id")
+              coll-revision-id (get body-map "collection-revision-id")]
+          (if coll-concept-id
+            (publish-variable-draft nil native-id request coll-concept-id coll-revision-id concept-id)
+            (errors/throw-service-error
+             :bad-request
+             (format "To publish variable draft [%s] a collection-concept-id needs to be provided in the body." concept-id)))) 
+        (publish-non-variable-draft request concept-id native-id))
+      (errors/throw-service-error
+       :bad-request
+       (format "Only draft can be published in this route. concept-id [%s] does not belong to a draft concept" concept-id)))))
 
 (defn crud-generic-document
   "This function checks for required parameters. If they don't exist then throw an error, otherwise send the request

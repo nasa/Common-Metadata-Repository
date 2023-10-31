@@ -1204,13 +1204,14 @@ For lack of a better ACL, ingest permissions for collection subscription are gra
 
 All drafts can be published, i.e. ingested into the CMR as a new concept through the publishing endpoints. This specific endpoint publishes all draft records except for variables drafts. Variable drafts can be published through the next described endpoint.
 
-Example: With the exception of variable drafts, publish a draft record such as an order option with the order option draft concept id of OOD1200000005-PROV1 and a new native-id of orderoption1 for the record to be published. Note: The CMR will use the HTTP header Content-Type if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record.
+Example: With the exception of variable drafts, publish a draft record such as an order option with the order option draft concept id of OOD1200000005-PROV1 and a new native-id of orderoption1 for the record to be published. Note: The CMR will use the format in the body if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. Also note: when a body is present in the request, the HTTP Content-Type header needs to be provided.
 
 ```
 curl -XPUT \
      -H "Authorization:  XXXX" \ 
      -H "Content-Type:application/vnd.nasa.cmr.umm+json" \
-     %CMR-ENDPOINT%/publish/OOD1200000005-PROV1/orderoption1
+     %CMR-ENDPOINT%/publish/OOD1200000005-PROV1/orderoption1\
+     -d "{\"format\":\"application/vnd.nasa.cmr.umm+json\"}"
 ```
 #### Successful Response in XML
 
@@ -1225,17 +1226,20 @@ curl -XPUT \
 ```
 
 ### <a name="publish-variable-draft"></a> Publish Variable Draft 
-#### <a name="publish-variable-draft-endpoint"></a> /collections/&lt;collection-concept-id&gt;/&lt;collection-revision-id&gt;/variables/&lt;native-id&gt;/publish/&lt;variable-draft-concept-id&gt; 
+#### <a name="publish-variable-draft-endpoint"></a> /publish/&lt;variable-draft-concept-id&gt;/&lt;native-id&gt;
 
 Variable drafts can be published, i.e. ingested into CMR as variable concept, through the variable draft publishing endpoint.
 
-Example: Publish variable draft VD1200000008-PROV1 using native-id var1. Note: The CMR will use the HTTP header Content-Type if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. 
+Example: Publish variable draft VD1200000008-PROV1 using native-id var1. Note: collection-concept-id is required in the body; The CMR will use the format in the body if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. Also note: the HTTP Content-Type header needs to be provided because the body is present. 
 
 ```
 curl -XPUT \
      -H "Authorization:  XXXX" \
-     -H "Content-Type:application/vnd.nasa.cmr.umm+json;version=1.8.1" \
-     %CMR-ENDPOINT%/collections/C1200000009-PROV1/1/variables/var1/publish/VD1200000008-PROV1
+     -H "Content-Type:application/vnd.nasa.cmr.umm+json" \
+     %CMR-ENDPOINT%/publish/VD1200000008-PROV1/var1 \
+     -d "{\"collection-concept-id\": \"C1200000009-PROV1\",\
+          \"collection-revision-id\":\"1\"
+          \"format\":\"application/vnd.nasa.cmr.umm+json;version=1.8.1\"}"
 ```
 #### Successful Response in XML
 

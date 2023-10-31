@@ -105,14 +105,14 @@
 
 (def ingest-routes
   (routes
-    ;; publish non-variable draft routes
+    ;; publish draft routes
     (api-core/set-default-error-format
      :xml
      (context "/publish/:draft-id" [draft-id]
        (context "/:native-id" [native-id]
          (PUT "/"
            request
-           (gen-doc/publish-non-variable-draft request draft-id native-id)))))
+           (gen-doc/publish-draft request draft-id native-id)))))
     ;; variable ingest routes with association
     (api-core/set-default-error-format
      :xml
