@@ -119,23 +119,11 @@
      (context "/collections/:coll-concept-id" [coll-concept-id]
        (context "/:coll-revision-id" [coll-revision-id]
          (context "/variables/:native-id" [native-id]
-           ;; publish variable draft
-           (context "/publish/:var-draft-id" [var-draft-id]
-             (PUT "/"
-               request
-               (gen-doc/publish-variable-draft
-                nil native-id request coll-concept-id coll-revision-id var-draft-id)))
            (PUT "/"
              request
              (variables/ingest-variable
               nil native-id request coll-concept-id coll-revision-id))))
        (context "/variables/:native-id" [native-id]
-         ;; publish variable draft
-         (context "/publish/:var-draft-id" [var-draft-id]
-             (PUT "/"
-               request
-               (gen-doc/publish-variable-draft
-                nil native-id request coll-concept-id nil var-draft-id)))
          (PUT "/"
            request
            (variables/ingest-variable

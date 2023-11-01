@@ -293,19 +293,12 @@
     {:native-id draft-native-id
      :request request}))
 
-(defn publish-non-variable-draft
+(defn- publish-non-variable-draft
   "Publish a non-variable draft concept. i.e. Ingest the corresponding concept
   and delete the draft."
   [request concept-id native-id]
   (let [{:keys [draft-concept-type provider-id concept-type-in-draft]}
         (extract-info-from-concept-id concept-id)]
-    ;; If draft-concept-type is not a non-variable draft, throw error.
-    (when-not (and (common-concepts/is-draft-concept? draft-concept-type)
-                   (not= :variable-draft draft-concept-type))
-      (errors/throw-service-error
-       :bad-request
-       (format "Only non-variable draft can be published in this route. concept-id [%s] does not belong to a non-variable draft concept" concept-id)))
-
     ;;Get info from metadata-db. 
     (let [info (get-info-from-metadata-db request concept-id provider-id concept-type-in-draft)
           request (:request info)
@@ -332,18 +325,12 @@
                      (:body publish-result) (:body delete-result)))))
         publish-result))))
     
-(defn publish-variable-draft
+(defn- publish-variable-draft
   "Publish a variable draft concept. i.e. Ingest the corresponding variable and
   delete the variable draft."
-  [provider-id native-id request coll-concept-id coll-revision-id var-draft-id]
+  [native-id request coll-concept-id coll-revision-id var-draft-id]
   (let [{:keys [draft-concept-type provider-id concept-type-in-draft]}           
         (extract-info-from-concept-id var-draft-id) ]
-    ;; If concept-id is not a variable draft, throw error.
-    (when-not (= :variable-draft draft-concept-type)
-      (errors/throw-service-error
-       :bad-request
-       (format "Only variable draft can be published in this route. concept-id [%s] does not belong to a variable draft concept" var-draft-id)))
-
     ;; Get information from metadata-db. 
     (let [info (get-info-from-metadata-db request var-draft-id provider-id concept-type-in-draft)
           request (:request info)
@@ -368,8 +355,7 @@
 (defn publish-draft
   "Publish a draft concept, i.e. ingest the corresponding concept and delete the draft."
   [request concept-id native-id]
-  (let [{:keys [draft-concept-type provider-id concept-type-in-draft]}
-        (extract-info-from-concept-id concept-id)
+  (let [draft-concept-type (:draft-concept-type (extract-info-from-concept-id concept-id))
         content-type (:content-type request)
         body (:body request)
         body-map (when body
@@ -392,7 +378,7 @@
         (let [coll-concept-id (get body-map "collection-concept-id")
               coll-revision-id (get body-map "collection-revision-id")]
           (if coll-concept-id
-            (publish-variable-draft nil native-id request coll-concept-id coll-revision-id concept-id)
+            (publish-variable-draft native-id request coll-concept-id coll-revision-id concept-id)
             (errors/throw-service-error
              :bad-request
              (format "To publish variable draft [%s] a collection-concept-id needs to be provided in the body." concept-id)))) 
