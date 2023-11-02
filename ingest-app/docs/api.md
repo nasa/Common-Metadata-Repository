@@ -55,10 +55,8 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
         * [Subscription Access Control](#subscription-access-control)
 * %GENERIC-TABLE-OF-CONTENTS%
 * [Publish Drafts](#publish-drafts)
-    * [/publish/\<non-variable-draft-concept-id\>/\<native-id\>](#publish-non-variable-draft-endpoint)
-        * [PUT - Publish all draft records except for variables.](#publish-non-variable-draft)
-    * [/collections/\<collection-concept-id\>/\<collection-revision-id\>/variables/\<native-id\>/publish/\<variable-draft-concept-id\>](#publish-variable-draft-endpoint)
-        * [PUT - Publish a variable draft.](#publish-variable-draft)
+    * [/publish/\<draft-concept-id\>/\<native-id\>](#publish-draft-endpoint)
+        * [PUT - Publish all draft records.](#publish-draft)
 * [Translations](#translate-collection)
     * [/translate/collection](#translate-collection-endpoint)
         * [POST - Translate collection metadata.](#translate-collection)
@@ -1199,10 +1197,9 @@ For lack of a better ACL, ingest permissions for collection subscription are gra
 %GENERIC-DOCS%
 
 ## <a name="publish-drafts"></a> Publish Drafts 
-### <a name="publish-non-variable-draft"></a> Publish Non Variable Draft 
-#### <a name="publish-non-variable-draft-endpoint"></a> /publish/&lt;non-variable-draft-concept-id&gt;/&lt;native-id&gt;
+#### <a name="publish-draft-endpoint"></a> /publish/&lt;draft-concept-id&gt;/&lt;native-id&gt;
 
-All drafts can be published, i.e. ingested into the CMR as a new concept through the publishing endpoints. This specific endpoint publishes all draft records except for variables drafts. Variable drafts can be published through the next described endpoint.
+All drafts can be published, i.e. ingested into the CMR as a new concept through the publishing endpoints. This specific endpoint publishes all draft records.
 
 Example: With the exception of variable drafts, publish a draft record such as an order option with the order option draft concept id of OOD1200000005-PROV1 and a new native-id of orderoption1 for the record to be published. Note: The CMR will use the format in the body if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. Also note: when a body is present in the request, the HTTP Content-Type header needs to be provided.
 
@@ -1225,12 +1222,7 @@ curl -XPUT \
 
 ```
 
-### <a name="publish-variable-draft"></a> Publish Variable Draft 
-#### <a name="publish-variable-draft-endpoint"></a> /publish/&lt;variable-draft-concept-id&gt;/&lt;native-id&gt;
-
-Variable drafts can be published, i.e. ingested into CMR as variable concept, through the variable draft publishing endpoint.
-
-Example: Publish variable draft VD1200000008-PROV1 using native-id var1. Note: collection-concept-id is required in the body; The CMR will use the format in the body if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. Also note: the HTTP Content-Type header needs to be provided because the body is present. 
+Example: Publish variable draft VD1200000008-PROV1 using native-id var1. Note: collection-concept-id is required in the body; The CMR will use the format in the body if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. Also note: the HTTP Content-Type header needs to be provided because the body is present.
 
 ```
 curl -XPUT \
@@ -1258,6 +1250,7 @@ curl -XPUT \
 </result>
 
 ```
+
 
 ## <a name="translate-collection"></a> Translate Collection Metadata
 #### <a name="translate-collection-endpoint"></a> /translate/collection
