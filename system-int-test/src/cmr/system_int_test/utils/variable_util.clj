@@ -153,7 +153,7 @@
 
 (def ^:private json-field-names
   "List of fields expected in a variable JSON response."
-  [:concept-id :revision-id :provider-id :native-id :deleted :name :long-name :associations :association-details])
+  [:concept-id :revision-id :provider-id :native-id :deleted :name :long-name :associations :association-details :science-keywords :definition])
 
 (defn extract-name-from-metadata
   "Pulls the name out of the metadata field in the provided variable concept."
