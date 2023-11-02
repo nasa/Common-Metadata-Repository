@@ -34,14 +34,24 @@
    [cache]
    "Returns the size of the cache in bytes."))
 
+(defn simple-cache?
+  "Function that takes a cache and checks to see if the
+   cache is cmr.common.cache or cmr.common.hash-cache."
+  [cache]
+  (if (string/includes? (str (type cache)) "hash_cache")
+    false
+    true))
+
 (defn reset-caches
   "Clear all caches found in the system, this includes the caches of embedded systems."
   [context]
   (doseq [[_ v] (get-in context [:system :caches])]
-    (reset v))
+    (when (simple-cache? v)
+      (reset v)))
   ;; reset embedded systems caches
   (doseq [[_ v] (get-in context [:system :embedded-systems])]
-    (reset-caches {:system v})))
+    (when (simple-cache? v)
+      (reset-caches {:system v}))))
 
 (defn cache-sizes
   "Returns a map of caches and their sizes in bytes."
@@ -49,5 +59,5 @@
   (let [system-caches (get-in context [:system :caches])]
     (into {}
           (for [[cache-key cache] system-caches]
-            (when-not (string/includes? (str (type cache)) "cmr.redis_utils.redis_hash_cache.RedisHashCache")
+            (when (simple-cache? cache)
               {cache-key (cache-size cache)})))))

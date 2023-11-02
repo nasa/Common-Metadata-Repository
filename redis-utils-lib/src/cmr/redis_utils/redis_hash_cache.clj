@@ -64,9 +64,9 @@
     (doseq [the-key keys-to-track]
       (wcar* (carmine/del (rc/serialize the-key)))))
    
-   (reset 
-     [this key]
-     (wcar* (carmine/del (rc/serialize key))))
+  (reset
+    [this key]
+    (wcar* (carmine/del (rc/serialize key))))
 
   (set-value
     [this key field value]
