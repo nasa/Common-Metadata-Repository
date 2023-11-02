@@ -121,15 +121,19 @@
   "Defines the password that is sent from the CMR to URS to authenticate the CMR."
   {})
 
-(defconfig local-edl-verification
-  "Controls when cmr uses the EDL public key to locally verify JWT tokens."
+(defconfig local-jwt-verification
+  "Controls when cmr uses a locally-defined JWKS (public key) to verify JWT tokens."
   {:type Boolean
    :default true})
 
 (defconfig jwt-web-key-set
-  "Defines the EDL public key which is used to validate EDL JWT tokens locally.  Default is set to
-   a locally generated EDL test jwk and is used in token unit tests"
+  "Defines the JWKS (public key) which is used to validate JWT tokens locally.  Default is set to
+   a locally-generated test JWKS and is used in token unit tests.  Must be a JSON-formatted array."
   {:default "[{\n      \"kty\": \"RSA\",\n      \"n\": \"xSxiOkM8m8oCyWn-sNNZxBVTUcPAlhXRjKpLTYIM21epMC9rqEnrgL7iuntmp3UcffOIKtFHOtCG-jWUkyzxZHPPMo0kYZVHKRjGj-AVAy3FA-d2AtUc1dPlrQ0TpdDoTzew_6-48BcbdFEQI3161wcMoy40unYYYfzo3KuUeNcCY3cmHzSkYn4iQHaBy5zTAzKTIcYCTpaBGDk4_IyuysvaYmgwdeNO26hNV9dmPx_rWgYZYlashXZ_kRLirDaGpnJJHyPrYaEJpMIWuIfsh_UoMjsyuoQGe4XU6pG8uNnUd31mHa4VU78cghGZGrCz_YkPydfFlaX65LBp9aLdCyKkA66pDdnCkm8odVMgsH2x_kGM7sNlQ6ELTsT-dtJoiEDI_z3fSZehLw469QpTGQjfsfXUCYm8QrGckJF4bJc935TfGU86qr2Ik2YoipP_L4K_oqUf8i6bwO0iomo_C7Ukr4l-dh4D5O7szAb9Ga804OZusFk3JENlc1-RlB20S--dWrrO-v_L8WI2d72gizOKky0Xwzd8sseEqfMWdktyeKoaW0ANkBJHib4E0QxgedeTca0DH_o0ykMjOZLihOFtvDuCsbHG3fv41OQr4qRoX97QO2Hj1y3EBYtUEypan46g-fUyLCt-sYP66RkBYzCJkikCbzF_ECBDgX314_0\",\n      \"e\": \"AQAB\",\n      \"kid\": \"edljwtpubkey_development\"\n}]"})
+
+(defconfig jwt-user-id-claim
+  "Defines the JWT claim field that carries the identifier for the current user.  This will likely be \"username\" for most OAuth-compatible providers, but is set here to \"uid\" to satisfy the needs of EDL/URS."
+  {:default "uid"})
 
 (defn mins->ms
   "Returns the number of minutes in milliseconds"

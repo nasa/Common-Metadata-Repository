@@ -997,9 +997,8 @@
 
 (defn is-jwt-token?
   "Check if a token matches the JWT pattern (Base64.Base64.Base64) and if it
-   does, try to look inside the header section and verify that the token is JWT
-   and it came from EarthDataLogin (EDL). Tokens may start with Bearer and end
-   with with a client-id section.
+   does, try to look inside the header section and verify that the token is JWT.
+   Tokens may start with Bearer and end with with a client-id section.
    Note: Similar code exists at gov.nasa.echo.kernel.service.authentication."
   [raw-token]
   (let [BEARER "Bearer "

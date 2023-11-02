@@ -28,7 +28,7 @@
           matching-key (first (filter #(= token-kid (get % :kid)) jwks-list))
           public-key (buddy-keys/jwk->public-key matching-key)
           decrypted-token (jwt/unsign bearer-stripped-token public-key {:alg :rs256})]
-      (:uid decrypted-token (:username decrypted-token)))
+      ((keyword transmit-config/jwt-user-id-claim) decrypted-token))
     (catch clojure.lang.ExceptionInfo ex
       (let [error-data (ex-data ex)]
         (cond
@@ -127,13 +127,13 @@
      [status parsed body])))
 
 (defn get-user-id
-  "Get the user-id from EDL or Launchpad for the given token"
+  "Get the user identifier from Launchpad or extract from the JWT bearer token"
   [context token]
   (if (transmit-config/echo-system-token? token)
     ;; Short circuit a lookup when we already know who this is.
     (transmit-config/echo-system-username)
     (if (and (common-util/is-jwt-token? token)
-             (transmit-config/local-edl-verification))
+             (transmit-config/local-jwt-verification))
       (verify-json-web-token-locally token)
       (if (common-util/is-launchpad-token? token)
         (:uid (launchpad-user-cache/get-launchpad-user context token))
