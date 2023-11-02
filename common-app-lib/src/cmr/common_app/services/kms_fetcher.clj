@@ -15,14 +15,9 @@
   (:require
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common.cache :as cache]
-   [cmr.common.cache.deflating-cache :as deflating-cache]
-   [cmr.common.cache.fallback-cache :as fallback-cache]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-   [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [def-stateful-job]]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.redis-utils.redis-cache :as redis-cache]
-   [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.transmit.kms :as kms]))
 
 (def nested-fields-mappings
@@ -58,7 +53,7 @@
   KMS keywords should use the same fallback cache to ensure functionality even if GCMD KMS becomes
   unavailable."
   []
-  (redis-cache/create-redis-cache))
+  (redis-cache/create-redis-cache [kms-cache-key]))
 
 (defn- fetch-gcmd-keywords-map
   "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way
@@ -82,7 +77,7 @@
     (let [cache (cache/context->cache context kms-cache-key)]
       (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context)))))
 
-(defn- refresh-kms-cache
+(defn refresh-kms-cache
   "Refreshes the KMS keywords stored in the cache. This should be called from a background job on a
   timer to keep the cache fresh. This will throw an exception if there is a problem fetching the
   keywords from KMS. The caller is responsible for catching and logging the exception."

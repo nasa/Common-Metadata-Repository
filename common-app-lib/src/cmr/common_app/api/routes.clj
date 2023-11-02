@@ -5,6 +5,7 @@
    [cmr.acl.core :as acl]
    [cmr.common.api.context :as cxt]
    [cmr.common.cache :as cache]
+   [cmr.common.hash-cache :as hcache]
    [cmr.common.jobs :as jobs]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
@@ -118,7 +119,9 @@
       (acl/verify-ingest-management-permission request-context :read)
       (let [cache (cache/context->cache request-context (keyword cache-name))]
         (when cache
-          (let [result (cache/get-keys cache)]
+          (let [result (case (str (type cache))
+                         "class cmr.redis_utils.redis_hash_cache.RedisHashCache" (map #(hcache/get-keys cache %1) (:keys-to-track cache))
+                         (cache/get-keys cache))]
             {:status 200
              :body (json/generate-string result)}))))
 
@@ -134,7 +137,9 @@
             ;; _ (println "GETTING CACHE " (keyword cache-name))
             cache (cache/context->cache request-context (keyword cache-name))
             ;; _ (when (nil? cache) (println "CACHE IS NIL"))
-            result (cache/get-value cache cache-key)]
+            result (case (str (type cache))
+                     "class cmr.redis_utils.redis_hash_cache.RedisHashCache" (hcache/get-map cache cache-key)
+                     (cache/get-value cache cache-key))]
         (if result
           {:status 200
            :body (json/generate-string result)}

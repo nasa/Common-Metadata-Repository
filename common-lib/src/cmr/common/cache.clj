@@ -1,5 +1,7 @@
 (ns cmr.common.cache
-  "Defines the core caching protocol for the CMR.")
+  "Defines the core caching protocol for the CMR."
+  (:require
+  [clojure.string :as string]))
 
 (defn context->cache
   "Get the cache for the given key from the context"
@@ -47,4 +49,5 @@
   (let [system-caches (get-in context [:system :caches])]
     (into {}
           (for [[cache-key cache] system-caches]
-            {cache-key (cache-size cache)}))))
+            (when-not (string/includes? (str (type cache)) "cmr.redis_utils.redis_hash_cache.RedisHashCache")
+              {cache-key (cache-size cache)})))))

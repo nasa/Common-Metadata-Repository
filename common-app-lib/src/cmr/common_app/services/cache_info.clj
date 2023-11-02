@@ -5,6 +5,7 @@
    [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.config :refer [defconfig]]
+   [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :refer [info error]]))
 
@@ -51,7 +52,8 @@
 
 (defjob LogCacheSizesJob
   [_ system]
-  (let [cache-size-map (cache/cache-sizes {:system system})]
+  (let [cache-size-map (merge (cache/cache-sizes {:system system})
+                              (hash-cache/cache-sizes {:system system}))]
     (log-cache-sizes cache-size-map)))
 
 (defconfig log-cache-info-interval

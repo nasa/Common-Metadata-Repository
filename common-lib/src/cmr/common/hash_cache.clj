@@ -1,6 +1,7 @@
 (ns cmr.common.hash-cache
   "Defines the core hash caching protocol for the CMR."
   (:require
+   [clojure.string :as string]
    [cmr.common.cache :as cache]))
 
 (defn context->cache
@@ -50,9 +51,17 @@
 (defn reset-caches
   "Clear all caches found in the system, this includes the caches of embedded systems."
   [context]
-  (cache/reset-caches context))
+  (doseq [[_ v] (get-in context [:system :caches])]
+    (reset v))
+  ;; reset embedded systems caches
+  (doseq [[_ v] (get-in context [:system :embedded-systems])]
+    (reset-caches {:system v})))
 
 (defn cache-sizes
   "Returns a map of caches and their sizes in bytes."
   [context]
-  (cache/cache-sizes context))
+  (let [system-caches (get-in context [:system :caches])]
+    (into {}
+          (for [[cache-key cache] system-caches]
+            (when (string/includes? (str (type cache)) "cmr.redis_utils.redis_hash_cache.RedisHashCache")
+              {cache-key (cache-size cache cache-key)})))))
