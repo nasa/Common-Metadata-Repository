@@ -1199,7 +1199,7 @@ For lack of a better ACL, ingest permissions for collection subscription are gra
 ## <a name="publish-drafts"></a> Publish Drafts 
 #### <a name="publish-draft-endpoint"></a> /publish/&lt;draft-concept-id&gt;/&lt;native-id&gt;
 
-All drafts can be published, i.e. ingested into the CMR as a new concept through the publishing endpoints. This specific endpoint publishes all draft records.
+All drafts can be published, i.e. ingested into the CMR as a new concept through the publishing endpoints. This specific endpoint publishes all draft records. However, since variable ingest requires collection association, when publishing a variable, a collection-concept-id needs to be provided in the request body. Please see the examples below for details.  
 
 Example: With the exception of variable drafts, publish a draft record such as an order option with the order option draft concept id of OOD1200000005-PROV1 and a new native-id of orderoption1 for the record to be published. Note: The CMR will use the format in the body if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. Also note: when a body is present in the request, the HTTP Content-Type header needs to be provided.
 
@@ -1222,7 +1222,7 @@ curl -XPUT \
 
 ```
 
-Example: Publish variable draft VD1200000008-PROV1 using native-id var1. Note: collection-concept-id is required in the body; The CMR will use the format in the body if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. Also note: the HTTP Content-Type header needs to be provided because the body is present.
+Example: Publish variable draft VD1200000008-PROV1 using native-id var1. Note: collection-concept-id is required in the body; collection-revision-id and format are optional.The CMR will use the format in the body if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. Also note: the HTTP Content-Type header needs to be provided because the body is present.
 
 ```
 curl -XPUT \
