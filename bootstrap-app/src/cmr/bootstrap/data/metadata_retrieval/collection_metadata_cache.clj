@@ -13,10 +13,6 @@
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.data.metadata-retrieval.revision-format-map :as crfm]
    [cmr.bootstrap.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
-;   [cmr.common-app.services.search.query-execution :as qe]
-;   [cmr.common-app.services.search.query-model :as q]
-;   [cmr.common.config :refer [defconfig]]
-;   [cmr.common.date-time-parser :as parser]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
@@ -84,7 +80,6 @@
 (defn refresh-cache
   "Refreshes the collection metadata cache"
   [context]
-  (def context2 context)
   (info "Refreshing collection metadata cache")
   (let [incremental-since-refresh-date (str (t/now))
         concepts-tuples (cmn-coll-metadata-cache/fetch-collections-from-elastic context)

@@ -85,8 +85,7 @@
 
 (defconfig update-collection-metadata-cache-interval
   "The number of seconds between refreshes of the collection metadata cache"
-  {;:default (* 3600 8)
-   :default 300
+  {:default (* 3600 8)
    :type Long})
 
 (defn prettify-cache

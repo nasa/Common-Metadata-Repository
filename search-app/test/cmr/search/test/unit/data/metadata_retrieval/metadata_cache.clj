@@ -2,16 +2,30 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
-   [cmr.common-app.test.data.metadata-retrieval.revision-format-map-test :as test-rfm]
+   [cmr.common-app.data.metadata-retrieval.revision-format-map :as crfm]
    [cmr.common.util :refer [are3]]
    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
    [cmr.redis-utils.test.test-util :as test-util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as mc]
+   [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
+   [cmr.search.test.unit.data.metadata-retrieval.revision-format-map :as trfm]
+   [cmr.search.test.unit.data.metadata-retrieval.test-metadata :as tm]
    [cmr.common.hash-cache :as hash-cache]))
 
 (use-fixtures :each test-util/embedded-redis-server-fixture)
 
 (def get-cached-metadata-in-format #'mc/get-cached-metadata-in-format)
+
+(defn test-rfm
+  "Creates a revision format map with the specified formats."
+  [concept-id revision-id formats]
+  (-> (crfm/concept->revision-format-map nil 
+                                         tm/dif10-concept 
+                                         trfm/all-metadata-formats 
+                                         metadata-transformer/transform-to-multiple-formats)
+      (select-keys (concat formats [:native-format]))
+      (assoc :concept-id concept-id
+             :revision-id revision-id)))
 
 (def empty-response
   {:revision-format-maps []
@@ -24,9 +38,9 @@
   (let [cache-key cmn-coll-metadata-cache/cache-key
         cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [cache-key]})
         _ (hash-cache/reset cache cache-key)
-        rfm1 (test-rfm/test-rfm "C1" 1 [:dif])
-        rfm2 (test-rfm/test-rfm "C2" 2 [:echo10])
-        rfm3 (test-rfm/test-rfm "C3" 3 [:echo10])
+        rfm1 (test-rfm "C1" 1 [:dif])
+        rfm2 (test-rfm "C2" 2 [:echo10])
+        rfm3 (test-rfm "C3" 3 [:echo10])
         context {:system {:caches {cache-key cache}}}]
     (hash-cache/set-value cache cache-key "C1" rfm1)
     (hash-cache/set-value cache cache-key "C2" rfm2)
