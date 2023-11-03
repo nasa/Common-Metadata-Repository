@@ -50,17 +50,12 @@
     (-> {:concept-type concept-type
          :provider-id provider-id
          :EntryTitle entry-title}
-        (assoc :AccessConstraints {:Value access-value})
-        ;;(u/lazy-assoc :AccessConstraints {:Value access-value})
-        (assoc :TemporalExtents [{:RangeDateTimes (when start-date [{:BeginningDateTime start-date1
-                                                                     :EndingDateTime end-date1}])}])
-        ;(u/lazy-assoc :TemporalExtents
-        ;              (let [start-date (parse-elastic-datetime start-date)
-        ;                    end-date (parse-elastic-datetime end-date)]
-        ;                [{:RangeDateTimes (when start-date [{:BeginningDateTime start-date
-        ;                                                     :EndingDateTime end-date}])}]))
-
-        )))
+        (u/lazy-assoc :AccessConstraints {:Value access-value})
+        (u/lazy-assoc :TemporalExtents
+                      (let [start-date (parse-elastic-datetime start-date)
+                            end-date (parse-elastic-datetime end-date)]
+                        [{:RangeDateTimes (when start-date [{:BeginningDateTime start-date
+                                                             :EndingDateTime end-date}])}])))))
 
 (defmethod parse-elastic-item :granule
   [concept-type elastic-result]

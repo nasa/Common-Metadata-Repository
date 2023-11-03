@@ -553,6 +553,21 @@
     (testing "original key is not used"
       (is (= 3 (get my-map :a))))))
 
+(deftest delazy-tests
+  (let [test (-> {:unrelated "value to not touch"}
+                  (util/lazy-assoc :base 10)
+                  (util/lazy-assoc :everything 42))]
+    (testing "check that a single values can be removed"
+      (let [actual (util/delazy-value test :base)]
+        (is (nil? (:everything actual)) "everything value was changed")
+        (is (= 10 (:base actual)) "base was not changed")
+        (is (= "value to not touch" (:unrelated actual)) "unrelated was touched")))
+
+    (testing "check that multiple lazy values can be removed"
+      (is (= {:unrelated "value to not touch" :base 10, :everything 42}
+             (util/delazy-all test))
+          "checking that only lazy values are converted"))))
+
 (deftest extract-between-strings-test
   (let [test-str "abcdefghjklmnopqrstuvwxyz"]
     (are [expected start end include-start-and-end?]

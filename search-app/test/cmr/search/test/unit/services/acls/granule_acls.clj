@@ -3,7 +3,12 @@
             [cmr.common.cache :as cache]
             [cmr.search.services.acls.granule-acls :as g]
             [cmr.search.services.acls.collections-cache :as coll-cache]
-            [cmr.common.cache.in-memory-cache :as mem-cache]))
+            [cmr.common.cache.in-memory-cache :as mem-cache]
+            [cmr.redis-utils.test.test-util :as test-util]
+            [cmr.common.util :as util :refer [are3]]
+            [cmr.search.services.acl-service :as acl-service]))
+
+(use-fixtures :once test-util/embedded-redis-server-fixture)
 
 (defn access-value
   "Creates an access value filter"
@@ -72,8 +77,8 @@
 
 (deftest acl-match-granule-concept-test
   (testing "provider ids"
-    (is (not (g/acl-match-concept? {} (make-acl "P1") (concept "P2" "C2-P2"))))
-    (is (g/acl-match-concept? {} (make-acl "P1") (concept "P1" "C2-P1"))))
+    (is (not (g/acl-match-concept? {} (make-acl "P1") (concept "P2" "C2-P2"))) "not same provider failed")
+    (is (g/acl-match-concept? {} (make-acl "P1") (concept "P1" "C2-P1")) "is same provider failed"))
 
   (let [collections [["C1-P1" "coll1" nil]
                      ["C2-P1" "coll2" 1]
@@ -82,99 +87,128 @@
                      ["C5-P2" "coll2" 1]]
         context (context-with-cached-collections
                   (for [coll-args collections]
-                    (apply collection coll-args)))]
+                    (apply collection coll-args)))
+        ;; setup the redis cache (rcache) from the memory cache
+        rcache (cmr.search.services.acls.collections-cache/create-cache)
+        old-mem-cache (get-in context [:system :caches :collections-for-gran-acls])
+        context (assoc-in context [:system :caches :collections-for-gran-acls] rcache)
+        data (.get-value old-mem-cache :collections)]
+    (.set-value rcache :collections-for-gran-acls data)
+
     (testing "collection identifier"
-      (are [entry-titles access-value-args collection-concept-id should-match?]
-           (let [access-value-filter (when access-value-args (apply access-value access-value-args))
-                 coll-identifier (coll-id entry-titles access-value-filter)
-                 acl (make-acl "P1" coll-identifier)
-                 granule (concept "P1" collection-concept-id)
-                 matches? (not (not (g/acl-match-concept? context acl granule)))]
-             (when-not (= should-match? matches?)
-               (println "context" (pr-str context))
-               (println "acl" (pr-str acl))
-               (println "granule" (pr-str granule)))
-             (= should-match? matches?))
+      (are3 [entry-titles access-value-args collection-concept-id should-match?]
+            (let [access-value-filter (when access-value-args (apply access-value access-value-args))
+                  coll-identifier (coll-id entry-titles access-value-filter)
+                  acl (make-acl "P1" coll-identifier)
+                  granule (concept "P1" collection-concept-id)
+                  matches? (not (not (g/acl-match-concept? context acl granule)))]
+              (is (= should-match? matches?) "match failed"))
 
-           ["coll1"] nil "C1-P1" true
+            "all good"
+            ["coll1"] nil "C1-P1" true
 
-           ;; collection doesn't exist
-           ["foo"] nil "C1-P1" false
-           ["foo" "coll2"] nil "C1-P1" false
-           ["foo" "coll1"] nil "C1-P1" true
+            ;; collection doesn't exist
+            "foo"
+            ["foo"] nil "C1-P1" false
+            "coll2"
+            ["foo" "coll2"] nil "C1-P1" false
+            "found with coll1"
+            ["foo" "coll1"] nil "C1-P1" true
 
-           ;;access value filter
-           ;; this is checked more completely in collection matcher tests
-           nil [1 2] "C2-P1" true
-           nil [1 2] "C1-P1" false
+            ;;access value filter
+            ;; this is checked more completely in collection matcher tests
+            "c2 check"
+            nil [1 2] "C2-P1" true
+            "c1 check"
+            nil [1 2] "C1-P1" false
 
-           ["foo" "coll2" "coll1"] [1 2] "C1-P1" false
-           ["foo" "coll2" "coll1"] [1 2] "C2-P1" true))
+            "c1 check"
+            ["foo" "coll2" "coll1"] [1 2] "C1-P1" false
+            "c2 check"
+            ["foo" "coll2" "coll1"] [1 2] "C2-P1" true))
 
     (testing "collection identifier and granule access-value"
-      (are [entry-titles access-value-args collection-concept-id gran-access-value should-match?]
-           (let [granule-identifier (gran-id (apply access-value access-value-args))
-                 coll-identifier (coll-id entry-titles nil)
-                 acl (make-acl "P1" coll-identifier granule-identifier)
-                 granule (concept "P1" collection-concept-id gran-access-value)
-                 matches? (not (not (g/acl-match-concept? context acl granule)))]
-             (when-not (= should-match? matches?)
-               (println "context" (pr-str context))
-               (println "acl" (pr-str acl))
-               (println "granule" (pr-str granule)))
-             (= should-match? matches?))
+      (are3
+       [entry-titles access-value-args collection-concept-id gran-access-value should-match?]
+       (let [granule-identifier (gran-id (apply access-value access-value-args))
+             coll-identifier (coll-id entry-titles nil)
+             acl (make-acl "P1" coll-identifier granule-identifier)
+             granule (concept "P1" collection-concept-id gran-access-value)
+             matches? (not (not (g/acl-match-concept? context acl granule)))]
+         (is (= should-match? matches?) "match failed"))
 
-           ["coll1"] [1 2] "C1-P1" 1 true
+       "- access value is good"
+       ["coll1"] [1 2] "C1-P1" 1 true
 
-           ;; access value outside range
-           ["coll1"] [1 2] "C1-P1" 3 false
+       "- access value outside range"
+       ["coll1"] [1 2] "C1-P1" 3 false
 
-           ;; different collection
-           ["coll1"] [1 2] "C2-P1" 1 false
+       "- different collection"
+       ["coll1"] [1 2] "C2-P1" 1 false
 
-           ;; collection doesn't exist
-           ["foo"] [1 2] "C1-P1" 1 false)))
-
+       "- collection does not exist"
+       ["foo"] [1 2] "C1-P1" 1 false)))
 
   (testing "granule access value"
-    (are [access-value-args gran-value should-match?]
-         (let [acl (make-acl "P1" nil (gran-id (apply access-value access-value-args)))
-               granule (concept "P1" "C1-P1" gran-value)
-               ;; not not makes truthy values true or false
-               matches? (not (not (g/acl-match-concept? {} acl granule)))]
-           (when-not (= should-match? matches?)
-             (println "acl" (pr-str acl))
-             (println "granule" (pr-str granule)))
-           (= should-match? matches?))
+    (are3
+     [access-value-args gran-value should-match?]
+     (let [acl (make-acl "P1" nil (gran-id (apply access-value access-value-args)))
+           granule (concept "P1" "C1-P1" gran-value)
+           ;; not not makes truthy values true or false
+           matches? (not (not (g/acl-match-concept? {} acl granule)))]
+       (is (= should-match? matches?)) "match failed")
 
-         ;; include undefined
-         [1 2 true] nil true
-         [nil nil true] 3 false
-         [1 2 true] 3 false
-         [1 2 true] 2 true
+     "include undefined"
+     [1 2 true] nil true
 
-         ;; just min
-         [7 nil] 7.0 true
-         [7 nil] 7 true
-         [7 nil] 7.1 true
-         [7 nil] 8 true
-         [7 nil] 6.999 false
-         [7 nil] -7.999 false
+     "no value"
+     [nil nil true] 3 false
+     "outside"
+     [1 2 true] 3 false
+     "on edge"
+     [1 2 true] 2 true
 
-         ;; just max
-         [nil 8] 8.0 true
-         [nil 8] 8 true
-         [nil 8] 8.1 false
-         [nil 8] 7 true
-         [nil 8] 7.999 true
-         [nil 8] -8.1 true
+     "just min - 7.0"
+     [7 nil] 7.0 true
+     "min - 7"
+     [7 nil] 7 true
+     "min - just inside"
+     [7 nil] 7.1 true
+     "min - well over"
+     [7 nil] 8 true
+     "min - just under"
+     [7 nil] 6.999 false
+     "min - way under"
+     [7 nil] -7.999 false
 
-         ;; min and max
-         [5 7] 5 true
-         [5 7] 5.0 true
-         [5 7] 7.0 true
-         [5 7] 6 true
-         [5 7] 5.5 true
-         [5 7] 7.2 false
-         [5 7] 4.2 false
-         [5 7] -7.2 false)))
+     ;;just max
+     "Right on max"
+     [nil 8] 8.0 true
+     "on max"
+     [nil 8] 8 true
+     "just over max"
+     [nil 8] 8.1 false
+     "under max"
+     [nil 8] 7 true
+     "just under max"
+     [nil 8] 7.999 true
+     "way under max"
+     [nil 8] -8.1 true
+
+     ;; min and max
+     "on min"
+     [5 7] 5 true
+     "exact on min"
+     [5 7] 5.0 true
+     "on max"
+     [5 7] 7.0 true
+     "between"
+     [5 7] 6 true
+     "just between, min side"
+     [5 7] 5.5 true
+     "just over max"
+     [5 7] 7.2 false
+     "just under min"
+     [5 7] 4.2 false
+     "way under min"
+     [5 7] -7.2 false)))

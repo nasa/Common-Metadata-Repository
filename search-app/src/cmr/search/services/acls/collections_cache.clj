@@ -10,7 +10,8 @@
             [cmr.redis-utils.redis-cache :as redis-cache]
             [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
             [cmr.common.util :as u]
-            [clojure.pprint :as pp]))
+            [clojure.pprint :as pp]
+            [cmr.common.util :as util]))
 
 ;; No other file reads this cache
 (def cache-key
@@ -30,8 +31,14 @@
 (defn- fetch-collections
   "Executes a query that will fetch all of the collection information needed for caching."
   [context]
+  (println "🚀🚀🚀 - here in fetch-collections")
+  ;; when creating a result processor, relize all the lazy (delay) values to
+  ;; actual values so that the resulting object can be cached in redis or some
+  ;; other text based caching system and not clojure memory
   (let [result-processor (fn [_ _ elastic-item]
-                           (assoc (acl-rhh/parse-elastic-item :collection elastic-item)
+                           (assoc (util/delazy-all (acl-rhh/parse-elastic-item
+                                                    :collection
+                                                    elastic-item))
                                   :concept-id (:_id elastic-item)))
         query (q/query {:concept-type :collection
                         :condition q/match-all
@@ -74,10 +81,13 @@
   "Gets the cached value."
   [context]
   (let [coll-cache (cache/context->cache context cache-key)
+        _ (println coll-cache)
+        ;; the wrong cache is here, but still, why do I not have the values I want?
         collection-map (cache/get-value
-                         coll-cache
-                         cache-key
-                         (fn [] (fetch-collections-map context)))]
+                        coll-cache
+                        cache-key
+                        (fn [] (fetch-collections-map context)))]
+    (println "🚀 - get-collections-map from cache resulted in" collection-map)
     (if (empty? collection-map)
       (errors/internal-error! "Collections were not in cache.")
       collection-map)))
@@ -88,6 +98,7 @@
   ([context concept-id]
    (println "🚀 - collections-cache/get-collection with" concept-id)
    (let [by-concept-id (:by-concept-id (get-collections-map context))]
+     (println "🚀 - got collections map" by-concept-id)
      (when-not (by-concept-id concept-id)
        (info (format "Collection with id %s not found in cache. Manually triggering cache refresh"
                      concept-id))
@@ -118,12 +129,11 @@
     (println "obj:" obj)
     (clojure.pprint/pprint data)
     ;(println "updated:" updated)
-    (println (cmr.common.util/get-real-or-lazy obj :AccessConstraints))
+    ;(println "AC - relized: " (cmr.common.util/get-real-or-lazy obj :AccessConstraints))
     ;(cmr.common.util/get-real-or-lazy obj :TemporalExtents)
     ;updated
     ;updated
-    cache
-    )
+    cache)
 
 
   (let [context {:system (get-in user/system [:apps :search])}
@@ -137,5 +147,14 @@
 
     ;;(cache/set-value cache cache-key collections-map)
     (cache/get-value cache cache-key)
-    cache
-    ))
+    cache)
+
+  (let [ data {:concept-type :collection
+               :provider-id "TCHERRY"
+               :EntryTitle "LarcDatasetId-native1"
+               :AccessConstraints {:Value nil}
+               :TemporalExtents [{:RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z", :EndingDateTime nil}]}]
+               :concept-id "C1200000026-TCHERRY"}]
+    (de-delay-collection data))
+
+  )
