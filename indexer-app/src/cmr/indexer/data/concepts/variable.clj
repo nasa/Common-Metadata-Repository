@@ -49,7 +49,6 @@
                                 :set-names (map :Name (:Sets parsed-concept))})
                         schema-keys)
         all-assocs (concat variable-associations generic-associations)]
-    
     (if deleted
       ;; This is only called by re-indexing (bulk indexing)
       ;; Regular deleted variables would have gone through the index-service/delete-concept path.
