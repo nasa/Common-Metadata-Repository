@@ -743,6 +743,16 @@
   {:pre [(keyword? k)]}
   (keyword (str "cmr.common.util/" (name k) "-delay")))
 
+(defn- delay-name->key
+  "Reverse key name"
+  [key]
+  {:pre [(keyword? key)]}
+  (-> key
+      (name)
+      (string/replace-first "cmr.common.util/" "")
+      (string/replace-first "-delay" "")
+      (keyword)))
+
 (defmacro lazy-assoc
   "Associates a value in a map in a way that the expression isn't evaluated
   until the value is retrieved from the map. The value must be retrieved using
@@ -763,6 +773,24 @@
   for a lazily associated value."
   [m k]
   (or (get m k) (lazy-get m k)))
+
+(defn delazy-value
+  "Remove a lazy value and replace it with the actual value"
+  [map key]
+  (if-let [actual (lazy-get map key)]
+    (-> map
+        (assoc key actual)
+        (dissoc (key->delay-name key)))
+    map))
+
+(defn delazy-all
+  "In a map, Remove all the lazy values and replace them with actual values so
+   that the resulting map can be cached or serialized correctly"
+  [data]
+  (into {} (map
+            (fn [[k v]] (if (delay? v)
+                          [(delay-name->key k) (deref (get data k))]
+                          [k v])) data)))
 
 (defn extract-between-strings
   "Extracts a substring from s that begins with start and ends with end."
@@ -1126,7 +1154,6 @@
   (hp-util/escape-html s))
 
 (defn tee
-  "Tee off an input console but do so inline for use in ->"
-  [anything]
-  (println anything)
-  anything)
+  "Tee a copy of input to the console, but does so to allow for inline use with ->"
+  ([anything] (println anything) anything)
+  ([anything note] (println note anything) anything))
