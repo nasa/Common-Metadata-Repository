@@ -98,13 +98,3 @@
         cache-map (dissoc cache-map incremental-since-refresh-date-key)]
     (println incremental-since-refresh-date-key incremental-since-refresh-date-key)
     (u/map-values crfm/prettify cache-map)))
-
-(comment
-  (keys (get-in user/system [:apps]))
-  (keys (get-in user/system [:apps :search]))
-  (get-in user/system [:apps :search])
-  (get-in user/system [:apps :search :caches :collection-metadata-cache])
-  (let [cache (get-in user/system [:apps :search :caches :collection-metadata-cache])]
-    (hash-cache/get-value cache :collection-metadata-cache "incremental-since-refresh-date"))
-  (data-range-condition (or nil "1600-01-01T00:00:00"))
-  )

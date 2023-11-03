@@ -86,61 +86,7 @@
     
     (errors/internal-error!
      (format "Unexpected transform strategy [%s] from concept of type [%s] to [%s]"
-             strategy (:format concept) (pr-str target-formats))))
-  )
-
-;(defmulti transform-with-strategy
-;  "Transforms the concept into the set of target formats specified using the given strategy"
-;  (fn [context concept strategy target-formats]
-;    strategy))
-
-;(defmethod transform-with-strategy :default
-;  [_ concept strategy target-formats]
-;  (errors/internal-error!
-;   (format "Unexpected transform strategy [%s] from concept of type [%s] to [%s]"
-;           strategy (:format concept) (pr-str target-formats))))
-
-;(defmethod transform-with-strategy :current-format
-;  [context concept _ _]
-;  {(mt/mime-type->format (:format concept))
-;   (cx/remove-xml-processing-instructions (:metadata concept))})
-
-;(defmethod transform-with-strategy :umm-spec
-;  [context concept _ target-formats]
-;  (let [{concept-mime-type :format, metadata :metadata} concept
-;        ummc (umm-spec/parse-metadata context (:concept-type concept) concept-mime-type metadata)]
-;    (reduce (fn [translated-map target-format]
-;              (assoc translated-map target-format
-;                     (umm-spec/generate-metadata context ummc target-format)))
-;            {}
-;            target-formats)))
-
-;(defmethod transform-with-strategy :migrate-umm-json
-;  [context concept _ target-formats]
-;  (let [{concept-mime-type :format, metadata :metadata, concept-type :concept-type} concept
-;        source-version (umm-spec/umm-json-version concept-type concept-mime-type)
-;        [t result] (u/time-execution (reduce (fn [translated-map target-format]
-;                                               (assoc translated-map target-format
-;                                                      (umm-json/umm->json
-;                                                       (u/remove-nils-empty-maps-seqs
-;                                                        (vm/migrate-umm context
-;                                                                        concept-type
-;                                                                        source-version
-;                                                                        (umm-spec/umm-json-version concept-type
-;                                                                                                   target-format)
- ;                                                                       (json/decode metadata true))))))
- ;                                            {}
- ;                                            target-formats))]
- ;   (info "transform-with-strategy migrate-umm-json: "
- ;         "time: " t
- ;         "concept-mime-type: " concept-mime-type
- ;         "concept-type: " concept-type
- ;         "parent request num-concepts: " (:num-concepts concept)
- ;         "target-formats: " target-formats
- ;         "source version: " source-version
- ;         "provider: " (:provider-id concept)
- ;         "metadata length: " (count metadata))
- ;   result))
+             strategy (:format concept) (pr-str target-formats)))))
 
 (defn transform-to-multiple-formats
   "Transforms the concept into multiple different formats. Returns a map of target format to metadata."
