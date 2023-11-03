@@ -150,7 +150,6 @@
     (POST "/clear-cache" {:keys [request-context params headers]}
       (acl/verify-ingest-management-permission request-context :update)
       (cache/reset-caches request-context)
-      (hcache/reset-caches)
       {:status 200})))
 
 (defn job-api-routes
