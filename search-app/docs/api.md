@@ -4114,7 +4114,7 @@ The JSON response includes the following fields.
 * took - How long the search took in milliseconds
 * items - a list of the current page of variables with the following fields
   * concept_id
-  * definitino
+  * definition
   * revision_id
   * provider_id
   * native_id
