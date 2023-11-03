@@ -10,8 +10,7 @@
    [cmr.indexer.data.concepts.association-util :as assoc-util]
    [cmr.indexer.data.concepts.keyword-util :as keyword-util]
    [cmr.indexer.data.elasticsearch :as es]
-   [cmr.transmit.metadata-db :as mdb]
-   [cmr.umm-spec.umm-spec-core :as umm]))
+   [cmr.transmit.metadata-db :as mdb]))
 
 (defn- measurement-quantity->elastic-doc
   "Returns the elastic document for the given measurement quantity"
@@ -23,7 +22,6 @@
 (defn- measurement-identifier->elastic-doc
   "Converts a measurement identifier into the portion going in an elastic document for indexing."
   [measurement-identifier]
-  (def measurementValue measurement-identifier )
   (let [{context-medium :MeasurementContextMedium
          object :MeasurementObject
          quantities :MeasurementQuantities} measurement-identifier
@@ -40,23 +38,10 @@
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
                 revision-date format extra-fields variable-associations generic-associations]} concept
         {:keys [variable-name measurement]} extra-fields
-        _(def justConcept concept)
-        _ (def notParsedConcept (umm/parse-metadata context concept))
-        _ (def myParedConcept parsed-concept)
-        _ (def myVariableAssociation variable-associations)
-        
-        ;; todo make the variable lowercase to keep pattern even if key is uppercase
         definition (:Definition parsed-concept)
         instance-information (:InstanceInformation (json/parse-string (:metadata concept) true))
         science-keywords (:ScienceKeywords (json/parse-string (:metadata concept) true))
-        _(def myInstanceInformation instance-information)
-        _ (def myScienceKeywords science-keywords)
-        _ (println (str "🚀 this is my InstanceInformation" instance-information))
-        _ (println (str "🚀 this is my definition" definition))
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
-        ;; todo schema-keys is just a list of keys
-        ;; todo why do we pull out the science keywords here
-        ;; todo I don't see how we are doing anything with it
         schema-keys [:ScienceKeywords :measurement :variable-name :variable-associations :set-names]
         keyword-values (keyword-util/concept-keys->keyword-text
                         (merge parsed-concept extra-fields
@@ -64,9 +49,6 @@
                                 :set-names (map :Name (:Sets parsed-concept))})
                         schema-keys)
         all-assocs (concat variable-associations generic-associations)]
-    (def instanceInformationHash (util/string->gzip-base64 (pr-str instance-information)))
-    (def assocHash (assoc-util/associations->gzip-base64-str all-assocs concept-id))
-    (def myAllAssoc all-assocs)
     
     (if deleted
       ;; This is only called by re-indexing (bulk indexing)

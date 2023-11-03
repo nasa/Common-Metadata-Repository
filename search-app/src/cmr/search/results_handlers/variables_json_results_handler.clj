@@ -35,11 +35,6 @@
                                 util/gzip-base64->string
                                 edn/read-string)
         revision-id (elastic-results/get-revision-id-from-elastic-result :variable elastic-result)
-        _(def myDefinitionInElastic definition)
-        _(def myElasticResult elastic-result)
-        _ (def myAssocHash associations-gzip-b64)
-        _ (def myInstanceHash instance-information-gzip-b64)
-        _ (def myScienceKeywordsHash science-keywords-gzip-b64)
         result-item (util/remove-nil-keys
                      {:concept_id concept-id
                       :revision_id revision-id
