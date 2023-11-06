@@ -396,7 +396,7 @@
      (parse-ingest-response (client/request params) options))))
 
 (defn publish-draft
-  "Publish a  draft and return a map with status, concept-id, and revision-id"
+  "Publish a draft and return a map with status, concept-id, and revision-id"
   [draft-concept-id native-id options]
   (let [{:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id test-existing-errors]} options
         method (get options :method :put)
