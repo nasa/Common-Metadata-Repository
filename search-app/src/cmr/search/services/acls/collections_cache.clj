@@ -25,8 +25,7 @@
   "Creates a new empty collections cache."
   []
   ;;(mem-cache/create-in-memory-cache)
-  (println "loading redis cache for collections")
-  (redis-cache/create-redis-cache {:keys-to-track :collections-for-gran-acls :ttl (* 15 60)}))
+  (redis-cache/create-redis-cache {:keys-to-track [:collections-for-gran-acls] :ttl (* 15 60)}))
 
 (defn- fetch-collections
   "Executes a query that will fetch all of the collection information needed for caching."

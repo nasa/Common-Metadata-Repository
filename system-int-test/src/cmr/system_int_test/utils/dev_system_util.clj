@@ -5,6 +5,7 @@
    [clj-http.client :as client]
    [clojure.string :as str]
    [clojure.test :refer [is]]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.util :as util]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.system-int-test.system :as s]
@@ -21,8 +22,13 @@
   "Resets the database, queues, and the elastic indexes"
   []
   (qb-side-api/wait-for-terminal-states)
-  (client/post (url/dev-system-reset-url) (admin-connect-options))
-  (index/refresh-elastic-index))
+  (try
+    (client/post (url/dev-system-reset-url) (admin-connect-options))
+    (index/refresh-elastic-index)
+    (catch Exception e
+      (println "Failed to send reset to dev-system")
+      (error "Failed to send reset to dev-system\n" e)
+      (throw e))))
 
 (defn eval-in-dev-sys*
   "Evaluates the code given in dev system"

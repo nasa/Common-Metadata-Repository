@@ -7,6 +7,7 @@
   (:require
    [clojure.edn :as edn]
    [cmr.common.cache :as cache]
+   [cmr.common.log :as log :refer [debug info warn error]] 
    [cmr.redis-utils.redis :as redis :refer [wcar*]]
    [taoensso.carmine :as carmine]))
 
@@ -57,9 +58,13 @@
           value))))
 
   (reset
-    [this]
-    (doseq [the-key keys-to-track]
-      (wcar* (carmine/del (serialize the-key)))))
+   [this]
+   (doseq [the-key keys-to-track]
+     (try
+       (wcar* (carmine/del (serialize the-key)))
+       (catch Exception e
+         (error "Exception in reset of redis cache on behalf of"
+                  the-key ": " (.getMessage e))))))
 
   (set-value
     [this key value]
@@ -67,7 +72,6 @@
     (let [s-key (serialize key)]
       (wcar* (carmine/set s-key {:value value})
              (when ttl (carmine/expire s-key ttl)))))
-  
   (cache-size
    [_]
    ;; not relevant for redis
