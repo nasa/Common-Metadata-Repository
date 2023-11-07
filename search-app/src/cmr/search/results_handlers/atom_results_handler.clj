@@ -64,6 +64,7 @@
                      "has-variables"
                      "has-formats"
                      "has-transforms"
+                     "has-combine"
                      "has-spatial-subsetting"
                      "has-temporal-subsetting"
                      "cloud-hosted"
@@ -114,6 +115,7 @@
   {:has-formats false
    :has-variables false
    :has-transforms false
+   :has-combine false
    :has-spatial-subsetting false
    :has-temporal-subsetting false})
 
@@ -164,6 +166,7 @@
           has-variables :has-variables
           has-formats :has-formats
           has-transforms :has-transforms
+          has-combine :has-combine
           has-spatial-subsetting :has-spatial-subsetting
           has-temporal-subsetting :has-temporal-subsetting
           cloud-hosted :cloud-hosted
@@ -220,6 +223,7 @@
             :has-variables has-variables
             :has-formats has-formats
             :has-transforms has-transforms
+            :has-combine has-combine
             :has-spatial-subsetting has-spatial-subsetting
             :has-temporal-subsetting has-temporal-subsetting
             :cloud-hosted cloud-hosted
@@ -467,7 +471,7 @@
         {:keys [id score title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
-                orbit-parameters organizations tags has-variables has-formats has-transforms
+                orbit-parameters organizations tags has-variables has-formats has-transforms has-combine
                 has-spatial-subsetting has-temporal-subsetting cloud-hosted consortiums]} reference
         granule-count (get granule-counts-map id 0)]
     (x/element :entry {}
@@ -502,6 +506,7 @@
                (x/element :echo:hasVariables {} has-variables)
                (x/element :echo:hasFormats {} has-formats)
                (x/element :echo:hasTransforms {} has-transforms)
+               (x/element :echo:hasCombine {} has-combine)
                (x/element :echo:hasSpatialSubsetting {} has-spatial-subsetting)
                (x/element :echo:hasTemporalSubsetting {} has-temporal-subsetting)
                (x/element :echo:cloudHosted {} cloud-hosted)

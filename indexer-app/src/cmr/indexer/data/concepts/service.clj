@@ -106,6 +106,16 @@
   [service]
   (has-subset-type? service :VariableSubset))
 
+(defn- has-combine?
+  "Returns true if the given service has ConcatenateDefault = true, false otherwise."
+  [service]
+  (-> service
+      :ServiceOptions
+      :Aggregation
+      :Concatenate
+      :ConcatenateDefault
+      boolean))
+
 (defn- has-transforms?
   "Returns true if the given service has a defined SubsetTypes or InterpolationTypes,
   or multiple supported projections values."
@@ -125,6 +135,7 @@
   [services]
   {:has-formats (boolean (some has-formats? services))
    :has-transforms (boolean (some has-transforms? services))
+   :has-combine (boolean (some has-combine? services))
    :has-variables (boolean (some has-variables? services))
    :has-spatial-subsetting (boolean (some has-spatial-subsetting? services))
    :has-temporal-subsetting (boolean (some has-temporal-subsetting? services))})
@@ -144,7 +155,7 @@
         harmony-services (filter #(= "Harmony" (:Type %)) services)]
     (util/remove-map-keys
       empty?
-      {:opendap (get-trimmed-has-features opendap-services )
+      {:opendap (get-trimmed-has-features opendap-services)
        :esi (get-trimmed-has-features esi-services)
        :harmony (get-trimmed-has-features harmony-services)})))
 
