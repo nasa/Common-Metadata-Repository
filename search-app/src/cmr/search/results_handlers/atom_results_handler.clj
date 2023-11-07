@@ -81,6 +81,7 @@
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :atom]
   [concept-type query]
   (let [atom-fields ["granule-ur"
+                     "revision-id"
                      "collection-concept-id"
                      "update-time"
                      "entry-title"

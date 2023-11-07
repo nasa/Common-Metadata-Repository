@@ -84,6 +84,7 @@
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :csv]
   [concept-type query]
   (let [csv-fields ["granule-ur"
+                    "revision-id"
                     "producer-gran-id"
                     "start-date"
                     "end-date"

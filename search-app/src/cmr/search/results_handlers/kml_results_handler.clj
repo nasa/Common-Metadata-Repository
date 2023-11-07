@@ -35,7 +35,7 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :kml]
   [concept-type query]
-  (vec (into #{"granule-ur" "ords-info" "ords"}
+  (vec (into #{"granule-ur" "ords-info" "ords" "revision-id"}
              orbit-swath-helper/orbit-elastic-fields)))
 
 (defn collection-elastic-result->query-result-item
