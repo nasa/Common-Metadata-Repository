@@ -94,7 +94,7 @@
         scroll-id (er-to-qr/get-scroll-id elastic-results)
         search-after (er-to-qr/get-search-after elastic-results)
         elastic-matches (er-to-qr/get-elastic-matches elastic-results)
-        items (if (= (:version result-format) "1.6.5") ;; TODO -- need to make more robust, should check for presence of umm_metadata per item
+        items (if (get-in (first elastic-matches) [:_source :umm_metadata]) ;; PROTOTYPE ONLY (for passing build). TODO -- need to make more robust, should check for presence of umm_metadata per item
                   (mapv #(elastic-result+metadata->umm-json-item
                           concept-type %
                           (parse-out-es-umm %)) elastic-matches)
