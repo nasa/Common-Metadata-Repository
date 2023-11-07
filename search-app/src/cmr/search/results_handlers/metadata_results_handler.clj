@@ -36,7 +36,7 @@
 (doseq [format (:granule result-formats)]
   (defmethod elastic-search-index/concept-type+result-format->fields [:granule format]
     [concept-type query]
-    ["metadata-format"]))
+    ["metadata-format" "revision-id"]))
 
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."

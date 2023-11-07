@@ -41,7 +41,11 @@
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :umm-json-results]
   [concept-type query]
-  granule-meta-fields)
+  (let [result-format (:result-format query)]
+       (if (and (= (:format result-format) :umm-json-results)
+                (= (:version result-format) "1.6.5"))
+           (conj granule-meta-fields "umm_metadata" "umm_version")
+           granule-meta-fields)))
 
 (defmethod results-helper/elastic-result+metadata->umm-json-item :granule
   [concept-type elastic-result metadata]

@@ -39,6 +39,7 @@
  [concept-type query]
  (let [stac-fields ["granule-ur"
                     "concept-id"
+                    "revision-id"
                     "collection-concept-id"
                     "provider-id"
                     "start-date"
