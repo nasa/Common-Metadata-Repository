@@ -423,18 +423,39 @@
                        :LongName "variable1"}
                       {:native-id "var3"
                        :coll-concept-id (:concept-id coll3)})
+        var1-scienceKeywords {:science-keywords [{:category "Cat1",
+                                             :topic "Topic1",
+                                             :term "Term1",
+                                             :variable-level-1 "Level1-1",
+                                             :variable-level-2 "Level1-2",
+                                             :variable-level-3 "Level1-3",
+                                             :detailed-variable "SUPER DETAILED!"}
+                                            {:category "Hurricane",
+                                             :topic "Laser spoonA",
+                                             :term "Extreme",
+                                             :variable-level-1 "Level2-1",
+                                             :variable-level-2 "Level2-2",
+                                             :variable-level-3 "Level2-3"}]}
+        var2-scienceKeywords {:science-keywords [ {:category "Cat2"
+                                                   :topic "Topic1"
+                                                   :term "Term1"
+                                                   :variable-level-1 "Level3-1"
+                                                   :variable-level-2 "Level3-2"
+                                                   :variable-level-3 "Level3-3"
+                                                   :detailed-variable "S@PER"}]}
+        definition {:definition "Defines the variable"}
         variable1 (variables/ingest-variable-with-association var1-concept)
         associations1 {:associations {:collections [(:concept-id coll1)]}
                        :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
-        variable1 (merge variable1 associations1)
+        variable1 (merge variable1 associations1 var1-scienceKeywords definition)
         variable2 (variables/ingest-variable-with-association var2-concept)
         associations2 {:associations {:collections [(:concept-id coll2)]}
                        :association-details {:collections [{:concept-id (:concept-id coll2)}]}}
-        variable2 (merge variable2 associations2)
+        variable2 (merge variable2 associations2 var2-scienceKeywords definition)
         variable3 (variables/ingest-variable-with-association var3-concept)
         associations3 {:associations {:collections [(:concept-id coll3)]}
                        :association-details {:collections [{:concept-id (:concept-id coll3)}]}}
-        variable3 (merge variable3 associations3)]
+        variable3 (merge variable3 associations3 definition)]
     (index/wait-until-indexed)
 
     (are3 [expected-variables keyword]
@@ -479,7 +500,8 @@
 
       "Wildcards"
       [variable1 variable2]
-      "s?per term*")))
+      "s?per term*"
+      )))
 
 (deftest deleted-variables-not-found-test
   (let [token (e/login (s/context) "user1")
@@ -492,16 +514,18 @@
                       {:native-id "var1"
                        :coll-concept-id (:concept-id coll1)})
         variable1 (variables/ingest-variable-with-association var1-concept {:token token})
+        sceinceKeywords {:science-keywords [{:category "sk-A", :topic "sk-B", :term "sk-C"}]}
+        definition {:definition "Defines the variable"}
         associations1 {:associations {:collections [(:concept-id coll1)]}
                        :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
-        variable1 (merge variable1 associations1)
+        variable1 (merge variable1 associations1 sceinceKeywords definition)
         var2-concept (variables/make-variable-concept
                       {:Name "Variable2"}
                       {:native-id "var2"
                        :coll-concept-id (:concept-id coll1)})
         variable2 (variables/ingest-variable-with-association var2-concept {:token token})
-        ;; Variable2 has the same associations as variable1
-        variable2 (merge variable2 associations1)
+        ;; Variable2 has the same associations, scienceKeywords, and definition as variable1
+        variable2 (merge variable2 associations1 sceinceKeywords definition)
         all-variables [variable1 variable2]]
     (index/wait-until-indexed)
 
@@ -651,19 +675,21 @@
         variable1 (variables/ingest-variable-with-association var1-concept)
         associations1 {:associations {:collections [(:concept-id coll1)]}
                        :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
-        variable1 (merge variable1 associations1)
+        scienceKeywords {:science-keywords [{:category "sk-A", :topic "sk-B", :term "sk-C"}]}
+        definition {:definition "Defines the variable"}
+        variable1 (merge variable1 associations1 scienceKeywords definition)
         variable2 (variables/ingest-variable-with-association var2-concept)
         associations2 {:associations {:collections [(:concept-id coll2)]}
                        :association-details {:collections [{:concept-id (:concept-id coll2)}]}}
-        variable2 (merge variable2 associations2)
+        variable2 (merge variable2 associations2 scienceKeywords definition)
         variable3 (variables/ingest-variable-with-association var3-concept)
         associations3 {:associations {:collections [(:concept-id coll3)]}
                        :association-details {:collections [{:concept-id (:concept-id coll3)}]}}
-        variable3 (merge variable3 associations3)
+        variable3 (merge variable3 associations3 scienceKeywords definition)
         variable4 (variables/ingest-variable-with-association var4-concept)
         associations4 {:associations {:collections [(:concept-id coll4)]}
                        :association-details {:collections [{:concept-id (:concept-id coll4)}]}}
-        variable4 (merge variable4 associations4)]
+        variable4 (merge variable4 associations4 scienceKeywords definition)]
     (index/wait-until-indexed)
 
     (are3 [sort-key expected-variables]

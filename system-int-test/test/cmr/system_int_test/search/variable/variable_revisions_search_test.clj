@@ -52,10 +52,12 @@
         associations1 {:associations {:collections [(:concept-id coll1)]}
                        :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
         associations2 {:associations {:collections [(:concept-id coll2)]}
-                        :association-details {:collections [{:concept-id (:concept-id coll2)}]}}
-        var1-1 (merge var1-1 associations1)
-        var1-3 (merge var1-3 associations1)
-        var2 (merge var2 associations2)]
+                       :association-details {:collections [{:concept-id (:concept-id coll2)}]}}
+        scienceKeywords {:science-keywords [{:category "sk-A", :topic "sk-B", :term "sk-C"}]}
+        definition {:definition "Defines the variable"}
+        var1-1 (merge var1-1 associations1 scienceKeywords definition)
+        var1-3 (merge var1-3 associations1 scienceKeywords definition)
+        var2 (merge var2 associations2 scienceKeywords definition)]
     (index/wait-until-indexed)
     (testing "search variables for all revisions"
       (are3 [variables params]
@@ -142,10 +144,12 @@
         var2 (variable/ingest-variable-with-association var2-concept)
         associations1 {:associations {:collections [(:concept-id coll1)]}
                        :association-details {:collections [{:concept-id (:concept-id coll1)}]}}
+        scienceKeywords {:science-keywords[{:category "sk-A", :topic "sk-B", :term "sk-C"}]}
+        definition {:definition "Defines the variable"}
         associations2 {:associations {:collections [(:concept-id coll2)]}
                         :association-details {:collections [{:concept-id (:concept-id coll2)}]}}
-        var1-1 (merge var1-1 associations1)
-        var2 (merge var2 associations2)]
+        var1-1 (merge var1-1 associations1 scienceKeywords definition)
+        var2 (merge var2 associations2 scienceKeywords definition)]
     (index/wait-until-indexed)
     (testing "search variables for all revisions"
       (are3 [variables params]
@@ -202,7 +206,8 @@
 
         "all-revisions true"
         [var1-1 var1-2-tombstone var2]
-        {:all-revisions true}))))
+        {:all-revisions true}
+        ))))
 
 (deftest search-all-revisions-error-cases
   (testing "variable search with all_revisions bad value"
