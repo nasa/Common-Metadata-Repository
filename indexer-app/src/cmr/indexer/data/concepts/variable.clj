@@ -2,6 +2,7 @@
   "Contains functions to parse and convert variable concepts"
   (:require
    [clojure.string :as string]
+   [cheshire.core :as json]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
@@ -37,6 +38,9 @@
   (let [{:keys [concept-id revision-id deleted provider-id native-id user-id
                 revision-date format extra-fields variable-associations generic-associations]} concept
         {:keys [variable-name measurement]} extra-fields
+        definition (:Definition parsed-concept)
+        instance-information (:InstanceInformation (json/parse-string (:metadata concept) true))
+        science-keywords (:ScienceKeywords (json/parse-string (:metadata concept) true))
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
         schema-keys [:ScienceKeywords :measurement :variable-name :variable-associations :set-names]
         keyword-values (keyword-util/concept-keys->keyword-text
@@ -72,6 +76,7 @@
        :variable-name variable-name
        :variable-name-lowercase (string/lower-case variable-name)
        :measurement measurement
+       :definition definition
        :measurement-lowercase (string/lower-case measurement)
        :provider-id provider-id
        :provider-id-lowercase (string/lower-case provider-id)
@@ -85,7 +90,9 @@
                                         (:MeasurementIdentifiers parsed-concept))
        ;; associated collections and generic concepts saved in elasticsearch for retrieving purpose in the format of:
        ;; [{"concept_id":"C1200000007-PROV1"}, {"concept_id":"C1200000008-PROV1","revision_id":5}]
-       :associations-gzip-b64 (assoc-util/associations->gzip-base64-str all-assocs concept-id)}))) 
+       :associations-gzip-b64 (assoc-util/associations->gzip-base64-str all-assocs concept-id) 
+       :instance-information-gzip-b64 (util/string->gzip-base64 (pr-str instance-information))
+       :science-keywords-gzip-b64 (util/string->gzip-base64 (pr-str science-keywords))}))) 
 
 (defn- variable-associations->variable-concepts
   "Returns the variable concepts for the given variable associations."
