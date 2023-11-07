@@ -394,6 +394,7 @@
           :has-variables m/bool-field-mapping
           :has-formats m/bool-field-mapping
           :has-transforms m/bool-field-mapping
+          :has-combine m/bool-field-mapping
           :has-spatial-subsetting m/bool-field-mapping
           :has-temporal-subsetting m/bool-field-mapping
           :has-opendap-url m/bool-field-mapping

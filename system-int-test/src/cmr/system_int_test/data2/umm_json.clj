@@ -21,7 +21,7 @@
   "Returns the meta section of umm-json format."
   [collection]
   (let [{:keys [user-id format-key revision-id concept-id provider-id deleted
-                has-variables has-formats has-transforms has-spatial-subsetting
+                has-variables has-formats has-transforms has-combine has-spatial-subsetting
                 has-temporal-subsetting variables services tools s3-bucket-and-object-prefix-names]} collection
         associations (when (or (seq services) (seq variables) (seq tools))
                        (util/remove-map-keys empty? {:variables (set variables)
@@ -39,6 +39,7 @@
       :has-variables (when-not deleted (boolean has-variables))
       :has-formats (when-not deleted (boolean has-formats))
       :has-transforms (when-not deleted (boolean has-transforms))
+      :has-combine (when-not deleted (boolean has-combine))
       :has-spatial-subsetting (when-not deleted (boolean has-spatial-subsetting))
       :has-temporal-subsetting (when-not deleted (boolean has-temporal-subsetting))
       :s3-links s3-bucket-and-object-prefix-names

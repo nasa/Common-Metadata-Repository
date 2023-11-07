@@ -51,7 +51,7 @@
                 processing-level-id original-format data-center archive-center start-date end-date
                 atom-links associated-difs online-access-flag browse-flag coordinate-system shapes
                 orbit-parameters highlighted-summary-snippets tags organizations
-                has-variables has-formats has-transforms has-spatial-subsetting has-temporal-subsetting
+                has-variables has-formats has-transforms has-combine has-spatial-subsetting has-temporal-subsetting
                 cloud-hosted platforms consortiums service-features associations eula-identifiers]} reference
         shape-result (atom-spatial/shapes->json shapes)
         granule-count (get granule-counts-map id 0)
@@ -82,6 +82,7 @@
                        :has_variables has-variables
                        :has_formats has-formats
                        :has_transforms has-transforms
+                       :has_combine has-combine
                        :has_spatial_subsetting has-spatial-subsetting
                        :has_temporal_subsetting has-temporal-subsetting
                        :cloud_hosted cloud-hosted

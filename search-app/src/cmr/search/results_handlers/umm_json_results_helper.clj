@@ -24,6 +24,7 @@
    "has-variables"
    "has-formats"
    "has-transforms"
+   "has-combine"
    "has-spatial-subsetting"
    "has-temporal-subsetting"
    "associations-gzip-b64"
@@ -33,7 +34,7 @@
   "Takes an elasticsearch result and returns a map of the meta fields for the response."
   [concept-type elastic-result]
   (let [{:keys [concept-id revision-id native-id user-id provider-id metadata-format
-                creation-date revision-date deleted has-variables has-formats has-transforms
+                creation-date revision-date deleted has-variables has-formats has-transforms has-combine
                 has-spatial-subsetting has-temporal-subsetting
                 associations-gzip-b64 s3-bucket-and-object-prefix-names]} (:_source elastic-result)
         creation-date (when creation-date (string/replace (str creation-date) #"\+0000" "Z"))
@@ -55,6 +56,7 @@
       :has-variables has-variables
       :has-formats has-formats
       :has-transforms has-transforms
+      :has-combine has-combine
       :has-spatial-subsetting has-spatial-subsetting
       :has-temporal-subsetting has-temporal-subsetting
       :s3-links s3-bucket-and-object-prefix-names
