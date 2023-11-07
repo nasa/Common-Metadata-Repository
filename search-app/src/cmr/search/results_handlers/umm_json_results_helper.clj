@@ -74,6 +74,19 @@
   (fn [concept-type elastic-result metadata]
     concept-type))
 
+(defn- parse-out-es-umm
+       "Returns the UMM JSON concept metadata inside an elastic result as a string."
+       [elastic-result]
+       (let [encoded-gzip-umm (get-in elastic-result [:_source :umm_metadata])]
+            (util/gzip-base64->string encoded-gzip-umm)))
+
+(defn- get-concepts-from-mdb
+  "Get concept metadata in specified UMM format and version. (Called when no ES copy of metadata present.)"
+  [context concept-type elastic-matches result-format]
+       (let [tuples (mapv (partial elastic-result->tuple concept-type) elastic-matches)]
+            (metadata-cache/get-formatted-concept-revisions
+             context concept-type tuples (assoc result-format :format :umm-json))))
+
 (defn query-elastic-results->query-results
   "Returns the query results for the given concept type, query and elastic results."
   [context concept-type query elastic-results]
@@ -83,18 +96,17 @@
         scroll-id (er-to-qr/get-scroll-id elastic-results)
         search-after (er-to-qr/get-search-after elastic-results)
         elastic-matches (er-to-qr/get-elastic-matches elastic-results)
-        ;; Get concept metadata in specified UMM format and version
-        tuples (mapv (partial elastic-result->tuple concept-type) elastic-matches)
-        concepts (metadata-cache/get-formatted-concept-revisions
-                  context concept-type tuples (assoc result-format :format :umm-json))
-        ;; Convert concepts into items with parsed umm.
-        items (mapv (fn [elastic-result concept]
-                      (if (:deleted concept)
-                        {:meta (elastic-result->meta concept-type elastic-result)}
-                        (elastic-result+metadata->umm-json-item
-                         concept-type elastic-result (:metadata concept))))
-                    elastic-matches
-                    concepts)]
+        items (if (get-in (first elastic-matches) [:_source :umm_metadata]) ;; PROTOTYPE ONLY (for passing build). TODO -- need to make more robust, should check for presence of umm_metadata per item
+                  (mapv #(elastic-result+metadata->umm-json-item
+                          concept-type %
+                          (parse-out-es-umm %)) elastic-matches)
+                  (mapv (fn [elastic-result concept]
+                            (if (:deleted concept)
+                                {:meta (elastic-result->meta concept-type elastic-result)}
+                                (elastic-result+metadata->umm-json-item
+                                 concept-type elastic-result (:metadata concept))))
+                        elastic-matches
+                        (get-concepts-from-mdb context concept-type elastic-matches result-format)))]
     (results/map->Results {:hits hits
                            :timed-out timed-out
                            :items items

@@ -7,6 +7,10 @@
   [concept-type elastic-result]
   (get-in elastic-result [:_source :revision-id]))
 
+(defmethod elastic-results/get-revision-id-from-elastic-result :granule 
+  [concept-type elastic-result]
+  (get-in elastic-result [:_source :revision-id]))
+
 (defmethod elastic-results/get-revision-id-from-elastic-result :variable
   [concept-type elastic-result]
   (get-in elastic-result [:_source :revision-id]))

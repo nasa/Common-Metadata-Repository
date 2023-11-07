@@ -17,7 +17,8 @@
   [concept-type query]
   ["granule-ur"
    "provider-id"
-   "concept-id"])
+   "concept-id"
+   "revision-id"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :xml]
   [concept-type query]
