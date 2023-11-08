@@ -542,4 +542,4 @@
     (testing "when concatenateDefault is true"
       (service-util/assert-collection-search-result coll2 {:has-combine true :service-features {:harmony {:has-combine true}}} [serv2-concept-id]))
     (testing "when concatenateDefault is false"
-      (service-util/assert-collection-search-result coll3 {:has-combine false :service-features {:harmony {:has-combine false}}} [serv3-concept-id]))))
+      (service-util/assert-collection-search-result coll3 {:has-combine true :service-features {:harmony {:has-combine true}}} [serv3-concept-id]))))

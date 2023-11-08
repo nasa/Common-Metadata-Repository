@@ -114,7 +114,7 @@
       :Aggregation
       :Concatenate
       :ConcatenateDefault
-      boolean))
+      some?))
 
 (defn- has-transforms?
   "Returns true if the given service has a defined SubsetTypes or InterpolationTypes,
