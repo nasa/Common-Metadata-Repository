@@ -16,7 +16,7 @@
                       (:variable-concept-id association))
         ;;There are no service-revision-id tool-revision-id and variable-revision-id.
         ;;because the service/tool/variable collection associations don't allow revision id
-        ;;for serivces, tools and variables.
+        ;;for services, tools and variables.
         source-revision-id (:source-revision-id association)
         assoc-id (:associated-concept-id association)
         assoc-revision-id (:associated-revision-id association)

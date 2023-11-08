@@ -272,8 +272,8 @@
         coll-draft (gen-util/ingest-generic-document
                     nil "PROV1" cd-native-id :collection-draft gen-util/collection-draft :post)
         cd-concept-id (:concept-id coll-draft)
-        coll-published (ingest/publish-non-variable-draft
-                        cd-concept-id coll-native-id nil)
+        coll-published (ingest/publish-draft
+                        cd-concept-id coll-native-id {:format "application/vnd.nasa.cmr.umm+json"})
         coll-concept-id (:concept-id coll-published)
 
         _ (index/wait-until-indexed)
@@ -311,7 +311,7 @@
         oo-draft (gen-util/ingest-generic-document
                   nil "PROV1" od-native-id :order-option-draft gen-util/order-option-draft :post)
         od-concept-id (:concept-id oo-draft)
-        oo-published (ingest/publish-non-variable-draft
+        oo-published (ingest/publish-draft
                       od-concept-id oo-native-id nil)
         oo-concept-id (:concept-id oo-published)
 
@@ -355,7 +355,7 @@
                   nil "PROV1" od-native-id :order-option-draft gen-util/order-option-draft :post)
         od-concept-id (:concept-id oo-draft)
         ;; Note publishing is using the existing oo-native-id as the order-option concept above.
-        oo-published (ingest/publish-non-variable-draft
+        oo-published (ingest/publish-draft
                       od-concept-id oo-native-id nil)
         ;; oo-concept-id should be the same as oo-concept-id-existing and oo-revision-id should be 2.
         oo-concept-id (:concept-id oo-published)
@@ -404,8 +404,9 @@
         vd-concept-id (:concept-id va-draft)
 
         _ (index/wait-until-indexed)
-        va-published (ingest/publish-variable-draft
-                      concept-id revision-id va-native-id vd-concept-id nil)
+        va-published (ingest/publish-draft
+                      vd-concept-id va-native-id {:collection-concept-id concept-id
+                                                  :collection-revision-id (str revision-id)})
         va-concept-id (:concept-id va-published)
 
         _ (index/wait-until-indexed)
@@ -465,8 +466,9 @@
 
         _ (index/wait-until-indexed)
         ;; Note publishing is using the same va-native-id as the variable concept above.
-        va-published (ingest/publish-variable-draft
-                      concept-id nil va-native-id vd-concept-id nil)
+        va-published (ingest/publish-draft
+                      vd-concept-id va-native-id {:collection-concept-id concept-id
+                                                  :format "application/vnd.nasa.cmr.umm+json;version=1.8.2"})
         ;; va-concept-id should be the same as va-concept-id-existing and va-revision-id should be 2.
         va-concept-id (:concept-id va-published)
         va-revision-id (:revision-id va-published)
