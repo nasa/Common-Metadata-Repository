@@ -2,7 +2,7 @@
   "Stores the latest humanizer json in a consistent cache."
   (:require
    [cmr.common.cache :as c]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.humanizer :as humanizer]))
 
 (def humanizer-cache-key
@@ -12,7 +12,7 @@
 (defn create-cache
   "Creates an instance of the cache."
   []
-  (stl-cache/create-single-thread-lookup-cache))
+  (redis-cache/create-redis-cache {:keys-to-track [humanizer-cache-key]}))
 
 (defn- retrieve-humanizers
   [context]
