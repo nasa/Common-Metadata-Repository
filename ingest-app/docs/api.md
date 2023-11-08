@@ -1230,7 +1230,7 @@ curl -XPUT \
      -H "Content-Type:application/vnd.nasa.cmr.umm+json" \
      %CMR-ENDPOINT%/publish/VD1200000008-PROV1/var1 \
      -d "{\"collection-concept-id\": \"C1200000009-PROV1\",\
-          \"collection-revision-id\":\"1\"
+          \"collection-revision-id\":\"1\",\
           \"format\":\"application/vnd.nasa.cmr.umm+json;version=1.8.1\"}"
 ```
 #### Successful Response in XML
