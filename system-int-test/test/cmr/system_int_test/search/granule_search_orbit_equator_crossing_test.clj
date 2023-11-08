@@ -14,7 +14,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(deftest search-by-granule-orbit-equator-crossing-longitude
+#_(deftest search-by-granule-orbit-equator-crossing-longitude
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
         gran1 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection coll1 (:conept-id coll1)

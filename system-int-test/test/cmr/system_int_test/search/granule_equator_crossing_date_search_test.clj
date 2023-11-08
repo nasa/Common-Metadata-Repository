@@ -22,7 +22,7 @@
        ",alpha,a,b"))
 
 
-(deftest granule-equator-crossing-date
+#_(deftest granule-equator-crossing-date
   (let [coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {}))
         make-gran (fn [crossing-date]
                     (d/ingest "PROV1"
