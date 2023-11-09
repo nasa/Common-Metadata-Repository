@@ -79,6 +79,10 @@
           "description": "Indicates if there are transformations (subset, interpolation or projection) in any services associated with the collection",
           "type": "boolean"
         },
+        "has-combine": {
+          "description": "Indicates if there is concatenation available in any services associated with the collection",
+          "type": "boolean"
+        },
         "has-spatial-subsetting": {
           "description": "Indicates if any associated services support spatial subsetting",
           "type": "boolean"
