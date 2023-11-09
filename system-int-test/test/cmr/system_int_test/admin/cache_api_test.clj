@@ -6,6 +6,7 @@
    [clojure.test :refer :all]
    [cmr.common.config :as common-config]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.redis-utils.test.test-util :as test-util]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]
@@ -13,8 +14,10 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url]))
 
-(use-fixtures :each (ingest/reset-fixture
-                     {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"}))
+(use-fixtures
+  :each (ingest/reset-fixture
+         {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"})
+  :once test-util/embedded-redis-server-fixture)
 
 (deftest cache-apis
   ;; login as a member of group 1
