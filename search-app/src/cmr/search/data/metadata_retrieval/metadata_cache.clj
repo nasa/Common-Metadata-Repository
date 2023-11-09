@@ -11,7 +11,6 @@
   (:require
    [clj-time.core :as t]
    [clojure.set :as cset]
-   [clojure.string :as string]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.data.metadata-retrieval.revision-format-map :as crfm]
    [cmr.common.config :refer [defconfig]]
@@ -109,10 +108,15 @@
                              new-cache-value)
       (info "Metadata cache update complete. Cache Size:" (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))))
 
+(defn in-memory-db?
+  "Checks to see if the database in the context is an in-memory db."
+  [system]
+  (instance? cmr.common.memory_db.connection.MemoryStore
+             (get-in {:system system} [:system :embedded-systems :metadata-db :db])))
+
 (defjob RefreshCollectionsMetadataCache
   [ctx system]
-  (when (string/includes? (str (type (get-in {:system system} [:system :embedded-systems :metadata-db :db])))
-                          "cmr.common.memory_db.connection.MemoryStore")
+  (when (in-memory-db? system)
     (refresh-cache {:system system})))
 
 (defn refresh-collections-metadata-cache-job
@@ -123,8 +127,7 @@
 
 (defjob UpdateCollectionsMetadataCache
   [ctx system]
-  (when (string/includes? (str (type (get-in {:system system} [:system :embedded-systems :metadata-db :db])))
-                          "cmr.common.memory_db.connection.MemoryStore")
+  (when (in-memory-db? system)
     (update-cache-job {:system system})))
 
 (defn update-collections-metadata-cache-job

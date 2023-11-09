@@ -66,7 +66,6 @@
         incremental-since-refresh-date (hash-cache/get-value cache
                                                              cache-key
                                                              incremental-since-refresh-date-key)
-        
         query (q/query {:concept-type :collection
                         :condition (data-range-condition (or incremental-since-refresh-date "1600-01-01T00:00:00"))
                         :skip-acls? true
@@ -92,9 +91,8 @@
   "Returns a simplified version of the cache to help with debugging cache problems."
   [cache]
   (let [cache-map (hash-cache/get-map cache cache-key)
-        incremental-since-refresh-date-key (hash-cache/get-value cache
-                                                                 cache-key
-                                                                 incremental-since-refresh-date-key)
-        cache-map (dissoc cache-map incremental-since-refresh-date-key)]
-    (println incremental-since-refresh-date-key incremental-since-refresh-date-key)
-    (u/map-values crfm/prettify cache-map)))
+        incremental-since-refresh-date (get cache-map incremental-since-refresh-date-key)
+        revision-format-map (dissoc cache-map incremental-since-refresh-date-key)]
+    (assoc (u/map-values crfm/prettify revision-format-map)
+           incremental-since-refresh-date-key
+           incremental-since-refresh-date)))

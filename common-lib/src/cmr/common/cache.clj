@@ -1,7 +1,5 @@
 (ns cmr.common.cache
-  "Defines the core caching protocol for the CMR."
-  (:require
-  [clojure.string :as string]))
+  "Defines the core caching protocol for the CMR.")
 
 (defn context->cache
   "Get the cache for the given key from the context"
@@ -38,9 +36,7 @@
   "Function that takes a cache and checks to see if the
    cache is cmr.common.cache or cmr.common.hash-cache."
   [cache]
-  (if (string/includes? (str (type cache)) "hash_cache")
-    false
-    true))
+  (not (instance? cmr.redis_utils.redis_hash_cache.RedisHashCache cache)))
 
 (defn reset-caches
   "Clear all caches found in the system, this includes the caches of embedded systems."

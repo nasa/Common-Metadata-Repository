@@ -5,7 +5,7 @@
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :as u]
+   [cmr.common.util :as c-util]
    [cmr.common.xml :as cx]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.umm-json :as umm-json]
@@ -42,22 +42,32 @@
             {}
             target-formats)))
 
+(defn transform-with-strategy-migrate-umm-json-to-target-format
+  "Adds to the translated-map the concept migrated to the passed in target-format."
+  [context concept-type source-version metadata translated-map target-format]
+  (assoc translated-map target-format
+         (umm-json/umm->json
+          (c-util/remove-nils-empty-maps-seqs
+           (vm/migrate-umm context
+                           concept-type
+                           source-version
+                           (umm-spec/umm-json-version concept-type
+                                                      target-format)
+                           (json/decode metadata true))))))
+
 (defn- transform-with-strategy-migrate-umm-json
   [context concept _ target-formats]
   (let [{concept-mime-type :format, metadata :metadata, concept-type :concept-type} concept
         source-version (umm-spec/umm-json-version concept-type concept-mime-type)
-        [t result] (u/time-execution (reduce (fn [translated-map target-format]
-                                               (assoc translated-map target-format
-                                                      (umm-json/umm->json
-                                                       (u/remove-nils-empty-maps-seqs
-                                                        (vm/migrate-umm context
-                                                                        concept-type
-                                                                        source-version
-                                                                        (umm-spec/umm-json-version concept-type
-                                                                                                   target-format)
-                                                                        (json/decode metadata true))))))
-                                             {}
-                                             target-formats))]
+        [t result] (c-util/time-execution (reduce #(transform-with-strategy-migrate-umm-json-to-target-format
+                                                    context
+                                                    concept-type
+                                                    source-version
+                                                    metadata
+                                                    %1
+                                                    %2)
+                                                  {}
+                                                  target-formats))]
     (info "transform-with-strategy migrate-umm-json: "
           "time: " t
           "concept-mime-type: " concept-mime-type
@@ -88,21 +98,25 @@
      (format "Unexpected transform strategy [%s] from concept of type [%s] to [%s]"
              strategy (:format concept) (pr-str target-formats)))))
 
+(defn transform-to-multiple-formats-with-strategy
+  "Transforms a concept into a map of formats dictated by the passed target-formats list."
+  [context concept ignore-exceptions? [k v]]
+  (if ignore-exceptions?
+    (try
+      (transform-with-strategy context concept k v)
+      (catch Throwable e
+        (log/error
+         e
+         (str "Ignoring exception while trying to transform metadata for concept "
+              (:concept-id concept) " with revision " (:revision-id concept) " error: "
+              (.getMessage e)))))
+    (transform-with-strategy context concept k v)))
+
 (defn transform-to-multiple-formats
   "Transforms the concept into multiple different formats. Returns a map of target format to metadata."
   [context concept target-formats ignore-exceptions?]
   {:pre [(not (:deleted concept))]}
   (->> target-formats
        (group-by #(transform-strategy concept %))
-       (keep (fn [[k v]]
-               (if ignore-exceptions?
-                 (try
-                   (transform-with-strategy context concept k v)
-                   (catch Throwable e
-                     (log/error
-                      e
-                      (str "Ignoring exception while trying to transform metadata for concept "
-                           (:concept-id concept) " with revision " (:revision-id concept) " error: "
-                           (.getMessage e)))))
-                 (transform-with-strategy context concept k v))))
+       (keep #(transform-to-multiple-formats-with-strategy context concept ignore-exceptions? %))
        (reduce into {})))

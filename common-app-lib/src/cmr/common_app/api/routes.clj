@@ -119,8 +119,8 @@
       (acl/verify-ingest-management-permission request-context :read)
       (let [cache (cache/context->cache request-context (keyword cache-name))]
         (when cache
-          (let [result (case (str (type cache))
-                         "class cmr.redis_utils.redis_hash_cache.RedisHashCache" (map #(hcache/get-keys cache %1) (:keys-to-track cache))
+          (let [result (if (instance? cmr.redis_utils.redis_hash_cache.RedisHashCache cache)
+                         (map #(hcache/get-keys cache %) (:keys-to-track cache))
                          (cache/get-keys cache))]
             {:status 200
              :body (json/generate-string result)}))))
@@ -131,14 +131,9 @@
                                     headers :headers}
       (acl/verify-ingest-management-permission request-context :read)
       (let [cache-key (keyword cache-key)
-            ;; caches (get-in request-context [:system :caches])
-            ;; _ (println "CACHES")
-            ;; _ (clojure.pprint/pprint caches)
-            ;; _ (println "GETTING CACHE " (keyword cache-name))
             cache (cache/context->cache request-context (keyword cache-name))
-            ;; _ (when (nil? cache) (println "CACHE IS NIL"))
-            result (case (str (type cache))
-                     "class cmr.redis_utils.redis_hash_cache.RedisHashCache" (hcache/get-map cache cache-key)
+            result (if (instance? cmr.redis_utils.redis_hash_cache.RedisHashCache cache)
+                     (hcache/get-map cache cache-key)
                      (cache/get-value cache cache-key))]
         (if result
           {:status 200

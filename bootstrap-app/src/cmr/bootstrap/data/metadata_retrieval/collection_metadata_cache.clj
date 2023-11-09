@@ -17,7 +17,7 @@
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :as log :refer [info]]
-   [cmr.common.util :as u]
+   [cmr.common.util :as c-util]
    [cmr.metadata-db.services.concept-service :as metadata-db]
    [cmr.umm-spec.versioning :as umm-version]))
 
@@ -48,13 +48,13 @@
   (let [mdb-context (cmn-coll-metadata-cache/context->metadata-db-context context)
         concepts (doall (metadata-db/get-concepts mdb-context concept-tuples true))
         concepts (cmn-coll-metadata-cache/concepts-without-xml-processing-inst concepts)
-        rfms (u/fast-map #(crfm/compress
-                           (crfm/concept->revision-format-map context 
-                                                              % 
-                                                              (cached-formats) 
-                                                              metadata-transformer/transform-to-multiple-formats 
-                                                              true))
-                         concepts)]
+        rfms (c-util/fast-map #(crfm/compress
+                                (crfm/concept->revision-format-map context
+                                                                   %
+                                                                   (cached-formats)
+                                                                   metadata-transformer/transform-to-multiple-formats
+                                                                   true))
+                              concepts)]
     (reduce #(assoc %1 (:concept-id %2) %2) {} rfms)))
 
 (defn update-cache
@@ -119,5 +119,4 @@
 
 (comment
   (refresh-cache {:system (get-in user/system [:apps :bootstrap])})
-  (cmn-coll-metadata-cache/prettify-cache (get-in user/system [:apps :bootstrap :caches cmn-coll-metadata-cache/cache-key]))
-  )
+  (cmn-coll-metadata-cache/prettify-cache (get-in user/system [:apps :bootstrap :caches cmn-coll-metadata-cache/cache-key])))
