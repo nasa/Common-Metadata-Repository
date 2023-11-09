@@ -7,7 +7,7 @@
   (:require
    [clojure.edn :as edn]
    [cmr.common.cache :as cache]
-   [cmr.common.log :as log :refer [debug info warn error]] 
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.redis-utils.redis :as redis :refer [wcar*]]
    [taoensso.carmine :as carmine]))
 
@@ -59,12 +59,16 @@
 
   (reset
    [this]
-   (doseq [the-key keys-to-track]
-     (try
-       (wcar* (carmine/del (serialize the-key)))
-       (catch Exception e
-         (error "Exception in reset of redis cache on behalf of"
-                  the-key ": " (.getMessage e))))))
+   ;; 💣 - as a test, check keys for nill
+   ;;(println "🚀 - " keys-to-track "is of type" (type keys-to-track))
+   (if (some? keys-to-track)
+     (assert (= clojure.lang.PersistentVector (type keys-to-track)))
+     (doseq [the-key keys-to-track]
+       (try
+         (wcar* (carmine/del (serialize the-key)))
+         (catch Exception e
+           (error "Exception in reset of redis cache on behalf of"
+                  the-key ": " (.getMessage e)))))))
 
   (set-value
     [this key value]
