@@ -7,12 +7,12 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.log :as log :refer [debug]]
    [cmr.common.util :as util]
+   [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.results-model :as results]
    [cmr.metadata-db.services.concept-service :as metadata-db]
-   [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.results-handlers.results-handler-util :as rs-util]
    [cmr.search.results-handlers.umm-json-results-helper :as results-helper]
    [cmr.umm-spec.umm-spec-core :as umm]))
@@ -21,7 +21,7 @@
   "Fetches metadata from Metadata DB for the given concept tuples."
   [context concept-tuples]
   (when (seq concept-tuples)
-    (let [mdb-context (metadata-cache/context->metadata-db-context context)
+    (let [mdb-context (cmn-coll-metadata-cache/context->metadata-db-context context)
           ;; Get Concepts from Metadata db
           [t1 concepts] (util/time-execution
                          (doall (metadata-db/get-concepts mdb-context concept-tuples false)))]

@@ -3,6 +3,7 @@
   (:require
    [clojure.data.csv :as csv]
    [cmr.common-app.humanizer :as h]
+   [cmr.common-app.data.metadata-retrieval.revision-format-map :as crfm]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.common.cache :as cache]
    [cmr.common.cache.fallback-cache :as fallback-cache]
@@ -13,7 +14,6 @@
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
-   [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
    [cmr.search.services.humanizers.humanizer-messages :as msg]
    [cmr.search.services.humanizers.humanizer-service :as hs]
    [cmr.redis-utils.redis-cache :as redis-cache]
@@ -65,7 +65,7 @@
   (let [concept-id (:concept-id revision-format-map)
         umm (umm-spec-core/parse-metadata
              context
-             (rfm/revision-format-map->concept :native revision-format-map))]
+             (crfm/revision-format-map->concept :native revision-format-map))]
     (assoc umm
            :concept-id concept-id
            :provider-id (:provider-id (concepts/parse-concept-id concept-id)))))

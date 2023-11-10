@@ -5,6 +5,7 @@
    [cmr.acl.core :as acl]
    [cmr.common.api.context :as cxt]
    [cmr.common.cache :as cache]
+   [cmr.common.hash-cache :as hcache]
    [cmr.common.jobs :as jobs]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
@@ -118,7 +119,9 @@
       (acl/verify-ingest-management-permission request-context :read)
       (let [cache (cache/context->cache request-context (keyword cache-name))]
         (when cache
-          (let [result (cache/get-keys cache)]
+          (let [result (if (cache/simple-cache? cache)
+                         (cache/get-keys cache)
+                         (map #(hcache/get-keys cache %) (:keys-to-track cache)))]
             {:status 200
              :body (json/generate-string result)}))))
 
@@ -128,13 +131,10 @@
                                     headers :headers}
       (acl/verify-ingest-management-permission request-context :read)
       (let [cache-key (keyword cache-key)
-            ;; caches (get-in request-context [:system :caches])
-            ;; _ (println "CACHES")
-            ;; _ (clojure.pprint/pprint caches)
-            ;; _ (println "GETTING CACHE " (keyword cache-name))
             cache (cache/context->cache request-context (keyword cache-name))
-            ;; _ (when (nil? cache) (println "CACHE IS NIL"))
-            result (cache/get-value cache cache-key)]
+            result (if (cache/simple-cache? cache)
+                     (cache/get-value cache cache-key)
+                     (hcache/get-map cache cache-key))]
         (if result
           {:status 200
            :body (json/generate-string result)}
@@ -145,6 +145,7 @@
     (POST "/clear-cache" {:keys [request-context params headers]}
       (acl/verify-ingest-management-permission request-context :update)
       (cache/reset-caches request-context)
+      (hcache/reset-caches request-context)
       {:status 200})))
 
 (defn job-api-routes
