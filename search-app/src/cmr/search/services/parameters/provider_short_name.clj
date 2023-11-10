@@ -1,10 +1,10 @@
 (ns cmr.search.services.parameters.provider-short-name
   "Contains functions for tranforming provider_short_name parameter to provider parameter."
-  (:require [clojure.string :as s]
-            [cmr.common.util :as util]
-            [cmr.common.services.errors :as errors]
-            [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
-            [cmr.metadata-db.services.provider-service :as metadata-db]))
+  (:require
+   [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
+   [cmr.common.util :as util]
+   [cmr.common.services.errors :as errors]
+   [cmr.metadata-db.services.provider-service :as metadata-db]))
 
 (def short-name-no-match-provider
   "The dummy provider name used when the provider_short_name search parameter values failed to
@@ -66,7 +66,7 @@
   (let [provider-short-names (:provider-short-name params)
         options (get-in params [:options :provider-short-name])]
     (validate-provider-short-name provider-short-names options)
-    (let [mdb-context (metadata-cache/context->metadata-db-context context)
+    (let [mdb-context (cmn-coll-metadata-cache/context->metadata-db-context context)
           providers (metadata-db/get-providers mdb-context)
           case-sensitive? (= "false" (:ignore-case options))
           provider-ids (provider-short-names->provider-ids

@@ -12,12 +12,15 @@
 
   This cache implements the cmr.common.lifecycle/Lifecycle protocol and must be started and stopped
   because it has a separate running thread."
-  (:require [cmr.common.cache :as c]
-            [clojure.core.async :as async]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.util :as u]
-            [cmr.common.lifecycle :as l]
-            [cmr.common.cache.in-memory-cache :as mc]))
+  (:require 
+   [clojure.core.async :as async]
+   [clojure.string :as string]
+   [cmr.common.cache :as c]
+   [cmr.common.hash-cache :as hc]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.util :as u]
+   [cmr.common.lifecycle :as l]
+   [cmr.common.cache.in-memory-cache :as mc]))
 
 (defn- safely-get-value-or-exception
   "Gets a value from the delegate cache safely handling any exceptions. If an exception is thrown
@@ -81,55 +84,61 @@
   c/CmrCache
   (get-keys
     [this]
-    (c/get-keys delegate-cache))
+    (when (c/simple-cache? delegate-cache)
+      (c/get-keys delegate-cache)))
 
   (get-value
-    [this key]
-    (c/get-value delegate-cache key))
+   [this key]
+   (when (c/simple-cache? delegate-cache)
+     (c/get-value delegate-cache key)))
 
   (get-value
     [this key lookup-fn]
-    (or
+    (when (c/simple-cache? delegate-cache)
+      (or
       ;; Get the value out of the cache if it's available
-      (c/get-value this key)
+       (c/get-value this key)
       ;; Or queue a request to get the value and wait for a response
-      (let [response-channel (async/chan)]
-        (async/>!! lookup-request-channel {:key key
-                                           :lookup-fn lookup-fn
-                                           :response-channel response-channel})
-        (let [result (async/<!! response-channel)]
+       (let [response-channel (async/chan)]
+         (async/>!! lookup-request-channel {:key key
+                                            :lookup-fn lookup-fn
+                                            :response-channel response-channel})
+         (let [result (async/<!! response-channel)]
           ;; Exceptions caught while executing the lookup will be returned on the response channel
-          (if (instance? Throwable result)
+           (if (instance? Throwable result)
             ;; We throw these back to the caller so they can deal with them.
-            (throw result)
-            result)))))
-  
-  (cache-size
-   [_]
-   (c/cache-size delegate-cache))
+             (throw result)
+             result))))))
 
-  (reset
+   (cache-size
+    [_]
+    (when (c/simple-cache? delegate-cache)
+      (c/cache-size delegate-cache)))
+
+   (reset
     [this]
-    (c/reset delegate-cache))
+    (when (c/simple-cache? delegate-cache)
+      (c/reset delegate-cache)))
 
-  (set-value
+   (set-value
     [this key value]
-    (c/set-value delegate-cache key value))
+    (when (c/simple-cache? delegate-cache)
+      (c/set-value delegate-cache key value)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  l/Lifecycle
-  (start
+   l/Lifecycle
+   (start
     [this system]
     (if lookup-request-channel
       ;; already running
       this
       ;; Not started yet
       (as-> this the-cache
-            (assoc the-cache :lookup-request-channel (async/chan))
-            (assoc the-cache :lookup-process-thread-channel
-                   (create-lookup-process-thread the-cache)))))
+        (assoc the-cache :lookup-request-channel (async/chan))
+        (assoc the-cache :lookup-process-thread-channel
+               (create-lookup-process-thread the-cache)))))
 
-  (stop
+   (stop
     [this system]
     (if lookup-request-channel
       ;; Running

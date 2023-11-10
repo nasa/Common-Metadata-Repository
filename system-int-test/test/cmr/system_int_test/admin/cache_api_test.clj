@@ -75,7 +75,7 @@
                                       "launchpad-user"
                                       "urs"
                                       "kms"
-                                      "metadata-cache"
+                                      "collection-metadata-cache"
                                       "scroll-id-cache"
                                       "first-page-cache"
                                       "token-imp"

@@ -7,12 +7,14 @@
    [cmr.bootstrap.api.fingerprint :as fingerprint]
    [cmr.bootstrap.api.rebalancing :as rebalancing]
    [cmr.bootstrap.api.virtual-products :as virtual-products]
+   [cmr.bootstrap.data.metadata-retrieval.collection-metadata-cache :as cmc]
    [cmr.bootstrap.services.health-service :as hs]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.context :as context]
+   [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as mc]
+   [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common.api.errors :as errors]
-   [cmr.common.jobs :as jobs]
    [cmr.common.log :refer [info]]
    [cmr.common.generics :as common-generic]
    [compojure.core :refer :all]
@@ -114,6 +116,19 @@
           (fingerprint/fingerprint-by-id request-context concept-id)))
       ;; Add routes for accessing caches
       common-routes/cache-api-routes
+      (context "/caches/refresh/:cache-name" [cache-name]
+        (POST "/" {:keys [params request-context headers]}
+          (acl/verify-ingest-management-permission request-context :update)
+          (cond
+            (= (keyword cache-name) mc/cache-key)
+            (cmc/refresh-cache request-context)
+
+            (= (keyword cache-name) kms-fetcher/kms-cache-key)
+            (kms-fetcher/refresh-kms-cache request-context))
+
+            :else
+            (route/not-found "Not Found"))
+          {:status 200})
       ;; db migration route
       (POST "/db-migrate" {:keys [request-context params]}
         (acl/verify-ingest-management-permission request-context :update)
