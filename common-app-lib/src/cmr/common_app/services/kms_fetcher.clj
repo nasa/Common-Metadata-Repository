@@ -53,7 +53,7 @@
   KMS keywords should use the same fallback cache to ensure functionality even if GCMD KMS becomes
   unavailable."
   []
-  (redis-cache/create-redis-cache [kms-cache-key]))
+  (redis-cache/create-redis-cache {:keys-to-track [kms-cache-key]}))
 
 (defn- fetch-gcmd-keywords-map
   "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way

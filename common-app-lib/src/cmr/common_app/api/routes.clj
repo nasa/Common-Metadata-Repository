@@ -119,9 +119,9 @@
       (acl/verify-ingest-management-permission request-context :read)
       (let [cache (cache/context->cache request-context (keyword cache-name))]
         (when cache
-          (let [result (if (instance? cmr.redis_utils.redis_hash_cache.RedisHashCache cache)
-                         (map #(hcache/get-keys cache %) (:keys-to-track cache))
-                         (cache/get-keys cache))]
+          (let [result (if (cache/simple-cache? cache)
+                         (cache/get-keys cache)
+                         (map #(hcache/get-keys cache %) (:keys-to-track cache)))]
             {:status 200
              :body (json/generate-string result)}))))
 
@@ -132,9 +132,9 @@
       (acl/verify-ingest-management-permission request-context :read)
       (let [cache-key (keyword cache-key)
             cache (cache/context->cache request-context (keyword cache-name))
-            result (if (instance? cmr.redis_utils.redis_hash_cache.RedisHashCache cache)
-                     (hcache/get-map cache cache-key)
-                     (cache/get-value cache cache-key))]
+            result (if (cache/simple-cache? cache)
+                     (cache/get-value cache cache-key)
+                     (hcache/get-map cache cache-key))]
         (if result
           {:status 200
            :body (json/generate-string result)}

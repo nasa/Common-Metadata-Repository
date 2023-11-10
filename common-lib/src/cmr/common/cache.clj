@@ -1,5 +1,7 @@
 (ns cmr.common.cache
-  "Defines the core caching protocol for the CMR.")
+  "Defines the core caching protocol for the CMR."
+  (:require
+   [clojure.string :as string]))
 
 (defn context->cache
   "Get the cache for the given key from the context"
@@ -33,10 +35,12 @@
    "Returns the size of the cache in bytes."))
 
 (defn simple-cache?
-  "Function that takes a cache and checks to see if the
-   cache is cmr.common.cache or cmr.common.hash-cache."
+  "Function that takes a cache and checks to see if the cache uses the CmrCache protocol,
+   simple cmr.common.cache. Currently there are two protocol types cmr.common.cache and
+   cmr.common.hash-cache. This function does the check using string comparison. Using instance?
+   forces non common libraries to be included in common and produces cirular dependencies."
   [cache]
-  (not (instance? cmr.redis_utils.redis_hash_cache.RedisHashCache cache)))
+  (not (string/includes? (str (type cache)) "hash_cache")))
 
 (defn reset-caches
   "Clear all caches found in the system, this includes the caches of embedded systems."

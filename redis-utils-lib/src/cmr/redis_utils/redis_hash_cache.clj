@@ -10,7 +10,7 @@
    [cmr.redis-utils.redis :as redis :refer [wcar*]]
    [taoensso.carmine :as carmine]))
 
-;; Implements the CmrCache protocol by saving data in Redis.
+;; Implements the CmrHashCache protocol by saving data in Redis.
 (defrecord RedisHashCache
   [
    ;; A collection of keys used by this cache. Only these keys will be deleted from the backend

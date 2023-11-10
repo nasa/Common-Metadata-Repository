@@ -1,12 +1,18 @@
 (ns cmr.common.hash-cache
   "Defines the core hash caching protocol for the CMR."
   (:require
-   [cmr.common.cache :as cmn-cache]))
+   [clojure.string :as string]))
 
 (defn context->cache
   "Get the cache for the given key from the context"
   [context cache-key]
-  (cmn-cache/context->cache context cache-key))
+  (get-in context [:system :caches cache-key]))
+
+(defn hash-cache?
+  "Function that takes a cache and checks to see if the
+   cache is a hash-cache."
+  [cache]
+  (string/includes? (str (type cache)) "hash_cache"))
 
 (defprotocol CmrHashCache
   "Defines a protocol used for caching data using hashes."
@@ -51,11 +57,11 @@
   "Clear all caches found in the system, this includes the caches of embedded systems."
   [context]
   (doseq [[_ v] (get-in context [:system :caches])]
-    (when-not (cmn-cache/simple-cache? v)
+    (when (hash-cache? v)
       (reset v)))
   ;; reset embedded systems caches
   (doseq [[_ v] (get-in context [:system :embedded-systems])]
-    (when-not (cmn-cache/simple-cache? v)
+    (when (hash-cache? v)
       (reset-caches {:system v}))))
 
 (defn cache-sizes
@@ -64,5 +70,5 @@
   (let [system-caches (get-in context [:system :caches])]
     (into {}
           (for [[cache-key cache] system-caches]
-            (when-not (cmn-cache/simple-cache? cache)
+            (when (hash-cache? cache)
               {cache-key (cache-size cache cache-key)})))))
