@@ -14,7 +14,8 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as e]
-   [cmr.common.util :as util]
+   [cmr.common.util :as util] 
+   [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
    [cmr.search.services.query-walkers.provider-id-extractor :as pex]
    [cmr.transmit.indexer :as indexer])
@@ -68,6 +69,11 @@
 (def index-names-cache-key
   "The key used for index names in the index cache."
   :concept-indices)
+
+(defn create-index-cache
+  "Used to create the cache that will be used for caching index names."
+  []
+  (redis-cache/create-redis-cache {:keys-to-track [index-names-cache-key]}))
 
 ;; A job for refreshing the index names cache.
 (defjob RefreshIndexNamesCacheJob
