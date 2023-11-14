@@ -5,6 +5,7 @@
    [clj-http.client :as client]
    [clojure.test :refer :all]
    [cmr.common.config :as common-config]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.redis-utils.test.test-util :as test-util]
    [cmr.system-int-test.data2.collection :as dc]
@@ -14,10 +15,12 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url]))
 
+;; 💣 - try to add redis and see if this fixes test
+
 (use-fixtures
   :each (ingest/reset-fixture
-         {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"})
-  :once test-util/embedded-redis-server-fixture)
+         {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"}))
+(use-fixtures :once test-util/embedded-redis-server-fixture)
 
 (deftest cache-apis
   ;; login as a member of group 1
@@ -155,27 +158,27 @@
            (is (= ["You do not have permission to perform that action."] errors))))))
 
     (testing "list cache keys"
-      (are [url cache cache-keys]
-           (let [response (list-cache-keys url cache admin-read-token)]
-             (is (= (set cache-keys) (set response))))
-
-        (url/indexer-read-caches-url) "acls" ["acls"]
-        (url/indexer-read-caches-url) "indexer-index-set-cache" ["concept-indices" "concept-mapping-types"]
-        (url/indexer-read-caches-url) "token-imp" [["ABC-2" "read"] ["ABC-1" "read"]]
-        (url/mdb-read-caches-url) "token-imp" [["mock-echo-system-token" "update"]
-                                               ["ABC-1" "read"]
-                                               ["ABC-2" "read"]]
-        (url/ingest-read-caches-url) "token-imp" [[nil "update"]
-                                                  ["ABC-1" "read"]
-                                                  ["ABC-2" "read"]]
-        (url/search-read-caches-url) "acls" ["acls"]
-        (url/search-read-caches-url) "collections-for-gran-acls" []
-        (url/search-read-caches-url) "has-granules-map" []
-        (url/search-read-caches-url) "index-names" [":acls-hash-code" ":collection-granule-aggregation-cache-hash-code" ":concept-indices-hash-code" ":concept-mapping-types-hash-code" ":providers-hash-code" ":write-enabled-hash-code" "collection-granule-aggregation-cache" "kms" "humanizer-cache"]
-        (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
-        (url/search-read-caches-url) "token-sid" ["ABC-2" "ABC-1"]
-        (url/search-read-caches-url) "xsl-transformer-templates" []
-        (url/search-read-caches-url) "token-user-id" ["ABC-1" "ABC-2"])
+      (are3 [url cache cache-keys]
+            (let [response (list-cache-keys url cache admin-read-token)]
+              (is (= (set cache-keys) (set response)) (format "could not read %s/%s" url cache)))
+            "Indexer 1" (url/indexer-read-caches-url) "acls" ["acls"]
+            "Indexer 2" (url/indexer-read-caches-url) "indexer-index-set-cache" ["concept-indices" "concept-mapping-types"]
+            "Indexer 3" (url/indexer-read-caches-url) "token-imp" [["ABC-2" "read"] ["ABC-1" "read"]]
+            "mdb" (url/mdb-read-caches-url) "token-imp" [["mock-echo-system-token" "update"]
+                                                         ["ABC-1" "read"]
+                                                         ["ABC-2" "read"]]
+            "ingest" (url/ingest-read-caches-url) "token-imp" [[nil "update"]
+                                                               ["ABC-1" "read"]
+                                                               ["ABC-2" "read"]]
+            "search 1" (url/search-read-caches-url) "acls" ["acls"]
+            ;; This is now a shared redis cache server, so many keys exist
+            ;;"search 2" (url/search-read-caches-url) "collections-for-gran-acls" []
+            "search 3" (url/search-read-caches-url) "has-granules-map" []
+            "search 4" (url/search-read-caches-url) "index-names" [":acls-hash-code" ":collection-granule-aggregation-cache-hash-code" ":concept-indices-hash-code" ":concept-mapping-types-hash-code" ":providers-hash-code" ":write-enabled-hash-code" "collection-granule-aggregation-cache" "kms" "humanizer-cache"]
+            "search 5" (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
+            "search 6" (url/search-read-caches-url) "token-sid" ["ABC-2" "ABC-1"]
+            "search 7" (url/search-read-caches-url) "xsl-transformer-templates" []
+            "search 8" (url/search-read-caches-url) "token-user-id" ["ABC-1" "ABC-2"])
       ;; CMR-4337 bootstrap
       #_(s/only-with-real-database
          (testing "list cache keys for bootstrap"
