@@ -22,6 +22,12 @@
   {:default 90
    :type Long})
 
+(defconfig granule-bulk-update-tasks-max-rows
+  "The maximum number of rows from granule_bulk_update_tasks table
+  that can be returned"
+  {:default 1000 
+   :type Long})
+
 (defconfig collection-bulk-update-enabled
   "Flag for whether or not bulk collection update is enabled."
   {:default true :type Boolean})
