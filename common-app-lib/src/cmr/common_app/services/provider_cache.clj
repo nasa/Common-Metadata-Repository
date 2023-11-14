@@ -37,7 +37,7 @@
   ([context providers]
    (let [cache (hcache/context->cache context cache-key)
          provider-map (into {} (map (fn [provider]
-                                      {(get provider :provider-id) provider})
+                                      {(:provider-id provider) provider})
                                     providers))]
      (info "Refreshed provider cache.")
      (hcache/set-values cache cache-key provider-map))))
