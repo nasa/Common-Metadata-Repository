@@ -6,8 +6,8 @@
    [clojure.set :as set]
    [clojure.string :as str]
    [cmr.common.cache :as cache]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.util :as util]
+   [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.humanizer :as humanizer]))
 
 (def humanizer-alias-cache-key
@@ -17,7 +17,7 @@
 (defn create-cache
   "Creates an instance of the cache."
   []
-  (stl-cache/create-single-thread-lookup-cache))
+  (redis-cache/create-redis-cache {:keys-to-track [humanizer-alias-cache-key]}))
 
 (defn- humanizer-group-by-field
   "A custom group-by function for use in the create-humanizer-alias-map

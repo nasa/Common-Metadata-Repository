@@ -176,10 +176,7 @@
     between HTTP requests for a report and Quartz cluster jobs that save
     report data."
   []
-  (stl-cache/create-single-thread-lookup-cache
-   (fallback-cache/create-fallback-cache
-    (consistent-cache/create-consistent-cache)
-    (redis-cache/create-redis-cache))))
+  (redis-cache/create-redis-cache))
 
 (defn- create-and-save-humanizer-report
   "Helper function to create the humanizer report, save it to the cache, and return the content."
