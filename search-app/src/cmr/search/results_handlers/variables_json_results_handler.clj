@@ -43,8 +43,8 @@
                       :native_id native-id
                       :name variable-name
                       :long_name measurement
-                      :science_keywords scienceKeywords
-                      :instance_information instanceInformation
+                      :science_keywords (util/snake-case-data scienceKeywords)
+                      :instance_information (util/snake-case-data instanceInformation)
                       :associations (rs-util/build-association-concept-id-list associations :variable)
                       :association_details (rs-util/build-association-details (rs-util/replace-snake-keys associations) :variable)})]
     (if deleted

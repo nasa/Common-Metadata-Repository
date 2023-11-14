@@ -278,6 +278,19 @@
     (is (nil? (:errors refs)))
     (is (d/refs-match? expected-colls refs))))
 
+(defn search-json
+  "Searches for services using the given parameters and requesting the JSON format
+   Without processing the response into a different format."
+  ([]
+   (search-json {}))
+  ([params]
+   (search-json params {}))
+  ([params options]
+    (transmit-search/search-for-variables
+     (s/context) params (merge options
+                               {:raw? true
+                                :http-options {:accept :json}}))))
+
 (defn search
   "Searches for variables using the given parameters."
   [params]
