@@ -17,7 +17,8 @@
    [cmr.umm-spec.legacy :as legacy]
    [cmr.umm-spec.time :as umm-time]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core]
-   [cmr.umm.acl-matchers :as umm-lib-acl-matchers]))
+   [cmr.umm.acl-matchers :as umm-lib-acl-matchers]
+   [cmr.common.util :as util]))
 
 (def ^:private supported-collection-identifier-keys
   #{:entry-titles :access-value :temporal :concept-ids})
@@ -110,7 +111,9 @@
       (get-acl-enforcement-collection-fields-fn concept))))
 
 (defn coll-matches-collection-identifier?
-  "Returns true if the collection matches the collection identifier"
+  "Returns true if the collection matches the collection identifier.
+   coll is a cached collection
+   coll-id is the catalog_item_identity"
   [coll coll-id]
   (let [coll-entry-title (:EntryTitle coll)
         concept-id (or (:concept-id coll)
@@ -126,6 +129,29 @@
          ;; want to pull out this specific value
          (or (nil? temporal)
              (matches-temporal-filter? :collection (u/get-real-or-lazy coll :TemporalExtents) temporal)))))
+
+(comment
+
+  (let [coll {:concept-type :collection
+              :provider-id "TCHERRY"
+              :EntryTitle "LarcDatasetId-sampleGranule0002"
+              :AccessConstraints {:Value 5}
+              :TemporalExtents
+              [{:RangeDateTimes
+                [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                  :EndingDateTime nil}]}]
+              :concept-id "C1200000219-TCHERRY"}
+        coll (cmr.common.util/lazy-assoc coll :AccessConstraints {:Value 5})
+        coll-id {:entry-titles ["LarcDatasetId-sampleGranule0002"]
+                 :access-value {:min-value 0 :max-value 6}
+                 :concept-ids ["C1200000219-TCHERRY"]}]
+    (println (coll-matches-collection-identifier? coll coll-id)))
+
+
+  {cmr.common.util/lazy-assoc {} :AccessConstraints {:Value 5}}
+
+  )
+
 
 (defn- validate-collection-identiier
   "Verifies the collection identifier isn't using any unsupported ACL features."

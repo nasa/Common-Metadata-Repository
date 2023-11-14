@@ -59,16 +59,20 @@
 
   (reset
    [this]
-   ;; 💣 - as a test, check keys for nill
-   ;;(println "🚀 - " keys-to-track "is of type" (type keys-to-track))
-   (if (some? keys-to-track)
-     (assert (= clojure.lang.PersistentVector (type keys-to-track)))
-     (doseq [the-key keys-to-track]
-       (try
-         (wcar* (carmine/del (serialize the-key)))
-         (catch Exception e
-           (error "Exception in reset of redis cache on behalf of"
-                  the-key ": " (.getMessage e)))))))
+   (doseq [the-key keys-to-track]
+     (wcar* (carmine/del (serialize the-key)))))
+
+  ;(comment reset
+  ;  [this]
+  ;  ;; 💣 - as a test, check keys for nill
+  ;  (if (some? keys-to-track)
+  ;    ;;(assert (= clojure.lang.PersistentVector (type keys-to-track)))
+  ;    (doseq [the-key keys-to-track]
+  ;      (try
+  ;        (wcar* (carmine/del (serialize the-key)))
+  ;        (catch Exception e
+  ;          (error "Exception in reset of redis cache on behalf of"
+  ;                 the-key ": " (.getMessage e)))))))
 
   (set-value
     [this key value]

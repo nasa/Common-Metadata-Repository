@@ -11,6 +11,7 @@
             [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
             [cmr.common.util :as u]
             [clojure.pprint :as pp]
+            [clojure.walk :as walk]
             [cmr.common.util :as util]))
 
 ;; No other file reads this cache
@@ -27,11 +28,26 @@
   ;;(mem-cache/create-in-memory-cache)
   (redis-cache/create-redis-cache {:keys-to-track [:collections-for-gran-acls] :ttl (* 15 60)}))
 
+(defn- clj-times->time-strs
+  [data]
+  (walk/postwalk
+   #(if (true? (instance? org.joda.time.DateTime %))
+      (cmr.common.date-time-parser/clj-time->date-time-str %)
+      %)
+   data))
+
+(defn- time-strs->clj-times
+  [data]
+  (walk/postwalk
+   #(if (and (instance? String %) (cmr.common.date-time-parser/try-parse-datetime %))
+      (cmr.common.date-time-parser/parse-datetime %)
+      %)
+   data))
+
 (defn- fetch-collections
   "Executes a query that will fetch all of the collection information needed for caching."
   [context]
-  (println "🚀🚀🚀 - here in fetch-collections")
-  ;; when creating a result processor, relize all the lazy (delay) values to
+  ;; when creating a result processor, realize all the lazy (delay) values to
   ;; actual values so that the resulting object can be cached in redis or some
   ;; other text based caching system and not clojure memory
   (let [result-processor (fn [_ _ elastic-item]
@@ -60,7 +76,6 @@
                                            [[provider-id EntryTitle] coll]))]
     ;; We could reduce the amount of memory here if needed by only fetching the collections that
     ;; have granules.
-    (println "🚀 - have collections" (first collections))
     {:by-concept-id by-concept-id
      :by-provider-id-entry-title by-provider-id-entry-title}))
 
@@ -71,33 +86,25 @@
   [context]
   (let [cache (cache/context->cache context cache-key)
         collections-map (fetch-collections-map context)]
-    ;;(println "serial:" (pr-str collections-map))
-    ;;(print "round:" (clojure.edn/read-string (pr-str collections-map)))
-    ;;(println "api:" (redis-cache/serialize collections-map))
-    (cache/set-value cache cache-key collections-map)))
+    (cache/set-value cache cache-key (clj-times->time-strs collections-map))))
 
 (defn- get-collections-map
   "Gets the cached value."
   [context]
   (let [coll-cache (cache/context->cache context cache-key)
-        _ (println coll-cache)
-        ;; the wrong cache is here, but still, why do I not have the values I want?
         collection-map (cache/get-value
                         coll-cache
                         cache-key
-                        (fn [] (fetch-collections-map context)))]
-    (println "🚀 - get-collections-map from cache resulted in" collection-map)
+                        (fn [] (clj-times->time-strs (fetch-collections-map context))))]
     (if (empty? collection-map)
       (errors/internal-error! "Collections were not in cache.")
-      collection-map)))
+      (time-strs->clj-times collection-map))))
 
 (defn get-collection
   "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
   Also allows provider-id and entry-title to be used."
   ([context concept-id]
-   (println "🚀 - collections-cache/get-collection with" concept-id)
    (let [by-concept-id (:by-concept-id (get-collections-map context))]
-     (println "🚀 - got collections map" by-concept-id)
      (when-not (by-concept-id concept-id)
        (info (format "Collection with id %s not found in cache. Manually triggering cache refresh"
                      concept-id))
@@ -115,45 +122,3 @@
   {:job-type RefreshCollectionsCacheForGranuleAclsJob
    ;; 15 minutes
    :interval (* 15 60)})
-
-(comment
-
-  (get-collection cmr.search.services.acl-service/mycontext "C1200000026-TCHERRY.json")
-
-  (let [system {:system (get-in user/system [:apps :search])}
-        cache (cache/context->cache system cache-key)
-        ;updated (refresh-cache system)
-        obj (get-in cache [:by-concept-id "C1200000026-TCHERRY"])
-        data (cache/get-value cache cache-key)]
-    (println "obj:" obj)
-    (clojure.pprint/pprint data)
-    ;(println "updated:" updated)
-    ;(println "AC - relized: " (cmr.common.util/get-real-or-lazy obj :AccessConstraints))
-    ;(cmr.common.util/get-real-or-lazy obj :TemporalExtents)
-    ;updated
-    ;updated
-    cache)
-
-
-  (let [context {:system (get-in user/system [:apps :search])}
-        cache (cache/context->cache context cache-key)
-        collections-map (fetch-collections-map context)]
-    (println "map:" collections-map)
-    ;;(println "orig:" (keys (get-in collections-map [:by-concept-id "C1200000026-TCHERRY"])))
-    ;;(println "serial:" (pr-str collections-map))
-    ;;(print "round:" (clojure.edn/read-string (pr-str collections-map)))
-    ;;(println "sapi:" (redis-cache/serialize collections-map))
-
-    ;;(cache/set-value cache cache-key collections-map)
-    (cache/get-value cache cache-key)
-    cache)
-
-  (let [ data {:concept-type :collection
-               :provider-id "TCHERRY"
-               :EntryTitle "LarcDatasetId-native1"
-               :AccessConstraints {:Value nil}
-               :TemporalExtents [{:RangeDateTimes [{:BeginningDateTime "2000-01-01T00:00:00.000Z", :EndingDateTime nil}]}]
-               :concept-id "C1200000026-TCHERRY"}]
-    (de-delay-collection data))
-
-  )
