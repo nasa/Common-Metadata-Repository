@@ -63,7 +63,7 @@
     [this]
     (doseq [the-key keys-to-track]
       (wcar* (carmine/del (rc/serialize the-key)))))
-   
+
   (reset
     [this key]
     (wcar* (carmine/del (rc/serialize key))))
@@ -79,8 +79,11 @@
                 (keys field-value-map))))
 
   (cache-size
-   [this key]
-   (wcar* (carmine/memory-usage (rc/serialize key)))))
+    [this key]
+    ;; Return 0 if the cache is empty or does not yet exist. This is for cmr.common-app.services.cache-info.
+    (if-let [size (wcar* (carmine/memory-usage (rc/serialize key)))]
+      size
+      0)))
 
 (defn create-redis-hash-cache
   "Creates an instance of the redis cache.
