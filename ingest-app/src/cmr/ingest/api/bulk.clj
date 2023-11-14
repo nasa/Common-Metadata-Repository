@@ -1,6 +1,9 @@
 (ns cmr.ingest.api.bulk
   "Bulk ingest functions in support of the ingest API."
   (:require
+   [clj-time.core :as t]
+   [clj-time.local :as l]
+   [clj-time.coerce :as c]
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [cmr.acl.core :as acl]
@@ -128,6 +131,12 @@
 (defn get-provider-tasks
   "Get all tasks and task statuses for provider."
   [concept-type provider-id request]
+  ;;(println "after?: " (t/after? (t/date-time 1986 10) #<DateTime 1986-12-05T00:00:00.000Z>))
+  ;;(println "to-local: " (l/format-local-time (l/to-local-date-time "1986-10-14T04:03:27.246Z") :basic-date-time))
+  ;;(println "to-local: " (c/to-long (l/to-local-date-time "1986-10-14T04:03:27.246Z")))
+  ;;(println "to-local: " (c/from-long (c/to-long (l/to-local-date-time "1986-10-14T04:03:27.246Z"))))
+  ;;(println "after?: " (t/after? (t/date-time 1986 10 14) (c/from-long (c/to-long (l/to-local-date-time "1986-10-14T00:00:00Z")))))
+  (println "after?: " (t/after? (t/date-time 1986 10 14) (l/to-local-date-time "1986-10-13T00:00:00Z")))
   (let [{:keys [headers request-context params]} request]
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
