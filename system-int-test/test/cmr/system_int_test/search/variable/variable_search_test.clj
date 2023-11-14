@@ -720,3 +720,67 @@
       "Sort by name then provider id descending order"
       ["-name" "-provider"]
       [variable2 variable1 variable4 variable3])))
+
+(deftest variable-json-format-test
+  (let [token (e/login (s/context) "user1")
+        coll1 (d/ingest-umm-spec-collection
+               "PROV2"
+               (data-umm-c/collection {:EntryTitle "E1"
+                                       :ShortName "S1"})
+               {:token token})
+        _ (index/wait-until-indexed)
+        sk1 (data-umm-cmn/science-keyword {:Category "Cat1"
+                                           :Topic "Topic1"
+                                           :Term "Term1"
+                                           :VariableLevel1 "Level1-1"
+                                           :VariableLevel2 "Level1-2"
+                                           :VariableLevel3 "Level1-3"
+                                           :DetailedVariable "SUPER DETAILED!"})
+        instanceInformation {:URL "s3://prod-giovanni-cache.s3.us-west-2.amazonaws.com/zarr/GPM_3IMERGHH_06_precipitationCal"
+                             :Format "Zarr"
+                             :Description "Other brief end user information can go here."
+                             :DirectDistributionInformation {:Region "us-west-2" 
+                                                             :S3BucketAndObjectPrefixNames ["prod-giovanni-cache",
+                                                                                            "zarr/GPM_3IMERGHH_06_precipitationCal"]
+                                                             :S3CredentialsAPIEndpoint "https://api.giovanni.earthdata.nasa.gov/s3credentials"
+                                                             :S3CredentialsAPIDocumentationURL "https://disc.gsfc.nasa.gov/information/documents?title=In-region%20Direct%20S3%20Zarr%20Cache%20Access"}
+                             :ChunkingInformation "Chunk size for this example is 1MB. It is optimized for time series."}
+        var1-concept (variables/make-variable-concept
+                      {:Name "variable"
+                       :LongName "Measurement1"
+                       :provider-id "PROV2"
+                       :ScienceKeywords [sk1]
+                       :Definition "variable definition"
+                       :InstanceInformation instanceInformation}
+                      {:native-id "var1"
+                       :coll-concept-id (:concept-id coll1)})]
+    (variables/ingest-variable-with-association var1-concept)
+    (index/wait-until-indexed)
+    (testing "json response keys are returned in snake_case" 
+      (is (= [{:long_name "Measurement1",
+               :definition "variable definition",
+               :science_keywords
+               [{:category "Cat1",
+                 :topic "Topic1",
+                 :term "Term1",
+                 :variable_level_1 "Level1-1",
+                 :variable_level_2 "Level1-2",
+                 :variable_level_3 "Level1-3",
+                 :detailed_variable "SUPER DETAILED!"}],
+               :name "variable",
+               :concept_id "V1200000011-PROV2",
+               :associations {:collections ["C1200000010-PROV2"]},
+               :revision_id 1,
+               :provider_id "PROV2",
+               :native_id "var1",
+               :instance_information {
+                :url "s3://prod-giovanni-cache.s3.us-west-2.amazonaws.com/zarr/GPM_3IMERGHH_06_precipitationCal",
+                :format "Zarr",
+                :description "Other brief end user information can go here.",
+                :direct_distribution_information {:region "us-west-2",
+                 :s_3_bucket_and_object_prefix_names ["prod-giovanni-cache" "zarr/GPM_3IMERGHH_06_precipitationCal"],
+                 :s_3_credentials_api_endpoint "https://api.giovanni.earthdata.nasa.gov/s3credentials",
+                 :s_3_credentials_api_documentation_url "https://disc.gsfc.nasa.gov/information/documents?title=In-region%20Direct%20S3%20Zarr%20Cache%20Access"},
+                :chunking_information "Chunk size for this example is 1MB. It is optimized for time series."},
+               :association_details {:collections [{:concept_id "C1200000010-PROV2"}]}}]
+          (:items (:body (variables/search-json))))))))
