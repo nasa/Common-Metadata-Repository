@@ -114,7 +114,7 @@
 
 (defmulti get-provider-tasks*
   "Get bulk update tasks status based on concept type"
-  (fn [context provider-id concept-type]
+  (fn [context provider-id concept-type params]
     concept-type))
 
 (defmethod get-provider-tasks* :collection
@@ -128,7 +128,6 @@
 (defn get-provider-tasks
   "Get all tasks and task statuses for provider."
   [concept-type provider-id request]
-  (println "request parameters: " request)
   (let [{:keys [headers request-context params]} request]
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
