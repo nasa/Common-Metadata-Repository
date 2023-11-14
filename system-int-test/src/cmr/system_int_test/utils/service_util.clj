@@ -280,7 +280,7 @@
         "JSON Result failed")))
 
 (defn- assert-collection-atom-json-result
-  "Verify collection in ATOM and JSON response has-formats, has-variables, has-transforms,
+  "Verify collection in ATOM and JSON response has-formats, has-variables, has-transforms, has-combine
   has-spatial-subsetting, has-temporal-subsetting and associations fields"
   [coll expected-fields serv-concept-ids var-concept-ids]
   (let [service-features {:opendap (merge handler/base-has-features
@@ -299,7 +299,7 @@
     (assert-collection-json-result coll expected-fields serv-concept-ids var-concept-ids)))
 
 (defn- assert-collection-umm-json-result
-  "Verify collection in UMM JSON response has-formats, has-variables, has-transforms,
+  "Verify collection in UMM JSON response has-formats, has-variables, has-transforms, has-combine,
   has-spatial-subsetting, has-temporal-subsetting and associations fields"
   [coll expected-fields serv-concept-ids var-concept-ids]
   (let [expected-fields (merge handler/base-has-features
@@ -317,7 +317,7 @@
 
 (defn assert-collection-search-result
   "Verify collection in ATOM, JSON and UMM JSON response has-formats, has-variables,
-  has-transforms, has-spatial-subsetting, has-temporal-subsetting and associations fields"
+  has-transforms, has-combine, has-spatial-subsetting, has-temporal-subsetting and associations fields"
   ([coll expected-fields serv-concept-ids]
    (assert-collection-search-result coll expected-fields serv-concept-ids nil))
   ([coll expected-fields serv-concept-ids var-concept-ids]

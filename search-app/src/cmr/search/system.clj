@@ -1,10 +1,12 @@
 (ns cmr.search.system
   (:require
+   [clojure.string :as string]
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
+   [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
@@ -109,7 +111,7 @@
              :web (web-server/create-web-server (transmit-config/search-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
-             :caches {idx/index-cache-name (mem-cache/create-in-memory-cache)
+             :caches {idx/index-cache-name (idx/create-index-cache)
                       af/acl-cache-key (af/create-acl-cache [:catalog-item :system-object :provider-object])
                       ;; Caches a map of tokens to the security identifiers
                       context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
@@ -126,7 +128,7 @@
                       kf/kms-cache-key (kf/create-kms-cache)
                       search/scroll-id-cache-key (search/create-scroll-id-cache)
                       search/scroll-first-page-cache-key (search/create-scroll-first-page-cache)
-                      metadata-cache/cache-key (metadata-cache/create-cache)
+                      cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       hrs/report-cache-key (hrs/create-report-cache)
@@ -143,6 +145,7 @@
                           hgocrf/refresh-has-granules-or-cwic-map-job
                           hgocrf/refresh-has-granules-or-opensearch-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
+                          (metadata-cache/update-collections-metadata-cache-job)
                           coll-cache/refresh-collections-cache-for-granule-acls-job
                           (cache-info/create-log-cache-info-job "search")
                           jvm-info/log-jvm-statistics-job

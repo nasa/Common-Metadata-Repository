@@ -162,7 +162,7 @@
 
 
 (defn- assert-collection-atom-result
-  "Verify the collection ATOM response has-formats, has-variables, has transforms fields
+  "Verify the collection ATOM response has-formats, has-variables, has-transforms, has-combine fields
   have the correct values"
   [coll expected-fields]
   (let [coll-with-extra-fields (merge coll expected-fields)
@@ -194,7 +194,7 @@
            [status results]))))
 
 (defn- assert-collection-atom-json-result
-  "Verify collection in ATOM and JSON response has-formats, has-variables, has-transforms,
+  "Verify collection in ATOM and JSON response has-formats, has-variables, has-transforms, has-combine,
   has-spatial-subsetting, has-temporal-subsetting and associations fields"
   [coll expected-fields tool-concept-ids var-concept-ids]
   (let [service-features {:opendap (merge handler/base-has-features
@@ -213,7 +213,7 @@
     (assert-collection-json-result coll expected-fields tool-concept-ids var-concept-ids)))
 
 (defn- assert-collection-umm-json-result
-  "Verify collection in UMM JSON response has-formats, has-variables, has-transforms,
+  "Verify collection in UMM JSON response has-formats, has-variables, has-transforms, has-combine,
   has-spatial-subsetting, has-temporal-subsetting and associations fields"
   [coll expected-fields tool-concept-ids var-concept-ids]
   (let [expected-fields (merge handler/base-has-features
@@ -231,7 +231,7 @@
 
 (defn assert-collection-search-result
   "Verify collection in ATOM, JSON and UMM JSON response has-formats, has-variables,
-  has-transforms, has-spatial-subsetting, has-temporal-subsetting and associations fields"
+  has-transforms, has-combine, has-spatial-subsetting, has-temporal-subsetting and associations fields"
   ([coll expected-fields tool-concept-ids]
    (assert-collection-search-result coll expected-fields tool-concept-ids nil))
   ([coll expected-fields tool-concept-ids var-concept-ids]

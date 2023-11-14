@@ -115,7 +115,9 @@
           variable (variables/ingest-variable-with-association var-concept)
           associations1 {:associations {:collections [(:concept-id coll)]}
                          :association-details {:collections [{:concept-id (:concept-id coll)}]}}
-                         variable (merge variable associations1)]
+          scienceKeywords {:science-keywords [{:category "sk-A", :topic "sk-B", :term "sk-C"}]}
+          definition {:definition "Defines the variable"}
+          variable (merge variable associations1 scienceKeywords definition)]
 
       (index/wait-until-indexed)
       (variables/assert-variable-search-order [variable] (variables/search {:provider "PROV1"}))))
@@ -136,6 +138,8 @@
           variable (variables/ingest-variable-with-association var-concept)
           associations1 {:associations {:collections [(:concept-id coll)]}
                          :association-details {:collections [{:concept-id (:concept-id coll)}]}}
-          variable (merge variable associations1)]
+          scienceKeywords {:science-keywords [{:category "sk-A", :topic "sk-B", :term "sk-C"}]}
+          definition {:definition "Defines the variable"}
+          variable (merge variable associations1 scienceKeywords definition)]
       (index/wait-until-indexed)
       (variables/assert-variable-search-order [variable] (variables/search {:provider "PROV3"})))))

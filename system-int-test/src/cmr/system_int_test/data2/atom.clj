@@ -169,6 +169,7 @@
      :has-variables (cx/bool-at-path entry-elem [:hasVariables])
      :has-formats (cx/bool-at-path entry-elem [:hasFormats])
      :has-transforms (cx/bool-at-path entry-elem [:hasTransforms])
+     :has-combine (cx/bool-at-path entry-elem [:hasCombine])
      :has-spatial-subsetting (cx/bool-at-path entry-elem [:hasSpatialSubsetting])
      :has-temporal-subsetting (cx/bool-at-path entry-elem [:hasTemporalSubsetting])
      :cloud-hosted (cx/bool-at-path entry-elem [:cloudHosted])
@@ -280,7 +281,7 @@
   that will do a conversion to echo10"
   [collection]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
-         :keys [concept-id format-key has-variables has-formats has-transforms
+         :keys [concept-id format-key has-variables has-formats has-transforms has-combine
                 has-spatial-subsetting has-temporal-subsetting cloud-hosted
                 services variables tools]} collection
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
@@ -341,6 +342,7 @@
       :has-variables (boolean has-variables)
       :has-formats (boolean has-formats)
       :has-transforms (boolean has-transforms)
+      :has-combine (boolean has-combine)
       :has-spatial-subsetting (boolean has-spatial-subsetting)
       :has-temporal-subsetting (boolean has-temporal-subsetting)
       :cloud-hosted (boolean cloud-hosted)

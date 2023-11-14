@@ -105,37 +105,25 @@
 
 (def ingest-routes
   (routes
-    ;; publish non-variable draft routes
+    ;; publish draft routes
     (api-core/set-default-error-format
      :xml
      (context "/publish/:draft-id" [draft-id]
        (context "/:native-id" [native-id]
          (PUT "/"
            request
-           (gen-doc/publish-non-variable-draft request draft-id native-id)))))
+           (gen-doc/publish-draft request draft-id native-id)))))
     ;; variable ingest routes with association
     (api-core/set-default-error-format
      :xml
      (context "/collections/:coll-concept-id" [coll-concept-id]
        (context "/:coll-revision-id" [coll-revision-id]
          (context "/variables/:native-id" [native-id]
-           ;; publish variable draft
-           (context "/publish/:var-draft-id" [var-draft-id]
-             (PUT "/"
-               request
-               (gen-doc/publish-variable-draft
-                nil native-id request coll-concept-id coll-revision-id var-draft-id)))
            (PUT "/"
              request
              (variables/ingest-variable
               nil native-id request coll-concept-id coll-revision-id))))
        (context "/variables/:native-id" [native-id]
-         ;; publish variable draft
-         (context "/publish/:var-draft-id" [var-draft-id]
-             (PUT "/"
-               request
-               (gen-doc/publish-variable-draft
-                nil native-id request coll-concept-id nil var-draft-id)))
          (PUT "/"
            request
            (variables/ingest-variable

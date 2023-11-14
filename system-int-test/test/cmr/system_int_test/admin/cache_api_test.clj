@@ -75,7 +75,7 @@
                                       "launchpad-user"
                                       "urs"
                                       "kms"
-                                      "metadata-cache"
+                                      "collection-metadata-cache"
                                       "scroll-id-cache"
                                       "first-page-cache"
                                       "token-imp"
@@ -168,7 +168,7 @@
         (url/search-read-caches-url) "acls" ["acls"]
         (url/search-read-caches-url) "collections-for-gran-acls" []
         (url/search-read-caches-url) "has-granules-map" []
-        (url/search-read-caches-url) "index-names" []
+        (url/search-read-caches-url) "index-names" [":acls-hash-code" ":collection-granule-aggregation-cache-hash-code" ":concept-indices-hash-code" ":concept-mapping-types-hash-code" ":providers-hash-code" ":write-enabled-hash-code" "collection-granule-aggregation-cache" "kms"]
         (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
         (url/search-read-caches-url) "token-sid" ["ABC-2" "ABC-1"]
         (url/search-read-caches-url) "xsl-transformer-templates" []

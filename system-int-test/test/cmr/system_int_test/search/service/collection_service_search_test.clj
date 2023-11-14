@@ -499,3 +499,47 @@
 
         "multiple search search"
         [coll1 coll2 coll3 coll4] ["Harmony" "OPeNDAP"]))))
+
+(deftest collection-services-search-has-combine-test
+  (let [token (e/login (s/context) "user1")
+        coll1 (d/ingest "PROV1" (dc/collection {:entry-title "ET1"
+                                                :short-name "S1"
+                                                :version-id "V1"}))
+        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "ET2"
+                                                :short-name "S2"
+                                                :version-id "V2"}))
+        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "ET3"
+                                                :short-name "S3"
+                                                :version-id "V3"}))
+        ;; create services
+        {serv1-concept-id :concept-id}
+        (service-util/ingest-service-with-attrs
+         {:native-id "serv1"
+          :Type "Harmony"
+          :Name "service1"})
+
+        {serv2-concept-id :concept-id}
+        (service-util/ingest-service-with-attrs
+          {:native-id "serv2"
+           :Name "service2"
+           :Type "Harmony"
+           :ServiceOptions {:Aggregation {:Concatenate {:ConcatenateDefault true}}}})
+
+        {serv3-concept-id :concept-id}
+        (service-util/ingest-service-with-attrs
+         {:native-id "serv3"
+          :Name "service3"
+          :Type "Harmony"
+          :ServiceOptions {:Aggregation {:Concatenate {:ConcatenateDefault false}}}})]
+
+    (index/wait-until-indexed)
+    (au/associate-by-concept-ids token serv1-concept-id [{:concept-id (:concept-id coll1)}])
+    (au/associate-by-concept-ids token serv2-concept-id [{:concept-id (:concept-id coll2)}])
+    (au/associate-by-concept-ids token serv3-concept-id [{:concept-id (:concept-id coll3)}])
+    (index/wait-until-indexed)
+    (testing "when Aggregation is not present"
+      (service-util/assert-collection-search-result coll1 {:has-combine false :service-features {:harmony {:has-combine false}}} [serv1-concept-id]))
+    (testing "when concatenateDefault is true"
+      (service-util/assert-collection-search-result coll2 {:has-combine true :service-features {:harmony {:has-combine true}}} [serv2-concept-id]))
+    (testing "when concatenateDefault is false"
+      (service-util/assert-collection-search-result coll3 {:has-combine true :service-features {:harmony {:has-combine true}}} [serv3-concept-id]))))
