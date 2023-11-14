@@ -16,6 +16,7 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
+   [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -96,7 +97,7 @@
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))
              :caches {af/acl-cache-key (af/create-acl-cache
                                         [:system-object :provider-object :single-instance-object])
-                      :providers (mem-cache/create-in-memory-cache :ttl {} {:ttl (hours->ms 12)})
+                      provider-cache/cache-key (provider-cache/create-cache)
                       gf/group-cache-key (gf/create-cache)
                       acl/collection-field-constraints-cache-key (acl/create-access-constraints-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)

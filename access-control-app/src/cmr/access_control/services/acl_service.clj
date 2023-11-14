@@ -14,8 +14,8 @@
    [cmr.access-control.services.messages :as msg]
    [cmr.access-control.services.parameter-validation :as pv]
    [cmr.acl.core :as acl]
-   [cmr.common.cache :as cache]
    [cmr.common-app.api.enabled :as common-enabled]
+   [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common-app.services.search.elastic-search-index :as common-esi]
    [cmr.common-app.services.search.params :as cp]
    [cmr.common-app.services.search.group-query-conditions :as gc]
@@ -460,33 +460,6 @@
          (remove nil?)
          parse-single-string-multi-valued-bucket-lists)))
 
-(defn- get-and-cache-providers
-  "Retrieves and caches the current providers in the database."
-  [context providers-cache]
-  (let [db-provs (mdb/get-providers context)]
-    (cache/set-value providers-cache :providers db-provs)
-    db-provs))
-
-(defn- get-cached-providers
-  "Retrieve the list of all providers from the cache. Setting the value
-  if not present."
-  [context]
-  (let [providers-cache (cache/context->cache context :providers)]
-    (or (cache/get-value providers-cache :providers)
-        (get-and-cache-providers context providers-cache))))
-
-(defn- validate-providers-exist
-  "Throws an exception if the given provider-ids are invalid, otherwise returns the input."
-  [context providers]
-  (when-let [invalid-providers
-             (seq (set/difference
-                   (set providers)
-                   (set (map :provider-id (get-cached-providers context)))))]
-    (errors/throw-service-errors
-     :bad-request
-     (map msg/provider-does-not-exist invalid-providers)))
-  providers)
-
 (defmethod common-esi/concept-type->index-info :collection
   [context _ query]
   ;; This function mirrors the multimethod definition in search.
@@ -507,7 +480,7 @@
 
   (let [sids (map name (auth-util/get-sids context user))
         providers (when (seq provider-ids)
-                    (validate-providers-exist context provider-ids))]
+                    (provider-cache/validate-providers-exist context provider-ids))]
     (if (empty? sids)
       []
       (fetch-s3-buckets-by-sids context sids providers))))
