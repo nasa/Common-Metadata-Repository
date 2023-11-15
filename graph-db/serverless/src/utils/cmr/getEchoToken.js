@@ -11,10 +11,10 @@ export const getEchoToken = async () => {
   const { env = {} } = process
   // Destructure env variables
   const {
-    CMR_TOKEN_KEY: cmrTokenKey,
-    ENVIRONMENT: environment,
+    cmrTokenKey,
+    stage,
     IS_LOCAL: isLocal,
-    TOKEN: localToken
+    localToken
   } = env
 
   if (isLocal === 'true') {
@@ -26,7 +26,7 @@ export const getEchoToken = async () => {
   if (cmrTokenKey) {
     try {
       token = await getSecureParam(
-        `/${environment}/graph-db/${cmrTokenKey}`
+        `/${stage}/graph-db/${cmrTokenKey}`
       )
     } catch (error) {
       console.log(`Could not get token: ${error}`)

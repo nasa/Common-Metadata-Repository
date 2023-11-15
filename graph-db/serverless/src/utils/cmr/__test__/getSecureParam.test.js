@@ -20,7 +20,7 @@ describe('getSecureParam', () => {
       Parameter: { Value: 'SUPER-SECRET-TOKEN' }
     })
 
-    const response = await getSecureParam(`/${process.env.ENVIRONMENT}/graph-db/CMR_ECHO_SYSTEM_TOKEN`)
+    const response = await getSecureParam(`/${process.env.stage}/graph-db/CMR_ECHO_SYSTEM_TOKEN`)
 
     expect(response).toEqual('SUPER-SECRET-TOKEN')
     expect(ssmClientMock.calls()).toHaveLength(1)

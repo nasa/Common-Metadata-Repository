@@ -23,7 +23,8 @@ export const initializeGremlinConnection = () => {
     return connection
   }
 
-  const gremlinUrl = process.env.GREMLIN_URL
+  const { env } = process
+  const { gremlinUrl } = env
 
   driverRC = new DriverRemoteConnection(gremlinUrl, {})
 

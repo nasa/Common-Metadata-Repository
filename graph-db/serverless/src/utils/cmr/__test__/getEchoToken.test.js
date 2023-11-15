@@ -17,9 +17,9 @@ afterEach(() => {
 })
 
 describe('getEchoToken', () => {
-  test('Default setting, no CMR_TOKEN_KEY value is set', async () => {
+  test('Default setting, no cmrTokenKey value is set', async () => {
     process.env.IS_LOCAL = 'false'
-    process.env.CMR_TOKEN_KEY = null
+    process.env.cmrTokenKey = null
 
     const response = await getEchoToken()
 
@@ -28,7 +28,7 @@ describe('getEchoToken', () => {
 
   test('Configure an ECHO token to retrieve from AWS', async () => {
     process.env.IS_LOCAL = 'false'
-    process.env.CMR_TOKEN_KEY = 'SIT_TOKEN'
+    process.env.cmrTokenKey = 'SIT_TOKEN'
 
     jest.spyOn(getSecureParam, 'getSecureParam').mockResolvedValue('1234-abcd-5678-efgh')
 
@@ -39,7 +39,7 @@ describe('getEchoToken', () => {
 
   test('IS_LOCAL = true', async () => {
     process.env.IS_LOCAL = 'true'
-    process.env.TOKEN = null
+    process.env.localToken = null
 
     const token = await getEchoToken()
 
@@ -48,7 +48,7 @@ describe('getEchoToken', () => {
 
   test('Error fetching ECHO Token', async () => {
     process.env.IS_LOCAL = 'false'
-    process.env.CMR_TOKEN_KEY = 'SIT_TOKEN'
+    process.env.cmrTokenKey = 'SIT_TOKEN'
 
     const consoleMock = jest.spyOn(console, 'log')
 

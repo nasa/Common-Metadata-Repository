@@ -18,7 +18,7 @@ WORKDIR /build
 RUN npm install
 EOF
 
-dockerTag=cmr-graph-db-$bamboo_ENVIRONMENT
+dockerTag=cmr-graph-db-$bamboo_stage
 docker build -t $dockerTag .
 
 # Convenience function to invoke `docker run` with appropriate env vars instead of baking them into image
@@ -35,7 +35,7 @@ dockerRun() {
 # Execute serverless commands in Docker
 #######################################
 
-stageOpts="--stage $bamboo_ENVIRONMENT"
+stageOpts="--stage $bamboo_stage"
 
 echo 'Deploying CMR GraphDB...'
 dockerRun npx serverless deploy $stageOpts --force

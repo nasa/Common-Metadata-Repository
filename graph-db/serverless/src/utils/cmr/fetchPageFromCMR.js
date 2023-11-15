@@ -5,7 +5,7 @@ import axios from 'axios'
 import { SQSClient, SendMessageBatchCommand } from '@aws-sdk/client-sqs'
 
 import { chunkArray } from '../chunkArray'
-import indexCmrCollections from '../../indexCmrCollection/handler'
+import { getSqsConfig } from '../aws/getSqsConfig'
 
 let sqs
 
@@ -40,7 +40,10 @@ export const fetchPageFromCMR = async ({
     requestHeaders['CMR-Search-After'] = searchAfter
   }
 
-  let fetchUrl = `${process.env.CMR_ROOT}/search/collections.json?page_size=${process.env.PAGE_SIZE}`
+  const { env } = process
+  const { cmrRoot, pageSize } = env
+
+  let fetchUrl = `${cmrRoot}/search/collections.umm_json?page_size=${pageSize}`
 
   if (providerId !== null) {
     fetchUrl += `&provider=${providerId}`
@@ -48,74 +51,65 @@ export const fetchPageFromCMR = async ({
 
   try {
     if (sqs == null) {
-      sqs = new SQSClient()
+      sqs = new SQSClient(getSqsConfig())
     }
+
     // Send request to CMR
     const cmrCollections = await axios({
       url: fetchUrl,
       method: 'GET',
       headers: requestHeaders
     })
+
     // Iterate over CMR-pages
     const { data, headers } = cmrCollections
     const { 'cmr-search-after': cmrsearchAfter } = headers
 
-    const { feed = {} } = data
-    const { entry = [] } = feed
+    const { items = [] } = data
+
     let currentBatchSize = 0
+
     // Split page array into array with sub-arrays of size 10
-    const chunkedItems = chunkArray(entry, 10)
+    const chunkedItems = chunkArray(items, 5)
 
     if (chunkedItems.length > 0) {
-      const { env: { IS_LOCAL } } = process
-
       await chunkedItems.forEachAsync(async (chunk) => {
-        if (IS_LOCAL === 'true') {
-          const queueBody = chunk.map((collection) => {
-            const { id: conceptId, revision_id: revisionId } = collection
+        const sqsEntries = []
 
-            return {
-              body: JSON.stringify({
-                'concept-id': conceptId,
-                'revision-id': revisionId,
-                action: 'concept-update'
-              })
-            }
-          })
-          // Locally we will call indexCmrCollections directly, otherwise send the job to SQS queue
-          await indexCmrCollections({ Records: queueBody })
-        } else {
-          const sqsEntries = []
-          chunk.forEach((collection) => {
-            const { id: conceptId } = collection
+        // console.log('chunk', chunk)
 
-            // TODO: Since we already made a call to CMR we may want to pass that information into the event
-            // TODO: it is possible that by passing cmr data in the event the data could be stale by the time
-            // the indexCollection handler picks it up to index it into the graphDb
-            sqsEntries.push({
-              Id: conceptId,
-              MessageBody: JSON.stringify({
-                action: 'concept-update',
-                'concept-id': conceptId
-              })
+        chunk.forEach((collection) => {
+          const { meta } = collection
+          const { 'concept-id': conceptId } = meta
+
+          // TODO: Since we already made a call to CMR we may want to pass that information into the event
+          // TODO: it is possible that by passing cmr data in the event the data could be stale by the time
+          // the indexCollection handler picks it up to index it into the graphDb
+          sqsEntries.push({
+            Id: conceptId,
+            MessageBody: JSON.stringify({
+              action: 'concept-update',
+              'concept-id': conceptId,
+              collection
             })
-            // Retrieve the total number of collections being processed in here
-            currentBatchSize += 1
           })
 
-          const command = new SendMessageBatchCommand({
-            QueueUrl: process.env.COLLECTION_INDEXING_QUEUE_URL,
-            Entries: sqsEntries
-          })
+          // Retrieve the total number of collections being processed in here
+          currentBatchSize += 1
+        })
 
-          await sqs.send(command)
-        }
+        const command = new SendMessageBatchCommand({
+          QueueUrl: process.env.collectionIndexingQueueUrl,
+          Entries: sqsEntries
+        })
+
+        await sqs.send(command)
       })
     }
 
     // If we have an active searchAfter so we aren't on the last page and there are more results
     // Second argument is to parse integers in base 10
-    if (cmrsearchAfter && entry.length === parseInt(process.env.PAGE_SIZE, 10)) {
+    if (cmrsearchAfter && items.length === parseInt(pageSize, 10)) {
       // TODO: Investigate putting in a wait function between calls for each page to allow it to get picked
       // up by the other lambda and indexed into the graph database
       await fetchPageFromCMR({
