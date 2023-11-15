@@ -4,13 +4,11 @@
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.cache :as cache]
-            [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.common-app.services.search.query-model :as q]
             [cmr.common-app.services.search.query-execution :as qe]
             [cmr.redis-utils.redis-cache :as redis-cache]
             [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
             [cmr.common.util :as u]
-            [clojure.pprint :as pp]
             [clojure.walk :as walk]
             [cmr.common.util :as util]))
 
@@ -29,6 +27,8 @@
   (redis-cache/create-redis-cache {:keys-to-track [:collections-for-gran-acls] :ttl (* 15 60)}))
 
 (defn- clj-times->time-strs
+  "Take a map and convert any date objects into strings so the map can be cached.
+   This can be reversed with time-strs->clj-times."
   [data]
   (walk/postwalk
    #(if (true? (instance? org.joda.time.DateTime %))
@@ -37,6 +37,8 @@
    data))
 
 (defn- time-strs->clj-times
+  "Take a map which has string dates and convert them to DateTime objects. This
+   can be reversed with clj-times->time-strs."
   [data]
   (walk/postwalk
    #(if (and (instance? String %) (cmr.common.date-time-parser/try-parse-datetime %))
