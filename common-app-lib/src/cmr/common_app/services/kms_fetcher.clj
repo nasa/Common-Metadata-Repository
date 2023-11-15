@@ -1,11 +1,9 @@
 (ns cmr.common-app.services.kms-fetcher
   "Provides functions to easily fetch keywords from the GCMD Keyword Management Service (KMS). It
   will use a cache in order to minimize calls to the GCMD KMS and improve performance. The job
-  defined in this namespace should be used to keep the KMS keywords fresh. KMS keywords will be
-  cached using a fallback cache with Redis as the backup store. See the documentation for
-  cmr.common.cache.fallback-cache for more details. As a result of persisting the keywords in Redis,
-  the CMR will still be able to lookup KMS keywords even when the GCMD KMS is unavailable. CMR will
-  use the last keyword values which were retrieved from the GCMD KMS before it became unavailable.
+  defined in this namespace should be used to keep the KMS keywords fresh. As a result of persisting the
+  keywords in Redis, the CMR will still be able to lookup KMS keywords even when the GCMD KMS is unavailable.
+  CMR will use the last keyword values which were retrieved from the GCMD KMS before it became unavailable.
 
   The KMS keywords are all cached under a single :kms key. The structure looks like the following:
   {:kms {:platforms [{:category \"C\" :sub-category \"S\"
@@ -79,8 +77,7 @@
 
 (defn refresh-kms-cache
   "Refreshes the KMS keywords stored in the cache. This should be called from a background job on a
-  timer to keep the cache fresh. This will throw an exception if there is a problem fetching the
-  keywords from KMS. The caller is responsible for catching and logging the exception."
+  timer to keep the cache fresh."
   [context]
   (let [cache (cache/context->cache context kms-cache-key)
         gcmd-keywords-map (fetch-gcmd-keywords-map context)]
@@ -88,8 +85,7 @@
     (cache/set-value cache kms-cache-key gcmd-keywords-map)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache because
-;; we use a consistent cache which uses redis to coordinate any changes to the cache.
+;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache.
 (def-stateful-job RefreshKmsCacheJob
   [_ system]
   (refresh-kms-cache {:system system}))

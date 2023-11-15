@@ -58,7 +58,7 @@
         (url/access-control-read-caches-url) ["acls"
                                               "group-ids-guids"
                                               "health"
-                                              "providers"
+                                              "provider-cache"
                                               "launchpad-user"
                                               "urs"
                                               "write-enabled"

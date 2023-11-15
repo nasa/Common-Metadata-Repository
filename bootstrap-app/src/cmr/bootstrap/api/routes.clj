@@ -14,6 +14,7 @@
    [cmr.common.api.context :as context]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as mc]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
+   [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common.api.errors :as errors]
    [cmr.common.log :refer [info]]
    [cmr.common.generics :as common-generic]
@@ -124,10 +125,13 @@
             (cmc/refresh-cache request-context)
 
             (= (keyword cache-name) kms-fetcher/kms-cache-key)
-            (kms-fetcher/refresh-kms-cache request-context))
+            (kms-fetcher/refresh-kms-cache request-context)
+
+            (= (keyword cache-name) provider-cache/cache-key)
+            (provider-cache/refresh-provider-cache request-context)
 
             :else
-            (route/not-found "Not Found"))
+            (route/not-found "Not Found")))
           {:status 200})
       ;; db migration route
       (POST "/db-migrate" {:keys [request-context params]}
