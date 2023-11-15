@@ -16,7 +16,7 @@ export const fetchCmrCollection = async (conceptId, token) => {
   let response
   try {
     response = await axios({
-      url: `${process.env.CMR_ROOT}/search/collections.umm_json?concept_id=${conceptId}`,
+      url: `${process.env.cmrRoot}/search/collections.umm_json?concept_id=${conceptId}`,
       method: 'GET',
       headers: requestHeaders,
       json: true

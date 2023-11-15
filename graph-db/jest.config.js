@@ -11,9 +11,9 @@ module.exports = {
   globals: {
     testGremlinConnection: null
   },
-  moduleNameMapper: {
-    // Jest uses CommonJS to use axios version > 1.0 we must transpile the JavaScript module from ECMAScript type to CommonJS type
-    // require.resolve, use(es) the internal require() machinery to look up the location of a module, but rather than loading the module, just return(s) the resolved filename.
-    '^axios$': require.resolve('axios')
-  }
+  modulePathIgnorePatterns: [
+    '.*__mocks__.*',
+    'dist'
+  ],
+  transformIgnorePatterns: ['node_modules/(?!axios)']
 }

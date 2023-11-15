@@ -5,12 +5,16 @@
   "main": "handler.js",
   "repository": "nasa/common-metadata-repository",
   "scripts": {
-    "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
-    "test": "jest -i",
-    "test:watch": "jest -i --watchAll",
-    "test-coverage": "jest --coverage",
     "ci-test": "jest -i --reporters=\"default\" --reporters=\"jest-junit\"",
-    "deploy": "./node_modules/.bin/sls deploy --config serverless.yml"
+    "deploy": "./node_modules/.bin/sls deploy --config serverless.yml",
+    "preinstall": "npm install --package-lock-only --ignore-scripts",
+    "prestart": "npm run start:queue",
+    "start:queue": "docker-compose up -d",
+    "start": "serverless offline",
+    "stop:queue": "docker-compose down",
+    "test-coverage": "jest --coverage",
+    "test:watch": "jest -i --watchAll",
+    "test": "jest -i"
   },
   "maintainers": [
     {
@@ -32,7 +36,8 @@
   ],
   "license": "ISC",
   "dependencies": {
-    "@aws-sdk/client-sqs": "^3.347.1",
+    "@aws-sdk/client-lambda": "^3.438.0",
+    "@aws-sdk/client-sqs": "^3.414.0",
     "@aws-sdk/client-ssm": "^3.347.1",
     "array-foreach-async": "^1.0.1",
     "axios": "^1.6.1",
@@ -43,23 +48,21 @@
     "serverless-offline": "^12.0.4",
     "serverless-webpack": "^5.9.0",
     "webpack": "^5.76.0",
+    "webpack-cli": "^5.1.4",
     "webpack-node-externals": "^3.0.0"
   },
   "devDependencies": {
     "@babel/preset-env": "^7.14.5",
     "aws-sdk-client-mock": "^0.6.2",
-    "eslint": "^7.28.0",
-    "eslint-config-airbnb-base": "^14.2.1",
+    "babel-loader": "^9.1.3",
+    "eslint": "^8.0.0",
+    "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-import": "^2.22.1",
+    "eslint-webpack-plugin": "^4.0.1",
     "jest": "^27.3.1",
     "jest-junit": "^12.2.0",
     "nock": "^13.2.1",
+    "serverless-offline-sqs": "^7.3.2",
     "snyk": "^1.996.0"
-  },
-  "overrides": {
-    "file-type": "16.5.4",
-    "fast-xml-parser": "4.2.4",
-    "luxon": "1.28.1",
-    "simple-git": "3.16.0"
   }
 }

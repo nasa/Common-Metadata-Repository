@@ -2,11 +2,11 @@ import nock from 'nock'
 
 import { closeGremlinConnection, initializeGremlinConnection } from './serverless/src/utils/gremlin/initializeGremlinConnection'
 
-process.env.PAGE_SIZE = 1
+process.env.cmrRoot = 'http://local-cmr'
+process.env.collectionIndexingQueueUrl = 'http://example.com/collectionIndexQueue'
+process.env.gremlinUrl = 'ws://localhost:8182/gremlin'
 process.env.IS_LOCAL = true
-process.env.CMR_ROOT = 'http://local-cmr'
-process.env.GREMLIN_URL = 'ws://localhost:8182/gremlin'
-process.env.COLLECTION_INDEXING_QUEUE_URL = 'http://example.com/collectionIndexQueue'
+process.env.pageSize = 1
 
 nock.cleanAll()
 nock.disableNetConnect()

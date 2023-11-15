@@ -24,7 +24,7 @@ export const fetchCollectionPermittedGroups = async (conceptId, token) => {
   let response
   try {
     response = await axios({
-      url: `${process.env.CMR_ROOT}/access-control/acls?permitted_concept_id=${conceptId}&include_full_acl=true`,
+      url: `${process.env.cmrRoot}/access-control/acls?permitted_concept_id=${conceptId}&include_full_acl=true`,
       method: 'GET',
       headers: requestHeaders,
       json: true
