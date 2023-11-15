@@ -1478,6 +1478,7 @@ A couple of parameters used in search expect a date range as input. For example,
 `/2010-03-10T12:00:00Z` - matches data before `2010-03-10T12:00:00Z`
 `2000-01-01T10:00:00Z/P10Y2M10DT2H` - matches data between `2000-01-01T10:00:00Z` and a date 10 years 2 months 10 days and 2 hours after that or `2010-03-11T02:00:00Z`
 `P1Y2M10DT2H30M/2008-05-11T15:30:00Z` - matches data between `2008-07-11T16:30:00Z` and a date 1 year 2 months 10 days 2 hours and 30 minutes before that or `2007-05-01T14:00:00Z`.
+`2000-01-01T00:00:00.000Z,2023-01-31T23:59:59.999Z,1,31` - matches data between the Julian days `1` to `31` from `2000-01-01T00:00:00.000Z` to `2023-01-31T23:59:59.999Z`.
 
 Note: ISO 8601 does not allow open-ended time intervals but the CMR API does allow specification of intervals which are open ended on one side. For example, `2000-01-01T10:00:00Z/` and `/2000-01-01T10:00:00Z` are valid ranges.
 
