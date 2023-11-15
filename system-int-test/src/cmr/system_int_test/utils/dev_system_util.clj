@@ -26,7 +26,6 @@
     (client/post (url/dev-system-reset-url) (admin-connect-options))
     (index/refresh-elastic-index)
     (catch Exception e
-      (println "Failed to send reset to dev-system")
       (error "Failed to send reset to dev-system\n" e)
       (throw e))))
 

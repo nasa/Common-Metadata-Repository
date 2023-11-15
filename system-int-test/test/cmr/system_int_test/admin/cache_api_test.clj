@@ -15,8 +15,6 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url]))
 
-;; 💣 - try to add redis and see if this fixes test
-
 (use-fixtures
   :each (ingest/reset-fixture
          {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"}))

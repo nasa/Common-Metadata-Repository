@@ -132,6 +132,7 @@
 
 (comment
 
+  ;; these are what the maps look like
   (let [coll {:concept-type :collection
               :provider-id "TCHERRY"
               :EntryTitle "LarcDatasetId-sampleGranule0002"

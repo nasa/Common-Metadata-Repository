@@ -46,7 +46,6 @@
         start-date (parse-elastic-datetime start-date1)
         end-date (parse-elastic-datetime end-date1)
         ]
-    (println "raw dates in parse elastic item" start-date1 end-date1)
     (-> {:concept-type concept-type
          :provider-id provider-id
          :EntryTitle entry-title}
