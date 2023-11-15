@@ -662,12 +662,12 @@
       (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:tasks (seq (for [task (cx/elements-at-path xml-elem [:tasks :task])]
-                      {:created-at (cx/string-at-path task [:created-at])
+                      {:created-at (cx/string-at-path task [:created_at])
                        :name (cx/string-at-path task [:name])
-                       :task-id (cx/string-at-path task [:task-id])
+                       :task-id (cx/string-at-path task [:task_id])
                        :status (cx/string-at-path task [:status])
-                       :status-message (cx/string-at-path task [:status-message])
-                       :request-json-body (cx/string-at-path task [:request-json-body])}))}))
+                       :status-message (cx/string-at-path task [:status_message])
+                       :request-json-body (cx/string-at-path task [:request_json_body])}))}))
     (catch Exception e
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
 
