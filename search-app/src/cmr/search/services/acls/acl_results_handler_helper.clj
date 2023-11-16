@@ -41,19 +41,19 @@
   (let [{{entry-title :entry-title
           provider-id :provider-id
           access-value :access-value
-          start-date1 :start-date
-          end-date1 :end-date} :_source} elastic-result
-        start-date (parse-elastic-datetime start-date1)
-        end-date (parse-elastic-datetime end-date1)]
+          start-date :start-date
+          end-date :end-date} :_source} elastic-result
+        elastic-start-date (parse-elastic-datetime start-date)
+        elastic-end-date (parse-elastic-datetime end-date)]
     (-> {:concept-type concept-type
          :provider-id provider-id
          :EntryTitle entry-title}
         (u/lazy-assoc :AccessConstraints {:Value access-value})
         (u/lazy-assoc :TemporalExtents
-                      (let [start-date (parse-elastic-datetime start-date)
-                            end-date (parse-elastic-datetime end-date)]
-                        [{:RangeDateTimes (when start-date [{:BeginningDateTime start-date
-                                                             :EndingDateTime end-date}])}])))))
+                      (let [elastic-start-date (parse-elastic-datetime elastic-start-date)
+                            elastic-end-date (parse-elastic-datetime elastic-end-date)]
+                        [{:RangeDateTimes (when elastic-start-date [{:BeginningDateTime elastic-start-date
+                                                             :EndingDateTime elastic-end-date}])}])))))
 
 (defmethod parse-elastic-item :granule
   [concept-type elastic-result]
