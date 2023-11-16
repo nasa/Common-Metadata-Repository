@@ -611,8 +611,7 @@
                                                                :http-options {:body "{{{{"}})
             error (-> body :errors first)]
         (is (= 400 status))
-        (is (re-find #"Invalid JSON: A JSON Object can not directly nest another JSON Object"
-                     error))))
+        (is (= "Invalid JSON: Missing value at 1 [character 2 line 1]" error))))
 
     (testing "Associate tag with collections with data exceed 32KB"
       (let [too-much-data {"a" (tags/string-of-length 32768)}
