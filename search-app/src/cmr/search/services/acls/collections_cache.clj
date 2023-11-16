@@ -1,16 +1,17 @@
 (ns cmr.search.services.acls.collections-cache
   "This is a cache of collection data for helping enforce granule acls in an efficient manner"
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common.jobs :refer [defjob]]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.cache :as cache]
-            [cmr.common-app.services.search.query-model :as q]
-            [cmr.common-app.services.search.query-execution :as qe]
-            [cmr.redis-utils.redis-cache :as redis-cache]
-            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
-            [cmr.common.util :as u]
-            [clojure.walk :as walk]
-            [cmr.common.util :as util]))
+  (:require
+   [clojure.walk :as walk]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as q]
+   [cmr.common.cache :as cache]
+   [cmr.common.date-time-parser :as time-parser]
+   [cmr.common.jobs :refer [defjob]]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.redis-utils.redis-cache :as redis-cache]
+   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]))
 
 ;; No other file reads this cache
 (def cache-key
@@ -23,27 +24,24 @@
 (defn create-cache
   "Creates a new empty collections cache."
   []
-  ;;(mem-cache/create-in-memory-cache)
   (redis-cache/create-redis-cache {:keys-to-track [:collections-for-gran-acls] :ttl (* 15 60)}))
 
-(defn- clj-times->time-strs
+(defn clj-times->time-strs
   "Take a map and convert any date objects into strings so the map can be cached.
    This can be reversed with time-strs->clj-times."
   [data]
   (walk/postwalk
    #(if (true? (instance? org.joda.time.DateTime %))
-      (cmr.common.date-time-parser/clj-time->date-time-str %)
+      (time-parser/clj-time->date-time-str %)
       %)
    data))
 
-(defn- time-strs->clj-times
+(defn time-strs->clj-times
   "Take a map which has string dates and convert them to DateTime objects. This
    can be reversed with clj-times->time-strs."
   [data]
   (walk/postwalk
-   #(if (and (instance? String %) (cmr.common.date-time-parser/try-parse-datetime %))
-      (cmr.common.date-time-parser/parse-datetime %)
-      %)
+   #(if-let [valid-date (time-parser/try-parse-datetime %)] valid-date %)
    data))
 
 (defn- fetch-collections

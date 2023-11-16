@@ -557,7 +557,7 @@
   (let [test (-> {:unrelated "value to not touch"}
                   (util/lazy-assoc :base 10)
                   (util/lazy-assoc :everything 42))]
-    (testing "check that a single values can be removed"
+    (testing "check that a single value can be removed"
       (let [actual (util/delazy-value test :base)]
         (is (nil? (:everything actual)) "everything value was changed")
         (is (= 10 (:base actual)) "base was not changed")

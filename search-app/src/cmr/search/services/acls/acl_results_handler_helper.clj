@@ -44,8 +44,7 @@
           start-date1 :start-date
           end-date1 :end-date} :_source} elastic-result
         start-date (parse-elastic-datetime start-date1)
-        end-date (parse-elastic-datetime end-date1)
-        ]
+        end-date (parse-elastic-datetime end-date1)]
     (-> {:concept-type concept-type
          :provider-id provider-id
          :EntryTitle entry-title}

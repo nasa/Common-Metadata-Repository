@@ -58,9 +58,9 @@
           value))))
 
   (reset
-   [this]
-   (doseq [the-key keys-to-track]
-     (wcar* (carmine/del (serialize the-key)))))
+    [this]
+    (doseq [the-key keys-to-track]
+      (wcar* (carmine/del (serialize the-key)))))
 
   (set-value
     [this key value]
@@ -68,10 +68,11 @@
     (let [s-key (serialize key)]
       (wcar* (carmine/set s-key {:value value})
              (when ttl (carmine/expire s-key ttl)))))
+
   (cache-size
-   [_]
-   ;; not relevant for redis
-   -1))
+    [_]
+    ;; not relevant for redis
+    -1))
 
 (defn create-redis-cache
   "Creates an instance of the redis cache.
