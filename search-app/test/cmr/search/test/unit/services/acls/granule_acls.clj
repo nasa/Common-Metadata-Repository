@@ -1,10 +1,10 @@
 (ns cmr.search.test.unit.services.acls.granule-acls
   (:require [clojure.test :refer :all]
-            [cmr.search.services.acls.granule-acls :as g]
-            [cmr.search.services.acls.collections-cache :as coll-cache]
             [cmr.common.cache.in-memory-cache :as mem-cache]
+            [cmr.common.util :as util :refer [are3]]
             [cmr.redis-utils.test.test-util :as test-util]
-            [cmr.common.util :as util :refer [are3]]))
+            [cmr.search.services.acls.collections-cache :as coll-cache]
+            [cmr.search.services.acls.granule-acls :as g]))
 
 (use-fixtures :once test-util/embedded-redis-server-fixture)
 
