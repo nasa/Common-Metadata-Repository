@@ -148,16 +148,16 @@
         (are3 [token grans colls]
           (let [concept-ids all-gran-concept-ids
                 gran-atom (da/granules->expected-atom
-                            grans colls
-                            (str "granules.atom?"
+                           grans colls
+                           (str "granules.atom?"
                                 (when token (str "token=" token "&"))
                                 "page_size=100&concept_id="
                                 (str/join "&concept_id=" concept-ids)))]
             (is (= gran-atom (:results (search/find-concepts-atom
                                         :granule (util/remove-nil-keys
                                                   {:token token
-                                                    :page-size 100
-                                                    :concept-id concept-ids}))))))
+                                                   :page-size 100
+                                                   :concept-id concept-ids}))))))
           "Guests find nothing" nil [] []
           "group1" user1 group1-granules group1-colls
           "group2" user2 group2-granules group2-colls
