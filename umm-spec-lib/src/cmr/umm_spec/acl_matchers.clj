@@ -5,20 +5,15 @@
    [clj-time.format :as f]
    [clojure.set :as set]
    [clojure.string :as str]
-   [cmr.acl.core :as acl-core]
    [cmr.common.cache :as cache]
-   [cmr.common.cache.cache-spec :as cache-spec]
-   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.log :refer [info debug warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as u :refer [update-in-each]]
-   [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.umm-spec.legacy :as legacy]
    [cmr.umm-spec.time :as umm-time]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core]
-   [cmr.umm.acl-matchers :as umm-lib-acl-matchers]
-   [cmr.common.util :as util]))
+   [cmr.umm.acl-matchers :as umm-lib-acl-matchers]))
 
 (def ^:private supported-collection-identifier-keys
   #{:entry-titles :access-value :temporal :concept-ids})
@@ -131,7 +126,6 @@
              (matches-temporal-filter? :collection (u/get-real-or-lazy coll :TemporalExtents) temporal)))))
 
 (comment
-
   ;; these are what the maps look like
   (let [coll {:concept-type :collection
               :provider-id "TCHERRY"
@@ -142,17 +136,13 @@
                 [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
                   :EndingDateTime nil}]}]
               :concept-id "C1200000219-TCHERRY"}
-        coll (cmr.common.util/lazy-assoc coll :AccessConstraints {:Value 5})
+        coll (u/lazy-assoc coll :AccessConstraints {:Value 5})
         coll-id {:entry-titles ["LarcDatasetId-sampleGranule0002"]
                  :access-value {:min-value 0 :max-value 6}
                  :concept-ids ["C1200000219-TCHERRY"]}]
     (println (coll-matches-collection-identifier? coll coll-id)))
 
-
-  {cmr.common.util/lazy-assoc {} :AccessConstraints {:Value 5}}
-
-  )
-
+  {u/lazy-assoc {} :AccessConstraints {:Value 5}})
 
 (defn- validate-collection-identiier
   "Verifies the collection identifier isn't using any unsupported ACL features."
