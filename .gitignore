@@ -3,6 +3,8 @@
 ###############################
 /logs
 /.lein-*
+.lein-env
+*/.lein-*
 profiles.clj
 browse-scaler/src/node_modules
 .classpath
