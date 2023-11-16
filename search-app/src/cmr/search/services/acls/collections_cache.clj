@@ -21,10 +21,24 @@
   "The initial cache state."
   nil)
 
+(def job-refresh-rate
+  "This is the frequency that the cron job will run. It should be less then
+   coll-for-gran-acl-ttl"
+  ;; 15 minutes
+  (* 15 60))
+
+(def coll-for-gran-acl-ttl
+  "This is when Redis should expire the data, this value should never be hit if
+   the cron job is working correctly, however in some modes (such as local dev
+   with no database) it may come into play."
+  ;; 30 minutes
+  (* 30 60))
+
 (defn create-cache
   "Creates a new empty collections cache."
   []
-  (redis-cache/create-redis-cache {:keys-to-track [:collections-for-gran-acls] :ttl (* 15 60)}))
+  (redis-cache/create-redis-cache {:keys-to-track [:collections-for-gran-acls]
+                                   :ttl coll-for-gran-acl-ttl}))
 
 (defn clj-times->time-strs
   "Take a map and convert any date objects into strings so the map can be cached.
@@ -120,5 +134,4 @@
 
 (def refresh-collections-cache-for-granule-acls-job
   {:job-type RefreshCollectionsCacheForGranuleAclsJob
-   ;; 15 minutes
-   :interval (* 15 60)})
+   :interval job-refresh-rate})
