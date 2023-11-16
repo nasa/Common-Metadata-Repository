@@ -47,7 +47,7 @@
                            [org.clojure/clojure "1.10.0"]
                            [org.clojure/tools.reader "1.3.2"]
                            [ring/ring-codec "1.1.3"]
-                           [ring/ring-core "1.9.6"]
+                           [ring/ring-core "1.10.0"]
                            [ring/ring-json "0.5.1"]]
                          project-dependencies)
   :plugins [[lein-modules "0.3.11"]
