@@ -553,6 +553,14 @@
     (testing "original key is not used"
       (is (= 3 (get my-map :a))))))
 
+(deftest delay-name-key-test
+  (testing "Check that a round trip on delay name keys can be made"
+    (doseq [expected (gen/sample gen/keyword)]
+      (let [actual (-> expected
+                     util/key->delay-name
+                     util/delay-name->key)]
+      (is (= expected actual) (str "round trip test failed with " expected))))))
+
 (deftest delazy-tests
   (let [test (-> {:unrelated "value to not touch"}
                   (util/lazy-assoc :base 10)

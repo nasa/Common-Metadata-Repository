@@ -737,13 +737,13 @@
       (sequential? v) (mapcat #(get-in-all %1 ks) v)
       :else (get-in-all v ks))))
 
-(defn- key->delay-name
+(defn key->delay-name
   "Returns the key that the delay is stored in for a lazy value"
   [k]
   {:pre [(keyword? k)]}
   (keyword (str "cmr.common.util/" (name k) "-delay")))
 
-(defn- delay-name->key
+(defn delay-name->key
   "Reverse key name"
   [key]
   {:pre [(keyword? key)]}
