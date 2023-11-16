@@ -167,12 +167,12 @@
       (testing "Collection ATOM ACL Enforcement by concept id"
         (are2 [token colls]
           (= (set (map :entry-title colls))
-              (atom-results->title-set
+             (atom-results->title-set
               (search/find-concepts-atom
-                :collection (util/remove-nil-keys
+               :collection (util/remove-nil-keys
                             {:token token
-                              :page-size 100
-                              :concept-id all-coll-concept-ids}))))
+                             :page-size 100
+                             :concept-id all-coll-concept-ids}))))
           "Guests find nothing" nil []
           "group1" user1 group1-colls
           "group2" user2 group2-colls
@@ -182,12 +182,12 @@
       (testing "Collection JSON ACL Enforcement by concept id"
         (are2 [token colls]
           (= (set (map :entry-title colls))
-              (atom-results->title-set
+             (atom-results->title-set
               (search/find-concepts-json
-                :collection (util/remove-nil-keys
+               :collection (util/remove-nil-keys
                             {:token token
-                              :page-size 100
-                              :concept-id all-coll-concept-ids}))))
+                             :page-size 100
+                             :concept-id all-coll-concept-ids}))))
           "Guests find nothing" nil []
           "group1" user1 group1-colls
           "group2" user2 group2-colls
@@ -313,11 +313,11 @@
             (= (set (map :granule-ur items))
                 (set (search/csv-response->granule-urs
                       (search/find-concepts-csv
-                      :granule
-                      (util/remove-nil-keys
+                       :granule
+                       (util/remove-nil-keys
                         {:token token
-                        :page-size 100
-                        :concept-id concept-ids}))))))
+                         :page-size 100
+                         :concept-id concept-ids}))))))
           "Guests find nothing" nil []
           "group1" user1 group1-granules
           "group2" user2 group2-granules
