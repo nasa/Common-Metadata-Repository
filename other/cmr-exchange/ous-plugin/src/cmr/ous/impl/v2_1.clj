@@ -75,6 +75,7 @@
   ([component user-token raw-params input-sa-header]
    (get-opendap-urls component user-token "2" raw-params input-sa-header))
   ([component user-token dap-version raw-params input-sa-header]
+   (log/error "CMR-9518 Debugging v2_1 dap-version: " dap-version)
    (log/trace "Got params:" raw-params)
    (let [start (util/now)
          search-endpoint (config/get-search-url component)
