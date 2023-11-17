@@ -1,31 +1,73 @@
 (ns cmr.search.services.acls.collections-cache
   "This is a cache of collection data for helping enforce granule acls in an efficient manner"
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common.jobs :refer [defjob]]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.cache :as cache]
-            [cmr.common.cache.in-memory-cache :as mem-cache]
-            [cmr.common-app.services.search.query-model :as q]
-            [cmr.common-app.services.search.query-execution :as qe]
-            [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]))
+  (:require
+   [clojure.walk :as walk]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as q]
+   [cmr.common.cache :as cache]
+   [cmr.common.date-time-parser :as time-parser]
+   [cmr.common.jobs :refer [defjob]]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.redis-utils.redis-cache :as redis-cache]
+   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]))
+
+;; No other file reads this cache
+(def cache-key
+  :collections-for-gran-acls)
 
 (def initial-cache-state
   "The initial cache state."
   nil)
 
+(def job-refresh-rate
+  "This is the frequency that the cron job will run. It should be less then
+   coll-for-gran-acl-ttl"
+  ;; 15 minutes
+  (* 15 60))
+
+(def coll-for-gran-acl-ttl
+  "This is when Redis should expire the data, this value should never be hit if
+   the cron job is working correctly, however in some modes (such as local dev
+   with no database) it may come into play."
+  ;; 30 minutes
+  (* 30 60))
+
 (defn create-cache
   "Creates a new empty collections cache."
   []
-  (mem-cache/create-in-memory-cache))
+  (redis-cache/create-redis-cache {:keys-to-track [:collections-for-gran-acls]
+                                   :ttl coll-for-gran-acl-ttl}))
 
-(def cache-key
-  :collections-for-gran-acls)
+(defn clj-times->time-strs
+  "Take a map and convert any date objects into strings so the map can be cached.
+   This can be reversed with time-strs->clj-times."
+  [data]
+  (walk/postwalk
+   #(if (true? (instance? org.joda.time.DateTime %))
+      (time-parser/clj-time->date-time-str %)
+      %)
+   data))
+
+(defn time-strs->clj-times
+  "Take a map which has string dates and convert them to DateTime objects. This
+   can be reversed with clj-times->time-strs."
+  [data]
+  (walk/postwalk
+   #(if-let [valid-date (time-parser/try-parse-datetime %)] valid-date %)
+   data))
 
 (defn- fetch-collections
   "Executes a query that will fetch all of the collection information needed for caching."
   [context]
+  ;; when creating a result processor, realize all the lazy (delay) values to
+  ;; actual values so that the resulting object can be cached in redis or some
+  ;; other text based caching system and not clojure memory
   (let [result-processor (fn [_ _ elastic-item]
-                           (assoc (acl-rhh/parse-elastic-item :collection elastic-item)
+                           (assoc (util/delazy-all (acl-rhh/parse-elastic-item
+                                                    :collection
+                                                    elastic-item))
                                   :concept-id (:_id elastic-item)))
         query (q/query {:concept-type :collection
                         :condition q/match-all
@@ -58,19 +100,19 @@
   [context]
   (let [cache (cache/context->cache context cache-key)
         collections-map (fetch-collections-map context)]
-    (cache/set-value cache :collections collections-map)))
+    (cache/set-value cache cache-key (clj-times->time-strs collections-map))))
 
 (defn- get-collections-map
   "Gets the cached value."
   [context]
   (let [coll-cache (cache/context->cache context cache-key)
         collection-map (cache/get-value
-                         coll-cache
-                         :collections
-                         (fn [] (fetch-collections-map context)))]
+                        coll-cache
+                        cache-key
+                        (fn [] (clj-times->time-strs (fetch-collections-map context))))]
     (if (empty? collection-map)
       (errors/internal-error! "Collections were not in cache.")
-      collection-map)))
+      (time-strs->clj-times collection-map))))
 
 (defn get-collection
   "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
@@ -92,5 +134,4 @@
 
 (def refresh-collections-cache-for-granule-acls-job
   {:job-type RefreshCollectionsCacheForGranuleAclsJob
-   ;; 15 minutes
-   :interval (* 15 60)})
+   :interval job-refresh-rate})

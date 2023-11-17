@@ -5,15 +5,11 @@
    [clj-time.format :as f]
    [clojure.set :as set]
    [clojure.string :as str]
-   [cmr.acl.core :as acl-core]
    [cmr.common.cache :as cache]
-   [cmr.common.cache.cache-spec :as cache-spec]
-   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.log :refer [info debug warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as u :refer [update-in-each]]
-   [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.umm-spec.legacy :as legacy]
    [cmr.umm-spec.time :as umm-time]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core]
@@ -110,7 +106,9 @@
       (get-acl-enforcement-collection-fields-fn concept))))
 
 (defn coll-matches-collection-identifier?
-  "Returns true if the collection matches the collection identifier"
+  "Returns true if the collection matches the collection identifier.
+   coll is a cached collection
+   coll-id is the catalog_item_identity"
   [coll coll-id]
   (let [coll-entry-title (:EntryTitle coll)
         concept-id (or (:concept-id coll)
@@ -126,6 +124,25 @@
          ;; want to pull out this specific value
          (or (nil? temporal)
              (matches-temporal-filter? :collection (u/get-real-or-lazy coll :TemporalExtents) temporal)))))
+
+(comment
+  ;; these are what the maps look like
+  (let [coll {:concept-type :collection
+              :provider-id "TCHERRY"
+              :EntryTitle "LarcDatasetId-sampleGranule0002"
+              :AccessConstraints {:Value 5}
+              :TemporalExtents
+              [{:RangeDateTimes
+                [{:BeginningDateTime "2000-01-01T00:00:00.000Z"
+                  :EndingDateTime nil}]}]
+              :concept-id "C1200000219-TCHERRY"}
+        coll (u/lazy-assoc coll :AccessConstraints {:Value 5})
+        coll-id {:entry-titles ["LarcDatasetId-sampleGranule0002"]
+                 :access-value {:min-value 0 :max-value 6}
+                 :concept-ids ["C1200000219-TCHERRY"]}]
+    (println (coll-matches-collection-identifier? coll coll-id)))
+
+  {u/lazy-assoc {} :AccessConstraints {:Value 5}})
 
 (defn- validate-collection-identiier
   "Verifies the collection identifier isn't using any unsupported ACL features."
