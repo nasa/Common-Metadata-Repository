@@ -7,11 +7,14 @@
    [clojure.string :as str]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common.api.context :as ctx-lib]
    [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
+   [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.elastic-utils.index-util :as index-util]
    [cmr.indexer.config :as indexer-config]
    [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
@@ -214,6 +217,10 @@
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
+  (info (str "get-elastic-doc-for-full-collection "
+             (ctx-lib/context->request-id context)
+             " start "
+             (jvm-info/get-memory-statistics)))
   (let [{:keys [concept-id revision-id provider-id user-id native-id
                 created-at revision-date deleted format extra-fields tag-associations
                 variable-associations service-associations tool-associations generic-associations]} concept
@@ -354,6 +361,10 @@
                                               :ResolutionAndCoordinateSystem
                                               :HorizontalDataResolution]))
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))]
+    (info (str "get-elastic-doc-for-full-collection "
+               (ctx-lib/context->request-id context)
+               " about to merge "
+               (jvm-info/get-memory-statistics)))
     (merge {:concept-id concept-id
             :doi-stored doi
             :doi-lowercase doi-lowercase
