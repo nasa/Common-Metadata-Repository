@@ -24,17 +24,19 @@
   keyword-map        A single GCMD keyword with each of its subfields as a key in a map. If the
                      keyword does not have a value for a subfield, that key will not be present in
                      the map."
-  (:require [compojure.core :refer :all]
-            [cheshire.core :as json]
-            [camel-snake-kebab.core :as csk]
-            [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.common.mime-types :as mt]
-            [cmr.common.util :as util]
-            [cmr.common.services.errors :as errors]
-            [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
-            [clojure.string :as str]
-            [clojure.set :as set]
-            [cmr.transmit.kms :as kms]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cheshire.core :as json]
+   [clojure.set :as set]
+   [clojure.string :as str]
+   [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
+   [cmr.transmit.kms :as kms]
+   [compojure.core :refer :all]))
 
 (def sorted-hierarchical-map
   "A map that sorts the keys of the hierarchical map so it is presented in a pleasing way to Users
@@ -161,7 +163,8 @@
           keyword-hierarchy (cmr-keyword-scheme kf/nested-fields-mappings)
           hierarchical-keywords (flat-keywords->hierarchical-keywords keywords keyword-hierarchy)]
       {:staus 200
-       :headers {"Content-Type" (mt/with-utf-8 mt/json)}
+       :headers {"Content-Type" (mt/with-utf-8 mt/json)
+                 common-routes/CORS_ORIGIN_HEADER "*"}
        :body (json/generate-string hierarchical-keywords)})))
 
 (def keyword-api-routes
