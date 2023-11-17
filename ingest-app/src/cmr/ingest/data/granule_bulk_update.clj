@@ -93,7 +93,7 @@
                  [:created-at :name :task-id :status :status-message :request-json-body]
                  (sql-utils/from "granule_bulk_update_tasks")
                  (sql-utils/where `(and (= :provider-id ~provider-id)
-                                        (> :create-at "'01-JAN-00 12.00.00.000000000 PM +00:00'")))
+                                        (> :created-at "'01-JAN-00 12.00.00.000000000 PM +00:00'")))
                  (sql-utils/order-by (sql-utils/desc `(+ :task-id 0)))))
           ;; Note: the column selected out of the database is created_at, instead of created-at.
           statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
