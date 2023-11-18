@@ -75,8 +75,6 @@
   ([component user-token raw-params input-sa-header]
    (get-opendap-urls component user-token "2" raw-params input-sa-header))
   ([component user-token dap-version raw-params input-sa-header]
-   (log/error "CMR-9518 Debugging v2_1 dap-version: " dap-version)
-   (log/error "Got params:" raw-params)
    (let [start (util/now)
          search-endpoint (config/get-search-url component)
          ;; Stage 1
@@ -126,7 +124,8 @@
                services bounding-info s3-errs
                query s4-errs
                {:errors (errors/check
-                         [not granule-links metadata-errors/empty-gnl-data-files])})]
+                         [not granule-links metadata-errors/empty-gnl-data-files])})
+         _ (log/error "CMR-9518 Debugging v2_1 after error handling: " params) ]
      (common/process-results {:params params
                               :dap-version dap-version
                               :granule-links granule-links
