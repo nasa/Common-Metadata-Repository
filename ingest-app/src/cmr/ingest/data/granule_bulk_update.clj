@@ -88,13 +88,13 @@
    (jdbc/with-db-transaction
     [conn db]
     ;; Testing Returns a list of bulk update tasks for the provider
-    (let [date "'2000-01-01T10:00:00Z'"
+    (let [date "2000-01-01T10:00:00Z"
           stmt (sql-utils/build
                 (sql-utils/select
                  [:created-at :name :task-id :status :status-message :request-json-body]
                  (sql-utils/from "granule_bulk_update_tasks")
                  (sql-utils/where `(and (= :provider-id ~provider-id)
-                                        (> :created-at `(to_utc_timestamp_tz(~date)))))
+                                        (> :created-at to_utc_timestamp_tz(~date))))
                  (sql-utils/order-by (sql-utils/desc `(+ :task-id 0)))))
           ;; Note: the column selected out of the database is created_at, instead of created-at.
           statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
