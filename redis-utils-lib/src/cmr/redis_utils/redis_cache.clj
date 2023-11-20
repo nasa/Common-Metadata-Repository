@@ -71,8 +71,11 @@
 
   (cache-size
     [_]
-    ;; not relevant for redis
-    -1))
+    (reduce #(+ %1 (if-let [size (wcar* (carmine/memory-usage (serialize %2)))]
+                     size
+                     0))
+            0
+            keys-to-track)))
 
 (defn create-redis-cache
   "Creates an instance of the redis cache.

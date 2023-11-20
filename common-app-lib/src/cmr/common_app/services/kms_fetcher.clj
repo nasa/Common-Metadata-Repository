@@ -73,6 +73,7 @@
   [context]
   (when-not (:ignore-kms-keywords context)
     (let [cache (cache/context->cache context kms-cache-key)]
+      (info (format "*** the KMS cache size is %s" (cache/cache-size cache)))
       (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context)))))
 
 (defn refresh-kms-cache
@@ -82,7 +83,8 @@
   (let [cache (cache/context->cache context kms-cache-key)
         gcmd-keywords-map (fetch-gcmd-keywords-map context)]
     (info "Refreshed KMS cache.")
-    (cache/set-value cache kms-cache-key gcmd-keywords-map)))
+    (cache/set-value cache kms-cache-key gcmd-keywords-map)
+    (info (format "*** the KMS cache size is %d" (cache/cache-size cache)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache.

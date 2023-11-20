@@ -1,7 +1,8 @@
 (ns cmr.common.cache
   "Defines the core caching protocol for the CMR."
   (:require
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [cmr.common.log :refer (info)]))
 
 (defn context->cache
   "Get the cache for the given key from the context"
@@ -60,4 +61,8 @@
     (into {}
           (for [[cache-key cache] system-caches]
             (when (simple-cache? cache)
-              {cache-key (cache-size cache)})))))
+              (try
+                {cache-key (cache-size cache)}
+                (catch java.lang.Exception e
+                  (info (format "Either the Cache %s or its delegate is null. The exception is %s" cache-key e))
+                  {cache-key 0})))))))

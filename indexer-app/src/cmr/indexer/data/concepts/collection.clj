@@ -8,6 +8,7 @@
    [cmr.common-app.config :as common-config]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer [debug warn info error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
@@ -211,6 +212,29 @@
       (distinct (conj consortiums "GEOSS"))
       consortiums)))
 
+(defn- get-memory-statistics
+  "Returns a map containing the memory statistics for the current JVM process."
+  []
+  (let [runtime (Runtime/getRuntime)
+        free-mb (double (/ (.freeMemory runtime) 1024 1024))
+        max-mb (double (/ (.maxMemory runtime) 1024 1024))
+        total-mb (double (/ (.totalMemory runtime) 1024 1024))
+        used-mb (double (- total-mb free-mb))
+        percent-used (double (* 100 (/ used-mb max-mb)))]
+    {:free-mb free-mb
+     :max-mb max-mb
+     :total-mb total-mb
+     :used-mb used-mb
+     :percent-used percent-used}))
+
+(defn log-jvm-statistics
+  "Logs JVM memory statistics."
+  [taken-when]
+  (let [{:keys [free-mb max-mb total-mb used-mb percent-used]} (get-memory-statistics)]
+    (info (format (str "Indexer %s Maximum Memory (MB): [%.0f] Total Allocated Memory (MB): [%.0f] Free "
+                       " memory (MB): [%.0f] Used memory (MB): [%.0f] Percent used: [%.1f]")
+                  taken-when max-mb total-mb free-mb used-mb percent-used))))
+
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
@@ -353,166 +377,161 @@
                                               :HorizontalSpatialDomain
                                               :ResolutionAndCoordinateSystem
                                               :HorizontalDataResolution]))
-        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))]
-    (merge {:concept-id concept-id
-            :doi-stored doi
-            :doi-lowercase doi-lowercase
-            :revision-id revision-id
-            :concept-seq-id (min es/MAX_INT concept-seq-id)
-            :concept-seq-id-long concept-seq-id
-            :native-id native-id
-            :native-id-lowercase (str/lower-case native-id)
-            :user-id user-id
-            :permitted-group-ids permitted-group-ids
-            ;; If there's an entry in the collection granule aggregates then the collection has granules.
-            :has-granules has-granules
-            :has-granules-or-cwic (or
-                                   has-granules
-                                   (contains? (set consortiums) "CWIC"))
-            :has-granules-or-opensearch (or
-                                         has-granules
-                                         (not (empty?
-                                               (set/intersection
-                                                (set consortiums)
-                                                (set (common-config/opensearch-consortiums))))))
-            :granule-data-format granule-data-format
-            :granule-data-format-lowercase (map str/lower-case granule-data-format)
-            :entry-id entry-id
-            :entry-id-lowercase (str/lower-case entry-id)
-            :entry-title (str/trim entry-title)
-            :entry-title-lowercase (str/trim (str/lower-case entry-title))
-            :provider-id provider-id
-            :provider-id-lowercase (str/lower-case provider-id)
-            :short-name short-name
-            :short-name-lowercase (util/safe-lowercase short-name)
-            :version-id version-id
-            :version-id-lowercase (util/safe-lowercase version-id)
-            :parsed-version-id-lowercase (util/safe-lowercase parsed-version-id)
-            :deleted (boolean deleted)
-            :revision-date revision-date
-            :access-value access-value
-            :processing-level-id processing-level-id
-            :processing-level-id-lowercase (util/safe-lowercase processing-level-id)
-            :latency latency
-            :latency-lowercase (util/safe-lowercase latency)
-            :collection-data-type collection-data-type
-            :collection-data-type-lowercase (when collection-data-type
-                                              (if (sequential? collection-data-type)
-                                                (map str/lower-case collection-data-type)
-                                                (str/lower-case collection-data-type)))
-            :platform-sn platform-short-names
-            :platform-sn-lowercase  (map str/lower-case platform-short-names)
-
-            ;; hierarchical fields
-            :platforms nil ;; DEPRECATED ; use :platforms2
-            :platforms2 platforms2-nested
-            :instruments instruments-nested
-            :archive-centers archive-centers
-            :data-centers data-centers
-            :temporals temporal-extents
-            :temporal-ranges (mapcat (fn [extent]
-                                       [(:start-date extent)
-                                        (:end-date extent)])
-                                     temporal-extents-ranges)
-            ;; added so that we can respect all collection temporal ranges in search
-            ;; when limit_to_granules is set and there are no granules for the collection.
-            :limit-to-granules-temporals
-            (if granule-start-date
-              [{:start-date (index-util/date->elastic granule-start-date)
-                :end-date (index-util/date->elastic granule-end-date)}]
-              temporal-extents)
-            :science-keywords (map #(sk/science-keyword->elastic-doc kms-index %)
-                                   (:ScienceKeywords collection))
-            :location-keywords (map #(clk/location-keyword->elastic-doc kms-index %)
-                                    (:LocationKeywords collection))
-
-            :instrument-sn instrument-short-names
-            :instrument-sn-lowercase  (map str/lower-case instrument-short-names)
-            :sensor-sn sensor-short-names
-            :sensor-sn-lowercase  (map str/lower-case sensor-short-names)
-            :authors authors
-            :authors-lowercase (map str/lower-case authors)
-            :consortiums consortiums
-            :consortiums-lowercase (map util/safe-lowercase consortiums)
-            :project-sn project-short-names
-            :project-sn-lowercase  (map str/lower-case project-short-names)
-            :two-d-coord-name two-d-coord-names
-            :two-d-coord-name-lowercase  (map str/lower-case two-d-coord-names)
-            :spatial-keyword spatial-keywords
-            :spatial-keyword-lowercase  (map str/lower-case spatial-keywords)
-            :attributes (attrib/aas->elastic-docs collection)
-            :science-keywords-flat (sk/flatten-science-keywords collection)
-            :personnel (json/generate-string personnel)
-            :archive-center archive-center-names
-            :archive-center-lowercase (map str/lower-case archive-center-names)
-            :data-center data-center-names
-            :data-center-lowercase (map str/lower-case data-center-names)
-            :downloadable downloadable
-            :browsable browsable
-            :atom-links atom-links
-            :summary summary
-            :metadata-format (name (mt/format-key format))
-            :related-urls (map json/generate-string opendata-related-urls)
-            :has-opendap-url (not (empty? (filter opendap-util/opendap-url? related-urls)))
-            :cloud-hosted (cloud-hosted? collection tags)
-            :standard-product (standard-product? collection tags)
-            :publication-references opendata-references
-            :collection-citations (map json/generate-string opendata-citations)
-            :update-time update-time
-            :index-time index-time
-            :insert-time insert-time
-            :created-at created-at
-            :coordinate-system coordinate-system
-
-            ;; fields added to support keyword searches including the quoted string case.
-            :keyword2 (k/create-keywords-field concept-id collection
-                                               {:platform-long-names platform-long-names
-                                                :instrument-long-names instrument-long-names
-                                                :entry-id entry-id})
-            :platform-ln-lowercase (map str/lower-case platform-long-names)
-            :instrument-ln-lowercase (map str/lower-case instrument-long-names)
-            :sensor-ln-lowercase (map str/lower-case sensor-long-names)
-            :project-ln-lowercase (map str/lower-case project-long-names)
-            :temporal-keyword-lowercase (map str/lower-case temporal-keywords)
-
-            ;; tags
-            :tags tags
-            ;; tag-data saved in elasticsearch for retrieving purpose in the format of:
-            ;; {"org.ceos.wgiss.cwic.native_id": {"associationDate":"2015-01-01T00:00:00.0Z",
-            ;;                                    "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"},
-            ;;  "org.ceos.wgiss.cwic.data_provider": {"associationDate":"2015-01-01T00:00:00.0Z",
-            ;;                                        "data": "NASA"},
-            ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
-            ;;                                      "data": "prod"}}
-            :tags-gzip-b64 (when (seq tag-associations)
-                             (util/string->gzip-base64
-                              (pr-str
-                               (into {} (for [ta tag-associations]
-                                          [(:tag-key ta) (util/remove-nil-keys
-                                                          {:data (:data ta)})])))))
-
-            :processing-level-id-lowercase-humanized (-> humanized-values
-                                                         :processing-level-id-humanized
-                                                         first
-                                                         :value-lowercase)
-            :associations-gzip-b64 (assoc-util/associations->gzip-base64-str
-                                    (concat variable-associations service-associations tool-associations generic-associations)
-                                    concept-id)
-            :usage-relevancy-score 0
-            :horizontal-data-resolutions {:value horizontal-data-resolutions
-                                          :priority 0}
-
-            :s3-bucket-and-object-prefix-names s3-bucket-and-object-prefix-names
-            :eula-identifiers (get-in collection [:UseConstraints :EULAIdentifiers])}
-
-           (variable-service-tool-associations->elastic-docs
-            context variable-associations service-associations tool-associations)
-           (collection-temporal-elastic context concept-id collection)
-           (spatial/collection-orbit-parameters->elastic-docs collection)
-           (spatial->elastic collection)
-           (sk/science-keywords->facet-fields collection)
-           humanized-values
-           (metrics/collection-community-usage-score context collection parsed-version-id))))
+        concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
+        result (merge {:concept-id concept-id
+                       :doi-stored doi
+                       :doi-lowercase doi-lowercase
+                       :revision-id revision-id
+                       :concept-seq-id (min es/MAX_INT concept-seq-id)
+                       :concept-seq-id-long concept-seq-id
+                       :native-id native-id
+                       :native-id-lowercase (str/lower-case native-id)
+                       :user-id user-id
+                       :permitted-group-ids permitted-group-ids
+                           ;; If there's an entry in the collection granule aggregates then the collection has granules.
+                       :has-granules has-granules
+                       :has-granules-or-cwic (or
+                                              has-granules
+                                              (contains? (set consortiums) "CWIC"))
+                       :has-granules-or-opensearch (or
+                                                    has-granules
+                                                    (not (empty?
+                                                          (set/intersection
+                                                           (set consortiums)
+                                                           (set (common-config/opensearch-consortiums))))))
+                       :granule-data-format granule-data-format
+                       :granule-data-format-lowercase (map str/lower-case granule-data-format)
+                       :entry-id entry-id
+                       :entry-id-lowercase (str/lower-case entry-id)
+                       :entry-title (str/trim entry-title)
+                       :entry-title-lowercase (str/trim (str/lower-case entry-title))
+                       :provider-id provider-id
+                       :provider-id-lowercase (str/lower-case provider-id)
+                       :short-name short-name
+                       :short-name-lowercase (util/safe-lowercase short-name)
+                       :version-id version-id
+                       :version-id-lowercase (util/safe-lowercase version-id)
+                       :parsed-version-id-lowercase (util/safe-lowercase parsed-version-id)
+                       :deleted (boolean deleted)
+                       :revision-date revision-date
+                       :access-value access-value
+                       :processing-level-id processing-level-id
+                       :processing-level-id-lowercase (util/safe-lowercase processing-level-id)
+                       :latency latency
+                       :latency-lowercase (util/safe-lowercase latency)
+                       :collection-data-type collection-data-type
+                       :collection-data-type-lowercase (when collection-data-type
+                                                         (if (sequential? collection-data-type)
+                                                           (map str/lower-case collection-data-type)
+                                                           (str/lower-case collection-data-type)))
+                       :platform-sn platform-short-names
+                       :platform-sn-lowercase  (map str/lower-case platform-short-names)
+                       ;; hierarchical fields
+                       :platforms nil ;; DEPRECATED ; use :platforms2
+                       :platforms2 platforms2-nested
+                       :instruments instruments-nested
+                       :archive-centers archive-centers
+                       :data-centers data-centers
+                       :temporals temporal-extents
+                       :temporal-ranges (mapcat (fn [extent]
+                                                  [(:start-date extent)
+                                                   (:end-date extent)])
+                                                temporal-extents-ranges)
+                           ;; added so that we can respect all collection temporal ranges in search
+                           ;; when limit_to_granules is set and there are no granules for the collection.
+                       :limit-to-granules-temporals
+                       (if granule-start-date
+                         [{:start-date (index-util/date->elastic granule-start-date)
+                           :end-date (index-util/date->elastic granule-end-date)}]
+                         temporal-extents)
+                       :science-keywords (map #(sk/science-keyword->elastic-doc kms-index %)
+                                              (:ScienceKeywords collection))
+                       :location-keywords (map #(clk/location-keyword->elastic-doc kms-index %)
+                                               (:LocationKeywords collection))
+                       :instrument-sn instrument-short-names
+                       :instrument-sn-lowercase  (map str/lower-case instrument-short-names)
+                       :sensor-sn sensor-short-names
+                       :sensor-sn-lowercase  (map str/lower-case sensor-short-names)
+                       :authors authors
+                       :authors-lowercase (map str/lower-case authors)
+                       :consortiums consortiums
+                       :consortiums-lowercase (map util/safe-lowercase consortiums)
+                       :project-sn project-short-names
+                       :project-sn-lowercase  (map str/lower-case project-short-names)
+                       :two-d-coord-name two-d-coord-names
+                       :two-d-coord-name-lowercase  (map str/lower-case two-d-coord-names)
+                       :spatial-keyword spatial-keywords
+                       :spatial-keyword-lowercase  (map str/lower-case spatial-keywords)
+                       :attributes (attrib/aas->elastic-docs collection)
+                       :science-keywords-flat (sk/flatten-science-keywords collection)
+                       :personnel (json/generate-string personnel)
+                       :archive-center archive-center-names
+                       :archive-center-lowercase (map str/lower-case archive-center-names)
+                       :data-center data-center-names
+                       :data-center-lowercase (map str/lower-case data-center-names)
+                       :downloadable downloadable
+                       :browsable browsable
+                       :atom-links atom-links
+                       :summary summary
+                       :metadata-format (name (mt/format-key format))
+                       :related-urls (map json/generate-string opendata-related-urls)
+                       :has-opendap-url (not (empty? (filter opendap-util/opendap-url? related-urls)))
+                       :cloud-hosted (cloud-hosted? collection tags)
+                       :standard-product (standard-product? collection tags)
+                       :publication-references opendata-references
+                       :collection-citations (map json/generate-string opendata-citations)
+                       :update-time update-time
+                       :index-time index-time
+                       :insert-time insert-time
+                       :created-at created-at
+                       :coordinate-system coordinate-system
+                       ;; fields added to support keyword searches including the quoted string case.
+                       :keyword2 (k/create-keywords-field concept-id collection
+                                                          {:platform-long-names platform-long-names
+                                                           :instrument-long-names instrument-long-names
+                                                           :entry-id entry-id})
+                       :platform-ln-lowercase (map str/lower-case platform-long-names)
+                       :instrument-ln-lowercase (map str/lower-case instrument-long-names)
+                       :sensor-ln-lowercase (map str/lower-case sensor-long-names)
+                       :project-ln-lowercase (map str/lower-case project-long-names)
+                       :temporal-keyword-lowercase (map str/lower-case temporal-keywords)
+                       ;; tags
+                       :tags tags
+                       ;; tag-data saved in elasticsearch for retrieving purpose in the format of:
+                       ;; {"org.ceos.wgiss.cwic.native_id": {"associationDate":"2015-01-01T00:00:00.0Z",
+                       ;;                                    "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"},
+                       ;;  "org.ceos.wgiss.cwic.data_provider": {"associationDate":"2015-01-01T00:00:00.0Z",
+                       ;;                                        "data": "NASA"},
+                       ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
+                       ;;                                      "data": "prod"}}
+                       :tags-gzip-b64 (when (seq tag-associations)
+                                        (util/string->gzip-base64
+                                         (pr-str
+                                          (into {} (for [ta tag-associations]
+                                                     [(:tag-key ta) (util/remove-nil-keys
+                                                                     {:data (:data ta)})])))))
+                       :processing-level-id-lowercase-humanized (-> humanized-values
+                                                                    :processing-level-id-humanized
+                                                                    first
+                                                                    :value-lowercase)
+                       :associations-gzip-b64 (assoc-util/associations->gzip-base64-str
+                                               (concat variable-associations service-associations tool-associations generic-associations)
+                                               concept-id)
+                       :usage-relevancy-score 0
+                       :horizontal-data-resolutions {:value horizontal-data-resolutions
+                                                     :priority 0}
+                       :s3-bucket-and-object-prefix-names s3-bucket-and-object-prefix-names
+                       :eula-identifiers (get-in collection [:UseConstraints :EULAIdentifiers])}
+                      (variable-service-tool-associations->elastic-docs
+                       context variable-associations service-associations tool-associations)
+                      (collection-temporal-elastic context concept-id collection)
+                      (spatial/collection-orbit-parameters->elastic-docs collection)
+                      (spatial->elastic collection)
+                      (sk/science-keywords->facet-fields collection)
+                      humanized-values
+                      (metrics/collection-community-usage-score context collection parsed-version-id))]
+    (log-jvm-statistics "ending 1 get-elastic-doc-for-full-collection")
+    result))
 
 (defn- get-elastic-doc-for-tombstone-collection
   "Get the subset of elastic field values that apply to a tombstone index operation."
@@ -552,6 +571,10 @@
   [context concept umm-collection]
   (if (:deleted concept)
     (get-elastic-doc-for-tombstone-collection context concept)
-    (get-elastic-doc-for-full-collection context
-                                         concept
-                                         umm-collection)))
+    (let [_ (log-jvm-statistics "staring get-elastic-doc-for-full-collection")
+          result (get-elastic-doc-for-full-collection context
+                                                      concept
+                                                      umm-collection)
+          _ (log-jvm-statistics "ending 2 get-elastic-doc-for-full-collection")]
+      result)))
+
