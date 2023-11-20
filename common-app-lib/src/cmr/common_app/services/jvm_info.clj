@@ -7,7 +7,7 @@
   (:import
    (java.lang Runtime)))
 
-(defn- get-memory-statistics
+(defn get-memory-statistics
   "Returns a map containing the memory statistics for the current JVM process."
   []
   (let [runtime (Runtime/getRuntime)
