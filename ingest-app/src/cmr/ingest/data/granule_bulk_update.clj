@@ -88,7 +88,7 @@
    (jdbc/with-db-transaction
     [conn db]
     ;; Testing Returns a list of bulk update tasks for the provider
-    (let [date "'2000-01-01T10:00:00Z'"
+    (let [date "2000-01-01T10:00:00Z"
           max-rows 1000
           stmt (sql-utils/build
                 (sql-utils/select
