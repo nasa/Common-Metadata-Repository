@@ -84,9 +84,7 @@
                (or (nil? begin-date) (re-matches #"\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ" begin-date))
                (or (nil? end-date) (re-matches #"\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ" end-date)))
         [begin-date end-date]
-        (errors/throw-service-error
-         :invalid-data
-         (str "Error getting granule bulk update tasks. Invalid date: " date))))))
+        (throw (Exception. (str "Invalid date: " date)))))))
 
 (defprotocol GranBulkUpdateStore
   "Defines a protocol for getting and storing the granule bulk update status and task-id
