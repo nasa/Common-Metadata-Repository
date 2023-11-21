@@ -69,6 +69,25 @@
       util/remove-nil-keys
       util/map-keys->kebab-case))
 
+(defn- get-begin-end-dates
+  "Returns the begin-date and end-date from the date parameter"
+  [date]
+  ;;first remove all the spaces, and the commas at the beginning and in the end.
+  ;;the valid date should be either like "2000-01-01T10:00:00Z,2000-01-02T10:00:00Z"
+  ;;or just one date like "2000-01-01T10:00:00Z".
+  (when date
+    (let [date-trimmed (string/replace date #"^,|,$| " "") 
+          dates (string/split date-trimmed #",")
+          begin-date (first dates)
+          end-date (second dates)]
+      (if (and (<= (count dates) 2)
+               (or (nil? begin-date) (re-matches #"\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ" begin-date))
+               (or (nil? end-date) (re-matches #"\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ" end-date)))
+        [begin-date end-date]
+        (errors/throw-service-error
+         :invalid-data
+         [(str "Error getting granule bulk update tasks. Invalid date: " date)])))))
+
 (defprotocol GranBulkUpdateStore
   "Defines a protocol for getting and storing the granule bulk update status and task-id
   information."
@@ -87,64 +106,49 @@
 
   (get-granule-tasks-by-provider-id
    [db provider-id params]
-   (let [max-rows (config/granule-bulk-update-tasks-max-rows)
-         date-param (:date params)
-         dates (when date-param
-                 (string/split (string/replace date-param #" " "") #","))
-         begin-date (first dates)
-         end-date (second dates)]
    (try
      (jdbc/with-db-transaction
       [conn db]
       ;; Returns a list of bulk update tasks for the provider
-      (let [stmt (if dates
-                   ;; dates parameter passed in needs to be either 2000-01-01T10:00:00Z,2000-01-02T10:00:00Z
-                   ;; or 2000-01-01T10:00:00Z, which is treated as being-date.
-                   (if (and (= 2 (count dates))
-                            (= 20 (count begin-date) (count end-date)))
-                     (let [begin-local (l/to-local-date-time begin-date)
-                           end-local (l/to-local-date-time end-date)]
-                     (sql-utils/build
-                      (sql-utils/select
-                       [:created-at :name :task-id :status :status-message :request-json-body]
-                       (sql-utils/from "granule_bulk_update_tasks")
-                       (sql-utils/where `(and (= :provider-id ~provider-id)
-                                              (<= :rownum ~max-rows)
-                                              (<= :created-at ~end-local)
-                                              (>= :created-at ~begin-local)))
-                       (sql-utils/order-by (sql-utils/desc `(+ :task-id 0))))))
-                     (if (and (= 1 (count dates))
-                              (= 20 (count begin-date)))
-                       (let [begin-local (l/to-local-date-time begin-date)]
-                       (sql-utils/build
-                        (sql-utils/select
-                         [:created-at :name :task-id :status :status-message :request-json-body]
-                         (sql-utils/from "granule_bulk_update_tasks")
-                         (sql-utils/where `(and (= :provider-id ~provider-id)
-                                                (<= :rownum ~max-rows)
-                                                (>= :created-at ~begin-local)))
-                         (sql-utils/order-by (sql-utils/desc `(+ :task-id 0))))))
-                         (errors/throw-service-error :invalid-data
-                                                     [(str "Error getting granule bulk update tasks"
-                                                           "dates passed in are not correct")])))
+      (let [max-rows (config/granule-bulk-update-tasks-max-rows)
+            [begin-date end-date] (get-begin-end-dates (:date params))
+            stmt (if (and begin-date end-date)
                    (sql-utils/build
                     (sql-utils/select
                      [:created-at :name :task-id :status :status-message :request-json-body]
                      (sql-utils/from "granule_bulk_update_tasks")
                      (sql-utils/where `(and (= :provider-id ~provider-id)
-                                            (<= :rownum ~max-rows)))
-                     (sql-utils/order-by (sql-utils/desc `(+ :task-id 0))))))
-            ;; Note: the column selected out of the database is created_at, instead of created-at.
+                                            (<= :rowNum ~max-rows)
+                                            (<= :created-at (:to_utc_timestamp_tz ~end-date)) 
+                                            (>= :created-at (:to_utc_timestamp_tz ~begin-date))))
+                     (sql-utils/order-by (sql-utils/desc `(+ :task-id 0)))))
+                   (if begin-date
+                     (sql-utils/build
+                      (sql-utils/select
+                       [:created-at :name :task-id :status :status-message :request-json-body]
+                       (sql-utils/from "granule_bulk_update_tasks")
+                       (sql-utils/where `(and (= :provider-id ~provider-id)
+                                              (<= :rowNum ~max-rows)
+                                              (>= :created-at (:to_utc_timestamp_tz ~begin-date))))
+                       (sql-utils/order-by (sql-utils/desc `(+ :task-id 0)))))
+                     (sql-utils/build
+                      (sql-utils/select
+                       [:created-at :name :task-id :status :status-message :request-json-body]
+                       (sql-utils/from "granule_bulk_update_tasks")
+                       (sql-utils/where `(and (= :provider-id ~provider-id)
+                                              (<= :rowNum ~max-rows)))
+                       (sql-utils/order-by (sql-utils/desc `(+ :task-id 0)))))))
+            ;; Note: the column selected out of the database is created_at, instead of created-at. 
             statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
                                  (sql-utils/query conn stmt)))
             statuses (map util/map-keys->kebab-case statuses)]
         (map #(update % :request-json-body util/gzip-blob->string)
              statuses)))
      (catch Exception e
-        (error "Exception caught in getting granule bulk update taaks: " e)
+        (error "Exception caught in getting granule bulk update tasks: " e)
         (errors/throw-service-error :invalid-data
                                     [(str "Error getting granule bulk update tasks"
-                                          (.getMessage e))])))))
+                                          (.getMessage e))]))))
 
   (get-granule-task-by-task-id
    [db task-id]
