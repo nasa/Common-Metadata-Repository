@@ -86,7 +86,7 @@
         [begin-date end-date]
         (errors/throw-service-error
          :invalid-data
-         [(str "Error getting granule bulk update tasks. Invalid date: " date)])))))
+         (str "Error getting granule bulk update tasks. Invalid date: " date))))))
 
 (defprotocol GranBulkUpdateStore
   "Defines a protocol for getting and storing the granule bulk update status and task-id
