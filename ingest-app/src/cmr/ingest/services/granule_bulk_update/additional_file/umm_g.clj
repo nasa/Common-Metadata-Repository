@@ -2,9 +2,7 @@
   "Contains functions to update UMM-G granule metadata for AdditionalFile granule bulk update."
   (:require
    [clojure.string :as string]
-   [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common.services.errors :as errors]
-   [cmr.common.validations.core :as v-core]
    [cmr.ingest.validation.validation :as v-validation]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
