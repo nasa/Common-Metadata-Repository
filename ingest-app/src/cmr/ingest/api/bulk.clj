@@ -1,9 +1,6 @@
 (ns cmr.ingest.api.bulk
   "Bulk ingest functions in support of the ingest API."
   (:require
-   [clj-time.core :as t]
-   [clj-time.local :as l]
-   [clj-time.coerce :as c]
    [clojure.data.xml :as xml]
    [clojure.string :as string]
    [cmr.acl.core :as acl]

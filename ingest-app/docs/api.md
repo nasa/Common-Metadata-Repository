@@ -2110,6 +2110,10 @@ Example granule bulk update response:
 
 The task information of all granule bulk update tasks that has been applied on a provider can be retrieved by sending an HTTP GET request to `%CMR-ENDPOINT%/providers/<provider-id>/bulk-update/granules/status`
 
+There is an option of adding a date search parameter: `%CMR-ENDPOINT%/providers/<provider-id>/bulk-update/granules/status?date=2000-01-01T10:00:00Z,2000-01-02T10:00:00Z`, The date parameter value needs to be either just one date, or two dates separated by a comma, in the format shown here. If only one date is passed in, the query will return all the rows with created-at >= <date>. If two dates are passed in, the query will return all the rows with   <first date> <= created-at <= <second date>.
+
+There is also a new environment variable involved, CMR_GRANULE_BULK_UPDATE_TASKS_MAX_ROWS, which limits the number of rows that could be returned, with or without the date parameter. The default is set to 1000.
+
 This returns a list of: name, task id, created-at, status (IN_PROGRESS or COMPLETE), a status message, and the original request JSON body.
 The list is ordered by task id, in descending order so that the newest update will show up on the top.
 
@@ -2121,7 +2125,7 @@ Example:
 curl \
   -H "Authorization:  XXXX" \
   -H "Cmr-Pretty:true" \
-  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules/status
+  %CMR-ENDPOINT%/providers/PROV1/bulk-update/granules/status?date=2021-03-12T10:00:00Z,2021-03-13T10:00:00Z
 
 <?xml version="1.0" encoding="UTF-8"?>
 <result>
