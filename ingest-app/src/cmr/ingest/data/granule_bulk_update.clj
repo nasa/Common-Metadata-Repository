@@ -145,8 +145,8 @@
      (catch Exception e
         (error "Exception caught in getting granule bulk update tasks: " e)
         (errors/throw-service-error :invalid-data
-                                    [(str "Error getting granule bulk update tasks"
-                                          (.getMessage e))]))))
+                                    (str "Error getting granule bulk update tasks"
+                                          (.getMessage e))))))
 
   (get-granule-task-by-task-id
    [db task-id]
