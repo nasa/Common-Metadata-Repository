@@ -21,9 +21,9 @@
    hierarchy for that short-name from the GCMD KMS keywords. If a field is not
    present in the KMS hierarchy, we use a dummy value to indicate the field was
    not present."
-  [kms-index short-name]
+  [context short-name]
   (let [full-platform
-        (kms-lookup/lookup-by-short-name kms-index :platforms short-name)
+        (kms-lookup/lookup-by-short-name context :platforms short-name)
         {:keys [basis category sub-category short-name long-name uuid]
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-platform]
@@ -47,16 +47,16 @@
   look up the original short name and fill out the doc if it exists. If it does exist just replace
   the original short name with the humanized one.  If it doesn't then just return the humanized
   platform."
-  [kms-index platform]
+  [context platform]
   (let [humanized-fields (filter #(-> % key namespace (= "cmr-humanized")) platform)
         humanized-fields-with-raw-values (util/map-values :value humanized-fields)
         ns-stripped-fields (util/map-keys->kebab-case humanized-fields-with-raw-values)
-        humanized-platform (platform2-nested-fields->elastic-doc kms-index
+        humanized-platform (platform2-nested-fields->elastic-doc context
                                                                  (:short-name ns-stripped-fields))]
     (if (:basis humanized-platform)
       humanized-platform
       (let [original-field (:ShortName platform)
-            original-platform (platform2-nested-fields->elastic-doc kms-index original-field)]
+            original-platform (platform2-nested-fields->elastic-doc context original-field)]
         (if (:basis original-platform)
           (assoc original-platform :short-name (:short-name humanized-platform)
                                    :short-name-lowercase (:short-name-lowercase humanized-platform))
@@ -71,10 +71,10 @@
    hierarchy for that short-name from the GCMD KMS keywords. If a field is not
    present in the KMS hierarchy, we use a dummy value to indicate the field was
    not present."
-  [kms-index short-name]
+  [context short-name]
   (let [full-platform
         (merge default-platform-values
-               (kms-lookup/lookup-by-short-name kms-index :platforms short-name))
+               (kms-lookup/lookup-by-short-name context :platforms short-name))
         {:keys [basis category sub-category short-name long-name uuid]
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-platform]

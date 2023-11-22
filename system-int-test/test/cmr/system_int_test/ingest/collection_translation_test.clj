@@ -20,7 +20,7 @@
    :dif10
    :echo10])
 
-(def test-context (location-keywords-helper/setup-context-for-test))
+(def test-context location-keywords-helper/create-context)
 
 (defn assert-translate-failure
   [error-regex & args]

@@ -1,14 +1,13 @@
 (ns cmr.common-app.test.services.kms-lookup
   "Unit tests for KMS lookup namespace."
   (:require
-   [clojure.java.io :as io]
    [clojure.test :refer :all]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common.util :refer [are3]]
-   [cmr.transmit.kms :as kms]))
+   [cmr.redis-utils.test.test-util :as redis-embedded-fixture]))
 
 (def sample-map
-  "Sample GCMD keywords map to use for all of the tests"
+  "Sample KMS map to use for all of the tests"
   {:providers [{:level-0 "ACADEMIC" :level-1 "OR-STATE/EOARC" :short-name "PROV1"
                 :long-name "Eastern Oregon Agriculture Research Center, Oregon State University"
                 :uuid "prov1-uuid"}]
@@ -39,18 +38,30 @@
                        :variable-level-1 "VL1" :variable-level-2 "VL2"
                        :variable-level-3 "VL3" :uuid "sk1-uuid"}]})
 
-(def kms-index
-  "KMS index to use for all of the tests which creates the KMS index from the sample map."
-  (kms-lookup/create-kms-index sample-map))
+(def create-context
+  "Creates a testing concept with the KMS caches."
+  {:system {:caches {kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
+                     kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
+                     kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
+                     kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}})
+
+(defn redis-cache-fixture
+  "Sets up the redis cache fixture to load data into the caches for testing."
+  [f]
+  (kms-lookup/create-kms-index create-context sample-map)
+  (f))
+
+(use-fixtures :once (join-fixtures [redis-embedded-fixture/embedded-redis-server-fixture
+                                    redis-cache-fixture]))
 
 (deftest lookup-by-location-string-test
   (testing "Full location hierarchy is returned"
     (is (= {:category "CONTINENT" :type "AFRICA" :subregion-1 "CENTRAL AFRICA"
             :subregion-2 "CHAD" :subregion-3 "AOUZOU" :uuid "location1-uuid"}
-           (kms-lookup/lookup-by-location-string kms-index "AOUZOU"))))
+           (kms-lookup/lookup-by-location-string create-context "AOUZOU"))))
 
   (are3 [location-string expected-uuid]
-    (is (= expected-uuid (:uuid (kms-lookup/lookup-by-location-string kms-index location-string))))
+    (is (= expected-uuid (:uuid (kms-lookup/lookup-by-location-string create-context location-string))))
 
     "Fewest number of hierarchical keys are returned"
     "CENTRAL AFRICA" "location3-uuid"
@@ -73,12 +84,12 @@
 (deftest lookup-by-umm-c-keyword-test
   (testing "Full keyword map is returned by umm-c lookup"
     (is (= {:short-name "PLAT1" :long-name "Platform 1" :category "Aircraft" :other-random-key 7 :uuid "plat1-uuid"}
-           (kms-lookup/lookup-by-umm-c-keyword kms-index :platforms
+           (kms-lookup/lookup-by-umm-c-keyword create-context :platforms
                                                {:short-name "Plat1" :long-name "Platform 1" :type "Aircraft"}))))
   ;; Test each of the different keywords with fields present and missing
   (are3 [keyword-scheme umm-c-keyword expected-uuid]
     (is (= expected-uuid
-           (:uuid (kms-lookup/lookup-by-umm-c-keyword kms-index keyword-scheme umm-c-keyword))))
+           (:uuid (kms-lookup/lookup-by-umm-c-keyword create-context keyword-scheme umm-c-keyword))))
 
     "Lookup Platform"
     :platforms {:short-name "PLAT1" :long-name "Platform 1" :type "Aircraft"} "plat1-uuid"
@@ -144,17 +155,17 @@
   ;; CMR-4400
   (testing "Platform Shortname exists but Longname is nil"
     (is (= {:short-name "PLAT1" :long-name "Platform 1" :category "Aircraft" :other-random-key 7 :uuid "plat1-uuid"}
-           (kms-lookup/lookup-by-umm-c-keyword kms-index :platforms
+           (kms-lookup/lookup-by-umm-c-keyword create-context :platforms
                                                {:short-name "Plat1" :long-name nil :type "Aircraft"})))))
 
 (deftest lookup-by-short-name-test
   (testing "Full keyword map is returned by short-name lookup"
     (is (= {:short-name "PLAT1" :long-name "Platform 1" :category "Aircraft" :other-random-key 7 :uuid "plat1-uuid"}
-           (kms-lookup/lookup-by-short-name kms-index :platforms "PLAT1"))))
+           (kms-lookup/lookup-by-short-name create-context :platforms "PLAT1"))))
   ;; Test each of the different keywords with fields present and missing
   (are3 [keyword-scheme short-name expected-uuid]
     (is (= expected-uuid
-           (:uuid (kms-lookup/lookup-by-short-name kms-index keyword-scheme short-name))))
+           (:uuid (kms-lookup/lookup-by-short-name create-context keyword-scheme short-name))))
 
     "Lookup Platform"
     :platforms "PLAT1" "plat1-uuid"

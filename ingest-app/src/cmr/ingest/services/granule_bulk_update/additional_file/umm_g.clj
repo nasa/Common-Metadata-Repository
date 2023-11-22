@@ -138,7 +138,6 @@
   ([context umm-gran additional-files catch-errors]
    (let [updated-metadata (update-in umm-gran [:DataGranule :ArchiveAndDistributionInformation]
                                  #(update-additional-file-metadata % additional-files))
-         kms-index (kms-fetcher/get-kms-index context)
          kms-errors (path-errors->scheme-error
                      (umm-spec-validation/validate-granule-without-collection
                       updated-metadata

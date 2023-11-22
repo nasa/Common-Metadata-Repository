@@ -30,8 +30,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"}))
-
-(def test-context (location-keywords-helper/setup-context-for-test))
+(def test-context location-keywords-helper/create-context)
 
 ;; tests
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
@@ -688,10 +687,11 @@
         (is (= 2 (:revision-id response))))))
 
   (testing "ingesting UMM JSON with parsing errors"
-    (let [json (umm-spec/generate-metadata test-context (assoc expected-conversion/curr-ingest-ver-example-collection-record
-                                                         :DataDates
-                                                         [{:Date "invalid date"
-                                                           :Type "CREATE"}])
+    (let [json (umm-spec/generate-metadata test-context
+                                           (assoc expected-conversion/curr-ingest-ver-example-collection-record
+                                                  :DataDates
+                                                  [{:Date "invalid date"
+                                                    :Type "CREATE"}])
                                            :umm-json)
           concept-map {:provider-id "PROV1"
                        :native-id "umm_json_coll_2"

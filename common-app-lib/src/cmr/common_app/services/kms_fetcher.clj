@@ -60,6 +60,7 @@
   (let [kms-cache (cache/context->cache context kms-cache-key)
         kms-cache-value (cache/get-value kms-cache kms-cache-key)]
     (kms-lookup/create-kms-index
+     context
      (into {}
            (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
              ;; if the keyword-scheme-value is nil that means we could not get the KMS keywords
@@ -74,7 +75,9 @@
   (when-not (:ignore-kms-keywords context)
     (let [cache (cache/context->cache context kms-cache-key)]
       (info (format "*** the KMS cache size is %s" (cache/cache-size cache)))
-      (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context)))))
+      (or (cache/get-value cache kms-cache-key)
+          (when-not (cache/key-exists cache kms-cache-key)
+            (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context)))))))
 
 (defn refresh-kms-cache
   "Refreshes the KMS keywords stored in the cache. This should be called from a background job on a

@@ -73,6 +73,11 @@
     [this]
     (keys @cache-atom))
 
+  (key-exists
+    [this key]
+    ;; key is the cache-key. Checks to see if the cache has been setup.
+    (some? @cache-atom))
+
   (get-value
     [this key]
     (-> cache-atom

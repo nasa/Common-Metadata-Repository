@@ -4,7 +4,8 @@
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
-   [cmr.common.util :as util :refer [remove-empty-maps are3]]
+   [cmr.common.util :as util :refer [are3]]
+   [cmr.redis-utils.test.test-util :as redis-embedded-fixture]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.migration.version.collection :as coll-mig]
    [cmr.umm-spec.migration.version.core :as vm]
@@ -18,6 +19,8 @@
    [cmr.umm-spec.versioning :as v]
    [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
+(use-fixtures :once (join-fixtures [redis-embedded-fixture/embedded-redis-server-fixture
+                                    lkt/redis-cache-fixture]))
 (def umm-1-9-related-urls
   {:ContactGroups [{:Roles ["Investigator"]}
                    :Uuid "6f2c3b1f-acae-4af0-a759-f0d57ccfc888"
@@ -438,7 +441,7 @@
   (for-all [umm-record   (gen/no-shrink umm-gen/umm-c-generator)
             dest-version (gen/elements (v/versions :collection))]
     (let [dest-media-type (str mt/umm-json "; version=" dest-version)
-          metadata (core/generate-metadata (lkt/setup-context-for-test)
+          metadata (core/generate-metadata {}
                                            umm-record dest-media-type)]
       (empty? (core/validate-metadata :collection dest-media-type metadata)))))
 
@@ -468,31 +471,29 @@
                                                          {:TilingIdentificationSystemName "bar"}]})))))
 
 (deftest migrate-1_1-up-to-1_2
-  (is (empty? (:LocationKeywords
-               (vm/migrate-umm (lkt/setup-context-for-test)
-                               :collection "1.1" "1.2" {:SpatialKeywords nil}))))
-  (is (empty? (:LocationKeywords
-               (vm/migrate-umm (lkt/setup-context-for-test)
-                               :collection "1.1" "1.2" {:SpatialKeywords []}))))
-
-  (is (= [{:Category "CONTINENT"}]
-         (:LocationKeywords
-          (vm/migrate-umm
-           (lkt/setup-context-for-test)
-           :collection "1.1" "1.2" {:SpatialKeywords ["CONTINENT"]}))))
-  ;; If not in the hierarchy, convert to CATEGORY OTHER and put the value as Type.
-  (is (= [{:Category "OTHER" :Type "Somewhereville"}]
-         (:LocationKeywords
-          (vm/migrate-umm
-           (lkt/setup-context-for-test)
-           :collection "1.1" "1.2" {:SpatialKeywords ["Somewhereville"]}))))
-
-  (is (= [{:Category "CONTINENT" :Type "AFRICA" :Subregion1 "CENTRAL AFRICA" :Subregion2 "ANGOLA"}]
-         (:LocationKeywords
-          (vm/migrate-umm
-           (lkt/setup-context-for-test)
-           :collection "1.1" "1.2" {:SpatialKeywords ["ANGOLA"]})))))
-
+  (let [test-context lkt/create-context]
+    (is (empty? (:LocationKeywords
+                 (vm/migrate-umm test-context
+                                 :collection "1.1" "1.2" {:SpatialKeywords nil}))))
+    (is (empty? (:LocationKeywords
+                 (vm/migrate-umm test-context
+                                 :collection "1.1" "1.2" {:SpatialKeywords []}))))
+    (is (= [{:Category "CONTINENT"}]
+           (:LocationKeywords
+            (vm/migrate-umm
+             test-context
+             :collection "1.1" "1.2" {:SpatialKeywords ["CONTINENT"]}))))
+      ;; If not in the hierarchy, convert to CATEGORY OTHER and put the value as Type.
+    (is (= [{:Category "OTHER" :Type "Somewhereville"}]
+           (:LocationKeywords
+            (vm/migrate-umm
+             test-context
+             :collection "1.1" "1.2" {:SpatialKeywords ["Somewhereville"]}))))
+    (is (= [{:Category "CONTINENT" :Type "AFRICA" :Subregion1 "CENTRAL AFRICA" :Subregion2 "ANGOLA"}]
+           (:LocationKeywords
+            (vm/migrate-umm
+             test-context
+             :collection "1.1" "1.2" {:SpatialKeywords ["ANGOLA"]}))))))
 
 (deftest migrate_1_2-down-to-1_1
   (is (nil?
