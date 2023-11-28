@@ -91,7 +91,7 @@
         old-mem-cache (get-in context [:system :caches :collections-for-gran-acls])
         context (assoc-in context [:system :caches :collections-for-gran-acls] rcache)
         data (.get-value old-mem-cache :collections)]
-    (.set-value rcache :collections-for-gran-acls data)
+    (.set-values rcache :collections-for-gran-acls data)
 
     (testing "collection identifier"
       (are3 [entry-titles access-value-args collection-concept-id should-match?]
