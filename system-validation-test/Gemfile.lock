@@ -28,14 +28,15 @@ GEM
     cucumber-tag-expressions (4.1.0)
     diff-lcs (1.5.0)
     ffi (1.15.5)
-    httparty (0.20.0)
-      mime-types (~> 3.0)
+    httparty (0.21.0)
+      mini_mime (>= 1.0.0)
       multi_xml (>= 0.5.2)
     jsonpath (1.1.2)
       multi_json
-    mime-types (3.4.1)
+    mime-types (3.5.1)
       mime-types-data (~> 3.2015)
-    mime-types-data (3.2022.0105)
+    mime-types-data (3.2023.1003)
+    mini_mime (1.1.5)
     multi_json (1.15.0)
     multi_test (1.1.0)
     multi_xml (0.6.0)
@@ -60,6 +61,7 @@ GEM
 
 PLATFORMS
   arm64-darwin-21
+  x86_64-linux
 
 DEPENDENCIES
   cucumber
