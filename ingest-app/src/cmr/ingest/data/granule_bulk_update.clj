@@ -81,8 +81,8 @@
           begin-date (first dates)
           end-date (second dates)]
       (if (and (<= (count dates) 2)
-               (or (nil? begin-date) (re-matches #"\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ" begin-date))
-               (or (nil? end-date) (re-matches #"\d\d\d\d-\d\d-\d\dT\d\d:\d\d:\d\dZ" end-date)))
+               (or (nil? begin-date) (re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z" begin-date))
+               (or (nil? end-date) (re-matches #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z" end-date)))
         [begin-date end-date]
         (throw (Exception. (str "Invalid date: " date)))))))
 
