@@ -78,10 +78,15 @@
    :spatial-keywords [:category :type :subregion-1 :subregion-2 :subregion-3]
    :concepts [:short-name]
    :iso-topic-categories [:iso-topic-category]
-   :granule-data-format [:format]
+   :granule-data-format [:short-name]
    :mime-type [:mime-type]
    :related-urls [:url-content-type :type :subtype]
-   :processing-levels [:processing-level]})
+   :processing-levels [:processing-level]
+   :temporal-keywords [:temporal-resolution-range]})
+
+(def kms-scheme->remove-fields-for-umm-c-lookup
+  "Remove these fields from the umm-c-lookup cache as its in its own cache."
+  [:measurement-name])
 
 (def kms-scheme->fields-for-umm-var-lookup
   "Maps the KMS keyword scheme to the list of fields that should be matched when comparing fields
@@ -119,7 +124,7 @@
                                               [(normalize-for-lookup keyword-map fields)
                                                keyword-map])
                                             keyword-maps)))])
-             gcmd-keywords-map)))
+             (apply dissoc gcmd-keywords-map kms-scheme->remove-fields-for-umm-c-lookup))))
 
 (def keywords-to-lookup-by-short-name
   "Set of KMS keywords that we need to be able to lookup by short name."
@@ -168,7 +173,7 @@
   [gcmd-keywords-map]
   (into {}
         (let [keyword-scheme :measurement-name
-              keyword-maps (:measurement-name gcmd-keywords-map)]
+              keyword-maps (keyword-scheme gcmd-keywords-map)]
           [[keyword-scheme (let [fields (get kms-scheme->fields-for-umm-var-lookup
                                              keyword-scheme)]
                              (into {}
@@ -213,24 +218,26 @@
 
 (defn lookup-by-short-name
   "Takes a kms-index, the keyword scheme, and a short name and returns the full KMS hierarchy for
-  that short name. Comparison is made case insensitively."
+  that short name. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context keyword-scheme short-name]
-  (let [short-name-cache (hash-cache/context->cache context kms-short-name-cache-key)
-        keywords (or (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme)
-                     (do
-                       (load-cache-if-necessary context short-name-cache kms-short-name-cache-key)
-                       (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme)))]
-     (get keywords (util/safe-lowercase short-name))))
+  (when-not (:ignore-kms-keywords context)
+    (let [short-name-cache (hash-cache/context->cache context kms-short-name-cache-key)
+          keywords (or (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme)
+                       (do
+                         (load-cache-if-necessary context short-name-cache kms-short-name-cache-key)
+                         (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme)))]
+      (get keywords (util/safe-lowercase short-name)))))
 
 (defn lookup-by-location-string
   "Takes a kms-index and a location string and returns the full KMS hierarchy for that location
-  string. Comparison is made case insensitively."
+  string. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context location-string]
-  (let [location-cache (hash-cache/context->cache context kms-location-cache-key)]
-    (or (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string))
-        (do
-          (load-cache-if-necessary context location-cache kms-location-cache-key)
-          (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string))))))
+  (when-not (:ignore-kms-keywords context)
+    (let [location-cache (hash-cache/context->cache context kms-location-cache-key)]
+      (or (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string))
+          (do
+            (load-cache-if-necessary context location-cache kms-location-cache-key)
+            (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string)))))))
 
 (defn- remove-long-name-from-kms-index
   "Removes long-name from the umm-c-index keys in order to prevent validation when
@@ -240,22 +247,27 @@
     (for [[k v] kms-index-value]
       [(dissoc k :long-name) v])))
 
-(defn lookup-by-umm-c-keyword-granule-data-format
+(defn lookup-by-umm-c-keyword-data-format
+  "Takes a keyword as represented in the UMM concepts as a map or as an individual string
+  and returns the KMS keyword map as its stored in the cache. Returns nil if a keyword is not found.
+  Comparison is made case insensitively."
   [context keyword-scheme umm-c-keyword]
-  (let [comparison-map (normalize-for-lookup
-                        (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
-                        (kms-scheme->fields-for-umm-c-lookup keyword-scheme))
+  (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
+        format-map (if (string? umm-c-keyword)
+                     {:short-name umm-c-keyword}
+                     {:short-name (:format umm-c-keyword)})
+        comparison-map (normalize-for-lookup format-map (kms-scheme->fields-for-umm-c-lookup
+                                                         keyword-scheme))
         umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
         value (or (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
                   (do
                     (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
                     (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)))]
-    (->> value
-         (filter #(= (string/lower-case (:short-name %))
-                     (string/lower-case (:format comparison-map))))
-         seq)))
+    (get-in value [comparison-map])))
 
 (defn lookup-by-umm-c-keyword-platforms
+  "Takes a keyword as represented in the UMM concepts as a map and returns the KMS keyword map
+  as its stored in the cache. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context keyword-scheme umm-c-keyword]
   (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
         ;; CMR-3696 This is needed to compare the keyword category, which is mapped
@@ -277,39 +289,42 @@
           (get comparison-map)))))
 
 (defn lookup-by-umm-c-keyword
-  "Takes a keyword as represented in UMM-C, UMM-G, UMM-S, UMM-T, or UMM-Var and
-  returns the KMS keyword. Comparison is made case insensitively."
+  "Takes a keyword as represented in UMM concepts as a map and returns the KMS keyword as it exists in the cache.
+  Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context keyword-scheme umm-c-keyword]
-  (case keyword-scheme
-    :granule-data-format (lookup-by-umm-c-keyword-granule-data-format context keyword-scheme umm-c-keyword)
-    :platforms (lookup-by-umm-c-keyword-platforms context keyword-scheme umm-c-keyword)
-    ;; default
-    (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
-          comparison-map (normalize-for-lookup umm-c-keyword
-                                               (kms-scheme->fields-for-umm-c-lookup keyword-scheme))
-          umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
-          value (or (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
-                    (do
-                      (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
-                      (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)))]
-      (get-in value [comparison-map]))))
+  (when-not (:ignore-kms-keywords context)
+    (case keyword-scheme
+      :platforms (lookup-by-umm-c-keyword-platforms context keyword-scheme umm-c-keyword)
+      :granule-data-format (lookup-by-umm-c-keyword-data-format context keyword-scheme umm-c-keyword)
+      ;; default
+      (let [umm-c-keyword (csk-extras/transform-keys csk/->kebab-case umm-c-keyword)
+            comparison-map (normalize-for-lookup umm-c-keyword
+                                                 (kms-scheme->fields-for-umm-c-lookup keyword-scheme))
+            umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
+            value (or (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
+                      (do
+                        (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
+                        (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)))]
+        (get-in value [comparison-map])))))
 
 (defn lookup-by-measurement
+  "Takes a keyword as represented in UMM concepts as a map. Returns a map of invalid measurement keywords.
+  Comparison is made case insensitively."
   [context value]
-  (let [measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)
-        measurement-index (or (hash-cache/get-map measurement-cache kms-measurement-cache-key)
-                              (do
-                                (load-cache-if-necessary context measurement-cache kms-measurement-cache-key)
-                                (hash-cache/get-map measurement-cache kms-measurement-cache-key)))
-        {:keys [MeasurementContextMedium MeasurementObject MeasurementQuantities]} value
-        measurements (if (seq MeasurementQuantities)
-                       (map (fn [quantity]
-                              {:context-medium MeasurementContextMedium
-                               :object MeasurementObject
-                               :quantity (:Value quantity)})
-                            MeasurementQuantities)
-                       [{:context-medium MeasurementContextMedium
-                         :object MeasurementObject}])
-        invalid-measurements (remove #(get-in measurement-index [:measurement-name %])
-                                     measurements)]
-    (seq invalid-measurements)))
+  (when-not (:ignore-kms-keywords context)
+    (let [measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)
+          measurement-index (or (hash-cache/get-value measurement-cache kms-measurement-cache-key :measurement-name)
+                                (do
+                                  (load-cache-if-necessary context measurement-cache kms-measurement-cache-key)
+                                  (hash-cache/get-value measurement-cache kms-measurement-cache-key :measurement-name)))
+          {:keys [MeasurementContextMedium MeasurementObject MeasurementQuantities]} value
+          measurements (if (seq MeasurementQuantities)
+                         (map (fn [quantity]
+                                {:context-medium MeasurementContextMedium
+                                 :object MeasurementObject
+                                 :quantity (:Value quantity)})
+                              MeasurementQuantities)
+                         [{:context-medium MeasurementContextMedium
+                           :object MeasurementObject}])
+          invalid-measurements (remove #(get measurement-index %) measurements)]
+      (seq invalid-measurements))))
