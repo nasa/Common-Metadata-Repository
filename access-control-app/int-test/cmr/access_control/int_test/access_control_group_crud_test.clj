@@ -46,8 +46,7 @@
                                                             {:http-options {:body "{{{"}
                                                              :allow-failure? true})]
         (is (= 400 status))
-        (is (re-find #"Invalid JSON: A JSON Object can not directly nest another JSON Object"
-                     (first errors)))))
+        (is (= (first errors) "Invalid JSON: Missing value at 1 [character 2 line 1]"))))
 
     (testing "Missing field validations"
       (are [field]

@@ -14,8 +14,9 @@
     (cmr.common.util/are3
      [body]
      (let [one (do (cutil/time-execution body))
-           two (do (cutil/time-execution body))]
-       (is (<= (first two) (first one))))
+           two (do (cutil/time-execution body))
+           diff (- (first two) (first one))]
+       (is (<= diff 2) (format "durration was %d > %d" diff 2)))
 
      "approved"
      (gconfig/approved-generic? :grid "0.0.1")

@@ -66,7 +66,7 @@
         "missing_shapefile_shp.zip" {:name "provider" :content "PROV1"} #"Incomplete shapefile: missing .shp file"
 
         "Shapefile is too big"
-        "too_big.zip" {:name "provider" :content "PROV1"} #"Shapefile size exceeds the 50000 byte limit"
+        "too_big.zip" {:name "provider" :content "PROV1"} #"Uploaded content exceeded limits."
 
         "Shapefile has too many features"
         "too_many_features.zip" {:name "provider" :content "PROV1"} #"Shapefile feature count \[3\] exceeds the 2 feature limit"

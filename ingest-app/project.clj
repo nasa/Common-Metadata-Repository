@@ -40,7 +40,7 @@
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]
                  [ring/ring-codec "1.1.3"]
-                 [ring/ring-core "1.9.6"]
+                 [ring/ring-core "1.10.0"]
                  [ring/ring-json "0.5.1"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
             [lein-exec "0.3.7"]]
