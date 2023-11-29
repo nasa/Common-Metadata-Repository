@@ -35,11 +35,11 @@
     "@aws-sdk/client-sqs": "^3.347.1",
     "@aws-sdk/client-ssm": "^3.347.1",
     "array-foreach-async": "^1.0.1",
-    "axios": "^0.24.0",
+    "axios": "^1.6.1",
     "axios-retry": "^3.3.1",
     "gremlin": "~3.4.10",
     "lodash": "^4.17.21",
-    "serverless": "^3.24.1",
+    "serverless": "^3.37.0",
     "serverless-offline": "^12.0.4",
     "serverless-webpack": "^5.9.0",
     "webpack": "^5.76.0",
@@ -56,7 +56,7 @@
     "nock": "^13.2.1",
     "snyk": "^1.996.0"
   },
-  "resolutions": {
+  "overrides": {
     "file-type": "16.5.4",
     "fast-xml-parser": "4.2.4",
     "luxon": "1.28.1",

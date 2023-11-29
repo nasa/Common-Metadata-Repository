@@ -82,8 +82,7 @@ describe('fetchCollectionPermittedGroups', () => {
       .reply(400, mockedBody)
 
     const result = await fetchCollectionPermittedGroups(conceptId, 'mock_token')
-
-    expect(consoleMock).toHaveBeenCalledWith(`Could not complete request to Access Control App to retrieve group information for ${conceptId} due to error: Error: Request failed with status code 400`)
+    expect(consoleMock).toHaveBeenCalledWith(`Could not complete request to Access Control App to retrieve group information for ${conceptId} due to error: AxiosError: Request failed with status code 400`)
     expect(result).toEqual(mockedBody)
   })
 
@@ -96,7 +95,7 @@ describe('fetchCollectionPermittedGroups', () => {
       .get(/acls/)
       .reply(400, mockedBody)
     const result = await fetchCollectionPermittedGroups(conceptId)
-    expect(consoleMock).toHaveBeenCalledWith(`Could not complete request to Access Control App to retrieve group information for ${conceptId} due to error: Error: Request failed with status code 400`)
+    expect(consoleMock).toHaveBeenCalledWith(`Could not complete request to Access Control App to retrieve group information for ${conceptId} due to error: AxiosError: Request failed with status code 400`)
     expect(result).toEqual(mockedBody)
   })
 
