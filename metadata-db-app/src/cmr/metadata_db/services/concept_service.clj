@@ -679,21 +679,11 @@
           :not-found
           (map (partial apply msg/concept-with-concept-id-and-rev-id-does-not-exist)
                missing-concept-tuples))))))
-(comment
-  (println concept-ids1)
-  (get-latest-concepts context1 concept-ids1 allow-mising1)
-  (doall (str (take 10 (repeatedly #(rand-int 42)))))
-  (doall (reduce #(str %1 " " %2)
-                 ""
-                 (take 10 (repeatedly #(rand-int 42)))))
-  )
+
 (defn get-latest-concepts
   "Get the latest version of concepts by specifiying a list of concept-ids. Results are
   returned in the order requested"
   [context concept-ids allow-missing?]
-  (def context1 context)
-  (def concept-ids1 concept-ids)
-  (def allow-mising1 allow-missing?)
   (if (> (count concept-ids) 0)
     (let [_ (info (format "Getting [%d] latest concepts by concept-id %s" (count concept-ids) (doall (reduce #(str %1 " " %2)
                                                                                                              ""
@@ -737,7 +727,8 @@
            :not-found
            (map msg/concept-does-not-exist
                 missing-concept-ids)))))
-    (let [_ (info "Calling cmr.metadata-db.services.concept-service/get-latest-concepts with 0 concept-ids.")]
+    (do
+      (info "Calling get-latest-concepts with 0 concept-ids.")
       '())))
 
 (defn get-expired-collections-concept-ids
