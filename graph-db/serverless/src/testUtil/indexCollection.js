@@ -64,6 +64,23 @@ export const updateCollection = async (conceptId, collectionTitle, attributes) =
     relatedUrlsObjs = relatedUrls.map(relatedUrlObj)
   }
 
+  const collectionMetadata = {
+    meta: {
+      'concept-id': conceptId,
+      'provider-id': 'TESTPROV'
+    },
+    umm: {
+      Projects: projectsObjs,
+      Platforms: platformInstrumentObjs,
+      RelatedUrls: relatedUrlsObjs,
+      DOI: {
+        DOI: 'doi:10.16904/envidat.166'
+      },
+      ShortName: 'latent-reserves-in-the-swiss-nfi',
+      EntryTitle: collectionTitle
+    }
+  }
+
   nock(/local-cmr/)
     .get(/search/)
     .reply(
@@ -71,22 +88,7 @@ export const updateCollection = async (conceptId, collectionTitle, attributes) =
       {
         hits: 16996,
         took: 5,
-        items: [{
-          meta: {
-            'concept-id': conceptId,
-            'provider-id': 'TESTPROV'
-          },
-          umm: {
-            Projects: projectsObjs,
-            Platforms: platformInstrumentObjs,
-            RelatedUrls: relatedUrlsObjs,
-            DOI: {
-              DOI: 'doi:10.16904/envidat.166'
-            },
-            ShortName: 'latent-reserves-in-the-swiss-nfi',
-            EntryTitle: collectionTitle
-          }
-        }]
+        items: [collectionMetadata]
       }
     )
 
@@ -139,7 +141,15 @@ export const updateCollection = async (conceptId, collectionTitle, attributes) =
       }
     )
 
-  const event = { Records: [{ body: `{"concept-id": "${conceptId}", "action": "concept-update" }` }] }
+  const event = {
+    Records: [{
+      body: JSON.stringify({
+        'concept-id': conceptId,
+        action: 'concept-update',
+        collection: collectionMetadata
+      })
+    }]
+  }
 
   const indexed = await indexCmrCollection(event)
 

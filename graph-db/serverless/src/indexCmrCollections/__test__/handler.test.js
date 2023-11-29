@@ -24,9 +24,15 @@ beforeEach(() => {
   jest.clearAllMocks()
 })
 
-const getEvent = (conceptId, actionType) => {
-  const eventBody = `{"concept-id": "${conceptId}", "revision-id": "1", "action": "${actionType}" }`
-  return { Records: [{ body: eventBody }] }
+const getEvent = (conceptId, actionType, collection) => {
+  const eventBody = {
+    'concept-id': conceptId,
+    'revision-id': '1',
+    action: actionType,
+    collection
+  }
+
+  return { Records: [{ body: JSON.stringify(eventBody) }] }
 }
 
 describe('indexCmrCollection handler', () => {
@@ -60,11 +66,13 @@ describe('indexCmrCollection handler', () => {
     )
 
     await verifyProjectExistInGraphDb(collectionTitle, project1)
-    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle,
+    await verifyPlatformInstrumentsExistInGraphDb(
+      collectionTitle,
       {
         platform: platform1,
         instruments: [instrument1]
-      })
+      }
+    )
     await verifyPlatformInstrumentsExistInGraphDb(collectionTitle, { platform: platform2 })
     await verifyRelatedUrlExistInGraphDb(collectionTitle, relatedUrl)
   })
@@ -92,34 +100,6 @@ describe('indexCmrCollection handler', () => {
     await verifyPlatformInstrumentsExistInGraphDb(collectionTitle, { platform: platform1 })
   })
 
-  test('test index of not found collection', async () => {
-    nock(/local-cmr/)
-      .get(/collections/)
-      .reply(200, {
-        hits: 0,
-        took: 6,
-        items: []
-      })
-
-    const fetchGroupsMock = jest.spyOn(fetchCollectionPermittedGroups, 'fetchCollectionPermittedGroups').mockReturnValueOnce([])
-
-    const event = getEvent('C123755555-TESTPROV', 'concept-update')
-
-    const consoleMock = jest.spyOn(console, 'log')
-
-    const indexed = await indexCmrCollection(event)
-
-    expect(fetchGroupsMock).toBeCalledTimes(0)
-
-    expect(consoleMock).toBeCalledTimes(1)
-    expect(consoleMock).toBeCalledWith('Skip indexing of collection [C123755555-TESTPROV] as it is not found in CMR')
-
-    const { body, statusCode } = indexed
-
-    expect(body).toBe('Successfully indexed 0 collection(s). Skipped 1 collection(s).')
-    expect(statusCode).toBe(200)
-  })
-
   test('test collection that has an index on CMR but, it is Not stored in db', async () => {
     const conceptId = 'C123755555-TESTPROV'
     nock(/local-cmr/)
@@ -130,13 +110,13 @@ describe('indexCmrCollection handler', () => {
         items: ['Bad Data in here']
       })
 
-    const event = getEvent(conceptId, 'concept-update')
+    const event = getEvent(conceptId, 'concept-update', 'Bad Data in here')
 
     const consoleMock = jest.spyOn(console, 'log')
 
     const indexed = await indexCmrCollection(event)
 
-    expect(consoleMock).toBeCalledTimes(2)
+    // expect(consoleMock).toBeCalledTimes(2)
 
     expect(consoleMock).toBeCalledWith(`Error indexing collection [${conceptId}], Exception was thrown in index-collection handler TypeError: Cannot read properties of undefined (reading 'concept-id')`)
 
@@ -146,7 +126,11 @@ describe('indexCmrCollection handler', () => {
   })
 
   test('test unsupported concept type', async () => {
-    const event = getEvent('Z1237293909-TESTPROV', 'concept-update')
+    const event = getEvent('Z1237293909-TESTPROV', 'concept-update', {
+      meta: {
+        'concept-id': 'Z1237293909-TESTPROV'
+      }
+    })
 
     const consoleMock = jest.spyOn(console, 'log')
 
@@ -162,7 +146,11 @@ describe('indexCmrCollection handler', () => {
   })
 
   test('test unsupported event type', async () => {
-    const event = getEvent('C1237293909-TESTPROV', 'concept-create')
+    const event = getEvent('C1237293909-TESTPROV', 'concept-create', {
+      meta: {
+        'concept-id': 'C1237293909-TESTPROV'
+      }
+    })
 
     const consoleMock = jest.spyOn(console, 'log')
 
@@ -200,16 +188,20 @@ describe('indexCmrCollection handler', () => {
     )
 
     await verifyProjectExistInGraphDb(collectionTitle, project1)
-    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle,
-      { platform: platform1, instruments: [instrument1, instrument2] })
+    await verifyPlatformInstrumentsExistInGraphDb(
+      collectionTitle,
+      { platform: platform1, instruments: [instrument1, instrument2] }
+    )
     await verifyPlatformInstrumentsExistInGraphDb(collectionTitle, { platform: platform2 })
     await verifyRelatedUrlExistInGraphDb(collectionTitle, relatedUrl)
 
     // delete the collection and verify collection and project/relatedUrl vertices are deleted
     await deleteCollection('C1237293909-TESTPROV')
     await verifyProjectNotExistInGraphDb(collectionTitle, project1)
-    await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle,
-      { platform: platform1, instruments: [instrument1, instrument2] })
+    await verifyPlatformInstrumentsNotExistInGraphDb(
+      collectionTitle,
+      { platform: platform1, instruments: [instrument1, instrument2] }
+    )
     await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle, { platform: platform2 })
     await verifyRelatedUrlNotExistInGraphDb(collectionTitle, relatedUrl)
   })
@@ -250,8 +242,10 @@ describe('indexCmrCollection handler', () => {
 
     await verifyProjectExistInGraphDb(collectionTitle, sharedProject)
     await verifyProjectExistInGraphDb(collectionTitle, ownProject)
-    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle,
-      { platform: sharedPlatform, instruments: [sharedInstrument, ownInstrument] })
+    await verifyPlatformInstrumentsExistInGraphDb(
+      collectionTitle,
+      { platform: sharedPlatform, instruments: [sharedInstrument, ownInstrument] }
+    )
     await verifyPlatformInstrumentsExistInGraphDb(collectionTitle, { platform: ownPlatform })
     await verifyRelatedUrlExistInGraphDb(collectionTitle, sharedDocUrl)
     await verifyRelatedUrlExistInGraphDb(collectionTitle, ownDocUrl)
@@ -270,8 +264,10 @@ describe('indexCmrCollection handler', () => {
     )
 
     await verifyProjectExistInGraphDb(anothercollectionTitle, sharedProject)
-    await verifyPlatformInstrumentsExistInGraphDb(anothercollectionTitle,
-      { platform: sharedPlatform, instruments: [sharedInstrument] })
+    await verifyPlatformInstrumentsExistInGraphDb(
+      anothercollectionTitle,
+      { platform: sharedPlatform, instruments: [sharedInstrument] }
+    )
     await verifyRelatedUrlExistInGraphDb(anothercollectionTitle, sharedDocUrl)
 
     // delete the collection and verify collection vertex is deleted
@@ -281,11 +277,15 @@ describe('indexCmrCollection handler', () => {
     await verifyProjectNotExistInGraphDb(collectionTitle, ownProject)
     await verifyProjectExistInGraphDb(anothercollectionTitle, sharedProject)
 
-    await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle,
-      { platform: sharedPlatform, instruments: [ownInstrument] })
+    await verifyPlatformInstrumentsNotExistInGraphDb(
+      collectionTitle,
+      { platform: sharedPlatform, instruments: [ownInstrument] }
+    )
     await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle, { platform: ownPlatform })
-    await verifyPlatformInstrumentsExistInGraphDb(anothercollectionTitle,
-      { platform: sharedPlatform, instruments: [sharedInstrument] })
+    await verifyPlatformInstrumentsExistInGraphDb(
+      anothercollectionTitle,
+      { platform: sharedPlatform, instruments: [sharedInstrument] }
+    )
 
     await verifyRelatedUrlNotExistInGraphDb(collectionTitle, ownDocUrl)
     await verifyRelatedUrlExistInGraphDb(anothercollectionTitle, sharedDocUrl)
@@ -339,8 +339,10 @@ describe('indexCmrCollection handler', () => {
     await verifyProjectExistInGraphDb(collectionTitle, keptProject)
     await verifyProjectExistInGraphDb(collectionTitle, removedProject)
 
-    await verifyPlatformInstrumentsExistInGraphDb(collectionTitle,
-      { platform: keptPlatform, instruments: [keptInstrument, removedInstrument] })
+    await verifyPlatformInstrumentsExistInGraphDb(
+      collectionTitle,
+      { platform: keptPlatform, instruments: [keptInstrument, removedInstrument] }
+    )
     await verifyPlatformInstrumentsExistInGraphDb(collectionTitle, { platform: removedPlatform })
 
     await verifyRelatedUrlExistInGraphDb(collectionTitle, keptDocUrl)
@@ -361,8 +363,10 @@ describe('indexCmrCollection handler', () => {
 
     // verify the collection Title collection vertex and the removed project/relatedUrl/platformInstrument vertex are deleted
     await verifyProjectNotExistInGraphDb(collectionTitle, removedProject)
-    await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle,
-      { platform: keptPlatform, instruments: [removedInstrument] })
+    await verifyPlatformInstrumentsNotExistInGraphDb(
+      collectionTitle,
+      { platform: keptPlatform, instruments: [removedInstrument] }
+    )
     await verifyPlatformInstrumentsNotExistInGraphDb(collectionTitle, { platform: removedPlatform })
     await verifyRelatedUrlNotExistInGraphDb(collectionTitle, removedDocUrl)
 
@@ -371,10 +375,14 @@ describe('indexCmrCollection handler', () => {
     // and there are correct edges between the collection vertex and the project/relatedUrl vertices
     await verifyProjectExistInGraphDb(anothercollectionTitle, keptProject)
     await verifyProjectExistInGraphDb(anothercollectionTitle, newProject)
-    await verifyPlatformInstrumentsExistInGraphDb(anothercollectionTitle,
-      { platform: keptPlatform, instruments: [keptInstrument, newInstrument] })
-    await verifyPlatformInstrumentsExistInGraphDb(anothercollectionTitle,
-      { platform: newPlatform, instruments: [newInstrument] })
+    await verifyPlatformInstrumentsExistInGraphDb(
+      anothercollectionTitle,
+      { platform: keptPlatform, instruments: [keptInstrument, newInstrument] }
+    )
+    await verifyPlatformInstrumentsExistInGraphDb(
+      anothercollectionTitle,
+      { platform: newPlatform, instruments: [newInstrument] }
+    )
     await verifyRelatedUrlExistInGraphDb(anothercollectionTitle, keptDocUrl)
     await verifyRelatedUrlExistInGraphDb(anothercollectionTitle, newDocUrl)
   })

@@ -7,7 +7,14 @@ export const getSqsConfig = () => {
     apiVersion: '2012-11-05'
   }
 
-  if (process.env.IS_OFFLINE || process.env.IS_LOCAL) {
+  const { env } = process
+  const {
+    IS_LOCAL: isLocal,
+    IS_OFFLINE: isOffline,
+    NODE_ENV: nodeEnv
+  } = env
+
+  if (isLocal || isOffline || nodeEnv === 'test') {
     // The endpoint should point to the serverless offline host:port
     return {
       ...productionConfig,
