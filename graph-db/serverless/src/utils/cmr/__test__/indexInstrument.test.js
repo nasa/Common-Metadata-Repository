@@ -23,11 +23,13 @@ describe('indexInstrument', () => {
         }
       )
 
-      await verifyPlatformInstrumentsExistInGraphDb('Vulputate Mollis Commodo',
+      await verifyPlatformInstrumentsExistInGraphDb(
+        'Vulputate Mollis Commodo',
         {
           platform: platform1,
           instruments: [instrument1]
-        })
+        }
+      )
     })
   })
 
