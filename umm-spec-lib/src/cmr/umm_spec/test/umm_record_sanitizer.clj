@@ -293,6 +293,26 @@
     (assoc-in record [:UseConstraints :LicenseText] nil)
     record))
 
+(defn- sanitize-umm-spatial-extent
+  "Sanitize SpatialExtent Data. If the granule spatial representation
+  is ORBIT then orbit parameters have to exist."
+  [record]
+  (let [gsr (get-in record [:SpatialExtent :GranuleSpatialRepresentation])
+        op (get-in record [:SpatialExtent :OrbitParameters])]
+    (if (= "ORBIT" gsr)
+      (if op
+        record
+        (assoc-in record
+                  [:SpatialExtent :OrbitParameters]
+                  {:SwathWidth 10
+                   :SwathWidthUnit "Kilometer"
+                   :OrbitPeriod 4
+                   :OrbitPeriodUnit "Decimal Minute"
+                   :InclinationAngle 30
+                   :InclinationAngleUnit "Degree"
+                   :NumberOfOrbits 1000}))
+      record)))
+
 (defn sanitized-umm-c-record
   "Returns the sanitized version of the given umm-c record."
   [record]
@@ -309,7 +329,8 @@
       sanitize-umm-number-of-instruments
       sanitize-umm-data-presentation-form
       sanitize-umm-collection-citations
-      sanitize-umm-file-distribution-media))
+      sanitize-umm-file-distribution-media
+      sanitize-umm-spatial-extent))
 
 (defn sanitized-umm-g-record
   "Include only the sanitizers needed for a given umm-g record."
