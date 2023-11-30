@@ -116,7 +116,6 @@
                      [:created-at :name :task-id :status :status-message :request-json-body]
                      (sql-utils/from "granule_bulk_update_tasks")
                      (sql-utils/where `(and (= :provider-id ~provider-id)
-                                            (<= :rowNum ~max-rows)
                                             (<= :created-at (:to_utc_timestamp_tz ~end-date)) 
                                             (>= :created-at (:to_utc_timestamp_tz ~begin-date))))
                      (sql-utils/order-by (sql-utils/desc `(+ :task-id 0)))))
@@ -126,19 +125,17 @@
                        [:created-at :name :task-id :status :status-message :request-json-body]
                        (sql-utils/from "granule_bulk_update_tasks")
                        (sql-utils/where `(and (= :provider-id ~provider-id)
-                                              (<= :rowNum ~max-rows)
                                               (>= :created-at (:to_utc_timestamp_tz ~begin-date))))
                        (sql-utils/order-by (sql-utils/desc `(+ :task-id 0)))))
                      (sql-utils/build
                       (sql-utils/select
                        [:created-at :name :task-id :status :status-message :request-json-body]
                        (sql-utils/from "granule_bulk_update_tasks")
-                       (sql-utils/where `(and (= :provider-id ~provider-id)
-                                              (<= :rowNum ~max-rows)))
+                       (sql-utils/where `(= :provider-id ~provider-id))
                        (sql-utils/order-by (sql-utils/desc `(+ :task-id 0)))))))
             ;; Note: the column selected out of the database is created_at, instead of created-at. 
             statuses (doall (map #(update % :created_at (partial oracle/oracle-timestamp->str-time conn))
-                                 (sql-utils/query conn stmt)))
+                                 (take max-rows (sql-utils/query conn stmt))))
             statuses (map util/map-keys->kebab-case statuses)]
         (map #(update % :request-json-body util/gzip-blob->string)
              statuses)))
