@@ -114,27 +114,27 @@
 
 (defmulti get-provider-tasks*
   "Get bulk update tasks status based on concept type"
-  (fn [context provider-id concept-type]
+  (fn [context provider-id concept-type params]
     concept-type))
 
 (defmethod get-provider-tasks* :collection
-  [context provider-id _]
+  [context provider-id _ _]
   (data-bulk-update/get-collection-tasks context provider-id))
 
 (defmethod get-provider-tasks* :granule
-  [context provider-id _]
-  (data-gran-bulk-update/get-granule-tasks-by-provider context provider-id))
+  [context provider-id _ params]
+  (data-gran-bulk-update/get-granule-tasks-by-provider context provider-id params))
 
 (defn get-provider-tasks
   "Get all tasks and task statuses for provider."
   [concept-type provider-id request]
-  (let [{:keys [headers request-context]} request]
+  (let [{:keys [headers request-context params]} request]
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :read :provider-object provider-id)
     (generate-provider-tasks-response
      headers
      {:status 200
-      :tasks (get-provider-tasks* request-context provider-id concept-type)})))
+      :tasks (get-provider-tasks* request-context provider-id concept-type params)})))
 
 (defmulti generate-provider-task-status-response
   "Convert a result to a proper response format"

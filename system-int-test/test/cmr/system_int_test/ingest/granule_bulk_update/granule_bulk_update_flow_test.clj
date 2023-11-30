@@ -5,6 +5,8 @@
    [clojure.test :refer :all]
    [clojure.string :as string]
    [cmr.common.util :as util :refer [are3]]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.ingest.config :as ingest-config]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.mock-echo.client.echo-util :as e]
@@ -187,7 +189,39 @@
             (is (= 200 status))
             (is (= ["11" "10" "9" "8" "7" "6" "5" "4" "3" "2" "1"]
                    (map :task-id tasks)))))
-
+        (testing "Granule bulk update tasks response sorting on task-id in desc order as numbers when max rows returned is less than the total rows"
+          (side/eval-form `(ingest-config/set-granule-bulk-update-tasks-max-rows! 5))
+          (let [response (ingest/granule-bulk-update-tasks
+                          "PROV1"
+                          {:accept-format :json})
+                {:keys [status tasks]} response]
+            (is (= 200 status))
+            ;; make sure latest task-ids are returned when the max-rows are applied.
+            (is (= ["11" "10" "9" "8" "7"]
+                   (map :task-id tasks))))
+          (side/eval-form `(ingest-config/set-granule-bulk-update-tasks-max-rows! 1000)))
+        (testing "Granule bulk update tasks response sorting on task-id in desc order as numbers when date is passed in the query"
+          (let [response1 (ingest/granule-bulk-update-tasks
+                          "PROV1"
+                          {:accept-format :json}
+                          "2000-01-01T10:00:00Z")
+                response2 (ingest/granule-bulk-update-tasks
+                          "PROV1"
+                          {:accept-format :json}
+                          "2050-01-01T10:00:00Z")
+                response3 (ingest/granule-bulk-update-tasks
+                          "PROV1"
+                          {:accept-format :json}
+                          "2000-01-01T10:00:00Z,2050-01-01T10:00:00Z")]
+            (is (= 200 (:status response1)))
+            (is (= ["11" "10" "9" "8" "7" "6" "5" "4" "3" "2" "1"]
+                   (map :task-id (:tasks response1))))
+            (is (= 200 (:status response2)))
+            (is (= [] 
+                   (map :task-id (:tasks response2))))
+            (is (= 200 (:status response3)))
+            (is (= ["11" "10" "9" "8" "7" "6" "5" "4" "3" "2" "1"]
+                   (map :task-id (:tasks response3))))))
         (testing "Granule bulk update tasks response"
           ;; PROV1
           (are3 [accept-format]
