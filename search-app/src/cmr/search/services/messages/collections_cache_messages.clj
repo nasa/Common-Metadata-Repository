@@ -1,5 +1,5 @@
 (ns cmr.search.services.messages.collections-cache-messages
-  "Contains messages for reporting responses to the user")
+  "Contains messages for reporting responses from the collections-cache to the user")
 
 (defn collection-not-found
   [concept-id]

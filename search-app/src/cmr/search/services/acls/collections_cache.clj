@@ -104,27 +104,32 @@
   (let [cache (hash-cache/context->cache context cache-key)
         collections-map (fetch-collections-map context)]
     (doseq [[coll-key coll-value] collections-map]
-      (debug (format "refresh-cache %s" coll-key))
+      (debug (format "collections-cache refresh-cache working on %s" coll-key))
       (hash-cache/set-value cache cache-key coll-key (clj-times->time-strs coll-value)))))
 
 (defn- get-collections-map
-  "Gets the cached value."
-  [context key-type]
+  "Gets the cached value. By default an error is thrown if there is no value in
+   the cache. Pass in anything other then :return-errors for the third parameter
+   to have null returned when no data is in the cache. :return-errors is for the
+   default behavior."
+  ([context key-type]
+   (get-collections-map context key-type :return-errors))
+  ([context key-type throw-errors]
   (let [coll-cache (hash-cache/context->cache context cache-key)
         collection-map (hash-cache/get-value
                         coll-cache
                         cache-key
                         key-type)]
-    (if (empty? collection-map)
+    (if (and (= :return-errors throw-errors) (empty? collection-map))
       (errors/internal-error! (coll-msg/collections-not-in-cache key-type))
-      (time-strs->clj-times collection-map))))
+      (time-strs->clj-times collection-map)))))
 
 (defn get-collection
   "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
   Also allows provider-id and entry-title to be used."
   ([context concept-id]
-   (let [by-concept-id (get-collections-map context :by-concept-id)]
-     (when-not (by-concept-id concept-id)
+   (let [by-concept-id (get-collections-map context :by-concept-id :no-errors)]
+     (when-not (and by-concept-id (by-concept-id concept-id))
        (info (coll-msg/collection-not-found concept-id))
        (refresh-cache context))
      (get (get-collections-map context :by-concept-id ) concept-id)))
