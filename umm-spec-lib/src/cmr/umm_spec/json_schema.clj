@@ -71,6 +71,12 @@
 
         (:anyOf type-def) "anyOf"
 
+        ;; this checks for validations written into the schema and will ignore them
+        ;; since they provide no value to our internal UMM models.
+        (or (:if type-def)
+            (:then type-def)
+            (:else type-def)) nil
+
         ;; This will trigger an error
         :else
         (throw (Exception. (str "Unable to resolve ref on " (pr-str type-def)))))))
@@ -134,6 +140,10 @@
   (resolve-one-of-any-of schema-name :oneOf type-def))
 
 (defmethod resolve-ref "anyOf"
+  [schema-name type-def]
+  (resolve-one-of-any-of schema-name :anyOf type-def))
+
+(defmethod resolve-ref nil
   [schema-name type-def]
   (resolve-one-of-any-of schema-name :anyOf type-def))
 
