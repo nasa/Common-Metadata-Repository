@@ -684,7 +684,10 @@
   "Get the latest version of concepts by specifiying a list of concept-ids. Results are
   returned in the order requested"
   [context concept-ids allow-missing?]
-  (if (> (count concept-ids) 0)
+  (if (<= (count concept-ids) 0)
+    (do
+      (info "Calling get-latest-concepts with 0 concept-ids.")
+      '())
     (let [_ (info (format "Getting [%d] latest concepts by concept-id %s" (count concept-ids) (doall (reduce #(str %1 " " %2)
                                                                                                              ""
                                                                                                              concept-ids))))
@@ -726,10 +729,7 @@
           (errors/throw-service-errors
            :not-found
            (map msg/concept-does-not-exist
-                missing-concept-ids)))))
-    (do
-      (info "Calling get-latest-concepts with 0 concept-ids.")
-      '())))
+                missing-concept-ids)))))))
 
 (defn get-expired-collections-concept-ids
   "Returns the concept ids of expired collections in the provider."
