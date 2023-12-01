@@ -7,6 +7,7 @@
   (:require
    [clojure.edn :as edn]
    [cmr.common.cache :as cache]
+   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.redis-utils.redis :as redis :refer [wcar*]]
    [taoensso.carmine :as carmine]))
 
@@ -38,6 +39,13 @@
     [this]
     (map deserialize (redis/get-keys)))
 
+  (key-exists
+    [this key]
+    ;; key is the cache-key. Returns true if the cache key exists in redis, otherwise returns nil.
+    (let [exists (wcar* (carmine/exists (serialize key)))]
+      (when exists
+        (> exists 0))))
+
   (get-value
     [this key]
     (let [s-key (serialize key)]
@@ -67,11 +75,14 @@
     (let [s-key (serialize key)]
       (wcar* (carmine/set s-key {:value value})
              (when ttl (carmine/expire s-key ttl)))))
-  
+
   (cache-size
-   [_]
-   ;; not relevant for redis
-   -1))
+    [_]
+    (reduce #(+ %1 (if-let [size (wcar* (carmine/memory-usage (serialize %2)))]
+                     size
+                     0))
+            0
+            keys-to-track)))
 
 (defn create-redis-cache
   "Creates an instance of the redis cache.

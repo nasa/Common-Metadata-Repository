@@ -1,9 +1,9 @@
 (ns cmr.umm-spec.test.location-keywords-helper
   "Helper functions for system integration tests."
-  (:require [cmr.common-app.services.kms-fetcher :as kf]
-            [cmr.common-app.services.kms-lookup :as kms-lookup]
-            [cmr.common.cache :as cache]
-            [cmr.common.cache.in-memory-cache :as imc]))
+  (:require
+   [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common-app.services.kms-lookup :as kms-lookup]
+   [cmr.common.cache :as cache]))
 
 (def ^:private sample-keyword-map
    {:spatial-keywords [{:category "SPACE", :uuid "3ffa2d97-a066-4b3c-87f9-06779f12e726"}
@@ -22,13 +22,20 @@
                        {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "ANGOLA", :uuid "9b0a194d-d617-4fed-9625-df176319892d"}
                        {:category "CONTINENT", :type "AFRICA", :subregion-1 "CENTRAL AFRICA", :subregion-2 "LAKE CHAD", :uuid "a1810ec4-2d03-4d98-b049-2cad380fb789"}]})
 
-(def sample-kms-index
-  "Sample KMS index to use for tests"
-  (kms-lookup/create-kms-index sample-keyword-map))
+(def create-context
+  "Simple context that setups KMS caches for testing."
+  {:system {:caches {kf/kms-cache-key (kf/create-kms-cache)
+                     kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
+                     kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
+                     kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
+                     kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}})
 
-(defn setup-context-for-test
-  "Sets up a cache by taking values necessary for the cache and returns a map of context"
-  []
-  (let [cache (imc/create-in-memory-cache)]
-    (cache/set-value cache kf/kms-cache-key sample-kms-index)
-    {:system {:caches {kf/kms-cache-key cache}}}))
+(defn redis-cache-fixture
+  "This fixture wraps any tests that use it with a set of values
+  in the KMS caches."
+  [f]
+  (let [test-context create-context
+        kms-cache (cache/context->cache test-context kf/kms-cache-key)]
+    (kms-lookup/create-kms-index test-context sample-keyword-map)
+    (cache/set-value kms-cache kf/kms-cache-key sample-keyword-map))
+    (f))

@@ -1,10 +1,8 @@
 (ns cmr.umm-spec.test.expected-conversion-util
  "Common functionality for expected conversions"
  (:require
-  [clj-time.core :as t]
   [clj-time.format :as f]
   [clojure.string :as string]
-  [cmr.common-app.services.kms-fetcher :as kf]
   [cmr.common.util :as util :refer [update-in-each]]
   [cmr.umm-spec.dif-util :as dif-util]
   [cmr.umm-spec.location-keywords :as lk]
@@ -27,7 +25,7 @@
    (let [coll-progress (:CollectionProgress umm-coll)
          upper-case-coll-progress (when coll-progress
                                     (string/upper-case coll-progress))]
-     (if (coll-progress-enum-list upper-case-coll-progress)
+     (if (enum-list-set upper-case-coll-progress)
        upper-case-coll-progress
        "NOT PROVIDED"))))
 
@@ -98,8 +96,7 @@
   [location-keywords]
   ;;Convert the Location Keyword to a leaf.
   (let [leaf-values (lk/location-keywords->spatial-keywords location-keywords)
-        translated-values (lk/translate-spatial-keywords
-                           (kf/get-kms-index (lkt/setup-context-for-test)) leaf-values)]
+        translated-values (lk/translate-spatial-keywords lkt/create-context leaf-values)]
     ;;If the keyword exists in the hierarchy
     (seq (map #(umm-c/map->LocationKeywordType %) translated-values))))
 

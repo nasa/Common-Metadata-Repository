@@ -7,7 +7,7 @@
    [cmr.umm-spec.test.location-keywords-helper :as location-keywords-helper]
    [cmr.umm-spec.umm-spec-core :as core]))
 
-(def test-context (location-keywords-helper/setup-context-for-test))
+(def test-context location-keywords-helper/create-context)
 
 (defn alt-xpath-example-file
   "Returns an example ISO19115 metadata file with alternative GranuleSpatialRepresentation xpath."

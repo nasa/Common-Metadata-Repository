@@ -10,12 +10,9 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.umm-spec.test.expected-conversion :as expected-conversion]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
-
-(def test-context (lkt/setup-context-for-test))
 
 (deftest search-collection-all-revisions
   (let [coll1-1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "et1"
@@ -122,7 +119,7 @@
 (deftest search-umm-json-tombstones
   (let [coll4-umm expected-conversion/example-collection-record
         mime-type "application/vnd.nasa.cmr.umm+json;version=1.0"
-        json (umm-spec/generate-metadata test-context coll4-umm mime-type)
+        json (umm-spec/generate-metadata {} coll4-umm mime-type)
         coll (d/ingest-concept-with-metadata {:provider-id "PROV1"
                                               :concept-type :collection
                                               :format mime-type

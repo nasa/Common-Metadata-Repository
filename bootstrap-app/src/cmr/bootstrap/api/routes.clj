@@ -131,8 +131,8 @@
             (provider-cache/refresh-provider-cache request-context)
 
             :else
-            (route/not-found "Not Found")))
-          {:status 200})
+            (route/not-found "Not Found"))
+          {:status 200}))
       ;; db migration route
       (POST "/db-migrate" {:keys [request-context params]}
         (acl/verify-ingest-management-permission request-context :update)

@@ -7,7 +7,6 @@
     [cmr.common.util :refer [are3]]
     [cmr.common.xml :as xml]
     [cmr.umm-spec.models.umm-collection-models :as coll]
-    [cmr.umm-spec.test.location-keywords-helper :as lkt]
     [cmr.umm-spec.umm-spec-core :as core]
     [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
     [cmr.umm-spec.util :as u]
@@ -561,7 +560,7 @@
 
 (deftest data-quality-info-additional-attributes
   (testing "additional attributes that should go to dataQualityInfo section are written out correctly"
-    (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test)
+    (let [parsed (#'parser/parse-iso19115-xml {}
                                               iso-with-use-constraints u/default-parsing-options)
           ;; all the parsed additional attributes are from dataQualityInfo and we use it as the expected value
           expected-additional-attributes (:AdditionalAttributes parsed)
@@ -576,7 +575,7 @@
 
 (deftest granule-spatial-representation
   (testing "granule spatial representation is parsed correctly"
-    (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test)
+    (let [parsed (#'parser/parse-iso19115-xml {}
                                               iso-with-use-constraints u/default-parsing-options)
           gran-spatial-representation (get-in parsed [:SpatialExtent :GranuleSpatialRepresentation])]
       (is (= "CARTESIAN" gran-spatial-representation)))))
@@ -584,7 +583,7 @@
 (deftest direct-distribution-information-test
   (testing "direct distribution information that should go to distribution section are
             written out correctly."
-    (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test)
+    (let [parsed (#'parser/parse-iso19115-xml {}
                                               iso-with-use-constraints u/default-parsing-options)
           ;; use the parsed out direct distribution info as the expected value
           expected-direct-distribution (:DirectDistributionInformation parsed)
@@ -600,7 +599,7 @@
 (deftest associated-doi-test
   "Testing the associated DOIs"
   (are3 [iso-record expect-empty]
-    (let [parsed (#'parser/parse-iso19115-xml (lkt/setup-context-for-test)
+    (let [parsed (#'parser/parse-iso19115-xml {}
                                               iso-record
                                               u/default-parsing-options)
           ;; use the parsed associated DOIs as the expected value

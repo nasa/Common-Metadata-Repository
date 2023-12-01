@@ -61,10 +61,10 @@
   "Converts a data-center short-name into an elastic document with the full nested hierarchy
   for that short-name from the GCMD KMS keywords. If a field is not present in the KMS hierarchy,
   we use a dummy value to indicate the field was not present."
-  [kms-index short-name]
+  [context short-name]
   (let [full-data-center
         (merge default-data-center-values
-               (kms-lookup/lookup-by-short-name kms-index :providers short-name))
+               (kms-lookup/lookup-by-short-name context :providers short-name))
         {:keys [level-0 level-1 level-2 level-3 short-name long-name url uuid]
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name}} full-data-center]

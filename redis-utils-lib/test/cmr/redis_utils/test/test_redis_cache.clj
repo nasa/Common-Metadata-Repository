@@ -13,6 +13,14 @@
 
 (use-fixtures :once test-util/embedded-redis-server-fixture)
 
+(deftest testing-checking-if-redis-is-setup
+  (let [key :testing-key-exists
+        rcache (redis-cache/create-redis-cache {:keys-to-track [key]})]
+    (cache/reset rcache)
+    (is (= false (cache/key-exists rcache key)))
+    (cache/set-value rcache key "some value")
+    (is (cache/key-exists rcache key))))
+
 (deftest test-redis-cache-with-expire
   (testing "Redis cache with default timeout..."
     (let [rcache (redis-cache/create-redis-cache {:ttl 10000})]
@@ -89,6 +97,9 @@
       (is (= nil
            (h-cache/get-map rhcache cache-key))))
 
+    (testing "The cache is empty because it hasn't been populated"
+      (is (= false (h-cache/key-exists rhcache cache-key))))
+
     (h-cache/set-value rhcache cache-key "C1200000003-PROV1" {:concept-id "C1200000003-PROV1",
                                                               :revision-id 4,
                                                               :native-format {:format :umm-json, :version "1.17.3"},
@@ -97,6 +108,9 @@
                                                               :dif10 "<DIF xmlns=\"http://gcmd.gsfc.n...",
                                                               :iso19115 "<gmi:MI_Metadata xmlns:xs=\"htt...",
                                                               :umm-json_1.17.3 "{  \"AdditionalAttributes\" : [ ..."})
+    (testing "The cache key exists in redis."
+      (is (= true (h-cache/key-exists rhcache cache-key))))
+
     (testing "Testing getting the entire hashmap back"
       (is (= single-field-value-map
              (h-cache/get-map rhcache cache-key))))

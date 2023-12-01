@@ -684,46 +684,52 @@
   "Get the latest version of concepts by specifiying a list of concept-ids. Results are
   returned in the order requested"
   [context concept-ids allow-missing?]
-  (info (format "Getting [%d] latest concepts by concept-id" (count concept-ids)))
-  (let [start (System/currentTimeMillis)
-        parallel-chunk-size (get-in context [:system :parallel-chunk-size])
-        db (util/context->db context)
-        providers (conj (provider-db/get-providers db) pv/cmr-provider)
-        ;; Split the concept-ids so they can be requested separately for each provider and concept type
-        split-concept-ids-map (split-concept-ids concept-ids)
-        split-concept-ids-map (if allow-missing?
-                                (filter-non-existent-providers split-concept-ids-map providers)
-                                (do
-                                  (validate-providers-exist (keys split-concept-ids-map) providers)
-                                  split-concept-ids-map))
-        concepts (apply concat
-                        (for [[provider-id concept-type-concept-id-map] split-concept-ids-map
-                              [concept-type cids] concept-type-concept-id-map
-                              :let [provider (get-provider-by-id provider-id providers)]]
-                          ;; Retrieve the concepts for this type and provider id.
-                          (if (and (> parallel-chunk-size 0)
-                                   (< parallel-chunk-size (count cids)))
-                            ;; retrieving chunks in parallel for faster read performance
-                            (apply concat
-                                   (cutil/pmap-n-all
-                                    (partial c/get-latest-concepts db concept-type provider)
-                                    parallel-chunk-size
-                                    cids))
-                            (c/get-latest-concepts db concept-type provider cids))))
-        ;; Create a map of concept-ids to concepts
-        concepts-by-concept-id (into {} (for [c concepts] [(:concept-id c) c]))]
-    (if (or allow-missing? (= (count concepts) (count concept-ids)))
-      ;; Return the concepts in the order they were requested
-      (let [millis (- (System/currentTimeMillis) start)]
-        (info (format "Found [%d] concepts in [%d] ms" (count concepts) millis))
-        (keep concepts-by-concept-id concept-ids))
-      ;; some concepts weren't found
-      (let [missing-concept-ids (set/difference (set concept-ids)
-                                                (set (keys concepts-by-concept-id)))]
-        (errors/throw-service-errors
-          :not-found
-          (map msg/concept-does-not-exist
-               missing-concept-ids))))))
+  (if (<= (count concept-ids) 0)
+    (do
+      (info "Calling get-latest-concepts with 0 concept-ids.")
+      '())
+    (let [_ (info (format "Getting [%d] latest concepts by concept-id %s" (count concept-ids) (doall (reduce #(str %1 " " %2)
+                                                                                                             ""
+                                                                                                             concept-ids))))
+          start (System/currentTimeMillis)
+          parallel-chunk-size (get-in context [:system :parallel-chunk-size])
+          db (util/context->db context)
+          providers (conj (provider-db/get-providers db) pv/cmr-provider)
+            ;; Split the concept-ids so they can be requested separately for each provider and concept type
+          split-concept-ids-map (split-concept-ids concept-ids)
+          split-concept-ids-map (if allow-missing?
+                                  (filter-non-existent-providers split-concept-ids-map providers)
+                                  (do
+                                    (validate-providers-exist (keys split-concept-ids-map) providers)
+                                    split-concept-ids-map))
+          concepts (apply concat
+                          (for [[provider-id concept-type-concept-id-map] split-concept-ids-map
+                                [concept-type cids] concept-type-concept-id-map
+                                :let [provider (get-provider-by-id provider-id providers)]]
+                              ;; Retrieve the concepts for this type and provider id.
+                            (if (and (> parallel-chunk-size 0)
+                                     (< parallel-chunk-size (count cids)))
+                                ;; retrieving chunks in parallel for faster read performance
+                              (apply concat
+                                     (cutil/pmap-n-all
+                                      (partial c/get-latest-concepts db concept-type provider)
+                                      parallel-chunk-size
+                                      cids))
+                              (c/get-latest-concepts db concept-type provider cids))))
+            ;; Create a map of concept-ids to concepts
+          concepts-by-concept-id (into {} (for [c concepts] [(:concept-id c) c]))]
+      (if (or allow-missing? (= (count concepts) (count concept-ids)))
+          ;; Return the concepts in the order they were requested
+        (let [millis (- (System/currentTimeMillis) start)]
+          (info (format "Found [%d] concepts in [%d] ms" (count concepts) millis))
+          (keep concepts-by-concept-id concept-ids))
+          ;; some concepts weren't found
+        (let [missing-concept-ids (set/difference (set concept-ids)
+                                                  (set (keys concepts-by-concept-id)))]
+          (errors/throw-service-errors
+           :not-found
+           (map msg/concept-does-not-exist
+                missing-concept-ids)))))))
 
 (defn get-expired-collections-concept-ids
   "Returns the concept ids of expired collections in the provider."
