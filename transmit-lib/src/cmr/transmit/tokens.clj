@@ -25,13 +25,18 @@
     (let [bearer-stripped-token (string/replace token #"Bearer\W+" "")
           token-kid (get (jws/decode-header bearer-stripped-token) :kid)
           jwks-list (json/parse-string (transmit-config/jwt-web-key-set) true)
-          matching-key (first (filter #(= token-kid (get % :kid)) jwks-list))
+          matching-key (common-util/first-or-throw (filter #(= token-kid (get % :kid)) jwks-list))
           public-key (buddy-keys/jwk->public-key matching-key)
           decrypted-token (jwt/unsign bearer-stripped-token public-key {:alg :rs256})]
-      ((keyword transmit-config/jwt-user-id-claim) decrypted-token))
+      (first (remove nil? (map #((keyword %) decrypted-token) (json/parse-string (transmit-config/jwt-user-id-claims) true)))))
     (catch clojure.lang.ExceptionInfo ex
       (let [error-data (ex-data ex)]
         (cond
+          (= :empty-list (:cause error-data))
+          (errors/throw-service-error
+           :unauthorized
+           (format "Token [%s] was not issued by recognized provider.  Note the token value has been partially redacted."
+                   (common-util/scrub-token token)))
           (= :exp (:cause error-data))
           (errors/throw-service-error
            :unauthorized

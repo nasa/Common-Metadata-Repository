@@ -1129,3 +1129,10 @@
   [anything]
   (println anything)
   anything)
+
+(defn first-or-throw
+  "Take the first element of a supplied list, throw an exception if it fails"
+  [l]
+  (cond
+    (empty? l) (throw (ex-info "Can't take first of empty list" {:cause :empty-list}))
+    :else (first l)))
