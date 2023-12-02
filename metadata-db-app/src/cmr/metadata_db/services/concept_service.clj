@@ -688,9 +688,9 @@
     (do
       (info "Calling get-latest-concepts with 0 concept-ids.")
       '())
-    (let [_ (info (format "Getting [%d] latest concepts by concept-id %s" (count concept-ids) (doall (reduce #(str %1 " " %2)
-                                                                                                             ""
-                                                                                                             concept-ids))))
+    (let [_ (info (format "Getting [%d] latest concepts by concept-id %s"
+                          (count concept-ids)
+                          (doall (reduce #(str %1 " " %2) "" concept-ids))))
           start (System/currentTimeMillis)
           parallel-chunk-size (get-in context [:system :parallel-chunk-size])
           db (util/context->db context)
