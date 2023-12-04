@@ -6,8 +6,8 @@
    [clojure.set :as set]
    [clojure.string :as str]
    [cmr.common-app.config :as common-config]
-   [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.concepts :as concepts]
+   [cmr.common.log :refer [debug warn info error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
@@ -255,8 +255,7 @@
         opendata-citations (keep opendata/collection-citation->opendata-citation collection-citations)
         personnel (opendata/opendata-email-contact collection)
         platforms (map util/map-keys->kebab-case platforms)
-        kms-index (kf/get-kms-index context)
-        platforms2-nested (map #(platform/platform2-nested-fields->elastic-doc kms-index %)
+        platforms2-nested (map #(platform/platform2-nested-fields->elastic-doc context %)
                                (map :short-name platforms))
         platform-short-names (->> (map :short-name platforms2-nested)
                                   (map str/trim))
@@ -268,7 +267,7 @@
                                  (remove str/blank?))
         instruments (mapcat :instruments platforms)
         instruments (concat instruments (mapcat :composed-of instruments))
-        instruments-nested (map #(instrument/instrument-short-name->elastic-doc kms-index %)
+        instruments-nested (map #(instrument/instrument-short-name->elastic-doc context %)
                                 (keep :short-name instruments))
         instrument-short-names (->> instruments-nested
                                     (map :short-name)
@@ -298,11 +297,11 @@
                                    (when-let [short-name (:short-name c)]
                                      (when (not= su/not-provided short-name)
                                        short-name)))
-        archive-centers (map #(data-center/data-center-short-name->elastic-doc kms-index %)
+        archive-centers (map #(data-center/data-center-short-name->elastic-doc context %)
                              (map str/trim (data-center/extract-archive-center-names collection)))
         ;; get the normalized names back
         archive-center-names (keep meaningful-short-name-fn archive-centers)
-        data-centers (map #(data-center/data-center-short-name->elastic-doc kms-index %)
+        data-centers (map #(data-center/data-center-short-name->elastic-doc context %)
                           (map str/trim (data-center/extract-data-center-names collection)))
         ;; returns a list of {:start-date xxx :end-date yyy}
         temporal-extents (->> collection-temporal-extents
@@ -364,7 +363,7 @@
             :native-id-lowercase (str/lower-case native-id)
             :user-id user-id
             :permitted-group-ids permitted-group-ids
-            ;; If there's an entry in the collection granule aggregates then the collection has granules.
+                               ;; If there's an entry in the collection granule aggregates then the collection has granules.
             :has-granules has-granules
             :has-granules-or-cwic (or
                                    has-granules
@@ -402,8 +401,7 @@
                                                 (str/lower-case collection-data-type)))
             :platform-sn platform-short-names
             :platform-sn-lowercase  (map str/lower-case platform-short-names)
-
-            ;; hierarchical fields
+                           ;; hierarchical fields
             :platforms nil ;; DEPRECATED ; use :platforms2
             :platforms2 platforms2-nested
             :instruments instruments-nested
@@ -414,18 +412,17 @@
                                        [(:start-date extent)
                                         (:end-date extent)])
                                      temporal-extents-ranges)
-            ;; added so that we can respect all collection temporal ranges in search
-            ;; when limit_to_granules is set and there are no granules for the collection.
+                               ;; added so that we can respect all collection temporal ranges in search
+                               ;; when limit_to_granules is set and there are no granules for the collection.
             :limit-to-granules-temporals
             (if granule-start-date
               [{:start-date (index-util/date->elastic granule-start-date)
                 :end-date (index-util/date->elastic granule-end-date)}]
               temporal-extents)
-            :science-keywords (map #(sk/science-keyword->elastic-doc kms-index %)
+            :science-keywords (map #(sk/science-keyword->elastic-doc context %)
                                    (:ScienceKeywords collection))
-            :location-keywords (map #(clk/location-keyword->elastic-doc kms-index %)
+            :location-keywords (map #(clk/location-keyword->elastic-doc context %)
                                     (:LocationKeywords collection))
-
             :instrument-sn instrument-short-names
             :instrument-sn-lowercase  (map str/lower-case instrument-short-names)
             :sensor-sn sensor-short-names
@@ -463,8 +460,7 @@
             :insert-time insert-time
             :created-at created-at
             :coordinate-system coordinate-system
-
-            ;; fields added to support keyword searches including the quoted string case.
+                           ;; fields added to support keyword searches including the quoted string case.
             :keyword2 (k/create-keywords-field concept-id collection
                                                {:platform-long-names platform-long-names
                                                 :instrument-long-names instrument-long-names
@@ -474,23 +470,21 @@
             :sensor-ln-lowercase (map str/lower-case sensor-long-names)
             :project-ln-lowercase (map str/lower-case project-long-names)
             :temporal-keyword-lowercase (map str/lower-case temporal-keywords)
-
-            ;; tags
+                           ;; tags
             :tags tags
-            ;; tag-data saved in elasticsearch for retrieving purpose in the format of:
-            ;; {"org.ceos.wgiss.cwic.native_id": {"associationDate":"2015-01-01T00:00:00.0Z",
-            ;;                                    "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"},
-            ;;  "org.ceos.wgiss.cwic.data_provider": {"associationDate":"2015-01-01T00:00:00.0Z",
-            ;;                                        "data": "NASA"},
-            ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
-            ;;                                      "data": "prod"}}
+                           ;; tag-data saved in elasticsearch for retrieving purpose in the format of:
+                           ;; {"org.ceos.wgiss.cwic.native_id": {"associationDate":"2015-01-01T00:00:00.0Z",
+                           ;;                                    "data": "Global Maps of Atmospheric Nitrogen Deposition, 1860, 1993, and 2050"},
+                           ;;  "org.ceos.wgiss.cwic.data_provider": {"associationDate":"2015-01-01T00:00:00.0Z",
+                           ;;                                        "data": "NASA"},
+                           ;;  "org.ceos.wgiss.cwic.cwic_status": {"associationDate":"2015-01-01T00:00:00.0Z",
+                           ;;                                      "data": "prod"}}
             :tags-gzip-b64 (when (seq tag-associations)
                              (util/string->gzip-base64
                               (pr-str
                                (into {} (for [ta tag-associations]
                                           [(:tag-key ta) (util/remove-nil-keys
                                                           {:data (:data ta)})])))))
-
             :processing-level-id-lowercase-humanized (-> humanized-values
                                                          :processing-level-id-humanized
                                                          first
@@ -501,10 +495,8 @@
             :usage-relevancy-score 0
             :horizontal-data-resolutions {:value horizontal-data-resolutions
                                           :priority 0}
-
             :s3-bucket-and-object-prefix-names s3-bucket-and-object-prefix-names
             :eula-identifiers (get-in collection [:UseConstraints :EULAIdentifiers])}
-
            (variable-service-tool-associations->elastic-docs
             context variable-associations service-associations tool-associations)
            (collection-temporal-elastic context concept-id collection)
@@ -555,3 +547,4 @@
     (get-elastic-doc-for-full-collection context
                                          concept
                                          umm-collection)))
+

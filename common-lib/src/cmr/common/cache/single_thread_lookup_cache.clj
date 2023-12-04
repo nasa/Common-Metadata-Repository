@@ -87,6 +87,11 @@
     (when (c/simple-cache? delegate-cache)
       (c/get-keys delegate-cache)))
 
+  (key-exists
+    [this key]
+    ;; key is the cache-key. Checks to see if the cache has been setup.
+    (c/key-exists delegate-cache key))
+
   (get-value
    [this key]
    (when (c/simple-cache? delegate-cache)

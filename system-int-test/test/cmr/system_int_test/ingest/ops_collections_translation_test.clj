@@ -25,7 +25,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(def context (lkt/setup-context-for-test))
+(def context lkt/create-context)
 
 (def starting-page-num
   "The starting page-num to retrieve collections for the translation test."

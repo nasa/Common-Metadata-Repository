@@ -3,13 +3,9 @@
   integration tests."
   (:require
    [cmr.common.mime-types :as mime-types]
-   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.umm-spec.models.umm-subscription-models :as umm-sub]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.versioning :as umm-versioning]))
-
-(def context (lkt/setup-context-for-test))
 
 (def ^:private latest-umm-sub-verison umm-versioning/current-subscription-version)
 
@@ -54,7 +50,7 @@
             :native-id (or (:native-id item) (:Name item))
             :metadata (when-not (:deleted item)
                         (umm-spec/generate-metadata
-                         context
+                         {}
                          (dissoc item :provider-id :concept-id :native-id)
                          format-key))
             :format format}

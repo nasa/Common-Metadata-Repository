@@ -13,10 +13,10 @@
   "Converts an instrument short-name into an elastic document with the full nested hierarchy for
   that short-name from the GCMD KMS keywords. If a field is not present in the KMS hierarchy, we
   use a dummy value to indicate the field was not present."
-  [kms-index short-name]
+  [context short-name]
   (let [full-instrument
         (merge default-instrument-values
-               (kms-lookup/lookup-by-short-name kms-index :instruments short-name))
+               (kms-lookup/lookup-by-short-name context :instruments short-name))
         {:keys [category type subtype short-name long-name uuid]
          ;; Use the short-name from KMS if present, otherwise use the metadata short-name
          :or {short-name short-name} i-class :class} full-instrument]

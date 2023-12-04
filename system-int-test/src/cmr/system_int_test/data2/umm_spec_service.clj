@@ -5,10 +5,7 @@
    [cmr.common.mime-types :as mime-types]
    [cmr.umm-spec.metadata-specification :as m-spec]
    [cmr.umm-spec.models.umm-service-models :as umm-s]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]))
-
-(def context (lkt/setup-context-for-test))
 
 (def ^:private sample-umm-service
   {:Name "AIRX3STD"
@@ -48,7 +45,7 @@
             :native-id (or (:native-id item) (:Name item))
             :metadata (when-not (:deleted item)
                         (umm-spec/generate-metadata
-                         context
+                         {}
                          (dissoc item :provider-id :concept-id :native-id)
                          format-key))
             :format format}

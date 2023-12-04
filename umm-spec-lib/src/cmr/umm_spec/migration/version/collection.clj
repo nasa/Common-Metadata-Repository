@@ -3,7 +3,6 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common.util :as util :refer [update-in-each remove-nil-keys]]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.metadata-specification :as m-spec]
@@ -20,7 +19,6 @@
    [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
-   [cmr.umm-spec.versioning :refer [versions current-version]]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -254,7 +252,7 @@
   [context c & _]
   ;; Change SpatialKeywords to LocationKeywords
   (-> c
-      (assoc :LocationKeywords (lk/translate-spatial-keywords (kf/get-kms-index context)
+      (assoc :LocationKeywords (lk/translate-spatial-keywords context
                                                               (:SpatialKeywords c)))))
 
 (defmethod interface/migrate-umm-version [:collection "1.2" "1.1"]

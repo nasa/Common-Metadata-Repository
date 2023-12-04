@@ -2,12 +2,10 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mime-types]
-   [cmr.common.util :as util]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm-spec.test.location-keywords-helper :as location-keywords-helper]
    [cmr.umm-spec.test.umm-g.expected-util :as expected-util]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.util :as umm-spec-util]))
 
 (def ^:private valid-input-formats
@@ -21,7 +19,7 @@
    :iso19115
    :echo10])
 
-(def test-context (location-keywords-helper/setup-context-for-test))
+(def test-context location-keywords-helper/create-context)
 
 (defn- assert-translate-failure
   [error-regex & args]

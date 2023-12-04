@@ -11,6 +11,7 @@
    [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common.api.web-server :as web]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -112,6 +113,10 @@
                        ingest-api/user-id-cache-key (ingest-api/create-user-id-cache)
                        ingest-translation/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                        kf/kms-cache-key (kf/create-kms-cache)
+                       kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+                       kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+                       kl/kms-location-cache-key (kl/create-kms-location-cache)
+                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
                        common-health/health-cache-key (common-health/create-health-cache)
                        common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                        humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache)

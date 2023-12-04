@@ -3,7 +3,6 @@
   data is indexed and searchable."
   (:require
     [cheshire.core :as json]
-    [clj-time.core :as t]
     [clj-time.format :as f]
     [clojure.test :refer :all]
     [cmr.common-app.config :as common-config]
@@ -17,8 +16,6 @@
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
-    [cmr.umm-spec.models.umm-collection-models :as umm-c]
-    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
     [cmr.umm-spec.test.expected-conversion :as expected-conversion]
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
@@ -27,7 +24,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
-(def context (lkt/setup-context-for-test))
+(def context lkt/create-context)
 
 (defn- unparse-date-time
   "Parse a date-time into a string that can be used in a parameter query"
