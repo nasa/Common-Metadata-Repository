@@ -1,7 +1,7 @@
 (ns cmr.search.test.unit.services.acls.granule-acls
   (:require [clojure.test :refer :all]
             [cmr.common.cache.in-memory-cache :as mem-cache]
-            ;;[cmr.common.hash-cache :as hash-cache]
+            [cmr.common.hash-cache :as hash-cache]
             [cmr.common.util :as util :refer [are3]]
             [cmr.redis-utils.test.test-util :as test-util]
             [cmr.search.services.acls.collections-cache :as coll-cache]
