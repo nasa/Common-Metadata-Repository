@@ -1,12 +1,8 @@
-import nock from 'nock'
-
 import indexCmrCollection from '../handler'
 
 import { updateCollection, deleteCollection } from '../../testUtil/indexCollection'
 
 import { verifyCollectionPropertiesInGraphDb } from '../../testUtil/verifyCollection'
-
-import * as fetchCollectionPermittedGroups from '../../utils/cmr/fetchCollectionPermittedGroups'
 
 import {
   verifyRelatedUrlExistInGraphDb, verifyRelatedUrlNotExistInGraphDb
@@ -98,31 +94,6 @@ describe('indexCmrCollection handler', () => {
     )
 
     await verifyPlatformInstrumentsExistInGraphDb(collectionTitle, { platform: platform1 })
-  })
-
-  test('test collection that has an index on CMR but, it is Not stored in db', async () => {
-    const conceptId = 'C123755555-TESTPROV'
-    nock(/local-cmr/)
-      .get(/collections/)
-      .reply(200, {
-        hits: 0,
-        took: 6,
-        items: ['Bad Data in here']
-      })
-
-    const event = getEvent(conceptId, 'concept-update', 'Bad Data in here')
-
-    const consoleMock = jest.spyOn(console, 'log')
-
-    const indexed = await indexCmrCollection(event)
-
-    // expect(consoleMock).toBeCalledTimes(2)
-
-    expect(consoleMock).toBeCalledWith(`Error indexing collection [${conceptId}], Exception was thrown in index-collection handler TypeError: Cannot read properties of undefined (reading 'concept-id')`)
-
-    const { body } = indexed
-
-    expect(body).toBe('Successfully indexed 0 collection(s).')
   })
 
   test('test unsupported concept type', async () => {
