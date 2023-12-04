@@ -13,10 +13,12 @@ provider:
    name: graphdb-driver-deployment-bucket-${self:provider.stage}
    skipPolicySetup: true
 
-  # vpc:
-  #   securityGroupIds:
-  #     - ${cf:${self:provider.stage}.servicesSecurityGroupId}
-  #   subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
+  # For now. comment out the VPC block for local development, we need to
+  # move the infrastructure and this codebase into its own repository. 
+  vpc:
+    securityGroupIds:
+      - ${cf:${self:provider.stage}.servicesSecurityGroupId}
+    subnetIds: !Split [',', '${cf:${self:provider.stage}.subnetIds}']
 
   environment: ${file(./serverless-configs/env.yml):${self:provider.stage}}
 
@@ -47,117 +49,12 @@ functions:
               - Arn
 
 resources:
-  Resources:
-    CollectionIndexingQueue:
-      Type: 'AWS::SQS::Queue'
-      Properties:
-        QueueName: graphdb-indexer-${self:provider.stage}-CollectionIndexingQueue
-        VisibilityTimeout: 300
-        DelaySeconds: 5
-        # RedrivePolicy:
-        #   deadLetterTargetArn:
-        #     Fn::GetAtt:
-        #       - CollectionIndexingQueueDeadLetterQueue
-        #       - Arn
-        #   maxReceiveCount: 2 # Number of times a message will be tried before being dumped to the DLQ
-
-    SqsQueuePolicy:
-      Type: AWS::SQS::QueuePolicy
-      Properties:
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Sid: topic-subscription-${self:provider.environment.cmrConceptSnsTopic}
-              Effect: Allow
-              Principal:
-                AWS: "*"
-              Action:
-                - sqs:SendMessage
-              Resource: !GetAtt CollectionIndexingQueue.Arn
-              Condition:
-                ArnEquals:
-                  aws:SourceArn: ${self:provider.environment.cmrConceptSnsTopic}
-        Queues:
-          - !Ref CollectionIndexingQueue
-
-    # CollectionIndexingQueueDeadLetterQueue:
-    #   Type: AWS::SQS::Queue
-    #   Properties:
-    #     QueueName: graphdb-indexer-${self:provider.stage}-CollectionIndexingQueueDeadLetterQueue
-    #     MessageRetentionPeriod: 1209600
-
-    cmrSnsSubscription:
-      Type: 'AWS::SNS::Subscription'
-      Properties:
-        TopicArn: ${self:provider.environment.cmrConceptSnsTopic}
-        Endpoint: !GetAtt
-          - CollectionIndexingQueue
-          - Arn
-        Protocol: sqs
-        RawMessageDelivery: 'true'
-
-    IamRoleGraphLambdaExecution:
-      Type: AWS::IAM::Role
-      Properties:
-        RoleName: cmrGraphRole-${self:provider.stage}
-        ManagedPolicyArns:
-          - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
-        PermissionsBoundary:
-          Fn::Join: [
-            "", [
-              "arn:aws:iam::",
-              {
-                "Ref": "AWS::AccountId"
-              },
-              ":policy/NGAPShRoleBoundary"
-            ]
-          ]
-        AssumeRolePolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Effect: 'Allow'
-              Principal:
-                Service:
-                  - 'lambda.amazonaws.com'
-              Action:
-                - 'sts:AssumeRole'
-
-    cmrGraphPolicy:
-      Type: AWS::IAM::Policy
-      Properties:
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Action:
-                - 'sqs:*'
-              Effect: 'Allow'
-              Resource: '*'
-        PolicyName: cmrGraphPolicy-${self:provider.stage}
-        Roles:
-          - Ref: IamRoleGraphLambdaExecution
-
-    cmrParamStorePolicy:
-      Type: AWS::IAM::Policy
-      Properties:
-        PolicyDocument:
-          Version: '2012-10-17'
-          Statement:
-            - Action:
-                - 'ssm:GetParameter*'
-                - 'secretsmanager:GetSecretValue'
-              Effect: 'Allow'
-              Resource:
-                - 'arn:aws:ssm:*:*:parameter/${self:provider.stage}/graph-db/*'
-                - 'arn:aws:ssm:*:*:parameter/${self:provider.stage}/graph-db/*'
-        PolicyName: cmrParamStorePolicy-${self:provider.stage}
-        Roles:
-          - Ref: IamRoleGraphLambdaExecution
+  Resources: ${file(./serverless-configs/resources.yml):${self:provider.stage}}
 
 custom:
   serverless-offline:
     reloadHandler: true
     useInProcess: true
-    # useDocker: true
 
   minifyBuild:
     development: false

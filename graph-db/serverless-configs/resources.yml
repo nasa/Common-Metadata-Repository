@@ -1,0 +1,127 @@
+shared: &shared_resources
+  SqsQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: topic-subscription-${self:provider.environment.cmrConceptSnsTopic}
+            Effect: Allow
+            Principal:
+              AWS: "*"
+            Action:
+              - sqs:SendMessage
+            Resource: !GetAtt CollectionIndexingQueue.Arn
+            Condition:
+              ArnEquals:
+                aws:SourceArn: ${self:provider.environment.cmrConceptSnsTopic}
+      Queues:
+        - !Ref CollectionIndexingQueue
+
+  cmrSnsSubscription:
+    Type: 'AWS::SNS::Subscription'
+    Properties:
+      TopicArn: ${self:provider.environment.cmrConceptSnsTopic}
+      Endpoint: !GetAtt
+        - CollectionIndexingQueue
+        - Arn
+      Protocol: sqs
+      RawMessageDelivery: 'true'
+
+  IamRoleGraphLambdaExecution:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: cmrGraphRole-${self:provider.stage}
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      PermissionsBoundary:
+        Fn::Join: [
+          "", [
+            "arn:aws:iam::",
+            {
+              "Ref": "AWS::AccountId"
+            },
+            ":policy/NGAPShRoleBoundary"
+          ]
+        ]
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service:
+                - 'lambda.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+
+  cmrGraphPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - 'sqs:*'
+            Effect: 'Allow'
+            Resource: '*'
+      PolicyName: cmrGraphPolicy-${self:provider.stage}
+      Roles:
+        - Ref: IamRoleGraphLambdaExecution
+
+  cmrParamStorePolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - 'ssm:GetParameter*'
+              - 'secretsmanager:GetSecretValue'
+            Effect: 'Allow'
+            Resource:
+              - 'arn:aws:ssm:*:*:parameter/${self:provider.stage}/graph-db/*'
+              - 'arn:aws:ssm:*:*:parameter/${self:provider.stage}/graph-db/*'
+      PolicyName: cmrParamStorePolicy-${self:provider.stage}
+      Roles:
+        - Ref: IamRoleGraphLambdaExecution
+
+aws: &aws_resources
+  CollectionIndexingQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: graphdb-indexer-${self:provider.stage}-CollectionIndexingQueue
+      VisibilityTimeout: 300
+      DelaySeconds: 5
+      RedrivePolicy:
+        deadLetterTargetArn:
+          Fn::GetAtt:
+            - CollectionIndexingQueueDeadLetterQueue
+            - Arn
+        maxReceiveCount: 2 # Number of times a message will be tried before being dumped to the DLQ
+
+  CollectionIndexingQueueDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: graphdb-indexer-${self:provider.stage}-CollectionIndexingQueueDeadLetterQueue
+      MessageRetentionPeriod: 1209600
+
+  <<: *shared_resources
+
+development: 
+  CollectionIndexingQueue:
+    Type: 'AWS::SQS::Queue'
+    Properties:
+      QueueName: graphdb-indexer-${self:provider.stage}-CollectionIndexingQueue
+      VisibilityTimeout: 300
+      DelaySeconds: 5
+
+  <<: *shared_resources
+
+sit:
+  <<: *aws_resources
+
+uat:
+  <<: *aws_resources
+
+prod:
+  <<: *aws_resources
