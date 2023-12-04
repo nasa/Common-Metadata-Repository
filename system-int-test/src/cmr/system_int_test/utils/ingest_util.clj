@@ -688,20 +688,24 @@
 
 (defn- bulk-update-provider-status*
   "Get the tasks and statuses by provider"
-  [concept-type provider-id options]
-  (let [accept-format (get options :accept-format :xml)
-        token (:token options)
-        task-url (if (= :collection concept-type)
-                   (url/ingest-collection-bulk-update-status-url provider-id)
-                   (url/ingest-granule-bulk-update-status-url provider-id))
-        params {:method :get
-                :url task-url
-                :connection-manager (s/conn-mgr)
-                :throw-exceptions false}
-        params (merge params (when accept-format {:accept accept-format}))
-        params (merge params (when token {:headers {transmit-config/token-header token}}))
-        response (client/request params)]
-    (parse-bulk-update-provider-status-response response options)))
+  ([concept-type provider-id options]
+   (bulk-update-provider-status* concept-type provider-id options nil))
+  ([concept-type provider-id options date] 
+   (let [accept-format (get options :accept-format :xml)
+         token (:token options)
+         task-url (if (= :collection concept-type)
+                    (url/ingest-collection-bulk-update-status-url provider-id)
+                    (if date
+                      (url/ingest-granule-bulk-update-status-url-with-date provider-id date)
+                      (url/ingest-granule-bulk-update-status-url provider-id)))
+         params {:method :get
+                 :url task-url
+                 :connection-manager (s/conn-mgr)
+                 :throw-exceptions false}
+         params (merge params (when accept-format {:accept accept-format}))
+         params (merge params (when token {:headers {transmit-config/token-header token}}))
+         response (client/request params)]
+     (parse-bulk-update-provider-status-response response options))))
 
 (defn update-granule-bulk-update-task-statuses
   "Force an unscheduled update of granule bulk update task status."
@@ -724,9 +728,11 @@
 (defn granule-bulk-update-tasks
   "Get the granule bulk update tasks by provider"
   ([provider-id]
-   (granule-bulk-update-tasks provider-id nil))
+   (granule-bulk-update-tasks provider-id nil nil))
   ([provider-id options]
-   (bulk-update-provider-status* :granule provider-id options)))
+   (granule-bulk-update-tasks provider-id options nil))
+  ([provider-id options date]
+   (bulk-update-provider-status* :granule provider-id options date)))
 
 (defn update-granule-bulk-update-tasks
   "Updates the granule bulk update tasks by provider"

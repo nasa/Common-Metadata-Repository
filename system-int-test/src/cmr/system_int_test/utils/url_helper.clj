@@ -310,6 +310,14 @@
           (transmit-config/ingest-port)
           provider-id))
 
+(defn ingest-granule-bulk-update-status-url-with-date
+  "Get the tasks and statuses for collection bulk update by provider and date"
+  [provider-id date]
+  (format "http://localhost:%s/providers/%s/bulk-update/granules/status?date=%s"
+          (transmit-config/ingest-port)
+          provider-id
+          date))
+
 (defn ingest-collection-bulk-update-task-status-url
   "Get the task and collection statuses by provider and task"
   [provider-id task-id]

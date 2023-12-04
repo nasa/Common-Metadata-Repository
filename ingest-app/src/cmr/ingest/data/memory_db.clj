@@ -136,7 +136,7 @@
   granule-data-bulk-update/GranBulkUpdateStore
 
   (get-granule-tasks-by-provider-id
-   [this provider-id]
+   [this provider-id params]
    (some->> @granule-task-status-atom
             (filter #(= provider-id (:provider-id %)))
             (map #(select-keys
