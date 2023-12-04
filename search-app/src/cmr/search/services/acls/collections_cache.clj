@@ -90,7 +90,6 @@
                                          (for [{:keys [provider-id EntryTitle] :as coll}
                                                collections]
                                            [[provider-id EntryTitle] coll]))]
-    (debug "fetch-collections-map count" (count collections))
     ;; We could reduce the amount of memory here if needed by only fetching the collections that
     ;; have granules.
     {:by-concept-id by-concept-id
@@ -104,7 +103,6 @@
   (let [cache (hash-cache/context->cache context cache-key)
         collections-map (fetch-collections-map context)]
     (doseq [[coll-key coll-value] collections-map]
-      (debug (format "collections-cache refresh-cache working on %s" coll-key))
       (hash-cache/set-value cache cache-key coll-key (clj-times->time-strs coll-value)))))
 
 (defn- get-collections-map
