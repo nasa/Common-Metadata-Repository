@@ -79,11 +79,6 @@
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
-                      kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
-                      kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
-                      kl/kms-location-cache-key (kl/create-kms-location-cache)
-                      kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
-                      provider-cache/cache-key (provider-cache/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job

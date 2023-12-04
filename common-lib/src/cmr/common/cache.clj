@@ -19,6 +19,10 @@
     [cache key]
     "Returns true if the key exists in the cache. This is used to determine if the cache has been set up.")
 
+  (key-exists
+    [cache key]
+    "Returns true if the key exists in the cache. This is used to determine if the cache has been set up.")
+
   (get-value
     [cache key]
     [cache key lookup-fn]
