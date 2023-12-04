@@ -87,17 +87,13 @@
         context (context-with-cached-collections
                  (for [coll-args collections]
                    (apply collection coll-args)))
-
-        ;;🚀 - clean this section up before merging! Do a test first
-
         ;; setup the redis cache (rcache) from the memory cache
         rcache (cmr.search.services.acls.collections-cache/create-cache)
-        ;;old-mem-cache (get-in context [:system :caches :collections-for-gran-acls])
+        old-mem-cache (get-in context [:system :caches :collections-for-gran-acls])
         context (assoc-in context [:system :caches :collections-for-gran-acls] rcache)
-        ;;data (.get-value old-mem-cache :collections)
-        ]
+        data (.get-value old-mem-cache :collections)]
     ;;(.set-values rcache :collections-for-gran-acls data)
-    ;;(hash-cache/set-values rcache :collections-for-gran-acls data)
+    (hash-cache/set-values rcache :collections-for-gran-acls data)
 
     (testing "collection identifier"
       (are3 [entry-titles access-value-args collection-concept-id should-match?]
