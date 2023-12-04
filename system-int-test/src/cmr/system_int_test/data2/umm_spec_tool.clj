@@ -3,12 +3,8 @@
   integration tests."
   (:require
    [cmr.common.mime-types :as mime-types]
-   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.umm-spec.models.umm-tool-models :as umm-t]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]))
-
-(def context (lkt/setup-context-for-test))
 
 (def ^:private sample-umm-tool
   {:Name "USGS_TOOLS_LATLONG"
@@ -66,7 +62,7 @@
             :native-id (or (:native-id item) (:Name item))
             :metadata (when-not (:deleted item)
                         (umm-spec/generate-metadata
-                         context
+                         {}
                          (dissoc item :provider-id :concept-id :native-id)
                          format-key))
             :format format}

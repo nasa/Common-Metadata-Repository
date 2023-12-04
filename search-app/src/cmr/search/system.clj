@@ -1,6 +1,5 @@
 (ns cmr.search.system
   (:require
-   [clojure.string :as string]
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
@@ -10,6 +9,7 @@
    [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common-app.services.search :as search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common.api.web-server :as web-server]
@@ -126,6 +126,10 @@
                       launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
                       urs/urs-cache-key (urs/create-urs-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
+                      kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+                      kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+                      kl/kms-location-cache-key (kl/create-kms-location-cache)
+                      kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
                       search/scroll-id-cache-key (search/create-scroll-id-cache)
                       search/scroll-first-page-cache-key (search/create-scroll-first-page-cache)
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)

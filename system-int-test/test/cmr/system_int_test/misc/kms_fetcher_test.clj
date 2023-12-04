@@ -2,19 +2,23 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.cache :as cache]
-   [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common-app.services.kms-fetcher :as fetcher]
+   [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common-app.services.kms-lookup :as kl]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.kms :as trans-kms]))
 
 (deftest validate-getting-kms-keywords-test
   (let [sys (transmit-config/system-with-connections
-             {:caches {fetcher/kms-cache-key (mem-cache/create-in-memory-cache)}}
+             {:caches {kf/kms-cache-key (kf/create-kms-cache)
+                       kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+                       kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+                       kl/kms-location-cache-key (kl/create-kms-location-cache)
+                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)}}
              [:kms])
         context {:system sys}
-        kms-cache (cache/context->cache context fetcher/kms-cache-key)
-        _  (#'fetcher/refresh-kms-cache context)
-        kms-map (cache/get-value kms-cache fetcher/kms-cache-key)]
+        kms-cache (cache/context->cache context kf/kms-cache-key)
+        _  (#'kf/refresh-kms-cache context)
+        kms-map (cache/get-value kms-cache kf/kms-cache-key)]
     
     (testing "Testing that KMS keywords such as projects exist after normal loading."
       (is (some? (:projects kms-map))))
@@ -28,5 +32,5 @@
     ;; wipe out the KMS keyword values in the cache.
     (testing "Makes sure that KMS keywords are not wiped out."
       (let [context (assoc context :testing-for-nil-keyword-scheme-value true)]
-        (#'fetcher/refresh-kms-cache context)
-        (is (some? (:projects (cache/get-value kms-cache fetcher/kms-cache-key))))))))
+        (#'kf/refresh-kms-cache context)
+        (is (some? (:projects (cache/get-value kms-cache kf/kms-cache-key))))))))

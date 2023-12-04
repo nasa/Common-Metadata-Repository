@@ -1,8 +1,7 @@
 (ns cmr.indexer.data.concepts.collection.science-keyword
   "Contains functions for converting science keyword domains into elastic documents"
   (:require
-    [clojure.string :as str]
-    [cmr.common-app.services.kms-fetcher :as kf]
+    [clojure.string :as string]
     [cmr.common-app.services.kms-lookup :as kms-lookup]
     [cmr.common.util :as util]
     [cmr.umm-spec.util :as spec-util]))
@@ -19,7 +18,7 @@
   "Convert science keyword field values into upper case and trim whitespace from both ends."
   [sk-field-value]
   (when (and sk-field-value (not= spec-util/not-provided sk-field-value))
-    (-> sk-field-value str/trim str/upper-case)))
+    (-> sk-field-value string/trim string/upper-case)))
 
 (defn science-keyword->elastic-doc
   "Converts a science keyword into the portion going in an elastic document. If there is a match
@@ -28,13 +27,13 @@
   this means there is no need to also index the keywords in all lowercase; however, we continue to
   index in lowercase so that science keywords are not treated as a special case in parts of the
   code that use lowercase mappings."
-  [kms-index science-keyword]
+  [context science-keyword]
   (let [science-keyword-kebab-key (util/map-keys->kebab-case science-keyword)
         science-keyword-upper-case (util/map-values normalize-sk-field-value
                                                     science-keyword-kebab-key)
         {:keys [category topic term variable-level-1 variable-level-2 variable-level-3
                 detailed-variable]} science-keyword-upper-case
-        {:keys [uuid]} (kms-lookup/lookup-by-umm-c-keyword kms-index :science-keywords
+        {:keys [uuid]} (kms-lookup/lookup-by-umm-c-keyword context :science-keywords
                                                            science-keyword-kebab-key)]
     {:category category
      :category-lowercase (util/safe-lowercase category)

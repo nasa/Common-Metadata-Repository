@@ -15,13 +15,16 @@
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
+<<<<<<< HEAD
+=======
+   [cmr.common-app.services.kms-lookup :as kl]
+   [cmr.common-app.services.provider-cache :as provider-cache]
+>>>>>>> fcef52322 (CMR-9558 Fixing indexer kms cache. (#2014))
    [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common.api.web-server :as web]
-   [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
-   [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
@@ -79,6 +82,10 @@
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
+                      kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+                      kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+                      kl/kms-location-cache-key (kl/create-kms-location-cache)
+                      kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job

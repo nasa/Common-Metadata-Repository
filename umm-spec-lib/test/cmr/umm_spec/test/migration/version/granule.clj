@@ -1,17 +1,13 @@
 (ns cmr.umm-spec.test.migration.version.granule
   (:require
-   [clojure.java.io :as io]
    [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
    [cmr.umm-spec.metadata-specification :as m-spec]
    [cmr.umm-spec.migration.version.core :as vm]
-   [cmr.umm-spec.migration.version.granule :as granule]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.test.umm-generators :as umm-gen]
    [cmr.umm-spec.umm-spec-core :as core]
-   [cmr.umm-spec.util :as u]
    [cmr.umm-spec.versioning :as v]
    [com.gfredericks.test.chuck.clojure-test :refer [for-all]]))
 
@@ -30,8 +26,8 @@
   (for-all [umm-record (gen/no-shrink umm-gen/umm-g-generator)
             dest-version (gen/elements (v/versions :granule))]
     (let [dest-media-type (str mt/umm-json "; version=" dest-version)
-          metadata (core/generate-metadata (lkt/setup-context-for-test)
-                                           umm-record dest-media-type)]
+          metadata (core/generate-metadata {}
+                    umm-record dest-media-type)]
       (empty? (core/validate-metadata :granule dest-media-type metadata)))))
 
 (deftest migrate-1_4-up-to-1_5

@@ -154,22 +154,6 @@
                           {:curr-val (first next-vals)
                            :next-vals (rest next-vals)}))))))
 
-(defmacro future-with-logging
-  "Creates a future that will log when a task starts and completes or if
-  exceptions occur."
-  [taskname & body]
-  `(future
-    (info "Starting " ~taskname)
-    (try
-      (let [result# (do ~@body)]
-        (info ~taskname " completed without exception")
-        result#)
-      (catch Throwable e#
-        (error e# "Exception in " ~taskname)
-        (throw e#))
-      (finally
-        (info ~taskname " complete.")))))
-
 (defmacro time-execution
   "Times the execution of the body and returns a tuple of time it took and the
   results."

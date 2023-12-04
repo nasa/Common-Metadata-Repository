@@ -25,6 +25,10 @@
                  (.getMessage e)))
       1)))
 
+(defmethod size-in-bytes java.lang.Boolean
+  [_]
+  1)
+
 (defmethod size-in-bytes clojure.lang.Keyword
   [kw]
   (count (.getBytes (name kw) "UTF-8")))
@@ -72,6 +76,11 @@
   (get-keys
     [this]
     (keys @cache-atom))
+
+  (key-exists
+    [this key]
+    ;; key is the cache-key. Checks to see if the cache has been setup.
+    (some? @cache-atom))
 
   (get-value
     [this key]

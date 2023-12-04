@@ -37,6 +37,13 @@
         (into {} (for [[a b] (partition 2 result)]
                    {a b})))))
 
+  (key-exists
+    [this key]
+    ;; key is the cache-key. Retuns true if the cache key exists in redis nil otherwise
+    (let [exists (wcar* (carmine/exists (rc/serialize key)))]
+      (when exists
+        (> exists 0))))
+
   (get-keys
     [this key]
     ;; key is the cache-key 

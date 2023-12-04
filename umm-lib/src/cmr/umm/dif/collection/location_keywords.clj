@@ -27,20 +27,20 @@
 
 (defn- find-spatial-keyword
   "Finds spatial keywords in the hierarchy and pick the one with the fewest keys (e.g. shortest
-  hierarchical depth.) Takes the kms-index and a location string as parameters, and returns
+  hierarchical depth.) Takes the request context and a location string as parameters, and returns
   the map of hierarichies which contain the location string (treated case insensitive)."
-  [kms-index location-string]
-  (or (kms-lookup/lookup-by-location-string kms-index location-string)
+  [context location-string]
+  (or (kms-lookup/lookup-by-location-string context location-string)
       {:category "OTHER" :type location-string}))
 
 (defn spatial-keywords->location-keywords
-  "Takes the kms-index and a list of Spatial Keywords and returns a list of location keyword maps
+  "Takes the request context and a list of Spatial Keywords and returns a list of location keyword maps
   for that spatial keyword."
-  [kms-index spatial-keywords]
+  [context spatial-keywords]
   (map (fn [keyword]
          (dissoc
           (set/rename-keys
-            (find-spatial-keyword kms-index keyword)
+            (find-spatial-keyword context keyword)
             cache-location-keywords->umm-location-keywords)
           :uuid))
        spatial-keywords))
@@ -65,8 +65,8 @@
 
 (defn translate-spatial-keywords
   "Translates a list of spatial keywords into an array of LocationKeyword type objects"
-  [kms-index spatial-keywords]
-  (let [location-keyword-maps (spatial-keywords->location-keywords kms-index spatial-keywords)
+  [context spatial-keywords]
+  (let [location-keyword-maps (spatial-keywords->location-keywords context spatial-keywords)
         umm-location-keyword-maps (seq
                                    (map
                                     #(dissoc

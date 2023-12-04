@@ -20,8 +20,7 @@
    [cmr.umm-spec.legacy :as umm-legacy]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
-   [cmr.umm-spec.versioning :as versioning]
-   [cmr.umm.umm-core :as umm]))
+   [cmr.umm-spec.versioning :as versioning]))
 
 (defn- item->native-id
   "Returns the native id of a UMM record."
@@ -31,7 +30,7 @@
     (or (some-> entry-title string/trim)
         (some #(get item %) [:granule-ur :variable-name :native-id :LongName]))))
 
-(def context (lkt/setup-context-for-test))
+(def context lkt/create-context)
 
 (defn- format-key->concept-format
   "Returns the format of the concept based on the format key, which could be a map with UMM version

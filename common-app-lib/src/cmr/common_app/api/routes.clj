@@ -132,9 +132,10 @@
       (acl/verify-ingest-management-permission request-context :read)
       (let [cache-key (keyword cache-key)
             cache (cache/context->cache request-context (keyword cache-name))
-            result (if (cache/simple-cache? cache)
-                     (cache/get-value cache cache-key)
-                     (hcache/get-map cache cache-key))]
+            result (when cache
+                     (if (cache/simple-cache? cache)
+                       (cache/get-value cache cache-key)
+                       (hcache/get-map cache cache-key)))]
         (if result
           {:status 200
            :body (json/generate-string result)}

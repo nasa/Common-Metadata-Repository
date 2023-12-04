@@ -4,9 +4,15 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.util :as common-util :refer [are3]]
+   [cmr.redis-utils.test.test-util :as redis-embedded-fixture]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.xml-to-umm-mappings.echo10 :as echo10]
    [cmr.umm-spec.xml-to-umm-mappings.echo10.data-contact :as contact]))
+
+(use-fixtures :once (join-fixtures [redis-embedded-fixture/embedded-redis-server-fixture
+                                    lkt/redis-cache-fixture]))
+
+(def test-context lkt/create-context)
 
 (deftest echo10-contact-role-test
   (testing "ECHO10 Contact with invalid role and default applied"
@@ -119,7 +125,7 @@
           :S3CredentialsAPIEndpoint "https://www.credAPIURL.org"
           :S3CredentialsAPIDocumentationURL "https://www.credAPIDocURL.org"}
          (:DirectDistributionInformation
-           (#'echo10/parse-echo10-xml (lkt/setup-context-for-test)
+           (#'echo10/parse-echo10-xml test-context
                                       "<Collection>
                                          <DirectDistributionInformation>
                                            <Region>us-west-1</Region>
@@ -129,23 +135,23 @@
                                            <S3CredentialsAPIDocumentationURL>https://www.credAPIDocURL.org</S3CredentialsAPIDocumentationURL>
                                          </DirectDistributionInformation>
                                        </Collection>"
-                                      true)))))
+            true)))))
 
 (deftest echo10-direct-distribution-information-nil-test
   "Testing the direct distribution information translation from echo10 to UMM-C when its nil."
   (is (= nil
          (:DirectDistributionInformation
-           (#'echo10/parse-echo10-xml (lkt/setup-context-for-test)
+           (#'echo10/parse-echo10-xml test-context
                                       "<Collection>
                                        </Collection>"
-                                      true)))))
+            true)))))
 
 (deftest echo10-doi-translation-test
   "This tests the echo 10 DOI translation from echo10 to UMM-C."
   (let [base-record (slurp (io/resource "example-data/echo10/artificial_test_data.xml"))]
 
     (are3 [expected-doi-result expected-associated-doi-result test-string]
-      (let [result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) test-string true)]
+      (let [result (#'echo10/parse-echo10-xml test-context test-string true)]
         (is (= expected-doi-result
                (:DOI result))
             (= expected-associated-doi-result
@@ -251,7 +257,7 @@
                                          <UseConstraints>
                                            <Description>Description</Description>
                                          </UseConstraints>")
-            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            result (#'echo10/parse-echo10-xml test-context actual-data true)
             umm-result (:UseConstraints result)]
         (is (= "Description" (:Description umm-result)))
         (is (= nil (:FreeAndOpenData umm-result)))))
@@ -269,7 +275,7 @@
                                              <MimeType>text/html</MimeType>
                                            </LicenseURL>
                                          </UseConstraints>")
-            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            result (#'echo10/parse-echo10-xml test-context actual-data true)
             umm-result (:UseConstraints result)]
         (is (= true (:FreeAndOpenData umm-result)))))
 
@@ -286,7 +292,7 @@
                                              <MimeType>text/html</MimeType>
                                            </LicenseURL>
                                          </UseConstraints>")
-            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            result (#'echo10/parse-echo10-xml test-context actual-data true)
             umm-result (:UseConstraints result)]
         (is (= false (:FreeAndOpenData umm-result)))))
 
@@ -302,7 +308,7 @@
                                              <MimeType>text/html</MimeType>
                                            </LicenseURL>
                                          </UseConstraints>")
-            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            result (#'echo10/parse-echo10-xml test-context actual-data true)
             umm-result (:UseConstraints result)]
         (is (and (= "https://someurl.com" (get-in umm-result [:LicenseURL :Linkage]))
                  (= "License URL Description" (get-in umm-result [:LicenseURL :Description]))
@@ -316,12 +322,12 @@
                                          <UseConstraints>
                                            <LicenseText>License Text</LicenseText>
                                          </UseConstraints>")
-            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            result (#'echo10/parse-echo10-xml test-context actual-data true)
             umm-result (:UseConstraints result)]
         (is (= "License Text" (:LicenseText umm-result)))))
 
     (testing "echo10 use constraints nil test"
-      (let [result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) base-record true)
+      (let [result (#'echo10/parse-echo10-xml test-context base-record true)
             umm-result (:UseConstraints result)]
         (is (= nil umm-result))))
 
@@ -338,7 +344,7 @@
                                              <MimeType>text/html</MimeType>
                                            </LicenseURL>
                                          </UseConstraints>")
-            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            result (#'echo10/parse-echo10-xml test-context actual-data true)
             umm-result (:UseConstraints result)]
         (is (and (= "Description" (:Description umm-result))
                  (= "https://someurl.com" (get-in umm-result [:LicenseURL :Linkage]))
@@ -354,7 +360,7 @@
                                            <Description>Description</Description>
                                            <LicenseText>License Text</LicenseText>
                                          </UseConstraints>")
-            result (#'echo10/parse-echo10-xml (lkt/setup-context-for-test) actual-data true)
+            result (#'echo10/parse-echo10-xml test-context actual-data true)
             umm-result (:UseConstraints result)]
         (is (and (= "Description" (:Description umm-result))
                  (= "License Text" (:LicenseText umm-result))))))))

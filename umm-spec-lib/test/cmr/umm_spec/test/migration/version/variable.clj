@@ -6,7 +6,6 @@
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
    [cmr.common.util :as util]
    [cmr.umm-spec.migration.version.core :as vm]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.test.umm-generators :as umm-gen]
    [cmr.umm-spec.umm-spec-core :as core]
    [cmr.umm-spec.util :as u]
@@ -153,7 +152,7 @@
   (for-all [umm-record   (gen/no-shrink umm-gen/umm-var-generator)
             dest-version (gen/elements (v/versions :variable))]
     (let [dest-media-type (str mt/umm-json "; version=" dest-version)
-          metadata (core/generate-metadata (lkt/setup-context-for-test)
+          metadata (core/generate-metadata {}
                                            umm-record dest-media-type)]
       (empty? (core/validate-metadata :variable dest-media-type metadata)))))
 

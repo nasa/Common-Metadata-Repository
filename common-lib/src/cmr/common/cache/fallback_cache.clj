@@ -44,6 +44,11 @@
     (set/union (set (c/get-keys primary-cache))
                (set (c/get-keys backup-cache))))
 
+  (key-exists
+    [this key]
+    ;; key is the cache-key. Checks to see if the cache has been setup.
+    (c/key-exists primary-cache key))
+
   (get-value
     [this key]
     (let [c-value (c/get-value primary-cache key)]
