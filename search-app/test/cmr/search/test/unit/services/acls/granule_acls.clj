@@ -87,12 +87,12 @@
         context (context-with-cached-collections
                  (for [coll-args collections]
                    (apply collection coll-args)))
-        ;; setup the redis cache (rcache) from the memory cache
+        ;; Setup the redis cache (rcache) from the memory cache
+        ;; Without doing this, tests will pass locally but not in CI/CD
         rcache (cmr.search.services.acls.collections-cache/create-cache)
         old-mem-cache (get-in context [:system :caches :collections-for-gran-acls])
         context (assoc-in context [:system :caches :collections-for-gran-acls] rcache)
         data (.get-value old-mem-cache :collections)]
-    ;;(.set-values rcache :collections-for-gran-acls data)
     (hash-cache/set-values rcache :collections-for-gran-acls data)
 
     (testing "collection identifier"
