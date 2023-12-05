@@ -323,7 +323,7 @@
           ;; Create a group
           (POST "/"
                 {ctx :request-context params :params headers :headers body :body}
-                ;;(lt-validation/validate-launchpad-token ctx)
+                (lt-validation/validate-launchpad-token ctx)
                 (pv/validate-create-group-route-params params)
                 (create-group ctx
                               headers
@@ -342,14 +342,14 @@
             ;; Delete a group
             (DELETE "/"
                     {ctx :request-context params :params}
-                    ;;(lt-validation/validate-launchpad-token ctx)
+                    (lt-validation/validate-launchpad-token ctx)
                     (pv/validate-group-route-params params)
                     (delete-group ctx group-id))
 
             ;; Update a group
             (PUT "/"
                  {ctx :request-context params :params headers :headers body :body}
-                 ;;(lt-validation/validate-launchpad-token ctx)
+                 (lt-validation/validate-launchpad-token ctx)
                  (pv/validate-group-route-params params)
                  (update-group ctx headers (slurp body) group-id))
 
@@ -362,13 +362,13 @@
 
               (POST "/"
                     {ctx :request-context params :params headers :headers body :body}
-                    ;;(lt-validation/validate-launchpad-token ctx)
+                    (lt-validation/validate-launchpad-token ctx)
                     (pv/validate-group-route-params params)
                     (add-members ctx headers (slurp body) group-id))
 
               (DELETE "/"
                       {ctx :request-context params :params headers :headers body :body}
-                      ;;(lt-validation/validate-launchpad-token ctx)
+                      (lt-validation/validate-launchpad-token ctx)
                       (pv/validate-group-route-params params)
                       (remove-members ctx headers (slurp body) group-id)))))
         (context "/groups" []))
@@ -391,7 +391,7 @@
         ;; Create an ACL
         (POST "/"
               {ctx :request-context params :params headers :headers body :body}
-              ;;(lt-validation/validate-launchpad-token ctx)
+              (lt-validation/validate-launchpad-token ctx)
               (pv/validate-standard-params params)
               (create-acl ctx headers (slurp body)))
 
@@ -401,13 +401,13 @@
           ;; Update an ACL
           (PUT "/"
                {ctx :request-context headers :headers body :body}
-               ;;(lt-validation/validate-launchpad-token ctx)
+               (lt-validation/validate-launchpad-token ctx)
                (update-acl ctx concept-id headers (slurp body)))
 
           ;; Delete an ACL
           (DELETE "/"
                   {ctx :request-context headers :headers}
-                  ;;(lt-validation/validate-launchpad-token ctx)
+                  (lt-validation/validate-launchpad-token ctx)
                   (delete-acl ctx concept-id headers))
 
           ;; Retrieve an ACL
