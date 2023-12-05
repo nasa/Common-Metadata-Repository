@@ -27,8 +27,6 @@
                                             {:grant-all-search? false})
                       (dev-sys-util/freeze-resume-time-fixture)]))
 
-(use-fixtures :once test-util/embedded-redis-server-fixture)
-
 (def now-n
   "The N value for the current time. Uses N values for date times as describd in
   cmr.common.test.time-util."

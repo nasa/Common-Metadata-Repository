@@ -3,18 +3,20 @@
   (:require
    [clojure.walk :as walk]
    [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as q]
-   [cmr.common.cache :as cache]
+   [cmr.common-app.services.search.query-model :as q-mod]
    [cmr.common.date-time-parser :as time-parser]
+   [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.redis-utils.redis-cache :as redis-cache]
-   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]))
+   [cmr.redis-utils.redis-hash-cache :as red-hash-cache]
+   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+   [cmr.search.services.messages.collections-cache-messages :as coll-msg]))
 
-;; No other file reads this cache
 (def cache-key
+  "This is the key name that will show up in redis.
+   Note: No other file reads this cache, so it is functionally private."
   :collections-for-gran-acls)
 
 (def initial-cache-state
@@ -25,20 +27,20 @@
   "This is the frequency that the cron job will run. It should be less then
    coll-for-gran-acl-ttl"
   ;; 15 minutes
-  (* 15 60))
+  (* 60 15))
 
 (def coll-for-gran-acl-ttl
   "This is when Redis should expire the data, this value should never be hit if
    the cron job is working correctly, however in some modes (such as local dev
    with no database) it may come into play."
   ;; 30 minutes
-  (* 30 60))
+  (* 60 30))
 
 (defn create-cache
   "Creates a new empty collections cache."
   []
-  (redis-cache/create-redis-cache {:keys-to-track [:collections-for-gran-acls]
-                                   :ttl coll-for-gran-acl-ttl}))
+  (red-hash-cache/create-redis-hash-cache {:keys-to-track [:collections-for-gran-acls]
+                                           :ttl coll-for-gran-acl-ttl}))
 
 (defn clj-times->time-strs
   "Take a map and convert any date objects into strings so the map can be cached.
@@ -69,13 +71,13 @@
                                                     :collection
                                                     elastic-item))
                                   :concept-id (:_id elastic-item)))
-        query (q/query {:concept-type :collection
-                        :condition q/match-all
-                        :skip-acls? true
-                        :page-size :unlimited
-                        :result-format :query-specified
-                        :result-fields (cons :concept-id acl-rhh/collection-elastic-fields)
-                        :result-features {:query-specified {:result-processor result-processor}}})]
+        query (q-mod/query {:concept-type :collection
+                            :condition q-mod/match-all
+                            :skip-acls? true
+                            :page-size :unlimited
+                            :result-format :query-specified
+                            :result-fields (cons :concept-id acl-rhh/collection-elastic-fields)
+                            :result-features {:query-specified {:result-processor result-processor}}})]
     (:items (qe/execute-query context query))))
 
 (defn- fetch-collections-map
@@ -98,34 +100,39 @@
   to keep the cache fresh. This will throw an exception if there is a problem fetching collections. The
   caller is responsible for catching and logging the exception."
   [context]
-  (let [cache (cache/context->cache context cache-key)
+  (let [cache (hash-cache/context->cache context cache-key)
         collections-map (fetch-collections-map context)]
-    (cache/set-value cache cache-key (clj-times->time-strs collections-map))))
+    (doseq [[coll-key coll-value] collections-map]
+      (hash-cache/set-value cache cache-key coll-key (clj-times->time-strs coll-value)))))
 
 (defn- get-collections-map
-  "Gets the cached value."
-  [context]
-  (let [coll-cache (cache/context->cache context cache-key)
-        collection-map (cache/get-value
+  "Gets the cached value. By default an error is thrown if there is no value in
+   the cache. Pass in anything other then :return-errors for the third parameter
+   to have null returned when no data is in the cache. :return-errors is for the
+   default behavior."
+  ([context key-type]
+   (get-collections-map context key-type :return-errors))
+  ([context key-type throw-errors]
+  (let [coll-cache (hash-cache/context->cache context cache-key)
+        collection-map (hash-cache/get-value
                         coll-cache
                         cache-key
-                        (fn [] (clj-times->time-strs (fetch-collections-map context))))]
-    (if (empty? collection-map)
-      (errors/internal-error! "Collections were not in cache.")
-      (time-strs->clj-times collection-map))))
+                        key-type)]
+    (if (and (= :return-errors throw-errors) (empty? collection-map))
+      (errors/internal-error! (coll-msg/collections-not-in-cache key-type))
+      (time-strs->clj-times collection-map)))))
 
 (defn get-collection
   "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
   Also allows provider-id and entry-title to be used."
   ([context concept-id]
-   (let [by-concept-id (:by-concept-id (get-collections-map context))]
-     (when-not (by-concept-id concept-id)
-       (info (format "Collection with id %s not found in cache. Manually triggering cache refresh"
-                     concept-id))
+   (let [by-concept-id (get-collections-map context :by-concept-id :no-errors)]
+     (when-not (and by-concept-id (by-concept-id concept-id))
+       (info (coll-msg/collection-not-found concept-id))
        (refresh-cache context))
-     (get (:by-concept-id (get-collections-map context)) concept-id)))
+     (get (get-collections-map context :by-concept-id ) concept-id)))
   ([context provider-id entry-title]
-   (let [by-provider-id-entry-title (:by-provider-id-entry-title (get-collections-map context))]
+   (let [by-provider-id-entry-title (get-collections-map context :by-provider-id-entry-title )]
      (get by-provider-id-entry-title [provider-id entry-title]))))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
