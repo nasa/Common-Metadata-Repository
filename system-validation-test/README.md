@@ -5,6 +5,7 @@ This is the repository for the Common Metadata Repository Client Validation Gem.
 ## Prerequisites
 
 * Ruby
+	* as of 2023-12-04 - Ruby 3.2.2 under rbenv worked	
 
 ## Installation
 
