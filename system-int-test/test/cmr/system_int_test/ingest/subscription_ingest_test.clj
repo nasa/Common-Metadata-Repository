@@ -7,6 +7,7 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.access-control.test.util :as ac-util]
+   [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.util :refer [are3]]
    [cmr.ingest.services.subscriptions-helper :as jobsub]
@@ -186,7 +187,9 @@
         (is (= 1 revision-id))))))
 
 (deftest subscription-ingest-test
-  (let [coll1 (data-core/ingest-umm-spec-collection
+  (let [;;testing that enforcing launchpad token doesn't affect subscription ingest without launchpad token.
+        _ (side/eval-form `(common-config/set-launchpad-token-enforced! true)) 
+        coll1 (data-core/ingest-umm-spec-collection
                "PROV1"
                (data-umm-c/collection
                 {:ShortName "coll1"
@@ -221,7 +224,8 @@
                      "coll-sub")
             {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
         (is (= 5 revision-id))
-        (is (mdb/concept-exists-in-mdb? concept-id 5))))))
+        (is (mdb/concept-exists-in-mdb? concept-id 5))))
+    (side/eval-form `(common-config/set-launchpad-token-enforced! false))))
 
 ;; Verify that the accept header works
 (deftest subscription-ingest-accept-header-response-test

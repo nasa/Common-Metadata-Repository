@@ -76,7 +76,9 @@
 
 (deftest create-tag-test
   (testing "Successful creation"
-    (let [tag-key "tag1"
+    (let [;;testing that enforcing launchpad token doesn't affect tag creation without launchpad token.
+          _ (side/eval-form `(common-config/set-launchpad-token-enforced! true))
+          tag-key "tag1"
           tag (tags/make-tag {:tag-key tag-key})
           token (echo-util/login (system/context) "user1")
           {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
@@ -111,7 +113,8 @@
           (is (= {:status 200 :concept-id concept-id :revision-id 3}
                  response))
           ;; A tag that was deleted but recreated gets a new originator id.
-          (tags/assert-tag-saved (assoc new-tag :originator-id "user2") "user2" concept-id 3))))
+          (tags/assert-tag-saved (assoc new-tag :originator-id "user2") "user2" concept-id 3)))
+      (side/eval-form `(common-config/set-launchpad-token-enforced! false)))
 
     (testing "Create tag with fields at maximum length"
       (let [tag (into {} (for [[field max-length] field-maxes]
@@ -265,14 +268,15 @@
       (tags/assert-tag-saved (assoc tag :originator-id "user1") "user1" concept-id revision-id))))
 
 (deftest launchpad-token-enforcement-test
-  ;; Turn on Launchpad token enforcement
+  ;; Turn on Launchpad token enforcement.
   (side/eval-form `(common-config/set-launchpad-token-enforced! true))
   (testing "URS token with launchpad token enforcement turned on"
+    ;; it shouldn't complain that launchpad token is required.
     (let [tag-key "tag1"
           tag (tags/make-tag {:tag-key tag-key})
           {:keys [status errors]} (tags/create-tag "ABCLongerTestToken-123456" tag)]
-      (is (= 400 status))
-      (is (= ["Launchpad token is required. Token [ABCLongerTXXX23456] is not a launchpad token."] errors))))
+      (is (= 401 status))
+      (is (= ["Token does not exist"] errors))))
   (testing "launchpad token with launchpad token enforcement turned on"
     (let [tag-key "tag1"
           tag (tags/make-tag {:tag-key tag-key})
