@@ -128,7 +128,7 @@ ACLs are uniquely identified by their identity. There can only be one ACL to a s
 
 ### <a name="create-acl"></a> Create ACL
 
-ACLs are created by POSTing a JSON representation of an ACL to `%CMR-ENDPOINT%/acls` along with a valid EDL bearer token or Launchpad token. The response will contain a concept id identifying the ACL along with the ACL revision id.
+ACLs are created by POSTing a JSON representation of an ACL to `%CMR-ENDPOINT%/acls` along with a valid Launchpad token. The response will contain a concept id identifying the ACL along with the ACL revision id.
 
 #### Creating an ACL
 
@@ -582,7 +582,7 @@ Content-Type: application/json
 
 ### <a name="update-acl"></a> Update ACL
 
-An ACL can be updated by sending a PUT request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created. `legacy-guid` field cannot be modified during update. The fields that uniquely identify an ACL cannot be updated, e.g. the `target` field of a system identity ACL. This limitation will eventually be removed as documented in CMR-3163.
+An ACL can be updated by sending a PUT request to `%CMR-ENDPOINT%/acls/<concept-id>`,along with a valid Launchpad token.  where `concept-id` is the concept id of the ACL returned when it was created. `legacy-guid` field cannot be modified during update. The fields that uniquely identify an ACL cannot be updated, e.g. the `target` field of a system identity ACL. This limitation will eventually be removed as documented in CMR-3163.
 
 ```
 curl -XPUT -i -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR -d \
@@ -609,7 +609,7 @@ Content-Type: application/json;charset=ISO-8859-1
 
 ### <a name="delete-acl"></a> Delete ACL
 
-An ACL can be deleted with a DELETE request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
+An ACL can be deleted with a DELETE request to `%CMR-ENDPOINT%/acls/<concept-id>`, along with a valid Launchpad token,  where `concept-id` is the concept id of the ACL returned when it was created.
 
 ```
 curl -XDELETE -i -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR
