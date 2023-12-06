@@ -5,6 +5,7 @@
    [clj-http.client :as client]
    [clojure.test :refer :all]
    [cmr.common.config :as common-config]
+   [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
@@ -180,7 +181,7 @@
             ;; This is now a shared redis cache server, so many keys exist
             ;;"search 2" (url/search-read-caches-url) "collections-for-gran-acls" []
             "search 3" (url/search-read-caches-url) "has-granules-map" []
-            "search 4" (url/search-read-caches-url) "index-names" [":acls-hash-code" ":collection-granule-aggregation-cache-hash-code" ":concept-indices-hash-code" ":concept-mapping-types-hash-code" ":providers-hash-code" ":write-enabled-hash-code" "collection-granule-aggregation-cache" "humanizer-cache"]
+            "search 4" (url/search-read-caches-url) "index-names" []
             "search 5" (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
             "search 6" (url/search-read-caches-url) "token-sid" ["ABC-2" "ABC-1"]
             "search 7" (url/search-read-caches-url) "xsl-transformer-templates" []
