@@ -15,11 +15,7 @@
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
-<<<<<<< HEAD
-=======
    [cmr.common-app.services.kms-lookup :as kl]
-   [cmr.common-app.services.provider-cache :as provider-cache]
->>>>>>> fcef52322 (CMR-9558 Fixing indexer kms cache. (#2014))
    [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common.api.web-server :as web]
    [cmr.common.cache.in-memory-cache :as mem-cache]
