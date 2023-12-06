@@ -170,7 +170,6 @@
   "Common checks needed before starting to process an ingest operation"
   [context]
   (common-enabled/validate-write-enabled context "ingest"))
-  ;;(lt-validation/validate-launchpad-token context))
 
 (defn- verify-coll-modification-permission
   "Verifies the current user has been granted permission to modify collection subscription.

@@ -187,7 +187,7 @@
         (is (= 1 revision-id))))))
 
 (deftest subscription-ingest-test
-  (let [;;testing that enforcing launchpad token doesn't affect subscription ingest without launchpad token.
+  (let [;;testing that subscription ingest doesn't require launchpad token when launchpad token is enforced.
         _ (side/eval-form `(common-config/set-launchpad-token-enforced! true)) 
         coll1 (data-core/ingest-umm-spec-collection
                "PROV1"

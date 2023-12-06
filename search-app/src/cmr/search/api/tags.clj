@@ -48,7 +48,6 @@
 (defn create-tag
   "Processes a create tag request."
   [context headers body]
-  ;;(lt-validation/validate-launchpad-token context)
   (verify-tag-modification-permission context :create)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
@@ -64,7 +63,6 @@
 (defn update-tag
   "Processes a request to update a tag."
   [context headers body tag-key]
-  ;;(lt-validation/validate-launchpad-token context)
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
@@ -73,7 +71,6 @@
 (defn delete-tag
   "Deletes the tag with the given tag-key."
   [context tag-key]
-  ;;(lt-validation/validate-launchpad-token context)
   (common-enabled/validate-write-enabled context "search")
   (verify-tag-modification-permission context :delete)
   (tag-api-response (tagging-service/delete-tag context tag-key)))
@@ -81,7 +78,6 @@
 (defn associate-tag-to-collections
   "Associate the tag to a list of collections."
   [context headers body tag-key]
-  ;;(lt-validation/validate-launchpad-token context)
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
@@ -92,7 +88,6 @@
 (defn dissociate-tag-to-collections
   "Dissociate the tag to a list of collections."
   [context headers body tag-key]
-  ;;(lt-validation/validate-launchpad-token context)
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
@@ -103,7 +98,6 @@
 (defn associate-tag-by-query
   "Processes a request to associate a tag."
   [context headers body tag-key]
-  ;;(lt-validation/validate-launchpad-token context)
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)
@@ -114,7 +108,6 @@
 (defn dissociate-tag-by-query
   "Processes a request to dissociate a tag."
   [context headers body tag-key]
-  ;;(lt-validation/validate-launchpad-token context)
   (verify-tag-modification-permission context :update)
   (common-enabled/validate-write-enabled context "search")
   (validate-tag-content-type headers)

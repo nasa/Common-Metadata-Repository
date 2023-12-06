@@ -76,7 +76,7 @@
 
 (deftest create-tag-test
   (testing "Successful creation"
-    (let [;;testing that enforcing launchpad token doesn't affect tag creation without launchpad token.
+    (let [;;testing that tag creation doesn't require launchpad token when launchpad token is enforced..
           _ (side/eval-form `(common-config/set-launchpad-token-enforced! true))
           tag-key "tag1"
           tag (tags/make-tag {:tag-key tag-key})

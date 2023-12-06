@@ -12,7 +12,7 @@
 
 (defconfig launchpad-token-enforced
   "Flag for whether or not launchpad token is enforced."
-  {:default false 
+  {:default false
    :type Boolean})
 
 (defconfig release-version
