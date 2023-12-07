@@ -104,7 +104,7 @@ For an example, the following means version 1.16.2 of the UMM JSON format:
 Note: For all values of `Content-Type`, data sent using POST or PUT should not be URL encoded.
 
 #### <a name="authorization-header"></a> Authorization Header
-All Ingest API operations require specifying an EDL bearer token or a Launchpad token. 
+All Ingest API operations require specifying a Launchpad token, except for subscriptions. Subscription Ingest API operations require specifying an EDL bearer token or a Launchpad token.
 
 An EDL Bearer token can be obtained from [Earthdata Login (EDL)](https://urs.earthdata.nasa.gov). The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the documentation [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token).
 
