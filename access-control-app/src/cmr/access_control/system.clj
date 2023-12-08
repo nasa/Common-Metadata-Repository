@@ -5,7 +5,6 @@
   (:require
    [cmr.access-control.config :as config]
    [cmr.access-control.data.access-control-index :as access-control-index]
-   [cmr.access-control.data.group-fetcher :as gf]
    [cmr.access-control.services.event-handler :as event-handler]
    [cmr.access-control.test.bootstrap :as bootstrap]
    [cmr.access-control.routes :as routes]
@@ -98,7 +97,6 @@
              :caches {af/acl-cache-key (af/create-acl-cache
                                         [:system-object :provider-object :single-instance-object])
                       provider-cache/cache-key (provider-cache/create-cache)
-                      gf/group-cache-key (gf/create-cache)
                       acl/collection-field-constraints-cache-key (acl/create-access-constraints-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
