@@ -4,7 +4,6 @@
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.set :as set]
-   [cmr.access-control.data.group-fetcher :as gf]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
