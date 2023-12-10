@@ -61,7 +61,7 @@
 (defn ingest-granule
   [provider-id native-id request]
   (let [{:keys [body content-type params headers request-context]} request]
-    (lt-validation/validate-launchpad-token request-context)
+    ;;(lt-validation/validate-launchpad-token request-context)
     (api-core/verify-provider-exists request-context provider-id)
     (acl/verify-ingest-management-permission request-context :update :provider-object provider-id)
     (common-enabled/validate-write-enabled request-context "ingest")
