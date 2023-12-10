@@ -136,10 +136,15 @@
                           #(granule-link->opendap-url % tag-data))
                     granule-links)
           format (or (:format params) const/default-format)
-          dap-format (if (and (is-dap-version-4? dap-version)
-                              (= "nc" format))
+          dap-format (if (or (and (is-dap-version-4? dap-version)
+                                  (= "nc" format))
+                             (and (is-dap-version-4? dap-version)
+                                  (= "nc4" format)))
                        "dap.nc4"
-                       format)]
+                       (if (and (is-dap-version-4? dap-version)
+                                (= "ascii" format))
+                         "dap.csv"
+                         format))]
       (if (errors/any-erred? urls)
         (do
           (log/error "Some problematic urls:" (vec urls))
