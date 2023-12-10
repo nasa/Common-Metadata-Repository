@@ -126,6 +126,11 @@
   "Takes a collection of granule links maps and converts each one to an OPeNDAP URL. Returns an
   error if unable to determine any of the OPeNDAP URLs."
   [params dap-version granule-links tag-data query-string]
+  (log/error "CMR-9518 Debugging params: "  params)
+  (log/error "CMR-9518 Debugging dap-version: " dap-version)
+  (log/error "CMR-9518 Debugging granule-links: " granule-links)
+  (log/error "CMR-9518 Debugging tag-data; " tag-data)
+  (log/error "CMR-9518 Debugging query-string: " query-string)  
   (when granule-links
     (let [urls (map (comp replace-double-slashes
                           #(granule-link->opendap-url % tag-data))

@@ -8,6 +8,9 @@
 (defn get-opendap-urls
   [component api-version user-token dap-version sa-header raw-params]
   (log/trace "Got API version:" api-version)
+  (log/error "CMR-9518 Debugging cmr.out.core API version: " api-version)
+  (log/error "CMR-9518 Debugging cmr.out.core dap-version: " dap-version)
+  (log/error "CMR-9518 Debugging cmr.out.core raw-params: " raw-params)
   (case (keyword api-version)
     :v1 (v1/get-opendap-urls component user-token raw-params sa-header)
     :v2.1 (v2-1/get-opendap-urls component user-token raw-params sa-header)

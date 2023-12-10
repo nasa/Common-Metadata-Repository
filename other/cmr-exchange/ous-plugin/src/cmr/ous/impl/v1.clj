@@ -93,6 +93,7 @@
                         :token user-token
                         :params raw-params
                         :sa-header input-sa-header})
+        _ (log/error "CMR-9518 Debugging v1 after stage1 params: " params)
         ;; Stage 2
         [params coll granule-links sa-header hits-header service-ids vars tag-data s2-errs]
         (stage2 component
@@ -101,6 +102,7 @@
                 {:endpoint search-endpoint
                  :token user-token
                  :params params})
+        _ (log/error "CMR-9518 Debugging v1 after stage2 params: " params)
         ;; Stage 3
         [services bounding-info s3-errs]
         (common/stage3 component
@@ -110,6 +112,7 @@
                        {:endpoint search-endpoint
                         :token user-token
                         :params params})
+        _ (log/error "CMR-9518 Debugging v1 after stage3 params: " params)
         ;; Stage 4
         [query s4-errs]
         (common/stage4 component
@@ -119,6 +122,7 @@
                        {:endpoint search-endpoint
                         :token user-token
                         :params params})
+        _ (log/error "CMR-9518 Debugging v1 after stage3 params: " params)
         ;; Error handling for all stages
         errs (errors/collect
               start params bounding-box grans-promise coll-promise s1-errs
@@ -126,7 +130,8 @@
               services bounding-info s3-errs
               query s4-errs
               {:errors (errors/check
-                        [not granule-links metadata-errors/empty-gnl-data-files])})]
+                        [not granule-links metadata-errors/empty-gnl-data-files])})
+        _ (log/error "CMR-9518 Debugging v1 after error handling: " params)]
     (common/process-results {:params params
                              :granule-links granule-links
                              :sa-header sa-header
