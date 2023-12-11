@@ -1790,7 +1790,7 @@
       "required": ["URL", "Name", "Version"]
     },
     "OrbitParameterExistsIfGranuleSpatialRepresentationIsOrbit": {
-      "$comment": "Checks if the Granule Spatial Representation value is Oribt, then the oribt parameter must exist.",
+      "$comment": "Checks if the Granule Spatial Representation value is Orbit, then the orbit parameter must exist.",
       "if": {"properties": {"GranuleSpatialRepresentation": {"const": "ORBIT"}}},
       "then": {"required": ["OrbitParameters"]}
     }
