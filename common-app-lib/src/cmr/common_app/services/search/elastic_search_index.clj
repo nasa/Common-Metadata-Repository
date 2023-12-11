@@ -7,6 +7,7 @@
    [clojurewerkz.elastisch.rest.document :as esd]
    [clojurewerkz.elastisch.rest.index :as esri]
    [clojurewerkz.elastisch.rest.response :as esrsp]
+   [cmr.common-app.config :as config]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common-app.services.search.results-model :as results]
@@ -217,16 +218,6 @@
                                                          concept-type)))))
                         all-concepts))))))
 
-(def unlimited-page-size
-  "This is the number of items we will request at a time when the page size is set to unlimited"
-  10000)
-
-(def max-unlimited-hits
-  "This is the maximum number of hits we can fetch if the page size is set to unlimited. We need to
-  support fetching fields on every single collection in the CMR. This is set to a number safely above
-  what we'll need to support with GCMD (~35K) and ECHO (~5k) collections."
-  100000)
-
 ;; Implements querying against elasticsearch when the page size is set to :unlimited. It works by
 ;; calling the default implementation multiple times until all results have been found. It uses
 ;; the constants defined above to control how many are requested at a time and the maximum number
@@ -238,14 +229,14 @@
 
   (loop [offset 0 prev-items [] took-total 0 timed-out false]
     (let [results (send-query-to-elastic
-                    context (assoc query :offset offset :page-size unlimited-page-size))
+                    context (assoc query :offset offset :page-size config/es-unlimited-page-size))
           total-hits (get-in results [:hits :total :value])
           current-items (get-in results [:hits :hits])]
 
-      (when (> total-hits max-unlimited-hits)
+      (when (> total-hits config/es-max-unlimited-hits)
         (errors/internal-error!
           (format "Query with unlimited page size matched %s items which exceeds maximum of %s. Query: %s"
-                  total-hits max-unlimited-hits (pr-str query))))
+                  total-hits config/es-max-unlimited-hits (pr-str query))))
 
       (if (>= (+ (count prev-items) (count current-items)) total-hits)
         ;; We've got enough results now. We'll return the query like we got all of them back in one request
@@ -254,7 +245,7 @@
             (update-in [:hits :hits] concat prev-items)
             (assoc :timed_out timed-out))
         ;; We need to keep searching subsequent pages
-        (recur (long (+ offset unlimited-page-size))
+        (recur (long (+ offset config/unlimited-page-size))
                (concat prev-items current-items)
                (long (+ took-total (:took results)))
                (or timed-out (:timed_out results)))))))
