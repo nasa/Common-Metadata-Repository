@@ -497,7 +497,8 @@
           "$ref": "#/definitions/GranuleSpatialRepresentationEnum"
         }
       },
-      "required": ["GranuleSpatialRepresentation"]
+      "required": ["GranuleSpatialRepresentation"],
+      "allOf": [{"$ref": "#/definitions/OrbitParameterExistsIfGranuleSpatialRepresentationIsOrbit"}]
     },
     "SpatialCoverageTypeEnum": {
       "type": "string",
@@ -1787,6 +1788,11 @@
         }
       },
       "required": ["URL", "Name", "Version"]
+    },
+    "OrbitParameterExistsIfGranuleSpatialRepresentationIsOrbit": {
+      "$comment": "Checks if the Granule Spatial Representation value is Orbit, then the orbit parameter must exist.",
+      "if": {"properties": {"GranuleSpatialRepresentation": {"const": "ORBIT"}}},
+      "then": {"required": ["OrbitParameters"]}
     }
   }
 }

@@ -4,7 +4,6 @@
     [clojure.java.io :as io]
     [clojure.string :as str]
     [clojure.test :refer :all]
-    [cmr.common-app.test.side-api :as side]
     [cmr.common.util :as util :refer [are3]]
     [cmr.system-int-test.data2.core :as data-core]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
