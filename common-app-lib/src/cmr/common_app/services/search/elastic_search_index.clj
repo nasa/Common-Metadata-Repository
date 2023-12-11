@@ -229,14 +229,14 @@
 
   (loop [offset 0 prev-items [] took-total 0 timed-out false]
     (let [results (send-query-to-elastic
-                    context (assoc query :offset offset :page-size config/es-unlimited-page-size))
+                    context (assoc query :offset offset :page-size (config/es-unlimited-page-size)))
           total-hits (get-in results [:hits :total :value])
           current-items (get-in results [:hits :hits])]
 
-      (when (> total-hits config/es-max-unlimited-hits)
+      (when (> total-hits (config/es-max-unlimited-hits))
         (errors/internal-error!
           (format "Query with unlimited page size matched %s items which exceeds maximum of %s. Query: %s"
-                  total-hits config/es-max-unlimited-hits (pr-str query))))
+                  total-hits (config/es-max-unlimited-hits) (pr-str query))))
 
       (if (>= (+ (count prev-items) (count current-items)) total-hits)
         ;; We've got enough results now. We'll return the query like we got all of them back in one request
@@ -245,7 +245,7 @@
             (update-in [:hits :hits] concat prev-items)
             (assoc :timed_out timed-out))
         ;; We need to keep searching subsequent pages
-        (recur (long (+ offset config/es-unlimited-page-size))
+        (recur (long (+ offset (config/es-unlimited-page-size)))
                (concat prev-items current-items)
                (long (+ took-total (:took results)))
                (or timed-out (:timed_out results)))))))
