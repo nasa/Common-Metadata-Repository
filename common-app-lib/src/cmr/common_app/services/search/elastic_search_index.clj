@@ -245,7 +245,7 @@
             (update-in [:hits :hits] concat prev-items)
             (assoc :timed_out timed-out))
         ;; We need to keep searching subsequent pages
-        (recur (long (+ offset config/unlimited-page-size))
+        (recur (long (+ offset config/es-unlimited-page-size))
                (concat prev-items current-items)
                (long (+ took-total (:took results)))
                (or timed-out (:timed_out results)))))))
