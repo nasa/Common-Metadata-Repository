@@ -31,7 +31,7 @@
 (defconfig es-unlimited-page-size
   "This is the number of items we will request from elastic search at a time when
   the page size is set to unlimited."
-  {:default 100000
+  {:default 10000
    :type Long})
 
 (defconfig es-max-unlimited-hits
