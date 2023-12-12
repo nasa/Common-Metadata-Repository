@@ -8,19 +8,19 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
   * [/acls](#acls)
     * [POST - Create ACL](#create-acl)
     * [GET - Search ACLs](#search-acls)
-  * /acls/:acl-id
+  * [/acls/:acl-id](#acl-by-id-param)
     * [GET - Retrieve an ACL](#retrieve-acl)
     * [PUT - Update an ACL](#update-acl)
     * [DELETE - Delete an ACL](#delete-acl)
-  * /permissions
+  * [/permissions](#permissions)
     * [GET - Check User Permissions](#get-permissions)
     * [POST - Check User Permissions](#get-permissions)
-  * /s3-buckets
+  * [/s3-buckets](#s3-buckets)
     * [GET - Check User Permissions to S3 Buckets](#get-s3-buckets)
-  * /health
+  * [/health](#health)
     * [GET - Get the health of the access control application.](#application-health)
 
-***
+---
 
 ## <a name="api-conventions"></a> API Conventions
 
@@ -48,9 +48,9 @@ The revision id header allows specifying the revision id to use when saving the 
 1. The revision id specified is not an integer.
 2. The revision id specified <= current revision id of the acl - a HTTP Status code of 409 will be returned indicating a conflict.
 
-***
+---
 
-### <a name="responses"></a> Responses
+## <a name="responses"></a> Responses
 
 ### <a name="response-headers"></a> Response Headers
 
@@ -191,6 +191,7 @@ For system, provider, and single instance identities, the grantable permissions 
 | DASHBOARD_MDQ_CURATOR                | create, read, update, delete |
 
 #### Provider Identity
+
 | Target                          | Grantable Permissions        |
 |---------------------------------|------------------------------|
 | AUDIT_REPORT                    | read                         |
@@ -243,7 +244,6 @@ The following parameters are supported when searching for ACLs.
 * page_num
 * pretty
 * include_full_acl - boolean parameter that indicates if the full acl details should be included in the search response.
-* include_legacy_group_guid - boolean parameter that indicates if legacy group guid should be returned in place of group concept id in full acl search response. It can only be used when include_full_acl parameter is true.
 
 ##### ACL Matching Parameters
 
@@ -552,11 +552,12 @@ CMR-Request-Id: b3e38b33-eaf3-46ac-9f04-fa62eabb2c11
 
 ```
 
+## <a name="acl-by-id-param"></a> /acls/:acl-id
+
 ### <a name="retrieve-acl"></a> Retrieve ACL
 
 A single ACL can be retrieved by sending a GET request to `%CMR-ENDPOINT%/acls/<concept-id>` where `concept-id` is the concept id of the ACL returned when it was created.
 
-Search parameter `include_legacy_group_guid`, which is a boolean parameter, can be used to indicate if legacy group guid should be returned in place of group concept id in the returned ACL.
 
 ```
 curl -i -H "Authorization: Bearer XXXX" %CMR-ENDPOINT%/acls/ACL1200000000-CMR?pretty=true
@@ -621,6 +622,8 @@ Content-Length: 50
 {"revision-id":3,"concept-id":"ACL1200000000-CMR"}
 ```
 
+## <a name="permissions"></a> Permisions
+
 ### <a name="get-permissions"></a> Checking User Permissions
 
 You can check the permissions granted to a specific user or user type on specific concepts or system objects by making a GET request to `%CMR-ENDPOINT%/permissions`.
@@ -665,6 +668,8 @@ Content-Type: application/json;charset=ISO-8859-1
   * `page_size` - Size of page desired, only supported with concept_id.
   * `page_num` - Page number desired, only supported with concept_id.
 
+## <a name="s3-buckets"></a> S3 Buckets
+
 ### <a name="get-s3-buckets"></a> User Access to S3 Buckets
 
 This endpoint will return a JSON list of S3 buckets a user has access to. If a list of providers is included in the request, the list of S3 buckets will be filtered to only include S3 buckets contained by collections within those providers.
@@ -700,7 +705,7 @@ Content-Type: application/json
 
 ["s3://aws.example-2.com","s3://aws.example-3.com"]
 ```
-
+## <a name="health"></a> Health
 
 ### <a name="application-health"></a> Application Health
 
