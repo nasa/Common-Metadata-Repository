@@ -653,28 +653,15 @@
 
   (testing "get acl with group id"
     (let [token (echo-util/login (test-util/conn-context) "admin")
-          group1-legacy-guid "group1-legacy-guid"
-          group1 (test-util/ingest-group token
-                                         {:name "group1"
-                                          :legacy_guid group1-legacy-guid}
-                                         ["user1"])
           group2 (test-util/ingest-group token
                                          {:name "group2"}
                                          ["user1"])
-          group1-concept-id (:concept_id group1)
           group2-concept-id (:concept_id group2)
-
-          ;; ACL associated with a group that has legacy guid
-          acl1 (assoc-in (test-util/system-acl "TAG_GROUP")
-                         [:group_permissions 0]
-                         {:permissions ["create"] :group_id group1-concept-id})
 
           ;; ACL associated with a group that does not have legacy guid
           acl2 (assoc-in (test-util/system-acl "ARCHIVE_RECORD")
                          [:group_permissions 0]
                          {:permissions ["delete"] :group_id group2-concept-id})
-          ;; SingleInstanceIdentity ACL with a group that has legacy guid
-          acl3 (test-util/single-instance-acl group1-concept-id)
           ;; SingleInstanceIdentity ACL with a group that does not have legacy guid
           acl4 (test-util/single-instance-acl group2-concept-id)]
 
@@ -685,17 +672,9 @@
                                                       {:token token
                                                        :http-options {:query-params {:include_legacy_group_guid true}}}))))
 
-        "ACL associated with a group that has legacy guid"
-        (assoc-in acl1 [:group_permissions 0 :group_id] group1-legacy-guid)
-        acl1
-
         "ACL associated with a group that does not have legacy guid"
         acl2
         acl2
-
-        "SingleInstanceIdentity ACL with a group that has legacy guid"
-        (assoc-in acl3 [:single_instance_identity :target_id] group1-legacy-guid)
-        acl3
 
         "SingleInstanceIdentity ACL with a group that does not have legacy guid"
         acl4

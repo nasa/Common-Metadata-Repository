@@ -22,7 +22,7 @@
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer [info debug]]
+   [cmr.common.log :refer [warn info debug]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.transmit.tokens :as tokens]
@@ -150,8 +150,8 @@
         params (cp/sanitize-params params)]
     (acl-auth/authorize-acl-action context :read acl)
     (if (= "true" (:include-legacy-group-guid params))
-      (result-handler/update-acl-legacy-group-guid context acl)
-      acl)))
+      (warn (format "A client [%s] tried to use include_legacy_group_guid." (:client-id context))))
+    acl))
 
 (defn get-all-acl-concepts
   "Returns all ACLs in metadata db."

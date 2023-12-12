@@ -760,25 +760,7 @@
     (testing "Find acls without legacy group guid"
       (let [response (ac/search-for-acls (u/conn-context) {:include_full_acl true :page_size 20})]
         (is (= (u/acls->search-response (count expected-acls) expected-acls {:include-full-acl true})
-               (dissoc response :took)))))
-
-    (testing "Find acls with legacy group guid"
-      (let [response (ac/search-for-acls (u/conn-context) {:include_full_acl true
-                                                           :include-legacy-group-guid true
-                                                           :page_size 20})]
-        (is (= (u/acls->search-response
-                (count expected-acls-with-legacy-guids)
-                expected-acls-with-legacy-guids {:include-full-acl true
-                                                 :include-legacy-group-guid true})
-               (dissoc response :took)))))
-
-    (testing "Find acls with include-legacy-group-guid but without include-full-acl"
-      (let [{:keys [status body]} (ac/search-for-acls
-                                   (u/conn-context) {:include-legacy-group-guid true} {:raw? true})
-            errors (:errors body)]
-        (is (= 400 status))
-        (is (= ["Parameter include_legacy_group_guid can only be used when include_full_acl is true"]
-               errors))))))
+               (dissoc response :took)))))))
 
 (deftest acl-reindexing-test
   (u/without-publishing-messages

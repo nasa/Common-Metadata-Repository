@@ -68,7 +68,6 @@
                                       "urs"
                                       "acls"]
         (url/access-control-read-caches-url) ["acls"
-                                              "group-ids-guids"
                                               "health"
                                               "provider-cache"
                                               "launchpad-user"

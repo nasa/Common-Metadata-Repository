@@ -4,7 +4,6 @@
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.set :as set]
-   [cmr.access-control.data.group-fetcher :as gf]
    [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
@@ -28,48 +27,13 @@
     fields-with-full-acl
     base-fields))
 
-(defn- group-concept-id->legacy-guid
-  "Returns the group legacy guid for the given group concept id if applicable;
-   Otherwise, returns the group concept id."
-  [context group-id]
-  (if-let [legacy-guid (gf/group-concept-id->legacy-guid context group-id)]
-    legacy-guid
-    group-id))
-
-(defn- update-group-permission-legacy-group-guid
-  "Returns the given group Permission with group id replaced with legacy group guid if applicable"
-  [context group-permission]
-  (if-let [group-id (:group-id group-permission)]
-    (update group-permission :group-id #(group-concept-id->legacy-guid context %))
-    group-permission))
-
-(defn update-acl-legacy-group-guid
-  "Returns the given acl with group id replaced with legacy group guid if applicable.
-   Group id only appears in the group_id field in group_permissions of an ACL or target_id field
-   of a SingleInstanceIdentity ACL."
-  [context acl]
-  (let [acl (update acl :group-permissions
-                    #(map (partial update-group-permission-legacy-group-guid context) %))]
-    (if-let [single-instance-identity (:single-instance-identity acl)]
-      (update-in acl [:single-instance-identity :target-id]
-                 #(group-concept-id->legacy-guid context %))
-      acl)))
-
-(defn- apply-legacy-group-guid-feature
-  "Returns the acl with include-legacy-group-guid feature applied if necessary"
-  [acl context query]
-  (if (some #{:include-legacy-group-guid} (:result-features query))
-    (update acl :acl #(update-acl-legacy-group-guid context %))
-    acl))
-
 (defmethod elastic-results/elastic-result->query-result-item [:acl :json]
   [context query elastic-result]
   (let [result-source (:_source elastic-result)
         item (if-let [acl-gzip (:acl-gzip-b64 result-source)]
                (-> result-source
                    (assoc :acl (edn/read-string (util/gzip-base64->string acl-gzip)))
-                   (dissoc :acl-gzip-b64)
-                   (apply-legacy-group-guid-feature context query))
+                   (dissoc :acl-gzip-b64))
                result-source)]
     (-> item
         (set/rename-keys {:display-name :name})
