@@ -274,7 +274,6 @@
 (defn- validate-umm-json-search-result
   "Validates the UMM JSON search result and returns a list of errors if invalid."
   [json-str concept-type schema-name umm-version]
-  (print json-str)
   (if-let [java-schema-obj (js-validations/parse-json-schema-from-path
                             (umm-schema-path concept-type schema-name umm-version))]
     (js-validations/validate-json java-schema-obj json-str)

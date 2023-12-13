@@ -858,12 +858,10 @@
     (dissoc m k)))
 
 (defn dissoc-in-mult
+  "Dissociates an vector of keys from a nested associative structure returning a new
+  nested structure. ks is a vector of keys."
   [m ks]
   (w/postwalk #(if (map? %) (apply dissoc % ks) %) m))
-
-(defn test-func
-  [m ks]
-  (update-in m [ks] (fn [nested] (apply dissoc nested [ks]))))
 
 (defn seqv
   "Returns (vec coll) when (seq coll) is not nil."
