@@ -51,6 +51,9 @@
         echo10-gran (ingest-granule-concept collection coll1-entry-title "echo10-gran" :echo10)
         smap-gran (ingest-granule-concept collection coll1-entry-title "iso-smap-gran" :iso-smap)
         umm-g-gran (ingest-granule-concept collection coll1-entry-title "umm-g-gran" :umm-json)]
+    (def mygran echo10-gran)
+    (def mysmapgran smap-gran)
+    (def ummgGran umm-g-gran)
     ;; delete a granule and verify that the deleted granule is not found
     (ingest/delete-concept (d/item->concept gran-to-be-deleted :echo10))
     (index/wait-until-indexed)

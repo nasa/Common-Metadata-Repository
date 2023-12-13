@@ -1,10 +1,8 @@
 (ns cmr.system-int-test.search.granule-search-test
   "Integration test for CMR granule search"
   (:require
-   [clojure.string :as s]
    [clojure.test :refer :all]
    [cmr.common-app.services.search.messages :as cmsg]
-   [cmr.common-app.services.search.messages :as vmsg]
    [cmr.common.services.messages :as msg]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
@@ -329,7 +327,7 @@
       (let [min-value 30.0
             max-value 0.0]
         (is (= {:status 400
-                :errors [(vmsg/min-value-greater-than-max min-value max-value)]}
+                :errors [(cmsg/min-value-greater-than-max min-value max-value)]}
                (search/find-refs :granule {"cloud_cover" (format "%s,%s" min-value max-value)})))))
     (testing "search by cloud-cover with non numeric str 'c9c,'"
       (let [num-range "c9c,"]

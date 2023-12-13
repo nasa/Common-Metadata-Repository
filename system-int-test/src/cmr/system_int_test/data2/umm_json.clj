@@ -3,6 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
+   [clojure.walk :as walk]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.search.results-handlers.results-handler-util :as rs-util]
@@ -138,27 +139,39 @@
 (defn- granule->umm-json-meta
   "Returns the meta section of granule UMM JSON search result."
   [granule]
-  (let [{:keys [concept-id revision-id provider-id native-id format]} granule]
+  (let [{:keys [concept-id revision-id provider-id native-id format collection-concept-id]} granule]
     (util/remove-nil-keys
      {:concept-type "granule"
       :concept-id concept-id
+      :collection-concept-id collection-concept-id
       :revision-id revision-id
       :native-id native-id
       :provider-id provider-id
       :format (mt/format->mime-type format)})))
+
+(defn remove-granule-keys
+  [m ks]
+  (walk/postwalk #(if (map? %) (apply dissoc % ks) %) m))
+
 
 (defn- granule->umm-json
   "Returns the UMM JSON search result of the given granule."
   [version granule]
   ;; Currently there is no version migration
   ;; We need to handle version migration later when it is supported for UMM-G
+  (def myGran granule)
   (let [{:keys [metadata]} granule]
     {:meta (granule->umm-json-meta granule)
      :umm (json/decode metadata true)}))
-
+;; todo are version migrations available now on this?
+;; todo this is the test failing fixture
+;; todo mt/umm-json-results this isn't resolving anywhere....
 (defn assert-granule-umm-jsons-match
   "Returns true if the UMM JSON response returned from the search matches the given granules."
   [version granules search-result]
+  (def myGranules granules)
+  (def mySearchResult search-result)
+  (def myVersion version)
   (if (and (some? (:status search-result)) (not= 200 (:status search-result)))
     (is (= 200 (:status search-result)) (pr-str search-result))
     (do
@@ -167,8 +180,10 @@
       (is (nil? (util/seqv (umm-json-schema/validate-granule-umm-json-search-result
                             (:body search-result) version)))
           "UMM search result JSON was invalid")
+      (def myExpected (set (map #(granule->umm-json version %) granules)))
+      (println (set (map #(granule->umm-json version %) granules)))
       (is (= (set (map #(granule->umm-json version %) granules))
-             (set (map #(util/dissoc-in % [:meta :revision-date])
+             (set (map #(util/dissoc-in-mult % [:collection-concept-id :revision-date])
                        (get-in search-result [:results :items]))))))))
 
 (defn- variable->umm-json-meta

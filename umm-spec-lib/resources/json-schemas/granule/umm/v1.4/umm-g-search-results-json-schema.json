@@ -39,6 +39,10 @@
         "concept-id": {
           "description": "The concept id of the item found.",
           "$ref": "#/definitions/ConceptIdType"
+        }, 
+        "collection-concept-id": {
+          "description": "The concept id of the parent collection to this granule found.",
+          "$ref": "#/definitions/ConceptIdType"
         },
         "revision-id": {
           "description": "A number >= 1 that indicates which revision of the item.",
@@ -55,7 +59,7 @@
           "minLength": 1
         }
       },
-      "required": ["provider-id", "concept-type", "native-id", "concept-id", "revision-id", "revision-date", "format"]
+      "required": ["provider-id", "concept-type", "native-id", "concept-id", "collection-concept-id", "revision-id", "revision-date", "format"]
     },
     "ConceptIdType": {
       "description": "The concept id of a concept.",

@@ -7,7 +7,6 @@
    [clojure.string :as str]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.log :as log]
-   [cmr.common.util :as util]
    [cmr.common.validations.json-schema :as js-validations]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
    [cmr.umm-spec.versioning :as ver]))
@@ -275,6 +274,7 @@
 (defn- validate-umm-json-search-result
   "Validates the UMM JSON search result and returns a list of errors if invalid."
   [json-str concept-type schema-name umm-version]
+  (print json-str)
   (if-let [java-schema-obj (js-validations/parse-json-schema-from-path
                             (umm-schema-path concept-type schema-name umm-version))]
     (js-validations/validate-json java-schema-obj json-str)
