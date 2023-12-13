@@ -138,11 +138,10 @@
 (defn- granule->umm-json-meta
   "Returns the meta section of granule UMM JSON search result."
   [granule]
-  (let [{:keys [concept-id revision-id provider-id native-id format collection-concept-id]} granule]
+  (let [{:keys [concept-id revision-id provider-id native-id format]} granule]
     (util/remove-nil-keys
      {:concept-type "granule"
       :concept-id concept-id
-      :collection-concept-id collection-concept-id
       :revision-id revision-id
       :native-id native-id
       :provider-id provider-id
