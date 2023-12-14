@@ -143,14 +143,22 @@
 
 ;; Member Functions
 
+(defn- complain-about-legacy-group-guid
+  "This function use to check for the include_legacy_group_guid parameter and
+   complain if it was used in the wrong context. This parameter has been removed
+   from CMR, but we wish to log which clients are out there which may still be
+   using this value and need to be updated."
+  [context params]
+  (when (:include-legacy-group-guid params)
+    (warn (format "A client [%s] tried to use include_legacy_group_guid." (:client-id context)))))
+
 (defn get-acl
   "Returns the parsed metadata of the latest revision of the ACL concept by id."
   [context concept-id params]
-  (let [acl (edn/read-string (:metadata (fetch-acl-concept context concept-id)))
-        params (cp/sanitize-params params)]
+  (let [params (cp/sanitize-params params)
+        _ (complain-about-legacy-group-guid context params)
+        acl (edn/read-string (:metadata (fetch-acl-concept context concept-id)))]
     (acl-auth/authorize-acl-action context :read acl)
-    (if (= "true" (:include-legacy-group-guid params))
-      (warn (format "A client [%s] tried to use include_legacy_group_guid." (:client-id context))))
     acl))
 
 (defn get-all-acl-concepts
