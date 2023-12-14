@@ -168,7 +168,7 @@
                             (:body search-result) version)))
           "UMM search result JSON was invalid")
       (is (= (set (map #(granule->umm-json version %) granules))
-             (set (map #(util/dissoc-in-mult % [:collection-concept-id :revision-date])
+             (set (map #(util/dissoc-multiple % [:collection-concept-id :revision-date])
                        (get-in search-result [:results :items]))))))))
 
 (defn- variable->umm-json-meta
