@@ -847,7 +847,7 @@
   "Dissociates an entry from a nested associative structure returning a new
   nested structure. keys is a sequence of keys. Any empty maps that result
   will not be present in the new structure."
-  [m [k & ks :as keys]]
+  [m [k & ks]]
   (if ks
     (if-let [nextmap (get m k)]
       (let [newmap (dissoc-in nextmap ks)]
@@ -856,6 +856,12 @@
           (dissoc m k)))
       m)
     (dissoc m k)))
+
+(defn dissoc-multiple
+  "Dissociates a vector of keys from a nested associative structure returning a new
+  nested structure. ks is a vector of keys."
+  [m ks]
+  (w/postwalk #(if (map? %) (apply dissoc % ks) %) m))
 
 (defn seqv
   "Returns (vec coll) when (seq coll) is not nil."

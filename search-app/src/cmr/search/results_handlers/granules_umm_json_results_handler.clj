@@ -18,7 +18,8 @@
    "native-id"
    "provider-id"
    "metadata-format"
-   "revision-date"])
+   "revision-date"
+   "collection-concept-id"])
 
 (defn granule-elastic-result->meta
   "Takes an elasticsearch result and returns a map of the meta fields in granule UMM JSON response."
@@ -28,6 +29,7 @@
          native-id :native-id
          provider-id :provider-id
          metadata-format :metadata-format
+         collection-concept-id :collection-concept-id
          revision-date :revision-date} (:_source elastic-result)
         revision-date (when revision-date (string/replace (str revision-date) #"\+0000" "Z"))]
     (util/remove-nil-keys
@@ -35,6 +37,7 @@
       :concept-id concept-id
       :revision-id revision-id
       :native-id native-id
+      :collection-concept-id collection-concept-id
       :provider-id provider-id
       :format (mt/format->mime-type (keyword metadata-format))
       :revision-date revision-date})))

@@ -7,7 +7,6 @@
    [clojure.string :as str]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.log :as log]
-   [cmr.common.util :as util]
    [cmr.common.validations.json-schema :as js-validations]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
    [cmr.umm-spec.versioning :as ver]))
