@@ -14,7 +14,7 @@
    [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
    [cmr.common-app.services.search.params :as cp]
    [cmr.common-app.services.search.query-model :as common-qm]
-   [cmr.common.log :refer [info debug]]
+   [cmr.common.log :refer [warn info debug]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.transmit.metadata-db2 :as mdb2]
@@ -130,13 +130,6 @@
                     "Only 'provider', 'system', 'single_instance', or 'catalog_item' can be specified.")
                (str/join ", " invalid-types))])))
 
-(defn- include-legacy-group-guid-validation
-  "Validates include-legacy-group-guid parameters."
-  [_ params]
-  (when (and (= "true" (:include-legacy-group-guid params))
-             (not= "true" (:include-full-acl params)))
-    ["Parameter include_legacy_group_guid can only be used when include_full_acl is true"]))
-
 (defn- target-id-validation
   "Validates that when target-id parameter is specified,
   identity-type=single_instance is also specified"
@@ -232,7 +225,16 @@
       ;; Creates the group-permission condition.
       (nf/parse-nested-condition target-field value case-sensitive? pattern?))))
 
-(defn validate-acl-search-params
+(defn- complain-about-legacy-group-guid
+  "This function use to check for the include_legacy_group_guid parameter and
+   complain if it was used in the wrong context. This parameter has been removed
+   from CMR, but we wish to log which clients are out there which may still be
+   using this value and need to be updated."
+  [context params]
+  (when (:include-legacy-group-guid params)
+    (warn (format "A client [%s] tried to use include_legacy_group_guid." (:client-id context)))))
+
+(defn- validate-acl-search-params
   "Validates the parameters for an ACL search. Returns the parameters or throws an error if invalid."
   [context params]
   (let [[safe-params type-errors] (cpv/apply-type-validations
@@ -243,6 +245,7 @@
                                     (partial cpv/validate-map [:options :provider])
                                     (partial cpv/validate-map [:options :permitted-user])
                                     (partial cpv/validate-map [:group_permission])])]
+    (complain-about-legacy-group-guid context params)
     (cpv/validate-parameters
      :acl safe-params
      (concat cpv/common-validations
@@ -250,9 +253,7 @@
               identity-type-validation
               group-permission-validation
               target-id-validation
-              (partial cpv/validate-boolean-param :include-full-acl)
-              (partial cpv/validate-boolean-param :include-legacy-group-guid)
-              include-legacy-group-guid-validation])
+              (partial cpv/validate-boolean-param :include-full-acl)])
      type-errors))
   params)
 
@@ -263,7 +264,7 @@
   (let [[query-creation-time query] (util/time-execution
                                      (->> params
                                           cp/sanitize-params
-                                          (validate-acl-search-params :acl)
+                                          (validate-acl-search-params context)
                                           (cp/parse-parameter-query context :acl)))
         [find-concepts-time results] (util/time-execution
                                       (cs/find-concepts context :acl query))
