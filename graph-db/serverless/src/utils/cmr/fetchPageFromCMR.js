@@ -70,13 +70,11 @@ export const fetchPageFromCMR = async ({
     let currentBatchSize = 0
 
     // Split page array into array with sub-arrays of size 10
-    const chunkedItems = chunkArray(items, 5)
+    const chunkedItems = chunkArray(items, 10)
 
     if (chunkedItems.length > 0) {
       await chunkedItems.forEachAsync(async (chunk) => {
         const sqsEntries = []
-
-        // console.log('chunk', chunk)
 
         chunk.forEach((collection) => {
           const { meta } = collection

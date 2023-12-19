@@ -1,6 +1,6 @@
 /**
- * Returns an environment specific configuration object for Lambda
- * @return {Object} A configuration object for Lambda
+ * Returns an environment specific configuration object for SQS
+ * @return {Object} A configuration object for SQS
  */
 export const getSqsConfig = () => {
   const productionConfig = {
