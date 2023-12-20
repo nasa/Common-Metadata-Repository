@@ -1,14 +1,13 @@
-(ns cmr.search.data.metadata-retrieval.revision-format-map
+(ns cmr.common-app.data.metadata-retrieval.revision-format-map
   "Defines a set of helper functions for the metadata cache for dealing with revision format maps.
   Revision format maps contain metadata from a concept in multiple formats. See the metadata cache
   namespace for the exact list of fields."
   (:require
    [clojure.set :as set]
-   [clojure.string :as str]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [clojure.string :as string]
+   [cmr.common.hash-cache :as hash-cache]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as u]
-   [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]))
+   [cmr.common.util :as u]))
 
 (def ^:private non-metadata-fields
   #{:concept-id :revision-id :native-format :compressed? :size})
@@ -63,7 +62,7 @@
   (let [uncompressed-map (dissoc (decompress revision-format-map) :compressed?)
         trim-xml (fn [xml]
                    (-> xml
-                       (str/replace "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" "")
+                       (string/replace "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" "")
                        (subs 0 30)
                        (str "...")))
         trimmed (map-metadata-values trim-xml uncompressed-map)
@@ -109,9 +108,9 @@
 
 (defn concept->revision-format-map
   "Converts a concept into a revision format map. Returns nil if the concept was deleted."
-  ([context concept target-format-set]
-   (concept->revision-format-map context concept target-format-set false))
-  ([context concept target-format-set ignore-exceptions?]
+  ([context concept target-format-set transformer]
+   (concept->revision-format-map context concept target-format-set transformer false))
+  ([context concept target-format-set transformer ignore-exceptions?]
    (when-not (:deleted concept)
      (let [{:keys [concept-id revision-id metadata] concept-mime-type :format} concept
            native-format (mt/mime-type->format concept-mime-type)
@@ -121,40 +120,39 @@
                      native-format metadata}
            ;; Translate to all the cached formats except the native format.
            target-formats (disj target-format-set native-format :native)
-           formats-map (metadata-transformer/transform-to-multiple-formats
-                        context concept target-formats ignore-exceptions?)]
+           formats-map (transformer context concept target-formats ignore-exceptions?)]
        (merge base-map formats-map)))))
 
 (defn add-additional-format
   "Adds an additional stored format to the revision format map."
-  [context target-format revision-format-map]
+  [context target-format revision-format-map transform]
   (let [concept (revision-format-map->concept :native revision-format-map)
-        transformed (metadata-transformer/transform context concept target-format)]
+        transformed (transform context concept target-format)]
     (if (:compressed? revision-format-map)
-     (assoc revision-format-map target-format (u/string->lz4-bytes transformed))
-     (assoc revision-format-map target-format transformed))))
+      (assoc revision-format-map target-format (u/string->lz4-bytes transformed))
+      (assoc revision-format-map target-format transformed))))
 
 (defn merge-into-cache-map
-  "Merges in the updated revision-format-map into the existing cache map. cache-map should be a map of
+  "Merges in the updated revision-format-map into the passed in cache map. cache-map should be a map of
   concept ids to revision format maps. The passed in revision format map can contain an unknown
   item, a newer revision, or formats not yet cached. The data will be merged in the right way."
-  [cache-map revision-format-map]
+  [cache cache-key revision-format-map]
   (let [{:keys [concept-id revision-id]} revision-format-map]
-    (if-let [curr-rev-format-map (cache-map concept-id)]
+    (if-let [curr-rev-format-map (hash-cache/get-value cache cache-key concept-id)]
       ;; We've cached this concept
       (cond
         ;; We've got a newer revision
         (> revision-id (:revision-id curr-rev-format-map))
-        (assoc cache-map concept-id revision-format-map)
+        (hash-cache/set-value cache cache-key concept-id revision-format-map)
 
         ;; We somehow retrieved older data than was cached. Keep newer data
         (< revision-id (:revision-id curr-rev-format-map))
-        cache-map
+        nil
 
         ;; Same revision
         :else
         ;; Merge in the newer data which may have additional cached formats.
-        (assoc cache-map concept-id (merge curr-rev-format-map revision-format-map)))
+        (hash-cache/set-value cache cache-key concept-id (merge curr-rev-format-map revision-format-map)))
 
       ;; We haven't cached this concept yet.
-      (assoc cache-map concept-id revision-format-map))))
+      (hash-cache/set-value cache cache-key concept-id revision-format-map))))

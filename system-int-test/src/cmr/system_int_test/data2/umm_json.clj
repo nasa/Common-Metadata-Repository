@@ -11,11 +11,8 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.umm-spec.json-schema :as umm-json-schema]
    [cmr.umm-spec.legacy :as umm-legacy]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm.collection.entry-id :as eid]))
-
-(def test-context (lkt/setup-context-for-test))
 
 (defn- collection->umm-json-meta
   "Returns the meta section of umm-json format."
@@ -79,11 +76,11 @@
   (if (:deleted collection)
     {:meta (collection->umm-json-meta collection)}
     (let [ingested-metadata (umm-legacy/generate-metadata
-                             test-context (d/remove-ingest-associated-keys collection) (:format-key collection))
+                             {} (d/remove-ingest-associated-keys collection) (:format-key collection))
           umm-spec-record (umm-spec/parse-metadata
-                           test-context :collection (:format-key collection) ingested-metadata)
+                           {} :collection (:format-key collection) ingested-metadata)
           umm-json (umm-spec/generate-metadata
-                    test-context umm-spec-record {:format :umm-json :version version})]
+                    {} umm-spec-record {:format :umm-json :version version})]
       {:meta (collection->umm-json-meta collection)
        :umm (json/decode umm-json true)})))
 

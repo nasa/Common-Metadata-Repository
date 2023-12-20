@@ -15,9 +15,7 @@
    [cmr.umm-spec.legacy :as legacy]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.umm-json :as umm-json]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
-   [cmr.umm-spec.versioning :as ver]
-   [cmr.umm.umm-core :as umm-lib-core]))
+   [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (def transformer-supported-base-formats
   "The set of formats supported by the transformer."

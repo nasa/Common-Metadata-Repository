@@ -30,8 +30,7 @@
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"}))
-
-(def test-context (location-keywords-helper/setup-context-for-test))
+(def test-context location-keywords-helper/create-context)
 
 ;; tests
 ;; ensure metadata, indexer and ingest apps are accessable on ports 3001, 3004 and 3002 resp;
@@ -64,7 +63,13 @@
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
       (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-      (is (= 1 revision-id))))
+      (is (= 1 revision-id)))
+    ;;testing that when launchpad token is enforced, collection ingest fails without launchpad token.
+    (side/eval-form `(common-config/set-launchpad-token-enforced! true))
+    (let [concept (data-umm-c/collection-concept {})
+          result (ingest/ingest-concept concept)]
+      (is (= ["Launchpad token is required. Token [XXX] is not a launchpad token."] (:errors result))))
+    (side/eval-form `(common-config/set-launchpad-token-enforced! false)))
   (testing "ingest of a concept with a revision id"
     (let [concept (data-umm-c/collection-concept {:revision-id 5})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
@@ -688,10 +693,11 @@
         (is (= 2 (:revision-id response))))))
 
   (testing "ingesting UMM JSON with parsing errors"
-    (let [json (umm-spec/generate-metadata test-context (assoc expected-conversion/curr-ingest-ver-example-collection-record
-                                                         :DataDates
-                                                         [{:Date "invalid date"
-                                                           :Type "CREATE"}])
+    (let [json (umm-spec/generate-metadata test-context
+                                           (assoc expected-conversion/curr-ingest-ver-example-collection-record
+                                                  :DataDates
+                                                  [{:Date "invalid date"
+                                                    :Type "CREATE"}])
                                            :umm-json)
           concept-map {:provider-id "PROV1"
                        :native-id "umm_json_coll_2"

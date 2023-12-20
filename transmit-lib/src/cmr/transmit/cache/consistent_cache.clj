@@ -86,6 +86,11 @@
           :when (= (hash (c/get-value memory-cache k)) (c/get-value hash-cache hash-key))]
       k))
 
+  (key-exists
+    [this key]
+    ;; key is the cache-key. Checks to see if the cache has been setup.
+    (c/key-exists memory-cache key))
+
   (get-value
     [this key]
     (let [mem-value (c/get-value memory-cache key)]

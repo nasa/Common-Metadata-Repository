@@ -3,9 +3,58 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.ingest.services.granule-bulk-update.additional-file.umm-g :as umm-g]))
+   [cmr.common-app.services.kms-lookup :as kl]
+   [cmr.ingest.services.granule-bulk-update.additional-file.umm-g :as umm-g]
+   [cmr.redis-utils.test.test-util :as redis-embedded-fixture]))
 
-(def ^:private context "A fake context object" {:ignore-kms-keywords true})
+(def sample-map
+  "Sample KMS map to use for all of the tests"
+  {:providers [{:level-0 "ACADEMIC" :level-1 "OR-STATE/EOARC" :short-name "PROV1"
+                :long-name "Eastern Oregon Agriculture Research Center, Oregon State University"
+                :uuid "prov1-uuid"}]
+   :platforms [{:short-name "PLAT1" :long-name "Platform 1" :category "Aircraft" :other-random-key 7 :uuid "plat1-uuid"}]
+   :instruments [{:short-name "INST1" :long-name "Instrument 1" :uuid "inst1-uuid"}]
+   :projects [{:short-name "PROJ1" :long-name "Project 1" :uuid "proj1-uuid"}]
+   :spatial-keywords [{:category "CONTINENT" :type "AFRICA" :subregion-1 "CENTRAL AFRICA"
+                       :subregion-2 "CHAD" :subregion-3 "AOUZOU" :uuid "location1-uuid"}
+                      {:category "CONTINENT" :type "AFRICA" :uuid "location2-uuid"}
+                      {:category "CONTINENT" :type "AFRICA" :subregion-1 "CENTRAL AFRICA"
+                       :uuid "location3-uuid"}
+                      {:category "CONTINENT" :type "EUROPE" :subregion-1 "BLACK SEA"
+                       :uuid "location4-uuid"}
+                      {:category "SPACE" :uuid "location5-uuid"}
+                      {:category "CONTINENT" :type "UNITED STATES" :subregion-1 "GEORGIA"
+                       :uuid "location6-uuid"}]
+   :related-urls [{:url-content-type "DistributionURL"
+                   :type "GOTO WEB TOOL"
+                   :subtype "HITIDE"
+                   :uuid "related1-uuid-hitide"}
+                  {:url-content-type "VisualizationURL"
+                   :type "GET RELATED VISUALIZATION"
+                   :subtype "MAP"
+                   :uuid "related2-uuid-map"}]
+   :iso-topic-categories [{:iso-topic-category "BIOTA" :uuid "itc1-uuid"} {:iso-topic-category "CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" :uuid "itc2-uuid"}]
+   :concepts [{:short-name "GOSIC/GTOS" :uuid "dn1-uuid"} {:short-name "GOMMP" :uuid "dn2-uuid"}]
+   :science-keywords [{:category "EARTH SCIENCE" :topic "TOPIC1" :term "TERM1"
+                       :variable-level-1 "VL1" :variable-level-2 "VL2"
+                       :variable-level-3 "VL3" :uuid "sk1-uuid"}]})
+
+(def ^:private context
+  "Creates a testing concept with the KMS caches."
+  {:system {:caches {kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+                     kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+                     kl/kms-location-cache-key (kl/create-kms-location-cache)
+                     kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)}}
+   :ignore-kms-keywords true})
+
+(defn redis-cache-fixture
+  "Sets up the redis cache fixture to load data into the caches for testing."
+  [f]
+  (kl/create-kms-index context sample-map)
+  (f))
+
+(use-fixtures :once (join-fixtures [redis-embedded-fixture/embedded-redis-server-fixture
+                                    redis-cache-fixture]))
 
 (deftest update-files
   ;;note we are not validating values here, so these tests serve solely to verify

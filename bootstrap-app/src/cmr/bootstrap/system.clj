@@ -3,23 +3,24 @@
   represented as a map of components. Design based on
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
-   [cmr.access-control.system :as ac-system]
    [cmr.acl.core :as acl]
    [cmr.bootstrap.api.routes :as routes]
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.bootstrap.data.bulk-index :as bi]
    [cmr.bootstrap.data.bulk-migration :as bm]
+   [cmr.bootstrap.data.metadata-retrieval.collection-metadata-cache :as b-coll-metadata-cache]
    [cmr.bootstrap.data.virtual-products :as vp]
    [cmr.bootstrap.services.dispatch.core :as dispatch]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common-app.services.kms-lookup :as kl]
+   [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common.api.web-server :as web]
-   [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
-   [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
@@ -29,7 +30,6 @@
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.metadata-db.services.util :as mdb-util]
-   [cmr.oracle.connection :as oracle]
    [cmr.transmit.config :as transmit-config]))
 
 (defconfig db-batch-size
@@ -42,7 +42,7 @@
 
 (def ^:private component-order
   "Defines the order to start the components."
-  [:log :caches :db :queue-broker :scheduler :web :nrepl])
+  [:log :caches :search-index :db :queue-broker :scheduler :web :nrepl])
 
 (def system-holder
   "Required for jobs"
@@ -66,6 +66,7 @@
         sys {:log (log/create-logger-with-log-level (log-level))
              :embedded-systems {:metadata-db metadata-db
                                 :indexer indexer}
+             :search-index (search-index/create-elastic-search-index)
              :db-batch-size (db-batch-size)
              :core-async-dispatcher (dispatch/create-backend :async)
              :synchronous-dispatcher (dispatch/create-backend :sync)
@@ -77,8 +78,16 @@
              :relative-root-url (transmit-config/bootstrap-relative-root-url)
              :caches {acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
-                      common-health/health-cache-key (common-health/create-health-cache)}
-             :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job])
+                      kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+                      kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+                      kl/kms-location-cache-key (kl/create-kms-location-cache)
+                      kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
+                      common-health/health-cache-key (common-health/create-health-cache)
+                      cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)}
+             :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
+                                                               (kf/refresh-kms-cache-job "bootstrap-kms-cache-refresh")
+                                                               (b-coll-metadata-cache/refresh-collections-metadata-cache-job "bootstrap-collections-metadata-cache-refresh")
+                                                               (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")])
              :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms
                                                   :indexer :access-control])))

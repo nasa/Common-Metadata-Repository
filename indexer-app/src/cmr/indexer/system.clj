@@ -10,6 +10,7 @@
    [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common.api.web-server :as web]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
@@ -65,6 +66,10 @@
                                                       :keys-to-track index-set-mappings-redis-keys})
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
+                      kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+                      kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+                      kl/kms-location-cache-key (kl/create-kms-location-cache)
+                      kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
                       cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
                       hf/humanizer-cache-key (hf/create-cache)
                       metrics-fetcher/usage-metrics-cache-key (metrics-fetcher/create-cache)
@@ -72,7 +77,6 @@
              :scheduler (jobs/create-scheduler
                          `system-holder
                          [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
-                          (kf/refresh-kms-cache-job "indexer-kms-cache-refresh")
                           jvm-info/log-jvm-statistics-job
                           (cache-info/create-log-cache-info-job "indexer")])
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]

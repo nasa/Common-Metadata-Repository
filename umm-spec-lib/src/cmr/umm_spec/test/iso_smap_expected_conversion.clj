@@ -1,26 +1,19 @@
 (ns cmr.umm-spec.test.iso-smap-expected-conversion
  "ISO SMAP specific expected conversion functionality"
  (:require
-   [clj-time.core :as t]
-   [clj-time.format :as f]
    [clojure.string :as string]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.iso-keywords :as kws]
-   [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as cmn]
-   [cmr.umm-spec.related-url :as ru-gen]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
    [cmr.umm-spec.test.iso-shared :as iso-shared]
    [cmr.umm-spec.test.iso19115-expected-conversion :as iso]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
-   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]
-   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
-   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact])
+   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization])
  (:use
    [cmr.umm-spec.models.umm-collection-models]
    [cmr.umm-spec.models.umm-common-models]))

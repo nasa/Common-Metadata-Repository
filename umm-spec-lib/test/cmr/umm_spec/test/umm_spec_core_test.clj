@@ -5,13 +5,16 @@
    [clj-time.core :as t]
    [cmr.common.util :as util :refer [are3]]
    [cmr.common.mime-types :as mt]
+   [cmr.redis-utils.test.test-util :as redis-embedded-fixture]
    [cmr.umm-spec.umm-spec-core :as core]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]))
 
-(def context (lkt/setup-context-for-test))
+(use-fixtures :once (join-fixtures [redis-embedded-fixture/embedded-redis-server-fixture
+                                    lkt/redis-cache-fixture]))
+(def context lkt/create-context)
 
 (def umm-c-record
   "This is the minimum valid UMM-C."

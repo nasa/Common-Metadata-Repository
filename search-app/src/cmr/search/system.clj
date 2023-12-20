@@ -5,9 +5,11 @@
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
+   [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common-app.services.search :as search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
    [cmr.common.api.web-server :as web-server]
@@ -121,15 +123,16 @@
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       acl/token-pc-cache-key (acl/create-token-pc-cache)
-                      ;; Note that search does not have a job to refresh the KMS cache. The indexer
-                      ;; already refreshes the cache. Since we use a consistent cache, the search
-                      ;; application will also pick up the updated KMS keywords.
                       launchpad-user-cache/launchpad-user-cache-key (launchpad-user-cache/create-launchpad-user-cache)
                       urs/urs-cache-key (urs/create-urs-cache)
                       kf/kms-cache-key (kf/create-kms-cache)
+                      kl/kms-short-name-cache-key (kl/create-kms-short-name-cache)
+                      kl/kms-umm-c-cache-key (kl/create-kms-umm-c-cache)
+                      kl/kms-location-cache-key (kl/create-kms-location-cache)
+                      kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
                       search/scroll-id-cache-key (search/create-scroll-id-cache)
                       search/scroll-first-page-cache-key (search/create-scroll-first-page-cache)
-                      metadata-cache/cache-key (metadata-cache/create-cache)
+                      cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       hrs/report-cache-key (hrs/create-report-cache)
@@ -146,6 +149,7 @@
                           hgocrf/refresh-has-granules-or-cwic-map-job
                           hgocrf/refresh-has-granules-or-opensearch-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
+                          (metadata-cache/update-collections-metadata-cache-job)
                           coll-cache/refresh-collections-cache-for-granule-acls-job
                           (cache-info/create-log-cache-info-job "search")
                           jvm-info/log-jvm-statistics-job

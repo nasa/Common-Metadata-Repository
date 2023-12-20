@@ -9,26 +9,22 @@
                  * native-format - A key or map of format and version identifying the native format
                  * various format keys each mapped to compressed metadata."
   (:require
-   [clojure.set :as set]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as q]
-   [cmr.common.cache :as c]
+   [clj-time.core :as t]
+   [clojure.set :as cset]
+   [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
+   [cmr.common-app.data.metadata-retrieval.revision-format-map :as crfm]
    [cmr.common.config :refer [defconfig]]
+   [cmr.common.hash-cache :as hash-cache]
+   [cmr.common.memory-db.connection]
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :as log :refer [debug info]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
-   [cmr.common.xml :as cx]
    [cmr.metadata-db.services.concept-service :as metadata-db]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
-   [cmr.search.data.metadata-retrieval.revision-format-map :as rfm]
    [cmr.search.services.acl-service :as acl-service]
    [cmr.umm-spec.acl-matchers :as acl-match]
    [cmr.umm-spec.versioning :as umm-version]))
-
-(def cache-key
-  "Identifies the key used when the cache is stored in the system."
-  :metadata-cache)
 
 (defconfig non-cached-collection-metadata-formats
   "Defines a set of collection metadata formats that will not be cached in memory"
@@ -48,96 +44,29 @@
 (defn cached-formats
   "This is a set of formats that are cached."
   []
-  (set/difference all-formats (non-cached-collection-metadata-formats)))
-
-;; Defines the record that represents the cache and implements the cache protocol. This is a very
-;; simple implementation that just wraps an atom with the map of cached concept ids to revision
-;; format maps.
-(defrecord MetadataCache
-  [cache-atom]
-  c/CmrCache
-  (get-keys
-    [this]
-    (keys @cache-atom))
-
-  (get-value
-    [this key]
-    (get @cache-atom key))
-
-  (get-value
-    [this key lookup-fn]
-    (throw (Exception. "Unsupported operation")))
-
-  (reset
-    [this]
-    (reset! cache-atom {}))
-
-  (set-value
-    [this key value]
-    (swap! cache-atom assoc key value))
-
-  (cache-size
-   [_]
-   (reduce + 0 (map :size (vals @cache-atom)))))
-
-(defn create-cache
-  "Creates an instance of the cache."
-  []
-  (->MetadataCache (atom {})))
-
-(defn- fetch-collections-from-elastic
-  "Executes a query that will fetch all of the collection information needed for caching."
-  [context]
-  (let [query (q/query {:concept-type :collection
-                        :condition q/match-all
-                        :skip-acls? true
-                        :page-size :unlimited
-                        :result-format :query-specified
-                        :result-fields [:concept-id :revision-id]})]
-    (mapv #(vector (:concept-id %) (:revision-id %))
-          (:items (qe/execute-query context query)))))
-
-(defn context->metadata-db-context
-  "Converts the context into one that can be used to invoke the metadata-db services."
-  [context]
-  (assoc context :system (get-in context [:system :embedded-systems :metadata-db])))
-
-(defn- prettify-cache
-  "Returns a simplified version of the cache to help with debugging cache problems."
-  [cache]
-  (let [cache-map @(:cache-atom cache)]
-    (u/map-values rfm/prettify cache-map)))
-
-(comment
- (refresh-cache {:system (get-in user/system [:apps :search])})
- (prettify-cache (get-in user/system [:apps :search :caches cache-key])))
+  (cset/difference all-formats (non-cached-collection-metadata-formats)))
 
 (defn cache-state
-  "A helper function for debugging that returns a map of concept id to a map containing
-   :revision-id and :cached-formats"
-  [context]
-  (let [cache-map @(:cache-atom (c/context->cache context cache-key))]
-    (u/map-values (fn [rfm]
-                    {:revision-id (:revision-id rfm)
-                     :cached-formats (rfm/cached-formats rfm)})
-                  cache-map)))
-
-(defn- concepts-without-xml-processing-inst
-  "Removes XML processing instructions from a list of concepts."
-  [concepts]
-  (u/fast-map
-   #(update % :metadata cx/remove-xml-processing-instructions)
-   concepts))
+    "A helper function for debugging that returns a map of concept id to a map containing
+     :revision-id and :cached-formats"
+    [context]
+    (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
+          cache-map (-> (hash-cache/get-map cache cmn-coll-metadata-cache/cache-key)
+                        (dissoc "incremental-since-refresh-date"))]
+      (u/map-values (fn [rfm]
+                      {:revision-id (:revision-id rfm)
+                       :cached-formats (crfm/cached-formats rfm)})
+                    cache-map)))
 
 (defn- concept-tuples->cache-map
   "Takes a set of concept tuples fetches the concepts from metadata db, converts them to revision
    format maps, and stores them into a cache map"
   [context concept-tuples]
-  (let [mdb-context (context->metadata-db-context context)
+  (let [mdb-context (cmn-coll-metadata-cache/context->metadata-db-context context)
         concepts (doall (metadata-db/get-concepts mdb-context concept-tuples true))
-        concepts (concepts-without-xml-processing-inst concepts)
-        rfms (u/fast-map #(rfm/compress
-                           (rfm/concept->revision-format-map context % (cached-formats) true))
+        concepts (cmn-coll-metadata-cache/concepts-without-xml-processing-inst concepts)
+        rfms (u/fast-map #(crfm/compress
+                           (crfm/concept->revision-format-map context % (cached-formats) metadata-transformer/transform-to-multiple-formats true))
                          concepts)]
     (reduce #(assoc %1 (:concept-id %2) %2) {} rfms)))
 
@@ -145,44 +74,87 @@
   "Refreshes the collection metadata cache"
   [context]
   (info "Refreshing metadata cache")
-  (let [concepts-tuples (fetch-collections-from-elastic context)
+  (let [incremental-since-refresh-date (str (clj-time.core/now))
+        concepts-tuples (cmn-coll-metadata-cache/fetch-collections-from-elastic context)
         new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
                                 {}
                                 (partition-all 1000 concepts-tuples))
-        cache (c/context->cache context cache-key)]
-    (reset! (:cache-atom cache) new-cache-value)
-    (info "Metadata cache refresh complete. Cache Size:" (c/cache-size cache))))
+        rcache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
+    (hash-cache/set-value rcache
+                          cmn-coll-metadata-cache/cache-key
+                          cmn-coll-metadata-cache/incremental-since-refresh-date-key
+                          incremental-since-refresh-date)
+    (hash-cache/set-values rcache cmn-coll-metadata-cache/cache-key new-cache-value)
+    (info "Metadata cache refresh complete. Cache Size:"
+          (hash-cache/cache-size rcache cmn-coll-metadata-cache/cache-key))))
 
-(defn all-cached-revision-format-maps
-  "Returns a sequence of all revision format maps in the cache sorted by concept id"
+(defn update-cache-job
+  "Updates the collection metadata cache by querying elastic search for updates since the
+  last time the cache was updated."
   [context]
-  (let [cache (deref (:cache-atom (c/context->cache context cache-key)))
-        maps (for [concept-id (sort (keys cache))]
-               (get cache concept-id))]
-    (seq maps)))
+    (info "Updating collection metadata cache")
+    (let [incremental-since-refresh-date (str (t/now))
+          concepts-tuples (cmn-coll-metadata-cache/fetch-updated-collections-from-elastic context)
+          new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
+                                  {}
+                                  (partition-all 1000 concepts-tuples))
+          cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
+      (hash-cache/set-value cache
+                            cmn-coll-metadata-cache/cache-key
+                            cmn-coll-metadata-cache/incremental-since-refresh-date-key
+                            incremental-since-refresh-date)
+      (hash-cache/set-values cache
+                             cmn-coll-metadata-cache/cache-key
+                             new-cache-value)
+      (info "Metadata cache update complete. Cache Size:" (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))))
 
-(defconfig refresh-collection-metadata-cache-interval
-  "The number of seconds between refreshes of the collection metadata cache"
-  {:default (* 3600 8)
-   :type Long})
+(defn in-memory-db?
+  "Checks to see if the database in the context is an in-memory db."
+  [system]
+  (instance? cmr.common.memory_db.connection.MemoryStore
+             (get-in {:system system} [:system :embedded-systems :metadata-db :db])))
 
 (defjob RefreshCollectionsMetadataCache
   [ctx system]
-  (refresh-cache {:system system}))
+  (when (in-memory-db? system)
+    (refresh-cache {:system system})))
 
 (defn refresh-collections-metadata-cache-job
   []
   {:job-type RefreshCollectionsMetadataCache
-   :interval (refresh-collection-metadata-cache-interval)})
+   ;; The time here is UTC.
+   :daily-at-hour-and-minute [06 00]})
+
+(defjob UpdateCollectionsMetadataCache
+  [ctx system]
+  (when (in-memory-db? system)
+    (update-cache-job {:system system})))
+
+(defn update-collections-metadata-cache-job
+  []
+  {:job-type UpdateCollectionsMetadataCache
+   :interval (cmn-coll-metadata-cache/update-collection-metadata-cache-interval)})
+
+(defn all-cached-revision-format-maps
+  "Returns a sequence of all revision format maps in the cache sorted by concept id"
+  [context]
+  (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
+        cache-map (-> (hash-cache/get-map cache cmn-coll-metadata-cache/cache-key)
+                      (dissoc "incremental-since-refresh-date"))
+        maps (for [concept-id (sort (keys cache-map))]
+               (get cache-map concept-id))]
+    (seq maps)))
 
 (defn- update-cache
   "Updates the cache so that it will contain the updated revision format maps."
   [context revision-format-maps]
-  (let [cache (:cache-atom (c/context->cache context cache-key))
-        compressed-maps (u/fast-map rfm/compress revision-format-maps)]
-    (swap! cache #(reduce rfm/merge-into-cache-map % compressed-maps))
+  (let [compressed-maps (u/fast-map crfm/compress revision-format-maps)
+        rcache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
+    (doall (map #(crfm/merge-into-cache-map rcache cmn-coll-metadata-cache/cache-key %) compressed-maps))
+
     (info "Cache updated with revision format maps. Cache Size:"
-          (c/cache-size (c/context->cache context cache-key)))))
+          (hash-cache/cache-size (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
+                                 cmn-coll-metadata-cache/cache-key))))
 
 (defn- transform-and-cache
   "Takes existing revision format maps missing the target format, generates the format XML, and returns
@@ -190,10 +162,10 @@
   [context revision-format-maps target-format]
   (when (seq revision-format-maps)
     (let [[t1 updated-revision-format-maps] (u/time-execution
-                                             (u/fast-map #(rfm/add-additional-format context target-format %)
+                                             (u/fast-map #(crfm/add-additional-format context target-format % metadata-transformer/transform)
                                                          revision-format-maps))
           [t2 concepts] (u/time-execution
-                         (u/fast-map #(rfm/revision-format-map->concept target-format %)
+                         (u/fast-map #(crfm/revision-format-map->concept target-format %)
                                      updated-revision-format-maps))
           ;; Cache the revision format maps.
           [t3 _] (u/time-execution
@@ -208,20 +180,23 @@
    requested. The original native format and the requested format are both stored in the cache."
   [context concept-tuples target-format]
   (when (seq concept-tuples)
-    (let [mdb-context (context->metadata-db-context context)
+    (let [mdb-context (cmn-coll-metadata-cache/context->metadata-db-context context)
 
           ;; Get Concepts from Metadata db
           [t1 concepts] (u/time-execution
                          (doall (metadata-db/get-concepts mdb-context concept-tuples false)))
 
           [t2 concepts] (u/time-execution
-                         (concepts-without-xml-processing-inst concepts))
+                         (cmn-coll-metadata-cache/concepts-without-xml-processing-inst concepts))
 
           ;; Convert concepts to revision format maps with the target format.
           target-format-set #{target-format}
           ;; revision-format-maps will contain nil if concept was deleted
           [t3 revision-format-maps] (u/time-execution
-                                     (u/fast-map #(rfm/concept->revision-format-map context % target-format-set)
+                                     (u/fast-map #(crfm/concept->revision-format-map context
+                                                                                     %
+                                                                                     target-format-set
+                                                                                     metadata-transformer/transform-to-multiple-formats)
                                                  concepts))
 
           ;; Convert revision format maps to concepts with the specific format. We must return these
@@ -229,7 +204,7 @@
           [t4 concepts] (u/time-execution
                          (mapv (fn [rvm concept]
                                  (if rvm
-                                   (rfm/revision-format-map->concept target-format rvm)
+                                   (crfm/revision-format-map->concept target-format rvm)
                                    ;; rvm would be nil if concept was a tombstone. Return original tombstone in that case.
                                    concept))
                                revision-format-maps
@@ -251,14 +226,14 @@
    requested."
   [context concept-tuples target-format]
   (when (seq concept-tuples)
-    (let [mdb-context (context->metadata-db-context context)
+    (let [mdb-context (cmn-coll-metadata-cache/context->metadata-db-context context)
           ;; Get Concepts from Metadata db
           [t1 concepts] (u/time-execution
                          (doall (metadata-db/get-concepts mdb-context concept-tuples false)))
           [t2 concepts] (u/time-execution
                          (metadata-transformer/transform-concepts context concepts target-format))
           [t3 concepts] (u/time-execution
-                         (concepts-without-xml-processing-inst concepts))]
+                         (cmn-coll-metadata-cache/concepts-without-xml-processing-inst concepts))]
       (info "fetch of " (count concept-tuples) " concepts:"
             "target-format:" target-format
             "get-concepts:" t1 "metadata-transformer/transform-concepts:" t2
@@ -270,10 +245,10 @@
   "Returns a a map of concepts found in the cache or other sets of items not found and mapped
    from a key that indicates why they weren't found in the cache."
   [context concept-tuples target-format]
-  (let [cache (deref (:cache-atom (c/context->cache context cache-key)))]
+  (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
     (reduce (fn [grouped-map tuple]
               (let [[concept-id revision-id] tuple
-                    revision-format-map (get cache concept-id)]
+                    revision-format-map (hash-cache/get-value cache cmn-coll-metadata-cache/cache-key concept-id)]
                 (if revision-format-map
                   ;; Concept is cached
                   (cond
@@ -321,7 +296,7 @@
                         (get-cached-metadata-in-format context concept-tuples target-format))
           ;; Convert items that were in the cache to concepts
           [t2 concepts1] (u/time-execution
-                          (rfm/revision-format-maps->concepts target-format (:revision-format-maps results)))
+                          (crfm/revision-format-maps->concepts target-format (:revision-format-maps results)))
           ;; Convert items that were in the cache but the format wasn't in the cache to concepts
           ;; and also cache the generated metadata
           [t3 concepts2] (u/time-execution
@@ -360,7 +335,7 @@
   ([context concept-ids target-format skip-acls?]
    (info "Getting latest version of" (count concept-ids) "concept(s) in" target-format "format")
 
-   (let [mdb-context (context->metadata-db-context context)
+   (let [mdb-context (cmn-coll-metadata-cache/context->metadata-db-context context)
          [t1 concepts] (u/time-execution
                         ;; Allow missing is passed in as true here because this is implementing a
                         ;; search mechanism where some items just might not be found.
@@ -395,7 +370,7 @@
   Applies ACLs to the concept found. Does not use the cache."
   [context concept-id revision-id target-format]
   (info "Getting revision" revision-id "of concept" concept-id "in" target-format "format")
-  (let [mdb-context (context->metadata-db-context context)
+  (let [mdb-context (cmn-coll-metadata-cache/context->metadata-db-context context)
         [t1 concept] (u/time-execution
                        (metadata-db/get-concept mdb-context concept-id revision-id))
         ;; Throw a service error for deleted concepts

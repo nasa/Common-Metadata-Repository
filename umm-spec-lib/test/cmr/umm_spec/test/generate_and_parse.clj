@@ -10,28 +10,27 @@
    [cmr.common.test.test-check-ext :as ext :refer [checking checking-with-seed]]
    [cmr.common.util :as util :refer [update-in-each update-in-all are3]]
    [cmr.common.xml.simple-xpath :refer [select context]]
+   [cmr.redis-utils.test.test-util :as redis-embedded-fixture]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iu]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.migration.version.collection :as version-collection]
-   [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.test.expected-conversion :as expected-conversion]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.test.umm-generators :as umm-gen]
-   [cmr.umm-spec.test.umm-record-sanitizer :as sanitize]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.umm-spec-core :as core]
-   [cmr.umm-spec.umm-to-xml-mappings.echo10 :as echo10]
-   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso-umm-to-xml]
    [cmr.umm-spec.validation.umm-spec-validation-core :as umm-validation]
-   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso-xml-to-umm]
-   [com.gfredericks.test.chuck.clojure-test :as ct :refer [for-all]]))
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as iso-xml-to-umm]))
+
+(use-fixtures :once (join-fixtures [redis-embedded-fixture/embedded-redis-server-fixture
+                                    lkt/redis-cache-fixture]))
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
   [:dif :dif10 :echo10 :iso19115 :iso-smap])
 
-(def test-context (lkt/setup-context-for-test))
+(def test-context lkt/create-context)
 
 (def collection-destination-formats
   "Converting to these formats is tested in the roundrobin test."

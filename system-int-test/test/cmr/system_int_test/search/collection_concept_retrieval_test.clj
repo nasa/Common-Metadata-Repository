@@ -56,7 +56,7 @@
 ;; Utility functions
 ;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(def test-context (lkt/setup-context-for-test))
+(def test-context lkt/create-context)
 
 (defn- get-concept-by-id-helper
   [concept options]

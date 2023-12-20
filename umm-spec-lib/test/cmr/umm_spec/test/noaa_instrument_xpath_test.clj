@@ -3,13 +3,16 @@
   (:require
    [clojure.java.io :as io]
    [clojure.test :refer :all]
+   [cmr.redis-utils.test.test-util :as redis-embedded-fixture]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as core]
    [cmr.umm-spec.util :as util]))
 
-(def test-context (lkt/setup-context-for-test))
+(use-fixtures :once (join-fixtures [redis-embedded-fixture/embedded-redis-server-fixture
+                                    lkt/redis-cache-fixture]))
+(def test-context lkt/create-context)
 
 (def expected-noaa-platforms
   (let [plats-alt [(cmn/map->PlatformType {:ShortName "NOAA-18" :LongName "National Oceanic & Atmospheric Administration-18"})
