@@ -210,7 +210,6 @@
                                      (make-concepts-query
                                       context concept-type params tag-data))
         _ (debug "INSIDE find-concepts-by-parameters -- query = ", query)
-        ;; #cmr.common_app.services.search.query_model.Query{:concept-type :granule, :condition #cmr.common_app.services.search.query_model.ConditionGroup{:operation :and, :conditions (#cmr.search.models.query.CollectionQueryCondition{:condition #cmr.common_app.services.search.query_model.StringCondition{:field :provider, :value CUMULUS, :case-sensitive? false, :pattern? false}} #cmr.common_app.services.search.query_model.StringCondition{:field :concept-id, :value G1261481218-CUMULUS, :case-sensitive? true, :pattern? false})}, :page-size 10, :offset 0, :sort-keys nil, :result-format :json, :result-features nil, :aggregations nil, :highlights nil, :skip-acls? nil, :result-options nil, :gran-specific-items-query? true, :echo-compatible? false, :scroll nil, :all-revisions? false, :simplify-shapefile? false}
         [find-concepts-time results] (u/time-execution
                                       (common-search/find-concepts
                                        context concept-type query))
