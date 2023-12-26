@@ -77,16 +77,28 @@
   [context query]
   [context query])
 
+;; jyna - 7th step -- ONLY FOR search/granues.json?concept_id=X&provider_id=X
 (defmethod execute-query :elasticsearch
   [context query]
-  (let [[context processed-query] (concept-type-specific-query-processing
+  (let [start-query-processing-time (System/currentTimeMillis)
+        [context processed-query] (concept-type-specific-query-processing
                                    context query)
+        elapsed-query-processing-time (- (System/currentTimeMillis) start-query-processing-time)
+        start-pre-process-time (System/currentTimeMillis)
         processed-query (pre-process-query-result-features context processed-query)
+        elapsed-pre-process-time (- (System/currentTimeMillis) start-pre-process-time)
+        _ (debug "INSIDE execute-query :elasticsearch -- processed-query:" (processed-query) "with elapsed-query-processing-time = " (elapsed-query-processing-time) "ms and elapsed-pre-process-time = " (elapsed-pre-process-time) "ms")
         elastic-results (->> processed-query
                              (#(if (or (tc/echo-system-token? context) (:skip-acls? %))
                                  %
                                  (add-acl-conditions-to-query context %)))
                              (c2s/reduce-query context)
                              (idx/execute-query context))
-        query-results (rc/elastic-results->query-results context processed-query elastic-results)]
-    (post-process-query-result-features context query elastic-results query-results)))
+        ;; elastic results are coming out fine because this was fast in the logs, so it's either one of these two at the bottom that is taking forever
+        ;; cmr.common-app.services.search.query-execution > execute-query :elasticsearch
+        start (System/currentTimeMillis)
+        query-results (rc/elastic-results->query-results context processed-query elastic-results)
+        elapsed (- (System/currentTimeMillis) start)]
+   (debug "INSIDE execute-query :elasticsearch -- query was --" (query))
+   (debug "INSIDE execute-query :elasticsearch -- elastic-results->query-results took" (elapsed) "ms")
+   (post-process-query-result-features context query elastic-results query-results)))

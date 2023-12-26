@@ -7,17 +7,21 @@
    [cmr.common.util :as util]
    [cmr.search.services.acl-service :as acl-service]
    [cmr.transmit.config :as tc]
-   [cmr.umm-spec.acl-matchers :as umm-matchers]))
+   [cmr.umm-spec.acl-matchers :as umm-matchers]
+   [cmr.common.log :refer (debug)]))
 
 (defmethod qe/add-acl-conditions-to-query :collection
   [context query]
   ;; return unmodified query if the context has a system token
+ (debug "INSIDE qe/add-acl-conditions-to-query :collection")
   (if (tc/echo-system-token? context)
     query
     (let [group-ids (map #(if (keyword? %) (name %) %)
                          (util/lazy-get context :sids))
           acl-cond (qm/string-conditions :permitted-group-ids group-ids true)]
-      (update-in query [:condition] #(gc/and-conds [acl-cond %])))))
+      (update-in query [:condition] #(gc/and-conds [acl-cond %]))
+      (debug "query after adding acl conditions: " query)
+      query)))
 
 
 (defmethod acl-service/acls-match-concept? :collection

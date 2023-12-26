@@ -2,12 +2,17 @@
   "Defines the core caching protocol for the CMR."
   (:require
    [clojure.string :as string]
-   [cmr.common.log :refer (info)]))
+   [cmr.common.log :refer (info, debug)]))
 
 (defn context->cache
   "Get the cache for the given key from the context"
   [context cache-key]
-  (get-in context [:system :caches cache-key]))
+ (let [start (System/currentTimeMillis)
+       cache (get-in context [:system :caches cache-key])
+       elapsed (- (System/currentTimeMillis) start)
+       _ (debug "INSIDE context->cache : context-> cache time = " (elapsed))
+       ]
+  cache))
 
 (defprotocol CmrCache
   "Defines a protocol used for caching data."

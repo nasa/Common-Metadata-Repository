@@ -95,6 +95,7 @@
             (cache/set-value short-scroll-id nil))
         result))))
 
+;; jyna - 6th step
 (defn time-concept-search
   "Executes a search for concepts and returns the results while logging execution times."
   [context query]
@@ -105,6 +106,7 @@
     (info "query-execution-time:" query-execution-time "result-gen-time:" result-gen-time)
     [results result-str]))
 
+;; jyna - 5th step
 (defn find-concepts
   "Executes a search for concepts using the given query."
   [context _concept-type query]

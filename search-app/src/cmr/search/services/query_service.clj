@@ -173,6 +173,7 @@
         (psn/replace-provider-short-names context)
         (pv/validate-parameters concept-type))))
 
+;; jyna - 5th step (choice of 1 from 4th step)
 (defn make-concepts-query
   "Utility function for generating an elastic-ready query."
   ([context concept-type params]
@@ -196,14 +197,20 @@
                 context concept-type params)]
     (common-params/generate-param-query-conditions context concept-type params)))
 
+;; jyna - 4th step
+;; JYNA this is the granule search execution stuff
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params]
-  (let [tag-data (make-concepts-tag-data params)
+ ;; concept-type = :granule
+ ;; params = {:concept_id "G1261481218-CUMULUS", :result-format :json}
+  (let [tag-data (make-concepts-tag-data params) ;; tag-data = nil
         [query-creation-time query] (u/time-execution
                                      (make-concepts-query
                                       context concept-type params tag-data))
+        _ (debug "INSIDE find-concepts-by-parameters -- query = ", query)
+        ;; #cmr.common_app.services.search.query_model.Query{:concept-type :granule, :condition #cmr.common_app.services.search.query_model.ConditionGroup{:operation :and, :conditions (#cmr.search.models.query.CollectionQueryCondition{:condition #cmr.common_app.services.search.query_model.StringCondition{:field :provider, :value CUMULUS, :case-sensitive? false, :pattern? false}} #cmr.common_app.services.search.query_model.StringCondition{:field :concept-id, :value G1261481218-CUMULUS, :case-sensitive? true, :pattern? false})}, :page-size 10, :offset 0, :sort-keys nil, :result-format :json, :result-features nil, :aggregations nil, :highlights nil, :skip-acls? nil, :result-options nil, :gran-specific-items-query? true, :echo-compatible? false, :scroll nil, :all-revisions? false, :simplify-shapefile? false}
         [find-concepts-time results] (u/time-execution
                                       (common-search/find-concepts
                                        context concept-type query))

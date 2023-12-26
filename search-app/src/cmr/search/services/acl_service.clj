@@ -4,7 +4,8 @@
    [cmr.common.api.context :as context-util]
    [cmr.common.concepts :as cc]
    [cmr.search.services.acls.acl-helper :as acl-helper]
-   [cmr.transmit.config :as tc]))
+   [cmr.transmit.config :as tc]
+   [cmr.common.log :refer (debug info warn error)]))
 
 (defmulti acls-match-concept?
   "Returns true if any of the catalog item acls match the concept.
@@ -121,7 +122,11 @@
     (if (tc/echo-system-token? context)
       ;;return all concepts if running with the system token
       concepts
-      (let [acls (acl-helper/get-acls-applicable-to-token context)
+      (let [_ (debug "INSIDE filter-concepts: System token not given, going other route.")
+            start2 (System/currentTimeMillis)
+            acls (acl-helper/get-acls-applicable-to-token context)
+            elapsed2 (- (System/currentTimeMillis) start2)
+            _ (debug "INSIDE filter-concepts: acl-helper/get-acls-applicable-to-token took " elapsed2 "ms")
             ;; drafts don't contain concept-type field, so we will need to derive it from concept-id
             ;; collections don't contain concept_id or concept-id fields, but they do contain concept-type field.
             concept-type (-> concepts first :concept-type)
@@ -131,7 +136,10 @@
             applicable-field (concept-type->applicable-field concept-type)
             ;; Note: This applicable-acls is only used for collections and granules acl matching.
             ;; For other concept types, it is not being used.
-            applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)]
+            start (System/currentTimeMillis)
+            applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)
+            elapsed (- (System/currentTimeMillis) start)
+            _ (debug "INSIDE filter-concepts: filtering to get applicable acls time = " elapsed)]
         (doall (remove nil? (pmap (fn [concept]
                                     (when (acls-match-concept? context applicable-acls concept)
                                       concept))

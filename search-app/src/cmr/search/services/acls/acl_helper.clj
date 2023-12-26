@@ -3,14 +3,19 @@
   (:require
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
-   [cmr.common.util :as util]))
+   [cmr.common.util :as util]
+   [cmr.common.log :refer (debug info warn error)]))
 
 (defn get-acls-applicable-to-token
   "Retrieves the catalog item ACLs that are applicable to the current user."
   [context]
-  (let [acls (af/get-acls context [:catalog-item])
-        sids (util/lazy-get context :sids)]
-    (filter (partial acl/acl-matches-sids-and-permission? sids :read) acls)))
+  (let [start (System/currentTimeMillis)
+        acls (af/get-acls context [:catalog-item])
+        sids (util/lazy-get context :sids)
+        results (filter (partial acl/acl-matches-sids-and-permission? sids :read) acls)
+        elapsed (- (System/currentTimeMillis) start)
+        _ (debug "INSIDE get-acls-applicable-to-token -- time taken = " (elapsed))]
+   results))
 
 (defn get-sm-acls-applicable-to-token
   "Retrieves the SUBSCRIPTION_MANAGEMENT ACLs that are applicable to the current user.

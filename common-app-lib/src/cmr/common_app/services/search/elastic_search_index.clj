@@ -251,6 +251,7 @@
                (or timed-out (:timed_out results)))))))
 
 
+;; jyna 8 step ;; this one executes fine
 (defn execute-query
   "Executes a query to find concepts. Returns concept id, native id, and revision id."
   [context query]

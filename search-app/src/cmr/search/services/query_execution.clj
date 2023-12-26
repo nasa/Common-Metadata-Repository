@@ -16,7 +16,8 @@
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as ce]
    [cmr.search.services.query-walkers.collection-query-resolver :as r]
    [cmr.search.services.query-walkers.facet-condition-resolver :as facet-condition-resolver]
-   [cmr.transmit.config :as tc])
+   [cmr.transmit.config :as tc]
+   [cmr.common.log :refer (debug info warn error)])
   (:import
    (cmr.common_app.services.search.query_model Query StringCondition StringsCondition ConditionGroup)
    (cmr.search.models.query CollectionQueryCondition)))
@@ -130,25 +131,46 @@
   "Returns the query results after ACLs are applied to filter out items
   that the current user does not have access to."
   [context query-results]
-  (let [original-item-count (count (:items query-results))
+  (let [_ (debug "INSIDE filter-query-results-with-acls: query results = " query-results)
+        original-item-count (count (:items query-results))
+        _ (debug "INSIDE filter-query-results-with-acls: original-item-count = " original-item-count)
+        start (System/currentTimeMillis)
         items (acl-service/filter-concepts context (:items query-results))
-        item-count (count items)]
+        elapsed (- (System/currentTimeMillis) start)
+        _ (debug "INSIDE filter-query-results-with-acls: Elapsed time for acl-service/filter-concepts is " elapsed)
+        _ (debug "INSIDE filter-query-results-with-acls: Items = " items)
+        item-count (count items)
+        _ (debug "INSIDE filter-query-results-with-acls: item-count = " item-count)]
     (-> query-results
         (assoc :items items)
         (update :hits - (- original-item-count item-count)))))
 
+;; jyna 7th step -- /search/granules.json?concept_id=X way (SLOW)
+;; this is the function that "query-execution-time" is being generated
 (defmethod common-qe/execute-query :specific-elastic-items
   [context query]
-  (let [processed-query (->> query
+  (let [start-processed-query-time (System/currentTimeMillis)
+        processed-query (->> query
                              (common-qe/pre-process-query-result-features context)
                              (r/resolve-collection-queries context)
                              (c2s/reduce-query context))
-        elastic-results (idx/execute-query context processed-query)
+        elapsed-processed-query-time (- (System/currentTimeMillis) start-processed-query-time)
+        _ (debug "INSIDE common-qe/execute-query :specific-elastic-items -- elapsed-processed-query-time = " elapsed-processed-query-time)
+        _ (debug "INSIDE common-qe/execute-query :specific-elastic-items -- processed-query = " processed-query)
+        elastic-results (idx/execute-query context processed-query) ;; this is where the log: "Elastic query for concept-type: :collection  and result format:  :xml took 29 ms. Connection elapsed: 59 ms" comes from
         query-results (rc/elastic-results->query-results context query elastic-results)
+        start (System/currentTimeMillis)
         query-results (if (or (tc/echo-system-token? context) (:skip-acls? query))
                         query-results
-                        (filter-query-results-with-acls context query-results))]
-    (common-qe/post-process-query-result-features context query elastic-results query-results)))
+                        (filter-query-results-with-acls context query-results)) ;; this may be the issue
+        elapsed (- (System/currentTimeMillis) start)
+        _ (debug "INSIDE common-qe/execute-query :specific-elastic-items -- Elapsed time of filter-query-results-with-acls =", elapsed)
+        start2 (System/currentTimeMillis)
+        query-execution-result (common-qe/post-process-query-result-features context query elastic-results query-results) ;; this might be the issue too
+        elapsed2 (- (System/currentTimeMillis) start2)
+        _ (debug "INSIDE common-qe/execute-query :specific-elastic-items -- common-qe/post-process-query-result-features execution time = ", elapsed2)]
+   query-execution-result
+    ))
 
 (defmethod common-qe/concept-type-specific-query-processing :granule
   [context query]

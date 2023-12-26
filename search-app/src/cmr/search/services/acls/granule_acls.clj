@@ -18,7 +18,8 @@
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as coll-id-extractor]
    [cmr.search.services.query-walkers.collection-query-resolver :as r]
    [cmr.search.services.query-walkers.provider-id-extractor :as provider-id-extractor]
-   [cmr.umm-spec.acl-matchers :as umm-matchers]))
+   [cmr.umm-spec.acl-matchers :as umm-matchers]
+   [cmr.common.log :refer (debug info warn error)]))
 
 (defmulti filter-applicable-granule-acls
   (fn [context coll-ids-by-prov provider-ids acls]
@@ -177,10 +178,12 @@
       (gc/or-conds conds)
       cqm/match-none)))
 
+;; jyna -- acl conditions for query
 ;; This expects that collection queries have been resolved before this step.
 (defmethod qe/add-acl-conditions-to-query :granule
   [context query]
-  (let [coll-ids-by-prov (->> (coll-id-extractor/extract-collection-concept-ids query)
+  (let [start (System/currentTimeMillis)
+        coll-ids-by-prov (->> (coll-id-extractor/extract-collection-concept-ids query)
                               ;; Group the concept ids by provider
                               (group-by #(:provider-id (c/parse-concept-id %)))
                               ;; Create a set of concept ids per provider
@@ -193,10 +196,14 @@
                coll-ids-by-prov
                provider-ids
                (acl-helper/get-acls-applicable-to-token context))
-        acl-cond (acls->query-condition context coll-ids-by-prov acls)]
+        acl-cond (acls->query-condition context coll-ids-by-prov acls)
+        elapsed (- (System/currentTimeMillis) start)]
+   (debug "qe/add-acl-conditions-to-query :granule -- time took = " elapsed)
     (r/resolve-collection-queries
       context
-      (update-in query [:condition] #(gc/and-conds [acl-cond %])))))
+      (update-in query [:condition] #(gc/and-conds [acl-cond %])))
+   (debug "qe/add-acl-conditions-to-query :granule -- query after adding acl conditions = " query)
+   query))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; acls match concept functions

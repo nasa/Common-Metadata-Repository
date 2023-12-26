@@ -101,10 +101,13 @@
 (defn- process-search-for-acls
   "Processes response and formats it for get-all-acls"
   [context object-identity-types]
+ (let [start (System/currentTimeMillis)]
+  (debug "INSIDE process-search-for-acls -- object-identity-types = " (object-identity-types))
   (->> (get-all-acls context object-identity-types)
        (mapcat :items)
        (map :acl)
-       (map util/map-keys->kebab-case)))
+       (map util/map-keys->kebab-case))
+  (debug "INSIDE process-search-for-acls with object-identity-types -- process-search-for-acls time = " (- (System/currentTimeMillis) start))))
 
 (defn expire-consistent-cache-hashes
   "Forces the cached hash codes of an ACL consistent cache to expire so that subsequent requests for
@@ -128,6 +131,7 @@
 (defn get-acls
   "Gets the current acls limited to a specific set of object identity types."
   [context object-identity-types]
+  (debug "INSIDE get-acls -- object-identity-types:" (object-identity-types))
   (if-let [cache (cache/context->cache context acl-cache-key)]
     ;; Check that we're caching the requested object identity types
     ;; Otherwise we'd just silently fail to find any acls.
@@ -136,13 +140,16 @@
                                     (set (context->cached-object-identity-types
                                            context))))]
       (do
+        (debug "INSIDE get-acls -- entered not-cached-oits condition")
         (info (str "The application is not configured to cache acls of the "
                    "following object-identity-types so we will fetch them "
                    "from access-control each time they are needed. "
                    (pr-str not-cached-oits)))
         (process-search-for-acls context object-identity-types))
       ;; Fetch ACLs using a cache
-      (filter
+      (do
+       (debug "INSIDE get-acls -- entered NOT not-cached-oits condition")
+       (filter
         (fn [acl]
           (some #(get acl (access-control/acl-type->acl-key %))
                 object-identity-types))
@@ -153,10 +160,13 @@
             context
             ;; All of the object identity types needed by the application are
             ;; fetched. We want the cache to contain all of the acls needed.
-            (context->cached-object-identity-types context)))))
+            (context->cached-object-identity-types context))))))
 
     ;; No cache is configured. Directly fetch the acls.
-    (process-search-for-acls context object-identity-types)))
+    (do
+     (debug "INSIDE get-acls -- No cache is configured. Directly fetch the acls.")
+     (process-search-for-acls context object-identity-types))
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing ACLs in the cache.
