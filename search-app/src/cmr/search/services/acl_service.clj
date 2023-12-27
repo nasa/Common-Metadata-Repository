@@ -126,7 +126,7 @@
             start2 (System/currentTimeMillis)
             acls (acl-helper/get-acls-applicable-to-token context)
             elapsed2 (- (System/currentTimeMillis) start2)
-            _ (debug "INSIDE filter-concepts: acl-helper/get-acls-applicable-to-token took " elapsed2 "ms")
+            _ (debug (str "INSIDE filter-concepts: acl-helper/get-acls-applicable-to-token took " elapsed2 "ms"))
             ;; drafts don't contain concept-type field, so we will need to derive it from concept-id
             ;; collections don't contain concept_id or concept-id fields, but they do contain concept-type field.
             concept-type (-> concepts first :concept-type)
@@ -139,7 +139,7 @@
             start (System/currentTimeMillis)
             applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)
             elapsed (- (System/currentTimeMillis) start)
-            _ (debug "INSIDE filter-concepts: filtering to get applicable acls time = " elapsed)]
+            _ (debug (str "INSIDE filter-concepts: filtering to get applicable acls time = " elapsed))]
         (doall (remove nil? (pmap (fn [concept]
                                     (when (acls-match-concept? context applicable-acls concept)
                                       concept))

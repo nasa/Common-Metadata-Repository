@@ -102,12 +102,12 @@
   "Processes response and formats it for get-all-acls"
   [context object-identity-types]
  (let [start (System/currentTimeMillis)]
-  (debug "INSIDE process-search-for-acls -- object-identity-types = " (object-identity-types))
+  (debug (str "INSIDE process-search-for-acls -- object-identity-types = " (pr-str object-identity-types)))
   (->> (get-all-acls context object-identity-types)
        (mapcat :items)
        (map :acl)
        (map util/map-keys->kebab-case))
-  (debug "INSIDE process-search-for-acls with object-identity-types -- process-search-for-acls time = " (- (System/currentTimeMillis) start))))
+  (debug (str "INSIDE process-search-for-acls with object-identity-types -- process-search-for-acls time = " (- (System/currentTimeMillis) start)))))
 
 (defn expire-consistent-cache-hashes
   "Forces the cached hash codes of an ACL consistent cache to expire so that subsequent requests for
@@ -131,7 +131,7 @@
 (defn get-acls
   "Gets the current acls limited to a specific set of object identity types."
   [context object-identity-types]
-  (debug "INSIDE get-acls -- object-identity-types:" (object-identity-types))
+  (debug (str "INSIDE get-acls -- object-identity-types:" (pr-str object-identity-types)))
   (if-let [cache (cache/context->cache context acl-cache-key)]
     ;; Check that we're caching the requested object identity types
     ;; Otherwise we'd just silently fail to find any acls.

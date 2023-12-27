@@ -235,7 +235,7 @@
         cached-search-params (:search-params scroll-id-and-search-params)
         search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
         ctx (assoc ctx :query-string body :scroll-id scroll-id :query-params params)
-        _ (debug "INSIDE find-concepts-by-parameters -- ctx:" (ctx))
+        _ (debug (str "INSIDE find-concepts-by-parameters -- ctx:" (pr-str ctx)))
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (block-excessive-queries ctx concept-type result-format params)
@@ -249,7 +249,7 @@
                   search-after (format "%s, search-after: %s." log-message search-after)
                   :else (format "%s." log-message)))
         search-params (or cached-search-params (lp/process-legacy-psa params))
-        _ (debug "INSIDE find-concepts-by-parameters -- search-params:" (search-params))
+        _ (debug (str "INSIDE find-concepts-by-parameters -- search-params:" (pr-str search-params)))
         _ (handle-granule-search-params headers concept-type search-params short-scroll-id)
 
         results (query-svc/find-concepts-by-parameters ctx concept-type search-params)]

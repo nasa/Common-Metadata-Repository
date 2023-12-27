@@ -10,8 +10,7 @@
  (let [start (System/currentTimeMillis)
        cache (get-in context [:system :caches cache-key])
        elapsed (- (System/currentTimeMillis) start)
-       _ (debug "INSIDE context->cache : context-> cache time = " (elapsed))
-       ]
+       _ (debug (str "INSIDE context->cache : context-> cache time = " elapsed))]
   cache))
 
 (defprotocol CmrCache

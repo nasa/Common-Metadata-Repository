@@ -209,7 +209,7 @@
         [query-creation-time query] (u/time-execution
                                      (make-concepts-query
                                       context concept-type params tag-data))
-        _ (debug "INSIDE find-concepts-by-parameters -- query = ", query)
+        _ (debug "INSIDE find-concepts-by-parameters -- query = " query)
         [find-concepts-time results] (u/time-execution
                                       (common-search/find-concepts
                                        context concept-type query))

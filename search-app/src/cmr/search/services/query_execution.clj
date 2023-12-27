@@ -131,14 +131,14 @@
   "Returns the query results after ACLs are applied to filter out items
   that the current user does not have access to."
   [context query-results]
-  (let [_ (debug "INSIDE filter-query-results-with-acls: query results = " query-results)
+  (let [_ (debug (str "INSIDE filter-query-results-with-acls: query results = " (pr-str query-results)))
         original-item-count (count (:items query-results))
         _ (debug "INSIDE filter-query-results-with-acls: original-item-count = " original-item-count)
         start (System/currentTimeMillis)
         items (acl-service/filter-concepts context (:items query-results))
         elapsed (- (System/currentTimeMillis) start)
         _ (debug "INSIDE filter-query-results-with-acls: Elapsed time for acl-service/filter-concepts is " elapsed)
-        _ (debug "INSIDE filter-query-results-with-acls: Items = " items)
+        _ (debug (str "INSIDE filter-query-results-with-acls: Items = " (pr-str items)))
         item-count (count items)
         _ (debug "INSIDE filter-query-results-with-acls: item-count = " item-count)]
     (-> query-results
@@ -164,11 +164,11 @@
                         query-results
                         (filter-query-results-with-acls context query-results)) ;; this may be the issue
         elapsed (- (System/currentTimeMillis) start)
-        _ (debug "INSIDE common-qe/execute-query :specific-elastic-items -- Elapsed time of filter-query-results-with-acls =", elapsed)
+        _ (debug "INSIDE common-qe/execute-query :specific-elastic-items -- Elapsed time of filter-query-results-with-acls =" elapsed)
         start2 (System/currentTimeMillis)
         query-execution-result (common-qe/post-process-query-result-features context query elastic-results query-results) ;; this might be the issue too
         elapsed2 (- (System/currentTimeMillis) start2)
-        _ (debug "INSIDE common-qe/execute-query :specific-elastic-items -- common-qe/post-process-query-result-features execution time = ", elapsed2)]
+        _ (debug "INSIDE common-qe/execute-query :specific-elastic-items -- common-qe/post-process-query-result-features execution time = " elapsed2)]
    query-execution-result
     ))
 
