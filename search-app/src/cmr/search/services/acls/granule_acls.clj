@@ -182,7 +182,8 @@
 ;; This expects that collection queries have been resolved before this step.
 (defmethod qe/add-acl-conditions-to-query :granule
   [context query]
-  (let [start (System/currentTimeMillis)
+  (let [_ (println "INSIDE qe/add-acl-conditions-to-query :granule")
+        start (System/currentTimeMillis)
         coll-ids-by-prov (->> (coll-id-extractor/extract-collection-concept-ids query)
                               ;; Group the concept ids by provider
                               (group-by #(:provider-id (c/parse-concept-id %)))
@@ -197,13 +198,16 @@
                provider-ids
                (acl-helper/get-acls-applicable-to-token context))
         acl-cond (acls->query-condition context coll-ids-by-prov acls)
-        elapsed (- (System/currentTimeMillis) start)]
-   (debug "qe/add-acl-conditions-to-query :granule -- time took = " elapsed)
-    (r/resolve-collection-queries
-      context
-      (update-in query [:condition] #(gc/and-conds [acl-cond %])))
-   (debug "qe/add-acl-conditions-to-query :granule -- query after adding acl conditions = " query)
-   query))
+        elapsed (- (System/currentTimeMillis) start)
+        start-result-time (- (System/currentTimeMillis) start)
+        _ (debug (str "qe/add-acl-conditions-to-query :granule -- before resolving collection queries -- time took = " elapsed))
+        result (r/resolve-collection-queries
+                context
+                (update-in query [:condition] #(gc/and-conds [acl-cond %])))
+        elapsed-result-time (- (System/currentTimeMillis) start-result-time)
+        _ (debug (str "qe/add-acl-conditions-to-query :granule -- after resolving collection queries -- time took = " elapsed-result-time))]
+   result
+    ))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; acls match concept functions

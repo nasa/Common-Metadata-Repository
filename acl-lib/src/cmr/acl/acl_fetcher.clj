@@ -101,13 +101,15 @@
 (defn- process-search-for-acls
   "Processes response and formats it for get-all-acls"
   [context object-identity-types]
- (let [start (System/currentTimeMillis)]
-  (debug (str "INSIDE process-search-for-acls -- object-identity-types = " (pr-str object-identity-types)))
-  (->> (get-all-acls context object-identity-types)
-       (mapcat :items)
-       (map :acl)
-       (map util/map-keys->kebab-case))
-  (debug (str "INSIDE process-search-for-acls with object-identity-types -- process-search-for-acls time = " (- (System/currentTimeMillis) start)))))
+ (let [_ (println "INSIDE process-search-for-acls")
+       start (System/currentTimeMillis)
+       _ (debug (str "INSIDE process-search-for-acls -- object-identity-types = " (pr-str object-identity-types)))
+       result (->> (get-all-acls context object-identity-types)
+                   (mapcat :items)
+                   (map :acl)
+                   (map util/map-keys->kebab-case))
+       _ (debug (str "INSIDE process-search-for-acls with object-identity-types -- process-search-for-acls time = " (- (System/currentTimeMillis) start)))]
+  result))
 
 (defn expire-consistent-cache-hashes
   "Forces the cached hash codes of an ACL consistent cache to expire so that subsequent requests for

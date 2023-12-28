@@ -48,21 +48,37 @@
         provider-cond (qm/string-condition :target-provider-id provider-id)]
     (gc/and provider-cond target-cond)))
 
+(defn jyna
+ []
+ (let [start (System/currentTimeMillis)]
+  (println (str "total time = " (- (System/currentTimeMillis) start)))
+  (println (str "hello " (pr-str "hi")))
+  (println (str "number = " (pr-str 10)))
+  ))
+
 (defmethod qe/add-acl-conditions-to-query :acl
   [context query]
- (let [start (System/currentTimeMillis)]
+ (let [_ (println "INSIDE qe/add-acl-conditions-to-query :acl")
+       start (System/currentTimeMillis)]
   (if (transmit-config/echo-system-token? context)
    query
    (let [acls (acls-granting-acl-read context)]
     (if (some #(= schema/system-any-acl-target (get-in % [:system-identity :target])) acls)
-     query
+     (do
+      (debug (str "qe/add-acl-conditions-to-query :acl -- from system-any-acl-target -- total time = " (- (System/currentTimeMillis) start) "ms"))
+      query)
      (if (seq acls)
-      (let [combined-condition (gc/or-conds (mapv provider-read-acl->condition acls))]
-       (update query :condition #(gc/and combined-condition %)))
-      (assoc query :condition qm/match-none)))
-    (debug "qe/add-acl-conditions-to-query :acl -- query after adding acl conditions: " (query))
-    query))
-  (debug "qe/add-acl-conditions-to-query :acl -- total time = " (- (System/currentTimeMillis) start) "ms")))
+      (let [combined-condition (gc/or-conds (mapv provider-read-acl->condition acls))
+            updated_query (update query :condition #(gc/and combined-condition %))
+            _ (debug (str "qe/add-acl-conditions-to-query :acl -- query after update: " updated_query))
+            _ (debug (str "qe/add-acl-conditions-to-query :acl -- from query after update -- total time = " (- (System/currentTimeMillis) start) "ms"))]
+       updated_query
+       )
+      (let [assoc_query (assoc query :condition qm/match-none)
+            _ (debug (str "qe/add-acl-conditions-to-query :acl -- query after assoc: " assoc_query))
+            _ (debug (str "qe/add-acl-conditions-to-query :acl -- query after assoc -- total time = " (- (System/currentTimeMillis) start) "ms"))]
+       assoc_query)))))
+  ))
 
 (defn has-system-access?
   "Returns true if system ACL matches sids for user in context for a given action"

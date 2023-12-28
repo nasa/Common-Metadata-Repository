@@ -260,7 +260,8 @@
   "Searches for ACLs using given parameters. Returns result map from find-concepts
    including total time taken."
   [context params]
-  (let [_ (debug "INSIDE search-for-acls")
+  (let [_ (println "INSIDE search-for-acls")
+        _ (debug "INSIDE search-for-acls")
         [query-creation-time query] (util/time-execution
                                      (->> params
                                           cp/sanitize-params
@@ -268,6 +269,10 @@
                                           (cp/parse-parameter-query context :acl)))
         [find-concepts-time results] (util/time-execution
                                       (cs/find-concepts context :acl query))
+        _ (debug (str "INSIDE search-for-acls -- query-creation-time = " query-creation-time))
+        _ (debug (str "INSIDE search-for-acls -- find-concepts-time = " find-concepts-time))
         total-took (+ query-creation-time find-concepts-time)]
-    (info "Found " (:hits results) " acls in " total-took " ms in format " (common-qm/base-result-format query) " with params " (pr-str params))
+    (info (format "Found %d acls in %d ms in format %s with params %s."
+                  (:hits results) total-took (common-qm/base-result-format query) (pr-str params)))
+    (debug (str "Found " (pr-str (:hits results)) " acls in " (pr-str total-took) " ms in format " (common-qm/base-result-format query) " with params " (pr-str params)))
     (assoc results :took total-took)))

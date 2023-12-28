@@ -198,18 +198,14 @@
     (common-params/generate-param-query-conditions context concept-type params)))
 
 ;; jyna - 4th step
-;; JYNA this is the granule search execution stuff
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
   [context concept-type params]
- ;; concept-type = :granule
- ;; params = {:concept_id "G1261481218-CUMULUS", :result-format :json}
-  (let [tag-data (make-concepts-tag-data params) ;; tag-data = nil
+  (let [tag-data (make-concepts-tag-data params)
         [query-creation-time query] (u/time-execution
                                      (make-concepts-query
                                       context concept-type params tag-data))
-        _ (debug "INSIDE find-concepts-by-parameters -- query = " query)
         [find-concepts-time results] (u/time-execution
                                       (common-search/find-concepts
                                        context concept-type query))

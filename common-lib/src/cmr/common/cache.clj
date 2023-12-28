@@ -7,7 +7,8 @@
 (defn context->cache
   "Get the cache for the given key from the context"
   [context cache-key]
- (let [start (System/currentTimeMillis)
+ (let [_ (println "INSIDE context->cache")
+       start (System/currentTimeMillis)
        cache (get-in context [:system :caches cache-key])
        elapsed (- (System/currentTimeMillis) start)
        _ (debug (str "INSIDE context->cache : context-> cache time = " elapsed))]

@@ -133,30 +133,36 @@
   [context query-results]
   (let [_ (debug (str "INSIDE filter-query-results-with-acls: query results = " (pr-str query-results)))
         original-item-count (count (:items query-results))
-        _ (debug "INSIDE filter-query-results-with-acls: original-item-count = " original-item-count)
+        _ (debug (str "INSIDE filter-query-results-with-acls: original-item-count = " original-item-count))
         start (System/currentTimeMillis)
         items (acl-service/filter-concepts context (:items query-results))
         elapsed (- (System/currentTimeMillis) start)
-        _ (debug "INSIDE filter-query-results-with-acls: Elapsed time for acl-service/filter-concepts is " elapsed)
+        _ (debug (str "INSIDE filter-query-results-with-acls: Elapsed time for acl-service/filter-concepts is " elapsed))
         _ (debug (str "INSIDE filter-query-results-with-acls: Items = " (pr-str items)))
         item-count (count items)
-        _ (debug "INSIDE filter-query-results-with-acls: item-count = " item-count)]
-    (-> query-results
-        (assoc :items items)
-        (update :hits - (- original-item-count item-count)))))
+        _ (debug (str "INSIDE filter-query-results-with-acls: item-count = " item-count))
+        start-result (System/currentTimeMillis)
+        result (-> query-results
+                   (assoc :items items)
+                   (update :hits - (- original-item-count item-count)))
+        elapsed-result (- (System/currentTimeMillis) start-result)
+        _ (debug (str "INSIDE filter-query-results-with-acls: assoc and update query result time  = " elapsed-result))]
+   result
+    ))
 
 ;; jyna 7th step -- /search/granules.json?concept_id=X way (SLOW)
 ;; this is the function that "query-execution-time" is being generated
 (defmethod common-qe/execute-query :specific-elastic-items
   [context query]
-  (let [start-processed-query-time (System/currentTimeMillis)
+  (let [_ (println "INSIDE: common-qe/execute-query :specific-elastic-items")
+        start-processed-query-time (System/currentTimeMillis)
         processed-query (->> query
                              (common-qe/pre-process-query-result-features context)
                              (r/resolve-collection-queries context)
                              (c2s/reduce-query context))
         elapsed-processed-query-time (- (System/currentTimeMillis) start-processed-query-time)
-        _ (debug "INSIDE common-qe/execute-query :specific-elastic-items -- elapsed-processed-query-time = " elapsed-processed-query-time)
-        _ (debug "INSIDE common-qe/execute-query :specific-elastic-items -- processed-query = " processed-query)
+        _ (debug (str "INSIDE common-qe/execute-query :specific-elastic-items -- elapsed-processed-query-time = " elapsed-processed-query-time))
+        _ (debug (str "INSIDE common-qe/execute-query :specific-elastic-items -- processed-query = " processed-query))
         elastic-results (idx/execute-query context processed-query) ;; this is where the log: "Elastic query for concept-type: :collection  and result format:  :xml took 29 ms. Connection elapsed: 59 ms" comes from
         query-results (rc/elastic-results->query-results context query elastic-results)
         start (System/currentTimeMillis)
@@ -164,11 +170,11 @@
                         query-results
                         (filter-query-results-with-acls context query-results)) ;; this may be the issue
         elapsed (- (System/currentTimeMillis) start)
-        _ (debug "INSIDE common-qe/execute-query :specific-elastic-items -- Elapsed time of filter-query-results-with-acls =" elapsed)
+        _ (debug (str "INSIDE common-qe/execute-query :specific-elastic-items -- Elapsed time of filter-query-results-with-acls =" elapsed))
         start2 (System/currentTimeMillis)
         query-execution-result (common-qe/post-process-query-result-features context query elastic-results query-results) ;; this might be the issue too
         elapsed2 (- (System/currentTimeMillis) start2)
-        _ (debug "INSIDE common-qe/execute-query :specific-elastic-items -- common-qe/post-process-query-result-features execution time = " elapsed2)]
+        _ (debug (str "INSIDE common-qe/execute-query :specific-elastic-items -- common-qe/post-process-query-result-features execution time = " elapsed2))]
    query-execution-result
     ))
 

@@ -122,7 +122,8 @@
     (if (tc/echo-system-token? context)
       ;;return all concepts if running with the system token
       concepts
-      (let [_ (debug "INSIDE filter-concepts: System token not given, going other route.")
+      (let [_ (println "INSIDE filter-concepts: System token not given, going other route.")
+            _ (debug "INSIDE filter-concepts: System token not given, going other route.")
             start2 (System/currentTimeMillis)
             acls (acl-helper/get-acls-applicable-to-token context)
             elapsed2 (- (System/currentTimeMillis) start2)
@@ -139,8 +140,13 @@
             start (System/currentTimeMillis)
             applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)
             elapsed (- (System/currentTimeMillis) start)
-            _ (debug (str "INSIDE filter-concepts: filtering to get applicable acls time = " elapsed))]
-        (doall (remove nil? (pmap (fn [concept]
-                                    (when (acls-match-concept? context applicable-acls concept)
-                                      concept))
-                                  concepts)))))))
+            _ (debug (str "INSIDE filter-concepts: filtering to get applicable acls time = " elapsed))
+            do-all-start-time (System/currentTimeMillis)
+            result (doall (remove nil? (pmap (fn [concept]
+                                              (when (acls-match-concept? context applicable-acls concept)
+                                               concept))
+                                             concepts)))
+            do-all-elapsed (- (System/currentTimeMillis) do-all-start-time)
+            _ (debug (str "INSIDE filter-concepts: doall time = " do-all-elapsed))]
+       result
+        ))))

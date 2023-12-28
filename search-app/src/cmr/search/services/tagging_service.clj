@@ -293,7 +293,7 @@
         [validation-time tag-associations] (util/time-execution
                                              (validate-tag-associations
                                                context operation-type tag-key tag-associations))]
-    (debug "link-tag-to-collections validation-time: " validation-time)
+    (debug "link-tag-to-collections validation-time:" validation-time)
     (update-tag-associations context tag-concept tag-associations operation-type)))
 
 (defn associate-tag-to-collections
