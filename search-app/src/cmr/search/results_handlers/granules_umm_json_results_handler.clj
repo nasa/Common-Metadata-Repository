@@ -47,6 +47,14 @@
            (conj granule-meta-fields "umm_metadata" "umm_version")
            granule-meta-fields)))
 
+(defmethod elastic-search-index/concept-type+result-format->fields [:granule :umm-json] ;; this fires for concept search, above for granules search
+           [concept-type query]
+           (let [result-format (:result-format query)]
+                (if (and (= (:format result-format) :umm-json)
+                         (= (:version result-format) "1.6.5"))
+                    (conj granule-meta-fields "umm_metadata" "umm_version")
+                    granule-meta-fields)))
+
 (defmethod results-helper/elastic-result+metadata->umm-json-item :granule
   [concept-type elastic-result metadata]
   {:meta (granule-elastic-result->meta elastic-result)
@@ -56,6 +64,14 @@
   [context query elastic-results]
   (results-helper/query-elastic-results->query-results context :granule query elastic-results))
 
+(defmethod elastic-results/elastic-results->query-results [:granule :umm-json]
+           [context query elastic-results]
+           (results-helper/query-elastic-results->query-results context :granule query elastic-results))
+
 (defmethod qs/search-results->response [:granule :umm-json-results]
   [context query results]
   (json/generate-string (select-keys results [:hits :took :items])))
+
+(defmethod qs/search-results->response [:granule :umm-json]
+           [context query results]
+           (json/generate-string (select-keys results [:hits :took :items])))

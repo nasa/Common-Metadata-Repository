@@ -213,7 +213,7 @@
         result-format (rfh/printable-result-format (:result-format query))
         log-message (log-search-result-metadata (:hits results) (name concept-type)
                                                 total-took (:client-id context) (:token context) result-format
-                                                "with params %s" (pr-str params))]
+                                                "with params %s" (json/generate-string params))]
     (info (cond
             scroll-id (format "%s, scroll-id: %s." log-message (str (hash scroll-id)))
             search-after (format "%s, search-after: %s, new search-after: %s."
@@ -288,25 +288,34 @@
     revision-id)))
 
 (defn find-concept-by-id
-  "Executes a search to metadata-db and returns the concept with the given cmr-concept-id."
+  "Executes a search to metadata-db and returns the concept with the given cmr-concept-id." ;; NOTE -- this docstring is not accurate; this func dispatches to elasticsearch as well as the db in certain cases
   [context result-format concept-id]
-  (if (contains? #{:atom :json :stac} result-format)
+  (if (contains? #{:atom :json :stac {:format :umm-json, :version "1.6.5"}} result-format)
     ;; do a query and use single-result->response
-    (let [query (common-params/parse-parameter-query context
-                                                     (cc/concept-id->type concept-id)
-                                                     {:page-size 1
-                                                      :concept-id concept-id
-                                                      :result-format result-format})
-          results (qe/execute-query context query)]
+    (let [[query-creation-time query] (u/time-execution (common-params/parse-parameter-query context
+                                                      (cc/concept-id->type concept-id)
+                                                      {:page-size 1
+                                                       :concept-id concept-id
+                                                       :result-format result-format}))
+          [find-concept-time results] (u/time-execution (qe/execute-query context query))
+          total-took (+ query-creation-time find-concept-time)
+          concept-type (cc/concept-id->type concept-id)
+          log-message (format "Found %s concept in %d ms in format %s" (name concept-type) total-took (pr-str result-format))] 
       (when (zero? (:hits results))
         (throw-id-not-found concept-id))
+         (when-not (zero? (:hits results))
+                   (info log-message))
       {:results (common-search/single-result->response context query results)
        :result-format result-format})
     ;; else
-    (let [concept (first (metadata-cache/get-latest-formatted-concepts
-                          context [concept-id] result-format))]
+    (let [[find-concept-time concept] (u/time-execution (first (metadata-cache/get-latest-formatted-concepts
+                           context [concept-id] result-format)))
+          concept-type (cc/concept-id->type concept-id)
+          log-message (format "Found %s concept in %d ms in format %s" (name concept-type) find-concept-time (pr-str result-format))]
       (when-not concept
         (throw-id-not-found concept-id))
+         (when concept
+               (info log-message))
       {:results (:metadata concept)
        :result-format (mt/mime-type->format (:format concept))})))
 
@@ -316,10 +325,14 @@
   [context result-format concept-id revision-id]
   ;; We don't store revision id in the search index, so we can't use shortcuts for json/atom
   ;; like we do in find-concept-by-id.
-  (let [concept (metadata-cache/get-formatted-concept
-                 context concept-id revision-id result-format)]
+  (let [[find-concept-time concept] (u/time-execution (metadata-cache/get-formatted-concept
+                  context concept-id revision-id result-format))
+        concept-type (cc/concept-id->type concept-id)
+        log-message (format "Found %s concept in %d ms in format %s" (name concept-type) find-concept-time (pr-str result-format))]
     (when-not concept
       (throw-concept-revision-not-found concept-id revision-id))
+       (when concept
+         (info log-message))
     {:results (:metadata concept)
      :result-format (mt/mime-type->format (:format concept))}))
 

@@ -23,7 +23,7 @@
 
 (def specific-elastic-items-format?
   "The set of formats that are supported for the :specific-elastic-items query execution strategy"
-  #{:json :atom :csv :opendata})
+  #{:json :atom :csv :opendata {:format :umm-json, :version "1.6.5"}})
 
 (defn- specific-items-query?
   "Returns true if the query is only for specific items."
@@ -71,12 +71,13 @@
        (util/any-true? #(facet-condition-resolver/has-field? query %)
                        (fv2rf/facets-v2-params concept-type))))
 
+;; order of conditions changed so that single concept queries matching prototype condition can hit :specific-elastic-items path
 (defn- collection-and-granule-execution-strategy-determiner
   "Determines the execution strategy to use for the given query."
   [query]
-  (cond
-    (direct-db-query? query) :direct-db
+  (cond 
     (specific-items-from-elastic-query? query) :specific-elastic-items
+    (direct-db-query? query) :direct-db
     (complicated-facets? query) :complicated-facets
     :else :elasticsearch))
 

@@ -3,6 +3,7 @@
   (:require
    [clojure.edn :as edn]
    [clojure.string :as string]
+   [cmr.common-app.services.search :as qs]
    [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.results-model :as results]
    [cmr.common.mime-types :as mt]
@@ -94,7 +95,7 @@
         scroll-id (er-to-qr/get-scroll-id elastic-results)
         search-after (er-to-qr/get-search-after elastic-results)
         elastic-matches (er-to-qr/get-elastic-matches elastic-results)
-        items (if (get-in (first elastic-matches) [:_source :umm_metadata]) ;; PROTOTYPE ONLY (for passing build). TODO -- need to make more robust, should check for presence of umm_metadata per item
+        items (if (get-in (first elastic-matches) [:_source :umm_metadata]) ;; PROTOTYPE ONLY (for passing build/perf tests). TODO -- need to make more robust, should check for presence of umm_metadata per item
                   (mapv #(elastic-result+metadata->umm-json-item
                           concept-type %
                           (parse-out-es-umm %)) elastic-matches)
@@ -111,3 +112,7 @@
                            :result-format result-format
                            :scroll-id scroll-id
                            :search-after search-after})))
+
+(defmethod qs/single-result->response [:granule :umm-json] ;; NOTE, flow does not arrive here except through elasticsearch querying. that's why we don't have to check again for prototype conditions
+           [context query results]
+           (first (:items results)))
