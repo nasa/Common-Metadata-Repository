@@ -234,8 +234,7 @@
 (defn get-collection-granule-counts
   "Returns the collection granule count by searching elasticsearch by aggregation"
   [context provider-ids]
-  (let [_ (println "INSIDE get-collection-granule-counts")
-        _ (debug "INSIDE get-collection-granule-counts")
+  (let [_ (debug "INSIDE get-collection-granule-counts")
         condition (if (seq provider-ids)
                     (qm/string-conditions :provider-id provider-ids true)
                     qm/match-all)

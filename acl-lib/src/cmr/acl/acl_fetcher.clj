@@ -101,8 +101,7 @@
 (defn- process-search-for-acls
   "Processes response and formats it for get-all-acls"
   [context object-identity-types]
- (let [_ (println "INSIDE process-search-for-acls")
-       start (System/currentTimeMillis)
+ (let [start (System/currentTimeMillis)
        _ (debug (str "INSIDE process-search-for-acls -- object-identity-types = " (pr-str object-identity-types)))
        result (->> (get-all-acls context object-identity-types)
                    (mapcat :items)

@@ -9,8 +9,7 @@
 (defn get-acls-applicable-to-token
   "Retrieves the catalog item ACLs that are applicable to the current user."
   [context]
-  (let [_ (println "INSIDE get-acls-applicable-to-token")
-        start (System/currentTimeMillis)
+  (let [start (System/currentTimeMillis)
         acls (af/get-acls context [:catalog-item])
         sids (util/lazy-get context :sids)
         results (filter (partial acl/acl-matches-sids-and-permission? sids :read) acls)

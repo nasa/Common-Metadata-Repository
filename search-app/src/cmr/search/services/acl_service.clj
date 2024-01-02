@@ -122,8 +122,7 @@
     (if (tc/echo-system-token? context)
       ;;return all concepts if running with the system token
       concepts
-      (let [_ (println "INSIDE filter-concepts: System token not given, going other route.")
-            _ (debug "INSIDE filter-concepts: System token not given, going other route.")
+      (let [_ (debug "INSIDE filter-concepts: System token not given, going other route.")
             start2 (System/currentTimeMillis)
             acls (acl-helper/get-acls-applicable-to-token context)
             elapsed2 (- (System/currentTimeMillis) start2)

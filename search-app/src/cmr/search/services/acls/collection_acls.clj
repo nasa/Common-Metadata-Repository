@@ -13,7 +13,6 @@
 (defmethod qe/add-acl-conditions-to-query :collection
   [context query]
   ;; return unmodified query if the context has a system token
- (println "INSIDE qe/add-acl-conditions-to-query :collection")
  (debug "INSIDE qe/add-acl-conditions-to-query :collection")
   (if (tc/echo-system-token? context)
     query

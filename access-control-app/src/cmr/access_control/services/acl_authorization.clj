@@ -48,18 +48,9 @@
         provider-cond (qm/string-condition :target-provider-id provider-id)]
     (gc/and provider-cond target-cond)))
 
-(defn jyna
- []
- (let [start (System/currentTimeMillis)]
-  (println (str "total time = " (- (System/currentTimeMillis) start)))
-  (println (str "hello " (pr-str "hi")))
-  (println (str "number = " (pr-str 10)))
-  ))
-
 (defmethod qe/add-acl-conditions-to-query :acl
   [context query]
- (let [_ (println "INSIDE qe/add-acl-conditions-to-query :acl")
-       start (System/currentTimeMillis)]
+ (let [start (System/currentTimeMillis)]
   (if (transmit-config/echo-system-token? context)
    query
    (let [acls (acls-granting-acl-read context)]

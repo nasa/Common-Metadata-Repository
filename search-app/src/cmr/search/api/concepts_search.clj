@@ -228,15 +228,13 @@
   "Invokes query service to parse the parameters query, find results, and
   return the response"
   [ctx path-w-extension params headers body]
-  (let [_ (println "INSIDE find-concepts-by-parameters")
-        concept-type (concept-type-path-w-extension->concept-type path-w-extension)
+  (let [concept-type (concept-type-path-w-extension->concept-type path-w-extension)
         short-scroll-id (get headers (string/lower-case common-routes/SCROLL_ID_HEADER))
         scroll-id-and-search-params (core-api/get-scroll-id-and-search-params-from-cache ctx short-scroll-id)
         scroll-id (:scroll-id scroll-id-and-search-params)
         cached-search-params (:search-params scroll-id-and-search-params)
         search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
         ctx (assoc ctx :query-string body :scroll-id scroll-id :query-params params)
-        _ (debug (str "INSIDE find-concepts-by-parameters -- ctx:" (pr-str ctx)))
         params (core-api/process-params concept-type params path-w-extension headers mt/xml)
         result-format (:result-format params)
         _ (block-excessive-queries ctx concept-type result-format params)

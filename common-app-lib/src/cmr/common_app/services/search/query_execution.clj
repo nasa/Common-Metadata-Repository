@@ -98,7 +98,7 @@
         start (System/currentTimeMillis)
         query-results (rc/elastic-results->query-results context processed-query elastic-results)
         elapsed (- (System/currentTimeMillis) start)
-        _ (debug (str "INSIDE execute-query :elasticsearch -- query was --" query))
+        _ (debug (str "INSIDE execute-query :elasticsearch -- query was --" (pr-str query)))
         _ (debug (str "INSIDE execute-query :elasticsearch -- elastic-results->query-results took" elapsed "ms"))
         post-start-time (System/currentTimeMillis)
         result (post-process-query-result-features context query elastic-results query-results)

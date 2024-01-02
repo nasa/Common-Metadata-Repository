@@ -154,8 +154,7 @@
 ;; this is the function that "query-execution-time" is being generated
 (defmethod common-qe/execute-query :specific-elastic-items
   [context query]
-  (let [_ (println "INSIDE: common-qe/execute-query :specific-elastic-items")
-        start-processed-query-time (System/currentTimeMillis)
+  (let [start-processed-query-time (System/currentTimeMillis)
         processed-query (->> query
                              (common-qe/pre-process-query-result-features context)
                              (r/resolve-collection-queries context)

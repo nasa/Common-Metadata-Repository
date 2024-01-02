@@ -81,8 +81,7 @@
 
 (defn resolve-collection-queries
   [context query]
-  (let [_ (println "INSIDE resolve-collection-queries")
-        start-merge (System/currentTimeMillis)
+  (let [start-merge (System/currentTimeMillis)
         query (merge-collection-queries query)
         elapsed-merge (- (System/currentTimeMillis) start-merge)
         _ (debug (str "resolve-collection-queries --  query = " query))

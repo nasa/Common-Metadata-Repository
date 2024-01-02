@@ -260,8 +260,7 @@
   "Searches for ACLs using given parameters. Returns result map from find-concepts
    including total time taken."
   [context params]
-  (let [_ (println "INSIDE search-for-acls")
-        _ (debug "INSIDE search-for-acls")
+  (let [_ (debug "INSIDE search-for-acls")
         [query-creation-time query] (util/time-execution
                                      (->> params
                                           cp/sanitize-params

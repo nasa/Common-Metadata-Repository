@@ -182,8 +182,7 @@
 ;; This expects that collection queries have been resolved before this step.
 (defmethod qe/add-acl-conditions-to-query :granule
   [context query]
-  (let [_ (println "INSIDE qe/add-acl-conditions-to-query :granule")
-        start (System/currentTimeMillis)
+  (let [start (System/currentTimeMillis)
         coll-ids-by-prov (->> (coll-id-extractor/extract-collection-concept-ids query)
                               ;; Group the concept ids by provider
                               (group-by #(:provider-id (c/parse-concept-id %)))
