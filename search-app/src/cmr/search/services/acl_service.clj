@@ -118,6 +118,8 @@
   * :concept-type
   * :provider-id"
   [context concepts]
+  (debug (str "INSIDE filter-concepts: concepts size: " (pr-str (count concepts))))
+  (debug (str "INSIDE filter-concepts: concepts given: " (pr-str concepts)))
   (when (seq concepts)
     (if (tc/echo-system-token? context)
       ;;return all concepts if running with the system token
@@ -140,7 +142,10 @@
             applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)
             elapsed (- (System/currentTimeMillis) start)
             _ (debug (str "INSIDE filter-concepts: filtering to get applicable acls time = " elapsed))
+            _ (debug (str "INSIDE filter-concepts: applicable-acls count = " (pr-str (count applicable-acls))))
+            _ (debug (str "INSIDE filter-concepts: applicable-acls given = " (pr-str applicable-acls)))
             do-all-start-time (System/currentTimeMillis)
+            ;; THIS DO ALL IS THE PROBLEM~~~~!!!!!!
             result (doall (remove nil? (pmap (fn [concept]
                                               (when (acls-match-concept? context applicable-acls concept)
                                                concept))

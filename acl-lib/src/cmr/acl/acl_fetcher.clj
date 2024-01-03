@@ -102,7 +102,7 @@
   "Processes response and formats it for get-all-acls"
   [context object-identity-types]
  (let [start (System/currentTimeMillis)
-       _ (debug (str "INSIDE process-search-for-acls -- object-identity-types = " (pr-str object-identity-types)))
+       ;;_ (debug (str "INSIDE process-search-for-acls -- object-identity-types = " (pr-str object-identity-types)))
        result (->> (get-all-acls context object-identity-types)
                    (mapcat :items)
                    (map :acl)
@@ -132,7 +132,7 @@
 (defn get-acls
   "Gets the current acls limited to a specific set of object identity types."
   [context object-identity-types]
-  (debug (str "INSIDE get-acls -- object-identity-types:" (pr-str object-identity-types)))
+  ;;(debug (str "INSIDE get-acls -- object-identity-types:" (pr-str object-identity-types)))
   (if-let [cache (cache/context->cache context acl-cache-key)]
     ;; Check that we're caching the requested object identity types
     ;; Otherwise we'd just silently fail to find any acls.
