@@ -131,7 +131,7 @@
   "Returns the query results after ACLs are applied to filter out items
   that the current user does not have access to."
   [context query-results]
-  (let [;;_ (debug (str "INSIDE filter-query-results-with-acls: query results = " (pr-str query-results)))
+  (let [_ (debug (str "INSIDE filter-query-results-with-acls: query results = " (pr-str query-results)))
         original-item-count (count (:items query-results))
         _ (debug (str "INSIDE filter-query-results-with-acls: original-item-count = " original-item-count))
         start (System/currentTimeMillis)
@@ -161,7 +161,7 @@
                              (c2s/reduce-query context))
         elapsed-processed-query-time (- (System/currentTimeMillis) start-processed-query-time)
         _ (debug (str "INSIDE common-qe/execute-query :specific-elastic-items -- elapsed-processed-query-time = " elapsed-processed-query-time))
-        ;;_ (debug (str "INSIDE common-qe/execute-query :specific-elastic-items -- processed-query = " processed-query))
+        _ (debug (str "INSIDE common-qe/execute-query :specific-elastic-items -- processed-query = " (pr-str processed-query)))
         elastic-results (idx/execute-query context processed-query) ;; this is where the log: "Elastic query for concept-type: :collection  and result format:  :xml took 29 ms. Connection elapsed: 59 ms" comes from
         query-results (rc/elastic-results->query-results context query elastic-results)
         start (System/currentTimeMillis)

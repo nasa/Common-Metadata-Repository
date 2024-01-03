@@ -80,7 +80,7 @@
 ;; jyna - 7th step -- ONLY FOR search/granues.json?concept_id=X&provider_id=X
 (defmethod execute-query :elasticsearch
   [context query]
-  (let [_ (println "INSIDE execute-query :elasticsearch")
+  (let [_ (debug "INSIDE execute-query :elasticsearch")
         start-query-processing-time (System/currentTimeMillis)
         [context processed-query] (concept-type-specific-query-processing
                                    context query)

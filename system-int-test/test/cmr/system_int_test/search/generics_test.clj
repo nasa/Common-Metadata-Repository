@@ -37,7 +37,6 @@
   "This function will make a request to one of the generic URLs using the provided
    provider and native id"
   ([concept-type-ext params]
-   (println (format "%s%s?%s" (url-helper/search-root) concept-type-ext params))
    (-> {:method :get
         :url (format "%s%s?%s" (url-helper/search-root) concept-type-ext params)
         :connection-manager (system/conn-mgr)
