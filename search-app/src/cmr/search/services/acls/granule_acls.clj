@@ -1,25 +1,26 @@
 (ns cmr.search.services.acls.granule-acls
-  "Contains functions for manipulating granule acls"
-  (:require
-   [clojure.set :as set]
-   [clojure.string :as string]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as cqm]
-   [cmr.common.concepts :as c]
-   [cmr.common.date-time-parser :as date-time-parser]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.time-keeper :as tk]
-   [cmr.common.util :as u]
-   [cmr.search.models.query :as q]
-   [cmr.search.services.acl-service :as acl-service]
-   [cmr.search.services.acls.acl-helper :as acl-helper]
-   [cmr.search.services.acls.collections-cache :as coll-cache]
-   [cmr.search.services.query-walkers.collection-concept-id-extractor :as coll-id-extractor]
-   [cmr.search.services.query-walkers.collection-query-resolver :as r]
-   [cmr.search.services.query-walkers.provider-id-extractor :as provider-id-extractor]
-   [cmr.umm-spec.acl-matchers :as umm-matchers]
-   [cmr.common.log :refer (debug info warn error)]))
+ "Contains functions for manipulating granule acls"
+ (:require
+  [clojure.set :as set]
+  [clojure.string :as string]
+  [cmr.common-app.services.search.group-query-conditions :as gc]
+  [cmr.common-app.services.search.query-execution :as qe]
+  [cmr.common-app.services.search.query-model :as cqm]
+  [cmr.common.concepts :as c]
+  [cmr.common.date-time-parser :as date-time-parser]
+  [cmr.common.services.errors :as errors]
+  [cmr.common.time-keeper :as tk]
+  [cmr.common.util :as u]
+  [cmr.search.models.query :as q]
+  [cmr.search.services.acl-service :as acl-service]
+  [cmr.search.services.acls.acl-helper :as acl-helper]
+  [cmr.search.services.acls.collections-cache :as coll-cache]
+  [cmr.search.services.query-walkers.collection-concept-id-extractor :as coll-id-extractor]
+  [cmr.search.services.query-walkers.collection-query-resolver :as r]
+  [cmr.search.services.query-walkers.provider-id-extractor :as provider-id-extractor]
+  [cmr.umm-spec.acl-matchers :as umm-matchers]
+  [cmr.common.log :refer (debug info warn error)])
+ (:import (org.apache.logging.log4j.core.util SystemMillisClock)))
 
 (defmulti filter-applicable-granule-acls
   (fn [context coll-ids-by-prov provider-ids acls]
@@ -251,4 +252,10 @@
 
 (defmethod acl-service/acls-match-concept? :granule
   [context acls concept]
-  (some #(acl-match-concept? context % concept) acls))
+ (let [_ (println "INSIDE acl-service/acls-match-concept? :granule")
+       start (System/currentTimeMillis)
+       result (some #(acl-match-concept? context % concept) acls)
+       elapsed (- (System/currentTimeMillis) start)
+       _ (println "INSIDE acl-service/acls-match-concept? :granule = time took = " elapsed)
+       ]
+  result))

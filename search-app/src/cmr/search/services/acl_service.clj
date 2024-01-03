@@ -118,17 +118,19 @@
   * :concept-type
   * :provider-id"
   [context concepts]
-  (debug (str "INSIDE filter-concepts: concepts size: " (pr-str (count concepts))))
-  (debug (str "INSIDE filter-concepts: concepts given: " (pr-str concepts)))
+  (println (str "INSIDE filter-concepts: concepts size: " (pr-str (count concepts))))
+  (println (str "INSIDE filter-concepts: concepts given: " (pr-str concepts)))
   (when (seq concepts)
     (if (tc/echo-system-token? context)
       ;;return all concepts if running with the system token
-      concepts
-      (let [_ (debug "INSIDE filter-concepts: System token not given, going other route.")
+      (do
+       (println "INSIDE filter-concepts: System token was given. Returning concepts directly.")
+       concepts)
+      (let [_ (println "INSIDE filter-concepts: System token NOT given, going to filter based on acls now.")
             start2 (System/currentTimeMillis)
-            acls (acl-helper/get-acls-applicable-to-token context)
+            acls (acl-helper/get-acls-applicable-to-token context) ;; getting acls based on the token provided
             elapsed2 (- (System/currentTimeMillis) start2)
-            _ (debug (str "INSIDE filter-concepts: acl-helper/get-acls-applicable-to-token took " elapsed2 "ms"))
+            _ (println (str "INSIDE filter-concepts: acl-helper/get-acls-applicable-to-token took " elapsed2 "ms"))
             ;; drafts don't contain concept-type field, so we will need to derive it from concept-id
             ;; collections don't contain concept_id or concept-id fields, but they do contain concept-type field.
             concept-type (-> concepts first :concept-type)
@@ -141,16 +143,17 @@
             start (System/currentTimeMillis)
             applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)
             elapsed (- (System/currentTimeMillis) start)
-            _ (debug (str "INSIDE filter-concepts: filtering to get applicable acls time = " elapsed))
-            _ (debug (str "INSIDE filter-concepts: applicable-acls count = " (pr-str (count applicable-acls))))
-            _ (debug (str "INSIDE filter-concepts: applicable-acls given = " (pr-str applicable-acls)))
+            _ (println (str "INSIDE filter-concepts: filtering to get applicable acls time = " elapsed))
+            _ (println (str "INSIDE filter-concepts: applicable-acls count = " (pr-str (count applicable-acls))))
+            _ (println (str "INSIDE filter-concepts: applicable-acls given = " (pr-str applicable-acls)))
             do-all-start-time (System/currentTimeMillis)
-            ;; THIS DO ALL IS THE PROBLEM~~~~!!!!!!
+            ;; TODO THIS DOALL IS THE PROBLEM~~~~!!!!!!
+            ;; what is this method doing?
             result (doall (remove nil? (pmap (fn [concept]
                                               (when (acls-match-concept? context applicable-acls concept)
-                                               concept))
-                                             concepts)))
+                                               concept));; when the concept matches the acl permissions return the concept
+                                             concepts))) ;; rolls all those concepts into a map after executing func in parallel
             do-all-elapsed (- (System/currentTimeMillis) do-all-start-time)
-            _ (debug (str "INSIDE filter-concepts: doall time = " do-all-elapsed))]
+            _ (println (str "INSIDE filter-concepts: doall time = " do-all-elapsed))]
        result
         ))))

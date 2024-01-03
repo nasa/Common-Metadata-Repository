@@ -88,7 +88,7 @@
         start-pre-process-time (System/currentTimeMillis)
         processed-query (pre-process-query-result-features context processed-query)
         elapsed-pre-process-time (- (System/currentTimeMillis) start-pre-process-time)
-        ;;_ (debug (str "INSIDE execute-query :elasticsearch -- processed-query:" (pr-str processed-query) "with elapsed-query-processing-time = " elapsed-query-processing-time "ms and elapsed-pre-process-time = " elapsed-pre-process-time "ms"))
+        _ (debug (str "INSIDE execute-query :elasticsearch -- processed-query:" (pr-str processed-query) "with elapsed-query-processing-time = " elapsed-query-processing-time " ms and elapsed-pre-process-time = " elapsed-pre-process-time " ms"))
         elastic-results (->> processed-query
                              (#(if (or (tc/echo-system-token? context) (:skip-acls? %))
                                  %

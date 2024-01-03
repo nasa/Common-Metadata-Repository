@@ -26,4 +26,5 @@
 
 (defmethod acl-service/acls-match-concept? :collection
   [context acls concept]
+ (println "INSIDE acl-service/acls-match-concept? :collection")
   (some #(umm-matchers/coll-applicable-acl? (:provider-id concept) concept %) acls))

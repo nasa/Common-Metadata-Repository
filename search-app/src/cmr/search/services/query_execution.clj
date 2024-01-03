@@ -135,10 +135,10 @@
         original-item-count (count (:items query-results))
         _ (debug (str "INSIDE filter-query-results-with-acls: original-item-count = " original-item-count))
         start (System/currentTimeMillis)
-        items (acl-service/filter-concepts context (:items query-results)) ;; this is the time ISSUE
+        items (acl-service/filter-concepts context (:items query-results)) ;; TODO this is the time ISSUE
         elapsed (- (System/currentTimeMillis) start)
         _ (debug (str "INSIDE filter-query-results-with-acls: Elapsed time for acl-service/filter-concepts is " elapsed))
-        _ (debug (str "INSIDE filter-query-results-with-acls: Items = " (pr-str items)))
+        _ (debug (str "INSIDE filter-query-results-with-acls: Items after filter concept = " (pr-str items)))
         item-count (count items)
         _ (debug (str "INSIDE filter-query-results-with-acls: item-count = " item-count))
         start-result (System/currentTimeMillis)
@@ -167,7 +167,7 @@
         start (System/currentTimeMillis)
         query-results (if (or (tc/echo-system-token? context) (:skip-acls? query))
                         query-results
-                        (filter-query-results-with-acls context query-results)) ;; this may be the issue
+                        (filter-query-results-with-acls context query-results)) ;; TODO this is the issue
         elapsed (- (System/currentTimeMillis) start)
         _ (debug (str "INSIDE common-qe/execute-query :specific-elastic-items -- Elapsed time of filter-query-results-with-acls =" elapsed))
         start2 (System/currentTimeMillis)
