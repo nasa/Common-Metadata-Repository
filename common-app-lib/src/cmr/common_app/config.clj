@@ -41,3 +41,14 @@
   {:default 200000
    :type Long})
 
+(defconfig custom-request-log
+  "True issues an additional custom request log for all activity received from
+   this server"
+  {:default true
+   :type Boolean})
+
+(defconfig add-hash-headers
+  "True will add MD5 and SHA-1 hash values to the response headers and include
+   them in the custome request log controlled by custom-request-log"
+  {:default true
+   :type Boolean})
