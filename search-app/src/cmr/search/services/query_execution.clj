@@ -76,7 +76,8 @@
   [query]
   (cond
     (direct-db-query? query) :direct-db
-    (specific-items-from-elastic-query? query) :specific-elastic-items
+    ;(specific-items-from-elastic-query? query) :specific-elastic-items
+    (specific-items-from-elastic-query? query) :elasticsearch
     (complicated-facets? query) :complicated-facets
     :else :elasticsearch))
 
