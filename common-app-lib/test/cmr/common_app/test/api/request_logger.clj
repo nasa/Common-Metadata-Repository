@@ -59,9 +59,7 @@
 
   (testing "basic check…"
     (let [scrub-token-from-map #'cmr.common-app.api.request-logger/scrub-token-from-map]
-
       (are3
-
        [expected options]
        ;; Take any number of 'options' and expand them out to cover both the
        ;; single and double arity calls
@@ -100,17 +98,7 @@
        [{"token" "keep this" :token "die"} :token]))))
 
 
-(deftest param-handling-tests
-  (testing "param handling tests"
-    (let [dump-param #'cmr.common-app.api.request-logger/dump-param
-          request {:form-params {:left :0 :right :1 :token "bad-value"}
-                   :query-params {:left :2 :right :3 "token" "value-bad"}
-                   :other-params {:left :4 :right :5}}]
-      (for [x (keys request)]
-        (is (not-empty (dump-param request x)))))))
-
 (deftest dump-param-test
-
   (testing "dump param tests"
     (let [dump-param #'cmr.common-app.api.request-logger/dump-param]
       (are3
