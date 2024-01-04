@@ -200,12 +200,12 @@
         acl-cond (acls->query-condition context coll-ids-by-prov acls)
         elapsed (- (System/currentTimeMillis) start)
         start-result-time (- (System/currentTimeMillis) start)
-        _ (debug (str "qe/add-acl-conditions-to-query :granule -- before resolving collection queries -- time took = " elapsed))
+        _ (debug (str "INSIDE qe/add-acl-conditions-to-query :granule -- before resolving collection queries -- time took = " elapsed))
         result (r/resolve-collection-queries
                 context
                 (update-in query [:condition] #(gc/and-conds [acl-cond %])))
         elapsed-result-time (- (System/currentTimeMillis) start-result-time)
-        _ (debug (str "qe/add-acl-conditions-to-query :granule -- after resolving collection queries -- time took = " elapsed-result-time))]
+        _ (debug (str "INSIDE qe/add-acl-conditions-to-query :granule -- after resolving collection queries -- time took = " elapsed-result-time))]
    result
     ))
 
@@ -229,10 +229,14 @@
   "Returns true if the collection identifier (a field in catalog item identities in ACLs) is nil or
   it matches the concept."
   [context coll-identifier concept]
+  (debug "INSIDE collection-identifier-matches-concept?")
   (if coll-identifier
     (let [collection-concept-id (:collection-concept-id concept)
+          start (System/currentTimeMillis)
           collection (merge {:concept-id collection-concept-id}
-                            (coll-cache/get-collection context collection-concept-id))]
+                            (coll-cache/get-collection context collection-concept-id))
+          elapsed (- (System/currentTimeMillis) start)
+          _ (debug "INSIDE collection-identifier-matches-concept?: collection-cache get collection time = " elapsed)] ;; TODO jyna in here
       (when-not collection
         (errors/internal-error!
           (format "Collection with id %s was in a granule but was not found using collection cache."
@@ -243,19 +247,25 @@
 (defn acl-match-concept?
   "Returns true if the acl matches the concept indicating the concept is permitted."
   [context acl concept]
-  (let [{provider-id :provider-id
+  (let [_ (debug "INSIDE acl-match-concept?")
+        {provider-id :provider-id
          gran-identifier :granule-identifier
-         coll-identifier :collection-identifier} (:catalog-item-identity acl)]
-    (and (= provider-id (:provider-id concept))
-         (granule-identifier-matches-concept? gran-identifier concept)
-         (collection-identifier-matches-concept? context coll-identifier concept))))
+         coll-identifier :collection-identifier} (:catalog-item-identity acl)
+         start (System/currentTimeMillis)
+         result (and (= provider-id (:provider-id concept))
+              (granule-identifier-matches-concept? gran-identifier concept)
+              (collection-identifier-matches-concept? context coll-identifier concept))
+         elapsed (- (System/currentTimeMillis) start)
+         _ (debug (str "INSIDE acl-match-concept?: collection-identifier-matches-concept time = " elapsed))]
+   result
+    )) ;;TODO going into here Jyna
 
 (defmethod acl-service/acls-match-concept? :granule
   [context acls concept]
- (let [_ (println "INSIDE acl-service/acls-match-concept? :granule")
+ (let [_ (debug "INSIDE acl-service/acls-match-concept? :granule")
        start (System/currentTimeMillis)
        result (some #(acl-match-concept? context % concept) acls)
        elapsed (- (System/currentTimeMillis) start)
-       _ (println "INSIDE acl-service/acls-match-concept? :granule = time took = " elapsed)
+       _ (debug "INSIDE acl-service/acls-match-concept? :granule = time took = " elapsed)
        ]
   result))

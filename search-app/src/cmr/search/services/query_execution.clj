@@ -131,7 +131,7 @@
   "Returns the query results after ACLs are applied to filter out items
   that the current user does not have access to."
   [context query-results]
-  (let [_ (debug (str "INSIDE filter-query-results-with-acls: query results = " (pr-str query-results)))
+  (let [;;_ (debug (str "INSIDE filter-query-results-with-acls: query results = " (pr-str query-results)))
         original-item-count (count (:items query-results))
         _ (debug (str "INSIDE filter-query-results-with-acls: original-item-count = " original-item-count))
         start (System/currentTimeMillis)

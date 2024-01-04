@@ -19,21 +19,25 @@
 ;; services currently have no catalog item ACLs, so return `true` for all ACL checks
 (defmethod acls-match-concept? :service
   [context acls concept]
+ (debug "INSIDE acls-match-concept? :service")
   true)
 
 ;; tools currently have no catalog item ACLs, so return `true` for all ACL checks
 (defmethod acls-match-concept? :tool
   [context acls concept]
+ (debug "INSIDE acls-match-concept? :tool")
   true)
 
 ;; tags have no catalog item acls so we always assume it matches
 (defmethod acls-match-concept? :tag
   [context acls concept]
+ (debug "INSIDE acls-match-concept? :tag")
   true)
 
 ;; variables currently have no catalog item ACLs, so return `true` for all ACL checks
 (defmethod acls-match-concept? :variable
   [context acls concept]
+ (debug "INSIDE acls-match-concept? :variable")
   true)
 
 ;; generic concepts currently have no catalog item ACLs, so return `true` for all ACL checks
@@ -51,6 +55,7 @@
 ;; subscriptions checks provider object ACLs, not catalog item ACLs
 (defmethod acls-match-concept? :subscription
   [context acls concept]
+  (debug "INSIDE acls-match-concept? :subscription")
   (let [sm-acls (acl-helper/get-sm-acls-applicable-to-token context)
         user-id (when (:token context)
                   (context-util/context->user-id context))
@@ -60,6 +65,7 @@
 
 (defmethod acls-match-concept? :default
   [context acls concept]
+  (debug "INSIDE acls-match-concept? :default")
   false)
 
 ;; XXX To be fixed with CMR-4394

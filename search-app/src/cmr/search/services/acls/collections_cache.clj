@@ -100,10 +100,14 @@
   to keep the cache fresh. This will throw an exception if there is a problem fetching collections. The
   caller is responsible for catching and logging the exception."
   [context]
-  (let [cache (hash-cache/context->cache context cache-key)
-        collections-map (fetch-collections-map context)]
-    (doseq [[coll-key coll-value] collections-map]
-      (hash-cache/set-value cache cache-key coll-key (clj-times->time-strs coll-value)))))
+  (let [start (System/currentTimeMillis)
+        cache (hash-cache/context->cache context cache-key)
+        collections-map (fetch-collections-map context)
+        result (doseq [[coll-key coll-value] collections-map]
+         (hash-cache/set-value cache cache-key coll-key (clj-times->time-strs coll-value)))
+        elapsed (- (System/currentTimeMillis) start)
+        _ (debug "INSIDE refresh-cache: time = " elapsed)]
+   result))
 
 (defn- get-collections-map
   "Gets the cached value. By default an error is thrown if there is no value in
@@ -122,13 +126,19 @@
       (errors/internal-error! (coll-msg/collections-not-in-cache key-type))
       (time-strs->clj-times collection-map)))))
 
+;; TODO jyna here
 (defn get-collection
   "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
   Also allows provider-id and entry-title to be used."
   ([context concept-id]
-   (let [by-concept-id (get-collections-map context :by-concept-id :no-errors)]
+   (let [_ (debug "INSIDE get-collection")
+         start (System/currentTimeMillis)
+         by-concept-id (get-collections-map context :by-concept-id :no-errors)
+         elapsed (- (System/currentTimeMillis) start)
+         _ (debug (str "INSIDE get-collection: get-collections-map time = " elapsed))]
      (when-not (and by-concept-id (by-concept-id concept-id))
        (info (coll-msg/collection-not-found concept-id))
+       (debug "INSIDE get-collection: refreshing collection cache")
        (refresh-cache context))
      (get (get-collections-map context :by-concept-id ) concept-id)))
   ([context provider-id entry-title]

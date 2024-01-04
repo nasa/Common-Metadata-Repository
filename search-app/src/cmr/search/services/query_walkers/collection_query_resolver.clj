@@ -81,16 +81,17 @@
 
 (defn resolve-collection-queries
   [context query]
-  (let [start-merge (System/currentTimeMillis)
+  (let [;;start-merge (System/currentTimeMillis)
         query (merge-collection-queries query)
-        elapsed-merge (- (System/currentTimeMillis) start-merge)
+        ;elapsed-merge (- (System/currentTimeMillis) start-merge)
         ;;_ (debug (str "resolve-collection-queries --  query = " query))
-        _ (debug (str "resolve-collection-queries -- merge time = " elapsed-merge))
-        start (System/currentTimeMillis)
+        ;_ (debug (str "resolve-collection-queries -- merge time = " elapsed-merge))
+        ;start (System/currentTimeMillis)
         result (second (resolve-collection-query query context))
         ;;_ (debug (str "resolve-collection-queries -- result = " result))
-        elapsed (- (System/currentTimeMillis) start)
-        _ (debug (str "resolve-collection-queries -- elapsed time =" elapsed))]
+        ;elapsed (- (System/currentTimeMillis) start)
+        ;_ (debug (str "resolve-collection-queries -- elapsed time =" elapsed))
+        ]
    result))
 
 (extend-protocol ResolveCollectionQuery

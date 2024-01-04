@@ -13,18 +13,19 @@
 (defmethod qe/add-acl-conditions-to-query :collection
   [context query]
   ;; return unmodified query if the context has a system token
- (debug "INSIDE qe/add-acl-conditions-to-query :collection")
+ ;;(debug "INSIDE qe/add-acl-conditions-to-query :collection")
   (if (tc/echo-system-token? context)
     query
     (let [group-ids (map #(if (keyword? %) (name %) %)
                          (util/lazy-get context :sids))
           acl-cond (qm/string-conditions :permitted-group-ids group-ids true)
           updated_query (update-in query [:condition] #(gc/and-conds [acl-cond %]))
-          _ (debug (str "query after adding acl conditions: " updated_query))]
+          ;; _ (debug (str "query after adding acl conditions: " updated_query))
+          ]
       updated_query)))
 
 
 (defmethod acl-service/acls-match-concept? :collection
   [context acls concept]
- (println "INSIDE acl-service/acls-match-concept? :collection")
+  (debug "INSIDE acl-service/acls-match-concept? :collection")
   (some #(umm-matchers/coll-applicable-acl? (:provider-id concept) concept %) acls))
