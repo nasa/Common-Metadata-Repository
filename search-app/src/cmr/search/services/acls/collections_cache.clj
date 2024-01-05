@@ -110,7 +110,7 @@
    result))
 
 ;; TODO JYNA THIS IS THE FUNCTION THAT IS TAKING FOREVER
-(defn- get-collections-map
+(defn- get-collections-map ;; 120465
   "Gets the cached value. By default an error is thrown if there is no value in
    the cache. Pass in anything other then :return-errors for the third parameter
    to have null returned when no data is in the cache. :return-errors is for the
@@ -118,21 +118,28 @@
   ([context key-type]
    (get-collections-map context key-type :return-errors))
   ([context key-type throw-errors]
-  (let [_ (debug "INSIDE get-collections-map with cache-key = " cache-key)
+  (let [_ (debug "INSIDE get-collections-map with cache-key = " cache-key) ;; :collections-for-gran-acls
         start (System/currentTimeMillis)
         coll-cache (hash-cache/context->cache context cache-key) ;; TODO is this returning the entire cache??? Why?
         elapsed (- (System/currentTimeMillis) start)
-        _ (debug "INSIDE get-collections-map coll-cache time = " elapsed)
+        _ (debug "INSIDE get-collections-map coll-cache time = " elapsed) ;; 0
         start-get-value (System/currentTimeMillis)
         collection-map (hash-cache/get-value
                         coll-cache
                         cache-key
                         key-type)
         elapsed-get-value (- (System/currentTimeMillis) start-get-value)
-        _ (debug "INSIDE get-collections-map get-value time = " elapsed-get-value)]
+        _ (debug "INSIDE get-collections-map get-value time = " elapsed-get-value) ;; 2068
+        _ (debug (str "INSIDE get-collections-map collection-map = " (pr-str collection-map)))]
     (if (and (= :return-errors throw-errors) (empty? collection-map))
       (errors/internal-error! (coll-msg/collections-not-in-cache key-type))
-      (time-strs->clj-times collection-map)))))
+      (do
+       (let [start_times (System/currentTimeMillis)
+             result (time-strs->clj-times collection-map) ;; is this where the time lag is coming from?
+             elapsed_times (- (System/currentTimeMillis) start_times)
+             _ (debug "INSIDE get-collections-map time-strs->clj-times time = " elapsed_times)]
+        result))
+      ))))
 
 ;; TODO jyna here
 (defn get-collection
