@@ -109,6 +109,7 @@
         _ (debug "INSIDE refresh-cache: time = " elapsed)]
    result))
 
+;; TODO JYNA THIS IS THE FUNCTION THAT IS TAKING FOREVER
 (defn- get-collections-map
   "Gets the cached value. By default an error is thrown if there is no value in
    the cache. Pass in anything other then :return-errors for the third parameter
@@ -117,11 +118,18 @@
   ([context key-type]
    (get-collections-map context key-type :return-errors))
   ([context key-type throw-errors]
-  (let [coll-cache (hash-cache/context->cache context cache-key)
+  (let [_ (debug "INSIDE get-collections-map with cache-key = " cache-key)
+        start (System/currentTimeMillis)
+        coll-cache (hash-cache/context->cache context cache-key) ;; TODO is this returning the entire cache??? Why?
+        elapsed (- (System/currentTimeMillis) start)
+        _ (debug "INSIDE get-collections-map coll-cache time = " elapsed)
+        start-get-value (System/currentTimeMillis)
         collection-map (hash-cache/get-value
                         coll-cache
                         cache-key
-                        key-type)]
+                        key-type)
+        elapsed-get-value (- (System/currentTimeMillis) start-get-value)
+        _ (debug "INSIDE get-collections-map get-value time = " elapsed-get-value)]
     (if (and (= :return-errors throw-errors) (empty? collection-map))
       (errors/internal-error! (coll-msg/collections-not-in-cache key-type))
       (time-strs->clj-times collection-map)))))
@@ -133,7 +141,7 @@
   ([context concept-id]
    (let [_ (debug "INSIDE get-collection")
          start (System/currentTimeMillis)
-         by-concept-id (get-collections-map context :by-concept-id :no-errors)
+         by-concept-id (get-collections-map context :by-concept-id :no-errors) ;; INSIDE get-collection: get-collections-map time = 301716
          elapsed (- (System/currentTimeMillis) start)
          _ (debug (str "INSIDE get-collection: get-collections-map time = " elapsed))]
      (when-not (and by-concept-id (by-concept-id concept-id))

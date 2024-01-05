@@ -236,6 +236,8 @@
           collection (merge {:concept-id collection-concept-id}
                             (coll-cache/get-collection context collection-concept-id))
           elapsed (- (System/currentTimeMillis) start)
+          ;; df47a271-8361-4979-ace4-c89bb137c5b5 request id
+          ;; INSIDE collection-identifier-matches-concept?: collection-cache get collection time =  847723
           _ (debug "INSIDE collection-identifier-matches-concept?: collection-cache get collection time = " elapsed)] ;; TODO jyna in here
       (when-not collection
         (errors/internal-error!
@@ -256,7 +258,7 @@
               (granule-identifier-matches-concept? gran-identifier concept)
               (collection-identifier-matches-concept? context coll-identifier concept))
          elapsed (- (System/currentTimeMillis) start)
-         _ (debug (str "INSIDE acl-match-concept?: collection-identifier-matches-concept time = " elapsed))]
+         _ (debug (str "INSIDE acl-match-concept?: collection-identifier-matches-concept time = " elapsed))] ;; 0 ms
    result
     )) ;;TODO going into here Jyna
 
@@ -264,7 +266,7 @@
   [context acls concept]
  (let [_ (debug "INSIDE acl-service/acls-match-concept? :granule")
        start (System/currentTimeMillis)
-       result (some #(acl-match-concept? context % concept) acls)
+       result (some #(acl-match-concept? context % concept) acls) ;; INSIDE acl-service/acls-match-concept? :granule = time took =  847729
        elapsed (- (System/currentTimeMillis) start)
        _ (debug "INSIDE acl-service/acls-match-concept? :granule = time took = " elapsed)
        ]
