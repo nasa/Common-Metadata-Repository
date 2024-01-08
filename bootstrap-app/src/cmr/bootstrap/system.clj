@@ -13,6 +13,7 @@
    [cmr.bootstrap.services.dispatch.core :as dispatch]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
+   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-gran-acls-caches]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
@@ -86,7 +87,9 @@
                       provider-cache/cache-key (provider-cache/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
-                      coll-for-gran-acls-by-concept-id-cache/collection-by-concept-id-cache-key (coll-for-gran-acls-by-concept-id-cache/create-cache)} ;;TODO fix import and paths
+                      coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache)
+                      coll-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key (coll-gran-acls-caches/create-coll-by-provider-id-and-entry-title-cache)
+                      }
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
                                                                (kf/refresh-kms-cache-job "bootstrap-kms-cache-refresh")
                                                                (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")

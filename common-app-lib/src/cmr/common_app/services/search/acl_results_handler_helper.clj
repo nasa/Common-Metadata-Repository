@@ -1,4 +1,4 @@
-(ns cmr.search.services.acls.acl-results-handler-helper
+(ns cmr.common-app.services.search.acl-results-handler-helper
   "This contains functions for aiding result handlers in retrieving and returning sets of results
   for in ways that can be filtered for ACLs. When we execute queries with only concept ids and the
   results can be built directly from Elasticsearch we post process the ACL filtering on the list of
@@ -6,8 +6,7 @@
   format the results so that the ACL filtering can be applied."
   (:require [cmr.common.date-time-parser :as dtp]
             [clojure.string :as str]
-            [cmr.common.util :as u]
-            [cmr.umm.umm-core :as ummc]))
+            [cmr.common.util :as u]))
 
 (def collection-elastic-fields
   "These are the fields that must be retrieved from Elasticsearch to enforce ACLs"

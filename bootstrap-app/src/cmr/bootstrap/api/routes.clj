@@ -15,6 +15,7 @@
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as mc]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common-app.services.provider-cache :as provider-cache]
+   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acls-cache]
    [cmr.common.api.errors :as errors]
    [cmr.common.log :refer [info]]
    [cmr.common.generics :as common-generic]
@@ -117,6 +118,7 @@
           (fingerprint/fingerprint-by-id request-context concept-id)))
       ;; Add routes for accessing caches
       common-routes/cache-api-routes
+      ;; TODO add the collection gran acls to this method block to allow for manual refreshes
       (context "/caches/refresh/:cache-name" [cache-name]
         (POST "/" {:keys [params request-context headers]}
           (acl/verify-ingest-management-permission request-context :update)
@@ -129,6 +131,11 @@
 
             (= (keyword cache-name) provider-cache/cache-key)
             (provider-cache/refresh-provider-cache request-context)
+
+            (= (keyword cache-name) coll-for-gran-acls-cache/coll-by-concept-id-cache-key)
+            (coll-for-gran-acls-cache/refresh-entire-cache request-context)
+
+            ;;TODO add one for by-entry-title too
 
             :else
             (route/not-found "Not Found"))

@@ -11,8 +11,9 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.redis-utils.redis-hash-cache :as red-hash-cache]
-   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
-   [cmr.search.services.messages.collections-cache-messages :as coll-msg]))
+   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
+   [cmr.search.services.messages.collections-cache-messages :as coll-msg]
+   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acl-caches]))
 
 ;; added to common lib
 (def cache-key
@@ -29,8 +30,9 @@
 (def job-refresh-rate
   "This is the frequency that the cron job will run. It should be less then
    coll-for-gran-acl-ttl"
+ ;; TODO (* 60 15)
   ;; 15 minutes
-  (* 60 15))
+ (* 60 5))
 
 ;; added to common lib
 (def coll-for-gran-acl-ttl
@@ -47,6 +49,7 @@
   (red-hash-cache/create-redis-hash-cache {:keys-to-track [:collections-for-gran-acls]
                                            :ttl coll-for-gran-acl-ttl}))
 
+;; added to common or bootstrap
 (defn clj-times->time-strs
   "Take a map and convert any date objects into strings so the map can be cached.
    This can be reversed with time-strs->clj-times."
@@ -57,6 +60,7 @@
       %)
    data))
 
+;; added to common or bootstrap
 (defn time-strs->clj-times
   "Take a map which has string dates and convert them to DateTime objects. This
    can be reversed with clj-times->time-strs."
@@ -65,7 +69,7 @@
    #(if-let [valid-date (time-parser/try-parse-datetime %)] valid-date %)
    data))
 
-;; TODO replicate + replace
+;; added to common-lib or bootstrap
 (defn- fetch-collections
   "Executes a query that will fetch all of the collection information needed for caching."
   [context]
@@ -86,34 +90,39 @@
                             :result-features {:query-specified {:result-processor result-processor}}})]
     (:items (qe/execute-query context query))))
 
-;; TODO replicate + replace
+;; added to common lib or bootstrap
 (defn- fetch-collections-map
   "Retrieve collections from search and return a map by concept-id and provider-id"
   [context]
-  (let [collections (fetch-collections context)
+  (let [_ (println "INSIDE fetch-collections-map in SEARCH")
+        collections (fetch-collections context)
+        _ (println "collections = " (pr-str collections))
         by-concept-id (into {} (for [{:keys [concept-id] :as coll} collections]
                                  [concept-id coll]))
+        _ (println "by-concept-id = " (pr-str by-concept-id))
         by-provider-id-entry-title (into {}
                                          (for [{:keys [provider-id EntryTitle] :as coll}
                                                collections]
-                                           [[provider-id EntryTitle] coll]))]
+                                           [[provider-id EntryTitle] coll]))
+        _ (println "by-provider-id-entry-title = " (pr-str by-provider-id-entry-title))]
     ;; We could reduce the amount of memory here if needed by only fetching the collections that
     ;; have granules.
     {:by-concept-id by-concept-id
      :by-provider-id-entry-title by-provider-id-entry-title}))
 
-;; added to common lib
+;; added to common lib or bootstrap
 (defn refresh-cache
   "Refreshes the collections stored in the cache. This should be called from a background job on a timer
   to keep the cache fresh. This will throw an exception if there is a problem fetching collections. The
   caller is responsible for catching and logging the exception."
   [context]
   (let [cache (hash-cache/context->cache context cache-key)
-        collections-map (fetch-collections-map context)]
+        collections-map (fetch-collections-map context)
+        _ (println "collections-map = " (pr-str collections-map))]
     (doseq [[coll-key coll-value] collections-map]
       (hash-cache/set-value cache cache-key coll-key (clj-times->time-strs coll-value)))))
 
-;; TODO replicate + replace
+;; TODO remove after transition
 (defn- get-collections-map
   "Gets the cached value. By default an error is thrown if there is no value in
    the cache. Pass in anything other then :return-errors for the third parameter
@@ -131,7 +140,7 @@
       (errors/internal-error! (coll-msg/collections-not-in-cache key-type))
       (time-strs->clj-times collection-map)))))
 
-;; TODO replicate + replace
+;; TODO remove after transition
 (defn get-collection
   "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
   Also allows provider-id and entry-title to be used."
@@ -140,17 +149,41 @@
      (when-not (and by-concept-id (by-concept-id concept-id))
        (info (coll-msg/collection-not-found concept-id))
        (refresh-cache context))
-     (get (get-collections-map context :by-concept-id ) concept-id)))
+     (get (get-collections-map context :by-concept-id ) concept-id)))  ;; TODO what is this line? what are we getting here?
   ([context provider-id entry-title]
    (let [by-provider-id-entry-title (get-collections-map context :by-provider-id-entry-title )]
      (get by-provider-id-entry-title [provider-id entry-title]))))
 
-;; added to common lib
+;; TODO this is the new func that will replace 'get-collection' AND 'get-collection-map' during transition
+(defn get-collection-gran-acls
+ "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
+ Also allows provider-id and entry-title to be used."
+ ([context coll-concept-id]
+  ;; TODO how do I make the sure context has the right cache key? ANSWER: context wll have the names of all the caches already in it. This fun just checks if the given cache-key exists in the context list
+  (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-concept-id-cache-key)
+        collection (hash-cache/get-value
+                    coll-by-concept-id-cache ;; cache
+                    coll-for-gran-acl-caches/coll-by-concept-id-cache-key ;; key
+                    coll-concept-id)] ;; field
+   ;;TODO check if collection is empty and return no error if it is empty or nil or whatever
+   (when (or (nil? collection) (empty? collection))
+    (info (coll-msg/collection-not-found coll-concept-id)) ;; no error needs to be thrown
+    (coll-for-gran-acl-caches/refresh-entire-cache context)) ;; FIXME why kick off an entire refresh cache during API calls? Instead, add one field/val pair to cache and move on.
+   (time-strs->clj-times collection)))
+ ([context provider-id entry-title]
+  (let [coll-by-provider-id-and-entry-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key)
+        collection (hash-cache/get-value
+                    coll-by-provider-id-and-entry-id-cache ;; cache
+                    coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key ;; key
+                    (str (provider-id) (entry-title)))]
+   (time-strs->clj-times collection))))
+
+;; added to common lib or bootstrap
 (defjob RefreshCollectionsCacheForGranuleAclsJob
   [ctx system]
   (refresh-cache {:system system}))
 
-;; added to common lib
+;; added to common lib or bootstrap
 (def refresh-collections-cache-for-granule-acls-job
   {:job-type RefreshCollectionsCacheForGranuleAclsJob
    :interval job-refresh-rate})
