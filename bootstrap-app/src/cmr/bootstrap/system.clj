@@ -85,7 +85,8 @@
                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
                       provider-cache/cache-key (provider-cache/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
-                      cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)}
+                      cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
+                      coll-for-gran-acls-by-concept-id-cache/collection-by-concept-id-cache-key (coll-for-gran-acls-by-concept-id-cache/create-cache)} ;;TODO fix import and paths
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
                                                                (kf/refresh-kms-cache-job "bootstrap-kms-cache-refresh")
                                                                (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")

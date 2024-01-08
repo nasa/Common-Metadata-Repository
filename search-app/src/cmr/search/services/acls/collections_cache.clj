@@ -14,21 +14,25 @@
    [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.messages.collections-cache-messages :as coll-msg]))
 
+;; added to common lib
 (def cache-key
   "This is the key name that will show up in redis.
    Note: No other file reads this cache, so it is functionally private."
   :collections-for-gran-acls)
 
+;; added to common lib
 (def initial-cache-state
   "The initial cache state."
   nil)
 
+;; added to common lib
 (def job-refresh-rate
   "This is the frequency that the cron job will run. It should be less then
    coll-for-gran-acl-ttl"
   ;; 15 minutes
   (* 60 15))
 
+;; added to common lib
 (def coll-for-gran-acl-ttl
   "This is when Redis should expire the data, this value should never be hit if
    the cron job is working correctly, however in some modes (such as local dev
@@ -36,6 +40,7 @@
   ;; 30 minutes
   (* 60 30))
 
+;; added to common lib
 (defn create-cache
   "Creates a new empty collections cache."
   []
@@ -60,6 +65,7 @@
    #(if-let [valid-date (time-parser/try-parse-datetime %)] valid-date %)
    data))
 
+;; TODO replicate + replace
 (defn- fetch-collections
   "Executes a query that will fetch all of the collection information needed for caching."
   [context]
@@ -80,6 +86,7 @@
                             :result-features {:query-specified {:result-processor result-processor}}})]
     (:items (qe/execute-query context query))))
 
+;; TODO replicate + replace
 (defn- fetch-collections-map
   "Retrieve collections from search and return a map by concept-id and provider-id"
   [context]
@@ -95,6 +102,7 @@
     {:by-concept-id by-concept-id
      :by-provider-id-entry-title by-provider-id-entry-title}))
 
+;; added to common lib
 (defn refresh-cache
   "Refreshes the collections stored in the cache. This should be called from a background job on a timer
   to keep the cache fresh. This will throw an exception if there is a problem fetching collections. The
@@ -105,6 +113,7 @@
     (doseq [[coll-key coll-value] collections-map]
       (hash-cache/set-value cache cache-key coll-key (clj-times->time-strs coll-value)))))
 
+;; TODO replicate + replace
 (defn- get-collections-map
   "Gets the cached value. By default an error is thrown if there is no value in
    the cache. Pass in anything other then :return-errors for the third parameter
@@ -122,6 +131,7 @@
       (errors/internal-error! (coll-msg/collections-not-in-cache key-type))
       (time-strs->clj-times collection-map)))))
 
+;; TODO replicate + replace
 (defn get-collection
   "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
   Also allows provider-id and entry-title to be used."
@@ -135,10 +145,12 @@
    (let [by-provider-id-entry-title (get-collections-map context :by-provider-id-entry-title )]
      (get by-provider-id-entry-title [provider-id entry-title]))))
 
+;; added to common lib
 (defjob RefreshCollectionsCacheForGranuleAclsJob
   [ctx system]
   (refresh-cache {:system system}))
 
+;; added to common lib
 (def refresh-collections-cache-for-granule-acls-job
   {:job-type RefreshCollectionsCacheForGranuleAclsJob
    :interval job-refresh-rate})
