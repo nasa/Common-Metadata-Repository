@@ -127,14 +127,8 @@
       (cmr-context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
       (shapefile-simplifier/shapefile-simplifier default-error-format)
-      ;;params/wrap-params  ;; remove before merge 🦄
+      params/wrap-params  ;; remove before merge 🦄
       copy-of-body-handler
       req-log/add-body-hashes
       req-log/action-logger
-      ;; These next three calls look redundent, but these are needed early in
-      ;; the process for logging. Other values are injected latter, but not
-      ;; logged by action-logger
-      params/wrap-params
-      keyword-params/wrap-keyword-params
-      nested-params/wrap-nested-params
       (shapefile/shapefile-upload default-error-format)))
