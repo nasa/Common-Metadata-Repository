@@ -10,6 +10,7 @@
    [cmr.common.util :as util]
    [cmr.common.time-keeper :as tk]
    [digest :as digest]
+   [ring.middleware.params :as params]
    [ring.util.codec :as codec]))
 
 (defn- request->uri
@@ -112,6 +113,8 @@
        (let [start (tk/now-ms)
              now (dtp/clj-time->date-time-str (tk/now))
              response (handler request)
+             query-params (params/assoc-query-params request "UTF-8")
+             form-params (params/assoc-form-params request "UTF-8")
              note (-> {"log-version" "1.0.0"}
                     ;; As this handler can be called multiple times, if so,
                     ;; include an id showing which instance is reporting this
@@ -121,11 +124,11 @@
                       (assoc "body-md5" (get-in response [:headers "Content-MD5"]))
                       (assoc "body-sha1" (get-in response [:headers "Content-SHA1"]))
                       (assoc "client-id" (get-in request [:headers "client-id"] "unknown"))
-                      (assoc "form-params" (dump-param request :form-params))
+                      (assoc "form-params" (dump-param form-params :form-params))
                       (assoc "method" (clojure.string/upper-case (name (:request-method request))))
                       (assoc "now" now)
                       (assoc "protocol" (:protocol request))
-                      (assoc "query-params" (dump-param request :query-params))
+                      (assoc "query-params" (dump-param query-params :query-params))
                       (assoc "remote-address" (:remote-addr request))
                       (assoc "request-id" (get-in response [:headers "CMR-Request-Id"] "-to early-"))
                       (assoc "status" (:status response))
@@ -140,6 +143,9 @@
          response)))))
 
 (comment
+
+  (ring.middleware.params/assoc-form-params {:content-type "application/x-www-form-urlencoded" :body "k=v"} "UTF-8")
+  (ring.middleware.params/assoc-query-params {:query-string "&keyword=value"} "UTF-8")
 
   (- (tk/now-ms) (tk/now-ms))
 
