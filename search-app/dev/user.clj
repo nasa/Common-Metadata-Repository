@@ -23,8 +23,7 @@
 (defn create-system
   []
   ;; Set the default job start delay to avoid jobs kicking off with tests etc.
- ;; FIXME temporarily setting this to 1 second, will need to put back to (* 3 3600) afterward
-  (jobs/set-default-job-start-delay! 1)
+  (jobs/set-default-job-start-delay! (* 3 3600))
 
   ; (tunnel-system)
   (let [web-server (web/create-web-server (transmit-config/search-port)

@@ -211,8 +211,7 @@
 
   (config/reset-config-values)
 
- ;; FIXME temporarily setting this to 1 second, will need to put back to (* 3 3600) afterward
- (jobs/set-default-job-start-delay! 1)
+  (jobs/set-default-job-start-delay! (* 3 3600))
 
   ;; Prevent jobs from blocking calls to reset
   (humanizer-report-service/set-retry-count! 0)
