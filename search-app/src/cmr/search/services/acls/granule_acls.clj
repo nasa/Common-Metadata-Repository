@@ -221,7 +221,11 @@
   (if coll-identifier
     (let [collection-concept-id (:collection-concept-id concept)
           collection (merge {:concept-id collection-concept-id}
-                            (coll-cache/get-collection context collection-concept-id))]
+                            (coll-cache/get-collection context collection-concept-id))
+          _ (println "INSIDE collection-identifier-matches-concept? collection by get-collection= " collection)
+          collection2 (merge {:concept-id collection-concept-id}
+                            (coll-cache/get-collection-gran-acls context collection-concept-id))
+          _ (println "INSIDE collection-identifier-matches-concept? collection by get-collection-gran-acls = " collection2)]
       (when-not collection
         (errors/internal-error!
           (format "Collection with id %s was in a granule but was not found using collection cache."
