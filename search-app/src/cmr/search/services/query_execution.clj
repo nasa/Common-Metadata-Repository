@@ -131,7 +131,7 @@
   that the current user does not have access to."
   [context query-results]
   (let [original-item-count (count (:items query-results))
-        items (acl-service/filter-concepts context (:items query-results)) ;; TODO filter concepts is used here
+        items (acl-service/filter-concepts context (:items query-results))
         item-count (count items)]
     (-> query-results
         (assoc :items items)
