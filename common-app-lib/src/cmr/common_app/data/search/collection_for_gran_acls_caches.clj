@@ -64,13 +64,13 @@
     %)
   data))
 
-;(defn time-strs->clj-times
-; "Take a map which has string dates and convert them to DateTime objects. This
-;  can be reversed with clj-times->time-strs."
-; [data]
-; (walk/postwalk
-;  #(if-let [valid-date (time-parser/try-parse-datetime %)] valid-date %)
-;  data))
+(defn time-strs->clj-times
+ "Take a map which has string dates and convert them to DateTime objects. This
+  can be reversed with clj-times->time-strs."
+ [data]
+ (walk/postwalk
+  #(if-let [valid-date (time-parser/try-parse-datetime %)] valid-date %)
+  data))
 
 (defn- fetch-collections
  "Executes a query that will fetch all of the collection information needed for caching."
