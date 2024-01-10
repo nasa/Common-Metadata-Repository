@@ -74,6 +74,7 @@
      {:caches
       {coll-cache/cache-key coll-cache}}}))
 
+;; TODO this test needs to change since we moved coll cache to external redis instead of in-memory
 (deftest acl-match-granule-concept-test
   (testing "provider ids"
     (is (not (g/acl-match-concept? {} (make-acl "P1") (concept "P2" "C2-P2"))) "not same provider failed")

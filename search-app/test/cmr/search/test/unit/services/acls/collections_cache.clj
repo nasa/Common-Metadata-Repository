@@ -21,3 +21,6 @@
                      coll-cache/clj-times->time-strs)]
       (is (= some-text (:a-field actual)) "field should not change")
       (is (= expected-date (str (:point-of-time actual))) "Date should exist"))))
+
+;; TODO attempt to mock out and redef tests to check if something works or not
+;; https://clojuredocs.org/clojure.core/with-redefs-fn
