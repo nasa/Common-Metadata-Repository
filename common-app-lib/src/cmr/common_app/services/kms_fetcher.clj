@@ -86,17 +86,3 @@
         gcmd-keywords-map (fetch-gcmd-keywords-map context)]
     (info "Refreshed KMS cache.")
     (cache/set-value cache kms-cache-key gcmd-keywords-map)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache.
-(def-stateful-job RefreshKmsCacheJob
-  [_ system]
-  (refresh-kms-cache {:system system}))
-
-(defn refresh-kms-cache-job
-  "The singleton job that refreshes the KMS cache. The keywords are infrequently updated by the
-  GCMD team, usually once a week."
-  [job-key]
-  {:job-type RefreshKmsCacheJob
-   :job-key job-key
-   :daily-at-hour-and-minute [02 00]})
