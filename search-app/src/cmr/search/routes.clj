@@ -117,8 +117,8 @@
       context-augmenter/add-user-id-and-sids-handler
       acl/add-authentication-handler
       ;; These two are here to capture any newly added parameters
-      keyword-params/wrap-keyword-params  ;; remove before merge 🦄
-      nested-params/wrap-nested-params    ;; remove before merge 🦄
+      keyword-params/wrap-keyword-params
+      nested-params/wrap-nested-params
       errors/invalid-url-encoding-handler
       mixed-arity-param-handler
       (errors/exception-handler default-error-format)
@@ -127,7 +127,7 @@
       (cmr-context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
       (shapefile-simplifier/shapefile-simplifier default-error-format)
-      params/wrap-params  ;; remove before merge 🦄
+      params/wrap-params
       copy-of-body-handler
       req-log/add-body-hashes
       req-log/action-logger
