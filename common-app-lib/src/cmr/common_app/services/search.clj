@@ -95,6 +95,7 @@
             (cache/set-value short-scroll-id nil))
         result))))
 
+;; TODO STEP 6
 (defn time-concept-search
   "Executes a search for concepts and returns the results while logging execution times."
   [context query]
@@ -105,6 +106,7 @@
     (info "query-execution-time:" query-execution-time "result-gen-time:" result-gen-time)
     [results result-str]))
 
+;; TODO STEP 5
 (defn find-concepts
   "Executes a search for concepts using the given query."
   [context _concept-type query]

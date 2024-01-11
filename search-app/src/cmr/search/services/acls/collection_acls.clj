@@ -13,7 +13,10 @@
   [context query]
   ;; return unmodified query if the context has a system token
   (if (tc/echo-system-token? context)
-    query
+   (let [group-ids (map #(if (keyword? %) (name %) %)
+                        (util/lazy-get context :sids))
+         acl-cond (qm/string-conditions :permitted-group-ids group-ids true)]
+    (update-in query [:condition] #(gc/and-conds [acl-cond %])))
     (let [group-ids (map #(if (keyword? %) (name %) %)
                          (util/lazy-get context :sids))
           acl-cond (qm/string-conditions :permitted-group-ids group-ids true)]

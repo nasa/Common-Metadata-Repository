@@ -126,6 +126,7 @@
                   :result-format result-format})]
     (common-qe/post-process-query-result-features context query nil results)))
 
+;; TODO STEP 8
 (defn- filter-query-results-with-acls
   "Returns the query results after ACLs are applied to filter out items
   that the current user does not have access to."
@@ -137,6 +138,7 @@
         (assoc :items items)
         (update :hits - (- original-item-count item-count)))))
 
+;; TODO STEP 7
 (defmethod common-qe/execute-query :specific-elastic-items
   [context query]
   (let [processed-query (->> query
@@ -146,7 +148,7 @@
         elastic-results (idx/execute-query context processed-query)
         query-results (rc/elastic-results->query-results context query elastic-results)
         query-results (if (or (tc/echo-system-token? context) (:skip-acls? query))
-                        query-results
+                        (filter-query-results-with-acls context query-results)
                         (filter-query-results-with-acls context query-results))]
     (common-qe/post-process-query-result-features context query elastic-results query-results)))
 

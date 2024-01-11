@@ -169,7 +169,7 @@
   [job-key]
   {:job-type RefreshAclCacheJob
    :job-key job-key
-   :interval 3600})
+   :interval 30})
 
 (comment
  (do

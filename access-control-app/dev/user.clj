@@ -58,7 +58,8 @@
 (defn start
   "Starts the current development system."
   []
-  (jobs/set-default-job-start-delay! (* 3 3600))
+ ;; FIXME temp changing this
+  (jobs/set-default-job-start-delay! 10)
 
   ;; Configure ports so that it won't conflict with another REPL containing the same applications.
   (transmit-config/set-access-control-port! 4011)

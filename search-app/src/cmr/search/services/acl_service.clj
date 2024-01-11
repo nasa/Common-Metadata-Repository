@@ -95,6 +95,7 @@
    (zipmap (cc/get-generic-concept-types-array) (map #(keyword (format "%s-applicable" (name %))) 
                                                      (cc/get-generic-concept-types-array)))))
 
+;;TODO STEP 9
 (defn filter-concepts
   "Filters out the concepts that the current user does not have access to. Concepts are the maps
   of concept metadata as returned by the metadata db.
@@ -117,11 +118,31 @@
   * :concept-type
   * :provider-id"
   [context concepts]
+ (println "INSIDE filter concepts")
   (when (seq concepts)
     (if (tc/echo-system-token? context)
       ;;return all concepts if running with the system token
-      concepts
-      (let [acls (acl-helper/get-acls-applicable-to-token context)
+      (do
+       (println "INSIDE filter concepts: FOUND ECHO SYSTEM TOKEN but re-routing.")
+       (println "context = " (pr-str context))
+       (let [acls (acl-helper/get-acls-applicable-to-token context)
+             ;; drafts don't contain concept-type field, so we will need to derive it from concept-id
+             ;; collections don't contain concept_id or concept-id fields, but they do contain concept-type field.
+             concept-type (-> concepts first :concept-type)
+             concept-type (if concept-type
+                           concept-type
+                           (-> concepts first :concept_id cc/concept-id->type))
+             applicable-field (concept-type->applicable-field concept-type)
+             ;; Note: This applicable-acls is only used for collections and granules acl matching.
+             ;; For other concept types, it is not being used.
+             applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)]
+        (doall (remove nil? (pmap (fn [concept]
+                                   (when (acls-match-concept? context applicable-acls concept)
+                                    concept))
+                                  concepts)))))
+      (let [_ (println "INSIDE filter concepts: did not find system token")
+            acls (acl-helper/get-acls-applicable-to-token context)
+            _ (println "inside filter concepts, acls = " (pr-str acls))
             ;; drafts don't contain concept-type field, so we will need to derive it from concept-id
             ;; collections don't contain concept_id or concept-id fields, but they do contain concept-type field.
             concept-type (-> concepts first :concept-type)
@@ -131,7 +152,8 @@
             applicable-field (concept-type->applicable-field concept-type)
             ;; Note: This applicable-acls is only used for collections and granules acl matching.
             ;; For other concept types, it is not being used.
-            applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)]
+            applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)
+            _ (println" Inside filter concepts: applicable-acls = " (pr-str applicable-acls))]
         (doall (remove nil? (pmap (fn [concept]
                                     (when (acls-match-concept? context applicable-acls concept)
                                       concept))

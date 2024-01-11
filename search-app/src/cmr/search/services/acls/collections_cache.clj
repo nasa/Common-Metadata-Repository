@@ -121,7 +121,6 @@
  "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
  Also allows provider-id and entry-title to be used."
  ([context coll-concept-id]
-  ;; TODO how do I make the sure context has the right cache key? ANSWER: context wll have the names of all the caches already in it. This fun just checks if the given cache-key exists in the context list
   (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-concept-id-cache-key)
         collection (hash-cache/get-value
                     coll-by-concept-id-cache ;; cache

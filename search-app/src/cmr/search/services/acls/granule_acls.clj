@@ -214,12 +214,14 @@
              (umm-matchers/matches-temporal-filter? :granule umm-temporal temporal))
            true))))
 
+; TODO STEP 12
 (defn collection-identifier-matches-concept?
   "Returns true if the collection identifier (a field in catalog item identities in ACLs) is nil or
   it matches the concept."
   [context coll-identifier concept]
   (if coll-identifier
-    (let [collection-concept-id (:collection-concept-id concept)
+    (let [_ (println "INSIDE collection-identifier-matches-concept? = coll-identifier = " (pr-str coll-identifier))
+          collection-concept-id (:collection-concept-id concept)
           collection (merge {:concept-id collection-concept-id}
                             (coll-cache/get-collection context collection-concept-id))
           _ (println "INSIDE collection-identifier-matches-concept? collection by get-collection= " collection)
@@ -233,16 +235,19 @@
       (umm-matchers/coll-matches-collection-identifier? collection coll-identifier))
     true))
 
+; TODO STEP 11
 (defn acl-match-concept?
   "Returns true if the acl matches the concept indicating the concept is permitted."
   [context acl concept]
-  (let [{provider-id :provider-id
+  (let [_ (println "Inside acl-match-concept?")
+        {provider-id :provider-id
          gran-identifier :granule-identifier
          coll-identifier :collection-identifier} (:catalog-item-identity acl)]
     (and (= provider-id (:provider-id concept))
          (granule-identifier-matches-concept? gran-identifier concept)
          (collection-identifier-matches-concept? context coll-identifier concept))))
 
+; TODO STEP 10
 (defmethod acl-service/acls-match-concept? :granule
   [context acls concept]
   (some #(acl-match-concept? context % concept) acls))

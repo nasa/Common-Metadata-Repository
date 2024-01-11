@@ -6,6 +6,7 @@
 (defn context->cache
   "Get the cache for the given key from the context"
   [context cache-key]
+  (println "inside context -> cache= caches = " (pr-str [:system :caches cache-key]))
   (get-in context [:system :caches cache-key]))
 
 (defn hash-cache?

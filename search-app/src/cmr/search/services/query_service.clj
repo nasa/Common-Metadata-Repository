@@ -196,6 +196,7 @@
                 context concept-type params)]
     (common-params/generate-param-query-conditions context concept-type params)))
 
+;; TODO STEP 4
 (defn find-concepts-by-parameters
   "Executes a search for concepts using the given parameters. The concepts will be returned with
   concept id and native provider id along with hit count and timing info."
