@@ -11,7 +11,7 @@
   [cmr.common.log :as log :refer (debug info warn error)]
   [clojure.walk :as walk]
   [cmr.common-app.services.search.query-execution :as qe]
-  [cmr.common-app.services.search.query-model :as q-mod]
+  [cmr.common-app.services.search.query-model :as qm]
   [cmr.common.date-time-parser :as time-parser]
   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
   [cmr.common.util :as util]))
@@ -81,8 +81,8 @@
                                                   :collection
                                                   elastic-item))
                           :concept-id (:_id elastic-item)))
-       query (q-mod/query {:concept-type :collection
-                           :condition q-mod/match-all
+       query (qm/query {:concept-type :collection
+                           :condition qm/match-all
                            :skip-acls? true
                            :page-size :unlimited
                            :result-format :query-specified
@@ -99,7 +99,7 @@
                                                   elastic-item))
                           :concept-id (:_id elastic-item)))
        ;; TODO how to find one collection in elastic search? need to fix this to search for only one concept_id
-       query (q-mod/query {:concept-type :collection
+       query (qm/query {:concept-type :collection
                            :condition (qm/string-condition :concept-id collection-concept-id)
                            :skip-acls? true
                            :page-size :unlimited
