@@ -140,7 +140,7 @@
 
 ;; TODO remove after transition
 (defn- get-collections-map
- "Gets the cached value. By default an error is thrown if there is no value in
+  "Gets the cached value. By default an error is thrown if there is no value in
    the cache. Pass in anything other then :return-errors for the third parameter
    to have null returned when no data is in the cache. :return-errors is for the
    default behavior."
