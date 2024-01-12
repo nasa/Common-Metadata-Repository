@@ -222,12 +222,12 @@
   (if coll-identifier
     (let [_ (println "INSIDE collection-identifier-matches-concept? = coll-identifier = " (pr-str coll-identifier))
           collection-concept-id (:collection-concept-id concept)
+          ;collection (merge {:concept-id collection-concept-id}
+          ;                  (coll-cache/get-collection context collection-concept-id))
+          ;_ (println "INSIDE collection-identifier-matches-concept? collection by get-collection= " collection)
           collection (merge {:concept-id collection-concept-id}
-                            (coll-cache/get-collection context collection-concept-id))
-          _ (println "INSIDE collection-identifier-matches-concept? collection by get-collection= " collection)
-          collection2 (merge {:concept-id collection-concept-id}
                             (coll-cache/get-collection-gran-acls context collection-concept-id))
-          _ (println "INSIDE collection-identifier-matches-concept? collection by get-collection-gran-acls = " collection2)]
+          _ (println "INSIDE collection-identifier-matches-concept? collection by get-collection-gran-acls = " collection)]
       (when-not collection
         (errors/internal-error!
           (format "Collection with id %s was in a granule but was not found using collection cache."
@@ -239,7 +239,7 @@
 (defn acl-match-concept?
   "Returns true if the acl matches the concept indicating the concept is permitted."
   [context acl concept]
-  (let [_ (println "Inside acl-match-concept?")
+  (let [_ (println "Inside acl-match-concept? :granule")
         {provider-id :provider-id
          gran-identifier :granule-identifier
          coll-identifier :collection-identifier} (:catalog-item-identity acl)]

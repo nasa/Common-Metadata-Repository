@@ -24,6 +24,7 @@
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
+   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-gran-acls-caches]
    [cmr.search.routes :as routes]
    [cmr.search.services.acls.collections-cache :as coll-cache]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
@@ -133,7 +134,9 @@
                       search/scroll-id-cache-key (search/create-scroll-id-cache)
                       search/scroll-first-page-cache-key (search/create-scroll-first-page-cache)
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
-                      common-health/health-cache-key (common-health/create-health-cache)
+                      coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache)
+                      coll-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key (coll-gran-acls-caches/create-coll-by-provider-id-and-entry-title-cache)
+             common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       hrs/report-cache-key (hrs/create-report-cache)
                       hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)}

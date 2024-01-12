@@ -13,7 +13,8 @@
    [cmr.redis-utils.redis-hash-cache :as red-hash-cache]
    [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.messages.collections-cache-messages :as coll-msg]
-   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acl-caches]))
+   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acl-caches]
+   [cmr.common.cache :as cmn-cache]))
 
 ;; added to common lib
 (def cache-key
@@ -122,21 +123,25 @@
  Also allows provider-id and entry-title to be used."
  ([context coll-concept-id]
   (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-concept-id-cache-key)
+        _ (println "inside get-collection-gran-acls: cache found = " (pr-str coll-by-concept-id-cache))
+        _ (println "inside get-collection-gran-acls: coll-concept-id found = " coll-concept-id)
         collection (hash-cache/get-value
                     coll-by-concept-id-cache ;; cache
                     coll-for-gran-acl-caches/coll-by-concept-id-cache-key ;; key
-                    coll-concept-id)] ;; field
-   ;;TODO check if collection is empty and return no error if it is empty or nil or whatever
+                    coll-concept-id) ;; field
+        _ (println "inside get-collection-gran-acls: collection found = " (pr-str collection))
+        ]
    (when (or (nil? collection) (empty? collection))
-    (info (coll-msg/collection-not-found coll-concept-id)) ;; no error needs to be thrown
-    (coll-for-gran-acl-caches/refresh-entire-cache context)) ;; FIXME why kick off an entire refresh cache during API calls? Instead, add one field/val pair to cache and move on.
+    ;; if collection not exist in cache, search for it and put in cache
+    (info (coll-msg/collection-not-found coll-concept-id))
+    (coll-for-gran-acl-caches/set-cache context coll-concept-id)) ;; TODO test this path
    (time-strs->clj-times collection)))
- ([context provider-id entry-title]
+ ([context provider-id entry-title] ;; TODO test this path
   (let [coll-by-provider-id-and-entry-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key)
         collection (hash-cache/get-value
-                    coll-by-provider-id-and-entry-id-cache ;; cache
-                    coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key ;; key
-                    (str (provider-id) (entry-title)))]
+                    coll-by-provider-id-and-entry-id-cache
+                    coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key
+                    (str provider-id entry-title))]
    (time-strs->clj-times collection))))
 
 ;; TODO remove after transition

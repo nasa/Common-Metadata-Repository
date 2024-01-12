@@ -159,10 +159,13 @@
 (defn coll-applicable-acl?
   "Returns true if the acl is applicable to the collection."
   [coll-prov-id coll acl]
+ (println "inside coll-applicable acl?")
+ (println "coll-prov-id = " coll-prov-id " and coll = " (pr-str coll))
   (when-let [{:keys [collection-applicable
                      collection-identifier
                      provider-id]} (:catalog-item-identity acl)]
     (validate-collection-identiier acl collection-identifier)
+    (println "collection-identifier is " (pr-str collection-identifier))
     (and collection-applicable
          (= coll-prov-id provider-id)
          (or (nil? collection-identifier)

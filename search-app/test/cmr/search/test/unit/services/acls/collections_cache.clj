@@ -24,3 +24,17 @@
 
 ;; TODO attempt to mock out and redef tests to check if something works or not
 ;; https://clojuredocs.org/clojure.core/with-redefs-fn
+
+;(deftest get-collection-gran-acls-test
+; "Test that collection is retrieved from acls."
+; (testing "collection is found"
+;  (let [context {:system {:caches [cmr.common-app.data.search.collection-for-gran-acls-caches/coll-by-concept-id-cache-key]}}
+;        coll-concept-id "C1234-PROV1"
+;        actual (cmr.search.services.acls.collections-cache/get-collection-gran-acls context coll-concept-id)
+;        ]
+;   )
+;  ))
+;
+;(deftest is-a-fn
+; (with-redefs-fn {#'http/post (fn [url] {:body "Hello world again"})}
+;  #(is (= {:body "Hello world again"} (http/post "http://service.com/greet")))))

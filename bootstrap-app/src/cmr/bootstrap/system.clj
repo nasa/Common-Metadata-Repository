@@ -88,13 +88,13 @@
                       common-health/health-cache-key (common-health/create-health-cache)
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
                       coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache)
-                      coll-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key (coll-gran-acls-caches/create-coll-by-provider-id-and-entry-title-cache)
-                      }
+                      coll-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key (coll-gran-acls-caches/create-coll-by-provider-id-and-entry-title-cache)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
                                                                (kf/refresh-kms-cache-job "bootstrap-kms-cache-refresh")
                                                                (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
                                                                (b-coll-metadata-cache/refresh-collections-metadata-cache-job "bootstrap-collections-metadata-cache-refresh")
-                                                               (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")])
+                                                               (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")
+                                                               (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job "bootstrap-collections-for-gran-acls-cache-refresh")])
              :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms
                                                   :indexer :access-control])))

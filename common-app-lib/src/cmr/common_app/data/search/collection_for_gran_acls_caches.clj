@@ -16,7 +16,8 @@
   [cmr.common.date-time-parser :as time-parser]
   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
   [cmr.common.util :as util]
-  [cmr.redis-utils.redis-hash-cache :as red-hash-cache]))
+  [cmr.redis-utils.redis-hash-cache :as red-hash-cache]
+  [cmr.common-app.services.search.query-model :as qm]))
 
 (def coll-by-concept-id-cache-key
   "Identifies the key used when the cache is stored in the system."
@@ -92,24 +93,58 @@
                            :result-features {:query-specified {:result-processor result-processor}}})]
   (:items (qe/execute-query context query))))
 
+(defn- fetch-collection
+ "fetch one collection from elastic search"
+ [context collection-concept-id]
+ (let [result-processor (fn [_ _ elastic-item]
+                         (assoc (util/delazy-all (acl-rhh/parse-elastic-item
+                                                  :collection
+                                                  elastic-item))
+                          :concept-id (:_id elastic-item)))
+       ;; TODO how to find one collection in elastic search? need to fix this to search for only one concept_id
+       query (q-mod/query {:concept-type :collection
+                           :condition (qm/string-condition :concept-id collection-concept-id)
+                           :skip-acls? true
+                           :page-size :unlimited
+                           :result-format :query-specified
+                           :result-fields (cons :concept-id acl-rhh/collection-elastic-fields)
+                           :result-features {:query-specified {:result-processor result-processor}}})]
+  (:items (qe/execute-query context query))))
+
 (defn refresh-entire-cache
   "Refreshes the collections-for-gran-acls coll-by-concept-id and coll-by-provider-id-and-entry-title caches.
   This should be called from a background job on a timer to keep the cache fresh.
   This will throw an exception if there is a problem fetching collections.
   The caller is responsible for catching and logging the exception."
   [context]
+  (info "Refreshing collection-for-gran-acls caches.")
   (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
         coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-by-provider-id-and-entry-title-cache-key)
         collections (fetch-collections context)]
    (doseq [coll collections]
-    (hash-cache/set-value coll-by-concept-id-cache ;; cache
-                          coll-by-concept-id-cache-key ;; key
-                          (:concept-id coll) ;; field
-                          (clj-times->time-strs coll)) ;; value
-    (hash-cache/set-value coll-by-provider-id-and-entry-title-cache ;; cache
-                          coll-by-provider-id-and-entry-title-cache-key ;; key
-                          (str (:provider-id coll) (:EntryTitle coll)) ;; field
-                          (clj-times->time-strs coll))))) ;; value
+    (hash-cache/set-value coll-by-concept-id-cache
+                          coll-by-concept-id-cache-key
+                          (:concept-id coll)
+                          (clj-times->time-strs coll))
+    (hash-cache/set-value coll-by-provider-id-and-entry-title-cache
+                          coll-by-provider-id-and-entry-title-cache-key
+                          (str (:provider-id coll) (:EntryTitle coll))
+                          (clj-times->time-strs coll)))))
+
+(defn set-cache
+ [context collection-concept-id]
+ (info "Updating collections-for-gran-acl caches for one given collection")
+ (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
+       coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-by-provider-id-and-entry-title-cache-key)
+       collection-found (fetch-collection context collection-concept-id)]
+  (hash-cache/set-value coll-by-concept-id-cache ;; cache
+                        coll-by-concept-id-cache-key ;; key
+                        (:concept-id collection-found) ;; field
+                        (clj-times->time-strs collection-found)) ;; value
+  (hash-cache/set-value coll-by-provider-id-and-entry-title-cache ;; cache
+                        coll-by-provider-id-and-entry-title-cache-key ;; key
+                        (str (:provider-id collection-found) (:EntryTitle collection-found)) ;; field
+                        (clj-times->time-strs collection-found))))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
         [ctx system]
