@@ -3,7 +3,7 @@
 
 (defn collection-not-found
   [concept-id]
-  (format "Collection with id %s not found in cache. Manually triggering cache refresh"
+  (format "Collection with id %s not found in cache."
           concept-id))
 
 (defn collections-not-in-cache

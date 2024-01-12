@@ -15,6 +15,7 @@
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as mc]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common-app.services.provider-cache :as provider-cache]
+   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acls-caches]
    [cmr.common.api.errors :as errors]
    [cmr.common.log :refer [info]]
    [cmr.common.generics :as common-generic]
@@ -129,6 +130,10 @@
 
             (= (keyword cache-name) provider-cache/cache-key)
             (provider-cache/refresh-provider-cache request-context)
+
+            (or (= (keyword cache-name) coll-for-gran-acls-caches/coll-by-concept-id-cache-key)
+                (= (keyword cache-name) coll-for-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key))
+            (coll-for-gran-acls-caches/refresh-entire-cache request-context)
 
             :else
             (route/not-found "Not Found"))

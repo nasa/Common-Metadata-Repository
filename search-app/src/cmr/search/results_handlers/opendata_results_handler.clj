@@ -16,7 +16,7 @@
    [cmr.common.services.errors :as svc-errors]
    [cmr.common.util :as util]
    [cmr.search.results-handlers.opendata-spatial-results-handler :as opendata-spatial]
-   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.url-helper :as url]
    [cmr.spatial.serialize :as srl]
