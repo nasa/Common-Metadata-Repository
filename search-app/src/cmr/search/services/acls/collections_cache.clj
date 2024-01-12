@@ -116,39 +116,31 @@
     (doseq [[coll-key coll-value] collections-map]
       (hash-cache/set-value cache cache-key coll-key (clj-times->time-strs coll-value)))))
 
-;; TODO this is the new func that will replace 'get-collection' AND 'get-collection-map' during transition
 (defn get-collection-gran-acls
- "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
- Also allows provider-id and entry-title to be used."
  ([context coll-concept-id]
-  (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-concept-id-cache-key)
-        _ (println "inside get-collection-gran-acls: cache found = " (pr-str coll-by-concept-id-cache))
-        _ (println "inside get-collection-gran-acls: coll-concept-id found = " coll-concept-id)
-        collection (hash-cache/get-value
-                    coll-by-concept-id-cache ;; cache
-                    coll-for-gran-acl-caches/coll-by-concept-id-cache-key ;; key
-                    coll-concept-id) ;; field
-        _ (println "inside get-collection-gran-acls: collection found = " (pr-str collection))
-        ]
+  "Gets a single collection from the cache by concept id. If collection is not found, will add it to the cache (if it exists in elastic) and will return empty collection."
+ (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-concept-id-cache-key)
+       collection (hash-cache/get-value
+                    coll-by-concept-id-cache
+                    coll-for-gran-acl-caches/coll-by-concept-id-cache-key
+                    coll-concept-id)]
    (when (or (nil? collection) (empty? collection))
     ;; if collection not exist in cache, search for it and put in cache
     (info (coll-msg/collection-not-found coll-concept-id))
-    (coll-for-gran-acl-caches/set-cache context coll-concept-id)) ;; TODO test this path
+    (coll-for-gran-acl-caches/set-caches context coll-concept-id))
    (time-strs->clj-times collection)))
- ([context provider-id entry-title] ;; TODO test this path
-  (let [coll-by-provider-id-and-entry-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key)
-        collection (hash-cache/get-value
-                    coll-by-provider-id-and-entry-id-cache
-                    coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key
-                    (str provider-id entry-title))]
-   (when (or (nil? collection) (empty? collection))
-    (info (coll-msg/collection-not-found (str provider-id entry-title)))
-    (coll-for-gran-acl-caches/refresh-entire-cache context)) ;;TODO replace
-   (time-strs->clj-times collection))))
+ ([context provider-id entry-title]
+  "Gets a single collection from the cache by concept id. If collection is not found, will add it to the cache (if it exists in elastic) and will return empty collection."
+ (let [coll-by-provider-id-and-entry-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key)
+       collection (hash-cache/get-value
+                   coll-by-provider-id-and-entry-id-cache
+                   coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key
+                   (str provider-id entry-title))]
+  (time-strs->clj-times collection))))
 
 ;; TODO remove after transition
 (defn- get-collections-map
-  "Gets the cached value. By default an error is thrown if there is no value in
+ "Gets the cached value. By default an error is thrown if there is no value in
    the cache. Pass in anything other then :return-errors for the third parameter
    to have null returned when no data is in the cache. :return-errors is for the
    default behavior."

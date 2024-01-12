@@ -90,6 +90,7 @@
                            :result-features {:query-specified {:result-processor result-processor}}})]
   (:items (qe/execute-query context query))))
 
+;; TODO test this
 (defn- fetch-collection
  "fetch one collection from elastic search"
  [context collection-concept-id]
@@ -131,21 +132,23 @@
          "coll-by-concept-id-cache Cache Size:" (hash-cache/cache-size coll-by-concept-id-cache coll-by-concept-id-cache-key)
          "coll-by-provider-id-and-entry-title-cache Cache Size:" (hash-cache/cache-size coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key)))))
 
-
-(defn set-cache
+;;TODO test
+(defn set-caches
+ "Set cache with collection found in elastic and then returns it"
  [context collection-concept-id]
- (info "Updating collections-for-gran-acl caches for one given collection")
+ (info "Updating collections-for-gran-acl caches for one given collection by concept id")
  (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
        coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-by-provider-id-and-entry-title-cache-key)
        collection-found (fetch-collection context collection-concept-id)]
-  (hash-cache/set-value coll-by-concept-id-cache ;; cache
-                        coll-by-concept-id-cache-key ;; key
-                        (:concept-id collection-found) ;; field
-                        (clj-times->time-strs collection-found)) ;; value
-  (hash-cache/set-value coll-by-provider-id-and-entry-title-cache ;; cache
-                        coll-by-provider-id-and-entry-title-cache-key ;; key
+  (hash-cache/set-value coll-by-concept-id-cache
+                        coll-by-concept-id-cache-key
+                        (:concept-id collection-found)
+                        (clj-times->time-strs collection-found))
+  (hash-cache/set-value coll-by-provider-id-and-entry-title-cache
+                        coll-by-provider-id-and-entry-title-cache-key
                         (str (:provider-id collection-found) (:EntryTitle collection-found)) ;; field
-                        (clj-times->time-strs collection-found))))
+                        (clj-times->time-strs collection-found))
+  collection-found))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
         [ctx system]
