@@ -13,6 +13,7 @@
    [cmr.bootstrap.services.dispatch.core :as dispatch]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
+   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-gran-acls-caches]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
@@ -85,12 +86,15 @@
                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
                       provider-cache/cache-key (provider-cache/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
-                      cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)}
+                      cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
+                      coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
+                      coll-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key (coll-gran-acls-caches/create-coll-by-provider-id-and-entry-title-cache-client)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
                                                                (kf/refresh-kms-cache-job "bootstrap-kms-cache-refresh")
                                                                (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
                                                                (b-coll-metadata-cache/refresh-collections-metadata-cache-job "bootstrap-collections-metadata-cache-refresh")
-                                                               (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")])
+                                                               (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")
+                                                               (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job "bootstrap-collections-for-gran-acls-cache-refresh")])
              :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms
                                                   :indexer :access-control])))

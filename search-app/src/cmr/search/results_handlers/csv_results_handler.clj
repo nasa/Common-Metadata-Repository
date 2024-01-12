@@ -8,7 +8,7 @@
    [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common.services.errors :as svc-errors]
-   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf])
   (:import
     [java.io StringWriter]))
