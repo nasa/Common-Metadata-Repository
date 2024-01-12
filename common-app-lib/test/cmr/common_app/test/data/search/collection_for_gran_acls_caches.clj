@@ -1,8 +1,8 @@
 (ns cmr.common-app.test.data.search.collection-for-gran-acls-caches
  (:require
   [clojure.test :refer :all]
-  [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acl-caches])
- )
+  [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acl-caches]
+  [clojure.test.check.generators :as gen]))
 
 (defn- random-text
  "Create a random string by combining all the values from gen/string-alphanumeric"
