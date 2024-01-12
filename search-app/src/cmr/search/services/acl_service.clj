@@ -95,7 +95,6 @@
    (zipmap (cc/get-generic-concept-types-array) (map #(keyword (format "%s-applicable" (name %))) 
                                                      (cc/get-generic-concept-types-array)))))
 
-;;TODO STEP 9
 (defn filter-concepts
   "Filters out the concepts that the current user does not have access to. Concepts are the maps
   of concept metadata as returned by the metadata db.
@@ -118,8 +117,6 @@
   * :concept-type
   * :provider-id"
   [context concepts]
- (println "INSIDE filter concepts")
- (println "concepts = " (pr-str concepts))
   (when (seq concepts)
     (if (tc/echo-system-token? context)
       ;;return all concepts if running with the system token

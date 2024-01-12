@@ -20,7 +20,6 @@
          {"prov1guid" "PROV1" "prov2guid" "PROV2" "prov3guid" "PROV3"}))
 (use-fixtures :once test-util/embedded-redis-server-fixture)
 
-;;TODO JYNA RUN THIS TEST
 (deftest cache-apis
   ;; login as a member of group 1
   (let [admin-read-group-concept-id (e/get-or-create-group (s/context) "admin-read-group")

@@ -126,37 +126,28 @@
                   :result-format result-format})]
     (common-qe/post-process-query-result-features context query nil results)))
 
-;; TODO STEP 8
 (defn- filter-query-results-with-acls
   "Returns the query results after ACLs are applied to filter out items
   that the current user does not have access to."
   [context query-results]
-  (let [_ (println "inside filter-query-results-with-acls")
-        original-item-count (count (:items query-results))
-        items (acl-service/filter-concepts context (:items query-results)) ;; TODO filter concepts is used here
+  (let [original-item-count (count (:items query-results))
+        items (acl-service/filter-concepts context (:items query-results))
         item-count (count items)]
     (-> query-results
         (assoc :items items)
         (update :hits - (- original-item-count item-count)))))
 
-;; TODO STEP 7
 (defmethod common-qe/execute-query :specific-elastic-items
   [context query]
-  (let [_ (println "inside common-qe/execute-query :specific-elastic-items")
-        processed-query (->> query
+  (let [processed-query (->> query
                              (common-qe/pre-process-query-result-features context)
                              (r/resolve-collection-queries context)
                              (c2s/reduce-query context))
         elastic-results (idx/execute-query context processed-query)
         query-results (rc/elastic-results->query-results context query elastic-results)
         query-results (if (or (tc/echo-system-token? context) (:skip-acls? query))
-                       (do
-                        (println "inside common-qe/execute-query :specific-elastic-items -- was given system token, but rerouting.")
-                        (filter-query-results-with-acls context query-results)
-                        )
-                       (do
-                        (println "inside (filter-query-results-with-acls context query-results) -- was not given system token")
-                        (filter-query-results-with-acls context query-results)))]
+                        query-results
+                        (filter-query-results-with-acls context query-results))]
     (common-qe/post-process-query-result-features context query elastic-results query-results)))
 
 (defmethod common-qe/concept-type-specific-query-processing :granule

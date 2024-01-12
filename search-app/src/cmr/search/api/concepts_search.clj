@@ -224,7 +224,6 @@
         (when (all-granule-params? scroll-id constraints)
           (handle-all-granule-params headers))))))
 
-;; TODO STEP 3
 (defn- find-concepts-by-parameters
   "Invokes query service to parse the parameters query, find results, and
   return the response"
@@ -256,7 +255,6 @@
       (core-api/search-response ctx results search-params)
       (core-api/search-response ctx results))))
 
-;; TODO STEP 2
 (defn- find-concepts
   "Invokes query service to find results and returns the response.
 
@@ -388,7 +386,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Route Definitions
 
-;; TODO STEP 1
 (def search-routes
   "Routes for /search/granules, /search/collections, etc."
   (context ["/:path-w-extension" :path-w-extension routes-regex] [path-w-extension]

@@ -136,7 +136,7 @@
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
                       coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache)
                       coll-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key (coll-gran-acls-caches/create-coll-by-provider-id-and-entry-title-cache)
-             common-health/health-cache-key (common-health/create-health-cache)
+                      common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       hrs/report-cache-key (hrs/create-report-cache)
                       hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)}
