@@ -119,7 +119,7 @@
                     ;; As this handler can be called multiple times, if so,
                     ;; include an id showing which instance is reporting this
                     ;; information.
-                      (as-> data (when-not (= id :ignore) (assoc data "log-id" id)))
+                      (as-> data (if (= id :ignore) (assoc data "log-id" id) data))
                     ;; assume that (add-body-hashes) has been run and reuse data
                       (assoc "body-md5" (get-in response [:headers "Content-MD5"]))
                       (assoc "body-sha1" (get-in response [:headers "Content-SHA1"]))
@@ -139,6 +139,7 @@
                       (assoc "log-cost" (- (tk/now-ms) start)))]
        ;; send the log to standard error in the same way that the ring access log does
          (.println *err* (json/generate-string note))
+         (println (json/generate-string note))
          (def my-response response)
          response)))))
 
