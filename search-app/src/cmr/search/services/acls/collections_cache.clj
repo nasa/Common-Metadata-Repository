@@ -13,8 +13,7 @@
    [cmr.redis-utils.redis-hash-cache :as red-hash-cache]
    [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.messages.collections-cache-messages :as coll-msg]
-   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acl-caches]
-   [cmr.common.cache :as cmn-cache]))
+   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acl-caches]))
 
 ;; added to common lib will remove in future
 (def cache-key
