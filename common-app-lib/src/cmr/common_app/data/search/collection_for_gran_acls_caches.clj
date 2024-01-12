@@ -9,14 +9,12 @@
   [cmr.common.hash-cache :as hash-cache]
   [cmr.common.jobs :refer [defjob]]
   [cmr.common.log :as log :refer (debug info warn error)]
-  [cmr.common.services.errors :as errors]
   [clojure.walk :as walk]
   [cmr.common-app.services.search.query-execution :as qe]
   [cmr.common-app.services.search.query-model :as q-mod]
   [cmr.common.date-time-parser :as time-parser]
   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
-  [cmr.common.util :as util]
-  [cmr.redis-utils.redis-hash-cache :as red-hash-cache]))
+  [cmr.common.util :as util]))
 
 (def coll-by-concept-id-cache-key
   "Identifies the key used when the cache is stored in the system."
@@ -38,7 +36,7 @@
    ;; 30 minutes
   (* 60 30))
 
-(defn create-coll-by-concept-id-cache
+(defn create-coll-by-concept-id-cache-client
  "Creates connection to collection-for-gran-acls coll-by-concept-id-cache.
   Field/Value Structure is as follows:
   concept-id -> {collection info}"
@@ -46,7 +44,7 @@
   (red-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-concept-id-cache-key]
                                            :ttl           cache-ttl}))
 
-(defn create-coll-by-provider-id-and-entry-title-cache
+(defn create-coll-by-provider-id-and-entry-title-cache-client
  "Creates connection to collection-for-gran-acls coll-by-provider-id-and-entry-id-cache.
   Field/Value Structure is as follows:
   <provider_id><entry-title> -> {collection info}"
@@ -98,18 +96,22 @@
   This will throw an exception if there is a problem fetching collections.
   The caller is responsible for catching and logging the exception."
   [context]
+ (info "Refreshing entire Collections-for-gran-acls caches")
   (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
         coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-by-provider-id-and-entry-title-cache-key)
         collections (fetch-collections context)]
    (doseq [coll collections]
-    (hash-cache/set-value coll-by-concept-id-cache ;; cache
-                          coll-by-concept-id-cache-key ;; key
-                          (:concept-id coll) ;; field
-                          (clj-times->time-strs coll)) ;; value
-    (hash-cache/set-value coll-by-provider-id-and-entry-title-cache ;; cache
-                          coll-by-provider-id-and-entry-title-cache-key ;; key
-                          (str (:provider-id coll) (:EntryTitle coll)) ;; field
-                          (clj-times->time-strs coll))))) ;; value
+    (hash-cache/set-value coll-by-concept-id-cache
+                          coll-by-concept-id-cache-key
+                          (:concept-id coll)
+                          (clj-times->time-strs coll))
+    (hash-cache/set-value coll-by-provider-id-and-entry-title-cache
+                          coll-by-provider-id-and-entry-title-cache-key
+                          (str (:provider-id coll) (:EntryTitle coll))
+                          (clj-times->time-strs coll)))
+   (info (str "Collections-for-gran-acls caches refresh complete."
+         "coll-by-concept-id-cache Cache Size:" (hash-cache/cache-size coll-by-concept-id-cache coll-by-concept-id-cache-key)
+         "coll-by-provider-id-and-entry-title-cache Cache Size:" (hash-cache/cache-size coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key)))))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
         [ctx system]

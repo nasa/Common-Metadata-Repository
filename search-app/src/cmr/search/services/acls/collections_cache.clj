@@ -123,19 +123,22 @@
  ([context coll-concept-id]
   (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-concept-id-cache-key)
         collection (hash-cache/get-value
-                    coll-by-concept-id-cache ;; cache
-                    coll-for-gran-acl-caches/coll-by-concept-id-cache-key ;; key
-                    coll-concept-id)] ;; field
+                    coll-by-concept-id-cache
+                    coll-for-gran-acl-caches/coll-by-concept-id-cache-key
+                    coll-concept-id)]
    (when (or (nil? collection) (empty? collection))
-    (info (coll-msg/collection-not-found coll-concept-id)) ;; no error needs to be thrown
-    (coll-for-gran-acl-caches/refresh-entire-cache context)) ;; FIXME why kick off an entire refresh cache during API calls? Instead, add one field/val pair to cache and move on.
+    (info (coll-msg/collection-not-found coll-concept-id))
+    (coll-for-gran-acl-caches/refresh-entire-cache context)) ;;TODO replace
    (time-strs->clj-times collection)))
  ([context provider-id entry-title]
   (let [coll-by-provider-id-and-entry-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key)
         collection (hash-cache/get-value
                     coll-by-provider-id-and-entry-id-cache ;; cache
                     coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key ;; key
-                    (str (provider-id) (entry-title)))]
+                    (str provider-id entry-title))]
+   (when (or (nil? collection) (empty? collection))
+    (info (coll-msg/collection-not-found (str provider-id entry-title)))
+    (coll-for-gran-acl-caches/refresh-entire-cache context)) ;;TODO replace
    (time-strs->clj-times collection))))
 
 ;; TODO remove after transition
