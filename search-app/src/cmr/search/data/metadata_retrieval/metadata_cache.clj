@@ -354,7 +354,7 @@
 
        ;; Convert concepts to results with acl enforcment
        (let [[t3 concepts] (u/time-execution (acl-match/add-acl-enforcement-fields context concepts))
-             [t4 concepts] (u/time-execution (acl-service/filter-concepts context concepts)) ;; TODO filter concepts is used here
+             [t4 concepts] (u/time-execution (acl-service/filter-concepts context concepts))
              [t5 concepts] (u/time-execution
                             (metadata-transformer/transform-concepts
                              context concepts target-format))]
@@ -382,7 +382,7 @@
                  revision-id
                  concept-id)]))
         [t2 concept] (u/time-execution (acl-match/add-acl-enforcement-fields-to-concept context concept))
-        [t3 [concept]] (u/time-execution (acl-service/filter-concepts context [concept])) ;; TODO filter concepts is used here
+        [t3 [concept]] (u/time-execution (acl-service/filter-concepts context [concept]))
         ;; format concept
         [t4 [concept]] (u/time-execution
                         (when concept

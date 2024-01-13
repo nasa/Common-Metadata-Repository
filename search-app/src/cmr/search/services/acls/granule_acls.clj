@@ -226,14 +226,12 @@
         (errors/internal-error!
           (format "Collection with id %s was in a granule but was not found using collection cache."
                   collection-concept-id)))
-      (println "collection found = " (pr-str collection))
       (umm-matchers/coll-matches-collection-identifier? collection coll-identifier))
     true))
 
 (defn acl-match-concept?
   "Returns true if the acl matches the concept indicating the concept is permitted."
   [context acl concept]
- (println "context give = " (pr-str context) ", acl given = " (pr-str acl) ", concept given = " (pr-str concept))
   (let [{provider-id :provider-id
          gran-identifier :granule-identifier
          coll-identifier :collection-identifier} (:catalog-item-identity acl)]

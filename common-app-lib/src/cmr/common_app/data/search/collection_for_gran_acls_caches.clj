@@ -90,7 +90,6 @@
                            :result-features {:query-specified {:result-processor result-processor}}})]
   (:items (qe/execute-query context query))))
 
-;; TODO test this
 (defn- fetch-collection
  "fetch one collection from elastic search"
  [context collection-concept-id]

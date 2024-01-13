@@ -82,14 +82,11 @@
     (is (not (g/acl-match-concept? {} (make-acl "P1") (concept "P2" "C2-P2"))) "not same provider failed")
     (is (g/acl-match-concept? {} (make-acl "P1") (concept "P1" "C2-P1")) "is same provider failed"))
 
-  ;; This test either needs to have mocked hash-cache now or moved into integration tests since it is no longer used in-memory cache
-
   (let [coll-by-concept-id-cache-key cmn-coll-for-gran-acls-caches/coll-by-concept-id-cache-key
         coll-by-concept-id-cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-concept-id-cache-key]})
         _ (hash-cache/reset coll-by-concept-id-cache coll-by-concept-id-cache-key)
         context {:system {:caches {coll-by-concept-id-cache-key coll-by-concept-id-cache}}}]
 
-    ;(hash-cache/set-values rcache :collections-for-gran-acls data)
     (hash-cache/set-value coll-by-concept-id-cache coll-by-concept-id-cache-key "C1-P1" (create-collection-for-gran-acls-test-entry "P1" "coll1" "C1-P1" nil))
     (hash-cache/set-value coll-by-concept-id-cache coll-by-concept-id-cache-key "C2-P1" (create-collection-for-gran-acls-test-entry "P1" "coll2" "C2-P1" 1))
     (hash-cache/set-value coll-by-concept-id-cache coll-by-concept-id-cache-key "C3-P1" (create-collection-for-gran-acls-test-entry "P1" "coll3" "C3-P1" 2))
