@@ -99,7 +99,6 @@
                                                   :collection
                                                   elastic-item))
                           :concept-id (:_id elastic-item)))
-       ;; TODO how to find one collection in elastic search? need to fix this to search for only one concept_id
        query (qm/query {:concept-type :collection
                            :condition (qm/string-condition :concept-id collection-concept-id)
                            :skip-acls? true
@@ -132,7 +131,6 @@
          "coll-by-concept-id-cache Cache Size:" (hash-cache/cache-size coll-by-concept-id-cache coll-by-concept-id-cache-key)
          "coll-by-provider-id-and-entry-title-cache Cache Size:" (hash-cache/cache-size coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key)))))
 
-;;TODO test
 (defn set-caches
  "Set cache with collection found in elastic and then returns it"
  [context collection-concept-id]

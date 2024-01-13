@@ -82,75 +82,76 @@
 
   ;; This test either needs to have mocked hash-cache now or moved into integration tests since it is no longer used in-memory cache
 
-  ;(let [collections [["C1-P1" "coll1" nil]
-  ;                   ["C2-P1" "coll2" 1]
-  ;                   ["C3-P1" "coll3" 2]
-  ;                   ["C4-P2" "coll1" nil]
-  ;                   ["C5-P2" "coll2" 1]]
-  ;      context (context-with-cached-collections
-  ;               (for [coll-args collections]
-  ;                 (apply collection coll-args)))
-  ;      ;; Setup the redis cache (rcache) from the memory cache
-  ;      ;; Without doing this, tests will pass locally but not in CI/CD
-  ;      rcache (cmr.search.services.acls.collections-cache/create-cache)
-  ;      old-mem-cache (get-in context [:system :caches :collections-for-gran-acls])
-  ;      context (assoc-in context [:system :caches :collections-for-gran-acls] rcache)
-  ;      data (.get-value old-mem-cache :collections)]
-  ;  (hash-cache/set-values rcache :collections-for-gran-acls data)
-  ;
-  ;  (testing "collection identifier"
-  ;    (are3 [entry-titles access-value-args collection-concept-id should-match?]
-  ;          (let [access-value-filter (when access-value-args (apply access-value access-value-args))
-  ;                coll-identifier (coll-id entry-titles access-value-filter)
-  ;                acl (make-acl "P1" coll-identifier)
-  ;                granule (concept "P1" collection-concept-id)
-  ;                matches? (not (not (g/acl-match-concept? context acl granule)))]
-  ;            (is (= should-match? matches?) "match failed"))
-  ;
-  ;          "all good"
-  ;          ["coll1"] nil "C1-P1" true
-  ;
-  ;          ;; collection doesn't exist
-  ;          "foo"
-  ;          ["foo"] nil "C1-P1" false
-  ;          "coll2"
-  ;          ["foo" "coll2"] nil "C1-P1" false
-  ;          "found with coll1"
-  ;          ["foo" "coll1"] nil "C1-P1" true
-  ;
-  ;          ;;access value filter
-  ;          ;; this is checked more completely in collection matcher tests
-  ;          "c2 check"
-  ;          nil [1 2] "C2-P1" true
-  ;          "c1 check"
-  ;          nil [1 2] "C1-P1" false
-  ;
-  ;          "c1 check"
-  ;          ["foo" "coll2" "coll1"] [1 2] "C1-P1" false
-  ;          "c2 check"
-  ;          ["foo" "coll2" "coll1"] [1 2] "C2-P1" true))
-  ;
-  ;  (testing "collection identifier and granule access-value"
-  ;    (are3
-  ;     [entry-titles access-value-args collection-concept-id gran-access-value should-match?]
-  ;     (let [granule-identifier (gran-id (apply access-value access-value-args))
-  ;           coll-identifier (coll-id entry-titles nil)
-  ;           acl (make-acl "P1" coll-identifier granule-identifier)
-  ;           granule (concept "P1" collection-concept-id gran-access-value)
-  ;           matches? (not (not (g/acl-match-concept? context acl granule)))]
-  ;       (is (= should-match? matches?) "match failed"))
-  ;
-  ;     "- access value is good"
-  ;     ["coll1"] [1 2] "C1-P1" 1 true
-  ;
-  ;     "- access value outside range"
-  ;     ["coll1"] [1 2] "C1-P1" 3 false
-  ;
-  ;     "- different collection"
-  ;     ["coll1"] [1 2] "C2-P1" 1 false
-  ;
-  ;     "- collection does not exist"
-  ;     ["foo"] [1 2] "C1-P1" 1 false)))
+  (let [collections [["C1-P1" "coll1" nil]
+                     ["C2-P1" "coll2" 1]
+                     ["C3-P1" "coll3" 2]
+                     ["C4-P2" "coll1" nil]
+                     ["C5-P2" "coll2" 1]]
+        context (context-with-cached-collections
+                 (for [coll-args collections]
+                   (apply collection coll-args)))
+        ;; Setup the redis cache (rcache) from the memory cache
+        ;; Without doing this, tests will pass locally but not in CI/CD
+        rcache (cmr.search.services.acls.collections-cache/create-cache)
+        old-mem-cache (get-in context [:system :caches :collections-for-gran-acls])
+        context (assoc-in context [:system :caches :collections-for-gran-acls] rcache)
+        data (.get-value old-mem-cache :collections)]
+
+    (hash-cache/set-values rcache :collections-for-gran-acls data)
+
+    (testing "collection identifier"
+      (are3 [entry-titles access-value-args collection-concept-id should-match?]
+            (let [access-value-filter (when access-value-args (apply access-value access-value-args))
+                  coll-identifier (coll-id entry-titles access-value-filter)
+                  acl (make-acl "P1" coll-identifier)
+                  granule (concept "P1" collection-concept-id)
+                  matches? (not (not (g/acl-match-concept? context acl granule)))]
+              (is (= should-match? matches?) "match failed"))
+
+            "all good"
+            ["coll1"] nil "C1-P1" true
+
+            ;; collection doesn't exist
+            "foo"
+            ["foo"] nil "C1-P1" false
+            "coll2"
+            ["foo" "coll2"] nil "C1-P1" false
+            "found with coll1"
+            ["foo" "coll1"] nil "C1-P1" true
+
+            ;;access value filter
+            ;; this is checked more completely in collection matcher tests
+            "c2 check"
+            nil [1 2] "C2-P1" true
+            "c1 check"
+            nil [1 2] "C1-P1" false
+
+            "c1 check"
+            ["foo" "coll2" "coll1"] [1 2] "C1-P1" false
+            "c2 check"
+            ["foo" "coll2" "coll1"] [1 2] "C2-P1" true))
+
+    (testing "collection identifier and granule access-value"
+      (are3
+       [entry-titles access-value-args collection-concept-id gran-access-value should-match?]
+       (let [granule-identifier (gran-id (apply access-value access-value-args))
+             coll-identifier (coll-id entry-titles nil)
+             acl (make-acl "P1" coll-identifier granule-identifier)
+             granule (concept "P1" collection-concept-id gran-access-value)
+             matches? (not (not (g/acl-match-concept? context acl granule)))]
+         (is (= should-match? matches?) "match failed"))
+
+       "- access value is good"
+       ["coll1"] [1 2] "C1-P1" 1 true
+
+       "- access value outside range"
+       ["coll1"] [1 2] "C1-P1" 3 false
+
+       "- different collection"
+       ["coll1"] [1 2] "C2-P1" 1 false
+
+       "- collection does not exist"
+       ["foo"] [1 2] "C1-P1" 1 false)))
 
   (testing "granule access value"
     (are3

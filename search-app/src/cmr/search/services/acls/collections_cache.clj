@@ -116,7 +116,7 @@
     (doseq [[coll-key coll-value] collections-map]
       (hash-cache/set-value cache cache-key coll-key (clj-times->time-strs coll-value)))))
 
-(defn get-collection-gran-acls
+(defn get-collection-for-gran-acls
  ([context coll-concept-id]
   "Gets a single collection from the cache by concept id. If collection is not found, will add it to the cache (if it exists in elastic) and will return empty collection."
  (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-concept-id-cache-key)
@@ -131,44 +131,44 @@
    (time-strs->clj-times collection)))
  ([context provider-id entry-title]
   "Gets a single collection from the cache by concept id. If collection is not found, will add it to the cache (if it exists in elastic) and will return empty collection."
- (let [coll-by-provider-id-and-entry-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key)
+ (let [coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key)
        collection (hash-cache/get-value
-                   coll-by-provider-id-and-entry-id-cache
+                   coll-by-provider-id-and-entry-title-cache
                    coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key
                    (str provider-id entry-title))]
   (time-strs->clj-times collection))))
 
 ;; TODO remove after transition
-(defn- get-collections-map
-  "Gets the cached value. By default an error is thrown if there is no value in
-   the cache. Pass in anything other then :return-errors for the third parameter
-   to have null returned when no data is in the cache. :return-errors is for the
-   default behavior."
-  ([context key-type]
-   (get-collections-map context key-type :return-errors))
-  ([context key-type throw-errors]
-  (let [coll-cache (hash-cache/context->cache context cache-key)
-        collection-map (hash-cache/get-value
-                        coll-cache
-                        cache-key
-                        key-type)]
-    (if (and (= :return-errors throw-errors) (empty? collection-map))
-      (errors/internal-error! (coll-msg/collections-not-in-cache key-type))
-      (time-strs->clj-times collection-map)))))
+;(defn- get-collections-map
+;  "Gets the cached value. By default an error is thrown if there is no value in
+;   the cache. Pass in anything other then :return-errors for the third parameter
+;   to have null returned when no data is in the cache. :return-errors is for the
+;   default behavior."
+;  ([context key-type]
+;   (get-collections-map context key-type :return-errors))
+;  ([context key-type throw-errors]
+;  (let [coll-cache (hash-cache/context->cache context cache-key)
+;        collection-map (hash-cache/get-value
+;                        coll-cache
+;                        cache-key
+;                        key-type)]
+;    (if (and (= :return-errors throw-errors) (empty? collection-map))
+;      (errors/internal-error! (coll-msg/collections-not-in-cache key-type))
+;      (time-strs->clj-times collection-map)))))
 
 ;; TODO remove after transition
-(defn get-collection
-  "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
-  Also allows provider-id and entry-title to be used."
-  ([context concept-id]
-   (let [by-concept-id (get-collections-map context :by-concept-id :no-errors)]
-     (when-not (and by-concept-id (by-concept-id concept-id))
-       (info (coll-msg/collection-not-found concept-id))
-       (refresh-cache context))
-     (get (get-collections-map context :by-concept-id ) concept-id)))
-  ([context provider-id entry-title]
-   (let [by-provider-id-entry-title (get-collections-map context :by-provider-id-entry-title )]
-     (get by-provider-id-entry-title [provider-id entry-title]))))
+;(defn get-collection
+;  "Gets a single collection from the cache by concept id. Handles refreshing the cache if it is not found in it.
+;  Also allows provider-id and entry-title to be used."
+;  ([context concept-id]
+;   (let [by-concept-id (get-collections-map context :by-concept-id :no-errors)]
+;     (when-not (and by-concept-id (by-concept-id concept-id))
+;       (info (coll-msg/collection-not-found concept-id))
+;       (refresh-cache context))
+;     (get (get-collections-map context :by-concept-id ) concept-id)))
+;  ([context provider-id entry-title]
+;   (let [by-provider-id-entry-title (get-collections-map context :by-provider-id-entry-title )]
+;     (get by-provider-id-entry-title [provider-id entry-title]))))
 
 ;; added to common lib will remove in future
 (defjob RefreshCollectionsCacheForGranuleAclsJob

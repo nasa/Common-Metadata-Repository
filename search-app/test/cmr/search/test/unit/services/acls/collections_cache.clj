@@ -29,7 +29,7 @@
 
 (use-fixtures :each test-util/embedded-redis-server-fixture)
 
-(def get-collection-gran-acls #'search-coll-for-gran-acls-cache/get-collection-gran-acls)
+(def get-collection-gran-acls #'search-coll-for-gran-acls-cache/get-collection-for-gran-acls)
 
 (defn create-collection-for-gran-acls-test-entry
  [provider-id entry-title coll-concept-id]
