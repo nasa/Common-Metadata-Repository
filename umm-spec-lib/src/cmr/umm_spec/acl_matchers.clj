@@ -110,6 +110,8 @@
    coll is a cached collection
    coll-id is the catalog_item_identity"
   [coll coll-id]
+ (println "/ncollection to be matched: " (pr-str coll))
+ (println "/ncollection identity that is being compared: " (pr-str coll-id))
   (let [coll-entry-title (:EntryTitle coll)
         concept-id (or (:concept-id coll)
                        (:id coll))
