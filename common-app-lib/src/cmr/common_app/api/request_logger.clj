@@ -115,7 +115,7 @@
              response (handler request)
              query-params (params/assoc-query-params request "UTF-8")
              form-params (params/assoc-form-params request "UTF-8")
-             note (-> {"log-version" "1.0.0"}
+             note (-> {"log-type" "action-log" "log-version" "1.0.0"}
                     ;; As this handler can be called multiple times, if so,
                     ;; include an id showing which instance is reporting this
                     ;; information.
@@ -138,9 +138,9 @@
                     ;; do this last
                       (assoc "log-cost" (- (tk/now-ms) start)))]
        ;; send the log to standard error in the same way that the ring access log does
-         (.println *err* (json/generate-string note))
-         (println (json/generate-string note))
-         (def my-response response)
+         ;;(.println *err* (json/generate-string note))
+         ;;(println (json/generate-string note))
+         (warn (json/generate-string note))
          response)))))
 
 (comment
