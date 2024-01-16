@@ -134,11 +134,8 @@
 
   (testing "Testing when collection doesn't exist in cache or elastic -> Then returns nil collection"
    ;; mock the set-cache func
-   (is (= nil (get-collection-for-gran-acls context "NON_EXISTENT" "EntryTitle000")))
-   ;(with-redefs-fn {#'cmn-coll-for-gran-acls-caches/set-caches (fn [context provider-id entry-title] nil)}
-   ; #(is (= nil (get-collection-for-gran-acls context "NON_EXISTENT" "EntryTitle000"))))
-
-   )
+   (with-redefs-fn {#'cmn-coll-for-gran-acls-caches/set-caches (fn [context provider-id entry-title] nil)}
+    #(is (= nil (get-collection-for-gran-acls context "NON_EXISTENT" "EntryTitle000")))))
 
   ;(testing "Testing when collection cache has collection, but it is empty map in cache and elastic -> Then should find the collection in elastic, if still empty then returns empty coll"
   ; (with-redefs-fn {#'cmn-coll-for-gran-acls-caches/set-caches (fn [context provider-id entry-title] {})}
