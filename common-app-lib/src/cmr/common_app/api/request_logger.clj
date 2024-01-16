@@ -4,7 +4,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
-   [cmr.common-app.config :as common-config]
+   [cmr.common-app.config :as config]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.util :as util]
@@ -18,20 +18,23 @@
   "Reconstruct a url that a request client may have asked for (assuming port
    number was given). Special care is taken to scrub token from the URL parameter
    list if provided at 'token'."
-  (let [raw-query (:query-params request)
+  ;; Another filter may have already parsed the parameters found at :query-params,
+  ;; use that to save time, otherwise do it ourself from :query-string
+  (let [raw-query (or (:query-params request) (codec/form-encode (:query-string request)))
         token (get raw-query "token")
         request-scheme (:scheme request)
         clean-query (if (nil? token)
                       raw-query
-                      (assoc raw-query "token" (util/scrub-token token)))]
-    ;; <protocol>://<server>:<port><path><?><params>
+                      (assoc raw-query "token" (util/scrub-token token)))
+        encoded-query (codec/form-encode clean-query)]
+    ;; <protocol>://<server>:<port><path><question-mark><params>
     (format "%s://%s:%s%s%s%s"
             (when request-scheme (name request-scheme))
             (or (:server-name request) nil)
             (or (:server-port request) nil)
             (or (:uri request) nil)
-            (if (empty? clean-query) "" "?") ;; don't show if no query
-            (codec/form-encode clean-query))))
+            (if (empty? encoded-query) "" "?") ;; don't show if no query
+            encoded-query)))
 
 (defn- scrub-token-from-map
   "Scrub out a token keyed at field-name from a map"
@@ -72,7 +75,7 @@
 (defn add-body-hashes
   [handler]
   (fn [request]
-    (if-not (common-config/add-hash-headers)
+    (if-not (config/add-hash-headers)
       (handler request)
       (let [response (handler request)
           ; after all responses
@@ -105,10 +108,8 @@
   ([handler]
    (action-logger handler :ignore))
   ([handler id]
-   (def my-handler handler)
    (fn [request]
-     (def my-request request)
-     (if-not (cmr.common-app.config/custom-request-log)
+     (if-not (config/custom-request-log)
        (handler request)
        (let [start (tk/now-ms)
              now (dtp/clj-time->date-time-str (tk/now))
@@ -116,11 +117,11 @@
              query-params (params/assoc-query-params request "UTF-8")
              form-params (params/assoc-form-params request "UTF-8")
              note (-> {"log-type" "action-log" "log-version" "1.0.0"}
-                    ;; As this handler can be called multiple times, if so,
-                    ;; include an id showing which instance is reporting this
-                    ;; information.
+                      ;; As this handler can be called multiple times, if so,
+                      ;; include an id showing which instance is reporting this
+                      ;; information.
                       (as-> data (if (= id :ignore) (assoc data "log-id" id) data))
-                    ;; assume that (add-body-hashes) has been run and reuse data
+                      ;; assume that (add-body-hashes) has been run and reuse data
                       (assoc "body-md5" (get-in response [:headers "Content-MD5"]))
                       (assoc "body-sha1" (get-in response [:headers "Content-SHA1"]))
                       (assoc "client-id" (get-in request [:headers "client-id"] "unknown"))
@@ -135,10 +136,10 @@
                       (assoc "took" (get-in response [:headers "CMR-Took"] "n/a"))
                       (assoc "uri" (request->uri request))
                       (assoc "user-agent" (get-in request [:headers "user-agent"] "unknown"))
-                    ;; do this last
+                      ;; do this last
                       (assoc "log-cost" (- (tk/now-ms) start)))]
-       ;; send the log to standard error in the same way that the ring access log does
-         ;;(.println *err* (json/generate-string note))
+         ;; send the log to standard error in the same way that the ring access log does
+         (when (config/custom-request-log-error) (.println *err* (json/generate-string note)))
          ;;(println (json/generate-string note))
          (warn (json/generate-string note))
          response)))))
