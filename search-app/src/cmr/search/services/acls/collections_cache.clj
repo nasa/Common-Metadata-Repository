@@ -118,17 +118,18 @@
 
 (defn get-collection-for-gran-acls
  ([context coll-concept-id]
-  "Gets a single collection from the cache by concept id. If collection is not found, will add it to the cache (if it exists in elastic) and will return empty collection."
+  "Gets a single collection from the cache by concept id. If collection is not found, will add it to the cache (if it exists in elastic) and will return the found collection."
  (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-concept-id-cache-key)
        collection (hash-cache/get-value
                     coll-by-concept-id-cache
                     coll-for-gran-acl-caches/coll-by-concept-id-cache-key
                     coll-concept-id)]
-   (when (or (nil? collection) (empty? collection))
-    ;; if collection not exist in cache, search for it and put in cache
-    (info (coll-msg/collection-not-found coll-concept-id))
-    (coll-for-gran-acl-caches/set-caches context coll-concept-id))
-   (time-strs->clj-times collection)))
+   (if (or (nil? collection) (empty? collection))
+    (do
+     ;; if collection not exist in cache, search for it and put in cache
+     (info (coll-msg/collection-not-found coll-concept-id))
+     (time-strs->clj-times (coll-for-gran-acl-caches/set-caches context coll-concept-id)))
+    (time-strs->clj-times collection))))
  ([context provider-id entry-title]
   "Gets a single collection from the cache by concept id. If collection is not found, will add it to the cache (if it exists in elastic) and will return empty collection."
  (let [coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-for-gran-acl-caches/coll-by-provider-id-and-entry-title-cache-key)

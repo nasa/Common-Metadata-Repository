@@ -146,7 +146,9 @@
         elastic-results (idx/execute-query context processed-query)
         query-results (rc/elastic-results->query-results context query elastic-results)
         query-results (if (or (tc/echo-system-token? context) (:skip-acls? query))
-                        query-results
+                       ;;TODO JYNA temporarily forcing it to go past system token
+                       ; query-results
+                        (filter-query-results-with-acls context query-results)
                         (filter-query-results-with-acls context query-results))]
     (common-qe/post-process-query-result-features context query elastic-results query-results)))
 

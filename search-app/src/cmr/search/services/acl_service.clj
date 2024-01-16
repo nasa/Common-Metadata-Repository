@@ -119,7 +119,23 @@
   [context concepts]
   (when (seq concepts)
     (if (tc/echo-system-token? context)
-      concepts
+     ;;TODO JYNA temporarily forcing it past system token
+     ; concepts
+     (let [acls (acl-helper/get-acls-applicable-to-token context)
+           ;; drafts don't contain concept-type field, so we will need to derive it from concept-id
+           ;; collections don't contain concept_id or concept-id fields, but they do contain concept-type field.
+           concept-type (-> concepts first :concept-type)
+           concept-type (if concept-type
+                         concept-type
+                         (-> concepts first :concept_id cc/concept-id->type))
+           applicable-field (concept-type->applicable-field concept-type)
+           ;; Note: This applicable-acls is only used for collections and granules acl matching.
+           ;; For other concept types, it is not being used.
+           applicable-acls (filterv (comp applicable-field :catalog-item-identity) acls)]
+      (doall (remove nil? (pmap (fn [concept]
+                                 (when (acls-match-concept? context applicable-acls concept)
+                                  concept))
+                                concepts))))
       (let [acls (acl-helper/get-acls-applicable-to-token context)
             ;; drafts don't contain concept-type field, so we will need to derive it from concept-id
             ;; collections don't contain concept_id or concept-id fields, but they do contain concept-type field.
