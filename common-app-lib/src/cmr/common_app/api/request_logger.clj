@@ -1,6 +1,8 @@
 (ns cmr.common-app.api.request-logger
-  "Defines a Ring Handler for writing a CMR style request log. The handlers here
-   can be controlled by settings in cmr.common-app.config."
+  "Defines a Ring Handlers for writing a CMR style request log. The handlers here
+   can be controlled by settings in cmr.common-app.config. These logs are to be
+   in addition to the standard NCSA Request logs issued by Ring but are different
+   in content and format. This log will be in JSON and hold a large set of values."
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
@@ -27,7 +29,7 @@
                       raw-query
                       (assoc raw-query "token" (util/scrub-token token)))
         encoded-query (codec/form-encode clean-query)]
-    ;; <protocol>://<server>:<port><path><question-mark><params>
+    ;; build: <protocol>://<server>:<port><path><question-mark><params>
     (format "%s://%s:%s%s%s%s"
             (when request-scheme (name request-scheme))
             (or (:server-name request) nil)
@@ -59,26 +61,21 @@
        ;; Parameters in forms could be really large, don't log everything
        (as-> item (apply dissoc item (drop limit (keys item)))))))
 
-(comment
-
-  (request->uri my-request)
-
-  (let [data {:a {:left :0 :right :1 :token "bad-value"}
-              :b {:left :2 :right :3 "token" "value-bad"}
-              :c {:left :4 :right :5}}]
-    (for [x (keys data)]
-      (dump-param data x))))
-
 ;; *****************************************************************************
 ;; Ring Middleware Handlers
 
 (defn add-body-hashes
+  "Calculate the MD5 and SHA1 hash for the body of a response and include those
+   results in the response as HTTP headers. Headers are called Content-MD5 and
+   Content-SHA1. Content-MD5 is mentioned on the Wikipedia page:
+   https://en.wikipedia.org/wiki/List_of_HTTP_header_fields#Standard_request_fields
+   so it is presumed to be in common use."
   [handler]
   (fn [request]
     (if-not (config/add-hash-headers)
       (handler request)
       (let [response (handler request)
-          ; after all responses
+            ;; This is run after all responses
             text (str (:body response))
             body-md5 (digest/md5 text)
             body-sha1 (digest/sha-1 text)
@@ -87,16 +84,26 @@
                                  (assoc-in [:headers "Content-SHA1"] body-sha1))]
         updated-response))))
 
-;; provider the same info as a standard NCSA Log
+;; Action-logger should provide the same info as a standard NCSA Log
 ;; ; 127.0.0.1 - - [2023-12-27 19:04:01.676] "GET /collections?keyword=any HTTP/1.1" 200 112 "-" "curl/8.1.2" 296
+
 ;; Fields are as follows:
-;; ip address
-;; date-time
+;; ;
+;; IP Address
+;; login (ignored)
+;; -
+;; login (ignored)
+;; -
+;; [date-time]
+;; "
 ;; HTTP VERB
 ;; Relative URL
+;; "
 ;; Status code
 ;; response size
+;; "-"
 ;; agent
+;; time
 
 (defn action-logger
   "Log a request from Ring returning JSON data to be parsed by a log tool like
@@ -116,6 +123,9 @@
              response (handler request)
              query-params (params/assoc-query-params request "UTF-8")
              form-params (params/assoc-form-params request "UTF-8")
+             ;; If adding or removing elements, change the log-version number so
+             ;; that reporting scripts can try to protect against change. Humans
+             ;; may be creating Splunk or ELK reports based on this content.
              note (-> {"log-type" "action-log" "log-version" "1.0.0"}
                       ;; As this handler can be called multiple times, if so,
                       ;; include an id showing which instance is reporting this
@@ -126,7 +136,7 @@
                       (assoc "body-sha1" (get-in response [:headers "Content-SHA1"]))
                       (assoc "client-id" (get-in request [:headers "client-id"] "unknown"))
                       (assoc "form-params" (dump-param form-params :form-params))
-                      (assoc "method" (clojure.string/upper-case (name (:request-method request))))
+                      (assoc "method" (string/upper-case (name (:request-method request))))
                       (assoc "now" now)
                       (assoc "protocol" (:protocol request))
                       (assoc "query-params" (dump-param query-params :query-params))
@@ -140,53 +150,20 @@
                       (assoc "log-cost" (- (tk/now-ms) start)))]
          ;; send the log to standard error in the same way that the ring access log does
          (when (config/custom-request-log-error) (.println *err* (json/generate-string note)))
-         ;;(println (json/generate-string note))
          (warn (json/generate-string note))
          response)))))
 
 (comment
+  ;; Notes on using ring code:
 
-  (ring.middleware.params/assoc-form-params {:content-type "application/x-www-form-urlencoded" :body "k=v"} "UTF-8")
-  (ring.middleware.params/assoc-query-params {:query-string "&keyword=value"} "UTF-8")
+  ;; We can reuse the ring code for parsing body parameters like so (instead of
+  ;; writing our own) but all the values must be exactly correct in case and setup
+  ;; Use the following as an example to understand what is expected of a request object
+  ;; and what you will get back.
+  (let [body-stream (clojure.java.io/reader (char-array "p1=a&p2=b"))
+        request {:headers {"content-type" "application/x-www-form-urlencoded;anything-allowed-here"}
+                 :body body-stream}]
+    (ring.middleware.params/assoc-form-params request "UTF-8"))
 
-  (- (tk/now-ms) (tk/now-ms))
-
-  (let [data {:a :b :c :d :e :f :g :h}]
-    (apply dissoc data (drop 128 (keys data))))
-
-  (let [id :ignores
-        test (when-not (= id :ignore) :something)]
-    test)
-
-  (dtp/clj-time->date-time-str (tk/now))
-
-  (:headers my-request)
-  (:headers (assoc-in my-request [:headers :action-logger] "here inaction"))
-
-  (dissoc my-request :request-context :body)
-  (keys my-handler)
-  (keys my-request)
-  (keys my-response)
-
-
-  (:content-type my-request)
-  (:headers my-request)
-  (:form-params my-request)
-  (:query-params my-request)
-
-  (my-handler my-request)
-  (my-handler (assoc-in my-request [:headers "Action-Logger"] "here in action"))
-
-  (get my-handler "CMR-Took", "zero")
-
-  (-> my-request
-      (dissoc :body-copy :ssl-client-cert :params :headers :content-length :form-params :content-type :character-encoding :body :multipart-params :request-context))
-  (format "%s://%s%s?%s"
-          (name (:scheme my-request))
-          (:server-name my-request)
-          (:uri my-request)
-          (:query-string my-request))
-
-  (digest/md5 (str "<?xml version=\"1.0\" encoding=\"UTF-8\"?><results><hits>0</hits><took>38</took><references></references></results>")))
-
-
+  ;; and query paramas are simple and can be done as the following:
+  (ring.middleware.params/assoc-query-params {:query-string "&keyword=value"} "UTF-8"))
