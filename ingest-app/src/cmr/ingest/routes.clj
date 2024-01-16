@@ -9,6 +9,7 @@
    [cmr.ingest.api.multipart :as mp]
    [cmr.ingest.api.routes :as api-routes]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
+   [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.site.pages :as common-pages]
    [cmr.common.api.context :as context]
@@ -49,4 +50,6 @@
       common-routes/add-security-header-response-handler
       (context/build-request-context-handler system)
       common-routes/pretty-print-response-handler
-      params/wrap-params))
+      params/wrap-params
+      req-log/add-body-hashes
+      req-log/action-logger))
