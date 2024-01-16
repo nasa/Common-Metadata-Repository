@@ -116,7 +116,6 @@
       ;; sids for that token Need to maintain this order (works backwards).
       context-augmenter/add-user-id-and-sids-handler
       acl/add-authentication-handler
-      ;; These two are here to capture any newly added parameters
       keyword-params/wrap-keyword-params
       nested-params/wrap-nested-params
       errors/invalid-url-encoding-handler

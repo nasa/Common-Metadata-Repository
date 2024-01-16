@@ -145,7 +145,6 @@
     (.setRequestLog
       (doto (NCSARequestLog.)
         (.setLogLatency true)
-        (.setExtended true)
         (.setLogDateFormat "yyyy-MM-dd HH:mm:ss.SSS")))))
 
 (defn- create-gzip-handler
