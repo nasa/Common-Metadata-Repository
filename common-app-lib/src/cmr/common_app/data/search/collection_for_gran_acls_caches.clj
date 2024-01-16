@@ -99,12 +99,12 @@
                                                   elastic-item))
                           :concept-id (:_id elastic-item)))
        query (qm/query {:concept-type :collection
-                         :condition (qm/string-condition :concept-id collection-concept-id true false)
-                         :skip-acls? true
-                         :page-size :unlimited
-                         :result-format :query-specified
-                         :result-fields (cons :concept-id acl-rhh/collection-elastic-fields)
-                         :result-features {:query-specified {:result-processor result-processor}}})
+                        :condition (qm/string-condition :concept-id collection-concept-id true false)
+                        :skip-acls? true
+                        :page-size :unlimited
+                        :result-format :query-specified
+                        :result-fields (cons :concept-id acl-rhh/collection-elastic-fields)
+                        :result-features {:query-specified {:result-processor result-processor}}})
        result (first (:items (qe/execute-query context query)))]
   result))
  ([context provider-id entry-title]
