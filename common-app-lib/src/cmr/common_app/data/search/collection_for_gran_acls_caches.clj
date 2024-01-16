@@ -71,7 +71,7 @@
   data))
 
 (defn- fetch-collections
- "Executes a query that will fetch all of the collection information needed for caching."
+ "Executes a query that will fetches all of the collection information from elastic needed for caching."
  [context]
  ;; when creating a result processor, realize all the lazy (delay) values to
  ;; actual values so that the resulting object can be cached in redis or some
@@ -82,30 +82,47 @@
                                                   elastic-item))
                           :concept-id (:_id elastic-item)))
        query (qm/query {:concept-type :collection
-                           :condition qm/match-all
-                           :skip-acls? true
-                           :page-size :unlimited
-                           :result-format :query-specified
-                           :result-fields (cons :concept-id acl-rhh/collection-elastic-fields)
-                           :result-features {:query-specified {:result-processor result-processor}}})]
+                        :condition qm/match-all
+                        :skip-acls? true
+                        :page-size :unlimited
+                        :result-format :query-specified
+                        :result-fields (cons :concept-id acl-rhh/collection-elastic-fields)
+                        :result-features {:query-specified {:result-processor result-processor}}})]
   (:items (qe/execute-query context query))))
 
 (defn- fetch-collection
- "fetch one collection from elastic search"
- [context collection-concept-id]
+ ([context collection-concept-id]
+  "Fetches one collection from elastic search by concept id. If no collection is found, will return nil."
  (let [result-processor (fn [_ _ elastic-item]
                          (assoc (util/delazy-all (acl-rhh/parse-elastic-item
                                                   :collection
                                                   elastic-item))
                           :concept-id (:_id elastic-item)))
        query (qm/query {:concept-type :collection
-                           :condition (qm/string-condition :concept-id collection-concept-id)
-                           :skip-acls? true
-                           :page-size :unlimited
-                           :result-format :query-specified
-                           :result-fields (cons :concept-id acl-rhh/collection-elastic-fields)
-                           :result-features {:query-specified {:result-processor result-processor}}})]
-  (:items (qe/execute-query context query))))
+                         :condition (qm/string-condition :concept-id collection-concept-id true false)
+                         :skip-acls? true
+                         :page-size :unlimited
+                         :result-format :query-specified
+                         :result-fields (cons :concept-id acl-rhh/collection-elastic-fields)
+                         :result-features {:query-specified {:result-processor result-processor}}})
+       result (first (:items (qe/execute-query context query)))]
+  result))
+ ([context provider-id entry-title]
+ "Fetches one collection from elastic search by entry-title and then checks if the provider id is accurate. If no collection is found, will return nil."
+ (let [result-processor (fn [_ _ elastic-item]
+                         (assoc (util/delazy-all (acl-rhh/parse-elastic-item
+                                                  :collection
+                                                  elastic-item))
+                          :concept-id (:_id elastic-item)))
+       query (qm/query {:concept-type :collection
+                        :condition (qm/string-condition :entry-title entry-title false false)
+                        :skip-acls? true
+                        :page-size :unlimited
+                        :result-format :query-specified
+                        :result-fields (cons :concept-id acl-rhh/collection-elastic-fields)
+                        :result-features {:query-specified {:result-processor result-processor}}})
+       result (some #(when (= provider-id (:provider-id %)) %) (:items (qe/execute-query context query)))]
+  result)))
 
 (defn refresh-entire-cache
   "Refreshes the collections-for-gran-acls coll-by-concept-id and coll-by-provider-id-and-entry-title caches.
@@ -131,21 +148,36 @@
          "coll-by-provider-id-and-entry-title-cache Cache Size:" (hash-cache/cache-size coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key)))))
 
 (defn set-caches
- "Set cache with collection found in elastic and then returns it"
- [context collection-concept-id]
- (info "Updating collections-for-gran-acl caches for one given collection by concept id")
+ ([context collection-concept-id]
+ "Updates collections-for-gran-acl caches for one given collection by concept id and  returns found collection or nil"
  (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
        coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-by-provider-id-and-entry-title-cache-key)
        collection-found (fetch-collection context collection-concept-id)]
-  (hash-cache/set-value coll-by-concept-id-cache
-                        coll-by-concept-id-cache-key
-                        (:concept-id collection-found)
-                        (clj-times->time-strs collection-found))
-  (hash-cache/set-value coll-by-provider-id-and-entry-title-cache
-                        coll-by-provider-id-and-entry-title-cache-key
-                        (str (:provider-id collection-found) (:EntryTitle collection-found)) ;; field
-                        (clj-times->time-strs collection-found))
+  (when-not (nil? collection-found)
+   (hash-cache/set-value coll-by-concept-id-cache
+                          coll-by-concept-id-cache-key
+                          (:concept-id collection-found)
+                          (clj-times->time-strs collection-found))
+    (hash-cache/set-value coll-by-provider-id-and-entry-title-cache
+                          coll-by-provider-id-and-entry-title-cache-key
+                          (str (:provider-id collection-found) (:EntryTitle collection-found))
+                          (clj-times->time-strs collection-found)))
   collection-found))
+ ([context provider-id entry-title]
+ "Updates collections-for-gran-acl caches for one given collection by provider id and entry-title and returns found collection or nil"
+ (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
+       coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-by-provider-id-and-entry-title-cache-key)
+       collection-found (fetch-collection context provider-id entry-title)]
+  (when-not (nil? collection-found)
+   (hash-cache/set-value coll-by-concept-id-cache
+                         coll-by-concept-id-cache-key
+                         (:concept-id collection-found)
+                         (clj-times->time-strs collection-found))
+   (hash-cache/set-value coll-by-provider-id-and-entry-title-cache
+                         coll-by-provider-id-and-entry-title-cache-key
+                         (str (:provider-id collection-found) (:EntryTitle collection-found))
+                         (clj-times->time-strs collection-found)))
+  collection-found)))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
         [ctx system]
