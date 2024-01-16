@@ -46,9 +46,18 @@
        coll-by-concept-id-cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-concept-id-cache-key]})
        _ (hash-cache/reset coll-by-concept-id-cache coll-by-concept-id-cache-key)
        context {:system {:caches {coll-by-concept-id-cache-key coll-by-concept-id-cache}}}
-       test-coll1 (create-collection-for-gran-acls-test-entry "TEST_PROV1" "EntryTitle1" "C123-TEST_PROV1")]
+       test-coll1 (create-collection-for-gran-acls-test-entry "TEST_PROV1" "EntryTitle1" "C123-TEST_PROV1")
+       test-coll2 (create-collection-for-gran-acls-test-entry "TEST_PROV1" "EntryTitle8" "C888-TEST_PROV1")
+       converted-test-coll2 {:concept-type :collection,
+                             :provider-id "TEST_PROV1",
+                             :EntryTitle "EntryTitle8",
+                             :AccessConstraints {:Value 1},
+                             :TemporalExtents [{:RangeDateTimes [{:BeginningDateTime #=(cmr.common.joda-time/date-time 452217600000 "UTC"), :EndingDateTime nil}]}],
+                             :concept-id "C888-TEST_PROV1"}]
   ;; populate the cache
   (hash-cache/set-value coll-by-concept-id-cache coll-by-concept-id-cache-key "C123-TEST_PROV1" test-coll1)
+  (hash-cache/set-value coll-by-concept-id-cache coll-by-concept-id-cache-key "C456-TEST_PROV1" {})
+
   (are3 [expected coll-concept-id]
         (is (= expected (get-collection-for-gran-acls context coll-concept-id)))
 
@@ -59,22 +68,7 @@
          :AccessConstraints {:Value 1},
          :TemporalExtents [{:RangeDateTimes [{:BeginningDateTime #=(cmr.common.joda-time/date-time 452217600000 "UTC"), :EndingDateTime nil}]}],
          :concept-id "C123-TEST_PROV1"}
-        "C123-TEST_PROV1")))
-
-(deftest get-collection-gran-acls-by-concept-id-no-collection-test
- (let [coll-by-concept-id-cache-key cmn-coll-for-gran-acls-caches/coll-by-concept-id-cache-key
-       coll-by-concept-id-cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-concept-id-cache-key]})
-       _ (hash-cache/reset coll-by-concept-id-cache coll-by-concept-id-cache-key)
-       context {:system {:caches {coll-by-concept-id-cache-key coll-by-concept-id-cache}}}
-       test-coll2 (create-collection-for-gran-acls-test-entry "TEST_PROV1" "EntryTitle8" "C888-TEST_PROV1")
-       converted-test-coll2 {:concept-type :collection,
-                             :provider-id "TEST_PROV1",
-                             :EntryTitle "EntryTitle8",
-                             :AccessConstraints {:Value 1},
-                             :TemporalExtents [{:RangeDateTimes [{:BeginningDateTime #=(cmr.common.joda-time/date-time 452217600000 "UTC"), :EndingDateTime nil}]}],
-                             :concept-id "C888-TEST_PROV1"}]
-  ;; populate the cache
-  (hash-cache/set-value coll-by-concept-id-cache coll-by-concept-id-cache-key "C456-TEST_PROV1" {})
+        "C123-TEST_PROV1")
 
   (testing "Testing when collection doesn't exist in cache or elastic -> Then returns nil collection"
    ;; mock the set-cache func
@@ -95,7 +89,14 @@
        coll-by-provider-id-entry-title-cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-provider-id-entry-title-cache-key]})
        _ (hash-cache/reset coll-by-provider-id-entry-title-cache coll-by-provider-id-entry-title-cache-key)
        context {:system {:caches {coll-by-provider-id-entry-title-cache-key coll-by-provider-id-entry-title-cache}}}
-       test-coll1 (create-collection-for-gran-acls-test-entry "TEST_PROV2" "EntryTitle2" "C123-TEST_PROV2")]
+       test-coll1 (create-collection-for-gran-acls-test-entry "TEST_PROV2" "EntryTitle2" "C123-TEST_PROV2")
+       test-coll2 (create-collection-for-gran-acls-test-entry "TEST_PROV1" "EntryTitle2" "C888-TEST_PROV1")
+       converted-test-coll2 {:concept-type :collection,
+                             :provider-id "TEST_PROV1",
+                             :EntryTitle "EntryTitle2",
+                             :AccessConstraints {:Value 1},
+                             :TemporalExtents [{:RangeDateTimes [{:BeginningDateTime #=(cmr.common.joda-time/date-time 452217600000 "UTC"), :EndingDateTime nil}]}],
+                             :concept-id "C888-TEST_PROV1"}]
   ;; populate the cache
   (hash-cache/set-value coll-by-provider-id-entry-title-cache coll-by-provider-id-entry-title-cache-key "C123-TEST_PROV2EntryTitle2" test-coll1)
   (hash-cache/set-value coll-by-provider-id-entry-title-cache coll-by-provider-id-entry-title-cache-key "C456-TEST_PROV2EntryTitle2" {})
@@ -110,39 +111,17 @@
          :AccessConstraints {:Value 1},
          :TemporalExtents [{:RangeDateTimes [{:BeginningDateTime #=(cmr.common.joda-time/date-time 452217600000 "UTC"), :EndingDateTime nil}]}],
          :concept-id "C123-TEST_PROV2"}
-        "C123-TEST_PROV2" "EntryTitle2")))
-
-(deftest get-collection-gran-acls-by-provider-id-and-entry-title-no-collection-test
- (let [coll-by-provider-id-and-entry-title-cache-key cmn-coll-for-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key
-       coll-by-provider-id-and-entry-title-cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-provider-id-and-entry-title-cache-key]})
-       _ (hash-cache/reset coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key)
-       context {:system {:caches {coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache}}}
-       test-coll2 (create-collection-for-gran-acls-test-entry "TEST_PROV1" "EntryTitle2" "C888-TEST_PROV1")
-       converted-test-coll2 {:concept-type :collection,
-                             :provider-id "TEST_PROV1",
-                             :EntryTitle "EntryTitle2",
-                             :AccessConstraints {:Value 1},
-                             :TemporalExtents [{:RangeDateTimes [{:BeginningDateTime #=(cmr.common.joda-time/date-time 452217600000 "UTC"), :EndingDateTime nil}]}],
-                             :concept-id "C888-TEST_PROV1"}
-       _ (hash-cache/set-value coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key "SOME_PROVEntryTitleRandom" {})
-       coll-added (hash-cache/get-value coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key "SOME_PROVEntryTitleRandom")
-       _ (println "coll-added = " (pr-str coll-added))]
-  ;; populate the cache
-  ;(hash-cache/set-value coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key "SOME_PROVEntryTitleRandom" {})
-  ;(hash-cache/get-value coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key "SOME_PROVEntryTitleRandom")
-
+        "C123-TEST_PROV2" "EntryTitle2")
 
   (testing "Testing when collection doesn't exist in cache or elastic -> Then returns nil collection"
    ;; mock the set-cache func
    (with-redefs-fn {#'cmn-coll-for-gran-acls-caches/set-caches (fn [context provider-id entry-title] nil)}
     #(is (= nil (get-collection-for-gran-acls context "NON_EXISTENT" "EntryTitle000")))))
 
-  ;(testing "Testing when collection cache has collection, but it is empty map in cache and elastic -> Then should find the collection in elastic, if still empty then returns empty coll"
-  ; (with-redefs-fn {#'cmn-coll-for-gran-acls-caches/set-caches (fn [context provider-id entry-title] {})}
-  ;  #(is (= {} (get-collection-for-gran-acls context "TEST_PROV1" "EntryTitle1")))))
-  ;
-  ;(testing "Testing when collection is not in cache, but exists in elastic -> Then should find the collection in elastic and add to cache"
-  ; (with-redefs-fn {#'cmn-coll-for-gran-acls-caches/set-caches (fn [context provider-id entry-title] test-coll2)}
-  ;  #(is (= converted-test-coll2 (get-collection-for-gran-acls context "TEST_PROV1" "EntryTitle2")))))
+  (testing "Testing when collection cache has collection, but it is empty map in cache and elastic -> Then should find the collection in elastic, if still empty then returns empty coll"
+   (with-redefs-fn {#'cmn-coll-for-gran-acls-caches/set-caches (fn [context provider-id entry-title] {})}
+    #(is (= {} (get-collection-for-gran-acls context "TEST_PROV1" "EntryTitle1")))))
 
-  ))
+  (testing "Testing when collection is not in cache, but exists in elastic -> Then should find the collection in elastic and add to cache"
+   (with-redefs-fn {#'cmn-coll-for-gran-acls-caches/set-caches (fn [context provider-id entry-title] test-coll2)}
+    #(is (= converted-test-coll2 (get-collection-for-gran-acls context "TEST_PROV1" "EntryTitle2")))))))
