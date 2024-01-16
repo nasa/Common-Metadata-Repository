@@ -8,7 +8,7 @@
    [clojure.string :as string]
    [cmr.common-app.config :as config]
    [cmr.common.date-time-parser :as dtp]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [debug info warn error report]]
    [cmr.common.util :as util]
    [cmr.common.time-keeper :as tk]
    [digest :as digest]
@@ -148,9 +148,9 @@
                       (assoc "user-agent" (get-in request [:headers "user-agent"] "unknown"))
                       ;; do this last
                       (assoc "log-cost" (- (tk/now-ms) start)))]
-         ;; send the log to standard error in the same way that the ring access log does
+         ;; send the log to standard error in the same way that the jetty access log does
          (when (config/custom-request-log-error) (.println *err* (json/generate-string note)))
-         (warn (json/generate-string note))
+         (report (json/generate-string note))
          response)))))
 
 (comment
