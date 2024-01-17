@@ -17,22 +17,20 @@
 (defn- log-formatter
   [{:keys [level ?err_ msg_ timestamp_ hostname_ ?ns-str] :as data}]
   ;; <timestamp_> <hostname_> <request id> <LEVEL> [<?ns-str>] - <msg_> <?err_>
-  (if (= "REPORT" (-> level name s/upper-case))
-    (force msg_) ;; don't format a report, let the caller do everything
-    (format "%s %s [%s] %s [%s] - %s%s"
-            (force timestamp_)
-            (force hostname_)
-            (or *request-id*
-                (.getName (Thread/currentThread))
-                (.getId (Thread/currentThread)))
-            (-> level name s/upper-case)
-            (or ?ns-str "?ns")
-            (force msg_)
-            (if-let [err (force ?err_)]
+  (format "%s %s [%s] %s [%s] - %s%s"
+          (force timestamp_)
+          (force hostname_)
+          (or *request-id*
+              (.getName (Thread/currentThread))
+              (.getId (Thread/currentThread)))
+          (-> level name s/upper-case)
+          (or ?ns-str "?ns")
+          (force msg_)
+          (if-let [err (force ?err_)]
             ;; Setting :stacktrace-fonts here to an empty map prevents color
             ;; codes in exception stacktraces.
-              (str "\n" (t/stacktrace err {:stacktrace-fonts {}}))
-              ""))))
+            (str "\n" (t/stacktrace err {:stacktrace-fonts {}}))
+            "")))
 
 ;; Checkout the config before and after
 (defn- setup-logging
