@@ -37,11 +37,11 @@
     concept-type))
 
 (defmethod concept-type->index-info :collection
- [context _ query]
- {:index-name (if (:all-revisions? query)
-               "1_all_collection_revisions"
-               (collections-index-alias))
-  :type-name "collection"})
+  [context _ query]
+  {:index-name (if (:all-revisions? query)
+                 "1_all_collection_revisions"
+                 (collections-index-alias))
+   :type-name "collection"})
 
 (defmulti concept-type+result-format->fields
   "Returns the fields that should be selected out of elastic search given a concept type and result

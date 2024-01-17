@@ -65,17 +65,16 @@
 (use-fixtures :each test-util/embedded-redis-server-fixture)
 
 (defn create-collection-for-gran-acls-test-entry
- [provider-id entry-title coll-concept-id access-value]
- (let [collection {:concept-type :collection,
-                   :provider-id provider-id,
-                   :EntryTitle entry-title,
-                   :AccessConstraints {:Value access-value},
-                   :TemporalExtents nil,
-                   ;:TemporalExtents [{:RangeDateTimes [{:BeginningDateTime "1984-05-01T00:00:00.000Z", :EndingDateTime nil}]}],
-                   :concept-id coll-concept-id}]
-  (if (not (nil? access-value))
-         (assoc collection :AccessConstraints {:Value access-value}))
-  collection))
+  [provider-id entry-title coll-concept-id access-value]
+  (let [collection {:concept-type :collection,
+                    :provider-id provider-id,
+                    :EntryTitle entry-title,
+                    :AccessConstraints {:Value access-value},
+                    :TemporalExtents nil,
+                    :concept-id coll-concept-id}]
+    (if (not (nil? access-value))
+      (assoc collection :AccessConstraints {:Value access-value}))
+    collection))
 
 (deftest acl-match-granule-concept-test
   (testing "provider ids"
