@@ -21,8 +21,8 @@
   :collections-for-gran-acls-by-concept-id)
 
 (def coll-by-provider-id-and-entry-title-cache-key
- "Identifies the key used when the cache is stored in the system."
- :collections-for-gran-acls-by-provider-id-and-entry-title)
+  "Identifies the key used when the cache is stored in the system."
+  :collections-for-gran-acls-by-provider-id-and-entry-title)
 
 (def job-refresh-rate
   "This is the frequency that the cron job will run. It should be less than cache-ttl"
@@ -37,7 +37,7 @@
   (* 60 30))
 
 (defn create-coll-by-concept-id-cache-client
- "Creates connection to collection-for-gran-acls coll-by-concept-id-cache.
+  "Creates connection to collection-for-gran-acls coll-by-concept-id-cache.
   Field/Value Structure is as follows:
   concept-id -> {collection info}"
   []
@@ -45,50 +45,62 @@
                                            :ttl           cache-ttl}))
 
 (defn create-coll-by-provider-id-and-entry-title-cache-client
- "Creates connection to collection-for-gran-acls coll-by-provider-id-and-entry-id-cache.
+  "Creates connection to collection-for-gran-acls coll-by-provider-id-and-entry-id-cache.
   Field/Value Structure is as follows:
   <provider_id><entry-title> -> {collection info}"
- []
- (red-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-provider-id-and-entry-title-cache-key]
-                                          :ttl           cache-ttl}))
+  []
+  (red-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-provider-id-and-entry-title-cache-key]
+                                           :ttl           cache-ttl}))
 
 (defn clj-times->time-strs
- "Take a map and convert any date objects into strings so the map can be cached.
+  "Take a map and convert any date objects into strings so the map can be cached.
   This can be reversed with time-strs->clj-times."
- [data]
- (walk/postwalk
-  #(if (true? (instance? org.joda.time.DateTime %))
-    (time-parser/clj-time->date-time-str %)
-    %)
-  data))
+  [data]
+  (walk/postwalk
+    #(if (true? (instance? org.joda.time.DateTime %))
+       (time-parser/clj-time->date-time-str %)
+       %)
+    data))
 
 (defn time-strs->clj-times
- "Take a map which has string dates and convert them to DateTime objects. This
-  can be reversed with clj-times->time-strs."
- [data]
- (walk/postwalk
-  #(if-let [valid-date (time-parser/try-parse-datetime %)] valid-date %)
-  data))
+  "Take a map which has string dates and convert them to DateTime objects.
+  This can be reversed with clj-times->time-strs."
+  [data]
+  (walk/postwalk
+    #(if-let [valid-date (time-parser/try-parse-datetime %)] valid-date %)
+    data))
+
+(defn- execute-coll-for-gran-acls-query
+  [context query-condition page-size]
+  ;; when creating a result processor, realize all the lazy (delay) values to
+  ;; actual values so that the resulting object can be cached in redis or some
+  ;; other text based caching system and not clojure memory
+  (let [result-processor (fn [_ _ elastic-item]
+                           (assoc (util/delazy-all (acl-rhh/parse-elastic-item :collection elastic-item)) :concept-id (:_id elastic-item)))
+        query (q-mod/query {:concept-type :collection
+                            :condition       query-condition
+                            :skip-acls?      true
+                            :page-size       page-size
+                            :result-format   :query-specified
+                            :result-fields   (cons :concept-id acl-rhh/collection-elastic-fields)
+                            :result-features {:query-specified {:result-processor result-processor}}})]
+    (:items (qe/execute-query context query))))
 
 (defn- fetch-collections
- "Executes a query that will fetch all of the collection information needed for caching."
- [context]
- ;; when creating a result processor, realize all the lazy (delay) values to
- ;; actual values so that the resulting object can be cached in redis or some
- ;; other text based caching system and not clojure memory
- (let [result-processor (fn [_ _ elastic-item]
-                         (assoc (util/delazy-all (acl-rhh/parse-elastic-item
-                                                  :collection
-                                                  elastic-item))
-                          :concept-id (:_id elastic-item)))
-       query (q-mod/query {:concept-type :collection
-                           :condition q-mod/match-all
-                           :skip-acls? true
-                           :page-size :unlimited
-                           :result-format :query-specified
-                           :result-fields (cons :concept-id acl-rhh/collection-elastic-fields)
-                           :result-features {:query-specified {:result-processor result-processor}}})]
-  (:items (qe/execute-query context query))))
+  ([context]
+   "Fetches all collections from elastic. If no collections are found, will return nil."
+   (let [query-condition (q-mod/match-all)]
+     (execute-coll-for-gran-acls-query context query-condition :unlimited)))
+  ([context collection-concept-id]
+   "Fetches one collection from elastic search by concept id. If no collection is found, will return nil."
+   (let [query-condition (q-mod/string-condition :concept-id collection-concept-id true false)
+         colls-found (execute-coll-for-gran-acls-query context query-condition 1)]
+     (first colls-found)))
+  ([context provider-id entry-title]
+   "Fetches one collection from elastic search by entry-title and then checks if the provider id is accurate. If no collection is found, will return nil."
+   (let [query-condition (q-mod/string-condition :entry-title entry-title false false)
+         colls-found (execute-coll-for-gran-acls-query context query-condition 1)]
+     (some #(when (= provider-id (:provider-id %)) %) colls-found))))
 
 (defn refresh-entire-cache
   "Refreshes the collections-for-gran-acls coll-by-concept-id and coll-by-provider-id-and-entry-title caches.
@@ -96,27 +108,52 @@
   This will throw an exception if there is a problem fetching collections.
   The caller is responsible for catching and logging the exception."
   [context]
- (info "Refreshing entire Collections-for-gran-acls caches")
+  (info "Refreshing entire Collections-for-gran-acls caches")
   (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
         coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-by-provider-id-and-entry-title-cache-key)
         collections (fetch-collections context)]
-   (doseq [coll collections]
-    (hash-cache/set-value coll-by-concept-id-cache
-                          coll-by-concept-id-cache-key
-                          (:concept-id coll)
-                          (clj-times->time-strs coll))
-    (hash-cache/set-value coll-by-provider-id-and-entry-title-cache
-                          coll-by-provider-id-and-entry-title-cache-key
-                          (str (:provider-id coll) (:EntryTitle coll))
-                          (clj-times->time-strs coll)))
-   (info (str "Collections-for-gran-acls caches refresh complete."
+    (doseq [coll collections]
+      (hash-cache/set-value coll-by-concept-id-cache
+                            coll-by-concept-id-cache-key
+                            (:concept-id coll)
+                            (clj-times->time-strs coll))
+      (hash-cache/set-value coll-by-provider-id-and-entry-title-cache
+                            coll-by-provider-id-and-entry-title-cache-key
+                            (str (:provider-id coll) (:EntryTitle coll))
+                            (clj-times->time-strs coll)))
+    (info (str "Collections-for-gran-acls caches refresh complete."
          "coll-by-concept-id-cache Cache Size:" (hash-cache/cache-size coll-by-concept-id-cache coll-by-concept-id-cache-key)
          "coll-by-provider-id-and-entry-title-cache Cache Size:" (hash-cache/cache-size coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key)))))
+
+(defn- set-caches-by-coll
+  [context collection-found]
+  (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
+        coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-by-provider-id-and-entry-title-cache-key)]
+    (when-not (nil? collection-found)
+      (hash-cache/set-value coll-by-concept-id-cache
+                            coll-by-concept-id-cache-key
+                            (:concept-id collection-found)
+                            (clj-times->time-strs collection-found))
+      (hash-cache/set-value coll-by-provider-id-and-entry-title-cache
+                            coll-by-provider-id-and-entry-title-cache-key
+                            (str (:provider-id collection-found) (:EntryTitle collection-found))
+                            (clj-times->time-strs collection-found)))
+    collection-found))
+
+(defn set-caches
+  ([context collection-concept-id]
+   "Updates collections-for-gran-acl caches for one given collection by concept id and  returns found collection or nil"
+   (set-caches-by-coll context (fetch-collections context collection-concept-id)))
+  ([context provider-id entry-title]
+   "Updates collections-for-gran-acl caches for one given collection by provider id and entry-title and returns found collection or nil"
+   (set-caches-by-coll context (fetch-collections context provider-id entry-title))))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
         [ctx system]
         (refresh-entire-cache {:system system}))
 
-(def refresh-collections-cache-for-granule-acls-job
+(defn refresh-collections-cache-for-granule-acls-job
+  [job-key]
   {:job-type RefreshCollectionsCacheForGranuleAclsJob
+   :job-key job-key
    :interval job-refresh-rate})
