@@ -1,10 +1,10 @@
 (ns cmr.search.test.unit.services.acls.granule-acls
   (:require [clojure.test :refer :all]
-            [cmr.common.cache.in-memory-cache :as mem-cache]
             [cmr.common.hash-cache :as hash-cache]
+            [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
             [cmr.common.util :as util :refer [are3]]
             [cmr.redis-utils.test.test-util :as test-util]
-            [cmr.search.services.acls.collections-cache :as coll-cache]
+            [cmr.common-app.data.search.collection-for-gran-acls-caches :as cmn-coll-for-gran-acls-caches]
             [cmr.search.services.acls.granule-acls :as g]))
 
 (use-fixtures :once test-util/embedded-redis-server-fixture)
@@ -62,38 +62,35 @@
     :concept-id concept-id
     :AccessConstraints {:Value access-value}}))
 
-(defn context-with-cached-collections
-  "Creates a context with the specified collections in the collections cache"
-  [collections]
-  (let [coll-cache (mem-cache/create-in-memory-cache
-                     :default
-                     {:collections {:by-concept-id
-                                    (into {} (for [{:keys [concept-id] :as coll} collections]
-                                               [concept-id coll]))}})]
-    {:system
-     {:caches
-      {coll-cache/cache-key coll-cache}}}))
+(use-fixtures :each test-util/embedded-redis-server-fixture)
+
+(defn create-collection-for-gran-acls-test-entry
+  [provider-id entry-title coll-concept-id access-value]
+  (let [collection {:concept-type :collection,
+                    :provider-id provider-id,
+                    :EntryTitle entry-title,
+                    :AccessConstraints {:Value access-value},
+                    :TemporalExtents nil,
+                    :concept-id coll-concept-id}]
+    (if (not (nil? access-value))
+      (assoc collection :AccessConstraints {:Value access-value}))
+    collection))
 
 (deftest acl-match-granule-concept-test
   (testing "provider ids"
     (is (not (g/acl-match-concept? {} (make-acl "P1") (concept "P2" "C2-P2"))) "not same provider failed")
     (is (g/acl-match-concept? {} (make-acl "P1") (concept "P1" "C2-P1")) "is same provider failed"))
 
-  (let [collections [["C1-P1" "coll1" nil]
-                     ["C2-P1" "coll2" 1]
-                     ["C3-P1" "coll3" 2]
-                     ["C4-P2" "coll1" nil]
-                     ["C5-P2" "coll2" 1]]
-        context (context-with-cached-collections
-                 (for [coll-args collections]
-                   (apply collection coll-args)))
-        ;; Setup the redis cache (rcache) from the memory cache
-        ;; Without doing this, tests will pass locally but not in CI/CD
-        rcache (cmr.search.services.acls.collections-cache/create-cache)
-        old-mem-cache (get-in context [:system :caches :collections-for-gran-acls])
-        context (assoc-in context [:system :caches :collections-for-gran-acls] rcache)
-        data (.get-value old-mem-cache :collections)]
-    (hash-cache/set-values rcache :collections-for-gran-acls data)
+  (let [coll-by-concept-id-cache-key cmn-coll-for-gran-acls-caches/coll-by-concept-id-cache-key
+        coll-by-concept-id-cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-concept-id-cache-key]})
+        _ (hash-cache/reset coll-by-concept-id-cache coll-by-concept-id-cache-key)
+        context {:system {:caches {coll-by-concept-id-cache-key coll-by-concept-id-cache}}}]
+
+    (hash-cache/set-value coll-by-concept-id-cache coll-by-concept-id-cache-key "C1-P1" (create-collection-for-gran-acls-test-entry "P1" "coll1" "C1-P1" nil))
+    (hash-cache/set-value coll-by-concept-id-cache coll-by-concept-id-cache-key "C2-P1" (create-collection-for-gran-acls-test-entry "P1" "coll2" "C2-P1" 1))
+    (hash-cache/set-value coll-by-concept-id-cache coll-by-concept-id-cache-key "C3-P1" (create-collection-for-gran-acls-test-entry "P1" "coll3" "C3-P1" 2))
+    (hash-cache/set-value coll-by-concept-id-cache coll-by-concept-id-cache-key "C4-P2" (create-collection-for-gran-acls-test-entry "P2" "coll1" "C4-P2" nil))
+    (hash-cache/set-value coll-by-concept-id-cache coll-by-concept-id-cache-key "C5-P2" (create-collection-for-gran-acls-test-entry "P2" "coll2" "C5-P2" 1))
 
     (testing "collection identifier"
       (are3 [entry-titles access-value-args collection-concept-id should-match?]

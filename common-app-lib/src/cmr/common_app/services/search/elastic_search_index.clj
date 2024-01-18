@@ -12,6 +12,7 @@
    [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common-app.services.search.results-model :as results]
    [cmr.common.concepts :as concepts]
+   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
@@ -24,12 +25,23 @@
    clojure.lang.ExceptionInfo
    java.net.UnknownHostException))
 
+(defconfig collections-index-alias
+           "The alias to use for the collections index."
+           {:default "collection_search_alias" :type String})
+
 (defmulti concept-type->index-info
   "Returns index info based on input concept type. The map should contain a :type-name key along with
    an :index-name key. :index-name can refer to a single index or a comma separated string of multiple
    index names."
   (fn [context concept-type query]
     concept-type))
+
+(defmethod concept-type->index-info :collection
+  [context _ query]
+  {:index-name (if (:all-revisions? query)
+                 "1_all_collection_revisions"
+                 (collections-index-alias))
+   :type-name "collection"})
 
 (defmulti concept-type+result-format->fields
   "Returns the fields that should be selected out of elastic search given a concept type and result
