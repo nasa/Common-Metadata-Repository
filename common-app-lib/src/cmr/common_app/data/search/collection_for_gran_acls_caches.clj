@@ -135,7 +135,7 @@
          "coll-by-provider-id-and-entry-title-cache Cache Size:" (hash-cache/cache-size coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key)))))
 
 (defn- set-caches-by-coll
-  [collection-found]
+  [context collection-found]
   (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
         coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-by-provider-id-and-entry-title-cache-key)]
     (when-not (nil? collection-found)
@@ -152,10 +152,10 @@
 (defn set-caches
   ([context collection-concept-id]
    "Updates collections-for-gran-acl caches for one given collection by concept id and  returns found collection or nil"
-   (set-caches-by-coll (fetch-collections context collection-concept-id)))
+   (set-caches-by-coll context (fetch-collections context collection-concept-id)))
   ([context provider-id entry-title]
    "Updates collections-for-gran-acl caches for one given collection by provider id and entry-title and returns found collection or nil"
-   (set-caches-by-coll (fetch-collections context provider-id entry-title))))
+   (set-caches-by-coll context (fetch-collections context provider-id entry-title))))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
         [ctx system]
