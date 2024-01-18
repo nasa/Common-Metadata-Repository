@@ -152,6 +152,8 @@
         [ctx system]
         (refresh-entire-cache {:system system}))
 
-(def refresh-collections-cache-for-granule-acls-job
+(defn refresh-collections-cache-for-granule-acls-job
+  [job-key]
   {:job-type RefreshCollectionsCacheForGranuleAclsJob
+   :job-key job-key
    :interval job-refresh-rate})
