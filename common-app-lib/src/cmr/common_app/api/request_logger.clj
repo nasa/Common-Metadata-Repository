@@ -132,22 +132,22 @@
                       ;; information.
                       (as-> data (if (= id :ignore) (assoc data "log-id" id) data))
                       ;; assume that (add-body-hashes) has been run and reuse data
-                      (assoc "body-md5" (get-in response [:headers "Content-MD5"]))
-                      (assoc "body-sha1" (get-in response [:headers "Content-SHA1"]))
-                      (assoc "client-id" (get-in request [:headers "client-id"] "unknown"))
-                      (assoc "form-params" (dump-param form-params :form-params))
-                      (assoc "method" (string/upper-case (name (:request-method request))))
-                      (assoc "now" now)
-                      (assoc "protocol" (:protocol request))
-                      (assoc "query-params" (dump-param query-params :query-params))
-                      (assoc "remote-address" (:remote-addr request))
-                      (assoc "request-id" (get-in response [:headers "CMR-Request-Id"] "-to early-"))
-                      (assoc "status" (:status response))
-                      (assoc "took" (get-in response [:headers "CMR-Took"] "n/a"))
-                      (assoc "uri" (request->uri request))
-                      (assoc "user-agent" (get-in request [:headers "user-agent"] "unknown"))
-                      ;; do this last
-                      (assoc "log-cost" (- (tk/now-ms) start)))]
+                      (assoc "body-md5" (get-in response [:headers "Content-MD5"])
+                             "body-sha1" (get-in response [:headers "Content-SHA1"])
+                             "client-id" (get-in request [:headers "client-id"] "unknown")
+                             "form-params" (dump-param form-params :form-params)
+                             "method" (string/upper-case (name (:request-method request)))
+                             "now" now
+                             "protocol" (:protocol request)
+                             "query-params" (dump-param query-params :query-params)
+                             "remote-address" (:remote-addr request)
+                             "request-id" (get-in response [:headers "CMR-Request-Id"] "-to early-")
+                             "status" (:status response)
+                             "took" (get-in response [:headers "CMR-Took"] "n/a")
+                             "uri" (request->uri request)
+                             "user-agent" (get-in request [:headers "user-agent"] "unknown")
+                             ;; do this last
+                             ("log-cost-ms" (- (tk/now-ms) start))))]
          ;; send the log to standard error in the same way that the jetty access log does
          (when (config/custom-request-log-error) (.println *err* (json/generate-string note)))
          (report (json/generate-string note))
