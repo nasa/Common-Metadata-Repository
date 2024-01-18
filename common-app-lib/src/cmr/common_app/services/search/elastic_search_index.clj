@@ -12,6 +12,7 @@
    [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common-app.services.search.results-model :as results]
    [cmr.common.concepts :as concepts]
+   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
@@ -19,8 +20,7 @@
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.es-helper :as es-helper]
-   [cmr.transmit.connection :as transmit-conn]
-   [cmr.common.config :as cfg :refer [defconfig]])
+   [cmr.transmit.connection :as transmit-conn])
   (:import
    clojure.lang.ExceptionInfo
    java.net.UnknownHostException))

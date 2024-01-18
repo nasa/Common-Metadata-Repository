@@ -50,7 +50,7 @@
   <provider_id><entry-title> -> {collection info}"
   []
   (red-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-provider-id-and-entry-title-cache-key]
-                                          :ttl           cache-ttl}))
+                                           :ttl           cache-ttl}))
 
 (defn clj-times->time-strs
   "Take a map and convert any date objects into strings so the map can be cached.
@@ -85,15 +85,6 @@
                             :result-fields   (cons :concept-id acl-rhh/collection-elastic-fields)
                             :result-features {:query-specified {:result-processor result-processor}}})]
     (:items (qe/execute-query context query))))
-
-;(defn- fetch-collections
-;  "Executes a query that fetches all of the collection information from elastic needed for caching."
-;  [context]
-;  ;; when creating a result processor, realize all the lazy (delay) values to
-;  ;; actual values so that the resulting object can be cached in redis or some
-;  ;; other text based caching system and not clojure memory
-;  (let [query-condition (q-mod/match-all)]
-;    (execute-coll-for-gran-acls-query context query-condition :unlimited)))
 
 (defn- fetch-collections
   ([context]
