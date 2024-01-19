@@ -28,10 +28,7 @@
    [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params])
-  ;; Required to be available at runtime.
-  (:require
-   [cmr.search.data.elastic-search-index]))
+   [ring.middleware.params :as params]))
 
 (defn- build-routes [system]
   (routes

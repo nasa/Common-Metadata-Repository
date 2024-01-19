@@ -60,4 +60,3 @@
                               :condition (qm/string-conditions :provider-id ["PROV1"] true)
                               :page-size 3})]
          (is (= "1_c*,1_small_collections,-1_collections*" (#'search-index/get-granule-indexes context query)))))))
- 
