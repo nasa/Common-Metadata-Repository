@@ -52,4 +52,4 @@
       common-routes/pretty-print-response-handler
       params/wrap-params
       req-log/add-body-hashes
-      req-log/action-logger))
+      req-log/log-ring-request))

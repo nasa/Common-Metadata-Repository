@@ -84,7 +84,7 @@
                                  (assoc-in [:headers "Content-SHA1"] body-sha1))]
         updated-response))))
 
-;; Action-logger should provide the same info as a standard NCSA Log
+;; log-ring-request should provide the same info as a standard NCSA Log
 ;; ; 127.0.0.1 - - [2023-12-27 19:04:01.676] "GET /collections?keyword=any HTTP/1.1" 200 112 "-" "curl/8.1.2" 296
 
 ;; Fields are as follows:
@@ -105,7 +105,7 @@
 ;; agent
 ;; time
 
-(defn action-logger
+(defn log-ring-request
   "Log a request from Ring returning JSON data to be parsed by a log tool like
    Splunk or ELK. This handler can be called multiple times at different positions
    in the handlers call. When calling multiple times then pass in an ID (two
@@ -113,7 +113,7 @@
    entries can be told appart. One may want to do this to see when a value logged
    becomes valid and thus availible downstream."
   ([handler]
-   (action-logger handler :ignore))
+   (log-ring-request handler :ignore))
   ([handler id]
    (fn [request]
      (if-not (config/custom-request-log)

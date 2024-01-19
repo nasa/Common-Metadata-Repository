@@ -129,5 +129,5 @@
       params/wrap-params
       copy-of-body-handler
       req-log/add-body-hashes
-      req-log/action-logger
+      req-log/log-ring-request
       (shapefile/shapefile-upload default-error-format)))
