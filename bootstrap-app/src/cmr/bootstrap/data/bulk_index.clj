@@ -140,9 +140,9 @@
   [system concept-batches]
   (let [indexer-context {:system (helper/get-indexer system)}]
     (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
-    (prn "🚀: [line 143][bulk_index.clj] all-revisions-index? true")
+    (info "🚀: [line 143][bulk_index.clj] all-revisions-index? true")
     (index/bulk-index indexer-context concept-batches {})
-    (prn "🚀: [line 143][bulk_index.clj] all-revisions-index? false")))
+    (info "🚀: [line 143][bulk_index.clj] all-revisions-index? false")))
 
 (defn- index-concepts-by-provider
   "Bulk index concepts for the given provider and concept-type."
