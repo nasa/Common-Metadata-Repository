@@ -220,12 +220,9 @@
   [context coll-identifier concept]
   (if coll-identifier
     (let [collection-concept-id (:collection-concept-id concept)
-          collection (merge {:concept-id collection-concept-id}
-                            (coll-cache/get-collection context collection-concept-id))]
+          collection (coll-cache/get-collection-for-gran-acls context collection-concept-id)]
       (when-not collection
-        (errors/internal-error!
-          (format "Collection with id %s was in a granule but was not found using collection cache."
-                  collection-concept-id)))
+        (errors/internal-error! (format "Collection with id %s was in a granule but was not found using collection cache." collection-concept-id)))
       (umm-matchers/coll-matches-collection-identifier? collection coll-identifier))
     true))
 

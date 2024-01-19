@@ -91,6 +91,8 @@
                                       "kms-short-name-index"
                                       "kms-location-index"
                                       "collection-metadata-cache"
+                                      "collections-for-gran-acls-by-concept-id"
+                                      "collections-for-gran-acls-by-provider-id-and-entry-title"
                                       "scroll-id-cache"
                                       "first-page-cache"
                                       "token-imp"
