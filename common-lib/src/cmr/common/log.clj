@@ -88,7 +88,9 @@
   `(t/error ~@body))
 
 (defmacro report
-  "Log a raw report level message"
+  "Log a report level message. Report level logs differ from Error in that they
+   always display but are not considered an Error or Fatal event and are already
+   supported by the base library."
   [& body]
   `(t/report ~@body))
 
