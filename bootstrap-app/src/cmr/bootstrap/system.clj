@@ -8,6 +8,7 @@
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.bootstrap.data.bulk-index :as bi]
    [cmr.bootstrap.data.bulk-migration :as bm]
+   [cmr.bootstrap.data.elastic-search-index-names-cache :as b-elastic-search-index-names-cache]
    [cmr.bootstrap.data.metadata-retrieval.collection-metadata-cache :as b-coll-metadata-cache]
    [cmr.bootstrap.data.virtual-products :as vp]
    [cmr.bootstrap.services.dispatch.core :as dispatch]
@@ -19,6 +20,7 @@
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common-app.services.search.elastic-search-index :as search-index]
+   [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]
    [cmr.common.api.web-server :as web]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -88,13 +90,15 @@
                       common-health/health-cache-key (common-health/create-health-cache)
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
                       coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
-                      coll-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key (coll-gran-acls-caches/create-coll-by-provider-id-and-entry-title-cache-client)}
+                      coll-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key (coll-gran-acls-caches/create-coll-by-provider-id-and-entry-title-cache-client)
+                      elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
                                                                (kf/refresh-kms-cache-job "bootstrap-kms-cache-refresh")
                                                                (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
                                                                (b-coll-metadata-cache/refresh-collections-metadata-cache-job "bootstrap-collections-metadata-cache-refresh")
                                                                (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")
-                                                               (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job "bootstrap-collections-for-gran-acls-cache-refresh")])
+                                                               (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job "bootstrap-collections-for-gran-acls-cache-refresh")
+                                                               (b-elastic-search-index-names-cache/refresh-index-names-cache-job "bootstrap-elastic-search-index-names-cache")])
              :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms
                                                   :indexer :access-control])))

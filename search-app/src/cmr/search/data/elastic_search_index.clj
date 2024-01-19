@@ -5,20 +5,15 @@
    [clojurewerkz.elastisch.query :as q]
    [clojurewerkz.elastisch.rest.document :as esd]
    [cmr.common-app.services.search.elastic-search-index :as common-esi]
+   [cmr.common-app.services.search.elastic-search-index-names-cache :as index-names-cache]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
-   [cmr.common.cache :as cache]
+   [cmr.common.hash-cache :as hcache]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :as cfg :refer [defconfig]]
-   [cmr.common.jobs :refer [defjob]]
-   [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as e]
-   [cmr.common.util :as util] 
-   [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
-   [cmr.search.services.query-walkers.provider-id-extractor :as pex]
-   [cmr.transmit.indexer :as indexer])
+   [cmr.search.services.query-walkers.provider-id-extractor :as pex])
   ;; Required to be available at runtime.
   (:require
    [cmr.search.data.elastic-relevancy-scoring]
@@ -31,75 +26,16 @@
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
 
-(defn- get-collections-moving-to-separate-index
-  "Returns a list of collections that are currently in the process of moving to a separate index.
-  Takes a map with the keyword of the collection as the key and the target index as the value.
-  For example: `{:C1-PROV1 \"separate-index\" :C2-PROV2 \"small-collections\"}` would return
-               `[\"C1-PROV1\"]`"
-  [rebalancing-targets-map]
-  (keep (fn [[k v]]
-          (when (= "separate-index" v)
-            (name k)))
-        rebalancing-targets-map))
-
-
-(defn- fetch-concept-type-index-names
-  "Fetch index names for each concept type from index-set app"
-  [context]
-  (let [fetched-index-set (indexer/get-index-set context index-set-id)
-        ;; We want to make sure collections in the process of being moved to a separate granule
-        ;; index continue to use the small collections index for search.
-        rebalancing-targets-map (get-in fetched-index-set [:index-set :granule :rebalancing-targets])
-        moving-to-separate-index (get-collections-moving-to-separate-index rebalancing-targets-map)
-        index-names-map (get-in fetched-index-set [:index-set :concepts])]
-    {:index-names index-names-map
-     :rebalancing-collections moving-to-separate-index}))
-
-(def index-cache-name
-  "The name of the cache for caching index names. It will contain a map of concept type to a map of
-   index names to the name of the index used in elasticsearch.
-
-   Example:
-   {:granule {:small_collections \"1_small_collections\"},
-    :tag {:tags \"1_tags\"},
-    :collection {:all-collection-revisions \"1_all_collection_revisions\",
-                 :collections \"1_collections_v2\"}}"
-  :index-names)
-
-(def index-names-cache-key
-  "The key used for index names in the index cache."
-  :concept-indices)
-
-(defn create-index-cache
-  "Used to create the cache that will be used for caching index names."
-  []
-  (redis-cache/create-redis-cache {:keys-to-track [index-names-cache-key]}))
-
-;; A job for refreshing the index names cache.
-(defjob RefreshIndexNamesCacheJob
-  [ctx system]
-  (let [context {:system system}
-        index-names (fetch-concept-type-index-names context)
-        cache (cache/context->cache context index-cache-name)]
-    (cache/set-value cache index-names-cache-key index-names)))
-
-(def refresh-index-names-cache-job
-  {:job-type RefreshIndexNamesCacheJob
-   ;; 5 minutes
-   :interval 300})
-
-(defn- get-index-names-map
-  "Fetch index names associated with concepts."
-  [context]
-  (cache/get-value (cache/context->cache context index-cache-name)
-                   index-names-cache-key
-                   (partial fetch-concept-type-index-names context)))
+;; Simplifies the cache key used in the funtions below.
+(def cache-key index-names-cache/index-names-cache-key)
 
 (defn- get-granule-index-names
   "Fetch index names associated with granules excluding rebalancing collections indexes"
   [context]
-  (let [{:keys [index-names rebalancing-collections]} (get-index-names-map context)]
-    (apply dissoc (:granule index-names) (map keyword rebalancing-collections))))
+  (let [cache (hcache/context->cache context cache-key)
+        granule-index-names (hcache/get-value cache cache-key :granule)
+        rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)]
+    (apply dissoc granule-index-names (map keyword rebalancing-collections))))
 
 (defn- collection-concept-id->index-name
   "Return the granule index name for the input collection concept id"
@@ -123,8 +59,9 @@
 (defn all-granule-indexes
   "Returns all possible granule indexes in a string that can be used by elasticsearch query"
   [context]
-  (let [{:keys [index-names rebalancing-collections]} (get-index-names-map context)
-        granule-index-names (:granule index-names)
+  (let [cache (hcache/context->cache context cache-key)
+        granule-index-names (hcache/get-value cache cache-key :granule)
+        rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)
         rebalancing-indexes (map granule-index-names (map keyword rebalancing-collections))
         ;; Exclude all the rebalancing collection indexes.
         excluded-collections-str (if (seq rebalancing-indexes)

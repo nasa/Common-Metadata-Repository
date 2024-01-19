@@ -12,6 +12,7 @@
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common-app.services.search :as search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
+   [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -21,7 +22,6 @@
    [cmr.common.system :as common-sys]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.orbits.orbits-runtime :as orbits-runtime]
-   [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
    [cmr.search.routes :as routes]
@@ -111,7 +111,7 @@
              :web (web-server/create-web-server (transmit-config/search-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
-             :caches {idx/index-cache-name (idx/create-index-cache)
+             :caches {elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)
                       af/acl-cache-key (af/create-acl-cache [:catalog-item :system-object :provider-object])
                       ;; Caches a map of tokens to the security identifiers
                       context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
@@ -144,7 +144,6 @@
              :scheduler (jobs/create-scheduler
                          `system-holder
                          [(af/refresh-acl-cache-job "search-acl-cache-refresh")
-                          idx/refresh-index-names-cache-job
                           hgrf/refresh-has-granules-map-job
                           hgocrf/refresh-has-granules-or-cwic-map-job
                           hgocrf/refresh-has-granules-or-opensearch-map-job
