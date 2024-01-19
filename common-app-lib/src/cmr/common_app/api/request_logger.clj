@@ -108,12 +108,16 @@
 (defn log-ring-request
   "Log a request from Ring returning JSON data to be parsed by a log tool like
    Splunk or ELK. This handler can be called multiple times at different positions
-   in the handlers call. When calling multiple times then pass in an ID (two
-   arity call) and the output will include this value in the log so that log
-   entries can be told appart. One may want to do this to see when a value logged
-   becomes valid and thus availible downstream."
+   in the handlers call. When calling this function multiple times in the routes
+   list, then pass in an ID (the two arity call) and the output will include the
+   ID value in the log so that log entries can be told apart. One may want to do
+   this to see when a value logged becomes valid in the routes chain and thus
+   availible downstream.
+
+   NOTE: If you pass in an ID of :ignore then no ID will be written out, the
+   same behavior if you call the single arity call."
   ([handler]
-   (log-ring-request handler :ignore))
+   (log-ring-request handler :ignore-id))
   ([handler id]
    (fn [request]
      (if-not (config/custom-request-log)
@@ -130,7 +134,7 @@
                       ;; As this handler can be called multiple times, if so,
                       ;; include an id showing which instance is reporting this
                       ;; information.
-                      (as-> data (if (= id :ignore) (assoc data "log-id" id) data))
+                      (as-> data (if (= id :ignore-id) (assoc data "log-id" id) data))
                       ;; assume that (add-body-hashes) has been run and reuse data
                       (assoc "body-md5" (get-in response [:headers "Content-MD5"])
                              "body-sha1" (get-in response [:headers "Content-SHA1"])
