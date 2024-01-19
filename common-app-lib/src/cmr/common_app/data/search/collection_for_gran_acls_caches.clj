@@ -89,8 +89,7 @@
 (defn- fetch-collections
   ([context]
    "Fetches all collections from elastic. If no collections are found, will return nil."
-   (let [query-condition (q-mod/match-all)]
-     (execute-coll-for-gran-acls-query context query-condition :unlimited)))
+   (execute-coll-for-gran-acls-query context q-mod/match-all :unlimited))
   ([context collection-concept-id]
    "Fetches one collection from elastic search by concept id. If no collection is found, will return nil."
    (let [query-condition (q-mod/string-condition :concept-id collection-concept-id true false)
