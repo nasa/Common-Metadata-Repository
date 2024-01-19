@@ -135,6 +135,7 @@
    (bulk-index context concept-batches nil))
   ([context concept-batches options]
    (reduce (fn [num-indexed batch]
+             (prn "🚀: [line 138][index_service.clj] num-indexed: " num-indexed)
              (let [batch (prepare-batch context batch options)]
                (es/bulk-index-documents context batch options)
                (+ num-indexed (count batch))))
