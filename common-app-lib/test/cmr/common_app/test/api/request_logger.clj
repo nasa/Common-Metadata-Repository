@@ -105,7 +105,7 @@
        [expected given]
        (is (= expected (apply dump-param given)))
 
-       "basic"
+       "nothing should be changed"
        {:left :0}
        [{:a {:left :0}} :a]
 
