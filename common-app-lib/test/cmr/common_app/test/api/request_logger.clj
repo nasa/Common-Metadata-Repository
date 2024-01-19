@@ -109,11 +109,19 @@
        {:left :0}
        [{:a {:left :0}} :a]
 
-       "with tokens"
+       "scrub token key as :token"
+       {:left :0 :right :1 :token "bad-XXX"}
+       [{:a {:left :0 :right :1 :token "bad-value" }} :a]
+
+       "scrub token key as string token"
+       {:left :0 :right :1 "token" "Bad-XXX"}
+       [{:a {:left :0 :right :1 "token" "Bad-value"}} :a]
+
+       "scrub both kinds of tokens"
        {:left :0 :right :1 :token "bad-XXX" "token" "Bad-XXX"}
        [{:a {:left :0 :right :1 :token "bad-value" "token" "Bad-value"}} :a]
 
-       "to many things"
+       "to many items, return fewer"
        {"a" 1 "b" 2 "c" 3 "d" 4 "e" 5}
        [{:query-param {"a" 1 "b" 2 "c" 3 "d" 4 "e" 5 "f" 6 "g" 7}} :query-param 5]
 
