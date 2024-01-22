@@ -135,7 +135,9 @@
    (bulk-index context concept-batches nil))
   ([context concept-batches options]
    (reduce (fn [num-indexed batch]
-             (info "🚀: [line 138][index_service.clj] num-indexed: " num-indexed)
+             (when (:provider options)
+               (info "🚀: [line 138][index_service.clj] num-indexed: " num-indexed)
+               (info "🚀: [line 139][index_service.clj] provider: "(:provider options)))
              (let [batch (prepare-batch context batch options)]
                (es/bulk-index-documents context batch options)
                (+ num-indexed (count batch))))
