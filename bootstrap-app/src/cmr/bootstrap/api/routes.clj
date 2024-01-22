@@ -7,7 +7,6 @@
    [cmr.bootstrap.api.fingerprint :as fingerprint]
    [cmr.bootstrap.api.rebalancing :as rebalancing]
    [cmr.bootstrap.api.virtual-products :as virtual-products]
-   [cmr.bootstrap.data.elastic-search-index-names-cache :as b-elastic-search-index-names-cache]
    [cmr.bootstrap.data.metadata-retrieval.collection-metadata-cache :as cmc]
    [cmr.bootstrap.services.health-service :as hs]
    [cmr.common-app.api.health :as common-health]
@@ -139,7 +138,7 @@
               (coll-for-gran-acls-caches/refresh-entire-cache request-context)
 
               (= keyword-cache-name elastic-search-index-names-cache/index-names-cache-key)
-              (b-elastic-search-index-names-cache/refresh-index-names-cache request-context)
+              (elastic-search-index-names-cache/refresh-index-names-cache request-context)
 
               :else
               (route/not-found "Not Found")))

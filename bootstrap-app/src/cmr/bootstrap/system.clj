@@ -8,7 +8,6 @@
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.bootstrap.data.bulk-index :as bi]
    [cmr.bootstrap.data.bulk-migration :as bm]
-   [cmr.bootstrap.data.elastic-search-index-names-cache :as b-elastic-search-index-names-cache]
    [cmr.bootstrap.data.metadata-retrieval.collection-metadata-cache :as b-coll-metadata-cache]
    [cmr.bootstrap.data.virtual-products :as vp]
    [cmr.bootstrap.services.dispatch.core :as dispatch]
@@ -98,7 +97,7 @@
                                                                (b-coll-metadata-cache/refresh-collections-metadata-cache-job "bootstrap-collections-metadata-cache-refresh")
                                                                (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")
                                                                (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job "bootstrap-collections-for-gran-acls-cache-refresh")
-                                                               (b-elastic-search-index-names-cache/refresh-index-names-cache-job "bootstrap-elastic-search-index-names-cache")])
+                                                               (elastic-search-index-names-cache/refresh-index-names-cache-job "bootstrap-elastic-search-index-names-cache")])
              :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms
                                                   :indexer :access-control])))

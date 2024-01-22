@@ -50,3 +50,18 @@
     (when (not= status expected-status)
       (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
     (json/decode (:body response) true)))
+
+(defn refresh-cache
+  "Refreshes the cache for the given url."
+ [url token]
+ (let [response (client/request {:url url
+                                 :method :post
+                                 :query-params {:token token}
+                                 :connection-manager (s/conn-mgr)
+                                 :throw-exceptions false})
+       status (:status response)]
+
+    ;; Make sure the status returned is success
+   (when (not= status 200)
+     (throw (Exception. (str "Unexpected status " status " response:" (:body response)))))
+   (json/decode (:body response) true)))
