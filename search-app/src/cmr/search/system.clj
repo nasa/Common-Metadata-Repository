@@ -26,7 +26,6 @@
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
    [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-gran-acls-caches]
    [cmr.search.routes :as routes]
-   [cmr.search.services.acls.collections-cache :as coll-cache]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.search.services.humanizers.humanizer-range-facet-service :as hrfs]
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
@@ -120,7 +119,6 @@
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       :has-granules-or-cwic-map (hgocrf/create-has-granules-or-cwic-map-cache)
                       :has-granules-or-opensearch-map (hgocrf/create-has-granules-or-opensearch-map-cache)
-                      coll-cache/cache-key (coll-cache/create-cache)
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       acl/token-pc-cache-key (acl/create-token-pc-cache)
@@ -153,7 +151,6 @@
                           hgocrf/refresh-has-granules-or-opensearch-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           (metadata-cache/update-collections-metadata-cache-job)
-                          coll-cache/refresh-collections-cache-for-granule-acls-job
                           (cache-info/create-log-cache-info-job "search")
                           jvm-info/log-jvm-statistics-job
                           hrs/humanizer-report-generator-job])}]

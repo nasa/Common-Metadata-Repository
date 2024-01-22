@@ -97,7 +97,7 @@
      (first colls-found)))
   ([context provider-id entry-title]
    "Fetches one collection from elastic search by entry-title and then checks if the provider id is accurate. If no collection is found, will return nil."
-   (let [query-condition (q-mod/string-condition :entry-title entry-title false false)
+   (let [query-condition (q-mod/string-condition :entry-title entry-title true false)
          colls-found (execute-coll-for-gran-acls-query context query-condition 1)]
      (some #(when (= provider-id (:provider-id %)) %) colls-found))))
 
@@ -121,8 +121,8 @@
                             (str (:provider-id coll) (:EntryTitle coll))
                             (clj-times->time-strs coll)))
     (info (str "Collections-for-gran-acls caches refresh complete."
-         "coll-by-concept-id-cache Cache Size:" (hash-cache/cache-size coll-by-concept-id-cache coll-by-concept-id-cache-key)
-         "coll-by-provider-id-and-entry-title-cache Cache Size:" (hash-cache/cache-size coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key)))))
+         " coll-by-concept-id-cache Cache Size: " (hash-cache/cache-size coll-by-concept-id-cache coll-by-concept-id-cache-key) " bytes"
+         " coll-by-provider-id-and-entry-title-cache Cache Size: " (hash-cache/cache-size coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key) " bytes"))))
 
 (defn- set-caches-by-coll
   [context collection-found]
