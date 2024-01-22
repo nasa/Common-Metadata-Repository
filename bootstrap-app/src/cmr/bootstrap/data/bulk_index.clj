@@ -137,12 +137,12 @@
 
 (defn- bulk-index-concept-batches
   "Bulk index the given concept batches in both regular index and all revisions index."
-  [system concept-batches]
+  [system concept-batches provider-id]
   (let [indexer-context {:system (helper/get-indexer system)}]
     (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
-    (info "🚀: [line 143][bulk_index.clj] all-revisions-index? true")
+    (info "🚀: [line 143][bulk_index.clj] all-revisions-index? true" provider-id)
     (index/bulk-index indexer-context concept-batches {})
-    (info "🚀: [line 143][bulk_index.clj] all-revisions-index? false")))
+    (info "🚀: [line 143][bulk_index.clj] all-revisions-index? false" provider-id)))
 
 (defn- index-concepts-by-provider
   "Bulk index concepts for the given provider and concept-type."
@@ -159,7 +159,7 @@
                          db provider
                          params
                          (:db-batch-size system))
-        num-concepts (bulk-index-concept-batches system concept-batches)
+        num-concepts (bulk-index-concept-batches system concept-batches provider)
         msg (format "Indexing of %s %s revisions for provider %s completed."
                     num-concepts
                     (name concept-type)
