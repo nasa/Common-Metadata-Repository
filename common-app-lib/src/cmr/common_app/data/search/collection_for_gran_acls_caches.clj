@@ -1,10 +1,9 @@
 (ns cmr.common-app.data.search.collection-for-gran-acls-caches
-"Defines common functions and defs a cache for search collections.
- This namespace defines two separate caches that are tightly coupled and will be created and updated/refreshed at the same time:
- - coll-by-concept-id-cache = collection-for-gran-acls-by-concept-id-cache
- - coll-by-entry-title-cache = collection-for-gran-acls-by-provider-id-and-entry-title-cache"
+  "Defines common functions and defs a cache for search collections.
+  This namespace defines two separate caches that are tightly coupled and will be created and updated/refreshed at the same time:
+  - coll-by-concept-id-cache = collection-for-gran-acls-by-concept-id-cache"
 
-(:require
+  (:require
   [cmr.redis-utils.redis-hash-cache :as red-hash-cache]
   [cmr.common.hash-cache :as hash-cache]
   [cmr.common.jobs :refer [defjob]]
@@ -19,10 +18,6 @@
 (def coll-by-concept-id-cache-key
   "Identifies the key used when the cache is stored in the system."
   :collections-for-gran-acls-by-concept-id)
-
-(def coll-by-provider-id-and-entry-title-cache-key
-  "Identifies the key used when the cache is stored in the system."
-  :collections-for-gran-acls-by-provider-id-and-entry-title)
 
 (def job-refresh-rate
   "This is the frequency that the cron job will run. It should be less than cache-ttl"
@@ -42,14 +37,6 @@
   concept-id -> {collection info}"
   []
   (red-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-concept-id-cache-key]
-                                           :ttl           cache-ttl}))
-
-(defn create-coll-by-provider-id-and-entry-title-cache-client
-  "Creates connection to collection-for-gran-acls coll-by-provider-id-and-entry-id-cache.
-  Field/Value Structure is as follows:
-  <provider_id><entry-title> -> {collection info}"
-  []
-  (red-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-provider-id-and-entry-title-cache-key]
                                            :ttl           cache-ttl}))
 
 (defn clj-times->time-strs
@@ -94,12 +81,7 @@
    "Fetches one collection from elastic search by concept id. If no collection is found, will return nil."
    (let [query-condition (q-mod/string-condition :concept-id collection-concept-id true false)
          colls-found (execute-coll-for-gran-acls-query context query-condition 1)]
-     (first colls-found)))
-  ([context provider-id entry-title]
-   "Fetches one collection from elastic search by entry-title and then checks if the provider id is accurate. If no collection is found, will return nil."
-   (let [query-condition (q-mod/string-condition :entry-title entry-title true false)
-         colls-found (execute-coll-for-gran-acls-query context query-condition 1)]
-     (some #(when (= provider-id (:provider-id %)) %) colls-found))))
+     (first colls-found))))
 
 (defn refresh-entire-cache
   "Refreshes the collections-for-gran-acls coll-by-concept-id and coll-by-provider-id-and-entry-title caches.
@@ -109,43 +91,26 @@
   [context]
   (info "Refreshing entire Collections-for-gran-acls caches")
   (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
-        coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-by-provider-id-and-entry-title-cache-key)
         collections (fetch-collections context)]
     (doseq [coll collections]
       (hash-cache/set-value coll-by-concept-id-cache
                             coll-by-concept-id-cache-key
                             (:concept-id coll)
-                            (clj-times->time-strs coll))
-      (hash-cache/set-value coll-by-provider-id-and-entry-title-cache
-                            coll-by-provider-id-and-entry-title-cache-key
-                            (str (:provider-id coll) (:EntryTitle coll))
                             (clj-times->time-strs coll)))
     (info (str "Collections-for-gran-acls caches refresh complete."
-         " coll-by-concept-id-cache Cache Size: " (hash-cache/cache-size coll-by-concept-id-cache coll-by-concept-id-cache-key) " bytes"
-         " coll-by-provider-id-and-entry-title-cache Cache Size: " (hash-cache/cache-size coll-by-provider-id-and-entry-title-cache coll-by-provider-id-and-entry-title-cache-key) " bytes"))))
-
-(defn- set-caches-by-coll
-  [context collection-found]
-  (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
-        coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-by-provider-id-and-entry-title-cache-key)]
-    (when-not (nil? collection-found)
-      (hash-cache/set-value coll-by-concept-id-cache
-                            coll-by-concept-id-cache-key
-                            (:concept-id collection-found)
-                            (clj-times->time-strs collection-found))
-      (hash-cache/set-value coll-by-provider-id-and-entry-title-cache
-                            coll-by-provider-id-and-entry-title-cache-key
-                            (str (:provider-id collection-found) (:EntryTitle collection-found))
-                            (clj-times->time-strs collection-found)))
-    collection-found))
+         " coll-by-concept-id-cache Cache Size: " (hash-cache/cache-size coll-by-concept-id-cache coll-by-concept-id-cache-key) " bytes"))))
 
 (defn set-caches
+  "Updates collections-for-gran-acl caches for one given collection by concept id and  returns found collection or nil"
   ([context collection-concept-id]
-   "Updates collections-for-gran-acl caches for one given collection by concept id and  returns found collection or nil"
-   (set-caches-by-coll context (fetch-collections context collection-concept-id)))
-  ([context provider-id entry-title]
-   "Updates collections-for-gran-acl caches for one given collection by provider id and entry-title and returns found collection or nil"
-   (set-caches-by-coll context (fetch-collections context provider-id entry-title))))
+   (let [collection-found (fetch-collections context collection-concept-id)
+         coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)]
+     (when-not (nil? collection-found)
+       (hash-cache/set-value coll-by-concept-id-cache
+                             coll-by-concept-id-cache-key
+                             (:concept-id collection-found)
+                             (clj-times->time-strs collection-found)))
+     collection-found)))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
         [ctx system]

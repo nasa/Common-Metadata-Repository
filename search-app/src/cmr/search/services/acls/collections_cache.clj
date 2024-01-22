@@ -17,15 +17,3 @@
          (info (str "Collection with concept-id " coll-concept-id " not found in cache. Will update cache and try to find."))
          (coll-caches/time-strs->clj-times (coll-caches/set-caches context coll-concept-id)))
        (coll-caches/time-strs->clj-times collection)))))
-  ; does anyone even use this part?
-  ;([context provider-id entry-title]
-  ; "Gets a single collection from the cache by provider-id and entry-title. If collection is not found in cache, but exists in elastic, it will add it to the cache and will return found collection."
-  ; (let [coll-by-provider-id-and-entry-title-cache (hash-cache/context->cache context coll-caches/coll-by-provider-id-and-entry-title-cache-key)
-  ;       collection (hash-cache/get-value coll-by-provider-id-and-entry-title-cache
-  ;                                        coll-caches/coll-by-provider-id-and-entry-title-cache-key
-  ;                                        (str provider-id entry-title))]
-  ;   (if (or (nil? collection) (empty? collection))
-  ;     (do
-  ;       (info (str "Collection with provider-id " provider-id " and entry-title " entry-title " not found in cache. Will update cache and try to find."))
-  ;       (coll-caches/time-strs->clj-times (coll-caches/set-caches context provider-id entry-title)))
-  ;     (coll-caches/time-strs->clj-times collection)))))
