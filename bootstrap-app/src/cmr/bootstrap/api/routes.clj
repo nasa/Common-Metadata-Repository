@@ -15,6 +15,7 @@
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as mc]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common-app.services.provider-cache :as provider-cache]
+   [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]
    [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acls-caches]
    [cmr.common.api.errors :as errors]
    [cmr.common.log :refer [info]]
@@ -121,22 +122,26 @@
       (context "/caches/refresh/:cache-name" [cache-name]
         (POST "/" {:keys [params request-context headers]}
           (acl/verify-ingest-management-permission request-context :update)
-          (cond
-            (= (keyword cache-name) mc/cache-key)
-            (cmc/refresh-cache request-context)
+          (let [keyword-cache-name (keyword cache-name)]
+            (cond
+              (= keyword-cache-name mc/cache-key)
+              (cmc/refresh-cache request-context)
 
-            (= (keyword cache-name) kms-fetcher/kms-cache-key)
-            (kms-fetcher/refresh-kms-cache request-context)
+              (= keyword-cache-name kms-fetcher/kms-cache-key)
+              (kms-fetcher/refresh-kms-cache request-context)
 
-            (= (keyword cache-name) provider-cache/cache-key)
-            (provider-cache/refresh-provider-cache request-context)
+              (= keyword-cache-name provider-cache/cache-key)
+              (provider-cache/refresh-provider-cache request-context)
 
-            (or (= (keyword cache-name) coll-for-gran-acls-caches/coll-by-concept-id-cache-key)
-                (= (keyword cache-name) coll-for-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key))
-            (coll-for-gran-acls-caches/refresh-entire-cache request-context)
+              (or (= keyword-cache-name coll-for-gran-acls-caches/coll-by-concept-id-cache-key)
+                  (= keyword-cache-name coll-for-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key))
+              (coll-for-gran-acls-caches/refresh-entire-cache request-context)
 
-            :else
-            (route/not-found "Not Found"))
+              (= keyword-cache-name elastic-search-index-names-cache/index-names-cache-key)
+              (elastic-search-index-names-cache/refresh-index-names-cache request-context)
+
+              :else
+              (route/not-found "Not Found")))
           {:status 200}))
       ;; db migration route
       (POST "/db-migrate" {:keys [request-context params]}
