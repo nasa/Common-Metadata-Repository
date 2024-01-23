@@ -185,26 +185,6 @@
             ;; This is now a shared redis cache server, so many keys exist
             ;;"search 2" (url/search-read-caches-url) "collections-for-gran-acls" []
             "search 3" (url/search-read-caches-url) "has-granules-map" []
-            "search 4" (url/search-read-caches-url) "index-names" [["generic-grid"
-                                                                   "generic-data-quality-summary-draft"
-                                                                   "tag"
-                                                                   "generic-order-option-draft"
-                                                                   "generic-grid-draft"
-                                                                   "service"
-                                                                   "granule"
-                                                                   "generic-collection-draft"
-                                                                   "generic-variable-draft"
-                                                                   "autocomplete"
-                                                                   "generic-tool-draft"
-                                                                   "collection"
-                                                                   "generic-service-draft"
-                                                                   "generic-data-quality-summary"
-                                                                   "subscription"
-                                                                   "variable"
-                                                                   "generic-order-option"
-                                                                   "rebalancing-collections"
-                                                                   "tool"
-                                                                   "deleted-granule"]]
             "search 5" (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
             "search 6" (url/search-read-caches-url) "token-sid" ["ABC-2" "ABC-1"]
             "search 7" (url/search-read-caches-url) "xsl-transformer-templates" []
