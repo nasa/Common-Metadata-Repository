@@ -131,9 +131,9 @@
               (kms-fetcher/refresh-kms-cache request-context)
 
               (= keyword-cache-name provider-cache/cache-key)
-              (provider-cache/refresh-provider-cache request-context))
+              (provider-cache/refresh-provider-cache request-context)
 
-														(= (keyword cache-name) coll-for-gran-acls-caches/coll-by-concept-id-cache-key)
+														(= keyword-cache-name coll-for-gran-acls-caches/coll-by-concept-id-cache-key)
 														(coll-for-gran-acls-caches/refresh-entire-cache request-context)
 
               (= keyword-cache-name elastic-search-index-names-cache/index-names-cache-key)
