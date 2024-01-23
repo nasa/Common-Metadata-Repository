@@ -133,14 +133,14 @@
               (= keyword-cache-name provider-cache/cache-key)
               (provider-cache/refresh-provider-cache request-context)
 
-														(= keyword-cache-name coll-for-gran-acls-caches/coll-by-concept-id-cache-key)
-														(coll-for-gran-acls-caches/refresh-entire-cache request-context)
+              (= keyword-cache-name coll-for-gran-acls-caches/coll-by-concept-id-cache-key)
+              (coll-for-gran-acls-caches/refresh-entire-cache request-context)
 
               (= keyword-cache-name elastic-search-index-names-cache/index-names-cache-key)
               (elastic-search-index-names-cache/refresh-index-names-cache request-context)
 
               :else
-              (route/not-found "Not Found"))
+              (route/not-found "Not Found")))
           {:status 200}))
       ;; db migration route
       (POST "/db-migrate" {:keys [request-context params]}
