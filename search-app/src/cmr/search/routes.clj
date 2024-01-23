@@ -9,6 +9,7 @@
    [cmr.acl.core :as acl]
    [cmr.common.api.errors :as errors]
    [cmr.common-app.api.request-context-user-augmenter :as context-augmenter]
+   [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.site.pages :as common-pages]
    [cmr.common.api.context :as cmr-context]
@@ -21,7 +22,6 @@
    [cmr.search.services.messages.common-messages :as msg]
    [cmr.search.site.routes :as site-routes]
    [compojure.core :refer [GET context routes]]
-   [ring.middleware.json :as ring-json]
    [ring.middleware.keyword-params :as keyword-params]
    [ring.middleware.nested-params :as nested-params]
    [ring.middleware.params :as params]
@@ -128,4 +128,6 @@
       (shapefile-simplifier/shapefile-simplifier default-error-format)
       params/wrap-params
       copy-of-body-handler
+      req-log/add-body-hashes
+      req-log/log-ring-request
       (shapefile/shapefile-upload default-error-format)))
