@@ -151,7 +151,7 @@
                              "uri" (request->uri request)
                              "user-agent" (get-in request [:headers "user-agent"] "unknown")
                              ;; do this last
-                             ("log-cost-ms" (- (tk/now-ms) start))))]
+                             "log-cost-ms" (- (tk/now-ms) start)))]
          ;; send the log to standard error in the same way that the jetty access log does
          (when (config/custom-request-log-error) (.println *err* (json/generate-string note)))
          (report (json/generate-string note))
