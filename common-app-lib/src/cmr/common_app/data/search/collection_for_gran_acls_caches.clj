@@ -2,7 +2,6 @@
   "Defines common functions and defs a cache for search collections.
   This namespace defines two separate caches that are tightly coupled and will be created and updated/refreshed at the same time:
   - coll-by-concept-id-cache = collection-for-gran-acls-by-concept-id-cache"
-
   (:require
   [cmr.redis-utils.redis-hash-cache :as red-hash-cache]
   [cmr.common.hash-cache :as hash-cache]
