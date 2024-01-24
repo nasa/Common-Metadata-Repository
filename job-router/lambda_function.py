@@ -19,22 +19,22 @@ service_port_map = {
 
 def handler(event, context):
     environment = os.getenv('CMR_ENVIRONMENT', 'local')
-    cmr_url = os.getenv('CMR_LB_URL', 'localhost')
+    cmr_url = os.getenv('CMR_LB_URL', 'host.docker.internal')
     service = event.get('service', 'bootstrap')
-    job = event.get('job')
+    endpoint = event.get('endpoint')
     target = event.get('target', 'single')
 
     print(event)
 
-    if (cmr_url == 'localhost'):
-        print("Running " + job + " job for " + service + " on local. URL: " + cmr_url + ':' + service_port_map[service] + '/' + job)
-        response = urllib3.request("POST", cmr_url + ":" + service_port_map[service] + "/" + job)
+    if (environment == 'local'):
+        print("Running " + endpoint + " endpoint for " + service + " on local. URL: " + "host.docker.internal" + ':' + service_port_map[service] + '/' + endpoint)
+        response = urllib3.request("POST", cmr_url + ":" + service_port_map[service] + "/" + endpoint, headers={"Authorization": event.get('token', 'no-token')})
     else:
         token = ssm_client.get_parameter(Name='/'+environment+'/'+service+'/CMR_ECHO_SYSTEM_TOKEN', WithDecryption=True)['Parameter']['Value']
         if (target == 'single'):
-            # response = requests.post(cmr_url + '/' + service + '/' + job)
-            print("Running " + job + " job for " + service + " on remote with URL: " + cmr_url + '/' + service + '/' + job)
-            response = urllib3.request("POST", cmr_url + '/' + service + '/' + job, headers={"Authorization": token})
+            # response = requests.post(cmr_url + '/' + service + '/' + endpoint)
+            print("Running " + endpoint + " endpoint for " + service + " on remote with URL: " + cmr_url + '/' + service + '/' + endpoint)
+            response = urllib3.request("POST", cmr_url + '/' + service + '/' + endpoint, headers={"Authorization": token})
         else:
             response = client.list_tasks(
                 cluster='cmr-service-'+environment,
@@ -50,5 +50,5 @@ def handler(event, context):
             task_ips = jmespath.search("[]", task_ips)
 
             for task in task_ips:
-                print("Running " + job + " job for " + service + " on remote with URL: " + task + '/' + service + '/' + job)
-                response = urllib3.request("POST", task + '/' + service + '/' + job, headers={"Authorization": token})
+                print("Running " + endpoint + " endpoint for " + service + " on remote with URL: " + task + '/' + service + '/' + endpoint)
+                response = urllib3.request("POST", task + '/' + service + '/' + endpoint, headers={"Authorization": token})
