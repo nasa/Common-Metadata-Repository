@@ -9,7 +9,7 @@
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.github.everit-org.json-schema/org.everit.json.schema "1.14.3"]
-                 [org.clojure/clojure "1.10.0"]]
+                 [org.clojure/clojure "1.11.1"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :global-vars {*warn-on-reflection* true}
   :jvm-opts ^:replace ["-server"

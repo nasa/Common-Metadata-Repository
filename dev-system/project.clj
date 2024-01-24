@@ -52,7 +52,7 @@
                [org.clojure/clojure]
                [ring/ring-codec]]
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
-                           [org.clojure/clojure "1.10.0"]
+                           [org.clojure/clojure "1.11.1"]
                            [ring/ring-codec "1.1.1"]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
@@ -67,9 +67,9 @@
              "-Dclojure.compiler.direct-linking=true"
              "-Dorg.jruby.embed.localcontext.scope=singlethread"]
   ;; Uncomment to enable logging in jetty.
-                                        ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
-                                        ; "-Dorg.eclipse.jetty.LEVEL=INFO"
-                                        ; "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
+                                          ; "-Dorg.eclipse.jetty.util.log.class=org.eclipse.jetty.util.log.StrErrLog"
+                                          ; "-Dorg.eclipse.jetty.LEVEL=INFO"
+                                          ; "-Dorg.eclipse.jetty.websocket.LEVEL=INFO"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"

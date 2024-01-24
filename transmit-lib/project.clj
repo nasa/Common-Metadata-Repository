@@ -13,7 +13,7 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
-                 [org.clojure/clojure "1.10.0"]
+                 [org.clojure/clojure "1.11.1"]
                  [org.clojure/data.csv "0.1.4"]
                  [potemkin "0.4.5"]
                  [prismatic/schema "1.1.9"]

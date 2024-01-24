@@ -9,7 +9,7 @@
                  [instaparse "1.4.10"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/clojure "1.10.0"]
+                 [org.clojure/clojure "1.11.1"]
                  [org.clojure/tools.reader "1.3.2"]
                  [ring/ring-core "1.10.0"]
                  [ring/ring-json "0.5.1"]]

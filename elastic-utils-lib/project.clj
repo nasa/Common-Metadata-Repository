@@ -19,7 +19,7 @@
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.apache.logging.log4j/log4j-api "2.15.0"]
-                 [org.clojure/clojure "1.10.0"]
+                 [org.clojure/clojure "1.11.1"]
                  [org.elasticsearch/elasticsearch ~elastic-version]
                  [org.testcontainers/testcontainers "1.17.2"]
                  [org.yaml/snakeyaml "1.31"]
