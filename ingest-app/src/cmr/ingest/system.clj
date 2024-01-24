@@ -90,7 +90,8 @@
   ([]
    (create-system "ingest"))
   ([connection-pool-name]
-   (let [sys {:log (log/create-logger-with-log-level (log-level))
+   (let [sys {:instance-name (format "%s-%d" connection-pool-name (int (rand 1024)))
+              :log (log/create-logger-with-log-level (log-level))
               :web (web/create-web-server (transmit-config/ingest-port) routes/handlers)
               :nrepl (nrepl/create-nrepl-if-configured (config/ingest-nrepl-port))
               :db (mdb-util/create-db (config/db-spec connection-pool-name))
@@ -139,4 +140,5 @@
 (def stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
-  (common-sys/stop-fn "ingest" component-order))
+  (let [stopped-system (common-sys/stop-fn "ingest" component-order)]
+    stopped-system))

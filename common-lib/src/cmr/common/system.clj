@@ -2,7 +2,7 @@
   "Contains helper functions for application systems."
   (:require
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug info warn error)]))
+   [cmr.common.log :as log :refer (debug info warn error reportf)]))
 
 (defn stop
   "Stops the system using the given component order."
@@ -46,19 +46,19 @@
   starting and started"
   [system-name component-order]
   (fn [s]
-    (info (str system-name " System starting"))
+    (reportf "%s System starting" system-name)
     (try
       (start s component-order)
       (finally
-        (info (str system-name " System started"))))))
+        (reportf "%s System started" system-name)))))
 
 (defn stop-fn
   "Creates a generic system stop function that logs when the system is stopping
   and stopped"
   [system-name component-order]
   (fn [s]
-    (info (str system-name " System stopping"))
+    (reportf "%s System stopping" system-name)
     (try
       (stop s component-order)
       (finally
-        (info (str system-name " System stopped"))))))
+        (reportf "%s System stopped" system-name)))))
