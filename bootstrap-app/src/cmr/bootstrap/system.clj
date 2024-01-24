@@ -14,6 +14,7 @@
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-gran-acls-caches]
+   [cmr.common-app.data.humanizer-cache :as humanizer-cache]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
@@ -90,7 +91,8 @@
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
                       coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
                       coll-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key (coll-gran-acls-caches/create-coll-by-provider-id-and-entry-title-cache-client)
-                      elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)}
+                      elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)
+                      humanizer-cache/cache-key (humanizer-cache/create-cache-client)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
                                                                (kf/refresh-kms-cache-job "bootstrap-kms-cache-refresh")
                                                                (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
