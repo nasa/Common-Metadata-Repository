@@ -75,7 +75,6 @@
                                               "write-enabled"
                                               "collection-field-constraints"]
         (url/search-read-caches-url) ["acls"
-                                      "collections-for-gran-acls"
                                       "has-granules-map"
                                       "has-granules-or-cwic-map"
                                       "has-granules-or-opensearch-map"
