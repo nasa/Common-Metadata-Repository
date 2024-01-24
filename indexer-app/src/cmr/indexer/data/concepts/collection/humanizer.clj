@@ -4,9 +4,9 @@
    [clojure.string :as str]
    [cmr.common.util :as util]
    [cmr.common-app.humanizer :as humanizer]
+   [cmr.common-app.data.humanizer-cache :as humanizer-cache]
    [cmr.indexer.data.concepts.collection.platform :as platform]
-   [cmr.indexer.data.concepts.collection.science-keyword :as sk]
-   [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]))
+   [cmr.indexer.data.concepts.collection.science-keyword :as sk]))
 
 (defn- add-humanized-lowercase
   "Adds a :value-lowercase field to a humanized object"
@@ -35,11 +35,12 @@
                                 (add-humanized-lowercase value-with-priorities))]
     {field value-with-lowercases}))
 
+;;TODO Jyna this is where humanizer is used
 (defn collection-humanizers-elastic
   "Given a umm-spec collection, returns humanized elastic search fields"
   [context collection]
-  (let [humanized (humanizer/umm-collection->umm-collection+humanizers
-                    collection (humanizer-fetcher/get-humanizer-instructions context))
+  (let [humanizer-instructions (humanizer-cache/get-humanizer-instructions context)
+        humanized (humanizer/umm-collection->umm-collection+humanizers collection humanizer-instructions)
         extract-fields (partial extract-humanized-elastic-fields humanized)
         platforms2-humanized (map #(platform/humanized-platform2-nested-fields->elastic-doc context %)
                                   (:Platforms humanized))]

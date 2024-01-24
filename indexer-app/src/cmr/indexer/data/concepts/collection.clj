@@ -214,7 +214,8 @@
 (defn- get-elastic-doc-for-full-collection
   "Get all the fields for a normal collection index operation."
   [context concept collection]
-  (let [{:keys [concept-id revision-id provider-id user-id native-id
+  (let [_ (println "inside get-elastic-doc-for-full-collection")
+        {:keys [concept-id revision-id provider-id user-id native-id
                 created-at revision-date deleted format extra-fields tag-associations
                 variable-associations service-associations tool-associations generic-associations]} concept
         consortiums-str (some #(when (= provider-id (:provider-id %)) (:consortiums %))
@@ -542,6 +543,7 @@
 
 (defmethod es/parsed-concept->elastic-doc :collection
   [context concept umm-collection]
+  (println "inside es/parsed-concept->elastic-doc :collection")
   (if (:deleted concept)
     (get-elastic-doc-for-tombstone-collection context concept)
     (get-elastic-doc-for-full-collection context

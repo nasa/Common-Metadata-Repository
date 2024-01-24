@@ -131,7 +131,7 @@
                   (count collection-batches)
                   (humanizer-report-collection-batch-size)))
     (csv/write-csv string-writer [CSV_HEADER])
-    (let [humanizers (hs/get-humanizers context)
+    (let [humanizers (hs/get-humanizers context) ;; a list of json humanizers
           [t4 csv-string]
           (util/time-execution
             (doseq [batch collection-batches]

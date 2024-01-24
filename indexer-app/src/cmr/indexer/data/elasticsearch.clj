@@ -225,13 +225,16 @@
   [context associations]
   (map #(cp/parse-concept context %) (filter #(not (:deleted %)) associations)))
 
+;; TODO jyna try this path
 (defn- non-tombstone-concept->bulk-elastic-doc
   "Takes a non-tombstoned concept map (a normal revision) and returns an elastic document suitable
    for bulk indexing."
   [context concept]
-  (let [parsed-concept (cp/parse-concept context concept)]
+  (let [_ (println "inside non-tombstone-concept->bulk-elastic-doc")
+        parsed-concept (cp/parse-concept context concept)]
     (parsed-concept->elastic-doc context concept parsed-concept)))
 
+;; TODO jyna try this path
 (defn- concept->bulk-elastic-docs
   "Converts a concept map into an elastic document suitable for bulk indexing."
   [context concept {:keys [all-revisions-index?] :as options}]

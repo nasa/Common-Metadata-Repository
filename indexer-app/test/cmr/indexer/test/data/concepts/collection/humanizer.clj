@@ -15,6 +15,7 @@
    {:platforms [{:basis "Space-based Platforms", :category "Earth Observation Satellites" :sub-category nil :short-name "Terra" :long-name "Earth Observing System, Terra (AM-1)" :uuid "80eca755-c564-4616-b910-a4c4387b7c54"}
                 {:basis "Space-based Platforms", :category "Space Stations/Crewed Spacecraft", :sub-category "Space Station", :short-name "ISS", :long-name "International Space Station", :uuid "93c5d18c-be62-46c4-9545-42f73a854d85"}]})
 
+;;TODO Jyna redo this test
 (def create-context
   (let [humanizer-cache (imc/create-in-memory-cache)]
     {:system {:caches {hf/humanizer-cache-key humanizer-cache
@@ -23,6 +24,7 @@
                        kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
                        kms-lookup/kms-measurement-cache-key (kms-lookup/create-kms-measurement-cache)}}}))
 
+;; TODO Jyna redo this test
 (defn redis-cache-fixture
   [f]
   (let [context create-context

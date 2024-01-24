@@ -6,6 +6,7 @@
    [clj-time.format :as f]
    [clojure.set :as cset]
    [cmr.acl.acl-fetcher :as acl-fetcher]
+   [cmr.common-app.data.humanizer-cache :as humanizer-cache]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :refer [defconfig]]
@@ -19,7 +20,6 @@
    [cmr.indexer.data.concept-parser :as cp]
    [cmr.indexer.data.concepts.deleted-granule :as dg]
    [cmr.indexer.data.elasticsearch :as es]
-   [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
@@ -231,7 +231,7 @@
 
    ;; We refresh this cache because it is fairly lightweight to do once for each provider and because
    ;; we want the latest humanizers on each of the Indexer instances that are processing these messages.
-   (humanizer-fetcher/refresh-cache context)
+   (humanizer-cache/refresh-cache context)
    (metrics-fetcher/refresh-cache context)
 
    (if refresh-acls?
@@ -448,9 +448,11 @@
   (fn [context concept parsed-concept options]
     (:concept-type concept)))
 
+;;TODO jyna try this path
 (defmethod index-concept :default
   [context concept parsed-concept options]
-  (let [{:keys [all-revisions-index?]} options
+  (let [_ (println "inside index-concept :default")
+        {:keys [all-revisions-index?]} options
         {:keys [concept-id revision-id concept-type deleted]} concept]
     (when (and (indexing-applicable? concept-type all-revisions-index?)
                ;; don't index a deleted variable
@@ -652,7 +654,8 @@
   [context concept-id revision-id options]
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
-  (let [{:keys [all-revisions-index?]} options
+  (let [_ (println "inside delete-concept :default")
+        {:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)
         concept (meta-db/get-concept context concept-id revision-id)
         elastic-version (get-elastic-version context concept)]
@@ -796,10 +799,11 @@
          :all-revisions-index? false}))
     (info "Reindexing all collection events submitted.")))
 
+;;TODO Jyna should this go to bootstrap?
 (defn update-humanizers
   "Update the humanizer cache and reindex all collections"
   [context]
-  (humanizer-fetcher/refresh-cache context)
+  (humanizer-cache/refresh-cache context)
   (reindex-all-collections context))
 
 (defn reset

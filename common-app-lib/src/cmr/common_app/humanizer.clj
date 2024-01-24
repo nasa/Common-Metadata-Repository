@@ -89,10 +89,15 @@
       (assoc parent target-key humanized-value))
     parent))
 
+;; TODO what is this func really doing and does it need all the humanizers to do it?
 (defn- apply-humanizer
   "Applies the humanizer to the collection"
   [collection humanizer]
-  (let [paths (humanizer-field->umm-paths (:field humanizer))]
+  (let [;;_ (println "inside apply-humanizer: humanizer = " (pr-str humanizer))
+        ;; inside apply-humanizer: humanizer =  {:field "platform", :order 10, :priority 10, :source_value "Terra", :type "priority"}
+        paths (humanizer-field->umm-paths (:field humanizer))]
+        ;;_ (println "paths = " (pr-str paths))]
+        ;; paths =  [[:Platforms :ShortName]]
     (reduce #(transform-in-all %1 %2 assoc-humanized humanizer) collection paths)))
 
 (defn- add-humanizer-field
@@ -112,4 +117,11 @@
 (defn umm-collection->umm-collection+humanizers
   "Applies humanizers to a parsed UMM-spec collection"
   [collection humanizers]
-  (reduce apply-humanizer (add-humanizer-fields collection) (sort-by :order humanizers)))
+  (let [_ (println "inside umm-collection->umm-collection+humanizers")
+        coll_with_humanizer_fields (add-humanizer-fields collection)
+        _ (println "coll_with_humanizer_fields = " (pr-str collection))
+        sorted_by_order_humanizers (sort-by :order humanizers)
+        _ (println "sorted_by_order_humanizers = " (pr-str sorted_by_order_humanizers))
+        umm-collection-humanizers (reduce apply-humanizer coll_with_humanizer_fields sorted_by_order_humanizers)
+        _ (println "umm-collection-humanizers = " (pr-str umm-collection-humanizers))]
+    umm-collection-humanizers))

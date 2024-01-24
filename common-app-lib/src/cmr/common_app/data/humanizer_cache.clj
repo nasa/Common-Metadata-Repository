@@ -5,14 +5,14 @@
 				[cmr.redis-utils.redis-cache :as redis-cache]
 				[cmr.transmit.humanizer :as humanizer]))
 
-(def cache-key
+(def humanizer-cache-key
     "The cache key to use when storing with caches in the system."
     :humanizer-cache)
 
 (defn create-cache-client
     "Creates an instance of the cache."
     []
-    (redis-cache/create-redis-cache {:keys-to-track [cache-key]}))
+    (redis-cache/create-redis-cache {:keys-to-track [humanizer-cache-key]}))
 
 (defn- retrieve-humanizers
 		[context]
@@ -22,15 +22,15 @@
 		"Refreshes the humanizers in the cache."
 		[context]
 		(info "Refreshing humanizer cache")
-		(let [cache (cmn-cache/context->cache context cache-key)]
-				(cmn-cache/set-value cache cache-key
+		(let [cache (cmn-cache/context->cache context humanizer-cache-key)]
+				(cmn-cache/set-value cache humanizer-cache-key
 																									(retrieve-humanizers context))
 				(info "Humanizer cache refresh complete.")))
 
 (defn get-humanizer-instructions
 		"Returns the humanizer instructions."
 		[context]
-		(let [cache (cmn-cache/context->cache context cache-key)]
+		(let [cache (cmn-cache/context->cache context humanizer-cache-key)]
 				(cmn-cache/get-value cache
-																									cache-key
+																									humanizer-cache-key
 																									#(retrieve-humanizers context))))

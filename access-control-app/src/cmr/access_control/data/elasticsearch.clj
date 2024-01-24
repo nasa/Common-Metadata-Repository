@@ -34,11 +34,13 @@
     concept
     (access-control-index/group-concept-map->elastic-doc concept)))
 
+;; TODO jyna try this path
 (defn- concept->bulk-elastic-docs
   "Converts a concept map into an elastic document suitable for bulk indexing."
   [context concept {:keys [all-revisions-index?] :as options}]
   (try
-    (let [{:keys [concept-id revision-id]} concept
+    (let [_ (println "inside concept->bulk-elastic-docs")
+          {:keys [concept-id revision-id]} concept
           type (concept->type concept)
           elastic-version (:revision-id concept)
           index-name (access-control-index/concept-type->index-name type)

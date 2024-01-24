@@ -14,10 +14,6 @@
 ;  []
 ;  (redis-cache/create-redis-cache {:keys-to-track [humanizer-cache-key]}))
 
-;(defn- retrieve-humanizers
-;  [context]
-;  (humanizer/get-humanizers context))
-
 ;(defn refresh-cache
 ;  "Refreshes the humanizers in the cache."
 ;  [context]
@@ -28,7 +24,9 @@
 ;(defn get-humanizer-instructions
 ;  "Returns the humanizer instructions."
 ;  [context]
-;  (let [cache (c/context->cache context humanizer-cache-key)]
-;    (c/get-value cache
-;                 humanizer-cache-key
-;                 #(retrieve-humanizers context))))
+;  (let [cache      (c/context->cache context humanizer-cache-key)
+;        humanizers (c/get-value cache
+;                                humanizer-cache-key
+;                                #(retrieve-humanizers context))
+;        _          (println " get-humanizer-instructions value returned = " (pr-str humanizers))] ;; returns list of json humanizers
+;    humanizers))

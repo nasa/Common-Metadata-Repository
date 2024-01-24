@@ -198,10 +198,12 @@
              configs)]
     (assoc doc :keyword (get-draft-keywords configs doc))))
 
+;;TODO jyna try this path
 (doseq [concept-type concepts/get-generic-non-draft-concept-types-array]
   (defmethod esearch/parsed-concept->elastic-doc concept-type
     ;; Public function called by the indexer framework when a document is needed.
     [context concept parsed-concept]
+    (println "inside esearch/parsed-concept->elastic-doc concept-type")
     (parsed-concept->elastic-doc context concept parsed-concept)))
 
 (doseq [concept-type concepts/get-draft-concept-types-array]
