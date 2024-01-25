@@ -182,18 +182,18 @@
       (let [{:keys [port routes-fn use-compression?]} this
             routes (wrap-request-body-size-validation (routes-fn system))
             ^Server server (jetty/run-jetty
-                             routes
-                             {:port port
-                              :join? false
-                              :min-threads MIN_THREADS
-                              :max-threads (MAX_THREADS)
-                              :configurator (fn [^Server jetty]
-                                              (doseq [^Connector connector (.getConnectors jetty)]
-                                                (let [^HttpConnectionFactory http-conn-factory
-                                                      (first (.getConnectionFactories connector))]
-                                                  (.setRequestHeaderSize
-                                                    (.getHttpConfiguration http-conn-factory)
-                                                    MAX_REQUEST_HEADER_SIZE))))})]
+                            routes
+                            {:port port
+                             :join? false
+                             :min-threads MIN_THREADS
+                             :max-threads (MAX_THREADS)
+                             :configurator (fn [^Server jetty]
+                                             (doseq [^Connector connector (.getConnectors jetty)]
+                                               (let [^HttpConnectionFactory http-conn-factory
+                                                     (first (.getConnectionFactories connector))]
+                                                 (.setRequestHeaderSize
+                                                  (.getHttpConfiguration http-conn-factory)
+                                                  MAX_REQUEST_HEADER_SIZE))))})]
 
 
         (.stop server)
@@ -210,7 +210,7 @@
         (info "Jetty started on port" port)
         (assoc this :server server))
       (catch Exception e
-        (info "Failed to start jetty on port" port)
+        (error "Failed to start jetty on port" port)
         (throw e))))
 
   (stop
