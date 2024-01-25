@@ -75,7 +75,6 @@
                                               "write-enabled"
                                               "collection-field-constraints"]
         (url/search-read-caches-url) ["acls"
-                                      "collections-for-gran-acls"
                                       "has-granules-map"
                                       "has-granules-or-cwic-map"
                                       "has-granules-or-opensearch-map"
@@ -92,7 +91,6 @@
                                       "kms-location-index"
                                       "collection-metadata-cache"
                                       "collections-for-gran-acls-by-concept-id"
-                                      "collections-for-gran-acls-by-provider-id-and-entry-title"
                                       "scroll-id-cache"
                                       "first-page-cache"
                                       "token-imp"

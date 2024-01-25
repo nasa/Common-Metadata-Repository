@@ -133,8 +133,7 @@
               (= keyword-cache-name provider-cache/cache-key)
               (provider-cache/refresh-provider-cache request-context)
 
-              (or (= keyword-cache-name coll-for-gran-acls-caches/coll-by-concept-id-cache-key)
-                  (= keyword-cache-name coll-for-gran-acls-caches/coll-by-provider-id-and-entry-title-cache-key))
+              (= keyword-cache-name coll-for-gran-acls-caches/coll-by-concept-id-cache-key)
               (coll-for-gran-acls-caches/refresh-entire-cache request-context)
 
               (= keyword-cache-name elastic-search-index-names-cache/index-names-cache-key)
