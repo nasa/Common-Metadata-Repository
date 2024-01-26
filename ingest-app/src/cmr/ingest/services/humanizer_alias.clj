@@ -5,84 +5,8 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as str]
-   [cmr.common.cache :as cache]
    [cmr.common.util :as util]
-   [cmr.common-app.data.humanizer-alias-cache :as cmn-humanizer-alias-cache]
-   [cmr.redis-utils.redis-cache :as redis-cache]
-   [cmr.transmit.humanizer :as humanizer]))
-
-;(def humanizer-alias-cache-key
-;  "The cache key to use when storing with caches in the system."
-;  :humanizer-alias-cache)
-
-;(defn create-cache
-;  "Creates an instance of the cache."
-;  []
-;  (redis-cache/create-redis-cache {:keys-to-track [humanizer-alias-cache-key]}))
-
-;(defn- humanizer-group-by-field
-;  "A custom group-by function for use in the create-humanizer-alias-map
-;  function."
-;  [humanizer]
-;  (group-by
-;    :field
-;    (map
-;      #(select-keys % [:field :replacement_value :source_value])
-;      (filter #(= (:type %) "alias") humanizer))))
-
-;(defn- humanizer-group-by-replacement-value
-;  "A custom group-by function for use in the create-humanizer-alias-map
-;  function.
-;
-;  In particular, this function converts the value assciated with
-;  :replacement_value to upper-case before group-by in order to cover the case
-;  in test-humanizers.json where there are multiple :replacement_value that only
-;  differ in upper-lower cases."
-;  [v1]
-;  (group-by
-;    :replacement_value
-;    (->>  v1
-;          (map #(select-keys % [:replacement_value :source_value]))
-;          (map #(update % :replacement_value str/upper-case)))))
-
-;(defn- create-humanizer-alias-map
-;  "Creates a map of humanizer aliases by type from the humanizer map and returns in the format below.
-;   Note: All the replacement_value are UPPER-CASED, so when using this map to get
-;   all the non-humanized source values for a given collection's platform,
-;   tile, or instrument, they need to be UPPER-CASED as well.
-;   {\"platform\" {\"TERRA\" [\"AM-1\" \"am-1\" \"AM 1\"] \"OTHERPLATFORMS\" [\"otheraliases\"]}
-;    \"tiling_system_name\" {\"TILE\" [\"tile_1\" \"tile_2\"] \"OTHERTILES\" [\"otheraliases\"]}
-;    \"instrument\" {\"INSTRUMENT\" [\"instr1\" \"instr2\"] \"OTHERINSTRUMENTS\" [\"otheraliases\"]}}"
-;  [humanizer]
-;  (into
-;    {}
-;    (for [[k1 v1] (humanizer-group-by-field humanizer)]
-;      [k1 (into
-;            {}
-;            (for [[k2 v2] (humanizer-group-by-replacement-value v1)]
-;              [k2 (map :source_value v2)]))])))
-
-;(defn refresh-cache
-;  "Refreshes the humanizer alias cache."
-;  [context]
-;  (let [_ (println "inside humanizer's refresh-cache")
-;        cache (cache/context->cache context humanizer-alias-cache-key)
-;        humanizer (humanizer/get-humanizers context)
-;        _ (println "humanizer found in refresh-cache = " (pr-str humanizer))]
-;    (cache/set-value cache
-;                     humanizer-alias-cache-key
-;                     (create-humanizer-alias-map humanizer))))
-
-;(defn get-humanizer-alias-map
-;  "Returns the humanizer alias map"
-;  [context]
-;  (let [cache (cache/context->cache context humanizer-alias-cache-key)
-;        _ (println "inside get-humanizer-alias-map")
-;        humanizer-alias-map (cache/get-value cache
-;                                             humanizer-alias-cache-key
-;                                             #(create-humanizer-alias-map (humanizer/get-humanizers context)))
-;        _ (println "humanizer-alias-map found = " (pr-str humanizer-alias-map))]
-;    humanizer-alias-map))
+   [cmr.common-app.data.humanizer-alias-cache :as cmn-humanizer-alias-cache]))
 
 (defn- get-field-aliases
   "Returns field aliases for a given element's fields, field-name-key and a field-alias-map.
@@ -111,6 +35,7 @@
                              subelements subelement-name-key subelement-alias-map)]
     (update element subelement-key concat subelement-aliases)))
 
+;; TODO jyna test this path
 (defn update-collection-with-platform-aliases
   "Returns the collection with humanizer platform aliases added.
    Given plat-alias-map being {\"TERRA\" [\"AM-1\" \"am-1\"]},
@@ -132,12 +57,11 @@
                    :platforms)
         plat-name-key (if umm-spec-collection?
                         :ShortName
-                        :short-name)
-        ;plat-alias-map (get humanizer-alias-map "platform")
-        ]
+                        :short-name)]
     (update-element-with-subelement-aliases
       collection plat-key plat-name-key plat-alias-map)))
 
+;; TODO jyna test this path
 (defn update-collection-with-tile-aliases
   "Returns the collection with humanizer tile aliases added"
   [collection umm-spec-collection? tile-alias-map]
@@ -146,12 +70,11 @@
                    :two-d-coordinate-systems)
         tile-name-key (if umm-spec-collection?
                         :TilingIdentificationSystemName
-                        :name)
-        ;tile-alias-map (get humanizer-alias-map "tiling_system_name")
-        ]
+                        :name)]
      (update-element-with-subelement-aliases
        collection tile-key tile-name-key tile-alias-map)))
 
+;; TODO jyna test this path
 (defn update-collection-with-instrument-aliases
   "Returns the collection with humanizer instrument aliases added.
    Go through each platform and update the platform with all the instrument aliases"
@@ -165,12 +88,12 @@
         instr-name-key (if umm-spec-collection?
                          :ShortName
                          :short-name)
-        ;instr-alias-map (get humanizer-alias-map "instrument")
         plats (get collection plat-key)
         updated-plats (map #(update-element-with-subelement-aliases
                               % instr-key instr-name-key instr-alias-map) plats)]
     (assoc collection plat-key updated-plats)))
 
+;; TODO jyna test this path
 (defn update-collection-with-sensor-aliases
   "Returns the collection with humanizer instrument aliases added to sensors.
    Go through each platform and update the platform with all the instrument aliases for the child instruments."
@@ -187,7 +110,6 @@
         sensor-name-key (if umm-spec-collection?
                          :ShortName
                          :short-name)
-        ;instr-alias-map (get humanizer-alias-map "instrument")
         plats (get collection plat-key)
         updated-plats (map #(util/update-in-all
                              %
@@ -196,6 +118,7 @@
                            plats)]
     (assoc collection plat-key updated-plats)))
 
+;; TODO test this path
 (defn update-collection-with-aliases
   "Returns the collection with humanizer aliases added."
   [context collection umm-spec-collection?]

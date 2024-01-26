@@ -6,6 +6,7 @@
 				[cmr.common.util :as util]
 				[cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]))
 
+;;TODO Jyna test this path
 (defn deleted-project-searches
   "Returns granule searches for deleted projects. We should not delete projects in a collection
   that are still referenced by existing granules. This function builds the search parameters

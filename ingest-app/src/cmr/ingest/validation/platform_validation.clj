@@ -2,10 +2,10 @@
   "Provides functions to validate the platforms during collection update"
   (:require
     [clojure.set :as s]
-    [clojure.string :as str]
     [cmr.common.util :as util]
     [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]))
 
+;; TODO jyna test this path
 (defn deleted-platform-searches
   "Returns granule searches for deleted platforms. We should not delete platforms in a collection
   that are still referenced by existing granules. This function builds the search parameters

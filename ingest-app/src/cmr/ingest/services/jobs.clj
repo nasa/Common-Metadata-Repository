@@ -140,11 +140,6 @@
   (let [context {:system system}]
     (cleanup-expired-collections context)))
 
-;(def-stateful-job RefreshHumanizerAliasCache
-;  [_ system]
-;  (let [context {:system system}]
-;    (humanizer-alias-cache/refresh-cache context)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Jobs for refreshing the collection granule aggregation cache in the indexer. This is a singleton job
 ;; and the indexer does not have a database so it's triggered from Ingest and sent via message.
@@ -155,11 +150,6 @@
   "Number of seconds between partial refreshes of the collection granule aggregation cache."
   {:default 3600
    :type Long})
-
-;(defconfig refresh-humanizer-alias-cache-interval
-;  "Number of seconds between refreshes of the humanizer alias cache."
-;  {:default 3600
-;   :type Long})
 
 (defconfig bulk-update-status-table-cleanup-interval
   "Number of seconds between cleanup of the old status rows."
@@ -258,9 +248,6 @@
 
    {:job-type CleanupExpiredCollections
     :interval CLEANUP_EXPIRED_COLLECTIONS_INTERVAL}
-
-   ;{:job-type RefreshHumanizerAliasCache
-   ; :interval (refresh-humanizer-alias-cache-interval)}
 
    {:job-type BulkUpdateStatusTableCleanup
     :interval (bulk-update-status-table-cleanup-interval)}

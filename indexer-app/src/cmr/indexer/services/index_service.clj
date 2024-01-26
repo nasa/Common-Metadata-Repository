@@ -448,11 +448,9 @@
   (fn [context concept parsed-concept options]
     (:concept-type concept)))
 
-;;TODO jyna try this path
 (defmethod index-concept :default
   [context concept parsed-concept options]
-  (let [_ (println "inside index-concept :default")
-        {:keys [all-revisions-index?]} options
+  (let [{:keys [all-revisions-index?]} options
         {:keys [concept-id revision-id concept-type deleted]} concept]
     (when (and (indexing-applicable? concept-type all-revisions-index?)
                ;; don't index a deleted variable
@@ -654,8 +652,7 @@
   [context concept-id revision-id options]
   ;; Assuming ingest will pass enough info for deletion
   ;; We should avoid making calls to metadata db to get the necessary info if possible
-  (let [_ (println "inside delete-concept :default")
-        {:keys [all-revisions-index?]} options
+  (let [{:keys [all-revisions-index?]} options
         concept-type (cs/concept-id->type concept-id)
         concept (meta-db/get-concept context concept-id revision-id)
         elastic-version (get-elastic-version context concept)]

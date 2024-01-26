@@ -11,7 +11,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.validations.core :as v]
    [cmr.ingest.config :as config]
-   [cmr.ingest.services.humanizer-alias :as humanizer-alias-cache]
+   [cmr.ingest.services.humanizer-alias :as humanizer-alias]
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.validation.business-rule-validation :as bv]
    [cmr.transmit.config :as transmit-config]
@@ -417,9 +417,9 @@
   updated with platform aliases whoes shortnames don't exist in the platforms."
   [context collection granule]
   (when-let [errors (seq (umm-spec-validation/validate-granule
-                          (humanizer-alias-cache/update-collection-with-aliases context
-                                                                                collection
-                                                                                true)
+                          (humanizer-alias/update-collection-with-aliases context
+                                                                          collection
+                                                                          true)
                           granule
                           (granule-keyword-validations context)))]
     (if-errors-throw :invalid-data errors)))
@@ -429,7 +429,7 @@
   updated with platform aliases whoes shortnames don't exist in the platforms."
   [context collection granule]
   (if-errors-throw :invalid-data (umm-spec-validation/validate-granule
-                                  (humanizer-alias-cache/update-collection-with-aliases
+                                  (humanizer-alias/update-collection-with-aliases
                                    context collection false)
                                   granule
                                   (granule-keyword-validations context))))
