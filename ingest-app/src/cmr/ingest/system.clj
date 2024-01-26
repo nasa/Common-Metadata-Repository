@@ -24,7 +24,7 @@
    [cmr.ingest.config :as config]
    [cmr.ingest.routes :as routes]
    [cmr.ingest.services.event-handler :as event-handler]
-   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
+   [cmr.ingest.services.humanizer-alias :as humanizer-alias-cache]
    [cmr.ingest.services.jobs :as ingest-jobs]
    [cmr.ingest.services.providers-cache :as pc]
    [cmr.message-queue.queue.queue-broker :as queue-broker]

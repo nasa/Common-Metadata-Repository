@@ -1,9 +1,9 @@
 (ns cmr.ingest.test.services.humanizer-alias-cache
   "This tests some of the more complicated functions of cmr.ingest.services.humanizer_alias_cache"
   (:require
-    [clojure.test :refer :all]
-    [cmr.common.util :as u :refer [are3]]
-    [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]))
+				[clojure.test :refer :all]
+				[cmr.common.util :as u :refer [are3]]
+				[cmr.ingest.services.humanizer-alias :as humanizer-alias-cache]))
 
 (deftest create-humanizer-alias-map-test
   (is (= {"platform" {"TERRA" ["AM-1" "am-1"] "FOO" ["old-foo1" "old-foo2"]}

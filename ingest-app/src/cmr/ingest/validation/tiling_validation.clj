@@ -1,10 +1,10 @@
 (ns cmr.ingest.validation.tiling-validation
   "Provides functions to validate the tiling identification system names during collection update"
   (:require
-   [clojure.set :as s]
-   [clojure.string :as str]
-   [cmr.common.util :as util]
-   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]))
+				[clojure.set :as s]
+				[clojure.string :as str]
+				[cmr.common.util :as util]
+				[cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]))
 
 (defn deleted-tiling-searches
   "Returns granule searches for deleted tiling identification system names.
@@ -17,7 +17,7 @@
         current-tiles
          (map :TilingIdentificationSystemName (:TilingIdentificationSystems concept))
         tile-alias-map
-         (get (humanizer-alias-cache/get-humanizer-alias-map context) "tiling_system_name")
+         (humanizer-alias-cache/get-non-humanized-source-to-aliases-map context "tiling_system_name")
         tile-aliases
          (mapcat #(get tile-alias-map %) (map str/upper-case current-tiles))
         ;; Only the deleted ones that are not part of the tile-aliases need to be validated.

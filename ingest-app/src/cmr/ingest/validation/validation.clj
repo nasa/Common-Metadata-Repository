@@ -11,7 +11,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.validations.core :as v]
    [cmr.ingest.config :as config]
-   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
+   [cmr.ingest.services.humanizer-alias :as humanizer-alias-cache]
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.validation.business-rule-validation :as bv]
    [cmr.transmit.config :as transmit-config]

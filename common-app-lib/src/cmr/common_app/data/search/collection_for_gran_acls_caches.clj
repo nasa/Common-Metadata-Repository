@@ -101,7 +101,7 @@
 
 (defn set-caches
   "Updates collections-for-gran-acl caches for one given collection by concept id and  returns found collection or nil"
-  ([context collection-concept-id]
+  [context collection-concept-id]
    (let [collection-found (fetch-collections context collection-concept-id)
          coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)]
      (when-not (nil? collection-found)
@@ -109,7 +109,7 @@
                              coll-by-concept-id-cache-key
                              (:concept-id collection-found)
                              (clj-times->time-strs collection-found)))
-     collection-found)))
+     collection-found))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
         [ctx system]
