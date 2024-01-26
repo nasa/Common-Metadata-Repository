@@ -89,7 +89,8 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger-with-log-level (log-level))
+  (let [sys {:instance-name (common-sys/instance-name "access-control")
+             :log (log/create-logger-with-log-level (log-level))
              :search-index (search-index/create-elastic-search-index)
              :web (web-server/create-web-server (transmit-config/access-control-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (access-control-nrepl-port))

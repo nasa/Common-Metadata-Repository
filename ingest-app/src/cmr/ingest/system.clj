@@ -90,7 +90,7 @@
   ([]
    (create-system "ingest"))
   ([connection-pool-name]
-   (let [sys {:instance-name (format "%s-%d" connection-pool-name (int (rand 1024)))
+   (let [sys {:instance-name (common-sys/instance-name connection-pool-name)
               :log (log/create-logger-with-log-level (log-level))
               :web (web/create-web-server (transmit-config/ingest-port) routes/handlers)
               :nrepl (nrepl/create-nrepl-if-configured (config/ingest-nrepl-port))

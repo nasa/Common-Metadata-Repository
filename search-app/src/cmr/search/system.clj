@@ -104,7 +104,7 @@
   []
   (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-search-app-pool")
                         (dissoc :log :web :scheduler :unclustered-scheduler))
-        sys {:instance-name (format "%s-%d" "search" (int (rand 1024)))
+        sys {:instance-name (common-sys/instance-name "search")
              :log (log/create-logger-with-log-level (log-level))
              ;; An embedded version of the metadata db app to allow quick retrieval of data
              ;; from oracle.

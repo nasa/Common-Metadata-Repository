@@ -4,14 +4,24 @@
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error reportf)]))
 
+(defn instance-name
+  "Creates a random instance name for the current application instance. This name
+   can then be used in logs to distinguish a specific node from others in a human
+   readable way"
+  [app-name]
+  (format "%s-%d" app-name (int (rand 1024))))
+
 (defn stop
   "Stops the system using the given component order."
   [s component-order]
+  (reportf "%s System stopping" (:instance-name s))
+  (when (nil? (:instance-name s)) (reportf "stop dump: %s" (keys s)))
   (reduce (fn [system component-name]
             (update-in system [component-name]
                        #(when % (lifecycle/stop % system))))
           s
-          (reverse component-order)))
+          (reverse component-order))
+  (reportf "%s System stopped" (:instance-name s)))
 
 (defn start-component
   "Start an individual system component.
@@ -33,32 +43,28 @@
 (defn start
   "Starts the system using the given component order."
   [s component-order]
+  (reportf "%s System starting" (:instance-name s))
+  (when (nil? (:instance-name s)) (reportf "start dump: %s" (keys s)))
   (try
     (->> component-order
          (reduce start-component {:system s :started-components []})
          :system)
     (catch Exception e
       (.printStackTrace e)
-      (throw e))))
+      (throw e))
+    (finally
+      (reportf "%s System started" (:instance-name s)))))
 
 (defn start-fn
   "Creates a generic system start function that logs when the system is
   starting and started"
   [system-name component-order]
-  (fn [s]
-    (reportf "%s System starting" system-name)
-    (try
-      (start s component-order)
-      (finally
-        (reportf "%s System started" system-name)))))
+  (fn [system]
+    (start system component-order)))
 
 (defn stop-fn
   "Creates a generic system stop function that logs when the system is stopping
   and stopped"
   [system-name component-order]
-  (fn [s]
-    (reportf "%s System stopping" system-name)
-    (try
-      (stop s component-order)
-      (finally
-        (reportf "%s System stopped" system-name)))))
+  (fn [system]
+    (stop system component-order)))
