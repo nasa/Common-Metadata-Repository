@@ -27,7 +27,7 @@
         exists (.exists (io/file file-path))
         local-settings (if exists (read-string (slurp file-path)) {})
         settings (get local-settings which default)]
-    ;; Aggresivly display that settings are being set from this process
+    ;; Aggressively display that settings are being set from this process
     (println (format "🚀 - Using settings %s = %s." which settings))
     settings))
 
