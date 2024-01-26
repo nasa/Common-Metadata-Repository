@@ -6,7 +6,9 @@
 (defn context->cache
   "Get the cache for the given key from the context"
   [context cache-key]
-  (get-in context [:system :caches cache-key]))
+  (or (get-in context [:system :caches cache-key])
+      ;; The job scheduler uses a subset of the system context.
+      (get-in context [:caches cache-key])))
 
 (defn hash-cache?
   "Function that takes a cache and checks to see if the
