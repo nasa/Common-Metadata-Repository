@@ -1,12 +1,13 @@
 (ns cmr.search.runner
-  (:require [cmr.search.system :as system]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.common.config :as cfg])
-  (:gen-class))
+  "Entry point for the application. Defines a main method that accepts arguments."
+  (:require [cmr.common-app.app-events :as events]
+            [cmr.common.config :as cfg]
+            [cmr.search.system :as system]))
 
 (defn -main
   "Starts the App."
   [& args]
   (let [system (system/start (system/create-system))]
-    (info "Running...")
-    (cfg/check-env-vars)))
+    (cfg/check-env-vars)
+    (events/stop-on-exit-hook (:instance-name system) #(system/stop system))
+    (events/dump-on-exit-hook (:instance-name system))))

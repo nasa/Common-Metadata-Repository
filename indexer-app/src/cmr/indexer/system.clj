@@ -54,7 +54,8 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger-with-log-level (log-level))
+  (let [sys {:instance-name (common-sys/instance-name "indexer")
+             :log (log/create-logger-with-log-level (log-level))
              :db (es/create-elasticsearch-store (es-config/elastic-config))
              :web (web/create-web-server (transmit-config/indexer-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (config/indexer-nrepl-port))

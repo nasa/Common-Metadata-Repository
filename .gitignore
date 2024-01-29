@@ -21,6 +21,7 @@ browse-scaler/src/node_modules
 *.clj-kondo
 *.ruby-version
 .cljfmt.edn
+dev-system/local.edn
 
 ###############################
 ### Test Files

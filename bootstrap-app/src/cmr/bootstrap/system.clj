@@ -66,7 +66,8 @@
                     ;; Specify an Elasticsearch http retry handler
                     (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
         queue-broker (queue-broker/create-queue-broker (bootstrap-config/queue-config))
-        sys {:log (log/create-logger-with-log-level (log-level))
+        sys {:instance-name (common-sys/instance-name "bootstrap")
+             :log (log/create-logger-with-log-level (log-level))
              :embedded-systems {:metadata-db metadata-db
                                 :indexer indexer}
              :search-index (search-index/create-elastic-search-index)

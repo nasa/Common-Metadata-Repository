@@ -43,7 +43,8 @@
   ([]
    (create-system "metadata-db"))
   ([connection-pool-name]
-   (let [sys {:db (assoc (mdb-util/create-db (config/db-spec connection-pool-name))
+   (let [sys {:instance-name (common-sys/instance-name "metadata-db")
+              :db (assoc (mdb-util/create-db (config/db-spec connection-pool-name))
                          :result-set-fetch-size
                          (config/result-set-fetch-size))
               :log (log/create-logger-with-log-level (log-level))

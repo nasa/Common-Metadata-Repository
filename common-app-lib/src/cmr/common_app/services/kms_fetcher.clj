@@ -91,7 +91,13 @@
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache.
 (def-stateful-job RefreshKmsCacheJob
   [_ system]
-  (refresh-kms-cache {:system system}))
+  (try
+    ;; Locally KMS may not be configured or ready to go, in this case a bad URL
+    ;; May exist. Trap the error and print out a shorter message to shorten the
+    ;; logs
+    (refresh-kms-cache {:system system})
+    (catch java.net.MalformedURLException mue
+      (error "Malformed URL"  (.getMessage  mue)))))
 
 (defn refresh-kms-cache-job
   "The singleton job that refreshes the KMS cache. The keywords are infrequently updated by the
