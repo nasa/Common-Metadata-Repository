@@ -160,9 +160,10 @@
    [db task-id status status-message]
    (try
      (let [statement (str "UPDATE granule_bulk_update_tasks "
-                          "SET status = ?, status_message = ?"
-                          "WHERE task_id = ?")]
-       (jdbc/db-do-prepared db statement [status status-message task-id]))
+                          "SET status = ?, status_message = ?, updated_at = ?"
+                          "WHERE task_id = ?")
+           updated-at (time-coerce/to-sql-time (time-keeper/now))]
+       (jdbc/db-do-prepared db statement [status status-message updated-at task-id]))
      (catch Exception e
        (errors/throw-service-error :invalid-data
                                    [(str "Error updating bulk update task status "
@@ -174,10 +175,11 @@
       (jdbc/with-db-transaction
         [conn db]
         (let [statement (str "UPDATE bulk_update_gran_status "
-                             "SET status = ?, status_message = ?"
+                             "SET status = ?, status_message = ?, updated_at = ?"
                              "WHERE task_id = ? AND granule_ur = ?")
-              status-message (util/trunc status-message 4000)]
-          (jdbc/db-do-prepared db statement [status status-message task-id granule-ur])))
+              status-message (util/trunc status-message 4000)
+              updated-at (time-coerce/to-sql-time (time-keeper/now))]
+          (jdbc/db-do-prepared db statement [status status-message updated-at task-id granule-ur])))
       (catch Exception e
         (error "Exception caught in update bulk update granule status: " e)
         (errors/throw-service-error :invalid-data
