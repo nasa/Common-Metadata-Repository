@@ -1,10 +1,10 @@
 (ns cmr.ingest.validation.project-validation
   "Provides functions to validate the projects during collection update"
   (:require
-	 [clojure.set :as s]
-	 [clojure.string :as string]
-	 [cmr.common.util :as util]
-	 [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]))
+   [clojure.set :as s]
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]))
 
 (defn deleted-project-searches
   "Returns granule searches for deleted projects. We should not delete projects in a collection

@@ -2,9 +2,9 @@
   "Provides functions to validate the instruments during collection update"
   (:require
    [clojure.set :as s]
-	 [clojure.string :as str]
-	 [cmr.common.util :as util]
-	 [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]))
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]))
 
 (defn- get-parent-instruments-from-concept
   "Returns all the parent instrument shortnames from a collection concept.
