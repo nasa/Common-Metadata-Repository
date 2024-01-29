@@ -22,7 +22,8 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [system {:log (log/create-logger)
+  (let [system {:instance-name (common-sys/instance-name "mock-echo")
+                :log (log/create-logger)
                 :token-db (token-db/create-db)
                 :provider-db (provider-db/create-db)
                 :acl-db (acl-db/create-db)

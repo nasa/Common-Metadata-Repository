@@ -59,3 +59,8 @@
    them in the custome request log controlled by custom-request-log"
   {:default true
    :type Boolean})
+
+(defconfig dump-diagnostics-on-exit-to
+  "Write a HotSpotDiagnostic file to the path provided. If no path is provided,
+   or the value of 'none' is given, then no file will be written."
+  {:default ""})

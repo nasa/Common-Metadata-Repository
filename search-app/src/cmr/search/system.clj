@@ -103,7 +103,8 @@
   []
   (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-search-app-pool")
                         (dissoc :log :web :scheduler :unclustered-scheduler))
-        sys {:log (log/create-logger-with-log-level (log-level))
+        sys {:instance-name (common-sys/instance-name "search")
+             :log (log/create-logger-with-log-level (log-level))
              ;; An embedded version of the metadata db app to allow quick retrieval of data
              ;; from oracle.
              :embedded-systems {:metadata-db metadata-db}
@@ -160,20 +161,16 @@
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
   [this]
-  (info "search System starting")
   (let [started-system (-> this
                            (update-in [:embedded-systems :metadata-db] mdb-system/start)
                            (common-sys/start component-order))]
-    (info "search System started")
     started-system))
 
 (defn stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
   [this]
-  (info "search System shutting down")
   (let [stopped-system (-> this
                            (common-sys/stop component-order)
                            (update-in [:embedded-systems :metadata-db] mdb-system/stop))]
-    (info "search System stopped")
     stopped-system))
