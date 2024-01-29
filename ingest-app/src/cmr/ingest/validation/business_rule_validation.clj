@@ -44,7 +44,6 @@
           [(format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
                    concept-id mdb-concept-id native-id)])))))
 
-;; todo test this func
 (def collection-update-searches
   "Defines a list of functions that take the context, concept-id, updated UMM concept and the
    previous UMM concept, and return search maps used to validate that a collection was not updated

@@ -51,7 +51,6 @@
    In the above example, alias {:ShortName \"AM-1\" :Otherfields \"other-terra-values\"} is not added.
    This is a conscious decision, not a bug."
   [collection umm-spec-collection? plat-alias-map]
-  (println "inside update-collection-with-platform-aliases == collection given = " (pr-str collection))
   (let [plat-key (if umm-spec-collection?
                    :Platforms
                    :platforms)
