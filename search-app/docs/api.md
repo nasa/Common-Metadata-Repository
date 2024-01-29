@@ -4040,6 +4040,8 @@ These parameters will match fields within a variable. They are case insensitive 
 * concept_id
 * measurement_identifiers
   * options: ignore_case, or
+* instance_format
+  * options: pattern
 measurement_identifiers parameter is a nested parameter with subfields: contextmedium, object and quantity. Multiple measurement_identifiers can be specified via different indexes to search variables. The following example searches for variables that have at least one measurement_identifier with contextmedium of Med1, object of Object1 and quantity of Q1, and another measurement_identifier with contextmedium of Med2 and object of Obj2.
 
 __Example__

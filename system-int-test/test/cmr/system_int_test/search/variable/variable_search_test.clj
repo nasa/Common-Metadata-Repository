@@ -89,12 +89,16 @@
                        :Sets [{:Name "TESTSETNAME"
                                :Type "Science"
                                :Size 2
-                               :Index 2}]}
+                               :Index 2}]
+                       :InstanceInformation {:URL "s3://prod-giovanni-cache.s3.us-west-2.amazonaws.com/zarr/GPM_3IMERGHH_06_precipitationCal"
+                                             :Format "Zarr"}}
                       {:native-id "VAR1"
                        :coll-concept-id (:concept-id coll1)})
         var2-concept (variables/make-variable-concept
                       {:Name "Variable2"
-                       :LongName "Measurement2"}
+                       :LongName "Measurement2"
+                       :InstanceInformation {:URL "s3://prod-giovanni-cache.s3.us-west-2.amazonaws.com/zarr/GPM_3IMERGHH_06_precipitationCal"
+                                             :Format "HTML"}}
                       {:native-id "var2"
                        :coll-concept-id (:concept-id coll2)})
         var3-concept (variables/make-variable-concept
@@ -350,7 +354,29 @@
 
       "By keyword multiple wildcards"
       [variable3]
-      {:keyword "sub* variable?"})))
+      {:keyword "sub* variable?"}
+
+      ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+      ;; instance-format Param
+      "By instance-format case insensitive - exact match"
+      [variable1]
+      {:instance-format "Zarr"}
+
+      "By instance-format case insensitive, mixed case"
+      [variable1]
+      {:instance-format "zaRR"}
+
+      "By instance-format Pattern, default false"
+      []
+      {:instance-format "ZA*"}
+
+      "By instance-format Pattern true"
+      [variable1]
+      {:instance-format "ZA*" "options[instance-format][pattern]" true}
+
+      "By instance-format match both"
+      [variable1 variable2]
+      {:instance-format ["Zarr" "html"]})))
 
 (deftest search-variable-science-keywords-test
   (let [sk1 (data-umm-cmn/science-keyword {:Category "Cat1"
