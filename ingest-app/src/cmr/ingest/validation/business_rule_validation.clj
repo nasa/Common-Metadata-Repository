@@ -44,6 +44,7 @@
           [(format "Concept-id [%s] does not match the existing concept-id [%s] for native-id [%s]"
                    concept-id mdb-concept-id native-id)])))))
 
+;; todo test this func
 (def collection-update-searches
   "Defines a list of functions that take the context, concept-id, updated UMM concept and the
    previous UMM concept, and return search maps used to validate that a collection was not updated
@@ -83,7 +84,7 @@
           search-errors)))))
 
 (defn standard-product-is-nasa-provider-validation
-  "Validate if the standard product is true then the provider must be a NASA provider - meaning 
+  "Validate if the standard product is true then the provider must be a NASA provider - meaning
   that the provider's consortium values must include EOSDIS. If validation fails an error is thrown."
   [context concept _]
   (let [provider-id (:provider-id concept)
@@ -101,7 +102,7 @@
                     "Please remove the StandardProduct element from the record."))])))
 
 (defn standard-product-not-real-time-validation
-  "Validate if the standard product is true then the CollectionDataType is not NEAR_REAL_TIME, LOW_LATENCY, 
+  "Validate if the standard product is true then the CollectionDataType is not NEAR_REAL_TIME, LOW_LATENCY,
   or EXPEDITED. If validation fails an error is thrown."
   [_ concept _]
   (let [collection (:umm-concept concept)

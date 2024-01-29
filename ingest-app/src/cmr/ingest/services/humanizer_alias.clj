@@ -35,7 +35,6 @@
                              subelements subelement-name-key subelement-alias-map)]
     (update element subelement-key concat subelement-aliases)))
 
-;; TODO jyna test this path
 (defn update-collection-with-platform-aliases
   "Returns the collection with humanizer platform aliases added.
    Given plat-alias-map being {\"TERRA\" [\"AM-1\" \"am-1\"]},
@@ -52,6 +51,7 @@
    In the above example, alias {:ShortName \"AM-1\" :Otherfields \"other-terra-values\"} is not added.
    This is a conscious decision, not a bug."
   [collection umm-spec-collection? plat-alias-map]
+  (println "inside update-collection-with-platform-aliases == collection given = " (pr-str collection))
   (let [plat-key (if umm-spec-collection?
                    :Platforms
                    :platforms)
@@ -61,7 +61,6 @@
     (update-element-with-subelement-aliases
       collection plat-key plat-name-key plat-alias-map)))
 
-;; TODO jyna test this path
 (defn update-collection-with-tile-aliases
   "Returns the collection with humanizer tile aliases added"
   [collection umm-spec-collection? tile-alias-map]
@@ -74,7 +73,6 @@
      (update-element-with-subelement-aliases
        collection tile-key tile-name-key tile-alias-map)))
 
-;; TODO jyna test this path
 (defn update-collection-with-instrument-aliases
   "Returns the collection with humanizer instrument aliases added.
    Go through each platform and update the platform with all the instrument aliases"
@@ -93,7 +91,6 @@
                               % instr-key instr-name-key instr-alias-map) plats)]
     (assoc collection plat-key updated-plats)))
 
-;; TODO jyna test this path
 (defn update-collection-with-sensor-aliases
   "Returns the collection with humanizer instrument aliases added to sensors.
    Go through each platform and update the platform with all the instrument aliases for the child instruments."

@@ -7,7 +7,6 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
-   [cmr.common-app.data.humanizer-cache :as humanizer-cache]
    [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
@@ -23,6 +22,7 @@
    [cmr.indexer.config :as config]
    [cmr.indexer.data.collection-granule-aggregation-cache :as cgac]
    [cmr.indexer.data.elasticsearch :as es]
+   [cmr.indexer.data.humanizer-fetcher :as hf]
    [cmr.indexer.data.index-set :as index-set]
    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
    [cmr.indexer.services.event-handler :as event-handler]
@@ -72,7 +72,7 @@
                       kl/kms-location-cache-key (kl/create-kms-location-cache)
                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
                       cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
-                      humanizer-cache/humanizer-cache-key (humanizer-cache/create-cache-client)
+                      hf/humanizer-cache-key (hf/create-cache)
                       metrics-fetcher/usage-metrics-cache-key (metrics-fetcher/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}
              :scheduler (jobs/create-scheduler

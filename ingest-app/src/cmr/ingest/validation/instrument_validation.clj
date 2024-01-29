@@ -29,7 +29,6 @@
         child-instrument (:ComposedOf instrument)]
     (:ShortName child-instrument)))
 
-;; TODO jyna test this path
 (defn deleted-parent-instrument-searches
   "Returns granule searches for deleted parent instruments. We should not delete instruments in a
    collection that are still referenced by existing granules. This function builds the search
@@ -50,7 +49,6 @@
        :error-msg (format (str "Collection Instrument [%s] is referenced by existing"
                                " granules, cannot be removed.") name)})))
 
-;; TODO jyna test this path
 (defn deleted-child-instrument-searches
   "Returns granule searches for deleted child instruments. We should not delete instruments in a
    collection that are still referenced by existing granules. This function builds the search

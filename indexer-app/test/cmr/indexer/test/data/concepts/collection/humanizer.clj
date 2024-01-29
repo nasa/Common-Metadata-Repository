@@ -3,12 +3,12 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
-			[cmr.common-app.data.humanizer-cache :as humanizer-cache]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common-app.test.sample-humanizer :as sh]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as imc]
    [cmr.indexer.data.concepts.collection.humanizer :as humanizer]
+   [cmr.indexer.data.humanizer-fetcher :as hf]
    [cmr.redis-utils.test.test-util :as redis-embedded-fixture]))
 
 (def ^:private sample-keyword-map
@@ -17,7 +17,7 @@
 
 (def create-context
   (let [humanizer-cache (imc/create-in-memory-cache)]
-    {:system {:caches {humanizer-cache/humanizer-cache-key humanizer-cache
+    {:system {:caches {hf/humanizer-cache-key humanizer-cache
                        kms-lookup/kms-short-name-cache-key (kms-lookup/create-kms-short-name-cache)
                        kms-lookup/kms-umm-c-cache-key (kms-lookup/create-kms-umm-c-cache)
                        kms-lookup/kms-location-cache-key (kms-lookup/create-kms-location-cache)
@@ -26,9 +26,9 @@
 (defn redis-cache-fixture
   [f]
   (let [context create-context
-        humanizer-cache (cache/context->cache context humanizer-cache/humanizer-cache-key)]
+        humanizer-cache (cache/context->cache context hf/humanizer-cache-key)]
     (kms-lookup/create-kms-index context sample-keyword-map)
-    (cache/set-value humanizer-cache humanizer-cache/humanizer-cache-key sh/sample-humanizers)
+    (cache/set-value humanizer-cache hf/humanizer-cache-key sh/sample-humanizers)
     (f)))
 
 (use-fixtures :once (join-fixtures [redis-embedded-fixture/embedded-redis-server-fixture

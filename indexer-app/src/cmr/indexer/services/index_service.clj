@@ -6,7 +6,6 @@
    [clj-time.format :as f]
    [clojure.set :as cset]
    [cmr.acl.acl-fetcher :as acl-fetcher]
-   [cmr.common-app.data.humanizer-cache :as humanizer-cache]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.config :refer [defconfig]]
@@ -20,6 +19,7 @@
    [cmr.indexer.data.concept-parser :as cp]
    [cmr.indexer.data.concepts.deleted-granule :as dg]
    [cmr.indexer.data.elasticsearch :as es]
+   [cmr.indexer.data.humanizer-fetcher :as humanizer-fetcher]
    [cmr.indexer.data.index-set :as idx-set]
    [cmr.indexer.data.metrics-fetcher :as metrics-fetcher]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
@@ -231,7 +231,7 @@
 
    ;; We refresh this cache because it is fairly lightweight to do once for each provider and because
    ;; we want the latest humanizers on each of the Indexer instances that are processing these messages.
-   (humanizer-cache/refresh-cache context)
+   (humanizer-fetcher/refresh-cache context)
    (metrics-fetcher/refresh-cache context)
 
    (if refresh-acls?
@@ -796,11 +796,10 @@
          :all-revisions-index? false}))
     (info "Reindexing all collection events submitted.")))
 
-;;TODO Jyna should this go to bootstrap?
 (defn update-humanizers
   "Update the humanizer cache and reindex all collections"
   [context]
-  (humanizer-cache/refresh-cache context)
+  (humanizer-fetcher/refresh-cache context)
   (reindex-all-collections context))
 
 (defn reset
