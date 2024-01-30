@@ -3,6 +3,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/ingest-app"
   :exclusions [[cheshire]
                [clj-time]
+               [com.fasterxml.jackson.core/jackson-core]
                [commons-codec/commons-codec]
                [commons-io]
                [instaparse]
@@ -12,6 +13,9 @@
                [ring/ring-codec]]
   :dependencies [[cheshire "5.10.0"]
                  [clj-time "0.15.1"]
+                 [com.fasterxml.jackson.core/jackson-core "2.13.2"]
+                 [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [camel-snake-kebab "0.4.2"]
                  [clj-http "2.3.0"]
                  [com.draines/postal "2.0.3"]
