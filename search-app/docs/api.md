@@ -4031,14 +4031,16 @@ The following parameters are supported when searching for variables.
 These parameters will match fields within a variable. They are case insensitive by default. They support options specified. They also support searching with multiple values in the style of `name[]=key1&name[]=key2`. The values are ORed together.
 
 * name
-  * options: pattern, ignore_case
+  options: pattern, ignore_case
 * provider
-  * options: pattern, ignore_case
+  options: pattern, ignore_case
 * native_id
-  * options: pattern, ignore_case
+  options: pattern, ignore_case
 * concept_id
 * measurement_identifiers
-  * options: ignore_case, or
+  options: ignore_case, or
+* instance_format
+  options: pattern
 measurement_identifiers parameter is a nested parameter with subfields: contextmedium, object and quantity. Multiple measurement_identifiers can be specified via different indexes to search variables. The following example searches for variables that have at least one measurement_identifier with contextmedium of Med1, object of Object1 and quantity of Q1, and another measurement_identifier with contextmedium of Med2 and object of Obj2.
 
 __Example__
@@ -4050,7 +4052,7 @@ curl -g "%CMR-ENDPOINT%/variables?measurement_identifiers\[0\]\[contextmedium\]=
 The multiple measurement_identifiers are ANDed by default. User can specify `options[measurement-identifiers][or]=true` to make the measurement_identifiers ORed together.
 
 * keyword (free text)
-  * keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
+  keyword search is case insensitive and supports wild cards ? and *. There is a limit of 30 wild cards allowed in keyword searches. Within 30 wild cards, there's also limit on the max keyword string length. The longer the max keyword string length, the less number of keywords with wild cards allowed.
 
 The following fields are indexed for keyword (free text) search:
 
