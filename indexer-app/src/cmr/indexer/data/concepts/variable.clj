@@ -86,6 +86,7 @@
        :user-id user-id
        :revision-date revision-date
        :metadata-format (name (mt/format-key format))
+       :instance-format (util/safe-lowercase (:Format instance-information))
        :measurement-identifiers (mapcat measurement-identifier->elastic-doc
                                         (:MeasurementIdentifiers parsed-concept))
        ;; associated collections and generic concepts saved in elasticsearch for retrieving purpose in the format of:

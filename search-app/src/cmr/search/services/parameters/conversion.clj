@@ -167,7 +167,8 @@
    :native-id :string
    :concept-id :string
    :keyword :keyword
-   :measurement-identifiers :measurement-identifiers})
+   :measurement-identifiers :measurement-identifiers
+   :instance-format :string})
 
 (defmethod common-params/param-mappings :service
   [_]

@@ -775,6 +775,7 @@
    :user-id (m/doc-values m/string-field-mapping)
    :revision-date (m/doc-values m/date-field-mapping)
    :metadata-format (m/doc-values m/string-field-mapping)
+   :instance-format (m/doc-values m/string-field-mapping)
    :measurement-identifiers measurement-identifiers-mapping
    ;; associations and fields where the variables are stored as EDN gzipped and base64 encoded for retrieving purpose
    :associations-gzip-b64 m/binary-field-mapping
