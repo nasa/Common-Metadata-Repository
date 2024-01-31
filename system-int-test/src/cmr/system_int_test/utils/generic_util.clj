@@ -90,4 +90,10 @@
    (json/parse-string
     (:body (generic-request
             token provider-id native-id (name concept-type) document method))
-    true)))
+    true))
+  ([token provider-id native-id concept-type document method mime-type]
+   (json/parse-string     
+    (:body (generic-request
+            token provider-id native-id (name concept-type) document method mime-type))
+    true))
+  )

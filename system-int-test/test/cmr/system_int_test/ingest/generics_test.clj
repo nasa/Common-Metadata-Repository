@@ -501,9 +501,9 @@
     ;; The draft delete result should indicate the draft does not exist.
     (is (= draft-delete-result {:errors ["VariableDraft with native id [VD-NativeId] in provider [PROV1] does not exist."]}))))
 
-;; Test that a Generic Doc can not be ingested when MetadataSpecification is missing
+;; Test that a Generic Doc can not be ingested when MetadataSpecification is missing or wrong
 ;; and a proper message is returned
-(deftest test-generic-doc-ingest-with-missing-specification
+(deftest test-generic-doc-ingest-with-missing-and-wrong-specification
   (let [;; Ingest two order-option concept
         oo-native-id1 "OO-NativeId1"
         oo-native-id2 "OO-NativeId2"
@@ -519,3 +519,12 @@
            (:errors oo-ingest-response1)))
     (is (= [":wrong-order-option version 1.0.0 are not supported"]
            (:errors oo-ingest-response2)))))
+
+;; Test that a Generic Doc can not be ingested when the version in Content-Type is not the same
+;; as the one in MetadataSpecification
+(deftest test-generic-doc-ingest-with-conflicting-versions
+  (let [;; Ingest order-option concept
+        oo-native-id "OO-NativeId"
+        oo-ingest-response (gen-util/ingest-generic-document nil "PROV1" "OO-NativeId" :order-option gen-util/order-option :post "application/vnd.nasa.cmr.umm+json;version=abc")]
+    (is (= ["Version in MetadataSpecifcation [1.0.0] is not the same as the one in Content-Type [abc]"] 
+           (:errors oo-ingest-response)))))
