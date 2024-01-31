@@ -250,6 +250,7 @@
 (defn parse-ingest-response
   "Parse an ingest response (if required) and append a status"
   [response options]
+  (println "inside parse-ingest-response, response = " (pr-str response))
   (if (get options :raw? false)
     response
     (let [response-format (or (:accept-format options)
@@ -371,7 +372,8 @@
   ([concept]
    (ingest-concept concept {}))
   ([concept options]
-   (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
+   (let [_ (println "inside ingest-concept")
+         {:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
          {:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id test-existing-errors]} options
          accept-format (:accept-format options)
          method (get options :method :put)
@@ -392,7 +394,8 @@
                  :headers headers
                  :throw-exceptions false
                  :connection-manager (s/conn-mgr)}
-         params (merge params (when accept-format {:accept accept-format}))]
+         params (merge params (when accept-format {:accept accept-format}))
+         _ (println "params = " (pr-str params))]
      (parse-ingest-response (client/request params) options))))
 
 (defn publish-draft
@@ -410,7 +413,7 @@
                                        "X-Request-Id" x-request-id})
         headers (when options
                   (assoc headers "Content-Type" "application/vnd.nasa.cmr.umm+json"))
-        params {:method method 
+        params {:method method
                 :url (url/publish-draft-url draft-concept-id native-id)
                 :body (when options
                         (json/generate-string options))
@@ -690,7 +693,7 @@
   "Get the tasks and statuses by provider"
   ([concept-type provider-id options]
    (bulk-update-provider-status* concept-type provider-id options nil))
-  ([concept-type provider-id options date] 
+  ([concept-type provider-id options date]
    (let [accept-format (get options :accept-format :xml)
          token (:token options)
          task-url (if (= :collection concept-type)
