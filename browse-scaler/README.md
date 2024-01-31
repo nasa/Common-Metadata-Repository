@@ -104,3 +104,19 @@ Example of a granule event passing a specified image
             "imageSrc":"https://airsl2.gesdisc.eosdis.nasa.gov/data/Aqua_AIRS_Level2/AIRH2CCF.006/2002/243/AIRS.2002.08.31.028.L2.CC_H.v6.0.12.0.G14101130602.hdf.jpg"
         }
     }
+
+### Deployment
+
+When the time comes to deploy REDIS ElasticCacheCluster, first ensure that you have the required ENV vars set:
+
+- AWS_PROFILE
+
+This application runs in a VPC for NASA security purposes, therefore the following values are expected when a deployment occurs:
+
+- VPC_ID
+- SUBNET_ID_A
+- SUBNET_ID_B
+
+To deploy the full application use the following:
+
+    serverless deploy --stage UNIQUE_STAGE
