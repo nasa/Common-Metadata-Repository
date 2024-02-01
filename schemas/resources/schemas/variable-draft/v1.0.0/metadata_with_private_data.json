@@ -1,0 +1,42 @@
+{
+  "_private" : {"CollectionId" : "C12345-PROV"},
+  "AdditionalIdentifiers" : [ {
+    "Identifier" : "air_temp"
+  }, {
+    "Description" : "AIRS_name",
+    "Identifier" : "TAirSup"
+  } ],
+  "VariableType" : "SCIENCE_VARIABLE",
+  "DataType" : "float32",
+  "StandardName" : "air_temperature",
+  "FillValues" : [ {
+    "Type" : "SCIENCE_FILLVALUE",
+    "Value" : 9.969209968E36
+  } ],
+  "Dimensions" : [ {
+    "Name" : "atrack",
+    "Size" : 45,
+    "Type" : "ALONG_TRACK_DIMENSION"
+  }, {
+    "Name" : "xtrack",
+    "Size" : 30,
+    "Type" : "CROSS_TRACK_DIMENSION"
+  }, {
+    "Name" : "air_pres",
+    "Size" : "Varies",
+    "Type" : "PRESSURE_DIMENSION"
+  } ],
+  "Definition" : "Air temperature profile from SNDRSNIML2CCPRET_2",
+  "Name" : "/air_temp",
+  "ValidRanges" : [ {
+    "Max" : 400,
+    "Min" : 100
+  } ],
+  "MetadataSpecification" : {
+    "Name" : "UMM-Var",
+    "URL" : "https://cdn.earthdata.nasa.gov/umm/variable/v1.8.2",
+    "Version" : "1.8.2"
+  },
+  "Units" : "Kelvin",
+  "LongName" : "Air temperature profile"
+}

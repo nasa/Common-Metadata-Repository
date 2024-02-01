@@ -13,11 +13,13 @@
    [cmr.bootstrap.services.dispatch.core :as dispatch]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
+   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-gran-acls-caches]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common-app.services.search.elastic-search-index :as search-index]
+   [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]
    [cmr.common.api.web-server :as web]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -64,7 +66,8 @@
                     ;; Specify an Elasticsearch http retry handler
                     (assoc-in [:db :config :retry-handler] bi/elastic-retry-handler))
         queue-broker (queue-broker/create-queue-broker (bootstrap-config/queue-config))
-        sys {:log (log/create-logger-with-log-level (log-level))
+        sys {:instance-name (common-sys/instance-name "bootstrap")
+             :log (log/create-logger-with-log-level (log-level))
              :embedded-systems {:metadata-db metadata-db
                                 :indexer indexer}
              :search-index (search-index/create-elastic-search-index)
@@ -85,11 +88,15 @@
                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
                       provider-cache/cache-key (provider-cache/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)
-                      cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)}
+                      cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
+                      coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
+                      elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
                                                                (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
                                                                (b-coll-metadata-cache/refresh-collections-metadata-cache-job "bootstrap-collections-metadata-cache-refresh")
-                                                               (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")])
+                                                               (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")
+                                                               (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job "bootstrap-collections-for-gran-acls-cache-refresh")
+                                                               (elastic-search-index-names-cache/refresh-index-names-cache-job "bootstrap-elastic-search-index-names-cache")])
              :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms
                                                   :indexer :access-control])))

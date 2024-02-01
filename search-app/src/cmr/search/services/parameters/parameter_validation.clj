@@ -70,7 +70,7 @@
   (cpv/merge-params-config
    cpv/basic-params-config
    {:single-value #{:keyword :all-revisions}
-    :multiple-value #{:name :variable-name :alias :full-path :measurement :instrument :provider :native-id :concept-id}
+    :multiple-value #{:name :variable-name :alias :full-path :measurement :instrument :provider :native-id :concept-id :instance-format}
     :always-case-sensitive #{}
     :disallow-pattern #{}}))
 
@@ -257,7 +257,8 @@
    :measurement cpv/string-param-options
    :native-id cpv/string-param-options
    :provider cpv/string-param-options
-   :measurement-identifiers cpv/string-plus-or-options})
+   :measurement-identifiers cpv/string-plus-or-options
+   :instance-format cpv/pattern-option})
 
 (defmethod cpv/valid-parameter-options :service
   [_]

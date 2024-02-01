@@ -236,7 +236,8 @@
 (defmethod q2e/field->lowercase-field-mappings :variable
   [_]
   {:provider "provider-id-lowercase"
-   :name "variable-name-lowercase"})
+   :name "variable-name-lowercase"
+   :instance-format "instance-format"})
 
 (defmethod q2e/field->lowercase-field-mappings :service
   [_]

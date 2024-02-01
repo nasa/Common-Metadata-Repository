@@ -37,7 +37,7 @@
                             (slurp)
                             (json/parse-string true)))
 
-(def variable-draft (-> "schemas/variable-draft/v1.0.0/metadata.json"
+(def variable-draft (-> "schemas/variable-draft/v1.0.0/metadata_with_private_data.json"
                         (jio/resource)
                         (slurp)
                         (json/parse-string true)))

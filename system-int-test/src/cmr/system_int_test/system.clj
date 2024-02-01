@@ -8,6 +8,7 @@
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.system :as common-sys]
    [cmr.metadata-db.services.util :as mdb-util]
    [cmr.oracle.connection :as oracle]
    [cmr.system-int-test.utils.url-helper :as url]
@@ -32,7 +33,8 @@
 (defn create-system
   "Returns a new instance of the whole application."
   [component-type-map]
-  (let [sys {:log (log/create-logger {:level @logging-level-atom})
+  (let [sys {:instance-name (common-sys/instance-name "system-int-test")
+             :log (log/create-logger {:level @logging-level-atom})
              :bootstrap-db (when (= :external (:db component-type-map))
                              (mdb-util/create-db (bootstrap-config/db-spec "bootstrap-test-pool")))
              ;; the HTTP connection manager to use. This allows system integration tests to use persistent
@@ -43,7 +45,7 @@
              ;; A map of the components (echo, elastic, db, and message queue) to whether they are
              ;; in-memory or external
              :component-type-map component-type-map}]
-    (transmit-config/system-with-connections sys [:echo-rest :search :access-control :urs :ingest :metadata-db])))
+    (transmit-config/system-with-connections sys [:echo-rest :search :access-control :urs :ingest :indexer :metadata-db])))
 
 (defn get-component-type-map
   "Returns the component-type-map from dev-system."

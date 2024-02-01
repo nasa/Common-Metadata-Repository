@@ -7,6 +7,7 @@
    [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.system :as common-sys]
    [cmr.common.util :as u]
    [cmr.dev-system.config :as dev-config]
    [cmr.dev-system.control :as control]
@@ -272,7 +273,8 @@
         elastic-server (create-elastic elastic)
         redis-server (create-redis redis)
         control-server (control/create-server)]
-    {:apps (u/remove-nil-keys
+    {:instance-name (common-sys/instance-name "dev-system")
+     :apps (u/remove-nil-keys
              {:mock-echo echo-component
               :access-control (create-access-control-app queue-broker)
               :metadata-db (create-metadata-db-app db-component queue-broker)

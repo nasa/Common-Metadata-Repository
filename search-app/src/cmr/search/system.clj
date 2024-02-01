@@ -12,6 +12,7 @@
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common-app.services.search :as search]
    [cmr.common-app.services.search.elastic-search-index :as common-idx]
+   [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
@@ -21,11 +22,10 @@
    [cmr.common.system :as common-sys]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.orbits.orbits-runtime :as orbits-runtime]
-   [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
+   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-gran-acls-caches]
    [cmr.search.routes :as routes]
-   [cmr.search.services.acls.collections-cache :as coll-cache]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.search.services.humanizers.humanizer-range-facet-service :as hrfs]
    [cmr.search.services.query-execution.has-granules-results-feature :as hgrf]
@@ -103,7 +103,8 @@
   []
   (let [metadata-db (-> (mdb-system/create-system "metadata-db-in-search-app-pool")
                         (dissoc :log :web :scheduler :unclustered-scheduler))
-        sys {:log (log/create-logger-with-log-level (log-level))
+        sys {:instance-name (common-sys/instance-name "search")
+             :log (log/create-logger-with-log-level (log-level))
              ;; An embedded version of the metadata db app to allow quick retrieval of data
              ;; from oracle.
              :embedded-systems {:metadata-db metadata-db}
@@ -111,7 +112,7 @@
              :web (web-server/create-web-server (transmit-config/search-port) routes/handlers)
              :nrepl (nrepl/create-nrepl-if-configured (search-nrepl-port))
              ;; Caches added to this list must be explicitly cleared in query-service/clear-cache
-             :caches {idx/index-cache-name (idx/create-index-cache)
+             :caches {elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)
                       af/acl-cache-key (af/create-acl-cache [:catalog-item :system-object :provider-object])
                       ;; Caches a map of tokens to the security identifiers
                       context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
@@ -119,7 +120,6 @@
                       :has-granules-map (hgrf/create-has-granules-map-cache)
                       :has-granules-or-cwic-map (hgocrf/create-has-granules-or-cwic-map-cache)
                       :has-granules-or-opensearch-map (hgocrf/create-has-granules-or-opensearch-map-cache)
-                      coll-cache/cache-key (coll-cache/create-cache)
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
                       acl/token-pc-cache-key (acl/create-token-pc-cache)
@@ -133,6 +133,7 @@
                       search/scroll-id-cache-key (search/create-scroll-id-cache)
                       search/scroll-first-page-cache-key (search/create-scroll-first-page-cache)
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
+                      coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
                       common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
                       hrs/report-cache-key (hrs/create-report-cache)
@@ -144,13 +145,11 @@
              :scheduler (jobs/create-scheduler
                          `system-holder
                          [(af/refresh-acl-cache-job "search-acl-cache-refresh")
-                          idx/refresh-index-names-cache-job
                           hgrf/refresh-has-granules-map-job
                           hgocrf/refresh-has-granules-or-cwic-map-job
                           hgocrf/refresh-has-granules-or-opensearch-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           (metadata-cache/update-collections-metadata-cache-job)
-                          coll-cache/refresh-collections-cache-for-granule-acls-job
                           (cache-info/create-log-cache-info-job "search")
                           jvm-info/log-jvm-statistics-job
                           hrs/humanizer-report-generator-job])}]
@@ -162,20 +161,16 @@
   "Performs side effects to initialize the system, acquire resources,
   and start it running. Returns an updated instance of the system."
   [this]
-  (info "search System starting")
   (let [started-system (-> this
                            (update-in [:embedded-systems :metadata-db] mdb-system/start)
                            (common-sys/start component-order))]
-    (info "search System started")
     started-system))
 
 (defn stop
   "Performs side effects to shut down the system and release its
   resources. Returns an updated instance of the system."
   [this]
-  (info "search System shutting down")
   (let [stopped-system (-> this
                            (common-sys/stop component-order)
                            (update-in [:embedded-systems :metadata-db] mdb-system/stop))]
-    (info "search System stopped")
     stopped-system))

@@ -17,7 +17,7 @@
    [cmr.search.results-handlers.atom-links-results-handler :as atom-links]
    [cmr.search.results-handlers.atom-spatial-results-handler :as atom-spatial]
    [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
-   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.query-execution.tags-results-feature :as trf]

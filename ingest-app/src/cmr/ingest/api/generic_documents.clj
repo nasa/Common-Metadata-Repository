@@ -274,6 +274,15 @@
         search-result (mdb/get-latest-concept context concept-id)
         draft-native-id (:native-id search-result)
         metadata (:metadata search-result)
+        ;; need to convert metadata to map and remove the mmt private data
+        ;; then convert it back to json. Currently it only applies to variable-draft
+        ;; publishing.
+        metadata (if (= :variable concept-type)
+                   (-> metadata
+                       (json/parse-string)
+                       (dissoc "_private")
+                       (json/generate-string))
+                   metadata)
         format (:format search-result)
         _ (when-not (and metadata format)
             (errors/throw-service-error

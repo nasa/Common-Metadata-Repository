@@ -391,6 +391,12 @@
   []
   (format "http://localhost:%s/caches" (transmit-config/search-port)))
 
+(defn refresh-index-names-cache-url
+  "URL to refresh the index-names cache."
+  []
+  (format "http://localhost:%s/caches/refresh/index-names"
+          (transmit-config/bootstrap-port)))
+
 (defn refresh-collection-metadata-cache-url
   []
   (format "http://localhost:%s/jobs/refresh-collection-metadata-cache"

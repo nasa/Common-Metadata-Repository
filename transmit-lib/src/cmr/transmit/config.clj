@@ -265,7 +265,9 @@
 (defn context->app-connection
   "Retrieves the connection from the context for the given app."
   [context app-name]
-  (get-in context [:system (app-connection-system-key-name app-name)]))
+  (or (get-in context [:system (app-connection-system-key-name app-name)])
+      ;; The job scheduler uses a subset of the system context.
+      (get context (app-connection-system-key-name app-name))))
 
 (defn system-with-connections
   "Adds connection keys to the system for the given applications. They will be added in a way

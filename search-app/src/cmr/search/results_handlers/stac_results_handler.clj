@@ -12,7 +12,7 @@
    [cmr.search.models.query :as q]
    [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
    [cmr.search.results-handlers.stac-spatial-results-handler :as ssrh]
-   [cmr.search.services.acls.acl-results-handler-helper :as acl-rhh]
+   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.url-helper :as url]
    [cmr.spatial.serialize :as srl]
    [ring.util.codec :as codec]))

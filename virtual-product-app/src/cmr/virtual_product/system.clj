@@ -39,7 +39,8 @@
 (defn create-system
   "Returns a new instance of the whole application."
   []
-  (let [sys {:log (log/create-logger-with-log-level (log-level))
+  (let [sys {:instance-name (common-sys/instance-name "virtual-product")
+             :log (log/create-logger-with-log-level (log-level))
              :web (web/create-web-server (transmit-config/virtual-product-port) routes/make-api)
              :nrepl (nrepl/create-nrepl-if-configured (virtual-product-nrepl-port))
              :relative-root-url (transmit-config/virtual-product-relative-root-url)

@@ -87,6 +87,48 @@
   [& body]
   `(t/error ~@body))
 
+(defmacro report
+  "Log a report level message. Report level logs differ from Error in that they
+   always display but are not considered an Error or Fatal event and are already
+   supported by the base library."
+  [& body]
+  `(t/report ~@body))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Log macros like the above but using a format like all the cool kids do
+
+(defmacro tracef
+  "Logs a message at the trace level."
+  [& body]
+  `(t/tracef ~@body))
+
+(defmacro debugf
+  "Logs a message at the debug level using a format."
+  [& body]
+  `(t/debugf ~@body))
+
+(defmacro infof
+  "Logs a message at the info level."
+  [& body]
+  `(t/infof ~@body))
+
+(defmacro warnf
+  "Logs a message at the warn level."
+  [& body]
+  `(t/warnf ~@body))
+
+(defmacro errorf
+  "Logs a message at the error level."
+  [& body]
+  `(t/errorf ~@body))
+
+(defmacro reportf
+  "Log a report level message. Report level logs differ from Error in that they
+   always display but are not considered an Error or Fatal event and are already
+   supported by the base library."
+  [& body]
+  `(t/reportf ~@body))
+
 (defrecord Logger
   [level ; The level to log out
    file  ; The path to the file to log to
