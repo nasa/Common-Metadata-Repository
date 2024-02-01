@@ -1,15 +1,10 @@
 (ns cmr.common.test.concepts
-  (:require [clojure.test :refer :all]
-
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [defspec]]
-
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [cmr.common.concepts :as c]
-            [cmr.common.test.test-util :as tu]))
-
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.test.test-check-ext :refer [defspec]]
+   [clojure.test.check.properties :refer [for-all]]
+   [clojure.test.check.generators :as gen]
+   [cmr.common.concepts :as c]))
 
 (deftest parse-concept-id-test
   (are [concept-type concept-id provider-id]
@@ -53,3 +48,10 @@
   (for-all [concept-id-map concept-id-maps]
     (let [concept-id (c/build-concept-id concept-id-map)]
       (= concept-id-map (c/parse-concept-id concept-id)))))
+
+(deftest concept-id-validation-test
+  (testing "Testing concept-id-validation working case"
+    (is (= nil (c/concept-id-validation "TL1222-PROV1")))
+    (is (= nil (c/concept-id-validation :concept-id "TL1222-PROV1")))
+    (is (= ["Concept-id [{&quot;0&quot; &quot;TL1222-PROV1&quot;}] is not valid."]
+           (c/concept-id-validation {"0" "TL1222-PROV1"})))))
