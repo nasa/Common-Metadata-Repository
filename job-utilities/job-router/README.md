@@ -17,7 +17,6 @@ zip deployment_package.zip lambda_function.py
 ## Deploying
 
 A manual deployment of the zip package is easy. Simply go to the job-router Lambda and upload the zip package of code to update it.
-Otherwise there is a deployment in Bamboo that uses the deploy_lambda.sh script in cmr-cloud-deployment.
 
 ## Testing/Running locally
 
@@ -31,10 +30,10 @@ When the Lambda is invoked there are certain fields that are required in the eve
 {
     "service": "service-name",
     "endpoint": "job-endpoint",
-    "target": "single-or-not"
+    "single-target": true/false
 }
 
 service - The service that the job needs to be run for (Bootstrap, Ingest, Search, etc.)
 endpoint - The endpoint for the job to be run (i.e, if the service is "bootstrap" and the KMS cache needs to be refreshed, the endpoint is "caches/refresh/kms")
-target - Some jobs need to run on a single instance of a service, others need to be run on all instances of a service. "single" will run on a single instance,
-         anything else will hit each instance
+single-target - Some jobs need to run on a single instance of a service, others need to be run on all instances of a service. true will run on a single instance,
+                false will hit each instance
