@@ -94,17 +94,17 @@
 	Returns: { 'TERRA' --> ['AM-1', 'am-1', 'AM 1']
 						 'OTHERPLATFORMS' --> ['otheraliases']}"
   [context humanizer-field-name]
-  (let [humanizer-alias-cache (hash-cache/context->cache context humanizer-alias-cache-key)
-        non-humanized-source-to-aliases-map (hash-cache/get-value humanizer-alias-cache humanizer-alias-cache-key humanizer-field-name)]
-				non-humanized-source-to-aliases-map))
+  (let [humanizer-alias-cache (hash-cache/context->cache context humanizer-alias-cache-key)]
+    (hash-cache/get-value humanizer-alias-cache humanizer-alias-cache-key humanizer-field-name)))
 
 (defconfig humanizer-alias-cache-job-refresh-rate
-           "Number of seconds between refreshes of the humanizer alias cache."
-           {:default 3600
-            :type Long})
+  "Number of seconds between refreshes of the humanizer alias cache."
+  {:default 3600
+  :type Long})
+
 (defjob RefreshHumanizerAliasCache
-        [ctx system]
-        (refresh-entire-cache {:system system}))
+  [ctx system]
+  (refresh-entire-cache {:system system}))
 
 (defn refresh-humanizer-alias-cache-job
   [job-key]

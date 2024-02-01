@@ -114,7 +114,6 @@
                            plats)]
     (assoc collection plat-key updated-plats)))
 
-;; TODO test this path
 (defn update-collection-with-aliases
   "Returns the collection with humanizer aliases added."
   [context collection umm-spec-collection?]
