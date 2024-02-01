@@ -250,7 +250,6 @@
 (defn parse-ingest-response
   "Parse an ingest response (if required) and append a status"
   [response options]
-  (println "inside parse-ingest-response, response = " (pr-str response))
   (if (get options :raw? false)
     response
     (let [response-format (or (:accept-format options)
@@ -372,8 +371,7 @@
   ([concept]
    (ingest-concept concept {}))
   ([concept options]
-   (let [_ (println "inside ingest-concept")
-         {:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
+   (let [{:keys [metadata format concept-type concept-id revision-id provider-id native-id]} concept
          {:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id test-existing-errors]} options
          accept-format (:accept-format options)
          method (get options :method :put)
@@ -394,8 +392,7 @@
                  :headers headers
                  :throw-exceptions false
                  :connection-manager (s/conn-mgr)}
-         params (merge params (when accept-format {:accept accept-format}))
-         _ (println "params = " (pr-str params))]
+         params (merge params (when accept-format {:accept accept-format}))]
      (parse-ingest-response (client/request params) options))))
 
 (defn publish-draft

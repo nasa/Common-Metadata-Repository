@@ -12,8 +12,10 @@
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.additional-attribute :as aa]
-   [cmr.umm-spec.spatial-conversion :as spatial-conversion]))
+   [cmr.system-int-test.utils.cache-util :as cache-util]
+   [cmr.system-int-test.utils.url-helper :as url]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
@@ -465,6 +467,7 @@
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:project-refs ["p4"]}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1" {:project-refs ["USGS_SOFIA"]}))]
 
+    (cache-util/refresh-cache (url/refresh-humanizer-alias-cache-url) (transmit-config/echo-system-token))
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
@@ -784,6 +787,7 @@
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "AM-1")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs (dg/platform-refs "p4")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs (dg/platform-refs "Terra")}))
+    (cache-util/refresh-cache (url/refresh-humanizer-alias-cache-url) (transmit-config/echo-system-token))
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
@@ -877,7 +881,6 @@
       ["MODIS Tile EASE" "WRS-2" "CALIPSO" "WELD Alaska Tile"]
       ["Collection TilingIdentificationSystemName [misr] is referenced by existing granules, cannot be removed. Found 2 granules."])))
 
-;; TODO Jyna this test is failing
 (deftest collection-update-instrument-test
   (let [;; Instrument "GPS RECEIVERS" is the humanized alias of "GPS"
         coll (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
@@ -899,12 +902,11 @@
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "s1")]}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "GPS RECEIVERS")]}))
     (index/wait-until-indexed)
+    (cache-util/refresh-cache (url/refresh-humanizer-alias-cache-url) (transmit-config/echo-system-token))
     (testing "Update collection successful cases"
       (are3
         [plat-instruments-1 plat-instruments-2]
-        (let [_ (println "plat-instruments-1 = " (pr-str plat-instruments-1))
-              _ (println "plat-instruments-2 = " (pr-str plat-instruments-2))
-              response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
+        (let [response (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                                               {:EntryTitle "parent-collection"
                                                                 :ShortName "S1"
                                                                 :Version "V1"
@@ -913,23 +915,22 @@
               {:keys [status errors]} response]
           (is (= [200 nil] [status errors])))
 
-        ;"Removing an instrument referenced by granules is invalid once hierarchical search is supported.
-        ; Currently it's okay if it exists under other platforms."
-        ;["p1-1" "i2" "GPS" "i4"]
-        ;["p1-2" "i1" "i2" "GPS" "i4"]
-        ;
-        ;"Adding an additional instrument is OK"
-        ;["p1-1" "i1" "i2" "GPS" "i4" "i5"]
-        ;["p1-2" "i1" "i2" "GPS" "i4" "i5"]
-        ;
-        ;"Removing an instrument not referenced by any granule in the collection is OK"
-        ;["p1-1" "i1" "i2" "GPS"]
-        ;["p1-2" "i1" "i2" "GPS"]
+        "Removing an instrument referenced by granules is invalid once hierarchical search is supported.
+         Currently it's okay if it exists under other platforms."
+        ["p1-1" "i2" "GPS" "i4"]
+        ["p1-2" "i1" "i2" "GPS" "i4"]
+
+        "Adding an additional instrument is OK"
+        ["p1-1" "i1" "i2" "GPS" "i4" "i5"]
+        ["p1-2" "i1" "i2" "GPS" "i4" "i5"]
+
+        "Removing an instrument not referenced by any granule in the collection is OK"
+        ["p1-1" "i1" "i2" "GPS"]
+        ["p1-2" "i1" "i2" "GPS"]
 
         "Updating an instrument  to humanized alias(case insensitively) referenced by granule on the original value is OK"
         ["p1-1" "i1" "i2" "Gps Receivers"]
-        ["p1-2" "i1" "i2" "Gps Receivers"]
-        ))
+        ["p1-2" "i1" "i2" "Gps Receivers"]))
 
     (testing "Update collection failure cases"
       (are3

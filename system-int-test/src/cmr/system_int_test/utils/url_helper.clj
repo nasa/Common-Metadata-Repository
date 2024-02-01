@@ -402,6 +402,10 @@
   (format "http://localhost:%s/jobs/refresh-collection-metadata-cache"
           (transmit-config/search-port)))
 
+(defn refresh-humanizer-alias-cache-url
+  []
+  (format "http://localhost:%s/caches/refresh/humanizer-alias-cache-by-field" (transmit-config/bootstrap-port)))
+
 (defn search-health-url
   "URL to check search health."
   []

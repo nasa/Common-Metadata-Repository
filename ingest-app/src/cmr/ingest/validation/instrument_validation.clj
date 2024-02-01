@@ -34,21 +34,14 @@
    collection that are still referenced by existing granules. This function builds the search
    parameters to identify such invalid deletions."
   [context concept-id concept prev-concept]
-  (let [_ (println "inside deleted-parent-instrument-searches")
-        ins-alias-map (humanizer-alias-cache/get-non-humanized-source-to-aliases-map context "instrument")
-        _ (println "ins-alias-map = " (pr-str ins-alias-map)) ;; nil
+  (let [ins-alias-map (humanizer-alias-cache/get-non-humanized-source-to-aliases-map context "instrument")
         current-parent-ins (get-parent-instruments-from-concept concept)
-        _ (println "current-parent-ins = " (pr-str current-parent-ins)) ;; ("i1" "i2" "Gps Receivers" "i1" "i2" "Gps Receivers")
         previous-parent-ins (get-parent-instruments-from-concept prev-concept)
-        _ (println "previous-parent-ins = " (pr-str previous-parent-ins)) ;; ("i1" "i2" "GPS" "i4" "i1" "i2" "GPS" "i4")
         ins-aliases (mapcat #(get ins-alias-map %) (map str/upper-case current-parent-ins))
-        _ (println "ins-aliases = " (pr-str ins-aliases)) ;; ()
         ;; Only the deleted ones that are not part of the ins-aliases need to be validated.
         deleted-parent-instrument-names (s/difference
                                           (set (map util/safe-lowercase previous-parent-ins))
-                                          (set (map util/safe-lowercase (concat current-parent-ins ins-aliases))))
-        _ (println "deleted-parent-instrument-names = " (pr-str deleted-parent-instrument-names))] ;; #{"gps" "i4"}
-    ;; So the issue is that deleted-parent-instrument-names should be empty, but it's not, but I think it's because the ins-alias-map is empty for some reason when it shouldn't be...
+                                          (set (map util/safe-lowercase (concat current-parent-ins ins-aliases))))]
     (for [name deleted-parent-instrument-names]
       {:params {"instrument[]" name
                 :collection-concept-id concept-id

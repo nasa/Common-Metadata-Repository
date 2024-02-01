@@ -147,13 +147,8 @@
   ([provider-id item]
    (ingest-umm-spec-collection provider-id item nil))
   ([provider-id item options]
-   (let [_ (println "inside ingest-umm-spec-collection")
-         _ (println "provider-id given = " provider-id)
-         _ (println "collection/item given = " (pr-str item))
-         _ (println "options = " options)
-         format-key (get options :format :echo10)
+   (let [format-key (get options :format :echo10)
          umm-concept (umm-c-collection->concept (assoc item :provider-id provider-id) format-key)
-         _ (println "umm-concept = " (pr-str umm-concept))
          response (ingest/ingest-concept
                     (assoc umm-concept :provider-id provider-id)
                     (select-keys options [:token

@@ -108,13 +108,11 @@
 (defn platform-with-instruments
   "Return a platform with a list of instruments"
   [short-name & instr-short-names]
-  (let [instruments (apply instruments instr-short-names)
-        result (umm-cmn/map->PlatformType {:ShortName short-name
-                                           :LongName (d/unique-str "long-name")
-                                           :Type (d/unique-str "Type")
-                                           :Instruments instruments})
-        _ (println "platform-with-instruments = " (pr-str result))]
-    result))
+  (let [instruments (apply instruments instr-short-names)]
+    (umm-cmn/map->PlatformType {:ShortName short-name
+                                :LongName (d/unique-str "long-name")
+                                :Type (d/unique-str "Type")
+                                :Instruments instruments})))
 
 (defn platform-with-instrument-and-childinstruments
   "Return a platform with an instrument and a list of child instruments"
