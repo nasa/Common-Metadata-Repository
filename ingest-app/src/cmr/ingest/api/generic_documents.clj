@@ -126,6 +126,17 @@
              request-context :read :provider-object provider-id))
         raw-document (slurp (:body request))
         content-type (get headers "content-type")
+        ;; get the version in content-type and verify it.
+        version-ct (when (and content-type
+                              (string/includes? content-type ";version="))
+                     (let [ct-split (string/split content-type #";version=")]
+                       (if (= 2 (count ct-split))
+                         (-> ct-split
+                             last
+                             string/trim)
+                         (errors/throw-service-error
+                          :invalid-data
+                          "Missing version value in Content-Type"))))
         {:keys [spec-key spec-version document-name format]}
          (pull-metadata-specific-information request-context concept-type content-type raw-document)]
     ;; Check to see if the passed in record contains the MetadataSpecification/Name field and its
@@ -139,20 +150,25 @@
        (if-not spec-key
          "The MetadataSpecification schema element is missing from the record being ingested."
          (str spec-key " version " spec-version " are not supported")))
-      {:concept (assoc {}
-                       :metadata raw-document
-                       :provider-id provider-id
-                       :concept-type concept-type
-                       :format format
-                       :native-id native-id
-                       :user-id (api-core/get-user-id request-context headers)
-                       :extra-fields {:document-name document-name
-                                      :schema spec-key})
-       :spec-key spec-key
-       :spec-version spec-version
-       :provider-id provider-id
-       :native-id native-id
-       :request-context request-context})))
+      (if (and version-ct
+               (not= version-ct spec-version))
+        (errors/throw-service-error
+         :invalid-data
+         (str "Version in MetadataSpecifcation [" spec-version "] is not the same as the one in Content-Type [" version-ct "]" ))
+         {:concept (assoc {}
+                          :metadata raw-document
+                          :provider-id provider-id
+                          :concept-type concept-type
+                          :format format
+                          :native-id native-id
+                          :user-id (api-core/get-user-id request-context headers)
+                          :extra-fields {:document-name document-name
+                                         :schema spec-key})
+          :spec-key spec-key
+          :spec-version spec-version
+          :provider-id provider-id
+          :native-id native-id
+          :request-context request-context}))))
 
 (defn validate-document-against-schema
   "This function will validate the passed in document with its schema and throw a

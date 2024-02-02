@@ -91,3 +91,11 @@
     (:body (generic-request
             token provider-id native-id (name concept-type) document method))
     true)))
+
+(defn ingest-generic-document-with-mime-type
+  "A wrapper function for generic-request, and returns the concept ingested."
+  [token provider-id native-id concept-type document method mime-type]
+  (json/parse-string     
+   (:body (generic-request
+           token provider-id native-id (name concept-type) document method mime-type))
+   true))
