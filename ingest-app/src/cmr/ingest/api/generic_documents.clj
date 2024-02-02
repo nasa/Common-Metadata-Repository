@@ -127,10 +127,16 @@
         raw-document (slurp (:body request))
         content-type (get headers "content-type")
         ;; get the version in content-type and verify it.
-        version-ct (-> content-type
-                       (string/split #";version=")
-                       last
-                       string/trim)
+        version-ct (when (and content-type
+                              (string/includes? content-type ";version="))
+                     (let [ct-split (string/split content-type #";version=")]
+                       (if (= 2 (count ct-split))
+                         (-> ct-split
+                             last
+                             string/trim)
+                         (errors/throw-service-error
+                          :invalid-data
+                          "Missing version value in Content-Type"))))
         {:keys [spec-key spec-version document-name format]}
          (pull-metadata-specific-information request-context concept-type content-type raw-document)]
     ;; Check to see if the passed in record contains the MetadataSpecification/Name field and its
@@ -144,7 +150,8 @@
        (if-not spec-key
          "The MetadataSpecification schema element is missing from the record being ingested."
          (str spec-key " version " spec-version " are not supported")))
-      (if (not= version-ct spec-version)
+      (if (and version-ct
+               (not= version-ct spec-version))
         (errors/throw-service-error
          :invalid-data
          (str "Version in MetadataSpecifcation [" spec-version "] is not the same as the one in Content-Type [" version-ct "]" ))

@@ -524,7 +524,9 @@
 ;; as the one in MetadataSpecification
 (deftest test-generic-doc-ingest-with-conflicting-versions
   (let [;; Ingest order-option concept
-        oo-native-id "OO-NativeId"
-        oo-ingest-response (gen-util/ingest-generic-document-with-mime-type nil "PROV1" "OO-NativeId" :order-option gen-util/order-option :post "application/vnd.nasa.cmr.umm+json;version=abc")]
-    (is (= ["Version in MetadataSpecifcation [1.0.0] is not the same as the one in Content-Type [abc]"] 
-           (:errors oo-ingest-response)))))
+        oo-ingest-response1 (gen-util/ingest-generic-document-with-mime-type nil "PROV1" "OO-NativeId1" :order-option gen-util/order-option :post "application/vnd.nasa.cmr.umm+json;version=abc")
+        oo-ingest-response2 (gen-util/ingest-generic-document-with-mime-type nil "PROV1" "OO-NativeId2" :order-option gen-util/order-option :post "application/vnd.nasa.cmr.umm+json;version=")]
+    (is (= ["Version in MetadataSpecifcation [1.0.0] is not the same as the one in Content-Type [abc]"]
+           (:errors oo-ingest-response1)))
+    (is (= ["Missing version value in Content-Type"]
+           (:errors oo-ingest-response2)))))
