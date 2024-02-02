@@ -142,10 +142,12 @@
    ;;use :collection-concept-id in place of param when validating collection-concept-id
    (concept-id-validation :concept-id concept-id))
   ([param concept-id]
-   (let [valid-prefixes (string/join "|" (keys concept-prefix->concept-type))
-         regex (re-pattern (str "(" valid-prefixes ")\\d+-[A-Za-z0-9_]+"))]
-     (when-not (re-matches regex concept-id)
-       [(format "%s [%s] is not valid." (-> param name string/capitalize) (util/html-escape concept-id))]))))
+   (if (string? concept-id)
+     (let [valid-prefixes (string/join "|" (keys concept-prefix->concept-type))
+           regex (re-pattern (str "(" valid-prefixes ")\\d+-[A-Za-z0-9_]+"))]
+       (when-not (re-matches regex concept-id)
+         [(format "%s [%s] is not valid." (-> param name string/capitalize) (util/html-escape concept-id))]))
+     [(format "%s [%s] is not valid." (-> param name string/capitalize) (util/html-escape concept-id))])))
 
 (def validate-concept-id
   "Validates a concept-id and throws an error if invalid"
