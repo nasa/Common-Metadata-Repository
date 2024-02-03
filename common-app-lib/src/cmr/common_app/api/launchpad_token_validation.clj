@@ -29,6 +29,7 @@
   [request-context]
   (let [token (:token request-context)]
     (when (and (config/launchpad-token-enforced)
+               (= 1 2)
                (not (common-util/is-launchpad-token? token))
                (not= (transmit-config/echo-system-token) token))
       (errors/throw-service-error
