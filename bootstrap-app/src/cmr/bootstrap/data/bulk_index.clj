@@ -137,10 +137,10 @@
 
 (defn- bulk-index-concept-batches
   "Bulk index the given concept batches in both regular index and all revisions index."
-  [system concept-batches]
+  [system concept-batches1 concept-batches2] ;; check if 2 seperate batches will work here first.
   (let [indexer-context {:system (helper/get-indexer system)}]
-    (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
-    (index/bulk-index indexer-context concept-batches {})))
+    (index/bulk-index indexer-context concept-batches1 {:all-revisions-index? true})
+    (index/bulk-index indexer-context concept-batches2 {})))
 
 (defn- index-concepts-by-provider
   "Bulk index concepts for the given provider and concept-type."
@@ -153,11 +153,15 @@
                        :provider-id (:provider-id provider)}
                       (when (cc/generic-concept? concept-type)
                         {:schema (name concept-type)}))
-        concept-batches (db/find-concepts-in-batches
-                         db provider
-                         params
-                         (:db-batch-size system))
-        num-concepts (bulk-index-concept-batches system concept-batches)
+        concept-batches1 (db/find-concepts-in-batches
+                          db provider
+                          params
+                          (:db-batch-size system))
+        concept-batches2 (db/find-concepts-in-batches
+                          db provider
+                          params
+                          (:db-batch-size system))
+        num-concepts (bulk-index-concept-batches system concept-batches1 concept-batches2)
         msg (format "Indexing of %s %s revisions for provider %s completed."
                     num-concepts
                     (name concept-type)
