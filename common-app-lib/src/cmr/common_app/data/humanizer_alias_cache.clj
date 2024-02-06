@@ -94,8 +94,11 @@
 	Returns: { 'TERRA' --> ['AM-1', 'am-1', 'AM 1']
 						 'OTHERPLATFORMS' --> ['otheraliases']}"
   [context humanizer-field-name]
-  (let [humanizer-alias-cache (hash-cache/context->cache context humanizer-alias-cache-key)]
-    (hash-cache/get-value humanizer-alias-cache humanizer-alias-cache-key humanizer-field-name)))
+  (let [humanizer-alias-cache (hash-cache/context->cache context humanizer-alias-cache-key)
+        found-aliases-map (hash-cache/get-value humanizer-alias-cache humanizer-alias-cache-key humanizer-field-name)]
+    (if (or (nil? found-aliases-map) (empty? found-aliases-map))
+      (info "cache-miss: humanizer-alias-cache could not find map with humanizer-field-name = " humanizer-field-name))
+    found-aliases-map))
 
 (defconfig humanizer-alias-cache-job-refresh-rate
   "Number of seconds between refreshes of the humanizer alias cache."
