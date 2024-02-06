@@ -8,16 +8,12 @@ import time
 import json
 import schedule
 import urllib3
+import os
 
-service_port_map = {
-    'metadata-db' : '3001',
-    'ingest' : '3002',
-    'search' : '3003',
-    'indexer' : '3004',
-    'bootstrap' : '3006',
-    'virtual-product' : '3009',
-    'access-control' : '3011'
-}
+service_ports_file_name = os.get_env("SERVICE_PORTS_FILE", "service_ports_file.json")
+
+service_ports_file = open(service_ports_file_name)
+service_port_map = json.load(service_ports_file)
 
 def build_endpoint(job):
     """

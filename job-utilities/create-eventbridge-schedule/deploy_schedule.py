@@ -10,6 +10,7 @@ client = boto3.client('events')
 lambda_client = boto3.client('lambda')
 
 environment = os.getenv('CMR_ENVIRONMENT', 'local').lower()
+jobs_file = os.getenv('JOBS_FILE', '../job-details.json')
 
 lambda_details = lambda_client.get_function(
     FunctionName="job-router-"+environment
@@ -61,7 +62,7 @@ def make_input_json(job):
     """
     return json.dumps(job["target"])
 
-with open('../job-details.json', encoding="UTF-8") as json_file:
+with open(jobs_file, encoding="UTF-8") as json_file:
     jobs_map = json.load(json_file)
     for job_name, job_details in jobs_map.items():
         response = client.put_rule(
