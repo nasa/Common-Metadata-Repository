@@ -5,16 +5,21 @@ rules in AWS EventBridge with the job-router Lambda as a target for invocation
 import json
 import os
 import boto3
+import sys
 
 client = boto3.client('events')
 lambda_client = boto3.client('lambda')
 
-environment = os.getenv('CMR_ENVIRONMENT', 'local').lower()
+environment = os.getenv('CMR_ENVIRONMENT').lower()
 jobs_file = os.getenv('JOBS_FILE', '../job-details.json')
 
-lambda_details = lambda_client.get_function(
-    FunctionName="job-router-"+environment
-)
+if len(sys.argv) < 2:
+    print("Usage is 'python deploy_schedule.py job_name'")
+    exit()
+
+if environment==None:
+    print("CMR_ENVIRONMENT variable needs to be set")
+    exit()
 
 def make_cron_expression(job):
     """
@@ -64,20 +69,31 @@ def make_input_json(job):
 
 with open(jobs_file, encoding="UTF-8") as json_file:
     jobs_map = json.load(json_file)
-    for job_name, job_details in jobs_map.items():
-        response = client.put_rule(
-            Name=job_name,
-            ScheduleExpression=make_schedule_expression(job_details),
-            State='ENABLED'
-        )
 
-        response = client.put_targets(
-            Rule=job_name,
-            Targets=[
-                {
-                    "Id" : "job-router-" + environment,
-                    "Arn" : lambda_details["Configuration"]["FunctionArn"],
-                    "Input" : make_input_json(job_details)
-                }
-            ]
-        )
+    job_name = sys.argv[1]
+    if not job_name in jobs_map:
+        print("Job details for " + job_name + " do not exist in " + jobs_file + " file")
+        exit()
+
+    lambda_details = lambda_client.get_function(
+        FunctionName="job-router-"+environment
+    )
+    
+    job_details = jobs_map[job_name]
+    response = client.put_rule(
+        Name=job_name,
+        ScheduleExpression=make_schedule_expression(job_details),
+        State='ENABLED'
+    )
+
+    response = client.put_targets(
+        Rule=job_name,
+        Targets=[
+            {
+                "Id" : "job-router-" + environment,
+                "Arn" : lambda_details["Configuration"]["FunctionArn"],
+                "Input" : make_input_json(job_details)
+            }
+        ]
+    )
+    print(job_name + " job event deployed")

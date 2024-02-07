@@ -46,3 +46,15 @@ what schedule the job should be run on, etc. The structure of this file is descr
         }
     }
 }
+
+## Adding a rule
+
+Fill in the details for a job following one of the above examples and use the create-eventbridge-schedule/deploy_schedule.py program to deploy
+
+## Updating a rule
+
+Update the details for a job following one of the above examples and use the create-eventbridge-schedule/deploy_schedule.py program to deploy
+
+## Deleting a rule
+
+Remove the job details from the details file, and manually remove the EventBridge rule in the environment
