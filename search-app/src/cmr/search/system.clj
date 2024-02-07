@@ -136,7 +136,7 @@
                       coll-gran-acls-caches/coll-by-concept-id-cache-key     (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
                       common-health/health-cache-key                         (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key                 (common-enabled/create-write-enabled-cache)
-                      hrs/humanizer-report-cache-key                         (hrs/create-report-cache)
+                      hrs/humanizer-report-cache-key                         (hrs/create-humanizer-report-cache-client)
                       hrfs/range-facet-cache-key                             (hrfs/create-range-facet-cache)}
              :public-conf (public-conf)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)

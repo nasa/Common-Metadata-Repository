@@ -52,6 +52,11 @@
   from collection cache."
   {:default 20 :type Long})
 
+(defn create-humanizer-report-cache-client
+  "Create instance of humanizer-report-cache client that connects to the redis cache"
+  []
+  (redis-cache/create-redis-cache {:keys-to-track [humanizer-report-cache-key]}))
+
 (defn- rfm->umm-collection
   "Takes a revision format map and parses it into a UMM-spec record."
   [context revision-format-map]
@@ -116,7 +121,7 @@
   "Returns a report on humanizers in use in collections as a CSV."
   [context]
   (let [[t1 collection-batches] (util/time-execution
-                                  (get-all-collections context))
+                                  (get-all-collections context)) ;; all collections from meetadata-collection-cache
          string-writer (StringWriter.)
          idx-atom (atom 0)]
     (info (format "get-all-collections: %d ms. Processing %d batches of size %d"
@@ -156,20 +161,6 @@
       (if (= (ex-data e) humanizer-not-found-error)
         (warn (.getMessage e) msg/returning-empty-report)
         (throw e)))))
-
-(defn create-report-cache
-  "This function creates the composite cache that is used for caching the
-  humanizer report. With the given composition we get the following features:
-  * A Redis cache that holds the generated report;
-  * A fast access in-memory cache that sits on top of Redis, providing
-    quick local results after the first call to Redis; this cache is kept
-    consistent across all instances of CMR, so no matter which host the LB
-    serves, all the content is the same;
-  * A single-threaded cache that circumvents potential race conditions
-    between HTTP requests for a report and Quartz cluster jobs that save
-    report data."
-  []
-  (redis-cache/create-redis-cache))
 
 (defn- create-and-save-humanizer-report
   "Helper function to create the humanizer report, save it to the cache, and return the content."
