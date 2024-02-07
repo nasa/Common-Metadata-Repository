@@ -5,7 +5,7 @@
                [potemkin]]
   :dependencies [[commons-io "2.6"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/clojure "1.10.0"]
+                 [org.clojure/clojure "1.10.3"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"

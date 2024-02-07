@@ -1,13 +1,14 @@
 (defproject nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"
   :description "Ingest is an external facing CMR service facilitating providers to create and  update their concepts in CMR. Internally it delegates concept persistence operations to metadata db and indexer micro services."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/ingest-app"
-  :exclusions [[commons-codec/commons-codec]
-               [commons-io]
-               [instaparse]
-               [org.apache.httpcomponents/httpclient]
-               [org.apache.httpcomponents/httpcore]
-               [org.slf4j/slf4j-api]
-               [ring/ring-codec]]
+  :exclusions [;[commons-codec/commons-codec]
+               ;[commons-io]
+               ;[instaparse]
+               ;[org.apache.httpcomponents/httpclient]
+               ;[org.apache.httpcomponents/httpcore]
+               ;[org.slf4j/slf4j-api]
+               ;[ring/ring-codec]
+               ]
   :dependencies [[camel-snake-kebab "0.4.2"]
                  [clj-http "2.3.0"]
                  [com.draines/postal "2.0.3"]
@@ -32,7 +33,7 @@
                  [net.sf.saxon/Saxon-HE "9.9.0-2"]
                  [org.apache.httpcomponents/httpclient "4.5.13"]
                  [org.apache.httpcomponents/httpcore "4.4.10"]
-                 [org.clojure/clojure "1.10.0"]
+                 [org.clojure/clojure "1.10.3"]
                  [org.clojure/data.xml "0.0.8"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [org.quartz-scheduler/quartz "2.3.2"]
@@ -50,8 +51,11 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
+             :dev {:dependencies [[clj-time "0.15.1"]
+                                  [org.clojars.gjahad/debug-repl "0.3.3"]
+                                  [org.clojure/core.async "0.4.500"] ;"0.4.490"] ;"1.6.681"]
                                   [org.clojure/tools.namespace "0.2.11"]
+                                  [ring/ring-jetty-adapter "1.10.0"]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
@@ -59,7 +63,9 @@
              ;; profile. An agent pool is being started when using the default profile which causes the wait of
              ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
              ;; Generate docs with: lein generate-static
-             :static {}
+             :static {:dependencies [[clj-time "0.15.1"]
+                                     [org.clojure/core.async "0.4.490"]
+                                     [ring/ring-jetty-adapter "1.10.0"]]}
              :uberjar {:main cmr.ingest.runner
                        :aot :all}
              ;; This profile is used for linting and static analysis. To run for this

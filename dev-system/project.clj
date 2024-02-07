@@ -48,11 +48,12 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/dev-system"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :exclusions [[commons-codec/commons-codec]
-               [org.clojure/clojure]
-               [ring/ring-codec]]
+  :exclusions [;[commons-codec/commons-codec]
+               ;[org.clojure/clojure]
+               ;[ring/ring-codec]
+               ]
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
-                           [org.clojure/clojure "1.10.0"]
+                           [org.clojure/clojure "1.10.3"]
                            [ring/ring-codec "1.1.1"]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
@@ -74,17 +75,20 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
-             :dev-dependencies {:exclusions [[org.clojure/tools.nrepl]]
+             :dev-dependencies {:exclusions [];[org.clojure/tools.nrepl]]
                                 :dependencies [[criterium "0.4.4"]
                                                [debugger "0.2.0"]
                                                [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
                                                [org.clojars.gjahad/debug-repl "0.3.3"]
+                                               [org.clojure/core.async "0.4.490"]
                                                [org.clojure/tools.namespace "0.2.11"]
                                                [org.clojure/tools.nrepl "0.2.13"]
                                                [pjstadig/humane-test-output "0.9.0"]
                                                [proto-repl "0.3.1"]
                                                [proto-repl-charts "0.3.2"]
                                                [proto-repl-sayid "0.1.3"]
+                                               [ring/ring-core "1.10.0"]
+                                               [ring/ring-jetty-adapter "1.10.0"]
                                                [ring-mock "0.1.5"]]
                                 ;; XXX Note that profiling can be kept in a profile,
                                 ;;     with no need to comment/uncomment.
@@ -144,7 +148,9 @@
 
             ;; Install spatial plugin locally
             "install-spatial-plugin"
-            ["shell" "cmr" "install" "local" "spatial_plugin"]
+            ["do"
+             ["shell" "printf" "\ninstall-spatial-plugin\n"]
+             ["shell" "cmr" "install" "local" "spatial_plugin"]]
             ;; Install with local elasticsearch
             "install"
             ["do"

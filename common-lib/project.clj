@@ -2,7 +2,7 @@
   :description "Provides common utility code for CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
   :exclusions [[cheshire]
-               [clj-time]
+               ;[clj-time]
                [commons-codec/commons-codec]
                [instaparse]
                [org.clojure/core.async]
@@ -32,7 +32,7 @@
                  [nasa-cmr/cmr-schemas "0.0.1-SNAPSHOT"]
                  [nasa-cmr/cmr-schema-validation-lib "0.1.0-SNAPSHOT"]
                  [net.jpountz.lz4/lz4 "1.3.0"]
-                 [org.clojure/clojure "1.10.0"]
+                 [org.clojure/clojure "1.10.3"]
                  [org.clojure/core.async "0.4.490"]
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.codec "0.1.1"]

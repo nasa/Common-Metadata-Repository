@@ -34,8 +34,13 @@
              :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                        [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                                        [org.elasticsearch/elasticsearch "7.17.14"]
+
+                                       [org.clojure/tools.reader "1.3.2"]
+
                                        [org.yaml/snakeyaml "1.31"]]}
-             :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
+             :es-deps {:exclusions [[cheshire]
+                                    [org.clojure/tools.reader]]
+                       :dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
                                        :exclusions [[com.dadrox/quiet-slf4j]
                                                     [com.fasterxml.jackson.core/jackson-core]
@@ -51,18 +56,27 @@
                                                     [org.locationtech.jts/jts-core]
                                                     [org.locationtech.jts.JTSVersion]
                                                     [org.slf4j/slf4j-api]]]
+
+                                      [cheshire "5.10.0"]
+                                      [org.clojure/tools.reader "1.3.2"]
+
                                       [org.clojure/clojure "1.10.0"]]
                        :target-path ~es-deps-target-path
                        :uberjar-name ~es-deps-uberjar-name
                        :jar-name ~es-deps-jar-name
                        :aot []}
-             :es-plugin {:aot [cmr.elasticsearch.plugins.spatial.script.core
+             :es-plugin {:dependencies [[cheshire "5.10.0"]]
+                         :aot [cmr.elasticsearch.plugins.spatial.script.core
                                cmr.elasticsearch.plugins.spatial.factory.lfactory
                                cmr.elasticsearch.plugins.spatial.factory.core
                                cmr.elasticsearch.plugins.spatial.engine.core
                                cmr.elasticsearch.plugins.spatial.plugin]}
-             :dev {:exclusions [[org.clojure/tools.nrepl]]
+             :dev {:exclusions [[org.clojure/tools.nrepl] [cheshire] [org.clojure/tools.reader]]
                    :dependencies [[criterium "0.4.4"]
+
+                                  [cheshire "5.10.0"]
+                                  [org.clojure/tools.reader "1.3.2"]
+
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                                   [org.elasticsearch/elasticsearch "7.17.14"]
@@ -75,7 +89,7 @@
                          cmr.elasticsearch.plugins.spatial.factory.core
                          cmr.elasticsearch.plugins.spatial.engine.core
                          cmr.elasticsearch.plugins.spatial.plugin]
-                   :global-vars {*warn-on-reflection* true
+                   :global-vars {*warn-on-reflection* false
                                  *assert* false}}
              :static {}
              :lint {:source-paths ^:replace ["src"]
@@ -94,12 +108,15 @@
                                "with-profile" "es-deps,provided" "clean,"
                                "with-profile" "es-deps,provided" "uberjar,"
                                ;; target-path is being ignored for uberjar. move uberjar to es-deps-target-path.
+                               ["shell" "echo" "inst-es-deps"]
                                "shell" "mv" ~(str "target/" es-deps-uberjar-name) ~es-deps-target-path]
             "install-es-plugin" ["do"
+                                 ["shell" "echo" "inst-es-plugin"]
                                  "with-profile" "es-plugin,provided" "clean,"
                                  "with-profile" "es-plugin,provided" "uberjar,"]
             "package-es-plugin" ["do"
                                  "install-es-plugin"
+                                 ["shell" "echo" "pack-es-deps"]
                                  "shell"
                                  "zip"
                                  "-j"
@@ -107,6 +124,7 @@
                                  ~uberjar-name
                                  "resources/plugin/plugin-descriptor.properties"]
             "build-all" ["do"
+                         ["shell" "echo" "build-all"]
                          "install-es-deps,"
                          "install-es-plugin,"]
 
@@ -120,6 +138,7 @@
             "ci-utest" ["utest" "--profile" ":ci"]
 
             "package-all" ["do"
+                           ["shell" "echo" "package-all"]
                            "install-es-deps,"
                            "package-es-plugin,"
                            "shell"
@@ -130,4 +149,4 @@
                            ~(str es-deps-target-path "/" es-deps-uberjar-name)]
             "check-sec" ["with-profile" "security" "dependency-check"]
             ;; Placeholder for future docs and enabler of top-level alias
-            "generate-static" ["with-profile" "static" "shell" "echo"]})
+            "generate-static" ["with-profile" "static" "shell" "echo" "no generate-static action needed"]})

@@ -28,13 +28,13 @@
 (defproject nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"
   :description "Implements the CMR access control application."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/access-control-app"
-  :exclusions [[cheshire]
-               [clj-time]
-               [com.fasterxml.jackson.core/jackson-core]
-               [commons-codec/commons-codec]
-               [commons-io]
-               [org.clojure/tools.reader]
-               [ring/ring-codec]]
+  :exclusions [];[cheshire]
+               ;[clj-time]
+               ;[com.fasterxml.jackson.core/jackson-core]
+               ;[commons-codec/commons-codec]
+               ;[commons-io]
+               ;[org.clojure/tools.reader]
+               ;[ring/ring-codec]]
   :dependencies ~(concat '[[cheshire "5.10.0"]
                            [clj-time "0.15.1"]
                            [com.fasterxml.jackson.core/jackson-core "2.13.2"]
@@ -44,7 +44,7 @@
                            [commons-io "2.6"]
                            [compojure "1.6.1"]
                            [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
-                           [org.clojure/clojure "1.10.0"]
+                           [org.clojure/clojure "1.10.3"]
                            [org.clojure/tools.reader "1.3.2"]
                            [ring/ring-codec "1.1.3"]
                            [ring/ring-core "1.10.0"]
@@ -60,11 +60,15 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions [[org.clojure/tools.nrepl]]
-                   :dependencies [[org.clojure/tools.namespace "0.2.11"]
+             :dev {:exclusions [];[org.clojure/tools.nrepl]]
+                   :dependencies [[org.apache.httpcomponents/httpclient "4.5.13"]
+                                  [org.clojure/core.async "0.4.500"]
+                                  [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
                                   [proto-repl "0.3.1"]
+                                  [ring/ring-codec "1.1.3"]
+                                  [ring/ring-jetty-adapter "1.10.0"]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test" "int-test"]
@@ -77,7 +81,15 @@
              ;; allowing the JVM to shutdown since no call to shutdown-agents is made.
              ;; Generate docs with: lein generate-static (the alias makes use of the
              ;; static profile).
-             :static {}
+             :static {:dependencies [[org.apache.httpcomponents/httpclient "4.5.13"]
+                                     [org.clojure/core.async "0.4.500"]
+                                     [org.clojure/tools.namespace "0.2.11"]
+                                     [org.clojure/tools.nrepl "0.2.13"]
+                                     [pjstadig/humane-test-output "0.9.0"]
+                                     [proto-repl "0.3.1"]
+                                     [ring/ring-codec "1.1.3"]
+                                     [ring/ring-jetty-adapter "1.10.0"]
+                                     [ring-mock "0.1.5"]]}
              :uberjar {:main cmr.access-control.runner
                        :aot :all}
              ;; This profile is used for linting and static analysis. To run for this

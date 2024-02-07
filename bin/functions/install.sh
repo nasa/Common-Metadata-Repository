@@ -66,6 +66,7 @@ function install_local_spatial_plugin () {
   # Install deps
   mkdir -p $CMR_DIR/dev-system/resources/elasticsearch/es_libs/
 
+  printf "\naction install-es-deps\n"
   (cd $CMR_DIR/es-spatial-plugin && \
   lein install-es-deps && \
   cp es-deps/cmr-es-spatial-plugin-deps-0.1.0-SNAPSHOT-standalone.jar $CMR_DIR/dev-system/resources/elasticsearch/es_libs/)
@@ -74,6 +75,7 @@ function install_local_spatial_plugin () {
   rm -rf $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial
   mkdir -p $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial
 
+  printf "\naction package-es-plugin\n"
   (cd $CMR_DIR/es-spatial-plugin && \
   lein package-es-plugin && \
   cp target/cmr-es-spatial-plugin-0.1.0-SNAPSHOT.zip $CMR_DIR/dev-system/resources/elasticsearch/plugins/cmr_spatial/ && \
