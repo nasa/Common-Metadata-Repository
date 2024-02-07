@@ -32,14 +32,15 @@
 ;;3. Retrieve the reporting
 ;;  curl http://localhost:3003/humanizers/report
 
+;; TODO Jyna fix this test
 (defn- get-cached-report
   "Pull the report data from its cache."
   []
   (let [full-url (str (url/search-read-caches-url)
                       "/"
-                      (name hrs/report-cache-key)
+                      (name hrs/humanizer-report-cache-key)
                       "/"
-                      (name hrs/csv-report-cache-key))
+                      (name hrs/humanizer-report-cache-key))
         admin-read-group-concept-id (e/get-or-create-group (s/context)
                                                            "admin-read-group")
         admin-read-token (e/login (s/context)

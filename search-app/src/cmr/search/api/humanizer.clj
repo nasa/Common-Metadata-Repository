@@ -5,14 +5,12 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.routes :as cr]
    [cmr.common.mime-types :as mt]
-   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.services.humanizers.humanizer-json-schema-validation :as hv]
    [cmr.search.services.humanizers.humanizer-range-facet-service :as range-facet]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.search.services.humanizers.humanizer-service :as humanizer-service]
-   [compojure.core :refer :all]
-   [compojure.route :as route]))
+   [compojure.core :refer :all]))
 
 (defn- validate-humanizer-content-type
   "Validates that content type sent with humanizer is JSON"

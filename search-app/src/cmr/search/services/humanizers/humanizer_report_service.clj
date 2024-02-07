@@ -4,10 +4,7 @@
    [clojure.data.csv :as csv]
    [cmr.common-app.humanizer :as h]
    [cmr.common-app.data.metadata-retrieval.revision-format-map :as crfm]
-   [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.common.cache :as cache]
-   [cmr.common.cache.fallback-cache :as fallback-cache]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob default-job-start-delay]]
@@ -21,12 +18,8 @@
   (:import
    (java.io StringWriter)))
 
-(def report-cache-key
+(def humanizer-report-cache-key
   "The key used to store the humanizer report cache in the system cache map."
-  :humanizer-report-cache)
-
-(def csv-report-cache-key
-  "The key used when setting the cache value of the report data."
   :humanizer-report)
 
 (def humanizer-not-found-error
@@ -185,8 +178,8 @@
   (let [[report-generation-time humanizers-report] (util/time-execution
                                                     (safe-generate-humanizers-report-csv context))]
     (info (format "Humanizer report generated in %d ms." report-generation-time))
-    (cache/set-value (cache/context->cache context report-cache-key)
-                     csv-report-cache-key
+    (cache/set-value (cache/context->cache context humanizer-report-cache-key)
+                     humanizer-report-cache-key
                      humanizers-report)
     humanizers-report))
 
@@ -200,8 +193,8 @@
   [context regenerate?]
   (if regenerate?
     (create-and-save-humanizer-report context)
-    (cache/get-value (cache/context->cache context report-cache-key)
-                     csv-report-cache-key
+    (cache/get-value (cache/context->cache context humanizer-report-cache-key)
+                     humanizer-report-cache-key
                      ;; If there is a cache miss, generate the report and then
                      ;; return its value
                      #(safe-generate-humanizers-report-csv context))))
@@ -211,8 +204,10 @@
   [_ctx system]
   (create-and-save-humanizer-report {:system system}))
 
-(def humanizer-report-generator-job
+(defn refresh-humanizer-report-cache-job
+  [job-key]
   "The job definition used by the system job scheduler."
   {:job-type HumanizerReportGeneratorJob
+   :job-key job-key
    :interval (* 60 60 24) ; every 24 hours
    :start-delay (+ (default-job-start-delay) (humanizer-report-generator-job-delay))})

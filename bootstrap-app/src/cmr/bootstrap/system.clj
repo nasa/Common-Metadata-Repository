@@ -34,6 +34,7 @@
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.metadata-db.services.util :as mdb-util]
+   [cmr.search.services.humanizers.humanizer-report-service :as humanizer-report-service]
    [cmr.transmit.config :as transmit-config]))
 
 (defconfig db-batch-size
@@ -100,7 +101,8 @@
                                                                (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")
                                                                (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job "bootstrap-collections-for-gran-acls-cache-refresh")
                                                                (elastic-search-index-names-cache/refresh-index-names-cache-job "bootstrap-elastic-search-index-names-cache")
-                                                               (humanizer-alias-cache/refresh-humanizer-alias-cache-job "boostrap-humanizer-alias-cache-refresh")])
+                                                               (humanizer-alias-cache/refresh-humanizer-alias-cache-job "bootstrap-humanizer-alias-cache-refresh")
+                                                               (humanizer-report-service/refresh-humanizer-report-cache-job "bootstrap-humanizer-report-cache-refresh")])
              :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :indexer :access-control :search])))
 
