@@ -2,16 +2,15 @@
   "Provides functions to validate the platforms during collection update"
   (:require
    [clojure.set :as s]
-   [clojure.string :as str]
    [cmr.common.util :as util]
-   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]))
+   [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]))
 
 (defn deleted-platform-searches
   "Returns granule searches for deleted platforms. We should not delete platforms in a collection
   that are still referenced by existing granules. This function builds the search parameters
   for identifying such invalid deletions."
   [context concept-id concept prev-concept]
-  (let [platform-alias-map (get (humanizer-alias-cache/get-humanizer-alias-map context) "platform")
+  (let [platform-alias-map (humanizer-alias-cache/get-non-humanized-source-to-aliases-map context "platform")
         current-platforms (map :ShortName (:Platforms concept))
         previous-platforms (map :ShortName (:Platforms prev-concept))
         platform-aliases (mapcat #(get platform-alias-map %) (map util/safe-uppercase current-platforms))

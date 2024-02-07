@@ -12,6 +12,7 @@
    [cmr.bootstrap.data.virtual-products :as vp]
    [cmr.bootstrap.services.dispatch.core :as dispatch]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-gran-acls-caches]
    [cmr.common-app.services.jvm-info :as jvm-info]
@@ -90,17 +91,18 @@
                       common-health/health-cache-key (common-health/create-health-cache)
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
                       coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
-                      elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)}
+                      elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)
+                      humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
                                                                (kf/refresh-kms-cache-job "bootstrap-kms-cache-refresh")
                                                                (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
                                                                (b-coll-metadata-cache/refresh-collections-metadata-cache-job "bootstrap-collections-metadata-cache-refresh")
                                                                (b-coll-metadata-cache/update-collections-metadata-cache-job "bootstrap-collections-metadata-cache-update")
                                                                (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job "bootstrap-collections-for-gran-acls-cache-refresh")
-                                                               (elastic-search-index-names-cache/refresh-index-names-cache-job "bootstrap-elastic-search-index-names-cache")])
+                                                               (elastic-search-index-names-cache/refresh-index-names-cache-job "bootstrap-elastic-search-index-names-cache")
+                                                               (humanizer-alias-cache/refresh-humanizer-alias-cache-job "boostrap-humanizer-alias-cache-refresh")])
              :queue-broker queue-broker}]
-    (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms
-                                                  :indexer :access-control])))
+    (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :indexer :access-control :search])))
 
 (defn start
   "Performs side effects to initialize the system, acquire resources,

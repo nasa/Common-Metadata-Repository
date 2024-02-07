@@ -4,7 +4,7 @@
    [clojure.set :as s]
    [clojure.string :as str]
    [cmr.common.util :as util]
-   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]))
+   [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]))
 
 (defn- get-parent-instruments-from-concept
   "Returns all the parent instrument shortnames from a collection concept.
@@ -34,7 +34,7 @@
    collection that are still referenced by existing granules. This function builds the search
    parameters to identify such invalid deletions."
   [context concept-id concept prev-concept]
-  (let [ins-alias-map (get (humanizer-alias-cache/get-humanizer-alias-map context) "instrument")
+  (let [ins-alias-map (humanizer-alias-cache/get-non-humanized-source-to-aliases-map context "instrument")
         current-parent-ins (get-parent-instruments-from-concept concept)
         previous-parent-ins (get-parent-instruments-from-concept prev-concept)
         ins-aliases (mapcat #(get ins-alias-map %) (map str/upper-case current-parent-ins))
@@ -54,7 +54,7 @@
    collection that are still referenced by existing granules. This function builds the search
    parameters to identify such invalid deletions."
   [context concept-id concept prev-concept]
-  (let [ins-alias-map (get (humanizer-alias-cache/get-humanizer-alias-map context) "instrument")
+  (let [ins-alias-map (humanizer-alias-cache/get-non-humanized-source-to-aliases-map context "instrument")
         current-child-ins (get-child-instruments-from-concept concept)
         previous-child-ins (get-child-instruments-from-concept prev-concept)
         ins-aliases (mapcat #(get ins-alias-map %) (map str/upper-case current-child-ins))

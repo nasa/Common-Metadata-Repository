@@ -60,7 +60,7 @@
                                       "kms"
                                       "write-enabled"
                                       "token-imp"
-                                      "humanizer-alias-cache"
+                                      "humanizer-alias-cache-by-field"
                                       "token-smp"
                                       "kms-location-index"
                                       "xsl-transformer-templates"
