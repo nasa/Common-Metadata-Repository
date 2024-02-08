@@ -20,7 +20,7 @@
 
 (def humanizer-report-cache-key
   "The key used to store the humanizer report cache in the system cache map."
-  :humanizer-report)
+  :humanizer-report-cache)
 
 (def humanizer-not-found-error
   {:type :not-found :errors ["Humanizer does not exist."]})
