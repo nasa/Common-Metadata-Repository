@@ -4,7 +4,7 @@ Python utilities to help with local development. Currently there is just a progr
 
 ## local_scheduler
 
-This program takes the job details from the job-details.json file and maps them to a schedule using the schedule Python library.
+This program takes the job details from the `job-details.json` file and maps them to a schedule using the schedule Python library.
 Cron jobs are assumed to be run once every day at a given time. Most jobs are likely to be interval based, which run every given period of time.
 
 ### Running

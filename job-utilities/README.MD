@@ -6,7 +6,7 @@ These utilites are used for assisting in job operations in a deployed environmen
 
 A core piece for these utilities to work is the job-details.json. This file contains details on a jobs endpoint, what service the job is for, 
 what schedule the job should be run on, etc. The structure of this file is described below.
-
+```
 {
     "JobName" :
     {
@@ -46,14 +46,14 @@ what schedule the job should be run on, etc. The structure of this file is descr
         }
     }
 }
-
+```
 ## Adding a rule
 
-Fill in the details for a job following one of the above examples and use the create-eventbridge-schedule/deploy_schedule.py program to deploy
+Fill in the details for a job following one of the above examples and use the `create-eventbridge-schedule/deploy_schedule.py` program to deploy
 
 ## Updating a rule
 
-Update the details for a job following one of the above examples and use the create-eventbridge-schedule/deploy_schedule.py program to deploy
+Update the details for a job following one of the above examples and use the `create-eventbridge-schedule/deploy_schedule.py` program to deploy
 
 ## Deleting a rule
 

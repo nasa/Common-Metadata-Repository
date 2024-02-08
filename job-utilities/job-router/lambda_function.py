@@ -26,8 +26,6 @@ def handler(event, _):
     endpoint = event.get('endpoint')
     single_target = event.get('single-target', True)
 
-    print(event)
-
     error_state = False
 
     if environment == None:
@@ -50,6 +48,10 @@ def handler(event, _):
                                     headers={"Authorization": token},
                                     timeout=urllib3.Timeout(15))
     else:
+        """
+        Multi-target functionality is not fully implemented.
+        CMR-9688 has been made to finish this part out
+        """
         response = client.list_tasks(
             cluster='cmr-service-'+environment,
             serviceName=service+'-'+environment

@@ -14,7 +14,7 @@ environment = os.getenv('CMR_ENVIRONMENT').lower()
 jobs_file = os.getenv('JOBS_FILE', '../job-details.json')
 
 if len(sys.argv) < 2:
-    print("Usage is 'python deploy_schedule.py job_name'")
+    print("Usage is 'python deploy_schedule.py job_name [jobs_file]'")
     exit()
 
 if environment==None:
@@ -35,7 +35,8 @@ def make_cron_expression(job):
     day_of_week = str(job["scheduling"]["timing"]["day-of-week"])
     year = str(job["scheduling"]["timing"]["year"])
 
-    cron_expression = cron_expression.format(minutes, hours, day_of_month, month, day_of_week, year)
+    cron_expression = cron_expression.format(minutes, hours, day_of_month,
+                                             month, day_of_week, year)
     return cron_expression
 
 def make_interval_expression(job):
@@ -67,33 +68,37 @@ def make_input_json(job):
     """
     return json.dumps(job["target"])
 
-with open(jobs_file, encoding="UTF-8") as json_file:
-    jobs_map = json.load(json_file)
+def deploy_schedule(job_name, jobs_file):
+    with open(jobs_file, encoding="UTF-8") as json_file:
+        jobs_map = json.load(json_file)
 
-    job_name = sys.argv[1]
-    if not job_name in jobs_map:
-        print("Job details for " + job_name + " do not exist in " + jobs_file + " file")
-        exit()
+        if not job_name in jobs_map:
+            print("Job details for " + job_name + " do not exist in " 
+                  + jobs_file + " file")
+            exit()
 
-    lambda_details = lambda_client.get_function(
-        FunctionName="job-router-"+environment
-    )
-    
-    job_details = jobs_map[job_name]
-    response = client.put_rule(
-        Name=job_name,
-        ScheduleExpression=make_schedule_expression(job_details),
-        State='ENABLED'
-    )
+        lambda_details = lambda_client.get_function(
+            FunctionName="job-router-"+environment
+        )
+        
+        job_details = jobs_map[job_name]
+        response = client.put_rule(
+            Name=job_name,
+            ScheduleExpression=make_schedule_expression(job_details),
+            State='ENABLED'
+        )
 
-    response = client.put_targets(
-        Rule=job_name,
-        Targets=[
-            {
-                "Id" : "job-router-" + environment,
-                "Arn" : lambda_details["Configuration"]["FunctionArn"],
-                "Input" : make_input_json(job_details)
-            }
-        ]
-    )
-    print(job_name + " job event deployed")
+        response = client.put_targets(
+            Rule=job_name,
+            Targets=[
+                {
+                    "Id" : "job-router-" + environment,
+                    "Arn" : lambda_details["Configuration"]["FunctionArn"],
+                    "Input" : make_input_json(job_details)
+                }
+            ]
+        )
+        print(job_name + " job event deployed")
+
+jobs_file = "../job-details.json" if len(sys.argv) < 3 else sys.argv[2]
+deploy_schedule(sys.argv[1], jobs_file)
