@@ -32,7 +32,6 @@
 ;;3. Retrieve the reporting
 ;;  curl http://localhost:3003/humanizers/report
 
-;; TODO Jyna fix this test
 (defn- get-cached-report
   "Pull the report data from its cache."
   []

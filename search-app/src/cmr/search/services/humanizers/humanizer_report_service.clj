@@ -121,7 +121,7 @@
   "Returns a report on humanizers in use in collections as a CSV."
   [context]
   (let [[t1 collection-batches] (util/time-execution
-                                  (get-all-collections context)) ;; all collections from meetadata-collection-cache
+                                  (get-all-collections context))
          string-writer (StringWriter.)
          idx-atom (atom 0)]
     (info (format "get-all-collections: %d ms. Processing %d batches of size %d"
