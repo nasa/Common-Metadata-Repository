@@ -8,6 +8,7 @@
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.system :as system]
+   [cmr.system-int-test.utils.cache-util :as cache-util]
    [cmr.system-int-test.utils.humanizer-util :as humanizer-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -209,7 +210,7 @@
 
           _ (index/wait-until-indexed)
           ;; Humanizers use the cached collection metadata - clear to make sure we have the latest
-          _ (search/refresh-collection-metadata-cache)
+          _ (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
           expected-report1 (str "provider,concept_id,short_name,version,original_value,"
                                 "humanized_value\n"
                                 "PROV1,C1-PROV1,Short,V5,Bioosphere,Biosphere\n")
@@ -244,7 +245,7 @@
                        :accept-format :json})
 
               _ (index/wait-until-indexed)
-              _ (search/refresh-collection-metadata-cache)
+              _ (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
               expected-report2 (str "provider,concept_id,short_name,version,original_value,"
                                     "humanized_value\n"
                                     "PROV1,C1-PROV1,Short,V5,Bioosphere,Biosphere\n"
@@ -273,7 +274,7 @@
         {:format :umm-json
          :accept-format :json})
     (index/wait-until-indexed)
-    (search/refresh-collection-metadata-cache)
+    (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
     (is (= 200 (:status (search/get-humanizers-report-raw)))))
   (testing "Guests cannot force the humanizer report to be regenerated"
     (is (= 401 (:status (search/get-humanizers-report-raw {:regenerate true})))))
@@ -294,7 +295,7 @@
         {:format :umm-json
          :accept-format :json})
     (index/wait-until-indexed)
-    (search/refresh-collection-metadata-cache)
+      (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
       (is (= 200 (:status (search/get-humanizers-report-raw {:regenerate true
                                                              :token admin-user-token}))))))
   (side/eval-form `(common-config/set-collection-umm-version! ~accepted-version))))

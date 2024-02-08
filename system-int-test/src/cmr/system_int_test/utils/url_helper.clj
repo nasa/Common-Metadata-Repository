@@ -399,8 +399,9 @@
 
 (defn refresh-collection-metadata-cache-url
   []
-  (format "http://localhost:%s/jobs/refresh-collection-metadata-cache"
-          (transmit-config/search-port)))
+  (format "http://localhost:%s/caches/refresh/collection-metadata-cache" (transmit-config/bootstrap-port)))
+
+;;collection-metadata-cache
 
 (defn refresh-humanizer-alias-cache-url
   []

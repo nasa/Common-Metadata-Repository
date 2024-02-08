@@ -12,11 +12,13 @@
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.cache-util :as cache-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.url-helper :as url]))
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
@@ -87,7 +89,8 @@
 
     (index/wait-until-indexed)
     ;; Refresh the metadata cache
-    (search/refresh-collection-metadata-cache)
+    (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
+
     (testing "Humanizer report csv"
       (let [report (search/get-humanizers-report)]
         (is (= ["provider,concept_id,short_name,version,original_value,humanized_value"
