@@ -5,6 +5,7 @@ for running scheduled jobs. These endpoints could be through
 a load balancer or directly to an ECS service
 """
 import os
+import sys
 import boto3
 import urllib3
 import jmespath
@@ -28,14 +29,14 @@ def handler(event, _):
 
     error_state = False
 
-    if environment == None:
+    if environment is None:
         print("ERROR: Environment variable not set!")
         error_state = True
-    if cmr_url == None:
+    if cmr_url is None:
         print("ERROR: CMR_URL variable not set!")
         error_state = True
     if error_state:
-        exit()
+        sys.exit()
 
     token_param_name = '/'+environment+'/'+service+'/CMR_ECHO_SYSTEM_TOKEN'
     token = ssm_client.get_parameter(Name=token_param_name,
@@ -48,10 +49,8 @@ def handler(event, _):
                                     headers={"Authorization": token},
                                     timeout=urllib3.Timeout(15))
     else:
-        """
-        Multi-target functionality is not fully implemented.
-        CMR-9688 has been made to finish this part out
-        """
+        #Multi-target functionality is not fully implemented.
+        #CMR-9688 has been made to finish this part out
         response = client.list_tasks(
             cluster='cmr-service-'+environment,
             serviceName=service+'-'+environment
