@@ -137,36 +137,63 @@
 
 (defn- bulk-index-concept-batches
   "Bulk index the given concept batches in both regular index and all revisions index."
-  [system concept-batches1 concept-batches2] ;; check if 2 seperate batches will work here first.
+  [system concept-batches]
   (let [indexer-context {:system (helper/get-indexer system)}]
-    (index/bulk-index indexer-context concept-batches1 {:all-revisions-index? true})
-    (index/bulk-index indexer-context concept-batches2 {})))
+    (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
+    (index/bulk-index indexer-context concept-batches {})))
 
-(defn- index-concepts-by-provider
+(defn- index-concepts-by-provider2
   "Bulk index concepts for the given provider and concept-type."
   [system concept-type provider]
-  (info (format "Indexing %ss for provider %s"
+  (info (format "Indexing2 %ss for provider %s"
                 (name concept-type)
                 (:provider-id provider)))
   (let [db (helper/get-metadata-db-db system)
+        indexer-context {:system (helper/get-indexer system)}
         params (merge {:concept-type concept-type
                        :provider-id (:provider-id provider)}
                       (when (cc/generic-concept? concept-type)
                         {:schema (name concept-type)}))
-        concept-batches1 (db/find-concepts-in-batches
-                          db provider
-                          params
-                          (:db-batch-size system))
-        concept-batches2 (db/find-concepts-in-batches
-                          db provider
-                          params
-                          (:db-batch-size system))
-        num-concepts (bulk-index-concept-batches system concept-batches1 concept-batches2)
-        msg (format "Indexing of %s %s revisions for provider %s completed."
-                    num-concepts
-                    (name concept-type)
-                    (:provider-id provider))]
+        num-concepts (loop [starting-id 0
+                            concept-count 0]
+                       (let [[batch next-id] (db/find-concepts-in-batches2
+                                              db provider
+                                              params
+                                              (:db-batch-size system)
+                                              starting-id)]
+                         (when-not (empty? batch)
+                           (index/bulk-index-batch indexer-context batch {:all-revisions-index? true})
+                           (index/bulk-index-batch indexer-context batch {}))
+                         (if next-id
+                           (recur next-id (+ concept-count (count batch)))
+                           (+ concept-count (count batch)))))
+        msg (format "Indexing2 of %s %s revisions for provider %s completed.")]
     (info msg)))
+
+(defn- index-concepts-by-provider
+  "Bulk index concepts for the given provider and concept-type."
+  [system concept-type provider]
+  (if (= :variable  concept-type)
+    (index-concepts-by-provider2 system concept-type provider)
+    (do
+      (info (format "Indexing %ss for provider %s"
+                    (name concept-type)
+                    (:provider-id provider))))
+    (let [db (helper/get-metadata-db-db system)
+          params (merge {:concept-type concept-type}
+                        :provider-id (:provider-id provider)
+                        (when (cc/generic-concept? concept-type)
+                          {:schema (name concept-type)}))
+          concept-batches (db/find-concepts-in-batches
+                           db provider
+                           params
+                           (:db-batch-size system))
+          num-concepts (bulk-index-concept-batches system concept-batches)
+          msg (format "Indexing of %s %s revisions for provider %s completed."
+                      num-concepts
+                      (name concept-type)
+                      (:provider-id provider))]
+      (info msg))))
 
 (defn index-provider-concepts
   "Bulk index concepts for the given provider-id and concept-type."

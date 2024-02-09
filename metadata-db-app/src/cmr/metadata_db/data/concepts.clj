@@ -16,6 +16,11 @@
     [db provider params batch-size start-index]
     "Get a lazy sequence of batched concepts for the given parameters.")
 
+  (find-concepts-in-batches2
+    [db provider params batch-size]
+    [db provider params batch-size start-index]
+    "Get a lazy sequence of batched concepts for the given parameters.")
+
   (find-concepts-in-batches-with-stmt
     [db provider params stmt batch-size]
     [db provider params stmt batch-size start-index]

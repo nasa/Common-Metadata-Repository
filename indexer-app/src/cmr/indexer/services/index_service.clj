@@ -121,6 +121,11 @@
   [context batch options]
   (es/prepare-batch context (filter-expired-concepts batch) options))
 
+(defn bulk-index-batch
+  [context batch options]
+  (let [batch (prepare-batch context batch options)]
+    (es/bulk-index-documents context batch options)))
+
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
   directly to this function - it does not retrieve them from metadata db (tag associations for

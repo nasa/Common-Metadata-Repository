@@ -29,7 +29,7 @@
 
 (def concept-type->columns
   "A map of concept type to the columns for that type in the database."
- (merge 
+ (merge
   {:granule (into common-columns
                   [:provider_id :parent_collection_id :delete_time :granule_ur])
    :collection (into common-columns
@@ -61,8 +61,8 @@
    :generic-association (into common-columns
                                [:associated_concept_id :associated_revision_id
                                 :source_concept_identifier :source_revision_id :user_id])}
-   (zipmap (cc/get-generic-concept-types-array)
-           (repeat (into common-columns [:provider_id :document_name :schema :user_id :created_at])))))
+  (zipmap (cc/get-generic-concept-types-array)
+          (repeat (into common-columns [:provider_id :document_name :schema :user_id :created_at])))))
 
 (def single-table-with-providers-concept-type?
   "The set of concept types that are stored in a single table with a provider column. These concept
@@ -79,7 +79,7 @@
 (defn- params->sql-params
   "Converts the search params into params that can be converted into a sql condition clause."
   [concept-type providers params]
-  (if (or (every? :small providers) 
+  (if (or (every? :small providers)
           (single-table-with-providers-concept-type? concept-type)
           (cc/generic-concept? concept-type))
     (dissoc params :concept-type :exclude-metadata)
@@ -235,6 +235,44 @@
     (util/mapcatv (fn [[table provider-list]]
                     (find-concepts-in-table db table concept-type provider-list params))
                   tables-to-providers)))
+
+(defn find-concepts-in-batches2
+  ([db provider params batch-size]
+   (find-concepts-in-batches2 db provider params batch-size 0))
+  ([db provider params batch-size requested-start-index]
+   (let [{:keys [concept-type]} params
+         provider-id (:provider-id provider)
+         params (params->sql-params concept-type [provider] params)
+         table (tables/get-table-name provider concept-type)
+         start-index (max requested-start-index (find-batch-starting-id db table params))]
+     (j/with-db-transaction
+       [conn db]
+       (let [conditions [`(>= :id ~start-index)
+                         `(< :id ~(+ start-index batch-size))]
+             _ (info (format "Finding batch for provider [%s] concept type [%s] from id >= %s and id < %s"
+                             provider-id
+                             (name concept-type)
+                             start-index
+                             (+ start-index batch-size)))
+             conditions (if (empty? params)
+                         conditions
+                         (cons (sh/find-params->sql-clause params) conditions))
+             stmt (su/build (select [:*]
+                                   (from table)
+                                   (where (cons `and conditions))))
+             batch-result (su/query db stmt)
+             batch (mapv (partial oc/db-result->concept-map concept-type conn provider-id)
+                         batch-result)]
+         (if (empty? batch)
+           ;; We couldn't find any items  between start-index and start-index + batch-size
+           ;; Look for the next greatest id and to see if there's a gap that we can restart from.
+           (do
+             (info "Couldn't find batch so searching for more from" start-index)
+             (when-let [next-id (find-batch-starting-id db table params start-index)]
+               (info "Found next-id of" next-id)
+               [batch next-id]))
+           ;; We found a batch. Return it and the next batch lazily
+           [batch (+ start-index batch-size)]))))))
 
 (defn find-concepts-in-batches
   ([db provider params batch-size]
