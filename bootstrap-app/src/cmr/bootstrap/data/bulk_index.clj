@@ -178,22 +178,22 @@
     (do
       (info (format "Indexing %ss for provider %s"
                     (name concept-type)
-                    (:provider-id provider))))
-    (let [db (helper/get-metadata-db-db system)
-          params (merge {:concept-type concept-type}
-                        :provider-id (:provider-id provider)
-                        (when (cc/generic-concept? concept-type)
-                          {:schema (name concept-type)}))
-          concept-batches (db/find-concepts-in-batches
-                           db provider
-                           params
-                           (:db-batch-size system))
-          num-concepts (bulk-index-concept-batches system concept-batches)
-          msg (format "Indexing of %s %s revisions for provider %s completed."
-                      num-concepts
-                      (name concept-type)
-                      (:provider-id provider))]
-      (info msg))))
+                    (:provider-id provider)))
+      (let [db (helper/get-metadata-db-db system)
+            params (merge {:concept-type concept-type}
+                          :provider-id (:provider-id provider)
+                          (when (cc/generic-concept? concept-type)
+                            {:schema (name concept-type)}))
+            concept-batches (db/find-concepts-in-batches
+                             db provider
+                             params
+                             (:db-batch-size system))
+            num-concepts (bulk-index-concept-batches system concept-batches)
+            msg (format "Indexing of %s %s revisions for provider %s completed."
+                        num-concepts
+                        (name concept-type)
+                        (:provider-id provider))]
+        (info msg)))))
 
 (defn index-provider-concepts
   "Bulk index concepts for the given provider-id and concept-type."
