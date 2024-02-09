@@ -8,19 +8,6 @@ import sys
 import boto3
 from botocore.exceptions import ClientError
 
-client = boto3.client('events')
-lambda_client = boto3.client('lambda')
-
-environment = os.getenv('CMR_ENVIRONMENT').lower()
-
-if len(sys.argv) < 2:
-    print("Usage is 'python deploy_schedule.py job_name [jobs_file]'")
-    sys.exit()
-
-if environment is None:
-    print("CMR_ENVIRONMENT variable needs to be set")
-    sys.exit()
-
 def make_cron_expression(job):
     """
     Takes the job details to construct a cron expression
@@ -60,13 +47,6 @@ def make_schedule_expression(job):
     if job["scheduling"]["type"] == "cron":
         return make_cron_expression(job)
     return make_interval_expression(job)
-
-def make_input_json(job):
-    """
-    Pulls the target dictionary field from the job details to make
-    an event for sending to Lambda on invocation
-    """
-    return json.dumps(job["target"])
 
 def deploy_schedule(job_name, jobs_file_name):
     """
@@ -109,7 +89,7 @@ def deploy_schedule(job_name, jobs_file_name):
                     {
                         "Id" : "job-router-" + environment,
                         "Arn" : lambda_details["Configuration"]["FunctionArn"],
-                        "Input" : make_input_json(job_details)
+                        "Input" : json.dumps(job_details["target"])
                     }
                 ]
             )
@@ -119,5 +99,19 @@ def deploy_schedule(job_name, jobs_file_name):
 
         print(job_name + " job event deployed")
 
-jobs_file = "../job-details.json" if len(sys.argv) < 3 else sys.argv[2]
-deploy_schedule(sys.argv[1], jobs_file)
+if __name__ is '__main__':
+    client = boto3.client('events')
+    lambda_client = boto3.client('lambda')
+
+    environment = os.getenv('CMR_ENVIRONMENT').lower()
+
+    if len(sys.argv) < 2:
+        print("Usage is 'python deploy_schedule.py job_name [jobs_file]'")
+        sys.exit()
+
+    if environment is None:
+        print("CMR_ENVIRONMENT variable needs to be set")
+        sys.exit()
+
+    jobs_file = "../job-details.json" if len(sys.argv) < 3 else sys.argv[2]
+    deploy_schedule(sys.argv[1], jobs_file)

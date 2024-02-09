@@ -56,8 +56,9 @@ def create_schedule():
                 schedule.every(total_minutes).seconds.do(run_job, job_details=job_details,
                                                          job_name=job_name)
 
-create_schedule()
+if __name__ is '__main__':
+    create_schedule()
 
-while True:
-    schedule.run_pending()
-    time.sleep(1)
+    while True:
+        schedule.run_pending()
+        time.sleep(1)

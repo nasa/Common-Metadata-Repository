@@ -9,5 +9,5 @@ Cron jobs are assumed to be run once every day at a given time. Most jobs are li
 
 ### Running
 
-Ensure you have the right dependencies by running `pip install -r requirements.txt` and then simply run the local_scheduler.py program.
+Ensure you have the right dependencies by running `pip3 install -r requirements.txt` and then simply run the local_scheduler.py program.
 Note that the program currently does not run jobs immediately upon scheduling.

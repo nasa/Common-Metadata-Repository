@@ -9,7 +9,7 @@ Putting together a package for deployment to Lambda is done with the following s
 
 ```
 mkdir package
-pip install --target ./package -r requirements.txt
+pip3 install --target ./package -r requirements.txt
 cd package
 zip -r ../deployment_package.zip .
 cd ..
