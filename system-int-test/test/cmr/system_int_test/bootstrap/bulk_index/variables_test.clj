@@ -30,10 +30,10 @@
                                                  :short-name "S1"
                                                  :version-id "V1"}))
             coll2 (data2-core/ingest
-                  "PROV2"
-                  (data2-collection/collection {:entry-title "ET2"
-                                                :short-name "S2"
-                                                :version-id "V2"}))
+                   "PROV2"
+                   (data2-collection/collection {:entry-title "ET2"
+                                                 :short-name "S2"
+                                                 :version-id "V2"}))
             _ (index/wait-until-indexed)
             var1 (variable/make-variable-concept
                   {:Name "Variable1"}
@@ -64,23 +64,23 @@
       ;; Re-enable message publishing for collection to be indexed.
       (core/reenable-automatic-indexing)
       (let [coll1 (data2-core/ingest
-                  "PROV1"
-                  (data2-collection/collection {:entry-title "ET1"
-                                                :short-name "S1"
-                                                :version-id "V1"}))
-           _ (index/wait-until-indexed)
-           var2 (variable/make-variable-concept
-                 {:Name "Variable2"}
-                 {:native-id "var2"
-                  :coll-concept-id (:concept-id coll1)})
-           var3 (variable/make-variable-concept
-                 {:Name "Variable3"}
-                 {:native-id "var3"
-                  :coll-concept-id (:concept-id coll1)})
-           var4 (variable/make-variable-concept
-                 {:Name "Variable4"}
-                 {:native-id "var4"
-                  :coll-concept-id (:concept-id coll1)})]
+                   "PROV1"
+                   (data2-collection/collection {:entry-title "ET1"
+                                                 :short-name "S1"
+                                                 :version-id "V1"}))
+            _ (index/wait-until-indexed)
+            var2 (variable/make-variable-concept
+                  {:Name "Variable2"}
+                  {:native-id "var2"
+                   :coll-concept-id (:concept-id coll1)})
+            var3 (variable/make-variable-concept
+                  {:Name "Variable3"}
+                  {:native-id "var3"
+                   :coll-concept-id (:concept-id coll1)})
+            var4 (variable/make-variable-concept
+                  {:Name "Variable4"}
+                  {:native-id "var4"
+                   :coll-concept-id (:concept-id coll1)})]
         ;; Disable message publishing so items are not indexed.
         (core/disable-automatic-indexing)
         ;; The following is saved, but not indexed due to the above call
@@ -147,7 +147,7 @@
        (variable/ingest-variable-with-association var3)
        (variable/ingest-variable-with-association var4)
        (variable/ingest-variable-with-association var5)
-       (variable/ingest-variable-with-association var6) 
+       (variable/ingest-variable-with-association var6)
        (is (= 0 (:hits (variable/search {}))))
        (bootstrap/bulk-index-variables "PROV1")
        (bootstrap/bulk-index-variables "PROV2")
@@ -228,10 +228,10 @@
                                                 :version-id "V3"}))
            _ (index/wait-until-indexed)
            ;; Disable message publishing so items are not indexed.
-           _ (core/disable-automatic-indexing) 
+           _ (core/disable-automatic-indexing)
            var1-concept (variable/make-variable-concept
                          {:Name "Variable1"}
-                         {:native-id "var1" 
+                         {:native-id "var1"
                           :coll-concept-id (:concept-id coll1)})
            var1-1 (variable/ingest-variable-with-association var1-concept)
            var1-2-tombstone (merge (ingest/delete-concept var1-concept {:token token})
@@ -240,7 +240,7 @@
                                     :user-id "user1"})
            var1-3 (variable/ingest-variable-with-association var1-concept)
 
-           var2-1-concept (variable/make-variable-concept 
+           var2-1-concept (variable/make-variable-concept
                            {:Name "Variable2"
                             :LongName "LongName2"}
                            {:native-id "var2"
