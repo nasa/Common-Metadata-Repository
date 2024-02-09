@@ -407,6 +407,7 @@
 (def behaviour
   {:find-concepts find-concepts
    :find-concepts-in-batches find-concepts-in-batches
+   :find-concepts-in-batches2 find-concepts-in-batches2
    :find-concepts-in-batches-with-stmt find-concepts-in-batches-with-stmt
    :find-latest-concepts find-latest-concepts
    :find-associations find-associations
