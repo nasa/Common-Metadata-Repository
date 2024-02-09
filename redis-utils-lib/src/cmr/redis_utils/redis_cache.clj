@@ -48,25 +48,27 @@
 
   (get-value
     [this key]
-   (info (format "Redis cache get timed function %s starting" key))
-    (let [s-key (serialize key)]
-      (-> (wcar* :as-pipeline
-                 (carmine/get s-key)
-                 (when refresh-ttl? (carmine/expire s-key ttl)))
-          first
-          :value))
-   (info (format "Redis cache get timed function %s finished" key)))
+    (info (format "Redis cache get timed function %s starting" key))
+    (let [s-key (serialize key)
+          result (-> (wcar* :as-pipeline
+                            (carmine/get s-key)
+                            (when refresh-ttl? (carmine/expire s-key ttl)))
+                     first
+                     :value)]
+      (info (format "Redis cache get timed function %s finished" key))
+      result))
 
   (get-value
     [this key lookup-fn]
-   (info (format "Redis cache get lookup timed function %s starting" key))
-    (let [cache-value (cache/get-value this key)]
-      (if-not (nil? cache-value)
-        cache-value
-        (let [value (lookup-fn)]
-          (cache/set-value this key value)
-          value)))
-   (info (format "Redis cache get lookup timed function %s finished" key)))
+    (info (format "Redis cache get lookup timed function %s starting" key))
+    (let [cache-value (cache/get-value this key)
+          result (if-not (nil? cache-value)
+                   cache-value
+                   (let [value (lookup-fn)]
+                     (cache/set-value this key value)
+                     value))]
+      (info (format "Redis cache get lookup timed function %s finished" key))
+      result))
 
   (reset
     [this]
@@ -77,10 +79,11 @@
     [this key value]
     ;; Store value in map to aid deserialization of numbers.
     (info (format "Redis cache save timed function %s starting" key))
-    (let [s-key (serialize key)]
-      (wcar* (carmine/set s-key {:value value})
-             (when ttl (carmine/expire s-key ttl))))
-   (info (format "Redis cache save timed function %s finished" key)))
+    (let [s-key (serialize key)
+          result (wcar* (carmine/set s-key {:value value})
+                        (when ttl (carmine/expire s-key ttl)))]
+      (info (format "Redis cache save timed function %s finished" key))
+      result))
 
   (cache-size
     [_]

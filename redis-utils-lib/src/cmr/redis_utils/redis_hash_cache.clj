@@ -27,16 +27,19 @@
   cache/CmrHashCache
   (get-map
     [this key]
+    (info (format "Redis hash cache get map timed function %s starting" key))
     ;; key is the cache-key 
     ;; hgetall returns a vector structure [[field1 value1 field2 value2 fieldN valueN]]
     ;; First pulls out the inner vector then conver it to {field value field value} hash 
     ;; map so that callers can process it.
     (let [result (-> (wcar* :as-pipeline (carmine/hgetall (rc/serialize key)))
-                     first)]
-      (when-not (or (nil? result)
-                    (empty? result))
-        (into {} (for [[a b] (partition 2 result)]
-                   {a b})))))
+                     first)
+          result (when-not (or (nil? result)
+                               (empty? result))
+                   (into {} (for [[a b] (partition 2 result)]
+                              {a b})))]
+      (info (format "Redis hash cache get map timed function %s finished" key))
+      result))
 
   (key-exists
     [this key]
@@ -47,29 +50,34 @@
 
   (get-keys
     [this key]
+    (info (format "Redis hash cache get keys timed function %s starting" key))
     ;; key is the cache-key 
     ;; hkeys returns a vector structure [[key1 key2 ... keyn]] First pulls out the inner vector
     ;; returns a vector of keys.
-    (-> (wcar* :as-pipeline (carmine/hkeys (rc/serialize key)))
-        first))
+   (let [result (-> (wcar* :as-pipeline (carmine/hkeys (rc/serialize key)))
+                    first)]
+     (info (format "Redis hash cache get keys timed function %s finished" key))
+     result))
 
   (get-value
     [this key field]
-   (info (format "Redis hash cache get value timed function %s %s starting" key field))
+    (info (format "Redis hash cache get value timed function %s %s starting" key field))
     ;; key is the cache-key. Returns the value of the passed in field.
-    (-> (wcar* :as-pipeline (carmine/hget (rc/serialize key) field))
-        first)
-   (info (format "Redis hash cache get value timed function %s %s finished" key field)))
+    (let [result (-> (wcar* :as-pipeline (carmine/hget (rc/serialize key) field))
+                     first)]
+      (info (format "Redis hash cache get value timed function %s %s finished" key field))
+      result))
   
   (get-values
     ;; key is the cache-key. Fields is either a vector or a list of fields.
     ;; returns a vector of values.
     [this key fields]
-   (info (format "Redis hash cache get values timed function %s %s starting" key fields))
-    (map #(-> (wcar* :as-pipeline (carmine/hget (rc/serialize key) %1))
-              first)
-         fields)
-   (info (format "Redis hash cache get values timed function %s %s finished" key fields)))
+    (info (format "Redis hash cache get values timed function %s %s starting" key fields))
+    (let [result (map #(-> (wcar* :as-pipeline (carmine/hget (rc/serialize key) %1))
+                           first)
+                      fields)]
+      (info (format "Redis hash cache get values timed function %s %s finished" key fields))
+      result))
 
   (reset
     [this]
@@ -82,17 +90,19 @@
 
   (set-value
     [this key field value]
-   (info (format "Redis hash cache set value timed function %s %s starting" key field))
+    (info (format "Redis hash cache set value timed function %s %s starting" key field))
     ;; Store value in map to aid deserialization of numbers.
-    (wcar* (carmine/hset (rc/serialize key) field value))
-   (info (format "Redis hash cache set value timed function %s %s finished" key field)))
+    (let [result (wcar* (carmine/hset (rc/serialize key) field value))]
+      (info (format "Redis hash cache set value timed function %s %s finished" key field))
+      result))
   
   (set-values
-    [this key field-value-map]
+   [this key field-value-map]
    (info (format "Redis hash cache set values timed function %s starting" key))
-    (doall (map #(wcar* (carmine/hset (rc/serialize key) %1 (get field-value-map %1)))
-                (keys field-value-map)))
-   (info (format "Redis hash cache set values timed function %s finished" key)))
+   (let [result (doall (map #(wcar* (carmine/hset (rc/serialize key) %1 (get field-value-map %1)))
+                            (keys field-value-map)))]
+     (info (format "Redis hash cache set values timed function %s finished" key))
+     result))
 
   (cache-size
     [this key]
