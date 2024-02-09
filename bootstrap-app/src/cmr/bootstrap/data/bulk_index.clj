@@ -167,7 +167,10 @@
                          (if next-id
                            (recur next-id (+ concept-count (count batch)))
                            (+ concept-count (count batch)))))
-        msg (format "Indexing2 of %s %s revisions for provider %s completed.")]
+        msg (format "Indexing2 of %s %s revisions for provider %s completed."
+             num-concepts
+             (name concept-type)
+             (:provider-id provider))]
     (info msg)))
 
 (defn- index-concepts-by-provider
