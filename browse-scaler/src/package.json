@@ -11,7 +11,7 @@
     "axios": "^1.6.4",
     "node-fetch": "^2.6.7",
     "redis": "^2.8.0",
-    "sharp": "^0.32.6"
+    "sharp": "^0.33.2"
   },
   "scripts": {
     "preinstall": "npm install --package-lock-only --ignore-scripts && npx npm-force-resolutions",
