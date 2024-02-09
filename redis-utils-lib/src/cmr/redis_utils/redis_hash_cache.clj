@@ -6,6 +6,7 @@
   reset on that particular cache. TTL MUST be set if you expect your keys to be evicted automatically."
   (:require
    [cmr.common.hash-cache :as cache]
+   [cmr.common.log :as log :refer [info]]
    [cmr.redis-utils.redis-cache :as rc]
    [cmr.redis-utils.redis :as redis :refer [wcar*]]
    [taoensso.carmine :as carmine]))
@@ -54,17 +55,21 @@
 
   (get-value
     [this key field]
+   (info (format "Redis hash cache get value timed function %s %s starting" key field))
     ;; key is the cache-key. Returns the value of the passed in field.
     (-> (wcar* :as-pipeline (carmine/hget (rc/serialize key) field))
-        first))
+        first)
+   (info (format "Redis hash cache get value timed function %s %s finished" key field)))
   
   (get-values
     ;; key is the cache-key. Fields is either a vector or a list of fields.
     ;; returns a vector of values.
     [this key fields]
+   (info (format "Redis hash cache get values timed function %s %s starting" key fields))
     (map #(-> (wcar* :as-pipeline (carmine/hget (rc/serialize key) %1))
               first)
-         fields))
+         fields)
+   (info (format "Redis hash cache get values timed function %s %s finished" key fields)))
 
   (reset
     [this]
@@ -77,13 +82,17 @@
 
   (set-value
     [this key field value]
+   (info (format "Redis hash cache set value timed function %s %s starting" key field))
     ;; Store value in map to aid deserialization of numbers.
-    (wcar* (carmine/hset (rc/serialize key) field value)))
+    (wcar* (carmine/hset (rc/serialize key) field value))
+   (info (format "Redis hash cache set value timed function %s %s finished" key field)))
   
   (set-values
     [this key field-value-map]
+   (info (format "Redis hash cache set values timed function %s starting" key))
     (doall (map #(wcar* (carmine/hset (rc/serialize key) %1 (get field-value-map %1)))
-                (keys field-value-map))))
+                (keys field-value-map)))
+   (info (format "Redis hash cache set values timed function %s finished" key)))
 
   (cache-size
     [this key]
