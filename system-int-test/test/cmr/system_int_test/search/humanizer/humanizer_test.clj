@@ -13,6 +13,7 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
+			[cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.test.expected-conversion :as expected-conversion]
    [cmr.umm-spec.versioning :as versioning]))

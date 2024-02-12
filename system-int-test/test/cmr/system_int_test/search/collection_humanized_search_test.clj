@@ -123,7 +123,7 @@
          :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]})))
     (index/wait-until-indexed)
     ;; Refresh the metadata cache
-    (search/refresh-collection-metadata-cache)
+				(cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
     (testing "Humanizer report batches"
       (let [report-lines (str/split (search/get-humanizers-report) #"\n")]
         (is (= (count report-lines) (+ 2 updated-batch-size)))
