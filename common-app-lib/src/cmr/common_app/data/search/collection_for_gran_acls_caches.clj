@@ -89,26 +89,36 @@
   The caller is responsible for catching and logging the exception."
   [context]
   (info "Refreshing entire Collections-for-gran-acls caches")
-  (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
-        collections (fetch-collections context)]
+  (let [coll-for-gran-start (System/currentTimeMillis)
+        coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
+        collections (fetch-collections context)
+        redis-start (System/currentTimeMillis)
+        col-for-gran-elapsed (- redis-start coll-for-gran-start)]
     (doseq [coll collections]
       (hash-cache/set-value coll-by-concept-id-cache
                             coll-by-concept-id-cache-key
                             (:concept-id coll)
                             (clj-times->time-strs coll)))
     (info (str "Collections-for-gran-acls caches refresh complete."
-         " coll-by-concept-id-cache Cache Size: " (hash-cache/cache-size coll-by-concept-id-cache coll-by-concept-id-cache-key) " bytes"))))
+         " coll-by-concept-id-cache Cache Size: " (hash-cache/cache-size coll-by-concept-id-cache coll-by-concept-id-cache-key) " bytes"))
+    (info (format "Redis timed function Refresh-entire-cache for %s data-collection time [%s] ms " coll-by-concept-id-cache-key col-for-gran-elapsed))
+    (info (format "Redis timed function Refresh-entire-cache for %s redis save time [%s] ms " coll-by-concept-id-cache-key (- (System/currentTimeMillis) redis-start)))))
 
 (defn set-caches
   "Updates collections-for-gran-acl caches for one given collection by concept id and  returns found collection or nil"
   ([context collection-concept-id]
-   (let [collection-found (fetch-collections context collection-concept-id)
+   (let [coll-for-gran-start (System/currentTimeMillis)
+         collection-found (fetch-collections context collection-concept-id)
+         col-for-gran-elapsed (- (System/currentTimeMillis) coll-for-gran-start)
          coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)]
+     (info (format "Redis timed function set-caches for %s data-collection time [%s] ms " coll-by-concept-id-cache-key col-for-gran-elapsed))
      (when-not (nil? collection-found)
-       (hash-cache/set-value coll-by-concept-id-cache
-                             coll-by-concept-id-cache-key
-                             (:concept-id collection-found)
-                             (clj-times->time-strs collection-found)))
+       (let [redis-start (System/currentTimeMillis)]
+         (hash-cache/set-value coll-by-concept-id-cache
+                               coll-by-concept-id-cache-key
+                               (:concept-id collection-found)
+                               (clj-times->time-strs collection-found))
+         (info (format "Redis timed function set-caches for %s redis save time [%s] ms " coll-by-concept-id-cache-key (- (System/currentTimeMillis) redis-start)))))
      collection-found)))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob

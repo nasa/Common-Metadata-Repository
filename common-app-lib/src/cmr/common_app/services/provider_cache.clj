@@ -38,9 +38,12 @@
    (let [cache (hcache/context->cache context cache-key)
          provider-map (into {} (map (fn [provider]
                                       {(:provider-id provider) provider})
-                                    providers))]
+                                    providers))
+         start (System/currentTimeMillis)
+         result (hcache/set-values cache cache-key provider-map)]
+     (info (format "Redis timed function refresh-provider-cache for %s redis set-values time [%s] ms " cache-key (- (System/currentTimeMillis) start)))
      (info "Refreshed provider cache.")
-     (hcache/set-values cache cache-key provider-map))))
+     result)))
 
 (defn- get-cached-providers
   "Retrieve the list of all providers from the cache. Setting the value

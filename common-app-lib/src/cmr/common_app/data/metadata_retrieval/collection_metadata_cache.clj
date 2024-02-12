@@ -15,6 +15,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.date-time-parser :as parser]
    [cmr.common.hash-cache :as hash-cache]
+   [cmr.common.log :refer [info]]
    [cmr.common.util :as u]
    [cmr.common.xml :as cx]
    [cmr.redis-utils.redis-hash-cache :as rhcache]))
@@ -63,9 +64,11 @@
   "Executes a query that will fetch all of the updated collection information needed for caching."
   [context]
   (let [cache (hash-cache/context->cache context cache-key)
+        redis-start (System/currentTimeMillis)
         incremental-since-refresh-date (hash-cache/get-value cache
                                                              cache-key
                                                              incremental-since-refresh-date-key)
+        _ (info (format "Redis timed function fetch-updated-collections-from-elastic for %s redis get-value time [%s] ms " cache-key (- (System/currentTimeMillis) redis-start)))
         query (q/query {:concept-type :collection
                         :condition (data-range-condition (or incremental-since-refresh-date "1600-01-01T00:00:00"))
                         :skip-acls? true

@@ -6,6 +6,7 @@
    [clojure.set :as set]
    [clojure.string :as str]
    [cmr.common.cache :as cache]
+   [cmr.common.log :refer [info]]
    [cmr.common.util :as util]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.humanizer :as humanizer]))
@@ -65,17 +66,22 @@
   "Refreshes the humanizer alias cache."
   [context]
   (let [cache (cache/context->cache context humanizer-alias-cache-key)
-        humanizer (humanizer/get-humanizers context)]
-    (cache/set-value cache humanizer-alias-cache-key
-                 (create-humanizer-alias-map humanizer))))
+        humanizer (humanizer/get-humanizers context)
+        start (System/currentTimeMillis)
+        result (cache/set-value cache humanizer-alias-cache-key (create-humanizer-alias-map humanizer))]
+    (info (format "Redis timed function refresh-cache for %s redis set-value time [%s] ms " humanizer-alias-cache-key (- (System/currentTimeMillis) start)))
+    result))
 
 (defn get-humanizer-alias-map
   "Returns the humanizer alias map"
   [context]
-  (let [cache (cache/context->cache context humanizer-alias-cache-key)]
-    (cache/get-value cache
-                 humanizer-alias-cache-key
-                 #(create-humanizer-alias-map (humanizer/get-humanizers context)))))
+  (let [cache (cache/context->cache context humanizer-alias-cache-key)
+        start (System/currentTimeMillis)
+        result (cache/get-value cache
+                                humanizer-alias-cache-key
+                                #(create-humanizer-alias-map (humanizer/get-humanizers context)))]
+    (info (format "Redis timed function get-humanizer-alias-map for %s redis set-value time [%s] ms " humanizer-alias-cache-key (- (System/currentTimeMillis) start)))
+    result))
 
 (defn- get-field-aliases
   "Returns field aliases for a given element's fields, field-name-key and a field-alias-map.

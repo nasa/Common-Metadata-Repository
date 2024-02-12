@@ -23,6 +23,7 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.hash-cache :as hash-cache]
+   [cmr.common.log :refer [info]]
    [cmr.common.util :as util]
    [cmr.redis-utils.redis-hash-cache :as rhcache]
    [cmr.transmit.kms :as kms]))
@@ -192,11 +193,19 @@
         short-name-cache (hash-cache/context->cache context kms-short-name-cache-key)
         umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
         location-cache (hash-cache/context->cache context kms-location-cache-key)
-        measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)]
-    (hash-cache/set-values short-name-cache kms-short-name-cache-key short-name-lookup-map)
-    (hash-cache/set-values umm-c-cache kms-umm-c-cache-key umm-c-lookup-map)
-    (hash-cache/set-values location-cache kms-location-cache-key location-lookup-map)
-    (hash-cache/set-values measurement-cache kms-measurement-cache-key measurement-lookup-map)
+        measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)
+        start (System/currentTimeMillis)
+        _ (hash-cache/set-values short-name-cache kms-short-name-cache-key short-name-lookup-map)
+        _ (info (format "Redis timed function create-kms-index for %s redis save time [%s] ms " kms-short-name-cache-key (- (System/currentTimeMillis) start)))
+        start (System/currentTimeMillis)
+        _ (hash-cache/set-values umm-c-cache kms-umm-c-cache-key umm-c-lookup-map)
+        _ (info (format "Redis timed function create-kms-index for %s redis save time [%s] ms " kms-umm-c-cache-key (- (System/currentTimeMillis) start)))
+        start (System/currentTimeMillis)
+        _ (hash-cache/set-values location-cache kms-location-cache-key location-lookup-map)
+        _ (info (format "Redis timed function create-kms-index for %s redis save time [%s] ms " kms-location-cache-key (- (System/currentTimeMillis) start)))
+        start (System/currentTimeMillis)
+        _ (hash-cache/set-values measurement-cache kms-measurement-cache-key measurement-lookup-map)
+        _ (info (format "Redis timed function create-kms-index for %s redis save time [%s] ms " kms-measurement-cache-key (- (System/currentTimeMillis) start)))]
     kms-keywords-map))
 
 (defn load-cache-if-necessary
@@ -222,10 +231,21 @@
   [context keyword-scheme short-name]
   (when-not (:ignore-kms-keywords context)
     (let [short-name-cache (hash-cache/context->cache context kms-short-name-cache-key)
-          keywords (or (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme)
-                       (do
-                         (load-cache-if-necessary context short-name-cache kms-short-name-cache-key)
-                         (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme)))]
+          start (System/currentTimeMillis)
+          keywords (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme)
+          _ (info (format "Redis timed function lookup-by-short-name for %s redis get time [%s] ms " kms-short-name-cache-key (- (System/currentTimeMillis) start)))
+          keywords (if keywords
+                     keywords
+                     (let [_ (info (format "Redis cache %s has not been loaded. Reloading redis cache and retrieving data." kms-short-name-cache-key))
+                           _ (load-cache-if-necessary context short-name-cache kms-short-name-cache-key)
+                           start (System/currentTimeMillis)
+                           result (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme)]
+                       (info (format "Redis timed function lookup-by-short-name for %s redis get time [%s] ms " kms-short-name-cache-key (- (System/currentTimeMillis) start)))
+                       result))]
+          ;keywords (or (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme)
+          ;             (do
+          ;               (load-cache-if-necessary context short-name-cache kms-short-name-cache-key)
+          ;               (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme)))]
       (get keywords (util/safe-lowercase short-name)))))
 
 (defn lookup-by-location-string
@@ -233,11 +253,23 @@
   string. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context location-string]
   (when-not (:ignore-kms-keywords context)
-    (let [location-cache (hash-cache/context->cache context kms-location-cache-key)]
-      (or (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string))
-          (do
-            (load-cache-if-necessary context location-cache kms-location-cache-key)
-            (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string)))))))
+    (let [location-cache (hash-cache/context->cache context kms-location-cache-key)
+          start (System/currentTimeMillis)
+          keywords (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string))
+          _ (info (format "Redis timed function lookup-by-location-string for %s redis get time [%s] ms " kms-location-cache-key (- (System/currentTimeMillis) start)))
+          keywords (if keywords
+                     keywords
+                     (let [_ (info (format "Redis cache %s has not been loaded. Reloading redis cache and retrieving data." kms-location-cache-key))
+                           _ (load-cache-if-necessary context location-cache kms-location-cache-key)
+                           start (System/currentTimeMillis)
+                           result (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string))]
+                       (info (format "Redis timed function lookup-by-location-string for %s redis get time [%s] ms " kms-short-name-cache-key (- (System/currentTimeMillis) start)))
+                       result))]
+      keywords)))
+      ;(or (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string))
+      ;    (do
+      ;      (load-cache-if-necessary context location-cache kms-location-cache-key)
+      ;      (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string)))))))
 
 (defn- remove-long-name-from-kms-index
   "Removes long-name from the umm-c-index keys in order to prevent validation when
@@ -259,10 +291,21 @@
         comparison-map (normalize-for-lookup format-map (kms-scheme->fields-for-umm-c-lookup
                                                          keyword-scheme))
         umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
-        value (or (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
-                  (do
-                    (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
-                    (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)))]
+        start (System/currentTimeMillis)
+        value (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
+        _ (info (format "Redis timed function lookup-by-umm-c-keyword-data-format for %s redis get time [%s] ms " kms-umm-c-cache-key (- (System/currentTimeMillis) start)))
+        value (if value
+                value
+                (let [_ (info (format "Redis cache %s has not been loaded. Reloading redis cache and retrieving data." kms-umm-c-cache-key))
+                      _ (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
+                      start (System/currentTimeMillis)
+                      result (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
+                      _ (info (format "Redis timed function lookup-by-umm-c-keyword-data-format for %s redis get time [%s] ms " kms-umm-c-cache-key (- (System/currentTimeMillis) start)))]
+                  result))]
+        ;value (or (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
+        ;          (do
+        ;            (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
+        ;            (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)))]
     (get-in value [comparison-map])))
 
 (defn lookup-by-umm-c-keyword-platforms
@@ -276,10 +319,21 @@
         comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup
                                                             keyword-scheme))
         umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
-        value (or (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
-                  (do
-                    (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
-                    (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)))]
+        start (System/currentTimeMillis)
+        value (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
+        _ (info (format "Redis timed function lookup-by-umm-c-keyword-platforms for %s redis get time [%s] ms " kms-umm-c-cache-key (- (System/currentTimeMillis) start)))
+        value (if value 
+                value
+                (let [_ (info (format "Redis cache %s has not been loaded. Reloading redis cache and retrieving data." kms-umm-c-cache-key))
+                      _ (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
+                      start (System/currentTimeMillis)
+                      result (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
+                      _ (info (format "Redis timed function lookup-by-umm-c-keyword-platforms for %s redis get time [%s] ms " kms-umm-c-cache-key (- (System/currentTimeMillis) start)))]
+                  result))]
+        ;value (or (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
+        ;          (do
+        ;            (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
+        ;            (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)))]
     (if (get umm-c-keyword :long-name)
       ;; Check both longname and shortname
       (get-in value [comparison-map])
@@ -301,10 +355,21 @@
             comparison-map (normalize-for-lookup umm-c-keyword
                                                  (kms-scheme->fields-for-umm-c-lookup keyword-scheme))
             umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
-            value (or (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
-                      (do
-                        (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
-                        (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)))]
+            start (System/currentTimeMillis)
+            value (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
+            _ (info (format "Redis timed function lookup-by-umm-c-keyword for %s redis get time [%s] ms " kms-umm-c-cache-key (- (System/currentTimeMillis) start)))
+            value (if value
+                    value
+                    (let [_ (info (format "Redis cache %s has not been loaded. Reloading redis cache and retrieving data." kms-umm-c-cache-key))
+                          _ (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
+                          start (System/currentTimeMillis)
+                          result (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
+                          _ (info (format "Redis timed function lookup-by-umm-c-keyword-platforms for %s redis get time [%s] ms " kms-umm-c-cache-key (- (System/currentTimeMillis) start)))]
+                      result))]
+            ;value (or (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
+            ;          (do
+            ;            (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
+            ;            (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)))]
         (get-in value [comparison-map])))))
 
 (defn lookup-by-measurement
@@ -313,10 +378,21 @@
   [context value]
   (when-not (:ignore-kms-keywords context)
     (let [measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)
-          measurement-index (or (hash-cache/get-value measurement-cache kms-measurement-cache-key :measurement-name)
-                                (do
-                                  (load-cache-if-necessary context measurement-cache kms-measurement-cache-key)
-                                  (hash-cache/get-value measurement-cache kms-measurement-cache-key :measurement-name)))
+          start (System/currentTimeMillis)
+          measurement-index (hash-cache/get-value measurement-cache kms-measurement-cache-key :measurement-name)
+          _ (info (format "Redis timed function lookup-by-measurement for %s redis get time [%s] ms " kms-measurement-cache-key (- (System/currentTimeMillis) start)))
+          ;measurement-index (or (hash-cache/get-value measurement-cache kms-measurement-cache-key :measurement-name)
+          ;                      (do
+          ;                        (load-cache-if-necessary context measurement-cache kms-measurement-cache-key)
+          ;                        (hash-cache/get-value measurement-cache kms-measurement-cache-key :measurement-name)))
+          measurement-index (if measurement-index
+                              measurement-index
+                              (let [_ (info (format "Redis cache %s has not been loaded. Reloading redis cache and retrieving data." kms-measurement-cache-key))
+                                    _ (load-cache-if-necessary context measurement-cache kms-measurement-cache-key)
+                                    start (System/currentTimeMillis)
+                                    result (hash-cache/get-value measurement-cache kms-measurement-cache-key :measurement-name)
+                                    _ (info (format "Redis timed function lookup-by-measurement for %s redis get time [%s] ms " kms-measurement-cache-key (- (System/currentTimeMillis) start)))]
+                                result))
           {:keys [MeasurementContextMedium MeasurementObject MeasurementQuantities]} value
           measurements (if (seq MeasurementQuantities)
                          (map (fn [quantity]

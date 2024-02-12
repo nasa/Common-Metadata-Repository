@@ -183,11 +183,13 @@
   [context]
   (info "Generating humanizer report.")
   (let [[report-generation-time humanizers-report] (util/time-execution
-                                                    (safe-generate-humanizers-report-csv context))]
-    (info (format "Humanizer report generated in %d ms." report-generation-time))
-    (cache/set-value (cache/context->cache context report-cache-key)
-                     csv-report-cache-key
-                     humanizers-report)
+                                                    (safe-generate-humanizers-report-csv context))
+        _ (info (format "Humanizer report generated in %d ms." report-generation-time))
+        [save-duration _] (util/time-execution
+                           (cache/set-value (cache/context->cache context report-cache-key)
+                                            csv-report-cache-key
+                                            humanizers-report))]
+    (info (format "Redis timed function create-and-save-humanizer-report for %s redis set-value time [%s] ms " report-cache-key save-duration))
     humanizers-report))
 
 (defn humanizers-report-csv
@@ -200,11 +202,14 @@
   [context regenerate?]
   (if regenerate?
     (create-and-save-humanizer-report context)
-    (cache/get-value (cache/context->cache context report-cache-key)
-                     csv-report-cache-key
-                     ;; If there is a cache miss, generate the report and then
-                     ;; return its value
-                     #(safe-generate-humanizers-report-csv context))))
+    (let [[duration result] (util/time-execution
+                             (cache/get-value (cache/context->cache context report-cache-key)
+                                              csv-report-cache-key
+                                                  ;; If there is a cache miss, generate the report and then
+                                                  ;; return its value
+                                              #(safe-generate-humanizers-report-csv context)))]
+      (info (format "Redis timed function humanizers-report-csv for %s redis set-value time [%s] ms " report-cache-key duration))
+      result)))
 
 ;; A job for generating the humanizers report
 (defjob HumanizerReportGeneratorJob

@@ -75,10 +75,12 @@
   [context]
   (info "Refreshing metadata cache")
   (let [incremental-since-refresh-date (str (clj-time.core/now))
+        data-start (System/currentTimeMillis)
         concepts-tuples (cmn-coll-metadata-cache/fetch-collections-from-elastic context)
         new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
                                 {}
                                 (partition-all 1000 concepts-tuples))
+        redis-start (System/currentTimeMillis)
         rcache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
     (hash-cache/set-value rcache
                           cmn-coll-metadata-cache/cache-key
@@ -86,7 +88,9 @@
                           incremental-since-refresh-date)
     (hash-cache/set-values rcache cmn-coll-metadata-cache/cache-key new-cache-value)
     (info "Metadata cache refresh complete. Cache Size:"
-          (hash-cache/cache-size rcache cmn-coll-metadata-cache/cache-key))))
+          (hash-cache/cache-size rcache cmn-coll-metadata-cache/cache-key))
+    (info (format "Redis timed function refresh-cache for %s data-collection time [%s] ms " cmn-coll-metadata-cache/cache-key (- redis-start data-start)))
+    (info (format "Redis timed function refresh-cache for %s redis save time [%s] ms " cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start)))))
 
 (defn update-cache-job
   "Updates the collection metadata cache by querying elastic search for updates since the
@@ -94,10 +98,12 @@
   [context]
     (info "Updating collection metadata cache")
     (let [incremental-since-refresh-date (str (t/now))
+          update-start (System/currentTimeMillis)
           concepts-tuples (cmn-coll-metadata-cache/fetch-updated-collections-from-elastic context)
           new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
                                   {}
                                   (partition-all 1000 concepts-tuples))
+          redis-start (System/currentTimeMillis)
           cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
       (hash-cache/set-value cache
                             cmn-coll-metadata-cache/cache-key
@@ -106,7 +112,9 @@
       (hash-cache/set-values cache
                              cmn-coll-metadata-cache/cache-key
                              new-cache-value)
-      (info "Metadata cache update complete. Cache Size:" (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))))
+      (info "Metadata cache update complete. Cache Size:" (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))
+      (info (format "Redis timed function update-cache-job for %s data-collection time [%s] ms " cmn-coll-metadata-cache/cache-key (- redis-start update-start)))
+      (info (format "Redis timed function update-cache-job for %s redis save time [%s] ms " cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start)))))
 
 (defn in-memory-db?
   "Checks to see if the database in the context is an in-memory db."
@@ -149,12 +157,14 @@
   "Updates the cache so that it will contain the updated revision format maps."
   [context revision-format-maps]
   (let [compressed-maps (u/fast-map crfm/compress revision-format-maps)
-        rcache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
+        rcache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
+        redis-start (System/currentTimeMillis)]
     (doall (map #(crfm/merge-into-cache-map rcache cmn-coll-metadata-cache/cache-key %) compressed-maps))
 
     (info "Cache updated with revision format maps. Cache Size:"
           (hash-cache/cache-size (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
-                                 cmn-coll-metadata-cache/cache-key))))
+                                 cmn-coll-metadata-cache/cache-key))
+    (info (format "Redis timed function update-cache for %s redis save time [%s] ms " cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start)))))
 
 (defn- transform-and-cache
   "Takes existing revision format maps missing the target format, generates the format XML, and returns
@@ -248,7 +258,9 @@
   (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
     (reduce (fn [grouped-map tuple]
               (let [[concept-id revision-id] tuple
-                    revision-format-map (hash-cache/get-value cache cmn-coll-metadata-cache/cache-key concept-id)]
+                    redis-start (System/currentTimeMillis)
+                    revision-format-map (hash-cache/get-value cache cmn-coll-metadata-cache/cache-key concept-id)
+                    _ (info (format "Redis timed function get-cached-metadata-in-format for %s redis get time [%s] ms " cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start)))]
                 (if revision-format-map
                   ;; Concept is cached
                   (cond

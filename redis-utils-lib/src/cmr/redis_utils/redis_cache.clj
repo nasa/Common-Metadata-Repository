@@ -7,7 +7,7 @@
   (:require
    [clojure.edn :as edn]
    [cmr.common.cache :as cache]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.log :as log :refer [info]]
    [cmr.redis-utils.redis :as redis :refer [wcar*]]
    [taoensso.carmine :as carmine]))
 
@@ -37,38 +37,37 @@
   cache/CmrCache
   (get-keys
     [this]
-    (map deserialize (redis/get-keys)))
+    (let [start (System/currentTimeMillis)
+          keys (map deserialize (redis/get-keys))]
+      (info (format "Redis timed function redis get-keys time [%s] ms" (- (System/currentTimeMillis) start)))
+      keys))
 
   (key-exists
     [this key]
     ;; key is the cache-key. Returns true if the cache key exists in redis, otherwise returns nil.
-    (let [exists (wcar* (carmine/exists (serialize key)))]
+    (let [start (System/currentTimeMillis)
+          exists (wcar* (carmine/exists (serialize key)))
+          _ (info (format "Redis timed function key-exists time [%s] ms" (- (System/currentTimeMillis) start)))]
       (when exists
         (> exists 0))))
 
   (get-value
     [this key]
-    (info (format "Redis cache get timed function %s starting" key))
-    (let [s-key (serialize key)
-          result (-> (wcar* :as-pipeline
-                            (carmine/get s-key)
-                            (when refresh-ttl? (carmine/expire s-key ttl)))
-                     first
-                     :value)]
-      (info (format "Redis cache get timed function %s finished" key))
-      result))
+    (let [s-key (serialize key)]
+      (-> (wcar* :as-pipeline
+                 (carmine/get s-key)
+                 (when refresh-ttl? (carmine/expire s-key ttl)))
+          first
+          :value)))
 
   (get-value
     [this key lookup-fn]
-    (info (format "Redis cache get lookup timed function %s starting" key))
-    (let [cache-value (cache/get-value this key)
-          result (if-not (nil? cache-value)
-                   cache-value
-                   (let [value (lookup-fn)]
-                     (cache/set-value this key value)
-                     value))]
-      (info (format "Redis cache get lookup timed function %s finished" key))
-      result))
+    (let [cache-value (cache/get-value this key)]
+      (if-not (nil? cache-value)
+        cache-value
+        (let [value (lookup-fn)]
+          (cache/set-value this key value)
+          value))))
 
   (reset
     [this]
@@ -78,20 +77,20 @@
   (set-value
     [this key value]
     ;; Store value in map to aid deserialization of numbers.
-    (info (format "Redis cache save timed function %s starting" key))
-    (let [s-key (serialize key)
-          result (wcar* (carmine/set s-key {:value value})
-                        (when ttl (carmine/expire s-key ttl)))]
-      (info (format "Redis cache save timed function %s finished" key))
-      result))
+    (let [s-key (serialize key)]
+      (wcar* (carmine/set s-key {:value value})
+             (when ttl (carmine/expire s-key ttl)))))
 
   (cache-size
     [_]
-    (reduce #(+ %1 (if-let [size (wcar* (carmine/memory-usage (serialize %2)))]
-                     size
-                     0))
-            0
-            keys-to-track)))
+    (let [start (System/currentTimeMillis)
+          size (reduce #(+ %1 (if-let [size (wcar* (carmine/memory-usage (serialize %2)))]
+                                size
+                                0))
+                       0
+                       keys-to-track)
+          _ (info (format "Redis timed function cache-size time [%s] ms" (- (System/currentTimeMillis) start)))]
+      size)))
 
 (defn create-redis-cache
   "Creates an instance of the redis cache.

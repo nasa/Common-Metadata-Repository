@@ -2,6 +2,7 @@
   "Stores the latest humanizer json in a consistent cache."
   (:require
    [cmr.common.cache :as c]
+   [cmr.common.log :refer [info]]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.humanizer :as humanizer]))
 
@@ -21,14 +22,19 @@
 (defn refresh-cache
   "Refreshes the humanizers in the cache."
   [context]
-  (let [cache (c/context->cache context humanizer-cache-key)]
-    (c/set-value cache humanizer-cache-key
-                 (retrieve-humanizers context))))
+  (let [cache (c/context->cache context humanizer-cache-key)
+        start (System/currentTimeMillis)
+        result (c/set-value cache humanizer-cache-key (retrieve-humanizers context))]
+    (info (format "Redis timed function refresh-cache for %s redis set-value time [%s] ms " humanizer-cache-key (- (System/currentTimeMillis) start)))
+    result))
 
 (defn get-humanizer-instructions
   "Returns the humanizer instructions."
   [context]
-  (let [cache (c/context->cache context humanizer-cache-key)]
-    (c/get-value cache
-                 humanizer-cache-key
-                 #(retrieve-humanizers context))))
+  (let [cache (c/context->cache context humanizer-cache-key)
+        start (System/currentTimeMillis)
+        result (c/get-value cache
+                            humanizer-cache-key
+                            #(retrieve-humanizers context))]
+    (info (format "Redis timed function get-humanizer-instructions for %s redis set-value time [%s] ms " humanizer-cache-key (- (System/currentTimeMillis) start)))
+    result))

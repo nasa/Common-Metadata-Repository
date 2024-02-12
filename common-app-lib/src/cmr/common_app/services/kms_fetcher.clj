@@ -58,7 +58,12 @@
   as used in the KMS cache."
   [context]
   (let [kms-cache (cache/context->cache context kms-cache-key)
-        kms-cache-value (cache/get-value kms-cache kms-cache-key)]
+        start (System/currentTimeMillis)
+        ;; TODO
+        ;; This the :kms cache used anywhere else? to get keywords, if not, it would 
+        ;; be better to remove this cache if it is only used to create the other caches.
+        kms-cache-value (cache/get-value kms-cache kms-cache-key)
+        _ (info (format "Redis timed function fetch-gcmd-keywords-map for %s redis get time [%s] ms " kms-cache-key (- (System/currentTimeMillis) start)))]
     (kms-lookup/create-kms-index
      context
      (into {}
@@ -73,19 +78,29 @@
   "Retrieves the GCMD keywords map from the cache."
   [context]
   (when-not (:ignore-kms-keywords context)
-    (let [cache (cache/context->cache context kms-cache-key)]
-      (or (cache/get-value cache kms-cache-key)
-          (when-not (cache/key-exists cache kms-cache-key)
-            (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context)))))))
+    (let [cache (cache/context->cache context kms-cache-key)
+          start (System/currentTimeMillis)
+          result (or (cache/get-value cache kms-cache-key)
+                           ;; Why are we calling key-exists - we don't need to. If the value is null
+                           ;; then we should just call get-value with the fetch. 
+                     (when-not (cache/key-exists cache kms-cache-key)
+                       (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context))))]
+      
+      (info (format "Redis timed function get-kms-index for %s redis get time [%s] ms " kms-cache-key (- (System/currentTimeMillis) start)))
+      result)))
 
 (defn refresh-kms-cache
   "Refreshes the KMS keywords stored in the cache. This should be called from a background job on a
   timer to keep the cache fresh."
   [context]
   (let [cache (cache/context->cache context kms-cache-key)
-        gcmd-keywords-map (fetch-gcmd-keywords-map context)]
+        gcmd-keywords-map (fetch-gcmd-keywords-map context)
+        start (System/currentTimeMillis)
+        ;; I don't think the caller cares for any return result, but I need to check.
+        result (cache/set-value cache kms-cache-key gcmd-keywords-map)]
+    (info (format "Redis timed function refresh-kms-cache for %s redis get time [%s] ms " kms-cache-key (- (System/currentTimeMillis) start)))
     (info "Refreshed KMS cache.")
-    (cache/set-value cache kms-cache-key gcmd-keywords-map)))
+    result))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache.

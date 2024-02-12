@@ -63,10 +63,12 @@
   [context]
   (info "Updating collection metadata cache")
   (let [incremental-since-refresh-date (str (t/now))
+        update-start (System/currentTimeMillis)
         concepts-tuples (cmn-coll-metadata-cache/fetch-updated-collections-from-elastic context)
         new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
                                 {}
                                 (partition-all 1000 concepts-tuples))
+        redis-start (System/currentTimeMillis)
         cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
     (hash-cache/set-value cache 
                           cmn-coll-metadata-cache/cache-key 
@@ -75,17 +77,21 @@
     (hash-cache/set-values cache 
                            cmn-coll-metadata-cache/cache-key 
                            new-cache-value)
-    (info "Metadata cache update complete. Cache Size:" (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))))
+    (info "Metadata cache update complete. Cache Size:" (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))
+    (info (format "Redis timed function update-cache for %s data-collection time [%s] ms " cmn-coll-metadata-cache/cache-key (- redis-start update-start)))
+    (info (format "Redis timed function update-cache for %s redis save time [%s] ms " cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start)))))
 
 (defn refresh-cache
   "Refreshes the collection metadata cache"
   [context]
   (info "Refreshing collection metadata cache")
   (let [incremental-since-refresh-date (str (t/now))
+        data-start (System/currentTimeMillis)
         concepts-tuples (cmn-coll-metadata-cache/fetch-collections-from-elastic context)
         new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
                                 {}
                                 (partition-all 1000 concepts-tuples))
+        redis-start (System/currentTimeMillis)
         cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
     (hash-cache/set-value cache 
                           cmn-coll-metadata-cache/cache-key 
@@ -94,7 +100,9 @@
     (hash-cache/set-values cache cmn-coll-metadata-cache/cache-key new-cache-value)
     
     (info "Metadata cache refresh complete. Cache Size:" 
-          (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))))
+          (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))
+    (info (format "Redis timed function refresh-cache for %s data-collection time [%s] ms " cmn-coll-metadata-cache/cache-key (- redis-start data-start)))
+    (info (format "Redis timed function refresh-cache for %s redis save time [%s] ms " cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start)))))
 
 (defjob RefreshCollectionsMetadataCache
   [ctx system]

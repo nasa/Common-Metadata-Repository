@@ -56,9 +56,11 @@
   (info "Refreshing search index-names cache.")
   (let [index-names-map (fetch-concept-type-index-names context)
         index-names (:index-names index-names-map)
-        cache (hcache/context->cache context index-names-cache-key)]
+        cache (hcache/context->cache context index-names-cache-key)
+        start (System/currentTimeMillis)]
     (hcache/set-values cache index-names-cache-key index-names)
     (hcache/set-value cache index-names-cache-key :rebalancing-collections (:rebalancing-collections index-names-map))
+    (info (format "Redis timed function refresh-index-names-cache for %s redis set-values time [%s] ms " index-names-cache-key (- (System/currentTimeMillis) start)))
     (info "Refreshed search index-names cache.")))
 
 ;; A job for refreshing the index names cache.
