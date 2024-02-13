@@ -18,10 +18,9 @@
                (catch Exception e#
                  (if (> num-retries# 0)
                    (do
-                     (info (format "Redis failed with exception %s. Retrying %d more times. Trying to %s %s"
+                     (info (format "Redis failed with exception %s. Retrying %d more times. Trying to %s"
                                    e#
                                    (dec num-retries#)
-                                   ~@body
                                    (.getStackTrace (Thread/currentThread))))
                      (Thread/sleep (config/redis-retry-interval))
                      (with-retry# (dec num-retries#)))
