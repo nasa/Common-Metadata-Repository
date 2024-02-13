@@ -164,7 +164,7 @@
     (info "Cache updated with revision format maps. Cache Size:"
           (hash-cache/cache-size (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
                                  cmn-coll-metadata-cache/cache-key))
-    (info (format "Redis timed function update-cache for %s redis save time [%s] ms " cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start)))))
+    (info (format "Redis timed function update-cache for %s  time [%s] ms " cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start)))))
 
 (defn- transform-and-cache
   "Takes existing revision format maps missing the target format, generates the format XML, and returns

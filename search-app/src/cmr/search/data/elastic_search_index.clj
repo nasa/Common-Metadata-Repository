@@ -11,6 +11,7 @@
    [cmr.common.hash-cache :as hcache]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.log :refer [info]]
    [cmr.common.services.errors :as e]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
    [cmr.search.services.query-walkers.provider-id-extractor :as pex])
@@ -32,11 +33,17 @@
 (defn- get-granule-index-names
   "Fetch index names associated with granules excluding rebalancing collections indexes"
   [context]
+  (def context context)
   (let [cache (hcache/context->cache context cache-key)
-        _ (when-not (hcache/key-exists cache cache-key)
-            (index-names-cache/refresh-index-names-cache context))
-        granule-index-names (hcache/get-value cache cache-key :granule)
-        rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)]
+        ;_ (when-not (hcache/key-exists cache cache-key)
+        ;    (index-names-cache/refresh-index-names-cache context))
+        start (System/currentTimeMillis)
+        granule-index-names (or (hcache/get-value cache cache-key :granule)
+                                (do 
+                                  (index-names-cache/refresh-index-names-cache context)
+                                  (hcache/get-value cache cache-key :granule)))
+        rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)
+        _ (info (format "Redis timed function get-granule-index-names for %s redis save time [%s] ms " cache-key (- (System/currentTimeMillis) start)))]
     (apply dissoc granule-index-names (map keyword rebalancing-collections))))
 
 (defn- collection-concept-id->index-name
@@ -58,15 +65,26 @@
           (map #(format "%d_c*_%s" index-set-id (string/lower-case %))
                provider-ids))))
 
+(comment
+  (let [cache (hcache/context->cache context cache-key)]
+    (hcache/get-value cache cache-key :granule1)
+        )
+  )
 (defn all-granule-indexes
   "Returns all possible granule indexes in a string that can be used by elasticsearch query"
   [context]
   (let [cache (hcache/context->cache context cache-key)
-        _ (when-not (hcache/key-exists cache cache-key)
-            (index-names-cache/refresh-index-names-cache context))
-        granule-index-names (hcache/get-value cache cache-key :granule)
+        ;_ (when-not (hcache/key-exists cache cache-key)
+        ;    (index-names-cache/refresh-index-names-cache context))
+        start (System/currentTimeMillis)
+        ;granule-index-names (hcache/get-value cache cache-key :granule)
+        granule-index-names (or (hcache/get-value cache cache-key :granule)
+                                (do
+                                  (index-names-cache/refresh-index-names-cache context)
+                                  (hcache/get-value cache cache-key :granule)))
         rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)
         rebalancing-indexes (map granule-index-names (map keyword rebalancing-collections))
+        _ (info (format "Redis timed function all-granule-indexes for %s redis save time [%s] ms " cache-key (- (System/currentTimeMillis) start)))
         ;; Exclude all the rebalancing collection indexes.
         excluded-collections-str (if (seq rebalancing-indexes)
                                    (str "," (string/join "," (map #(str "-" %) rebalancing-indexes)))
