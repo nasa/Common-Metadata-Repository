@@ -46,6 +46,7 @@
 
 (defmethod post-process-query-result-feature :default
   [context query elastic-results query-results feature]
+  (println "inside post-process-query-result-feature :default")
   ; Does nothing by default
   query-results)
 
@@ -59,6 +60,7 @@
 (defn post-process-query-result-features
   "Processes result features that execute after a query results have been found."
   [context query elastic-results query-results]
+  (println "inside post-process-query-result-features")
   (reduce (partial post-process-query-result-feature context query elastic-results)
           query-results
           (:result-features query)))
@@ -79,7 +81,8 @@
 
 (defmethod execute-query :elasticsearch
   [context query]
-  (let [[context processed-query] (concept-type-specific-query-processing
+  (let [_ (println "inside execute-query :elasticsearch")
+        [context processed-query] (concept-type-specific-query-processing
                                    context query)
         processed-query (pre-process-query-result-features context processed-query)
         elastic-results (->> processed-query

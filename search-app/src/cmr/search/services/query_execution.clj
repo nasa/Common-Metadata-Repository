@@ -152,6 +152,7 @@
 
 (defmethod common-qe/concept-type-specific-query-processing :granule
   [context query]
+  (println "inside common-qe/concept-type-specific-query-processing :granule")
   (let [processed-query (r/resolve-collection-queries context query)
         collection-ids (ce/extract-collection-concept-ids processed-query)]
     [(assoc context

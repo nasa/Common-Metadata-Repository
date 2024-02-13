@@ -21,6 +21,7 @@
    [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]
    [cmr.common.log :refer [info]]
    [cmr.common.generics :as common-generic]
+   [cmr.search.services.query-execution.has-granules-results-feature :as has-granules-results-feature]
    [compojure.core :refer :all]
    [compojure.route :as route]
    [drift.execute :as drift]
@@ -142,6 +143,9 @@
 
               (= keyword-cache-name humanizer-alias-cache/humanizer-alias-cache-key)
               (humanizer-alias-cache/refresh-entire-cache request-context)
+
+              (= keyword-cache-name has-granules-results-feature/has-granule-cache-key)
+              (has-granules-results-feature/refresh-has-granules-map request-context)
 
               :else
               (route/not-found "Not Found")))
