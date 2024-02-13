@@ -12,7 +12,7 @@
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.site-util :as site]
    [cmr.system-int-test.utils.tag-util :as tags]
-			[cmr.system-int-test.utils.url-helper :as url]
+   [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.models.umm-common-models :as cm]
    [cmr.umm-spec.test.expected-conversion :as exp-conv]))

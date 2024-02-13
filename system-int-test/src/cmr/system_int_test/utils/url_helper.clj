@@ -401,8 +401,6 @@
   []
   (format "http://localhost:%s/caches/refresh/collection-metadata-cache" (transmit-config/bootstrap-port)))
 
-;;collection-metadata-cache
-
 (defn refresh-humanizer-alias-cache-url
   []
   (format "http://localhost:%s/caches/refresh/humanizer-alias-cache-by-field" (transmit-config/bootstrap-port)))
