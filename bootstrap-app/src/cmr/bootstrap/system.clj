@@ -22,6 +22,7 @@
    [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]
    [cmr.common.api.web-server :as web]
+   [cmr.common.cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
@@ -34,6 +35,7 @@
    [cmr.metadata-db.config :as mdb-config]
    [cmr.metadata-db.system :as mdb-system]
    [cmr.metadata-db.services.util :as mdb-util]
+   [cmr.redis-utils.redis-cache]
    [cmr.search.services.humanizers.humanizer-report-service :as humanizer-report-service]
    [cmr.transmit.config :as transmit-config]))
 
