@@ -54,6 +54,12 @@ def deploy_schedule(job_name, jobs_file_name):
     into AWS EventBridge that invoke the job-router lambda
     for each given job in the jobs_file
     """
+    environment = os.getenv('CMR_ENVIRONMENT')
+
+    if environment is None:
+        print("CMR_ENVIRONMENT variable needs to be set")
+        sys.exit()
+
     with open(jobs_file_name, encoding="UTF-8") as json_file:
         jobs_map = json.load(json_file)
 
@@ -62,6 +68,7 @@ def deploy_schedule(job_name, jobs_file_name):
                   + jobs_file_name + " file")
             sys.exit()
 
+        lambda_client = boto3.client('lambda')
         try:
             lambda_details = lambda_client.get_function(
                 FunctionName="job-router-"+environment
@@ -72,6 +79,7 @@ def deploy_schedule(job_name, jobs_file_name):
 
         job_details = jobs_map[job_name]
 
+        client = boto3.client('events')
         try:
             client.put_rule(
                 Name=job_name,
@@ -100,17 +108,8 @@ def deploy_schedule(job_name, jobs_file_name):
         print(job_name + " job event deployed")
 
 if __name__ is '__main__':
-    client = boto3.client('events')
-    lambda_client = boto3.client('lambda')
-
-    environment = os.getenv('CMR_ENVIRONMENT').lower()
-
     if len(sys.argv) < 2:
         print("Usage is 'python deploy_schedule.py job_name [jobs_file]'")
-        sys.exit()
-
-    if environment is None:
-        print("CMR_ENVIRONMENT variable needs to be set")
         sys.exit()
 
     jobs_file = "../job-details.json" if len(sys.argv) < 3 else sys.argv[2]
