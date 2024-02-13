@@ -183,10 +183,10 @@
                     (name concept-type)
                     (:provider-id provider)))
       (let [db (helper/get-metadata-db-db system)
-            params (merge {:concept-type concept-type}
-                          :provider-id (:provider-id provider)
-                          (when (cc/generic-concept? concept-type)
-                            {:schema (name concept-type)}))
+            params (merge {:concept-type concept-type
+                           :provider-id (:provider-id provider)
+                           (when (cc/generic-concept? concept-type)
+                             {:schema (name concept-type)})})
             concept-batches (db/find-concepts-in-batches
                              db provider
                              params
