@@ -244,7 +244,8 @@
          provider-id (:provider-id provider)
          params (params->sql-params concept-type [provider] params)
          table (tables/get-table-name provider concept-type)
-         start-index (max requested-start-index (find-batch-starting-id db table params))]
+         start-index (max (or requested-start-index 0)
+                          (or (find-batch-starting-id db table params) 0))]
      (j/with-db-transaction
        [conn db]
        (let [conditions [`(>= :id ~start-index)
