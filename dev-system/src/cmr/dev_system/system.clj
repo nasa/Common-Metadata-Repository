@@ -224,8 +224,8 @@
 		"Create an instance of the bootstrap application."
 		[db-component queue-broker]
 		(let [sys-with-db (if db-component
-																						(assoc-in (bootstrap-system/create-system) [:embedded-systems :metadata-db :db] db-component)
-																						(bootstrap-system/create-system))]
+                      (assoc-in (bootstrap-system/create-system) [:embedded-systems :metadata-db :db] db-component)
+                      (bootstrap-system/create-system))]
 				(assoc sys-with-db :queue-broker queue-broker)))
 
 (defmulti create-ingest-app
