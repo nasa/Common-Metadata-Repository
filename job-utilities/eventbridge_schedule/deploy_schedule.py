@@ -107,7 +107,7 @@ def deploy_schedule(job_name, jobs_file_name):
 
         print(job_name + " job event deployed")
 
-if __name__ is '__main__':
+if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("Usage is 'python deploy_schedule.py job_name [jobs_file]'")
         sys.exit()

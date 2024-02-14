@@ -1,13 +1,14 @@
+"""
+Test module for unit testing eventbridge_schdeule/deploy_schedule.py
+"""
 import unittest
 from unittest.mock import patch, mock_open, Mock, MagicMock
 import json
 import os
 
-import boto3
 from botocore.exceptions import ClientError
-from botocore.stub import Stubber
 
-import eventbridge_schedule.deploy_schedule as deploy_schedule
+from eventbridge_schedule import deploy_schedule
 
 test_job_data = {
     "CronSingleTargetJob" :
@@ -61,47 +62,78 @@ test_error_response = {
 }
 
 class TestDeploySchedule(unittest.TestCase):
+    """
+    Unittest class
+    """
     def test_make_cron_expression(self):
-        self.assertEqual(deploy_schedule.make_cron_expression(test_job_data["CronSingleTargetJob"]), "cron(1 2 * * ? *)")
-    
+        """
+        Test the make_cron_expression function creates an expression of the correct format
+        """
+        self.assertEqual(deploy_schedule.make_cron_expression(test_job_data["CronSingleTargetJob"]),
+                         "cron(1 2 * * ? *)")
+
     def test_make_interval_expression(self):
-        self.assertEqual(deploy_schedule.make_interval_expression(test_job_data["ScheduleSingleTargetJob"]), "rate(95 minutes)")
+        """
+        Test the make_interval_expression function creates an expression of the correct format
+        """
+        self.assertEqual(deploy_schedule.make_interval_expression(test_job_data["ScheduleSingleTargetJob"]),
+                         "rate(95 minutes)")
 
     def test_make_schedule_expressions(self):
-        self.assertEqual(deploy_schedule.make_schedule_expression(test_job_data["CronSingleTargetJob"]), "cron(1 2 * * ? *)")
-        self.assertEqual(deploy_schedule.make_schedule_expression(test_job_data["ScheduleSingleTargetJob"]), "rate(95 minutes)")
+        """
+        Test the make_schedule function correcly creates both cron and schedule expressions
+        """
+        self.assertEqual(deploy_schedule.make_schedule_expression(test_job_data["CronSingleTargetJob"]),
+                         "cron(1 2 * * ? *)")
+        self.assertEqual(deploy_schedule.make_schedule_expression(test_job_data["ScheduleSingleTargetJob"]),
+                         "rate(95 minutes)")
 
-    def client_mocks(client_type):
-        mock = Mock()
-        return mock
+    @patch('builtins.open', new_callable=mock_open, read_data=json.dumps(test_job_data))
+    @patch.dict(os.environ, {}, clear=True)
+    def test_wrong_environment_variables(self, _mock_file):
+        """
+        Test that deploy_schedule fails out when needed environment variables aren't set
+        """
+        with self.assertRaises(SystemExit):
+            deploy_schedule.deploy_schedule("CronSingleTargetJob", "TestFile")
 
     @patch('boto3.client')
     @patch('builtins.open', new_callable=mock_open, read_data=json.dumps(test_job_data))
-    def test_get_function_client_error(self, mock_file, mock_client):
+    @patch.dict(os.environ, {"CMR_ENVIRONMENT": "test"})
+    def test_get_function_client_error(self, _mock_file, mock_client):
+        """
+        Test that deploy_schedule fails out when client.get_function returns a ClientError
+        """
         get_function_mock = Mock()
         get_function_mock.get_function.side_effect = ClientError(test_error_response, "get_function")
 
         mock_client.return_value = get_function_mock
-        os.environ["CMR_ENVIRONMENT"] = "test"
 
         with self.assertRaises(SystemExit):
             deploy_schedule.deploy_schedule("CronSingleTargetJob", "TestFile")
 
     @patch('boto3.client')
     @patch('builtins.open', new_callable=mock_open, read_data=json.dumps(test_job_data))
-    def test_put_rule_client_error(self, mock_file, mock_client):
+    @patch.dict(os.environ, {"CMR_ENVIRONMENT": "test"})
+    def test_put_rule_client_error(self, _mock_file, mock_client):
+        """
+        Test that deploy_schedule fails out when clien.put_rule returns a ClientError
+        """
         put_rule_mock = Mock()
         put_rule_mock.put_rule.side_effect = ClientError(test_error_response, "put_rule")
 
         mock_client.return_value = put_rule_mock
-        os.environ["CMR_ENVIRONMENT"] = "test"
 
         with self.assertRaises(SystemExit):
             deploy_schedule.deploy_schedule("CronSingleTargetJob", "TestFile")
 
     @patch('boto3.client')
     @patch('builtins.open', new_callable=mock_open, read_data=json.dumps(test_job_data))
-    def test_put_target_client_error(self, mock_file, mock_client):
+    @patch.dict(os.environ, {"CMR_ENVIRONMENT": "test"})
+    def test_put_target_client_error(self, _mock_file, mock_client):
+        """
+        Test that deploy_schedule fails out when client.put_targets returns a ClientError
+        """
         put_targets_mock = MagicMock()
         put_targets_mock.put_targets.side_effect = ClientError(test_error_response, "put_targets")
 
@@ -110,7 +142,6 @@ class TestDeploySchedule(unittest.TestCase):
 
         with self.assertRaises(SystemExit):
             deploy_schedule.deploy_schedule("CronSingleTargetJob", "TestFile")
-        
 
 if __name__ == '__main__':
     unittest.main()
