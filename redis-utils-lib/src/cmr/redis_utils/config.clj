@@ -60,8 +60,8 @@
           :port (redis-port)
           :password (redis-password)
           :timeout-ms (redis-timeout-ms)}
-   :pool {:max-total 1}})
-   ;:pool {:max-total (web-server/MAX_THREADS)}})
+   ;:pool {:max-total 1}})
+   :pool {:max-total (web-server/MAX_THREADS)}})
 
 (defn redis-write-conn-opts
   "Redis connection options to be used with wcar."
@@ -70,8 +70,8 @@
           :port (redis-write-port)
           :password (redis-password)
           :timeout-ms (redis-timeout-ms)}
-   :pool {:max-total 1}})
-   ;:pool {:max-total (web-server/MAX_THREADS)}})
+   ;:pool {:max-total 1}})
+   :pool {:max-total (web-server/MAX_THREADS)}})
 
 (defn redis-read-conn-opts
   "Redis connection options to be used with wcar."
@@ -80,5 +80,5 @@
           :port (redis-read-port)
           :password (redis-password)
           :timeout-ms (redis-timeout-ms)}
-   :pool {:max-total 1}})
-   ;:pool {:max-total (web-server/MAX_THREADS)}})
+   ;:pool {:max-total 1}})
+   :pool {:max-total (web-server/MAX_THREADS)}})
