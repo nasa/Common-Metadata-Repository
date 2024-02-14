@@ -138,7 +138,6 @@ class TestDeploySchedule(unittest.TestCase):
         put_targets_mock.put_targets.side_effect = ClientError(test_error_response, "put_targets")
 
         mock_client.return_value = put_targets_mock
-        os.environ["CMR_ENVIRONMENT"] = "test"
 
         with self.assertRaises(SystemExit):
             deploy_schedule.deploy_schedule("CronSingleTargetJob", "TestFile")
