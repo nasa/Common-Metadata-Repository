@@ -221,9 +221,12 @@
   (assoc (access-control-system/create-system) :queue-broker queue-broker))
 
 (defn create-bootstrap-app
-  "Create an instance of the bootstrap application."
-  [queue-broker]
-  (assoc (bootstrap-system/create-system) :queue-broker queue-broker))
+		"Create an instance of the bootstrap application."
+		[db-component queue-broker]
+		(let [sys-with-db (if db-component
+                      (assoc-in (bootstrap-system/create-system) [:embedded-systems :metadata-db :db] db-component)
+                      (bootstrap-system/create-system))]
+				(assoc sys-with-db :queue-broker queue-broker)))
 
 (defmulti create-ingest-app
   "Create an instance of the ingest application."
@@ -278,7 +281,7 @@
              {:mock-echo echo-component
               :access-control (create-access-control-app queue-broker)
               :metadata-db (create-metadata-db-app db-component queue-broker)
-              :bootstrap (create-bootstrap-app queue-broker)
+              :bootstrap (create-bootstrap-app db-component queue-broker)
               :indexer (create-indexer-app queue-broker)
               :ingest (create-ingest-app db queue-broker)
               :search (create-search-app db-component queue-broker)
