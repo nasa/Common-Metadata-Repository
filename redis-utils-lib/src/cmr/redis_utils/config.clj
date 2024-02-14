@@ -8,7 +8,23 @@
   "Redis host."
   {:default "localhost"})
 
+(defconfig redis-write-host
+  "Redis write host."
+  {:default "localhost"})
+
+(defconfig redis-read-host
+  "Redis read host."
+  {:default "localhost"})
+
 (defconfig redis-port
+  "Port Redis is listening on."
+  {:default 6379 :type Long})
+
+(defconfig redis-write-port
+  "Port Redis is listening on."
+  {:default 6379 :type Long})
+
+(defconfig redis-read-port
   "Port Redis is listening on."
   {:default 6379 :type Long})
 
@@ -44,4 +60,25 @@
           :port (redis-port)
           :password (redis-password)
           :timeout-ms (redis-timeout-ms)}
-   :pool {:max-total (web-server/MAX_THREADS)}})
+   :pool {:max-total 1}})
+   ;:pool {:max-total (web-server/MAX_THREADS)}})
+
+(defn redis-write-conn-opts
+  "Redis connection options to be used with wcar."
+  []
+  {:spec {:host (redis-write-host)
+          :port (redis-write-port)
+          :password (redis-password)
+          :timeout-ms (redis-timeout-ms)}
+   :pool {:max-total 1}})
+   ;:pool {:max-total (web-server/MAX_THREADS)}})
+
+(defn redis-read-conn-opts
+  "Redis connection options to be used with wcar."
+  []
+  {:spec {:host (redis-read-host)
+          :port (redis-read-port)
+          :password (redis-password)
+          :timeout-ms (redis-timeout-ms)}
+   :pool {:max-total 1}})
+   ;:pool {:max-total (web-server/MAX_THREADS)}})

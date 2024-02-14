@@ -8,7 +8,7 @@
    [clojure.edn :as edn]
    [cmr.common.cache :as cache]
    [cmr.common.log :as log :refer [info]]
-   [cmr.redis-utils.redis :as redis :refer [wcar*]]
+   [cmr.redis-utils.redis :as redis :refer [wr-wcar*]]
    [taoensso.carmine :as carmine]))
 
 (defn serialize
@@ -46,7 +46,7 @@
     [this key]
     ;; key is the cache-key. Returns true if the cache key exists in redis, otherwise returns nil.
     (let [start (System/currentTimeMillis)
-          exists (wcar* (carmine/exists (serialize key)))
+          exists (wr-wcar* key true (carmine/exists (serialize key)))
           _ (info (format "Redis timed function key-exists time [%s] ms" (- (System/currentTimeMillis) start)))]
       (when exists
         (> exists 0))))
@@ -54,9 +54,11 @@
   (get-value
     [this key]
     (let [s-key (serialize key)]
-      (-> (wcar* :as-pipeline
-                 (carmine/get s-key)
-                 (when refresh-ttl? (carmine/expire s-key ttl)))
+      (-> (wr-wcar* key 
+                    true 
+                    :as-pipeline
+                    (carmine/get s-key)
+                    (when refresh-ttl? (carmine/expire s-key ttl)))
           first
           :value)))
 
@@ -72,19 +74,21 @@
   (reset
     [this]
     (doseq [the-key keys-to-track]
-      (wcar* (carmine/del (serialize the-key)))))
+      (wr-wcar* the-key false (carmine/del (serialize the-key)))))
 
   (set-value
     [this key value]
     ;; Store value in map to aid deserialization of numbers.
     (let [s-key (serialize key)]
-      (wcar* (carmine/set s-key {:value value})
-             (when ttl (carmine/expire s-key ttl)))))
+      (wr-wcar* key 
+                false 
+                (carmine/set s-key {:value value})
+                (when ttl (carmine/expire s-key ttl)))))
 
   (cache-size
     [_]
     (let [start (System/currentTimeMillis)
-          size (reduce #(+ %1 (if-let [size (wcar* (carmine/memory-usage (serialize %2)))]
+          size (reduce #(+ %1 (if-let [size (wr-wcar* "" false (carmine/memory-usage (serialize %2)))]
                                 size
                                 0))
                        0

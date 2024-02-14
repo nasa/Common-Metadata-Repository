@@ -8,7 +8,7 @@
    [cmr.common.hash-cache :as cache]
    [cmr.common.log :as log :refer [info]]
    [cmr.redis-utils.redis-cache :as rc]
-   [cmr.redis-utils.redis :as redis :refer [wcar*]]
+   [cmr.redis-utils.redis :as redis :refer [wr-wcar*]]
    [taoensso.carmine :as carmine]))
 
 ;; Implements the CmrHashCache protocol by saving data in Redis.
@@ -32,7 +32,8 @@
     ;; First pulls out the inner vector then conver it to {field value field value} hash 
     ;; map so that callers can process it.
     (let [start (System/currentTimeMillis)
-          result (-> (wcar* :as-pipeline (carmine/hgetall (rc/serialize key)))
+          ;; true is for reading the cache.
+          result (-> (wr-wcar* key true :as-pipeline (carmine/hgetall (rc/serialize key)))
                      first)
           result (when-not (or (nil? result)
                                (empty? result))
@@ -45,7 +46,7 @@
     [this key]
     ;; key is the cache-key. Retuns true if the cache key exists in redis nil otherwise
     (let [start (System/currentTimeMillis)
-          exists (wcar* (carmine/exists (rc/serialize key)))]
+          exists (wr-wcar* key true (carmine/exists (rc/serialize key)))]
       (info (format "Redis timed function hash cache key-exists for %s time [%s] ms" key (- (System/currentTimeMillis) start)))
       (when exists
         (> exists 0))))
@@ -56,7 +57,7 @@
     ;; hkeys returns a vector structure [[key1 key2 ... keyn]] First pulls out the inner vector
     ;; returns a vector of keys.
    (let [start (System/currentTimeMillis)
-         result (-> (wcar* :as-pipeline (carmine/hkeys (rc/serialize key)))
+         result (-> (wr-wcar* key true :as-pipeline (carmine/hkeys (rc/serialize key)))
                     first)]
      (info (format "Redis timed function hash cache get keys for %s time [%s] ms" key (- (System/currentTimeMillis) start)))
      result))
@@ -64,41 +65,41 @@
   (get-value
     [this key field]
     ;; key is the cache-key. Returns the value of the passed in field.
-    (-> (wcar* :as-pipeline (carmine/hget (rc/serialize key) field))
+    (-> (wr-wcar* key true :as-pipeline (carmine/hget (rc/serialize key) field))
         first))
   
   (get-values
     ;; key is the cache-key. Fields is either a vector or a list of fields.
     ;; returns a vector of values.
     [this key fields]
-    (map #(-> (wcar* :as-pipeline (carmine/hget (rc/serialize key) %1))
+    (map #(-> (wr-wcar* key true :as-pipeline (carmine/hget (rc/serialize key) %1))
               first)
          fields))
 
   (reset
     [this]
     (doseq [the-key keys-to-track]
-      (wcar* (carmine/del (rc/serialize the-key)))))
+      (wr-wcar* the-key false (carmine/del (rc/serialize the-key)))))
 
   (reset
     [this key]
-    (wcar* (carmine/del (rc/serialize key))))
+    (wr-wcar* key false (carmine/del (rc/serialize key))))
 
   (set-value
     [this key field value]
     ;; Store value in map to aid deserialization of numbers.
-    (wcar* (carmine/hset (rc/serialize key) field value)))
+    (wr-wcar* (str key "-" field) false (carmine/hset (rc/serialize key) field value)))
   
   (set-values
    [this key field-value-map]
-   (doall (map #(wcar* (carmine/hset (rc/serialize key) %1 (get field-value-map %1)))
+   (doall (map #(wr-wcar* key false (carmine/hset (rc/serialize key) %1 (get field-value-map %1)))
                (keys field-value-map))))
 
   (cache-size
     [this key]
     ;; Return 0 if the cache is empty or does not yet exist. This is for cmr.common-app.services.cache-info.
     (let [start (System/currentTimeMillis)
-          size (if-let [size (wcar* (carmine/memory-usage (rc/serialize key)))]
+          size (if-let [size (wr-wcar* key false (carmine/memory-usage (rc/serialize key)))]
                  size
                  0)]
       (info (format "Redis timed function hash cache cache-size for %s time [%s] ms" key (- (System/currentTimeMillis) start)))
