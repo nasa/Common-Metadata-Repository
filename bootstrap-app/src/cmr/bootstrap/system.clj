@@ -93,7 +93,8 @@
                       cmn-coll-metadata-cache/cache-key (cmn-coll-metadata-cache/create-cache)
                       coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
                       elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)
-                      humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)}
+                      humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)
+                      has-granules-results-feature/has-granule-cache-key (has-granules-results-feature/create-has-granules-map-cache)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
                                                                (kf/refresh-kms-cache-job "bootstrap-kms-cache-refresh")
                                                                (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")

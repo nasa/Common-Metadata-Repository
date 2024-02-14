@@ -31,35 +31,29 @@
 (defn refresh-has-granules-map
   "Gets the latest provider holdings and updates the has-granules-map stored in the cache."
   [context]
-  (println "inside refresh-has-granules-map")
   (let [has-granules-map (collection-granule-counts->has-granules-map
                            (idx/get-collection-granule-counts context nil))]
-    (println "has-granules-map found in elastic = " (pr-str has-granules-map))
     (cache/set-value (cache/context->cache context has-granule-cache-key)
-                     :has-granules
+                     has-granule-cache-key
                      has-granules-map)))
 
+;; TODO need to continue to trace back to see if a full map is necessary. What is it really being used for anyway? Something related to ES queries.
 (defn get-has-granules-map
   "Gets the cached has granules map from the context which contains collection ids to true or false
   of whether the collections have granules or not. If the has-granules-map has not yet been cached
-  it will retrieve it and cache it."
+  it will retrieve it and cache it.
+  Example) {\"C0000000002-PROV1\" true, \"C0000000003-PROV1\" false}"
   [context]
-  (println "get-has-granules-map func")
-  (refresh-has-granules-map context) ;; temp
-  (let [has-granules-map-cache (cache/context->cache context has-granule-cache-key)
-        _ (println "has-granules-map-cache = " (pr-str has-granules-map-cache))
-        has-granules-map (cache/get-value has-granules-map-cache
-                                          :has-granules
-                                          (fn []
-                                            (collection-granule-counts->has-granules-map
-                                              (idx/get-collection-granule-counts context nil))))
-        _ (println "has-granules-map found = " (pr-str has-granules-map))]
-    has-granules-map))
+  (let [has-granules-map-cache (cache/context->cache context has-granule-cache-key)]
+    (cache/get-value has-granules-map-cache
+                     has-granule-cache-key
+                     (fn []
+                       (collection-granule-counts->has-granules-map
+                         (idx/get-collection-granule-counts context nil))))))
 
 ;; This returns a boolean flag with collection results if a collection has any granules in provider holdings
 (defmethod query-execution/post-process-query-result-feature :has-granules
   [context query elastic-results query-results feature]
-  (println "inside query-execution/post-process-query-result-feature :has-granules")
   (assoc query-results :has-granules-map (get-has-granules-map context)))
 
 (defjob RefreshHasGranulesMapJob
