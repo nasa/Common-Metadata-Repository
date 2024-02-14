@@ -37,7 +37,6 @@
                      has-granule-cache-key
                      has-granules-map)))
 
-;; TODO need to continue to trace back to see if a full map is necessary. What is it really being used for anyway? Something related to ES queries.
 (defn get-has-granules-map
   "Gets the cached has granules map from the context which contains collection ids to true or false
   of whether the collections have granules or not. If the has-granules-map has not yet been cached
