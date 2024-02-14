@@ -12,12 +12,6 @@ Summarize what you changed.
 
 List impacted areas.
 
-# Testing
-
-### Performance Test Results
-
-Please put in details of performance results from testing in WL
-
 # Checklist
 
 - [ ] I have updated/added unit and integration tests that prove my fix is effective or that my feature works
