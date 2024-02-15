@@ -12,6 +12,8 @@ import urllib3
 
 service_ports_file_name = os.getenv("SERVICE_PORTS_FILE", "service_ports_file.json")
 
+pool_manager = urllib3.PoolManager(headers={"Authorization" : "mock-echo-system-token"})
+
 with open(service_ports_file_name, encoding="UTF-8") as service_ports_file:
     service_port_map = json.load(service_ports_file)
 
@@ -28,8 +30,7 @@ def run_job(details, name):
     Takes the job details and runs a POST request on the job endpoint.
     """
     print('send POST to ' + details["target"]["endpoint"] + ' for job ' + name)
-    urllib3.request("POST", build_endpoint(details),
-                    headers={"Authorization" : "mock-echo-system-token"})
+    pool_manager.request("POST", build_endpoint(details),)
 
 def create_schedule():
     """

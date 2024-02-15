@@ -42,12 +42,13 @@ def handler(event, _):
     token = ssm_client.get_parameter(Name=token_param_name,
                                         WithDecryption=True)['Parameter']['Value']
 
+    pool_manager = urllib3.PoolManager(headers={"Authorization": token},
+                                       timeout=urllib3.Timeout(15))
+
     if single_target:
         print("Running POST on URL: " + cmr_url + '/' + service + '/' + endpoint)
 
-        response = urllib3.request("POST", cmr_url + '/' + service + '/' + endpoint,
-                                    headers={"Authorization": token},
-                                    timeout=urllib3.Timeout(15))
+        response = pool_manager.request("POST", cmr_url + '/' + service + '/' + endpoint)
     else:
         #Multi-target functionality is not fully implemented.
         #CMR-9688 has been made to finish this part out
@@ -66,6 +67,4 @@ def handler(event, _):
         for task in task_ips:
             print("Running POST on URL: " + task + '/' + service + '/' + endpoint)
 
-            response = urllib3.request("POST", task + '/' + service + '/' + endpoint,
-                                        headers={"Authorization": token},
-                                        timeout=urllib3.Timeout(15))
+            response = pool_manager.request("POST", task + '/' + service + '/' + endpoint)
