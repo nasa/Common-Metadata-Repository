@@ -10,9 +10,6 @@ import boto3
 import urllib3
 import jmespath
 
-client = boto3.client('ecs')
-ssm_client = boto3.client('ssm')
-
 def handler(event, _):
     """
     Entry point for Lambda function invocation.
@@ -37,6 +34,9 @@ def handler(event, _):
         error_state = True
     if error_state:
         sys.exit()
+
+    client = boto3.client('ecs')
+    ssm_client = boto3.client('ssm')
 
     token_param_name = '/'+environment+'/'+service+'/CMR_ECHO_SYSTEM_TOKEN'
     token = ssm_client.get_parameter(Name=token_param_name,
