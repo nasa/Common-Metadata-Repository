@@ -81,7 +81,7 @@
     ;; Store value in map to aid deserialization of numbers.
     (let [s-key (serialize key)]
       (wr-wcar* key 
-                false 
+                false
                 (carmine/set s-key {:value value})
                 (when ttl (carmine/expire s-key ttl)))))
 

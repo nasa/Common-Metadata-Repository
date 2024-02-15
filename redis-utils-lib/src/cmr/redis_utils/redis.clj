@@ -35,36 +35,34 @@
          with-retry#
          (fn with-retry# [num-retries#]
            (try
-             (if ~read
+             (if ~read?
                (carmine/wcar (config/redis-read-conn-opts) ~@body)
                (carmine/wcar (config/redis-write-conn-opts) ~@body))
              (catch Exception e#
                (if (> num-retries# 0)
                  (do
-                   (info (format "Redis wr-wcar %s %s failed with exception %s. Retrying %d more times."
-                                 wr-string#
-                                 ~key
-                                 e#
-                                 (dec num-retries#)))
-                   (info (format "Redis wr-wcar Testing exception message wr-string %s key %s .getMessage %s"
-                                 wr-string#
-                                 ~key
-                                 (.getMessage e#)))
-                   (info (format "Redis wr-wcar Testing exception message wr-string %s key %s stacktrace %s"
-                                 wr-string#
-                                 ~key
-                                 (clojure.stacktrace/print-stack-trace e#)))
+                   (if ~key
+                     (info (format "Redis wr-wcar %s %s failed with exception %s. Retrying %d more times."
+                                   wr-string#
+                                   ~key
+                                   e#
+                                   (dec num-retries#)))
+                     (info (format "Redis wr-wcar %s stacktrace to log which cache is having a problem %s"
+                                   wr-string#
+                                   (clojure.stacktrace/print-stack-trace e#))))
                    (Thread/sleep (config/redis-retry-interval))
                    (with-retry# (dec num-retries#)))
-                 (error "Redis failed with exception " e#)))))]
+                 (error (format "Redis wr-wcar %s %s failed with exception " wr-string# ~key) e#)))))]
      (with-retry# (config/redis-num-retries))))
 
 (defmacro ahah
   [key read? & body]
+  (println read?)
   `(let [wr-string# (if ~read? "read" "write")]
-     (if ~read
-       (str wr-string# " " ~key " " (config/redis-read-conn-opts) " " ~@body)
-       (str wr-string# " " ~key " " (config/redis-write-conn-opts) " " ~@body))))
+     (println "read " ~read?)
+     (if ~read?
+       (str "read " wr-string# " " ~key " " (config/redis-read-conn-opts) " " ~@body)
+       (str "write "wr-string# " " ~key " " (config/redis-write-conn-opts) " " ~@body))))
 (comment
   (ahah :hello false (+ 1 1))
   (clojure.stacktrace/print-stack-trace (Exception. "foo"))
