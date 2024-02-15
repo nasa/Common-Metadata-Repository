@@ -101,7 +101,7 @@
 
 (defmethod prepare-batch :variable
   [context batch options]
-  Get the variable associations as well.
+  ;; Get the variable associations as well.
   (let [batch (map (fn [concept]
                      (let [variable-associations (meta-db/get-associations-for-variable
                                                   context concept)]
@@ -124,7 +124,8 @@
 (defn bulk-index-batch
   [context batch options]
   (let [batch (prepare-batch context batch options)]
-    (es/bulk-index-documents context batch options)))
+    nil))
+    ;;(es/bulk-index-documents context batch options)))
 
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
