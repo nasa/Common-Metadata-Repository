@@ -180,9 +180,8 @@
                                                                ["ABC-1" "read"]
                                                                ["ABC-2" "read"]]
             "search 1" (url/search-read-caches-url) "acls" ["acls"]
-            ;; This is now a shared redis cache server, so many keys exist
-            ;;"search 2" (url/search-read-caches-url) "collections-for-gran-acls" []
-            "search 3" (url/search-read-caches-url) "has-granules-map" []
+            ;; collections-for-gran-acls-by-concept-id and has-granules-map are purposefully left out because they are
+            ;; in a shared redis cache server and will have multiple keys dependent on the data now
             "search 5" (url/search-read-caches-url) "token-imp" [["ABC-1" "read"] ["ABC-2" "read"]]
             "search 6" (url/search-read-caches-url) "token-sid" ["ABC-2" "ABC-1"]
             "search 7" (url/search-read-caches-url) "xsl-transformer-templates" []
