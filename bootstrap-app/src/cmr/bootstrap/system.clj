@@ -97,7 +97,7 @@
                       coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
                       elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)
                       humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)
-                      has-granules-results-feature/has-granule-cache-key (has-granules-results-feature/create-has-granules-map-cache)}
+                      has-granules-results-feature/has-granule-cache-key (has-granules-results-feature/create-has-granules-map-cache)
                       humanizer-report-service/humanizer-report-cache-key (humanizer-report-service/create-humanizer-report-cache-client)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
                                                                (kf/refresh-kms-cache-job "bootstrap-kms-cache-refresh")
@@ -107,7 +107,7 @@
                                                                (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job "bootstrap-collections-for-gran-acls-cache-refresh")
                                                                (elastic-search-index-names-cache/refresh-index-names-cache-job "bootstrap-elastic-search-index-names-cache")
                                                                (humanizer-alias-cache/refresh-humanizer-alias-cache-job "boostrap-humanizer-alias-cache-refresh")
-                                                               (has-granules-results-feature/refresh-has-granules-map-job "bootstrap-has-granules-map-refresh")])
+                                                               (has-granules-results-feature/refresh-has-granules-map-job "bootstrap-has-granules-map-refresh")
                                                                (humanizer-report-service/refresh-humanizer-report-cache-job "bootstrap-humanizer-report-cache-refresh")])
              :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :indexer :access-control :search])))
