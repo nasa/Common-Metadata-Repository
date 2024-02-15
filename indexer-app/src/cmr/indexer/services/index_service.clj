@@ -101,13 +101,13 @@
 
 (defmethod prepare-batch :variable
   [context batch options]
-  ;; Get the variable associations as well.
-  ;; (let [batch (map (fn [concept]
-  ;;                    (let [variable-associations (meta-db/get-associations-for-variable
-  ;;                                                 context concept)]
-  ;;                      (assoc concept :variable-associations variable-associations)))
-  ;;                  batch)]
-  (es/prepare-batch context (filter-expired-concepts batch) options))
+  Get the variable associations as well.
+  (let [batch (map (fn [concept]
+                     (let [variable-associations (meta-db/get-associations-for-variable
+                                                  context concept)]
+                       (assoc concept :variable-associations variable-associations)))
+                   batch)]
+    (es/prepare-batch context (filter-expired-concepts batch) options)))
 
 (defmethod prepare-batch :service
   [context batch options]
