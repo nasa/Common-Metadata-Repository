@@ -26,22 +26,10 @@
 (def has-granules-or-opensearch-cache-key
   :has-granules-or-opensearch-map)
 
-;; TODO we'll want to remove all this and make it a simple redis cache
 (defn create-has-granules-or-cwic-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
-  ;; Single threaded lookup cache used to prevent indexing multiple items at the same time with
-  ;; empty cache cause lots of lookups in elasticsearch.
-  (stl-cache/create-single-thread-lookup-cache
-    ;; Use the fall back cache so that the data is fast and available in memory
-    ;; But if it's not available we'll fetch it from redis.
-    (fallback-cache/create-fallback-cache
-
-      ;; Consistent cache is required so that if we have multiple instances of the indexer we'll
-      ;; have only a single indexer refreshing its cache.
-      (consistent-cache/create-consistent-cache
-       {:hash-timeout-seconds (* 5 60)})
-      (redis-cache/create-redis-cache))))
+  (redis-cache/create-redis-cache {:keys-to-track [has-granules-or-cwic-cache-key]}))
 
 (defn create-has-granules-or-opensearch-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
@@ -127,7 +115,7 @@
   [context]
   (let [has-granules-or-cwic-map-cache (cache/context->cache context has-granules-or-cwic-cache-key)]
     (cache/get-value has-granules-or-cwic-map-cache
-                     :has-granules-or-cwic
+                     has-granules-or-cwic-cache-key
                      (fn []
                        (collection-granule-counts->has-granules-or-cwic-map
                         (merge
