@@ -3,7 +3,6 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.data.xml :as x]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
@@ -12,16 +11,13 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.test.url-util :as url-util]
    [cmr.common.util :as util :refer [are2 are3]]
-   [cmr.common.xml :as cx]
    [cmr.search.validators.opendata :as opendata-json]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.atom :as da]
-   [cmr.system-int-test.data2.atom-json :as dj]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -30,13 +26,14 @@
    [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.data2.umm-spec-collection :as umm-spec-collection]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.cache-util :as cache-util]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.test.expected-conversion :as exp-conv]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.versioning :as umm-version]
    [cmr.umm.umm-core :as umm]
    [cmr.umm.umm-spatial :as umm-s]))
@@ -172,7 +169,7 @@
                                c3-dif [:dif :echo10 :dif10]}))
 
         (testing "All collections and formats cached after cache is refreshed"
-          (search/refresh-collection-metadata-cache)
+          (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
           ;; All formats excludes dif since we configured it above to not be cached
           (let [all-formats [:dif10 :echo10 :iso19115
                               {:format :umm-json :version umm-version/current-collection-version}]]

@@ -136,7 +136,7 @@
                       coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
                       common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
-                      hrs/report-cache-key (hrs/create-report-cache)
+                      hrs/humanizer-report-cache-key (hrs/create-humanizer-report-cache-client)
                       hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)}
              :public-conf (public-conf)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
@@ -150,8 +150,7 @@
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           (metadata-cache/update-collections-metadata-cache-job)
                           (cache-info/create-log-cache-info-job "search")
-                          jvm-info/log-jvm-statistics-job
-                          hrs/humanizer-report-generator-job])}]
+                          jvm-info/log-jvm-statistics-job])}]
     (transmit-config/system-with-connections
      sys
      [:indexer :echo-rest :metadata-db :kms :access-control :urs])))

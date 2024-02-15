@@ -22,6 +22,7 @@
    [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]
    [cmr.common.api.web-server :as web]
+   [cmr.common.cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
@@ -35,6 +36,8 @@
    [cmr.metadata-db.system :as mdb-system]
    [cmr.metadata-db.services.util :as mdb-util]
    [cmr.search.services.query-execution.has-granules-results-feature :as has-granules-results-feature]
+   [cmr.redis-utils.redis-cache]
+   [cmr.search.services.humanizers.humanizer-report-service :as humanizer-report-service]
    [cmr.transmit.config :as transmit-config]))
 
 (defconfig db-batch-size
@@ -95,6 +98,7 @@
                       elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)
                       humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)
                       has-granules-results-feature/has-granule-cache-key (has-granules-results-feature/create-has-granules-map-cache)}
+                      humanizer-report-service/humanizer-report-cache-key (humanizer-report-service/create-humanizer-report-cache-client)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
                                                                (kf/refresh-kms-cache-job "bootstrap-kms-cache-refresh")
                                                                (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
@@ -104,6 +108,7 @@
                                                                (elastic-search-index-names-cache/refresh-index-names-cache-job "bootstrap-elastic-search-index-names-cache")
                                                                (humanizer-alias-cache/refresh-humanizer-alias-cache-job "boostrap-humanizer-alias-cache-refresh")
                                                                (has-granules-results-feature/refresh-has-granules-map-job "bootstrap-has-granules-map-refresh")])
+                                                               (humanizer-report-service/refresh-humanizer-report-cache-job "bootstrap-humanizer-report-cache-refresh")])
              :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :indexer :access-control :search])))
 
