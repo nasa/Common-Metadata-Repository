@@ -3,15 +3,11 @@
   When it is enabled collection search results will include a boolean flag indicating whether the collection has
   any granules at all as indicated by provider holdings."
   (:require
-   [clojure.string :as str]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.services.search.elastic-search-index :as common-esi]
    [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
-   [cmr.common-app.services.search.query-execution :as query-execution]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.cache :as cache]
-   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.jobs :refer [defjob]]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
@@ -30,6 +26,7 @@
 (def has-granules-or-opensearch-cache-key
   :has-granules-or-opensearch-map)
 
+;; TODO we'll want to remove all this and make it a simple redis cache
 (defn create-has-granules-or-cwic-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
@@ -109,7 +106,8 @@
                                    (idx/get-collection-granule-counts context nil)
                                    (get-cwic-collections context nil)))]
     (cache/set-value (cache/context->cache context has-granules-or-cwic-cache-key)
-                     :has-granules-or-cwic has-granules-or-cwic-map)))
+                     has-granules-or-cwic-cache-key
+                     has-granules-or-cwic-map)))
 
 (defn refresh-has-granules-or-opensearch-map
   "Gets the latest provider holdings and updates the has-granules-or-opensearch-map stored in the cache."
@@ -124,7 +122,8 @@
 (defn get-has-granules-or-cwic-map
   "Gets the cached has granules map from the context which contains collection ids to true or false
   of whether the collections have granules or not. If the has-granules-or-cwic-map has not yet been cached
-  it will retrieve it and cache it."
+  it will retrieve it and cache it.
+  Example) {\"C0000000002-PROV1\" true, \"C0000000003-PROV1\" true}"
   [context]
   (let [has-granules-or-cwic-map-cache (cache/context->cache context has-granules-or-cwic-cache-key)]
     (cache/get-value has-granules-or-cwic-map-cache
