@@ -1,4 +1,6 @@
-# [Common Metadata Repository](https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository)
+# Common Metadata Repository
+
+Visit the CMR at [https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository](https://earthdata.nasa.gov/about/science-system-description/eosdis-components/common-metadata-repository)
 
 ## About
 
@@ -6,47 +8,64 @@ The Common Metadata Repository (CMR) is an earth science metadata repository
 for [NASA](https://www.nasa.gov/) [EOSDIS](https://earthdata.nasa.gov) data. The CMR
 Search API provides access to this metadata.
 
-## License
+## Client-facing Components
 
-> Copyright © 2007-2023 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
->
-> Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
-> You may obtain a copy of the License at
->
->    http://www.apache.org/licenses/LICENSE-2.0
->
->Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS,
->WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+- Search
+  - Allows the user to search by collections, granules, and concepts with a
+    myriad of different query types
+  - [Search API Docs](https://cmr.earthdata.nasa.gov/search/site/search_api_docs.html)
 
+- Ingest
+  - Ingest refers to the process of validating, inserting, updating, or
+    deleting metadata in the CMR system. It affects only the metadata for the
+    specific Data Partner. The CMR allows Data Partners to ingest metadata.
+    records through a RESTful API
+  - [Ingest API Docs](https://cmr.earthdata.nasa.gov/ingest/site/ingest_api_docs.html)
 
-## [Prerequisites](#prerequisites)
+- Access Control
+  - Access Control Lists (ACLs) are the mechanism which grants users
+    access to perform different operations in the CMR. CMR ACLs follow the same
+    design as ECHO ACLs, which are a superset of the generic ACL
+    design pattern used in many other systems. An ACL is a
+    mapping of actors (subjects) to resources (object) to operations
+    (predicate).
+  - Two quick examples of a CMR ACL could be:
+    - All registered users have READ access to ASTER data
+    - A provider's operations team may ingest data for that provider
+  - [Access Control API Docs](https://cmr.earthdata.nasa.gov/access-control/site/access_control_api_docs.html)
 
-### Java 17
+## Prerequisites
 
-[https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html](https://www.oracle.com/java/technologies/javase/jdk17-archive-downloads.html)
+- Java 17
+- Leiningen
+- Maven
+- `gcc` and `libc`
+- Docker
 
-### Leiningen
-[https://leiningen.org/](https://leiningen.org/)
+## Obtaining the Code
 
-```brew install leiningen```
+You can get the CMR source code by cloning the repository from GitHub:
 
-### Maven
-Maven is a package manager for Java and is used within CMR to deal with dependency mangement.
+``` sh
+git clone https://github.com/nasa/Common-Metadata-Repository.git cmr
+```
 
-`brew install maven`
+## Building and Running the CMR
 
-### Docker
-Docker needs to be installed and running in order to run CMR.
+The CMR is a system consisting of many services. The services can run
+individually or in a single process. Running in a single process makes
+local development easier because it avoids having to start many different
+processes. The `dev-system` project allows the CMR to run from a single REPL
+or JAR file. If you are developing a client against the CMR you can build and
+run the entire CMR with no external dependencies from this JAR file and use
+that instance for local testing. The sections below contain instructions for
+running the CMR as a single process or as many processes.
 
-[https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)
+#### Using the `cmr` CLI Tool
 
-## [Building and Running the CMR](#building-and-running-the-cmr)
-
-The CMR is a system consisting of many services. The services can run individually or in a single process. Running in a single process makes local development easier because it avoids having to start many different processes. The sections below contain instructions for running the CMR as a single process or as many processes.
-
-### Using the `cmr` CLI Tool
-
-This project has its own tool that offers shortcuts and some additional functionality that help reduce the number of steps involved in many processes. To use the tool as we do below, be sure to run the following from the top-level CMR directory:
+This project has its own tool that is able to do everything from initial setup to
+running builds and tests on the CI/CD infrastructure. To use the tool
+as we do below, be sure to run the following from the top-level CMR directory:
 
 ```sh
 export PATH=$PATH:`pwd`/bin
@@ -63,53 +82,45 @@ echo "export PATH=\$PATH:`pwd`/bin" >> ~/.profile
 echo "source `pwd`/resources/shell/cmr-bash-autocomplete" >> ~/.profile
 ```
 
-**If you wish to not use the tool, simply replace all the command that start with `cmr` with `./bin/cmr` to run the scripts directly.**
+#### Building and Running CMR Dev System in a REPL with CMR CLI tool
 
-### Environment Setup 
-
-1. `./bin/cmr setup profile` and then update the new `./dev-system/profiles.clj` file, it will look something like this:
-   
-When running CMR locally, the values in this file do not need to be change, CMR just expects that they exist.
-
+1. `cmr setup profile` and then update the new `./dev-system/profiles.clj` file.
+   it will look something like this:
    ``` clojure
-   {:dev-config {:env {:cmr-metadata-db-password "CHANGE_ME"
-                       :cmr-sys-dba-password "CHANGE_ME"
-                       :cmr-bootstrap-password "CHANGE_ME"
-                       :cmr-ingest-password "CHANGE_ME"
-                       :cmr-urs-password "CHANGE_ME"}}}
+   {:dev-config {:env {:cmr-metadata-db-password "<YOUR PASSWORD HERE>"
+                       :cmr-sys-dba-password "<YOUR PASSWORD HERE>"
+                       :cmr-bootstrap-password "<YOUR PASSWORD HERE>"
+                       :cmr-ingest-password "<YOUR PASSWORD HERE>"
+                       :cmr-urs-password "<YOUR PASSWORD HERE>"}}}
    ```
 
-2. `./bin/cmr setup dev`
+2. `cmr setup dev`
+3. `cmr start repl`
+4. Once given a Clojure prompt, run `(reset)`
 
-This process will take quite a long time, be patient and monitor progress.
+Note that the `reset` action may take a while, not only due to
+the code reloading for a large number of namespaces, but for bootstrapping
+services as well as starting up worker threads.
 
-#### Running CMR
-You can run CMR two different ways, everything in one or as separte. 
+#### Building and Running CMR Dev System from a JAR
 
-##### All Services At Once
-
-###### Via REPL
-
-This method offers hot-reloading which is a more common method when actively developing against CMR.
-
-1. `./bin/cmr start repl`
-2. Once given a Clojure prompt, run `(reset)`
-
-Note that the `reset` action may take a while, not only due to the code reloading for a large number of namespaces, but for bootstrapping services as well as starting up worker threads.
-
-###### Via JAR
-
-Running CMR with this method requires reloading your environment after code changes, it is not recommended to use this method if actively developing.
-
-##### Running All Services At Once
+Assuming you have already run the above steps (namely `cmr setup dev`), to
+build and run the default CMR development system (`dev-system`) from a
+`.jar` file:
 
 1. `cmr build uberjars`
 2. `cmr build all`
 3. `cmr start uberjar dev-system` will run the dev-system as a background task
 
-##### Running Individual Services
+See CMR Development Guide to read about specifying options and setting
+environment variables
 
-The following will build every application but will put each JAR into the appropriate `target` directory for each application. The command shown in step 3 is an example. For the proper command to start up each application, see the `Applications` section below. Note: You only need to complete steps 1 and 2 once.
+#### Building and Running separate CMR Applications
+
+The following will build every application but will put each JAR into the
+appropriate `target` directory for each application. The command shown in step
+3 is an example. For the proper command to start up each application, see the
+`Applications` section below. Note: You only need to complete steps 1 and 2 once.
 
 1. `cmr build uberjar APP`
 2. `cmr run uberjar APP`
@@ -121,7 +132,53 @@ after entering `uberjar` in each step above.
 Note: building uberjars will interfere with your repl. If you want to use your repl post-build you will need to,
 `rm -f ./dev-system/target/`
 
-## Testing CMR
+## Checking Dependencies, Static Analysis, and Tests
+
+There are several `lein` plugins within the CMR for performing
+various tasks either at individual subproject levels or at the top-level for
+all subprojects.
+
+#### Dependency Versions
+
+To check for up-to-date versions of all project dependencies, you can use
+`cmr test versions PROJ`, where `PROJ` is any CMR sub-project under the
+top-level directory.
+
+You may run the same command without a project to check for all projects:
+`cmr test versions`.
+
+Note that this command fails with the first project that fails. If many
+subprojects are failing their dependency version checks and you wish to see
+them all, you may use your system shell:
+
+```sh
+for PROJ in `ls -1d */project.clj|xargs dirname`
+do
+  "Checking $PROJ ..."
+  cmr test versions $PROJ
+  cd - &> /dev/null
+done
+```
+
+#### Dependency Ambiguities and `.jar` File Conflicts
+
+To see if the JVM is having problems resolving which version of a
+dependency to use, you can run `cmr test dep-tree PROJ`. To perform this
+against all projects: `cmr test dep-trees`.
+
+#### Static Analysis and Linting
+
+To perform static analysis and linting for a project, you can run
+`cmr test lint PROJ`. As above with dependency version checking, by
+not passing a project, you can run for all projects: `cmr test lint`.
+
+#### Dependency Vulnerability Scanning
+
+You can see if your currently installed version of CMR has any reported Common Vulnerabilities and Exploits (CVEs) by running the helpful alias `lein check-sec` that you can use in each application, or at the root folder to scan all CMR apps together.
+
+You will find the vulnerability summary in `./target/dependency-check-report.html` in each application.
+
+#### Testing CMR
 
 Test files in CMR should follow the naming convention of ending in `-test`.
 
@@ -243,15 +300,22 @@ with the standard being `:unit` and `:integration`.
 
 Not all modules will contain `:integration` tests.
 
+## Code structure
+
+The CMR comprises several small services called microservices. These are
+small purposed-based services that do a small set of things well.
+
+- For more reading on microservices: https://martinfowler.com/articles/microservices.html
+
 ### The Microservices
 
 Each microservice has a `README` file in its root directory, which provides a
 short overview of the service's functionality. There are many main
 applications, as well as several libraries and support applications.
 
-#### Applications
+#### Applications:
 
-- [access-control-app](access-control-app/README.md)
+- access-control-app
   - The mechanism which grants users access to perform different
     operations in the CMR. It also maintains groups and access control rules.
     Note that ECHO and URS provide user access as an external dependency.
@@ -259,49 +323,101 @@ applications, as well as several libraries and support applications.
     for local testing.
   - Main method: `cmr.access_control.runner`
 
-- [bootstrap-app](bootstrap-app/README.md)
+- bootstrap-app
   - Contains APIs for performing various bulk actions in the CMR
   - Main method: cmr.bootstrap.runner
+  - See `/bootstrap-app/README.md` for a list of lein and uberjar commands
 
-- [dev-system](dev-system/README.md)
+- dev-system
   - An app that combines the separate microservices of the CMR into a single
   application. We use this to simplify development
   - Main method: `cmr.dev_system.runner`
 
-- [indexer-app](indexer-app/README.md)
+- indexer-app
   - This handles indexing collections, granules, and tags in Elasticsearch
   - Maintains the set of indexes in Elasticsearch for each concept
   - Main method: `cmr.indexer.runner`
 
-- [ingest-app](ingest-app/README.md)
+- ingest-app
   - The Ingest app handles collaborating with metadata db and indexer systems.
   This maintains the lifecycle of concepts coming into the CMR
   - Main method: `cmr.ingest.runner`
 
-- [search-app](search-app/README.md)
+- search-app
   - Provides a public search API for concepts in the CMR
   - Main method: `cmr.search.runner`
 
-- [search-relevancy-test](search-relevancy-test/README.md)
+- search-relevancy-test
   - Tests to measure and report the effectiveness of CMR's search relevancy algorithm
 
-- [system-int-test](system-int-test/README.md)
+- system-int-test
   - Black-box, system-level tests to ensure functionality of the CMR
 
-- [virtual-product-app](virtual-product-app/README.md)
+- virtual-product-app
   - Adds the concept of Virtual Products to the CMR. Virtual Products represent
   products that a provider generates on demand from users. This takes place when
    a user places an order or downloads a product through a URL
   - Main method: cmr.virtual_product.runner
 
-- [metadata-db-app](metadata-db-app/README.md)
+- metadata-db-app
   - A database that maintains revisioned copies of metadata for the CMR
   - Main method: cmr.metadata_db.runner
 
-- [mock-echo-app](mock-echo-app/README.md)
+- mock-echo-app
   - This mocks out the ECHO REST API and the URS API as well. Its purpose is to
   make it easier to integration test the CMR system without having to run a full
    instance of ECHO. It will only provide the parts necessary to enable
    integration testing. You should not expect a perfect or complete
    implementation of ECHO.
   - Main method: cmr.mock_echo.runner
+
+#### Libraries:
+
+- acl-lib
+  - Contains utilities for retrieving and working with ACLs
+
+- common-app-lib
+  - Contains utilities used within many CMR applications
+
+- common-lib
+  - Provides common utility code for CMR projects
+
+- elastic-utils-lib
+  - A library that handles most of the interfacing with Elasticsearch
+
+- es-spatial-plugin
+  - An Elasticsearch plugin that enables spatial search within elastic
+
+- oracle-lib
+  - Contains utilities for connecting to and manipulating data in Oracle
+
+- orbits-lib
+  - Clojure wrapper of a Ruby implementation of the Backtrack Orbit Search
+    Algorithm (BOSA)
+
+- message-queue-lib
+  - A library for interfacing with RabbitMQ, AWS SQS, and an in-memory message queue
+
+- spatial-lib
+  - The spatial libraries provide utilities for working with spatial areas in the CMR
+
+- transmit-lib
+  - The Transmit Library defines functions for invoking CMR services
+
+- umm-lib
+  - This is the old source of UMM schemas and translation code. Since the
+    advent of umm-spec-lib we are planning to remove it
+
+- umm-spec-lib
+  - The UMM Spec lib contains JSON schemas that define the Unified Metadata
+    Model, as well as mappings to other supported formats, and code to migrate
+    collections between any supported formats.
+
+## Further Reading
+
+- [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/ED/CMR+Client+Partner+User+Guide)
+- [CMR Data Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide)
+
+## License
+
+Copyright © 2014-2023 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
