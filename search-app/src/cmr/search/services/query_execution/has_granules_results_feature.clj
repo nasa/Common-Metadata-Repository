@@ -5,7 +5,6 @@
   (:require [cmr.common-app.services.search.query-execution :as query-execution]
             [cmr.common.jobs :refer [defjob]]
             [cmr.common.cache :as cache]
-            [cmr.common.log :as log :refer [info]]
             [cmr.redis-utils.redis-cache :as redis-cache]
             [cmr.search.data.elastic-search-index :as idx]))
 
@@ -32,13 +31,11 @@
 (defn refresh-has-granules-map
   "Gets the latest provider holdings and updates the has-granules-map stored in the cache."
   [context]
-  (info "Refreshing has-granules-map cache.")
   (let [has-granules-map (collection-granule-counts->has-granules-map
                            (idx/get-collection-granule-counts context nil))]
     (cache/set-value (cache/context->cache context has-granule-cache-key)
                      has-granule-cache-key
-                     has-granules-map)
-    (info "Finished has-granules-map cache.")))
+                     has-granules-map)))
 
 (defn get-has-granules-map
   "Gets the cached has granules map from the context which contains collection ids to true or false
