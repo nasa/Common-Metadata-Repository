@@ -8,7 +8,6 @@
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.cache :as cache]
-   [cmr.common.log :as log :refer [info]]
    [cmr.common.jobs :refer [defjob]]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
@@ -90,15 +89,13 @@
 (defn refresh-has-granules-or-cwic-map
   "Gets the latest provider holdings and updates the has-granules-or-cwic-map stored in the cache."
   [context]
-  (info "Refreshing has-granules-or-cwic-map cache.")
   (let [has-granules-or-cwic-map (collection-granule-counts->has-granules-or-cwic-map
                                   (merge
                                    (idx/get-collection-granule-counts context nil)
                                    (get-cwic-collections context nil)))]
     (cache/set-value (cache/context->cache context has-granules-or-cwic-cache-key)
                      has-granules-or-cwic-cache-key
-                     has-granules-or-cwic-map)
-    (info "Finished refreshing has-granules-or-cwic-map cache.")))
+                     has-granules-or-cwic-map)))
 
 (defn refresh-has-granules-or-opensearch-map
   "Gets the latest provider holdings and updates the has-granules-or-opensearch-map stored in the cache."
