@@ -8,6 +8,7 @@
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.cache :as cache]
+   [cmr.common.log :as log :refer [info]]
    [cmr.common.jobs :refer [defjob]]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
