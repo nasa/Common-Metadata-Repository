@@ -89,13 +89,15 @@
 (defn refresh-has-granules-or-cwic-map
   "Gets the latest provider holdings and updates the has-granules-or-cwic-map stored in the cache."
   [context]
+  (info "Refreshing has-granules-or-cwic-map cache.")
   (let [has-granules-or-cwic-map (collection-granule-counts->has-granules-or-cwic-map
                                   (merge
                                    (idx/get-collection-granule-counts context nil)
                                    (get-cwic-collections context nil)))]
     (cache/set-value (cache/context->cache context has-granules-or-cwic-cache-key)
                      has-granules-or-cwic-cache-key
-                     has-granules-or-cwic-map)))
+                     has-granules-or-cwic-map)
+    (info "Finished refreshing has-granules-or-cwic-map cache.")))
 
 (defn refresh-has-granules-or-opensearch-map
   "Gets the latest provider holdings and updates the has-granules-or-opensearch-map stored in the cache."
