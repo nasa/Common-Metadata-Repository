@@ -124,8 +124,7 @@
 (defn bulk-index-batch
   [context batch options]
   (let [batch (prepare-batch context batch options)]
-    nil))
-    ;;(es/bulk-index-documents context batch options)))
+    (es/bulk-index-documents context batch options)))
 
 (defn bulk-index
   "Index many concepts at once using the elastic bulk api. The concepts to be indexed are passed
