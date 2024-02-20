@@ -1,6 +1,7 @@
 (ns cmr.bootstrap.data.bulk-index
   "Functions to support concurrent bulk indexing."
   (:require
+    [cmr.common.config :as config :refer [defconfig]]
     [cheshire.core :as json]
     [clj-http.client :as client]
     [clj-time.coerce :as time-coerce]
@@ -135,12 +136,17 @@
             gran-count
             provider-id)))
 
+(defconfig bulk-index-enabled
+  ""
+  {:default true :type Boolean})
+
 (defn- bulk-index-concept-batches
   "Bulk index the given concept batches in both regular index and all revisions index."
   [system concept-batches]
   (let [indexer-context {:system (helper/get-indexer system)}]
-    (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
-    (index/bulk-index indexer-context concept-batches {})))
+    (when (bulk-index-enabled)
+      (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
+      (index/bulk-index indexer-context concept-batches {}))))
 
 (defn- index-concepts-by-provider2
   "Bulk index concepts for the given provider and concept-type."
