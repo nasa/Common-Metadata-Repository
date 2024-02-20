@@ -144,9 +144,8 @@
   "Bulk index the given concept batches in both regular index and all revisions index."
   [system concept-batches]
   (let [indexer-context {:system (helper/get-indexer system)}]
-    (when (bulk-index-enabled)
-      (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
-      (index/bulk-index indexer-context concept-batches {}))))
+    (index/bulk-index indexer-context concept-batches {:all-revisions-index? true})
+    (index/bulk-index indexer-context concept-batches {})))
 
 (defn- index-concepts-by-provider2
   "Bulk index concepts for the given provider and concept-type."
@@ -168,8 +167,9 @@
                                               (:db-batch-size system)
                                               starting-id)]
                          (when-not (empty? batch)
-                           (index/bulk-index-batch indexer-context batch {:all-revisions-index? true})
-                           (index/bulk-index-batch indexer-context batch {}))
+                           (when (bulk-index-enabled)
+                             (index/bulk-index-batch indexer-context batch {:all-revisions-index? true})
+                             (index/bulk-index-batch indexer-context batch {})))
                          (if next-id
                            (recur next-id (+ concept-count (count batch)))
                            (+ concept-count (count batch)))))
