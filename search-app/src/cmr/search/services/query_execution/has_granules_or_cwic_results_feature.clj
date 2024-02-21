@@ -144,8 +144,10 @@
   [ctx system]
   (refresh-has-granules-or-opensearch-map {:system system}))
 
-(def refresh-has-granules-or-cwic-map-job
+(defn refresh-has-granules-or-cwic-map-job
+  [job-key]
   {:job-type RefreshHasGranulesOrCwicMapJob
+   :job-key job-key
    :interval REFRESH_HAS_GRANULES_OR_CWIC_MAP_JOB_INTERVAL})
 
 (def refresh-has-granules-or-opensearch-map-job
