@@ -49,6 +49,10 @@
   "The number of times to retry a failed Redis command."
   {:default 3 :type Long})
 
+(defconfig redis-retry-interval-cap
+  "The maximum number of milliseconds to wait between Redis retry command."
+  {:default 500 :type Long})
+
 (defconfig redis-retry-interval
   "The number of milliseconds to wait between Redis retry command."
   {:default 100 :type Long})
@@ -64,7 +68,7 @@
    :pool {:max-total (web-server/MAX_THREADS)}})
 
 (defn redis-write-conn-opts
-  "Redis connection options to be used with wcar."
+  "Redis connection options to be used with wr-wcar*."
   []
   {:spec {:host (redis-write-host)
           :port (redis-write-port)
@@ -74,7 +78,7 @@
    :pool {:max-total (web-server/MAX_THREADS)}})
 
 (defn redis-read-conn-opts
-  "Redis connection options to be used with wcar."
+  "Redis connection options to be used with wr-wcar*."
   []
   {:spec {:host (redis-read-host)
           :port (redis-read-port)

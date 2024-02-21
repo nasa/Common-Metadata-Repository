@@ -24,7 +24,10 @@
   [context]
   (let [cache (c/context->cache context humanizer-cache-key)
         start (System/currentTimeMillis)
-        result (c/set-value cache humanizer-cache-key (retrieve-humanizers context))]
+        humanizers (retrieve-humanizers context)
+        _ (info "Refreshing :humanizer-cache - saving to redis.")
+        ;result (c/set-value cache humanizer-cache-key (retrieve-humanizers context))
+        result (c/set-value cache humanizer-cache-key humanizers)]
     (info (format "Redis timed function refresh-cache for %s redis set-value time [%s] ms " humanizer-cache-key (- (System/currentTimeMillis) start)))
     result))
 
@@ -33,6 +36,7 @@
   [context]
   (let [cache (c/context->cache context humanizer-cache-key)
         start (System/currentTimeMillis)
+        _ (info "Reading :humanizer-cache get-humanizer-instructions, if it can't read the cache it gets the data and loads the cache.")
         result (c/get-value cache
                             humanizer-cache-key
                             #(retrieve-humanizers context))]

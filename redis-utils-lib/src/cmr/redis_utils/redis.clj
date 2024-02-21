@@ -29,9 +29,11 @@
 (defmacro wr-wcar*
   "Safe call redis with conn opts and retries.
   For available commands refer to Redis docuemntation or:
-  https://github.com/ptaoussanis/carmine/blob/master/src/taoensso/carmine/commands.edn."
+  https://github.com/ptaoussanis/carmine/blob/master/src/taoensso/carmine/commands.edn.
+  The retries strategy is using exponential backoff with jitter
+  https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/"
   [key read? & body]
-  `(let [wr-string# (if ~read? "read" "write") 
+  `(let [wr-string# (if ~read? "read" "write")
          with-retry#
          (fn with-retry# [num-retries#]
            (try
@@ -47,13 +49,50 @@
                                    ~key
                                    e#
                                    (dec num-retries#)))
-                     (info (format "Redis wr-wcar %s stacktrace to log which cache is having a problem %s"
+                     (info (format "Redis wr-wcar %s failed with exception %s. Retrying %d more times."
                                    wr-string#
-                                   (clojure.stacktrace/print-stack-trace e#))))
+                                   (clojure.stacktrace/print-stack-trace e#)
+                                   (dec num-retries#))))
                    (Thread/sleep (config/redis-retry-interval))
                    (with-retry# (dec num-retries#)))
                  (error (format "Redis wr-wcar %s %s failed with exception " wr-string# ~key) e#)))))]
      (with-retry# (config/redis-num-retries))))
+
+(defmacro wr-wcar-save*
+  "Safe call redis with conn opts and retries.
+  For available commands refer to Redis docuemntation or:
+  https://github.com/ptaoussanis/carmine/blob/master/src/taoensso/carmine/commands.edn.
+  The retries strategy is using exponential backoff with jitter
+  https://aws.amazon.com/blogs/architecture/exponential-backoff-and-jitter/"
+  [key read? & body]
+  `(let [wr-string# (if ~read? "read" "write") 
+         with-retry#
+         (fn with-retry# [num-retries# last-sleep-time#]
+           (try
+             (if ~read?
+               (carmine/wcar (config/redis-read-conn-opts) ~@body)
+               (carmine/wcar (config/redis-write-conn-opts) ~@body))
+             (catch Exception e#
+               (if (> num-retries# 0)
+                 (let [cap# (config/redis-retry-interval-cap)
+                       base# (config/redis-retry-interval)
+                       sleep-time# (min cap# (+ base# (rand-int (* last-sleep-time# 3))))]
+                   (if ~key
+                     (info (format "Redis wr-wcar %s %s failed with exception %s. Retrying %d more times. This time waiting [%d] ms."
+                                   wr-string#
+                                   ~key
+                                   e#
+                                   (dec num-retries#)
+                                   sleep-time#))
+                     (info (format "Redis wr-wcar %s failed with exception %s. Retrying %d more times. This time waiting [%d] ms."
+                                   wr-string#
+                                   (clojure.stacktrace/print-stack-trace e#)
+                                   (dec num-retries#)
+                                   sleep-time#)))
+                   (Thread/sleep sleep-time#)
+                   (with-retry# (dec num-retries#) sleep-time#))
+                 (error (format "Redis wr-wcar %s %s failed with exception " wr-string# ~key) e#)))))]
+     (with-retry# (config/redis-num-retries) (config/redis-retry-interval))))
 
 (defmacro ahah
   [key read? & body]
@@ -75,14 +114,14 @@
   [& args]
   {:ok?
    (try
-     (= "PONG" (wcar* (carmine/ping)))
+     (= "PONG" (wr-wcar* nil false (carmine/ping)))
      (catch Exception _
        false))})
 
 (defn reset
   "Evict all keys in redis. Primarily for dev-system use."
   []
-  (wcar* (carmine/flushall)))
+  (wr-wcar* nil false (carmine/flushall)))
 
 (defn get-keys
   "Scans the redis db for keys matching the match argument (use * to match all).
@@ -102,3 +141,29 @@
          (vec (take (config/redis-max-scan-keys) merged-results))
          (recur new-cursor
                 merged-results))))))
+
+;(defn- get-pool
+;  "Creates Redis pool connection to be used in queries"
+;  [{:keys [host-port db-name]}]
+;  (let [pool (doto (ComboPooledDataSource.)
+;               (.setDriverClass "com.mysql.cj.jdbc.Driver")
+;               (.setJdbcUrl (str "jdbc:mysql://"
+;                                 host-port
+;                                 "/" db-name))
+;               (.setUser username)
+;               (.setPassword password)
+;                   ;; expire excess connections after 30 minutes of inactivity:
+;               (.setMaxIdleTimeExcessConnections (* 30 60))
+;                   ;; expire connections after 3 hours of inactivity:
+;               (.setMaxIdleTime (* 3 60 60)))]
+;    {:datasource pool}))
+
+
+;(def pool-db (delay (get-pool db-spec)))
+
+
+;(defn connection [] @pool-db)
+
+; usage in code
+;(jdbc/query (connection) ["Select SUM(1, 2, 3)"])
+;;https://stackoverflow.com/questions/54613947/connection-pooling-in-clojure

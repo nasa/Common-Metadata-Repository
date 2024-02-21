@@ -146,9 +146,12 @@
 (defn all-cached-revision-format-maps
   "Returns a sequence of all revision format maps in the cache sorted by concept id"
   [context]
-  (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
+  (info (format "Reading %s cache to get-map" cmn-coll-metadata-cache/cache-key))
+  (let [redis-start (System/currentTimeMillis)
+        cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
         cache-map (-> (hash-cache/get-map cache cmn-coll-metadata-cache/cache-key)
                       (dissoc "incremental-since-refresh-date"))
+        _ (info (format "Redis timed function all-cached-revision-format-maps for %s get-map time [%s] ms " cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start)))
         maps (for [concept-id (sort (keys cache-map))]
                (get cache-map concept-id))]
     (seq maps)))
@@ -159,6 +162,7 @@
   (let [compressed-maps (u/fast-map crfm/compress revision-format-maps)
         rcache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
         redis-start (System/currentTimeMillis)]
+    (info (format "Updating %s from update-cache function." cmn-coll-metadata-cache/cache-key))
     (doall (map #(crfm/merge-into-cache-map rcache cmn-coll-metadata-cache/cache-key %) compressed-maps))
 
     (info "Cache updated with revision format maps. Cache Size:"

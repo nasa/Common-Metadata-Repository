@@ -68,6 +68,7 @@
   (let [cache (cache/context->cache context humanizer-alias-cache-key)
         humanizer (humanizer/get-humanizers context)
         start (System/currentTimeMillis)
+        _ (info "Refreshing :humanizer-alias-cache.")
         result (cache/set-value cache humanizer-alias-cache-key (create-humanizer-alias-map humanizer))]
     (info (format "Redis timed function refresh-cache for %s redis set-value time [%s] ms " humanizer-alias-cache-key (- (System/currentTimeMillis) start)))
     result))
@@ -77,6 +78,7 @@
   [context]
   (let [cache (cache/context->cache context humanizer-alias-cache-key)
         start (System/currentTimeMillis)
+        _ (info "Reading :humanizer-alias-cache.")
         result (cache/get-value cache
                                 humanizer-alias-cache-key
                                 #(create-humanizer-alias-map (humanizer/get-humanizers context)))]

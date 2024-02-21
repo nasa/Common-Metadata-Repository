@@ -94,6 +94,7 @@
         collections (fetch-collections context)
         redis-start (System/currentTimeMillis)
         col-for-gran-elapsed (- redis-start coll-for-gran-start)]
+    (info "Refreshing entire Collections-for-gran-acls caches - saving to redis")
     (doseq [coll collections]
       (hash-cache/set-value coll-by-concept-id-cache
                             coll-by-concept-id-cache-key
@@ -105,7 +106,7 @@
     (info (format "Redis timed function Refresh-entire-cache for %s redis save time [%s] ms " coll-by-concept-id-cache-key (- (System/currentTimeMillis) redis-start)))))
 
 (defn set-caches
-  "Updates collections-for-gran-acl caches for one given collection by concept id and  returns found collection or nil"
+  "Updates collections-for-gran-acl caches for one given collection by concept id and returns found collection or nil"
   ([context collection-concept-id]
    (let [coll-for-gran-start (System/currentTimeMillis)
          collection-found (fetch-collections context collection-concept-id)
@@ -114,6 +115,7 @@
      (info (format "Redis timed function set-caches for %s data-collection time [%s] ms " coll-by-concept-id-cache-key col-for-gran-elapsed))
      (when-not (nil? collection-found)
        (let [redis-start (System/currentTimeMillis)]
+         (info "Updating collections-for-gran-acl caches for one collection - saving to redis.")
          (hash-cache/set-value coll-by-concept-id-cache
                                coll-by-concept-id-cache-key
                                (:concept-id collection-found)

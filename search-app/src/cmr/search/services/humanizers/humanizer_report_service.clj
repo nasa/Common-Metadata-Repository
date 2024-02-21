@@ -78,11 +78,13 @@
 (defn- get-cached-revision-format-maps-with-retry
   "Get all the collections from cache, if nothing is returned,
   Wait configurable number of seconds before retrying configurable number of times."
-  [context]
+  [context] 
   (loop [retries (retry-count)]
+    (info "Reading collection metadata cache for the humanizer report.")
     (if-let [rfms (metadata-cache/all-cached-revision-format-maps context)]
       rfms
       (when (> retries 0)
+        (info "Failed Reading collection metadata cache for the humanizer report.")
         (info (format (str "Humanizer report generator job is sleeping for %d second(s)"
                            " before retrying to fetch from collection cache.")
                       (/ (humanizer-report-generator-job-wait) 1000)))

@@ -62,6 +62,7 @@
         ;; TODO
         ;; This the :kms cache used anywhere else? to get keywords, if not, it would 
         ;; be better to remove this cache if it is only used to create the other caches.
+        _ (info "Reading :kms cache in kms_fetcher/fetch-gcmd-keywords-map")
         kms-cache-value (cache/get-value kms-cache kms-cache-key)
         _ (info (format "Redis timed function fetch-gcmd-keywords-map for %s redis get time [%s] ms " kms-cache-key (- (System/currentTimeMillis) start)))]
     (kms-lookup/create-kms-index
@@ -80,7 +81,9 @@
   (when-not (:ignore-kms-keywords context)
     (let [cache (cache/context->cache context kms-cache-key)
           start (System/currentTimeMillis)
+          _ (info "Reading :kms cache.")
           result (or (cache/get-value cache kms-cache-key)
+                           ;; TODO
                            ;; Why are we calling key-exists - we don't need to. If the value is null
                            ;; then we should just call get-value with the fetch. 
                      (when-not (cache/key-exists cache kms-cache-key)
@@ -96,6 +99,7 @@
   (let [cache (cache/context->cache context kms-cache-key)
         gcmd-keywords-map (fetch-gcmd-keywords-map context)
         start (System/currentTimeMillis)
+        _ (info "Refreshing the :kms cache - saving to redis.")
         ;; I don't think the caller cares for any return result, but I need to check.
         result (cache/set-value cache kms-cache-key gcmd-keywords-map)]
     (info (format "Redis timed function refresh-kms-cache for %s redis get time [%s] ms " kms-cache-key (- (System/currentTimeMillis) start)))

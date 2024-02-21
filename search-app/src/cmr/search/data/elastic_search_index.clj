@@ -38,12 +38,13 @@
         ;_ (when-not (hcache/key-exists cache cache-key)
         ;    (index-names-cache/refresh-index-names-cache context))
         start (System/currentTimeMillis)
+        _ (info "Reading index names cache")
         granule-index-names (or (hcache/get-value cache cache-key :granule)
                                 (do 
                                   (index-names-cache/refresh-index-names-cache context)
                                   (hcache/get-value cache cache-key :granule)))
         rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)
-        _ (info (format "Redis timed function get-granule-index-names for %s redis save time [%s] ms " cache-key (- (System/currentTimeMillis) start)))]
+        _ (info (format "Redis timed function get-granule-index-names for %s redis get time [%s] ms " cache-key (- (System/currentTimeMillis) start)))]
     (apply dissoc granule-index-names (map keyword rebalancing-collections))))
 
 (defn- collection-concept-id->index-name
@@ -78,13 +79,14 @@
         ;    (index-names-cache/refresh-index-names-cache context))
         start (System/currentTimeMillis)
         ;granule-index-names (hcache/get-value cache cache-key :granule)
+        _ (info "Reading index names for all-granule-indexes function.")
         granule-index-names (or (hcache/get-value cache cache-key :granule)
                                 (do
                                   (index-names-cache/refresh-index-names-cache context)
                                   (hcache/get-value cache cache-key :granule)))
         rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)
         rebalancing-indexes (map granule-index-names (map keyword rebalancing-collections))
-        _ (info (format "Redis timed function all-granule-indexes for %s redis save time [%s] ms " cache-key (- (System/currentTimeMillis) start)))
+        _ (info (format "Redis timed function all-granule-indexes for %s redis get time [%s] ms " cache-key (- (System/currentTimeMillis) start)))
         ;; Exclude all the rebalancing collection indexes.
         excluded-collections-str (if (seq rebalancing-indexes)
                                    (str "," (string/join "," (map #(str "-" %) rebalancing-indexes)))

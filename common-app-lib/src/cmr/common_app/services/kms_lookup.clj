@@ -195,15 +195,19 @@
         location-cache (hash-cache/context->cache context kms-location-cache-key)
         measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)
         start (System/currentTimeMillis)
+        _ (info (format "Refreshing KMS %s cache - saving to redis." kms-short-name-cache-key))
         _ (hash-cache/set-values short-name-cache kms-short-name-cache-key short-name-lookup-map)
         _ (info (format "Redis timed function create-kms-index for %s redis save time [%s] ms " kms-short-name-cache-key (- (System/currentTimeMillis) start)))
         start (System/currentTimeMillis)
+        _ (info (format "Refreshing KMS %s cache - saving to redis." kms-umm-c-cache-key))
         _ (hash-cache/set-values umm-c-cache kms-umm-c-cache-key umm-c-lookup-map)
         _ (info (format "Redis timed function create-kms-index for %s redis save time [%s] ms " kms-umm-c-cache-key (- (System/currentTimeMillis) start)))
         start (System/currentTimeMillis)
+        _ (info (format "Refreshing KMS %s cache - saving to redis." kms-location-cache-key))
         _ (hash-cache/set-values location-cache kms-location-cache-key location-lookup-map)
         _ (info (format "Redis timed function create-kms-index for %s redis save time [%s] ms " kms-location-cache-key (- (System/currentTimeMillis) start)))
         start (System/currentTimeMillis)
+        _ (info (format "Refreshing KMS %s cache - saving to redis." kms-measurement-cache-key))
         _ (hash-cache/set-values measurement-cache kms-measurement-cache-key measurement-lookup-map)
         _ (info (format "Redis timed function create-kms-index for %s redis save time [%s] ms " kms-measurement-cache-key (- (System/currentTimeMillis) start)))]
     kms-keywords-map))
@@ -214,6 +218,7 @@
   does not exist. A manual refresh must be done to get the latest values, this prevents forcing always
   going back to KMS to try to get a value that doesn't exist."
   [context cache key]
+  ;;TODO why check to see if the key exists, 
   (when-not (hash-cache/key-exists cache key)
     ;; go to KMS and get the keywords, since the cache doesn't exist.
     (create-kms-index

@@ -70,6 +70,7 @@
                                 (partition-all 1000 concepts-tuples))
         redis-start (System/currentTimeMillis)
         cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
+    (info "Updating collection metadata cache - save to redis.")
     (hash-cache/set-value cache 
                           cmn-coll-metadata-cache/cache-key 
                           cmn-coll-metadata-cache/incremental-since-refresh-date-key 
@@ -93,6 +94,7 @@
                                 (partition-all 1000 concepts-tuples))
         redis-start (System/currentTimeMillis)
         cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
+    (info "Refreshing collection metadata cache - save to redis.")
     (hash-cache/set-value cache 
                           cmn-coll-metadata-cache/cache-key 
                           cmn-coll-metadata-cache/incremental-since-refresh-date-key 

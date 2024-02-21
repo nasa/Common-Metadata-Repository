@@ -40,6 +40,7 @@
                                       {(:provider-id provider) provider})
                                     providers))
          start (System/currentTimeMillis)
+         _ (info "Refreshing provider cache - saving to redis.")
          result (hcache/set-values cache cache-key provider-map)]
      (info (format "Redis timed function refresh-provider-cache for %s redis set-values time [%s] ms " cache-key (- (System/currentTimeMillis) start)))
      (info "Refreshed provider cache.")
@@ -49,11 +50,20 @@
   "Retrieve the list of all providers from the cache. Setting the value
   if not present."
   [context]
-  (let [cache (hcache/context->cache context cache-key)]
-    (or (hcache/get-map cache cache-key)
-        (do 
-          (refresh-provider-cache context)
-          (hcache/get-map cache cache-key)))))
+  (info "Reading provider cache - all of it.")
+  (let [cache (hcache/context->cache context cache-key)
+        start (System/currentTimeMillis)
+        providers (or (hcache/get-map cache cache-key)
+                      (do
+                        (refresh-provider-cache context)
+                        (hcache/get-map cache cache-key)))]
+    (info (format "Redis timed function get-cached-providers for %s redis get-map time [%s] ms " cache-key (- (System/currentTimeMillis) start)))
+    providers))
+    
+    ;(or (hcache/get-map cache cache-key)
+    ;    (do 
+    ;      (refresh-provider-cache context)
+    ;      (hcache/get-map cache cache-key)))))
 
 (defn validate-providers-exist
   "Throws an exception if the given provider-ids are invalid, otherwise returns the input."
