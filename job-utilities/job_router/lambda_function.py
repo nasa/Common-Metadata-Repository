@@ -33,7 +33,7 @@ def handler(event, _):
         print("ERROR: CMR_URL variable not set!")
         error_state = True
     if error_state:
-        sys.exit()
+        sys.exit(1)
 
     client = boto3.client('ecs')
     ssm_client = boto3.client('ssm')

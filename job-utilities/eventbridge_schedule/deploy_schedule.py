@@ -58,7 +58,7 @@ def deploy_schedule(job_name, jobs_file_name):
 
     if environment is None:
         print("CMR_ENVIRONMENT variable needs to be set")
-        sys.exit()
+        sys.exit(1)
 
     with open(jobs_file_name, encoding="UTF-8") as json_file:
         jobs_map = json.load(json_file)
@@ -66,7 +66,7 @@ def deploy_schedule(job_name, jobs_file_name):
         if not job_name in jobs_map:
             print("Job details for " + job_name + " do not exist in "
                   + jobs_file_name + " file")
-            sys.exit()
+            sys.exit(1)
 
         lambda_client = boto3.client('lambda')
         try:
@@ -75,7 +75,7 @@ def deploy_schedule(job_name, jobs_file_name):
             )
         except ClientError as e:
             print("Error getting lambda function: " + e.response['Error']['Code'])
-            sys.exit()
+            sys.exit(1)
 
         job_details = jobs_map[job_name]
 
@@ -88,7 +88,7 @@ def deploy_schedule(job_name, jobs_file_name):
             )
         except ClientError as e:
             print("Error putting EventBridge rule: " + e.response["Error"]["Code"])
-            sys.exit()
+            sys.exit(1)
 
         try:
             client.put_targets(
@@ -103,14 +103,14 @@ def deploy_schedule(job_name, jobs_file_name):
             )
         except ClientError as e:
             print("Error putting lambda target: " + e.response["Error"]["Code"])
-            sys.exit()
+            sys.exit(1)
 
         print(job_name + " job event deployed")
 
 if __name__ == '__main__':
     if len(sys.argv) < 2:
         print("Usage is 'python deploy_schedule.py job_name [jobs_file]'")
-        sys.exit()
+        sys.exit(1)
 
     jobs_file = "../job-details.json" if len(sys.argv) < 3 else sys.argv[2]
     deploy_schedule(sys.argv[1], jobs_file)
