@@ -1,0 +1,21 @@
+{
+    "RefreshKMSCache" :
+    {
+        "target" : {
+            "endpoint" : "caches/refresh/kms",
+            "service" : "bootstrap",
+            "single-target" : true
+        },
+        "scheduling" : {
+            "type" : "cron",
+            "timing" : {
+                "minutes" : 0,
+                "hours" : 7,
+                "day-of-month" : "*",
+                "month" : "*",
+                "day-of-week" : "?",
+                "year" : "*"
+            }
+        }
+    }
+}
