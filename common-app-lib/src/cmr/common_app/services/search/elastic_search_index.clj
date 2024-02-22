@@ -52,6 +52,17 @@
    "provider-id"
    "concept-id"])
 
+(defmethod concept-type+result-format->fields [:collection :xml]
+  [concept-type query]
+  ["entry-title"
+   "provider-id"
+   "short-name"
+   "version-id"
+   "concept-id"
+   "deleted"
+   "revision-id"
+   "_score"])
+
 (defn context->search-index
   "Returns the search index given a context. This assumes that the search index is always located in a
    system using the :search-index key."
