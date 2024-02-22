@@ -81,10 +81,17 @@ def deploy_schedule(job_name, jobs_file_name):
 
         client = boto3.client('events')
         try:
-            client.put_rule(
+            create_rule_resp = client.put_rule(
                 Name=job_name,
                 ScheduleExpression=make_schedule_expression(job_details),
                 State='ENABLED'
+            )
+            lambda_client.add_permission(
+                FunctionName="job-router-"+environment,
+                StatementId="InvokeJobRouter",
+                Action="lambda:InvokeFunction",
+                Principal="events.amazonaws.com",
+                SourceArn=create_rule_resp["RuleArn"]
             )
         except ClientError as e:
             print("Error putting EventBridge rule: " + e.response["Error"]["Code"])
