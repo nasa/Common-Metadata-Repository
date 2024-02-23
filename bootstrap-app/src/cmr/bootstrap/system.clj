@@ -37,6 +37,7 @@
    [cmr.metadata-db.services.util :as mdb-util]
    [cmr.redis-utils.redis-cache]
    [cmr.search.services.humanizers.humanizer-report-service :as humanizer-report-service]
+   [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as has-gran-or-cwic-results-feature]
    [cmr.transmit.config :as transmit-config]))
 
 (defconfig db-batch-size
@@ -96,7 +97,8 @@
                       coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
                       elastic-search-index-names-cache/index-names-cache-key (elastic-search-index-names-cache/create-index-cache)
                       humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)
-                      humanizer-report-service/humanizer-report-cache-key (humanizer-report-service/create-humanizer-report-cache-client)}
+                      humanizer-report-service/humanizer-report-cache-key (humanizer-report-service/create-humanizer-report-cache-client)
+                      has-gran-or-cwic-results-feature/has-granules-or-cwic-cache-key (has-gran-or-cwic-results-feature/create-has-granules-or-cwic-map-cache)}
              :scheduler (jobs/create-scheduler `system-holder [jvm-info/log-jvm-statistics-job
                                                                (provider-cache/refresh-provider-cache-job "bootstrap-provider-cache-refresh")
                                                                (b-coll-metadata-cache/refresh-collections-metadata-cache-job "bootstrap-collections-metadata-cache-refresh")
@@ -104,7 +106,8 @@
                                                                (coll-gran-acls-caches/refresh-collections-cache-for-granule-acls-job "bootstrap-collections-for-gran-acls-cache-refresh")
                                                                (elastic-search-index-names-cache/refresh-index-names-cache-job "bootstrap-elastic-search-index-names-cache")
                                                                (humanizer-alias-cache/refresh-humanizer-alias-cache-job "bootstrap-humanizer-alias-cache-refresh")
-                                                               (humanizer-report-service/refresh-humanizer-report-cache-job "bootstrap-humanizer-report-cache-refresh")])
+                                                               (humanizer-report-service/refresh-humanizer-report-cache-job "bootstrap-humanizer-report-cache-refresh")
+                                                               (has-gran-or-cwic-results-feature/refresh-has-granules-or-cwic-map-job "bootstrap-has-granules-or-cwic-map-cache-refresh")])
              :queue-broker queue-broker}]
     (transmit-config/system-with-connections sys [:metadata-db :echo-rest :kms :indexer :access-control :search])))
 
