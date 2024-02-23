@@ -197,8 +197,10 @@
 
 (defn refresh-humanizer-report-cache-job
   [job-key]
-  "The job definition used by the system job scheduler."
+  "The job definition used by the system job scheduler to refresh the humanizer report cache.
+  This cache is directly reliant on the collection-metadata-cache being refreshed and present (refresh-collections-metadata-cache-job).
+  Currently the collection metadata cache is refreshed daily at 6 AM UTC. So we will start this job an hour after that."
   {:job-type HumanizerReportGeneratorJob
    :job-key job-key
-   :interval (* 60 60 24) ; every 24 hours
-   :start-delay (+ (default-job-start-delay) (humanizer-report-generator-job-delay))})
+   :start-delay (* 10 60) ;; 10 minutes delay
+   :daily-at-hour-and-minute [07 00]})

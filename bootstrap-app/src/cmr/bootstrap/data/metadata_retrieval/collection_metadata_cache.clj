@@ -101,6 +101,8 @@
   (refresh-cache {:system system}))
 
 (defn refresh-collections-metadata-cache-job
+  "This job definition for refreshing the entire collection metadata cache. This cache is relied upon by the humanizer-report cache job.
+  If you change the daily schedule of this cache, you must change the daily schedule of the humanizer-report generator as well."
   [job-key]
   {:job-type RefreshCollectionsMetadataCache
    :job-key job-key
