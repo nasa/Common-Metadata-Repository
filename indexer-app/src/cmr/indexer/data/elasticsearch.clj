@@ -27,7 +27,7 @@
 
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
-  100)
+  10)
 
 (defn context->conn
   "Returns the elastisch connection in the context"
@@ -166,11 +166,11 @@
   (index-set-svc/reset context)
   (create-indexes context))
 
-(defrecord ESstore 
-  [;; configuration of host, port and admin-token for elasticsearch 
+(defrecord ESstore
+  [;; configuration of host, port and admin-token for elasticsearch
    config
 
-   ;; The connection to elasticsearch 
+   ;; The connection to elasticsearch
    conn]
 
 
