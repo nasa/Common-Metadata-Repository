@@ -16,6 +16,8 @@
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.redis-log-util :as rl-util]
+   [cmr.common.util :as util]
    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
    [cmr.transmit.humanizer :as humanizer]))
 
@@ -75,12 +77,14 @@
   (info "Refreshing entire humanizer alias cache")
   (let [humanizer-alias-cache (hash-cache/context->cache context humanizer-alias-cache-key)
         humanizers (humanizer/get-humanizers context)
-        humanizers-alias-map (create-humanizer-alias-map humanizers)]
-    (doseq [[humanizer-field get-non-humanized-source-to-aliases-map] humanizers-alias-map]
-      (hash-cache/set-value humanizer-alias-cache
-                            humanizer-alias-cache-key
-                            humanizer-field
-                            get-non-humanized-source-to-aliases-map))
+        humanizers-alias-map (create-humanizer-alias-map humanizers)
+        [tm _] (util/time-execution
+                (doseq [[humanizer-field get-non-humanized-source-to-aliases-map] humanizers-alias-map]
+                  (hash-cache/set-value humanizer-alias-cache
+                                        humanizer-alias-cache-key
+                                        humanizer-field
+                                        get-non-humanized-source-to-aliases-map)))]
+    (rl-util/log-redis-write-complete "refresh-entire-cache" humanizer-alias-cache-key tm)
     (info (str "Humanizer alias cache refresh complete."
                " humanizer-alias-cache size: " (hash-cache/cache-size humanizer-alias-cache humanizer-alias-cache-key) " bytes"))))
 
@@ -95,8 +99,10 @@
 						 'OTHERPLATFORMS' --> ['otheraliases']}"
   [context humanizer-field-name]
   (let [humanizer-alias-cache (hash-cache/context->cache context humanizer-alias-cache-key)
-        found-aliases-map (hash-cache/get-value humanizer-alias-cache humanizer-alias-cache-key humanizer-field-name)]
-    (if (or (nil? found-aliases-map) (empty? found-aliases-map))
+        [tm found-aliases-map] (util/time-execution
+                                (hash-cache/get-value humanizer-alias-cache humanizer-alias-cache-key humanizer-field-name))]
+    (rl-util/log-redis-read-complete "get-non-humanized-source-to-aliases-map" humanizer-alias-cache-key tm)
+    (when (or (nil? found-aliases-map) (empty? found-aliases-map))
       (info "cache-miss: humanizer-alias-cache could not find map with humanizer-field-name = " humanizer-field-name))
     found-aliases-map))
 

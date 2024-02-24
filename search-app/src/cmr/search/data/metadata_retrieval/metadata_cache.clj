@@ -18,13 +18,15 @@
    [cmr.common.memory-db.connection]
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :as log :refer [debug info]]
+   [cmr.common.redis-log-util :as rl-util]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
    [cmr.metadata-db.services.concept-service :as metadata-db]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
    [cmr.search.services.acl-service :as acl-service]
    [cmr.umm-spec.acl-matchers :as acl-match]
-   [cmr.umm-spec.versioning :as umm-version]))
+   [cmr.umm-spec.versioning :as umm-version]
+   [cmr.common.util :as util]))
 
 (defconfig non-cached-collection-metadata-formats
   "Defines a set of collection metadata formats that will not be cached in memory"
@@ -139,8 +141,11 @@
   "Returns a sequence of all revision format maps in the cache sorted by concept id"
   [context]
   (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
-        cache-map (-> (hash-cache/get-map cache cmn-coll-metadata-cache/cache-key)
-                      (dissoc "incremental-since-refresh-date"))
+        _ (rl-util/log-redis-reading-start "all-cached-revision-format-maps:get-map" cmn-coll-metadata-cache/cache-key)
+        [tm cache-map] (util/time-execution
+                        (-> (hash-cache/get-map cache cmn-coll-metadata-cache/cache-key)
+                            (dissoc "incremental-since-refresh-date")))
+        _ (rl-util/log-redis-read-complete "all-cached-revision-format-maps" cmn-coll-metadata-cache/cache-key tm)
         maps (for [concept-id (sort (keys cache-map))]
                (get cache-map concept-id))]
     (seq maps)))
@@ -149,8 +154,10 @@
   "Updates the cache so that it will contain the updated revision format maps."
   [context revision-format-maps]
   (let [compressed-maps (u/fast-map crfm/compress revision-format-maps)
-        rcache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
-    (doall (map #(crfm/merge-into-cache-map rcache cmn-coll-metadata-cache/cache-key %) compressed-maps))
+        rcache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
+        [tm _] (util/time-execution
+                (doall (map #(crfm/merge-into-cache-map rcache cmn-coll-metadata-cache/cache-key %) compressed-maps)))]
+    (rl-util/log-redis-write-complete "update-cache" cmn-coll-metadata-cache/cache-key tm)
 
     (info "Cache updated with revision format maps. Cache Size:"
           (hash-cache/cache-size (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
@@ -248,7 +255,9 @@
   (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
     (reduce (fn [grouped-map tuple]
               (let [[concept-id revision-id] tuple
-                    revision-format-map (hash-cache/get-value cache cmn-coll-metadata-cache/cache-key concept-id)]
+                    [tm revision-format-map] (util/time-execution
+                                              (hash-cache/get-value cache cmn-coll-metadata-cache/cache-key concept-id))]
+                (rl-util/log-redis-read-complete "get-cached-metadata-in-format" cmn-coll-metadata-cache/cache-key tm)
                 (if revision-format-map
                   ;; Concept is cached
                   (cond

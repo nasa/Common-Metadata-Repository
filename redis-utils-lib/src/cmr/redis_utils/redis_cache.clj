@@ -7,7 +7,6 @@
   (:require
    [clojure.edn :as edn]
    [cmr.common.cache :as cache]
-   [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.redis-utils.redis :as redis :refer [wcar*]]
    [taoensso.carmine :as carmine]))
 

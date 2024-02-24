@@ -23,6 +23,7 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.hash-cache :as hash-cache]
+   [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
    [cmr.redis-utils.redis-hash-cache :as rhcache]
    [cmr.transmit.kms :as kms]))
@@ -192,11 +193,20 @@
         short-name-cache (hash-cache/context->cache context kms-short-name-cache-key)
         umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
         location-cache (hash-cache/context->cache context kms-location-cache-key)
-        measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)]
-    (hash-cache/set-values short-name-cache kms-short-name-cache-key short-name-lookup-map)
-    (hash-cache/set-values umm-c-cache kms-umm-c-cache-key umm-c-lookup-map)
-    (hash-cache/set-values location-cache kms-location-cache-key location-lookup-map)
-    (hash-cache/set-values measurement-cache kms-measurement-cache-key measurement-lookup-map)
+        measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)
+        _ (rl-util/log-refresh-start (format "%s %s %s %s"
+                                             kms-short-name-cache-key
+                                             kms-umm-c-cache-key
+                                             kms-location-cache-key
+                                             kms-measurement-cache-key))
+        [tm _] (util/time-execution (hash-cache/set-values short-name-cache kms-short-name-cache-key short-name-lookup-map))
+        _ (rl-util/log-redis-write-complete "create-kms-index" kms-short-name-cache-key tm)
+        [tm _] (util/time-execution (hash-cache/set-values umm-c-cache kms-umm-c-cache-key umm-c-lookup-map))
+        _ (rl-util/log-redis-write-complete "create-kms-index" kms-umm-c-cache-key tm)
+        [tm _] (util/time-execution (hash-cache/set-values location-cache kms-location-cache-key location-lookup-map))
+        _ (rl-util/log-redis-write-complete "create-kms-index" kms-location-cache-key tm)
+        [tm _] (util/time-execution (hash-cache/set-values measurement-cache kms-measurement-cache-key measurement-lookup-map))
+        _ (rl-util/log-redis-write-complete "create-kms-index" kms-measurement-cache-key tm)]
     kms-keywords-map))
 
 (defn load-cache-if-necessary
@@ -207,6 +217,7 @@
   [context cache key]
   (when-not (hash-cache/key-exists cache key)
     ;; go to KMS and get the keywords, since the cache doesn't exist.
+    (rl-util/log-refresh-start key)
     (create-kms-index
      context
      (into {}
@@ -222,10 +233,14 @@
   [context keyword-scheme short-name]
   (when-not (:ignore-kms-keywords context)
     (let [short-name-cache (hash-cache/context->cache context kms-short-name-cache-key)
-          keywords (or (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme)
-                       (do
-                         (load-cache-if-necessary context short-name-cache kms-short-name-cache-key)
-                         (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme)))]
+          [tm keywords] (util/time-execution (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme))
+          _ (rl-util/log-redis-read-complete "lookup-by-short-name" kms-short-name-cache-key tm)
+          keywords (if keywords
+                     keywords
+                     (let [_ (load-cache-if-necessary context short-name-cache kms-short-name-cache-key)
+                           [tm kwords] (util/time-execution (hash-cache/get-value short-name-cache kms-short-name-cache-key keyword-scheme))]
+                       (rl-util/log-redis-read-complete "lookup-by-short-name" kms-short-name-cache-key tm)
+                       kwords))]
       (get keywords (util/safe-lowercase short-name)))))
 
 (defn lookup-by-location-string
@@ -233,11 +248,15 @@
   string. Returns nil if a keyword is not found. Comparison is made case insensitively."
   [context location-string]
   (when-not (:ignore-kms-keywords context)
-    (let [location-cache (hash-cache/context->cache context kms-location-cache-key)]
-      (or (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string))
-          (do
-            (load-cache-if-necessary context location-cache kms-location-cache-key)
-            (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string)))))))
+    (let [location-cache (hash-cache/context->cache context kms-location-cache-key)
+          [tm keywords] (util/time-execution (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string)))
+          _ (rl-util/log-redis-read-complete "lookup-by-location-string" kms-location-cache-key tm)]
+      (if keywords
+        keywords
+        (let [_ (load-cache-if-necessary context location-cache kms-location-cache-key)
+              [tm kwords] (util/time-execution (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string)))]
+          (rl-util/log-redis-read-complete "lookup-by-location-string" kms-location-cache-key tm)
+          kwords)))))
 
 (defn- remove-long-name-from-kms-index
   "Removes long-name from the umm-c-index keys in order to prevent validation when
@@ -259,10 +278,14 @@
         comparison-map (normalize-for-lookup format-map (kms-scheme->fields-for-umm-c-lookup
                                                          keyword-scheme))
         umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
-        value (or (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
-                  (do
-                    (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
-                    (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)))]
+        [tm value] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))
+        _ (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-data-format" kms-umm-c-cache-key tm)
+        value (if value
+                value
+                (let [_ (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
+                      [tm vlue] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))]
+                  (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-data-format" kms-umm-c-cache-key tm)
+                  vlue))]
     (get-in value [comparison-map])))
 
 (defn lookup-by-umm-c-keyword-platforms
@@ -276,10 +299,14 @@
         comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup
                                                             keyword-scheme))
         umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
-        value (or (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
-                  (do
-                    (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
-                    (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)))]
+        [tm value] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))
+        _ (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-platforms" kms-umm-c-cache-key tm)
+        value (if value
+                value
+                (let [_ (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
+                      [tm vlue] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))]
+                  (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-platforms" kms-umm-c-cache-key tm)
+                  vlue))]
     (if (get umm-c-keyword :long-name)
       ;; Check both longname and shortname
       (get-in value [comparison-map])
@@ -301,10 +328,14 @@
             comparison-map (normalize-for-lookup umm-c-keyword
                                                  (kms-scheme->fields-for-umm-c-lookup keyword-scheme))
             umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
-            value (or (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)
-                      (do
-                        (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
-                        (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme)))]
+            [tm value] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))
+            _ (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword" kms-umm-c-cache-key tm)
+            value (if value
+                    value
+                    (let [_ (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
+                          [tm vlue] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))]
+                      (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword" kms-umm-c-cache-key tm)
+                      vlue))]
         (get-in value [comparison-map])))))
 
 (defn lookup-by-measurement
@@ -313,10 +344,14 @@
   [context value]
   (when-not (:ignore-kms-keywords context)
     (let [measurement-cache (hash-cache/context->cache context kms-measurement-cache-key)
-          measurement-index (or (hash-cache/get-value measurement-cache kms-measurement-cache-key :measurement-name)
-                                (do
-                                  (load-cache-if-necessary context measurement-cache kms-measurement-cache-key)
-                                  (hash-cache/get-value measurement-cache kms-measurement-cache-key :measurement-name)))
+          [tm measurement-index] (util/time-execution (hash-cache/get-value measurement-cache kms-measurement-cache-key :measurement-name))
+          _ (rl-util/log-redis-read-complete "lookup-by-measurement" kms-measurement-cache-key tm)
+          measurement-index (if measurement-index
+                              measurement-index
+                              (let [_ (load-cache-if-necessary context measurement-cache kms-measurement-cache-key)
+                                    [tm mt-index] (util/time-execution (hash-cache/get-value measurement-cache kms-measurement-cache-key :measurement-name))]
+                                (rl-util/log-redis-read-complete "lookup-by-measurement" kms-measurement-cache-key tm)
+                                mt-index))
           {:keys [MeasurementContextMedium MeasurementObject MeasurementQuantities]} value
           measurements (if (seq MeasurementQuantities)
                          (map (fn [quantity]
