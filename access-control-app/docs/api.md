@@ -1,23 +1,23 @@
 ## API Documentation
 
-See the [CMR Data Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide) for a general guide to utilizing the CMR Ingest API as a data partner.
-See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide) for a general guide to developing a CMR client.
+See the [CMR Data Partner User Guide][data-guide] for a general guide to utilizing the CMR Ingest API as a data partner.
+See the [CMR Client Partner User Guide][client-guide] for a general guide to developing a CMR client.
 
 ### Access Control API Overview
 
-  * [/acls](#acls)
+* [/acls](#acls)
     * [POST - Create ACL](#create-acl)
     * [GET - Search ACLs](#search-acls)
-  * [/acls/:acl-id](#acl-by-id-param)
+* [/acls/:acl-id](#acl-by-id-param)
     * [GET - Retrieve an ACL](#retrieve-acl)
     * [PUT - Update an ACL](#update-acl)
     * [DELETE - Delete an ACL](#delete-acl)
-  * [/permissions](#permissions)
+* [/permissions](#permissions)
     * [GET - Check User Permissions](#get-permissions)
     * [POST - Check User Permissions](#get-permissions)
-  * [/s3-buckets](#s3-buckets)
+* [/s3-buckets](#s3-buckets)
     * [GET - Check User Permissions to S3 Buckets](#get-s3-buckets)
-  * [/health](#health)
+* [/health](#health)
     * [GET - Get the health of the access control application.](#application-health)
 
 ---
@@ -38,13 +38,14 @@ Content-Type is a standard HTTP header that specifies the content type of the bo
 
 All Access Control API operations require specifying a token.
 
-An EDL token can be obtained from [Earthdata Login (EDL)](https://urs.earthdata.nasa.gov). The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the documentation [here](https://urs.earthdata.nasa.gov/documentation/for_users/user_token).
+An EDL token can be obtained from [Earthdata Login (EDL)][edl]. The token should be specified using the `Authorization: Bearer` header followed by the EDL bearer token. For more information on obtaining an EDL bearer token, please reference the [documentation][token-doc].
 
-An example for generating a Launchpad token can he found [here](https://wiki.earthdata.nasa.gov/display/CMR/Example+Code+for+Requesting+Launchpad+Token). The token should be specified using the `Authorization:` header followed by the Launchpad token. More information on getting access to Launchpad tokens can be found on [this guide](https://wiki.earthdata.nasa.gov/display/CMR/Launchpad+Authentication+User%27s+Guide)
+An example for generating a Launchpad token can he found on the Earthdata [wiki][token-example]. The token should be specified using the `Authorization:` header followed by the Launchpad token. More information on getting access to Launchpad tokens can be found on the [Launchpad Authentication User's Guide][launch-guide].
 
 #### <a name="cmr-revision-id-header"></a> Cmr-Revision-Id Header
 
 The revision id header allows specifying the revision id to use when saving the concept. It is optional for all ACL updates. The update will be rejected when:
+
 1. The revision id specified is not an integer.
 2. The revision id specified <= current revision id of the acl - a HTTP Status code of 409 will be returned indicating a conflict.
 
@@ -119,7 +120,7 @@ Every ACL refers to an object called an "identity". The "identity" identifies wh
 
 ### ACL Uniqueness
 
-ACLs are uniquely identified by their identity. There can only be one ACL to a specific identity. For example provider identities contain a provider id and a target. There can only be one ACL in the system for granting permissions to Provider FOO's Option Definitions. The rules for uniquely identifying each type is listed below.
+ACLs are uniquely identified by their identity. There can only be one ACL to a specific identity. For example provider identities contain a provider id (such as "Foo") and a target. There can only be one ACL in the system for granting permissions to Provider FOO's Option Definitions. The rules for uniquely identifying each type is listed below.
 
 * System Identities - Unique by target
 * Provider Identities - Unique by provider id and target
@@ -161,74 +162,74 @@ For system, provider, and single instance identities, the grantable permissions 
 
 #### System Identity
 
-| Target                               | Grantable Permissions        |
-|--------------------------------------|------------------------------|
-| SYSTEM_AUDIT_REPORT                  | read                         |
-| METRIC_DATA_POINT_SAMPLE             | read                         |
-| SYSTEM_INITIALIZER                   | create                       |
-| ARCHIVE_RECORD                       | delete                       |
-| ERROR_MESSAGE                        | update                       |
-| TOKEN                                | read, delete                 |
-| TOKEN_REVOCATION                     | create                       |
-| EXTENDED_SERVICE_ACTIVATION          | create                       |
-| ORDER_AND_ORDER_ITEMS                | read, delete                 |
-| PROVIDER                             | create, delete               |
-| TAG_GROUP                            | create, update, delete       |
-| TAXONOMY                             | create                       |
-| TAXONOMY_ENTRY                       | create                       |
-| USER_CONTEXT                         | read                         |
-| USER                                 | read, update, delete         |
-| GROUP                                | create, read                 |
-| ANY_ACL                              | create, read, update, delete |
-| EVENT_NOTIFICATION                   | delete                       |
-| EXTENDED_SERVICE                     | delete                       |
-| SYSTEM_OPTION_DEFINITION             | create, delete               |
-| SYSTEM_OPTION_DEFINITION_DEPRECATION | create                       |
-| INGEST_MANAGEMENT_ACL                | read, update                 |
-| SYSTEM_CALENDAR_EVENT                | create, update, delete       |
-| DASHBOARD_ADMIN                      | create, read, update, delete |
-| DASHBOARD_ARC_CURATOR                | create, read, update, delete |
-| DASHBOARD_MDQ_CURATOR                | create, read, update, delete |
+| Target                                 | Grantable Permissions        |
+|----------------------------------------|------------------------------|
+| `SYSTEM_AUDIT_REPORT`                  | read                         |
+| `METRIC_DATA_POINT_SAMPLE`             | read                         |
+| `SYSTEM_INITIALIZER`                   | create                       |
+| `ARCHIVE_RECORD`                       | delete                       |
+| `ERROR_MESSAGE`                        | update                       |
+| `TOKEN`                                | read, delete                 |
+| `TOKEN_REVOCATION`                     | create                       |
+| `EXTENDED_SERVICE_ACTIVATION`          | create                       |
+| `ORDER_AND_ORDER_ITEMS`                | read, delete                 |
+| `PROVIDER`                             | create, delete               |
+| `TAG_GROUP`                            | create, update, delete       |
+| `TAXONOMY`                             | create                       |
+| `TAXONOMY_ENTRY`                       | create                       |
+| `USER_CONTEXT`                         | read                         |
+| `USER`                                 | read, update, delete         |
+| `GROUP`                                | create, read                 |
+| `ANY_ACL`                              | create, read, update, delete |
+| `EVENT_NOTIFICATION`                   | delete                       |
+| `EXTENDED_SERVICE`                     | delete                       |
+| `SYSTEM_OPTION_DEFINITION`             | create, delete               |
+| `SYSTEM_OPTION_DEFINITION_DEPRECATION` | create                       |
+| `INGEST_MANAGEMENT_ACL`                | read, update                 |
+| `SYSTEM_CALENDAR_EVENT`                | create, update, delete       |
+| `DASHBOARD_ADMIN`                      | create, read, update, delete |
+| `DASHBOARD_ARC_CURATOR`                | create, read, update, delete |
+| `DASHBOARD_MDQ_CURATOR`                | create, read, update, delete |
 
 #### Provider Identity
 
-| Target                          | Grantable Permissions        |
-|---------------------------------|------------------------------|
-| AUDIT_REPORT                    | read                         |
-| OPTION_ASSIGNMENT               | create, read, delete         |
-| OPTION_DEFINITION               | create, delete               |
-| OPTION_DEFINITION_DEPRECATION   | create                       |
-| DATASET_INFORMATION             | read                         |
-| PROVIDER_HOLDINGS               | read                         |
-| EXTENDED_SERVICE                | create, update, delete       |
-| PROVIDER_ORDER                  | read                         |
-| PROVIDER_ORDER_RESUBMISSION     | create                       |
-| PROVIDER_ORDER_ACCEPTANCE       | create                       |
-| PROVIDER_ORDER_REJECTION        | create                       |
-| PROVIDER_ORDER_CLOSURE          | create                       |
-| PROVIDER_ORDER_TRACKING_ID      | update                       |
-| PROVIDER_INFORMATION            | update                       |
-| PROVIDER_CONTEXT                | read                         |
-| AUTHENTICATOR_DEFINITION        | create, delete               |
-| PROVIDER_POLICIES               | read, update, delete         |
-| USER                            | read                         |
-| GROUP                           | create, read                 |
-| PROVIDER_OBJECT_ACL             | create, read, update, delete |
-| CATALOG_ITEM_ACL                | create, read, update, delete |
-| INGEST_MANAGEMENT_ACL           | read, update                 |
-| DATA_QUALITY_SUMMARY_DEFINITION | create, update, delete       |
-| DATA_QUALITY_SUMMARY_ASSIGNMENT | create, delete               |
-| PROVIDER_CALENDAR_EVENT         | create, update, delete       |
-| DASHBOARD_DAAC_CURATOR          | create, read, update, delete |
-| NON_NASA_DRAFT_USER             | create, read, update, delete |
-| NON_NASA_DRAFT_APPROVER         | create, read, update, delete |
-| SUBSCRIPTION_MANAGEMENT         | read, update                 |
+| Target                            | Grantable Permissions        |
+|-----------------------------------|------------------------------|
+| `AUDIT_REPORT`                    | read                         |
+| `OPTION_ASSIGNMENT`               | create, read, delete         |
+| `OPTION_DEFINITION`               | create, delete               |
+| `OPTION_DEFINITION_DEPRECATION`   | create                       |
+| `DATASET_INFORMATION`             | read                         |
+| `PROVIDER_HOLDINGS`               | read                         |
+| `EXTENDED_SERVICE`                | create, update, delete       |
+| `PROVIDER_ORDER`                  | read                         |
+| `PROVIDER_ORDER_RESUBMISSION`     | create                       |
+| `PROVIDER_ORDER_ACCEPTANCE`       | create                       |
+| `PROVIDER_ORDER_REJECTION`        | create                       |
+| `PROVIDER_ORDER_CLOSURE`          | create                       |
+| `PROVIDER_ORDER_TRACKING_ID`      | update                       |
+| `PROVIDER_INFORMATION`            | update                       |
+| `PROVIDER_CONTEXT`                | read                         |
+| `AUTHENTICATOR_DEFINITION`        | create, delete               |
+| `PROVIDER_POLICIES`               | read, update, delete         |
+| `USER`                            | read                         |
+| `GROUP`                           | create, read                 |
+| `PROVIDER_OBJECT_ACL`             | create, read, update, delete |
+| `CATALOG_ITEM_ACL`                | create, read, update, delete |
+| `INGEST_MANAGEMENT_ACL`           | read, update                 |
+| `DATA_QUALITY_SUMMARY_DEFINITION` | create, update, delete       |
+| `DATA_QUALITY_SUMMARY_ASSIGNMENT` | create, delete               |
+| `PROVIDER_CALENDAR_EVENT`         | create, update, delete       |
+| `DASHBOARD_DAAC_CURATOR`          | create, read, update, delete |
+| `NON_NASA_DRAFT_USER`             | create, read, update, delete |
+| `NON_NASA_DRAFT_APPROVER`         | create, read, update, delete |
+| `SUBSCRIPTION_MANAGEMENT`         | read, update                 |
 
 #### Single Instance Identity
 
 | Target           | Grantable Permissions |
 |------------------|-----------------------|
-| GROUP_MANAGEMENT | update, delete        |
+| `GROUP_MANAGEMENT` | update, delete        |
 
 ### <a name="search-acls"></a> Search ACLs
 
@@ -240,45 +241,45 @@ The following parameters are supported when searching for ACLs.
 
 ##### Standard Parameters:
 
-* page_size
-* page_num
-* pretty
-* include_full_acl - boolean parameter that indicates if the full acl details should be included in the search response.
+* `page_size`
+* `page_num`
+* `pretty`
+* `include_full_acl` - boolean parameter that indicates if the full acl details should be included in the search response.
 
 ##### ACL Matching Parameters
 
-* permitted_group
-  * options: ignore_case
-* identity_type
-  * options: none (always case-insensitive)
-  * The type must be one or more of the following
-    * system
-    * provider
-    * single_instance
-    * catalog_item
-* target
-  * options: none (always case-insensitive)
-  * Matches ACLs which have the given object identity target
-* target_id
-  * options: none (case-sensitive)
-  * Matches single_instance ACLs through specified group target_id. Only applies when the single_instance target is GROUP_MANAGEMENT
-  * identity_type=single_instance parameter is required alongside this parameter
-* permitted_user
-  * options: none (always case-insensitive)
-  * user is a URS user name corresponding to a member of a group that has access to an ACL
-* provider
-  * options: ignore_case
-  * Matches ACLs which reference a provider through a catalog item identity or a provider identity
-* group_permission
-  * options: none (always case-insensitive)
-  * This is a nested parameter that has subfields 'permitted_group' and 'permission'; it can contain both subfields or just one
-* permitted_concept_id
-  * Matches ACLs that grant permission to the collection or granule with the given concept id
-  * For an ACL to grant permission to a collection, the collection_applicable field of the ACL should be true and all the collection identifier filters (entry title, temporal and access value) of the ACL should match the related fields of the collection; no collection identifier defined in the ACL makes the ACL match all collections when its collection_applicable field is true.
-  * For an ACL to grant permission to a granule, the granule_applicable field of the ACL should be true and both the granule identifier filters (temporal and access value), and collection identifier filters (entry title, temporal and access value) of the ACL should match the related fields of the granule and its parent collection.
-* id
-  * options: none (case-sensitive)
-  * Matches either ACL concept ID or ACL legacy GUID
+* `permitted_group`
+    * options: `ignore_case`
+* `identity_type`
+    * options: none (always case-insensitive)
+    * The type must be one or more of the following
+        * `system`
+        * `provider`
+        * `single_instance`
+        * `catalog_item`
+* `target`
+    * options: none (always case-insensitive)
+    * Matches ACLs which have the given object identity target
+* `target_id`
+    * options: none (case-sensitive)
+    * Matches single_instance ACLs through specified group `target_id`. Only applies when the `single_instance` target is `GROUP_MANAGEMENT`
+    * identity_type=single_instance parameter is required alongside this parameter
+* `permitted_user`
+    * options: none (always case-insensitive)
+    * user is a URS user name corresponding to a member of a group that has access to an ACL
+* `provider`
+    * options: ignore_case
+    * Matches ACLs which reference a provider through a catalog item identity or a provider identity
+* `group_permission`
+    * options: none (always case-insensitive)
+    * This is a nested parameter that has subfields 'permitted_group' and 'permission'; it can contain both subfields or just one
+* `permitted_concept_id`
+    * Matches ACLs that grant permission to the collection or granule with the given concept id
+    * For an ACL to grant permission to a collection, the collection_applicable field of the ACL should be true and all the collection identifier filters (entry title, temporal and access value) of the ACL should match the related fields of the collection; no collection identifier defined in the ACL makes the ACL match all collections when its collection_applicable field is true.
+    * For an ACL to grant permission to a granule, the granule_applicable field of the ACL should be true and both the granule identifier filters (temporal and access value), and collection identifier filters (entry title, temporal and access value) of the ACL should match the related fields of the granule and its parent collection.
+* `id`
+    * options: none (case-sensitive)
+    * Matches ACL concept ID
 
 ##### ACL Search Response
 
@@ -287,12 +288,12 @@ The response is always returned in JSON and includes the following parts.
 * hits - How many total ACLs were found.
 * took - How long the search took in milliseconds
 * items - a list of the current page of ACLs with the following fields
-  * concept_id
-  * revision_id
-  * name - This will be the catalog item identity name or a string containing "<identity type> - <target>". For example "System - PROVIDER"
-  * identity_type - String of "provider", "system", "single_instance", or "catalog_item"
-  * location - A URL to retrieve the ACL
-  * acl - full JSON of the ACL. Included if `include_full_acl=true` parameter is set.
+    * `concept_id`
+    * `revision_id`
+    * `name` - This will be the catalog item identity name or a string containing "<identity type> - <target>". For example "System - PROVIDER"
+    * `identity_type` - String of "provider", "system", "single_instance", or "catalog_item"
+    * `location` - A URL to retrieve the ACL
+    * `acl` - full JSON of the ACL. Included if `include_full_acl=true` parameter is set.
 
 ##### ACL Search Examples
 
@@ -755,3 +756,9 @@ Example unhealthy response body:
   }
 }
 ```
+[data-guide]: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Data+Partner+User+Guide "CMR Data Partner User Guide"
+[client-guide]: https://wiki.earthdata.nasa.gov/display/CMR/CMR+Client+Partner+User+Guide "CMR Client Partner User Guide"
+[edl]: https://urs.earthdata.nasa.gov "Earthdata Login (EDL)"
+[token-doc]: https://urs.earthdata.nasa.gov/documentation/for_users/user_token "User Token Documentation"
+[token-example]: https://wiki.earthdata.nasa.gov/display/CMR/Example+Code+for+Requesting+Launchpad+Token "Example Code for Launchpad tokens"
+[launch-guide]: https://wiki.earthdata.nasa.gov/display/CMR/Launchpad+Authentication+User%27s+Guide "Launchpad Authentication User's Guide"

@@ -14,7 +14,6 @@
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.ingest.data.provider-acl-hash :as pah]
    [cmr.ingest.services.granule-bulk-update-service :as gran-bulk-update-svc]
-   [cmr.ingest.services.humanizer-alias-cache :as humanizer-alias-cache]
    [cmr.ingest.services.subscriptions-helper :as subscription]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
@@ -141,11 +140,6 @@
   (let [context {:system system}]
     (cleanup-expired-collections context)))
 
-(def-stateful-job RefreshHumanizerAliasCache
-  [_ system]
-  (let [context {:system system}]
-    (humanizer-alias-cache/refresh-cache context)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Jobs for refreshing the collection granule aggregation cache in the indexer. This is a singleton job
 ;; and the indexer does not have a database so it's triggered from Ingest and sent via message.
@@ -154,11 +148,6 @@
 
 (defconfig partial-refresh-collection-granule-aggregation-cache-interval
   "Number of seconds between partial refreshes of the collection granule aggregation cache."
-  {:default 3600
-   :type Long})
-
-(defconfig refresh-humanizer-alias-cache-interval
-  "Number of seconds between refreshes of the humanizer alias cache."
   {:default 3600
    :type Long})
 
@@ -259,9 +248,6 @@
 
    {:job-type CleanupExpiredCollections
     :interval CLEANUP_EXPIRED_COLLECTIONS_INTERVAL}
-
-   {:job-type RefreshHumanizerAliasCache
-    :interval (refresh-humanizer-alias-cache-interval)}
 
    {:job-type BulkUpdateStatusTableCleanup
     :interval (bulk-update-status-table-cleanup-interval)}

@@ -58,7 +58,7 @@
     (reduce #(assoc %1 (:concept-id %2) %2) {} rfms)))
 
 (defn update-cache
-  "Updates the collection metadata cache by querying elastic search for updates since the 
+  "Updates the collection metadata cache by querying elastic search for updates since the
   last time the cache was updated."
   [context]
   (info "Updating collection metadata cache")
@@ -68,12 +68,12 @@
                                 {}
                                 (partition-all 1000 concepts-tuples))
         cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
-    (hash-cache/set-value cache 
-                          cmn-coll-metadata-cache/cache-key 
-                          cmn-coll-metadata-cache/incremental-since-refresh-date-key 
+    (hash-cache/set-value cache
+                          cmn-coll-metadata-cache/cache-key
+                          cmn-coll-metadata-cache/incremental-since-refresh-date-key
                           incremental-since-refresh-date)
-    (hash-cache/set-values cache 
-                           cmn-coll-metadata-cache/cache-key 
+    (hash-cache/set-values cache
+                           cmn-coll-metadata-cache/cache-key
                            new-cache-value)
     (info "Metadata cache update complete. Cache Size:" (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))))
 
@@ -87,13 +87,13 @@
                                 {}
                                 (partition-all 1000 concepts-tuples))
         cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
-    (hash-cache/set-value cache 
-                          cmn-coll-metadata-cache/cache-key 
-                          cmn-coll-metadata-cache/incremental-since-refresh-date-key 
+    (hash-cache/set-value cache
+                          cmn-coll-metadata-cache/cache-key
+                          cmn-coll-metadata-cache/incremental-since-refresh-date-key
                           incremental-since-refresh-date)
     (hash-cache/set-values cache cmn-coll-metadata-cache/cache-key new-cache-value)
-    
-    (info "Metadata cache refresh complete. Cache Size:" 
+
+    (info "Metadata cache refresh complete. Cache Size:"
           (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))))
 
 (defjob RefreshCollectionsMetadataCache
@@ -101,6 +101,8 @@
   (refresh-cache {:system system}))
 
 (defn refresh-collections-metadata-cache-job
+  "This job definition for refreshing the entire collection metadata cache. This cache is relied upon by the humanizer-report cache job.
+  If you change the daily schedule of this cache, you must change the daily schedule of the humanizer-report generator as well."
   [job-key]
   {:job-type RefreshCollectionsMetadataCache
    :job-key job-key

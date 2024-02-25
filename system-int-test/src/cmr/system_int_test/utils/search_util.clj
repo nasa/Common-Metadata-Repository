@@ -5,9 +5,7 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clj-time.coerce :as tc]
-   [clj-time.core :as t]
    [clojure.data.xml :as x]
-   [clojure.set :as set]
    [clojure.string :as str]
    [clojure.test :refer :all]
    [clojure.walk]
@@ -49,16 +47,6 @@
   [options]
   (let [response (client/post (url/disable-search-writes-url) options)]
     (is (= 200 (:status response)))))
-
-(defn refresh-collection-metadata-cache
-  "Triggers a full refresh of the collection metadata cache in the search application."
-  []
-  (let [response (client/post
-                  (url/refresh-collection-metadata-cache-url)
-                  {:connection-manager (s/conn-mgr)
-                   :headers {transmit-config/token-header (transmit-config/echo-system-token)}
-                   :throw-exceptions false})]
-    (is (= 200 (:status response)) (:body response))))
 
 (defn collection-metadata-cache-state
   "Fetches the state of the collection metadata cache"

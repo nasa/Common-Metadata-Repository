@@ -9,17 +9,19 @@
    [cmr.bootstrap.api.virtual-products :as virtual-products]
    [cmr.bootstrap.data.metadata-retrieval.collection-metadata-cache :as cmc]
    [cmr.bootstrap.services.health-service :as hs]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
-   [cmr.common.api.context :as context]
+   [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as mc]
+   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acls-caches]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]
-   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acls-caches]
-   [cmr.common.api.errors :as errors]
    [cmr.common.log :refer [info]]
    [cmr.common.generics :as common-generic]
+   [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as has-granules-or-cwic-results-feature]
    [compojure.core :refer :all]
    [compojure.route :as route]
    [drift.execute :as drift]
@@ -138,6 +140,12 @@
 
               (= keyword-cache-name elastic-search-index-names-cache/index-names-cache-key)
               (elastic-search-index-names-cache/refresh-index-names-cache request-context)
+
+              (= keyword-cache-name humanizer-alias-cache/humanizer-alias-cache-key)
+              (humanizer-alias-cache/refresh-entire-cache request-context)
+
+              (= keyword-cache-name has-granules-or-cwic-results-feature/has-granules-or-cwic-cache-key)
+              (has-granules-or-cwic-results-feature/refresh-has-granules-or-cwic-map request-context)
 
               :else
               (route/not-found "Not Found")))

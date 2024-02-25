@@ -1,5 +1,5 @@
 (ns cmr.common-app.data.metadata-retrieval.collection-metadata-cache
-  "Defines common functions and defs a cache for catalog item metadata. 
+  "Defines common functions and defs a cache for catalog item metadata.
   It currently only stores collections.
   The metadata cache contains data like the following:
 
@@ -29,7 +29,7 @@
   (rhcache/create-redis-hash-cache {:keys-to-track [cache-key]}))
 
 (def incremental-since-refresh-date-key
-  "Identifies the field used in the defined cache-key to get the date represented 
+  "Identifies the field used in the defined cache-key to get the date represented
   as a string to get collections from ES the last time they where fetched."
   "incremental-since-refresh-date")
 
@@ -51,7 +51,7 @@
           (:items (qe/execute-query context query)))))
 
 (defn- data-range-condition
-  "Parses the date string into a cmr.common.joda-time and puts it into an elastic search 
+  "Parses the date string into a cmr.common.joda-time and puts it into an elastic search
    query condition so that the date can be used in an elastic search query."
   [date]
   (q/map->DateRangeCondition

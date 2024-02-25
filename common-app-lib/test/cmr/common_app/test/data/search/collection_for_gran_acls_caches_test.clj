@@ -1,4 +1,4 @@
-(ns cmr.common-app.test.data.search.collection-for-gran-acls-caches
+(ns cmr.common-app.test.data.search.collection-for-gran-acls-caches-test
  (:require
   [clojure.test :refer :all]
   [clojure.test.check.generators :as gen]

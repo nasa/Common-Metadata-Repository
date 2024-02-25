@@ -12,8 +12,10 @@
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.additional-attribute :as aa]
-   [cmr.umm-spec.spatial-conversion :as spatial-conversion]))
+   [cmr.system-int-test.utils.cache-util :as cache-util]
+   [cmr.system-int-test.utils.url-helper :as url]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
@@ -465,6 +467,7 @@
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:project-refs ["p4"]}))
         _ (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 "C1-PROV1" {:project-refs ["USGS_SOFIA"]}))]
 
+    (cache-util/refresh-cache (url/refresh-humanizer-alias-cache-url) (transmit-config/echo-system-token))
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
@@ -538,9 +541,9 @@
         orbit-params {:SwathWidth 1450
                       :SwathWidthUnit "Kilometer"
                       :OrbitPeriod 98.88
-                      :OrbitPeriodUnit "Decimal Minute" 
+                      :OrbitPeriodUnit "Decimal Minute"
                       :InclinationAngle 98.15
-                      :InclinationAngleUnit "Degree" 
+                      :InclinationAngleUnit "Degree"
                       :NumberOfOrbits 0.5
                       :StartCircularLatitude -90
                       :StartCircularLatitudeUnit "Degree"}
@@ -784,6 +787,7 @@
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll "C1-PROV1" {:platform-refs (dg/platform-refs "AM-1")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs (dg/platform-refs "p4")}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs (dg/platform-refs "Terra")}))
+    (cache-util/refresh-cache (url/refresh-humanizer-alias-cache-url) (transmit-config/echo-system-token))
     (index/wait-until-indexed)
 
     (testing "Update collection successful cases"
@@ -898,6 +902,7 @@
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "s1")]}))
     (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 "C1-PROV1" {:platform-refs [(dg/platform-ref-with-instrument-ref-and-sensor-refs "p2" "i2" "GPS RECEIVERS")]}))
     (index/wait-until-indexed)
+    (cache-util/refresh-cache (url/refresh-humanizer-alias-cache-url) (transmit-config/echo-system-token))
     (testing "Update collection successful cases"
       (are3
         [plat-instruments-1 plat-instruments-2]

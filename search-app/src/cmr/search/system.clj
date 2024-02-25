@@ -118,7 +118,7 @@
                       context-augmenter/token-sid-cache-name (context-augmenter/create-token-sid-cache)
                       context-augmenter/token-user-id-cache-name (context-augmenter/create-token-user-id-cache)
                       :has-granules-map (hgrf/create-has-granules-map-cache)
-                      :has-granules-or-cwic-map (hgocrf/create-has-granules-or-cwic-map-cache)
+                      hgocrf/has-granules-or-cwic-cache-key (hgocrf/create-has-granules-or-cwic-map-cache)
                       :has-granules-or-opensearch-map (hgocrf/create-has-granules-or-opensearch-map-cache)
                       metadata-transformer/xsl-transformer-cache-name (mem-cache/create-in-memory-cache)
                       acl/token-imp-cache-key (acl/create-token-imp-cache)
@@ -136,7 +136,7 @@
                       coll-gran-acls-caches/coll-by-concept-id-cache-key (coll-gran-acls-caches/create-coll-by-concept-id-cache-client)
                       common-health/health-cache-key (common-health/create-health-cache)
                       common-enabled/write-enabled-cache-key (common-enabled/create-write-enabled-cache)
-                      hrs/report-cache-key (hrs/create-report-cache)
+                      hrs/humanizer-report-cache-key (hrs/create-humanizer-report-cache-client)
                       hrfs/range-facet-cache-key (hrfs/create-range-facet-cache)}
              :public-conf (public-conf)
              orbits-runtime/system-key (orbits-runtime/create-orbits-runtime)
@@ -146,13 +146,11 @@
                          `system-holder
                          [(af/refresh-acl-cache-job "search-acl-cache-refresh")
                           hgrf/refresh-has-granules-map-job
-                          hgocrf/refresh-has-granules-or-cwic-map-job
                           hgocrf/refresh-has-granules-or-opensearch-map-job
                           (metadata-cache/refresh-collections-metadata-cache-job)
                           (metadata-cache/update-collections-metadata-cache-job)
                           (cache-info/create-log-cache-info-job "search")
-                          jvm-info/log-jvm-statistics-job
-                          hrs/humanizer-report-generator-job])}]
+                          jvm-info/log-jvm-statistics-job])}]
     (transmit-config/system-with-connections
      sys
      [:indexer :echo-rest :metadata-db :kms :access-control :urs])))
