@@ -89,7 +89,7 @@ def deploy_schedule(job_name, jobs_file_name):
         except ClientError as e:
             print("Error putting EventBridge rule: " + e.response["Error"]["Code"])
             sys.exit(1)
-        
+
         try:
             lambda_client.add_permission(
                 FunctionName="job-router-"+environment,
