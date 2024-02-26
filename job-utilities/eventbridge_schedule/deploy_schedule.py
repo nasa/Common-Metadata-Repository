@@ -86,6 +86,11 @@ def deploy_schedule(job_name, jobs_file_name):
                 ScheduleExpression=make_schedule_expression(job_details),
                 State='ENABLED'
             )
+        except ClientError as e:
+            print("Error putting EventBridge rule: " + e.response["Error"]["Code"])
+            sys.exit(1)
+
+        try:
             lambda_client.add_permission(
                 FunctionName="job-router-"+environment,
                 StatementId="InvokeJobRouter",
@@ -94,8 +99,8 @@ def deploy_schedule(job_name, jobs_file_name):
                 SourceArn=create_rule_resp["RuleArn"]
             )
         except ClientError as e:
-            print("Error putting EventBridge rule: " + e.response["Error"]["Code"])
-            sys.exit(1)
+            print("Error adding permissions to lambda: " + e.response["Error"]["Code"])
+            print("This does not mean the deployment will fail, it could just indicate the permission already exists")
 
         try:
             client.put_targets(
