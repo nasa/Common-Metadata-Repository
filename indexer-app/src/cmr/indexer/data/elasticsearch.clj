@@ -27,7 +27,7 @@
 
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
-  10)
+  1)
 
 (defn context->conn
   "Returns the elastisch connection in the context"
