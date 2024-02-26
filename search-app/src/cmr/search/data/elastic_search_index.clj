@@ -33,9 +33,10 @@
   "Fetch index names associated with granules excluding rebalancing collections indexes"
   [context]
   (let [cache (hcache/context->cache context cache-key)
-        _ (when-not (hcache/key-exists cache cache-key)
-            (index-names-cache/refresh-index-names-cache context))
-        granule-index-names (hcache/get-value cache cache-key :granule)
+        granule-index-names (or (hcache/get-value cache cache-key :granule)
+                                (do
+                                  (index-names-cache/refresh-index-names-cache context)
+                                  (hcache/get-value cache cache-key :granule)))
         rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)]
     (apply dissoc granule-index-names (map keyword rebalancing-collections))))
 
@@ -62,9 +63,10 @@
   "Returns all possible granule indexes in a string that can be used by elasticsearch query"
   [context]
   (let [cache (hcache/context->cache context cache-key)
-        _ (when-not (hcache/key-exists cache cache-key)
-            (index-names-cache/refresh-index-names-cache context))
-        granule-index-names (hcache/get-value cache cache-key :granule)
+        granule-index-names (or (hcache/get-value cache cache-key :granule)
+                                (do
+                                  (index-names-cache/refresh-index-names-cache context)
+                                  (hcache/get-value cache cache-key :granule)))
         rebalancing-collections (hcache/get-value cache cache-key :rebalancing-collections)
         rebalancing-indexes (map granule-index-names (map keyword rebalancing-collections))
         ;; Exclude all the rebalancing collection indexes.

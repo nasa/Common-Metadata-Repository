@@ -3,12 +3,14 @@
   (:require
    [clojure.data.csv :as csv]
    [cmr.common-app.humanizer :as h]
+   [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.data.metadata-retrieval.revision-format-map :as crfm]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob default-job-start-delay]]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.log :as log :refer [info warn]]
+   [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.humanizers.humanizer-messages :as msg]
@@ -78,11 +80,14 @@
   Wait configurable number of seconds before retrying configurable number of times."
   [context]
   (loop [retries (retry-count)]
+    (rl-util/log-redis-reading-start "humanizer report service get-cached-revision-format-maps-with-retry" cmn-coll-metadata-cache/cache-key)
     (if-let [rfms (metadata-cache/all-cached-revision-format-maps context)]
       rfms
       (when (> retries 0)
-        (info (format (str "Humanizer report generator job is sleeping for %d second(s)"
+        (info (format (str "Failed reading %s for the humanizer report. "
+                           "Humanizer report generator job is sleeping for %d second(s)"
                            " before retrying to fetch from collection cache.")
+                      cmn-coll-metadata-cache/cache-key
                       (/ (humanizer-report-generator-job-wait) 1000)))
         (Thread/sleep (humanizer-report-generator-job-wait))
         (recur (dec retries))))))
@@ -165,13 +170,15 @@
 (defn- create-and-save-humanizer-report
   "Helper function to create the humanizer report, save it to the cache, and return the content."
   [context]
-  (info "Generating humanizer report.")
+  (rl-util/log-refresh-start humanizer-report-cache-key)
   (let [[report-generation-time humanizers-report] (util/time-execution
-                                                    (safe-generate-humanizers-report-csv context))]
-    (info (format "Humanizer report generated in %d ms." report-generation-time))
-    (cache/set-value (cache/context->cache context humanizer-report-cache-key)
-                     humanizer-report-cache-key
-                     humanizers-report)
+                                                    (safe-generate-humanizers-report-csv context))
+        _ (info (format "Humanizer report generated in %d ms." report-generation-time))
+        [tm _] (util/time-execution
+                (cache/set-value (cache/context->cache context humanizer-report-cache-key)
+                                 humanizer-report-cache-key
+                                 humanizers-report))]
+    (rl-util/log-redis-write-complete "create-and-save-humanizer-report" humanizer-report-cache-key tm)
     humanizers-report))
 
 (defn humanizers-report-csv
@@ -184,11 +191,18 @@
   [context regenerate?]
   (if regenerate?
     (create-and-save-humanizer-report context)
-    (cache/get-value (cache/context->cache context humanizer-report-cache-key)
-                     humanizer-report-cache-key
-                     ;; If there is a cache miss, generate the report and then
-                     ;; return its value
-                     #(safe-generate-humanizers-report-csv context))))
+    (let [cache (cache/context->cache context humanizer-report-cache-key)
+          [tm report] (util/time-execution
+                       (cache/get-value cache humanizer-report-cache-key))]
+      (if report
+        (do
+          (rl-util/log-redis-read-complete "humanizers-report-csv" humanizer-report-cache-key tm)
+          report)
+        (let [report (safe-generate-humanizers-report-csv context)
+              [tm _] (util/time-execution
+                      (cache/set-value cache humanizer-report-cache-key report))]
+          (rl-util/log-redis-read-complete "humanizers-report-csv" humanizer-report-cache-key tm)
+          report)))))
 
 ;; A job for generating the humanizers report
 (defjob HumanizerReportGeneratorJob

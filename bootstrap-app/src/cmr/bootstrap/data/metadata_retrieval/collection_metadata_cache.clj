@@ -17,6 +17,7 @@
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :as log :refer [info]]
+   [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as c-util]
    [cmr.metadata-db.services.concept-service :as metadata-db]
    [cmr.umm-spec.versioning :as umm-version]))
@@ -61,12 +62,17 @@
   "Updates the collection metadata cache by querying elastic search for updates since the
   last time the cache was updated."
   [context]
-  (info "Updating collection metadata cache")
+  (rl-util/log-update-start cmn-coll-metadata-cache/cache-key)
   (let [incremental-since-refresh-date (str (t/now))
+        update-start (System/currentTimeMillis)
         concepts-tuples (cmn-coll-metadata-cache/fetch-updated-collections-from-elastic context)
         new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
                                 {}
                                 (partition-all 1000 concepts-tuples))
+        redis-start (System/currentTimeMillis)
+        _ (rl-util/log-data-gathering-stats "update-cache"
+                                            cmn-coll-metadata-cache/cache-key
+                                            (- redis-start update-start))
         cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
     (hash-cache/set-value cache
                           cmn-coll-metadata-cache/cache-key
@@ -75,24 +81,30 @@
     (hash-cache/set-values cache
                            cmn-coll-metadata-cache/cache-key
                            new-cache-value)
+    (rl-util/log-redis-write-complete "update-cache" cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start))
     (info "Metadata cache update complete. Cache Size:" (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))))
 
 (defn refresh-cache
   "Refreshes the collection metadata cache"
   [context]
-  (info "Refreshing collection metadata cache")
+  (rl-util/log-refresh-start cmn-coll-metadata-cache/cache-key)
   (let [incremental-since-refresh-date (str (t/now))
+        data-start (System/currentTimeMillis)
         concepts-tuples (cmn-coll-metadata-cache/fetch-collections-from-elastic context)
         new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
                                 {}
                                 (partition-all 1000 concepts-tuples))
+        redis-start (System/currentTimeMillis)
+        _ (rl-util/log-data-gathering-stats "refresh-cache"
+                                            cmn-coll-metadata-cache/cache-key
+                                            (- redis-start data-start))
         cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
     (hash-cache/set-value cache
                           cmn-coll-metadata-cache/cache-key
                           cmn-coll-metadata-cache/incremental-since-refresh-date-key
                           incremental-since-refresh-date)
     (hash-cache/set-values cache cmn-coll-metadata-cache/cache-key new-cache-value)
-
+    (rl-util/log-redis-write-complete "refresh-cache" cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start))
     (info "Metadata cache refresh complete. Cache Size:"
           (hash-cache/cache-size cache cmn-coll-metadata-cache/cache-key))))
 
