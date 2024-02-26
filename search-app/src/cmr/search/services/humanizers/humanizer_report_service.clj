@@ -170,7 +170,7 @@
 (defn- create-and-save-humanizer-report
   "Helper function to create the humanizer report, save it to the cache, and return the content."
   [context]
-  (info "Generating humanizer report.")
+  (rl-util/log-refresh-start humanizer-report-cache-key)
   (let [[report-generation-time humanizers-report] (util/time-execution
                                                     (safe-generate-humanizers-report-csv context))
         _ (info (format "Humanizer report generated in %d ms." report-generation-time))

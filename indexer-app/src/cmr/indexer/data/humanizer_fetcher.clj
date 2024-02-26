@@ -23,6 +23,7 @@
 (defn refresh-cache
   "Refreshes the humanizers in the cache."
   [context]
+  (rl-util/log-refresh-start humanizer-cache-key)
   (let [cache (c/context->cache context humanizer-cache-key)
         humanizers (retrieve-humanizers context)
         [tm _] (util/time-execution
