@@ -12,7 +12,7 @@
          :providers [...]}"
   (:require
    [cmr.common-app.services.kms-lookup :as kms-lookup]
-   [cmr.common.cache :as cache]
+   [cmr.common.cache :as cache]git
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
    [cmr.redis-utils.redis-cache :as redis-cache]

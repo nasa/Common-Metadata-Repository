@@ -37,12 +37,14 @@
         (into {} (for [[a b] (partition 2 result)]
                    {a b})))))
 
+  ;; TODO change this to return error vs nil + unit test
   (key-exists
     [this key]
-    ;; key is the cache-key. Retuns true if the cache key exists in redis nil otherwise
-    (let [exists (wcar* (carmine/exists (rc/serialize key)))]
-      (when exists
-        (> exists 0))))
+    ;; key is the cache-key. Returns true if the cache key exists in redis, false if key does not exist in redis and error if there is a redis error.
+    (try
+      (wcar* (carmine/exists (rc/serialize key)))
+      (catch Exception e
+        (throw e))))
 
   (get-keys
     [this key]

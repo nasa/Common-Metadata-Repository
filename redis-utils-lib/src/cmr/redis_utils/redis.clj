@@ -23,7 +23,10 @@
                                    (dec num-retries#)))
                      (Thread/sleep (config/redis-retry-interval))
                      (with-retry# (dec num-retries#)))
-                   (error "Redis failed with exception " e#)))))]
+                   (do
+                     (error "Redis failed with exception " e#)
+                     ;; bubble up the error to upper level
+                     (throw e#))))))]
      (with-retry# (config/redis-num-retries))))
 
 (defn healthy?
@@ -40,6 +43,7 @@
   []
   (wcar* (carmine/flushall)))
 
+;; TODO look into this later
 (defn get-keys
   "Scans the redis db for keys matching the match argument (use * to match all).
   Will return up to the max-returned-keys keys. This config option is also used

@@ -38,13 +38,17 @@
     [this]
     (map deserialize (redis/get-keys)))
 
+  ;; TODO change this to return error vs nil
   (key-exists
     [this key]
-    ;; key is the cache-key. Returns true if the cache key exists in redis, otherwise returns nil.
-    (let [exists (wcar* (carmine/exists (serialize key)))]
-      (when exists
-        (> exists 0))))
+    ;; key is the cache-key. Returns true if the cache key exists in redis, false if key does not exist in redis and error if there is a redis error.
+    (try
+      (let [exists (wcar* (carmine/exists (serialize key)))]
+        (when exists
+          (> exists 0)))
+      (catch Exception e)))
 
+  ;; TODO catch exceptions here and bubble up
   (get-value
     [this key]
     (let [s-key (serialize key)]

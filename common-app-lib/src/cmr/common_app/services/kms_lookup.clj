@@ -23,6 +23,7 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.hash-cache :as hash-cache]
+   [cmr.common.log :refer [error]]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
    [cmr.redis-utils.redis-hash-cache :as rhcache]
@@ -209,24 +210,29 @@
         _ (rl-util/log-redis-write-complete "create-kms-index" kms-measurement-cache-key tm)]
     kms-keywords-map))
 
+;; TODO need to add the connection error checks here -- what does this func do?
 (defn load-cache-if-necessary
   "Checks to see if the key exists. If it does then the cache has been loaded and just return nil
   since the value doesn't exist in the cache. - this function only refreshes the cache if the key
   does not exist. A manual refresh must be done to get the latest values, this prevents forcing always
   going back to KMS to try to get a value that doesn't exist."
   [context cache key]
-  (when-not (hash-cache/key-exists cache key)
-    ;; go to KMS and get the keywords, since the cache doesn't exist.
-    (rl-util/log-refresh-start key)
-    (create-kms-index
-     context
-     (into {}
-           (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
-             ;; unlike in kms-fetcher where we check to see if we got values back to not
-             ;; remove the existing cache, we only get here if the cache doesn't exist in
-             ;; the first place.
-             [keyword-scheme (kms/get-keywords-for-keyword-scheme context keyword-scheme)])))))
+  (try
+    (when-not (hash-cache/key-exists cache key)
+      ;; go to KMS and get the keywords, since the cache doesn't exist.
+      (rl-util/log-refresh-start key)
+      (create-kms-index
+        context
+        (into {}
+              (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
+                ;; unlike in kms-fetcher where we check to see if we got values back to not
+                ;; remove the existing cache, we only get here if the cache doesn't exist in
+                ;; the first place.
+                [keyword-scheme (kms/get-keywords-for-keyword-scheme context keyword-scheme)]))))
+    (catch Exception e
+      (throw e))))
 
+;; TODO add try/catch here
 (defn lookup-by-short-name
   "Takes a kms-index, the keyword scheme, and a short name and returns the full KMS hierarchy for
   that short name. Returns nil if a keyword is not found. Comparison is made case insensitively."
@@ -243,6 +249,7 @@
                        kwords))]
       (get keywords (util/safe-lowercase short-name)))))
 
+;; TODO add try/catch here
 (defn lookup-by-location-string
   "Takes a kms-index and a location string and returns the full KMS hierarchy for that location
   string. Returns nil if a keyword is not found. Comparison is made case insensitively."
@@ -266,6 +273,7 @@
     (for [[k v] kms-index-value]
       [(dissoc k :long-name) v])))
 
+;; TODO add try/catch here
 (defn lookup-by-umm-c-keyword-data-format
   "Takes a keyword as represented in the UMM concepts as a map or as an individual string
   and returns the KMS keyword map as its stored in the cache. Returns nil if a keyword is not found.
@@ -288,6 +296,7 @@
                   vlue))]
     (get-in value [comparison-map])))
 
+;; TODO unit test this
 (defn lookup-by-umm-c-keyword-platforms
   "Takes a keyword as represented in the UMM concepts as a map and returns the KMS keyword map
   as its stored in the cache. Returns nil if a keyword is not found. Comparison is made case insensitively."
@@ -303,10 +312,14 @@
         _ (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-platforms" kms-umm-c-cache-key tm)
         value (if value
                 value
-                (let [_ (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
-                      [tm vlue] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))]
-                  (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-platforms" kms-umm-c-cache-key tm)
-                  vlue))]
+                (try
+                  (let [_ (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
+                        [tm vlue] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))]
+                    (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-platforms" kms-umm-c-cache-key tm)
+                    vlue)
+                   (catch Exception e
+                     (error "lookup-by-umm-c-keyword-platforms found a cache error. Will return no value.")
+                     nil)))]
     (if (get umm-c-keyword :long-name)
       ;; Check both longname and shortname
       (get-in value [comparison-map])
@@ -315,6 +328,7 @@
           (remove-long-name-from-kms-index)
           (get comparison-map)))))
 
+;; TODO add try/catch here
 (defn lookup-by-umm-c-keyword
   "Takes a keyword as represented in UMM concepts as a map and returns the KMS keyword as it exists in the cache.
   Returns nil if a keyword is not found. Comparison is made case insensitively."
@@ -338,6 +352,7 @@
                       vlue))]
         (get-in value [comparison-map])))))
 
+;; TODO add try/catch here
 (defn lookup-by-measurement
   "Takes a keyword as represented in UMM concepts as a map. Returns a map of invalid measurement keywords.
   Comparison is made case insensitively."
