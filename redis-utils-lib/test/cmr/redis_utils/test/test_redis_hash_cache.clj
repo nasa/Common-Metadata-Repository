@@ -7,6 +7,7 @@
     [cmr.redis-utils.test.test-util :as test-util]))
 
 (use-fixtures :once test-util/embedded-redis-server-fixture)
+
 (def field-value-map
   {"C1200000001-PROV1"
    {:concept-id "C1200000001-PROV1",
@@ -41,6 +42,7 @@
         rhcache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [cache-key]})]
     (testing "Clearing the cache with cache-key"
       (h-cache/set-value rhcache cache-key "C1200000003-PROV1" (get single-field-value-map "C1200000003-PROV1"))
+      (is (= true (h-cache/key-exists rhcache cache-key)))
       (h-cache/reset rhcache cache-key)
       (is (= nil (h-cache/get-map rhcache cache-key))))
 
@@ -75,7 +77,7 @@
       (is (= (get single-field-value-map "C1200000003-PROV1")
             (h-cache/get-value rhcache cache-key "C1200000003-PROV1"))))
 
-    (testing "Testing getting getting multiple values back from a list."
+    (testing "Testing getting multiple values back from a list."
       (is (= (list (get single-field-value-map "C1200000003-PROV1"))
              (h-cache/get-values rhcache cache-key '("C1200000003-PROV1")))))
 
@@ -90,7 +92,7 @@
 
     (testing "Testing getting a value back from a bigger hash map."
       (is (= (get single-field-value-map "C1200000003-PROV1")
-            h-cache/get-value rhcache cache-key "C1200000003-PROV1")))
+             (h-cache/get-value rhcache cache-key "C1200000003-PROV1")))
 
     (testing "Testing getting multiple values back."
       (is (= (let [full-map (merge field-value-map single-field-value-map)]
@@ -98,4 +100,4 @@
             (set (h-cache/get-values rhcache cache-key '("C1200000003-PROV1" "C1200000002-PROV1"))))))
 
     (testing "Testing getting size back from redis."
-      (is (= java.lang.Long (type (h-cache/cache-size rhcache cache-key)))))))
+      (is (= java.lang.Long (type (h-cache/cache-size rhcache cache-key))))))))
