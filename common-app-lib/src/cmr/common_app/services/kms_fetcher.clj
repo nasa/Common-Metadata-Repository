@@ -17,7 +17,8 @@
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
    [cmr.redis-utils.redis-cache :as redis-cache]
-   [cmr.transmit.kms :as kms]))
+   [cmr.transmit.kms :as kms])
+  (:import (clojure.lang ExceptionInfo)))
 
 (def nested-fields-mappings
   "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
@@ -54,7 +55,6 @@
   []
   (redis-cache/create-redis-cache {:keys-to-track [kms-cache-key]}))
 
-;; TODO unit test
 (defn- fetch-gcmd-keywords-map
   "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way
   as used in the KMS cache."
@@ -69,16 +69,17 @@
         (into {}
               (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
                 ;; if the keyword-scheme-value is nil that means we could not get the KMS keywords
-                ;; in this case use the cached value value instead so that we dont wipe out the cache.
+                ;; in this case use the cached value instead so that we don't wipe out the cache.
                 (if-let [keyword-scheme-value (kms/get-keywords-for-keyword-scheme context keyword-scheme)]
                   [keyword-scheme keyword-scheme-value]
                   [keyword-scheme (get kms-cache-value keyword-scheme)])))))
-    (catch Exception e
-      (error "fetch-gcmd-keywords-map found exception. Will return nil as result." e)
-      nil))
-  )
+    (catch ExceptionInfo e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (do
+          (error "lookup-by-measurement redis carmine exception. Will return nil result." e)
+          nil)
+        (throw e)))))
 
-;; TODO unit test this
 (defn get-kms-index
   "Retrieves the GCMD keywords map from the cache."
   [context]
@@ -96,10 +97,12 @@
             (rl-util/log-data-gathering-stats "get-kms-index" kms-cache-key t1)
             (rl-util/log-redis-write-complete "get-kms-index" kms-cache-key t2)
             kms-index))))
-    (catch Exception e
-      (error "get-kms-index ran into exception. Will return nil as result." e)
-      nil))
-  )
+    (catch ExceptionInfo e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (do
+          (error "lookup-by-measurement redis carmine exception. Will return nil result." e)
+          nil)
+        (throw e)))))
 
 (defn refresh-kms-cache
   "Refreshes the KMS keywords stored in the cache. This should be called from a background job on a

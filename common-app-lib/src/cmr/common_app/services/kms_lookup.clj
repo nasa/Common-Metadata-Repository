@@ -18,16 +18,17 @@
                     \"CHAD\" {:category \"CONTINENT\" :type \"AFRICA\" :subregion-1 \"WESTERN AFRICA\"
                               :subregion-2 \"CHAD\" :uuid \"456\"}}}"
   (:require
-   [camel-snake-kebab.core :as csk]
-   [camel-snake-kebab.extras :as csk-extras]
-   [clojure.set :as set]
-   [clojure.string :as string]
-   [cmr.common.hash-cache :as hash-cache]
-   [cmr.common.log :refer [error]]
-   [cmr.common.redis-log-util :as rl-util]
-   [cmr.common.util :as util]
-   [cmr.redis-utils.redis-hash-cache :as rhcache]
-   [cmr.transmit.kms :as kms]))
+    [camel-snake-kebab.core :as csk]
+    [camel-snake-kebab.extras :as csk-extras]
+    [clojure.set :as set]
+    [clojure.string :as string]
+    [cmr.common.hash-cache :as hash-cache]
+    [cmr.common.log :refer [error]]
+    [cmr.common.redis-log-util :as rl-util]
+    [cmr.common.util :as util]
+    [cmr.redis-utils.redis-hash-cache :as rhcache]
+    [cmr.transmit.kms :as kms])
+  (:import (clojure.lang ExceptionInfo)))
 
 (def kms-short-name-cache-key
   "The key used to store the data generated from KMS into a short name index cache
@@ -210,29 +211,25 @@
         _ (rl-util/log-redis-write-complete "create-kms-index" kms-measurement-cache-key tm)]
     kms-keywords-map))
 
-;; TODO unit test this
 (defn load-cache-if-necessary
   "Checks to see if the key exists. If it does then the cache has been loaded and just return nil
   since the value doesn't exist in the cache. - this function only refreshes the cache if the key
   does not exist. A manual refresh must be done to get the latest values, this prevents forcing always
-  going back to KMS to try to get a value that doesn't exist."
+  going back to KMS to try to get a value that doesn't exist.
+  Will bubble up any exceptions found."
   [context cache key]
-  (try
-    (when-not (hash-cache/key-exists cache key)
-      ;; go to KMS and get the keywords, since the cache doesn't exist.
-      (rl-util/log-refresh-start key)
-      (create-kms-index
-        context
-        (into {}
-              (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
-                ;; unlike in kms-fetcher where we check to see if we got values back to not
-                ;; remove the existing cache, we only get here if the cache doesn't exist in
-                ;; the first place.
-                [keyword-scheme (kms/get-keywords-for-keyword-scheme context keyword-scheme)]))))
-    (catch Exception e
-      (throw e))))
+  (when-not (hash-cache/key-exists cache key)
+    ;; go to KMS and get the keywords, since the cache doesn't exist.
+    ;; (rl-util/log-refresh-start key)
+    (create-kms-index
+      context
+      (into {}
+            (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
+              ;; unlike in kms-fetcher where we check to see if we got values back to not
+              ;; remove the existing cache, we only get here if the cache doesn't exist in
+              ;; the first place.
+              [keyword-scheme (kms/get-keywords-for-keyword-scheme context keyword-scheme)])))))
 
-;; TODO unit test
 (defn lookup-by-short-name
   "Takes a kms-index, the keyword scheme, and a short name and returns the full KMS hierarchy for
   that short name. Returns nil if a keyword is not found. Comparison is made case insensitively."
@@ -249,11 +246,13 @@
                          (rl-util/log-redis-read-complete "lookup-by-short-name" kms-short-name-cache-key tm)
                          kwords))]
         (get keywords (util/safe-lowercase short-name))))
-    (catch Exception e
-      (error "lookup-by-short-name found exception. Will return nil result." e)
-      nil)))
+    (catch ExceptionInfo e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (do
+          (error "lookup-by-short-name found redis carmine exception. Will return nil result." e)
+          nil)
+        (throw e)))))
 
-;; TODO unit test this
 (defn lookup-by-location-string
   "Takes a kms-index and a location string and returns the full KMS hierarchy for that location
   string. Returns nil if a keyword is not found. Comparison is made case insensitively."
@@ -269,9 +268,12 @@
                 [tm kwords] (util/time-execution (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string)))]
             (rl-util/log-redis-read-complete "lookup-by-location-string" kms-location-cache-key tm)
             kwords))))
-    (catch Exception e
-      (error "lookup-by-location-string found exception. Will return nil result." e)
-      nil)))
+    (catch ExceptionInfo e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (do
+          (error "lookup-by-location-string found redis carmine exception. Will return nil result." e)
+          nil)
+        (throw e)))))
 
 (defn- remove-long-name-from-kms-index
   "Removes long-name from the umm-c-index keys in order to prevent validation when
@@ -281,7 +283,6 @@
     (for [[k v] kms-index-value]
       [(dissoc k :long-name) v])))
 
-;; TODO unit test
 (defn lookup-by-umm-c-keyword-data-format
   "Takes a keyword as represented in the UMM concepts as a map or as an individual string
   and returns the KMS keyword map as its stored in the cache. Returns nil if a keyword is not found.
@@ -304,11 +305,13 @@
                     (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-data-format" kms-umm-c-cache-key tm)
                     vlue))]
       (get-in value [comparison-map]))
-    (catch Exception e
-      (error "lookup-by-umm-c-keyword-data-format found exception. Will return nil result." e)
-      nil)))
+    (catch ExceptionInfo e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (do
+          (error "lookup-by-umm-c-keyword-data-format found redis carmine exception. Will return nil result." e)
+          nil)
+        (throw e)))))
 
-;; TODO unit test this
 (defn lookup-by-umm-c-keyword-platforms
   "Takes a keyword as represented in the UMM concepts as a map and returns the KMS keyword map
   as its stored in the cache. Returns nil if a keyword is not found. Comparison is made case insensitively."
@@ -340,11 +343,13 @@
         (-> value
             (remove-long-name-from-kms-index)
             (get comparison-map))))
-    (catch Exception e
-      (error "lookup-by-umm-c-keyword-platforms found exception. Will return nil result." e)
-      nil)))
+    (catch ExceptionInfo e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (do
+          (error "lookup-by-umm-c-keyword-platforms found redis carmine exception. Will return nil result." e)
+          nil)
+        (throw e)))))
 
-;; TODO unit test
 (defn lookup-by-umm-c-keyword
   "Takes a keyword as represented in UMM concepts as a map and returns the KMS keyword as it exists in the cache.
   Returns nil if a keyword is not found. Comparison is made case insensitively."
@@ -368,11 +373,13 @@
                         (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword" kms-umm-c-cache-key tm)
                         vlue))]
           (get-in value [comparison-map]))))
-    (catch Exception e
-      (error "lookup-by-umm-c-keyword found exception. Will return nil result." e)
-      nil)))
+    (catch ExceptionInfo e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (do
+          (error "lookup-by-umm-c-keyword found redis carmine exception. Will return nil result." e)
+          nil)
+        (throw e)))))
 
-;; TODO unit test
 (defn lookup-by-measurement
   "Takes a keyword as represented in UMM concepts as a map. Returns a map of invalid measurement keywords.
   Comparison is made case insensitively."
@@ -399,6 +406,9 @@
                              :object MeasurementObject}])
             invalid-measurements (remove #(get measurement-index %) measurements)]
         (seq invalid-measurements)))
-    (catch Exception e
-      (error "lookup-by-measurement found exception. Will return nil result." e)
-      nil)))
+    (catch ExceptionInfo e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (do
+          (error "lookup-by-measurement redis carmine exception. Will return nil result." e)
+          nil)
+        (throw e)))))

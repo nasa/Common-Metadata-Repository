@@ -4,7 +4,17 @@
             [cmr.common-app.humanizer :as h]
             [cmr.common-app.test.sample-humanizer :as sh]
             [cmr.common.util :refer [are3]]
-            [cmr.search.services.humanizers.humanizer-range-facet-service :as hrfs]))
+            [cmr.search.services.humanizers.humanizer-range-facet-service :as hrfs]
+            [cmr.redis-utils.test.test-util :as redis-embedded-fixture]))
+
+(defn redis-cache-fixture
+  "Sets up the redis cache fixture to load data into the caches for testing."
+  [f]
+  (hrfs/create-range-facet-cache)
+  (f))
+
+(use-fixtures :once (join-fixtures [redis-embedded-fixture/embedded-redis-server-fixture
+                                    redis-cache-fixture]))
 
 (deftest create-facet-range-test
   "Testing converting the humanizers to search facets"
