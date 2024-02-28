@@ -41,14 +41,16 @@
   (key-exists
     [this key]
     ;; key is the cache-key. Returns true if the cache key exists in redis, otherwise returns nil.
-    (let [exists (wcar* (carmine/exists (serialize key)))]
+    (let [exists (wcar* key true (carmine/exists (serialize key)))]
       (when exists
         (> exists 0))))
 
   (get-value
     [this key]
     (let [s-key (serialize key)]
-      (-> (wcar* :as-pipeline
+      (-> (wcar* key
+                 true
+                 :as-pipeline
                  (carmine/get s-key)
                  (when refresh-ttl? (carmine/expire s-key ttl)))
           first
@@ -66,18 +68,18 @@
   (reset
     [this]
     (doseq [the-key keys-to-track]
-      (wcar* (carmine/del (serialize the-key)))))
+      (wcar* the-key false (carmine/del (serialize the-key)))))
 
   (set-value
     [this key value]
     ;; Store value in map to aid deserialization of numbers.
     (let [s-key (serialize key)]
-      (wcar* (carmine/set s-key {:value value})
+      (wcar* s-key false (carmine/set s-key {:value value})
              (when ttl (carmine/expire s-key ttl)))))
 
   (cache-size
     [_]
-    (reduce #(+ %1 (if-let [size (wcar* (carmine/memory-usage (serialize %2)))]
+    (reduce #(+ %1 (if-let [size (wcar* (serialize %2) true (carmine/memory-usage (serialize %2)))]
                      size
                      0))
             0

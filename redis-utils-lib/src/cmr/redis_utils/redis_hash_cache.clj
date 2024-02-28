@@ -30,7 +30,8 @@
     ;; hgetall returns a vector structure [[field1 value1 field2 value2 fieldN valueN]]
     ;; First pulls out the inner vector then conver it to {field value field value} hash 
     ;; map so that callers can process it.
-    (let [result (-> (wcar* :as-pipeline (carmine/hgetall (rc/serialize key)))
+    (let [s-key (rc/serialize key)
+          result (-> (wcar* s-key true :as-pipeline (carmine/hgetall s-key))
                      first)]
       (when-not (or (nil? result)
                     (empty? result))
@@ -40,7 +41,8 @@
   (key-exists
     [this key]
     ;; key is the cache-key. Retuns true if the cache key exists in redis nil otherwise
-    (let [exists (wcar* (carmine/exists (rc/serialize key)))]
+    (let [s-key (rc/serialize key)
+          exists (wcar* s-key true (carmine/exists s-key))]
       (when exists
         (> exists 0))))
 
@@ -49,48 +51,56 @@
     ;; key is the cache-key 
     ;; hkeys returns a vector structure [[key1 key2 ... keyn]] First pulls out the inner vector
     ;; returns a vector of keys.
-    (-> (wcar* :as-pipeline (carmine/hkeys (rc/serialize key)))
-        first))
+    (let [s-key (rc/serialize key)]
+      (-> (wcar* s-key true :as-pipeline (carmine/hkeys s-key))
+          first)))
 
   (get-value
     [this key field]
     ;; key is the cache-key. Returns the value of the passed in field.
-    (-> (wcar* :as-pipeline (carmine/hget (rc/serialize key) field))
-        first))
+    (let [s-key (rc/serialize key)]
+      (-> (wcar* s-key true :as-pipeline (carmine/hget s-key field))
+          first)))
   
   (get-values
     ;; key is the cache-key. Fields is either a vector or a list of fields.
     ;; returns a vector of values.
     [this key fields]
-    (map #(-> (wcar* :as-pipeline (carmine/hget (rc/serialize key) %1))
-              first)
-         fields))
+    (let [s-key (rc/serialize key)]
+      (map #(-> (wcar* s-key true :as-pipeline (carmine/hget s-key %1))
+                first)
+           fields)))
 
   (reset
     [this]
     (doseq [the-key keys-to-track]
-      (wcar* (carmine/del (rc/serialize the-key)))))
+      (let [s-key (rc/serialize the-key)]
+        (wcar* s-key false (carmine/del s-key)))))
 
   (reset
     [this key]
-    (wcar* (carmine/del (rc/serialize key))))
+    (let [s-key (rc/serialize key)]
+      (wcar* s-key false (carmine/del s-key))))
 
   (set-value
     [this key field value]
-    ;; Store value in map to aid deserialization of numbers.
-    (wcar* (carmine/hset (rc/serialize key) field value)))
+    (let [s-key (rc/serialize key)]
+      ;; Store value in map to aid deserialization of numbers.
+      (wcar* s-key false (carmine/hset s-key field value))))
   
   (set-values
     [this key field-value-map]
-    (doall (map #(wcar* (carmine/hset (rc/serialize key) %1 (get field-value-map %1)))
-                (keys field-value-map))))
+    (let [s-key (rc/serialize key)]
+      (doall (map #(wcar* s-key false (carmine/hset s-key %1 (get field-value-map %1)))
+                  (keys field-value-map)))))
 
   (cache-size
     [this key]
-    ;; Return 0 if the cache is empty or does not yet exist. This is for cmr.common-app.services.cache-info.
-    (if-let [size (wcar* (carmine/memory-usage (rc/serialize key)))]
-      size
-      0)))
+    (let [s-key (rc/serialize key)]
+      ;; Return 0 if the cache is empty or does not yet exist. This is for cmr.common-app.services.cache-info.
+      (if-let [size (wcar* s-key true (carmine/memory-usage s-key))]
+        size
+        0))))
 
 (defn create-redis-hash-cache
   "Creates an instance of the redis cache.
