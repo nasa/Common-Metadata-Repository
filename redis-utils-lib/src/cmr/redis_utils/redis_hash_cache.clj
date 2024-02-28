@@ -24,7 +24,6 @@
    refresh-ttl?]
 
   cache/CmrHashCache
-  ;; TODO try/catch exceptions and bubble up
   (get-map
     [this key]
     ;; key is the cache-key 

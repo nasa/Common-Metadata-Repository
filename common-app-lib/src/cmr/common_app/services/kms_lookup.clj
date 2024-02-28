@@ -215,20 +215,19 @@
   "Checks to see if the key exists. If it does then the cache has been loaded and just return nil
   since the value doesn't exist in the cache. - this function only refreshes the cache if the key
   does not exist. A manual refresh must be done to get the latest values, this prevents forcing always
-  going back to KMS to try to get a value that doesn't exist.
-  Will bubble up any exceptions found."
+  going back to KMS to try to get a value that doesn't exist."
   [context cache key]
   (when-not (hash-cache/key-exists cache key)
     ;; go to KMS and get the keywords, since the cache doesn't exist.
-    ;; (rl-util/log-refresh-start key)
+    (rl-util/log-refresh-start key)
     (create-kms-index
-      context
-      (into {}
-            (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
-              ;; unlike in kms-fetcher where we check to see if we got values back to not
-              ;; remove the existing cache, we only get here if the cache doesn't exist in
-              ;; the first place.
-              [keyword-scheme (kms/get-keywords-for-keyword-scheme context keyword-scheme)])))))
+     context
+     (into {}
+           (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
+             ;; unlike in kms-fetcher where we check to see if we got values back to not
+             ;; remove the existing cache, we only get here if the cache doesn't exist in
+             ;; the first place.
+             [keyword-scheme (kms/get-keywords-for-keyword-scheme context keyword-scheme)])))))
 
 (defn lookup-by-short-name
   "Takes a kms-index, the keyword scheme, and a short name and returns the full KMS hierarchy for
@@ -321,21 +320,16 @@
           ;; CMR-3696 This is needed to compare the keyword category, which is mapped
           ;; to the UMM Platform Type field.  This will avoid complications with facets.
           umm-c-keyword (set/rename-keys umm-c-keyword {:type :category})
-          comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup
-                                                               keyword-scheme))
+          comparison-map (normalize-for-lookup umm-c-keyword (kms-scheme->fields-for-umm-c-lookup keyword-scheme))
           umm-c-cache (hash-cache/context->cache context kms-umm-c-cache-key)
           [tm value] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))
           _ (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-platforms" kms-umm-c-cache-key tm)
           value (if value
                   value
-                  (try
-                    (let [_ (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
-                          [tm vlue] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))]
-                      (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-platforms" kms-umm-c-cache-key tm)
-                      vlue)
-                    (catch Exception e
-                      (error "lookup-by-umm-c-keyword-platforms found a cache error. Will return no value.")
-                      nil)))]
+                  (let [_ (load-cache-if-necessary context umm-c-cache kms-umm-c-cache-key)
+                        [tm vlue] (util/time-execution (hash-cache/get-value umm-c-cache kms-umm-c-cache-key keyword-scheme))]
+                    (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-platforms" kms-umm-c-cache-key tm)
+                    vlue))]
       (if (get umm-c-keyword :long-name)
         ;; Check both longname and shortname
         (get-in value [comparison-map])

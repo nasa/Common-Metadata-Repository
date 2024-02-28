@@ -25,7 +25,6 @@
                      (with-retry# (dec num-retries#)))
                    (do
                      (error "Redis failed with exception " e#)
-                     ;; bubble up the error to upper level
                      (throw e#))))))]
      (with-retry# (config/redis-num-retries))))
 
@@ -43,7 +42,6 @@
   []
   (wcar* (carmine/flushall)))
 
-;; TODO look into this later
 (defn get-keys
   "Scans the redis db for keys matching the match argument (use * to match all).
   Will return up to the max-returned-keys keys. This config option is also used
