@@ -111,10 +111,21 @@
    ;; For ESDIS records the value of https://doi.org/ should be used.
    AssociatedDOIs
 
+   ;; Provides additional or provider defined identifiers of the collection.
+   OtherIdentifiers
+
    SpatialExtent
+
+   ;; The File Naming Convention refers to the naming convention of the data set's (Collection's)
+   ;; data files along with a description of the granule file construction.
+   FileNamingConvention
 
    ;; Information about the personnel groups responsible for this collection and its metadata.
    ContactGroups
+
+   ;; The Data Maturity element is used to inform users on where the collection is in a collection's
+   ;; life cycle.
+   DataMaturity
 
    ;; The data’s distinctive attributes of the collection (i.e. attributes used to describe the
    ;; unique characteristics of the collection which extend beyond those defined).
@@ -567,6 +578,21 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing HorizontalDataResolutionType)
 
+(defrecord OtherIdentifierType
+  [
+   ;; This element stores the identifier
+   Identifier
+
+   ;; This element represents the type of the identifier.
+   Type
+
+   ;; This element allows the curator to describe what kind of Identifier is present when the value
+   ;; of Other is chosen as the type. This element is not allowed if a value other than Other is
+   ;; chosen.
+   DescriptionOfOtherType
+  ])
+(record-pretty-printer/enable-record-pretty-printing OtherIdentifierType)
+
 (defrecord ChronostratigraphicUnitType
   [
    Eon
@@ -700,13 +726,6 @@
   ])
 (record-pretty-printer/enable-record-pretty-printing BoundaryType)
 
-;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note: The
-;; values should start with the directory indicator which in ESDIS' case is 10. If the DOI was
-;; registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not
-;; stored here; it should be stored as a RelatedURL. The DOI organization that is responsible for
-;; creating the DOI is described in the Authority element. For ESDIS records the value of
-;; https://doi.org/ should be used. NASA metadata providers are strongly encouraged to include DOI
-;; and DOI Authority for their collections using CollectionDOI property.
 (defrecord AssociatedDoiType
   [
    ;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note:
@@ -722,6 +741,14 @@
    ;; The DOI organization that is responsible for creating the DOI is described in the Authority
    ;; element. For ESDIS records the value of https://doi.org/ should be used.
    Authority
+
+   ;; This element describes to what DOI is associated.
+   Type
+
+   ;; This element allows the curator to describe what kind of DOI is present when the value of
+   ;; Other is chosen as the type. This element is not allowed if a value other than Other is
+   ;; chosen.
+   DescriptionOfOtherType
   ])
 (record-pretty-printer/enable-record-pretty-printing AssociatedDoiType)
 
@@ -988,6 +1015,18 @@
    LicenseText
   ])
 (record-pretty-printer/enable-record-pretty-printing UseConstraintsType)
+
+;; The File Naming Convention refers to the naming convention of the data set's (Collection's) data
+;; files along with a description of the granule file construction.
+(defrecord FileNamingConventionType
+  [
+   ;; This element represents the convention of the filename.
+   Convention
+
+   ;; This element describes the convention of the filename.
+   Description
+  ])
+(record-pretty-printer/enable-record-pretty-printing FileNamingConventionType)
 
 (defrecord VerticalCoordinateSystemType
   [
