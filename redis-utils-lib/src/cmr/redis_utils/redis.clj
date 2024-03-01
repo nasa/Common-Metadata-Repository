@@ -18,6 +18,10 @@
             (fn with-retry# [num-retries#]
               (let [wr-string# (if ~read? "read" "write")]
                 (try
+                  ; TODO delete this before merging this is just to make sure the collection-metadata-cache
+                  ; is being hit.
+                  (when (= ~key :collection-metadata-cache)
+                    (info (format "%s is using the following connection data " ~conn)))
                   (carmine/wcar ~conn ~@body)
                   (catch Exception e#
                     (if (> num-retries# 0)

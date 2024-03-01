@@ -73,19 +73,14 @@
            :concept-id concept-id
            :provider-id (:provider-id (concepts/parse-concept-id concept-id)))))
 
-(defn- rfms->umm-collections
-  "Parse multiple revision format maps into UMM-spec records"
-  [context rfms]
-  (map #(rfm->umm-collection context %) rfms))
-
-(defn- get-cached-revision-format-maps-with-retry
-  "Get all the collections from cache, if nothing is returned,
+(defn- get-collection-metadata-cache-concept-ids-with-retry
+  "Get all the collection ids from the cache, if nothing is returned,
   Wait configurable number of seconds before retrying configurable number of times."
   [context]
   (loop [retries (retry-count)]
-    (rl-util/log-redis-reading-start "humanizer report service get-cached-revision-format-maps-with-retry" cmn-coll-metadata-cache/cache-key)
-    (if-let [rfms (metadata-cache/all-cached-revision-format-maps context)]
-      rfms
+    (rl-util/log-redis-reading-start "humanizer report service get-collection-metadata-cache-concept-ids" cmn-coll-metadata-cache/cache-key)
+    (if-let [vec-concept-ids (metadata-cache/get-collection-metadata-cache-concept-ids context)]
+      vec-concept-ids
       (when (> retries 0)
         (info (format (str "Failed reading %s for the humanizer report. "
                            "Humanizer report generator job is sleeping for %d second(s)"
@@ -94,20 +89,6 @@
                       (/ (humanizer-report-generator-job-wait) 1000)))
         (Thread/sleep (humanizer-report-generator-job-wait))
         (recur (dec retries))))))
-
-(defn- get-all-collections
-  "Retrieves all collections from the Metadata cache, partitions them into batches of size
-  humanizer-report-collection-batch-size, so the batches can be processed lazily to avoid out of memory errors."
-  [context]
-  ;; Currently not throwing an exception if the cache is empty. May want to
-  ;; change in the future to throw an exception.
-  (if-let [rfms (get-cached-revision-format-maps-with-retry context)]
-    (map
-      #(rfms->umm-collections context %)
-      (partition-all (humanizer-report-collection-batch-size) rfms))
-    (warn (format "Collection cache is not populated after %d seconds of delay and %d times of retry."
-                  (humanizer-report-generator-job-delay)
-                  (retry-count)))))
 
 (defn humanized-collection->reported-rows
   "Takes a humanized collection and returns rows to populate the CSV report."
@@ -128,35 +109,17 @@
 (defn generate-humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
   [context]
-  (let [[t1 collection-batches] (util/time-execution
-                                  (get-all-collections context))
-         string-writer (StringWriter.)
-         idx-atom (atom 0)]
-    (info (format "get-all-collections: %d ms. Processing %d batches of size %d"
-                  t1
-                  (count collection-batches)
-                  (humanizer-report-collection-batch-size)))
+  (let [concept-ids (get-collection-metadata-cache-concept-ids-with-retry context)
+        humanizers (hs/get-humanizers context)
+        string-writer (StringWriter.)]
     (csv/write-csv string-writer [CSV_HEADER])
-    (let [humanizers (hs/get-humanizers context)
-          [t4 csv-string]
-          (util/time-execution
-            (doseq [batch collection-batches]
-              (let [[t2 humanized-rows]
-                    (util/time-execution
-                      (doall
-                        (pmap (fn [coll]
-                                (-> (h/umm-collection->umm-collection+humanizers coll humanizers)
-                                    humanized-collection->reported-rows))
-                              batch)))
-                    [t3 rows] (util/time-execution
-                                (apply concat humanized-rows))]
-                (csv/write-csv string-writer rows)
-                (info "Batch " (swap! idx-atom inc) " Size " (count batch)
-                       "Write humanizer report of " (count rows) " rows"
-                       "get humanized rows:" t2
-                       "concat humanized rows:" t3))))]
-      (info "Create report " t4)
-      (str string-writer))))
+    (doseq [concept-id concept-ids]
+      (let [rfm (metadata-cache/get-concept-id context concept-id)
+            collection (rfm->umm-collection context rfm)
+            humanized-rows (-> (h/umm-collection->umm-collection+humanizers collection humanizers)
+                               humanized-collection->reported-rows)]
+        (csv/write-csv string-writer humanized-rows)))
+    (str string-writer)))
 
 (defn safe-generate-humanizers-report-csv
   "This convenience function wraps the report generator in a try/catch,
