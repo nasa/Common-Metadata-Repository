@@ -1,7 +1,12 @@
 (ns cmr.common-app.test.data.humanizer-alias-cache-test
   (:require
-   [clojure.test :refer :all]
-   [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]))
+    [clojure.test :refer :all]
+    [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache])
+  (:import (clojure.lang ExceptionInfo)))
+
+(def create-context
+  "Creates a testing concept with the KMS caches."
+  {:system {:caches {humanizer-alias-cache/humanizer-alias-cache-key (humanizer-alias-cache/create-cache-client)}}})
 
 (deftest create-humanizer-alias-map-test
   (is (= {"platform" {"TERRA" ["AM-1" "am-1"] "FOO" ["old-foo1" "old-foo2"]}
@@ -18,3 +23,7 @@
             {:type "alias", :field "instrument", :source_value "instr-1", :replacement_value "Instrument", :reportable true, :order 0}
             {:type "alias", :field "instrument", :source_value "instr-2", :replacement_value "Instrument", :reportable true, :order 0}
             {:type "alias", :field "instrument", :source_value "instr-3", :replacement_value "inStruMent", :reportable true, :order 0}]))))
+
+(deftest get-non-humanized-source-to-aliases-map-test
+  (testing "cache connection error"
+    (is (thrown? ExceptionInfo (humanizer-alias-cache/get-non-humanized-source-to-aliases-map create-context "platform")))))

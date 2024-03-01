@@ -23,7 +23,9 @@
                                    (dec num-retries#)))
                      (Thread/sleep (config/redis-retry-interval))
                      (with-retry# (dec num-retries#)))
-                   (error "Redis failed with exception " e#)))))]
+                   (do
+                     (error "Redis failed with exception " e#)
+                     (throw e#))))))]
      (with-retry# (config/redis-num-retries))))
 
 (defn healthy?

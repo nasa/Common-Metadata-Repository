@@ -104,7 +104,7 @@
                                 (hash-cache/get-value humanizer-alias-cache humanizer-alias-cache-key humanizer-field-name))]
     (rl-util/log-redis-read-complete "get-non-humanized-source-to-aliases-map" humanizer-alias-cache-key tm)
     (when (or (nil? found-aliases-map) (empty? found-aliases-map))
-      (info (format "cache-miss: %s could not find map with humanizer-field-name [%s]" humanizer-alias-cache-key humanizer-field-name)))
+      (warn (format "cache-miss: %s could not find map with humanizer-field-name [%s]" humanizer-alias-cache-key humanizer-field-name)))
     found-aliases-map))
 
 (defconfig humanizer-alias-cache-job-refresh-rate
