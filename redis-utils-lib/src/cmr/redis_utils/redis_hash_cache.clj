@@ -21,7 +21,14 @@
    ttl
 
    ;; Refresh the time to live when GET operations are called on key.
-   refresh-ttl?]
+   refresh-ttl?
+
+   ;; The connection used to get data from redis. This can either be the redis read-only replicas
+   ;; or the primary node.
+   read-connection
+    
+   ;; The connection used to write data to redis.
+   primary-connection]
 
   cache/CmrHashCache
   (get-map
@@ -31,7 +38,7 @@
     ;; First pulls out the inner vector then conver it to {field value field value} hash 
     ;; map so that callers can process it.
     (let [s-key (rc/serialize key)
-          result (-> (wcar* s-key true :as-pipeline (carmine/hgetall s-key))
+          result (-> (wcar* s-key true read-connection :as-pipeline (carmine/hgetall s-key))
                      first)]
       (when-not (or (nil? result)
                     (empty? result))
@@ -42,7 +49,7 @@
     [this key]
     ;; key is the cache-key. Retuns true if the cache key exists in redis nil otherwise
     (let [s-key (rc/serialize key)
-          exists (wcar* s-key true (carmine/exists s-key))]
+          exists (wcar* s-key true read-connection (carmine/exists s-key))]
       (when exists
         (> exists 0))))
 
@@ -52,14 +59,14 @@
     ;; hkeys returns a vector structure [[key1 key2 ... keyn]] First pulls out the inner vector
     ;; returns a vector of keys.
     (let [s-key (rc/serialize key)]
-      (-> (wcar* s-key true :as-pipeline (carmine/hkeys s-key))
+      (-> (wcar* s-key true read-connection :as-pipeline (carmine/hkeys s-key))
           first)))
 
   (get-value
     [this key field]
     ;; key is the cache-key. Returns the value of the passed in field.
     (let [s-key (rc/serialize key)]
-      (-> (wcar* s-key true :as-pipeline (carmine/hget s-key field))
+      (-> (wcar* s-key true read-connection :as-pipeline (carmine/hget s-key field))
           first)))
   
   (get-values
@@ -67,7 +74,7 @@
     ;; returns a vector of values.
     [this key fields]
     (let [s-key (rc/serialize key)]
-      (map #(-> (wcar* s-key true :as-pipeline (carmine/hget s-key %1))
+      (map #(-> (wcar* s-key true read-connection :as-pipeline (carmine/hget s-key %1))
                 first)
            fields)))
 
@@ -75,30 +82,30 @@
     [this]
     (doseq [the-key keys-to-track]
       (let [s-key (rc/serialize the-key)]
-        (wcar* s-key false (carmine/del s-key)))))
+        (wcar* s-key false primary-connection (carmine/del s-key)))))
 
   (reset
     [this key]
     (let [s-key (rc/serialize key)]
-      (wcar* s-key false (carmine/del s-key))))
+      (wcar* s-key false primary-connection (carmine/del s-key))))
 
   (set-value
     [this key field value]
     (let [s-key (rc/serialize key)]
       ;; Store value in map to aid deserialization of numbers.
-      (wcar* s-key false (carmine/hset s-key field value))))
+      (wcar* s-key false primary-connection (carmine/hset s-key field value))))
   
   (set-values
     [this key field-value-map]
     (let [s-key (rc/serialize key)]
-      (doall (map #(wcar* s-key false (carmine/hset s-key %1 (get field-value-map %1)))
+      (doall (map #(wcar* s-key false primary-connection (carmine/hset s-key %1 (get field-value-map %1)))
                   (keys field-value-map)))))
 
   (cache-size
     [this key]
     (let [s-key (rc/serialize key)]
       ;; Return 0 if the cache is empty or does not yet exist. This is for cmr.common-app.services.cache-info.
-      (if-let [size (wcar* s-key true (carmine/memory-usage s-key))]
+      (if-let [size (wcar* s-key true read-connection (carmine/memory-usage s-key))]
         size
         0))))
 
@@ -119,5 +126,7 @@
    (create-redis-hash-cache nil))
   ([options]
    (->RedisHashCache (:keys-to-track options)
-                     (get options :ttl)
-                     (get options :refresh-ttl? false))))
+                     (:ttl options)
+                     (get options :refresh-ttl? false)
+                     (:read-connection options)
+                     (:primary-connection options))))

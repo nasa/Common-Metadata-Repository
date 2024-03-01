@@ -74,7 +74,7 @@
           :timeout-ms (redis-timeout-ms)}
    :pool {:max-total (web-server/MAX_THREADS)}})
 
-(defn redis-read-conn-ops
+(defn redis-read-conn-opts
   "Redis default read connection options to be used with wcar."
   []
   {:spec {:host (redis-read-host)
@@ -83,7 +83,7 @@
           :timeout-ms (redis-timeout-ms)}
    :pool {:max-total (web-server/MAX_THREADS)}})
 
-(defn redis-collection-metadata-cache-conn-ops
+(defn redis-collection-metadata-cache-conn-opts
   "Redis collection-metadata-cache default and write connection options to be used with wcar."
   []
   {:spec {:host (redis-collection-metadata-host)
@@ -92,7 +92,7 @@
           :timeout-ms (redis-collection-metadata-timeout-ms)}
    :pool {:max-total (web-server/MAX_THREADS)}})
 
-(defn redis-collection-metadata-cache-read-conn-ops
+(defn redis-collection-metadata-cache-read-conn-opts
   "Redis collecltion-metadata-cache read connection options to be used with wcar."
   []
   {:spec {:host (redis-collection-metadata-read-host)

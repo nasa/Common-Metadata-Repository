@@ -42,13 +42,13 @@
   Reading keys of the cache is an expensive operation. (See the comment there.) If you need fast access
   to the set of keys in the cache consider a different implementation."
   (:require
-   [clojure.set :as set]
    [cmr.common.cache :as c]
    [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.services.errors :as errors]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache])
   (:import
    (cmr.common.cache.in_memory_cache InMemoryCache)))
@@ -154,7 +154,10 @@
    (create-consistent-cache nil))
   ([options]
    (let [timeout (get options :hash-timeout-seconds (consistent-cache-default-hash-timeout-seconds))
-         hash-cache (redis-cache/create-redis-cache options)
+         hash-cache (redis-cache/create-redis-cache 
+                     (merge options
+                            {:read-connection (cmr.redis-utils.config/redis-read-conn-opts)
+                             :primary-connection (cmr.redis-utils.config/redis-conn-opts)}))
          main-cache (mem-cache/create-in-memory-cache)]
      (create-consistent-cache main-cache (fallback-with-timeout hash-cache timeout))))
   ([memory-cache hash-cache]

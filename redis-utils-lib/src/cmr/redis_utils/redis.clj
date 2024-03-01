@@ -13,19 +13,12 @@
     should be used. This flag is also used in more logging information.
     For available commands refer to Redis docuemntation or:
     https://github.com/ptaoussanis/carmine/blob/master/src/taoensso/carmine/commands.edn."
-    [key read? & body]
+    [key read? conn & body]
     `(let [with-retry#
             (fn with-retry# [num-retries#]
-              (let [wr-string# (if ~read? "read" "write")
-                    config# (if (= :collection-metadata-cache ~key)
-                              (if ~read?
-                                (config/redis-collection-metadata-cache-read-conn-ops)
-                                (config/redis-collection-metadata-cache-conn-ops))
-                              (if ~read?
-                                (config/redis-read-conn-ops)
-                                (config/redis-conn-opts)))]
+              (let [wr-string# (if ~read? "read" "write")]
                 (try
-                  (carmine/wcar config# ~@body)
+                  (carmine/wcar ~conn ~@body)
                   (catch Exception e#
                     (if (> num-retries# 0)
                       (do
@@ -44,14 +37,18 @@
   [& args]
   {:ok?
    (try
-     (= "PONG" (wcar* "healthy?" true (carmine/ping)))
+     (and (= "PONG" (wcar* "healthy?" true (config/redis-read-conn-opts) (carmine/ping)))
+          (= "PONG" (wcar* "healthy?" true (config/redis-collection-metadata-cache-read-conn-opts) (carmine/ping))))
      (catch Exception _
        false))})
 
 (defn reset
   "Evict all keys in redis. Primarily for dev-system use."
-  []
-  (wcar* "reset" false (carmine/flushall)))
+  ([]
+   (wcar* "reset" false (config/redis-conn-opts) (carmine/flushall))
+   (wcar* "reset" false (config/redis-collection-metadata-cache-conn-opts) (carmine/flushall)))
+  ([conn]
+   (wcar* "reset" false conn (carmine/flushall))))
 
 (defn get-keys
   "Scans the redis db for keys matching the match argument (use * to match all).
@@ -59,12 +56,12 @@
   as the page size to scan the redis db with. We use this method rather than the
   KEYS redis command to avoid blocking other redis calls as KEYS can become an
   expensive operation."
-  ([]
-   (get-keys "*"))
-  ([match]
+  ([conn]
+   (get-keys "*" conn))
+  ([match conn]
    (loop [cursor "0"
           results #{}]
-     (let [[new-cursor new-results] (wcar* "get-keys" true (carmine/scan cursor :match match :count (config/redis-max-scan-keys)))
+     (let [[new-cursor new-results] (wcar* "get-keys" true conn (carmine/scan cursor :match match :count (config/redis-max-scan-keys)))
            merged-results (union results new-results)]
        (if (or (= "0" (str new-cursor))
                (>= (count merged-results) (config/redis-max-scan-keys)))

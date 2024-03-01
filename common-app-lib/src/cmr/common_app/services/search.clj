@@ -15,6 +15,7 @@
    ;; Must be required to be available
    [cmr.common-app.services.search.validators.numeric-range]
    [cmr.common-app.services.search.validators.date-range]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]))
 
 (def scroll-id-cache-key
@@ -41,14 +42,18 @@
   "Returns a cache backed by Redis. This cache is used to store a map of cmr scroll-ids to ES scroll-ids 
    in a consistent way acrosss all instances of search."
   []
-  (redis-cache/create-redis-cache {:ttl (/ (scroll-id-cache-ttl) 1000)}))
+  (redis-cache/create-redis-cache {:ttl (/ (scroll-id-cache-ttl) 1000)
+                                   :read-connection (redis-config/redis-read-conn-opts)
+                                   :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn create-scroll-first-page-cache
   "Returns a cache backed by Redis. This cache is used to store a map of cmr scroll-ids to the first 
    page of results in a consistent way acrosss all instances of search. This is used to support scrolling with
    sessions intitiated with a HEAD, GET, or POS request."
   []
-  (redis-cache/create-redis-cache {:ttl (/ (scroll-first-page-cache-ttl) 1000)}))
+  (redis-cache/create-redis-cache {:ttl (/ (scroll-first-page-cache-ttl) 1000)
+                                   :read-connection (redis-config/redis-read-conn-opts)
+                                   :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn validate-query
   "Validates a query model. Throws an exception to return to user with errors.

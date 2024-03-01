@@ -17,6 +17,7 @@
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.util :as u]
    [cmr.common.xml :as cx]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as rhcache]))
 
 (def cache-key
@@ -26,7 +27,9 @@
 (defn create-cache
   "Creates an instance of the cache."
   []
-  (rhcache/create-redis-hash-cache {:keys-to-track [cache-key]}))
+  (rhcache/create-redis-hash-cache {:keys-to-track [cache-key]
+                                    :read-connection (redis-config/redis-collection-metadata-cache-read-conn-opts)
+                                    :primary-connection (redis-config/redis-collection-metadata-cache-conn-opts)}))
 
 (def incremental-since-refresh-date-key
   "Identifies the field used in the defined cache-key to get the date represented

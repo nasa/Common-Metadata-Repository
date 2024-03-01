@@ -15,6 +15,7 @@
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.humanizers.humanizer-messages :as msg]
    [cmr.search.services.humanizers.humanizer-service :as hs]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core])
   (:import
@@ -57,7 +58,9 @@
 (defn create-humanizer-report-cache-client
   "Create instance of humanizer-report-cache client that connects to the redis cache"
   []
-  (redis-cache/create-redis-cache {:keys-to-track [humanizer-report-cache-key]}))
+  (redis-cache/create-redis-cache {:keys-to-track [humanizer-report-cache-key]
+                                   :read-connection (redis-config/redis-read-conn-opts)
+                                   :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn- rfm->umm-collection
   "Takes a revision format map and parses it into a UMM-spec record."

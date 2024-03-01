@@ -3,14 +3,15 @@
    [clojure.test :refer :all]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.data.metadata-retrieval.revision-format-map :as crfm]
+   [cmr.common.hash-cache :as hash-cache]
    [cmr.common.util :refer [are3]]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
    [cmr.redis-utils.test.test-util :as test-util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as mc]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
    [cmr.search.test.unit.data.metadata-retrieval.revision-format-map :as trfm]
-   [cmr.search.test.unit.data.metadata-retrieval.test-metadata :as tm]
-   [cmr.common.hash-cache :as hash-cache]))
+   [cmr.search.test.unit.data.metadata-retrieval.test-metadata :as tm]))
 
 (use-fixtures :each test-util/embedded-redis-server-fixture)
 
@@ -36,7 +37,10 @@
 
 (deftest get-cached-metadata-in-format-test
   (let [cache-key cmn-coll-metadata-cache/cache-key
-        cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [cache-key]})
+        cache (redis-hash-cache/create-redis-hash-cache 
+               {:keys-to-track [cache-key]
+                :read-connection (redis-config/redis-collection-metadata-cache-read-conn-opts)
+                :primary-connection (redis-config/redis-collection-metadata-cache-conn-opts)})
         _ (hash-cache/reset cache cache-key)
         rfm1 (test-rfm "C1" 1 [:dif])
         rfm2 (test-rfm "C2" 2 [:echo10])

@@ -2,11 +2,12 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common-app.services.search.elastic-search-index-names-cache :as idx-names-cache]
+   [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.hash-cache :as hash-cache]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
    [cmr.redis-utils.test.test-util :as test-util]
-   [cmr.search.data.elastic-search-index :as search-index]
-   [cmr.common-app.services.search.query-model :as qm]))
+   [cmr.search.data.elastic-search-index :as search-index]))
 
 (use-fixtures :once test-util/embedded-redis-server-fixture)
 
@@ -34,7 +35,9 @@
 
 (deftest get-cached-index-names-test
   (let [cache-key idx-names-cache/index-names-cache-key
-        cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [cache-key]})
+        cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [cache-key]
+                                                         :read-connection (redis-config/redis-read-conn-opts)
+                                                         :primary-connection (redis-config/redis-conn-opts)})
         _ (hash-cache/reset cache cache-key)
         context {:system {:caches {cache-key cache}}}]
     (hash-cache/set-values cache cache-key cached-index-names)
