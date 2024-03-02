@@ -39,7 +39,7 @@
 (def collection-metadata-cache-fields-key
   "Identifies a list of concept ids, to speed up getting collection metadata cache data
   for the humanizer report."
-  :concept-id-keys)
+  "concept-id-keys")
 
 (defn context->metadata-db-context
   "Converts the context into one that can be used to invoke the metadata-db services."

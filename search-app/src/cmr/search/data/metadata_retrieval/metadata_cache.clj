@@ -53,7 +53,8 @@
     [context]
     (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
           cache-map (-> (hash-cache/get-map cache cmn-coll-metadata-cache/cache-key)
-                        (dissoc "incremental-since-refresh-date"))]
+                        (dissoc cmn-coll-metadata-cache/incremental-since-refresh-date-key 
+                                cmn-coll-metadata-cache/collection-metadata-cache-fields-key))]
       (u/map-values (fn [rfm]
                       {:revision-id (:revision-id rfm)
                        :cached-formats (crfm/cached-formats rfm)})
@@ -154,9 +155,10 @@
   humanizer report."
   [context]
   (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
-    (hash-cache/get-value cache
-                          cmn-coll-metadata-cache/cache-key
-                          cmn-coll-metadata-cache/collection-metadata-cache-fields-key)))
+    (sort
+     (hash-cache/get-value cache
+                           cmn-coll-metadata-cache/cache-key
+                           cmn-coll-metadata-cache/collection-metadata-cache-fields-key))))
 
 (defn get-concept-id
   "Given a concept-id, returns the value stored in the collection-metadata-cache for that concept which is
