@@ -109,7 +109,7 @@
 (defn generate-humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
   [context]
-  (let [concept-ids (get-collection-metadata-cache-concept-ids-with-retry context)
+  (let [concept-ids (sort (get-collection-metadata-cache-concept-ids-with-retry context))
         humanizers (hs/get-humanizers context)
         string-writer (StringWriter.)]
     (csv/write-csv string-writer [CSV_HEADER])
