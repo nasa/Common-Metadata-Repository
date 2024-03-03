@@ -27,22 +27,22 @@
   :first-page-cache)
 
 (defconfig scroll-id-cache-ttl
-  "Time in milliseconds scroll-ids can stay in the cache before getting evicted."
+  "Time in seconds scroll-ids can stay in the cache before getting evicted."
   {:type Long
    ;; 24 hours
-   :default (* 24 3600 1000)})
+   :default (* 24 3600)})
 
 (defconfig scroll-first-page-cache-ttl
-  "Time in milliseconds the first page of results can stay in the cache before getting evicted."
+  "Time in seconds the first page of results can stay in the cache before getting evicted."
   {:type Long
     ;; 15 minutes
-   :default (* 900 1000)})
+   :default 900})
 
 (defn create-scroll-id-cache
   "Returns a cache backed by Redis. This cache is used to store a map of cmr scroll-ids to ES scroll-ids 
    in a consistent way acrosss all instances of search."
   []
-  (redis-cache/create-redis-cache {:ttl (/ (scroll-id-cache-ttl) 1000)
+  (redis-cache/create-redis-cache {:ttl (scroll-id-cache-ttl)
                                    :read-connection (redis-config/redis-read-conn-opts)
                                    :primary-connection (redis-config/redis-conn-opts)}))
 
@@ -51,7 +51,7 @@
    page of results in a consistent way acrosss all instances of search. This is used to support scrolling with
    sessions intitiated with a HEAD, GET, or POS request."
   []
-  (redis-cache/create-redis-cache {:ttl (/ (scroll-first-page-cache-ttl) 1000)
+  (redis-cache/create-redis-cache {:ttl (scroll-first-page-cache-ttl)
                                    :read-connection (redis-config/redis-read-conn-opts)
                                    :primary-connection (redis-config/redis-conn-opts)}))
 

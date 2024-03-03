@@ -66,7 +66,9 @@
 (defn create-kms-location-cache
   "Creates an instance of the cache."
   []
-  (rhcache/create-redis-hash-cache {:keys-to-track [kms-location-cache-key]}))
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-location-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn create-kms-measurement-cache
   "Creates an instance of the cache."

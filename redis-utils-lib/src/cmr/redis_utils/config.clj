@@ -45,8 +45,8 @@
   {:default 3000 :type Long})
 
 (defconfig redis-collection-metadata-timeout-ms
-  "Timeout for connection in ms."
-  {:default 300000 :type Long})
+  "5 minute timeout for connection in ms."
+  {:default (* 5 60 1000) :type Long})
 
 (defconfig redis-default-key-timeout-seconds
   "The default value in seconds to use to expire keys. Default is 24 hours."

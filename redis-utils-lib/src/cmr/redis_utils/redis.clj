@@ -15,26 +15,28 @@
     https://github.com/ptaoussanis/carmine/blob/master/src/taoensso/carmine/commands.edn."
     [key read? conn & body]
     `(let [with-retry#
-            (fn with-retry# [num-retries#]
-              (let [wr-string# (if ~read? "read" "write")]
-                (try
-                  ; TODO delete this before merging this is just to make sure the collection-metadata-cache
-                  ; is being hit.
-                  (when (= ~key :collection-metadata-cache)
-                    (info (format "%s is using the following connection data " ~conn)))
-                  (carmine/wcar ~conn ~@body)
-                  (catch Exception e#
-                    (if (> num-retries# 0)
-                      (do
-                        (info (format "Redis %s %s failed with exception %s. Retrying %d more times."
-                                      wr-string#
-                                      ~key
-                                      e#
-                                      (dec num-retries#)))
-                        (Thread/sleep (config/redis-retry-interval))
-                        (with-retry# (dec num-retries#)))
-                      (error (format "Redis %s %s failed with exception %s"  wr-string# ~key e#)))))))]
-        (with-retry# (config/redis-num-retries))))
+           (fn with-retry# [num-retries#]
+             (let [wr-string# (if ~read? "read" "write")]
+               (if-not ~conn
+                 (error (format "Redis %s %s connection is nil, please set it up properly."  wr-string# ~key))
+                 (try
+                   ; TODO delete this before merging this is just to make sure the collection-metadata-cache
+                   ; is being hit.
+                   (when (clojure.string/includes? (name ~key) "metadata-cache")
+                     (info (format "%s is using the following connection data " ~conn)))
+                   (carmine/wcar ~conn ~@body)
+                   (catch Exception e#
+                     (if (> num-retries# 0)
+                       (do
+                         (info (format "Redis %s %s failed with exception %s. Retrying %d more times."
+                                       wr-string#
+                                       ~key
+                                       e#
+                                       (dec num-retries#)))
+                         (Thread/sleep (config/redis-retry-interval))
+                         (with-retry# (dec num-retries#)))
+                       (error (format "Redis %s %s failed with exception %s"  wr-string# ~key e#))))))))]
+       (with-retry# (config/redis-num-retries))))
 
 (defn healthy?
   "Returns true if able to reach Redis."
