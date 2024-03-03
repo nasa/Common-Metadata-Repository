@@ -99,15 +99,6 @@
     c
     (assoc c :RelatedUrls [u/not-provided-related-url])))
 
-(defn- migrate-spatialextent-down-from-1_18_0
-  "If SpatialExtent/SpatialCoverageType is EARTH/GLOBAL or LUNAR, remove the SpatialCoverageType."
-  [c]
-  (let [sct (get-in c [:SpatialExtent :SpatialCoverageType])]
-    (if (or (= "EARTH/GLOBAL" sct)
-            (= "LUNAR" sct))
-      (update-in c [:SpatialExtent] dissoc :SpatialCoverageType)
-      c))) 
-
 (defn- migrate-sensor-to-instrument
  "Migrate from 1.8 to 1.9 sensors to ComposedOf list of instrument child types on
  the instrument"
@@ -725,15 +716,21 @@
 
 (defmethod interface/migrate-umm-version [:collection "1.18.0" "1.17.3"]
   [context collection & _]
-  ;; Migrate TilingIdentificationSystems/Coordinate1 and Coordinate2 down if they are numbers.
-  ;; Replace a GetService MimeType to a valid value.
+  ;; Remove Type and DescriptionOfOtherType from AssociatedDOIs;
+  ;; Remove SpatialCoverageType from SpatialExtent if it's "LUNAR" and "EARTH/GLOBAL";
+  ;; Remove PreviousVersion from DOI;
+  ;; Remove DataMaturity, OtherIdentifiers and FileNamingConvention;
+  ;; Remove TemporalResolution from TemporalExtents.
   (util/remove-nils-empty-maps-seqs
    (-> collection
        (m-spec/update-version :collection "1.17.3")
        (update-in-each [:AssociatedDOIs] dissoc :Type :DescriptionOfOtherType)
-       (migrate-spatialextent-down-from-1_18_0)
-       (dissoc :DataMaturity)
+       (update-in-each [:TemporalExtents] dissoc :TemporalResolution)
        (update-in [:DOI] dissoc :PreviousVersion)
-       (dissoc :OtherIdentifiers)
-       (dissoc :FileNamingConvention)
-       (update-in-each [:TemporalExtents] dissoc :TemporalResolution))))
+       (dissoc :DataMaturity :OtherIdentifiers :FileNamingConvention)
+       (as-> rc
+         (let [sct (get-in rc [:SpatialExtent :SpatialCoverageType])]
+           (if (or (= "EARTH/GLOBAL" sct)
+                   (= "LUNAR" sct))
+             (update-in rc [:SpatialExtent] dissoc :SpatialCoverageType)
+             rc))))))
