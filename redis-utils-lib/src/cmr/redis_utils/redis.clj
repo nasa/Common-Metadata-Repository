@@ -20,10 +20,6 @@
                (if-not ~conn
                  (error (format "Redis %s %s connection is nil, please set it up properly."  wr-string# ~key))
                  (try
-                   ; TODO delete this before merging this is just to make sure the collection-metadata-cache
-                   ; is being hit.
-                   (when (clojure.string/includes? (name ~key) "metadata-cache")
-                     (info (format "%s is using the following connection data " ~conn)))
                    (carmine/wcar ~conn ~@body)
                    (catch Exception e#
                      (if (> num-retries# 0)
