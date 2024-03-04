@@ -27,7 +27,7 @@
 
 (def MAX_BULK_OPERATIONS_PER_REQUEST
   "The maximum number of operations to batch in a single request"
-  1)
+  100)
 
 (defn context->conn
   "Returns the elastisch connection in the context"
@@ -312,9 +312,10 @@
   ([context docs {:keys [all-revisions-index?]}]
    (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
      (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
-           conn (context->conn context)
-           response (es-helper/bulk conn bulk-operations)]
-       (handle-bulk-index-response response)))))
+           conn (context->conn context)]
+           ;; response (es-helper/bulk conn bulk-operations)]
+       ;; (handle-bulk-index-response response)
+       (es-helper/bulk conn bulk-operations)))))
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
