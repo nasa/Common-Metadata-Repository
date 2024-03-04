@@ -62,7 +62,9 @@
   {:default 3 :type Long})
 
 (defconfig redis-retry-interval
-  "The number of milliseconds to wait between Redis retry command."
+  "The number of milliseconds to wait between Redis retry command.
+  Some queries take between 200-300 milliseconds to complete. Making this time
+  shorter, will cause unnecessary retries."
   {:default 400 :type Long})
 
 (defn redis-conn-opts
