@@ -9,7 +9,7 @@
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob default-job-start-delay]]
-   [cmr.common.log :as log :refer [info warn]]
+   [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
@@ -66,12 +66,16 @@
   "Takes a revision format map and parses it into a UMM-spec record."
   [context revision-format-map]
   (let [concept-id (:concept-id revision-format-map)
-        umm (umm-spec-core/parse-metadata
-             context
-             (crfm/revision-format-map->concept :native revision-format-map))]
-    (assoc umm
-           :concept-id concept-id
-           :provider-id (:provider-id (concepts/parse-concept-id concept-id)))))
+        umm (try
+              (umm-spec-core/parse-metadata
+               context
+               (crfm/revision-format-map->concept :native revision-format-map))
+              (catch Exception e
+                (error (format "Exception caught trying to parse %s to umm that was retrieved from a revision-format-map %s" concept-id e))))]
+    (when umm
+      (assoc umm
+             :concept-id concept-id
+             :provider-id (:provider-id (concepts/parse-concept-id concept-id))))))
 
 (defn- get-collection-metadata-cache-concept-ids-with-retry
   "Get all the collection ids from the cache, if nothing is returned,

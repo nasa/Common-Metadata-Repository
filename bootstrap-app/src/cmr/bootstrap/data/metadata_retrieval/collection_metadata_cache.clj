@@ -74,7 +74,7 @@
         old-concept-keys (hash-cache/get-value cache
                                                cmn-coll-metadata-cache/cache-key
                                                cmn-coll-metadata-cache/collection-metadata-cache-fields-key)
-        full-key-set (vec (distinct (concat new-concept-keys old-concept-keys)))
+        full-key-set (vec (distinct (remove nil? (concat new-concept-keys old-concept-keys))))
         redis-start (System/currentTimeMillis)
         _ (rl-util/log-data-gathering-stats "update-cache"
                                             cmn-coll-metadata-cache/cache-key
@@ -115,7 +115,7 @@
     (hash-cache/set-value cache
                           cmn-coll-metadata-cache/cache-key
                           cmn-coll-metadata-cache/collection-metadata-cache-fields-key
-                          (vec (keys new-cache-value)))
+                          (vec (remove nil? (keys new-cache-value))))
     (hash-cache/set-values cache cmn-coll-metadata-cache/cache-key new-cache-value)
     (rl-util/log-redis-write-complete "refresh-cache" cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start))
     (info "Metadata cache refresh complete. Cache Size:"
