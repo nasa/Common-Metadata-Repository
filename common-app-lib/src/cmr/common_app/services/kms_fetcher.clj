@@ -16,6 +16,7 @@
    [cmr.common.log :refer [error]]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.kms :as kms])
   (:import (clojure.lang ExceptionInfo)))
@@ -53,7 +54,9 @@
   KMS keywords should use the same fallback cache to ensure functionality even if GCMD KMS becomes
   unavailable."
   []
-  (redis-cache/create-redis-cache {:keys-to-track [kms-cache-key]}))
+  (redis-cache/create-redis-cache {:keys-to-track [kms-cache-key]
+                                   :read-connection (redis-config/redis-read-conn-opts)
+                                   :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn- fetch-gcmd-keywords-map
   "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way

@@ -18,16 +18,17 @@
                     \"CHAD\" {:category \"CONTINENT\" :type \"AFRICA\" :subregion-1 \"WESTERN AFRICA\"
                               :subregion-2 \"CHAD\" :uuid \"456\"}}}"
   (:require
-    [camel-snake-kebab.core :as csk]
-    [camel-snake-kebab.extras :as csk-extras]
-    [clojure.set :as set]
-    [clojure.string :as string]
-    [cmr.common.hash-cache :as hash-cache]
-    [cmr.common.log :refer [error]]
-    [cmr.common.redis-log-util :as rl-util]
-    [cmr.common.util :as util]
-    [cmr.redis-utils.redis-hash-cache :as rhcache]
-    [cmr.transmit.kms :as kms])
+   [camel-snake-kebab.core :as csk]
+   [camel-snake-kebab.extras :as csk-extras]
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [cmr.common.hash-cache :as hash-cache]
+   [cmr.common.log :refer [error]]
+   [cmr.common.redis-log-util :as rl-util]
+   [cmr.common.util :as util]
+   [cmr.redis-utils.config :as redis-config]
+   [cmr.redis-utils.redis-hash-cache :as rhcache]
+   [cmr.transmit.kms :as kms])
   (:import (clojure.lang ExceptionInfo)))
 
 (def kms-short-name-cache-key
@@ -53,22 +54,30 @@
 (defn create-kms-short-name-cache
   "Creates an instance of the cache."
   []
-  (rhcache/create-redis-hash-cache {:keys-to-track [kms-short-name-cache-key]}))
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-short-name-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn create-kms-umm-c-cache
   "Creates an instance of the cache."
   []
-  (rhcache/create-redis-hash-cache {:keys-to-track [kms-umm-c-cache-key]}))
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-umm-c-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn create-kms-location-cache
   "Creates an instance of the cache."
   []
-  (rhcache/create-redis-hash-cache {:keys-to-track [kms-location-cache-key]}))
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-location-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn create-kms-measurement-cache
   "Creates an instance of the cache."
   []
-  (rhcache/create-redis-hash-cache {:keys-to-track [kms-measurement-cache-key]}))
+  (rhcache/create-redis-hash-cache {:keys-to-track [kms-measurement-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)}))
 
 (def kms-scheme->fields-for-umm-c-lookup
   "Maps the KMS keyword scheme to the list of fields that should be matched when

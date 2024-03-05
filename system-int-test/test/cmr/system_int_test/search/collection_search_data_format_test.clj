@@ -5,10 +5,13 @@
    [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.system-int-test.data2.umm-spec-collection :as umm-spec-collection]
+   [cmr.system-int-test.utils.cache-util :as cache-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]))
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"
@@ -44,6 +47,7 @@
     (let [concept (umm-spec-collection/collection-concept sample-data-format-collection-test)
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
+      (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
       (is (= 1
              (-> (search/make-raw-search-query :collection ".umm_json?granule_data_format=NetCDF-9")
                  (:body)

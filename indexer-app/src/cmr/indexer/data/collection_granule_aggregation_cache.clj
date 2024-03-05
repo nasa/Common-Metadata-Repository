@@ -21,6 +21,7 @@
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.indexer.data.elasticsearch :as es]
    [cmr.indexer.services.index-service :as index-service]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.transmit.metadata-db :as meta-db]))
@@ -49,7 +50,8 @@
       ;; have only a single indexer refreshing its cache.
       (consistent-cache/create-consistent-cache
        {:hash-timeout-seconds (coll-gran-agg-cache-consistent-timeout-seconds)})
-      (redis-cache/create-redis-cache))))
+      (redis-cache/create-redis-cache {:read-connection (redis-config/redis-read-conn-opts)
+                                       :primary-connection (redis-config/redis-conn-opts)}))))
 
 (def ^:private collection-aggregations
   "Defines the aggregations to use to find information about all the granules in a collection."

@@ -17,6 +17,7 @@
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.util :as u]
    [cmr.common.xml :as cx]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as rhcache]))
 
 (def cache-key
@@ -26,12 +27,19 @@
 (defn create-cache
   "Creates an instance of the cache."
   []
-  (rhcache/create-redis-hash-cache {:keys-to-track [cache-key]}))
+  (rhcache/create-redis-hash-cache {:keys-to-track [cache-key]
+                                    :read-connection (redis-config/redis-collection-metadata-cache-read-conn-opts)
+                                    :primary-connection (redis-config/redis-collection-metadata-cache-conn-opts)}))
 
 (def incremental-since-refresh-date-key
   "Identifies the field used in the defined cache-key to get the date represented
   as a string to get collections from ES the last time they where fetched."
   "incremental-since-refresh-date")
+
+(def collection-metadata-cache-fields-key
+  "Identifies a list of concept ids, to speed up getting collection metadata cache data
+  for the humanizer report."
+  "concept-id-keys")
 
 (defn context->metadata-db-context
   "Converts the context into one that can be used to invoke the metadata-db services."
@@ -92,7 +100,7 @@
   [cache]
   (let [cache-map (hash-cache/get-map cache cache-key)
         incremental-since-refresh-date (get cache-map incremental-since-refresh-date-key)
-        revision-format-map (dissoc cache-map incremental-since-refresh-date-key)]
+        revision-format-map (dissoc cache-map incremental-since-refresh-date-key collection-metadata-cache-fields-key)]
     (assoc (u/map-values crfm/prettify revision-format-map)
            incremental-since-refresh-date-key
            incremental-since-refresh-date)))

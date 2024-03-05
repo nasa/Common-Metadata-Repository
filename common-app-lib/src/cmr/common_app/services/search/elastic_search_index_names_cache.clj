@@ -5,6 +5,7 @@
    [cmr.common.hash-cache :as hcache]
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :refer [info]]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as rhcache]
    [cmr.transmit.indexer :as indexer]))
 
@@ -25,7 +26,9 @@
 (defn create-index-cache
   "Used to create the cache that will be used for caching index names."
   []
-  (rhcache/create-redis-hash-cache {:keys-to-track [index-names-cache-key]}))
+  (rhcache/create-redis-hash-cache {:keys-to-track [index-names-cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn- get-collections-moving-to-separate-index
   "Returns a list of collections that are currently in the process of moving to a separate index.

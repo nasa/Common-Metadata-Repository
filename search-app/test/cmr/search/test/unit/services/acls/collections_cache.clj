@@ -6,6 +6,7 @@
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.joda-time :as joda-time]
    [cmr.common.util :refer [are3]]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
    [cmr.redis-utils.test.test-util :as test-util]
    [cmr.search.services.acls.collections-cache :as search-coll-cache]))
@@ -44,7 +45,9 @@
 
 (deftest get-collection-gran-acls-by-concept-id-test
   (let [coll-by-concept-id-cache-key coll-gran-acls-caches/coll-by-concept-id-cache-key
-        coll-by-concept-id-cache     (redis-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-concept-id-cache-key]})
+        coll-by-concept-id-cache     (redis-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-concept-id-cache-key]
+                                                                                :read-connection (redis-config/redis-read-conn-opts)
+                                                                                :primary-connection (redis-config/redis-conn-opts)})
         _                            (hash-cache/reset coll-by-concept-id-cache coll-by-concept-id-cache-key)
         context                      {:system {:caches {coll-by-concept-id-cache-key coll-by-concept-id-cache}}}
         test-coll1                   (create-collection-for-gran-acls-test-entry "TEST_PROV1" "EntryTitle1" "C123-TEST_PROV1")
