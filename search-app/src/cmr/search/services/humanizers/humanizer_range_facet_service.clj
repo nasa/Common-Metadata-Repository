@@ -3,12 +3,11 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [clojure.string :as string]
    [cmr.common.cache :as cache]
    [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.log :as log :refer [warn]]
-   [cmr.common.util :refer [convert-to-meters]]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.search.services.humanizers.humanizer-messages :as msg]
    [cmr.search.services.humanizers.humanizer-service :as hs]
@@ -38,7 +37,8 @@
   (stl-cache/create-single-thread-lookup-cache
    (fallback-cache/create-fallback-cache
     (consistent-cache/create-consistent-cache)
-    (redis-cache/create-redis-cache))))
+    (redis-cache/create-redis-cache {:read-connection (redis-config/redis-read-conn-opts)
+                                     :primary-connection (redis-config/redis-conn-opts)}))))
 
 (def addition-factor
   "Range aggregation does not include the :to number in the facets so we add a very small number

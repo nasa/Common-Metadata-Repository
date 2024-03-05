@@ -13,6 +13,7 @@
    [cmr.common.log :as log :refer (info)]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as red-hash-cache]))
 
 (def coll-by-concept-id-cache-key
@@ -37,7 +38,9 @@
   concept-id -> {collection info}"
   []
   (red-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-concept-id-cache-key]
-                                           :ttl           cache-ttl}))
+                                           :ttl           cache-ttl
+                                           :read-connection (redis-config/redis-read-conn-opts)
+                                           :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn clj-times->time-strs
   "Take a map and convert any date objects into strings so the map can be cached.

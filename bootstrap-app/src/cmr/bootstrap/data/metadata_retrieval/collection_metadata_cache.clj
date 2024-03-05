@@ -63,21 +63,30 @@
   last time the cache was updated."
   [context]
   (rl-util/log-update-start cmn-coll-metadata-cache/cache-key)
-  (let [incremental-since-refresh-date (str (t/now))
+  (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
+        incremental-since-refresh-date (str (t/now))
         update-start (System/currentTimeMillis)
         concepts-tuples (cmn-coll-metadata-cache/fetch-updated-collections-from-elastic context)
         new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
                                 {}
                                 (partition-all 1000 concepts-tuples))
+        new-concept-keys (keys new-cache-value)
+        old-concept-keys (hash-cache/get-value cache
+                                               cmn-coll-metadata-cache/cache-key
+                                               cmn-coll-metadata-cache/collection-metadata-cache-fields-key)
+        full-key-set (vec (distinct (remove nil? (concat new-concept-keys old-concept-keys))))
         redis-start (System/currentTimeMillis)
         _ (rl-util/log-data-gathering-stats "update-cache"
                                             cmn-coll-metadata-cache/cache-key
-                                            (- redis-start update-start))
-        cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
+                                            (- redis-start update-start))]
     (hash-cache/set-value cache
                           cmn-coll-metadata-cache/cache-key
                           cmn-coll-metadata-cache/incremental-since-refresh-date-key
                           incremental-since-refresh-date)
+    (hash-cache/set-value cache
+                          cmn-coll-metadata-cache/cache-key
+                          cmn-coll-metadata-cache/collection-metadata-cache-fields-key
+                          full-key-set)
     (hash-cache/set-values cache
                            cmn-coll-metadata-cache/cache-key
                            new-cache-value)
@@ -103,6 +112,10 @@
                           cmn-coll-metadata-cache/cache-key
                           cmn-coll-metadata-cache/incremental-since-refresh-date-key
                           incremental-since-refresh-date)
+    (hash-cache/set-value cache
+                          cmn-coll-metadata-cache/cache-key
+                          cmn-coll-metadata-cache/collection-metadata-cache-fields-key
+                          (vec (remove nil? (keys new-cache-value))))
     (hash-cache/set-values cache cmn-coll-metadata-cache/cache-key new-cache-value)
     (rl-util/log-redis-write-complete "refresh-cache" cmn-coll-metadata-cache/cache-key (- (System/currentTimeMillis) redis-start))
     (info "Metadata cache refresh complete. Cache Size:"

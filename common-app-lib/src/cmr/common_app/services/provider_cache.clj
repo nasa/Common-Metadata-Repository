@@ -5,10 +5,10 @@
    [clojure.set :as cset]
    [cmr.common.hash-cache :as hcache]
    [cmr.common.jobs :refer [def-stateful-job]]
-   [cmr.common.log :as log :refer [info]]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as rhcache]
    [cmr.transmit.metadata-db2 :as mdb]))
 
@@ -19,7 +19,9 @@
 (defn create-cache
   "Creates a client instance of the cache."
   []
-  (rhcache/create-redis-hash-cache {:keys-to-track [cache-key]}))
+  (rhcache/create-redis-hash-cache {:keys-to-track [cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn- provider-does-not-exist
   [provider-id]
