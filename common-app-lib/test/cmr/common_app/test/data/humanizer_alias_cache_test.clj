@@ -1,7 +1,7 @@
 (ns cmr.common-app.test.data.humanizer-alias-cache-test
   (:require
-    [clojure.test :refer :all]
-    [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache])
+   [clojure.test :refer :all]
+   [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache])
   (:import (clojure.lang ExceptionInfo)))
 
 (def create-context

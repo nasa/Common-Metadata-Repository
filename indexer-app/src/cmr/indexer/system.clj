@@ -76,10 +76,10 @@
                       metrics-fetcher/usage-metrics-cache-key (metrics-fetcher/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}
              :scheduler (jobs/create-scheduler
-                          `system-holder
-                          [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
-                           jvm-info/log-jvm-statistics-job
-                           (cache-info/create-log-cache-info-job "indexer")])
+                         `system-holder
+                         [(af/refresh-acl-cache-job "indexer-acl-cache-refresh")
+                          jvm-info/log-jvm-statistics-job
+                          (cache-info/create-log-cache-info-job "indexer")])
              :queue-broker (queue-broker/create-queue-broker (config/queue-config))}]
 
     (transmit-config/system-with-connections sys [:metadata-db :access-control :echo-rest :kms :search])))
@@ -101,7 +101,7 @@
   "Starts the system but performs extra calls to make sure all indexes are created in elastic."
   [system]
   (let [started-system (start system)
-        context        {:system started-system}]
+        context {:system started-system}]
     ;; The indexes/alias will not be created if they already exist.
     (try
       (es/create-indexes context)
