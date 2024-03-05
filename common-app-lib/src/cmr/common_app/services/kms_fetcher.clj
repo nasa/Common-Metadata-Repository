@@ -76,7 +76,7 @@
                 (if-let [keyword-scheme-value (kms/get-keywords-for-keyword-scheme context keyword-scheme)]
                   [keyword-scheme keyword-scheme-value]
                   [keyword-scheme (get kms-cache-value keyword-scheme)])))))
-    (catch ExceptionInfo e
+    (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (do
           (error "lookup-by-measurement redis carmine exception. Will return nil result." e)
@@ -100,7 +100,7 @@
             (rl-util/log-data-gathering-stats "get-kms-index" kms-cache-key t1)
             (rl-util/log-redis-write-complete "get-kms-index" kms-cache-key t2)
             kms-index))))
-    (catch ExceptionInfo e
+    (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (do
           (error "lookup-by-measurement redis carmine exception. Will return nil result." e)

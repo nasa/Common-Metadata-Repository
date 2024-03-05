@@ -11,4 +11,4 @@
         rhcache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [cache-key]})]
 
     (testing "key-exists returns nil when redis connection is not setup properly"
-      (is (nil? (h-cache/key-exists rhcache cache-key))))))
+      (is (throws? Exception (h-cache/key-exists rhcache cache-key))))))

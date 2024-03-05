@@ -2,8 +2,7 @@
   "Unit tests for specific connection errors coming from kms-lookup"
   (:require
     [clojure.test :refer :all]
-    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
-    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]))
+    [cmr.common-app.services.kms-fetcher :as kms-fetcher]))
 
 (def create-context
   "Creates a testing concept with the KMS caches."

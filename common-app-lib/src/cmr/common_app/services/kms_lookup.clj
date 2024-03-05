@@ -254,7 +254,7 @@
                          (rl-util/log-redis-read-complete "lookup-by-short-name" kms-short-name-cache-key tm)
                          kwords))]
         (get keywords (util/safe-lowercase short-name))))
-    (catch ExceptionInfo e
+    (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (do
           (error "lookup-by-short-name found redis carmine exception. Will return nil result." e)
@@ -276,7 +276,7 @@
                 [tm kwords] (util/time-execution (hash-cache/get-value location-cache kms-location-cache-key (string/upper-case location-string)))]
             (rl-util/log-redis-read-complete "lookup-by-location-string" kms-location-cache-key tm)
             kwords))))
-    (catch ExceptionInfo e
+    (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (do
           (error "lookup-by-location-string found redis carmine exception. Will return nil result." e)
@@ -313,7 +313,7 @@
                     (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword-data-format" kms-umm-c-cache-key tm)
                     vlue))]
       (get-in value [comparison-map]))
-    (catch ExceptionInfo e
+    (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (do
           (error "lookup-by-umm-c-keyword-data-format found redis carmine exception. Will return nil result." e)
@@ -346,7 +346,7 @@
         (-> value
             (remove-long-name-from-kms-index)
             (get comparison-map))))
-    (catch ExceptionInfo e
+    (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (do
           (error "lookup-by-umm-c-keyword-platforms found redis carmine exception. Will return nil result." e)
@@ -376,7 +376,7 @@
                         (rl-util/log-redis-read-complete "lookup-by-umm-c-keyword" kms-umm-c-cache-key tm)
                         vlue))]
           (get-in value [comparison-map]))))
-    (catch ExceptionInfo e
+    (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (do
           (error "lookup-by-umm-c-keyword found redis carmine exception. Will return nil result." e)
@@ -409,7 +409,7 @@
                              :object MeasurementObject}])
             invalid-measurements (remove #(get measurement-index %) measurements)]
         (seq invalid-measurements)))
-    (catch ExceptionInfo e
+    (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (do
           (error "lookup-by-measurement redis carmine exception. Will return nil result." e)

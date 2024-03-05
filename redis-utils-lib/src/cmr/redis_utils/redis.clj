@@ -18,7 +18,9 @@
            (fn with-retry# [num-retries#]
              (let [wr-string# (if ~read? "read" "write")]
                (if-not ~conn
-                 (error (format "Redis %s %s connection is nil, please set it up properly."  wr-string# ~key))
+                 (do
+                   (error (format "Redis %s %s connection is nil, please set it up properly."  wr-string# ~key))
+                   (throw (Exception. "Connection to redis server was nil. Please setup properly.")))
                  (try
                    (carmine/wcar ~conn ~@body)
                    (catch Exception e#
