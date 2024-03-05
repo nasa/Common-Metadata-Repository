@@ -310,11 +310,15 @@
   ([context docs]
    (bulk-index-documents context docs nil))
   ([context docs {:keys [all-revisions-index?]}]
-   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
-     (let [bulk-operations nil ;; (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
-           conn (context->conn context)
-           response (es-helper/bulk conn bulk-operations)]
-       (handle-bulk-index-response response)))))
+   (let [docs-batches (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)
+         counter (atom 0)]
+     (doseq [docs-batch docs-batches]
+       (let [_ (log/info (format "DEBUGz Batch %s out of %s" counter))
+             _ (swap! counter inc)
+             bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
+             conn (context->conn context)
+             response (es-helper/bulk conn bulk-operations)]
+         (handle-bulk-index-response response))))))
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
