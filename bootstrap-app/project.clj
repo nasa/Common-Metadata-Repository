@@ -36,13 +36,15 @@
                  [potemkin "0.4.5"]
                  [ring/ring-codec "1.1.3"]
                  [ring/ring-core "1.10.0"]
-                 [ring/ring-json "0.5.1"]]
+                 [ring/ring-json "0.5.1"]
+                 [com.clojure-goes-fast/clj-memory-meter "0.3.0"]]
   :plugins [[io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
             [lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
-                       "-Dclojure.compiler.direct-linking=true"]
+                       "-Dclojure.compiler.direct-linking=true"
+                       "-Djdk.attach.allowAttachSelf"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
