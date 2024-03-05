@@ -21,6 +21,7 @@
   :plugins [[lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
+                       "-Djdk.attach.allowAttachSelf"
                        "-Dclojure.compiler.direct-linking=true"]
   :test-paths ["test" "int-test"]
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
