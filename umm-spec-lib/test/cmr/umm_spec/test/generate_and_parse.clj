@@ -213,6 +213,25 @@
       (update-in-all [:TilingIdentificationSystems :Coordinate2 :MinimumValue] trim-tiling-system-value)
       (update-in-all [:TilingIdentificationSystems :Coordinate2 :MaximumValue] trim-tiling-system-value)))
 
+
+(defn- remove-1_18_0-change
+  "Temporary! We need to remove this function after all the translations of different formats
+  are done. Before that, we should remove the calling of this function locally and test individual format
+  translation before merging."
+  [record]
+  (util/remove-nils-empty-maps-seqs
+  (-> record
+      (update-in-each [:AssociatedDOIs] dissoc :Type :DescriptionOfOtherType)
+      (update-in-each [:TemporalExtents] dissoc :TemporalResolution)
+      (update-in [:DOI] dissoc :PreviousVersion)
+      (dissoc :DataMaturity :OtherIdentifiers :FileNamingConvention)
+      (as-> rc
+        (let [sct (get-in rc [:SpatialExtent :SpatialCoverageType])]
+          (if (or (= "EARTH/GLOBAL" sct)
+                  (= "LUNAR" sct))
+            (update-in rc [:SpatialExtent] dissoc :SpatialCoverageType)
+            rc))))))
+
 ;; This test starts with a umm record where the values of the record
 ;; are generated with different values every time. This test takes the
 ;; UMM record and converts it into another supported format, then converts it back
@@ -236,6 +255,7 @@
           ;;    so we have to convert the value and unit in umm-record to kilometer before round-trip comparison.
           ;; 4. SwathWidth can be 1.0E-1 in umm, translating to other formats it could be changed to 0.1
           umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
+          umm-record (remove-1_18_0-change umm-record)
           umm-record (js/parse-umm-c
                         (assoc umm-record
                                :DataDates [{:Date (t/date-time 2012)
@@ -278,6 +298,7 @@
      metadata-format (gen/elements tested-collection-formats)]
     (let [;; CMR-8128 remove OrbitParameters for the same reason as the previous test.
           umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
+          umm-record (remove-1_18_0-change umm-record)
           umm-record (js/parse-umm-c
                       (assoc umm-record
                              :DataDates [{:Date (t/date-time 2012)

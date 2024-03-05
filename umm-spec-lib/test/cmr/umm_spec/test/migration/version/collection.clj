@@ -3782,3 +3782,75 @@
                                  :Name "UMM-C",
                                  :Version "1.17.2"}}
         {}))
+
+(deftest migrate-1-17-3-to-1-18-0
+  ;; "Test the migration of collections from 1.17.3 to 1.18.0."
+
+  (are3 [expected sample-collection]
+        (let [result (vm/migrate-umm {} :collection "1.17.3" "1.18.0" sample-collection)]
+          (is (= expected result)))
+
+        "Migrating related fields up to 1.18.0"
+        {:AssociatedDOIs [{:DOI "10.5067/fake.record.02"} 
+                          {:DOI "10.5067/fake.record.03"}]
+         :DOI {:DOI "10.5067/fake.record.01"}
+         :SpatialExtent {:GranuleSpatialRepresentation "NO_SPATIAL"}
+         :TemporalExtents [{:EndsAtPresentFlag false
+                            :SingleDateTimes ["2024-02-14T01:02:03Z"]}]
+         :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.0",
+                                 :Name "UMM-C",
+                                 :Version "1.18.0"}}
+        {:AssociatedDOIs [{:DOI "10.5067/fake.record.02"} 
+                          {:DOI "10.5067/fake.record.03"}]
+         :DOI {:DOI "10.5067/fake.record.01"}
+         :SpatialExtent {:GranuleSpatialRepresentation "NO_SPATIAL"}
+         :TemporalExtents [{:EndsAtPresentFlag false
+                            :SingleDateTimes ["2024-02-14T01:02:03Z"]}]
+         :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.3",
+                                 :Name "UMM-C",
+                                 :Version "1.17.3"}}))
+
+(deftest migrate-1-18-0-to-1-17-3
+  ;; "Test the migration of collections from 1.18.0 to 1.17.3."
+
+  (are3 [expected sample-collection]
+        (let [result (vm/migrate-umm {} :collection "1.18.0" "1.17.3" sample-collection)]
+          (is (= expected result)))
+
+        "Migrating related fields down to 1.17.3"
+        {:AssociatedDOIs [{:DOI "10.5067/fake.record.02"} 
+                          {:DOI "10.5067/fake.record.03"}]
+         :DOI {:DOI "10.5067/fake.record.01"}
+         :SpatialExtent {:GranuleSpatialRepresentation "NO_SPATIAL"}
+         :TemporalExtents [{:EndsAtPresentFlag false
+                            :SingleDateTimes ["2024-02-14T01:02:03Z"]}]
+         :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.17.3",
+                                 :Name "UMM-C",
+                                 :Version "1.17.3"}}
+        {:DataMaturity "Validated"
+         :FileNamingConvention {:Convention "yyyy-mm-dd.data.txt"
+                                :Description "ECSE-1474 addition to describe convention"}
+         :OtherIdentifiers [{:Identifier "C123456_Prov"
+                             :Type "ArchiveSetsNumber"}
+                            {:Identifier "ECSE-1474"
+                             :Type "Other"
+                             :DescriptionOfOtherType "ECSE-1474 addition"}] 
+         :AssociatedDOIs [{:DOI "10.5067/fake.record.02"
+                           :Type "Related Dataset"} 
+                          {:DOI "10.5067/fake.record.03"
+                           :Type "Other"
+                           :DescriptionOfOtherType "ECSE-1474 addition to describe Other DOI"}]
+         :DOI {:DOI "10.5067/fake.record.01"
+               :PreviousVersion {:Version "3.1459"
+                                 :Description "ECSE-1474 addition"
+                                 :DOI "10.5067/fake.record.04"
+                                 :Published "2024-02-22T12:00:00Z"}}
+         :SpatialExtent {:SpatialCoverageType "LUNAR"
+                         :GranuleSpatialRepresentation "NO_SPATIAL"}
+         :TemporalExtents [{:EndsAtPresentFlag false
+                            :SingleDateTimes ["2024-02-14T01:02:03Z"]
+                            :TemporalResolution {:Value 42
+                                                 :Unit "Minute"}}]
+         :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/collection/v1.18.0",
+                                 :Name "UMM-C",
+                                 :Version "1.18.0"}}))

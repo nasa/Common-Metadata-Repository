@@ -226,6 +226,8 @@
    ;; element. For ESDIS records the value of https://doi.org/ should be used.
    Authority
 
+   PreviousVersion
+
    ;; This element stores the fact that a DOI (Digital Object Identifier) is not applicable or is
    ;; unknown for this record.
    MissingReason
@@ -391,6 +393,35 @@
    Authority
   ])
 (record-pretty-printer/enable-record-pretty-printing DoiDoiType)
+
+;; Provides a DOI of the previous version of this collection. This allows users to find historical
+;; data for this collection. Note: The values should start with the directory indicator which in
+;; ESDIS' case is 10. If the DOI was registered through ESDIS, the beginning of the string should be
+;; 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL. The DOI
+;; organization that is responsible for creating the DOI is described in the Authority element. For
+;; ESDIS records the value of https://doi.org/ should be used. For those that want to specify that a
+;; DOI is not applicable or unknown for their record, use the second option.
+(defrecord PreviousVersionType
+  [
+   ;; This element stores the DOI (Digital Object Identifier) that identifies the prevoius version
+   ;; of this collection. Note: The values should start with the directory indicator which in ESDIS'
+   ;; case is 10. If the DOI was registered through ESDIS, the beginning of the string should be
+   ;; 10.5067. The DOI URL is not stored here; it should be stored as a RelatedURL.
+   Version
+
+   ;; Short description of the previous version.
+   Description
+
+   ;; This element stores the DOI (Digital Object Identifier) that identifies the collection. Note:
+   ;; The values should start with the directory indicator which in ESDIS' case is 10. If the DOI
+   ;; was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is
+   ;; not stored here; it should be stored as a RelatedURL.
+   DOI
+
+   ;; Describes the pubished date for the previous version.
+   Published
+  ])
+(record-pretty-printer/enable-record-pretty-printing PreviousVersionType)
 
 ;; Describes key bibliographic citations pertaining to the data.
 (defrecord PublicationReferenceType
@@ -570,6 +601,8 @@
    ;; period. Information includes the start and end dates of the period, duration unit and value,
    ;; and cycle duration unit and value.
    PeriodicDateTimes
+
+   TemporalResolution
   ])
 (record-pretty-printer/enable-record-pretty-printing TemporalExtentType)
 
@@ -611,6 +644,16 @@
    GetService
   ])
 (record-pretty-printer/enable-record-pretty-printing RelatedUrlType)
+
+(defrecord TemporalResolutionType
+  [
+   ;; Describes a constant or varies temporal resolution.
+   Unit
+
+   ;; The temporal resolution value.
+   Value
+  ])
+(record-pretty-printer/enable-record-pretty-printing TemporalResolutionType)
 
 ;; Information about Periodic Date Time collections, including the name of the temporal period in
 ;; addition to the start and end dates, duration unit and value, and cycle duration unit and value.
