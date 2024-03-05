@@ -313,7 +313,7 @@
    (let [docs-batches (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)
          counter (atom 0)]
      (doseq [docs-batch docs-batches]
-       (let [_ (log/info (format "DEBUGz Batch %s out of %s" counter (count docs-batches)))
+       (let [_ (log/info (format "DEBUGz Batch %s out of %s" @counter (count docs-batches)))
              _ (swap! counter inc)
              bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
              conn (context->conn context)
