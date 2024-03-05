@@ -15,9 +15,10 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer (info)]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
    [cmr.transmit.humanizer :as humanizer]))
 
@@ -28,7 +29,9 @@
 (defn create-cache-client
   "Creates an instance of the cache."
   []
-  (redis-hash-cache/create-redis-hash-cache {:keys-to-track [humanizer-alias-cache-key]}))
+  (redis-hash-cache/create-redis-hash-cache {:keys-to-track [humanizer-alias-cache-key]
+                                             :read-connection (redis-config/redis-read-conn-opts)
+                                             :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn- humanizer-group-by-field
   "A custom group-by function for use in the create-humanizer-alias-map function."

@@ -9,6 +9,7 @@
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.cache :as cache]
    [cmr.common.jobs :refer [defjob]]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.common.cache.fallback-cache :as fallback-cache]
@@ -29,7 +30,9 @@
 (defn create-has-granules-or-cwic-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
   []
-  (redis-cache/create-redis-cache {:keys-to-track [has-granules-or-cwic-cache-key]}))
+  (redis-cache/create-redis-cache {:keys-to-track [has-granules-or-cwic-cache-key]
+                                   :read-connection (redis-config/redis-read-conn-opts)
+                                   :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn create-has-granules-or-opensearch-map-cache
   "Returns a 'cache' which will contain the cached has granules map."
@@ -45,7 +48,8 @@
       ;; have only a single indexer refreshing its cache.
       (consistent-cache/create-consistent-cache
        {:hash-timeout-seconds (* 5 60)})
-      (redis-cache/create-redis-cache))))
+      (redis-cache/create-redis-cache {:read-connection (redis-config/redis-read-conn-opts)
+                                       :primary-connection (redis-config/redis-conn-opts)}))))
 
 (defn get-cwic-collections
   "Returns the collection granule count by searching elasticsearch by aggregation"

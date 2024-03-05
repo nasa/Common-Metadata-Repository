@@ -4,6 +4,7 @@
    [cmr.common.cache :as c]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.humanizer :as humanizer]))
 
@@ -14,7 +15,9 @@
 (defn create-cache-client
   "Creates an instance of the cache."
   []
-  (redis-cache/create-redis-cache {:keys-to-track [humanizer-cache-key]}))
+  (redis-cache/create-redis-cache {:keys-to-track [humanizer-cache-key]
+                                   :read-connection (redis-config/redis-read-conn-opts)
+                                   :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn- retrieve-humanizers
   [context]
