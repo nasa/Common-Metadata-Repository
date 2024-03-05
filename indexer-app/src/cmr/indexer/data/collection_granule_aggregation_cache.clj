@@ -243,6 +243,7 @@
       (partial-cache-refresh context granules-updated-in-last-n)
       (full-cache-refresh context))))
 
+;;TODO restructure the collection-granule-aggregation-cache
 (defn get-coll-gran-aggregates
   "Returns the map of granule aggregate information for the collection. Will return nil if the
    collection has no granules."

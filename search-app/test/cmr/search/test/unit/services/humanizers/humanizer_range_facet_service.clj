@@ -1,10 +1,12 @@
 (ns cmr.search.test.unit.services.humanizers.humanizer-range-facet-service
   "Testing functions used for verifying the humanizer report"
   (:require [clojure.test :refer :all]
-            [cmr.common-app.humanizer :as h]
             [cmr.common-app.test.sample-humanizer :as sh]
             [cmr.common.util :refer [are3]]
+            [cmr.redis-utils.test.test-util :as test-util]
             [cmr.search.services.humanizers.humanizer-range-facet-service :as hrfs]))
+
+(use-fixtures :once test-util/embedded-redis-server-fixture)
 
 (deftest create-facet-range-test
   "Testing converting the humanizers to search facets"
