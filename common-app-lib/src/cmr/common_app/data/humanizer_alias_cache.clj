@@ -15,7 +15,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
-   [cmr.common.log :as log :refer (info)]
+   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
    [cmr.redis-utils.config :as redis-config]
