@@ -16,7 +16,8 @@
                  [org.clojure/clojure "1.10.0"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [ring/ring-core "1.10.0"]
-                 [ring/ring-json "0.5.1"]]
+                 [ring/ring-json "0.5.1"]
+                 [com.clojure-goes-fast/clj-memory-meter "0.3.0"]]
   :plugins [[lein-shell "0.5.0"]]
   :repl-options {:init-ns user}
   :jvm-opts ^:replace ["-server"
