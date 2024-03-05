@@ -81,7 +81,7 @@
   (let [start-date (spec-time/collection-start-date collection)
         end-date (spec-time/normalized-end-date collection)
         {:keys [granule-start-date granule-end-date]}
-        (cgac/get-coll-gran-aggregates context concept-id) ;; these funcs are using this as a way to set the cache, but not using the data the comes from it...
+        (cgac/get-coll-gran-aggregates context concept-id)
         last-3-days (t/interval (t/minus (tk/now) (t/days 3)) (tk/now))
         granule-end-date (when-not (and granule-end-date
                                         (t/within? last-3-days granule-end-date))

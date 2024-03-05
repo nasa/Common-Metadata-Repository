@@ -104,8 +104,8 @@
     (info (str "Collections-for-gran-acls caches refresh complete."
          " coll-by-concept-id-cache Cache Size: " (hash-cache/cache-size coll-by-concept-id-cache coll-by-concept-id-cache-key) " bytes"))))
 
-(defn set-caches
-  "Updates collections-for-gran-acl caches for one given collection by concept id and returns found collection or nil"
+(defn set-cache
+  "Updates collections-for-gran-acl cache for one given collection by concept id and returns found collection or nil"
   [context collection-concept-id]
    (let [collection-found (fetch-collections context collection-concept-id)
          coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)]
@@ -128,7 +128,7 @@
     (if (or (nil? collection) (empty? collection))
       (do
         (info (str "Collection with concept-id " coll-concept-id " not found in cache. Will update cache and try to find."))
-        (time-strs->clj-times (set-caches context coll-concept-id)))
+        (time-strs->clj-times (set-cache context coll-concept-id)))
       (time-strs->clj-times collection))))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
