@@ -707,3 +707,30 @@
        (util/update-in-all [:TilingIdentificationSystems :Coordinate2 :MinimumValue] str)
        (util/update-in-all [:TilingIdentificationSystems :Coordinate2 :MaximumValue] str)
        (update :RelatedUrls related-url/migrating-down-to_1_17_2))))
+
+(defmethod interface/migrate-umm-version [:collection "1.17.3" "1.18.0"]
+  [context collection & _]
+  ;; No need to migrate, except for the version
+  (-> collection
+      (m-spec/update-version :collection "1.18.0")))
+
+(defmethod interface/migrate-umm-version [:collection "1.18.0" "1.17.3"]
+  [context collection & _]
+  ;; Remove Type and DescriptionOfOtherType from AssociatedDOIs;
+  ;; Remove SpatialCoverageType from SpatialExtent if it's "LUNAR" and "EARTH/GLOBAL";
+  ;; Remove PreviousVersion from DOI;
+  ;; Remove DataMaturity, OtherIdentifiers and FileNamingConvention;
+  ;; Remove TemporalResolution from TemporalExtents.
+  (util/remove-nils-empty-maps-seqs
+   (-> collection
+       (m-spec/update-version :collection "1.17.3")
+       (update-in-each [:AssociatedDOIs] dissoc :Type :DescriptionOfOtherType)
+       (update-in-each [:TemporalExtents] dissoc :TemporalResolution)
+       (update-in [:DOI] dissoc :PreviousVersion)
+       (dissoc :DataMaturity :OtherIdentifiers :FileNamingConvention)
+       (as-> rc
+         (let [sct (get-in rc [:SpatialExtent :SpatialCoverageType])]
+           (if (or (= "EARTH/GLOBAL" sct)
+                   (= "LUNAR" sct))
+             (update-in rc [:SpatialExtent] dissoc :SpatialCoverageType)
+             rc))))))
