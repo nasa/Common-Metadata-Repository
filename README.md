@@ -8,7 +8,7 @@ Search API provides access to this metadata.
 
 ## License
 
-> Copyright © 2007-2023 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
+> Copyright © 2007-2024 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.
 >
 > Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License.
 > You may obtain a copy of the License at
@@ -72,11 +72,11 @@ echo "source `pwd`/resources/shell/cmr-bash-autocomplete" >> ~/.profile
 When running CMR locally, the values in this file do not need to be change, CMR just expects that they exist.
 
    ``` clojure
-   {:dev-config {:env {:cmr-metadata-db-password "CHANGE_ME"
-                       :cmr-sys-dba-password "CHANGE_ME"
-                       :cmr-bootstrap-password "CHANGE_ME"
-                       :cmr-ingest-password "CHANGE_ME"
-                       :cmr-urs-password "CHANGE_ME"}}}
+   {:dev-config {:env {:cmr-metadata-db-password "<YOUR PASSWORD HERE>"
+                       :cmr-sys-dba-password "<YOUR PASSWORD HERE>"
+                       :cmr-bootstrap-password "<YOUR PASSWORD HERE>"
+                       :cmr-ingest-password "<YOUR PASSWORD HERE>"
+                       :cmr-urs-password "<YOUR PASSWORD HERE>"}}}
    ```
 
 2. `./bin/cmr setup dev`
