@@ -412,6 +412,6 @@
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (do
-          (error "lookup-by-measurement redis carmine exception. Will return nil result." e)
+          (error "lookup-by-measurement found redis carmine exception. Will return nil result." e)
           nil)
         (throw e)))))

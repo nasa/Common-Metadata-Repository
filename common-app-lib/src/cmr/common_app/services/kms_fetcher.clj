@@ -79,7 +79,7 @@
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (do
-          (error "lookup-by-measurement redis carmine exception. Will return nil result." e)
+          (error "fetch-gcmd-keywords-map found redis carmine exception. Will return nil result." e)
           nil)
         (throw e)))))
 
@@ -103,7 +103,7 @@
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
         (do
-          (error "lookup-by-measurement redis carmine exception. Will return nil result." e)
+          (error "get-kms-index found redis carmine exception. Will return nil result." e)
           nil)
         (throw e)))))
 
