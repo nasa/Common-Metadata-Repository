@@ -256,9 +256,7 @@
         (get keywords (util/safe-lowercase short-name))))
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (do
-          (error "lookup-by-short-name found redis carmine exception. Will return nil result." e)
-          nil)
+        (error "lookup-by-short-name found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
 (defn lookup-by-location-string
@@ -278,9 +276,7 @@
             kwords))))
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (do
-          (error "lookup-by-location-string found redis carmine exception. Will return nil result." e)
-          nil)
+        (error "lookup-by-location-string found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
 (defn- remove-long-name-from-kms-index
@@ -315,9 +311,7 @@
       (get-in value [comparison-map]))
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (do
-          (error "lookup-by-umm-c-keyword-data-format found redis carmine exception. Will return nil result." e)
-          nil)
+        (error "lookup-by-umm-c-keyword-data-format found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
 (defn lookup-by-umm-c-keyword-platforms
@@ -348,9 +342,7 @@
             (get comparison-map))))
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (do
-          (error "lookup-by-umm-c-keyword-platforms found redis carmine exception. Will return nil result." e)
-          nil)
+        (error "lookup-by-umm-c-keyword-platforms found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
 (defn lookup-by-umm-c-keyword
@@ -378,9 +370,7 @@
           (get-in value [comparison-map]))))
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (do
-          (error "lookup-by-umm-c-keyword found redis carmine exception. Will return nil result." e)
-          nil)
+        (error "lookup-by-umm-c-keyword found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
 (defn lookup-by-measurement
@@ -411,7 +401,5 @@
         (seq invalid-measurements)))
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (do
-          (error "lookup-by-measurement found redis carmine exception. Will return nil result." e)
-          nil)
+        (error "lookup-by-measurement found redis carmine exception. Will return nil result." e)
         (throw e)))))

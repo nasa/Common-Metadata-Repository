@@ -78,9 +78,7 @@
                   [keyword-scheme (get kms-cache-value keyword-scheme)])))))
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (do
-          (error "fetch-gcmd-keywords-map found redis carmine exception. Will return nil result." e)
-          nil)
+        (error "fetch-gcmd-keywords-map found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
 (defn get-kms-index
@@ -102,9 +100,7 @@
             kms-index))))
     (catch Exception e
       (if (clojure.string/includes? (ex-message e) "Carmine connection error")
-        (do
-          (error "get-kms-index found redis carmine exception. Will return nil result." e)
-          nil)
+        (error "get-kms-index found redis carmine exception. Will return nil result." e)
         (throw e)))))
 
 (defn refresh-kms-cache
