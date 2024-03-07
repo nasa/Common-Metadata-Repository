@@ -166,11 +166,11 @@
   (index-set-svc/reset context)
   (create-indexes context))
 
-(defrecord ESstore 
-  [;; configuration of host, port and admin-token for elasticsearch 
+(defrecord ESstore
+  [;; configuration of host, port and admin-token for elasticsearch
    config
 
-   ;; The connection to elasticsearch 
+   ;; The connection to elasticsearch
    conn]
 
 
@@ -310,11 +310,16 @@
   ([context docs]
    (bulk-index-documents context docs nil))
   ([context docs {:keys [all-revisions-index?]}]
-   (doseq [docs-batch (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)]
-     (let [bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
-           conn (context->conn context)
-           response (es-helper/bulk conn bulk-operations)]
-       (handle-bulk-index-response response)))))
+   (let [batch-size (min MAX_BULK_OPERATIONS_PER_REQUEST (count docs))]
+     (loop [remaining-docs docs]
+       (when (seq remaining-docs)
+         (let [docs-batch (take batch-size remaining-docs)
+               remaining-docs (drop batch-size remaining-docs)
+               bulk-operations (cmr-bulk/create-bulk-index-operations docs-batch all-revisions-index?)
+               conn (context->conn context)
+               response (es-helper/bulk conn bulk-operations)]
+           (handle-bulk-index-response response)
+           (recur remaining-docs)))))))
 
 (defn save-document-in-elastic
   "Save the document in Elasticsearch, raise error if failed."
