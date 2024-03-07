@@ -311,6 +311,7 @@
    (bulk-index-documents context docs nil))
   ([context docs {:keys [all-revisions-index?]}]
    (let [batch-size (min MAX_BULK_OPERATIONS_PER_REQUEST (count docs))]
+     (prn docs)
      (loop [remaining-docs docs]
        (when (seq remaining-docs)
          (let [docs-batch (take batch-size remaining-docs)
