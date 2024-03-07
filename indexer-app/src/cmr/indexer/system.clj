@@ -72,7 +72,7 @@
                       kl/kms-location-cache-key (kl/create-kms-location-cache)
                       kl/kms-measurement-cache-key (kl/create-kms-measurement-cache)
                       cgac/coll-gran-aggregate-cache-key (cgac/create-cache)
-                      hf/humanizer-cache-key (hf/create-cache)
+                      hf/humanizer-cache-key (hf/create-cache-client)
                       metrics-fetcher/usage-metrics-cache-key (metrics-fetcher/create-cache)
                       common-health/health-cache-key (common-health/create-health-cache)}
              :scheduler (jobs/create-scheduler

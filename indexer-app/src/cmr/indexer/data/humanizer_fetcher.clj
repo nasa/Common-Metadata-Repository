@@ -12,7 +12,7 @@
   "The cache key to use when storing with caches in the system."
   :humanizer-cache)
 
-(defn create-cache
+(defn create-cache-client
   "Creates an instance of the cache."
   []
   (redis-cache/create-redis-cache {:keys-to-track [humanizer-cache-key]
