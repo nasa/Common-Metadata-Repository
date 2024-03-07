@@ -15,7 +15,7 @@
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as mc]
-   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-for-gran-acls-caches]
+   [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as coll-for-gran-acls-caches]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]

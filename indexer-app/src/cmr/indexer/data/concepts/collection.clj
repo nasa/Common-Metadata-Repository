@@ -342,7 +342,7 @@
                            granule-end-date)
         humanized-values (humanizer/collection-humanizers-elastic context collection)
         tags (map tag/tag-association->elastic-doc tag-associations)
-        has-granules (some? (cgac/get-coll-gran-aggregates context concept-id))
+        has-granules (some? (cgac/get-coll-gran-aggregates context concept-id)) ;; this is just checking if the concept-id is in the aggregate...
         granule-data-format (get-granule-data-format
                              (get-in collection [:ArchiveAndDistributionInformation
                                                  :FileDistributionInformation]))
