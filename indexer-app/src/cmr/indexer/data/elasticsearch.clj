@@ -1,7 +1,6 @@
 (ns cmr.indexer.data.elasticsearch
   (:require
    [cheshire.core :as json]
-   [clj-memory-meter.core :as mm]
    [clj-http.client :as client]
    [cmr.common.concepts :as cs]
    [cmr.common.lifecycle :as lifecycle]
@@ -312,7 +311,7 @@
    (bulk-index-documents context docs nil))
   ([context docs {:keys [all-revisions-index?]}]
 
-   (log/info (format "DEBUGz Calling partition-all on %s docs of size %s with per_request %s and all-revisions-index? %s" (count docs) (mm/measure docs) MAX_BULK_OPERATIONS_PER_REQUEST all-revisions-index?))
+   (log/info (format "DEBUGz Calling partition-all on %s docs with per_request %s and all-revisions-index? %s" (count docs) MAX_BULK_OPERATIONS_PER_REQUEST all-revisions-index?))
    (let [docs-batches (partition-all MAX_BULK_OPERATIONS_PER_REQUEST docs)
          counter (atom 0)]
      (doseq [docs-batch docs-batches]
