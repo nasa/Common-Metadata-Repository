@@ -26,7 +26,7 @@
    ;; The connection used to get data from redis. This can either be the redis read-only replicas
    ;; or the primary node.
    read-connection
-    
+
    ;; The connection used to write data to redis.
    primary-connection]
 
@@ -47,7 +47,12 @@
 
   (key-exists
     [this key]
-    ;; key is the cache-key. Retuns true if the cache key exists in redis nil otherwise
+    ;; Parameters:
+    ;    - key is the cache-key.
+    ;    Returns:
+    ;    - true if the cache key exists in redis
+    ;    - false if key does not exist in redis
+    ;    - throws an exception if exception is returned from redis
     (let [s-key (rc/serialize key)
           exists (wcar* s-key true read-connection (carmine/exists s-key))]
       (when exists
