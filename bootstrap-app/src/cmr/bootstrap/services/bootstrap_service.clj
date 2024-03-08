@@ -20,7 +20,7 @@
   {:migrate-provider :core-async-dispatcher
    :migrate-collection :core-async-dispatcher
    :index-provider :message-queue-dispatcher
-   :index-variables :message-queue-dispatcher
+   :index-variables :synchronous-dispatcher
    :index-services :message-queue-dispatcher
    :index-tools :message-queue-dispatcher
    :index-subscriptions :message-queue-dispatcher
