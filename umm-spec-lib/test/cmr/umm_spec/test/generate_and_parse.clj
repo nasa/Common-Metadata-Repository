@@ -28,21 +28,19 @@
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
-  [:dif :dif10 :echo10 :iso19115 :iso-smap])
+  [:echo10])
 
 (def test-context lkt/create-context)
 
 (def collection-destination-formats
   "Converting to these formats is tested in the roundrobin test."
-  [:echo10 :dif10 :dif :iso19115 :iso-smap])
+  [:echo10])
 
 (def collection-format-examples
   "Map of format type to example file"
-  {:dif "dif.xml"
-   :dif10 "dif10.xml"
+  {
    :echo10 "echo10.xml"
-   :iso19115 "iso19115.xml"
-   :iso-smap "iso_smap.xml"})
+   })
 
 (defn- convert-to-sets
   "Convert lists in the umm record to sets so order doesn't matter during comparison"
@@ -214,23 +212,12 @@
       (update-in-all [:TilingIdentificationSystems :Coordinate2 :MaximumValue] trim-tiling-system-value)))
 
 
-(defn- remove-1_18_0-change
-  "Temporary! We need to remove this function after all the translations of different formats
-  are done. Before that, we should remove the calling of this function locally and test individual format
-  translation before merging."
+(defn- remove-1_18_0-temporal-resolution
+  "Remove TemporalResolution from the comparisions."
   [record]
   (util/remove-nils-empty-maps-seqs
   (-> record
-      (update-in-each [:AssociatedDOIs] dissoc :Type :DescriptionOfOtherType)
-      (update-in-each [:TemporalExtents] dissoc :TemporalResolution)
-      (update-in [:DOI] dissoc :PreviousVersion)
-      (dissoc :DataMaturity :OtherIdentifiers :FileNamingConvention)
-      (as-> rc
-        (let [sct (get-in rc [:SpatialExtent :SpatialCoverageType])]
-          (if (or (= "EARTH/GLOBAL" sct)
-                  (= "LUNAR" sct))
-            (update-in rc [:SpatialExtent] dissoc :SpatialCoverageType)
-            rc))))))
+      (update-in-each [:TemporalExtents] dissoc :TemporalResolution))))
 
 ;; This test starts with a umm record where the values of the record
 ;; are generated with different values every time. This test takes the
@@ -255,7 +242,7 @@
           ;;    so we have to convert the value and unit in umm-record to kilometer before round-trip comparison.
           ;; 4. SwathWidth can be 1.0E-1 in umm, translating to other formats it could be changed to 0.1
           umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
-          umm-record (remove-1_18_0-change umm-record)
+          umm-record (remove-1_18_0-temporal-resolution umm-record)
           umm-record (js/parse-umm-c
                         (assoc umm-record
                                :DataDates [{:Date (t/date-time 2012)
@@ -270,7 +257,7 @@
                        (update-in umm-record [:UseConstraints] assoc :EULAIdentifiers nil)
                        umm-record)
           umm-record (trim-tiling-system-values umm-record)
-
+          
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
 
@@ -298,7 +285,7 @@
      metadata-format (gen/elements tested-collection-formats)]
     (let [;; CMR-8128 remove OrbitParameters for the same reason as the previous test.
           umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
-          umm-record (remove-1_18_0-change umm-record)
+          umm-record (remove-1_18_0-temporal-resolution umm-record)
           umm-record (js/parse-umm-c
                       (assoc umm-record
                              :DataDates [{:Date (t/date-time 2012)

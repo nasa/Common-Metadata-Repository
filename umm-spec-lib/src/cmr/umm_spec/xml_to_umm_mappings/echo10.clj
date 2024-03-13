@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.xml-to-umm-mappings.echo10
+
   "Defines mappings from ECHO10 XML into UMM records"
   (:require
    [clojure.string :as string]
@@ -30,6 +30,13 @@
    "DEPRECATED" "DEPRECATED"
    "NOT APPLICABLE" "NOT APPLICABLE"})
 
+(defn fields-from-temporal-resolution
+  [element]
+  (when (value-of element "Value")
+    (zipmap [:Value :Unit] 
+            [(read-string (value-of element "Value"))
+             (value-of element "Unit")])))
+
 (defn parse-temporal
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
   [doc]
@@ -42,7 +49,10 @@
      :SingleDateTimes (values-at temporal "SingleDateTime")
      :PeriodicDateTimes (for [pdt (select temporal "PeriodicDateTime")]
                           (fields-from pdt :Name :StartDate :EndDate :DurationUnit :DurationValue
-                                       :PeriodCycleDurationUnit :PeriodCycleDurationValue))}))
+                                       :PeriodCycleDurationUnit :PeriodCycleDurationValue))
+     :TemporalResolution (when (seq (select temporal "TemporalResolution"))
+                          (for [tr (select temporal "TemporalResolution")]
+                           (fields-from-temporal-resolution tr)))}))
 
 (defn parse-characteristic
   "Returns a UMM characteristic record from an ECHO10 Characteristic element."
@@ -194,22 +204,28 @@
   "Parse the XML collection DOI into the UMM-C counterparts.
    There could be multiple DOIs under Collection, just take the first one for now."
   [doc]
-  (if-let [doi (first (select doc "Collection/DOI"))]
-    (let [doi-value (value-of doi "DOI")
-          authority (value-of doi "Authority")
-          missing-reason (value-of doi "MissingReason")
-          explanation (value-of doi "Explanation")]
-      (if (or doi-value authority)
-        {:DOI (when doi-value
-                doi-value)
-         :Authority (when authority
-                      authority)}
-        {:MissingReason (when missing-reason
-                          missing-reason)
-         :Explanation (when explanation
-                        explanation)}))
-    {:MissingReason "Unknown"
-     :Explanation "It is unknown if this record has a DOI."}))
+  (let [doi (first (select doc "Collection/DOI"))
+        previous-version (first (select doc "Collection/DOI/PreviousVersion"))]
+    (if doi
+      (let [doi-value (value-of doi "DOI")
+            authority (value-of doi "Authority")
+            previous-version (when (seq previous-version)
+                               (fields-from previous-version :Version :Description :DOI :Published))
+            missing-reason (value-of doi "MissingReason")
+            explanation (value-of doi "Explanation")]
+        (if (or doi-value authority)
+          {:DOI (when doi-value
+                  doi-value)
+           :Authority (when authority
+                        authority)
+           :PreviousVersion (when (seq previous-version)
+                              (util/remove-nil-keys previous-version))}
+          {:MissingReason (when missing-reason
+                            missing-reason)
+           :Explanation (when explanation
+                          explanation)}))
+      {:MissingReason "Unknown"
+       :Explanation "It is unknown if this record has a DOI."})))
 
 (defn- parse-associated-dois
   "Parse the XML associated DOIs into the UMM-C counterparts."
@@ -219,7 +235,19 @@
       (for [assoc-doi assoc-dois]
         {:DOI (value-of assoc-doi "DOI")
          :Title (value-of assoc-doi "Title")
-         :Authority (value-of assoc-doi "Authority")}))))
+         :Authority (value-of assoc-doi "Authority")
+         :Type (value-of assoc-doi "Type")
+         :DescriptionOfOtherType (value-of assoc-doi "DescriptionOfOtherType")}))))
+
+(defn- parse-other-identifiers
+  "Parse the XML other identifiers into the UMM-C counterparts."
+  [doc]
+  (when-let [other-identifiers (select doc "Collection/OtherIdentifiers/OtherIdentifier")]
+    (into []
+      (for [other-identifier other-identifiers]
+        {:Identifier (value-of other-identifier "Identifier")
+         :Type (value-of other-identifier "Type")
+         :DescriptionOfOtherType (value-of other-identifier "DescriptionOfOtherType")}))))
 
 (defn add-data-format
   "This function fills in the FileDistributionInformation
@@ -250,12 +278,24 @@
     (when-not (empty? distribution)
       {:FileDistributionInformation distribution})))
 
+(defn- parse-file-naming-convention
+  "Returns UMM-C FileNamingConvention map from ECHO10 XML document."
+  [doc]
+  (when-let [[fnc] (select doc "/Collection/FileNamingConvention")]
+    {:Convention  (when-let [convention (value-of fnc "Convention")]
+                    convention)
+     :Description (when-let [description (value-of fnc "Description")]
+                    description)}))
+
 (defn- parse-echo10-xml
   "Returns UMM-C collection structure from ECHO10 collection XML document."
   [context doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/Collection/DataSetId")
-   :DOI (parse-collection-doi doc)
+   :DOI (util/remove-nil-keys (parse-collection-doi doc))
    :AssociatedDOIs (parse-associated-dois doc)
+   :DataMaturity (value-of doc "/Collection/DataMaturity")
+   :FileNamingConvention (parse-file-naming-convention doc)
+   :OtherIdentifiers (parse-other-identifiers doc)
    :ShortName  (value-of doc "/Collection/ShortName")
    :Version    (value-of doc "/Collection/VersionId")
    :VersionDescription (value-of doc "/Collection/VersionDescription")

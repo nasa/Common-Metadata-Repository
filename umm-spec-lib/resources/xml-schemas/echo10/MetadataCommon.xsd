@@ -1,7 +1,7 @@
-<?xml version="1.0" encoding="us-ascii"?>
+<?xml version="1.0" encoding="utf-8"?>
 <xs:schema elementFormDefault="qualified"
 	xmlns:xs="http://www.w3.org/2001/XMLSchema">
-	<!-- spatial types -->
+	<!-- #mark - spatial types -->
 	<xs:simpleType name="CoordinateSystem">
 		<xs:restriction base="xs:string">
 			<xs:enumeration value="CARTESIAN">
@@ -237,6 +237,7 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+	<!-- #mark - Range Date Time -->
 	<xs:complexType name="RangeDateTime">
 		<xs:annotation>
 			<xs:documentation>This entity stores the start and end
@@ -257,6 +258,7 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+	<!-- #mark - OnLine Access URL Types -->
 	<xs:complexType name="ListOfOnlineAccessURLs">
 		<xs:annotation>
 			<xs:documentation>This entity stores the online URL(s) for
@@ -372,6 +374,7 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+	<!-- #mark - List of Operation Modes -->
 	<xs:complexType name="ListOfOperationModes">
 		<xs:sequence>
 			<xs:element minOccurs="0" maxOccurs="unbounded" name="OperationMode">
@@ -384,12 +387,14 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
-  <xs:simpleType name="CommonEntryId">
-	<xs:restriction base="xs:string">
-	  <xs:minLength value="1" />
-	  <xs:pattern value="[^\\/:\s]{1,255}"></xs:pattern>
-	</xs:restriction>
-  </xs:simpleType>
+	<!-- #mark Common Entry Id -->
+	<xs:simpleType name="CommonEntryId">
+		<xs:restriction base="xs:string">
+			<xs:minLength value="1" />
+			<xs:pattern value="[^\\/:\s]{1,255}"></xs:pattern>
+		</xs:restriction>
+	</xs:simpleType>
+	<!-- #mark Collection Ref -->
 	<xs:complexType name="CollectionRef">
 		<xs:annotation>
 			<xs:documentation>A reference to a collection using one of
@@ -437,10 +442,11 @@
 				</xs:element>
 			</xs:sequence>
 			<xs:sequence>
-			  	<xs:element minOccurs="1" maxOccurs="unbounded" name="EntryId" type="CommonEntryId" />
+				<xs:element minOccurs="1" maxOccurs="unbounded" name="EntryId" type="CommonEntryId" />
 			</xs:sequence>
 		</xs:choice>
 	</xs:complexType>
+	<!-- #mark Emtpy Type -->
 	<xs:complexType name="EmptyType">
 		<xs:annotation>
 			<xs:documentation>The element should contain no children. In
@@ -449,7 +455,8 @@
 				data.</xs:documentation>
 		</xs:annotation>
 	</xs:complexType>
-	<!-- common simple types -->
+	<!-- #mark - common simple types -->
+	<!-- #mark Provider Browse Elements -->
 	<xs:complexType name="ProviderBrowseElement">
 		<xs:annotation>
 			<xs:documentation>The unique identifier for a browse image
@@ -520,6 +527,7 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+	<!-- #mark Granule UR -->
 	<xs:simpleType name="GranuleUR">
 		<xs:annotation>
 			<xs:documentation>The Universal Reference ID of the granule
@@ -531,36 +539,42 @@
 			<xs:minLength value="1"></xs:minLength>
 		</xs:restriction>
 	</xs:simpleType>
+	<!-- #mark Collection Short Name Date Time -->
 	<xs:simpleType name="CollectionShortName">
 		<xs:restriction base="xs:string">
 			<xs:maxLength value="85" />
 			<xs:minLength value="1"></xs:minLength>
 		</xs:restriction>
 	</xs:simpleType>
+	<!-- #mark List of Strings -->
 	<xs:complexType name="ListOfStrings">
 		<xs:sequence>
 			<xs:element minOccurs="0" maxOccurs="unbounded" name="Item"
 				type="xs:string" />
 		</xs:sequence>
 	</xs:complexType>
+	<!-- #mark Latitude -->
 	<xs:simpleType name="Latitude">
 		<xs:restriction base="xs:decimal">
 			<xs:minInclusive value="-90.0" />
 			<xs:maxInclusive value="90.0" />
 		</xs:restriction>
 	</xs:simpleType>
+	<!-- #mark Longitude -->
 	<xs:simpleType name="Longitude">
 		<xs:restriction base="xs:decimal">
 			<xs:minInclusive value="-180.0" />
 			<xs:maxInclusive value="180.0" />
 		</xs:restriction>
 	</xs:simpleType>
+	<!-- #mark DollarAmount -->
 	<xs:simpleType name="DollarAmount">
 		<xs:restriction base="xs:decimal">
 			<xs:totalDigits value="9" />
 			<xs:fractionDigits value="2" />
 		</xs:restriction>
 	</xs:simpleType>
+	<!-- #mark List of Collection Refs -->
 	<xs:complexType name="ListOfCollectionRefs">
 		<xs:annotation>
 			<xs:documentation>A list of references to
@@ -576,6 +590,7 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+	<!-- #mark List of Granule URs -->
 	<xs:complexType name="ListOfGranuleURs">
 		<xs:annotation>
 			<xs:documentation>A list of references to
@@ -591,6 +606,7 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+	<!-- #mark List of Provider Browse Elements -->
 	<xs:complexType name="ListOfProviderBrowseIds">
 		<xs:annotation>
 			<xs:documentation>A list of references to browse
@@ -621,81 +637,110 @@
 			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
-    <xs:simpleType name="MetadataStandardName">
-      <xs:restriction base="xs:string">
-        <xs:minLength value="1" />
-        <xs:maxLength value="80" />
-      </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="MetadataStandardVersion">
-      <xs:restriction base="xs:string">
-        <xs:minLength value="1" />
-        <xs:maxLength value="80" />
-      </xs:restriction>
-    </xs:simpleType>
-    <xs:simpleType name="ProductFlag">
-      <xs:restriction base="xs:string">
-        <xs:enumeration value="DATA_PRODUCT_FILE"/>
-        <xs:enumeration value="INSTRUMENT_ANCILLARY_FILE"/>
-        <xs:enumeration value="SYSTEM/SPACECRAFT_FILE"/>
-        <xs:enumeration value="EXTERNAL_DATA"/>
-      </xs:restriction>
-    </xs:simpleType>
+	<!-- #mark Metadata Standard -->
+	<xs:simpleType name="MetadataStandardName">
+	  <xs:restriction base="xs:string">
+		<xs:minLength value="1" />
+		<xs:maxLength value="80" />
+	  </xs:restriction>
+	</xs:simpleType>
+	<xs:simpleType name="MetadataStandardVersion">
+	  <xs:restriction base="xs:string">
+		<xs:minLength value="1" />
+		<xs:maxLength value="80" />
+	  </xs:restriction>
+	</xs:simpleType>
+	<!-- #mark Product Flag -->
+	<xs:simpleType name="ProductFlag">
+	  <xs:restriction base="xs:string">
+		<xs:enumeration value="DATA_PRODUCT_FILE"/>
+		<xs:enumeration value="INSTRUMENT_ANCILLARY_FILE"/>
+		<xs:enumeration value="SYSTEM/SPACECRAFT_FILE"/>
+		<xs:enumeration value="EXTERNAL_DATA"/>
+	  </xs:restriction>
+	</xs:simpleType>
+	<!-- #mark Doi Type -->
 	<xs:complexType name="DoiType">
 		<xs:annotation>
 			<xs:documentation>This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as an OnlineResource. The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used. While this element is not required, NASA metadata providers are strongly encouraged to include DOI and DOI Authority for their collections. For those that want to specify that a DOI is not applicable for their record use the second option.</xs:documentation>
 		</xs:annotation>
-		<xs:choice>
-			<xs:sequence>
-				<xs:element name="DOI">
-					<xs:annotation>
-						<xs:documentation>This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as an OnlineResource.</xs:documentation>
-					</xs:annotation>
-					<xs:simpleType>
-						<xs:restriction base="xs:string">
-							<xs:maxLength value="1024"/>
-							<xs:minLength value="1"/>
-						</xs:restriction>
-					</xs:simpleType>
-				</xs:element>
-				<xs:element name="Authority" minOccurs="0">
-					<xs:annotation>
-						<xs:documentation>The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used.</xs:documentation>
-					</xs:annotation>
-					<xs:simpleType>
-						<xs:restriction base="xs:string">
-							<xs:maxLength value="80" />
-							<xs:minLength value="1"/>
-						</xs:restriction>
-					</xs:simpleType>
-				</xs:element>
-			</xs:sequence>
-			<xs:sequence>
-				<xs:element name="MissingReason">
-					<xs:annotation>
-						<xs:documentation>This element stores the fact that the DOI (Digital Object Identifier) is not applicable.</xs:documentation>
-					</xs:annotation>
-					<xs:simpleType>
-						<xs:restriction base="xs:string">
-							<xs:enumeration value="Not Applicable"/>
-							<xs:enumeration value="Unknown"/>
-						</xs:restriction>
-					</xs:simpleType>
-				</xs:element>
-				<xs:element name="Explanation" minOccurs="0">
-					<xs:annotation>
-						<xs:documentation>This element describes the reason the DOI is not applicable.</xs:documentation>
-					</xs:annotation>
-					<xs:simpleType>
-						<xs:restriction base="xs:string">
-							<xs:maxLength value="80" />
-							<xs:minLength value="1"/>
-						</xs:restriction>
-					</xs:simpleType>
-				</xs:element>
-			</xs:sequence>
-		</xs:choice>
+		<xs:sequence>
+			<xs:choice>
+				<xs:sequence>
+					<xs:element name="DOI">
+						<xs:annotation>
+							<xs:documentation>This element stores the DOI (Digital Object Identifier) that identifies the collection.  Note: The values should start with the directory indicator which in ESDIS' case is 10.  If the DOI was registered through ESDIS, the beginning of the string should be 10.5067. The DOI URL is not stored here; it should be stored as an OnlineResource.</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:maxLength value="1024"/>
+								<xs:minLength value="1"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="Authority" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>The DOI organization that is responsible for creating the DOI is described in the Authority element. For ESDIS records the value of https://doi.org/ should be used.</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:maxLength value="80" />
+								<xs:minLength value="1"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="PreviousVersion" type="PreviousVersionType" minOccurs="0"/>
+				</xs:sequence>
+				<xs:sequence>
+					<xs:element name="MissingReason">
+						<xs:annotation>
+							<xs:documentation>This element stores the fact that the DOI (Digital Object Identifier) is not applicable.</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:enumeration value="Not Applicable"/>
+								<xs:enumeration value="Unknown"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+					<xs:element name="Explanation" minOccurs="0">
+						<xs:annotation>
+							<xs:documentation>This element describes the reason the DOI is not applicable.</xs:documentation>
+						</xs:annotation>
+						<xs:simpleType>
+							<xs:restriction base="xs:string">
+								<xs:maxLength value="80" />
+								<xs:minLength value="1"/>
+							</xs:restriction>
+						</xs:simpleType>
+					</xs:element>
+				</xs:sequence>
+			</xs:choice>
+		</xs:sequence>
 	</xs:complexType>
+	<xs:complexType name="PreviousVersionType">
+		<xs:annotation>
+			<xs:documentation>
+				The DOI Previous Version provides a record of every time that a
+				DOI was updated and links to the DOI landing page for the
+				previous version.
+			</xs:documentation>
+		</xs:annotation>
+		<xs:sequence>
+			<xs:element name="Version" type="xs:string" minOccurs="0"/>
+			<xs:element name="Description" type="xs:string" minOccurs="0"/>
+			<xs:element name="DOI">
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:maxLength value="1024"/>
+						<xs:minLength value="1"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="Published" type="xs:string" minOccurs="0"/>
+		</xs:sequence>
+	</xs:complexType>
+	<!-- #mark Associated Doi -->
 	<xs:complexType name="AssociatedDoiType">
 		<xs:annotation>
 			<xs:documentation>This element stores DOIs that are associated with the collection
@@ -749,11 +794,65 @@
 				</xs:annotation>
 				<xs:simpleType>
 					<xs:restriction base="xs:string">
-						<xs:maxLength value="80" />
+						<xs:maxLength value="80"/>
 						<xs:minLength value="1"/>
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:element>
+			<xs:element name="Type" minOccurs="0">
+				<xs:annotation>
+					<xs:documentation>
+						The Associated DOI Type element is used to inform users
+						about what kind or type of DOI association is related to
+						the element value. The "DescriptionOfOtherType" describes
+						what is the Other value populated in the type field of
+						the Associated DOI.
+					</xs:documentation>
+				</xs:annotation>
+				<xs:simpleType>
+					<xs:restriction base="xs:string">
+						<xs:enumeration value="Child Dataset"/>
+						<xs:enumeration value="Collaborative/Other Agency"/>
+						<xs:enumeration value="Field Campaign"/>
+						<xs:enumeration value="Parent Dataset"/>
+						<xs:enumeration value="Related Dataset"/>
+						<xs:enumeration value="Other"/>
+					</xs:restriction>
+				</xs:simpleType>
+			</xs:element>
+			<xs:element name="DescriptionOfOtherType" minOccurs="0" type="string-1k">
+				<xs:annotation>
+					<xs:documentation>
+						The "DescriptionOfOtherType" describes what is the Other
+						value populated in the type field of the Associated DOI.
+					</xs:documentation>
+				</xs:annotation>
+			</xs:element>
 		</xs:sequence>
 	</xs:complexType>
+
+	<!-- *********************************************************** -->
+	<!-- #mark Standard Strings -->
+
+	<xs:simpleType name="string-80">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="80"/>
+			<xs:minLength value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="string-1k">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="1024"/>
+			<xs:minLength value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+
+	<xs:simpleType name="string-4000">
+		<xs:restriction base="xs:string">
+			<xs:maxLength value="4000"/>
+			<xs:minLength value="1"/>
+		</xs:restriction>
+	</xs:simpleType>
+
 </xs:schema>

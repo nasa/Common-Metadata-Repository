@@ -1,0 +1,117 @@
+<!--
+To validate, use the validator in the dif-schema as such:
+>.../dif-schemas/resources/verification/run.sh \
+	-s schemas/10.0/Collection.xsd \
+	-x samples/ecse-1475.xml
+-->
+<Collection>
+	<ShortName>ECSE-1475</ShortName>
+	<VersionId>1</VersionId>
+
+	<!-- ******************************************************************* -->
+	<!-- #mark Added Other Identifiers -->
+	<OtherIdentifiers>
+		<OtherIdentifier>
+			<Identifier>ECSE-1475-Internal</Identifier>
+			<Type>Other</Type>
+			<DescriptionOfOtherType>Jira number</DescriptionOfOtherType>
+		</OtherIdentifier>
+		<OtherIdentifier>
+			<Identifier>ECSE-1475-Internal</Identifier>
+			<Type>ArchiveSetsNumber</Type>
+		</OtherIdentifier>
+	</OtherIdentifiers>
+	<!-- end -->
+
+	<InsertTime>2024-02-14T09:34:00</InsertTime>
+	<LastUpdate>2024-02-14T16:00:00</LastUpdate>
+	<DeleteTime>2034-01-10T01:02:03</DeleteTime>
+	<LongName>Ticket ECSE-1475 - CMR Landing page Support</LongName>
+	<DataSetId>Fake-42:ECS-1475</DataSetId>
+
+	<!-- ******************************************************************* -->
+	<!-- #mark Added Data Maturity -->
+	<DataMaturity>Validated</DataMaturity>
+	<!-- end -->
+
+	<Description>
+		This ticket describes the new fields being added to support the CMR
+		Landing Page Effort.
+
+		Changes include:
+
+		* Added Other Identifiers
+		* Added Data Maturity
+		* Added Previous DOI Versions
+		* Added Associated DOI Type and Description
+		* Added Temporal Resolution
+		* Added File Naming Convention
+		* Updated Enum for Spatial Coverage Type
+	</Description>
+
+	<DOI>
+		<DOI>10.1234/NASA/Example.01</DOI>
+
+		<!-- *************************************************************** -->
+		<!-- #mark Added Previous Versions -->
+		<PreviousVersion>
+			<Version>A.1</Version>
+			<Description>The version before this one</Description>
+			<DOI>10.1234/NASA/Example.02</DOI>
+			<Published>2024-02-14T08:00:00Z</Published>
+		</PreviousVersion>
+		<!-- end -->
+
+	</DOI>
+
+	<AssociatedDOIs>
+		<AssociatedDOI>
+			<DOI>10.1234/NASA/Example.03.1</DOI>
+			<!-- *********************************************************** -->
+			<!-- #mark Added Associated DOI Type and Description -->
+			<Type>Other</Type>
+			<DescriptionOfOtherType>Similar DataSet</DescriptionOfOtherType>
+			<!-- end -->
+
+		</AssociatedDOI>
+		<AssociatedDOI>
+			<DOI>10.1234/NASA/Example.03.2</DOI>
+			<!-- *********************************************************** -->
+			<!-- #mark Added Associated DOI Type and Description -->
+			<Type>Related Dataset</Type>
+			<!-- end -->
+
+		</AssociatedDOI>
+	</AssociatedDOIs>
+
+	<Temporal>
+		<SingleDateTime>2024-02-14T13:14:15Z</SingleDateTime>
+
+		<!-- *************************************************************** -->
+		<!-- #mark Added Temporal Resolution -->
+		<TemporalResolution>
+			<Value>42</Value>
+			<Unit>Year</Unit>
+		</TemporalResolution>
+		<!-- end -->
+
+	</Temporal>
+
+	<!-- ******************************************************************* -->
+	<!-- #mark Added File Naming Convention -->
+	<FileNamingConvention>
+		<Convention>YYYY-MM-DD.Short-Name</Convention>
+		<Description>ISO date followed by the short name</Description>
+	</FileNamingConvention>
+	<!-- end -->
+
+	<Spatial>
+
+		<!-- *************************************************************** -->
+		<!-- #mark Updated Enum for Spatial Coverage Type -->
+		<SpatialCoverageType>LUNAR</SpatialCoverageType>
+		<!-- end -->
+
+		<GranuleSpatialRepresentation>CARTESIAN</GranuleSpatialRepresentation>
+	</Spatial>
+</Collection>

@@ -114,6 +114,8 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       </xs:element>
     </xs:sequence>
   </xs:complexType>
+
+  <!-- #mark Collection Type -->
   <xs:complexType name="Collection">
     <xs:annotation>
       <xs:documentation>
@@ -158,6 +160,38 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
+
+      <!-- #mark - Other Identifiers -->
+      <xs:element name="OtherIdentifiers" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            Provides additional or provider defined identifiers of the collection.
+            When the Type is set to Other, then a value should be provided for
+            the DescriptionOfOtherType element.
+          </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="OtherIdentifier" minOccurs="1" maxOccurs="unbounded">
+              <xs:complexType>
+                <xs:sequence>
+                  <xs:element name="Identifier" type="string-1k"/>
+                  <xs:element name="Type">
+                    <xs:simpleType>
+                      <xs:restriction base="xs:string">
+                        <xs:enumeration value="ArchiveSetsNumber"/>
+                        <xs:enumeration value="Other"/>
+                      </xs:restriction>
+                    </xs:simpleType>
+                  </xs:element>
+                  <xs:element name="DescriptionOfOtherType" type="string-1k" minOccurs="0"/>
+                </xs:sequence>
+              </xs:complexType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
       <xs:element name="InsertTime" type="xs:dateTime">
         <xs:annotation>
           <xs:documentation>The insert date/time the collection
@@ -172,8 +206,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           data provider.</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" name="DeleteTime"
-      type="xs:dateTime">
+      <xs:element minOccurs="0" name="DeleteTime" type="xs:dateTime">
         <xs:annotation>
           <xs:documentation>The date the collection is or is
           planned to be deleted from the data provider's database.
@@ -210,6 +243,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
+      <xs:element name="DataMaturity" type="DataMaturityType" minOccurs="0"/>
       <xs:element name="Description">
         <xs:annotation>
           <xs:documentation>This attribute identifies the major
@@ -243,37 +277,43 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       </xs:element>
       <xs:element minOccurs="0" name="CollectionDataType">
         <xs:annotation>
-          <xs:documentation> This element is used to identify the collection's ready for end user consumption latency from when the data was acquired by an instrument. NEAR_REAL_TIME is defined to be ready for end user consumption 1 to 3 hours after data acquisition. LOW_LATENCY is defined to be ready for consumption 3 to 24 hours after data acquisition. EXPEDITED is defined to be 1 to 4 days after data acquisition. SCIENCE_QUALITY is defined to mean that a collection has been fully and completely processed which usually takes between 2 to 3 weeks after data acquisition. OTHER is defined for collection where the latency is between EXPEDITED and SCIENCE_QUALITY </xs:documentation>
+          <xs:documentation>This element is used to identify the collections ready for end user consumption latency from when the data was acquired by an instrument. NEAR_REAL_TIME is defined to be ready for end user consumption 1 to 3 hours after data acquisition. LOW_LATENCY is defined to be ready for consumption 3 to 24 hours after data acquisition. EXPEDITED is defined to be 1 to 4 days after data acquisition. SCIENCE_QUALITY is defined to mean that a collection has been fully and completely processed which usually takes between 2 to 3 weeks after data acquisition. OTHER is defined for collection where the latency is between EXPEDITED and SCIENCE_QUALITY.</xs:documentation>
         </xs:annotation>
         <xs:simpleType>
           <xs:restriction base="xs:string">
             <xs:enumeration value="SCIENCE_QUALITY">
               <xs:annotation>
-                <xs:documentation> All data products that have been fully and completely processed which usually takes between 2 to 3 weeks after data acquisition </xs:documentation>
+                <xs:documentation>All data products that have been fully and completely processed which usually takes between 2 to 3 weeks after data acquisition.</xs:documentation>
               </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="NEAR_REAL_TIME">
               <xs:annotation>
-                <xs:documentation> The data is ready for end user consumption 1 to 3 hours after data acquisition. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived </xs:documentation>
+                <xs:documentation>The data is ready for end user consumption 1 to 3 hours after data acquisition. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived.</xs:documentation>
               </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="LOW_LATENCY">
               <xs:annotation>
-                <xs:documentation> The data is ready for end user consumption 3 to 24 hours after data acquisition. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived </xs:documentation>
+                <xs:documentation>The data is ready for end user consumption 3 to 24 hours after data acquisition. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived.</xs:documentation>
               </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="EXPEDITED">
               <xs:annotation>
-                <xs:documentation> The data is ready for end user consumption 1 to 4 days after data acquisition. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived </xs:documentation>
+                <xs:documentation>The data is ready for end user consumption 1 to 4 days after data acquisition. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived.</xs:documentation>
               </xs:annotation>
             </xs:enumeration>
             <xs:enumeration value="OTHER">
               <xs:annotation>
-                <xs:documentation> The data is ready for end user consumption between the EXPEDITED and SCIENCE_QUALITY acquisition timeframes. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived </xs:documentation>
+                <xs:documentation>The data is ready for end user consumption between the EXPEDITED and SCIENCE_QUALITY acquisition timeframes. This data is not fully processed and is not retained by EOSDIS once the SCIENCE_QUALITY product is archived.</xs:documentation>
               </xs:annotation>
             </xs:enumeration>
           </xs:restriction>
         </xs:simpleType>
+      </xs:element>
+      <xs:element name="StandardProduct" type="xs:boolean" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>The indication of whether this
+          collection is standard product.</xs:documentation>
+        </xs:annotation>
       </xs:element>
       <xs:element name="Orderable" type="xs:boolean" minOccurs="0">
         <xs:annotation>
@@ -498,7 +538,10 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           collection.</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" name="Temporal" type="Temporal" />
+
+      <!-- #mark Temporal -->
+      <xs:element minOccurs="0" name="Temporal" type="TemporalType" />
+
       <xs:element minOccurs="0" name="Contacts"
       type="ListOfContacts" />
       <xs:element minOccurs="0" name="ScienceKeywords"
@@ -535,6 +578,24 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       type="ListOfOnlineResources" />
       <xs:element minOccurs="0" name="AssociatedDIFs"
       type="ListOfAssociatedDIFs" />
+
+      <!-- #mark File Naming Convention -->
+      <xs:element name="FileNamingConvention" minOccurs="0">
+        <xs:annotation>
+          <xs:documentation>
+            The File Naming Convention refers to the naming convention of the
+            data set's (Collection's) data files along with a description of the
+            granule file construction.
+          </xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Convention" type="string-4000"/>
+            <xs:element name="Description" type="string-4000" minOccurs="0"/>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
+
       <xs:element minOccurs="0" name="Spatial" type="Spatial" />
       <xs:element minOccurs="0" name="MetadataStandardName" type="MetadataStandardName" />
       <xs:element minOccurs="0" name="MetadataStandardVersion" type="MetadataStandardVersion" />
@@ -634,6 +695,17 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
         <xs:annotation>
           <xs:documentation>This sub-element if true, describes to end users and machines that this collection's data is free of charge and open for any use the user sees fit.</xs:documentation>
         </xs:annotation>
+      </xs:element>
+      <xs:element name="EULAIdentifier" minOccurs="0" maxOccurs="unbounded">
+        <xs:annotation>
+          <xs:documentation>Allows an End User License Agreement to be associated with a collection. This allows a service to check if an end user has accepted a EULA for this collection (data set) before it will allow data to be downloaded or used.</xs:documentation>
+        </xs:annotation>
+        <xs:simpleType>
+            <xs:restriction base="xs:string">
+              <xs:minLength value="1" />
+              <xs:maxLength value="40" />
+            </xs:restriction>
+          </xs:simpleType>
       </xs:element>
       <xs:choice minOccurs="0">
         <xs:element name="LicenseURL" type="OnlineResource"/>
@@ -1461,7 +1533,9 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       <xs:element name="EntryId" type="CommonEntryId"/>
     </xs:sequence>
   </xs:complexType>
-  <xs:complexType name="Temporal">
+
+  <!-- #mark TemporalType -->
+  <xs:complexType name="TemporalType">
     <xs:annotation>
       <xs:documentation>This entity contains records, which
       describe the basis of the time system used for a specific
@@ -1507,16 +1581,14 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           </xs:restriction>
         </xs:simpleType>
       </xs:element>
-      <xs:element minOccurs="0" name="PrecisionOfSeconds"
-      type="xs:int">
+      <xs:element minOccurs="0" name="PrecisionOfSeconds" type="xs:int">
         <xs:annotation>
           <xs:documentation>The precision (position in number of
           places to right of decimal point) of seconds used in
           measurement.</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element minOccurs="0" name="EndsAtPresentFlag"
-      type="xs:boolean">
+      <xs:element minOccurs="0" name="EndsAtPresentFlag" type="xs:boolean">
         <xs:annotation>
           <xs:documentation>This attribute will denote that a data
           collection which covers, temporally, a discontinuous
@@ -1534,8 +1606,32 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
         <xs:element maxOccurs="unbounded" name="PeriodicDateTime"
         type="PeriodicDateTime" />
       </xs:choice>
+      <xs:element minOccurs="0" name="TemporalResolution">
+        <xs:complexType>
+          <xs:sequence>
+            <xs:element name="Value" type="xs:string"/>
+            <xs:element name="Unit">
+              <xs:simpleType>
+                <xs:restriction base="xs:string">
+                  <xs:enumeration value="Constant"/>
+                  <xs:enumeration value="Varies"/>
+                  <xs:enumeration value="Second"/>
+                  <xs:enumeration value="Minute"/>
+                  <xs:enumeration value="Hour"/>
+                  <xs:enumeration value="Day"/>
+                  <xs:enumeration value="Week"/>
+                  <xs:enumeration value="Month"/>
+                  <xs:enumeration value="Year"/>
+                  <xs:enumeration value="Diurnal"/>
+                </xs:restriction>
+              </xs:simpleType>
+            </xs:element>
+          </xs:sequence>
+        </xs:complexType>
+      </xs:element>
     </xs:sequence>
   </xs:complexType>
+
   <xs:complexType name="PeriodicDateTime">
     <xs:annotation>
       <xs:documentation>This entity contains the name of the
@@ -1642,11 +1738,13 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
     </xs:annotation>
     <xs:sequence>
       <xs:element name="MinimumValue" minOccurs="0"
-      type="xs:decimal" />
+      type="xs:string" />
       <xs:element name="MaximumValue" minOccurs="0"
-      type="xs:decimal" />
+      type="xs:string" />
     </xs:sequence>
   </xs:complexType>
+
+  <!-- #mark Spatial -->
   <xs:complexType name="Spatial">
     <xs:annotation>
       <xs:documentation>This entity contains collection's spatial
@@ -1680,6 +1778,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
       </xs:element>
     </xs:sequence>
   </xs:complexType>
+
   <xs:complexType name="HorizontalSpatialDomain">
     <xs:annotation>
       <xs:documentation>This entity holds collection horizontal
@@ -2543,7 +2642,7 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           more information.</xs:documentation>
         </xs:annotation>
       </xs:element>
-      <xs:element name="Temporal" type="Temporal">
+      <xs:element name="Temporal" type="TemporalType">
         <xs:annotation>
           <xs:documentation>Updates the temporal information for
           the collection. The entire temporal information will be
@@ -2870,6 +2969,17 @@ xmlns:xs="http://www.w3.org/2001/XMLSchema">
           format.</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DataMaturityType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="Beta"/>
+      <xs:enumeration value="Provisional"/>
+      <xs:enumeration value="Validated"/>
+      <xs:enumeration value="Stage 1 Validation"/>
+      <xs:enumeration value="Stage 2 Validation"/>
+      <xs:enumeration value="Stage 3 Validation"/>
+      <xs:enumeration value="Stage 4 Validation"/>
     </xs:restriction>
   </xs:simpleType>
 </xs:schema>
