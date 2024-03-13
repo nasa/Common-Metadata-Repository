@@ -1,4 +1,4 @@
-
+(ns cmr.umm-spec.xml-to-umm-mappings.echo10
   "Defines mappings from ECHO10 XML into UMM records"
   (:require
    [clojure.string :as string]
