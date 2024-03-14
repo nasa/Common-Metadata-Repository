@@ -180,6 +180,7 @@
         (-> doi
             (update-in [:PreviousVersion :Published] #(when % (str %)))
             (update-in [:PreviousVersion] util/remove-nil-keys)
+            (update-in [:PreviousVersion] cmn/map->PreviousVersionType)
             util/remove-nil-keys)
         (util/remove-nil-keys doi))))
 

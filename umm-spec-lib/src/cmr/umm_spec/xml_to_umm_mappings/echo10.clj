@@ -9,6 +9,7 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
+   [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
@@ -31,11 +32,15 @@
    "NOT APPLICABLE" "NOT APPLICABLE"})
 
 (defn fields-from-temporal-resolution
+  "Get the TemporalResolution and change the Value to number."
   [element]
-  (when (value-of element "Value")
-    (zipmap [:Value :Unit] 
-            [(read-string (value-of element "Value"))
-             (value-of element "Unit")])))
+  (when (value-of element "Unit")
+    (util/remove-nil-keys
+      (let [unit-value (value-of element "Unit")
+            value (value-of element "Value")
+            value-number (when value (read-string value))]
+        {:Unit unit-value
+         :Value value-number}))))
 
 (defn parse-temporal
   "Returns seq of UMM temporal extents from an ECHO10 XML document."
@@ -219,7 +224,8 @@
            :Authority (when authority
                         authority)
            :PreviousVersion (when (seq previous-version)
-                              (util/remove-nil-keys previous-version))}
+                              (cmn/map->PreviousVersionType
+                                (util/remove-nil-keys previous-version)))}
           {:MissingReason (when missing-reason
                             missing-reason)
            :Explanation (when explanation

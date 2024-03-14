@@ -212,13 +212,6 @@
       (update-in-all [:TilingIdentificationSystems :Coordinate2 :MaximumValue] trim-tiling-system-value)))
 
 
-(defn- remove-1_18_0-temporal-resolution
-  "Remove TemporalResolution from the comparisions."
-  [record]
-  (util/remove-nils-empty-maps-seqs
-  (-> record
-      (update-in-each [:TemporalExtents] dissoc :TemporalResolution))))
-
 ;; This test starts with a umm record where the values of the record
 ;; are generated with different values every time. This test takes the
 ;; UMM record and converts it into another supported format, then converts it back
@@ -242,7 +235,6 @@
           ;;    so we have to convert the value and unit in umm-record to kilometer before round-trip comparison.
           ;; 4. SwathWidth can be 1.0E-1 in umm, translating to other formats it could be changed to 0.1
           umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
-          umm-record (remove-1_18_0-temporal-resolution umm-record)
           umm-record (js/parse-umm-c
                         (assoc umm-record
                                :DataDates [{:Date (t/date-time 2012)
@@ -285,7 +277,6 @@
      metadata-format (gen/elements tested-collection-formats)]
     (let [;; CMR-8128 remove OrbitParameters for the same reason as the previous test.
           umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
-          umm-record (remove-1_18_0-temporal-resolution umm-record)
           umm-record (js/parse-umm-c
                       (assoc umm-record
                              :DataDates [{:Date (t/date-time 2012)

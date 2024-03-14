@@ -95,6 +95,13 @@ To validate, use the validator in the dif-schema as such:
 		</TemporalResolution>
 		<!-- end -->
 
+		<!-- Also Supported -->
+		<!--
+		<TemporalResolution>
+			<Unit>Constant</Unit>
+		</TemporalResolution>
+		-->
+
 	</Temporal>
 
 	<!-- ******************************************************************* -->
