@@ -58,7 +58,7 @@ To validate, use the validator in the dif-schema as such:
 			<Version>A.1</Version>
 			<Description>The version before this one</Description>
 			<DOI>10.1234/NASA/Example.02</DOI>
-			<Published>2024-02-14T08:00:00Z</Published>
+			<Published>2024-02-14T08:01:00Z</Published>
 		</PreviousVersion>
 		<!-- end -->
 

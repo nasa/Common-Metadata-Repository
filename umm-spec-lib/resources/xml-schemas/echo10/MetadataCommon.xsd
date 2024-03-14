@@ -737,7 +737,7 @@
 					</xs:restriction>
 				</xs:simpleType>
 			</xs:element>
-			<xs:element name="Published" type="xs:string" minOccurs="0"/>
+                        <xs:element name="Published" type="xs:dateTime" minOccurs="0"/>
 		</xs:sequence>
 	</xs:complexType>
 	<!-- #mark Associated Doi -->
