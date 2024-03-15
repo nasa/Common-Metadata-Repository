@@ -9,7 +9,7 @@
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.341.0",
     "axios": "^1.6.4",
-    "node-fetch": "^2.6.7",
+    "node-fetch": "^3.3.2",
     "redis": "^2.8.0",
     "sharp": "^0.32.6"
   },
