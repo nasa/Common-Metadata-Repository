@@ -3048,7 +3048,7 @@ Example: `science_keywords_h[0][topic]=Oceans`
 
 Example curl calls:
 
-    %CMR-ENDPOINT%/search/collections.json?include_facets=v2&hierarchical_facets=true&science_keywords_h%5B0%5D%5Btopic%5D=Oceans
+    %CMR-ENDPOINT%/collections.json?include_facets=v2&hierarchical_facets=true&science_keywords_h%5B0%5D%5Btopic%5D=Oceans
 
 ##### Responses
 
