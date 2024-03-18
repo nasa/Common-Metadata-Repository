@@ -4,7 +4,7 @@
     [clojure.string :as string]
     [cmr.acl.core :as acl-core]
     [cmr.common-app.api.routes :as common-routes]
-    [cmr.common-app.services.search.params :as common-params]
+    [cmr.elastic-utils.es-params-converter :as common-params]
     [cmr.common.log :refer [debug info warn error]]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as svc-errors]

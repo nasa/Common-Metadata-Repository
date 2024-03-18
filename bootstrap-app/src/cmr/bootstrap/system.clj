@@ -20,7 +20,7 @@
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common-app.services.search.elastic-search-index :as search-index]
-   [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]
+   [cmr.elastic-utils.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.common.api.web-server :as web]
    [cmr.common.cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]

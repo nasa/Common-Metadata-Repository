@@ -1,7 +1,7 @@
 (ns cmr.search.services.parameters.converters.orbit-number
   "Contains functions for converting orbit number search parameters to a query model."
   (:require [cmr.search.models.query :as qm]
-            [cmr.common-app.services.search.params :as p]
+            [cmr.elastic-utils.es-params-converter :as p]
             [clojure.string :as str]
             [cmr.search.services.messages.orbit-number-messages :as msg]
             [cmr.common.services.errors :as errors]

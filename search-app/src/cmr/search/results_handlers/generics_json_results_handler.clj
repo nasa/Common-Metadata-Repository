@@ -9,7 +9,7 @@
    [cmr.common.util :as util]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
+   [cmr.elastic-utils.es-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.results-model :as results]
    [cmr.metadata-db.services.concept-service :as metadata-db]

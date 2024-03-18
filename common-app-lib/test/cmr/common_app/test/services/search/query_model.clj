@@ -2,7 +2,7 @@
   (:require [clojure.test :refer :all]
             [cmr.common-app.test.services.search.helpers :refer :all]
             [cmr.common-app.services.search.query-model :as q]
-            [cmr.common-app.services.search.group-query-conditions :as gc]))
+            [cmr.elastic-utils.es-group-query-conditions :as gc]))
 
 (deftest conds-test
   (testing "AND simplification"

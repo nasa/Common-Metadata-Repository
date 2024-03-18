@@ -6,8 +6,8 @@
    - has_granules_revised_at"
   (:require
    [clojure.set :as set]
-   [cmr.common-app.services.search.group-query-conditions :as group-query-conditions]
-   [cmr.common-app.services.search.params :as common-params]
+   [cmr.elastic-utils.es-group-query-conditions :as group-query-conditions]
+   [cmr.elastic-utils.es-params-converter :as common-params]
    [cmr.common-app.services.search.query-execution :as query-execution]
    [cmr.common-app.services.search.query-model :as query-model]
    [cmr.common-app.services.search.query-to-elastic :as query-to-elastic]

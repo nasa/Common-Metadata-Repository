@@ -3,7 +3,7 @@
   for AND and OR."
   (:require [cmr.common-app.services.search.query-model :as q]
             [cmr.common.services.errors :as errors]
-            [cmr.common-app.services.search.condition-merger :as condition-merger])
+            [cmr.elastic-utils.es-condition-merger :as condition-merger])
   (:refer-clojure :exclude [and or])
   (:import [cmr.common_app.services.search.query_model
             ConditionGroup]))

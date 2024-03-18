@@ -2,7 +2,7 @@
   "Service for autocomplete functionality"
   (:require
     [cmr.acl.acl-fetcher :as af]
-    [cmr.common-app.services.search.group-query-conditions :as gc]
+    [cmr.elastic-utils.es-group-query-conditions :as gc]
     [cmr.common-app.services.search.query-execution :as qe]
     [cmr.common-app.services.search.query-model :as qm]))
 

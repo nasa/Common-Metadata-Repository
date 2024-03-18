@@ -8,7 +8,7 @@
    [clj-time.core :as t]
    [clj-time.format :as f]
    [clojurewerkz.elastisch.query :as esq]
-   [cmr.common-app.services.search.datetime-helper :as datetime-helper]
+   [cmr.elastic-utils.datetime-helper :as datetime-helper]
    [cmr.common.cache :as c]
    [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]

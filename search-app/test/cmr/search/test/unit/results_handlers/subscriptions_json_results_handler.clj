@@ -3,7 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.search.results-handlers.subscriptions-json-results-handler]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]))
+   [cmr.elastic-utils.es-results-to-query-results :as elastic-results]))
 
 (deftest results-formatting-test
   (let [result {:_source {:subscription-name "subscription-name"

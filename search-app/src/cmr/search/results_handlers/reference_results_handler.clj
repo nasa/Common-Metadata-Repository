@@ -6,7 +6,7 @@
    [clojure.set :as set]
    [cmr.common.concepts :as concepts]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.search.models.query :as q]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
