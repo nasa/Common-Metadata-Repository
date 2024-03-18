@@ -4,7 +4,7 @@
    [cheshire.core :as json]
    [clojure.string :as string]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
+   [cmr.elastic-utils.es-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.results-model :as r]
    [cmr.common.services.errors :as svc-errors]
@@ -12,7 +12,7 @@
    [cmr.search.models.query :as q]
    [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
    [cmr.search.results-handlers.stac-spatial-results-handler :as ssrh]
-   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
+   [cmr.elastic-utils.es-acl-parser :as acl-rhh]
    [cmr.search.services.url-helper :as url]
    [cmr.spatial.serialize :as srl]
    [ring.util.codec :as codec]))

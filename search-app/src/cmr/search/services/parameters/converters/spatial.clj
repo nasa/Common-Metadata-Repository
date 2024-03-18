@@ -2,8 +2,8 @@
   "Contains parameter converters for spatial parameters"
   (:require
    [clojure.string :as string]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.params :as p]
+   [cmr.elastic-utils.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.es-params-converter :as p]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.services.errors :as errors]
    [cmr.search.models.query :as qm]

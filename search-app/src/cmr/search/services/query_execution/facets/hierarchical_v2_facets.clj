@@ -8,7 +8,7 @@
    [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common.util :as util]
-   [cmr.common-app.services.search.parameters.converters.nested-field :as nested-field]
+   [cmr.elastic-utils.nested-field :as nested-field]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.search.services.query-execution.facets.hierarchical-links-helper :as hlh]

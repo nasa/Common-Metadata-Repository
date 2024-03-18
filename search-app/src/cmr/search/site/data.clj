@@ -12,7 +12,7 @@
   (:require
    [clojure.string :as string]
    [cmr.common-app.config :as common-config]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as query-exec]
    [cmr.common-app.services.search.query-model :as query-model]
    [cmr.common-app.services.search.query-to-elastic :as q2e]

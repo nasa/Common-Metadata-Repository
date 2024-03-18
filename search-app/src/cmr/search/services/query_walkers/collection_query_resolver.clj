@@ -2,10 +2,10 @@
   "Defines protocols and functions to resolve collection query conditions"
   (:require [cmr.search.models.query :as qm]
             [cmr.common-app.services.search.query-model :as cqm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
+            [cmr.elastic-utils.es-group-query-conditions :as gc]
             [cmr.common.services.errors :as errors]
             [cmr.common-app.services.search.elastic-search-index :as idx]
-            [cmr.common-app.services.search.complex-to-simple :as c2s]
+            [cmr.elastic-utils.query-transform.clj :as c2s]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.set :as set])
   (:import cmr.search.models.query.CollectionQueryCondition))

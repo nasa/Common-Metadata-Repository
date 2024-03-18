@@ -4,7 +4,7 @@
    [clojure.set :as set]
    [clojure.string :as str]
    [clojurewerkz.elastisch.query :as eq]
-   [cmr.common-app.services.search.complex-to-simple :as c2s]
+   [cmr.elastic-utils.query-transform.clj :as c2s]
    [cmr.common-app.services.search.query-model :as q]
    [cmr.common-app.services.search.query-order-by-expense :as query-expense]
    [cmr.common-app.services.search.query-to-elastic :as q2e]

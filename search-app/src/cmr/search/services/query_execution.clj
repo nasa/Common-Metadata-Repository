@@ -1,8 +1,8 @@
 (ns cmr.search.services.query-execution
   (:require
    [clojure.set :as set]
-   [cmr.common-app.services.search.complex-to-simple :as c2s]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as rc]
+   [cmr.elastic-utils.query-transform.clj :as c2s]
+   [cmr.elastic-utils.es-results-to-query-results :as rc]
    [cmr.common-app.services.search.elastic-search-index :as idx]
    [cmr.common-app.services.search.query-execution :as common-qe]
    [cmr.common-app.services.search.query-model :as cqm]

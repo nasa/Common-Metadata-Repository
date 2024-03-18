@@ -5,7 +5,7 @@
    [clojurewerkz.elastisch.query :as q]
    [clojurewerkz.elastisch.rest.document :as esd]
    [cmr.common-app.services.search.elastic-search-index :as common-esi]
-   [cmr.common-app.services.search.elastic-search-index-names-cache :as index-names-cache]
+   [cmr.elastic-utils.es-index-name-cache :as index-names-cache]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common.hash-cache :as hcache]

@@ -3,7 +3,7 @@
   (:require
    [clojure.edn :as edn]
    [clojure.string :as string]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
+   [cmr.elastic-utils.es-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.results-model :as results]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]

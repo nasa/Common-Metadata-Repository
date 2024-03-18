@@ -5,7 +5,7 @@
    [clj-time.core :as t]
    [clojure.set :as set]
    [clojure.string :as s]
-   [cmr.common-app.services.search.messages :as d-msg]
+   [cmr.elastic-utils.es-messenger :as d-msg]
    [cmr.common-app.services.search.parameter-validation :as cpv]
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common.concepts :as cc]

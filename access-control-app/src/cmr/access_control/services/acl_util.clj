@@ -8,7 +8,7 @@
    [cmr.access-control.config :as config]
    [cmr.access-control.data.access-control-index :as index]
    [cmr.access-control.data.acls :as acls]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.log :refer [info warn]]

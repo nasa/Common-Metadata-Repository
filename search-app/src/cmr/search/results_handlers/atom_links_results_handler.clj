@@ -8,7 +8,7 @@
    [clj-time.core :as time]
    [clojure.data.xml :as x]
    [clojure.string :as str]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]))

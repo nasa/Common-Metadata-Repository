@@ -4,8 +4,8 @@
    in the query model."
   (:require
     [clojure.string :as string]
-    [cmr.common-app.services.search.group-query-conditions :as gc]
-    [cmr.common-app.services.search.params :as p]
+    [cmr.elastic-utils.es-group-query-conditions :as gc]
+    [cmr.elastic-utils.es-params-converter :as p]
     [cmr.common-app.services.search.query-model :as qm]
     [cmr.common-app.services.search.query-to-elastic :as q2e]
     [cmr.common.services.errors :as errors]
