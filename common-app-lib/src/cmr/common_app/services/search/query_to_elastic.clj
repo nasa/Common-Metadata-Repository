@@ -3,8 +3,8 @@
   (:require
    [clojure.string :as str]
    [clojurewerkz.elastisch.query :as q]
-   [cmr.common-app.services.search.datetime-helper :as h]
-   [cmr.common-app.services.search.messages :as m]
+   [cmr.elastic-utils.datetime-helper :as h]
+   [cmr.elastic-utils.es-messenger :as m]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common-app.services.search.query-order-by-expense :as query-expense]
    [cmr.common.config :as cfg :refer [defconfig]]

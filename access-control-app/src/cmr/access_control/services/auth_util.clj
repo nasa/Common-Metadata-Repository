@@ -2,7 +2,7 @@
   (:require
    [cmr.access-control.config :as access-control-config]
    [cmr.acl.core :as acl]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.services.errors :as errors]

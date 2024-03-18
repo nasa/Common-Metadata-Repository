@@ -1,8 +1,8 @@
 (ns cmr.search.services.parameters.converters.two-d-coordinate-system
   "Contains functions for converting two d coordinate system search parameters to a query model."
   (:require [cmr.search.models.query :as qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common-app.services.search.params :as p]
+            [cmr.elastic-utils.es-group-query-conditions :as gc]
+            [cmr.elastic-utils.es-params-converter :as p]
             [clojure.string :as s]
             [cmr.common.services.errors :as errors])
   (:import [cmr.search.models.query

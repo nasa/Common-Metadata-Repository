@@ -6,9 +6,9 @@
   (:require
    [clojure.data :as data]
    [clojure.string :as string]
-   [cmr.common-app.services.search.complex-to-simple :as c2s]
+   [cmr.elastic-utils.query-transform.clj :as c2s]
    [cmr.common-app.services.search.elastic-search-index :as idx]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as query-execution]
    [cmr.common-app.services.search.query-model :as q]
    [cmr.common-app.services.search.query-to-elastic :as q2e]

@@ -2,7 +2,7 @@
   "Contains ACL search functions for permitted-concept-id searches"
   (:require
     [clj-time.core :as t]
-    [cmr.common-app.services.search.group-query-conditions :as gc]
+    [cmr.elastic-utils.es-group-query-conditions :as gc]
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.elastic-utils.index-util :as index-util]
     [cmr.transmit.metadata-db2 :as mdb2]

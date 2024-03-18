@@ -6,7 +6,7 @@
    [clojure.data.csv :as csv]
    [clojure.string :as str]
    [cmr.common-app.services.search.parameter-validation :as cpv]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.log :as log :refer (debug info warn error)]

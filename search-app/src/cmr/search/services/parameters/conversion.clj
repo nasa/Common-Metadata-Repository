@@ -3,9 +3,9 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
-   [cmr.common-app.services.search.params :as common-params]
+   [cmr.elastic-utils.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.nested-field :as nf]
+   [cmr.elastic-utils.es-params-converter :as common-params]
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as parser]

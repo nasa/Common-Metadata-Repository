@@ -1,7 +1,7 @@
 (ns cmr.search.services.query-walkers.update-field-resolver
   "Defines protocols and functions to resolve conditions for a provided field."
   (:require
-   [cmr.common-app.services.search.group-query-conditions :as gc]
+   [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common.util :as util]))
 

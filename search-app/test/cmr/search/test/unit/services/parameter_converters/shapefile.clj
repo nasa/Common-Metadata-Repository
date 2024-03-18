@@ -8,8 +8,8 @@
     [cmr.search.services.parameters.converters.geometry :as geometry]
     [cmr.search.services.messages.attribute-messages :as msg]
     [cmr.search.models.query :as qm]
-    [cmr.common-app.services.search.group-query-conditions :as gc]
-    [cmr.common-app.services.search.params :as p]
+    [cmr.elastic-utils.es-group-query-conditions :as gc]
+    [cmr.elastic-utils.es-params-converter :as p]
     [cmr.common.util :as u])
   (:import
     (java.io BufferedInputStream File FileReader FileOutputStream FileInputStream)

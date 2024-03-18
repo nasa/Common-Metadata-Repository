@@ -4,7 +4,7 @@
    [cheshire.core :as json]
    [clojure.string :as string]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
+   [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]

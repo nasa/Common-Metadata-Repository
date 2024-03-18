@@ -5,7 +5,7 @@
    [clojure.data.xml :as x]
    [clojure.string :as string]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
+   [cmr.elastic-utils.es-results-to-query-results :as er-to-qr]
    [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common-app.services.search.results-model :as results]
    [cmr.common.log :refer (debug info warn error)]

@@ -1,8 +1,8 @@
 (ns cmr.search.services.parameters.converters.attribute
   "Contains functions for converting additional attribute search parameters to a query model"
   (:require [cmr.search.models.query :as qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common-app.services.search.params :as p]
+            [cmr.elastic-utils.es-group-query-conditions :as gc]
+            [cmr.elastic-utils.es-params-converter :as p]
             [clojure.string :as str]
             [clj-time.core :as t]
             [clj-time.format :as f]

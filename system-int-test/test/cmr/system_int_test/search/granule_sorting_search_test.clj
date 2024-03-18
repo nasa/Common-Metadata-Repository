@@ -9,7 +9,7 @@
             [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.common-app.services.search.messages :as cmsg]
+            [cmr.elastic-utils.es-messenger :as cmsg]
             [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 

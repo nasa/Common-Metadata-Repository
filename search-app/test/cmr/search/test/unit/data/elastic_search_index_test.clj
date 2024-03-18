@@ -1,7 +1,7 @@
 (ns cmr.search.test.unit.data.elastic-search-index-test
   (:require
    [clojure.test :refer :all]
-   [cmr.common-app.services.search.elastic-search-index-names-cache :as idx-names-cache]
+   [cmr.elastic-utils.es-index-name-cache :as idx-names-cache]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.redis-utils.config :as redis-config]

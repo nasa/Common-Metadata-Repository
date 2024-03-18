@@ -2,8 +2,8 @@
   "Finds RelatedItemQueryConditions in a query, executes them, processes the results and replaces
   them with the retrieved condition"
   (:require [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common-app.services.search.complex-to-simple :as c2s]
+            [cmr.elastic-utils.es-group-query-conditions :as gc]
+            [cmr.elastic-utils.query-transform.clj :as c2s]
             [cmr.common-app.services.search.elastic-search-index :as idx]))
 
 (defprotocol ResolveRelatedItemQueryCondition

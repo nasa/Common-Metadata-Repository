@@ -18,7 +18,7 @@
    [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as coll-for-gran-acls-caches]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common-app.services.provider-cache :as provider-cache]
-   [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]
+   [cmr.elastic-utils.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.common.log :refer [info]]
    [cmr.common.generics :as common-generic]
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as has-granules-or-cwic-results-feature]
