@@ -88,7 +88,7 @@
           (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/delete-concepts-by-id request-context body params))
         ;; generating pluralized endpoints for each generic document type & converting to singular in call
-        (context ["/:concept-type" :concept-type 
+        (context ["/:concept-type" :concept-type
                   (re-pattern common-generic/plural-generic-concept-types-reg-ex)] [concept-type]
           (POST "/" {:keys [request-context params]}
             (acl/verify-ingest-management-permission request-context :update)

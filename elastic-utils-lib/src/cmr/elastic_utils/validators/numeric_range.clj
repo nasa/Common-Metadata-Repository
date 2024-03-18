@@ -3,7 +3,6 @@
   (:require
    [cmr.elastic-utils.search.es-messenger :as m]
    [cmr.elastic-utils.search.es-query-validation :as v])
-  
   (:import cmr.common.services.search.query_model.NumericRangeCondition))
 
 (defn min-is-lte-max

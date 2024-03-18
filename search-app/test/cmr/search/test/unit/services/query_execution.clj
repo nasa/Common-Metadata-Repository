@@ -7,7 +7,6 @@
    [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.search.services.query-execution :as search-qe]))
 
-
 (defn- params->query-execution-strategy
   "Converts parameters to a query and then returns the query execution strategy used on that."
   [concept-type params]

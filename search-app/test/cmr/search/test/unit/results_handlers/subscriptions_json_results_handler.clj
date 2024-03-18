@@ -16,11 +16,11 @@
                           :concept-id "concept-id"}}
         query {:concept-type :subscription
                :format :json}]
-    (is (= #{:concept_id 
+    (is (= #{:concept_id
              :revision_id
              :provider_id
              :native_id
              :name
              :subscriber_id
-             :collection_concept_id} 
+             :collection_concept_id}
            (set (keys (elastic-results/elastic-result->query-result-item nil query result)))))))

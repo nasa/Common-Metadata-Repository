@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.search.granule-orbit-number-search-test
   "Integration test for CMR granule orbit number search"
-  (:require 
+  (:require
     [clojure.test :refer :all]
     [cmr.elastic-utils.search.es-messenger :as m]
     [cmr.common.services.messages :as cm]
@@ -41,7 +41,7 @@
         gran5 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1)
                                     {:orbit-calculated-spatial-domains [{:start-orbit-number 3
-                                                                         :stop-orbit-number 4 
+                                                                         :stop-orbit-number 4
                                                                          :equator-crossing-longitude 0
                                                                          :equator-crossing-date-time "2011-02-01T12:00:00Z"}]}))
         gran6 (d/ingest "PROV1"

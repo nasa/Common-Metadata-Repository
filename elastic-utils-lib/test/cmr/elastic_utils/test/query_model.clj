@@ -1,6 +1,5 @@
 (ns cmr.elastic-utils.test.query-model
   (:require [clojure.test :refer :all]
-            ;[cmr.common.test.services.search.helpers :refer :all]
             [cmr.elastic-utils.test.helpers :refer :all]
             [cmr.common.services.search.query-model :as q]
             [cmr.elastic-utils.search.es-group-query-conditions :as gc]))

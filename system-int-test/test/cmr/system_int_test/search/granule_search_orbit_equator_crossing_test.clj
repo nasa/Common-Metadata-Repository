@@ -1,10 +1,8 @@
 (ns cmr.system-int-test.search.granule-search-orbit-equator-crossing-test
   "Integration test for CMR granule temporal search"
-  (:require 
+  (:require
     [clojure.test :refer :all]
-    [cmr.elastic-utils.search.es-messenger :as m]
     [cmr.common.services.messages :as cm]
-    [cmr.search.services.messages.orbit-number-messages :as on-m]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
