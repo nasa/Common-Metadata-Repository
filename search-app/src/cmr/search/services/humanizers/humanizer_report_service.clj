@@ -3,31 +3,27 @@
   (:require
    [clojure.data.csv :as csv]
    [cmr.common-app.humanizer :as h]
+   [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.data.metadata-retrieval.revision-format-map :as crfm]
-   [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.common.cache :as cache]
-   [cmr.common.cache.fallback-cache :as fallback-cache]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob default-job-start-delay]]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.log :as log :refer [info warn error]]
+   [cmr.common.redis-log-util :as rl-util]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.humanizers.humanizer-messages :as msg]
    [cmr.search.services.humanizers.humanizer-service :as hs]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core])
   (:import
    (java.io StringWriter)))
 
-(def report-cache-key
+(def humanizer-report-cache-key
   "The key used to store the humanizer report cache in the system cache map."
   :humanizer-report-cache)
-
-(def csv-report-cache-key
-  "The key used when setting the cache value of the report data."
-  :humanizer-report)
 
 (def humanizer-not-found-error
   {:type :not-found :errors ["Humanizer does not exist."]})
@@ -59,49 +55,44 @@
   from collection cache."
   {:default 20 :type Long})
 
+(defn create-humanizer-report-cache-client
+  "Create instance of humanizer-report-cache client that connects to the redis cache"
+  []
+  (redis-cache/create-redis-cache {:keys-to-track [humanizer-report-cache-key]
+                                   :read-connection (redis-config/redis-read-conn-opts)
+                                   :primary-connection (redis-config/redis-conn-opts)}))
+
 (defn- rfm->umm-collection
   "Takes a revision format map and parses it into a UMM-spec record."
   [context revision-format-map]
   (let [concept-id (:concept-id revision-format-map)
-        umm (umm-spec-core/parse-metadata
-             context
-             (crfm/revision-format-map->concept :native revision-format-map))]
-    (assoc umm
-           :concept-id concept-id
-           :provider-id (:provider-id (concepts/parse-concept-id concept-id)))))
+        umm (try
+              (umm-spec-core/parse-metadata
+               context
+               (crfm/revision-format-map->concept :native revision-format-map))
+              (catch Exception e
+                (error (format "Exception caught trying to parse %s to umm that was retrieved from a revision-format-map %s" concept-id e))))]
+    (when umm
+      (assoc umm
+             :concept-id concept-id
+             :provider-id (:provider-id (concepts/parse-concept-id concept-id))))))
 
-(defn- rfms->umm-collections
-  "Parse multiple revision format maps into UMM-spec records"
-  [context rfms]
-  (map #(rfm->umm-collection context %) rfms))
-
-(defn- get-cached-revision-format-maps-with-retry
-  "Get all the collections from cache, if nothing is returned,
+(defn- get-collection-metadata-cache-concept-ids-with-retry
+  "Get all the collection ids from the cache, if nothing is returned,
   Wait configurable number of seconds before retrying configurable number of times."
   [context]
   (loop [retries (retry-count)]
-    (if-let [rfms (metadata-cache/all-cached-revision-format-maps context)]
-      rfms
+    (rl-util/log-redis-reading-start "humanizer report service get-collection-metadata-cache-concept-ids" cmn-coll-metadata-cache/cache-key)
+    (if-let [vec-concept-ids (metadata-cache/get-collection-metadata-cache-concept-ids context)]
+      vec-concept-ids
       (when (> retries 0)
-        (info (format (str "Humanizer report generator job is sleeping for %d second(s)"
+        (info (format (str "Failed reading %s for the humanizer report. "
+                           "Humanizer report generator job is sleeping for %d second(s)"
                            " before retrying to fetch from collection cache.")
+                      cmn-coll-metadata-cache/cache-key
                       (/ (humanizer-report-generator-job-wait) 1000)))
         (Thread/sleep (humanizer-report-generator-job-wait))
         (recur (dec retries))))))
-
-(defn- get-all-collections
-  "Retrieves all collections from the Metadata cache, partitions them into batches of size
-  humanizer-report-collection-batch-size, so the batches can be processed lazily to avoid out of memory errors."
-  [context]
-  ;; Currently not throwing an exception if the cache is empty. May want to
-  ;; change in the future to throw an exception.
-  (if-let [rfms (get-cached-revision-format-maps-with-retry context)]
-    (map
-      #(rfms->umm-collections context %)
-      (partition-all (humanizer-report-collection-batch-size) rfms))
-    (warn (format "Collection cache is not populated after %d seconds of delay and %d times of retry."
-                  (humanizer-report-generator-job-delay)
-                  (retry-count)))))
 
 (defn humanized-collection->reported-rows
   "Takes a humanized collection and returns rows to populate the CSV report."
@@ -122,35 +113,17 @@
 (defn generate-humanizers-report-csv
   "Returns a report on humanizers in use in collections as a CSV."
   [context]
-  (let [[t1 collection-batches] (util/time-execution
-                                  (get-all-collections context))
-         string-writer (StringWriter.)
-         idx-atom (atom 0)]
-    (info (format "get-all-collections: %d ms. Processing %d batches of size %d"
-                  t1
-                  (count collection-batches)
-                  (humanizer-report-collection-batch-size)))
+  (let [concept-ids (get-collection-metadata-cache-concept-ids-with-retry context)
+        humanizers (hs/get-humanizers context)
+        string-writer (StringWriter.)]
     (csv/write-csv string-writer [CSV_HEADER])
-    (let [humanizers (hs/get-humanizers context)
-          [t4 csv-string]
-          (util/time-execution
-            (doseq [batch collection-batches]
-              (let [[t2 humanized-rows]
-                    (util/time-execution
-                      (doall
-                        (pmap (fn [coll]
-                                (-> (h/umm-collection->umm-collection+humanizers coll humanizers)
-                                    humanized-collection->reported-rows))
-                              batch)))
-                    [t3 rows] (util/time-execution
-                                (apply concat humanized-rows))]
-                (csv/write-csv string-writer rows)
-                (info "Batch " (swap! idx-atom inc) " Size " (count batch)
-                       "Write humanizer report of " (count rows) " rows"
-                       "get humanized rows:" t2
-                       "concat humanized rows:" t3))))]
-      (info "Create report " t4)
-      (str string-writer))))
+    (doseq [concept-id concept-ids]
+      (let [rfm (metadata-cache/get-concept-id context concept-id)
+            collection (rfm->umm-collection context rfm)
+            humanized-rows (-> (h/umm-collection->umm-collection+humanizers collection humanizers)
+                               humanized-collection->reported-rows)]
+        (csv/write-csv string-writer humanized-rows)))
+    (str string-writer)))
 
 (defn safe-generate-humanizers-report-csv
   "This convenience function wraps the report generator in a try/catch,
@@ -164,30 +137,18 @@
         (warn (.getMessage e) msg/returning-empty-report)
         (throw e)))))
 
-(defn create-report-cache
-  "This function creates the composite cache that is used for caching the
-  humanizer report. With the given composition we get the following features:
-  * A Redis cache that holds the generated report;
-  * A fast access in-memory cache that sits on top of Redis, providing
-    quick local results after the first call to Redis; this cache is kept
-    consistent across all instances of CMR, so no matter which host the LB
-    serves, all the content is the same;
-  * A single-threaded cache that circumvents potential race conditions
-    between HTTP requests for a report and Quartz cluster jobs that save
-    report data."
-  []
-  (redis-cache/create-redis-cache))
-
 (defn- create-and-save-humanizer-report
   "Helper function to create the humanizer report, save it to the cache, and return the content."
   [context]
-  (info "Generating humanizer report.")
+  (rl-util/log-refresh-start humanizer-report-cache-key)
   (let [[report-generation-time humanizers-report] (util/time-execution
-                                                    (safe-generate-humanizers-report-csv context))]
-    (info (format "Humanizer report generated in %d ms." report-generation-time))
-    (cache/set-value (cache/context->cache context report-cache-key)
-                     csv-report-cache-key
-                     humanizers-report)
+                                                    (safe-generate-humanizers-report-csv context))
+        _ (info (format "Humanizer report generated in %d ms." report-generation-time))
+        [tm _] (util/time-execution
+                (cache/set-value (cache/context->cache context humanizer-report-cache-key)
+                                 humanizer-report-cache-key
+                                 humanizers-report))]
+    (rl-util/log-redis-write-complete "create-and-save-humanizer-report" humanizer-report-cache-key tm)
     humanizers-report))
 
 (defn humanizers-report-csv
@@ -200,19 +161,30 @@
   [context regenerate?]
   (if regenerate?
     (create-and-save-humanizer-report context)
-    (cache/get-value (cache/context->cache context report-cache-key)
-                     csv-report-cache-key
-                     ;; If there is a cache miss, generate the report and then
-                     ;; return its value
-                     #(safe-generate-humanizers-report-csv context))))
+    (let [cache (cache/context->cache context humanizer-report-cache-key)
+          [tm report] (util/time-execution
+                       (cache/get-value cache humanizer-report-cache-key))]
+      (if report
+        (do
+          (rl-util/log-redis-read-complete "humanizers-report-csv" humanizer-report-cache-key tm)
+          report)
+        (let [report (safe-generate-humanizers-report-csv context)
+              [tm _] (util/time-execution
+                      (cache/set-value cache humanizer-report-cache-key report))]
+          (rl-util/log-redis-read-complete "humanizers-report-csv" humanizer-report-cache-key tm)
+          report)))))
 
 ;; A job for generating the humanizers report
 (defjob HumanizerReportGeneratorJob
   [_ctx system]
   (create-and-save-humanizer-report {:system system}))
 
-(def humanizer-report-generator-job
-  "The job definition used by the system job scheduler."
+(defn refresh-humanizer-report-cache-job
+  [job-key]
+  "The job definition used by the system job scheduler to refresh the humanizer report cache.
+  This cache is directly reliant on the collection-metadata-cache being refreshed and present (refresh-collections-metadata-cache-job).
+  Currently the collection metadata cache is refreshed daily at 6 AM UTC. So we will start this job an hour after that."
   {:job-type HumanizerReportGeneratorJob
-   :interval (* 60 60 24) ; every 24 hours
-   :start-delay (+ (default-job-start-delay) (humanizer-report-generator-job-delay))})
+   :job-key job-key
+   :start-delay (* 10 60) ;; 10 minutes delay
+   :daily-at-hour-and-minute [07 00]})

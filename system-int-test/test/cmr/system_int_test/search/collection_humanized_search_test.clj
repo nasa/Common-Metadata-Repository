@@ -5,18 +5,19 @@
    [clj-http.client :as client]
    [clojure.string :as str]
    [clojure.test :refer :all]
-   [cmr.common-app.test.side-api :as side]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.cache-util :as cache-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.url-helper :as url]))
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
@@ -37,9 +38,9 @@
   []
   (let [full-url (str (url/search-read-caches-url)
                       "/"
-                      (name hrs/report-cache-key)
+                      (name hrs/humanizer-report-cache-key)
                       "/"
-                      (name hrs/csv-report-cache-key))
+                      (name hrs/humanizer-report-cache-key))
         admin-read-group-concept-id (e/get-or-create-group (s/context)
                                                            "admin-read-group")
         admin-read-token (e/login (s/context)
@@ -87,7 +88,8 @@
 
     (index/wait-until-indexed)
     ;; Refresh the metadata cache
-    (search/refresh-collection-metadata-cache)
+    (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
+
     (testing "Humanizer report csv"
       (let [report (search/get-humanizers-report)]
         (is (= ["provider,concept_id,short_name,version,original_value,humanized_value"
@@ -98,45 +100,6 @@
                (str/split report #"\n")))
         (testing "Ensure that the returned report is the same as the cached one"
           (is (= report (get-cached-report))))))))
-
-(defn- get-humanizer-report-batch-size
-  "Returns the currently configured value for the humanizer report batch size."
-  []
-  (-> (side/eval-form `(hrs/humanizer-report-collection-batch-size))
-      :body
-      Integer/parseInt))
-
-(deftest humanizer-report-batch
-  (side/eval-form `(hrs/set-humanizer-report-collection-batch-size! 10))
-  (let [updated-batch-size (get-humanizer-report-batch-size)]
-    ;; Insert more entries than the batch size to test batches
-    (doseq [n (range (inc updated-batch-size))]
-      (d/ingest-umm-spec-collection
-       "PROV1"
-       (data-umm-c/collection
-        n
-        {:ShortName "B"
-         :Version n
-         :Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]})))
-    (index/wait-until-indexed)
-    ;; Refresh the metadata cache
-    (search/refresh-collection-metadata-cache)
-    (testing "Humanizer report batches"
-      (let [report-lines (str/split (search/get-humanizers-report) #"\n")]
-        (is (= (count report-lines) (+ 2 updated-batch-size)))
-        (doall
-         (map-indexed (fn [n actual-line]
-                        (let [coll-normalized (+ n 7) ;; First collection concept ID ends with 7
-                              coll-suffix (if (< coll-normalized 10)
-                                            (str "0" coll-normalized)
-                                            (str coll-normalized))]
-                          (is (-> (format "PROV1,C12000000\\d+-PROV1,B,%d,AM-1,Terra" n)
-                                  re-pattern
-                                  (re-find actual-line)
-                                  nil?
-                                  false?))))
-                      (rest report-lines)))))
-    (side/eval-form `(hrs/set-humanizer-report-collection-batch-size! 500))))
 
 (deftest search-by-platform-humanized
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [(data-umm-cmn/platform {:ShortName "TERRA"})]}))

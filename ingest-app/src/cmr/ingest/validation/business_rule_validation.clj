@@ -83,7 +83,7 @@
           search-errors)))))
 
 (defn standard-product-is-nasa-provider-validation
-  "Validate if the standard product is true then the provider must be a NASA provider - meaning 
+  "Validate if the standard product is true then the provider must be a NASA provider - meaning
   that the provider's consortium values must include EOSDIS. If validation fails an error is thrown."
   [context concept _]
   (let [provider-id (:provider-id concept)
@@ -101,7 +101,7 @@
                     "Please remove the StandardProduct element from the record."))])))
 
 (defn standard-product-not-real-time-validation
-  "Validate if the standard product is true then the CollectionDataType is not NEAR_REAL_TIME, LOW_LATENCY, 
+  "Validate if the standard product is true then the CollectionDataType is not NEAR_REAL_TIME, LOW_LATENCY,
   or EXPEDITED. If validation fails an error is thrown."
   [_ concept _]
   (let [collection (:umm-concept concept)

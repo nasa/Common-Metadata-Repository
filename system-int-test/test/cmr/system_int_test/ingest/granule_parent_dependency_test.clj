@@ -2,25 +2,20 @@
   "CMR granule ingest with validation against parent collection integration tests"
   (:require
     [clojure.java.io :as io]
-    [clojure.string :as str]
     [clojure.test :refer :all]
-    [cmr.common.mime-types :as mt]
     [cmr.common.util :as u :refer [are3]]
-    [cmr.indexer.system :as indexer-system]
     [cmr.spatial.mbr :as m]
     [cmr.spatial.polygon :as poly]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
-    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
+    [cmr.system-int-test.utils.cache-util :as cache-util]
     [cmr.system-int-test.utils.humanizer-util :as hu]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.metadata-db-util :as mdb]
-    [cmr.system-int-test.utils.search-util :as search]
-    [cmr.umm.umm-granule :as umm-g]
+    [cmr.system-int-test.utils.url-helper :as url]
+    [cmr.transmit.config :as transmit-config]
     [cmr.umm.umm-spatial :as umm-s]))
 
 (use-fixtures :each (join-fixtures
@@ -191,6 +186,8 @@
         gran-Terra-InstrumentB-coll2 (dg/granule-with-umm-spec-collection echo10-coll2 (:concept-id echo10-coll2) gran-data3)
         gran-Foo-coll2 (dg/granule-with-umm-spec-collection echo10-coll2 (:concept-id echo10-coll2) gran-data4)]
 
+    (cache-util/refresh-cache (url/refresh-humanizer-alias-cache-url) (transmit-config/echo-system-token))
+
     (are3 [exp-errors gran]
           (is (= exp-errors
                  (flatten (map (fn [error] (:errors error))
@@ -333,6 +330,8 @@
         gran-A-for-echo10-coll-B (dg/granule-with-umm-spec-collection echo10-coll-B (:concept-id echo10-coll-B) gran-data-A)
         gran-B-for-echo10-coll-B (dg/granule-with-umm-spec-collection echo10-coll-B (:concept-id echo10-coll-B) gran-data-B)]
 
+    (cache-util/refresh-cache (url/refresh-humanizer-alias-cache-url) (transmit-config/echo-system-token))
+
     (are3 [exp-errors gran]
           (is (= exp-errors
                  (flatten (map (fn [error] (:errors error))
@@ -455,6 +454,8 @@
         gran-B-for-echo10-coll-A (dg/granule-with-umm-spec-collection echo10-coll-A (:concept-id echo10-coll-A) gran-data-B)
         gran-A-for-echo10-coll-B (dg/granule-with-umm-spec-collection echo10-coll-B (:concept-id echo10-coll-B) gran-data-A)
         gran-B-for-echo10-coll-B (dg/granule-with-umm-spec-collection echo10-coll-B (:concept-id echo10-coll-B) gran-data-B)]
+
+    (cache-util/refresh-cache (url/refresh-humanizer-alias-cache-url) (transmit-config/echo-system-token))
 
     (are3 [exp-errors gran]
           (is (= exp-errors

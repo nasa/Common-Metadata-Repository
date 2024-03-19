@@ -6,12 +6,14 @@
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.cache-util :as cache-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.site-util :as site]
    [cmr.system-int-test.utils.tag-util :as tags]
+   [cmr.system-int-test.utils.url-helper :as url]
+   [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.models.umm-common-models :as cm]
    [cmr.umm-spec.test.expected-conversion :as exp-conv]))
 
@@ -88,7 +90,7 @@
 (def collections-fixture
   (fn [f]
     (setup-collections)
-    (search/refresh-collection-metadata-cache)
+    (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
     (f)))
 
 (use-fixtures :once (join-fixtures

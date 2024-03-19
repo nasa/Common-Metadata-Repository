@@ -1,10 +1,11 @@
 (ns cmr.search.test.unit.services.acls.granule-acls
   (:require [clojure.test :refer :all]
+            [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as cmn-coll-for-gran-acls-caches]
             [cmr.common.hash-cache :as hash-cache]
+            [cmr.redis-utils.config :as redis-config]
             [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
             [cmr.common.util :as util :refer [are3]]
             [cmr.redis-utils.test.test-util :as test-util]
-            [cmr.common-app.data.search.collection-for-gran-acls-caches :as cmn-coll-for-gran-acls-caches]
             [cmr.search.services.acls.granule-acls :as g]))
 
 (use-fixtures :once test-util/embedded-redis-server-fixture)
@@ -82,7 +83,9 @@
     (is (g/acl-match-concept? {} (make-acl "P1") (concept "P1" "C2-P1")) "is same provider failed"))
 
   (let [coll-by-concept-id-cache-key cmn-coll-for-gran-acls-caches/coll-by-concept-id-cache-key
-        coll-by-concept-id-cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-concept-id-cache-key]})
+        coll-by-concept-id-cache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-concept-id-cache-key]
+                                                                            :read-connection (redis-config/redis-read-conn-opts)
+                                                                            :primary-connection (redis-config/redis-conn-opts)})
         _ (hash-cache/reset coll-by-concept-id-cache coll-by-concept-id-cache-key)
         context {:system {:caches {coll-by-concept-id-cache-key coll-by-concept-id-cache}}}]
 

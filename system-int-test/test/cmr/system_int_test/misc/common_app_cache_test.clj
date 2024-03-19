@@ -5,6 +5,7 @@
    [clojure.test :refer :all]
    [cmr.common.cache :as cache]
    [cmr.common.cache.cache-spec :as cache-spec]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.transmit.cache.consistent-cache-spec :as consistent-cache-spec]))
@@ -12,7 +13,9 @@
 (def redis-options
   "The options to pass into redis when creating the cache. For the cache spec we test that calls
   to reset remove the :foo and :bar keys and their hash key counterparts."
-  {:keys-to-track [:foo :bar ":foo-hash-code" ":bar-hash-code"]})
+  {:keys-to-track [:foo :bar ":foo-hash-code" ":bar-hash-code"]
+   :read-connection (redis-config/redis-read-conn-opts)
+   :primary-connection (redis-config/redis-conn-opts)})
 
 (deftest redis-cache-functions-as-cache-test
   (cache-spec/assert-cache (redis-cache/create-redis-cache redis-options)

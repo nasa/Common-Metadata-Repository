@@ -410,7 +410,7 @@
                                        "X-Request-Id" x-request-id})
         headers (when options
                   (assoc headers "Content-Type" "application/vnd.nasa.cmr.umm+json"))
-        params {:method method 
+        params {:method method
                 :url (url/publish-draft-url draft-concept-id native-id)
                 :body (when options
                         (json/generate-string options))
@@ -690,7 +690,7 @@
   "Get the tasks and statuses by provider"
   ([concept-type provider-id options]
    (bulk-update-provider-status* concept-type provider-id options nil))
-  ([concept-type provider-id options date] 
+  ([concept-type provider-id options date]
    (let [accept-format (get options :accept-format :xml)
          token (:token options)
          task-url (if (= :collection concept-type)

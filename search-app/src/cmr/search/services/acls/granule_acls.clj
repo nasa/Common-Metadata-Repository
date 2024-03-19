@@ -7,14 +7,12 @@
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as cqm]
    [cmr.common.concepts :as c]
-   [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.services.errors :as errors]
-   [cmr.common.time-keeper :as tk]
    [cmr.common.util :as u]
    [cmr.search.models.query :as q]
    [cmr.search.services.acl-service :as acl-service]
    [cmr.search.services.acls.acl-helper :as acl-helper]
-   [cmr.search.services.acls.collections-cache :as coll-cache]
+   [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as coll-gran-acls-cache]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as coll-id-extractor]
    [cmr.search.services.query-walkers.collection-query-resolver :as r]
    [cmr.search.services.query-walkers.provider-id-extractor :as provider-id-extractor]
@@ -220,7 +218,7 @@
   [context coll-identifier concept]
   (if coll-identifier
     (let [collection-concept-id (:collection-concept-id concept)
-          collection (coll-cache/get-collection-for-gran-acls context collection-concept-id)]
+          collection (coll-gran-acls-cache/get-collection-for-gran-acls context collection-concept-id)]
       (when-not collection
         (errors/internal-error! (format "Collection with id %s was in a granule but was not found using collection cache." collection-concept-id)))
       (umm-matchers/coll-matches-collection-identifier? collection coll-identifier))

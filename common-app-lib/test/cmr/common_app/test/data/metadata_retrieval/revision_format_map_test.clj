@@ -7,6 +7,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
    [cmr.redis-utils.test.test-util :as test-util]
    [digest :as digest]))
@@ -155,7 +156,10 @@
 
 (deftest merge-into-cache-map-test
   (let [cache-key cmn-coll-metadata-cache/cache-key
-        rhcache (redis-hash-cache/create-redis-hash-cache {:keys-to-track [cache-key]})]
+        rhcache (redis-hash-cache/create-redis-hash-cache
+                 {:keys-to-track [cache-key]
+                  :read-connection (redis-config/redis-collection-metadata-cache-read-conn-opts)
+                  :primary-connection (redis-config/redis-collection-metadata-cache-conn-opts)})]
     (hash-cache/reset rhcache cache-key)
     (testing "Not yet in cache map is added to cache"
       (let [existing-rfm (test-rfm "C1-PROV1" 1 [:echo10])

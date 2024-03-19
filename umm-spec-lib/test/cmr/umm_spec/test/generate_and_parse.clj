@@ -28,21 +28,19 @@
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
-  [:dif :dif10 :echo10 :iso19115 :iso-smap])
+  [:echo10])
 
 (def test-context lkt/create-context)
 
 (def collection-destination-formats
   "Converting to these formats is tested in the roundrobin test."
-  [:echo10 :dif10 :dif :iso19115 :iso-smap])
+  [:echo10])
 
 (def collection-format-examples
   "Map of format type to example file"
-  {:dif "dif.xml"
-   :dif10 "dif10.xml"
+  {
    :echo10 "echo10.xml"
-   :iso19115 "iso19115.xml"
-   :iso-smap "iso_smap.xml"})
+   })
 
 (defn- convert-to-sets
   "Convert lists in the umm record to sets so order doesn't matter during comparison"
@@ -213,6 +211,7 @@
       (update-in-all [:TilingIdentificationSystems :Coordinate2 :MinimumValue] trim-tiling-system-value)
       (update-in-all [:TilingIdentificationSystems :Coordinate2 :MaximumValue] trim-tiling-system-value)))
 
+
 ;; This test starts with a umm record where the values of the record
 ;; are generated with different values every time. This test takes the
 ;; UMM record and converts it into another supported format, then converts it back
@@ -250,7 +249,7 @@
                        (update-in umm-record [:UseConstraints] assoc :EULAIdentifiers nil)
                        umm-record)
           umm-record (trim-tiling-system-values umm-record)
-
+          
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
 

@@ -1,18 +1,20 @@
-(ns cmr.common-app.data.search.collection-for-gran-acls-caches
+(ns cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache
   "Defines common functions and defs a cache for search collections.
   This namespace defines two separate caches that are tightly coupled and will be created and updated/refreshed at the same time:
   - coll-by-concept-id-cache = collection-for-gran-acls-by-concept-id-cache"
   (:require
-  [cmr.redis-utils.redis-hash-cache :as red-hash-cache]
-  [cmr.common.hash-cache :as hash-cache]
-  [cmr.common.jobs :refer [defjob]]
-  [cmr.common.log :as log :refer (debug info warn error)]
-  [clojure.walk :as walk]
-  [cmr.common-app.services.search.query-execution :as qe]
-  [cmr.common-app.services.search.query-model :as q-mod]
-  [cmr.common.date-time-parser :as time-parser]
-  [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
-  [cmr.common.util :as util]))
+   [clojure.walk :as walk]
+   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
+   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.common-app.services.search.query-model :as q-mod]
+   [cmr.common.date-time-parser :as time-parser]
+   [cmr.common.hash-cache :as hash-cache]
+   [cmr.common.jobs :refer [defjob]]
+   [cmr.common.log :refer [info]]
+   [cmr.common.redis-log-util :as rl-util]
+   [cmr.common.util :as util]
+   [cmr.redis-utils.config :as redis-config]
+   [cmr.redis-utils.redis-hash-cache :as red-hash-cache]))
 
 (def coll-by-concept-id-cache-key
   "Identifies the key used when the cache is stored in the system."
@@ -36,7 +38,9 @@
   concept-id -> {collection info}"
   []
   (red-hash-cache/create-redis-hash-cache {:keys-to-track [coll-by-concept-id-cache-key]
-                                           :ttl           cache-ttl}))
+                                           :ttl           cache-ttl
+                                           :read-connection (redis-config/redis-read-conn-opts)
+                                           :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn clj-times->time-strs
   "Take a map and convert any date objects into strings so the map can be cached.
@@ -73,11 +77,10 @@
     (:items (qe/execute-query context query))))
 
 (defn- fetch-collections
+  "Fetches all collections or one collection by concept id from elastic. If no collections are found, will return nil."
   ([context]
-   "Fetches all collections from elastic. If no collections are found, will return nil."
    (execute-coll-for-gran-acls-query context q-mod/match-all :unlimited))
   ([context collection-concept-id]
-   "Fetches one collection from elastic search by concept id. If no collection is found, will return nil."
    (let [query-condition (q-mod/string-condition :concept-id collection-concept-id true false)
          colls-found (execute-coll-for-gran-acls-query context query-condition 1)]
      (first colls-found))))
@@ -88,28 +91,45 @@
   This will throw an exception if there is a problem fetching collections.
   The caller is responsible for catching and logging the exception."
   [context]
-  (info "Refreshing entire Collections-for-gran-acls caches")
+  (rl-util/log-refresh-start coll-by-concept-id-cache-key)
   (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
-        collections (fetch-collections context)]
-    (doseq [coll collections]
-      (hash-cache/set-value coll-by-concept-id-cache
-                            coll-by-concept-id-cache-key
-                            (:concept-id coll)
-                            (clj-times->time-strs coll)))
+        collections (fetch-collections context)
+        [tm _] (util/time-execution
+                (doseq [coll collections]
+                  (hash-cache/set-value coll-by-concept-id-cache
+                                        coll-by-concept-id-cache-key
+                                        (:concept-id coll)
+                                        (clj-times->time-strs coll))))]
+    (rl-util/log-redis-write-complete "refresh-entire-cache" coll-by-concept-id-cache-key tm)
     (info (str "Collections-for-gran-acls caches refresh complete."
          " coll-by-concept-id-cache Cache Size: " (hash-cache/cache-size coll-by-concept-id-cache coll-by-concept-id-cache-key) " bytes"))))
 
-(defn set-caches
-  "Updates collections-for-gran-acl caches for one given collection by concept id and  returns found collection or nil"
-  ([context collection-concept-id]
+(defn set-cache
+  "Updates collections-for-gran-acl cache for one given collection by concept id and returns found collection or nil"
+  [context collection-concept-id]
    (let [collection-found (fetch-collections context collection-concept-id)
          coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)]
-     (when-not (nil? collection-found)
-       (hash-cache/set-value coll-by-concept-id-cache
-                             coll-by-concept-id-cache-key
-                             (:concept-id collection-found)
-                             (clj-times->time-strs collection-found)))
-     collection-found)))
+     (when collection-found
+       (let [[tm _] (util/time-execution
+                     (hash-cache/set-value coll-by-concept-id-cache
+                                           coll-by-concept-id-cache-key
+                                           (:concept-id collection-found)
+                                           (clj-times->time-strs collection-found)))]
+         (rl-util/log-redis-write-complete "set-caches" coll-by-concept-id-cache-key tm)))
+     collection-found))
+
+(defn get-collection-for-gran-acls
+  [context coll-concept-id]
+  "Gets a single collection from the cache by concept id. If collection is not found in cache, but exists in elastic, it will add it to the cache and will return the found collection."
+  (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
+        collection (hash-cache/get-value coll-by-concept-id-cache
+                                         coll-by-concept-id-cache-key
+                                         coll-concept-id)]
+    (if (or (nil? collection) (empty? collection))
+      (do
+        (info (str "Collection with concept-id " coll-concept-id " not found in cache. Will update cache and try to find."))
+        (time-strs->clj-times (set-cache context coll-concept-id)))
+      (time-strs->clj-times collection))))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
         [ctx system]

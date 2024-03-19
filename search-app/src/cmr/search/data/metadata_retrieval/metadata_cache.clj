@@ -18,6 +18,7 @@
    [cmr.common.memory-db.connection]
    [cmr.common.jobs :refer [defjob]]
    [cmr.common.log :as log :refer [debug info]]
+   [cmr.common.redis-log-util :as rl-util]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
    [cmr.metadata-db.services.concept-service :as metadata-db]
@@ -52,7 +53,8 @@
     [context]
     (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
           cache-map (-> (hash-cache/get-map cache cmn-coll-metadata-cache/cache-key)
-                        (dissoc "incremental-since-refresh-date"))]
+                        (dissoc cmn-coll-metadata-cache/incremental-since-refresh-date-key 
+                                cmn-coll-metadata-cache/collection-metadata-cache-fields-key))]
       (u/map-values (fn [rfm]
                       {:revision-id (:revision-id rfm)
                        :cached-formats (crfm/cached-formats rfm)})
@@ -84,6 +86,10 @@
                           cmn-coll-metadata-cache/cache-key
                           cmn-coll-metadata-cache/incremental-since-refresh-date-key
                           incremental-since-refresh-date)
+    (hash-cache/set-value rcache
+                          cmn-coll-metadata-cache/cache-key
+                          cmn-coll-metadata-cache/collection-metadata-cache-fields-key
+                          (vec (remove nil? (keys new-cache-value))))
     (hash-cache/set-values rcache cmn-coll-metadata-cache/cache-key new-cache-value)
     (info "Metadata cache refresh complete. Cache Size:"
           (hash-cache/cache-size rcache cmn-coll-metadata-cache/cache-key))))
@@ -93,16 +99,25 @@
   last time the cache was updated."
   [context]
     (info "Updating collection metadata cache")
-    (let [incremental-since-refresh-date (str (t/now))
+    (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
+          incremental-since-refresh-date (str (t/now))
           concepts-tuples (cmn-coll-metadata-cache/fetch-updated-collections-from-elastic context)
           new-cache-value (reduce #(merge %1 (concept-tuples->cache-map context %2))
                                   {}
                                   (partition-all 1000 concepts-tuples))
-          cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
+          new-concept-keys (keys new-cache-value)
+          old-concept-keys (hash-cache/get-value cache
+                                                 cmn-coll-metadata-cache/cache-key
+                                                 cmn-coll-metadata-cache/collection-metadata-cache-fields-key)
+          full-key-set (vec (distinct (remove nil? (concat new-concept-keys old-concept-keys))))]
       (hash-cache/set-value cache
                             cmn-coll-metadata-cache/cache-key
                             cmn-coll-metadata-cache/incremental-since-refresh-date-key
                             incremental-since-refresh-date)
+      (hash-cache/set-value cache
+                            cmn-coll-metadata-cache/cache-key
+                            cmn-coll-metadata-cache/collection-metadata-cache-fields-key
+                            full-key-set)
       (hash-cache/set-values cache
                              cmn-coll-metadata-cache/cache-key
                              new-cache-value)
@@ -135,22 +150,33 @@
   {:job-type UpdateCollectionsMetadataCache
    :interval (cmn-coll-metadata-cache/update-collection-metadata-cache-interval)})
 
-(defn all-cached-revision-format-maps
-  "Returns a sequence of all revision format maps in the cache sorted by concept id"
+(defn get-collection-metadata-cache-concept-ids
+  "Returns a vector of collection concept ids that are stored in the collection-metadata-cache for the
+  humanizer report."
   [context]
-  (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
-        cache-map (-> (hash-cache/get-map cache cmn-coll-metadata-cache/cache-key)
-                      (dissoc "incremental-since-refresh-date"))
-        maps (for [concept-id (sort (keys cache-map))]
-               (get cache-map concept-id))]
-    (seq maps)))
+  (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
+    (sort
+     (hash-cache/get-value cache
+                           cmn-coll-metadata-cache/cache-key
+                           cmn-coll-metadata-cache/collection-metadata-cache-fields-key))))
+
+(defn get-concept-id
+  "Given a concept-id, returns the value stored in the collection-metadata-cache for that concept which is
+  documented at the top of this file."
+  [context concept-id]
+  (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
+    (hash-cache/get-value cache
+                          cmn-coll-metadata-cache/cache-key
+                          concept-id)))
 
 (defn- update-cache
   "Updates the cache so that it will contain the updated revision format maps."
   [context revision-format-maps]
   (let [compressed-maps (u/fast-map crfm/compress revision-format-maps)
-        rcache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
-    (doall (map #(crfm/merge-into-cache-map rcache cmn-coll-metadata-cache/cache-key %) compressed-maps))
+        rcache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
+        [tm _] (u/time-execution
+                (doall (map #(crfm/merge-into-cache-map rcache cmn-coll-metadata-cache/cache-key %) compressed-maps)))]
+    (rl-util/log-redis-write-complete "update-cache" cmn-coll-metadata-cache/cache-key tm)
 
     (info "Cache updated with revision format maps. Cache Size:"
           (hash-cache/cache-size (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)
@@ -248,7 +274,9 @@
   (let [cache (hash-cache/context->cache context cmn-coll-metadata-cache/cache-key)]
     (reduce (fn [grouped-map tuple]
               (let [[concept-id revision-id] tuple
-                    revision-format-map (hash-cache/get-value cache cmn-coll-metadata-cache/cache-key concept-id)]
+                    [tm revision-format-map] (u/time-execution
+                                              (hash-cache/get-value cache cmn-coll-metadata-cache/cache-key concept-id))]
+                (rl-util/log-redis-read-complete "get-cached-metadata-in-format" cmn-coll-metadata-cache/cache-key tm)
                 (if revision-format-map
                   ;; Concept is cached
                   (cond

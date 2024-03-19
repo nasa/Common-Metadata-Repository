@@ -13,10 +13,13 @@
   (:require
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common.cache :as cache]
-   [cmr.common.jobs :refer [def-stateful-job]]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.log :refer [error]]
+   [cmr.common.redis-log-util :as rl-util]
+   [cmr.common.util :as util]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
-   [cmr.transmit.kms :as kms]))
+   [cmr.transmit.kms :as kms])
+  (:import (clojure.lang ExceptionInfo)))
 
 (def nested-fields-mappings
   "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
@@ -51,58 +54,61 @@
   KMS keywords should use the same fallback cache to ensure functionality even if GCMD KMS becomes
   unavailable."
   []
-  (redis-cache/create-redis-cache {:keys-to-track [kms-cache-key]}))
+  (redis-cache/create-redis-cache {:keys-to-track [kms-cache-key]
+                                   :read-connection (redis-config/redis-read-conn-opts)
+                                   :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn- fetch-gcmd-keywords-map
   "Calls GCMD KMS endpoints to retrieve the keywords. Response is a map structured in the same way
   as used in the KMS cache."
   [context]
-  (let [kms-cache (cache/context->cache context kms-cache-key)
-        kms-cache-value (cache/get-value kms-cache kms-cache-key)]
-    (kms-lookup/create-kms-index
-     context
-     (into {}
-           (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
-             ;; if the keyword-scheme-value is nil that means we could not get the KMS keywords
-             ;; in this case use the cached value value instead so that we dont wipe out the cache.
-             (if-let [keyword-scheme-value (kms/get-keywords-for-keyword-scheme context keyword-scheme)]
-               [keyword-scheme keyword-scheme-value]
-               [keyword-scheme (get kms-cache-value keyword-scheme)]))))))
+  (try
+    (let [kms-cache (cache/context->cache context kms-cache-key)
+          _ (rl-util/log-redis-reading-start "kms-fetcher.fetch-gcmd-keywords-map" kms-cache-key)
+          [t1 kms-cache-value] (util/time-execution (cache/get-value kms-cache kms-cache-key))]
+      (rl-util/log-redis-read-complete "fetch-gcmd-keywords-map" kms-cache-key t1)
+      (kms-lookup/create-kms-index
+        context
+        (into {}
+              (for [keyword-scheme (keys kms/keyword-scheme->field-names)]
+                ;; if the keyword-scheme-value is nil that means we could not get the KMS keywords
+                ;; in this case use the cached value instead so that we don't wipe out the cache.
+                (if-let [keyword-scheme-value (kms/get-keywords-for-keyword-scheme context keyword-scheme)]
+                  [keyword-scheme keyword-scheme-value]
+                  [keyword-scheme (get kms-cache-value keyword-scheme)])))))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "fetch-gcmd-keywords-map found redis carmine exception. Will return nil result." e)
+        (throw e)))))
 
 (defn get-kms-index
   "Retrieves the GCMD keywords map from the cache."
   [context]
-  (when-not (:ignore-kms-keywords context)
-    (let [cache (cache/context->cache context kms-cache-key)]
-      (or (cache/get-value cache kms-cache-key)
-          (when-not (cache/key-exists cache kms-cache-key)
-            (cache/get-value cache kms-cache-key (partial fetch-gcmd-keywords-map context)))))))
+  (try
+    (when-not (:ignore-kms-keywords context)
+      (let [cache (cache/context->cache context kms-cache-key)
+            _ (rl-util/log-redis-reading-start kms-cache-key)
+            [t1 kms-index] (util/time-execution (cache/get-value cache kms-cache-key))]
+        (if kms-index
+          (do
+            (rl-util/log-redis-read-complete "get-kms-index" kms-cache-key t1)
+            kms-index)
+          (let [[t1 kms-index] (util/time-execution (fetch-gcmd-keywords-map context))
+                [t2 _] (util/time-execution (cache/set-value cache kms-cache-key kms-index))]
+            (rl-util/log-data-gathering-stats "get-kms-index" kms-cache-key t1)
+            (rl-util/log-redis-write-complete "get-kms-index" kms-cache-key t2)
+            kms-index))))
+    (catch Exception e
+      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+        (error "get-kms-index found redis carmine exception. Will return nil result." e)
+        (throw e)))))
 
 (defn refresh-kms-cache
   "Refreshes the KMS keywords stored in the cache. This should be called from a background job on a
   timer to keep the cache fresh."
   [context]
+  (rl-util/log-refresh-start kms-cache-key)
   (let [cache (cache/context->cache context kms-cache-key)
-        gcmd-keywords-map (fetch-gcmd-keywords-map context)]
-    (info "Refreshed KMS cache.")
-    (cache/set-value cache kms-cache-key gcmd-keywords-map)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Job for refreshing the KMS keywords cache. Only one node needs to refresh the cache.
-(def-stateful-job RefreshKmsCacheJob
-  [_ system]
-  (try
-    ;; Locally KMS may not be configured or ready to go, in this case a bad URL
-    ;; May exist. Trap the error and print out a shorter message to shorten the
-    ;; logs
-    (refresh-kms-cache {:system system})
-    (catch java.net.MalformedURLException mue
-      (error "Malformed URL"  (.getMessage  mue)))))
-
-(defn refresh-kms-cache-job
-  "The singleton job that refreshes the KMS cache. The keywords are infrequently updated by the
-  GCMD team, usually once a week."
-  [job-key]
-  {:job-type RefreshKmsCacheJob
-   :job-key job-key
-   :daily-at-hour-and-minute [02 00]})
+        [t1 gcmd-keywords-map] (util/time-execution (fetch-gcmd-keywords-map context))
+        [t2 _] (util/time-execution (cache/set-value cache kms-cache-key gcmd-keywords-map))]
+    (rl-util/log-redis-data-write-complete "refresh-kms-cache" kms-cache-key t1 t2)))

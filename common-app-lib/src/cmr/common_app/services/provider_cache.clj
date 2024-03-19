@@ -5,9 +5,10 @@
    [clojure.set :as cset]
    [cmr.common.hash-cache :as hcache]
    [cmr.common.jobs :refer [def-stateful-job]]
-   [cmr.common.log :as log :refer [info]]
+   [cmr.common.redis-log-util :as rl-util]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as rhcache]
    [cmr.transmit.metadata-db2 :as mdb]))
 
@@ -18,7 +19,9 @@
 (defn create-cache
   "Creates a client instance of the cache."
   []
-  (rhcache/create-redis-hash-cache {:keys-to-track [cache-key]}))
+  (rhcache/create-redis-hash-cache {:keys-to-track [cache-key]
+                                    :read-connection (redis-config/redis-read-conn-opts)
+                                    :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn- provider-does-not-exist
   [provider-id]
@@ -35,22 +38,30 @@
   ([context]
    (refresh-provider-cache context (mdb/get-providers context)))
   ([context providers]
+   (rl-util/log-refresh-start cache-key)
    (let [cache (hcache/context->cache context cache-key)
          provider-map (into {} (map (fn [provider]
                                       {(:provider-id provider) provider})
-                                    providers))]
-     (info "Refreshed provider cache.")
-     (hcache/set-values cache cache-key provider-map))))
+                                    providers))
+         [tm result] (util/time-execution
+                      (hcache/set-values cache cache-key provider-map))]
+     (rl-util/log-redis-write-complete "refresh-provider-cache" cache-key tm)
+     result)))
 
 (defn- get-cached-providers
   "Retrieve the list of all providers from the cache. Setting the value
   if not present."
   [context]
-  (let [cache (hcache/context->cache context cache-key)]
-    (or (hcache/get-map cache cache-key)
-        (do 
-          (refresh-provider-cache context)
-          (hcache/get-map cache cache-key)))))
+  (rl-util/log-redis-reading-start "get-cached-providers get-map" cache-key)
+  (let [cache (hcache/context->cache context cache-key)
+        [tm result] (util/time-execution (hcache/get-map cache cache-key))
+        _ (rl-util/log-redis-read-complete "get-cached-providers" cache-key tm)]
+    (if result
+      result
+      (let [_ (refresh-provider-cache context)
+            [tm rst] (util/time-execution (hcache/get-map cache cache-key))]
+        (rl-util/log-redis-read-complete "get-cached-providers" cache-key tm)
+        rst))))
 
 (defn validate-providers-exist
   "Throws an exception if the given provider-ids are invalid, otherwise returns the input."

@@ -23,6 +23,7 @@ browse-scaler/src/node_modules
 *.ruby-version
 .cljfmt.edn
 dev-system/local.edn
+*pycache*
 
 ###############################
 ### Test Files
