@@ -19,6 +19,7 @@
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.generics :as gcom]
+   [cmr.common.log :refer [info]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as srvc-errors]
    [cmr.ingest.services.provider-service :as provider-service]
@@ -43,12 +44,14 @@
      :headers {"Content-Type" (mt/with-utf-8 mt/json)}
      :body body}))
 
+;; TODO error in this func with compojure
 (defn- one-result->response-map
   "Returns the response map of the given result, but this expects there to be
    just one value and it only returns the metadata, see result->response-map for
    the older return type. However, if there is an error in the response, then the
    body is returned as is"
   [result]
+  (info "inside one-result->response-map with result: " (pr-str result))
   (let [{:keys [status body]} result
         metadata (-> body
                      (json/parse-string)
@@ -99,6 +102,7 @@
    throws error if the metadata is not a valid against the UMM service JSON schema."
   [concept]
   ;; find fields and construct the MetadataDB format
+  (info "inside validate-and-prepare-provider-concept")
   (let [provider-id (get concept :ProviderId (get concept :provider-id))
         short-name provider-id ;; every production provider does this anyways, so make it official
         small (:small concept)
@@ -118,15 +122,18 @@
      :consortiums consortiums
      :metadata metadata}))
 
+;; STEP 1: /providers/::provider-id
 (def provider-api-routes
   (context "/providers" []
 
     ;; create a new provider
     (POST "/" {:keys [request-context body params headers]}
-      (acl/verify-ingest-management-permission request-context :update)
-      (common-enabled/validate-write-enabled request-context "ingest")
+      (acl/verify-ingest-management-permission request-context :update) ;; cache call
+      (info "verified ingest management permission")
+      (common-enabled/validate-write-enabled request-context "ingest") ;; checks within context
+      (info "validated write enabled")
       (one-result->response-map
-        (provider-service/create-provider request-context
+        (provider-service/create-provider request-context ;; this calls the metadata-db app via API through the LB host url (transmit lib config file)
                                           (validate-and-prepare-provider-concept
                                            (read-body headers body)))))
 

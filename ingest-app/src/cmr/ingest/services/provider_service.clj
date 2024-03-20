@@ -6,6 +6,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.ingest.data.ingest-events :as ingest-events]
    [cmr.transmit.metadata-db :as mdb]
+   [cmr.common.log :refer [info]]
    [cmr.transmit.ordering :as ordering]))
 
 (defn verify-empty-provider
@@ -34,7 +35,9 @@
 (defn create-provider
   "Create a provider."
   [context provider]
+  (info "creating provider: " (pr-str provider))
   (let [response (mdb/create-provider-raw context provider)]
+    (info "create-provider response: " (pr-str response))
     (when (successful? response)
       (ordering/notify-ordering context)
       (ingest-events/publish-provider-event

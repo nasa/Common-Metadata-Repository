@@ -209,25 +209,26 @@
   {:protocol "http"
    :context ""})
 
+;; TODO this is where the app connections are happening, variables are coming from the parameter store in AWS
 (defn app-conn-info
   "Returns the current application connection information as a map by application name"
   []
-  {:metadata-db {:protocol (metadata-db-protocol)
-                 :host (metadata-db-host)
-                 :port (metadata-db-port)
-                 :context (metadata-db-relative-root-url)}
-   :ingest {:protocol (ingest-protocol)
-            :host (ingest-host)
-            :port (ingest-port)
-            :context (ingest-relative-root-url)}
-   :access-control {:protocol (access-control-protocol)
-                    :host (access-control-host)
-                    :port (access-control-port)
-                    :context (access-control-relative-root-url)}
-   :search {:protocol (search-protocol)
-            :host (search-host)
-            :port (search-port)
-            :context (search-relative-root-url)}
+  {:metadata-db {:protocol (metadata-db-protocol) ;; http
+                 :host (metadata-db-host) ;; lb arn
+                 :port (metadata-db-port) ;; 80
+                 :context (metadata-db-relative-root-url)} ;; /metadata-db
+   :ingest {:protocol (ingest-protocol) ;; http
+            :host (ingest-host) ;; lb arn
+            :port (ingest-port) ;; 80
+            :context (ingest-relative-root-url)} ;;  /ingest
+   :access-control {:protocol (access-control-protocol) ;; http
+                    :host (access-control-host) ;; lb arn
+                    :port (access-control-port) ;; 80
+                    :context (access-control-relative-root-url)} ;; /access-control
+   :search {:protocol (search-protocol) ;; http
+            :host (search-host) ;; lb arn
+            :port (search-port) ;; 80
+            :context (search-relative-root-url)} ;; /search
    :indexer {:protocol (indexer-protocol)
              :host (indexer-host)
              :port (indexer-port)

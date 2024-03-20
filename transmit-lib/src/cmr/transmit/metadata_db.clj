@@ -340,6 +340,7 @@
   [context provider]
   (let [conn (config/context->app-connection context :metadata-db)
         request-url (str (conn/root-url conn) "/providers")]
+    (info "create-provider-raw: request url: " request-url "with connection " (pr-str conn))
     (client/post request-url
                  {:body (json/generate-string provider)
                   :content-type :json
