@@ -1,8 +1,8 @@
 (ns cmr.elastic-utils.es-condition-merger
   "Contains functions for merging and simplifying conditions in a condition group"
-  (:require [cmr.common-app.services.search.query-model :as q]
+  (:require [cmr.elastic-utils.es-query-model :as q]
             [clojure.set :as set])
-  (:import [cmr.common_app.services.search.query_model
+  (:import [cmr.elastic-utils.es-query-model
             StringCondition
             StringsCondition
             RelatedItemQueryCondition]))

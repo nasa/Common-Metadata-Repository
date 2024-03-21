@@ -1,7 +1,7 @@
 (ns cmr.elastic-utils.es-results-to-query-results
   "Contains functions to convert elasticsearch results to query results."
   (:require
-   [cmr.common-app.services.search.query-model :as common-qm]
+   [cmr.elastic-utils.es-query-model :as common-qm]
    [cmr.common-app.services.search.results-model :as results]))
 
 (defn get-hits

@@ -1,7 +1,7 @@
 (ns cmr.common.test.parameter-parser
   "Contains tests for parameter-parser"
   (:require [clojure.test :refer :all]
-            [cmr.common.parameter-parser :as p]
+            [cmr.elastic-utils.parameter-parser :as p]
             [cmr.common.services.messages :as msg])
   (:import clojure.lang.ExceptionInfo))
 

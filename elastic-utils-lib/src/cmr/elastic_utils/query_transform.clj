@@ -14,18 +14,18 @@
   (reduce-query-condition query context))
 
 (extend-protocol ComplexQueryToSimple
-  cmr.common_app.services.search.query_model.Query
+  cmr.elastic-utils.es-query-model.Query
   (reduce-query-condition
     [query context]
     (update-in query [:condition] reduce-query-condition context))
 
-  cmr.common_app.services.search.query_model.ConditionGroup
+  cmr.elastic-utils.es-query-model.ConditionGroup
   (reduce-query-condition
     [condition context]
     (update-in condition [:conditions] (fn [conditions]
                                          (map #(reduce-query-condition % context) conditions))))
 
-  cmr.common_app.services.search.query_model.NegatedCondition
+  cmr.elastic-utils.es-query-model.NegatedCondition
   (reduce-query-condition
     [condition context]
     (update-in condition [:condition] reduce-query-condition context))

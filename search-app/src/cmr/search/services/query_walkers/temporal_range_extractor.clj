@@ -3,7 +3,6 @@
   during pre-processing of the query to get the temporal conditions result feature."
   (:require
    [cmr.common.util :as util]
-   ;;[cmr.search.models.query :as qm]
    )
   (:import cmr.common.services.search.query_model.Query
            cmr.common.services.search.query_model.ConditionGroup

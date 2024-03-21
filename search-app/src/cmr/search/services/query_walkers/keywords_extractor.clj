@@ -80,7 +80,7 @@
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common.services.search.query_model.ConditionGroup
-  (extract-keywords-seq
+ (extract-keywords-seq
    [{:keys [conditions]}]
    (apply merge-with concat (map extract-keywords-seq conditions)))
   (contains-keyword-condition?

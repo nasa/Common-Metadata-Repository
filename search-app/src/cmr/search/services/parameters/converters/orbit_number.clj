@@ -5,7 +5,7 @@
             [clojure.string :as str]
             [cmr.search.services.messages.orbit-number-messages :as msg]
             [cmr.common.services.errors :as errors]
-            [cmr.common.parameter-parser :as parser])
+            [cmr.elastic-utils.parameter-parser :as parser])
   (:import [cmr.search.models.query
             OrbitNumberValueCondition
             OrbitNumberRangeCondition]

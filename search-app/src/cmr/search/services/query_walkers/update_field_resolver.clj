@@ -97,7 +97,7 @@
        (gc/group-conds operation conditions))))
 
   cmr.common.services.search.query_model.NumericRangeIntersectionCondition
-  (has-field?
+ (has-field?
    [c field-key]
    (or (= (:min-field c) field-key)
        (= (:max-field c) field-key)))

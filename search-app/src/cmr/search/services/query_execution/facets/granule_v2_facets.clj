@@ -135,7 +135,7 @@
 (defn create-cycle-facet
   "Returns a filter facet node for a cycle."
   [base-url query-params applied? aggs]
-  (v2h/generate-filter-node 
+  (v2h/generate-filter-node
     base-url
     query-params
     "cycle"
