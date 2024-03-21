@@ -24,8 +24,7 @@
       [:gmd:date {:gco:nilReason "unknown"}]
       (output-character-string :gmd:edition (:Version ma))]]]])
 
-(def code-list-url (str "https://cdn.earthdata.nasa.gov/iso"
-                        "/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"))
+(def code-list-url (str (:earthdata-iso iso/code-lists) "#DS_AssociationTypeCode"))
 
 (defn generate-metatdata-association
   [ma]

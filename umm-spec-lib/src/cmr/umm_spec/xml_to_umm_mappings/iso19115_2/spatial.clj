@@ -2,7 +2,6 @@
   "Functions for parsing UMM spatial records out of ISO 19115-2 XML documents."
   (:require
    [clojure.string :as string]
-   [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
    [cmr.spatial.encoding.gmd :as gmd]
@@ -10,7 +9,6 @@
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :refer [generate-horizontal-resolution-code-name-map]]
-   [cmr.umm-spec.util :as umm-spec-util]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as iso-xml-parsing-util]))
 
 (def coordinate-system-xpath
@@ -248,7 +246,6 @@
   This map is used later to programatically pull out the UMM-C class name. in this example it
   would be GenericResolutions"
   [xpath-parsed-resolution-element map]
-  (def res1 xpath-parsed-resolution-element)
   (let [x (get-in xpath-parsed-resolution-element [:tag])]
     (assoc map x (-> xpath-parsed-resolution-element
                      (get-in [:content])

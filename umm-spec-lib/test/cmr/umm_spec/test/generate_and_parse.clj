@@ -28,18 +28,17 @@
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
-  [:dif :dif10 :echo10 :iso19115 :iso-smap])
+  [:dif10 :echo10 :iso19115 :iso-smap])
 
 (def test-context lkt/create-context)
 
 (def collection-destination-formats
   "Converting to these formats is tested in the roundrobin test."
-  [:echo10 :dif10 :dif :iso19115 :iso-smap])
+  [:echo10 :dif10 :iso19115 :iso-smap])
 
 (def collection-format-examples
   "Map of format type to example file"
-  {:dif "dif.xml"
-   :dif10 "dif10.xml"
+  {:dif10 "dif10.xml"
    :echo10 "echo10.xml"
    :iso19115 "iso19115.xml"
    :iso-smap "iso_smap.xml"})
@@ -55,7 +54,10 @@
       (update-in-each [:DataCenters] update :ContactPersons set)
       (update :DataCenters set)
       (update :ContactPersons set)
-      (update-in [:SpatialExtent] update :VerticalSpatialDomains set)))
+      (update-in [:SpatialExtent] update :VerticalSpatialDomains set)
+      (update-in-each [:TemporalExtents] update :RangeDateTimes set)
+      (update-in-each [:TemporalExtents] update :SingleDateTimes set)
+      (update :TemporalExtents set)))
 
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
@@ -80,11 +82,6 @@
   "Returns a set of example metadata files in the given format."
   [metadata-format]
   (seq (.listFiles (io/file (io/resource (str "example-data/" (name metadata-format)))))))
-
-(defn- remove-vertical-spatial-domains
-  "Remove the VerticalSpatialDomains from the SpatialExtent of the record."
-  [record]
-  (update-in record [:SpatialExtent] dissoc :VerticalSpatialDomains))
 
 (deftest roundtrip-example-metadata
   (let [failed-atom (atom false)
@@ -131,26 +128,20 @@
                                #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
                                                                 (when (> ct 0) ct)))))
                     ;; Change fields to sets for comparison
-                    ;; Also, dif9 changes VerticalSpatialDomain values when they contain Max and Min
-                    ;;  Remove them from the comparison.
-                    expected (convert-to-sets (if (= :dif target-format)
-                                                (remove-vertical-spatial-domains expected)
-                                                ;; Footprints don't exist in dif10 and echo10
-                                                ;; it needs to be removed for round-trip comparison.
-                                                (if (or (= :dif10 target-format)
-                                                        (= :echo10 target-format)
-                                                        (not (get-in expected
-                                                              [:SpatialExtent :OrbitParameters :Footprints])))
-                                                  (update-in expected [:SpatialExtent :OrbitParameters]
-                                                             dissoc :Footprints)
-                                                    expected)))
-                    actual (convert-to-sets (if (= :dif target-format)
-                                              (remove-vertical-spatial-domains actual)
-                                              ;; remove Footprints if it's nil
-                                              (if (get-in actual [:SpatialExtent :OrbitParameters :Footprints])
-                                                actual
-                                                (update-in actual [:SpatialExtent :OrbitParameters]
-                                                           dissoc :Footprints))))
+                    ;; Footprints don't exist in dif10 and echo10
+                    ;; it needs to be removed for round-trip comparison.
+                    expected (convert-to-sets (if (or (= :dif10 target-format)
+                                                      (= :echo10 target-format)
+                                                      (not (get-in expected
+                                                                   [:SpatialExtent :OrbitParameters :Footprints])))
+                                                (update-in expected [:SpatialExtent :OrbitParameters]
+                                                           dissoc :Footprints)
+                                                expected))
+                    ;; remove Footprints if it's nil
+                    actual (convert-to-sets (if (get-in actual [:SpatialExtent :OrbitParameters :Footprints])
+                                              actual
+                                              (update-in actual [:SpatialExtent :OrbitParameters]
+                                                         dissoc :Footprints)))
                     expected (util/remove-nil-keys expected)
                     actual (util/remove-nil-keys actual)]]
 
@@ -255,7 +246,9 @@
           ;;    so we have to convert the value and unit in umm-record to kilometer before round-trip comparison.
           ;; 4. SwathWidth can be 1.0E-1 in umm, translating to other formats it could be changed to 0.1
           umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
-          umm-record (remove-1_18_0-change umm-record)
+          umm-record (if (or (= metadata-format :echo10) (= metadata-format :dif10))
+                       (remove-1_18_0-change umm-record)
+                       umm-record)
           umm-record (js/parse-umm-c
                         (assoc umm-record
                                :DataDates [{:Date (t/date-time 2012)
@@ -279,6 +272,7 @@
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]
+
       (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
 
@@ -298,7 +292,9 @@
      metadata-format (gen/elements tested-collection-formats)]
     (let [;; CMR-8128 remove OrbitParameters for the same reason as the previous test.
           umm-record (update-in umm-record [:SpatialExtent] dissoc :OrbitParameters)
-          umm-record (remove-1_18_0-change umm-record)
+          umm-record (if (or (= metadata-format :echo10) (= metadata-format :dif10))
+                       (remove-1_18_0-change umm-record)
+                       umm-record)
           umm-record (js/parse-umm-c
                       (assoc umm-record
                              :DataDates [{:Date (t/date-time 2012)

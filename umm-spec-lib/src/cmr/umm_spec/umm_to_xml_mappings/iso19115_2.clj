@@ -8,7 +8,6 @@
    [cmr.umm-spec.date-util :as date-util]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso]
-   [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.archive-and-dist-info :as archive-and-dist-info]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation :as collection-citation]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress :as collection-progress]
@@ -219,13 +218,168 @@
   "Returns the ISO extent description string (a \"key=value,key=value\" string) for the given UMM-C
   collection record."
   [c]
-  (let [temporal (first (:TemporalExtents c))
-        m {"SpatialCoverageType" (-> c :SpatialExtent :SpatialCoverageType)
+  (let [m {"SpatialCoverageType" (-> c :SpatialExtent :SpatialCoverageType)
            "SpatialGranuleSpatialRepresentation" (-> c :SpatialExtent :GranuleSpatialRepresentation)
            "CoordinateSystem" (-> c :SpatialExtent :HorizontalSpatialDomain :Geometry :CoordinateSystem)}]
     (string/join "," (for [[k v] m
                            :when (some? v)]
                       (str k "=" (string/replace v #"[,=]" ""))))))
+
+(defn generate-other-identifer
+  "Returns the ISO structure for UMM OtherIdentifiers"
+  [other-identifier]
+  [:gmd:identifier
+   [:gmd:MD_Identifier
+    [:gmd:code [:gco:CharacterString (:Identifier other-identifier)]]
+    [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.otheridentifier"]]
+    [:gmd:description [:gco:CharacterString (if (:DescriptionOfOtherType other-identifier)
+                                              (format "Type: %s DescriptionOfOtherType: %s" (:Type other-identifier) (:DescriptionOfOtherType other-identifier))
+                                              (format "Type: %s" (:Type other-identifier)))]]]])
+
+(defn generate-file-naming-convention
+  "Returns the ISO structure for UMM file naming convention."
+  [fnc]
+  (let [spec (if (:Description fnc)
+               (format "FileNameConvention: %s ConventionDescription: %s" (:Convention fnc) (:Description fnc))
+               (format "FileNameConvention: %s" (:Convention fnc)))]
+    [:gmd:resourceFormat
+     [:gmd:MD_Format
+      [:gmd:name (char-string "FileNamingConvention")]
+      [:gmd:version {:gco:nilReason "inapplicable"}]
+      [:gmd:specification (char-string spec)]]]))
+
+(defn convert-temporal-resolution-to-iso
+  "Check and convert the UMM temporal resolution to satisfy the ISO schema."
+  [resolution]
+  (let [unit (util/safe-lowercase (:Unit resolution))
+        value (:Value resolution)
+        value (if (= "week" unit) ;; Convert week to day
+                (* 7 value)
+                value)
+        unit (case unit
+               "week" "day"
+               "diurnal" "day"
+               unit)]
+    {:Value value
+     :Unit unit}))
+
+(defn create-iso-temp-res
+  "Creates a temporary temporal resolution map structure to more easily
+  create ISO temporal extent data."
+  [idx resolution]
+  (let [base {:Id (str "temporal_extent_" idx)}
+        res (if (:Value resolution)
+              (convert-temporal-resolution-to-iso resolution)
+              resolution)]
+    (if (:Value res)
+      (merge base
+             {:Begin ""
+              :End ""
+              :Value (:Value res)
+              :Unit (:Unit res)})
+      (merge base
+             {:Instant ""
+              :Unit (:Unit res)}))))
+
+(defn create-iso-rdt
+  "Creates a temporary temporal range date times map structure to more easily
+  create ISO temporal extent data."
+  [idx rdt ends-at-present? resolution]
+  (let [begin (:BeginningDateTime rdt)
+        end (:EndingDateTime rdt)
+        base {:Id (str "temporal_extent_" idx)
+              :Begin (su/nil-to-empty-string (when begin
+                                               (if (= (type begin) java.lang.String)
+                                                 begin
+                                                 (p/clj-time->date-time-str begin))))
+              :End (if ends-at-present?
+                     {:indeterminatePosition "now"}
+                     (su/nil-to-empty-string (when end
+                                               (if (= (type end) java.lang.String)
+                                                 end
+                                                 (p/clj-time->date-time-str end)))))}]
+    (if (:Value resolution)
+      (let [res (convert-temporal-resolution-to-iso resolution)]
+        (merge base
+               {:Value (:Value res)
+                :Unit (:Unit res)}))
+      (if (:Unit resolution)
+        (vector base (create-iso-temp-res idx resolution))
+        base))))
+
+(defn create-iso-sdt
+  "Creates a temporary temporal single date times map structure to more easily
+  create ISO temporal extent data."
+  [idx sdt resolution]
+  (let [base {:Id (str "temporal_extent_" idx)
+              :Instant (when sdt
+                         (if (= (type sdt) java.lang.String)
+                           sdt
+                           (p/clj-time->date-time-str sdt)))}]
+    (if (:Unit resolution)
+      (vector base (create-iso-temp-res idx resolution))
+      base)))
+
+(defn generate-iso-temporal-extents
+  "Takes the temporal extent temporary structure and builds the ISO temporal extent."
+  [extent-map]
+  [:gmd:temporalElement {:uuidref (:Id extent-map)}
+   [:gmd:EX_TemporalExtent
+    [:gmd:extent
+     (when (:Begin extent-map)
+       (if (and (= "" (:Begin extent-map))
+                (:Value extent-map))
+         [:gml:TimePeriod {:gml:id (str (:Id extent-map) "_resolution")}
+          [:gml:beginPosition ""]
+          [:gml:endPosition ""]
+          [:gml:timeInterval {:unit (:Unit extent-map)} (:Value extent-map)]]
+         [:gml:TimePeriod {:gml:id (:Id extent-map)}
+          [:gml:beginPosition (:Begin extent-map)]
+          [:gml:endPosition (:End extent-map)]
+          (when (:Value extent-map)
+            [:gml:timeInterval {:unit (:Unit extent-map)} (:Value extent-map)])]))
+     (when (:Instant extent-map)
+       (if (and (= "" (:Instant extent-map))
+                (:Unit extent-map))
+         [:gml:TimeInstant {:gml:id (str (:Id extent-map) "_resolution")}
+          [:gml:timePosition (:Unit extent-map)]]
+         [:gml:TimeInstant {:gml:id (:Id extent-map)}
+          [:gml:timePosition (:Instant extent-map)]]))]]])
+
+(defn generate-temporal-umm-maps
+  "Generates and returns ISO temporal extents from UMM-C temporal extents."
+  [temporal-extents]
+  (loop [extents temporal-extents
+         cntr 1
+         result nil]
+    (if (seq extents)
+      (let [extent (first extents)
+            rdts (:RangeDateTimes extent)
+            sdts (:SingleDateTimes extent)
+            rdts-map (flatten (vector (map-indexed #(create-iso-rdt (+ cntr %)
+                                                                    %2
+                                                                    (:EndsAtPresentFlag extent)
+                                                                    (:TemporalResolution extent))
+                                                   rdts)))
+            sdts-map (flatten (vector (map-indexed #(create-iso-sdt (+ cntr (count rdts) %)
+                                                                    %2
+                                                                    (:TemporalResolution extent))
+                                                   sdts)))
+            temp-res (when (and (:TemporalResolution extent)
+                                (not (or rdts sdts)))
+                       (create-iso-temp-res (+ cntr (count rdts) (count sdts))
+                                            (:TemporalResolution extent)))
+            results (conj result rdts-map sdts-map temp-res)]
+        (recur (rest extents) (+ cntr (count rdts) (count sdts) (if temp-res 1 0)) results))
+      result)))
+
+(defn generate-temporal-extents
+  "The starting point to generate the temporal extents. A temporary map structure is created first
+  so that we can more easily put the data into the ISO structure."
+  [temporal-extents]
+  (let [umm-temporal-maps (generate-temporal-umm-maps temporal-extents)
+        umm-temporal-maps (flatten (util/remove-nils-empty-maps-seqs umm-temporal-maps))]
+    (doall (map generate-iso-temporal-extents umm-temporal-maps))))
 
 (defn umm-c-to-iso19115-2-xml
   "Returns the generated ISO19115-2 xml from UMM collection record c."
@@ -284,6 +438,14 @@
                     [:gmd:code [:gco:CharacterString standard-product]]
                     [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.standardproduct"]]
                     [:gmd:description [:gco:CharacterString "Standard Product"]]]]))
+            (when (:OtherIdentifiers c)
+              (map #(generate-other-identifer %) (:OtherIdentifiers c)))
+            (when-let [data-maturity (:DataMaturity c)]
+              [:gmd:identifier
+               [:gmd:MD_Identifier
+                [:gmd:code [:gco:CharacterString data-maturity]]
+                [:gmd:codeSpace [:gco:CharacterString "gov.nasa.esdis.umm.datamaturity"]]
+                [:gmd:description [:gco:CharacterString "Data Maturity"]]]])
             (collection-citation/convert-creator c)
             (collection-citation/convert-editor c)
             (collection-citation/convert-publisher c)
@@ -304,6 +466,8 @@
           (data-contact/generate-contact-groups (:ContactGroups c))
           (sdru/generate-browse-urls c)
           (archive-and-dist-info/generate-file-archive-info c)
+          (when-let [fnc (:FileNamingConvention c)]
+            (generate-file-naming-convention fnc))
           (generate-projects-keywords (:Projects c))
           (kws/generate-iso19115-descriptive-keywords
            kws/science-keyword-type (map kws/science-keyword->iso-keyword-string (:ScienceKeywords c)))
@@ -318,6 +482,7 @@
           (generate-publication-references (:PublicationReferences c))
           (sdru/generate-publication-related-urls c)
           (doi/generate-associated-dois c)
+          (doi/generate-previous-version c)
           [:gmd:language (char-string (or (:DataLanguage c) "eng"))]
           (iso-topic-categories/generate-iso-topic-categories c)
           (when (:TilingIdentificationSystems c)
@@ -339,23 +504,7 @@
             (spatial/generate-vertical-domain c)
             (spatial/generate-orbit-parameters c)
             (spatial/generate-orbit-parameters-foot-prints c)
-            (for [temporal (:TemporalExtents c)
-                  rdt (:RangeDateTimes temporal)]
-              [:gmd:temporalElement
-               [:gmd:EX_TemporalExtent
-                [:gmd:extent
-                 [:gml:TimePeriod {:gml:id (su/generate-id)}
-                  [:gml:beginPosition (:BeginningDateTime rdt)]
-                  (if (:EndsAtPresentFlag temporal)
-                    [:gml:endPosition {:indeterminatePosition "now"}]
-                    [:gml:endPosition (su/nil-to-empty-string (:EndingDateTime rdt))])]]]])
-            (for [temporal (:TemporalExtents c)
-                  date (:SingleDateTimes temporal)]
-              [:gmd:temporalElement
-               [:gmd:EX_TemporalExtent
-                [:gmd:extent
-                 [:gml:TimeInstant {:gml:id (su/generate-id)}
-                  [:gml:timePosition date]]]]])]]
+            (generate-temporal-extents (:TemporalExtents c))]]
           (when processing-level
             [:gmd:processingLevel
              (proc-level/generate-iso-processing-level processing-level)])]]

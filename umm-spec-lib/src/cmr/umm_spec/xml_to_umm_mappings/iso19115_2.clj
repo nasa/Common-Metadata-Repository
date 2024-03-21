@@ -2,9 +2,8 @@
   "Defines mappings from ISO19115-2 XML to UMM records"
   (:require
    [clj-time.format :as f]
-   [clojure.data :as data]
    [clojure.string :as string]
-   [cmr.common-app.services.kms-fetcher :as kf]
+   [cmr.common.log :refer [warn]]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select]]
@@ -12,10 +11,9 @@
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value gmx-anchor-value]]
    [cmr.umm-spec.json-schema :as js]
-   [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.url :as url]
-   [cmr.umm-spec.util :as su :refer [char-string]]
+   [cmr.umm-spec.util :as su]
    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.archive-and-dist-info :as archive-and-dist-info]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation :as collection-citation]
@@ -23,6 +21,7 @@
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.platform :as platform]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.project-element :as project]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as parsing-util]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.use-constraints :as use-constraints]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as data-contact]
@@ -57,8 +56,7 @@
   (str md-data-id-base-xpath "/gmd:resourceConstraints/gmd:MD_LegalConstraints"))
 
 (def temporal-xpath
-  "Temoral xpath relative to md-data-id-base-xpath"
-  (str "gmd:extent/gmd:EX_Extent/gmd:temporalElement/gmd:EX_TemporalExtent/gmd:extent"))
+  (str md-data-id-base-xpath "/gmd:extent/gmd:EX_Extent/gmd:temporalElement"))
 
 (def data-quality-info-xpath
   "/gmi:MI_Metadata/gmd:dataQualityInfo/gmd:DQ_DataQuality")
@@ -68,12 +66,8 @@
        "/gmd:report/DQ_QuantitativeAttributeAccuracy/gmd:evaluationMethodDescription"))
 
 (def precision-xpath
-  (str data-quality-info-xpath
-       "/gmd:report/gmd:DQ_AccuracyOfATimeMeasurement/gmd:result/gmd:DQ_QuantitativeResult"
+  (str "gmd:DQ_AccuracyOfATimeMeasurement/gmd:result/gmd:DQ_QuantitativeResult"
        "/gmd:value/gco:Record[@xsi:type='gco:Real_PropertyType']/gco:Real"))
-
-(def topic-categories-xpath
-  (str md-data-id-base-xpath "/gmd:topicCategory/gmd:MD_TopicCategoryCode"))
 
 (def data-dates-xpath
   (str md-data-id-base-xpath "/gmd:citation/gmd:CI_Citation/gmd:date/gmd:CI_Date"))
@@ -86,9 +80,6 @@
   "Publication xpath relative to md-data-id-base-xpath"
   (str "gmd:aggregationInfo/gmd:MD_AggregateInformation/gmd:aggregateDataSetName/gmd:CI_Citation"
        "[gmd:citedResponsibleParty/gmd:CI_ResponsibleParty/gmd:role/gmd:CI_RoleCode='publication']"))
-
-(def personnel-xpath
-  "/gmi:MI_Metadata/gmd:contact/gmd:CI_ResponsibleParty")
 
 (def metadata-extended-element-xpath
   (str "/gmi:MI_Metadata/gmd:metadataExtensionInfo/gmd:MD_MetadataExtensionInformation"
@@ -132,25 +123,98 @@
             :when (not (keyword-types-to-ignore (value-of kw "gmd:type/gmd:MD_KeywordTypeCode")))]
         (values-at kw "gmd:keyword/gco:CharacterString")))))
 
-(defn- temporal-ends-at-present?
+(defn temporal-ends-at-present?
   [temporal-el]
-  (-> temporal-el
-      (select "gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']")
-      seq
-      some?))
+  (->> temporal-el
+       (some #(select % "gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:endPosition[@indeterminatePosition='now']"))
+       some?))
 
-(defn- parse-temporal-extents
+(defn get-attribute
+  "Given an element, return the value of the attribute off of it.
+  This function assumes there is only 1 attribute on the element."
+  [element]
+  (-> element      ;; list of 1 element that contains needed attribute.
+       (first)     ;; takes element out of list.
+       (:attrs)    ;; #:gml{:id temporal_extent_2_resolution}
+       (first)     ;; [:gml/id temporal_extent_2_resolution]
+       (second)))  ;; temporal_extent_2_resolution
+
+(defn find-temporal-resolution-non-value-unit
+  "Find the non value temporal resolution unit if it exists which
+  is either the enumerations of varies or constant."
+  [temporal-extent resolution-key]
+  (let [element (select temporal-extent "gmd:EX_TemporalExtent/gmd:extent/gml:TimeInstant")
+        attribute-value (get-attribute element)]
+    (when (= resolution-key attribute-value)
+      (let [value (value-of element "/")]
+        (when value
+          (if (string/includes? (string/lower-case value) "constant")
+            "Constant"
+            "Varies"))))))
+
+(defn find-temporal-resolution-value-unit
+  "Find the temporal resolution value and unit if it exists."
+  [temporal-extent]
+  (let [value (value-of temporal-extent "gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:timeInterval")
+        value (when value
+                (try (Double/parseDouble (string/trim value))
+                     (catch Exception e
+                       (warn (str "Exception thrown while trying to parse a non parsable ISO temporal resolution value number."
+                                  "The value is " value))
+                       0.0)))
+        unit (value-of (first (select temporal-extent "gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:timeInterval")) "@unit")
+        unit (when unit
+               (string/capitalize unit))]
+    (when value
+      {:Value value
+       :Unit unit})))
+
+(defn parse-temporal-resolution
+  "Returns the temporal resolution map given a list of extents with the same group uuidref."
+  [temporal-extents-list temporal-group-key]
+  (let [non-value-unit (some #(find-temporal-resolution-non-value-unit % (str temporal-group-key "_resolution")) temporal-extents-list)
+        value-unit (some #(find-temporal-resolution-value-unit %) temporal-extents-list)]
+    (if non-value-unit
+      {:Unit non-value-unit}
+      value-unit)))
+
+(defn find-single-date-time
+  "Returns the single date time if it exists in the ISO temporal extents sub elements."
+  [temporal-extent group-key]
+  (let [element (select temporal-extent "gmd:EX_TemporalExtent/gmd:extent/gml:TimeInstant")
+        attribute-value (get-attribute element)]
+    (when (and element (= group-key attribute-value))
+      (date-at-str element "/"))))
+
+(defn parse-temporal-extents
   "Parses the collection temporal extents from the the collection document
   and the data identification element."
-  [doc md-data-id-el]
-  (util/doall-recursive
-   (for [temporal (select md-data-id-el temporal-xpath)]
-     {:PrecisionOfSeconds (value-of doc precision-xpath)
-      :EndsAtPresentFlag (temporal-ends-at-present? temporal)
-      :RangeDateTimes (for [period (select temporal "gml:TimePeriod")]
-                        {:BeginningDateTime (date-at-str period "gml:beginPosition")
-                         :EndingDateTime    (date-at-str period "gml:endPosition")})
-      :SingleDateTimes (dates-at-str temporal "gml:TimeInstant/gml:timePosition")})))
+  [doc]
+  (seq
+   (for [temporal-group (group-by #(value-of % "@uuidref") (select doc temporal-xpath))
+         :let [temporal-extents-list (val temporal-group)]]
+     {:PrecisionOfSeconds (if (key temporal-group)
+                            (or (value-of doc (str data-quality-info-xpath
+                                                   "/gmd:report[@uuidref='"
+                                                   (key temporal-group)
+                                                   "']/"
+                                                   precision-xpath))
+                                (value-of doc (str data-quality-info-xpath
+                                                   "/gmd:report/"
+                                                   precision-xpath)))
+                            (value-of doc (str data-quality-info-xpath
+                                               "/gmd:report/"
+                                               precision-xpath)))
+      :EndsAtPresentFlag (temporal-ends-at-present? temporal-extents-list)
+      :RangeDateTimes (seq (util/remove-nils-empty-maps-seqs
+                            (for [period temporal-extents-list
+                                  :let [time-period (first (select period "gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod"))]
+                                  :when time-period]
+                              {:BeginningDateTime (date-at-str time-period "gml:beginPosition")
+                               :EndingDateTime    (date-at-str time-period "gml:endPosition")})))
+      :SingleDateTimes (seq
+                        (util/remove-nils-empty-maps-seqs (map #(find-single-date-time % (key temporal-group)) temporal-extents-list)))
+      :TemporalResolution (parse-temporal-resolution temporal-extents-list (key temporal-group))})))
 
 (defn- parse-abstract-version-description
   "Returns the Abstract and VersionDescription parsed from the collection
@@ -174,7 +238,6 @@
        :when (some? metadata-date-type)]
    {:Type metadata-date-type
     :Date (f/parse (char-string-value metadata-date "gmd:domainValue"))}))
-
 
 (defn- parse-online-resource
  "Parse online resource from the publication XML"
@@ -226,6 +289,53 @@
      :OnlineResource (parse-online-resource publication sanitize?)
      :OtherReferenceDetails (char-string-value publication "gmd:otherCitationDetails")}))
 
+(defn parse-other-identifiers
+  "Return the UMM-C OtherIdentifiers from an ISO record."
+  [doc]
+  (for [id-el (select doc identifier-base-xpath)
+        :let [id (char-string-value id-el "gmd:code")
+              desc (char-string-value id-el "gmd:description")
+              desc-map (when desc
+                         (parsing-util/convert-iso-description-string-to-map
+                          desc
+                          (re-pattern "Type:|DescriptionOfOtherType:")))]
+        :when (= "gov.nasa.esdis.umm.otheridentifier" (value-of id-el "gmd:codeSpace/gco:CharacterString"))]
+    (if (:DescriptionOfOtherType desc-map)
+      {:Identifier id
+       :Type (:Type desc-map)
+       :DescriptionOfOtherType (:DescriptionOfOtherType desc-map)}
+      {:Identifier id
+       :Type (:Type desc-map)})))
+
+(defn parse-file-naming-convention
+  "Return the UMM-C FileNamingConvention from an ISO record."
+  [doc]
+  (first
+   (for [format (select doc (str archive-info-xpath "/gmd:MD_Format"))
+         :let [format-name (char-string-value format "gmd:name")
+               specification (char-string-value format "gmd:specification")
+               spec-map (when specification
+                          (parsing-util/convert-iso-description-string-to-map
+                           specification
+                           (re-pattern "FileNameConvention:|ConventionDescription:")))]
+         :when (= "FileNamingConvention" format-name)]
+     {:Convention (:FileNameConvention spec-map)
+      :Description (:ConventionDescription spec-map)})))
+
+(def data-maturity-valid-values
+  "Vector list of the data maturity valid values"
+  ["Beta" "Provisional" "Validated" "Stage 1 Validation" "Stage 2 Validation" "Stage 3 Validation" "Stage 4 Validation"])
+
+(defn parse-data-maturity
+  "Return the UMM-C DataMaturity element and the sub elements from an ISO record."
+  [doc]
+  (first
+   (for [id-el (select doc identifier-base-xpath)
+         :let [id (char-string-value id-el "gmd:code")]
+         :when (= "gov.nasa.esdis.umm.datamaturity" (value-of id-el "gmd:codeSpace/gco:CharacterString"))]
+     (when (and id (some #(= id %) data-maturity-valid-values))
+       id))))
+
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
   [context doc {:keys [sanitize?]}]
@@ -241,16 +351,19 @@
                      (gmx-anchor-value id-el "gmd:code"))
       :EntryTitle (char-string-value citation-el "gmd:title")
       :DOI (doi/parse-doi doc citation-base-xpath)
+      :OtherIdentifiers (parse-other-identifiers doc)
+      :FileNamingConvention (parse-file-naming-convention doc)
       :AssociatedDOIs (doi/parse-associated-dois doc associated-doi-xpath)
       :Version (or (char-string-value citation-el "gmd:edition") "Not Applicable")
       :VersionDescription version-description
       :Abstract abstract
       :Purpose (su/truncate (char-string-value md-data-id-el "gmd:purpose") su/PURPOSE_MAX sanitize?)
       :CollectionProgress (get-umm-element/get-collection-progress
-                            coll-progress-mapping
-                            md-data-id-el
-                            "gmd:status/gmd:MD_ProgressCode"
-                            sanitize?)
+                           coll-progress-mapping
+                           md-data-id-el
+                           "gmd:status/gmd:MD_ProgressCode"
+                           sanitize?)
+      :DataMaturity (parse-data-maturity doc)
       :Quality (su/truncate (char-string-value doc quality-xpath) su/QUALITY_MAX sanitize?)
       :DataDates (iso-util/parse-data-dates doc data-dates-xpath)
       :AccessConstraints (use-constraints/parse-access-constraints doc constraints-xpath sanitize?)
@@ -261,15 +374,15 @@
       :ISOTopicCategories (iso-topic-categories/parse-iso-topic-categories doc "")
       :SpatialExtent (spatial/parse-spatial doc sanitize?)
       :TilingIdentificationSystems (tiling/parse-tiling-system md-data-id-el)
-      :TemporalExtents (or (seq (parse-temporal-extents doc md-data-id-el))
+      :TemporalExtents (or (seq (parse-temporal-extents doc))
                            (when sanitize? su/not-provided-temporal-extents))
       :CollectionDataType (value-of (select doc collection-data-type-xpath) ".")
       :StandardProduct (value-of (select doc standard-product-xpath) ".")
       :ProcessingLevel {:Id
                         (su/with-default
-                         (char-string-value
-                          md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
-                         sanitize?)
+                          (char-string-value
+                           md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:code")
+                          sanitize?)
                         :ProcessingLevelDescription
                         (char-string-value
                          md-data-id-el "gmd:processingLevel/gmd:MD_Identifier/gmd:description")}
@@ -292,19 +405,13 @@
       :DirectDistributionInformation (archive-and-dist-info/parse-direct-dist-info doc
                                                                                    dist-info-xpath)
       :MetadataSpecification (umm-c/map->MetadataSpecificationType
-                             {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
-                                        umm-spec-versioning/current-collection-version),
-                              :Name "UMM-C"
-                              :Version umm-spec-versioning/current-collection-version})})))
+                              {:URL (str "https://cdn.earthdata.nasa.gov/umm/collection/v"
+                                         umm-spec-versioning/current-collection-version),
+                               :Name "UMM-C"
+                               :Version umm-spec-versioning/current-collection-version})})))
 
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document. The :sanitize? option
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
   [context metadata options]
   (js/parse-umm-c (parse-iso19115-xml context metadata options)))
-
-(defn parse-doc-temporal-extents
- "Standalone function to parse temporal extents outside of full collection parsing"
- [doc]
- (let [md-data-id-el (first (select doc md-data-id-base-xpath))]
-  (parse-temporal-extents doc md-data-id-el)))

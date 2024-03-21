@@ -1,23 +1,23 @@
 (ns cmr.umm-spec.test.iso19115-expected-conversion
   "ISO 19115 specific expected conversion functionality"
   (:require
-    [clj-time.format :as f]
-    [clojure.string :as string]
-    [cmr.common.util :as util :refer [update-in-each]]
-    [cmr.spatial.mbr :as m]
-    [cmr.umm-spec.date-util :as date-util]
-    [cmr.umm-spec.iso19115-2-util :as iso-util]
-    [cmr.umm-spec.json-schema :as js]
-    [cmr.umm-spec.models.umm-collection-models :as umm-c]
-    [cmr.umm-spec.models.umm-common-models :as cmn]
-    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
-    [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-    [cmr.umm-spec.test.iso-shared :as iso-shared]
-    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
-    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
-    [cmr.umm-spec.url :as url]
-    [cmr.umm-spec.util :as su]
-    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
+   [clj-time.format :as f]
+   [clojure.string :as string]
+   [cmr.common.util :as util :refer [update-in-each]]
+   [cmr.spatial.mbr :as m]
+   [cmr.umm-spec.date-util :as date-util]
+   [cmr.umm-spec.iso19115-2-util :as iso-util]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.models.umm-collection-models :as umm-c]
+   [cmr.umm-spec.models.umm-common-models :as cmn]
+   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
+   [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+   [cmr.umm-spec.test.iso-shared :as iso-shared]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.additional-attribute :as iso-aa]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact :as data-contact]
+   [cmr.umm-spec.url :as url]
+   [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
 
 (defn- propagate-first
   "Returns coll with the first element's value under k assoc'ed to each element in coll.
@@ -28,7 +28,31 @@
     (for [x coll]
       (assoc x k v))))
 
+(defn convert-temp-res
+  "Check and convert the UMM temporal resolution to satisfy the ISO schema."
+  [resolution]
+  (let [unit (:Unit resolution)
+        value (:Value resolution)
+        value (if (= "Week" unit) ;; Convert week to day
+                (* 7 value)
+                value)
+        unit (case unit
+               "Week" "Day"
+               "Diurnal" "Day"
+               unit)]
+    {:Value value
+     :Unit unit}))
+
+(defn- convert-temporal-resolution
+  "Go through all of the temporal extents and convert their UMM temporal 
+  resolutions to satisfy the ISO schema."
+  [temporal-extents]
+  (util/remove-nils-empty-maps-seqs
+   (for [temporal-extent temporal-extents]
+     (update temporal-extent :TemporalResolution convert-temp-res))))
+
 (defn expected-iso-19115-2-temporal
+  "Fix up the expected temporal extents from round tripping ISO MENDS."
   [temporal-extents]
   (->> temporal-extents
        (propagate-first :PrecisionOfSeconds)
@@ -36,7 +60,8 @@
        (iso-shared/split-temporals :RangeDateTimes)
        (iso-shared/split-temporals :SingleDateTimes)
        iso-shared/sort-by-date-type-iso
-       (#(or (seq %) su/not-provided-temporal-extents))))
+       (#(or (seq %) su/not-provided-temporal-extents))
+       convert-temporal-resolution))
 
 (defn- expected-online-resource
  "Sanitize the values in online resource"
@@ -375,8 +400,8 @@
       (assoc :PaleoTemporalCoverages nil)
       ;;add contact persons introduced by CollectionCitation.
       (assoc :ContactPersons (iso-shared/update-contact-persons-from-collection-citation
-                               (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll))
-                               (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll)))))
+                              (map #(expected-contact-person % "Technical Contact") (:ContactPersons umm-coll))
+                              (iso-shared/trim-collection-citation (first (:CollectionCitations umm-coll)))))
       ;; CollectionCitation's Title and UMM's EntryTitle share the same xml element, So do CollectionCitation's
       ;; Version and UMM's Version. When translate to xml file, we use the UMM's EntryTitle and Version. The values
       ;; could be different.
@@ -395,4 +420,11 @@
       (update :UseConstraints iso-shared/expected-use-constraints)
       (update :ArchiveAndDistributionInformation iso-shared/expected-archive-dist-info)
       (update-in [:SpatialExtent :HorizontalSpatialDomain] expected-horizontal-spatial-domain)
+      (update-in [:FileNamingConvention :Convention] iso-util/safe-trim)
+      (update-in [:FileNamingConvention :Description] iso-util/safe-trim)
+      (update-in-each [:OtherIdentifiers] #(-> %
+                                               (update :Type iso-util/safe-trim)
+                                               (update :DescriptionOfOtherType iso-util/safe-trim)))
+      (update-in-each [:AssociatedDOIs] #(-> %
+                                               (update :DescriptionOfOtherType iso-util/safe-trim)))
       js/parse-umm-c))

@@ -120,20 +120,22 @@
    archive-info-xpath is what differentiates between the two, the calling function will pass
    the relevant path."
   [doc archive-info-xpath]
-  (for [archive (select doc archive-info-xpath)
-        :let [{:keys [FormatType FormatDescription AverageFileSize
-                      AverageFileSizeUnit TotalCollectionFileSize
-                      TotalCollectionFileSizeUnit Description]} (parse-archive-info-specification archive)]]
-    {:Format (char-string-value archive "gmd:MD_Format/gmd:name")
-     :FormatType FormatType
-     :FormatDescription FormatDescription
-     :AverageFileSize (when AverageFileSize
-                        (read-string AverageFileSize))
-     :AverageFileSizeUnit AverageFileSizeUnit
-     :TotalCollectionFileSize (when TotalCollectionFileSize
-                                (read-string TotalCollectionFileSize))
-     :TotalCollectionFileSizeUnit TotalCollectionFileSizeUnit
-     :Description Description}))
+  (seq
+   (for [archive (select doc archive-info-xpath)
+         :let [{:keys [FormatType FormatDescription AverageFileSize
+                       AverageFileSizeUnit TotalCollectionFileSize
+                       TotalCollectionFileSizeUnit Description]} (parse-archive-info-specification archive)]
+         :when (not (= "FileNamingConvention" (char-string-value archive "gmd:MD_Format/gmd:name")))]
+     {:Format (char-string-value archive "gmd:MD_Format/gmd:name")
+      :FormatType FormatType
+      :FormatDescription FormatDescription
+      :AverageFileSize (when AverageFileSize
+                         (read-string AverageFileSize))
+      :AverageFileSizeUnit AverageFileSizeUnit
+      :TotalCollectionFileSize (when TotalCollectionFileSize
+                                 (read-string TotalCollectionFileSize))
+      :TotalCollectionFileSizeUnit TotalCollectionFileSizeUnit
+      :Description Description})))
 
 (defn parse-archive-dist-info
   "Parses ArchiveAndDistributionInformation from ISO MENDS and SMAP XML."

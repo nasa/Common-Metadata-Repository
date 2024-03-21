@@ -5,6 +5,8 @@
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.iso-keywords :as kws]
+   [cmr.umm-spec.iso19115-2-util :as iso-util]
+   [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
@@ -248,6 +250,7 @@
   "Changes the temporal extent to the expected outcome of a ISO SMAP translation."
   [temporal-extents]
   (->> temporal-extents
+       (map #(dissoc % :TemporalResolution))
        (map #(assoc % :PrecisionOfSeconds nil))
        iso-shared/fixup-iso-ends-at-present
        (iso-shared/split-temporals :RangeDateTimes)
@@ -310,5 +313,9 @@
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       (update :DOI iso-shared/expected-doi)
+      (update :DOI #(dissoc % :PreviousVersion))
       (update :ArchiveAndDistributionInformation iso-shared/expected-archive-dist-info)
-      (dissoc :StandardProduct)))
+      (dissoc :StandardProduct :DataMaturity :OtherIdentifiers :FileNamingConvention)
+      (update-in-each [:AssociatedDOIs] #(-> %
+                                             (update :DescriptionOfOtherType iso-util/safe-trim)))
+      js/parse-umm-c))
