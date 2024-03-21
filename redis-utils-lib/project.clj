@@ -14,7 +14,7 @@
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.0"]
                  [org.apache.commons/commons-compress "1.26.0"]
-                 [org.testcontainers/testcontainers "1.17.2"]]
+                 [org.testcontainers/testcontainers "1.19.7"]]
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
   :resource-paths ["resources"]

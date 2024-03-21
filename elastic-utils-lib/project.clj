@@ -23,7 +23,7 @@
                  [org.clojure/clojure "1.10.0"]
                  [org.elasticsearch/elasticsearch ~elastic-version]
                  [org.apache.commons/commons-compress "1.26.0"]
-                 [org.testcontainers/testcontainers "1.17.2"]
+                 [org.testcontainers/testcontainers "1.19.7"]
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]]
