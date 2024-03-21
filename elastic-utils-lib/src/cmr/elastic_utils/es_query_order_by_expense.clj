@@ -1,10 +1,10 @@
-(ns cmr.common-app.services.search.query-order-by-expense
+(ns cmr.elastic-utils.es-query-order-by-expense
   "Sorts query conditions within a query by their execution expense. Elasticsearch recommend putting
   cached filters before uncached filters. Expensive queries like exact spatial intersection should
   be placed last."
   (:require [cmr.common.services.errors :as errors]
-            [cmr.common-app.services.search.query-model :as qm])
-  (:import [cmr.common_app.services.search.query_model
+            [cmr.elastic-utils.es-query-model :as qm])
+  (:import [cmr.elastic-utils.es-query-model
             Query
             ScriptCondition
             ConditionGroup

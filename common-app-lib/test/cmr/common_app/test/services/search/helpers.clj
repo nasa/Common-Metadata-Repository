@@ -1,6 +1,6 @@
 (ns cmr.common-app.test.services.search.helpers
   "Contains helper functions for testing"
-  (:require [cmr.common-app.services.search.query-model :as cqm]
+  (:require [cmr.elastic-utils.es-query-model :as cqm]
             [cmr.elastic-utils.es-group-query-conditions :as gc]))
 
 (defn and-conds

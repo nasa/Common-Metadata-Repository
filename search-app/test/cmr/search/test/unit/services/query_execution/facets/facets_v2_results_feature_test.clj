@@ -1,7 +1,7 @@
 (ns cmr.search.test.unit.services.query-execution.facets.facets-v2-results-feature-test
   (:require
    [clojure.test :refer :all]
-   [cmr.common-app.services.search.query-execution :as query-execution]
+   [cmr.elastic-utils.query-execution :as query-execution]
    [cmr.search.services.humanizers.humanizer-range-facet-service :as rfs]
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as v2-facets]
    [cmr.search.services.query-execution.facets.collection-v2-facets :as cv2f]))

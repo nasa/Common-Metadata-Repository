@@ -8,8 +8,8 @@
     [cmr.access-control.data.acl-schema :as schema]
     [cmr.acl.core :as acl]
     [cmr.elastic-utils.es-group-query-conditions :as gc]
-    [cmr.common-app.services.search.query-execution :as qe]
-    [cmr.common-app.services.search.query-model :as qm]
+    [cmr.elastic-utils.query-execution :as qe]
+    [cmr.elastic-utils.es-query-model :as qm]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util :refer [defn-timed]]
     [cmr.transmit.config :as transmit-config]))

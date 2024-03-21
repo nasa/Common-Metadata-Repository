@@ -1,8 +1,8 @@
 (ns cmr.search.validators.validation
   "Defines protocols and functions to validate conditions"
   (:require
-   [cmr.common-app.services.search.query-model :as cqm]
-   [cmr.common-app.services.search.query-validation :as cqv]
+   [cmr.elastic-utils.es-query-model :as cqm]
+   [cmr.elastic-utils.es-query-validation :as cqv]
    [cmr.common.concepts :as concepts]
    [cmr.common.generics :as generic]
    [cmr.common.mime-types :as mt]

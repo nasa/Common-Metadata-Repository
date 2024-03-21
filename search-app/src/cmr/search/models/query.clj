@@ -1,7 +1,7 @@
 (ns cmr.search.models.query
   "Defines various query models and conditions specific for searching for various concepts."
   (:require
-   [cmr.common-app.services.search.query-model :as common-qm]
+   [cmr.elastic-utils.es-query-model :as common-qm]
    [cmr.common.concepts :as concepts]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 

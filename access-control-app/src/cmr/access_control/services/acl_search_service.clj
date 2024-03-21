@@ -13,7 +13,7 @@
    [cmr.common-app.services.search.parameter-validation :as cpv]
    [cmr.elastic-utils.nested-field :as nf]
    [cmr.elastic-utils.es-params-converter :as cp]
-   [cmr.common-app.services.search.query-model :as common-qm]
+   [cmr.elastic-utils.es-query-model :as common-qm]
    [cmr.common.log :refer [warn info debug]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]

@@ -1,7 +1,7 @@
 (ns cmr.search.validators.attribute
   "Contains functions for validating attribute condition"
   (:require [cmr.search.services.messages.attribute-messages :as attrib-msg]
-            [cmr.common-app.services.search.query-validation :as v]))
+            [cmr.elastic-utils.es-query-validation :as v]))
 
 
 (extend-protocol v/Validator

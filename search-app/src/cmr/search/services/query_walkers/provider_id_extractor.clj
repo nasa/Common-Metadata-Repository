@@ -1,7 +1,7 @@
 (ns cmr.search.services.query-walkers.provider-id-extractor
   "Defines protocols and functions to extract provider ids from the query constructs"
   (:require [cmr.common.services.errors :as errors]
-            [cmr.common-app.services.search.query-model :as cqm]
+            [cmr.elastic-utils.es-query-model :as cqm]
             [cmr.search.models.query :as qm]
             [cmr.common.concepts :as concepts]))
 
@@ -12,7 +12,7 @@
     "Extract provider-ids"))
 
 (extend-protocol ExtractProviderIds
-  cmr.common_app.services.search.query_model.Query
+  cmr.elastic-utils.es-query-model.Query
   (extract-provider-ids
     [query]
     ;; This is expected to the entry way into the
@@ -21,7 +21,7 @@
         #{}
         provider-ids)))
 
-  cmr.common_app.services.search.query_model.ConditionGroup
+  cmr.elastic-utils.es-query-model.ConditionGroup
   (extract-provider-ids
     [{:keys [operation conditions]}]
     (let [provider-ids (set (mapcat extract-provider-ids conditions))]
@@ -32,7 +32,7 @@
         (disj provider-ids :any))))
 
 
-  cmr.common_app.services.search.query_model.StringCondition
+  cmr.elastic-utils.es-query-model.StringCondition
   (extract-provider-ids
     [{:keys [field value pattern]}]
     (if pattern
@@ -44,7 +44,7 @@
         ;;else
         [:any])))
 
-  cmr.common_app.services.search.query_model.StringsCondition
+  cmr.elastic-utils.es-query-model.StringsCondition
   (extract-provider-ids
     [{:keys [field values]}]
     (case field

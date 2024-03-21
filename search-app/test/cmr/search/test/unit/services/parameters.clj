@@ -3,7 +3,7 @@
    [clojure.test :refer :all]
    [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.elastic-utils.es-params-converter :as p]
-   [cmr.common-app.services.search.query-model :as q]
+   [cmr.elastic-utils.es-query-model :as q]
    [cmr.common.util :refer [are2]]
    [cmr.search.services.parameters.legacy-parameters :as lp]
    [cmr.search.services.parameters.provider-short-name :as psn]))

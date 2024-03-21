@@ -9,9 +9,9 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common-app.services.search.query-validation :as qv]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.elastic-utils.es-query-validation :as qv]
+   [cmr.elastic-utils.query-execution :as qe]
+   [cmr.elastic-utils.es-query-model :as qm]
    ;; Must be required to be available
    [cmr.common-app.services.search.validators.numeric-range]
    [cmr.common-app.services.search.validators.date-range]

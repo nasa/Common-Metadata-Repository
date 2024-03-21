@@ -2,9 +2,9 @@
   "Contains tests for validating date-range condition"
   (:require [clojure.test :refer :all]
             [clj-time.core :as t]
-            [cmr.common-app.services.search.query-validation :as v]
+            [cmr.elastic-utils.es-query-validation :as v]
             [cmr.common-app.services.search.validators.date-range]
-            [cmr.common-app.services.search.query-model :as q]))
+            [cmr.elastic-utils.es-query-model :as q]))
 
 (deftest validate-start-date-before-end-date-test
   (testing "valid-start-end-date"
