@@ -131,23 +131,24 @@
   "Parse out the associated DOIs from the ISO MENDS/SMAP document."
   [doc associated-doi-xpath]
   (let [assocs
-         (seq
-           (for [assoc (select doc associated-doi-xpath)
-                 :let [assoc-code-list (select assoc "gmd:associationType/gmd:DS_AssociationTypeCode")
-                       assoc-type (value-of (first assoc-code-list) "@codeListValue")
-                       assoc-type (when assoc-type
-                                    (string/trim assoc-type))
-                       l-assoc-type (util/safe-lowercase assoc-type)
-                       doi (iso-util/char-string-value assoc "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier/gmd:code")]
-                 :when (and doi (some #(= l-assoc-type %) associated-doi-types))]
-             {:DOI doi
-              :Title (iso-util/char-string-value assoc "gmd:aggregateDataSetName/gmd:CI_Citation/gmd:title")
-              :Authority (iso-util/char-string-value assoc (str "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier"
-                                                                "/gmd:authority/gmd:CI_Citation/gmd:citedResponsibleParty"
-                                                                "/gmd:CI_ResponsibleParty/gmd:organisationName"))
-              :Type (get associated-doi-code-umm-map l-assoc-type)
-              :DescriptionOfOtherType (when (= "other" l-assoc-type)
-                                        (when-let [other-desc (value-of assoc "gmd:associationType/gmd:DS_AssociationTypeCode")]
-                                          (string/trim other-desc)))}))]
+        (seq
+         (util/remove-nils-empty-maps-seqs
+          (for [assoc (select doc associated-doi-xpath)
+                :let [assoc-code-list (select assoc "gmd:associationType/gmd:DS_AssociationTypeCode")
+                      assoc-type (value-of (first assoc-code-list) "@codeListValue")
+                      assoc-type (when assoc-type
+                                   (string/trim assoc-type))
+                      l-assoc-type (util/safe-lowercase assoc-type)
+                      doi (iso-util/char-string-value assoc "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier/gmd:code")]
+                :when (and doi (some #(= l-assoc-type %) associated-doi-types))]
+            {:DOI doi
+             :Title (iso-util/char-string-value assoc "gmd:aggregateDataSetName/gmd:CI_Citation/gmd:title")
+             :Authority (iso-util/char-string-value assoc (str "gmd:aggregateDataSetIdentifier/gmd:MD_Identifier"
+                                                               "/gmd:authority/gmd:CI_Citation/gmd:citedResponsibleParty"
+                                                               "/gmd:CI_ResponsibleParty/gmd:organisationName"))
+             :Type (get associated-doi-code-umm-map l-assoc-type)
+             :DescriptionOfOtherType (when (= "other" l-assoc-type)
+                                       (when-let [other-desc (value-of assoc "gmd:associationType/gmd:DS_AssociationTypeCode")]
+                                         (string/trim other-desc)))})))]
     (when assocs
       (into [] assocs))))

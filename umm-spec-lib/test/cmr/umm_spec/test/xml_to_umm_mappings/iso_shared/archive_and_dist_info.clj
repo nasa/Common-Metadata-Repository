@@ -24,11 +24,11 @@
     (slurp (io/file (io/resource "example-data/iso19115/artificial_test_data.xml")))
 
     "Test with empty map"
-    '()
+    nil
     {}
 
     "Test with nil input"
-    '()
+    nil
     nil))
 
 (deftest parse-dist-info-test
