@@ -3,7 +3,7 @@
   during pre-processing of the query to get the temporal conditions result feature."
   (:require
    [clojure.string :as str]
-   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.elastic-utils.es-query-model :as cqm]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.models.query :as qm]))
@@ -29,7 +29,7 @@
 
 (extend-protocol ExtractTemporalRanges
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.Query
+  cmr.elastic-utils.es-query-model.Query
   (extract-temporal-ranges
    [query]
    (extract-temporal-ranges (:condition query)))
@@ -38,7 +38,7 @@
    (contains-temporal-range-condition? (:condition query)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.ConditionGroup
+  cmr.elastic-utils.es-query-model.ConditionGroup
   (extract-temporal-ranges
    [{:keys [conditions]}]
    (mapcat extract-temporal-ranges conditions))

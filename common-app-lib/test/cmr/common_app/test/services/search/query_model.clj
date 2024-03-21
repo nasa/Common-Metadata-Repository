@@ -1,7 +1,7 @@
 (ns cmr.common-app.test.services.search.query-model
   (:require [clojure.test :refer :all]
             [cmr.common-app.test.services.search.helpers :refer :all]
-            [cmr.common-app.services.search.query-model :as q]
+            [cmr.elastic-utils.es-query-model :as q]
             [cmr.elastic-utils.es-group-query-conditions :as gc]))
 
 (deftest conds-test

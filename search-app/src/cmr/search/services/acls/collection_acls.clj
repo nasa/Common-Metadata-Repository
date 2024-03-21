@@ -2,8 +2,8 @@
   "Contains functions for manipulating collection acls"
   (:require
    [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.elastic-utils.query-execution :as qe]
+   [cmr.elastic-utils.es-query-model :as qm]
    [cmr.common.util :as util]
    [cmr.search.services.acl-service :as acl-service]
    [cmr.transmit.config :as tc]

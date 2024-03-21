@@ -2,7 +2,7 @@
   "Contains functions for validating date range condition"
   (:require [clj-time.core :as t]
             [clj-time.format :as f]
-            [cmr.common-app.services.search.query-validation :as v]
+            [cmr.elastic-utils.es-query-validation :as v]
             [cmr.elastic-utils.datetime-helper :as h]))
 
 (defn- start-date-is-before-end-date
@@ -15,7 +15,7 @@
       [])))
 
 (extend-protocol v/Validator
-  cmr.common_app.services.search.query_model.DateRangeCondition
+  cmr.elastic-utils.es-query-model.DateRangeCondition
   (validate
     [date-range]
     (start-date-is-before-end-date date-range)))

@@ -1,9 +1,9 @@
-(ns cmr.common-app.services.search.related-item-resolver
+(ns cmr.elastic-utils.es-related-item-resolver
   "Finds RelatedItemQueryConditions in a query, executes them, processes the results and replaces
   them with the retrieved condition"
-  (:require [cmr.common-app.services.search.query-model :as qm]
+  (:require [cmr.elastic-utils.es-query-model :as qm]
             [cmr.elastic-utils.es-group-query-conditions :as gc]
-            [cmr.elastic-utils.query-transform.clj :as c2s]
+            [cmr.elastic-utils.query-transform :as c2s]
             [cmr.common-app.services.search.elastic-search-index :as idx]))
 
 (defprotocol ResolveRelatedItemQueryCondition
@@ -13,28 +13,28 @@
 
 (extend-protocol ResolveRelatedItemQueryCondition
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.Query
+  cmr.elastic-utils.es-query-model.Query
 
   (resolve-related-item-conditions
     [query context]
     (update-in query [:condition] #(resolve-related-item-conditions % context)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.ConditionGroup
+  cmr.elastic-utils.es-query-model.ConditionGroup
 
   (resolve-related-item-conditions
     [condition context]
     (update-in condition [:conditions] (partial mapv #(resolve-related-item-conditions % context))))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.NegatedCondition
+  cmr.elastic-utils.es-query-model.NegatedCondition
 
   (resolve-related-item-conditions
     [condition context]
     (update-in condition [:condition] #(resolve-related-item-conditions % context)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.RelatedItemQueryCondition
+  cmr.elastic-utils.es-query-model.RelatedItemQueryCondition
 
   (resolve-related-item-conditions
     [{:keys [concept-type condition result-fields results-to-condition-fn]} context]

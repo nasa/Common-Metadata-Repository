@@ -5,7 +5,7 @@
    [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.test :refer :all]
-   [cmr.common-app.services.search.query-validation :as cqv]
+   [cmr.elastic-utils.es-query-validation :as cqv]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.system-int-test.data2.core :as d]

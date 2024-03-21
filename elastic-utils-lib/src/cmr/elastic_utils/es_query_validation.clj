@@ -1,6 +1,6 @@
-(ns cmr.common-app.services.search.query-validation
+(ns cmr.elastic-utils.es-query-validation
   "Defines protocols and functions to validate query conditions"
-  (:require [cmr.common-app.services.search.query-model :as qm]
+  (:require [cmr.elastic-utils.es-query-model :as qm]
             [cmr.common.concepts :as concepts]
             [cmr.common.mime-types :as mt]
             [cmr.common-app.services.search.validators.max-number-of-conditions :as max-conditions]))
@@ -47,16 +47,16 @@
   nil)
 
 (extend-protocol Validator
-  cmr.common_app.services.search.query_model.Query
+  cmr.elastic-utils.es-query-model.Query
   (validate
-    [{:keys [concept-type result-format condition ] :as query}]
+    [{:keys [concept-type result-format condition] :as query}]
     (let [concept-specific-validations (query-validations concept-type)
           errors (concat (validate-concept-type-result-format concept-type result-format)
                          (mapcat #(% query) concept-specific-validations)
                          (max-conditions/validate query))]
       (if (seq errors) errors (validate condition))))
 
-  cmr.common_app.services.search.query_model.ConditionGroup
+  cmr.elastic-utils.es-query-model.ConditionGroup
   (validate
     [{:keys [conditions]}]
     (mapcat validate conditions))

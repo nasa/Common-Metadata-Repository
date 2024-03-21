@@ -1,6 +1,6 @@
 (ns cmr.common-app.services.search.validators.numeric-range
   "Contains functions for validating numeric range condition"
-  (:require [cmr.common-app.services.search.query-validation :as v]
+  (:require [cmr.elastic-utils.es-query-validation :as v]
             [cmr.elastic-utils.es-messenger :as m]))
 
 (defn min-is-lte-max
@@ -18,7 +18,7 @@
     [(m/nil-min-max-msg)]))
 
 (extend-protocol v/Validator
-  cmr.common_app.services.search.query_model.NumericRangeCondition
+  cmr.elastic-utils.es-query-model.NumericRangeCondition
   (validate
     [numeric-range]
     (concat (min-max-not-both-nil numeric-range) (min-is-lte-max numeric-range))))

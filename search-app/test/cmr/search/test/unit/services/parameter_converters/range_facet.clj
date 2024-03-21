@@ -4,7 +4,7 @@
     [cmr.common.util :refer [are3]]
     [cmr.elastic-utils.es-group-query-conditions :as gc]
     [cmr.elastic-utils.es-params-converter :as p]
-    [cmr.common-app.services.search.query-model :as qm]
+    [cmr.elastic-utils.es-query-model :as qm]
     [cmr.search.services.parameters.converters.range-facet :as range-facet]))
 
 (deftest range-facet->condition-test

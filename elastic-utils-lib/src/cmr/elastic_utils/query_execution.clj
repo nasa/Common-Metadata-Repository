@@ -1,8 +1,8 @@
-(ns cmr.common-app.services.search.query-execution
+(ns cmr.elastic-utils.query-execution
   (:require
-   [cmr.elastic-utils.query-transform.clj :as c2s]
+   [cmr.elastic-utils.query-transform :as c2s]
    [cmr.elastic-utils.es-results-to-query-results :as rc]
-   [cmr.common-app.services.search.elastic-search-index :as idx]
+   [cmr.elastic-utils.es-index :as idx]
    [cmr.transmit.config :as tc]))
 
 (defmulti add-acl-conditions-to-query

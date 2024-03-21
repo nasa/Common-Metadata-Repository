@@ -1,11 +1,11 @@
 (ns cmr.search.services.query-walkers.collection-query-resolver
   "Defines protocols and functions to resolve collection query conditions"
   (:require [cmr.search.models.query :as qm]
-            [cmr.common-app.services.search.query-model :as cqm]
+            [cmr.elastic-utils.es-query-model :as cqm]
             [cmr.elastic-utils.es-group-query-conditions :as gc]
             [cmr.common.services.errors :as errors]
             [cmr.common-app.services.search.elastic-search-index :as idx]
-            [cmr.elastic-utils.query-transform.clj :as c2s]
+            [cmr.elastic-utils.query-transform :as c2s]
             [cmr.common.log :refer (debug info warn error)]
             [clojure.set :as set])
   (:import cmr.search.models.query.CollectionQueryCondition))
@@ -86,7 +86,7 @@
 
 (extend-protocol ResolveCollectionQuery
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.Query
+  cmr.elastic-utils.es-query-model.Query
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries
@@ -98,7 +98,7 @@
    [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.NegatedCondition
+  cmr.elastic-utils.es-query-model.NegatedCondition
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries
@@ -110,7 +110,7 @@
    [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.ConditionGroup
+  cmr.elastic-utils.es-query-model.ConditionGroup
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries

@@ -6,8 +6,8 @@
   conditions get very complicated and it's easier to pull them out here."
   (:require
    [clojure.string :as str]
-   [cmr.common-app.services.search.query-execution :as query-execution]
-   [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.elastic-utils.query-execution :as query-execution]
+   [cmr.elastic-utils.es-query-to-elastic :as q2e]
    [cmr.common-app.services.search.results-model :as r]
    [cmr.common.util :as util]
    [cmr.search.services.query-walkers.temporal-range-extractor :as temporal-range-extractor]))
@@ -20,19 +20,19 @@
 
 (extend-protocol AddConceptTypeToTemporalCondition
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.Query
+  cmr.elastic-utils.es-query-model.Query
   (add-concept-type-to-temporal-condition
    [query concept-type]
    (update query :condition add-concept-type-to-temporal-condition concept-type))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.ConditionGroup
+  cmr.elastic-utils.es-query-model.ConditionGroup
   (add-concept-type-to-temporal-condition
    [cg concept-type]
    (util/update-in-each cg [:conditions] add-concept-type-to-temporal-condition concept-type))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.NestedCondition
+  cmr.elastic-utils.es-query-model.NestedCondition
   (add-concept-type-to-temporal-condition
    [nc concept-type]
    (update nc :condition add-concept-type-to-temporal-condition concept-type))

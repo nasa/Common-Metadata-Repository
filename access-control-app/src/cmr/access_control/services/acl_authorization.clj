@@ -1,17 +1,17 @@
 (ns cmr.access-control.services.acl-authorization
   (:require
-   [cmr.access-control.services.acl-util :as acl-util]
-   [cmr.access-control.services.auth-util :as auth-util]
-   [cmr.access-control.services.group-service :as group-service]
-   [cmr.access-control.data.access-control-index :as index]
-   [cmr.access-control.data.acl-schema :as schema]
-   [cmr.acl.core :as acl]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as qm]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util :refer [defn-timed]]
-   [cmr.transmit.config :as transmit-config]))
+    [cmr.access-control.data.access-control-index :as index]
+    [cmr.access-control.data.acl-schema :as schema]
+    [cmr.access-control.services.acl-util :as acl-util]
+    [cmr.access-control.services.auth-util :as auth-util]
+    [cmr.access-control.services.group-service :as group-service]
+    [cmr.acl.core :as acl]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.util :as util :refer [defn-timed]]
+    [cmr.elastic-utils.es-group-query-conditions :as gc]
+    [cmr.elastic-utils.es-query-model :as qm]
+    [cmr.elastic-utils.query-execution :as qe]
+    [cmr.transmit.config :as transmit-config]))
 
 (declare acls-granting-acl-read context)
 (defn-timed acls-granting-acl-read
