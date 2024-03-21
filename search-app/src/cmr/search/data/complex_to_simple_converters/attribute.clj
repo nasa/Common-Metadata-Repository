@@ -2,8 +2,8 @@
   "Defines functions that implement the reduce-query-condition method of the ComplexQueryToSimple
   protocol for product specific attribute search fields."
   (:require [clojure.string :as s]
-            [cmr.elastic-utils.query-transform.clj :as c2s]
-            [cmr.common-app.services.search.query-model :as qm]
+            [cmr.elastic-utils.query-transform :as c2s]
+            [cmr.elastic-utils.es-query-model :as qm]
             [cmr.elastic-utils.es-group-query-conditions :as gc]
             [cmr.elastic-utils.datetime-helper :as h]))
 

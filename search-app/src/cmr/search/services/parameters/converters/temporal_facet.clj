@@ -6,7 +6,7 @@
    [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.elastic-utils.nested-field :as nf]
    [cmr.elastic-utils.es-params-converter :as p]
-   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.elastic-utils.es-query-model :as qm]
    [cmr.common.date-time-parser :as parser]))
 
 (defn- temporal-facet-map->clj-time-interval

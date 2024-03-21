@@ -1,8 +1,8 @@
 (ns cmr.search.test.unit.services.query-execution.granule-counts-results-feature
   (:require
    [clojure.test :refer :all]
-   [cmr.common-app.services.search.query-model :as cqm]
-   [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.elastic-utils.es-query-model :as cqm]
+   [cmr.elastic-utils.es-query-to-elastic :as q2e]
    [cmr.common-app.services.search.results-model :as r]
    [cmr.search.models.query :as q]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]

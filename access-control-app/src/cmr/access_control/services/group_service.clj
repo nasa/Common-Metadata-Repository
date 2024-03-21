@@ -14,7 +14,7 @@
     [cmr.elastic-utils.es-group-query-conditions :as gc]
     [cmr.common-app.services.search.parameter-validation :as cpv]
     [cmr.elastic-utils.es-params-converter :as cp]
-    [cmr.common-app.services.search.query-model :as common-qm]
+    [cmr.elastic-utils.es-query-model :as common-qm]
     [cmr.common.concepts :as concepts]
     [cmr.common.log :refer (debug info)]
     [cmr.common.mime-types :as mt]

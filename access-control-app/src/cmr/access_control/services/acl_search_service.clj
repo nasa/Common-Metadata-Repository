@@ -9,14 +9,14 @@
    [cmr.access-control.services.group-service :as groups]
    [cmr.access-control.services.permitted-concept-id-search :as pcs]
    [cmr.common-app.services.search :as cs]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.common-app.services.search.parameter-validation :as cpv]
-   [cmr.elastic-utils.nested-field :as nf]
-   [cmr.elastic-utils.es-params-converter :as cp]
-   [cmr.common-app.services.search.query-model :as common-qm]
    [cmr.common.log :refer [warn info]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.es-params-converter :as cp]
+   [cmr.elastic-utils.es-query-model :as common-qm]
+   [cmr.elastic-utils.nested-field :as nf]
    [cmr.transmit.metadata-db2 :as mdb2]
    [cmr.umm.collection.product-specific-attribute :as psa])
   ;; Must be required to be available at runtime

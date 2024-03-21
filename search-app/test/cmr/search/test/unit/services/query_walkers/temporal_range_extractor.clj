@@ -3,7 +3,7 @@
  (:require
   [clj-time.core :as time]
   [clojure.test :refer :all]
-  [cmr.common-app.services.search.query-model :as qm]
+  [cmr.elastic-utils.es-query-model :as qm]
   [cmr.search.models.query :as query]
   [cmr.search.services.query-walkers.temporal-range-extractor :as range-extractor]
   [cmr.search.test.unit.models.helpers :as query-helper]))

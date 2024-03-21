@@ -1,7 +1,7 @@
 (ns cmr.common-app.test.services.search.condition-merger
   (:require [clojure.test :refer :all]
             [cmr.elastic-utils.es-condition-merger :as c]
-            [cmr.common-app.services.search.query-model :as q]
+            [cmr.elastic-utils.es-query-model :as q]
             [cmr.common-app.test.services.search.helpers :refer :all]))
 
 

@@ -1,7 +1,7 @@
 (ns cmr.search.validators.temporal
   "Contains functions for validating temporal condition"
-  (:require [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.query-validation :as v]))
+  (:require [cmr.elastic-utils.es-query-model :as qm]
+            [cmr.elastic-utils.es-query-validation :as v]))
 
 (extend-protocol v/Validator
   cmr.search.models.query.TemporalCondition

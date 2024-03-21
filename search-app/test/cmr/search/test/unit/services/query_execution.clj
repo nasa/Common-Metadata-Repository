@@ -4,7 +4,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.elastic-utils.es-params-converter :as pc]
-   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.elastic-utils.query-execution :as qe]
    [cmr.search.services.query-execution :as search-qe]))
 
 

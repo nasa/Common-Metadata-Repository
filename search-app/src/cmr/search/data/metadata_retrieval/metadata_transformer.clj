@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.elastic-utils.es-query-model :as qm]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
    [cmr.common.log :as log :refer (debug info warn error)]

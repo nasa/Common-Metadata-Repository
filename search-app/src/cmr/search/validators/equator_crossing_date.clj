@@ -1,7 +1,7 @@
 (ns cmr.search.validators.equator-crossing-date
   "Contains functions for validating equator-crossing-date conditions"
-  (:require [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.query-validation :as v]))
+  (:require [cmr.elastic-utils.es-query-model :as qm]
+            [cmr.elastic-utils.es-query-validation :as v]))
 
 
 (extend-protocol v/Validator
