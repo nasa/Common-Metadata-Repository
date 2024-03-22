@@ -10,7 +10,7 @@
    [ring.adapter.jetty :as jetty])
   (:import
    (java.io ByteArrayInputStream InputStream)
-   (org.eclipse.jetty.server Server NCSARequestLog Connector HttpConnectionFactory)
+   (org.eclipse.jetty.server Server CustomRequestLog Connector HttpConnectionFactory RequestLogWriter)
    (org.eclipse.jetty.server.handler RequestLogHandler)
    (org.eclipse.jetty.server.handler.gzip GzipHandler)))
 
@@ -143,9 +143,7 @@
   (doto (RequestLogHandler.)
     (.setHandler existing-handler)
     (.setRequestLog
-      (doto (NCSARequestLog.)
-        (.setLogLatency true)
-        (.setLogDateFormat "yyyy-MM-dd HH:mm:ss.SSS")))))
+      (CustomRequestLog. (RequestLogWriter.) "%{client}a - %u %{yyyy-MM-dd HH:mm:ss.SSS}t \"%r\" %s %O \"%{Referer}i\" \"%{User-Agent}i\" %{ms}T"))))
 
 (defn- create-gzip-handler
   "Setup gzip compression for responses.  Compression will be used for any response larger than
