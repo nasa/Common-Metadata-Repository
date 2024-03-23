@@ -15,7 +15,9 @@
    "Vertical" "VERTICAL"
    "Orbit" "ORBITAL"
    "HorizontalVertical" "HORIZONTAL_VERTICAL"
-   "Horizon&amp;Vert" "HORIZONTAL_VERTICAL"})
+   "Horizon&amp;Vert" "HORIZONTAL_VERTICAL"
+   "Lunar" "LUNAR"
+   "Earth/Global" "EARTH/GLOBAL"})
 
 (defn- parse-point
   [el]

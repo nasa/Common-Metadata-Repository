@@ -332,6 +332,15 @@
       (update collection-citation :OnlineResource #(select-keys % [:Linkage]))
       collection-citation)))
 
+(defn- expected-temporal-resolution
+  "Add _type to the temporal resolution"
+  [temporal-extent]
+  (if (:TemporalResolution temporal-extent)
+    (-> temporal-extent
+        (update-in [:TemporalResolution] cmn/map->TemporalResolutionType)
+        util/remove-nil-keys)
+    (util/remove-nil-keys temporal-extent)))
+
 (def coll-progress-enum-list
   "Part of the enum list for CollectionProgress in v1.10. that could be converted from dif10"
   (set ["PLANNED" "ACTIVE" "COMPLETE" "NOT PROVIDED"]))
@@ -406,6 +415,7 @@
       (update-in [:CollectionCitations] expected-collection-citations)
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:TemporalExtents] update :EndsAtPresentFlag #(if % % false)) ; true or false, not nil
+      (update-in-each [:TemporalExtents] expected-temporal-resolution)
       (update :UseConstraints expected-echo10-use-constraints)
       (update :ArchiveAndDistributionInformation expected-archive-dist-info)
       js/parse-umm-c))

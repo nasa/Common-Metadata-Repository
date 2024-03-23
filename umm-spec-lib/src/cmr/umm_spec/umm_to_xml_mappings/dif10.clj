@@ -69,7 +69,10 @@
       [:Duration_Unit (:DurationUnit pdt)]
       [:Duration_Value (:DurationValue pdt)]
       [:Period_Cycle_Duration_Unit (:PeriodCycleDurationUnit pdt)]
-      [:Period_Cycle_Duration_Value (:PeriodCycleDurationValue pdt)]])])
+      [:Period_Cycle_Duration_Value (:PeriodCycleDurationValue pdt)]])
+   (when-let [tr (:TemporalResolution extent)]
+     [:Temporal_Info
+      [:Temporal_Resolution (gen/elements-from tr :Value :Unit)]])])
 
 (defn- generate-paleo-temporal
   "Returns the given paleo temporal in DIF10 format."
@@ -224,13 +227,16 @@
 (defn generate-dataset-citation
   "Returns the dif10 Data_Set_Citations from UMM-C."
   [c]
-  (let [doi (get-in c [:DOI :DOI])]
+  (let [doi (get-in c [:DOI :DOI])
+        pv (get-in c [:DOI :PreviousVersion])]
     (if (empty? (:CollectionCitations c))
       (when (seq doi)
         [:Dataset_Citation
          [:Persistent_Identifier
           [:Type "DOI"]
-          [:Identifier doi]]])
+          [:Identifier doi]
+          (when (seq pv)
+              [:Previous_Version (gen/elements-from pv :Version :Description :DOI :Published)])]])
       (for [collection-citation (:CollectionCitations c)]
         [:Dataset_Citation
          [:Dataset_Creator (:Creator collection-citation)]
@@ -247,7 +253,9 @@
          (when (seq doi)
            [:Persistent_Identifier
             [:Type "DOI"]
-            [:Identifier doi]])
+            [:Identifier doi]
+            (when (seq pv)
+              [:Previous_Version (gen/elements-from pv :Version :Description :DOI :Published)])])
          (when-let [online-resource (:OnlineResource collection-citation)]
            [:Online_Resource (:Linkage online-resource)])]))))
 
@@ -258,7 +266,18 @@
     [:Associated_DOIs
      [:DOI (:DOI assoc-doi)]
      [:Title (:Title assoc-doi)]
-     [:Authority (:Authority assoc-doi)]]))
+     [:Authority (:Authority assoc-doi)]
+     [:Type (:Type assoc-doi)]
+     [:Description_Of_Other_Type (:DescriptionOfOtherType assoc-doi)]]))
+
+(defn- generate-other-identifiers
+  "Returns the DIF 10 XML other identifiers from a UMM-C collection record."
+  [c]
+  (for [other-identifier (get c :OtherIdentifiers)]
+    [:Other_Identifiers
+     [:Identifier (:Identifier other-identifier)]
+     [:Type (:Type other-identifier)]
+     [:Description_Of_Other_Type (:DescriptionOfOtherType other-identifier)]]))
 
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
@@ -272,6 +291,7 @@
     [:Version_Description (:VersionDescription c)]
     [:Entry_Title (or (:EntryTitle c) u/not-provided)]
     (generate-dataset-citation c)
+    (generate-other-identifiers c)
     (generate-associated-dois c)
     (contact/generate-collection-personnel c)
     (if-let [sks (:ScienceKeywords c)]
@@ -322,6 +342,7 @@
              (for [tkw (:TemporalKeywords c)]
                [:Ancillary_Temporal_Keyword tkw])]))
 
+
     (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
     (generate-paleo-temporal (:PaleoTemporalCoverages c))
     (generate-dataset-progress c)
@@ -336,6 +357,7 @@
        [:Detailed_Location (:DetailedLocation location-keyword-map)]])
     (generate-projects (:Projects c))
     [:Quality (:Quality c)]
+    [:Data_Maturity (:DataMaturity c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
     (when-let [use-constraints (get c :UseConstraints)]
       [:Use_Constraints
@@ -398,6 +420,7 @@
      [:Abstract (u/with-default (:Abstract c))]
      [:Purpose (:Purpose c)]]
     (generate-related-urls c)
+    [:File_Naming_Convention (gen/elements-from (:FileNamingConvention c) :Convention :Description)]
     (for [ma (:MetadataAssociations c)
           :when (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT" "PARENT" "CHILD" "RELATED" nil} (:Type ma))]
       [:Metadata_Association
