@@ -91,6 +91,8 @@
             <Beginning_Date_Time>1975-02-14</Beginning_Date_Time>
         </Range_DateTime>
         <Temporal_Info>
+            <Ancillary_Temporal_Keyword>keyword1</Ancillary_Temporal_Keyword>
+            <Ancillary_Temporal_Keyword>keyword2</Ancillary_Temporal_Keyword>
             <Temporal_Resolution>
                 <Unit>Constant</Unit>
             </Temporal_Resolution>

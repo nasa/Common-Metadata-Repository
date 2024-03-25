@@ -807,7 +807,7 @@ History:
                 <xs:element name="Paleo_DateTime"       type="PaleoDateTimeType"    maxOccurs="unbounded"/>
             </xs:choice>
 
-            <xs:element name="Temporal_Info"        type="TemporalInfoType" minOccurs="0" maxOccurs="2"/>
+            <xs:element name="Temporal_Info"        type="TemporalInfoType" minOccurs="0"/>
         </xs:sequence>
     </xs:complexType>
 

@@ -74,6 +74,31 @@
      [:Temporal_Info
       [:Temporal_Resolution (gen/elements-from tr :Value :Unit)]])])
 
+(defn- temporal-coverage-without-temporal-keywords-and-resolution
+  "Returns the temporal coverage content without the temporal keywords and resolution"
+  [extent]
+  [:Temporal_Coverage
+   [:Precision_Of_Seconds (:PrecisionOfSeconds extent)]
+   [:Ends_At_Present_Flag (:EndsAtPresentFlag extent)]
+
+   (for [rdt (:RangeDateTimes extent)]
+     [:Range_DateTime
+      [:Beginning_Date_Time (:BeginningDateTime rdt)]
+      [:Ending_Date_Time (:EndingDateTime rdt)]])
+
+   (for [sdt (:SingleDateTimes extent)]
+     [:Single_DateTime sdt])
+
+   (for [pdt (:PeriodicDateTimes extent)]
+     [:Periodic_DateTime
+      (gen/elements-from pdt :Name)
+      [:Start_Date (:StartDate pdt)]
+      [:End_Date (:EndDate pdt)]
+      [:Duration_Unit (:DurationUnit pdt)]
+      [:Duration_Value (:DurationValue pdt)]
+      [:Period_Cycle_Duration_Unit (:PeriodCycleDurationUnit pdt)]
+      [:Period_Cycle_Duration_Value (:PeriodCycleDurationValue pdt)]])])
+
 (defn- generate-paleo-temporal
   "Returns the given paleo temporal in DIF10 format."
   [paleo-temporal]
@@ -337,10 +362,13 @@
     ;; be associated with. This is something DIF10 team will look into at improving, but in the
     ;; mean time, we put the TemporalKeywords on the first TemporalExtent element.
     (let [extent (-> c :TemporalExtents first)]
-      (conj (temporal-coverage-without-temporal-keywords extent)
+      (conj (temporal-coverage-without-temporal-keywords-and-resolution extent)
             [:Temporal_Info
-             (for [tkw (:TemporalKeywords c)]
-               [:Ancillary_Temporal_Keyword tkw])]))
+              (concat
+               (for [tkw (:TemporalKeywords c)]
+                 [:Ancillary_Temporal_Keyword tkw])
+               (when-let [tr (:TemporalResolution extent)]
+                       [[:Temporal_Resolution (gen/elements-from tr :Value :Unit)]]))]))
 
 
     (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
