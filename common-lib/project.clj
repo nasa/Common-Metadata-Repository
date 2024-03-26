@@ -42,10 +42,10 @@
                  [org.clojure/tools.reader "1.3.2"]
                  ;; These dependencies should be updated in tandem with the ring dependencies below.
                  ;; To find the corresponding versions, see: https://clojars.org/ring/ring-core/versions/1.9.6
-                ;;  [org.eclipse.jetty/jetty-http "9.4.53.v20231009"]
-                ;;  [org.eclipse.jetty/jetty-io "9.4.53.v20231009"]
-                ;;  [org.eclipse.jetty/jetty-servlets "9.4.53.v20231009"]
-                ;;  [org.eclipse.jetty/jetty-util "9.4.53.v20231009"]
+                 [org.eclipse.jetty/jetty-http "9.4.53.v20231009"]
+                 [org.eclipse.jetty/jetty-io "9.4.53.v20231009"]
+                 [org.eclipse.jetty/jetty-servlets "9.4.53.v20231009"]
+                 [org.eclipse.jetty/jetty-util "9.4.53.v20231009"]
                  ;; load jts core lib first to make sure it is available for shapefile integration,
                  ;; otherwise ES referenced 1.15.0 version will be mistakenly picked for shapefile
                  [org.locationtech.jts/jts-core "1.18.2"]
