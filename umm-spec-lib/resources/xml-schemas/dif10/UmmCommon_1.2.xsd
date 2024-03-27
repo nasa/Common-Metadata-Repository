@@ -5,6 +5,15 @@
         targetNamespace="http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/"
     >
 
+    <!--
+    This file primarally holds Enums and other definitions shared between
+    multiple elements in the primary dif_v10.2.xsd
+    
+    Tested to work with DIF 10.2
+    -->
+
+    <!-- #mark - _Enums: -->
+
     <!-- *********************************************************** -->
     <!-- #mark Granule Spatial Representation Enum -->
     
@@ -210,12 +219,12 @@ technical contact
         </xs:annotation>
 
         <xs:restriction base="xs:string">
-            <xs:enumeration value="SCIENCE_QUALITY"/>
             <xs:enumeration value="NEAR_REAL_TIME"/>
             <xs:enumeration value="LOW_LATENCY"/>
             <xs:enumeration value="EXPEDITED"/>
-            <xs:enumeration value="ON_DEMAND"/>
+            <xs:enumeration value="SCIENCE_QUALITY"/>
             <xs:enumeration value="OTHER"/>
+            <xs:enumeration value="ON_DEMAND"/>
         </xs:restriction>
     </xs:simpleType>
     
@@ -262,7 +271,7 @@ technical contact
     
     <!-- *********************************************************** -->
     <!-- #mark Spatial Coverage Type Enum -->
-        
+
     <xs:simpleType name="SpatialCoverageTypeEnum">
         <xs:annotation>
             <xs:documentation>
@@ -273,17 +282,25 @@ technical contact
             </xs:documentation>
         </xs:annotation>
         <xs:restriction base="xs:string">
-            <xs:enumeration value="Horizontal"/>
-            <xs:enumeration value="HorizontalVertical"/>
-            <xs:enumeration value="Orbit"/>
-            <xs:enumeration value="Vertical"/>
-            <xs:enumeration value="Horizon&amp;Vert"/>
+            <xs:enumeration value="Earth/Global"/>                  <!-- ECSE-1474-->
+            <xs:enumeration value="Horizontal"/>                    <!-- DIF -->
+            <xs:enumeration value="Vertical"/>                      <!-- DIF -->
+            <xs:enumeration value="Orbit"/>                         <!-- DIF -->
+            <xs:enumeration value="HorizontalVertical"/>            <!-- DIF -->
+
+            <!-- Deprecated, please use HorizontalVertical -->
+            <xs:enumeration value="Horizon&amp;Vert"/>              <!-- DIF -->
+
+            <xs:enumeration value="Orbital_Vertical"/>              <!-- ECSE-1474-->
+            <xs:enumeration value="Horizontal_Orbital"/>            <!-- ECSE-1474-->
+            <xs:enumeration value="Horizontal_Vertical_Orbital"/>   <!-- ECSE-1474-->
+            <xs:enumeration value="Lunar"/>                         <!-- ECSE-1474-->
         </xs:restriction>
     </xs:simpleType>
     
     <!-- *********************************************************** -->
     <!-- #mark Phone Type Enum -->
-        
+
     <xs:simpleType name="PhoneTypeEnum">
         <xs:annotation>
             <xs:documentation>
@@ -327,9 +344,17 @@ technical contact
         </xs:restriction>
     </xs:simpleType>
     
+    <!--
+    Proposed mappings if there are to be mappings (as of 2015-10-19):
+    Child -> Dependent
+    Parent -> <new/mappingless>
+    Related -> Science Associated
+    ? -> Input
+    -->
+    
     <!-- *********************************************************** -->
     <!-- #mark Private Enum -->
-        
+
     <xs:simpleType name="PrivateEnum">
         <xs:annotation>
             <xs:documentation>
@@ -349,7 +374,7 @@ technical contact
     
     <!-- *********************************************************** -->
     <!-- #mark Metadata Version Enum -->
-        
+
     <xs:simpleType name="MetadataVersionEnum">
         <xs:annotation>
             <xs:documentation>
@@ -369,7 +394,7 @@ technical contact
             <!--xs:enumeration value="VERSION 10.0"/-->
             <!--xs:enumeration value="VERSION 10.1"/-->
             <xs:enumeration value="VERSION 10.2"/>
-            <!--xs:enumeration value="VERSION 10.2"/-->
+            <!--xs:enumeration value="VERSION 10.3"/-->
         </xs:restriction>
     </xs:simpleType>
 
@@ -464,14 +489,116 @@ technical contact
     <xs:simpleType name="DisplayableTextTypeBaseType">
         <xs:restriction base="xs:string"/>
     </xs:simpleType>
-    
-    <!--xs:complexType name="DisplayableTextType">
-        <xs:simpleContent>
-            <xs:extension base="DisplayableTextTypeBaseType">
-                <xs:attribute type="DisplayableTextEnum" name="mime_type" default="text/plain"/>
-            </xs:extension>
-        </xs:simpleContent>
-    </xs:complexType-->
+
+    <!-- *********************************************************** -->
+    <!-- #mark Data Maturity Enum -->
+
+    <xs:simpleType name="DataMaturityEnum">
+        <xs:annotation>
+            <xs:appinfo><details>In support of CMR Landing pages</details></xs:appinfo>
+            <xs:appinfo><action>added</action><src>UMM</src><since>1.17.4</since></xs:appinfo>
+            <xs:documentation>
+                Example Usage:
+                * /DIF/Data_Maturity/Validated
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Beta"/>
+            <xs:enumeration value="Provisional"/>
+            <xs:enumeration value="Validated"/>
+            <xs:enumeration value="Stage 1 Validation"/>
+            <xs:enumeration value="Stage 2 Validation"/>
+            <xs:enumeration value="Stage 3 Validation"/>
+            <xs:enumeration value="Stage 4 Validation"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- *********************************************************** -->
+    <!-- #mark Other Identifiers Type Enum -->
+
+    <xs:simpleType name="OtherIdentifiersTypeEnum">
+        <xs:annotation>
+            <xs:appinfo><details>In support of CMR Landing pages</details></xs:appinfo>
+            <xs:appinfo><action>added</action><src>UMM</src><since>1.17.4</since></xs:appinfo>
+            <xs:documentation>
+                When set to 'Other' then Other_Description is to be used.
+
+                Example Usage:
+                * /Other_Identifiers/Type = 'Other'
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="ArchiveSetsNumber"/>
+            <xs:enumeration value="Other"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- *********************************************************** -->
+    <!-- #mark Temporal Resolutions Unit Enum -->
+
+    <xs:simpleType name="TemporalResolutionsUnitEnum">
+        <xs:annotation>
+            <xs:appinfo><details>In support of CMR Landing pages</details></xs:appinfo>
+            <xs:appinfo><action>added</action><src>UMM</src><since>1.17.4</since></xs:appinfo>
+            <xs:documentation>
+                Example Usage:
+                * Temporal_Coverage/Temporal_Info/Temporal_Resolutions/Unit = 'Day'
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Constant"/>
+            <xs:enumeration value="Varies"/>
+            <xs:enumeration value="Second"/>
+            <xs:enumeration value="Minute"/>
+            <xs:enumeration value="Hour"/>
+            <xs:enumeration value="Day"/>
+            <xs:enumeration value="Week"/>
+            <xs:enumeration value="Month"/>
+            <xs:enumeration value="Year"/>
+            <xs:enumeration value="Diurnal"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- *********************************************************** -->
+    <!-- #mark Associated DOI Type Enum -->
+
+    <xs:simpleType name="AssociatedDOITypeEnum">
+        <xs:annotation>
+            <xs:appinfo><details>In support of CMR Landing pages</details></xs:appinfo>
+            <xs:appinfo><action>added</action><src>UMM</src><since>1.17.4</since></xs:appinfo>
+            <xs:documentation>
+                When set to other, then Description_Of_Other_Type is to be used.
+
+                Example Usage:
+                * Associcated_DOIs/Type = 'Other'
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Child Dataset"/>
+            <xs:enumeration value="Collaborative/Other Agency"/>
+            <xs:enumeration value="Field Campaign"/>
+            <xs:enumeration value="Parent Dataset"/>
+            <xs:enumeration value="Related Dataset"/>
+            <xs:enumeration value="Other"/>
+        </xs:restriction>
+    </xs:simpleType>
+    <xs:simpleType name="AssociatedDOITypeOtherEnum">
+        <xs:annotation>
+            <xs:appinfo><details>In support of CMR Landing pages</details></xs:appinfo>
+            <xs:appinfo><action>added</action><src>UMM</src><since>1.17.4</since></xs:appinfo>
+            <xs:documentation>
+                When set to other, then Description_Of_Other_Type is to be used.
+
+                Example Usage:
+                * Associcated_DOIs/Type = 'Other'
+            </xs:documentation>
+        </xs:annotation>
+        <xs:restriction base="xs:string">
+            <xs:enumeration value="Other"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <!-- #mark - _Complex types: -->
 
     <!-- *********************************************************** -->
     <!-- #mark Persistent Identifier Type and Enum -->
@@ -489,8 +616,9 @@ technical contact
         </xs:annotation>
         
         <xs:sequence>
-            <xs:element name="Type" type="PersistentIdentifierEnum"/>
-            <xs:element name="Identifier" type="xs:string"/>
+            <xs:element name="Type"             type="PersistentIdentifierEnum"/>
+            <xs:element name="Identifier"       type="string-1k"/>
+            <xs:element name="Previous_Version" type="DOIPreviousVersionType"   minOccurs="0"/> <!-- added in ECS-1474-->
         </xs:sequence>
     </xs:complexType>
     
@@ -505,6 +633,30 @@ technical contact
             <xs:enumeration value="ARK"/>
         </xs:restriction>
     </xs:simpleType>
+
+    <!-- *********************************************************** -->
+    <!-- #mark DOI Previous Version Type -->
+    <xs:complexType name="DOIPreviousVersionType">
+        <xs:annotation>
+            <xs:appinfo><details>In support of CMR Landing pages</details></xs:appinfo>
+            <xs:appinfo><action>added</action><src>UMM</src><since>1.17.4</since></xs:appinfo>
+            <xs:documentation>
+            The DOI Previous Version provides a record of every time that a DOI
+            was updated and links to the DOI landing page for the previous version.
+
+            | ECHO 10            | UMM                | DIF 10               |
+            | ------------------ | ------------------ | -------------------- |
+            | DOIPreviousVersion | DOIPreviousVersion | DOI_Previous_Version |
+            </xs:documentation>
+        </xs:annotation>
+        <xs:sequence>
+            <xs:element name="Version"      type="string-80"            minOccurs="0"/>
+            <xs:element name="Description"  type="string-4000"          minOccurs="0"/>
+            <xs:element name="DOI"          type="string-1k"/>
+            <xs:element name="Published"    type="DateOrTimeOrEnumType" minOccurs="0"/>
+        </xs:sequence>
+    </xs:complexType>
+
 
     <!-- *********************************************************** -->
     <!-- #mark Date, Time, or Enum -->
@@ -605,5 +757,29 @@ technical contact
             <xs:pattern value="[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89abAB][0-9a-f]{3}-[0-9a-f]{12}"/>
         </xs:restriction>
     </xs:simpleType>
-    
+
+    <!-- *********************************************************** -->
+    <!-- #mark Standard Strings -->
+
+    <xs:simpleType name="string-80">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="80"/>
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="string-1k">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="1024"/>
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
+    <xs:simpleType name="string-4000">
+        <xs:restriction base="xs:string">
+            <xs:maxLength value="4000"/>
+            <xs:minLength value="1"/>
+        </xs:restriction>
+    </xs:simpleType>
+
 </xs:schema>

@@ -322,7 +322,8 @@
         temporal-extent {:PrecisionOfSeconds (:PrecisionOfSeconds (first temporal-extents))
                          :EndsAtPresentFlag (boolean (some :EndsAtPresentFlag temporal-extents))
                          :TemporalResolution (some #(when (contains? % :TemporalResolution)
-                                                   (:TemporalResolution %)) temporal-extents)}]
+                                                      (:TemporalResolution %))
+                                                   temporal-extents)}]
     (cond
       (seq range-date-times)
       [(cmn/map->TemporalExtentType (assoc temporal-extent :RangeDateTimes range-date-times))]
