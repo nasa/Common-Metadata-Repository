@@ -15,7 +15,7 @@
                  [nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/clojure "1.10.0"]
+                 [org.clojure/clojure "1.11.2"]
                  [com.vladsch.flexmark/flexmark-all "0.64.0"]
                  [ring/ring-core "1.10.0"]
                  [ring/ring-json "0.5.1"]

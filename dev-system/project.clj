@@ -52,7 +52,7 @@
                [org.clojure/clojure]
                [ring/ring-codec]]
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
-                           [org.clojure/clojure "1.10.0"]
+                           [org.clojure/clojure "1.11.2"]
                            [ring/ring-codec "1.1.1"]]
                          project-dependencies)
   :plugins [[lein-environ "1.1.0"]
