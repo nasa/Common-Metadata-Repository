@@ -3,13 +3,13 @@
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/elastic-utils-lib"
-  :exclusions [;[cheshire]
+  :exclusions [];[cheshire]
                ;[commons-codec/commons-codec]
                ;[commons-io]
-               [org.apache.logging.log4j/log4j-api]
-               [org.elasticsearch/elasticsearch]
+               ;[org.apache.logging.log4j/log4j-api]
+               ;[org.elasticsearch/elasticsearch]
                ;[potemkin]
-               [commons-compress]]
+               ;[commons-compress]]
   :dependencies [[cheshire "5.10.0"]
                  [clj-http "3.11.0"]
                  [clojurewerkz/elastisch "5.0.0-beta1"]
@@ -38,7 +38,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions [[org.clojure/tools.nrepl]]
+             :dev {:exclusions [];[org.clojure/tools.nrepl]]
                    :dependencies [[cheshire "5.10.0"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
@@ -54,7 +54,7 @@
                     :test-paths ^:replace []
                     :dependencies []
                     :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's

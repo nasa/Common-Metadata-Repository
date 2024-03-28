@@ -9,7 +9,7 @@
 (defproject nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handling cacheing with the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/redis-utils-lib"
-  :exclusions [[commons-compress]]
+  :exclusions [];[commons-compress]]
   :dependencies [[com.taoensso/carmine "3.0.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.10.3"]
@@ -38,7 +38,7 @@
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
                     :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]
                               [lein-shell "0.5.0"]]}

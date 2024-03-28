@@ -61,7 +61,7 @@
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
                     :plugins [[jonase/eastwood "0.3.3"]
-                              [lein-ancient "0.6.15"]
+                              [lein-ancient "0.7.0"]
                               [lein-kibit "0.1.8"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
                     :plugins [[lein-ltest "0.3.0"]]

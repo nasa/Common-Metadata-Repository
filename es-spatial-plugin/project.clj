@@ -38,8 +38,8 @@
                                        [org.clojure/tools.reader "1.3.2"]
 
                                        [org.yaml/snakeyaml "1.31"]]}
-             :es-deps {:exclusions [[cheshire]
-                                    [org.clojure/tools.reader]]
+             :es-deps {:exclusions [];[cheshire]
+                                    ;[org.clojure/tools.reader]]
                        :dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
                                        :exclusions [[com.dadrox/quiet-slf4j]
@@ -71,7 +71,7 @@
                                cmr.elasticsearch.plugins.spatial.factory.core
                                cmr.elasticsearch.plugins.spatial.engine.core
                                cmr.elasticsearch.plugins.spatial.plugin]}
-             :dev {:exclusions [[org.clojure/tools.nrepl] [cheshire] [org.clojure/tools.reader]]
+             :dev {:exclusions [];[org.clojure/tools.nrepl] [cheshire] [org.clojure/tools.reader]]
                    :dependencies [[criterium "0.4.4"]
 
                                   [cheshire "5.10.0"]
@@ -95,7 +95,7 @@
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
                     :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's

@@ -5,16 +5,16 @@
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/message-queue-lib"
-  :exclusions [[cheshire]
-               [clj-http]
-               [clj-time]
-               [commons-codec/commons-codec]
-               [commons-io]
-               [commons-logging]
-               [org.apache.httpcomponents/httpclient]
-               [org.apache.httpcomponents/httpcore]
-               [org.clojure/tools.reader]
-               [potemkin]]
+  :exclusions [];[cheshire]
+               ;[clj-http]
+               ;[clj-time]
+               ;[commons-codec/commons-codec]
+               ;[commons-io]
+               ;[commons-logging]
+               ;[org.apache.httpcomponents/httpclient]
+               ;[org.apache.httpcomponents/httpcore]
+               ;[org.clojure/tools.reader]
+               ;[potemkin]]
   :dependencies [[cheshire "5.10.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
@@ -58,7 +58,7 @@
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
                     :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's

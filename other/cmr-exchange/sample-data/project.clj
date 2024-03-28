@@ -18,7 +18,7 @@
                    :source-paths ["dev-resources/src"]
                    :repl-options {:init-ns cmr.sample-data.dev
                                   :prompt ~get-prompt}}
-             :test {:plugins [[lein-ancient "0.6.15"]
+             :test {:plugins [[lein-ancient "0.7.0"]
                               [jonase/eastwood "0.2.5"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.8"]

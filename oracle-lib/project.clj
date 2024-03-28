@@ -15,7 +15,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions [[org.clojure/tools.nrepl]]
+             :dev {:exclusions [];[org.clojure/tools.nrepl]]
                    :dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]]
@@ -29,7 +29,7 @@
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
                     :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's

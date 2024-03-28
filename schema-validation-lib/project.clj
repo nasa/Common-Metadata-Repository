@@ -3,7 +3,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/schema-validation-lib"
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
-  :exclusions [[chesire]]
+  :exclusions []
   :dependencies [[cheshire "5.10.0"]
                  [com.fasterxml.jackson.core/jackson-core "2.13.2"]
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
@@ -34,14 +34,15 @@
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
                     :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
-                                     [lambdaisland/kaocha-cloverage "1.0.75"]
+             :kaocha {:dependencies [[org.clojure/tools.namespace "1.2.0"]
+                                     [lambdaisland/kaocha "1.88.1376"]
+                                     [lambdaisland/kaocha-cloverage "1.1.89"]
                                      [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
