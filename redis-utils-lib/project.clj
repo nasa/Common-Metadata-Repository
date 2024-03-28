@@ -37,7 +37,8 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
+                    :plugins [[com.github.clj-kondo/lein-clj-kondo "2024.02.12"]
+                              [jonase/eastwood "0.2.5"]
                               [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]

@@ -1,10 +1,10 @@
 (defproject nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"
   :description "Defines the Unified Metadata Model and mappings from various metadata standards into UMM."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/umm-spec-lib"
-  :exclusions [[commons-io]
-               [org.apache.httpcomponents/httpcore]
-               [org.clojure/clojure]
-               [org.clojure/tools.reader]]
+  :exclusions [];[commons-io]
+               ;[org.apache.httpcomponents/httpcore]
+               ;[org.clojure/clojure]
+               ;[org.clojure/tools.reader]]
   :dependencies [[commons-io "2.6"]
                  [commons-validator/commons-validator "1.7"]
                  [digest "1.4.8"]

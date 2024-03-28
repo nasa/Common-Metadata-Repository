@@ -2,13 +2,13 @@
   :description "The metadata db is a micro-service that provides
                support for persisting metadata concepts."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/metadata-db-app"
-  :exclusions [[cheshire]
-               [clj-http]
-               [clj-time]
-               [com.fasterxml.jackson.core/jackson-core]
-               [com.fasterxml.jackson.core/jackson-databind]
-               [org.clojure/tools.reader]
-               [org.slf4j/slf4j-api]]
+  :exclusions [];[cheshire]
+               ;[clj-http]
+               ;[clj-time]
+               ;[com.fasterxml.jackson.core/jackson-core]
+               ;[com.fasterxml.jackson.core/jackson-databind]
+               ;[org.clojure/tools.reader]
+               ;[org.slf4j/slf4j-api]]
   :dependencies [[cheshire "5.10.0"]
                  [clj-http "3.11.0"]
                  [clj-time "0.15.1"]
