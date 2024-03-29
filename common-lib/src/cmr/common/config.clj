@@ -100,8 +100,6 @@
 (comment
   (print-all-configs-docs))
 
-
-;; not currently used, either find some uses or delete when the linter ticket gets here
 (defn parse-bool
   "Helper for parsing boolean strings."
   [s]
@@ -122,7 +120,7 @@
   {String identity
    Long #(Long. ^String %)
    Double #(Double. ^String %)
-   Boolean parse-boolean
+   Boolean parse-bool
    :edn edn/read-string})
 
 (defmacro defconfig
