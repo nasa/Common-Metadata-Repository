@@ -51,9 +51,8 @@
 
 (defn- create-elastic-server
   "Creates an instance of an elasticsearch server in memory."
-  []
-  (elastic-config/set-elastic-port! 9306)
-  (es/create-server 9306 {:log-level (system/log-level)}))
+  [] 
+  (es/create-server {:log-level (system/log-level)}))
 
 (defn start
   "Starts the current development system."
