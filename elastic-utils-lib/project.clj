@@ -22,7 +22,6 @@
                  [org.elasticsearch/elasticsearch ~elastic-version]
                  [org.apache.commons/commons-compress "1.26.0"]
                  [org.testcontainers/testcontainers "1.19.7"]
-                 [org.testcontainers/elasticsearch "1.19.7"]
                  [org.yaml/snakeyaml "1.31"]
                  [potemkin "0.4.5"]
                  [ring/ring-core "1.10.0"]

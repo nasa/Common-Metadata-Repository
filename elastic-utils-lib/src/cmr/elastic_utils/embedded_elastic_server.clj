@@ -7,7 +7,6 @@
    [cmr.elastic-utils.config :as elastic-config])
   (:import
    (java.time Duration)
-   (org.testcontainers.elasticsearch ElasticsearchContainer)
    (org.testcontainers.containers GenericContainer Network)
    (org.testcontainers.containers.wait.strategy Wait)
    (org.testcontainers.images.builder ImageFromDockerfile)))
@@ -94,7 +93,7 @@
                      (.withFileFromClasspath docker-image k v))
                    (.get docker-image))
                  elasticsearch-official-docker-image)
-         container (ElasticsearchContainer. image)]
+         container (GenericContainer. image)]
      (when data-dir
        (.withFileSystemBind container data-dir "/usr/share/elasticsearch/data"))
      (when log-level
@@ -154,7 +153,7 @@
   (stop
     [this system]
     (let [containers (:containers this)
-          ^ElasticsearchContainer node (:container (:elasticsearch-node containers))
+          ^GenericContainer node (:container (:elasticsearch-node containers))
           ^GenericContainer kibana (:container (:kibana-container containers))]
       (when node
         (.stop node))
