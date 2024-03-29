@@ -53,7 +53,7 @@
                                                     [org.locationtech.jts.JTSVersion]
                                                     [org.slf4j/slf4j-api]]]
 
-                                      [cheshire "5.10.0"]
+                                      [cheshire "5.12.0"]
                                       [org.clojure/tools.reader "1.3.2"]
 
                                       [org.clojure/clojure "1.10.0"]]
@@ -61,7 +61,7 @@
                        :uberjar-name ~es-deps-uberjar-name
                        :jar-name ~es-deps-jar-name
                        :aot []}
-             :es-plugin {:dependencies [[cheshire "5.10.0"]]
+             :es-plugin {:dependencies [[cheshire "5.12.0"]]
                          :aot [cmr.elasticsearch.plugins.spatial.script.core
                                cmr.elasticsearch.plugins.spatial.factory.lfactory
                                cmr.elasticsearch.plugins.spatial.factory.core
@@ -70,7 +70,7 @@
              :dev {:exclusions [];[org.clojure/tools.nrepl] [cheshire] [org.clojure/tools.reader]]
                    :dependencies [[criterium "0.4.4"]
 
-                                  [cheshire "5.10.0"]
+                                  [cheshire "5.12.0"]
                                   [org.clojure/tools.reader "1.3.2"]
 
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]

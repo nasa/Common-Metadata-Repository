@@ -20,7 +20,7 @@
   :url "https://github.com/cmr-exchange/cmr-graph"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[cheshire "5.8.0"]
+  :dependencies [[cheshire "5.12.0"]
                  [clojurewerkz/elastisch "3.0.0"]
                  [clojurewerkz/neocons "3.2.0"]
                  [clojusc/system-manager "0.3.0"]

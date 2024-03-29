@@ -13,7 +13,7 @@
                ;org.eclipse.emf/org.eclipse.emf.ecore
                ;ring/ring-codec
                org.mozilla/rhino]
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.12.0"]
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io/commons-io "2.6"]

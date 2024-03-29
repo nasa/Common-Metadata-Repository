@@ -4,7 +4,7 @@
   :plugins [[lein-exec "0.3.7"]
             [lein-shell "0.5.0"]]
   :exclusions []
-  :dependencies [[cheshire "5.10.0"]
+  :dependencies [[cheshire "5.12.0"]
                  [com.github.everit-org.json-schema/org.everit.json.schema "1.14.3"]
                  [org.clojure/clojure "1.10.3"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]

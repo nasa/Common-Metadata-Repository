@@ -35,7 +35,7 @@
                ;[commons-io]
                ;[org.clojure/tools.reader]
                ;[ring/ring-codec]]
-  :dependencies ~(concat '[[cheshire "5.10.0"]
+  :dependencies ~(concat '[[cheshire "5.12.0"]
                            [clj-time "0.15.1"]
                            [com.fasterxml.jackson.core/jackson-core "2.13.2"]
                            [commons-codec/commons-codec "1.11"]

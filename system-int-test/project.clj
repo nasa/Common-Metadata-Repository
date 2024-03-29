@@ -16,7 +16,7 @@
                ;[org.jsoup/jsoup]
                ;[potemkin]
                ;[ring/ring-codec]]
-  :dependencies [[cheshire "5.10.0"]
+  :dependencies [[cheshire "5.12.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [clj-xml-validation "1.0.2"]

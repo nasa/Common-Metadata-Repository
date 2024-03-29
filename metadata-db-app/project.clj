@@ -9,7 +9,7 @@
                ;[com.fasterxml.jackson.core/jackson-databind]
                ;[org.clojure/tools.reader]
                ;[org.slf4j/slf4j-api]]
-  :dependencies [[cheshire "5.10.0"]
+  :dependencies [[cheshire "5.12.0"]
                  [clj-http "3.11.0"]
                  [clj-time "0.15.1"]
                  [compojure "1.6.1"]

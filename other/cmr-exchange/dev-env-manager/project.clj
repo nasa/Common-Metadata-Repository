@@ -14,7 +14,7 @@
                org.apache.maven.wagon/wagon-provider-api
                org.clojure/clojure
                org.clojure/tools.macro]
-  :dependencies [[cheshire "5.8.0"]
+  :dependencies [[cheshire "5.12.0"]
                  [clj-http "3.7.0"]
                  [com.stuartsierra/component "0.3.2"]
                  [commons-codec "1.11"]

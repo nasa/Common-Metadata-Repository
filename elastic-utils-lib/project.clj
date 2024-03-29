@@ -10,7 +10,7 @@
                ;[org.elasticsearch/elasticsearch]
                ;[potemkin]
                ;[commons-compress]]
-  :dependencies [[cheshire "5.10.0"]
+  :dependencies [[cheshire "5.12.0"]
                  [clj-http "3.11.0"]
                  [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
@@ -36,7 +36,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
              :dev {:exclusions [];[org.clojure/tools.nrepl]]
-                   :dependencies [[cheshire "5.10.0"]
+                   :dependencies [[cheshire "5.12.0"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]]

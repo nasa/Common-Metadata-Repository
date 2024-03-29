@@ -22,7 +22,7 @@
   :url "https://github.com/cmr-exchange/cmr-metadata-proxy"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.12.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
                  [com.stuartsierra/component "0.4.0"]

@@ -12,7 +12,7 @@
                ;[potemkin]
                ;[ring/ring-codec]
                ]
-  :dependencies [[cheshire "5.10.0"]
+  :dependencies [[cheshire "5.12.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
