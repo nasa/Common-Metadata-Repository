@@ -3,7 +3,7 @@
   a queue listener"
   (:require
    [clojail.core :as timeout]
-   [cmr.common.log :as log :refer [debug error info warn]]
+   [cmr.common.log :as log :refer [debug error warn]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.message-queue.config :as config]
@@ -37,6 +37,8 @@
     (Thread/sleep (config/messaging-retry-delay))
     (recur queue-broker exchange-name msg)))
 
+(declare publish-message)
+(declare queue-broker exchange-name msg)
 (defn-timed publish-message
   "Publishes a message to an exchange Throws a service unavailable error if the message
   fails to be put on the queue.
@@ -52,5 +54,5 @@
       (catch java.util.concurrent.TimeoutException e
         (errors/throw-service-error
           :service-unavailable
-          (str "Request timed out when attempting to publish message: " msg)
+          (str "Request timed out when attempting to publish message " (- (System/currentTimeMillis) start-time) ": " msg)
           e)))))

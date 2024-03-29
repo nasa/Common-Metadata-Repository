@@ -101,8 +101,8 @@
   (print-all-configs-docs))
 
 
-
-(defn parse-boolean
+;; not currently used, either find some uses or delete when the linter ticket gets here
+(defn parse-bool
   "Helper for parsing boolean strings."
   [s]
   (cond
@@ -185,9 +185,9 @@
                     (some? default-value#)
                     (not= (type default-value#) ~config-type))
            (throw
-             (Exception.
-               (format "The type of the default value %s does not match the specified config type %s"
-                       (type default-value#) ~config-type))))
+            (Exception.
+             (format "The type of the default value %s does not match the specified config type %s"
+                     (type default-value#) ~config-type))))
 
          ;; Register the config
          (register-config ~(str *ns*) ~config-name-key doc-string-value#

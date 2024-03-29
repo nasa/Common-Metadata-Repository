@@ -9,7 +9,7 @@
    [clojure.set :as set]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug trace info warn error)]
+   [cmr.common.log :as log :refer (trace info warn)]
    [cmr.common.util :as util]
    [cmr.message-queue.config :as iconfig]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
@@ -262,8 +262,9 @@
       (finally
         (reset! resetting?-atom false))))
 
+  ;; Parameter is 'this'
   (health
-    [this]
+    [_]
     (queue-protocol/health queue-broker)))
 
 (record-pretty-printer/enable-record-pretty-printing BrokerWrapper)

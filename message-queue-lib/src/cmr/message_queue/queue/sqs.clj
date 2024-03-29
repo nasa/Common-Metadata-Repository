@@ -4,64 +4,64 @@
   comments here. Topics in SNS are (mostly) equivalent to exchanges in RabbitMQ."
   (:require
    [cheshire.core :as json]
-   [clj-http.client :as client]
-   [clj-time.core :as t]
-   [clj-time.format :as f]
    [clojure.core.async :as a]
    [clojure.string :as string]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.services.health-helper :as hh]
-   [cmr.common.util :as u]
    [cmr.message-queue.config :as config]
-   [cmr.message-queue.queue.queue-protocol :as queue-protocol]
-   [cmr.message-queue.services.queue :as queue])
+   [cmr.message-queue.queue.queue-protocol :as queue-protocol])
   (:import
    (clojure.lang Keyword Reflector)
    (cmr.message_queue.test ExitException)
-   (com.amazonaws ClientConfiguration)
-   (com.amazonaws.auth BasicAWSCredentials)
-   (com.amazonaws.auth.policy Condition Policy Principal Resource Statement Statement$Effect)
-   (com.amazonaws.auth.policy.actions SQSActions)
-   (com.amazonaws.auth.policy.conditions ConditionFactory)
-   (com.amazonaws.regions InMemoryRegionImpl)
+   ;(com.amazonaws ClientConfiguration)
+   ;(com.amazonaws.auth BasicAWSCredentials)
+   ;(com.amazonaws.auth.policy Condition Policy Principal Resource Statement Statement$Effect)
+   ;(com.amazonaws.auth.policy.actions SQSActions)
+   ;(com.amazonaws.auth.policy.conditions ConditionFactory)
+   ;(com.amazonaws.regions InMemoryRegionImpl)
    (com.amazonaws.services.sns AmazonSNSClient)
    (com.amazonaws.services.sqs AmazonSQSClient)
    (com.amazonaws.services.sns.util Topics)
-   (com.amazonaws.services.sqs.model CreateQueueRequest GetQueueUrlRequest GetQueueUrlResult
-                                     PurgeQueueRequest ReceiveMessageRequest
-                                     SendMessageResult SetQueueAttributesRequest)
-   (java.io IOException)
+   (com.amazonaws.services.sqs.model PurgeQueueRequest ReceiveMessageRequest
+                                     SetQueueAttributesRequest)
+   ;(com.amazonaws.services.sqs.model CreateQueueRequest GetQueueUrlRequest GetQueueUrlResult
+   ;                                  PurgeQueueRequest ReceiveMessageRequest
+   ;                                  SendMessageResult SetQueueAttributesRequest)
+   ;(java.io IOException)
    (java.util ArrayList)
    (java.util HashMap)))
 
+
+(declare queue-polling-timeout)
 (defconfig queue-polling-timeout
  "Number of seconds SQS should wait before giving up on an attempt to read data from a queue."
  {:default 20
   :type Long})
 
+(declare default-queue-visibility-timeout)
 (defconfig default-queue-visibility-timeout
   "Default number of seconds SQS should wait after a message is read before making it visible to
   other queue readers."
   {:default 300
    :type Long})
 
+(declare provider-queue-visibility-timeout)
 (defconfig provider-queue-visibility-timeout
   "Number of seconds SQS should wait after a message is read from a provider queue before making
   it visible to other readers."
-  {:default 43200 
+  {:default 43200
    :type Long})
 
+(declare default-num-tries)
 (defconfig default-num-tries
   "Default number of tries (including initial attempt and all retries) for an individual message
   before moving the message to the DLQ."
   {:default 5
    :type Long})
 
+(declare sqs-endpoint)
 (defconfig sqs-endpoint
   "By default the SQS client will not explicitly set the SQS endpoint. This
   configuration is provided for use in situations where explicitly setting
@@ -69,6 +69,7 @@
   {:default nil
    :type String})
 
+(declare sqs-extend-policy-remaining-exchanges)
 (defconfig sqs-extend-policy-remaining-exchanges
   "When subscribing a queue to a topic, one may override the AWS policy or
   extend it. CMR's default behaviour for AWS is to not extend the policy
@@ -80,6 +81,7 @@
   {:default true
    :type Boolean})
 
+(declare sns-endpoint)
 (defconfig sns-endpoint
   "By default the SNS client will not explicitly set the SNS endpoint. This
   configuration is provided for use in situations where explicitly setting
@@ -215,16 +217,22 @@
   the configuration operation doesn't actually take place."
   identity)
 
+;; parameter is type
 (defmethod create-aws-client :sqs
-  [^Keyword type]
+  [^Keyword _]
+  ;; new AmazonSNS() has been depricated in favor of
+  ;; AmazonSNS sns = AmazonSNSClient.builder().build();
   (configure-aws-client
-    (new AmazonSQSClient)
+    (.build (AmazonSQSClient/builder))
     :setEndpoint (sqs-endpoint)))
 
+;; parameter is type
 (defmethod create-aws-client :sns
-  [^Keyword type]
+  [^Keyword _]
+  ;; new AmazonSNS() has been depricated in favor of
+  ;; AmazonSNS sns = AmazonSNSClient.builder().build();
   (configure-aws-client
-    (new AmazonSNSClient)
+    (.build (AmazonSNSClient/builder))
     :setEndpoint (sns-endpoint)))
 
 (defn- create-async-handler
@@ -241,9 +249,9 @@
          queue-url (.getQueueUrl (.getQueueUrl sqs-client queue-name))
          rec-req (doto (ReceiveMessageRequest. queue-url)
                        ;; Only take one message at a time from the queue.
-                       (.setMaxNumberOfMessages (Integer. 1))
+                       (.setMaxNumberOfMessages (Integer/valueOf 1))
                        ;; Tell SQS how long to wait before returning with no data (long polling).
-                       (.setWaitTimeSeconds (Integer. (queue-polling-timeout))))]
+                       (.setWaitTimeSeconds (Integer/valueOf (queue-polling-timeout))))]
      (a/thread
        (loop [sqs-client-atom (atom sqs-client)]
          (try
@@ -278,9 +286,9 @@
         dlq-name (dead-letter-queue q-name)
 
         ;; Create the dead-letter-queue first and get its url
-        dlq-url (.getQueueUrl (.createQueue sqs-client dlq-name))
+        ;dlq-url (.getQueueUrl (.createQueue sqs-client dlq-name))
         dlq-arn (get-queue-arn sqs-client dlq-name)
-        create-queue-request (CreateQueueRequest. q-name)
+        ;create-queue-request (CreateQueueRequest. q-name)
         ;; the policy that sets retries and what dead-letter-queue to use
         redrive-policy (format "{\"maxReceiveCount\":\"%d\", \"deadLetterTargetArn\": \"%s\"}"
                                max-tries
@@ -298,31 +306,6 @@
   "Create an SNS topic to be used as an exchange."
   [sns-client exchange-name]
   (.createTopic sns-client (normalize-queue-name exchange-name)))
-
-(defn- topic-conditions
-  "Returns a sequence of Conditions allowing the given exchanges access to a queue.
-  These will be applied to an explicit queue later."
-  [sns-client exchange-names]
-  (map (fn [exchange-name]
-           (let [ex-name (normalize-queue-name exchange-name)
-                 topic (get-topic sns-client ex-name)
-                 topic-arn (.getTopicArn topic)]
-            (ConditionFactory/newSourceArnCondition topic-arn)))
-      exchange-names))
-
-(defn- sns-to-sqs-access-policy
-  "Returns an access policy allowing the given SNS topic to publish to the given SQS queue."
-  [sns-client sqs-client queue-name exchange-names]
-  (let [conditions (topic-conditions sns-client exchange-names)
-        queue-arn (get-queue-arn sqs-client queue-name)
-        resource (Resource. queue-arn)
-        statement (doto (Statement. Statement$Effect/Allow)
-                        (.withPrincipals (into-array Principal [Principal/AllUsers]))
-                        (.withActions (into-array SQSActions [SQSActions/SendMessage]))
-                        (.withResources (into-array Resource [resource]))
-                        (.withConditions (into-array Condition conditions)))
-        policy (.withStatements (Policy.) (into-array Statement [statement]))]
-    (.toJson policy)))
 
 (defn bind-queue-to-exchange
   "Bind a queue to a single exchange. Extend should be true
@@ -367,41 +350,41 @@
   "Memoized function that returns the queue url for the given name."
   (memoize -get-queue-url))
 
-(defrecord SQSQueueBroker
+(defrecord
+ SQSQueueBroker
   ;; A record containing fields related to accessing SNS/SQS exchanges and queues.
-  [
-   ;; Connection to AWS SNS
-   ^AmazonSNSClient sns-client-atom
+ [;; Connection to AWS SNS
+  ^AmazonSNSClient sns-client-atom
 
    ;; Connection to AWS SQS
-   ^AmazonSQSClient sqs-client
+  ^AmazonSQSClient sqs-client
 
    ;; queues known to this broker
-   queues
+  queues
 
    ;; map of normalized queue names to original queue names - needed for testing with queue broker wrapper
    ;; See normalize-queue-name for an explanation of normalized queue names.
-   normalized-queue-names
+  normalized-queue-names
 
    ;; exchanges (topics) known to this broker
-   exchanges
+  exchanges
 
    ;; a map of queue names to the retry policies for that queue
-   queues-to-policies
+  queues-to-policies
 
    ;; a map of queues to sequences of exchange names to which they should be bound
-   queues-to-exchanges]
+  queues-to-exchanges]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
   (start
-    [this system]
+    [this _]
     (let [sqs-client (create-aws-client :sqs)
           sns-client (create-aws-client :sns)
           normalized-queue-names (reduce (fn [m queue-name]
-                                             (let [nqn (normalize-queue-name queue-name)]
-                                               (assoc m nqn queue-name)))
+                                           (let [nqn (normalize-queue-name queue-name)]
+                                             (assoc m nqn queue-name)))
                                          {}
                                          queues)]
       (doseq [queue-name queues]
@@ -420,7 +403,7 @@
              :normalized-queue-names normalized-queue-names)))
 
   (stop
-    [this system]
+    [this _]
     (.shutdown @sns-client-atom)
     (.shutdown sqs-client)
     this)
@@ -428,8 +411,9 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   queue-protocol/Queue
 
+  ;; First param is 'this'
   (publish-to-queue
-    [this queue-name msg]
+    [_ queue-name msg]
     (let [msg (json/generate-string msg)
           queue-name (normalize-queue-name queue-name)
           queue-url (get-queue-url sqs-client queue-name)]
@@ -443,14 +427,15 @@
           topic-arn (.getTopicArn topic)
           subs (vec (.getSubscriptions (.listSubscriptionsByTopic @sns-client-atom topic-arn)))]
       (map (fn [sub]
-               (->> sub
-                    .getEndpoint
-                    subscription-endpoint->name
-                    (normalized-queue-name->original-queue-name this)))
+             (->> sub
+                  .getEndpoint
+                  subscription-endpoint->name
+                  (normalized-queue-name->original-queue-name this)))
            subs)))
 
+  ;; first param is 'this'
   (publish-to-exchange
-    [this exchange-name msg]
+    [_ exchange-name msg]
     (let [msg (json/generate-string msg)
           exchange-name (normalize-queue-name exchange-name)
           topic (get-topic @sns-client-atom exchange-name)
@@ -516,7 +501,7 @@
   ;; list the queues for the cmr_ingest_exchange
   (queue-protocol/get-queues-bound-to-exchange broker "jn_test_exchangeA5")
   ;; create a test queue
-  (create-queue (:sqs-client broker) "jn_test_queue3")
+  (create-queue (:sqs-client broker) "jn_test_queue3" 10 10)
   ;; create a test exchange
   (create-exchange (deref (:sns-client-atom broker)) "jn_test_exchange3")
   (create-exchange (deref (:sns-client-atom broker)) "jn_test_exchange3b")
@@ -525,7 +510,7 @@
   ;; Bind the queue to the new exchange
   (bind-queue-to-exchanges (deref (:sns-client-atom broker)) (:sqs-client broker) ["jn_test_exchangeA5"] "jn_test_queueY5")
   ;; subscribe to test queue with a simple handler that prints received messages
-  (queue-protocol/subscribe broker "jn_test_queueY5" (fn [msg] (do (println "MESSAGE!") (swap! msg-cnt-atom inc))))
+  (queue-protocol/subscribe broker "jn_test_queueY5" (fn [msg] (println "MESSAGE!" msg) (swap! msg-cnt-atom inc)))
   ;; publish a message to the queue to verify our subscribe worked
   (queue-protocol/publish-to-queue broker "jn_test_queueY5" {:action "concept-update" :dummy "dummy"})
   ;; publish a message to the exchange to verify the message is sent to the queue
