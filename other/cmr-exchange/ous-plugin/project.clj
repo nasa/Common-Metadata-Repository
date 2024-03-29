@@ -9,6 +9,10 @@
     ;; this function is really only meant to be used by Dragon itself.
     (catch Exception _ "")))
 
+;; 33 == Yellow
+;; 34 == Blue
+;; 35 == Magenta
+;; [ns] λ=>
 (defn get-prompt
   [ns]
   (str "\u001B[35m[\u001B[34m"
@@ -34,7 +38,7 @@
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [metosin/ring-http-response "0.9.1"]
-                 [org.clojure/clojure "1.10.3"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.clojure/core.async "0.4.490"]
                  [org.clojure/core.cache "0.7.2"]
                  [org.clojure/data.xml "0.2.0-alpha5"]

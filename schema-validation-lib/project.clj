@@ -6,7 +6,7 @@
   :exclusions []
   :dependencies [[cheshire "5.12.0"]
                  [com.github.everit-org.json-schema/org.everit.json.schema "1.14.3"]
-                 [org.clojure/clojure "1.10.3"]]
+                 [org.clojure/clojure "1.11.2"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
   :global-vars {*warn-on-reflection* true}
   :jvm-opts ^:replace ["-server"

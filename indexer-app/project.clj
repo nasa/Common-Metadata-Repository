@@ -14,7 +14,7 @@
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"]
-                 [org.clojure/clojure "1.10.3"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.clojure/tools.nrepl "0.2.13"]
                  [ring/ring-core "1.10.0"]
                  [ring/ring-json "0.5.1"]]

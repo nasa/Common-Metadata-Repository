@@ -12,7 +12,7 @@
   :exclusions [];[commons-compress]]
   :dependencies [[com.taoensso/carmine "3.0.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [org.clojure/clojure "1.10.3"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.apache.commons/commons-compress "1.26.0"]
                  [org.testcontainers/testcontainers "1.17.2"]]
   :plugins [[lein-exec "0.3.7"]

@@ -52,11 +52,9 @@
                                                     [org.locationtech.jts/jts-core]
                                                     [org.locationtech.jts.JTSVersion]
                                                     [org.slf4j/slf4j-api]]]
-
                                       [cheshire "5.12.0"]
                                       [org.clojure/tools.reader "1.3.2"]
-
-                                      [org.clojure/clojure "1.10.0"]]
+                                      [org.clojure/clojure "1.11.2"]]
                        :target-path ~es-deps-target-path
                        :uberjar-name ~es-deps-uberjar-name
                        :jar-name ~es-deps-jar-name

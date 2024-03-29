@@ -33,7 +33,7 @@
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0"]
                  [gov.nasa.earthdata/cmr-mission-control "0.1.0"]
                  [metosin/ring-http-response "0.9.1"]
-                 [org.clojure/clojure "1.10.3"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.clojure/core.async "0.4.490"]
                  [org.clojure/core.cache "0.7.2"]]
   :jvm-opts ["-XX:-OmitStackTraceInFastThrow"

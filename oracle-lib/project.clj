@@ -6,7 +6,7 @@
                  [com.oracle.database.ha/ons "19.14.0.0"]
                  [com.oracle.database.jdbc/ucp "19.14.0.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                 [org.clojure/clojure "1.10.3"]
+                 [org.clojure/clojure "1.11.2"]
                  [org.clojure/java.jdbc "0.4.2"]
                  [sqlingvo "0.7.15"]]
   :plugins [[lein-shell "0.5.0"]]
