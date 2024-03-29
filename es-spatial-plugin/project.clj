@@ -42,11 +42,7 @@
                                     ;[org.clojure/tools.reader]]
                        :dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
-                                       :exclusions [[com.dadrox/quiet-slf4j]
-                                                    [com.fasterxml.jackson.core/jackson-core]
-                                                    [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
-                                                    [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
-                                                    [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]
+                                       :exclusions [[com.dadrox/quiet-slf4j] 
                                                     [commons-codec]
                                                     [commons-logging]
                                                     [joda-time]
@@ -94,7 +90,7 @@
              :static {}
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
+                    :plugins [[jonase/eastwood "1.4.2"]
                               [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}

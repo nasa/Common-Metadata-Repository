@@ -5,9 +5,6 @@
             [lein-shell "0.5.0"]]
   :exclusions []
   :dependencies [[cheshire "5.10.0"]
-                 [com.fasterxml.jackson.core/jackson-core "2.13.2"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
-                  :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [com.github.everit-org.json-schema/org.everit.json.schema "1.14.3"]
                  [org.clojure/clojure "1.10.3"]]
   :repositories [["jitpack.io" "https://jitpack.io"]]
@@ -33,7 +30,7 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
+                    :plugins [[jonase/eastwood "1.4.2"]
                               [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}

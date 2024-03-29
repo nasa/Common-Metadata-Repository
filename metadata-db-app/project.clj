@@ -12,8 +12,6 @@
   :dependencies [[cheshire "5.10.0"]
                  [clj-http "3.11.0"]
                  [clj-time "0.15.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.13.2"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [compojure "1.6.1"]
                  [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
                  [inflections "0.13.0"]
@@ -59,7 +57,7 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
+                    :plugins [[jonase/eastwood "1.4.2"]
                               [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}

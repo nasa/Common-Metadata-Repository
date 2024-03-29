@@ -3,6 +3,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/indexer-app"
   :exclusions [];[instaparse]]
   :dependencies [[compojure "1.6.1"]
+                 [com.fasterxml.jackson.core/jackson-core "2.13.2"]
                  [instaparse "1.4.10"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
@@ -39,7 +40,7 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
+                    :plugins [[jonase/eastwood "1.4.2"]
                               [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}

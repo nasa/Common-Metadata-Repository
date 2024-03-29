@@ -15,9 +15,6 @@
                  [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
-                 [com.fasterxml.jackson.core/jackson-core "2.13.2"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
-                  :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.apache.logging.log4j/log4j-api "2.15.0"]
                  [org.clojure/clojure "1.10.3"]
@@ -53,7 +50,7 @@
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
                     :dependencies []
-                    :plugins [[jonase/eastwood "0.2.5"]
+                    :plugins [[jonase/eastwood "1.4.2"]
                               [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}

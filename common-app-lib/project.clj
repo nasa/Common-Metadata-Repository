@@ -5,9 +5,6 @@
                ;[clj-time]]
   :dependencies [[cheshire "5.10.0"]
                  [clj-time "0.15.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.13.2"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
-                  :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [compojure "1.6.1"]
                  [digest "1.4.8"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
@@ -40,7 +37,7 @@
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
                     :plugins [[com.github.clj-kondo/lein-clj-kondo "2024.02.12"]
-                              [jonase/eastwood "0.2.5"]
+                              [jonase/eastwood "1.4.2"]
                               [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}

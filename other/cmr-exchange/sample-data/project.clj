@@ -19,7 +19,7 @@
                    :repl-options {:init-ns cmr.sample-data.dev
                                   :prompt ~get-prompt}}
              :test {:plugins [[lein-ancient "0.7.0"]
-                              [jonase/eastwood "0.2.5"]
+                              [jonase/eastwood "1.4.2"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.8"]
                               [venantius/yagni "0.1.4"]]}}

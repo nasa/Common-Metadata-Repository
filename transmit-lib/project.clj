@@ -9,6 +9,7 @@
   :dependencies [[clj-http "3.11.0"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
+                 [com.fasterxml.jackson.core/jackson-core "2.13.2"]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
@@ -40,7 +41,7 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
+                    :plugins [[jonase/eastwood "1.4.2"]
                               [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}
