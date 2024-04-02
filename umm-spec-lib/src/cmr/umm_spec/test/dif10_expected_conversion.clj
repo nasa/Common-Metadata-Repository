@@ -107,23 +107,10 @@
     (when (seq horizontal-data-resolution)
       horizontal-data-resolution)))
 
-(defn- translate-non-exist-spatial-coverage-type
-  "For SpatialCoverageType DIF 10 doesn't have an ORBITAL_VERTICAL value so it gets
-   translated into HORIZONTAL_VERTICAL. Also it doesn't have HORIZONTAL_ORBITAL and
-   HORIZONTAL_VERTICAL_ORBITAL either. They both get translated to ORBITAL"
-  [spatial-extent]
-  (let [sct (:SpatialCoverageType spatial-extent)]
-    (if (= sct "ORBITAL_VERTICAL")
-      (assoc spatial-extent :SpatialCoverageType "HORIZONTAL_VERTICAL")
-      (if (or (= sct "HORIZONTAL_ORBITAL")
-              (= sct "HORIZONTAL_VERTICAL_ORBITAL"))
-        (assoc spatial-extent :SpatialCoverageType "ORBITAL")
-        spatial-extent))))
-
 (defn- expected-dif10-spatial-extent
   "Get the expected dif10 spatial extent."
   [spatial-extent]
-  (-> (translate-non-exist-spatial-coverage-type spatial-extent)
+  (-> spatial-extent
       (update-in [:HorizontalSpatialDomain :Geometry] conversion-util/geometry-with-coordinate-system)
       (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem] dissoc :Description)
       (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel] umm-c/map->GeodeticModelType)

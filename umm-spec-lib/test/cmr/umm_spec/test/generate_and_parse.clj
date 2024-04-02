@@ -28,18 +28,18 @@
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
-  [:dif10])
+  [:dif10 :echo10])
 
 (def test-context lkt/create-context)
 
 (def collection-destination-formats
   "Converting to these formats is tested in the roundrobin test."
-  [:dif10])
+  [:dif10 :echo10])
 
 (def collection-format-examples
   "Map of format type to example file"
-  {
-   :dif10 "dif10.xml"})
+  {:dif10 "dif10.xml"
+   :echo10 "echo10.xml"})
 
 (defn- convert-to-sets
   "Convert lists in the umm record to sets so order doesn't matter during comparison"

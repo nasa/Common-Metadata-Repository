@@ -16,6 +16,9 @@
    "Orbit" "ORBITAL"
    "HorizontalVertical" "HORIZONTAL_VERTICAL"
    "Horizon&amp;Vert" "HORIZONTAL_VERTICAL"
+   "Orbital_Vertical" "ORBITAL_VERTICAL"
+   "Horizontal_Orbital" "HORIZONTAL_ORBITAL"
+   "Horizontal_Vertical_Orbital" "HORIZONTAL_VERTICAL_ORBITAL"
    "Lunar" "LUNAR"
    "Earth/Global" "EARTH/GLOBAL"})
 
