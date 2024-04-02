@@ -15,24 +15,13 @@
   (:import
    (clojure.lang Keyword Reflector)
    (cmr.message_queue.test ExitException)
-   ;(com.amazonaws ClientConfiguration)
-   ;(com.amazonaws.auth BasicAWSCredentials)
-   ;(com.amazonaws.auth.policy Condition Policy Principal Resource Statement Statement$Effect)
-   ;(com.amazonaws.auth.policy.actions SQSActions)
-   ;(com.amazonaws.auth.policy.conditions ConditionFactory)
-   ;(com.amazonaws.regions InMemoryRegionImpl)
    (com.amazonaws.services.sns AmazonSNSClient)
    (com.amazonaws.services.sqs AmazonSQSClient)
    (com.amazonaws.services.sns.util Topics)
    (com.amazonaws.services.sqs.model PurgeQueueRequest ReceiveMessageRequest
                                      SetQueueAttributesRequest)
-   ;(com.amazonaws.services.sqs.model CreateQueueRequest GetQueueUrlRequest GetQueueUrlResult
-   ;                                  PurgeQueueRequest ReceiveMessageRequest
-   ;                                  SendMessageResult SetQueueAttributesRequest)
-   ;(java.io IOException)
    (java.util ArrayList)
    (java.util HashMap)))
-
 
 (declare queue-polling-timeout)
 (defconfig queue-polling-timeout
@@ -263,16 +252,20 @@
                    (handler msg-content)
                    (.deleteMessage @sqs-client-atom queue-url (.getReceiptHandle msg))
                    (catch Throwable e
-                     (error e "Message processing failed for message" (pr-str msg) "on queue" queue-name))))))
-           ;; Catching this so the next catch block won't - this allows us to exit the thread after a test
-           ;; by throwing an ExitException object.
+                     (error e "Message processing failed for message" (pr-str msg)
+                            "on queue" queue-name))))))
+           ;; Catching this so the next catch block won't - this allows us to exit
+           ;; the thread after a test by throwing an ExitException object.
            (catch ExitException e
              (error "Aysnc handler for queue" queue-name "exiting.")
-             ;; Catching just to rethrow is generally not a good thing to do, but we want the thread to exit here.
+             ;; Catching just to rethrow is generally not a good thing to do,
+             ;; but we want the thread to exit here.
              (throw e))
            (catch Throwable t
-             (error t "Async handler for queue" queue-name "continuing after failed message receive.")
-             ;; We want to avoid a tight loop in case the call to getMessages is failing immediately.
+             (error t "Async handler for queue" queue-name
+                    "continuing after failed message receive.")
+             ;; We want to avoid a tight loop in case the call to getMessages is
+             ;; failing immediately.
              (Thread/sleep 1000)
              (when auto-reconnect?
                (warn "Recreating SQS client.")
@@ -362,8 +355,9 @@
    ;; queues known to this broker
   queues
 
-   ;; map of normalized queue names to original queue names - needed for testing with queue broker wrapper
-   ;; See normalize-queue-name for an explanation of normalized queue names.
+   ;; map of normalized queue names to original queue names - needed for testing
+   ;; with queue broker wrapper See normalize-queue-name for an explanation of
+   ;; normalized queue names.
   normalized-queue-names
 
    ;; exchanges (topics) known to this broker
@@ -488,12 +482,15 @@
 (comment
   ;; create a broker
   ;; (def broker (lifecycle/start (create-queue-broker {}) nil))
-  (def broker (lifecycle/start (create-queue-broker {:queues ["jn_test_queueX5" "jn_test_queueY5" "jn_test_queueZ5"]
-                                                     :exchanges ["jn_test_exchangeA5" "jn_test_exchangeB5"]
-                                                     :queues-to-exchanges {"jn_test_queueX5" ["jn_test_exchangeA5"]
-                                                                           "jn_test_queueY5" ["jn_test_exchangeA5" "jn_test_exchangeB5"]
-                                                                           "jn_test_queueZ5" ["jn_test_exchangeB5"]}})
-                               nil))
+  (def broker
+    (lifecycle/start
+     (create-queue-broker
+      {:queues ["jn_test_queueX5" "jn_test_queueY5" "jn_test_queueZ5"]
+       :exchanges ["jn_test_exchangeA5" "jn_test_exchangeB5"]
+       :queues-to-exchanges {"jn_test_queueX5" ["jn_test_exchangeA5"]
+                             "jn_test_queueY5" ["jn_test_exchangeA5" "jn_test_exchangeB5"]
+                             "jn_test_queueZ5" ["jn_test_exchangeB5"]}})
+     nil))
 
   (def msg-cnt-atom (atom 0))
   ;; list the topics for the cmr-ingest_exchange exchange/topic
@@ -508,10 +505,17 @@
   ;; list the queues for the cmr_test_exchange
   (queue-protocol/get-queues-bound-to-exchange broker "jn_test_exchangeA5")
   ;; Bind the queue to the new exchange
-  (bind-queue-to-exchanges (deref (:sns-client-atom broker)) (:sqs-client broker) ["jn_test_exchangeA5"] "jn_test_queueY5")
+  (bind-queue-to-exchanges (deref (:sns-client-atom broker))
+                           (:sqs-client broker)
+                           ["jn_test_exchangeA5"] "jn_test_queueY5")
   ;; subscribe to test queue with a simple handler that prints received messages
-  (queue-protocol/subscribe broker "jn_test_queueY5" (fn [msg] (println "MESSAGE!" msg) (swap! msg-cnt-atom inc)))
+  (queue-protocol/subscribe broker "jn_test_queueY5"
+                            (fn [msg] (println "MESSAGE!" msg) (swap! msg-cnt-atom inc)))
   ;; publish a message to the queue to verify our subscribe worked
-  (queue-protocol/publish-to-queue broker "jn_test_queueY5" {:action "concept-update" :dummy "dummy"})
+  (queue-protocol/publish-to-queue broker
+                                   "jn_test_queueY5"
+                                   {:action "concept-update" :dummy "dummy"})
   ;; publish a message to the exchange to verify the message is sent to the queue
-  (queue-protocol/publish-to-exchange broker "jn_test_exchangeA5" {:action "concept-update" :dummy "dummy"}))
+  (queue-protocol/publish-to-exchange broker
+                                      "jn_test_exchangeA5"
+                                      {:action "concept-update" :dummy "dummy"}))

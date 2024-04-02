@@ -1,5 +1,6 @@
 (ns cmr.message-queue.queue.memory-queue
-  "Defines an in memory implementation of the Queue protocol. It uses core.async for message passing."
+  "Defines an in memory implementation of the Queue protocol. It uses core.async
+   for message passing."
   (:require
    [cheshire.core :as json]
    [clojure.core.async :as a]
@@ -30,8 +31,8 @@
 
 (declare msg)
 (defn- create-async-handler
-  "Creates a go block that will asynchronously pull messages off the queue, pass them to the handler,
-  and process the response."
+  "Creates a go block that will asynchronously pull messages off the queue, pass
+   them to the handler, and process the response."
   [queue-broker queue-name handler]
   (let [queue-ch (get-in queue-broker [:queues-to-channels queue-name])]
     (a/go
@@ -70,7 +71,8 @@
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;; Running State
 
-   ;; An atom containing a sequence of channels returned by the go block processors for each handler.
+   ;; An atom containing a sequence of channels returned by the go block processors
+   ;; for each handler.
   handler-channels-atom]
 
 
@@ -108,7 +110,8 @@
     ;; Puts the message on the channel. It is encoded as json to simulate the Rabbit MQ behavior
     (if-let [chan (queues-to-channels queue-name)]
       (a/>!! chan (json/generate-string msg))
-      (throw (IllegalArgumentException. (str "Could not find channel bound to queue " queue-name)))))
+      (throw (IllegalArgumentException.
+              (str "Could not find channel bound to queue " queue-name)))))
 
   ;; parameters are 'this' and exchange-name
   (get-queues-bound-to-exchange

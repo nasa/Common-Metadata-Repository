@@ -19,10 +19,11 @@
 (defn- try-to-publish
   "Attempts to publish messages to the given exchange.
 
-  When the messaging service is down or unreachable, calls to publish will throw an exception. Rather
-  than raise an error to the caller immediately, the publication will be retried indefinitely.
-  By retrying, routine maintenance such as restarting the RabbitMQ server will not result in any
-  ingest errors returned to the provider.
+  When the messaging service is down or unreachable, calls to publish will throw
+   an exception. Rather than raise an error to the caller immediately, the
+   publication will be retried indefinitely. By retrying, routine maintenance
+   such as restarting the RabbitMQ server will not result in any ingest errors
+   returned to the provider.
 
   Returns true if the message was successfully enqueued and false otherwise."
   [queue-broker exchange-name msg]
@@ -54,5 +55,6 @@
       (catch java.util.concurrent.TimeoutException e
         (errors/throw-service-error
           :service-unavailable
-          (str "Request timed out when attempting to publish message " (- (System/currentTimeMillis) start-time) ": " msg)
+          (format "Request timed out when attempting to publish message %s: %s"
+                  (- (System/currentTimeMillis) start-time) msg)
           e)))))

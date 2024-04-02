@@ -87,6 +87,7 @@
             ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps"
             ["with-profile" "lint" "ancient" ":all"]
+            "ancient" ["with-profile" "lint" "ancient"]
             "check-sec"
             ["with-profile" "security" "dependency-check"]
             "lint"
