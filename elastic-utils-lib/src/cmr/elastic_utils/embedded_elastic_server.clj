@@ -103,7 +103,7 @@
        (.withEnv "node.name" "embedded-elastic")
        (.withNetwork network)
        (.withNetworkAliases (into-array String ["elasticsearch"]))
-       (.withExposedPorts Integer [9200])
+       (.withExposedPorts (into-array Integer [9200]))
        (.withStartupTimeout (Duration/ofSeconds 120))
        (.waitingFor
         (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200)))
