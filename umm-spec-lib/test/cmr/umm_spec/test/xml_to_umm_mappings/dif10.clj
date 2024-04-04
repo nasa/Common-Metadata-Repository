@@ -183,7 +183,7 @@
   (are3 [expected-doi-result expected-associated-doi-result test-string]
     (let [result (parse/parse-dif10-xml test-string options)]
       (is (= expected-doi-result
-             (:DOI result))
+             (common-util/remove-nil-keys (:DOI result)))
           (= expected-associated-doi-result
              (:AssociatedDOIs result))))
 

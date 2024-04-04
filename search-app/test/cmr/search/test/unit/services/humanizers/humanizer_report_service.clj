@@ -3,7 +3,8 @@
   (:require [clojure.test :refer :all]
             [cmr.common-app.humanizer :as h]
             [cmr.common-app.test.sample-humanizer :as sh]
-            [cmr.search.services.humanizers.humanizer-report-service :as hrs]))
+            [cmr.search.services.humanizers.humanizer-report-service :as hrs])
+  (:import (clojure.lang ExceptionInfo)))
 
 (deftest humanized-collection-report-science-keywords
   (let [collection {:provider-id "PROV1"
@@ -136,3 +137,11 @@
               ["PROV1" "C1200000004-PROV1" "short-name" "V15" "GPS" "GPS Receivers"]
               ["PROV1" "C1200000004-PROV1" "short-name" "V15" "Bioosphere" "Biosphere"]
               ["PROV1" "C1200000004-PROV1" "short-name" "V15" "L1T" "1T"]])))))
+
+(def create-context
+  "Creates a testing concept with the KMS caches."
+  {:system {:caches {hrs/humanizer-report-cache-key (hrs/create-humanizer-report-cache-client)}}})
+
+(deftest humanizers-report-csv-test
+  (testing "redis connection error"
+    (is (thrown? ExceptionInfo (hrs/humanizers-report-csv create-context false)))))

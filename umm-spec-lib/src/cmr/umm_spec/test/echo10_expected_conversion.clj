@@ -172,6 +172,18 @@
     (when (seq horizontal-data-resolution)
       horizontal-data-resolution)))
 
+(defn- expected-echo10-doi
+  "Returns the expected ECHO10 DOI for comparison with the umm model."
+  [doi]
+    (cmn/map->DoiType
+      (if (:PreviousVersion doi)
+        (-> doi
+            (update-in [:PreviousVersion :Published] #(when % (str %)))
+            (update-in [:PreviousVersion] util/remove-nil-keys)
+            (update-in [:PreviousVersion] cmn/map->PreviousVersionType)
+            util/remove-nil-keys)
+        (util/remove-nil-keys doi))))
+
 (defn- expected-echo10-spatial-extent
   "Returns the expected ECHO10 SpatialExtent for comparison with the umm model."
   [spatial-extent]
@@ -308,7 +320,10 @@
         single-date-times (mapcat :SingleDateTimes temporal-extents)
         periodic-date-times (mapcat :PeriodicDateTimes temporal-extents)
         temporal-extent {:PrecisionOfSeconds (:PrecisionOfSeconds (first temporal-extents))
-                         :EndsAtPresentFlag (boolean (some :EndsAtPresentFlag temporal-extents))}]
+                         :EndsAtPresentFlag (boolean (some :EndsAtPresentFlag temporal-extents))
+                         :TemporalResolution (some #(when (contains? % :TemporalResolution)
+                                                      (:TemporalResolution %))
+                                                   temporal-extents)}]
     (cond
       (seq range-date-times)
       [(cmn/map->TemporalExtentType (assoc temporal-extent :RangeDateTimes range-date-times))]
@@ -357,6 +372,10 @@
       ;; the order used when umm is converted to echo10.
       (assoc :RelatedUrls (expected-echo10-reorder-related-urls umm-coll))
       (update :TemporalExtents expected-temporal-extents)
+      ;; UMM-C 1.18.0 introduced DOI/PreviousVersion/Published. It's a string with date/time
+      ;; format. The generated one is like #=(cmr.common.joda-time/date-time 1453628376748 UTC)}
+      ;; when converted to xml it becomes string, so after the round-trip, it becomes a string.
+      (update-in [:DOI] expected-echo10-doi)
       (update :DataDates fixup-echo10-data-dates)
       (assoc :DataLanguage nil)
       (assoc :Quality nil)
