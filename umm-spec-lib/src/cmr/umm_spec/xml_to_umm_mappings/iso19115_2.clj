@@ -183,7 +183,9 @@
   [temporal-extent group-key]
   (let [element (select temporal-extent "gmd:EX_TemporalExtent/gmd:extent/gml:TimeInstant")
         attribute-value (get-attribute element)]
-    (when (and element (= group-key attribute-value))
+    (when (and element
+               (or (nil? group-key)
+                   (= group-key attribute-value)))
       (date-at-str element "/"))))
 
 (defn parse-temporal-extents
