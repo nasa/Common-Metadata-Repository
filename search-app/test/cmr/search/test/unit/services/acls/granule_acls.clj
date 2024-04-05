@@ -1,6 +1,6 @@
 (ns cmr.search.test.unit.services.acls.granule-acls
   (:require [clojure.test :refer :all]
-            [cmr.common-app.data.search.collection-for-gran-acls-caches :as cmn-coll-for-gran-acls-caches]
+            [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as cmn-coll-for-gran-acls-caches]
             [cmr.common.hash-cache :as hash-cache]
             [cmr.redis-utils.config :as redis-config]
             [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]

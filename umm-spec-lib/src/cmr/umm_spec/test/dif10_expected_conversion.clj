@@ -107,23 +107,10 @@
     (when (seq horizontal-data-resolution)
       horizontal-data-resolution)))
 
-(defn- translate-non-exist-spatial-coverage-type
-  "For SpatialCoverageType DIF 10 doesn't have an ORBITAL_VERTICAL value so it gets
-   translated into HORIZONTAL_VERTICAL. Also it doesn't have HORIZONTAL_ORBITAL and
-   HORIZONTAL_VERTICAL_ORBITAL either. They both get translated to ORBITAL"
-  [spatial-extent]
-  (let [sct (:SpatialCoverageType spatial-extent)]
-    (if (= sct "ORBITAL_VERTICAL")
-      (assoc spatial-extent :SpatialCoverageType "HORIZONTAL_VERTICAL")
-      (if (or (= sct "HORIZONTAL_ORBITAL")
-              (= sct "HORIZONTAL_VERTICAL_ORBITAL"))
-        (assoc spatial-extent :SpatialCoverageType "ORBITAL")
-        spatial-extent))))
-
 (defn- expected-dif10-spatial-extent
   "Get the expected dif10 spatial extent."
   [spatial-extent]
-  (-> (translate-non-exist-spatial-coverage-type spatial-extent)
+  (-> spatial-extent
       (update-in [:HorizontalSpatialDomain :Geometry] conversion-util/geometry-with-coordinate-system)
       (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem] dissoc :Description)
       (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel] umm-c/map->GeodeticModelType)
@@ -332,6 +319,15 @@
       (update collection-citation :OnlineResource #(select-keys % [:Linkage]))
       collection-citation)))
 
+(defn- expected-temporal-resolution
+  "Add _type to the temporal resolution"
+  [temporal-extent]
+  (if (:TemporalResolution temporal-extent)
+    (-> temporal-extent
+        (update-in [:TemporalResolution] cmn/map->TemporalResolutionType)
+        util/remove-nil-keys)
+    (util/remove-nil-keys temporal-extent)))
+
 (def coll-progress-enum-list
   "Part of the enum list for CollectionProgress in v1.10. that could be converted from dif10"
   (set ["PLANNED" "ACTIVE" "COMPLETE" "NOT PROVIDED"]))
@@ -406,6 +402,7 @@
       (update-in [:CollectionCitations] expected-collection-citations)
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:TemporalExtents] update :EndsAtPresentFlag #(if % % false)) ; true or false, not nil
+      (update-in-each [:TemporalExtents] expected-temporal-resolution)
       (update :UseConstraints expected-echo10-use-constraints)
       (update :ArchiveAndDistributionInformation expected-archive-dist-info)
       js/parse-umm-c))

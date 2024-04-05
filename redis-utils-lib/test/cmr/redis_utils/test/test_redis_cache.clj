@@ -19,9 +19,11 @@
                                                 :read-connection (redis-config/redis-read-conn-opts)
                                                 :primary-connection (redis-config/redis-conn-opts)})]
     (cache/reset rcache)
-    (is (= false (cache/key-exists rcache key)))
-    (cache/set-value rcache key "some value")
-    (is (cache/key-exists rcache key))))
+    (testing "cache key does not exist"
+      (is (= false (cache/key-exists rcache key))))
+    (testing "cache key does exist"
+      (cache/set-value rcache key "some value")
+      (is (cache/key-exists rcache key)))))
 
 (deftest test-redis-cache-with-expire
   (testing "Redis cache with default timeout..."

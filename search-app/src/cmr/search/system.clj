@@ -24,7 +24,7 @@
    [cmr.orbits.orbits-runtime :as orbits-runtime]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
-   [cmr.common-app.data.search.collection-for-gran-acls-caches :as coll-gran-acls-caches]
+   [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as coll-gran-acls-caches]
    [cmr.search.routes :as routes]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.search.services.humanizers.humanizer-range-facet-service :as hrfs]

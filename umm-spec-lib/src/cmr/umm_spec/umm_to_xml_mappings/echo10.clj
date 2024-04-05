@@ -91,7 +91,10 @@
                            :DurationUnit
                            :DurationValue
                            :PeriodCycleDurationUnit
-                           :PeriodCycleDurationValue)])))]))
+                           :PeriodCycleDurationValue)])))
+       (when-let [temporal-resolution
+                  (some #(when (contains? % :TemporalResolution) (:TemporalResolution %)) temporals)]
+         [:TemporalResolution (elements-from temporal-resolution :Value :Unit)])]))
 
 (defn echo10-sciencekeywords
   "Generates ECHO 10 XML structure for science-keywords"
@@ -142,11 +145,22 @@
     [:Collection
      [:ShortName (:ShortName c)]
      [:VersionId (:Version c)]
+     (when-let [other-ids (get c :OtherIdentifiers)]
+       [:OtherIdentifiers
+         (for [other-id other-ids]
+           [:OtherIdentifier
+             [:Identifier (:Identifier other-id)]
+             (when (:Type other-id)
+               [:Type (:Type other-id)])
+             (when (= "Other" (:Type other-id))
+               [:DescriptionOfOtherType (:DescriptionOfOtherType other-id)])])]) 
      [:InsertTime (dates/with-current (dates/data-create-date c))]
      [:LastUpdate (dates/with-current (dates/data-update-date c))]
      [:DeleteTime (dates/data-delete-date c)]
      [:LongName spec-util/not-provided]
      [:DataSetId (:EntryTitle c)]
+     (when-let [data-maturity (:DataMaturity c)]
+       [:DataMaturity data-maturity])
      [:Description (if-let [abstract (:Abstract c)]
                      (util/trunc abstract 12000)
                      spec-util/not-provided)]
@@ -155,7 +169,9 @@
          [:DOI
           [:DOI (:DOI doi)]
           (when (:Authority doi)
-            [:Authority (:Authority doi)])]
+            [:Authority (:Authority doi)])
+          (when (:PreviousVersion doi)
+            [:PreviousVersion (elements-from (:PreviousVersion doi) :Version :Description :DOI :Published)])]
          (when (:MissingReason doi)
            [:DOI
             [:MissingReason (:MissingReason doi)]
@@ -167,7 +183,11 @@
            [:AssociatedDOI
              [:DOI (:DOI assoc-doi)]
              [:Title (:Title assoc-doi)]
-             [:Authority (:Authority assoc-doi)]])])
+             [:Authority (:Authority assoc-doi)]
+             (when (:Type assoc-doi)
+               [:Type (:Type assoc-doi)])
+              (when (= "Other" (:Type assoc-doi))
+                [:DescriptionOfOtherType (:DescriptionOfOtherType assoc-doi)])])])
      [:CollectionDataType (:CollectionDataType c)]
      [:StandardProduct (:StandardProduct c)]
      (when-let [revision-date (dates/metadata-update-date c)]
@@ -246,6 +266,8 @@
      (spatial/spatial-info-element c)
      (ru/generate-access-urls (:RelatedUrls c))
      (ru/generate-resource-urls (:RelatedUrls c))
+     (when-let [fnc (:FileNamingConvention c)]
+       [:FileNamingConvention  (elements-from fnc :Convention :Description)])
      (spatial/spatial-element c)
      (ru/generate-browse-urls (:RelatedUrls c))
      (when-let [direct-dist-info (:DirectDistributionInformation c)]

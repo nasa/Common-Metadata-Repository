@@ -207,7 +207,13 @@
   (let [updated-doi (util/remove-nil-keys
                      (dissoc doi :Authority :MissingReason :Explanation))]
     (if (seq updated-doi)
-      (cmn/map->DoiDoiType updated-doi)
+      (if (:PreviousVersion updated-doi)
+        (-> updated-doi
+            (update-in [:PreviousVersion :Published] #(when % (str %)))
+            (update-in [:PreviousVersion] cmn/map->PreviousVersionType)
+            ;;(update-in [:PreviousVersion] util/remove-nil-keys)
+            cmn/map->DoiDoiType)
+        (cmn/map->DoiDoiType updated-doi))
       {:Explanation "It is unknown if this record has a DOI.",
        :MissingReason "Unknown"})))
 
