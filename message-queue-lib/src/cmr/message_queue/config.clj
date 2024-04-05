@@ -4,25 +4,30 @@
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.services.errors :as errors]))
 
+(declare app-environment)
 (defconfig app-environment
   "The environment in which the application is running in NGAP (wl, sit, uat, ops)"
   {:default "local"})
 
+(declare time-to-live-s)
 (defconfig time-to-live-s
   "The Time-To-Live (TTL) for each retry queue (in seconds)."
   {:default [5, 50, 500, 5000, 50000]
    :parser #(json/decode ^String %)})
 
+(declare publish-queue-timeout-ms set-publish-queue-timeout-ms!)
 (defconfig publish-queue-timeout-ms
   "Number of milliseconds to wait for a publish request to be confirmed before considering the
   request timed out."
   {:default 10000 :type Long})
 
+(declare queue-type)
 (defconfig queue-type
   "This indicates which type of queue to use. Valid types are \"memory\",
   and \"aws\""
   {:default "memory"})
 
+(declare messaging-retry-delay)
 (defconfig messaging-retry-delay
   "This configuration value is used to determine how long to wait before
   retrying a messaging operation."

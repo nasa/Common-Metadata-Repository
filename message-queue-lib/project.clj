@@ -57,10 +57,10 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
-                              [lein-bikeshed "0.5.0"]
-                              [lein-kibit "0.1.6"]]}
+                    :plugins [[jonase/eastwood "1.4.2"]
+                              [lein-ancient "0.7.0"]
+                              [lein-bikeshed "0.5.2"]
+                              [lein-kibit "0.1.8"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
@@ -82,11 +82,12 @@
              ["shell" "echo" "== Kibit =="]
              ["with-profile" "lint" "kibit"]]
             "eastwood"
-            ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
+            ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths] :exclude-linters [:reflection]}"]
             "bikeshed"
             ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps"
             ["with-profile" "lint" "ancient" ":all"]
+            "ancient" ["with-profile" "lint" "ancient"]
             "check-sec"
             ["with-profile" "security" "dependency-check"]
             "lint"

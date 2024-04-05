@@ -100,9 +100,7 @@
 (comment
   (print-all-configs-docs))
 
-
-
-(defn parse-boolean
+(defn parse-bool
   "Helper for parsing boolean strings."
   [s]
   (cond
@@ -122,7 +120,7 @@
   {String identity
    Long #(Long. ^String %)
    Double #(Double. ^String %)
-   Boolean parse-boolean
+   Boolean parse-bool
    :edn edn/read-string})
 
 (defmacro defconfig
@@ -185,9 +183,9 @@
                     (some? default-value#)
                     (not= (type default-value#) ~config-type))
            (throw
-             (Exception.
-               (format "The type of the default value %s does not match the specified config type %s"
-                       (type default-value#) ~config-type))))
+            (Exception.
+             (format "The type of the default value %s does not match the specified config type %s"
+                     (type default-value#) ~config-type))))
 
          ;; Register the config
          (register-config ~(str *ns*) ~config-name-key doc-string-value#

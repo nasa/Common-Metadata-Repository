@@ -1,14 +1,14 @@
 (ns cmr.message-queue.test.queue-broker-side-api
   "Defines routes for accessing a controlling the queue broker in testing through a side api and
   function for accessing those routes."
-  (:require [compojure.core :refer :all]
-            [clj-http.client :as client]
-            [cheshire.core :as json]
-            [clojure.string :as str]
-            [cmr.common.log :refer (debug info warn error)]
-            [cmr.message-queue.test.queue-broker-wrapper :as wrapper]
-            [cmr.message-queue.config :as config]
-            [cmr.common-app.test.side-api :as side-api]))
+  (:require
+   [compojure.core :refer  [GET POST context routes]]
+   [clj-http.client :as client]
+   [cheshire.core :as json]
+   [cmr.common.log :refer (debug)]
+   [cmr.message-queue.test.queue-broker-wrapper :as wrapper]
+   [cmr.message-queue.config :as config]
+   [cmr.common-app.test.side-api :as side-api]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Functions for defining the API
