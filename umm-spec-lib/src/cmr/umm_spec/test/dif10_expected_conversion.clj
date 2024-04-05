@@ -1,19 +1,14 @@
 (ns cmr.umm-spec.test.dif10-expected-conversion
  "DIF 10 specific expected conversion functionality"
  (:require
-  [clj-time.core :as t]
-  [clj-time.format :as f]
   [clojure.string :as string]
   [cmr.common.util :as util :refer [update-in-each]]
   [cmr.umm-spec.date-util :as date]
   [cmr.umm-spec.json-schema :as js]
-  [cmr.umm-spec.location-keywords :as lk]
   [cmr.umm-spec.models.umm-collection-models :as umm-c]
   [cmr.umm-spec.models.umm-common-models :as cmn]
-  [cmr.umm-spec.related-url :as ru-gen]
   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
   [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-  [cmr.umm-spec.test.location-keywords-helper :as lkt]
   [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
   [cmr.umm-spec.url :as url]
   [cmr.umm-spec.util :as su]
@@ -78,11 +73,6 @@
   "Defaults metadata association type to \"SCIENCE ASSOCIATED\"."
   [ma]
   (update-in ma [:Type] #(or % "SCIENCE ASSOCIATED")))
-
-(defn- expected-dif10-related-urls
-  [related-urls]
-  (seq (for [related-url related-urls]
-         (assoc related-url :FileSize nil :MimeType nil))))
 
 (defn- expected-horizontal-data-resolution
   [horizontal-data-resolution]
@@ -204,8 +194,8 @@
       expected-contacts)))
 
 (defn- expected-dif10-contacts
-  [contacts]
   "Returns the expected DIF 10 data center contact persons or contact groups for the given UMM collection."
+  [contacts]
   (let [expected-contacts
         (conversion-util/expected-contact-information-urls
          (mapv #(contact->expected-dif10-collection %) contacts)

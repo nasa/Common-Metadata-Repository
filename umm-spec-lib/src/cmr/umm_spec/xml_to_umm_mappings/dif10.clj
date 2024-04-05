@@ -12,7 +12,6 @@
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as cmn]
-   [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su :refer [without-default-value-of]]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
    [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
@@ -252,7 +251,7 @@
                                             {:Version (value-of dsc "Persistent_Identifier/Previous_Version/Version")
                                              :Description (value-of dsc "Persistent_Identifier/Previous_Version/Description")
                                              :DOI (value-of dsc "Persistent_Identifier/Previous_Version/DOI")
-                                             :Published (value-of dsc "Persistent_Identifier/Previous_Version/Published")})]
+                                             :Published (date-at dsc "Persistent_Identifier/Previous_Version/Published")})]
                                     (when-not (empty? pv) (cmn/map->PreviousVersionType pv)))}))))]
     (if first-doi
       first-doi

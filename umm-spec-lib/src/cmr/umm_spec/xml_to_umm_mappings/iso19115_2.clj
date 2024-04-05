@@ -157,11 +157,7 @@
   [temporal-extent]
   (let [value (value-of temporal-extent "gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:timeInterval")
         value (when value
-                (try (Double/parseDouble (string/trim value))
-                     (catch Exception e
-                       (warn (str "Exception thrown while trying to parse a non parsable ISO temporal resolution value number."
-                                  "The value is " value))
-                       0.0)))
+                (util/str->num (string/trim value)))
         unit (value-of (first (select temporal-extent "gmd:EX_TemporalExtent/gmd:extent/gml:TimePeriod/gml:timeInterval")) "@unit")
         unit (when unit
                (string/capitalize unit))]

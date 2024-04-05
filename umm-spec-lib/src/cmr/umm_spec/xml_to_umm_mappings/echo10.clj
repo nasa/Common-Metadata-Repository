@@ -2,6 +2,7 @@
   "Defines mappings from ECHO10 XML into UMM records"
   (:require
    [clojure.string :as string]
+   [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer [select text]]
@@ -215,7 +216,10 @@
       (let [doi-value (value-of doi "DOI")
             authority (value-of doi "Authority")
             previous-version (when (seq previous-version)
-                               (fields-from previous-version :Version :Description :DOI :Published))
+                               (let [pv (fields-from previous-version :Version :Description :DOI :Published)]
+                                 (if (:Published pv)
+                                   (assoc pv :Published (dtp/parse-datetime (:Published pv)))
+                                   pv)))
             missing-reason (value-of doi "MissingReason")
             explanation (value-of doi "Explanation")]
         (if (or doi-value authority)
