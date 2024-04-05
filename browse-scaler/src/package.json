@@ -8,7 +8,7 @@
   "type": "module",
   "dependencies": {
     "@aws-sdk/client-ssm": "^3.x.x",
-    "axios": "^1.6.4",
+    "axios": "^1.6.8",
     "node-fetch": "^2.6.7",
     "redis": "^2.8.0",
     "sharp": "^0.32.6"
