@@ -265,9 +265,8 @@
       (finally
         (reset! resetting?-atom false))))
 
-  ;; Parameter is 'this'
   (health
-    [_]
+    [_this]
     (queue-protocol/health queue-broker)))
 
 (record-pretty-printer/enable-record-pretty-printing BrokerWrapper)

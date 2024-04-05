@@ -79,16 +79,12 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
-  ;; param 1 is 'this'
-  ;; param 2 is system
   (start
-    [this _]
+    [this _system]
     this)
 
-  ;; param 1 is 'this'
-  ;; param 2 is system
   (stop
-    [this _]
+    [this _system]
     (drain-channels (vals queues-to-channels))
 
     ;; Wait for go blocks to finish
@@ -104,18 +100,16 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   queue-protocol/Queue
 
-  ;; parameters are 'this', queue-name, and message
   (publish-to-queue
-    [_ queue-name msg]
+    [_this queue-name msg]
     ;; Puts the message on the channel. It is encoded as json to simulate the Rabbit MQ behavior
     (if-let [chan (queues-to-channels queue-name)]
       (a/>!! chan (json/generate-string msg))
       (throw (IllegalArgumentException.
               (str "Could not find channel bound to queue " queue-name)))))
 
-  ;; parameters are 'this' and exchange-name
   (get-queues-bound-to-exchange
-    [_ exchange-name]
+    [_this exchange-name]
     (seq (exchanges-to-queue-sets exchange-name)))
 
   (publish-to-exchange
@@ -128,9 +122,8 @@
     (swap! handler-channels-atom conj (create-async-handler this queue-name handler))
     nil)
 
-  ;; parameter is 'this'
   (reset
-    [_]
+    [_this]
     ;; clear all channels
     (drain-channels (vals queues-to-channels)))
 
@@ -143,9 +136,8 @@
     (lifecycle/start this nil)
     this)
 
-  ;; parameter is 'this'
   (health
-    [_]
+    [_this]
     {:ok? true}))
 (record-pretty-printer/enable-record-pretty-printing MemoryQueueBroker)
 

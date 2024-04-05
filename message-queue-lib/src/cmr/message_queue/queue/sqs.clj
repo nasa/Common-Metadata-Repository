@@ -206,18 +206,16 @@
   the configuration operation doesn't actually take place."
   identity)
 
-;; parameter is type
 (defmethod create-aws-client :sqs
-  [^Keyword _]
+  [^Keyword _type]
   ;; new AmazonSNS() has been depricated in favor of
   ;; AmazonSNS sns = AmazonSNSClient.builder().build();
   (configure-aws-client
     (.build (AmazonSQSClient/builder))
     :setEndpoint (sqs-endpoint)))
 
-;; parameter is type
 (defmethod create-aws-client :sns
-  [^Keyword _]
+  [^Keyword _type]
   ;; new AmazonSNS() has been depricated in favor of
   ;; AmazonSNS sns = AmazonSNSClient.builder().build();
   (configure-aws-client
@@ -279,9 +277,7 @@
         dlq-name (dead-letter-queue q-name)
 
         ;; Create the dead-letter-queue first and get its url
-        ;dlq-url (.getQueueUrl (.createQueue sqs-client dlq-name))
         dlq-arn (get-queue-arn sqs-client dlq-name)
-        ;create-queue-request (CreateQueueRequest. q-name)
         ;; the policy that sets retries and what dead-letter-queue to use
         redrive-policy (format "{\"maxReceiveCount\":\"%d\", \"deadLetterTargetArn\": \"%s\"}"
                                max-tries
@@ -373,7 +369,7 @@
   lifecycle/Lifecycle
 
   (start
-    [this _]
+    [this _system]
     (let [sqs-client (create-aws-client :sqs)
           sns-client (create-aws-client :sns)
           normalized-queue-names (reduce (fn [m queue-name]
@@ -397,7 +393,7 @@
              :normalized-queue-names normalized-queue-names)))
 
   (stop
-    [this _]
+    [this _system]
     (.shutdown @sns-client-atom)
     (.shutdown sqs-client)
     this)
@@ -405,9 +401,8 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   queue-protocol/Queue
 
-  ;; First param is 'this'
   (publish-to-queue
-    [_ queue-name msg]
+    [_this queue-name msg]
     (let [msg (json/generate-string msg)
           queue-name (normalize-queue-name queue-name)
           queue-url (get-queue-url sqs-client queue-name)]
@@ -427,9 +422,8 @@
                   (normalized-queue-name->original-queue-name this)))
            subs)))
 
-  ;; first param is 'this'
   (publish-to-exchange
-    [_ exchange-name msg]
+    [_this exchange-name msg]
     (let [msg (json/generate-string msg)
           exchange-name (normalize-queue-name exchange-name)
           topic (get-topic @sns-client-atom exchange-name)
