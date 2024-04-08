@@ -1097,12 +1097,12 @@
     (let [temporal-extents-list (select iso-with-use-constraints (str parser/temporal-xpath
                                                                       "[contains(@uuidref,'temporal_extent_1')]"))]
       (is (= {:Unit "Second"
-              :Value 30.0}
+              :Value 30}
              (some #(parser/find-temporal-resolution-value-unit %) temporal-extents-list))))))
 
 (deftest parse-temporal-resolution-test
   (testing "testing parse temporal resolution"
-    (is (= '({:Value 30.0, :Unit "Second"}
+    (is (= '({:Value 30 :Unit "Second"}
              {:Unit "Varies"}
              {:Unit "Constant"}
              {:Unit "Varies"})
