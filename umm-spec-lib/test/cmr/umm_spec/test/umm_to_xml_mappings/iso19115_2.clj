@@ -371,9 +371,9 @@
                              <gco:CharacterString>https://doi.org</gco:CharacterString>
                            </gmd:organisationName>
                            <gmd:role>
-                             <gmd:RoleCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"authority\">
+                             <gmd:CI_RoleCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"authority\">
                                authority
-                             </gmd:RoleCode>
+                             </gmd:CI_RoleCode>
                            </gmd:role>
                          </gmd:CI_ResponsibleParty>
                        </gmd:citedResponsibleParty>
@@ -418,9 +418,9 @@
                              <gco:CharacterString>https://doi.org</gco:CharacterString>
                            </gmd:organisationName>
                            <gmd:role>
-                             <gmd:RoleCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"authority\">
+                             <gmd:CI_RoleCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"authority\">
                                authority
-                             </gmd:RoleCode>
+                             </gmd:CI_RoleCode>
                            </gmd:role>
                          </gmd:CI_ResponsibleParty>
                        </gmd:citedResponsibleParty>
@@ -465,9 +465,9 @@
                              <gco:CharacterString>https://doi.org</gco:CharacterString>
                            </gmd:organisationName>
                            <gmd:role>
-                             <gmd:RoleCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"authority\">
+                             <gmd:CI_RoleCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"authority\">
                                authority
-                             </gmd:RoleCode>
+                             </gmd:CI_RoleCode>
                            </gmd:role>
                          </gmd:CI_ResponsibleParty>
                        </gmd:citedResponsibleParty>
