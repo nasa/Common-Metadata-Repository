@@ -90,6 +90,7 @@
   ([description-string description-regex]
    (convert-iso-description-string-to-map description-string description-regex nil))
   ([description-string description-regex number-key-list]
-   (-> (convert-iso-description-string-to-string-map description-string description-regex)
-       convert-key-strings-to-keywords
-       (convert-select-values-from-string-to-number number-key-list))))
+   (when description-string
+     (-> (convert-iso-description-string-to-string-map description-string description-regex)
+         convert-key-strings-to-keywords
+         (convert-select-values-from-string-to-number number-key-list)))))

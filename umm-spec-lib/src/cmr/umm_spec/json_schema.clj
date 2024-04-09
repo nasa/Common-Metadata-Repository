@@ -485,7 +485,11 @@
   ;; wrap the LicenseURL as a defrecord. This supports a UMM-C schema change that was needed for
   ;; MMT and preferred by the CMR in 1.16.2.
   (let [coerced (coerce umm-c-schema x)
-        license-url (get-in coerced [:UseConstraints :LicenseURL])]
-    (if license-url
-      (assoc-in coerced [:UseConstraints :LicenseURL] (umm-cmn/map->OnlineResourceType license-url))
+        license-url (get-in coerced [:UseConstraints :LicenseURL])
+        coerced (if license-url
+                  (assoc-in coerced [:UseConstraints :LicenseURL] (umm-cmn/map->OnlineResourceType license-url))
+                  coerced)
+        previous-version (get-in coerced [:DOI :PreviousVersion])]
+    (if previous-version
+      (assoc-in coerced [:DOI :PreviousVersion] (umm-cmn/map->PreviousVersionType previous-version))
       coerced)))
