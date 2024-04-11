@@ -1,7 +1,6 @@
 (ns cmr.access-control.int-test.access-control-group-acl-test
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
    [cmr.mock-echo.client.echo-util :as e]

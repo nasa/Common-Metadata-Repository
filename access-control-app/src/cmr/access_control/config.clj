@@ -3,6 +3,10 @@
   (:require [cmr.common.config :as cfg :refer [defconfig]]
             [cmr.message-queue.config :as rmq-conf]))
 
+(declare access-control-exchange-name provider-exchange-name provider-queue-name index-queue-name
+         concept-ingest-exchange-name index-queue-listener-count sync-entry-titles-concept-ids-collection-batch-size
+         enable-edl-groups enable-cmr-group-sids enable-cmr-groups enable-sids-get)
+
 (defconfig access-control-exchange-name
   "The access control exchange to which update/save messages are published for access control data."
   {:default "cmr_access_control.exchange"})

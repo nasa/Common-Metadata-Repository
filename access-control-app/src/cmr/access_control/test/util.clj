@@ -13,7 +13,6 @@
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db2 :as mdb]
-   [cmr.umm.umm-core :as umm-core]
    [cmr.umm.umm-granule :as umm-g]
    [cmr.umm-spec.legacy :as legacy]
    [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]

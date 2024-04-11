@@ -1,7 +1,7 @@
 (ns cmr.access-control.test.site.routes
   (:require
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.access-control.site.routes :as r]
    [ring.mock.request :refer [request]]))
 

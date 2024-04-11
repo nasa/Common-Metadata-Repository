@@ -22,13 +22,13 @@
   (conj base-fields "acl-gzip-b64"))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:acl :json]
-  [concept-type query]
+  [_concept-type query]
   (if (some #{:include-full-acl} (:result-features query))
     fields-with-full-acl
     base-fields))
 
 (defmethod elastic-results/elastic-result->query-result-item [:acl :json]
-  [context query elastic-result]
+  [context _query elastic-result]
   (let [result-source (:_source elastic-result)
         item (if-let [acl-gzip (:acl-gzip-b64 result-source)]
                (-> result-source
@@ -41,6 +41,6 @@
         util/remove-nil-keys)))
 
 (defmethod qs/search-results->response [:acl :json]
-  [context query results]
+  [_context _query results]
   (let [results (select-keys results [:hits :took :items])]
     (json/generate-string (util/map-keys->snake_case results))))

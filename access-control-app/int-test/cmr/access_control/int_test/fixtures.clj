@@ -109,7 +109,7 @@
      (mdb/reset (conn-context))
      (ac/reset (conn-context) {:bootstrap-data? true})
      (e/grant-system-group-permissions-to-admin-group (conn-context) :create :read)
-     (doseq [[provider-guid provider-id] provider-map]
+     (doseq [[_provider-guid provider-id] provider-map]
        (mdb/create-provider (assoc (conn-context) :token (config/echo-system-token))
                             (prov-util/minimum-provider->metadata {:provider-id provider-id}))
        ;; Create provider in mock echo with the guid set to the ID to make things easier to sync up

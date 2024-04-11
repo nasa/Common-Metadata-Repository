@@ -3,13 +3,8 @@
   (:require
    [clojure.string :as str]
    [cmr.access-control.services.group-service :as group-service]
-   [cmr.access-control.data.access-control-index :as ac-index]
-   [cmr.common-app.services.search.elastic-search-index :as search-index]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as qm]
    [cmr.transmit.metadata-db :as mdb-legacy]
-   [cmr.common.log :refer [debug info warn error]]
-   [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
+   [cmr.common.log :refer [info]]
    [cmr.transmit.config :as transmit-config]))
 
 (defn- administrators-group

@@ -56,7 +56,7 @@
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
   [context acl]
   (common-enabled/validate-write-enabled context "access control")
-  (v/validate-acl-save! context acl :create)
+  (v/validate-acl-save! context acl)
   (acl-auth/authorize-acl-action context :create acl)
   (let [acl (acl-util/sync-entry-titles-concept-ids context acl)]
     (acl-util/create-acl context acl)))
@@ -93,7 +93,7 @@
    (update-acl context concept-id nil acl))
   ([context concept-id revision-id acl]
    (common-enabled/validate-write-enabled context "access control")
-   (v/validate-acl-save! context acl :update)
+   (v/validate-acl-save! context acl)
    (acl-auth/authorize-acl-action context :update acl)
    ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
    (let [existing-concept (fetch-acl-concept context concept-id)

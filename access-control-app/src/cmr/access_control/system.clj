@@ -10,7 +10,6 @@
    [cmr.access-control.routes :as routes]
    [cmr.acl.acl-fetcher :as af]
    [cmr.acl.core :as acl]
-   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.services.cache-info :as cache-info]
@@ -28,15 +27,18 @@
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
    [cmr.transmit.urs :as urs]))
 
+(declare access-control-nrepl-port)
 (defconfig access-control-nrepl-port
   "Port to listen for nREPL connections"
   {:default nil
    :parser cfg/maybe-long})
 
+(declare log-level)
 (defconfig log-level
   "App logging level"
   {:default "info"})
 
+(declare access-control-public-protocol)
 (defconfig access-control-public-protocol
   "The protocol to use for public access to the access-control application.
 
@@ -46,6 +48,7 @@
   more details."
   {:default "http"})
 
+(declare access-control-public-host)
 (defconfig access-control-public-host
   "The host name to use for public access to the access-control application.
 
@@ -55,6 +58,8 @@
   more details."
   {:default "localhost"})
 
+(declare set-access-control-public-port!)
+(declare access-control-public-port)
 (defconfig access-control-public-port
   "The port to use for public access to the access-control application.
 

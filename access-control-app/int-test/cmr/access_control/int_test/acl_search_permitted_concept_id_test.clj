@@ -10,8 +10,7 @@
    [cmr.access-control.test.util :as u]
    [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.transmit.access-control :as ac]
-   [cmr.umm.umm-collection :as c]))
+   [cmr.transmit.access-control :as ac]))
 
 (use-fixtures :each
               (fixtures/reset-fixture {"prov1guid" "PROV1", "prov2guid" "PROV2"} ["user1"])
