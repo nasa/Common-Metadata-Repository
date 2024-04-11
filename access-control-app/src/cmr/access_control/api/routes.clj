@@ -24,6 +24,7 @@
    [cmr.common.util :as util]
    [compojure.core :refer [DELETE GET OPTIONS POST PUT context routes]])
   (:import
+   #_{:clj-kondo/ignore [:unused-import]}
    (org.json JSONException)))
 
 (defn- api-response
@@ -271,7 +272,7 @@
      :body (json/generate-string s3-list)}))
 
 ;;; Handler
-
+#_{:clj-kondo/ignore [:unused-binding]}
 (defn build-routes [system]
   (routes
     (context (:relative-root-url system) []
