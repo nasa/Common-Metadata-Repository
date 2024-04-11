@@ -37,4 +37,5 @@
 
 
 (comment
+  #_{:clj-kondo/ignore [:unresolved-namespace]}
  (bootstrap (get-in user/system [:apps :access-control])))
