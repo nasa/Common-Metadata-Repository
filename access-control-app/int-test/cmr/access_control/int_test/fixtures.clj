@@ -148,7 +148,9 @@
 
 ;;These two vars will be rebinded dynamically when the fixtures are setup for each test and
 ;;are used to represent the ACLs inside of the tests
+#_{:clj-kondo/ignore [:uninitialized-var]}
 (def ^:dynamic *fixture-provider-acl*)
+#_{:clj-kondo/ignore [:uninitialized-var]}
 (def ^:dynamic *fixture-system-acl*)
 
 (defn grant-provider-acl-permissions-to-all
