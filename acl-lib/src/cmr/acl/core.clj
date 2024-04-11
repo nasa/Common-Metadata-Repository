@@ -2,14 +2,12 @@
   "Contains code for retrieving and manipulating ACLs."
   (:require
    [cheshire.core :as json]
-   [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.config :as cfg :refer [defconfig]]
-   [cmr.common.date-time-parser :as dtp]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.transmit.access-control :as access-control]
@@ -19,6 +17,7 @@
 (def CURL_CLIENT_ID "curl")
 (def UNKNOWN_CLIENT_ID "unknown")
 
+(declare allow-echo-token)
 (defconfig allow-echo-token
   "Flag that indicates if we accept the 'Echo-Token' header."
   {:default true :type Boolean})
@@ -29,7 +28,7 @@
 
 (defn non-empty-string
   [s]
-  (when-not (str/blank? s) s))
+  (when-not (string/blank? s) s))
 
 (defn get-token
   "Returns the token the user passed in the headers or parameters"
@@ -70,7 +69,7 @@
   It expects the request context is already associated with the request."
   [f]
   (fn [request]
-    (let [{:keys [request-context params headers]} request]
+    (let [{:keys [params headers]} request]
       (f (update-in request [:request-context] add-authentication-to-context params headers)))))
 
 (defn- request-sids
@@ -90,34 +89,6 @@
   [context]
   (or (util/get-real-or-lazy context :sids)
       (request-sids context)))
-
-(defn echo-style-temporal-identifier
-  "Returns an ECHO-style ACL temporal identifier from a CMR-style ACL temporal identifier"
-  [t]
-  (when t
-    (-> t
-        (assoc :temporal-field :acquisition)
-        (update-in [:mask] keyword)
-        (update-in [:start-date] dtp/try-parse-datetime)
-        (update-in [:stop-date] dtp/try-parse-datetime)
-        (set/rename-keys {:stop-date :end-date}))))
-
-(defn echo-style-acl
-  "Returns acl with the older ECHO-style keywords for consumption in utility functions from other parts of the CMR."
-  [acl]
-  (-> acl
-      (set/rename-keys {:system-identity :system-object-identity
-                        :provider-identity :provider-object-identity
-                        :group-permissions :aces})
-      (util/update-in-each [:aces] update-in [:user-type] keyword)
-      (util/update-in-each [:aces] set/rename-keys {:group-id :group-guid})
-      (update-in [:catalog-item-identity :collection-identifier :temporal] echo-style-temporal-identifier)
-      (update-in [:catalog-item-identity :granule-identifier :temporal] echo-style-temporal-identifier)
-      (update-in [:catalog-item-identity :collection-identifier :access-value]
-                 #(set/rename-keys % {:include-undefined-value :include-undefined}))
-      (update-in [:catalog-item-identity :granule-identifier :access-value]
-                 #(set/rename-keys % {:include-undefined-value :include-undefined}))
-      util/remove-empty-maps))
 
 (defn- ace-matches-sid?
   "Returns true if the ACE is applicable to the SID."
