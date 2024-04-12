@@ -619,3 +619,18 @@
     (-> umm-s
         (assoc :OperationMetadata operation-metadata)
         (m-spec/update-version :service "1.5.2"))))
+
+(defmethod interface/migrate-umm-version [:service "1.5.2" "1.5.3"]
+  [_context umm-s & _]
+  (-> umm-s
+      (m-spec/update-version :service "1.5.3")))
+
+(defmethod interface/migrate-umm-version [:service "1.5.3" "1.5.2"]
+  [_context umm-s & _]
+  (let [service-type (:Type umm-s)
+        service-type (if (= service-type "SWODLR")
+                       "NOT PROVIDED"
+                       service-type)]
+    (-> umm-s
+        (assoc :Type service-type)
+        (m-spec/update-version :service "1.5.2"))))
