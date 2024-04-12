@@ -278,7 +278,7 @@
   (base-result-format [x]))
 
 (extend-protocol BaseResultFormat
- cmr.elastic-utils.es-query-model.Query
+  Query
   (base-result-format
     [query]
     (base-result-format (:result-format query)))

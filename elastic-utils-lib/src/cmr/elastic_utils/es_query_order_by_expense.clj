@@ -4,7 +4,7 @@
   be placed last."
   (:require [cmr.common.services.errors :as errors]
             [cmr.elastic-utils.es-query-model :as qm])
-  (:import [cmr.elastic-utils.es-query-model
+  (:import [cmr.elastic_utils.es_query_model
             Query
             ScriptCondition
             ConditionGroup
