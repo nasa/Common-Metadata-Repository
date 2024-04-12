@@ -64,6 +64,9 @@
     (hcache/set-value cache index-names-cache-key :rebalancing-collections (:rebalancing-collections index-names-map))
     (info "Refreshed search index-names cache.")))
 
+(declare ctx system)
+;TODO: figure out why RefreshIndexNamesCacheJob can not be "declare"
+
 ;; A job for refreshing the index names cache.
 (defjob RefreshIndexNamesCacheJob
   [ctx system]
