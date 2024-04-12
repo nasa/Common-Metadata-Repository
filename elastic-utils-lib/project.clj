@@ -19,6 +19,7 @@
                  [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"
                   :exclusions [com.fasterxml.jackson.core/jackson-databind]]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
+                 [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.logging.log4j/log4j-api "2.15.0"]
                  [org.clojure/clojure "1.11.2"]
                  [org.elasticsearch/elasticsearch ~elastic-version]
@@ -34,6 +35,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
+             :uberjar {:aot :all} ;; remove before merging
              :dev {:exclusions [[org.clojure/tools.nrepl]]
                    :dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]

@@ -5,8 +5,7 @@
             [cmr.common.services.errors :as errors]
             [cmr.elastic-utils.es-condition-merger :as condition-merger])
   (:refer-clojure :exclude [and or])
-  (:import [cmr.elastic-utils.es-query-model
-            ConditionGroup]))
+  (:import cmr.elastic_utils.es_query_model.ConditionGroup))
 
 (defn- flatten-group-conds
   "Looks for group conditions of the same operation type in the conditions to create. If they are
