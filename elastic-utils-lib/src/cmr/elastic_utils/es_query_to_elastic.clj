@@ -2,22 +2,13 @@
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require
    [clojure.string :as str]
-   [clojurewerkz.elastisch.query :as q]
-   [cmr.elastic-utils.datetime-helper :as h]
-   [cmr.elastic-utils.es-messenger :as m]
+   [clojurewerkz.elastisch.query :as query]
+   [cmr.elastic-utils.config :as config]
+   [cmr.elastic-utils.datetime-helper :as dt-help]
+   [cmr.elastic-utils.es-messenger :as es-msg]
    [cmr.elastic-utils.es-query-model :as qm]
    [cmr.elastic-utils.es-query-order-by-expense :as query-expense]
-   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.services.errors :as errors]))
-
-(defconfig numeric-range-execution-mode
-  "Defines the execution mode to use for numeric ranges in an elasticsearch search"
-  {:default "fielddata"})
-
-(defconfig numeric-range-use-cache
-  "Indicates whether the numeric range should use the field data cache or not."
-  {:type Boolean
-   :default false})
 
 (defmulti concept-type->field-mappings
   "Returns a map of fields in the query to the field name in elastic. Field names are excluded from
@@ -87,7 +78,7 @@
   [query]
   (let [{:keys [concept-type condition]} (query-expense/order-conditions query)
         core-query (condition->elastic condition concept-type)]
-    {:query {:bool {:must (q/match-all)
+    {:query {:bool {:must (query/match-all)
                     :filter core-query}}}))
 
 (defmethod query->elastic :autocomplete
@@ -180,7 +171,7 @@
        {:range {field {less-than max-value}}}
 
        :else
-       (errors/internal-error! (m/nil-min-max-msg))))))
+       (errors/internal-error! (es-msg/nil-min-max-msg))))))
 
 (extend-protocol ConditionToElastic
   cmr.elastic_utils.es_query_model.ConditionGroup
@@ -274,7 +265,7 @@
     [{:keys [field min-value max-value exclusive?]} concept-type]
     (range-condition->elastic
      (query-field->elastic-field field concept-type)
-     min-value max-value (numeric-range-execution-mode) (numeric-range-use-cache) exclusive?))
+     min-value max-value (config/numeric-range-execution-mode) (config/numeric-range-use-cache) exclusive?))
 
   cmr.elastic_utils.es_query_model.NumericRangeIntersectionCondition
   (condition->elastic
@@ -283,24 +274,24 @@
      {:should [(range-condition->elastic (query-field->elastic-field min-field concept-type)
                                          min-value
                                          max-value
-                                         (numeric-range-execution-mode)
-                                         (numeric-range-use-cache))
+                                         (config/numeric-range-execution-mode)
+                                         (config/numeric-range-use-cache))
                (range-condition->elastic (query-field->elastic-field max-field concept-type)
                                          min-value
                                          max-value
-                                         (numeric-range-execution-mode)
-                                         (numeric-range-use-cache))
+                                         (config/numeric-range-execution-mode)
+                                         (config/numeric-range-use-cache))
                {:bool
                 {:must [(range-condition->elastic (query-field->elastic-field min-field concept-type)
                                                   nil
                                                   min-value
-                                                  (numeric-range-execution-mode)
-                                                  (numeric-range-use-cache))
+                                                  (config/numeric-range-execution-mode)
+                                                  (config/numeric-range-use-cache))
                         (range-condition->elastic (query-field->elastic-field max-field concept-type)
                                                   max-value
                                                   nil
-                                                  (numeric-range-execution-mode)
-                                                  (numeric-range-use-cache))]}}]
+                                                  (config/numeric-range-execution-mode)
+                                                  (config/numeric-range-use-cache))]}}]
       :minimum_should_match 1}})
 
   cmr.elastic_utils.es_query_model.StringRangeCondition
@@ -314,16 +305,16 @@
     [{:keys [field start-date end-date exclusive?]} concept-type]
     (let [field (query-field->elastic-field field concept-type)
           from-value (if start-date
-                       (h/utc-time->elastic-time start-date)
-                       h/earliest-start-date-elastic-time)
-          end-value (when end-date (h/utc-time->elastic-time end-date))]
+                       (dt-help/utc-time->elastic-time start-date)
+                       dt-help/earliest-start-date-elastic-time)
+          end-value (when end-date (dt-help/utc-time->elastic-time end-date))]
       (range-condition->elastic
-       field from-value end-value (numeric-range-execution-mode) (numeric-range-use-cache) exclusive?)))
+       field from-value end-value (config/numeric-range-execution-mode) (config/numeric-range-use-cache) exclusive?)))
 
   cmr.elastic_utils.es_query_model.DateValueCondition
   (condition->elastic
     [{:keys [field value]} concept-type]
-    {:term {field (h/utc-time->elastic-time value)}})
+    {:term {field (dt-help/utc-time->elastic-time value)}})
 
   cmr.elastic_utils.es_query_model.MatchAllCondition
   (condition->elastic
