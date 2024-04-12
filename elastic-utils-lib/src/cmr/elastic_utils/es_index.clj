@@ -19,27 +19,23 @@
    clojure.lang.ExceptionInfo
    java.net.UnknownHostException))
 
-(defconfig collections-index-alias
-  "The alias to use for the collections index."
-  {:default "collection_search_alias" :type String})
-
 (defmulti concept-type->index-info
-  "Returns index info based on input concept type. The map should contain a :type-name key along with
-   an :index-name key. :index-name can refer to a single index or a comma separated string of multiple
-   index names."
-  (fn [context concept-type query]
+  "Returns index info based on input concept type. The map should contain a :type-name key along
+   with an :index-name key. :index-name can refer to a single index or a comma separated string of
+   multiple index names."
+  (fn [_context concept-type _query]
     concept-type))
 
 (defmethod concept-type->index-info :collection
-  [context _ query]
+  [_context _ query]
   {:index-name (if (:all-revisions? query)
                  "1_all_collection_revisions"
-                 (collections-index-alias))
+                 (es-config/collections-index-alias))
    :type-name "collection"})
 
 (defmulti concept-type+result-format->fields
   "Returns the fields that should be selected out of elastic search given a concept type and result
-  format"
+   format"
   (fn [concept-type query]
     [concept-type (qm/base-result-format query)]))
 
@@ -61,14 +57,14 @@
    "_score"])
 
 (defn context->search-index
-  "Returns the search index given a context. This assumes that the search index is always located in a
-   system using the :search-index key."
+  "Returns the search index given a context. This assumes that the search index is always located
+   in a system using the :search-index key."
   [context]
   (get-in context [:system :search-index]))
 
 (defn context->conn
-  "Returns the connection given a context. This assumes that the search index is always located in a
-   system using the :search-index key."
+  "Returns the connection given a context. This assumes that the search index is always located in
+   a system using the :search-index key."
   [context]
   (:conn (context->search-index context)))
 
@@ -304,10 +300,10 @@
   lifecycle/Lifecycle
 
   (start
-    [this system]
+    [this _system]
     (assoc this :conn (es/try-connect (:config this))))
 
-  (stop [this system]
+  (stop [this _system]
     this))
 
 (defn create-elastic-search-index
