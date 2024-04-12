@@ -1,7 +1,6 @@
 (ns cmr.elastic-utils.es-query-model
   "Defines various query models and conditions."
   (:require
-   [clojure.string :as s]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.parameter-parser :as pp]
    [cmr.common.services.errors :as errors]))
@@ -279,7 +278,7 @@
   (base-result-format [x]))
 
 (extend-protocol BaseResultFormat
- cmr.elastic-utils.es-query-model.Query
+  Query
   (base-result-format
     [query]
     (base-result-format (:result-format query)))

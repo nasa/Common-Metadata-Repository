@@ -1,10 +1,12 @@
-(ns cmr.common-app.services.search.validators.max-number-of-conditions
-  "Validates that a query does not contain more than the configured maximum number of conditions"
+(ns cmr.elastic-utils.validators.max-number-of-conditions
+  "Validates that a query does not contain more than the configured maximum
+   number of conditions"
   (:require
    [cmr.elastic-utils.es-query-model]
    [cmr.common.config :refer [defconfig]]
-   [cmr.common.log :refer [debug info]]))
+   [cmr.common.log :refer [info]]))
 
+(declare max-number-of-conditions)
 (defconfig max-number-of-conditions
   "The configured maximum number of conditions in a query"
   {:default 4100
@@ -16,7 +18,7 @@
     "Returns the number of conditions in the query object"))
 
 (extend-protocol ConditionCounter
-  cmr.elastic-utils.es-query-model.ConditionGroup
+  cmr.elastic_utils.es_query_model.ConditionGroup
   (count-conditions
     [{:keys [conditions]}]
     (reduce + (map count-conditions conditions)))

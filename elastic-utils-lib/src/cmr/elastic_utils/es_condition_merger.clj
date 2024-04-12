@@ -2,10 +2,10 @@
   "Contains functions for merging and simplifying conditions in a condition group"
   (:require [cmr.elastic-utils.es-query-model :as q]
             [clojure.set :as set])
-  (:import [cmr.elastic-utils.es-query-model
-            StringCondition
-            StringsCondition
-            RelatedItemQueryCondition]))
+  (:import cmr.elastic_utils.es_query_model.StringCondition
+           cmr.elastic_utils.es_query_model.StringsCondition
+           cmr.elastic_utils.es_query_model.RelatedItemQueryCondition)
+  )
 
 (defprotocol ConditionValueExtractor
   (extract-values

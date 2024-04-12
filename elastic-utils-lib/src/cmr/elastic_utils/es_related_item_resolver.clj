@@ -1,10 +1,10 @@
 (ns cmr.elastic-utils.es-related-item-resolver
-  "Finds RelatedItemQueryConditions in a query, executes them, processes the results and replaces
-  them with the retrieved condition"
+  "Finds RelatedItemQueryConditions in a query, executes them, processes the
+   results and replaces them with the retrieved condition"
   (:require [cmr.elastic-utils.es-query-model :as qm]
             [cmr.elastic-utils.es-group-query-conditions :as gc]
             [cmr.elastic-utils.query-transform :as c2s]
-            [cmr.common-app.services.search.elastic-search-index :as idx]))
+            [cmr.elastic-utils.es-index :as idx]))
 
 (defprotocol ResolveRelatedItemQueryCondition
   (resolve-related-item-conditions
@@ -13,28 +13,28 @@
 
 (extend-protocol ResolveRelatedItemQueryCondition
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.Query
+  cmr.elastic_utils.es_query_model.Query
 
   (resolve-related-item-conditions
     [query context]
     (update-in query [:condition] #(resolve-related-item-conditions % context)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.ConditionGroup
+  cmr.elastic_utils.es_query_model.ConditionGroup
 
   (resolve-related-item-conditions
     [condition context]
     (update-in condition [:conditions] (partial mapv #(resolve-related-item-conditions % context))))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.NegatedCondition
+  cmr.elastic_utils.es_query_model.NegatedCondition
 
   (resolve-related-item-conditions
     [condition context]
     (update-in condition [:condition] #(resolve-related-item-conditions % context)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.RelatedItemQueryCondition
+  cmr.elastic_utils.es_query_model.RelatedItemQueryCondition
 
   (resolve-related-item-conditions
     [{:keys [concept-type condition result-fields results-to-condition-fn]} context]
@@ -50,4 +50,4 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; catch all resolver
   java.lang.Object
-  (resolve-related-item-conditions [this context] this))
+  (resolve-related-item-conditions [this _context] this))

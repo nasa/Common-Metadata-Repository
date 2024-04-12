@@ -4,7 +4,7 @@
   be placed last."
   (:require [cmr.common.services.errors :as errors]
             [cmr.elastic-utils.es-query-model :as qm])
-  (:import [cmr.elastic-utils.es-query-model
+  (:import [cmr.elastic_utils.es_query_model
             Query
             ScriptCondition
             ConditionGroup
@@ -15,7 +15,6 @@
             NumericValueCondition
             NumericRangeCondition
             NumericRangeIntersectionCondition]))
-
 
 (defprotocol QueryOrderByExpense
   "Defines functions for ordering queries by expense and returning the expense of a query."

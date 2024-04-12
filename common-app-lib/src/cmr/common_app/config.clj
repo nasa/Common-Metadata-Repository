@@ -28,19 +28,6 @@
   "CMR support email address"
   {:default "cmr-support@earthdata.nasa.gov"})
 
-(defconfig es-unlimited-page-size
-  "This is the number of items we will request from elastic search at a time when
-  the page size is set to unlimited."
-  {:default 10000
-   :type Long})
-
-(defconfig es-max-unlimited-hits
-  "Sets an upper limit in order to get all results from elastic search
-  without paging. This is used by CMR applications to load data into their
-  caches."
-  {:default 200000
-   :type Long})
-
 (defconfig custom-request-log
   "True issues an additional custom request log for all activity received from
    this server"
