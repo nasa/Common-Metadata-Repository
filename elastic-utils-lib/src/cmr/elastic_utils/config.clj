@@ -4,6 +4,19 @@
    [clojure.data.codec.base64 :as b64]
    [cmr.common.config :as config :refer [defconfig]]))
 
+(defconfig es-unlimited-page-size
+  "This is the number of items we will request from elastic search at a time when
+  the page size is set to unlimited."
+  {:default 10000
+   :type Long})
+
+(defconfig es-max-unlimited-hits
+  "Sets an upper limit in order to get all results from elastic search
+  without paging. This is used by CMR applications to load data into their
+  caches."
+  {:default 200000
+   :type Long})
+
 (defconfig elastic-host
   "Elastic host or VIP."
   {:default "localhost"})
