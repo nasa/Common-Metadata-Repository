@@ -211,8 +211,7 @@
                          target (string/join ", " grantable-permissions))]})))
 
 (defn- make-acl-validations
-  "Returns a sequence of validations closed over the given context for validating ACL records.
-   Takes action flag (:create or :update) to do different valiations based on whether creating or updating acl concept"
+  "Returns a sequence of validations closed over the given context for validating ACL records."
   [context acl]
   [#(validate-provider-exists context %1 %2)
    {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl))
