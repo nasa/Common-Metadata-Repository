@@ -160,11 +160,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing ACLs in the cache.
 
-(declare RefreshAclCacheJob ctx system)
+(declare ctx system)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defjob RefreshAclCacheJob
   [ctx system]
   (refresh-acl-cache {:system system}))
 
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn refresh-acl-cache-job
   [job-key]
   {:job-type RefreshAclCacheJob
