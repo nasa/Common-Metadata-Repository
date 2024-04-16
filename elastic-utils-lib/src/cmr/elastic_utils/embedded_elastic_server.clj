@@ -66,7 +66,7 @@
            (.withNetwork network)
            (.withNetworkAliases (into-array String ["elasticsearch"]))
            (.withFixedExposedPort (int http-port) 9200)
-           (.withStartupTimeout (Duration/ofSeconds 120))
+           (.withStartupTimeout (Duration/ofSeconds 240))
            (.waitingFor
             (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200)))
      {:elasticsearch container
