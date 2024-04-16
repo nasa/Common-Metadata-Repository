@@ -6,7 +6,7 @@
    [cmr.access-control.data.acls :as acls]
    [cmr.common-app.services.search.elastic-search-index :as esi]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
-   [cmr.common.log :refer [info debug error]]
+   [cmr.common.log :refer [info error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
@@ -23,6 +23,7 @@
   "The name of the mapping type within the cubby elasticsearch index."
   "access-group")
 
+(declare group-mappings)
 (defmapping ^:private group-mappings group-type-name
   "Defines the field mappings and type options for indexing groups in elasticsearch."
   {:concept-id m/string-field-mapping
@@ -96,6 +97,7 @@
                   revision-id
                   {:refresh? true}))
 
+(declare reindex-groups context)
 (defn-timed reindex-groups
   "Fetches and indexes all groups"
   [context]
@@ -128,7 +130,7 @@
    :member "members-lowercase"})
 
 (defmethod esi/concept-type->index-info :access-group
-  [context _ _]
+  [_context _ _]
   {:index-name group-index-name
    :type-name group-type-name})
 
@@ -143,6 +145,7 @@
   "The name of the mapping type within the cubby elasticsearch index."
   "acl")
 
+(declare group-permission-field-mapping)
 (defnestedmapping group-permission-field-mapping
   "Defines mappings for group permission."
   {:permitted-group m/string-field-mapping
@@ -150,6 +153,7 @@
    :permission m/string-field-mapping
    :permission-lowercase m/string-field-mapping})
 
+(declare acl-mappings)
 (defmapping ^:private acl-mappings acl-type-name
   "Defines the field mappings and type options for indexing acls in elasticsearch."
   {:concept-id m/string-field-mapping
@@ -389,6 +393,7 @@
                   ;; refresh by default because unindexing is rare, and this keeps things simpler
                   {:refresh? true}))
 
+(declare reindex-acls)
 (defn-timed reindex-acls
   "Fetches and indexes all acls"
   [context]
@@ -401,7 +406,7 @@
   (info "Reindexing all acls complete"))
 
 (defmethod esi/concept-type->index-info :acl
-  [context _ _]
+  [_context _ _]
   {:index-name acl-index-name
    :type-name acl-type-name})
 

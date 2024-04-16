@@ -4,12 +4,11 @@
    [clj-time.format :as f]
    [cmr.access-control.data.elasticsearch :as es]
    [cmr.common.concepts :as cs]
-   [cmr.common.log :refer [info]]
    [cmr.common.util :as util]))
 
 (defmulti prepare-batch
   "Returns the batch of concepts into elastic docs for bulk indexing."
-  (fn [context batch options]
+  (fn [_context batch _options]
     (cs/concept-id->type (:concept-id (first batch)))))
 
 (defmethod prepare-batch :default

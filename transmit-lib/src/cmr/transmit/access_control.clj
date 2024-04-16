@@ -4,8 +4,7 @@
    [cheshire.core :as json]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
-   [cmr.transmit.http-helper :as h]
-   [cmr.transmit.config :as transmit-config]))
+   [cmr.transmit.http-helper :as h]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; URL functions
@@ -60,8 +59,14 @@
                :raw? raw?
                :use-system-token? true})))
 
+(declare clear-cache)
 (h/defcacheclearer clear-cache :access-control)
 
+(declare create-group)
+(declare search-for-groups)
+(declare update-group)
+(declare delete-group)
+(declare get-group)
 ; Group CRUD functions
 (h/defcreator create-group :access-control groups-url)
 (h/defsearcher search-for-groups :access-control groups-url)
@@ -134,7 +139,7 @@
   (let [token (:token context)
         headers (-> token
                     (when {config/token-header token})
-                    (as-> item (merge {:client-id transmit-config/cmr-client-id
+                    (as-> item (merge {:client-id config/cmr-client-id
                                        :content-type "application/json"} item)))
         body (json/generate-string {:user-token user-token})]
     (h/request context :access-control
@@ -187,11 +192,16 @@
                :raw? raw?
                :use-system-token? true})))
 
+(declare create-acl)
 (h/defcreator create-acl :access-control acl-root-url)
+
+(declare update-acl)
 (h/defupdater update-acl :access-control acl-concept-id-url)
 
+(declare search-for-acls-get)
 (h/defsearcher search-for-acls-get :access-control acl-root-url)
 
+(declare search-for-acls*)
 (h/defsearcher search-for-acls* :access-control acl-search-post-url)
 
 (defn search-for-acls
@@ -201,11 +211,16 @@
   ([context params options]
    (search-for-acls* context params (merge options {:method :post}))))
 
+(declare delete-acl)
 (h/defdestroyer delete-acl :access-control acl-concept-id-url)
+
+(declare get-acl)
 (h/defgetter get-acl :access-control acl-concept-id-url)
 
+(declare get-permissions)
 (h/defsearcher get-permissions :access-control acl-permission-url)
 ;;; Misc. Functions
 
 ;; Defines health check function
+(declare get-access-control-health)
 (h/defhealther get-access-control-health :access-control {:timeout-secs 2})

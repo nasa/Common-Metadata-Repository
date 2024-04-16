@@ -4,7 +4,7 @@
    [cmr.access-control.data.access-control-index :as access-control-index]
    [cmr.access-control.data.bulk :as cmr-bulk]
    [cmr.common.concepts :as cs]
-   [cmr.common.log :refer [info error]]
+   [cmr.common.log :refer [error]]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.es-helper :as es-helper]))
 
@@ -19,7 +19,7 @@
 
 (defmulti parsed-concept->elastic-doc
   "Returns elastic json that can be used to insert into Elasticsearch for the given concept"
-  (fn [context concept parsed-concept]
+  (fn [_context concept _parsed-concept]
     (cs/concept-id->type (:concept-id concept))))
 
 (defmethod parsed-concept->elastic-doc :acl
@@ -36,11 +36,11 @@
 
 (defn- concept->bulk-elastic-docs
   "Converts a concept map into an elastic document suitable for bulk indexing."
-  [context concept {:keys [all-revisions-index?] :as options}]
+  [context concept]
   (try
     (let [{:keys [concept-id revision-id]} concept
           type (concept->type concept)
-          elastic-version (:revision-id concept)
+          elastic-version revision-id
           index-name (access-control-index/concept-type->index-name type)
           elastic-doc (parsed-concept->elastic-doc context concept concept)
           ;; "only index the document if the given version is equal or higher than
@@ -58,10 +58,10 @@
 
 (defn prepare-batch
   "Convert a batch of concepts into elastic docs for bulk indexing."
-  [context concept-batch options]
+  [context concept-batch _options]
   (doall
    (->> concept-batch
-        (pmap #(concept->bulk-elastic-docs context % options))
+        (pmap #(concept->bulk-elastic-docs context %))
         ;; Remove nils because some concepts may fail with an exception and return nil.
         (remove nil?)
         flatten)))

@@ -2,7 +2,7 @@
   "Contains helper functions for application systems."
   (:require
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug info warn error reportf)]))
+   [cmr.common.log :as log :refer (error reportf)]))
 
 (defn instance-name
   "Creates a random instance name for the current application instance. This name
@@ -58,13 +58,13 @@
 (defn start-fn
   "Creates a generic system start function that logs when the system is
   starting and started"
-  [system-name component-order]
+  [_system-name component-order]
   (fn [system]
     (start system component-order)))
 
 (defn stop-fn
   "Creates a generic system stop function that logs when the system is stopping
   and stopped"
-  [system-name component-order]
+  [_system-name component-order]
   (fn [system]
     (stop system component-order)))

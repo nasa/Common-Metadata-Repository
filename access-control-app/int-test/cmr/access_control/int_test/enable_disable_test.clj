@@ -1,12 +1,12 @@
 (ns cmr.access-control.int-test.enable-disable-test
   "CMR Access Control Enable/Disable endpoint test"
   (:require
-    [clojure.test :refer :all]
-    [cmr.access-control.int-test.fixtures :as fixtures]
-    [cmr.access-control.test.util :as u]
-    [cmr.mock-echo.client.echo-util :as e]
-    [cmr.transmit.access-control :as ac]
-    [cmr.transmit.config :as transmit-config]))
+   [clojure.test :refer[deftest is testing use-fixtures]]
+   [cmr.access-control.int-test.fixtures :as fixtures]
+   [cmr.access-control.test.util :as u]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.transmit.access-control :as ac]
+   [cmr.transmit.config :as transmit-config]))
 
 (use-fixtures :each
               (fixtures/int-test-fixtures)
@@ -65,8 +65,7 @@
     (u/disable-access-control-writes post-options)
 
     (testing "save, update, and delete acl fails after disable"
-      (let [resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})
-            concept-id (get-in resp [:body :concept_id])]
+      (let [resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})]
         ;; check save response
         (is (= 503 (:status resp)))
         ;; test update
@@ -78,8 +77,7 @@
     (u/enable-access-control-writes post-options)
 
     (testing "save, upate, and delete acl works after re-enable"
-      (let [resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})
-            concept-id (get-in resp [:body :concept_id])]
+      (let [resp (ac/create-acl (u/conn-context) system-acl {:raw? true :token token})]
         ;; check save response
         (is (= 200 (:status resp)))
         ;; test update
@@ -90,7 +88,7 @@
 (deftest enable-disable-re-enable-write-group
   (let [token (get-token "admin")
         group (u/make-group)
-        {:keys [status concept_id revision_id]} (u/create-group token group)
+        {:keys [status concept_id]} (u/create-group token group)
         ;; create a second group to use to test updates/deletes after disable
         group2 (u/make-group {:name "group2" :members ["user1" "user2"]})
         second-resp (u/create-group token group2)

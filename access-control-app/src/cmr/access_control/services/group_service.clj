@@ -16,7 +16,7 @@
     [cmr.common-app.services.search.params :as cp]
     [cmr.common-app.services.search.query-model :as common-qm]
     [cmr.common.concepts :as concepts]
-    [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.log :refer (debug info)]
     [cmr.common.mime-types :as mt]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as u]
@@ -35,7 +35,7 @@
   "Returns user id of the token in the context. Throws an error if no token is provided"
   [context]
   (if-let [token (:token context)]
-    (tokens/get-user-id context (:token context))
+    (tokens/get-user-id context token)
     (errors/throw-service-error :unauthorized msg/token-required)))
 
 (def SYSTEM_PROVIDER_ID
@@ -72,7 +72,7 @@
   "Fetches the latest version of a group concept by concept id. Handles unknown concept ids by
   throwing a service error."
   [context concept-id]
-  (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
+  (let [{:keys [concept-type]} (concepts/parse-concept-id concept-id)]
     (when (not= :access-group concept-type)
       (errors/throw-service-error :bad-request (g-msg/bad-group-concept-id concept-id))))
 
@@ -163,7 +163,7 @@
 (defn group-exists?
   "Returns true if group exists."
   [context concept-id]
-  (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
+  (let [{:keys [concept-type]} (concepts/parse-concept-id concept-id)]
     (when (not= :access-group concept-type)
       (errors/throw-service-error :bad-request (g-msg/bad-group-concept-id concept-id))))
   (if-let [concept (mdb/get-latest-concept context concept-id false)]
@@ -305,7 +305,7 @@
 
 (defn validate-group-search-params
   "Validates the parameters for a group search. Returns the parameters or throws an error if invalid."
-  [context params]
+  [_context params]
   (let [[safe-params type-errors] (cpv/apply-type-validations
                                    params
                                    [(partial cpv/validate-map [:options])
@@ -346,7 +346,7 @@
       (cp/string-parameter->condition concept-type param value options))))
 
 (defmethod cp/parse-query-level-params :access-group
-  [concept-type params]
+  [_concept-type params]
   (let [[params query-attribs] (cp/default-parse-query-level-params :access-group params)]
     [(dissoc params :include-members)
      (merge query-attribs

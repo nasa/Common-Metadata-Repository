@@ -11,6 +11,7 @@
    [cmr.transmit.tokens :as tokens]
    [cmr.transmit.urs :as urs]))
 
+(declare get-sids context username-or-type)
 (defn-timed get-sids
   "Returns a seq of sids for the given username string or user type keyword
    for use in checking permissions against acls."
