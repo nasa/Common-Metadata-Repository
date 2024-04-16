@@ -10,9 +10,7 @@
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob]]
-   [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.time-keeper :as tk]
+   [cmr.common.log :as log :refer (info)]
    [cmr.common.util :as util]
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as config]))
@@ -42,6 +40,7 @@
   [object-identity-types]
   (create-acl-cache* (stl-cache/create-single-thread-lookup-cache) object-identity-types))
 
+(declare acl-cache-consistent-timeout-seconds)
 (defconfig acl-cache-consistent-timeout-seconds
   "The number of seconds between when the ACL cache should check with redis for consistence"
   {:default 30
@@ -161,10 +160,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Job for refreshing ACLs in the cache.
 
+(declare ctx system)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defjob RefreshAclCacheJob
   [ctx system]
   (refresh-acl-cache {:system system}))
 
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn refresh-acl-cache-job
   [job-key]
   {:job-type RefreshAclCacheJob
@@ -172,8 +174,9 @@
    :interval 3600})
 
 (comment
- (do
-   (def context (cmr.access-control.test.util/conn-context))
-   (process-search-for-acls (assoc context :token (config/echo-system-token)) [:catalog-item])
-   (cmr.transmit.echo.acls/get-acls-by-types context [:catalog-item])
-   (get-acls context [:catalog-item])))
+  #_{:clj-kondo/ignore [:unresolved-namespace]}
+  (do
+    (def context (cmr.access-control.test.util/conn-context))
+    (process-search-for-acls (assoc context :token (config/echo-system-token)) [:catalog-item])
+    (cmr.transmit.echo.acls/get-acls-by-types context [:catalog-item])
+    (get-acls context [:catalog-item])))
