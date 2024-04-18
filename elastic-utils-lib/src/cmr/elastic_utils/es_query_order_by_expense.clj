@@ -3,8 +3,8 @@
   cached filters before uncached filters. Expensive queries like exact spatial intersection should
   be placed last."
   (:require [cmr.common.services.errors :as errors]
-            [cmr.elastic-utils.es-query-model :as qm])
-  (:import [cmr.elastic_utils.es_query_model
+            [cmr.common.services.search.query-model :as qm])
+  (:import [cmr.common.services.search.query_model
             Query
             ScriptCondition
             ConditionGroup

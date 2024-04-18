@@ -4,8 +4,6 @@
   (:require [cmr.elastic-utils.search.query-execution :as query-execution]
             [cmr.common.services.search.results-model :as r]
             [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
-            [clojure.string :as str]
-            [cmr.common.util :as util]))
 
 (defn get-keyword-conditions
   "Returns a list of the keyword text conditions from a condition"

@@ -12,7 +12,7 @@
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.es-helper :as es-helper]
-   [cmr.elastic-utils.es-query-model :as qm]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.es-query-to-elastic :as q2e]
    [cmr.transmit.connection :as transmit-conn])
   (:import
