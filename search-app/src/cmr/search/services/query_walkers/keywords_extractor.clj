@@ -2,9 +2,14 @@
   "Defines protocols and functions to extract keywords from a query."
   (:require
    [clojure.string :as str]
-   [cmr.elastic-utils.es-query-model :as cqm]
-   [cmr.common.services.errors :as errors]
-   [cmr.search.models.query :as qm]))
+   [cmr.common.services.search.query-model :as cqm]
+   [cmr.common.services.errors :as errors])
+  (:import cmr.common.services.search.query_model.Query
+           cmr.common.services.search.query_model.ConditionGroup
+           cmr.common.services.search.query_model.NestedCondition
+           cmr.common.services.search.query_model.TextCondition
+           cmr.common.services.search.query_model.StringCondition
+           cmr.common.services.search.query_model.StringsCondition))
 
 (defprotocol ExtractKeywords
   "Defines a function to extract keywords"
@@ -65,7 +70,7 @@
 
 (extend-protocol ExtractKeywords
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.Query
+  cmr.common.services.search.query_model.Query
   (extract-keywords-seq
    [query]
    (extract-keywords-seq (:condition query)))
@@ -74,7 +79,7 @@
    (contains-keyword-condition? (:condition query)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.ConditionGroup
+  cmr.common.services.search.query_model.ConditionGroup
   (extract-keywords-seq
    [{:keys [conditions]}]
    (apply merge-with concat (map extract-keywords-seq conditions)))
@@ -87,7 +92,7 @@
            conditions))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.NestedCondition
+  cmr.common.services.search.query_model.NestedCondition
   (extract-keywords-seq
    [{:keys [condition]}]
    (extract-keywords-seq condition))
@@ -96,7 +101,7 @@
    (contains-keyword-condition? condition))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.TextCondition
+  cmr.common.services.search.query_model.TextCondition
   (extract-keywords-seq
    [{:keys [field query-str]}]
    (when (= field :keyword)
@@ -106,7 +111,7 @@
    (= field :keyword))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.StringCondition
+  cmr.common.services.search.query_model.StringCondition
   (extract-keywords-seq
    [{:keys [field value]}]
    (when (contains? keyword-string-fields field)
@@ -116,7 +121,7 @@
    false)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.StringsCondition
+  cmr.common.services.search.query_model.StringsCondition
   (extract-keywords-seq
    [{:keys [field values]}]
    (when (contains? keyword-string-fields field)

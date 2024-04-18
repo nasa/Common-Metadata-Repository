@@ -4,9 +4,9 @@
    [clojure.string :as string]
    [clojurewerkz.elastisch.query :as q]
    [clojurewerkz.elastisch.rest.document :as esd]
-   [cmr.common-app.services.search.elastic-search-index :as common-esi]
+   [cmr.elastic-utils.es-index :as common-esi]
    [cmr.elastic-utils.es-index-name-cache :as index-names-cache]
-   [cmr.elastic-utils.es-query-model :as qm]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.es-query-to-elastic :as q2e]
    [cmr.common.hash-cache :as hcache]
    [cmr.common.concepts :as concepts]
@@ -145,11 +145,11 @@
 
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
   (defmethod common-esi/concept-type->index-info concept-type
-    [context _ query] 
+    [context _ query]
     {:index-name (if (:all-revisions? query)
-                   (format "1_all_generic_%s_revisions" (string/replace (name concept-type) 
+                   (format "1_all_generic_%s_revisions" (string/replace (name concept-type)
                                                                         #"-" "_"))
-                   (format "1_generic_%s" (string/replace (name concept-type) 
+                   (format "1_generic_%s" (string/replace (name concept-type)
                                                           #"-" "_")))
      :type-name (name concept-type)}))
 

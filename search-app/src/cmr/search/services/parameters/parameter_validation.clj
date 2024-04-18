@@ -7,7 +7,7 @@
    [clojure.string :as s]
    [cmr.elastic-utils.es-messenger :as d-msg]
    [cmr.common-app.services.search.parameter-validation :as cpv]
-   [cmr.elastic-utils.es-query-model :as cqm]
+   [cmr.common.services.search.query-model :as cqm]
    [cmr.common.concepts :as cc]
    [cmr.common.mime-types :as mt]
    [cmr.common.date-time-parser :as dt-parser]

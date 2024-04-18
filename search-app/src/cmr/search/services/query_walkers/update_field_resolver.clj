@@ -2,8 +2,13 @@
   "Defines protocols and functions to resolve conditions for a provided field."
   (:require
    [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.es-query-model :as cqm]
-   [cmr.common.util :as util]))
+   [cmr.common.services.search.query-model :as cqm]
+   [cmr.common.util :as util])
+  (:import cmr.common.services.search.query_model.Query
+           cmr.common.services.search.query_model.NestedCondition
+           cmr.common.services.search.query_model.RelatedItemQueryCondition
+           cmr.common.services.search.query_model.ConditionGroup
+           cmr.common.services.search.query_model.NumericRangeIntersectionCondition))
 
 (defprotocol UpdateQueryForField
   "Defines functions to adjust query to either remove a field from the query or update the name of
@@ -52,26 +57,26 @@
    :remove-field remove-field-within-condition
    :rename-field rename-field-within-condition})
 
-(extend cmr.elastic-utils.es-query-model.Query
+(extend cmr.common.services.search.query_model.Query
         UpdateQueryForField
         (merge condition-matching-fns
                {:remove-field remove-field-within-root-query}))
 
-(extend cmr.elastic-utils.es-query-model.NestedCondition
+(extend cmr.common.services.search.query_model.NestedCondition
         UpdateQueryForField
         condition-matching-fns)
 
-(extend cmr.elastic-utils.es-query-model.NegatedCondition
+(extend cmr.common.services.search.query_model.NegatedCondition
         UpdateQueryForField
         condition-matching-fns)
 
-(extend cmr.elastic-utils.es-query-model.RelatedItemQueryCondition
+(extend cmr.common.services.search.query_model.RelatedItemQueryCondition
         UpdateQueryForField
         condition-matching-fns)
 
 (extend-protocol UpdateQueryForField
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.ConditionGroup
+  cmr.common.services.search.query_model.ConditionGroup
   (has-field?
    [cg field-key]
    (let [conditions (:conditions cg)]
@@ -91,7 +96,7 @@
      (when (seq conditions)
        (gc/group-conds operation conditions))))
 
-  cmr.elastic-utils.es-query-model.NumericRangeIntersectionCondition
+  cmr.common.services.search.query_model.NumericRangeIntersectionCondition
   (has-field?
    [c field-key]
    (or (= (:min-field c) field-key)

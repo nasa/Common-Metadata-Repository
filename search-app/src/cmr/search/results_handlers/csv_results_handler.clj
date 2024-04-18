@@ -6,7 +6,7 @@
    [clojure.string :as str]
    [cmr.common-app.services.search :as qs]
    [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.elastic-utils.es-index :as elastic-search-index]
    [cmr.common.services.errors :as svc-errors]
    [cmr.elastic-utils.es-acl-parser :as acl-rhh]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf])

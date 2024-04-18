@@ -2,7 +2,7 @@
   "Contains functions for parsing, validating and converting scienceKeywords aql element to query conditions"
   (:require [cmr.common.xml :as cx]
             [cmr.search.services.aql.conversion :as a]
-            [cmr.elastic-utils.es-query-model :as qm]
+            [cmr.common.services.search.query-model :as qm]
             [cmr.elastic-utils.es-group-query-conditions :as gc]))
 
 (defmulti keyword-element->condition

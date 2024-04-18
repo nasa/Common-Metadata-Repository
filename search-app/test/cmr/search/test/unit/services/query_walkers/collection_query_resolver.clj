@@ -4,7 +4,7 @@
             [cmr.search.test.unit.models.helpers :refer :all]
             [clojure.string :as str]
             [cmr.search.models.query :as q]
-            [cmr.elastic-utils.es-query-model :as cqm]
+            [cmr.common.services.search.query-model :as cqm]
             [clojure.set :as set]))
 (defn query
   [condition]

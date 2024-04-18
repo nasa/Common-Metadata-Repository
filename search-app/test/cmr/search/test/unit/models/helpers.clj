@@ -2,7 +2,7 @@
   "Contains helper functions for testing the query walkers namespaces."
   (:require
    [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.es-query-model :as cqm]
+   [cmr.common.services.search.query-model:as cqm]
    [cmr.search.models.query :as q]))
 
 (defn and-conds

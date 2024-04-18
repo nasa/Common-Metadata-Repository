@@ -1,4 +1,4 @@
-(ns cmr.elastic-utils.results-model
+(ns cmr.common.services.search.results-model
   "Defines types for search results"
   (:require [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 

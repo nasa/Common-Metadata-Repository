@@ -2,7 +2,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.elastic-utils.es-index-name-cache :as idx-names-cache]
-   [cmr.elastic-utils.es-query-model :as qm]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
@@ -45,19 +45,19 @@
     (testing "Testing get granule index names"
       (is (= {:small_collections "1_small_collections"}
              (#'search-index/get-granule-index-names context))))
-    
+
     (testing "collection concept id to index name"
       (let [query (qm/query {:concept-type :granule
                              :condition (qm/string-conditions :concept-id ["C1200000001-PROV1"] true)
                              :page-size 1})]
         (is (= "1_small_collections,1_c*_prov1" (#'search-index/get-granule-indexes context query)))))
-    
+
     (testing "provider id to index name"
       (let [query (qm/query {:concept-type :granule
                              :condition (qm/string-conditions :provider ["PROV1"] true)
                              :page-size 2})]
         (is (= "1_small_collections,1_c*_prov1" (#'search-index/get-granule-indexes context query)))))
-    
+
     (testing "all granule to index name"
       (let [query (qm/query {:concept-type :granule
                               :condition (qm/string-conditions :provider-id ["PROV1"] true)

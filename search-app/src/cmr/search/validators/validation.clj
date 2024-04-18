@@ -1,12 +1,11 @@
 (ns cmr.search.validators.validation
   "Defines protocols and functions to validate conditions"
   (:require
-   [cmr.elastic-utils.es-query-model :as cqm]
+   [cmr.common.services.search.query-model :as cqm]
    [cmr.elastic-utils.es-query-validation :as cqv]
    [cmr.common.concepts :as concepts]
    [cmr.common.generics :as generic]
    [cmr.common.mime-types :as mt]
-   [cmr.search.models.query :as qm]
    [cmr.search.validators.all-granule-validation :as all-granule-validation]
    [cmr.search.validators.leading-wildcard-validation :as lwv]
    [cmr.spatial.validation :as spatial-validation]

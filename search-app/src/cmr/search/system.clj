@@ -11,7 +11,7 @@
    [cmr.common-app.services.kms-fetcher :as kf]
    [cmr.common-app.services.kms-lookup :as kl]
    [cmr.common-app.services.search :as search]
-   [cmr.common-app.services.search.elastic-search-index :as common-idx]
+   [cmr.elastic-utils.es-index :as common-idx]
    [cmr.elastic-utils.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.cache.in-memory-cache :as mem-cache]

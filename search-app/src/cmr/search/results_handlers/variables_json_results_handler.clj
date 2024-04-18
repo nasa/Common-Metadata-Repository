@@ -5,7 +5,7 @@
    [clojure.edn :as edn]
    [cmr.common-app.services.search :as qs]
    [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.elastic-utils.es-index :as elastic-search-index]
    [cmr.common.util :as util]
    [cmr.search.results-handlers.results-handler-util :as rs-util]))
 
@@ -39,7 +39,7 @@
                      {:concept_id concept-id
                       :revision_id revision-id
                       :provider_id provider-id
-                      :definition definition 
+                      :definition definition
                       :native_id native-id
                       :name variable-name
                       :long_name measurement

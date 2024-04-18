@@ -5,7 +5,7 @@
    [clojure.string :as str]
    [clojurewerkz.elastisch.query :as eq]
    [cmr.elastic-utils.query-transform :as c2s]
-   [cmr.elastic-utils.es-query-model :as q]
+   [cmr.common.services.search.query-model :as q]
    [cmr.elastic-utils.es-query-order-by-expense :as query-expense]
    [cmr.elastic-utils.es-query-to-elastic :as q2e]
    [cmr.common.concepts :as concepts]

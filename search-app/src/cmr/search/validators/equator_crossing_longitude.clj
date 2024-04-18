@@ -1,8 +1,8 @@
 (ns cmr.search.validators.equator-crossing-longitude
   "Contains functions for validating equator-crossing-longitude conditions"
-  (:require [cmr.elastic-utils.es-query-model :as qm]
+  (:require [cmr.common.services.search.query-model :as qm]
             [cmr.elastic-utils.es-query-validation :as v]
-            [cmr.common-app.services.search.validators.numeric-range :as nm]
+            [cmr.elastic-utils.validators.numeric-range :as nm]
             [cmr.search.services.messages.orbit-number-messages :as onm]))
 
 (extend-protocol v/Validator

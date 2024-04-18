@@ -6,7 +6,7 @@
    [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.elastic-utils.nested-field :as nf]
    [cmr.elastic-utils.es-params-converter :as common-params]
-   [cmr.elastic-utils.es-query-model :as cqm]
+   [cmr.common.services.search.query-model :as cqm]
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as parser]
    [cmr.common.services.errors :as errors]

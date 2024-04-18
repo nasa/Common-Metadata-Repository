@@ -4,7 +4,7 @@
    [clojure.edn :as edn]
    [clojure.string :as string]
    [cmr.elastic-utils.es-results-to-query-results :as er-to-qr]
-   [cmr.common-app.services.search.results-model :as results]
+   [cmr.common.services.search.results-model :as results]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]

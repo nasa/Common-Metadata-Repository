@@ -2,7 +2,7 @@
   "Entry point for the db (elasticsearch) related operations. Defines a main method that accepts arguments."
   (:require [cmr.common.log :refer (info error)]
             [cmr.access-control.data.access-control-index :as ac-index]
-            [cmr.common-app.services.search.elastic-search-index :as search-index]
+            [cmr.elastic-utils.es-index :as search-index]
             [cmr.common.lifecycle :as l])
   (:gen-class))
 
