@@ -7,7 +7,7 @@
    [cmr.common.concepts :as concepts]
    [cmr.common-app.services.search :as qs]
    [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.elastic-utils.es-index :as elastic-search-index]
    [cmr.search.models.query :as q]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
@@ -77,7 +77,7 @@
    "revision-id"
    "_score"]))
 
-;; TODO: Generic work: Should use a configuration file here?  Or is just "name" OK to have in code?  
+;; TODO: Generic work: Should use a configuration file here?  Or is just "name" OK to have in code?
 ;; Then we need a how to create a new concept for search wiki page or read me or something.
 (def generic-concepts->name-key
   (zipmap (concepts/get-generic-concept-types-array)
@@ -85,7 +85,7 @@
 
 (def concept-type->name-key
   "A map of the concept type to the key to use to extract the reference name field."
-  (merge 
+  (merge
    {:collection :entry-title
     :granule :granule-ur
     :variable :variable-name
@@ -160,7 +160,7 @@
                             (map (partial reference->xml-element false results) items))
                (frf/facets->xml-element facets))))
 
-;; TODO: Generic work: I used this because I got a null results back. That is because 
+;; TODO: Generic work: I used this because I got a null results back. That is because
 ;; the generic document isn't being stored correctly.  It is missing cmr elements. Will be working
 ;; on this next, so I may then be able to delete this.
 (defmethod results->xml-element :default

@@ -9,11 +9,11 @@
    [clj-time.core :as t]
    [cmr.common-app.services.search :as qs]
    [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.elastic-utils.es-index :as elastic-search-index]
    [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.elastic-utils.query-execution :as query-execution]
    [cmr.elastic-utils.es-query-to-elastic :as q2e]
-   [cmr.common-app.services.search.results-model :as r]
+   [cmr.common.services.search.results-model :as r]
    [cmr.common.services.errors :as errors]
    [cmr.search.models.query :as q]))
 

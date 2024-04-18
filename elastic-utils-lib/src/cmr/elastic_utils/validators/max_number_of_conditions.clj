@@ -2,7 +2,7 @@
   "Validates that a query does not contain more than the configured maximum
    number of conditions"
   (:require
-   [cmr.elastic-utils.es-query-model]
+   [cmr.common.services.search.query-model]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer [info]]))
 
@@ -18,7 +18,7 @@
     "Returns the number of conditions in the query object"))
 
 (extend-protocol ConditionCounter
-  cmr.elastic_utils.es_query_model.ConditionGroup
+  cmr.common.services.search.query_model.ConditionGroup
   (count-conditions
     [{:keys [conditions]}]
     (reduce + (map count-conditions conditions)))

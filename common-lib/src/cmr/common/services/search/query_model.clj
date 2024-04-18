@@ -1,4 +1,4 @@
-(ns cmr.elastic-utils.es-query-model
+(ns cmr.common.services.search.query-model
   "Defines various query models and conditions."
   (:require
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]

@@ -1,7 +1,7 @@
 (ns cmr.search.data.complex-to-simple-converters.orbit
   "Defines functions that implement the reduce-query-condition method of the ComplexQueryToSimple
   protocol for orbit related search fields."
-  (:require [cmr.elastic-utils.es-query-model :as qm]
+  (:require [cmr.common.services.search.query-model :as qm]
             [cmr.elastic-utils.es-group-query-conditions :as gc]
             [cmr.elastic-utils.query-transform :as c2s]
             [cmr.common.services.errors :as errors]

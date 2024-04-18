@@ -1,14 +1,16 @@
 (ns cmr.search.services.query-walkers.collection-query-resolver
   "Defines protocols and functions to resolve collection query conditions"
   (:require [cmr.search.models.query :as qm]
-            [cmr.elastic-utils.es-query-model :as cqm]
+            [cmr.common.services.search.query-model :as cqm]
             [cmr.elastic-utils.es-group-query-conditions :as gc]
             [cmr.common.services.errors :as errors]
-            [cmr.common-app.services.search.elastic-search-index :as idx]
+            [cmr.elastic-utils.es-index :as idx]
             [cmr.elastic-utils.query-transform :as c2s]
-            [cmr.common.log :refer (debug info warn error)]
             [clojure.set :as set])
-  (:import cmr.search.models.query.CollectionQueryCondition))
+  (:import cmr.search.models.query.CollectionQueryCondition
+           cmr.common.services.search.query_model.Query
+           cmr.common.services.search.query_model.NegatedCondition
+           cmr.common.services.search.query_model.ConditionGroup))
 
 (defprotocol ResolveCollectionQuery
   "Defines a function to resolve a collection query condition into conditions of
@@ -86,7 +88,7 @@
 
 (extend-protocol ResolveCollectionQuery
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.Query
+  cmr.common.services.search.query_model.Query
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries
@@ -98,7 +100,7 @@
    [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.NegatedCondition
+  cmr.common.services.search.query_model.NegatedCondition
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries
@@ -110,7 +112,7 @@
    [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.ConditionGroup
+  cmr.common.services.search.query_model.ConditionGroup
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries

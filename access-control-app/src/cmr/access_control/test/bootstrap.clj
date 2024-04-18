@@ -4,11 +4,10 @@
    [clojure.string :as str]
    [cmr.access-control.services.group-service :as group-service]
    [cmr.access-control.data.access-control-index :as ac-index]
-   [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.elastic-utils.query-execution :as qe]
-   [cmr.elastic-utils.es-query-model :as qm]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.transmit.metadata-db :as mdb-legacy]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [info]]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.transmit.config :as transmit-config]))
 

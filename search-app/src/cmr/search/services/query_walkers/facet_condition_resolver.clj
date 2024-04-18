@@ -3,9 +3,13 @@
    match the given facet field."
   (:require
    [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.es-query-model :as cqm]
+   [cmr.common.services.search.query-model :as cqm]
    [cmr.common.util :as util]
-   [cmr.search.services.query-execution.facets.facets-v2-results-feature :as fvrf]))
+   [cmr.search.services.query-execution.facets.facets-v2-results-feature :as fvrf])
+  (:import cmr.common.services.search.query_model.Query
+           cmr.common.services.search.query_model.ConditionGroup
+           cmr.common.services.search.query_model.NestedCondition
+           cmr.common.services.search.query_model.StringCondition))
 
 (defn- string-condition-for-v2-facet-field?
   "Returns true if the given string condition is on the given v2 facet field"
@@ -33,7 +37,7 @@
 
 (extend-protocol AdjustFacetQuery
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.Query
+  cmr.common.services.search.query_model.Query
   (has-field?
    [query field-key]
    (has-field? (:condition query) field-key))
@@ -45,7 +49,7 @@
      (assoc query :condition cqm/match-all)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic-utils.es-query-model.ConditionGroup
+  cmr.common.services.search.query_model.ConditionGroup
   (has-field?
    [cg field-key]
    (let [conditions (:conditions cg)]
@@ -58,7 +62,7 @@
      (when (seq conditions)
        (gc/group-conds operation conditions))))
 
-  cmr.elastic-utils.es-query-model.NestedCondition
+  cmr.common.services.search.query_model.NestedCondition
   (has-field?
    [c field-key]
    (has-field? (:condition c) field-key))
@@ -69,7 +73,7 @@
    (when-not (has-field? (:condition c) field-key)
      c))
 
-  cmr.elastic-utils.es-query-model.StringCondition
+  cmr.common.services.search.query_model.StringCondition
   (has-field?
    [c field-key]
    (string-condition-for-v2-facet-field? c field-key))

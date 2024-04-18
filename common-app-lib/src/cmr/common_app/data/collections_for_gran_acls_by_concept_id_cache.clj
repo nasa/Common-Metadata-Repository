@@ -6,7 +6,7 @@
    [clojure.walk :as walk]
    [cmr.elastic-utils.es-acl-parser :as acl-rhh]
    [cmr.elastic-utils.query-execution :as qe]
-   [cmr.elastic-utils.es-query-model :as q-mod]
+   [cmr.common.services.search.query-model :as q-mod]
    [cmr.common.date-time-parser :as time-parser]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]

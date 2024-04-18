@@ -16,7 +16,7 @@
    [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.provider-cache :as provider-cache]
-   [cmr.common-app.services.search.elastic-search-index :as search-index]
+   [cmr.elastic-utils.es-index :as search-index]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]

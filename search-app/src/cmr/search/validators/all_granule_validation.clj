@@ -5,7 +5,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.search.services.query-walkers.condition-extractor :as extractor])
   (:import
-   (cmr.elastic-utils.es-query-model StringCondition StringsCondition MatchNoneCondition)
+   (cmr.common.services.search.query_model StringCondition StringsCondition MatchNoneCondition)
    (cmr.search.models.query SpatialCondition)))
 
 (defconfig all-granules-page-depth-limit

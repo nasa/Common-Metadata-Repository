@@ -1,6 +1,5 @@
 (ns cmr.access-control.services.acl-authorization
   (:require
-    [clojure.edn :as edn]
     [cmr.access-control.services.acl-util :as acl-util]
     [cmr.access-control.services.auth-util :as auth-util]
     [cmr.access-control.services.group-service :as group-service]
@@ -9,7 +8,7 @@
     [cmr.acl.core :as acl]
     [cmr.elastic-utils.es-group-query-conditions :as gc]
     [cmr.elastic-utils.query-execution :as qe]
-    [cmr.elastic-utils.es-query-model :as qm]
+    [cmr.common.services.search.query-model :as qm]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util :refer [defn-timed]]
     [cmr.transmit.config :as transmit-config]))

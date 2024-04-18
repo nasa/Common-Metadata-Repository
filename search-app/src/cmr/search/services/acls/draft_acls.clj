@@ -3,7 +3,7 @@
   (:require
    [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.elastic-utils.query-execution :as qe]
-   [cmr.elastic-utils.es-query-model :as qm]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.common.concepts :as cc]
    [cmr.search.services.acls.acl-helper :as acl-helper]
    [cmr.transmit.config :as tc]))
@@ -22,4 +22,4 @@
                              (map #(get-in % [:provider-identity :provider-id]) pc-acls)
                              ["non-existing-provider-id"])
               acl-cond (qm/string-conditions :provider-id provider-ids true)]
-          (update-in query [:condition] #(gc/and-conds [acl-cond %])))))))  
+          (update-in query [:condition] #(gc/and-conds [acl-cond %])))))))

@@ -7,7 +7,7 @@
    [cmr.acl.core :as acl]
    [cmr.common.concepts :as concepts]
    [cmr.elastic-utils.query-execution :as qe]
-   [cmr.elastic-utils.es-query-model :as cqm]
+   [cmr.common.services.search.query-model :as cqm]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.services.tagging.json-schema-validation :as jv]
@@ -115,7 +115,7 @@
 
 (defn validate-generic-association-conflict-for-concept
   "Validates concept with concept-id can not be associated with the concept in the association
-  with and without the revisions." 
+  with and without the revisions."
   [context concept-id association]
   (let [;;Get all the generic associations between the concept with concept-id and the concept
         ;;in the association. Depending on the order of the sorting between concept-id and (:concept-id association),
@@ -123,7 +123,7 @@
         concept-id-as-source? (if (= concept-id (first (sort [concept-id (:concept-id association)])))
                                 true
                                 false)
-        generic-assocs (if concept-id-as-source? 
+        generic-assocs (if concept-id-as-source?
                          (->> (mdb/find-concepts context
                                                  {:source-concept-identifier concept-id
                                                   :associated-concept-id (:concept-id association)
@@ -133,7 +133,7 @@
                               (filter #(not (:deleted %))))
                          (->> (mdb/find-concepts context
                                                  {:source-concept-identifier (:concept-id association)
-                                                  :associated-concept-id concept-id 
+                                                  :associated-concept-id concept-id
                                                   :exclude-metadata true
                                                   :latest true}
                                                   :generic-association)
@@ -482,14 +482,14 @@
         concept-types (map #(concepts/concept-id->type %) concept-ids)
         supported-concept-types (set (concat [:collection :variable :service :tool]
                                              concepts/get-generic-non-draft-concept-types-array))
-        non-supported-types (remove nil? 
+        non-supported-types (remove nil?
                                     (map #(when-not (contains? supported-concept-types %) %)
                                          concept-types))]
     (if (seq non-supported-types)
       (errors/throw-service-error
         :invalid-data (assoc-msg/non-supported-generic-association-types (pr-str non-supported-types)))
       associations)))
-         
+
 (defn- partition-associations
   "Returns the associations as a list partitioned by if there is a revision-id."
   [associations]
@@ -532,7 +532,7 @@
     operation-type))
 
 (defmulti validate-generic-associations
-  "Validates the associations based on the operation type, which is either :insert or :delete. 
+  "Validates the associations based on the operation type, which is either :insert or :delete.
   assoc-typeand assoc-id are the concept type and concept id that is associated with the concepts
   in the associations. Returns the associations with errors found
   appended to them. If the provided associations fail the basic rules validation (e.g. empty
@@ -683,7 +683,7 @@
                                                context (map :concept-id concept-id-only-assocs))
         ;;Find inaccessible concept revisions and tombstoned revisions from revision-assocs.
         ;;This search uses all_revision=true, which can return the deleted revisions so we
-        ;;could distinguish the two. 
+        ;;could distinguish the two.
         {:keys [tombstoned-revisions inaccessible-revisions]} (get-bad-concept-revisions context revision-assocs)
         inaccessible-concept-only-concept-ids (remove #(found-id? no-permission-concept-ids %)
                                               inaccessible-concept-only-concept-ids)
