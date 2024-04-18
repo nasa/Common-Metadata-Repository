@@ -2,39 +2,31 @@
   "Handles the returning search results in KML format (keyhole markup language for Google Earth etc)"
   (:require
    [clojure.data.xml :as x]
-   [clojure.string :as str]
    [cmr.common-app.services.search :as qs]
    [cmr.elastic-utils.es-results-to-query-results :as er-to-qr]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-   [cmr.common-app.services.search.results-model :as r]
+   [cmr.elastic-utils.es-index :as elastic-search-index]
+   [cmr.common.services.search.results-model :as r-model]
    [cmr.common.services.errors :as svc-errors]
-   [cmr.common.util :as util]
    [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
-   [cmr.spatial.cartesian-ring :as cr]
-   [cmr.spatial.geodetic-ring :as gr]
    [cmr.spatial.kml :as kml]
-   [cmr.spatial.line-string :as l]
-   [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
-   [cmr.spatial.polygon :as poly]
    [cmr.spatial.relations :as relations]
    [cmr.spatial.serialize :as srl]))
 
 (defmethod gcrf/query-results->concept-ids :kml
-  [results]
+  [_results]
   (svc-errors/throw-service-error
     :bad-request
     "Collections search in kml format is not supported with include_granule_counts option"))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :kml]
-  [concept-type query]
+  [_concept-type _query]
   ["entry-title"
    "ords-info"
    "ords"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :kml]
-  [concept-type query]
+  [_concept-type _query]
   (vec (into #{"granule-ur" "ords-info" "ords"}
              orbit-swath-helper/orbit-elastic-fields)))
 
@@ -72,7 +64,7 @@
         items (if (= :granule (:concept-type query))
                 (granule-elastic-results->query-result-items context query elastic-matches)
                 (map collection-elastic-result->query-result-item elastic-matches))]
-    (r/map->Results {:hits hits :timed-out timed-out :items items :result-format (:result-format query)})))
+    (r-model/map->Results {:hits hits :timed-out timed-out :items items :result-format (:result-format query)})))
 
 (doseq [concept-type [:granule :collection]]
   (defmethod er-to-qr/elastic-results->query-results [concept-type :kml]

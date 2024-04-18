@@ -5,13 +5,10 @@
   This handles the retrieval of collection atom links by collection concept ids."
   (:require
    [cheshire.core :as json]
-   [clj-time.core :as time]
-   [clojure.data.xml :as x]
-   [clojure.string :as str]
    [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.elastic-utils.es-index :as elastic-search-index]
    [cmr.elastic-utils.query-execution :as qe]
-   [cmr.elastic-utils.es-query-model :as qm]))
+   [cmr.common.services.search.query-model :as qm]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :atom-links]
   [concept-type query]

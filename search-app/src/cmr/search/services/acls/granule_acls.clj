@@ -5,7 +5,7 @@
    [clojure.string :as string]
    [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.elastic-utils.query-execution :as qe]
-   [cmr.elastic-utils.es-query-model :as cqm]
+   [cmr.common.services.search.query-model :as cqm]
    [cmr.common.concepts :as c]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]

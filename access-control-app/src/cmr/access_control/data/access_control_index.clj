@@ -4,10 +4,10 @@
    [clojure.edn :as edn]
    [clojure.string :as str]
    [cmr.access-control.data.acls :as acls]
-   [cmr.common-app.services.search.elastic-search-index :as esi]
    [cmr.common.log :refer [info error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
+   [cmr.elastic-utils.es-index :as esi]
    [cmr.elastic-utils.es-query-to-elastic :as q2e]
    [cmr.elastic-utils.index-util :as m :refer [defmapping defnestedmapping]]
    [cmr.transmit.metadata-db :as mdb-legacy]))

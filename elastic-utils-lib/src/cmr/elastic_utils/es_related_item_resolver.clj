@@ -1,7 +1,7 @@
 (ns cmr.elastic-utils.es-related-item-resolver
   "Finds RelatedItemQueryConditions in a query, executes them, processes the
    results and replaces them with the retrieved condition"
-  (:require [cmr.elastic-utils.es-query-model :as qm]
+  (:require [cmr.common.services.search.query-model :as qm]
             [cmr.elastic-utils.es-group-query-conditions :as gc]
             [cmr.elastic-utils.query-transform :as c2s]
             [cmr.elastic-utils.es-index :as idx]))
@@ -13,28 +13,28 @@
 
 (extend-protocol ResolveRelatedItemQueryCondition
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic_utils.es_query_model.Query
+  cmr.common.services.search.query_model.Query
 
   (resolve-related-item-conditions
     [query context]
     (update-in query [:condition] #(resolve-related-item-conditions % context)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic_utils.es_query_model.ConditionGroup
+  cmr.common.services.search.query_model.ConditionGroup
 
   (resolve-related-item-conditions
     [condition context]
     (update-in condition [:conditions] (partial mapv #(resolve-related-item-conditions % context))))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic_utils.es_query_model.NegatedCondition
+  cmr.common.services.search.query_model.NegatedCondition
 
   (resolve-related-item-conditions
     [condition context]
     (update-in condition [:condition] #(resolve-related-item-conditions % context)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.elastic_utils.es_query_model.RelatedItemQueryCondition
+  cmr.common.services.search.query_model.RelatedItemQueryCondition
 
   (resolve-related-item-conditions
     [{:keys [concept-type condition result-fields results-to-condition-fn]} context]

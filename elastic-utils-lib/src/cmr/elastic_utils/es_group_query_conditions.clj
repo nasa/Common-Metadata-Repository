@@ -1,11 +1,11 @@
 (ns cmr.elastic-utils.es-group-query-conditions
   "Contains conditions for group together multiple conditions. These are the boolean operations
   for AND and OR."
-  (:require [cmr.elastic-utils.es-query-model :as q]
+  (:require [cmr.common.services.search.query-model :as q]
             [cmr.common.services.errors :as errors]
             [cmr.elastic-utils.es-condition-merger :as condition-merger])
   (:refer-clojure :exclude [and or])
-  (:import cmr.elastic_utils.es_query_model.ConditionGroup))
+  (:import cmr.common.services.search.query_model.ConditionGroup))
 
 (defn- flatten-group-conds
   "Looks for group conditions of the same operation type in the conditions to create. If they are

@@ -6,7 +6,7 @@
    [cmr.elastic-utils.config :as config]
    [cmr.elastic-utils.datetime-helper :as dt-help]
    [cmr.elastic-utils.es-messenger :as es-msg]
-   [cmr.elastic-utils.es-query-model :as qm]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.es-query-order-by-expense :as query-expense]
    [cmr.common.services.errors :as errors]))
 
@@ -174,7 +174,7 @@
        (errors/internal-error! (es-msg/nil-min-max-msg))))))
 
 (extend-protocol ConditionToElastic
-  cmr.elastic_utils.es_query_model.ConditionGroup
+  cmr.common.services.search.query_model.ConditionGroup
   (condition->elastic
     [{:keys [operation conditions]} concept-type]
    ;; Performance enhancement: We should order the conditions within and/ors.
@@ -183,13 +183,13 @@
       {:bool {:should (map #(condition->elastic % concept-type) conditions)
               :minimum_should_match 1}}))
 
-  cmr.elastic_utils.es_query_model.NestedCondition
+  cmr.common.services.search.query_model.NestedCondition
   (condition->elastic
     [{:keys [path condition]} concept-type]
     {:nested {:path path
               :query {:bool {:filter (condition->elastic condition concept-type)}}}})
 
-  cmr.elastic_utils.es_query_model.TextCondition
+  cmr.common.services.search.query_model.TextCondition
   (condition->elastic
     [{:keys [field query-str]} concept-type]
     (let [elastic-field (query-field->elastic-field field concept-type)]
@@ -207,7 +207,7 @@
                         :default_field elastic-field
                         :default_operator :and}})))
 
-  cmr.elastic_utils.es_query_model.StringCondition
+  cmr.common.services.search.query_model.StringCondition
   (condition->elastic
     [{:keys [field value case-sensitive? pattern?]} concept-type]
     (let [field (if case-sensitive?
@@ -218,7 +218,7 @@
         {:wildcard {field value}}
         {:term {field value}})))
 
-  cmr.elastic_utils.es_query_model.StringsCondition
+  cmr.common.services.search.query_model.StringsCondition
   (condition->elastic
     [{:keys [field values case-sensitive?]} concept-type]
     (let [field (if case-sensitive?
@@ -227,47 +227,47 @@
           values (if case-sensitive? values (map str/lower-case values))]
       {:terms {field values}}))
 
-  cmr.elastic_utils.es_query_model.BooleanCondition
+  cmr.common.services.search.query_model.BooleanCondition
   (condition->elastic
     [{:keys [field value]} concept-type]
     (let [field (query-field->elastic-field field concept-type)]
       {:term {field value}}))
 
-  cmr.elastic_utils.es_query_model.NegatedCondition
+  cmr.common.services.search.query_model.NegatedCondition
   (condition->elastic
     [{:keys [condition]} concept-type]
     {:bool {:must_not (condition->elastic condition concept-type)}})
 
-  cmr.elastic_utils.es_query_model.ScriptCondition
+  cmr.common.services.search.query_model.ScriptCondition
   (condition->elastic
     [{:keys [source lang params]} concept-type]
     {:script {:script {:source source
                        :params params
                        :lang lang}}})
 
-  cmr.elastic_utils.es_query_model.ExistCondition
+  cmr.common.services.search.query_model.ExistCondition
   (condition->elastic
     [{:keys [field]} concept-type]
     {:exists {:field (query-field->elastic-field field concept-type)}})
 
-  cmr.elastic_utils.es_query_model.MissingCondition
+  cmr.common.services.search.query_model.MissingCondition
   (condition->elastic
     [{:keys [field]} concept-type]
     {:bool {:must_not {:exists {:field (query-field->elastic-field field concept-type)}}}})
 
-  cmr.elastic_utils.es_query_model.NumericValueCondition
+  cmr.common.services.search.query_model.NumericValueCondition
   (condition->elastic
     [{:keys [field value]} concept-type]
     {:term {(query-field->elastic-field field concept-type) value}})
 
-  cmr.elastic_utils.es_query_model.NumericRangeCondition
+  cmr.common.services.search.query_model.NumericRangeCondition
   (condition->elastic
     [{:keys [field min-value max-value exclusive?]} concept-type]
     (range-condition->elastic
      (query-field->elastic-field field concept-type)
      min-value max-value (config/numeric-range-execution-mode) (config/numeric-range-use-cache) exclusive?))
 
-  cmr.elastic_utils.es_query_model.NumericRangeIntersectionCondition
+  cmr.common.services.search.query_model.NumericRangeIntersectionCondition
   (condition->elastic
     [{:keys [min-field max-field min-value max-value]} concept-type]
     {:bool
@@ -294,13 +294,13 @@
                                                   (config/numeric-range-use-cache))]}}]
       :minimum_should_match 1}})
 
-  cmr.elastic_utils.es_query_model.StringRangeCondition
+  cmr.common.services.search.query_model.StringRangeCondition
   (condition->elastic
     [{:keys [field start-value end-value exclusive?]} concept-type]
     (range-condition->elastic (query-field->elastic-field field concept-type)
                               start-value end-value "index" true exclusive?))
 
-  cmr.elastic_utils.es_query_model.DateRangeCondition
+  cmr.common.services.search.query_model.DateRangeCondition
   (condition->elastic
     [{:keys [field start-date end-date exclusive?]} concept-type]
     (let [field (query-field->elastic-field field concept-type)
@@ -311,32 +311,32 @@
       (range-condition->elastic
        field from-value end-value (config/numeric-range-execution-mode) (config/numeric-range-use-cache) exclusive?)))
 
-  cmr.elastic_utils.es_query_model.DateValueCondition
+  cmr.common.services.search.query_model.DateValueCondition
   (condition->elastic
     [{:keys [field value]} concept-type]
     {:term {field (dt-help/utc-time->elastic-time value)}})
 
-  cmr.elastic_utils.es_query_model.MatchAllCondition
+  cmr.common.services.search.query_model.MatchAllCondition
   (condition->elastic
     [_ _]
     {:match_all {}})
 
-  cmr.elastic_utils.es_query_model.MatchNoneCondition
+  cmr.common.services.search.query_model.MatchNoneCondition
   (condition->elastic
     [_ _]
     {:term {:match_none "none"}})
 
-  cmr.elastic_utils.es_query_model.MatchCondition
+  cmr.common.services.search.query_model.MatchCondition
   (condition->elastic
     [{:keys [field value]} _]
     {:match {field value}})
 
-  cmr.elastic_utils.es_query_model.MatchBoolPrefixCondition
+  cmr.common.services.search.query_model.MatchBoolPrefixCondition
   (condition->elastic
     [{:keys [field value]} _]
     {:match_bool_prefix {field {:query value}}})
 
-  cmr.elastic_utils.es_query_model.MultiMatchCondition
+  cmr.common.services.search.query_model.MultiMatchCondition
   (condition->elastic
     [{:keys [query-type fields value opts]} _]
     {:multi_match (merge {:query value

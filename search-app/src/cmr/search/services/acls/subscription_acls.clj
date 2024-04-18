@@ -3,7 +3,7 @@
   (:require
    [cmr.elastic-utils.es-group-query-conditions :as gc]
    [cmr.elastic-utils.query-execution :as qe]
-   [cmr.elastic-utils.es-query-model :as qm]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.common.api.context :as context-util]
    [cmr.common.util :as util]
    [cmr.search.services.acls.acl-helper :as acl-helper]

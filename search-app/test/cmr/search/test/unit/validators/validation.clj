@@ -1,7 +1,7 @@
 (ns cmr.search.test.unit.validators.validation
   (:require [clojure.test :refer :all]
             [cmr.elastic-utils.es-query-validation :as v]
-            [cmr.elastic-utils.es-query-model :as q]))
+            [cmr.common.services.search.query-model :as q]))
 
 
 (def sample-query

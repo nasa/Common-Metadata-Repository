@@ -6,7 +6,7 @@
     [clojure.string :as string]
     [cmr.elastic-utils.es-group-query-conditions :as gc]
     [cmr.elastic-utils.es-params-converter :as p]
-    [cmr.elastic-utils.es-query-model :as qm]
+    [cmr.common.services.search.query-model :as qm]
     [cmr.elastic-utils.es-query-to-elastic :as q2e]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :refer [convert-to-meters]]))

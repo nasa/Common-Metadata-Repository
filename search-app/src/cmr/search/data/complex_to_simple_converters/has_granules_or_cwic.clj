@@ -1,7 +1,7 @@
 (ns cmr.search.data.complex-to-simple-converters.has-granules-or-cwic
   (:require
    [cmr.elastic-utils.query-transform :as c2s]
-   [cmr.elastic-utils.es-query-model :as cqm]
+   [cmr.common.services.search.query-model :as cqm]
    [cmr.search.models.query :as qm]
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as has-gran-or-cwic-base]
    [cmr.search.services.query-execution.has-granules-results-feature :as has-granules-base]))
