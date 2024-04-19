@@ -37,7 +37,7 @@
           :uuid))
        spatial-keywords))
 
-(defn- location-values
+(defn- location-for-leaf-values
   "Returns the location keyword values in order so that we can get the last one"
   [location-keyword]
   (for [k location-keyword-order
@@ -48,7 +48,7 @@
 (defn- leaf-value
   "Returns the leaf value of the location-keyword object to be put in a SpatialKeywords list"
   [location-keyword]
-  (last (location-values location-keyword)))
+  (last (location-for-leaf-values location-keyword)))
 
 (defn location-keywords->spatial-keywords
   "Converts a list of LocationKeyword maps to a list of SpatialKeywords"
