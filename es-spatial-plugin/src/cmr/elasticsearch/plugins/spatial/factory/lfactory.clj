@@ -8,9 +8,6 @@
    (org.elasticsearch.search.lookup SearchLookup))
   (:require
    [clojure.string :as str]
-   [cmr.spatial.derived :as d]
-   [cmr.spatial.point :as point]
-   [cmr.spatial.polygon :as poly]
    [cmr.spatial.relations :as relations]
    [cmr.spatial.serialize :as srl])
   (:gen-class
@@ -76,6 +73,7 @@
 
 (import 'cmr.elasticsearch.plugins.SpatialScriptLeafFactory)
 
+#_{:clj-kondo/ignore [:unused-private-var]}
 (defn- -init [^Map params ^SearchLookup lookup]
   [[] {:params params
        :lookup lookup}])
