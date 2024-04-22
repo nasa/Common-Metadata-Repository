@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.test.time-test
   (:require
    [clj-time.core :as t]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :as util :refer [are3]]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
@@ -75,6 +75,7 @@
   (testing "No dates"
     (is (nil? (time/collection-end-date {})))))
 
+(declare range-date-times ends-at-present expected-ranges)
 (deftest normalize-range-end-dates
   (testing "Normalize end dates"
     (are3 [range-date-times ends-at-present expected-ranges]
@@ -137,7 +138,6 @@
      true
      [{:BeginningDateTime (t/date-time 2000)
        :EndingDateTime nil}])))
-
 
 (deftest resolve-range-overlaps
   (testing "Resolve overlaps"
@@ -210,3 +210,16 @@
 
       "Nil temporal ranges"
       nil [])))
+
+(deftest granule-start-date-test
+  (let [dt1 (t/date-time 2001 10 15 4 3 27 1)
+        dt2 (t/date-time 2002 10 15 4 3 27 2)
+        dt3 (t/date-time 2003 10 15 4 3 27 3)
+        range1 {:beginning-date-time dt1
+                :ending-date-time dt2}]
+    (testing "granule start date"
+      (is (= dt3 (time/granule-start-date {:range-date-time range1 :single-date-time dt3})))
+      (is (= dt1 (time/granule-start-date {:range-date-time range1}))))
+    (testing "granule end date"
+      (is (= dt3 (time/granule-end-date {:range-date-time range1 :single-date-time dt3})))
+      (is (= dt2 (time/granule-end-date {:range-date-time range1}))))))

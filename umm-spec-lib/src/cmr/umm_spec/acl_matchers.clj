@@ -4,16 +4,14 @@
    [clj-time.core :as t]
    [clj-time.format :as f]
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.cache :as cache]
-   [cmr.common.log :refer [info debug warn error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
-   [cmr.common.util :as u :refer [update-in-each]]
+   [cmr.common.util :as u]
    [cmr.umm-spec.legacy :as legacy]
    [cmr.umm-spec.time :as umm-time]
-   [cmr.umm-spec.umm-spec-core :as umm-spec-core]
-   [cmr.umm.acl-matchers :as umm-lib-acl-matchers]))
+   [cmr.umm-spec.umm-spec-core :as umm-spec-core]))
 
 (def ^:private supported-collection-identifier-keys
   #{:entry-titles :access-value :temporal :concept-ids})
@@ -22,20 +20,15 @@
   "The cache key for a URS cache."
   :collection-field-constraints)
 
-(defmulti matches-access-value-filter?
- "Returns true if the umm item matches the access-value filter"
- (fn [concept-type umm access-value-filter]
-   concept-type))
-
-(defmethod matches-access-value-filter? :collection
-  [concept-type umm access-value-filter]
+(defn matches-concept-access-value-filter?
+  [access-value-filter access-value]
   (let [{:keys [min-value max-value include-undefined-value]} access-value-filter]
     (when (and (not min-value) (not max-value) (not include-undefined-value))
       (errors/internal-error!
-        "Encountered restriction flag filter where min and max were not set and include-undefined-value was false"))
+       "Encountered restriction flag filter where min and max were not set and include-undefined-value was false"))
     ;; We use lazy get here for performance reasons, we do not want to parse the entire concept, we just
     ;; want to pull out this specific value
-    (if-let [^double access-value (:Value (u/get-real-or-lazy umm :AccessConstraints))]
+    (if access-value
       ;; If there's no range specified then a umm item without a value is restricted
       (when (or min-value max-value)
         (and (or (nil? min-value)
@@ -45,9 +38,14 @@
       ;; umm items without a value will only be included if include-undefined-value is true
       include-undefined-value)))
 
-(defmethod matches-access-value-filter? :granule
- [concept-type umm access-value-filter]
- (umm-lib-acl-matchers/matches-access-value-filter? umm access-value-filter))
+(defn matches-access-value-filter?
+  "Returns true if the umm item matches the access-value filter"
+  [concept-type umm access-value-filter]
+  (case concept-type
+    :collection (let [^double access-value (:Value (u/get-real-or-lazy umm :AccessConstraints))]
+                  (matches-concept-access-value-filter? access-value-filter access-value))
+    :granule (let [^double access-value (u/get-real-or-lazy umm :access-value)]
+               (matches-concept-access-value-filter? access-value-filter access-value))))
 
 (defn- time-range1-contains-range2?
   "Returns true if the time range1 completely contains range 2. Start and ends are inclusive."
@@ -59,51 +57,37 @@
       ;; Is end2 in the range
       (or (= end1 end2) (= start1 end2) (t/within? interval1 end2)))))
 
-(defmulti matches-temporal-filter?
- "Returns true if the umm item matches the temporal filter"
- (fn [concept-type umm-temporal temporal-filter]
-   concept-type))
-
 (defn- parse-date
- [date]
- (if (string? date)
-  (f/parse (f/formatters :date-time-parser) date)
-  date))
+  [date]
+  (if (string? date)
+    (f/parse (f/formatters :date-time-parser) date)
+    date))
 
-(defmethod matches-temporal-filter? :collection
+(defn matches-concept-temporal-filter?
+  "Returns true if the umm item matches the temporal filter"
+ [umm-temporal temporal-filter umm-start umm-end]
+ (when (seq umm-temporal)
+   (let [{:keys [start-date stop-date mask]} temporal-filter
+         start-date (parse-date start-date)
+         stop-date (parse-date stop-date)]
+     (case mask
+       "intersect" (t/overlaps? start-date stop-date umm-start umm-end)
+       ;; Per ECHO10 API documentation disjoint is the negation of intersects
+       "disjoint" (not (t/overlaps? start-date stop-date umm-start umm-end))
+       "contains" (time-range1-contains-range2? start-date stop-date umm-start umm-end)))))
+
+(defn matches-temporal-filter?
+  "Returns true if the umm item matches the temporal filter"
   [concept-type umm-temporal temporal-filter]
   (when (seq umm-temporal)
-    (let [{:keys [start-date stop-date mask]} temporal-filter
-          coll-with-temporal {:TemporalExtents umm-temporal}
-          start-date (parse-date start-date)
-          stop-date (parse-date stop-date)
-          umm-start (parse-date (umm-time/collection-start-date coll-with-temporal))
-          umm-end (parse-date (or (umm-time/normalized-end-date coll-with-temporal) (tk/now)))]
-      (case mask
-        "intersect" (t/overlaps? start-date stop-date umm-start umm-end)
-        ;; Per ECHO10 API documentation disjoint is the negation of intersects
-        "disjoint" (not (t/overlaps? start-date stop-date umm-start umm-end))
-        "contains" (time-range1-contains-range2? start-date
-                                                 stop-date
-                                                 umm-start umm-end)))))
-
-(defmethod matches-temporal-filter? :granule
- [concept-type umm-temporal temporal-filter]
- (umm-lib-acl-matchers/matches-temporal-filter? concept-type umm-temporal temporal-filter))
-
-(defn get-acl-enforcement-collection-fields-fn
-  [concept]
-  {:AccessConstraints (when-not (= "" (:metadata concept))
-                        (umm-spec-core/parse-concept-access-value concept))
-   :TemporalExtents (when-not (= "" (:metadata concept))
-                        (umm-spec-core/parse-concept-temporal concept))})
-
-(defn get-acl-enforcement-collection-fields
-  [context concept]
-  (let [concept-id-key (keyword (:concept-id concept))]
-    (if-let [cache (cache/context->cache context collection-field-constraints-cache-key)]
-      (cache/get-value cache concept-id-key (fn [] (get-acl-enforcement-collection-fields-fn concept)))
-      (get-acl-enforcement-collection-fields-fn concept))))
+    (case concept-type
+      :collection (let [coll-with-temporal {:TemporalExtents umm-temporal}
+                        umm-start (parse-date (umm-time/collection-start-date coll-with-temporal))
+                        umm-end (parse-date (or (umm-time/normalized-end-date coll-with-temporal) (tk/now)))]
+                    (matches-concept-temporal-filter? umm-temporal temporal-filter umm-start umm-end))
+      :granule (let [umm-start (parse-date (umm-time/granule-start-date umm-temporal))
+                     umm-end (parse-date (or (umm-time/granule-end-date umm-temporal) (tk/now)))]
+                 (matches-concept-temporal-filter? umm-temporal temporal-filter umm-start umm-end)))))
 
 (defn coll-matches-collection-identifier?
   "Returns true if the collection matches the collection identifier.
@@ -142,7 +126,7 @@
                  :concept-ids ["C1200000219-TCHERRY"]}]
     (println (coll-matches-collection-identifier? coll coll-id)))
 
-  {u/lazy-assoc {} :AccessConstraints {:Value 5}})
+  (u/lazy-assoc {} :AccessConstraints {:Value 5}))
 
 (defn- validate-collection-identiier
   "Verifies the collection identifier isn't using any unsupported ACL features."
@@ -154,7 +138,7 @@
           (errors/internal-error!
             (format "The ACL with GUID %s had unsupported attributes set: %s"
                     (:id acl)
-                    (str/join ", " unsupported-keys)))))))
+                    (string/join ", " unsupported-keys)))))))
 
 (defn coll-applicable-acl?
   "Returns true if the acl is applicable to the collection."
@@ -168,37 +152,31 @@
          (or (nil? collection-identifier)
              (coll-matches-collection-identifier? coll collection-identifier)))))
 
-(defn- parse-temporal
- [umm-temporal]
- (for [temporal umm-temporal]
-   (-> temporal
-       ;; We use lazy assoc here for performance reasons, we do not want to parse the entire concept, we just
-       ;; want to pull out these specific values
-       (update-in-each [:RangeDateTimes] update :BeginningDateTime #(f/parse (f/formatters :date-time) %))
-       (update-in-each [:RangeDateTimes] update :EndingDateTime #(f/parse (f/formatters :date-time) %))
-       (update-in-each [:SingleDateTimes] #(f/parse (f/formatters :date-time) %)))))
-
 ;; Functions for preparing concepts to be passed to functions above.
 
-(defmulti add-acl-enforcement-fields-to-concept
-  "Adds the fields necessary to enforce ACLs to the concept. Temporal and access value are relatively
-  expensive to extract so they are lazily associated. The values won't be evaluated until needed."
-  (fn [context concept]
-    (:concept-type concept)))
+(defn get-acl-enforcement-collection-fields-fn
+  [concept]
+  {:AccessConstraints (when-not (= "" (:metadata concept))
+                        (umm-spec-core/parse-concept-access-value concept))
+   :TemporalExtents (when-not (= "" (:metadata concept))
+                      (umm-spec-core/parse-concept-temporal concept))})
 
-(defmethod add-acl-enforcement-fields-to-concept :default
+(defn get-acl-enforcement-collection-fields
   [context concept]
-  concept)
+  (let [concept-id-key (keyword (:concept-id concept))]
+    (if-let [cache (cache/context->cache context collection-field-constraints-cache-key)]
+      (cache/get-value cache concept-id-key (fn [] (get-acl-enforcement-collection-fields-fn concept)))
+      (get-acl-enforcement-collection-fields-fn concept))))
 
-(defmethod add-acl-enforcement-fields-to-concept :collection
+(defn add-acl-enforcement-fields-to-collection
   [context concept]
   (let [concept-map (get-acl-enforcement-collection-fields context concept)]
     (-> concept
         (merge concept-map)
         (assoc :EntryTitle (get-in concept [:extra-fields :entry-title])))))
 
-(defmethod add-acl-enforcement-fields-to-concept :granule
-  [context concept]
+(defn add-acl-enforcement-fields-to-granule
+  [concept]
   (let [deleted? (:deleted concept)]
     (as-> concept concept
           (if-not deleted?
@@ -208,6 +186,15 @@
             (u/lazy-assoc concept :temporal (legacy/parse-concept-temporal concept))
             concept)
           (assoc concept :collection-concept-id (get-in concept [:extra-fields :parent-collection-id])))))
+
+(defn add-acl-enforcement-fields-to-concept
+  "Adds the fields necessary to enforce ACLs to the concept. Temporal and access value are relatively
+  expensive to extract so they are lazily associated. The values won't be evaluated until needed."
+  [context concept]
+  (case (:concept-type concept)
+    :collection (add-acl-enforcement-fields-to-collection context concept)
+    :granule (add-acl-enforcement-fields-to-granule concept)
+    concept))
 
 (defn add-acl-enforcement-fields
   "Adds the fields necessary to enforce ACLs to the concepts."
