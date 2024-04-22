@@ -2,6 +2,7 @@
   (:require
    [cmr.common.util :as u]
    [cmr.spatial.serialize :as srl])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import
    (java.util Map)
    (org.apache.logging.log4j LogManager)
@@ -62,10 +63,12 @@
 
 (import 'cmr.elasticsearch.plugins.SpatialScript)
 
+#_{:clj-kondo/ignore [:non-arg-vec-return-type-hint]}
 (defn ^LeafStoredFieldsLookup -getFields
   [^SpatialScript this]
   (-> this .data :search-lookup .fields))
 
+#_{:clj-kondo/ignore [:non-arg-vec-return-type-hint]}
 (defn ^Map -getDoc
   [^SpatialScript this]
   (-> this .data :search-lookup .doc))
@@ -75,6 +78,7 @@
   [^SpatialScript this doc-id]
   (-> this .data :search-lookup (.setDocument doc-id)))
 
+#_{:clj-kondo/ignore [:unused-private-var]}
 (defn- -init [^Object intersects-fn ^Map params ^SearchLookup lookup ^DocReader doc-reader]
   [[params lookup doc-reader] {:intersects-fn intersects-fn
                                :search-lookup (.getLeafSearchLookup lookup (.getLeafReaderContext doc-reader))}])

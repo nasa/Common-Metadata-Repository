@@ -1,4 +1,5 @@
 (ns cmr.elasticsearch.plugins.spatial.plugin
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import
    (org.elasticsearch.script ScriptModule)
    (org.elasticsearch.plugins ScriptPlugin)
@@ -13,10 +14,10 @@
 
 (defn -getScriptEngine
   "Spatial script engine."
-  [this ^Settings settings ^Collection contexts]
+  [_this ^Settings _settings ^Collection _contexts]
   (new SpatialScriptEngine))
 
 (defn -getContexts
   "Return script contexts."
-  [this]
+  [_this]
   (Collections/emptyList))
