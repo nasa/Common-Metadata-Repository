@@ -3,11 +3,9 @@
   data is indexed and searchable."
   (:require
     [cheshire.core :as json]
-    [clj-time.format :as f]
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is testing use-fixtures]]
     [cmr.common-app.config :as common-config]
     [cmr.common-app.test.side-api :as side]
-    [cmr.common.mime-types :as mt]
     [cmr.common.util :refer [are2]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -25,18 +23,6 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
 (def context lkt/create-context)
-
-(defn- unparse-date-time
-  "Parse a date-time into a string that can be used in a parameter query"
-  [date-time]
-  (f/unparse (f/formatters :date-time-no-ms) date-time))
-
-(defn- date-time-range->range-param
-  "Convert a date-time range to a string suitable for a range parameter query"
-  [date-time-range]
-  (let [{begin-date-time :BeginningDateTime end-date-time :endingDateTime} date-time-range
-        [begin-str end-str] (map unparse-date-time [begin-date-time end-date-time])]
-    (format "%s,%s", begin-str end-str)))
 
 (defn assert-granules-found
   ([granules]
@@ -117,14 +103,6 @@
   [coll gran attribs]
   (ingest-gran coll (merge gran attribs)))
 
-(comment
-  ;; for REPL testing purposes
-  (def example-collection-record expected-conversion/example-collection-record)
-  (cmr.umm.umm-core/parse-concept {:metadata (cmr.umm-spec.umm-spec-core/generate-metadata
-                                              example-collection-record :echo10)
-                                   :concept-type :collection
-                                   :format "application/echo10+xml"}))
-
 (deftest spatial-keywords-migration-test
   (testing "Make sure that spatial keywords are converted to LocationKeywords from 1.1->1.2"
     (let [coll expected-conversion/example-collection-record
@@ -132,8 +110,7 @@
           input-str (umm-spec/generate-metadata context coll mime-type)
           input-version "1.1"
           output-version "1.2"
-          {:keys [status headers body]} (ingest/translate-between-umm-versions :collection input-version input-str output-version nil)
-          content-type (first (mt/extract-mime-types (:content-type headers)))
+          {:keys [body]} (ingest/translate-between-umm-versions :collection input-version input-str output-version nil)
           response (json/parse-string body)]
       (is (= [{"Category" "CONTINENT",
                "Type" "AFRICA",
@@ -143,6 +120,7 @@
              (get response "LocationKeywords")))
       (is (= ["ANGOLA" "Detailed Somewhereville"] (get response "SpatialKeywords"))))))
 
+(declare items params)
 (deftest mmt-ingest-round-trip
   (testing "ingest and search UMM JSON metadata"
     ;; test for each UMM JSON version
