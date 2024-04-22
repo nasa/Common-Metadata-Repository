@@ -4,6 +4,10 @@
    [clojure.data.codec.base64 :as b64]
    [cmr.common.config :as config :refer [defconfig]]))
 
+(declare elastic-host elastic-port set-elastic-port!
+         elastic-admin-token elastic-scroll-timeout elastic-query-timeout
+         elastic-unknown-host-retries elastic-unknown-host-retry-interval-ms
+         elastic-scroll-search-type)
 (defconfig elastic-host
   "Elastic host or VIP."
   {:default "localhost"})

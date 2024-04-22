@@ -9,7 +9,6 @@
    [cmr.access-control.data.group-schema :as group-schema]
    [cmr.access-control.services.acl-search-service :as acl-search]
    [cmr.access-control.services.acl-service :as acl-service]
-   [cmr.access-control.services.acl-util :as acl-util]
    [cmr.access-control.services.group-service :as group-service]
    [cmr.access-control.services.parameter-validation :as pv]
    [cmr.access-control.test.bootstrap :as bootstrap]
@@ -19,19 +18,14 @@
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search.parameter-validation :as cpv]
-   [cmr.common.api.errors :as api-errors]
    [cmr.common.cache :as cache]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.common.validations.core :as validation]
-   [compojure.core :refer :all]
-   [compojure.handler :as handler]
-   [ring.middleware.keyword-params :as keyword-params]
-   [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params])
+   [compojure.core :refer [DELETE GET OPTIONS POST PUT context routes]])
   (:import
+   #_{:clj-kondo/ignore [:unused-import]}
    (org.json JSONException)))
 
 (defn- api-response
@@ -153,7 +147,7 @@
 
 (defn- get-acl
   "Returns a Ring response with the metadata of the ACL identified by concept-id."
-  [ctx headers concept-id params]
+  [ctx concept-id params]
   (-> (acl-service/get-acl ctx concept-id params)
       (util/map-keys->snake_case)
       api-response))
@@ -198,7 +192,7 @@
       util/map-keys->kebab-case
       pv/validate-page-size-and-num)
   (let [start-time (System/currentTimeMillis)
-        {:keys [concept_id system_object target target_group_id page_size page_num]} params
+        {:keys [concept_id page_size page_num]} params
         client-id (:client-id context)
         ;; Default and max page_size is 2000
         page_size (if (and page_size
@@ -293,7 +287,7 @@
      :body (json/generate-string s3-list)}))
 
 ;;; Handler
-
+#_{:clj-kondo/ignore [:unused-binding]}
 (defn build-routes [system]
   (routes
     (context (:relative-root-url system) []
@@ -427,18 +421,18 @@
 
           ;; Retrieve an ACL
           (GET "/"
-               {ctx :request-context params :params headers :headers}
-               (get-acl ctx headers concept-id params))))
+               {ctx :request-context params :params}
+               (get-acl ctx concept-id params))))
 
       (context "/permissions" []
         (OPTIONS "/" [] (common-routes/options-response))
 
         (GET "/"
-             {ctx :request-context headers :headers params :params}
+             {ctx :request-context params :params}
              (get-permissions ctx params))
 
         (POST "/"
-              {ctx :request-context headers :headers params :params}
+              {ctx :request-context params :params}
               (get-permissions ctx params)))
 
       (context "/current-sids" []

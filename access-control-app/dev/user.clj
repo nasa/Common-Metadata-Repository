@@ -2,10 +2,8 @@
   "user is the default namespace of the REPL. This defines helper functions for starting and
   stopping the application from the REPL."
   (:require
-   [clojure.pprint :refer (pprint pp)]
    [clojure.repl :refer :all]
-   [clojure.test :refer (run-all-tests)]
-   [clojure.tools.namespace.repl :refer (refresh refresh-all)]
+   [clojure.tools.namespace.repl :refer (refresh)]
    [cmr.access-control.int-test.fixtures :as int-test-util]
    [cmr.access-control.system :as system]
    [cmr.elastic-utils.config :as elastic-config]
@@ -14,7 +12,7 @@
    [cmr.common.dev.util :as d]
    [cmr.common.jobs :as jobs]
    [cmr.common.lifecycle :as l]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer (info)]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.message-queue.test.queue-broker-side-api :as queue-broker-side-api]
    [cmr.message-queue.test.queue-broker-wrapper :as queue-broker-wrapper]

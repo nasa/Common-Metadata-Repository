@@ -21,13 +21,13 @@
   (some #{:include-members} (:result-features query)))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:access-group :json]
-  [concept-type query]
+  [_concept-type query]
   (if (include-members? query)
     fields-with-members
     base-fields))
 
 (defmethod elastic-results/elastic-result->query-result-item [:access-group :json]
-  [context query elastic-result]
+  [_context query elastic-result]
   (let [field-values (:_source elastic-result)
         item (dissoc field-values :members)]
     (if (include-members? query)
@@ -35,7 +35,7 @@
       item)))
 
 (defmethod qs/search-results->response [:access-group :json]
-  [context query results]
+  [_context _query results]
   (let [results (select-keys results [:hits :took :items])
         converted-items (util/map-keys->snake_case results)]
    (json/generate-string converted-items)))

@@ -51,11 +51,12 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Request functions
+(declare reset)
 (h/defresetter reset :metadata-db)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Provider functions
-
+(declare create-provider update-provider delete-provider)
 (h/defcreator create-provider :metadata-db providers-url {:use-system-token? true})
 (h/defupdater update-provider :metadata-db provider-url {:use-system-token? true})
 (h/defdestroyer delete-provider :metadata-db provider-url {:use-system-token? true})
@@ -82,7 +83,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Concept functions
-
+(declare save-concept)
 (h/defcreator save-concept :metadata-db concepts-url {:use-system-token? true})
 
 (defn get-concept-id
@@ -153,4 +154,5 @@
        finish-parse-concept)))
 
 ;; Defines health check function
+(declare get-metadata-db-health)
 (h/defhealther get-metadata-db-health :metadata-db {:timeout-secs 2})

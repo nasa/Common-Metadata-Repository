@@ -1,7 +1,6 @@
 (ns cmr.access-control.services.acl-service-messages
-  (:require [clojure.string :as str]
-            [clojure.edn :as edn]
-            [cmr.common.util :as util]))
+  (:require
+   [cmr.common.util :as util]))
 
 (defn acl-does-not-exist
   [concept-id]

@@ -1,7 +1,6 @@
 (ns cmr.access-control.services.parameter-validation
   (:require
-   [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.access-control.data.acl-schema :as acl-schema]
    [cmr.common-app.services.search.parameter-validation :as pv]
    [cmr.common.concepts :as cc]
@@ -35,7 +34,7 @@
   "Validates presence and combinations of system_object, concept_id, provider, and target parameters."
   [{:keys [system_object concept_id provider target target_group_id]}]
   (let [present? #(if (string? %)
-                    (not (str/blank? %))
+                    (not (string/blank? %))
                     (seq %))]
     (when-not (util/xor (present? system_object)
                         (present? concept_id)
@@ -71,7 +70,7 @@
 (defn- user_id-user_type-validation
   "Validates that only one of user_id or user_type are specified."
   [{:keys [user_id user_type]}]
-  (if-not (= 1 (count (remove str/blank? [user_id user_type])))
+  (when-not (= 1 (count (remove string/blank? [user_id user_type])))
     ["One of parameters [user_type] or [user_id] are required."]))
 
 (defn- provider-target-validation
@@ -121,9 +120,9 @@
           (when (and (> valid-upper-bound 0)
                      (< valid-upper-bound page-num-i))
             [(format "page_num must be a number less than or equal to %s" valid-upper-bound)])))
-      (catch java.lang.ArithmeticException e
+      (catch java.lang.ArithmeticException _e
         nil)
-      (catch NumberFormatException e
+      (catch NumberFormatException _e
         nil))))
 
 (def ^:private get-permissions-validations
@@ -161,5 +160,5 @@
   "Throws service errors if any invalid params or values are found."
   [params]
   (validate-params params :user_id :provider)
-  (when (str/blank? (:user_id params))
+  (when (string/blank? (:user_id params))
     (errors/throw-service-errors :bad-request ["Parameter [user_id] is required."])))

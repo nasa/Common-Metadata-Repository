@@ -4,7 +4,6 @@
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.access-control.data.access-control-index :as index]
-   [cmr.access-control.data.acl-json-results-handler :as result-handler]
    [cmr.access-control.data.acl-schema :as schema]
    [cmr.access-control.services.acl-authorization :as acl-auth]
    [cmr.access-control.services.acl-service-messages :as acl-msg]
@@ -22,7 +21,7 @@
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer [warn info debug]]
+   [cmr.common.log :refer [warn info]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.transmit.tokens :as tokens]
@@ -31,18 +30,11 @@
    [cmr.transmit.urs :as urs]
    [cmr.umm-spec.acl-matchers :as acl-matchers]))
 
-(defn- context->user-id
-  "Returns user id of the token in the context. Throws an error if no token is provided"
-  [context]
-  (if-let [token (:token context)]
-    (tokens/get-user-id context (:token context))
-    (errors/throw-service-error :unauthorized msg/token-required)))
-
 (defn- fetch-acl-concept
   "Fetches the latest version of ACL concept by concept id. Handles unknown concept ids by
   throwing a service error."
   [context concept-id]
-  (let [{:keys [concept-type provider-id]} (concepts/parse-concept-id concept-id)]
+  (let [{:keys [concept-type]} (concepts/parse-concept-id concept-id)]
     (when (not= :acl concept-type)
       (errors/throw-service-error :bad-request (acl-msg/bad-acl-concept-id concept-id))))
 
@@ -56,7 +48,7 @@
   "Save a new ACL to Metadata DB. Returns map with concept and revision id of created acl."
   [context acl]
   (common-enabled/validate-write-enabled context "access control")
-  (v/validate-acl-save! context acl :create)
+  (v/validate-acl-save! context acl)
   (acl-auth/authorize-acl-action context :create acl)
   (let [acl (acl-util/sync-entry-titles-concept-ids context acl)]
     (acl-util/create-acl context acl)))
@@ -93,7 +85,7 @@
    (update-acl context concept-id nil acl))
   ([context concept-id revision-id acl]
    (common-enabled/validate-write-enabled context "access control")
-   (v/validate-acl-save! context acl :update)
+   (v/validate-acl-save! context acl)
    (acl-auth/authorize-acl-action context :update acl)
    ;; This fetch acl call also validates if the ACL with the concept id does not exist or is deleted
    (let [existing-concept (fetch-acl-concept context concept-id)
@@ -245,6 +237,7 @@
   [acl]
   (-> acl :provider-identity :target (= schema/ingest-management-acl-target)))
 
+(declare concept-permissions-granted-by-acls concept sids acls)
 (defn-timed concept-permissions-granted-by-acls
   "Returns the set of permission keywords (:read, :order, and :update) granted on concept
    to the seq of group guids by seq of acls."
@@ -278,6 +271,7 @@
                  (some #{:access-value :temporal} value))
           (get (first acls) (:provider-id concept)))))
 
+(declare add-acl-enforcement-fields context)
 (defn-timed add-acl-enforcement-fields
   "Adds all fields necessary for comparing concept map against ACLs."
   [context concept acls]
@@ -293,6 +287,7 @@
           (dissoc :metadata))
       (dissoc concept :metadata))))
 
+(declare add-parent-collection-to-concept parent-concepts)
 (defn-timed add-parent-collection-to-concept
   [concept parent-concepts]
   (let [parent-id (get-in concept [:extra-fields :parent-collection-id])
@@ -319,6 +314,7 @@
                                 (keys provider-acls))]
     [catalog-item-acls ingest-management-acls]))
 
+(declare get-catalog-item-permissions username-or-type concept-ids)
 (defn-timed get-catalog-item-permissions
   "Returns a map of concept ids to seqs of permissions granted on that concept for the given username."
   [context username-or-type concept-ids]
@@ -469,7 +465,7 @@
          parse-single-string-multi-valued-bucket-lists)))
 
 (defmethod common-esi/concept-type->index-info :collection
-  [context _ query]
+  [_context _ query]
   ;; This function mirrors the multimethod definition in search.
   ;; Search is not a dependency of access-control and this must be
   ;; defined for collection search to work

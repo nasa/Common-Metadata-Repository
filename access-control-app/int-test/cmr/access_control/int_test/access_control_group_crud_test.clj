@@ -1,7 +1,7 @@
 (ns cmr.access-control.int-test.access-control-group-crud-test
   (:require
    [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as test-util]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -183,7 +183,7 @@
 ;; mock-echo use cmr for acls instead of echo-rest to more accurately depict how operations works with cmr-acl-read-enabled.
 (deftest create-group-with-managing-group-id-test
   (let [token-user1 (echo-util/login (test-util/conn-context) "user1")
-        token-user2 (echo-util/login (test-util/conn-context) "user2")
+        _token-user2 (echo-util/login (test-util/conn-context) "user2")
         token-user3 (echo-util/login (test-util/conn-context) "user3")
         managing-group (test-util/ingest-group token-user1 {:name "managing group"} ["user1"])
         managing-group-id (:concept_id managing-group)
@@ -284,7 +284,7 @@
   (let [group1 (test-util/make-group {:name "other group"})
         group2 (test-util/make-group {:name "Some other group"})
         token (echo-util/login (test-util/conn-context) "user1")
-        {:keys [concept_id revision_id]} (test-util/create-group token group1)
+        {:keys [concept_id]} (test-util/create-group token group1)
         group2-concept-id (:concept_id (test-util/create-group token group2))]
     (testing "Delete without token"
       (is (= {:status 401
@@ -386,30 +386,28 @@
 (deftest update-group-test
   (let [group (test-util/make-group {:members ["user1" "user2"]})
         token (echo-util/login (test-util/conn-context) "user1")
-        {:keys [concept_id]} (test-util/create-group token group)]
-
-    ;; Do not specify members in the update
-    (let [updated-group {:name "Updated Group Name"
-                         :description "Updated group description"}
-          token2 (echo-util/login (test-util/conn-context) "user2")
-          response (test-util/update-group token2 concept_id updated-group)]
-      (is (= {:status 200 :concept_id concept_id :revision_id 2}
-             response))
-      ;; Members should be intact
-      (test-util/assert-group-saved (assoc updated-group :members ["user1" "user2"]) "user2" concept_id 2))))
+        {:keys [concept_id]} (test-util/create-group token group)
+        ;; Do not specify members in the update
+        updated-group {:name "Updated Group Name"
+                       :description "Updated group description"}
+        token2 (echo-util/login (test-util/conn-context) "user2")
+        response (test-util/update-group token2 concept_id updated-group)]
+    (is (= {:status 200 :concept_id concept_id :revision_id 2}
+           response))
+          ;; Members should be intact
+    (test-util/assert-group-saved (assoc updated-group :members ["user1" "user2"]) "user2" concept_id 2)))
 
 (deftest update-group-with-members-test
   (let [group (test-util/make-group {:members ["user1" "user2"]})
         token (echo-util/login (test-util/conn-context) "user1")
-        {:keys [concept_id revision_id]} (test-util/create-group token group)]
-
-    ;; Change members as part of the update
-    (let [updated-group {:name "Administrators2" :description "A very good group updated" :members ["user1"]}
-          token2 (echo-util/login (test-util/conn-context) "user2")
-          response (test-util/update-group token2 concept_id updated-group)]
-      (is (= {:status 200 :concept_id concept_id :revision_id 2}
-             response))
-      (test-util/assert-group-saved updated-group "user2" concept_id 2))))
+        {:keys [concept_id]} (test-util/create-group token group)
+        ;; Change members as part of the update
+        updated-group {:name "Administrators2" :description "A very good group updated" :members ["user1"]}
+        token2 (echo-util/login (test-util/conn-context) "user2")
+        response (test-util/update-group token2 concept_id updated-group)]
+    (is (= {:status 200 :concept_id concept_id :revision_id 2}
+           response))
+    (test-util/assert-group-saved updated-group "user2" concept_id 2)))
 
 (deftest update-group-failure-test
   (let [group (test-util/make-group)
@@ -418,7 +416,7 @@
 
         token (echo-util/login (test-util/conn-context) "user1")
 
-        {:keys [concept_id revision_id]} (test-util/create-group token group)
+        {:keys [concept_id]} (test-util/create-group token group)
         {concept_id2 :concept_id} (test-util/create-group token group2)
         {concept_id3 :concept_id} (test-util/create-group token group3)]
 

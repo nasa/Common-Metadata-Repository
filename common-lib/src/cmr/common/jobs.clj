@@ -120,6 +120,7 @@
     (System/setProperty "org.quartz.dataSource.myDS.user" user)
     (System/setProperty "org.quartz.dataSource.myDS.password" password)))
 
+(declare default-job-start-delay set-default-job-start-delay!)
 (defconfig default-job-start-delay
   "The start delay of the job in seconds."
   {:default 5

@@ -1,13 +1,11 @@
 (ns cmr.access-control.services.acl-validation
   (:require
    [clj-time.core :as t]
+   [clojure.string :as string]
    [cmr.access-control.config :as access-control-config]
    [cmr.access-control.data.acls :as acls]
    [cmr.access-control.services.group-service :as group-service]
    [cmr.access-control.services.messages :as msg]
-   [cmr.acl.core :as acl]
-   [cmr.common.concepts :as concepts]
-   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.validations.core :as v]
    [cmr.transmit.metadata-db :as mdb1]
@@ -84,7 +82,7 @@
     (println "| Target | Allowed Permissions |")
     (println "| ------ | ------------------- |")
     (doseq [[target permissions] (sort-by key targets-permissions)]
-      (println "|" target "|" (clojure.string/join ", " permissions) "|"))
+      (println "|" target "|" (string/join ", " permissions) "|"))
     (println)))
 
 (defn- get-identity-type
@@ -101,11 +99,6 @@
   (let [regex #"^AG\d+-\S+$"]
     (when-not (or (access-control-config/enable-edl-groups) (re-matches regex group-id))
       {key-path [(format "[%s] is not a valid group concept-id" group-id)]})))
-
-(defn- make-group-permissions-validation
-  "Returns validation for the group_permissions portion of the ACL."
-  [context acl]
-  {:group-id (v/when-present group-id-validation)})
 
 (defn- make-collection-entry-titles-validation
   "Returns a validation for the entry_titles part of a collection identifier, closed over the context and ACL to be validated."
@@ -190,7 +183,7 @@
    closed over the given context and ACL to be validated.
    Takes action flag (:create or :update) to do different valiations
    based on whether creating or updating acl concept"
-  [context acl action]
+  [context acl]
   [catalog-item-identity-collection-or-granule-validation
    catalog-item-identity-granule-applicable-validation
    {:collection-identifier (v/when-present (make-collection-identifier-validation context acl))
@@ -214,21 +207,20 @@
         ungrantable-permissions (remove (set grantable-permissions) permissions-requested)]
     (when (and (seq ungrantable-permissions) (seq (set grantable-permissions)))
       {key-path [(format "[%s] ACL cannot have [%s] permission for target [%s], only [%s] are grantable"
-                         (name identity-type) (clojure.string/join ", " ungrantable-permissions)
-                         target (clojure.string/join ", " grantable-permissions))]})))
+                         (name identity-type) (string/join ", " ungrantable-permissions)
+                         target (string/join ", " grantable-permissions))]})))
 
 (defn- make-acl-validations
-  "Returns a sequence of validations closed over the given context for validating ACL records.
-   Takes action flag (:create or :update) to do different valiations based on whether creating or updating acl concept"
-  [context acl action]
+  "Returns a sequence of validations closed over the given context for validating ACL records."
+  [context acl]
   [#(validate-provider-exists context %1 %2)
-   {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl action))
+   {:catalog-item-identity (v/when-present (make-catalog-item-identity-validations context acl))
     :single-instance-identity (v/when-present (make-single-instance-identity-validations context))
-    :group-permissions (v/every (make-group-permissions-validation context acl))}
+    :group-permissions (v/every {:group-id (v/when-present group-id-validation)})}
    validate-grantable-permissions])
 
 (defn validate-acl-save!
   "Throws service errors if ACL is invalid. Takes action flag (:create or :update) to do different valiations
    based on whether creating or updating acl concept"
-  [context acl action]
-  (v/validate! (make-acl-validations context acl action) acl))
+  [context acl]
+  (v/validate! (make-acl-validations context acl) acl))

@@ -11,7 +11,7 @@
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-execution :as qe]
    [cmr.common-app.services.search.query-model :as qm]
-   [cmr.common.log :refer [info debug warn error]]
+   [cmr.common.log :refer [info warn]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :refer [defn-timed] :as util]
@@ -82,6 +82,7 @@
     (info (acl-log-message context (merge acl {:concept-id (:concept-id resp)}) :create))
     resp))
 
+(declare get-acls-by-condition context condition)
 (defn-timed get-acls-by-condition
   "Returns the ACLs found by executing given condition against ACL index."
   [context condition]
