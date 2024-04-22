@@ -6,7 +6,9 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [clojure.test :refer :all]
+   [cmr.acl.core :as acl]
    [cmr.access-control.test.util :as test-util]
+   [cmr.common-app.api.routes :as routes]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.date-time-parser :as date-time-parser]
@@ -488,6 +490,7 @@
                                                                                     :ShortName "S4"}))
         token (echo-util/login-guest (system/context))]
 
+
     ;; wait for the collections to be indexed so that ACLs will be valid
     (index/wait-until-indexed)
     (test-util/create-acl (transmit-config/echo-system-token)
@@ -551,7 +554,20 @@
 
     ;; Verify that the ACLs are found in Access Control Service search.
     (testing "Concept id based catalog item acls"
-      (let [results (:items (test-util/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV2"}))]
+      (let [results (:items (test-util/search-for-acls (transmit-config/echo-system-token) {:identity_type "catalog_item" :provider "PROV2"}))
+
+            ;; The following variables are used to test search-after header functionality for acl search in CMR-9840
+            results-with-headers (test-util/search-for-acls-with-returned-headers (transmit-config/echo-system-token)
+                                                                                  {:identity_type "catalog_item" :provider "PROV2"
+                                                                                   :page-size 1})
+            search-after1 (get-in results-with-headers [:headers routes/SEARCH_AFTER_HEADER])
+            results-with-headers (test-util/search-for-acls-with-returned-headers (transmit-config/echo-system-token)
+                                                                                  {:identity_type "catalog_item" :provider "PROV2"
+                                                                                   :page-size 1}
+                                                                                  {:headers {routes/SEARCH_AFTER_HEADER search-after1}})
+            search-after2 (get-in results-with-headers [:headers routes/SEARCH_AFTER_HEADER])]
+        (is (not= search-after1 search-after2))
+
         (is (= [1 1] (map :revision_id results)))
         (is (= ["coll3 ACL" "coll3/coll4 ACL"] (map :name results))))
       ;; Delete the collection via ingest.

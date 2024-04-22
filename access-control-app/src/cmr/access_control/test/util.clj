@@ -434,6 +434,14 @@
    (let [options (merge {:raw? true :token token} options)]
      (process-response (ac/search-for-acls (conn-context) params options)))))
 
+(defn search-for-acls-with-returned-headers
+  "Searches for acls using the given parameters"
+  ([token params]
+   (search-for-acls-with-returned-headers token params nil))
+  ([token params options]
+   (let [options (merge {:raw? true :token token} options)]
+     (ac/search-for-acls-with-returned-headers (conn-context) params options))))
+
 (defn- enable-access-control-writes-url
   "URL to enable writes in access control service."
   []

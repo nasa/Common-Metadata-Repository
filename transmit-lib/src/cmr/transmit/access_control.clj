@@ -193,6 +193,7 @@
 (h/defsearcher search-for-acls-get :access-control acl-root-url)
 
 (h/defsearcher search-for-acls* :access-control acl-search-post-url)
+(h/defsearcher-with-returned-headers search-for-acls-with-returned-headers* :access-control acl-search-post-url)
 
 (defn search-for-acls
   "Search for ACLs."
@@ -200,6 +201,13 @@
    (search-for-acls context params nil))
   ([context params options]
    (search-for-acls* context params (merge options {:method :post}))))
+
+(defn search-for-acls-with-returned-headers
+  "Search for ACLs."
+  ([context params]
+   (search-for-acls-with-returned-headers context params nil))
+  ([context params options]
+   (search-for-acls-with-returned-headers* context params (merge options {:method :post}))))
 
 (h/defdestroyer delete-acl :access-control acl-concept-id-url)
 (h/defgetter get-acl :access-control acl-concept-id-url)
