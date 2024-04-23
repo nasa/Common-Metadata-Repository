@@ -3,10 +3,10 @@
  (:require
   [clojure.string :as string]
   [cmr.common.util :as util]
-  [cmr.common.xml.parse :refer :all]
-  [cmr.common.xml.simple-xpath :refer [select text]]
-  [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]
-  [cmr.umm-spec.util :as su :refer [char-string]]))
+  [cmr.common.xml.parse :refer [value-of]]
+  [cmr.common.xml.simple-xpath :refer [select]]
+  [cmr.umm-spec.iso19115-2-util :as iso-util]
+  [cmr.umm-spec.util :as su]))
 
 (defn parse-projects
   "Returns the projects parsed from the given xml document."

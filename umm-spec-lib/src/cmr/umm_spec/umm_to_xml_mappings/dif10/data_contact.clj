@@ -1,7 +1,9 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact
   "Functions for generating DIF10 XML elements from UMM data contacts."
-  (:require [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.util :as u]))
+  #_{:clj-kondo/ignore [:refer-all]}
+  (:require
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.util :as u]))
 
 (def umm-personnel-contact-role->dif10-role
    {"Data Center Contact" "TECHNICAL CONTACT"

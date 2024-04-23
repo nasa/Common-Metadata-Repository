@@ -55,7 +55,7 @@
  (let [granule-spatial-representation (:GranuleSpatialRepresentation spatial-extent)
        geometry (util/remove-nil-keys
                  (dissoc (get-in spatial-extent [:HorizontalSpatialDomain :Geometry]) :CoordinateSystem))]
-  (if (and (not (empty? geometry))
+  (if (and (seq geometry)
            (nil? granule-spatial-representation))
     {field-path ["Granule Spatial Representation must be supplied."]}
     (validate-enum field-path granule-spatial-representation valid-granule-spatial-representations))))

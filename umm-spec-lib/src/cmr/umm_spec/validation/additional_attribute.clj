@@ -1,10 +1,8 @@
 (ns cmr.umm-spec.validation.additional-attribute
   "Defines validations for UMM collection product specific attribute."
-  (:require [clj-time.core :as t]
-            [cmr.common.validations.core :as v]
+  (:require [cmr.common.validations.core :as v]
             [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]
             [cmr.common.util :as util]
-            [cmr.umm-spec.models.umm-common-models :as common]
             [cmr.umm-spec.additional-attribute :as aa]))
 
 (def no-range-data-types

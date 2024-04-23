@@ -2,9 +2,8 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as str]
-   [clojure.java.io :as io]
-   [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.common.xml.parse :refer [value-of]]
+   [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.common.util :as util]
    [cmr.umm-spec.related-url :as related-url]
    [cmr.umm-spec.util :as su]

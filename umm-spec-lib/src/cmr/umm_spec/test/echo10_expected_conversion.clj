@@ -1,22 +1,17 @@
 (ns cmr.umm-spec.test.echo10-expected-conversion
  "ECHO 10 specific expected conversion functionality"
  (:require
-   [clj-time.core :as t]
-   [clj-time.format :as f]
-   [clojure.string :as string]
-   [cmr.common.util :as util :refer [update-in-each]]
-   [cmr.umm-spec.date-util :as date]
-   [cmr.umm-spec.location-keywords :as lk]
-   [cmr.umm-spec.models.umm-collection-models :as umm-c]
-   [cmr.umm-spec.models.umm-common-models :as cmn]
-   [cmr.umm-spec.related-url :as ru-gen]
-   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
-   [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-   [cmr.umm-spec.test.location-keywords-helper :as lkt]
-   [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
-   [cmr.umm-spec.url :as url]
-   [cmr.umm-spec.util :as su]
-   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
+  [cmr.common.util :as util :refer [update-in-each]]
+  [cmr.umm-spec.date-util :as date]
+  [cmr.umm-spec.models.umm-collection-models :as umm-c]
+  [cmr.umm-spec.models.umm-common-models :as cmn]
+  [cmr.umm-spec.related-url :as ru-gen]
+  [cmr.umm-spec.spatial-conversion :as spatial-conversion]
+  [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
+  [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
+  [cmr.umm-spec.url :as url]
+  [cmr.umm-spec.util :as su]
+  [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
 
 (defn- fixup-echo10-data-dates
   [data-dates]
@@ -30,7 +25,7 @@
   (when fees
     (try
       (format "%9.2f" (Double. fees))
-      (catch NumberFormatException e))))
+      (catch NumberFormatException _e))))
 
 (defn find-first-available-distribution-price
   "Find the first FileDistributionInformation object that contains the sub element of Fees."

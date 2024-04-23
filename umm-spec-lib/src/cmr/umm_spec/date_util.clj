@@ -6,7 +6,7 @@
    [clojure.string :as str]
    [cmr.common.date-time-parser :as p]
    [cmr.common.time-keeper :as time-keeper]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
    [cmr.umm-spec.models.umm-common-models :as cmn]))
 
 (def default-date-value "1970-01-01T00:00:00")
@@ -93,7 +93,7 @@
       (time-core/equal? date
                      date)
       (catch
-        Exception e nil))))
+        Exception _e nil))))
 
 (defn is-in-past?
   "Parse date and return true if date is in the past, false if not or date is nil"

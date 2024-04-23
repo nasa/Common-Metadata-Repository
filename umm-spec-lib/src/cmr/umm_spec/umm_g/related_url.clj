@@ -3,6 +3,7 @@
   RelatedURLs and generating UMM-G JSON related-urls from umm-lib granule model RelatedURLs."
   (:require
    [cmr.umm.umm-collection :as umm-c])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import
    (cmr.umm.umm_collection RelatedURL)))
 

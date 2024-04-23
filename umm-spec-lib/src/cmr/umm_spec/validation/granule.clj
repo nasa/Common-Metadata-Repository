@@ -4,14 +4,12 @@
             [clojure.set :as set]
             [clojure.string :as str]
             [cmr.common.validations.core :as v]
-            [cmr.common.util :as util]
             [cmr.umm.umm-spatial :as umm-s]
             [cmr.umm.start-end-date :as sed]
             [cmr.umm-spec.time :as umm-spec-time]
             [cmr.spatial.validation :as sv]
             [cmr.umm.validation.validation-utils :as vu]
             [cmr.umm.validation.validation-helper :as h]
-            [cmr.common.services.errors :as errors]
             [camel-snake-kebab.core :as csk]
             [cmr.umm.collection.entry-id :as eid]
             [cmr.umm-spec.validation.additional-attribute :as aav]))
@@ -39,8 +37,8 @@
           (str/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
 
 (defn- spatial-field-is-required
-  [spatial-coverage-path spatial-coverage-ref granule-spatial-representation]
   "Create a function which takes in :orbit or :geometries as input and returns an error if the field does not exist"
+  [spatial-coverage-path spatial-coverage-ref granule-spatial-representation]
   (fn [field]
     (when-not (field spatial-coverage-ref)
       {(conj spatial-coverage-path field)

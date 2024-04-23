@@ -1,27 +1,23 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif9
   "Defines mappings from DIF9 XML into UMM records"
   (:require
-    [camel-snake-kebab.core :as csk]
-    [clj-time.format :as f]
-    [clojure.string :as string]
-    [cmr.common.util :as util]
-    [cmr.common.xml.parse :refer :all]
-    [cmr.common.xml.simple-xpath :refer [select]]
-    [cmr.umm-spec.date-util :as date]
-    [cmr.umm-spec.dif-util :as dif-util]
-    [cmr.umm-spec.json-schema :as js]
-    [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
-    [cmr.umm-spec.models.umm-common-models :as cmn]
-    [cmr.umm-spec.url :as url]
-    [cmr.umm-spec.util :as su]
-    [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]
-    [cmr.umm-spec.xml-to-umm-mappings.dif9.data-center :as center]
-    [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
-    [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
-    [cmr.umm-spec.xml-to-umm-mappings.dif9.spatial-extent :as spatial]
-    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
-    [cmr.umm-spec.versioning :as umm-spec-versioning]
-    [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
+   [camel-snake-kebab.core :as csk]
+   [cmr.common.xml.parse :refer [date-at-str value-of values-at]]
+   [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.date-util :as date]
+   [cmr.umm-spec.dif-util :as dif-util]
+   [cmr.umm-spec.json-schema :as js]
+   [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
+   [cmr.umm-spec.url :as url]
+   [cmr.umm-spec.util :as su]
+   [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]
+   [cmr.umm-spec.xml-to-umm-mappings.dif9.data-center :as center]
+   [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]
+   [cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal :as pt]
+   [cmr.umm-spec.xml-to-umm-mappings.dif9.spatial-extent :as spatial]
+   [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
+   [cmr.umm-spec.versioning :as umm-spec-versioning]
+   [cmr.umm.dif.date-util :refer [parse-dif-end-date]]))
 
 (def coll-progress-mapping
   "Mapping from values supported for DIF9 Data_Set_Progress to UMM CollectionProgress."

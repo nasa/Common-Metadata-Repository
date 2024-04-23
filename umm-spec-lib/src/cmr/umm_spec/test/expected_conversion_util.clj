@@ -187,7 +187,6 @@
   "Format all of the URLs in Data Centers, including the data center contact info,
   the contact groups contact info, and the contact persons contact info"
   [data-centers]
-  (def data-centers data-centers)
   (seq (for [dc (expected-contact-information-urls data-centers "DataCenterURL")]
          (-> dc
              (update :ContactPersons expected-contact-information-urls "DataContactURL")

@@ -2,7 +2,7 @@
   "Functions for parsing UMM metadata association records out of ISO 19115-2 XML elemuments."
   (:require
    [clojure.string :as string]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.common.util :as util]))

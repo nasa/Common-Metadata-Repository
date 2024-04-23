@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.characteristics-and-operationalmodes
   "Functions for parsing UMM characteristics and operationalmodes records out of ISO SMAP XML documents."
   (:require
-   [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.common.xml.parse :refer [value-of]]
+   [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
 

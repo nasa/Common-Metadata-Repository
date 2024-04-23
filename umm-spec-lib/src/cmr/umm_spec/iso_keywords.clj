@@ -6,15 +6,10 @@
   get this changed, but in the mean time, we will have to parse the keyword string to determine the
   type of the keyword."
   (:require
-   [clojure.data.xml :as x]
-   [clojure.set :as set]
-   [clojure.string :as str]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.xml :as cx]
-   [cmr.common.xml.parse :refer :all]
+   [clojure.string :as string]
+   [cmr.common.xml.parse :refer [values-at]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.iso19115-2-util :as iso]
-   [cmr.umm-spec.models.umm-common-models :as c]
    [cmr.umm-spec.util :as su])
   (:import
    (clojure.lang PersistentHashSet)))
@@ -62,7 +57,7 @@
 (defn parse-keyword-str
   "Returns a seq of individual components of an ISO-19115-2 or SMAP keyword string."
   [iso-keyword]
-  (for [s (str/split iso-keyword iso/keyword-separator-split)]
+  (for [s (string/split iso-keyword iso/keyword-separator-split)]
     (if (empty? s)
       nil
       s)))
@@ -147,7 +142,7 @@
     (for [lk location-keywords
           :let [[category type subregion1 subregion2 subregion3
                  detailed-location] (map #(if (= nil-location-keyword-field %) nil %)
-                                         (str/split lk iso/keyword-separator-split))]]
+                                         (string/split lk iso/keyword-separator-split))]]
       {:Category category
        :Type type
        :Subregion1 subregion1
@@ -168,7 +163,7 @@
                                                                      science-keyword-title)))]
      (for [sk science-keywords
            :let [[category topic term variable-level-1 variable-level-2 variable-level-3
-                  detailed-variable] (->> (str/split sk iso/keyword-separator-split)
+                  detailed-variable] (->> (string/split sk iso/keyword-separator-split)
                                           (map #(when-not (= nil-science-keyword-field %)  %)))]]
  
          {:Category category
@@ -212,7 +207,7 @@
          detailed-variable :DetailedVariable} science-keyword]
     (->> [category topic term variable-level-1 variable-level-2 variable-level-3 detailed-variable]
          (map #(or % nil-science-keyword-field))
-         (str/join iso/keyword-separator-join))))
+         (string/join iso/keyword-separator-join))))
 
 (defn location-keyword->iso-keyword-string
   "Returns an ISO location keyword string from the given location keyword."
@@ -225,7 +220,7 @@
          detailed-location :DetailedLocation} location-keyword]
     (->> [category type subregion1 subregion2 subregion3 detailed-location]
          (map #(or % nil-location-keyword-field))
-         (str/join iso/keyword-separator-join))))
+         (string/join iso/keyword-separator-join))))
 
 (defn- generate-descriptive-keywords
   "Returns the content generator instructions for the given descriptive keywords."

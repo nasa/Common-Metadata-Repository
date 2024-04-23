@@ -13,7 +13,7 @@
       (keyword (str "Minimum_Altitude"))
       (when (.contains elevation-type "Max")
         (keyword (str "Maximum_Altitude"))))
-    (if (.contains elevation-type "Depth")
+    (when (.contains elevation-type "Depth")
       (if (.contains elevation-type "Min")
         (keyword (str "Minimum_Depth"))
         (when (.contains elevation-type "Max")

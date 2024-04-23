@@ -3,7 +3,6 @@
   (:require
     [camel-snake-kebab.core :as csk]
     [clj-time.format :as f]
-    [clojure.set :as set]
     [clojure.string :as string]
     [cmr.common.util :as util]
     [cmr.common.xml.gen :as gen]
@@ -12,7 +11,7 @@
     [cmr.umm-spec.umm-to-xml-mappings.dif10.data-center :as center]
     [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]
     [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
-    [cmr.umm-spec.util :as u :refer [with-default]]))
+    [cmr.umm-spec.util :as u]))
 
 (def coll-progress-mapping
   "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."

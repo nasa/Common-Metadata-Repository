@@ -101,11 +101,11 @@
   (= (select-keys value (keys find-value))
      find-value))
 
-(defmulti apply-umm-list-update
-  "Apply the umm update by type. Assumes that the update-field is a list in
-  the umm collection. Update-field should be a vector to handle nested fields."
-  (fn [update-type umm update-field update-value find-value]
-    update-type))
+;(defmulti apply-umm-list-update
+;  "Apply the umm update by type. Assumes that the update-field is a list in
+;  the umm collection. Update-field should be a vector to handle nested fields."
+;  (fn [update-type umm update-field update-value find-value]
+;    update-type))
 
 (defn- remove-duplicates
   "Remove duplicates in update-field, whoes value is [map(s)] for bulk updates."
@@ -124,24 +124,24 @@
     (some (partial value-matches? find-value) snuf-values)
     (some (partial value-matches? find-value) (get-in umm update-field))))
 
-(defmethod apply-umm-list-update :add-to-existing
-  [update-type umm update-field update-value find-value]
+(defn- apply-umm-list-update-add-to-existing
+  [umm update-field update-value]
   (as-> umm umm
         (if (sequential? update-value)
           (update-in umm update-field #(concat % update-value))
           (update-in umm update-field #(conj % update-value)))
         (remove-duplicates umm update-field)))
 
-(defmethod apply-umm-list-update :clear-all-and-replace
-  [update-type umm update-field update-value find-value]
+(defn- apply-umm-list-update-clear-all-and-replace
+  [umm update-field update-value]
   (as-> umm umm
         (if (sequential? update-value)
           (assoc-in umm update-field update-value)
           (assoc-in umm update-field [update-value]))
         (remove-duplicates umm update-field)))
 
-(defmethod apply-umm-list-update :find-and-remove
-  [update-type umm update-field update-value find-value]
+(defn- apply-umm-list-update-find-and-remove
+  [umm update-field find-value]
   (let [umm-updated (update-in umm update-field #(remove (fn [x]
                                                            (value-matches? find-value x))
                                                    %))]
@@ -149,8 +149,8 @@
       umm-updated
       (update-in umm-updated update-field seq))))
 
-(defmethod apply-umm-list-update :find-and-replace
-  [update-type umm update-field update-value find-value]
+(defn- apply-umm-list-update-find-and-replace
+  [umm update-field update-value find-value]
   (let [update-value (if (sequential? update-value)
                        (map #(util/remove-nil-keys %) update-value)
                        (util/remove-nil-keys update-value))
@@ -168,8 +168,8 @@
        umm
        (remove-duplicates updated-umm update-field))))
 
-(defmethod apply-umm-list-update :find-and-update
-  [update-type umm update-field update-value find-value]
+(defn- apply-umm-list-update-find-and-update
+  [umm update-field update-value find-value]
   ;; For each entry in update-field, if we find it using the find params,
   ;; update only the fields supplied in update-value with nils removed
   (if (get-in umm update-field)
@@ -180,14 +180,14 @@
                                                 %)))
     umm))
 
-(defmethod apply-umm-list-update :find-and-update-home-page-url
+(defn- apply-umm-list-update-home-page-url
   ;; This is a special case that applies to DataCenter ContactInformation update only.
   ;; All other updates outside of ContactInformation remains the same as find-and-update.
   ;; We only want to update the home page url inside the :ContactInformation :RelatedUrls.
   ;; We don't want to replace the :ContactInformation with the new one in update-value.
   ;; Any information other than the home page url value under :ContactInformation
   ;; in update-value is not used.
-  [update-type umm update-field update-value find-value]
+  [umm update-field update-value find-value]
   ;; For each entry in update-field, if we find it using the find params,
   ;; update only the fields supplied in update-value with nils removed, except for the
   ;; ContactInformation part of the update-value.
@@ -197,6 +197,17 @@
                                                   x))
                                               %))))
 
+(defn apply-umm-list-update
+  "Apply the umm update by type. Assumes that the update-field is a list in
+  the umm collection. Update-field should be a vector to handle nested fields."
+  [update-type umm update-field update-value find-value]
+  (case update-type
+    :add-to-existing (apply-umm-list-update-add-to-existing umm update-field update-value)
+    :clear-all-and-replace (apply-umm-list-update-clear-all-and-replace umm update-field update-value)
+    :find-and-remove (apply-umm-list-update-find-and-remove umm update-field find-value)
+    :find-and-replace (apply-umm-list-update-find-and-replace umm update-field update-value find-value)
+    :find-and-update (apply-umm-list-update-find-and-update umm update-field update-value find-value)
+    :find-and-update-home-page-url (apply-umm-list-update-home-page-url umm update-field update-value find-value)))
 
 (defn- apply-list-update-nested
   "Apply the umm list update when the update-field is a supported nested field."

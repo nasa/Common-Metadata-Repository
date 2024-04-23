@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.test.validation.umm-spec-granule-validation-tests
   "This has tests for UMM validations."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing]]
    [cmr.umm-spec.validation.umm-spec-validation-core :as v]
    [cmr.umm-spec.models.umm-collection-models :as c]
    [cmr.umm-spec.models.umm-common-models :as cmn]
@@ -12,7 +12,6 @@
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.services.errors :as e]
    [cmr.common.util :as u :refer [are3]]
-   [cmr.umm.collection.product-specific-attribute :as psa]
    [cmr.umm-spec.additional-attribute :as aa]))
 
 (defn assert-valid-gran
@@ -281,7 +280,6 @@
                                      :OperationalModes ["OM3" "OM4"]})
         i3 (cmn/map->InstrumentType {:ShortName "I3"
                                      :ComposedOf [s2 s3]})
-        i4 (cmn/map->InstrumentType {:ShortName "I3"})
         p1 (cmn/map->PlatformType {:ShortName "p1"
                                    :Instruments [i1 i2]})
         p2 (cmn/map->PlatformType {:ShortName "p2"
@@ -647,6 +645,7 @@
        [:related-urls]
        [(format "Related Urls must be unique. This contains duplicates named [%s]." url)]))))
 
+(declare start1 end1 start2 end2 coord-system-name expected-errors)
 (deftest granule-two-d-coordinate-system-validation
   (let [collection (make-collection {:TilingIdentificationSystems
                                       [{:TilingIdentificationSystemName "name"

@@ -1,6 +1,6 @@
-(ns cmr.umm-spec.test.migration.version.variable
+(ns cmr.umm-spec.test.migration.version.core
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.versioning :as v]))
 

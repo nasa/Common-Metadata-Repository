@@ -3,7 +3,7 @@
   (:require
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :refer [are3]]
    [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.use-constraints :as uc]
@@ -16,6 +16,7 @@
 (def iso-xpath iso/constraints-xpath)
 (def smap-xpath smap/constraints-xpath)
 
+(declare test-iso xpath add-xpath value? expected)
 (deftest parse-ac-test
   (testing "Parsing access constraints by regex"
 
@@ -136,6 +137,7 @@
       uc/new-access-desc
       "  description")))
 
+(declare sanitize?)
 (deftest parse-access-constraints-test
   (testing "Parsing access constraints"
 

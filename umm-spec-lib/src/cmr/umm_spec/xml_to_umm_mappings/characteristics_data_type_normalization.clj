@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization
   "Contains helper functions for normalizing UMM characteristics' data type from string to enum"
   (:require
-   [clojure.set :as set] 
    [clojure.string :as string]
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]

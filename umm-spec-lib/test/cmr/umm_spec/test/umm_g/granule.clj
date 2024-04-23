@@ -2,7 +2,7 @@
   "Tests parsing and generating UMM-G granule."
   (:require
    [clojure.java.io :as io]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as ext :refer [checking checking-with-seed]]
    [cmr.umm-spec.test.umm-g.expected-util :as expected-util]
@@ -10,6 +10,7 @@
    [cmr.umm-spec.test.umm-g.sanitizer :as sanitizer]
    [cmr.umm-spec.umm-spec-core :as core]))
 
+(declare granule)
 (deftest generate-granule-is-valid-umm-g-test
   (checking "umm-g validate metadata" 100
     [granule (gen/no-shrink generators/umm-g-granules)]

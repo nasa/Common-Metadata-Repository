@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.util
   "This contains utilities for the UMM Spec code."
   (:require
-   [clj-time.format :as f]
    [clojure.string :as string]
    [cmr.common.xml.parse :as p]
    [cmr.common.xml.simple-xpath :refer [select]]

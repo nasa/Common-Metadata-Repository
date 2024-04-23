@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.archive-and-dist-info
+  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [clojure.string :as string]
    [cmr.common.xml.gen :refer :all]
-   [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.util :refer [char-string]]))
 
 (defn generate-specification-string

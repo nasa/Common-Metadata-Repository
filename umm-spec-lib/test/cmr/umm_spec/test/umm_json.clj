@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.test.umm-json
   (:require
    [clj-time.core :as time]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as ext :refer [checking]]
    [cmr.common.util :as util]
@@ -127,6 +127,7 @@
           parsed (umm-json/json->umm {} :collection json)]
       (is (= contact-group-example-umm-c-record parsed)))))
 
+(declare umm-c-record)
 (deftest all-umm-c-records
   (checking "all umm-c records" 100
     [umm-c-record (gen/no-shrink umm-gen/umm-c-generator)]
@@ -138,6 +139,7 @@
           umm-c-record (update-in parsed [:UseConstraints] util/remove-nil-keys)]
       (is (= umm-c-record parsed)))))
 
+(declare umm-s-record)
 (deftest all-umm-s-records
   (checking "all umm-s records" 100
     [umm-s-record (gen/no-shrink umm-gen/umm-s-generator)]
@@ -149,6 +151,7 @@
           parsed (umm-json/json->umm {} :service json)]
       (is (= umm-s-record parsed)))))
 
+(declare umm-t-record)
 (deftest all-umm-t-records
   (checking "all umm-t records" 100
     [umm-t-record (gen/no-shrink umm-gen/umm-t-generator)]
@@ -157,6 +160,7 @@
           parsed (umm-json/json->umm {} :tool json)]
       (is (= umm-t-record parsed)))))
 
+(declare umm-sub-record)
 (deftest all-umm-sub-records
   (checking "all umm-sub records" 100
     [umm-sub-record (gen/no-shrink umm-gen/umm-sub-generator)]
@@ -165,6 +169,7 @@
           parsed (umm-json/json->umm {} :subscription json)]
       (is (= umm-sub-record parsed)))))
 
+(declare umm-var-record)
 (deftest all-umm-var-records
   (checking "all umm-var records" 100
     [umm-var-record (gen/no-shrink umm-gen/umm-var-generator)]

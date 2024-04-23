@@ -2,7 +2,7 @@
   "Contains common definitions and functions for DIF9 and DIF10 metadata parsing and generation."
   (:require
    [clojure.set :as set]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [value-of values-at]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.common.util :as common-util]
    [cmr.umm-spec.url :as url]

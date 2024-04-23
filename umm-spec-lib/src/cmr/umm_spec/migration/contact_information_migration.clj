@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.migration.contact-information-migration
-  "Contains helper functions for migrating between different versions of UMM contact information"
-  (:require [cmr.umm-spec.util :as u]))
+  "Contains helper functions for migrating between different versions of UMM contact information")
 
 (defn first-contact-info
   "Update the array of contact infos to be a single instance using the first contact info in the list"

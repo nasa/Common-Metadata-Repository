@@ -59,7 +59,7 @@
    converted to a number."
   [map number-key-list]
     (when (and (not (nil? map))
-               (not (empty? map)))
+               (seq map))
       (if (or (nil? number-key-list)
               (empty? number-key-list))
         map
@@ -73,7 +73,7 @@
                       {k (Double/parseDouble string-number)}
                       {k (Long/parseLong string-number)}))
                   {k v})
-                (catch Exception e
+                (catch Exception _e
                   (errors/throw-service-error
                    :invalid-data (format "Error parsing the field %s with value %s" k v)))))))))
 

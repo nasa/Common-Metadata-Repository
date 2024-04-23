@@ -3,10 +3,10 @@
   (:require
    [clojure.data.xml :as x]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
+   [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as util :refer [are3]]
    [cmr.common.xml :as xml]
-   [cmr.common.xml.gen :refer [xml]]
    [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.models.umm-collection-models :as coll]
@@ -787,6 +787,7 @@
 
 (def constraints-path [:identificationInfo :MD_DataIdentification :resourceConstraints])
 
+(declare expected-iso umm-map)
 (deftest iso-constraints
   (testing "Use constraints"
    (are3 [expected-iso umm-map]
@@ -859,6 +860,7 @@
       (is (seq parsed-direct-distribution))
       (is (= expected-direct-distribution parsed-direct-distribution)))))
 
+(declare iso-record expect-empty)
 (deftest associated-doi-test
   (testing "Testing the associated DOIs"
     (are3 [iso-record expect-empty]
@@ -875,7 +877,7 @@
             (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
             (if expect-empty
               (is (empty? parsed-associated-dois))
-              (is (not (empty? parsed-associated-dois))))
+              (is (seq parsed-associated-dois)))
             (is (= expected-associated-dois parsed-associated-dois)))
 
           "Associated DOIs are written out correctly."
@@ -1055,7 +1057,7 @@
                                  (:RangeDateTimes)
                                  first
                                  (:BeginningDateTime)
-                                 cmr.common.date-time-parser/clj-time->date-time-str)
+                                 dtp/clj-time->date-time-str)
 
           ;; parse out the temporal extent
           parsed-temporal-extent (parser/parse-temporal-extents generated-iso)
@@ -1112,12 +1114,16 @@
 
 (def umm-temporal-test-record
   {:TemporalExtents
-   [{:SingleDateTimes [(cmr.common.date-time-parser/parse-datetime "1982-09-13T10:57:10.054Z") (cmr.common.date-time-parser/parse-datetime "2055-08-18T04:35:47.867Z")]
+   [{:SingleDateTimes [(dtp/parse-datetime "1982-09-13T10:57:10.054Z")
+                       (dtp/parse-datetime "2055-08-18T04:35:47.867Z")]
      :TemporalResolution {:Unit "Week", :Value 0.0}}
     {:PrecisionOfSeconds 0
-     :SingleDateTimes [(cmr.common.date-time-parser/parse-datetime "1995-07-12T07:40:24.568Z") (cmr.common.date-time-parser/parse-datetime "2079-05-10T11:44:01.003Z") (cmr.common.date-time-parser/parse-datetime "2013-06-28T19:40:49.678Z")]
+     :SingleDateTimes [(dtp/parse-datetime "1995-07-12T07:40:24.568Z")
+                       (dtp/parse-datetime "2079-05-10T11:44:01.003Z")
+                       (dtp/parse-datetime "2013-06-28T19:40:49.678Z")]
      :TemporalResolution {:Unit "Month", :Value 1.0}}
-    {:RangeDateTimes [{:BeginningDateTime (cmr.common.date-time-parser/parse-datetime "2047-09-02T00:47:50.343Z") :EndingDateTime (cmr.common.date-time-parser/parse-datetime "2048-06-27T07:50:49.335Z")}]
+    {:RangeDateTimes [{:BeginningDateTime (dtp/parse-datetime "2047-09-02T00:47:50.343Z")
+                       :EndingDateTime (dtp/parse-datetime "2048-06-27T07:50:49.335Z")}]
      :TemporalResolution {:Unit "Varies"}}]})
 
 (deftest generate-temporal-umm-maps-test

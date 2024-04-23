@@ -1,9 +1,8 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10.data-center
   "Defines mappings and parsing from DIF 10 elements into UMM records data center fields."
   (:require
-   [clojure.set :as set]
-   [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.common.xml.parse :refer [value-of values-at]]
+   [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.xml-to-umm-mappings.dif10.data-contact :as contact]))
 
