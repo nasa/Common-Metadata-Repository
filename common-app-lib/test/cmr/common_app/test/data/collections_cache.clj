@@ -1,6 +1,6 @@
 (ns cmr.common-app.test.data.collections-cache
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [clojure.test.check.generators :as gen]
    [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as coll-gran-acls-cache]
    [cmr.common.hash-cache :as hash-cache]
@@ -16,8 +16,7 @@
   (apply str (vec (gen/sample gen/string-alphanumeric))))
 
 (deftest make-dates-safe-for-serialize-test
-  "Confirm that an object can be serialized to text and then back"
-  (testing "round trip"
+  (testing "round trip: Confirm that an object can be serialized to text and then back"
     (let [some-text (random-text)
           some-date "2024-12-31T4:3:2"
           supplied-data {:point-of-time some-date :a-field some-text}
@@ -75,13 +74,13 @@
 
   (testing "Testing when collection doesn't exist in cache or elastic -> Then returns nil collection"
    ;; mock the set-cache func
-   (with-redefs-fn {#'coll-gran-acls-cache/set-cache (fn [context coll-concept-id] nil)}
+   (with-redefs-fn {#'coll-gran-acls-cache/set-cache (fn [_context _coll-concept-id] nil)}
      #(is (= nil (get-collection-for-gran-acls context "C000-NON_EXISTENT")))))
 
   (testing "Testing when collection cache has collection, but it is empty map in cache and elastic -> Then should find the collection in elastic, if still empty then returns empty coll"
-    (with-redefs-fn {#'coll-gran-acls-cache/set-cache (fn [context coll-concept-id] {})}
+    (with-redefs-fn {#'coll-gran-acls-cache/set-cache (fn [_context _coll-concept-id] {})}
       #(is (= {} (get-collection-for-gran-acls context "C456-TEST_PROV1")))))
 
   (testing "Testing when collection is not in cache, but exists in elastic -> Then should find the collection in elastic and add to cache"
-    (with-redefs-fn {#'coll-gran-acls-cache/set-cache (fn [context coll-concept-id] test-coll2)}
+    (with-redefs-fn {#'coll-gran-acls-cache/set-cache (fn [_context _coll-concept-id] test-coll2)}
       #(is (= converted-test-coll2 (get-collection-for-gran-acls context "C888-TEST_PROV1")))))))

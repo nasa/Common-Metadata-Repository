@@ -7,12 +7,10 @@
    [cmr.common.cache :as cache]
    [cmr.common.hash-cache :as hcache]
    [cmr.common.jobs :as jobs]
-   [cmr.common.log :refer [debug info warn error]]
    [cmr.common.mime-types :as mt]
    [cmr.common.xml :as cx]
    [compojure.core :refer [context GET POST]]
    [ring.middleware.json :as ring-json]
-   [ring.util.codec :as rc]
    [ring.util.response :as ring-resp]))
 
 (def RESPONSE_REQUEST_ID_HEADER
@@ -107,15 +105,15 @@
   "Create routes for the cache querying/management api"
   (context "/caches" []
     ;; Get the list of caches
-    (GET "/" {:keys [params request-context headers]}
+    (GET "/" {:keys [_params request-context _headers]}
       (acl/verify-ingest-management-permission request-context :read)
       (let [caches (map name (keys (get-in request-context [:system :caches])))]
         {:status 200
          :body (json/generate-string caches)}))
     ;; Get the keys for the given cache
-    (GET "/:cache-name" {{:keys [cache-name] :as params} :params
+    (GET "/:cache-name" {{:keys [cache-name] :as _params} :params
                          request-context :request-context
-                         headers :headers}
+                         _headers :headers}
       (acl/verify-ingest-management-permission request-context :read)
       (let [cache (cache/context->cache request-context (keyword cache-name))]
         (when cache
@@ -126,9 +124,9 @@
              :body (json/generate-string result)}))))
 
     ;; Get the value for the given key for the given cache
-    (GET "/:cache-name/:cache-key" {{:keys [cache-name cache-key] :as params} :params
+    (GET "/:cache-name/:cache-key" {{:keys [cache-name cache-key] :as _params} :params
                                     request-context :request-context
-                                    headers :headers}
+                                    _headers :headers}
       (acl/verify-ingest-management-permission request-context :read)
       (let [cache-key (keyword cache-key)
             cache (cache/context->cache request-context (keyword cache-name))
@@ -143,7 +141,7 @@
             :body (json/generate-string
                    {:error (format "missing key [%s] for cache [%s]" cache-key cache-name)})})))
 
-    (POST "/clear-cache" {:keys [request-context params headers]}
+    (POST "/clear-cache" {:keys [request-context _params _headers]}
       (acl/verify-ingest-management-permission request-context :update)
       (cache/reset-caches request-context)
       (hcache/reset-caches request-context)
@@ -157,19 +155,19 @@
   ([additional-job-routes]
    (context "/jobs" []
      ;; Pause all jobs
-     (POST "/pause" {:keys [request-context params headers]}
+     (POST "/pause" {:keys [request-context _params _headers]}
        (acl/verify-ingest-management-permission request-context :update)
        (jobs/pause-jobs (get-in request-context [:system :scheduler]))
        {:status 204})
 
      ;; Resume all jobs
-     (POST "/resume" {:keys [request-context params headers]}
+     (POST "/resume" {:keys [request-context _params _headers]}
        (acl/verify-ingest-management-permission request-context :update)
        (jobs/resume-jobs (get-in request-context [:system :scheduler]))
        {:status 204})
 
      ;; Retrieve status of jobs - whether they are paused or active
-     (GET "/status" {:keys [request-context params headers]}
+     (GET "/status" {:keys [request-context _params _headers]}
        (acl/verify-ingest-management-permission request-context :update)
        (let [paused? (jobs/paused? (get-in request-context [:system :scheduler]))]
          {:status 200
@@ -245,7 +243,7 @@
   "Adds a number of security related response headers."
   [handler]
   (fn [{context :request-context :as request}]
-    (if-let [request-id (cxt/context->request-id context)]
+    (if-let [_request-id (cxt/context->request-id context)]
       (-> request
           (handler)
           (assoc-in [:headers RESPONSE_STRICT_TRANSPORT_SECURITY_HEADER] "max-age=31536000")

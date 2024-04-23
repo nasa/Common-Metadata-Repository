@@ -1,6 +1,6 @@
 (ns cmr.common-app.test.humanizer
   "Tests for humanizer transforms"
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [are deftest is testing]]
             [cmr.common-app.humanizer :as humanizer]))
 
 (defn- humanizes

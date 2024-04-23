@@ -27,16 +27,16 @@
   "Map of humanizer JSON type values to functions which take a field value and
   humanizer configuration and return a transformed field value. The functions
   can assume that the humanizer should be applied to the value."
-  (fn [humanizer value]
+  (fn [humanizer _value]
     (:type humanizer)))
 
 (defmethod to-human "trim_whitespace"
-  [humanizer value]
+  [_humanizer value]
   (assoc value
          :value (str/trim (str/replace (:value value) #"\s+" " "))))
 
 (defmethod to-human "capitalize"
-  [humanizer value]
+  [_humanizer value]
   (assoc value
          :value (->> (str/split (:value value) #"\b")
                      (map str/capitalize)
@@ -48,7 +48,7 @@
          :value (:replacement_value humanizer)))
 
 (defmethod to-human "ignore"
-  [humanizer value]
+  [_humanizer _value]
   nil)
 
 (defmethod to-human "priority"

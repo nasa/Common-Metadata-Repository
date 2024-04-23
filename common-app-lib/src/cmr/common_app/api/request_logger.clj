@@ -8,7 +8,7 @@
    [clojure.string :as string]
    [cmr.common-app.config :as config]
    [cmr.common.date-time-parser :as dtp]
-   [cmr.common.log :refer [debug info warn error report]]
+   [cmr.common.log :refer [report]]
    [cmr.common.util :as util]
    [cmr.common.time-keeper :as tk]
    [digest :as digest]
@@ -16,10 +16,10 @@
    [ring.util.codec :as codec]))
 
 (defn- request->uri
-  [request]
   "Reconstruct a url that a request client may have asked for (assuming port
    number was given). Special care is taken to scrub token from the URL parameter
    list if provided at 'token'."
+  [request]
   ;; Another filter may have already parsed the parameters found at :query-params,
   ;; use that to save time, otherwise do it ourself from :query-string
   (let [raw-query (or (:query-params request) (codec/form-encode (:query-string request)))

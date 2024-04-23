@@ -1,0 +1,10 @@
+{:skip-comments true
+ ;; no linting for all dev/user.clj namespaces
+ :config-in-ns {user {:ignore true}}
+ ;; CMR custom macros
+ :lint-as {cmr.common.config/defconfig clojure.core/def
+           cmr.common.jobs/defjob clojure.core/defn
+           cmr.common.jobs/def-stateful-job clojure.core/defn
+           cmr.common.util/are3 clj-kondo.lint-as/def-catch-all}
+ ;; dynamically generated functions/vars
+ :linters {:unresolved-var {:exclude [digest/md5 digest/sha-1]}}}
