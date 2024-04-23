@@ -1,12 +1,12 @@
 (ns cmr.search.results-handlers.kml-results-handler
   "Handles the returning search results in KML format (keyhole markup language for Google Earth etc)"
   (:require
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common-app.services.search :as qs]
-   [cmr.elastic-utils.es-results-to-query-results :as er-to-qr]
-   [cmr.elastic-utils.es-index :as elastic-search-index]
-   [cmr.common.services.search.results-model :as r-model]
    [cmr.common.services.errors :as svc-errors]
+   [cmr.common.services.search.results-model :as r-model]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as er-to-qr]
    [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.spatial.kml :as kml]
@@ -80,24 +80,24 @@
     (let [shapes-by-coord-sys (group-by #(or (relations/coordinate-system %) :geodetic) (:shapes item))
           multiple-placemarks? (> (count shapes-by-coord-sys) 1)]
       (for [[coordinate-system shapes] shapes-by-coord-sys]
-        (x/element :Placemark {}
-                   (x/element :name {} (if multiple-placemarks?
+        (xml/element :Placemark {}
+                   (xml/element :name {} (if multiple-placemarks?
                                          (str (:name item) "_" (name coordinate-system))
                                          (:name item)))
-                   (x/element :styleUrl {} (kml/coordinate-system->style-url coordinate-system))
+                   (xml/element :styleUrl {} (kml/coordinate-system->style-url coordinate-system))
                    (if (> (count shapes) 1)
-                     (x/element :MultiGeometry {}
+                     (xml/element :MultiGeometry {}
                                 (map kml/shape->xml-element shapes))
                      (kml/shape->xml-element (first shapes))))))
-    [(x/element :Placemark {}
-                (x/element :name {} (:name item))
-                (x/xml-comment "No spatial area"))]))
+    [(xml/element :Placemark {}
+                (xml/element :name {} (:name item))
+                (xml/xml-comment "No spatial area"))]))
 
 (defn- search-results->response
   [context query results]
-  (x/emit-str
-    (x/element :kml kml/KML_XML_NAMESPACE_ATTRIBUTES
-               (x/element :Document {}
+  (xml/emit-str
+    (xml/element :kml kml/KML_XML_NAMESPACE_ATTRIBUTES
+               (xml/element :Document {}
                           kml/kml-geodetic-style-xml-elem
                           kml/kml-cartesian-style-xml-elem
                           (mapcat item->kml-placemarks (:items results))))))

@@ -2,7 +2,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.services.search.query-model :as cqm]
-   [cmr.elastic-utils.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.common.services.search.results-model :as r]
    [cmr.search.models.query :as q]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]

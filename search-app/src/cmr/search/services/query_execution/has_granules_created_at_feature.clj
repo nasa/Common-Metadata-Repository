@@ -12,7 +12,7 @@
   3.) Return the full search results for those collection-ids returned by the granule query."
   (:require
    [clojure.set :as set]
-   [cmr.elastic-utils.query-execution :as query-execution]
+   [cmr.elastic-utils.search.query-execution :as query-execution]
    [cmr.search.services.query-execution.multi-part-query-feature-common :as mp-query-common]))
 
 (defmethod query-execution/pre-process-query-result-feature :has-granules-created-at

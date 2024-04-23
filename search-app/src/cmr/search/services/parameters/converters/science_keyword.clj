@@ -1,9 +1,9 @@
 (ns cmr.search.services.parameters.converters.science-keyword
   "Contains functions for converting science keywords query parameters to conditions"
   (:require [clojure.string :as str]
-            [cmr.elastic-utils.nested-field :as nf]
-            [cmr.elastic-utils.es-group-query-conditions :as gc]
-            [cmr.elastic-utils.es-params-converter :as p]))
+            [cmr.elastic-utils.search.nested-field :as nf]
+            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+            [cmr.elastic-utils.search.es-params-converter :as p]))
 
 ;; Converts science keywords parameter and values into conditions
 (defmethod p/parameter->condition :science-keywords

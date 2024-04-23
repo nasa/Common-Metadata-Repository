@@ -1,4 +1,4 @@
-(ns cmr.elastic-utils.es-messenger
+(ns cmr.elastic-utils.search.es-messenger
   (:require [camel-snake-kebab.core :as csk]))
 
 (defn invalid-opt-for-param

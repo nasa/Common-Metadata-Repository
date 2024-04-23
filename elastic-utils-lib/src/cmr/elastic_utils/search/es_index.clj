@@ -1,19 +1,18 @@
-(ns cmr.elastic-utils.es-index
+(ns cmr.elastic-utils.search.es-index
   "Implements searching against Elasticsearch. Defines an Elastic Search Index component."
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
    [clojurewerkz.elastisch.rest.index :as esri]
-   [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info]]
    [cmr.common.services.errors :as errors]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.common.util :as util]
    [cmr.elastic-utils.config :as es-config]
    [cmr.elastic-utils.connect :as es]
    [cmr.elastic-utils.es-helper :as es-helper]
-   [cmr.common.services.search.query-model :as qm]
-   [cmr.elastic-utils.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.transmit.connection :as transmit-conn])
   (:import
    clojure.lang.ExceptionInfo

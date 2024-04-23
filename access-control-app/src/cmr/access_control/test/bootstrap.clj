@@ -5,6 +5,7 @@
    [cmr.access-control.services.group-service :as group-service]
    [cmr.common.log :refer [info]]
    [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.metadata-db :as mdb-legacy]
    [cmr.transmit.metadata-db :as mdb-legacy]))
 
 (defn- administrators-group

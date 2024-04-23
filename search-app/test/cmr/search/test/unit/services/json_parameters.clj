@@ -3,7 +3,7 @@
   (:require [clojure.test :refer :all]
             [cmr.common.util :refer [are3]]
             [cmr.common.services.search.query-model :as q]
-            [cmr.elastic-utils.es-group-query-conditions :as gc]
+            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
             [cmr.search.services.json-parameters.conversion :as jp]
             [cheshire.core :as json]))
 

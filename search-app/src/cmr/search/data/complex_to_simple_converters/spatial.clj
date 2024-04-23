@@ -2,8 +2,8 @@
   "Contains converters for spatial condition into the simpler executable conditions"
   (:require
    [clojure.string :as string]
-   [cmr.elastic-utils.query-transform :as c2s]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.query-transform :as c2s]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.common.services.search.query-model :as qm]
    [cmr.orbits.orbits-runtime :as orbits]
    [cmr.search.services.query-helper-service :as query-helper]

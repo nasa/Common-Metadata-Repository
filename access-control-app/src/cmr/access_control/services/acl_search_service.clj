@@ -12,11 +12,11 @@
    [cmr.common-app.services.search.parameter-validation :as cpv]
    [cmr.common.log :refer [warn info]]
    [cmr.common.services.errors :as errors]
+   [cmr.common.services.search.query-model :as common-qm]
    [cmr.common.util :as util]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.es-params-converter :as cp]
-   [cmr.elastic-utils.es-query-model :as common-qm]
-   [cmr.elastic-utils.nested-field :as nf]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as cp]
+   [cmr.elastic-utils.search.nested-field :as nf]
    [cmr.transmit.metadata-db2 :as mdb2]
    [cmr.umm.collection.product-specific-attribute :as psa])
   ;; Must be required to be available at runtime

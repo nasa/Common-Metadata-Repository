@@ -2,8 +2,8 @@
   (:require
     [clojure.test :refer :all]
     [cmr.common.util :refer [are3]]
-    [cmr.elastic-utils.es-group-query-conditions :as gc]
-    [cmr.elastic-utils.es-params-converter :as p]
+    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+    [cmr.elastic-utils.search.es-params-converter :as p]
     [cmr.common.services.search.query-model :as qm]
     [cmr.search.services.parameters.converters.range-facet :as range-facet]))
 

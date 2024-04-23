@@ -1,14 +1,14 @@
-(ns cmr.elastic-utils.es-query-to-elastic
+(ns cmr.elastic-utils.search.es-query-to-elastic
   "Defines protocols and functions to map from a query model to elastic search query"
   (:require
    [clojure.string :as str]
    [clojurewerkz.elastisch.query :as query]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.config :as config]
    [cmr.elastic-utils.datetime-helper :as dt-help]
-   [cmr.elastic-utils.es-messenger :as es-msg]
-   [cmr.common.services.search.query-model :as qm]
-   [cmr.elastic-utils.es-query-order-by-expense :as query-expense]
-   [cmr.common.services.errors :as errors]))
+   [cmr.elastic-utils.search.es-messenger :as es-msg]
+   [cmr.elastic-utils.search.es-query-order-by-expense :as query-expense]))
 
 (defmulti concept-type->field-mappings
   "Returns a map of fields in the query to the field name in elastic. Field names are excluded from

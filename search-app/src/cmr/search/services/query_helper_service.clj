@@ -1,9 +1,9 @@
 (ns cmr.search.services.query-helper-service
   "Helper queries for other services, for instance fetching collection-level
    data required to construct granule queries or results."
-  (:require [cmr.elastic-utils.query-execution :as qe]
+  (:require [cmr.elastic-utils.search.query-execution :as qe]
             [cmr.common.services.search.query-model :as qm]
-            [cmr.elastic-utils.es-group-query-conditions :as gc]))
+            [cmr.elastic-utils.search.es-group-query-conditions :as gc]))
 
 (def ^:private orbit-param-fields
   "The collection fields that describe the orbit as used in orbital back tracking."

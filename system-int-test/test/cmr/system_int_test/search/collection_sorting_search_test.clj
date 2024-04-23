@@ -4,7 +4,7 @@
    [clj-time.core :as t]
    [clojure.string :as str]
    [clojure.test :refer :all]
-   [cmr.elastic-utils.es-messenger :as msg]
+   [cmr.elastic-utils.search.es-messenger :as msg]
    [cmr.common.date-time-parser :as p]
    [cmr.indexer.config :as indexer-config]
    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]

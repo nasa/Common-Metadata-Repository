@@ -1,8 +1,8 @@
 (ns cmr.search.test.unit.services.parameters
   (:require
    [clojure.test :refer :all]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.es-params-converter :as p]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as p]
    [cmr.common.services.search.query-model :as q]
    [cmr.common.util :refer [are2]]
    [cmr.search.services.parameters.legacy-parameters :as lp]

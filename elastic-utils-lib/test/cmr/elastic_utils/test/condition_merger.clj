@@ -1,19 +1,19 @@
 (ns cmr.elastic-utils.test.condition-merger
-  (:require [clojure.test :refer :all]
-            [cmr.elastic-utils.es-condition-merger :as c]
-            [cmr.common.services.search.query-model :as q]
-            [cmr.elastic-utils.test.helpers :refer :all]))
-
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.services.search.query-model :as q]
+   [cmr.elastic-utils.search.es-condition-merger :as ecm]
+   [cmr.elastic-utils.test.helpers :refer :all]))
 
 (defn does-not-merge
   [op conditions]
   (is (= conditions
-         (c/merge-conditions op conditions))))
+         (ecm/merge-conditions op conditions))))
 
 (defn does-merge
   [op expected conditions]
   (is (= expected
-         (c/merge-conditions op conditions))))
+         (ecm/merge-conditions op conditions))))
 
 (def does-not-merge-or
   (partial does-not-merge :or))

@@ -4,10 +4,10 @@
    [cheshire.core :as json]
    [clojure.string :as string]
    [cmr.common-app.services.search :as qs]
-   [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
-   [cmr.elastic-utils.es-index :as elastic-search-index]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]
    [cmr.search.results-handlers.umm-json-results-helper :as results-helper]))
 
 (def granule-meta-fields
@@ -43,11 +43,11 @@
       :revision-date revision-date})))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :umm-json-results]
-  [concept-type query]
+  [_concept-type _query]
   granule-meta-fields)
 
 (defmethod results-helper/elastic-result+metadata->umm-json-item :granule
-  [concept-type elastic-result metadata]
+  [_concept-type elastic-result metadata]
   {:meta (granule-elastic-result->meta elastic-result)
    :umm (json/decode metadata)})
 
@@ -56,5 +56,5 @@
   (results-helper/query-elastic-results->query-results context :granule query elastic-results))
 
 (defmethod qs/search-results->response [:granule :umm-json-results]
-  [context query results]
+  [_context _query results]
   (json/generate-string (select-keys results [:hits :took :items])))

@@ -4,7 +4,7 @@
    [clojure.java.shell :as shell]
    [clojure.string :as s]
    [clojure.test :refer :all]
-   [cmr.elastic-utils.es-messenger :as cmsg]
+   [cmr.elastic-utils.search.es-messenger :as cmsg]
    [cmr.common.services.messages :as msg]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]

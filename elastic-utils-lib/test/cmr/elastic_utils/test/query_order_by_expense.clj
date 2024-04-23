@@ -1,8 +1,9 @@
 (ns cmr.elastic-utils.test.query-order-by-expense
-  (:require [clojure.test :refer :all]
-            [cmr.elastic-utils.test.helpers :refer :all]
-            [cmr.elastic-utils.es-query-order-by-expense :as qe]
-            [cmr.common.services.search.query-model :as q]))
+  (:require
+   [clojure.test :refer :all]
+   [cmr.common.services.search.query-model :as q]
+   [cmr.elastic-utils.search.es-query-order-by-expense :as qe]
+   [cmr.elastic-utils.test.helpers :refer :all]))
 
 (defn script-cond
   [script-name]

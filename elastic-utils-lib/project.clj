@@ -35,7 +35,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :uberjar {:aot :all} ;; remove before merging
+             ;; :uberjar {:aot :all} ;; remove before merging
              :dev {:exclusions [[org.clojure/tools.nrepl]]
                    :dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]

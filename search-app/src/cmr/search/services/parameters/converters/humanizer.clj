@@ -1,8 +1,8 @@
 (ns cmr.search.services.parameters.converters.humanizer
   "Contains functions for converting humanizer query parameters to conditions"
   (:require [cmr.common.services.search.query-model :as qm]
-            [cmr.elastic-utils.es-params-converter :as p]
-            [cmr.elastic-utils.es-query-to-elastic :as q2e]))
+            [cmr.elastic-utils.search.es-params-converter :as p]
+            [cmr.elastic-utils.search.es-query-to-elastic :as q2e]))
 
 ;; Converts humanizer parameter and values into conditions
 (defmethod p/parameter->condition :humanizer

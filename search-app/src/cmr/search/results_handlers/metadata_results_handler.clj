@@ -2,15 +2,15 @@
   "Handles search results with metadata including ECHO10 and DIF formats."
   (:require
    [cheshire.core :as json]
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common-app.services.search :as qs]
-   [cmr.elastic-utils.es-results-to-query-results :as er-to-qr]
-   [cmr.elastic-utils.es-index :as elastic-search-index]
-   [cmr.common.services.search.results-model :as results]
    [cmr.common.log :refer (debug)]
    [cmr.common.mime-types :as mt]
+   [cmr.common.services.search.results-model :as results]
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as er-to-qr]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
@@ -105,13 +105,13 @@
   [tags]
   (when (seq tags)
     [(cx/remove-xml-processing-instructions
-      (x/emit-str
-       (x/element :tags {}
+      (xml/emit-str
+       (xml/element :tags {}
                   (for [[tag-key {:keys [data]}] tags]
-                    (x/element :tag {}
-                               (x/element :tagKey {} tag-key)
+                    (xml/element :tag {}
+                               (xml/element :tagKey {} tag-key)
                                (when data
-                                 (x/element :data {} (json/generate-string data))))))))]))
+                                 (xml/element :data {} (json/generate-string data))))))))]))
 
 (defn xml-escape-umm-json-metadata
   "Returns the metadata. Xml escape the special characters in UMM JSON metadata if applicable."
@@ -194,7 +194,7 @@
   [facets]
   (if facets
     (cx/remove-xml-processing-instructions
-      (x/emit-str (frf/facets->xml-element facets)))
+      (xml/emit-str (frf/facets->xml-element facets)))
     ""))
 
 (defn search-results->metadata-response

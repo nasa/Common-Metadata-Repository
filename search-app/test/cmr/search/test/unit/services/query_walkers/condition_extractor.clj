@@ -18,7 +18,7 @@
   [condition-path condition]
   (->> condition-path
        (filter (fn [c]
-                 (= q.ConditionGroup (type c))))
+                 (= cmr.common.services.search.query_model.ConditionGroup (type c))))
        (filter (fn [c]
                  (= :or (:operation c))))
        empty?))

@@ -4,14 +4,14 @@
    [clojure.string :as string]
    [clojurewerkz.elastisch.query :as q]
    [clojurewerkz.elastisch.rest.document :as esd]
-   [cmr.elastic-utils.es-index :as common-esi]
-   [cmr.elastic-utils.es-index-name-cache :as index-names-cache]
-   [cmr.common.services.search.query-model :as qm]
-   [cmr.elastic-utils.es-query-to-elastic :as q2e]
-   [cmr.common.hash-cache :as hcache]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.hash-cache :as hcache]
    [cmr.common.services.errors :as e]
+   [cmr.common.services.search.query-model :as qm]
+   [cmr.elastic-utils.search.es-index :as common-esi]
+   [cmr.elastic-utils.search.es-index-name-cache :as index-names-cache]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
    [cmr.search.services.query-walkers.provider-id-extractor :as pex])
   ;; Required to be available at runtime.
@@ -157,9 +157,11 @@
   [context]
   (get-in context [:system :search-index :conn]))
 
+;;TODO: where does this belong? cmr.elastic-utils.search.es-index?
 (defn get-collection-permitted-groups
   "NOTE: Use for debugging only. Gets collections along with their currently permitted groups. This
-  won't work if more than 10,000 collections exist in the CMR."
+   won't work if more than 10,000 collections exist in the CMR.
+   called by dev-system/src/cmr/dev_system/control.clj only"
   [context]
   (let [index-info (common-esi/concept-type->index-info context :collection nil)
         results (esd/search (context->conn context)

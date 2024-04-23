@@ -1,10 +1,10 @@
-(ns cmr.elastic-utils.nested-field
+(ns cmr.elastic-utils.search.nested-field
   "Contains functions for converting query parameters to conditions for nested fields."
   (:require
    [clojure.string :as string]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.es-params-converter :as p]
    [cmr.common.services.search.query-model :as qm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as p]
    [cmr.transmit.kms :as kms]))
 
 (def variable-subfields

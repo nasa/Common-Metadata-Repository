@@ -5,7 +5,7 @@
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.search.services.aql.conversion :as a]
             [cmr.common.services.search.query-model :as q]
-            [cmr.elastic-utils.es-group-query-conditions :as gc]
+            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
             [cmr.search.services.aql.conversion :as c]
             [cmr.common.test.test-util :as tu]))
 

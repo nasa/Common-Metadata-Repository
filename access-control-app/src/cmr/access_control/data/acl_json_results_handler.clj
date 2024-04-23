@@ -5,9 +5,9 @@
    [clojure.edn :as edn]
    [clojure.set :as set]
    [cmr.common-app.services.search :as qs]
-   [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
-   [cmr.elastic-utils.es-index :as elastic-search-index]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]
    [cmr.transmit.config :as tconfig]))
 
 (defn- reference-root

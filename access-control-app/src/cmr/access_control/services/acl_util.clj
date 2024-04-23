@@ -11,10 +11,10 @@
    [cmr.common.log :refer [info warn]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.common.util :refer [defn-timed] :as util]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.es-query-model :as qm]
-   [cmr.elastic-utils.query-execution :as qe]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.transmit.metadata-db :as mdb1]
    [cmr.transmit.metadata-db2 :as mdb]
    [cmr.transmit.tokens :as tokens]))

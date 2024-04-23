@@ -5,13 +5,13 @@
    [clj-time.core :as t]
    [clojure.set :as set]
    [clojure.string :as s]
-   [cmr.elastic-utils.es-messenger :as d-msg]
+   [cmr.elastic-utils.search.es-messenger :as d-msg]
    [cmr.common-app.services.search.parameter-validation :as cpv]
    [cmr.common.services.search.query-model :as cqm]
    [cmr.common.concepts :as cc]
    [cmr.common.mime-types :as mt]
    [cmr.common.date-time-parser :as dt-parser]
-   [cmr.elastic-utils.parameter-parser :as parser]
+   [cmr.elastic-utils.search.parameter-parser :as parser]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.search.data.keywords-to-elastic :as k2e]
@@ -433,7 +433,7 @@
       (let [num (Integer/parseInt day)]
         (when (or (< num 1) (> num 366))
           [(format "%s [%s] must be an integer between 1 and 366" tag day)]))
-      (catch NumberFormatException e
+      (catch NumberFormatException _e
         [(format "%s [%s] must be an integer between 1 and 366" tag day)]))))
 
 (defn- temporal-input-format-valid?
@@ -444,7 +444,7 @@
 (defn- temporal-format-validation
   "Validates that temporal datetime parameter conforms to the :date-time-no-ms format,
   start-day and end-day are integer between 1 and 366"
-  [concept-type params]
+  [_concept-type params]
   (when-let [temporal (:temporal params)]
     (let [temporal (if (sequential? temporal)
                      temporal
@@ -453,7 +453,7 @@
         (mapcat
          (fn [value]
            (if (re-find #"/" value)
-             (let [[iso-range start-day end-day] (map s/trim (s/split value #","))]
+             (let [[_iso-range start-day end-day] (map s/trim (s/split value #","))]
                (concat
                 (cpv/validate-date-time-range nil)
                 (day-valid? start-day "temporal_start_day")
@@ -469,7 +469,7 @@
 
 (defn- updated-since-validation
   "Validates updated-since parameter conforms to formats in data-time-parser NS"
-  [concept-type params]
+  [_concept-type params]
   (when-let [param-value (:updated-since params)]
     (if (and (sequential? (:updated-since params)) (> (count (:updated-since params)) 1))
       ["Search not allowed with multiple updated_since values"]
@@ -478,7 +478,7 @@
 
 (defn- tag-data-validation
   "Validates tag-data parameter must be a map"
-  [concept-type params]
+  [_concept-type params]
   (when-let [param-value (:tag-data params)]
     (if (map? param-value)
       ;; validate that tag-value cannot be empty
@@ -503,7 +503,7 @@
 
 (defn- sequential-multi-date-validation
   "Validates the given date parameter contains valid date time strings."
-  [concept-type params param-key]
+  [_concept-type params param-key]
   (when-let [value (param-key params)]
     (let [value (if (sequential? value)
                   value
@@ -526,7 +526,7 @@
   (sequential-multi-date-validation concept-type params :created-at))
 
 (defn- attribute-validation
-  [concept-type params]
+  [_concept-type params]
   (when-let [attributes (:attribute params)]
     (if (sequential? attributes)
       (mapcat #(-> % attrib/parse-value :errors) attributes)
@@ -569,14 +569,14 @@
   [value field]
   (let [parsed-value (try
                        (Long. value)
-                       (catch Exception e
+                       (catch Exception _e
                          nil))]
     (and (not (nil? parsed-value))
          (<= 1 parsed-value (max-value-for-date-field field)))))
 
 (defn- temporal-facet-date-validation
   "Validates that the given temporal date field in all temporal-facet parameters are valid."
-  [date-field concept-type params]
+  [date-field _concept-type params]
   (when-let [param-values (:temporal-facet params)]
     (when (map? param-values)
       (let [temporal-facet-maps (vals param-values)
@@ -629,12 +629,12 @@
         (if error-message-fn
           [(apply error-message-fn args)]
           [(d-msg/nil-min-max-msg)]))
-      (catch NumberFormatException e
+      (catch NumberFormatException _e
         [(apply error-message-fn args)]))))
 
 (defn- cloud-cover-validation
   "Validates cloud cover range values are numeric"
-  [concept-type params]
+  [_concept-type params]
   (when-let [cloud-cover (:cloud-cover params)]
     (if (string? cloud-cover)
       (cpv/validate-numeric-range-param cloud-cover nil)
@@ -644,7 +644,7 @@
   "Validates that the orbital number is either a single number or a range in the format
   start,stop, or in the catlog-rest style orbit_number[value], orbit_number[minValue],
   orbit_number[maxValue]."
-  [concept-type params]
+  [_concept-type params]
   (when-let [orbit-number-param (:orbit-number params)]
     (if (string? orbit-number-param)
       (cpv/validate-numeric-range-param orbit-number-param on-msg/invalid-orbit-number-msg)
@@ -653,7 +653,7 @@
 (defn- equator-crossing-longitude-validation
   "Validates that the equator-crossing-longitude parameter is a single number or
   a valid range string."
-  [concept-type params]
+  [_concept-type params]
   (when-let [equator-crossing-longitude (:equator-crossing-longitude params)]
     (if (string? equator-crossing-longitude)
       (cpv/validate-numeric-range-param equator-crossing-longitude nil)
@@ -662,7 +662,7 @@
 
 (defn- equator-crossing-date-validation
   "Validates that the equator_crossing_date parameter is a valid date range string."
-  [concept-type params]
+  [_concept-type params]
   (when-let [equator-crossing-date (:equator-crossing-date params)]
     (parser/date-time-range-string-validation equator-crossing-date)))
 
@@ -682,7 +682,7 @@
 
 (defn- boolean-value-validation
   "Validates that all of the boolean parameters have values of true, false or unset."
-  [concept-type params]
+  [_concept-type params]
   (let [bool-params (select-keys params [:downloadable :browsable :include-granule-counts
                                          :include-has-granules :has-granules :hierarchical-facets
                                          :include-highlights :all-revisions :has-opendap-url
@@ -696,7 +696,7 @@
 
 (defn- collection-include-facets-validation
   "Validates that the include_facets parameter has a value of true, false or v2."
-  [concept-type params]
+  [_concept-type params]
   (when-let [include-facets (:include-facets params)]
     (when-not (contains? #{"true" "false" "v2"} (s/lower-case include-facets))
       [(format "Collection parameter include_facets must take value of true, false, or v2, but was [%s]"
@@ -715,7 +715,7 @@
 
 (defn- collection-facets-size-validation
   "Validates that the facets-size parameter has a value positive integer value."
-  [concept-type params]
+  [_concept-type params]
   (when-let [facets-size (:facets-size params)]
     (when (or (not (map? facets-size))
               (not-all-positive-integer-values? (vals facets-size)))
@@ -727,14 +727,14 @@
 
 (defn- no-facets-size-without-include-facets-v2
   "Validates that the include-facets parameter is set to v2 if facets-size is set."
-  [concept-type params]
+  [_concept-type params]
   (when (and (:facets-size params)
              (not= "v2" (:include-facets params)))
     ["facets_size option is not allowed unless the include_facets is v2."]))
 
 (defn- granule-include-facets-validation
   "Validates that the include_facets parameter has a value of v2."
-  [concept-type params]
+  [_concept-type params]
   (when-let [include-facets (:include-facets params)]
     (when-not (= "v2" (s/lower-case include-facets))
       [(format "Granule parameter include_facets only supports the value v2, but was [%s]"
@@ -764,14 +764,14 @@
 
 (defn- collection-concept-id-validation
   "Validates the collection-concept-id(s)"
-  [concept-type params]
+  [_concept-type params]
   ;; collection-concept-ids can be either a vector or a single value.
   (when-let [c-concept-ids (util/seqify (:collection-concept-id params))]
     (mapcat (partial cc/concept-id-validation :collection-concept-id) c-concept-ids)))
 
 (defn- timeline-start-date-validation
   "Validates the timeline start date parameter"
-  [concept-type params]
+  [_concept-type params]
   (let [start-date (:start-date params)]
     (if-not (s/blank? start-date)
       (cpv/validate-date-time "Timeline parameter start_date" start-date)
@@ -779,7 +779,7 @@
 
 (defn- timeline-end-date-validation
   "Validates the timeline end date parameter"
-  [concept-type params]
+  [_concept-type params]
   (let [end-date (:end-date params)]
     (if-not (s/blank? end-date)
       (cpv/validate-date-time "Timeline parameter end_date" end-date)
@@ -787,7 +787,7 @@
 
 (defn- timeline-range-validation
   "Validates the start date is before the end date"
-  [concept-type params]
+  [_concept-type params]
   (try
     (let [{:keys [start-date end-date]} params]
       (when (and start-date end-date
@@ -795,21 +795,21 @@
                            (dt-parser/parse-datetime end-date)))
         [(format "start_date [%s] must be before the end_date [%s]"
                  start-date end-date)]))
-    (catch ExceptionInfo e
+    (catch ExceptionInfo _e
       ;; The date times are invalid. This error should be handled by other validations
       [])))
 
 (defn- no-highlight-options-without-highlights-validation
   "Validates that the include-highlights parameter is set to true if any of the highlights
   options params are set."
-  [concept-type params]
+  [_concept-type params]
   (when (and (get-in params [:options :highlights])
              (not= "true" (:include-highlights params)))
     ["Highlights options are not allowed unless the include-highlights is true."]))
 
 (defn- highlights-numeric-options-validation
   "Validates that the highlights option (if present) is an integer greater than zero."
-  [concept-type params]
+  [_concept-type params]
   (keep
    (fn [param]
      (when-let [value (get-in params [:options :highlights param])]
@@ -818,7 +818,7 @@
            (when (< int-value 1)
              (format "%s option [%d] for highlights must be an integer greater than 0."
                      (csk/->snake_case_string param) int-value)))
-         (catch NumberFormatException e
+         (catch NumberFormatException _e
            (format
             "%s option [%s] for highlights is not a valid integer."
             (csk/->snake_case_string param) value)))))
@@ -826,7 +826,7 @@
 
 (defn- include-tags-parameter-validation
   "Validates parameters against result format."
-  [concept-type params]
+  [_concept-type params]
   (concat
    (when (and (not (#{:json :atom :echo10 :dif :dif10 :iso19115 :native} (:result-format params)))
               (not (s/blank? (:include-tags params))))
@@ -839,7 +839,7 @@
 
 (defn- timeline-interval-validation
   "Validates the timeline interval parameter"
-  [concept-type params]
+  [_concept-type params]
   (if-let [interval (:interval params)]
     (when-not (valid-timeline-intervals interval)
       [(str "Timeline interval is a required parameter for timeline search and must be one of"
@@ -849,7 +849,7 @@
 (defn- boosts-validation
   "Validates that all the provided fields in the boosts parameter are valid and that the values
   are numeric."
-  [concept-type params]
+  [_concept-type params]
   (let [boosts (:boosts params)]
     (keep (fn [[field value]]
             (if (or (field k2e/default-boosts)
@@ -867,7 +867,7 @@
 
 (defn shapefile-format-validation
   "Validates that the shapefile format value is one of the accepted formats"
-  [concept-type params]
+  [_concept-type params]
   (when-let [shapefile-format (get-in params [:shapefile :content-type])]
     (when (not (contains? valid-shapefile-formats shapefile-format))
       [(format "Shapefile format [%s] is not supported. It must be one of %s"
@@ -884,7 +884,7 @@
 
 (defn- circle-values-validation
   "Validates that the circle values are valid"
-  [concept-type params]
+  [_concept-type params]
   (when-let [circle-value (:circle params)]
     (let [circle-values (if (sequential? circle-value)
                           circle-value
@@ -1141,22 +1141,6 @@
   [params]
   (map #(format "Parameter [%s] was not recognized." (csk/->snake_case_string %))
        (set/difference (set (keys params)) valid-deleted-granules-search-params)))
-
-(defn- validate-deleted-grans-revision-date-str
-  [revision-date]
-  (when (.contains revision-date ",")
-    [(format (str "Invalid format for revision date, only a starting date is allowed "
-                  "for deleted granules search, but was [%s]") revision-date)]))
-
-(defn- deleted-grans-revision-date-validation
-  "Validates that deleted time can only have a start date for deleted collections search"
-  [params]
-  (when-let [revision-date (:revision-date params)]
-    (if (sequential? revision-date)
-      (if (> (count revision-date) 1)
-        [(format "Only one deleted time is allowed, but %s were provided." (count revision-date))]
-        (validate-deleted-grans-revision-date-str (first revision-date)))
-      (validate-deleted-grans-revision-date-str revision-date))))
 
 (defn- deleted-grans-revision-date-range-validation
   "Validates that deleted time can only have a start date for deleted collections search"
