@@ -5,8 +5,8 @@
             [cmr.common.date-time-parser :as parser]
             [cmr.common.date-time-range-parser :as range-parser]
             [cmr.search.models.query :as qm]
-            [cmr.elastic-utils.es-group-query-conditions :as gc]
-            [cmr.elastic-utils.es-params-converter :as p]))
+            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+            [cmr.elastic-utils.search.es-params-converter :as p]))
 
 (defn string->int-value
   "Return int value of the string value if it is not blank or nil if it is"

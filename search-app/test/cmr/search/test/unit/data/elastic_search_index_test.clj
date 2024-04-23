@@ -1,9 +1,9 @@
 (ns cmr.search.test.unit.data.elastic-search-index-test
   (:require
    [clojure.test :refer :all]
-   [cmr.elastic-utils.es-index-name-cache :as idx-names-cache]
-   [cmr.common.services.search.query-model :as qm]
    [cmr.common.hash-cache :as hash-cache]
+   [cmr.common.services.search.query-model :as qm]
+   [cmr.elastic-utils.search.es-index-name-cache :as idx-names-cache]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]
    [cmr.redis-utils.test.test-util :as test-util]

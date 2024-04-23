@@ -2,7 +2,7 @@
   "Contains utility functions for validating parameters."
   (:require
    [camel-snake-kebab.core :as csk]
-   [cmr.elastic-utils.nested-field :as nf]
+   [cmr.elastic-utils.search.nested-field :as nf]
    [cmr.common.util :as util]))
 
 (defn nested-field-validation-for-subfield

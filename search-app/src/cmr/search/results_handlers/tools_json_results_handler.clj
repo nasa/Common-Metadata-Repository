@@ -4,9 +4,9 @@
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [cmr.common-app.services.search :as qs]
-   [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
-   [cmr.elastic-utils.es-index :as elastic-search-index]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]
    [cmr.search.results-handlers.results-handler-util :as rs-util]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:tool :json]

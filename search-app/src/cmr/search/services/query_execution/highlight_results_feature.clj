@@ -1,9 +1,9 @@
 (ns cmr.search.services.query-execution.highlight-results-feature
   "This enables returning highlighted snippets with collection search results based on the
   provided keyword search."
-  (:require [cmr.elastic-utils.query-execution :as query-execution]
+  (:require [cmr.elastic-utils.search.query-execution :as query-execution]
             [cmr.common.services.search.results-model :as r]
-            [cmr.elastic-utils.es-query-to-elastic :as q2e]
+            [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
             [clojure.string :as str]
             [cmr.common.util :as util]))
 

@@ -10,7 +10,7 @@
                  * various format keys each mapped to compressed metadata."
   (:require
    [cmr.common-app.data.metadata-retrieval.revision-format-map :as crfm]
-   [cmr.elastic-utils.query-execution :as qe]
+   [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.common.services.search.query-model :as q]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.date-time-parser :as parser]

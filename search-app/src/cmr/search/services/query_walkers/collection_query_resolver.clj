@@ -1,12 +1,13 @@
 (ns cmr.search.services.query-walkers.collection-query-resolver
   "Defines protocols and functions to resolve collection query conditions"
-  (:require [cmr.search.models.query :as qm]
-            [cmr.common.services.search.query-model :as cqm]
-            [cmr.elastic-utils.es-group-query-conditions :as gc]
-            [cmr.common.services.errors :as errors]
-            [cmr.elastic-utils.es-index :as idx]
-            [cmr.elastic-utils.query-transform :as c2s]
-            [clojure.set :as set])
+  (:require
+   [clojure.set :as set]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.search.query-model :as cqm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-index :as idx]
+   [cmr.elastic-utils.search.query-transform :as c2s]
+   [cmr.search.models.query :as qm])
   (:import cmr.search.models.query.CollectionQueryCondition
            cmr.common.services.search.query_model.Query
            cmr.common.services.search.query_model.NegatedCondition

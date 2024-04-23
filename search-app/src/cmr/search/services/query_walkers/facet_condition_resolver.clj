@@ -2,7 +2,7 @@
   "Defines protocols and functions to resolve facet conditions by removing the conditions that
    match the given facet field."
   (:require
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.common.services.search.query-model :as cqm]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as fvrf])

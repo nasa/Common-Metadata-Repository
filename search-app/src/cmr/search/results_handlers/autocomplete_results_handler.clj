@@ -1,7 +1,7 @@
 (ns cmr.search.results-handlers.autocomplete-results-handler
   "Handles the Autocomplete JSON results format and related functions"
   (:require
-    [cmr.elastic-utils.es-results-to-query-results :as er]))
+    [cmr.elastic-utils.search.es-results-to-query-results :as er]))
 
 (defmethod er/elastic-result->query-result-item [:autocomplete :json]
   [context query elastic-result]

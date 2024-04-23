@@ -1,8 +1,9 @@
 (ns cmr.elastic-utils.validators.date-range
   "Contains functions for validating date range condition"
-  (:require [clj-time.core :as t]
-            [cmr.elastic-utils.es-query-validation :as v]
-            [cmr.elastic-utils.datetime-helper :as h])
+  (:require
+   [clj-time.core :as t]
+   [cmr.elastic-utils.datetime-helper :as h]
+   [cmr.elastic-utils.search.es-query-validation :as v])
   (:import cmr.common.services.search.query_model.DateRangeCondition))
 
 (defn- start-date-is-before-end-date

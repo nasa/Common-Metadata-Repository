@@ -3,8 +3,8 @@
   (:require
    [cheshire.core :as json]
    [cmr.common-app.services.search :as qs]
-   [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
-   [cmr.elastic-utils.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]
    [cmr.search.results-handlers.umm-json-results-helper :as results-helper]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]))
 

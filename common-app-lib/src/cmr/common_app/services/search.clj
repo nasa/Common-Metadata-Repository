@@ -1,20 +1,17 @@
 (ns cmr.common-app.services.search
   "This contains common code for implementing search capabilities in a CMR application"
   (:require
-   [cmr.common.util :as u]
-   [cmr.common.cache.fallback-cache :as fallback-cache]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
+   [cmr.common.cache :as cache]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.log :refer (info)]
    [cmr.common.services.errors :as errors]
-   [cmr.common.cache :as cache]
-   [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.elastic-utils.es-query-validation :as qv]
-   [cmr.elastic-utils.query-execution :as qe]
    [cmr.common.services.search.query-model :as qm]
+   [cmr.common.util :as u]
+   [cmr.elastic-utils.search.es-query-validation :as qv]
+   [cmr.elastic-utils.search.query-execution :as qe]
    ;; Must be required to be available
-   [cmr.elastic-utils.validators.numeric-range]
    [cmr.elastic-utils.validators.date-range]
+   [cmr.elastic-utils.validators.numeric-range]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]))
 

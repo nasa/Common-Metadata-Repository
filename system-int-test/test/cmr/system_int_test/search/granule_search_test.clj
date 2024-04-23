@@ -2,7 +2,7 @@
   "Integration test for CMR granule search"
   (:require
    [clojure.test :refer :all]
-   [cmr.elastic-utils.es-messenger :as cmsg]
+   [cmr.elastic-utils.search.es-messenger :as cmsg]
    [cmr.common.services.messages :as msg]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]

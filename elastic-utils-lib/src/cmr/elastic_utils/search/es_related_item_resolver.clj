@@ -1,10 +1,14 @@
-(ns cmr.elastic-utils.es-related-item-resolver
+(ns cmr.elastic-utils.search.es-related-item-resolver
   "Finds RelatedItemQueryConditions in a query, executes them, processes the
    results and replaces them with the retrieved condition"
-  (:require [cmr.common.services.search.query-model :as qm]
-            [cmr.elastic-utils.es-group-query-conditions :as gc]
-            [cmr.elastic-utils.query-transform :as c2s]
-            [cmr.elastic-utils.es-index :as idx]))
+  (:require
+   [cmr.common.services.search.query-model :as qm]
+   [cmr.elastic-utils.search.es-index :as idx]
+   [cmr.elastic-utils.search.query-transform :as c2s])
+  (:import cmr.common.services.search.query_model.Query
+           cmr.common.services.search.query_model.ConditionGroup
+           cmr.common.services.search.query_model.NegatedCondition
+           cmr.common.services.search.query_model.RelatedItemQueryCondition))
 
 (defprotocol ResolveRelatedItemQueryCondition
   (resolve-related-item-conditions

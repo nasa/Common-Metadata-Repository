@@ -1,7 +1,6 @@
 (ns cmr.elastic-utils.es-index-helper
   "Defines helper functions for invoking ES index"
   (:require
-   [cheshire.core :as json]
    [clj-http.client :as http]
    [clojurewerkz.elastisch.rest :as rest]
    [clojurewerkz.elastisch.rest.index :as esi]

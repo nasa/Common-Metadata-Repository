@@ -5,7 +5,7 @@
   range data from the query. This is done during pre-processing since down the road temporal
   conditions get very complicated and it's easier to pull them out here."
   (:require
-   [cmr.elastic-utils.query-execution :as query-execution]
+   [cmr.elastic-utils.search.query-execution :as query-execution]
    [cmr.common.util :as util]
    [cmr.search.services.query-walkers.temporal-range-extractor :as temporal-range-extractor])
   (:import cmr.common.services.search.query_model.Query

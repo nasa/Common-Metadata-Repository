@@ -5,10 +5,10 @@
   Other types of conditions will not be included in limiting the granule counts."
   (:require
    [clojure.string :as string]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.query-execution :as query-execution]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.query-execution :as query-execution]
    [cmr.common.services.search.query-model :as q]
-   [cmr.elastic-utils.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.common.services.errors :as errors]
    [cmr.search.models.query :as qm]
    [cmr.search.services.query-walkers.condition-extractor :as condition-extractor])

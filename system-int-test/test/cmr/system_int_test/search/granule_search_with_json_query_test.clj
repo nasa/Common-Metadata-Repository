@@ -3,8 +3,8 @@
   (:require
    [clojure.string :as s]
    [clojure.test :refer :all]
-   [cmr.elastic-utils.es-messenger :as cmsg]
-   [cmr.elastic-utils.es-messenger :as vmsg]
+   [cmr.elastic-utils.search.es-messenger :as cmsg]
+   [cmr.elastic-utils.search.es-messenger :as vmsg]
    [cmr.common.services.messages :as msg]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
