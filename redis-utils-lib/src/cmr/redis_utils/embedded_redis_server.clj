@@ -15,7 +15,7 @@
   "Setup redis docker image"
   [network]
   (doto (GenericContainer. redis-image)
-    (.withExposedPorts (ints 6379))
+    (.withExposedPorts (int-array 6379))
     (.withNetwork network)))
 
 (defrecord RedisServer

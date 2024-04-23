@@ -24,7 +24,7 @@
   "Build kibana in an embedded docker."
   [network]
   (doto (GenericContainer. kibana-official-docker-image)
-        (.withexposedPorts (ints 5601))
+        (.withexposedPorts (int-array 5601))
         (.withNetwork network)))
 
 (defn- build-node
@@ -67,7 +67,7 @@
            (.withEnv "node.name" "embedded-elastic")
            (.withNetwork network)
            (.withNetworkAliases (into-array String ["elasticsearch"]))
-           (.withExposedPort (ints 9200))
+           (.withExposedPorts (int-array 9200))
            (.withStartupTimeout (Duration/ofSeconds 480))
            (.waitingFor
             (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200)))
