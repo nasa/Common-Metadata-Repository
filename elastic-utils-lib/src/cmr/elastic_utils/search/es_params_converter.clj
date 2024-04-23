@@ -1,12 +1,12 @@
-(ns cmr.elastic-utils.es-params-converter
+(ns cmr.elastic-utils.search.es-params-converter
   "Contains common code for handling search parameters and converting them into a query model."
   (:require
    [camel-snake-kebab.core :as csk]
    [clojure.string :as string]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.common.services.search.query-model :as qm]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :as u]))
+   [cmr.common.services.search.query-model :as qm]
+   [cmr.common.util :as u]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]))
 
 (defn- sanitize-sort-key
   "Sanitizes a single sort key preserving the direction character."

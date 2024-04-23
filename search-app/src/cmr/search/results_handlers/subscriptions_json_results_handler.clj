@@ -3,17 +3,17 @@
   (:require
    [cheshire.core :as json]
    [cmr.common-app.services.search :as qs]
-   [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
-   [cmr.elastic-utils.es-index :as elastic-search-index]
-   [cmr.common.util :as util]))
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:subscription :json]
-  [concept-type query]
+  [_concept-type _query]
   ["concept-id" "revision-id" "deleted" "provider-id" "native-id" "subscription-name"
    "subscriber-id" "collection-concept-id" "type"])
 
 (defmethod elastic-results/elastic-result->query-result-item [:subscription :json]
-  [context query elastic-result]
+  [_context _query elastic-result]
   (let [{{subscription-name :subscription-name
           subscriber-id :subscriber-id
           collection-concept-id :collection-concept-id
@@ -37,5 +37,5 @@
       result-item)))
 
 (defmethod qs/search-results->response [:subscription :json]
-  [context query results]
+  [_context _query results]
   (json/generate-string (select-keys results [:hits :took :items])))

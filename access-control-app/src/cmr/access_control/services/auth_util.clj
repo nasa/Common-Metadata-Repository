@@ -2,8 +2,8 @@
   (:require
    [cmr.access-control.config :as access-control-config]
    [cmr.acl.core :as acl]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.query-execution :as qe]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.common.services.search.query-model :as qm]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]

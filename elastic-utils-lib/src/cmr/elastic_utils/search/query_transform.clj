@@ -1,4 +1,4 @@
-(ns cmr.elastic-utils.query-transform
+(ns cmr.elastic-utils.search.query-transform
   (:require [cmr.common.services.search.query-model :as qm]))
 
 (defprotocol ComplexQueryToSimple

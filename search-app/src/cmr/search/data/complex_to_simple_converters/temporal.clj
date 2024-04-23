@@ -7,9 +7,9 @@
             [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
             [cmr.common.services.search.query-model :as cqm]
-            [cmr.elastic-utils.es-group-query-conditions :as gc]
+            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
             [cmr.elastic-utils.datetime-helper :as h]
-            [cmr.elastic-utils.query-transform :as c2s]))
+            [cmr.elastic-utils.search.query-transform :as c2s]))
 
 (defn- intersect-temporal->simple-conditions
   "Convert a temporal condition with INTERSECT mask into a combination of simpler conditions

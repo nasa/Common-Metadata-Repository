@@ -1,9 +1,9 @@
-(ns cmr.elastic-utils.es-query-validation
+(ns cmr.elastic-utils.search.es-query-validation
   "Defines protocols and functions to validate query conditions"
   (:require
    [cmr.common.concepts :as concepts]
    [cmr.common.mime-types :as mt]
-   [cmr.common.services.search.query-model :as qm]
+   ;[cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.validators.max-number-of-conditions :as max-conditions])
   (:import cmr.common.services.search.query_model.Query
            cmr.common.services.search.query_model.ConditionGroup))

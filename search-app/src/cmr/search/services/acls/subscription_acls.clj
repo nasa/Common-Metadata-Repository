@@ -1,8 +1,8 @@
 (ns cmr.search.services.acls.subscription-acls
   "Contains functions for manipulating subscription acls"
   (:require
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.query-execution :as qe]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.common.services.search.query-model :as qm]
    [cmr.common.api.context :as context-util]
    [cmr.common.util :as util]

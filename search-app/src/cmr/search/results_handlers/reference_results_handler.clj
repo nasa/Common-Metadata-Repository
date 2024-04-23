@@ -1,26 +1,24 @@
 (ns cmr.search.results-handlers.reference-results-handler
   "Handles the XML reference format."
   (:require
-   [cheshire.core :as json]
-   [clojure.data.xml :as x]
-   [clojure.set :as set]
-   [cmr.common.concepts :as concepts]
+   [clojure.data.xml :as xml]
    [cmr.common-app.services.search :as qs]
-   [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
-   [cmr.elastic-utils.es-index :as elastic-search-index]
-   [cmr.search.models.query :as q]
+   [cmr.common.concepts :as concepts]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]
+   [cmr.search.models.query :as query]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.url-helper :as url]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["granule-ur"
    "provider-id"
    "concept-id"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["entry-title"
    "provider-id"
    "short-name"
@@ -31,7 +29,7 @@
    "_score"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:variable :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["variable-name"
    "provider-id"
    "concept-id"
@@ -40,7 +38,7 @@
    "_score"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:service :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["service-name"
    "provider-id"
    "concept-id"
@@ -49,7 +47,7 @@
    "_score"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:tool :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["tool-name"
    "provider-id"
    "concept-id"
@@ -58,7 +56,7 @@
    "_score"])
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:subscription :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["subscription-name"
    "provider-id"
    "concept-id"
@@ -68,7 +66,7 @@
 
 (doseq [concept-type-key (concepts/get-generic-concept-types-array)]
   (defmethod elastic-search-index/concept-type+result-format->fields [concept-type-key :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["name"
    "id"
    "provider-id"
@@ -106,7 +104,7 @@
      :deleted deleted
      :location (format "%s%s/%s" (url/reference-root context) concept-id revision-id)
      :name name-value
-     :score (q/normalize-score score)}))
+     :score (query/normalize-score score)}))
 
 (doseq [concept-type (into [] (concat [:collection :granule :variable :service :tool :subscription] (concepts/get-generic-concept-types-array)))]
   (defmethod elastic-results/elastic-result->query-result-item [concept-type :xml]
@@ -136,27 +134,27 @@
   (let [{:keys [has-granules-map granule-counts-map]} results
         {:keys [concept-id revision-id location name score deleted]} reference
         granule-count (get granule-counts-map concept-id 0)]
-    (x/element :reference {}
-               (x/element :name {} name)
-               (x/element :id {} concept-id)
+    (xml/element :reference {}
+               (xml/element :name {} name)
+               (xml/element :id {} concept-id)
                (if deleted
-                 (x/element :deleted {} "true")
-                 (x/element :location {} location))
-               (x/element :revision-id {} (str revision-id))
+                 (xml/element :deleted {} "true")
+                 (xml/element :location {} location))
+               (xml/element :revision-id {} (str revision-id))
                (when has-granules-map
-                 (x/element :has-granules {} (or (< 0 granule-count)
+                 (xml/element :has-granules {} (or (< 0 granule-count)
                                                  (get has-granules-map concept-id false))))
                (when granule-counts-map
-                 (x/element :granule-count {} granule-count))
-               (when score (x/element :score {} score)))))
+                 (xml/element :granule-count {} granule-count))
+               (when score (xml/element :score {} score)))))
 
 (defmethod results->xml-element false
-  [_ include-facets? results]
+  [_ _include-facets? results]
   (let [{:keys [hits took items facets]} results]
-    (x/element :results {}
-               (x/element :hits {} (str hits))
-               (x/element :took {} (str took))
-               (x/->Element :references {}
+    (xml/element :results {}
+               (xml/element :hits {} (str hits))
+               (xml/element :took {} (str took))
+               (xml/->Element :references {}
                             (map (partial reference->xml-element false results) items))
                (frf/facets->xml-element facets))))
 
@@ -164,25 +162,25 @@
 ;; the generic document isn't being stored correctly.  It is missing cmr elements. Will be working
 ;; on this next, so I may then be able to delete this.
 (defmethod results->xml-element :default
-  [_ include-facets? results]
+  [_ _include-facets? results]
   (let [{:keys [hits took items facets]} results]
-    (x/element :results {}
-               (x/element :hits {} (str hits))
-               (x/element :took {} (str took))
-               (x/->Element :references {}
+    (xml/element :results {}
+               (xml/element :hits {} (str hits))
+               (xml/element :took {} (str took))
+               (xml/->Element :references {}
                             (map (partial reference->xml-element false results) items))
                (frf/facets->xml-element facets))))
 
 ;; ECHO Compatible implementations
 
 (defmethod reference->xml-element true
-  [_ results reference]
+  [_ _results reference]
   (let [{:keys [concept-id location name score]} reference]
-    (x/element :reference {}
-               (x/element :name {} name)
-               (x/element :id {} concept-id)
-               (x/element :location {} location)
-               (when score (x/element :score {} score)))))
+    (xml/element :reference {}
+               (xml/element :name {} name)
+               (xml/element :id {} concept-id)
+               (xml/element :location {} location)
+               (when score (xml/element :score {} score)))))
 
 (defmethod results->xml-element true
   [_ include-facets? results]
@@ -191,14 +189,14 @@
     ;; We generate response in catalog-rest search-facet format.
     ;; Only facets are returned, not query results
     (frf/facets->echo-xml-element (:facets results))
-    (x/->Element :references {"type" "array"}
+    (xml/->Element :references {"type" "array"}
                  (map (partial reference->xml-element true results) (:items results)))))
 
 (defn- search-results->response
-  [context query results]
+  [_context query results]
   (let [{:keys [echo-compatible? result-features]} query
         include-facets? (boolean (some #{:facets} result-features))]
-    (x/emit-str (results->xml-element echo-compatible? include-facets? results))))
+    (xml/emit-str (results->xml-element echo-compatible? include-facets? results))))
 
 (doseq [concept-type (into [] (concat [:collection :granule :variable :service :tool :subscription] (concepts/get-generic-concept-types-array)))]
   (defmethod qs/search-results->response [concept-type :xml]

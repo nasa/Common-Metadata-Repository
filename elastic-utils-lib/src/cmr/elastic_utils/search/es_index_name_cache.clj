@@ -1,4 +1,4 @@
-(ns cmr.elastic-utils.es-index-name-cache
+(ns cmr.elastic-utils.search.es-index-name-cache
   "Implements a cache to store Elasticsearch information used when searching
   elastic search for concepts."
   (:require

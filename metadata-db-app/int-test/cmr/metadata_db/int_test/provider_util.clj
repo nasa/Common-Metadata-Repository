@@ -8,7 +8,6 @@
    * cmr.access-control.test.provider-util
    * cmr.system-int-test.utils.provider-util"
   (:require
-   [clojure.string :as str]
    [cmr.common.util :as util]))
 
 ;; The most basic provider metadata needed to create a provider

@@ -5,17 +5,17 @@
   ending. The events counts of granules are used to determine when intervals start and stop."
   (:require
    [cheshire.core :as json]
-   [clj-time.coerce :as c]
-   [clj-time.core :as t]
+   [clj-time.coerce :as coerce]
+   [clj-time.core :as time]
    [cmr.common-app.services.search :as qs]
-   [cmr.elastic-utils.es-results-to-query-results :as elastic-results]
-   [cmr.elastic-utils.es-index :as elastic-search-index]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.query-execution :as query-execution]
-   [cmr.elastic-utils.es-query-to-elastic :as q2e]
-   [cmr.common.services.search.results-model :as r]
    [cmr.common.services.errors :as errors]
-   [cmr.search.models.query :as q]))
+   [cmr.common.services.search.results-model :as r-model]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]
+   [cmr.elastic-utils.search.query-execution :as query-execution]
+   [cmr.search.models.query :as query]))
 
 (defn- query-aggregations
   "Returns the elasticsearch aggregations to put in the query for finding granule timeline intervals."
@@ -38,7 +38,7 @@
 (defmethod query-execution/pre-process-query-result-feature :timeline
   [context query feature]
   (let [{:keys [interval]} query
-        temporal-cond (q/map->TemporalCondition (select-keys query [:start-date :end-date]))]
+        temporal-cond (query/map->TemporalCondition (select-keys query [:start-date :end-date]))]
     (-> query
         (assoc :aggregations (query-aggregations interval)
                :page-size 0
@@ -70,7 +70,7 @@
   [event-type bucket]
   {:event-type event-type
    :hits (:doc_count bucket)
-   :event-time (c/from-long (long (:key bucket)))})
+   :event-time (coerce/from-long (long (:key bucket)))})
 
 (defn collection-bucket->ordered-events
   "Returns a list of ordered events within the collection bucket."
@@ -124,19 +124,19 @@
 (def interval-granularity->dist-fn
   "Maps an interval granularity to a clj-time function to compute the distance between two time values
   in that granularity."
-  {:year t/in-years
-   :month t/in-months
-   :day t/in-days
-   :hour t/in-hours
-   :minute t/in-minutes
-   :second t/in-seconds})
+  {:year time/in-years
+   :month time/in-months
+   :day time/in-days
+   :hour time/in-hours
+   :minute time/in-minutes
+   :second time/in-seconds})
 
 (defn adjacent?
   "Returns true if 2 intervals are adjacent based on the interval granularity. The order here is
   important. It assumes i2 follows i1."
   [interval-granularity i1 i2]
   (let [dist-fn (interval-granularity->dist-fn interval-granularity)]
-    (= 1 (dist-fn (t/interval (:end i1) (:start i2))))))
+    (= 1 (dist-fn (time/interval (:end i1) (:start i2))))))
 
 (defn- merge-intervals
   "Merges two intervals together. The start date of the first is taken along with the end date of
@@ -172,13 +172,12 @@
 
 (def ^:private interval-granularity->period-fn
   "Maps interval granularity types to the clj-time period functions"
-  {:year t/years
-   :month t/months
-   :day t/days
-   :hour t/hours
-   :minute t/minutes
-   :second t/seconds})
-
+  {:year time/years
+   :month time/months
+   :day time/days
+   :hour time/hours
+   :minute time/minutes
+   :second time/seconds})
 
 (defn- advance-interval-end-date
   "Advances the interval end date by one unit of interval granularity. The end dates coming back from
@@ -187,7 +186,7 @@
   clients that there is data within that time area."
   [interval-granularity interval]
   (let [one-unit ((interval-granularity->period-fn interval-granularity) 1)]
-    (update-in interval [:end] #(when % (t/plus % one-unit)))))
+    (update-in interval [:end] #(when % (time/plus % one-unit)))))
 
 (defn- constrain-interval-to-user-range
   "Constrains the start and end date of the interval to within the range given by the user"
@@ -197,8 +196,8 @@
   ;; interval end date to the end of the range the user requested.
   (let [no-end (:no-end interval)]
     (-> interval
-        (update-in [:start] #(if (t/before? % start-date) start-date %))
-        (update-in [:end] #(if (or no-end (nil? %) (t/after? % end-date)) end-date %)))))
+        (update-in [:start] #(if (time/before? % start-date) start-date %))
+        (update-in [:end] #(if (or no-end (nil? %) (time/after? % end-date)) end-date %)))))
 
 (defn- collection-bucket->intervals
   "Takes a single collection bucket from the aggregation response and returns the intervals
@@ -225,18 +224,18 @@
   (let [{:keys [start-date end-date interval]} query
         items (map (partial collection-bucket->intervals (:interval query) start-date end-date)
                    (get-in elastic-results [:aggregations :by-collection :buckets]))]
-    (r/map->Results {:items items
+    (r-model/map->Results {:items items
                      :timed-out (:timed_out elastic-results)
                      :result-format (:result-format query)})))
 
 (defn interval->response-tuple
   "Converts an interval into the response tuple containing the start, end, and number of granules."
   [query {:keys [start end num-grans]}]
-  [(/ (c/to-long start) 1000)
+  [(/ (coerce/to-long start) 1000)
    (-> end
        ;; End may not be set if the granule didn't have an end date
        (or (:end-date query))
-       c/to-long
+       coerce/to-long
        (/ 1000))
    num-grans])
 

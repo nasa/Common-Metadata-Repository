@@ -2,8 +2,8 @@
   "Contains functions for converting temporal facets query parameters to conditions"
   (:require
    [clj-time.core :as clj-time]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.es-params-converter :as p]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as p]
    [cmr.common.services.search.query-model :as qm]
    [cmr.common.date-time-parser :as parser]))
 

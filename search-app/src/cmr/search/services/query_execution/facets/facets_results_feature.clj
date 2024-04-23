@@ -1,6 +1,6 @@
 (ns cmr.search.services.query-execution.facets.facets-results-feature
   "This enables returning facets with collection search results"
-  (:require [cmr.elastic-utils.query-execution :as query-execution]
+  (:require [cmr.elastic-utils.search.query-execution :as query-execution]
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
             [cmr.common.services.search.results-model :as r]
             [camel-snake-kebab.core :as csk]

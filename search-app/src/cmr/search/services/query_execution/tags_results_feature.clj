@@ -4,8 +4,8 @@
   (:require [clojure.string :as str]
             [cmr.common.util :as util]
             [clojure.edn :as edn]
-            [cmr.elastic-utils.es-query-to-elastic :as q2e]
-            [cmr.elastic-utils.query-execution :as query-execution]))
+            [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+            [cmr.elastic-utils.search.query-execution :as query-execution]))
 
 (def stored-tags-field
   "name of the elasticsearch collection mapping field that stores the tags info"

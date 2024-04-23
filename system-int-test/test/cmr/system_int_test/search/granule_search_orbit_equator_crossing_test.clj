@@ -2,7 +2,7 @@
   "Integration test for CMR granule temporal search"
   (:require 
     [clojure.test :refer :all]
-    [cmr.elastic-utils.es-messenger :as m]
+    [cmr.elastic-utils.search.es-messenger :as m]
     [cmr.common.services.messages :as cm]
     [cmr.search.services.messages.orbit-number-messages :as on-m]
     [cmr.system-int-test.data2.core :as d]

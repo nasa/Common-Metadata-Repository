@@ -1,11 +1,12 @@
 (ns cmr.search.validators.equator-crossing-longitude
   "Contains functions for validating equator-crossing-longitude conditions"
-  (:require [cmr.common.services.search.query-model :as qm]
-            [cmr.elastic-utils.es-query-validation :as v]
-            [cmr.elastic-utils.validators.numeric-range :as nm]
-            [cmr.search.services.messages.orbit-number-messages :as onm]))
+  (:require
+   [cmr.common.services.search.query-model :as qm]
+   [cmr.elastic-utils.search.es-query-validation :as val]
+   [cmr.elastic-utils.validators.numeric-range :as nm]
+   [cmr.search.services.messages.orbit-number-messages :as onm]))
 
-(extend-protocol v/Validator
+(extend-protocol val/Validator
   cmr.search.models.query.EquatorCrossingLongitudeValueCondition
   (validate
     [{:keys [value]}]
@@ -13,7 +14,7 @@
            (< value -180.0))
       (onm/non-numeric-equator-crossing-longitude-parameter))))
 
-(extend-protocol v/Validator
+(extend-protocol val/Validator
   cmr.search.models.query.EquatorCrossingLongitudeRangeCondition
   (validate
     [{:keys [min-value max-value]}]

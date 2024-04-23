@@ -1,8 +1,8 @@
 (ns cmr.search.test.unit.models.helpers
   "Contains helper functions for testing the query walkers namespaces."
   (:require
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.common.services.search.query-model:as cqm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.common.services.search.query-model :as cqm]
    [cmr.search.models.query :as q]))
 
 (defn and-conds

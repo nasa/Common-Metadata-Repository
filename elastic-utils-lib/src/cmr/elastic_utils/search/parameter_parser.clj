@@ -1,9 +1,10 @@
-(ns cmr.elastic-utils.parameter-parser
+(ns cmr.elastic-utils.search.parameter-parser
   "Contains helper functions to parse parameter strings."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common.services.messages :as msg]
-            [cmr.common.date-time-parser :as dtp]
-            [cmr.common.date-time-range-parser :as dtrp]))
+  (:require
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.date-time-range-parser :as dtrp]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.messages :as msg]))
 
 (defn range-parameter->map
   "Parses a range parameter in the form 'value' or 'min-value,max-value' where

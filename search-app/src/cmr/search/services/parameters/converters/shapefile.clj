@@ -6,8 +6,8 @@
    [cmr.common.log :refer [debug info]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.es-params-converter :as p]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as p]
    [cmr.common.services.errors :as errors]
    [cmr.search.services.parameters.converters.geojson :as geojson]
    [cmr.search.services.parameters.converters.geometry :as geo])

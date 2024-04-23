@@ -8,7 +8,7 @@
    [cmr.search.services.messages.orbit-number-messages :as on-msg]
    [cmr.common.services.messages :as com-msg]
    [cmr.search.services.messages.common-messages :as msg]
-   [cmr.elastic-utils.es-messenger :as cmsg]))
+   [cmr.elastic-utils.search.es-messenger :as cmsg]))
 
 (def valid-params
   "Example valid parameters"
