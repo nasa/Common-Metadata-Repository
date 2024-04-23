@@ -55,16 +55,16 @@
    * group-operation - the group operation i.e. :and or :or
    * group-info - the map of common group fields.
    * conditions - the list of conditions to merge."
-  (fn [group-operation group-info conditions]
+  (fn [group-operation _group-info _conditions]
     group-operation))
 
 (defmethod merge-string-condition-group :or
-  [group-operation {:keys [field case-sensitive?]} conditions]
+  [_group-operation {:keys [field case-sensitive?]} conditions]
   (let [values (distinct (mapcat extract-values conditions))]
     (q/string-conditions field values case-sensitive?)))
 
 (defmethod merge-string-condition-group :and
-  [group-operation {:keys [field case-sensitive?]} conditions]
+  [_group-operation {:keys [field case-sensitive?]} conditions]
   ;; When we have a series of AND'd conditions we will extract each set of values which are OR'd
   ;; and create a set of each one.
   (let [value-sets (map (comp set extract-values) conditions)
@@ -77,7 +77,7 @@
 
 (defmulti merge-conditions-with-strategy
   "Merges together the conditions using the given strategy"
-  (fn [strategy group-operation conditions]
+  (fn [strategy _group-operation _conditions]
     strategy))
 
 ;; Conditions with no merge strategy are not merged together

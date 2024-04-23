@@ -22,11 +22,11 @@
 
 (defmulti filter-group-conds
   "Filters out conditions from group conditions that would have no effect on the query."
-  (fn [operation conditions]
+  (fn [operation _conditions]
     operation))
 
 (defmethod filter-group-conds :and
-  [operation conditions]
+  [_operation conditions]
   ;; Match all conditions can be filtered out of an AND.
   (if (= conditions [q/match-all])
     ;; A single match-all should be returned
@@ -34,7 +34,7 @@
     (filter #(not= % q/match-all) conditions)))
 
 (defmethod filter-group-conds :or
-  [operation conditions]
+  [_operation conditions]
   ;; Match none conditions can be filtered out of an OR.
   (if (= conditions [q/match-none])
     ;; A single match-none should be returned
@@ -44,17 +44,17 @@
 (defmulti short-circuit-group-conds
   "Looks for conditions that will overrule all other conditions such as a match-none or match-all.
   If the condition group contains one of those conditions it will return just that condition."
-  (fn [operation conditions]
+  (fn [operation _conditions]
     operation))
 
 (defmethod short-circuit-group-conds :and
-  [operation conditions]
+  [_operation conditions]
   (if (some #(= q/match-none %) conditions)
     [q/match-none]
     conditions))
 
 (defmethod short-circuit-group-conds :or
-  [operation conditions]
+  [_operation conditions]
   (if (some #(= q/match-all %) conditions)
     [q/match-all]
     conditions))

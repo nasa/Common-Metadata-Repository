@@ -12,7 +12,6 @@
    [cheshire.core :as json]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common.log :refer (info)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.transmit.access-control :as access-control]
@@ -85,7 +84,7 @@
   It expects the request context is already associated with the request."
   [handler]
   (fn [request]
-    (let [{:keys [request-context]} request]
+    (let [{:keys [_request-context]} request]
       (-> request
           (update-in [:request-context] add-user-id-and-sids-to-context)
           (handler)))))

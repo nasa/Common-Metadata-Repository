@@ -1,8 +1,8 @@
 (ns cmr.common-app.test.services.search.condition-merger
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [cmr.common-app.services.search.condition-merger :as c]
             [cmr.common-app.services.search.query-model :as q]
-            [cmr.common-app.test.services.search.helpers :refer :all]))
+            [cmr.common-app.test.services.search.helpers :refer [and-conds generic or-conds]]))
 
 
 (defn does-not-merge

@@ -66,7 +66,7 @@
 
 ;; A job for refreshing the index names cache.
 (defjob RefreshIndexNamesCacheJob
-  [ctx system]
+  [_ctx system]
   (refresh-index-names-cache system))
 
 (defn refresh-index-names-cache-job

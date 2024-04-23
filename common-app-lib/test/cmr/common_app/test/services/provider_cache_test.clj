@@ -1,6 +1,6 @@
 (ns cmr.common-app.test.services.provider-cache-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common-app.services.provider-cache :as provider-cache]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.time-keeper :as tk]

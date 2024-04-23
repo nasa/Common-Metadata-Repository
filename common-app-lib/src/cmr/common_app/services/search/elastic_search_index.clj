@@ -7,8 +7,6 @@
    [cmr.common-app.config :as config]
    [cmr.common-app.services.search.query-model :as qm]
    [cmr.common-app.services.search.query-to-elastic :as q2e]
-   [cmr.common-app.services.search.results-model :as results]
-   [cmr.common.concepts :as concepts]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [debug info]]
@@ -30,11 +28,11 @@
   "Returns index info based on input concept type. The map should contain a :type-name key along with
    an :index-name key. :index-name can refer to a single index or a comma separated string of multiple
    index names."
-  (fn [context concept-type query]
+  (fn [_context concept-type _query]
     concept-type))
 
 (defmethod concept-type->index-info :collection
-  [context _ query]
+  [_context _ query]
   {:index-name (if (:all-revisions? query)
                  "1_all_collection_revisions"
                  (collections-index-alias))
@@ -47,13 +45,13 @@
     [concept-type (qm/base-result-format query)]))
 
 (defmethod concept-type+result-format->fields [:granule :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["granule-ur"
    "provider-id"
    "concept-id"])
 
 (defmethod concept-type+result-format->fields [:collection :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["entry-title"
    "provider-id"
    "short-name"
@@ -110,7 +108,7 @@
 
 (defmulti handle-es-exception
   "Handles exceptions from ES. Unexpected exceptions are simply re-thrown."
-  (fn [ex scroll-id]
+  (fn [ex _scroll-id]
     (:status (ex-data ex))))
 
 (defmethod handle-es-exception 404
@@ -142,7 +140,7 @@
          (context->conn context) (:index-name index-info) [(:type-name index-info)] query))
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
 
-    (catch UnknownHostException e
+    (catch UnknownHostException _e
       (info (format
              (str "Execute ES query failed due to UnknownHostException. Retry in %.3f seconds."
                   " Will retry up to %d times.")
@@ -207,7 +205,7 @@
 
 (defmulti send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
-  (fn [context query]
+  (fn [_context query]
     (:page-size query)))
 
 (defmethod send-query-to-elastic :default
@@ -308,10 +306,10 @@
   lifecycle/Lifecycle
 
   (start
-    [this system]
+    [this _system]
     (assoc this :conn (es/try-connect (:config this))))
 
-  (stop [this system]
+  (stop [this _system]
         this))
 
 (defn create-elastic-search-index

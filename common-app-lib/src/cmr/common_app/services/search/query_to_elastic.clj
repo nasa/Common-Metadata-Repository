@@ -165,7 +165,7 @@
    (range-condition->elastic field min-value max-value execution true))
   ([field min-value max-value execution use-cache]
    (range-condition->elastic field min-value max-value execution use-cache false))
-  ([field min-value max-value execution use-cache exclusive?]
+  ([field min-value max-value _execution _use-cache exclusive?]
    (let [[greater-than less-than] (if exclusive?
                                     [:gt :lt]
                                     [:gte :lte])]
@@ -249,7 +249,7 @@
 
   cmr.common_app.services.search.query_model.ScriptCondition
   (condition->elastic
-   [{:keys [source lang params]} concept-type]
+   [{:keys [source lang params]} _concept-type]
    {:script {:script {:source source
                       :params params
                       :lang lang}}})
@@ -322,7 +322,7 @@
 
   cmr.common_app.services.search.query_model.DateValueCondition
   (condition->elastic
-   [{:keys [field value]} concept-type]
+   [{:keys [field value]} _concept-type]
    {:term {field (h/utc-time->elastic-time value)}})
 
   cmr.common_app.services.search.query_model.MatchAllCondition

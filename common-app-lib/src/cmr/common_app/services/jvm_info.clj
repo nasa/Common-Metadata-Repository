@@ -3,7 +3,7 @@
   (:require
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob]]
-   [cmr.common.log :refer [debug warn info error]])
+   [cmr.common.log :refer [info]])
   (:import
    (java.lang Runtime)))
 

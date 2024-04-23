@@ -2,7 +2,6 @@
   "Finds RelatedItemQueryConditions in a query, executes them, processes the results and replaces
   them with the retrieved condition"
   (:require [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
             [cmr.common-app.services.search.complex-to-simple :as c2s]
             [cmr.common-app.services.search.elastic-search-index :as idx]))
 
@@ -50,4 +49,4 @@
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; catch all resolver
   java.lang.Object
-  (resolve-related-item-conditions [this context] this))
+  (resolve-related-item-conditions [this _context] this))

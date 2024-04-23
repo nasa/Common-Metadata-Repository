@@ -1,6 +1,6 @@
 (ns cmr.common-app.services.search.parameter-validation-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [cmr.common.util :refer [are3]]
    [cmr.common-app.services.search.parameter-validation :as pv]))
 

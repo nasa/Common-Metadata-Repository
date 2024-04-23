@@ -1,9 +1,6 @@
 (ns cmr.common-app.api.launchpad-token-validation
   "Validate Launchpad token."
   (:require
-   [cheshire.core :as json]
-   [clojure.data.codec.base64 :as base64]
-   [clojure.string :as string]
    [cmr.common-app.config :as config]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as common-util]

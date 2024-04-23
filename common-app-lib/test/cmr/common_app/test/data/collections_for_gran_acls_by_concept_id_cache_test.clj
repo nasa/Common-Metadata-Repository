@@ -1,6 +1,6 @@
 (ns cmr.common-app.test.data.collections-for-gran-acls-by-concept-id-cache-test
  (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [clojure.test.check.generators :as gen]
    [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as coll-for-gran-acls-cache]))
 
@@ -14,8 +14,7 @@
   {:system {:caches {coll-for-gran-acls-cache/coll-by-concept-id-cache-key (coll-for-gran-acls-cache/create-coll-by-concept-id-cache-client)}}})
 
 (deftest make-dates-safe-for-serialize-test
- "Confirm that an object can be serialized to text and then back"
- (testing "round trip"
+ (testing "round trip: Confirm that an object can be serialized to text and then back"
   (let [some-text (random-text)
         some-date "2024-12-31T4:3:2"
         supplied-data {:point-of-time some-date :a-field some-text}

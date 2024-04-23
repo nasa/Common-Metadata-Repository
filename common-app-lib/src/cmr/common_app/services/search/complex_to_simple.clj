@@ -1,5 +1,4 @@
-(ns cmr.common-app.services.search.complex-to-simple
-  (:require [cmr.common-app.services.search.query-model :as cqm]))
+(ns cmr.common-app.services.search.complex-to-simple)
 
 (defprotocol ComplexQueryToSimple
   "Defines a function to convert a complex / high level query/condition into simpler ones that
@@ -34,6 +33,6 @@
   ;; catch all
   java.lang.Object
   (reduce-query-condition
-    [this context]
+    [this _context]
     ;; do nothing
     this))

@@ -34,7 +34,7 @@
 
 (defmulti elastic-result->query-result-item
   "Converts the Elasticsearch result into the result expected from execute-query for the given format."
-  (fn [context query elastic-result]
+  (fn [_context query _elastic-result]
     (let [result-format (common-qm/base-result-format query)]
       (if (= :query-specified result-format)
         ;; The same result reader is used for every concept type when query specified
@@ -43,7 +43,7 @@
 
 (defn- default-query-specified-elastic-result-item-processor
   "The default function that will be used to process an elastic result into a result for the caller."
-  [context query elastic-result]
+  [_context query elastic-result]
   (let [{concept-id :_id
          field-values :_source} elastic-result]
     (reduce #(assoc %1 %2 (-> field-values %2))
@@ -58,7 +58,7 @@
 
 (defmulti elastic-results->query-results
   "Converts elastic search results to query results"
-  (fn [context query elastic-results]
+  (fn [_context query _elastic-results]
     [(:concept-type query) (common-qm/base-result-format query)]))
 
 (defn default-elastic-results->query-results
@@ -85,9 +85,9 @@
 
 (defmulti get-revision-id-from-elastic-result
   "Returns the revision-id from elastic result for the given concept-type"
-  (fn [concept-type elastic-result]
+  (fn [concept-type _elastic-result]
     concept-type))
 
 (defmethod get-revision-id-from-elastic-result :default
-  [concept-type elastic-result]
+  [_concept-type elastic-result]
   (:_version elastic-result))

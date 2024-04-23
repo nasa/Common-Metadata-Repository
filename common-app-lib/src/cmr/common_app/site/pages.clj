@@ -6,7 +6,7 @@
 
 (defn render-template
   "A utility function for preparing templates."
-  [context template page-data]
+  [_context template page-data]
   (response/response
    (selmer/render-file template page-data)))
 

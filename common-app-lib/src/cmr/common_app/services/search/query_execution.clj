@@ -3,15 +3,11 @@
    [cmr.common-app.services.search.complex-to-simple :as c2s]
    [cmr.common-app.services.search.elastic-results-to-query-results :as rc]
    [cmr.common-app.services.search.elastic-search-index :as idx]
-   [cmr.common-app.services.search.query-model :as qm]
-   [cmr.common-app.services.search.related-item-resolver :as related-item-resolver]
-   [cmr.common-app.services.search.results-model :as results]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.transmit.config :as tc]))
 
 (defmulti add-acl-conditions-to-query
   "Adds conditions to the query to enforce ACLs."
-  (fn [context query]
+  (fn [_context query]
     (:concept-type query)))
 
 (defmethod add-acl-conditions-to-query :default
@@ -30,22 +26,22 @@
 (defmulti pre-process-query-result-feature
   "Applies result feature changes to the query before it is executed. Should return the query with
   any changes necessary to apply the feature."
-  (fn [context query feature]
+  (fn [_context _query feature]
     feature))
 
 (defmethod pre-process-query-result-feature :default
-  [context query feature]
+  [_context query _feature]
   ; Does nothing by default
   query)
 
 (defmulti post-process-query-result-feature
   "Processes the results found by the query to add additional information or other changes
   based on the particular feature enabled by the user."
-  (fn [context query elastic-results query-results feature]
+  (fn [_context _query _elastic-results _query-results feature]
     feature))
 
 (defmethod post-process-query-result-feature :default
-  [context query elastic-results query-results feature]
+  [_context _query _elastic-results query-results _feature]
   ; Does nothing by default
   query-results)
 
@@ -65,12 +61,12 @@
 
 (defmulti execute-query
   "Executes the query using the most appropriate mechanism"
-  (fn [context query]
+  (fn [_context query]
     (query->execution-strategy query)))
 
 (defmulti concept-type-specific-query-processing
   "Performs processing on the context and the query specific to the concept type being searched"
-  (fn [context query]
+  (fn [_context query]
     (:concept-type query)))
 
 (defmethod concept-type-specific-query-processing :default

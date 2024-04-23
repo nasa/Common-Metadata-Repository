@@ -1,6 +1,6 @@
 (ns cmr.common-app.test.services.search.validators.date-range
   "Contains tests for validating date-range condition"
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [clj-time.core :as t]
             [cmr.common-app.services.search.query-validation :as v]
             [cmr.common-app.services.search.validators.date-range]

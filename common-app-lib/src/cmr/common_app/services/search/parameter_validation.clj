@@ -2,7 +2,6 @@
   "Contains functions for validating query parameters"
   (:require
    [camel-snake-kebab.core :as csk]
-   [clj-time.core :as t]
    [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common-app.services.search.messages :as msg]
@@ -13,7 +12,6 @@
    [cmr.common.date-time-range-parser :as dtr-parser]
    [cmr.common.parameter-parser :as parser]
    [cmr.common.services.errors :as errors]
-   [cmr.common.services.messages :as c-msg]
    [cmr.common.util :as util])
   (:import
    (clojure.lang ExceptionInfo)))
@@ -121,7 +119,7 @@
       (when-let [page-size-i (get-ivalue-from-params params :page-size)]
         (when (or (neg? page-size-i) (> page-size-i max-page-size))
           page-size-errors))
-      (catch NumberFormatException e
+      (catch NumberFormatException _e
         page-size-errors))))
 
 (defn- offset-error-message
@@ -147,7 +145,7 @@
     (when-let [page-num-i (get-ivalue-from-params params :page-num)]
       (when (> 1 page-num-i)
         ["page_num must be a number greater than or equal to 1"]))
-    (catch NumberFormatException e
+    (catch NumberFormatException _e
       ["page_num must be a number greater than or equal to 1"])))
 
 (defn paging-depth-validation
@@ -170,7 +168,7 @@
           [(format "The paging depth (page_size + offset) of [%d] exceeds the limit of %d."
                    (+ page-size offset)
                    limit)])))
-    (catch NumberFormatException e
+    (catch NumberFormatException _e
       ;; This should be handled separately by page-size and page-num validiation
       [])))
 

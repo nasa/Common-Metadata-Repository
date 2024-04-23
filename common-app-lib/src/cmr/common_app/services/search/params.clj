@@ -2,7 +2,6 @@
   "Contains common code for handling search parameters and converting them into a query model."
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.data :as data]
    [clojure.string :as string]
    [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.query-model :as qm]
@@ -68,7 +67,7 @@
 
 (defn pattern-field?
   "Returns true if the field is a pattern"
-  [concept-type field options]
+  [_concept-type field options]
   (= "true" (get-in options [field :pattern])))
 
 (defn group-operation
@@ -93,11 +92,11 @@
 
 (defmulti parameter->condition
   "Converts a parameter into a condition"
-  (fn [context concept-type param value options]
+  (fn [_context concept-type param _value _options]
     (param-name->type concept-type param)))
 
 (defmethod parameter->condition :default
-  [_context concept-type param value options]
+  [_context concept-type param _value _options]
   (errors/internal-error!
    (format "Could not find parameter handler for [%s] with concept-type [%s]" param concept-type)))
 
@@ -115,7 +114,7 @@
   (string-parameter->condition concept-type param value options))
 
 (defmethod parameter->condition :int
-  [_context concept-type param value options]
+  [_context _concept-type param value options]
   (if (sequential? value)
     (gc/group-conds (group-operation param options)
                     (map #(qm/numeric-value-condition param %) value))
@@ -123,7 +122,7 @@
 
 ;; or-conds --> "not (CondA and CondB)" == "(not CondA) or (not CondB)"
 (defmethod parameter->condition :exclude
-  [context concept-type param value options]
+  [context concept-type _param value options]
   (gc/or-conds
    (map (fn [[exclude-param exclude-val]]
           (qm/map->NegatedCondition
@@ -131,7 +130,7 @@
         value)))
 
 (defmethod parameter->condition :boolean
-  [_context concept-type param value options]
+  [_context _concept-type param value _options]
   (let [value (u/safe-lowercase value)]
     (cond
     (or (= "true" value) (= "false" value))
@@ -143,7 +142,7 @@
     (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value)))))
 
 (defmethod parameter->condition :num-range
-  [_context concept-type param value options]
+  [_context _concept-type param value _options]
   (qm/numeric-range-str->condition param value))
 
 (defn parse-sort-key
@@ -212,7 +211,7 @@
    Anything that is not a parameter that becomes a condition is a query level parameter. There are
    different query level parameters for different concept types. Collections have many of these like
    include_granule_counts, include_facets, and echo_compatible."
-  (fn [concept-type params]
+  (fn [concept-type _params]
     concept-type))
 
 (defmethod parse-query-level-params :default

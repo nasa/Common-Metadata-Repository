@@ -3,7 +3,7 @@
   (:require
    [cmr.common-app.services.search.query-model]
    [cmr.common.config :refer [defconfig]]
-   [cmr.common.log :refer [debug info]]))
+   [cmr.common.log :refer [info]]))
 
 (defconfig max-number-of-conditions
   "The configured maximum number of conditions in a query"

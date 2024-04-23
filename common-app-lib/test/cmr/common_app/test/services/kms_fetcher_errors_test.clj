@@ -1,7 +1,7 @@
-(ns cmr.common-app.test.services.kms_fetcher_errors_test
+(ns cmr.common-app.test.services.kms-fetcher-errors-test
   "Unit tests for specific connection errors coming from kms-lookup"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is testing]]
     [cmr.common-app.services.kms-fetcher :as kms-fetcher]))
 
 (def create-context

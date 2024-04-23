@@ -32,7 +32,7 @@
 
 (defmulti parse-elastic-item
   "Parses the Elasticsearch response into a map that can be used to enforce ACLs."
-  (fn [concept-type elastic-result]
+  (fn [concept-type _elastic-result]
     concept-type))
 
 (defmethod parse-elastic-item :collection

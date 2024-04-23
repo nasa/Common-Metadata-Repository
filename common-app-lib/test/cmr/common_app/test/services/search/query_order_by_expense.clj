@@ -1,6 +1,6 @@
 (ns cmr.common-app.test.services.search.query-order-by-expense
-  (:require [clojure.test :refer :all]
-            [cmr.common-app.test.services.search.helpers :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
+            [cmr.common-app.test.services.search.helpers :refer [and-conds generic or-conds]]
             [cmr.common-app.services.search.query-order-by-expense :as qe]
             [cmr.common-app.services.search.query-model :as q]))
 

@@ -1,7 +1,6 @@
 (ns cmr.common-app.services.search.query-validation
   "Defines protocols and functions to validate query conditions"
-  (:require [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common.concepts :as concepts]
+  (:require [cmr.common.concepts :as concepts]
             [cmr.common.mime-types :as mt]
             [cmr.common-app.services.search.validators.max-number-of-conditions :as max-conditions]))
 
@@ -63,4 +62,4 @@
 
   ;; catch all validator
   java.lang.Object
-  (validate [this] []))
+  (validate [_this] []))

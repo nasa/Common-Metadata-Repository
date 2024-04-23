@@ -1,7 +1,6 @@
 (ns cmr.common-app.services.search.validators.date-range
   "Contains functions for validating date range condition"
   (:require [clj-time.core :as t]
-            [clj-time.format :as f]
             [cmr.common-app.services.search.query-validation :as v]
             [cmr.common-app.services.search.datetime-helper :as h]))
 
