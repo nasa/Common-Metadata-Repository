@@ -31,15 +31,16 @@ const buildResponse = image => {
  */
 const getImageUrlFromConcept = async (conceptId, conceptType, imageSrc) => {
   console.log(`Concept id: ${conceptId} of conceptType ${conceptType}`);
+  // conceptType is 'search' which is why it is skipping this... but why did it work before in SIT?
 
   if (!conceptId) {
     return null;
   }
 
-  if (conceptType === 'granules') {
+  if (conceptType === 'granules' || conceptType === 'search') {
     return getGranuleLevelBrowseImage(conceptId, imageSrc);
   }
-  if (conceptType === 'datasets') {
+  if (conceptType === 'datasets' || conceptType === 'search') {
     return getCollectionLevelBrowseImage(conceptId);
   }
 
