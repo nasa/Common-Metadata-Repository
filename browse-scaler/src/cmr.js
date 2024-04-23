@@ -162,6 +162,9 @@ export const getGranuleLevelBrowseImage = async (conceptId, imageSrc) => {
  */
 export const getCollectionLevelBrowseImage = async collectionId => {
   // const collectionConcept = await fetchConceptFromCMR(collectionId, CMR_COLLECTION_URL);
+  console.log(
+      `CMR ROOT == ${CMR_ROOT_URL}`
+    );
   const collectionConcept = await fetchCmrCollection(collectionId);
   const collectionImagery = await getBrowseImageFromConcept(collectionConcept);
   if (collectionImagery) {

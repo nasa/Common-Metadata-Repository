@@ -30,7 +30,7 @@ const buildResponse = image => {
  * @returns {String} image url or null
  */
 const getImageUrlFromConcept = async (conceptId, conceptType, imageSrc) => {
-  console.log(`Concept id: ${conceptId}`);
+  console.log(`Concept id: ${conceptId} of conceptType ${conceptType`);
 
   if (!conceptId) {
     return null;
@@ -68,6 +68,8 @@ const resizeImageFromConceptId = async (conceptType, conceptId, height, width, i
     console.log(`Returning cached image ${cacheKey}`);
     return buildResponse(imageFromCache);
   }
+
+  console.log(`There was no cached image.`);
 
   const imageUrl = await getImageUrlFromConcept(conceptId, conceptType, imageSrc);
   // If the url is not `null`, `undefined`, or an empty string try to grab the image and resize it
