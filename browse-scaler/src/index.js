@@ -30,7 +30,7 @@ const buildResponse = image => {
  * @returns {String} image url or null
  */
 const getImageUrlFromConcept = async (conceptId, conceptType, imageSrc) => {
-  console.log(`Concept id: ${conceptId} of conceptType ${conceptType`);
+  console.log(`Concept id: ${conceptId} of conceptType ${conceptType}`);
 
   if (!conceptId) {
     return null;
