@@ -1,6 +1,7 @@
 (ns cmr.elasticsearch.plugins.spatial.engine.core
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import
-   (cmr.elasticsearch.plugins SpatialScriptFactory)
+   (cmr.elasticsearch.plugins SpatialScriptFactory) 
    (org.elasticsearch.script FilterScript ScriptContext ScriptEngine)
    (java.util Map))
   (:gen-class
@@ -11,9 +12,10 @@
 
 (defn -getType
   "Get script lang."
-  [^SpatialScriptEngine this]
+  [^SpatialScriptEngine _this]
   "cmr_spatial")
 
+#_{:clj-kondo/ignore [:unused-binding]}
 (defn -compile
   "Compile script."
   [^SpatialScriptEngine this
@@ -34,7 +36,8 @@
     :else
     (-> context .factoryClazz (.cast (new SpatialScriptFactory)))))
 
+#_{:clj-kondo/ignore [:redundant-do]}
 (defn -close
   "Do nothing."
-  [this]
+  [_this]
   (do))

@@ -95,3 +95,17 @@
   [umm-coll]
   (let [end-date (collection-end-date umm-coll)]
     (when-not (= :present end-date) end-date)))
+
+(defn granule-start-date
+  [temporal]
+  (let [{:keys [range-date-time single-date-time]} temporal]
+    (if single-date-time
+      single-date-time
+      (when range-date-time (:beginning-date-time range-date-time)))))
+
+(defn granule-end-date
+  [temporal]
+  (let [{:keys [range-date-time single-date-time]} temporal]
+    (if single-date-time
+      single-date-time
+      (when range-date-time (:ending-date-time range-date-time)))))

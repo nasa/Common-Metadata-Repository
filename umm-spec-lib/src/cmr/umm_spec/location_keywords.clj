@@ -13,10 +13,6 @@
    :subregion-3 :Subregion3
    :detailed-location :DetailedLocation})
 
-(def location-keyword-order
-  "Defines the order of hierarchical keywords for LocationKeywords"
-  [:Category :Type :Subregion1 :Subregion2 :Subregion3])
-
 (defn- find-spatial-keyword
   "Finds spatial keywords in the hierarchy and pick the one with the fewest keys (e.g. shortest
   hierarchical depth.) Takes the request context and a location string as parameters, and returns
@@ -38,12 +34,11 @@
        spatial-keywords))
 
 (defn- location-values
-  "Returns the location keyword values in order so that we can get the last one"
+  "Returns the location keyword values so they can be indexed for searching"
   [location-keyword]
-  (for [k location-keyword-order
-        :let [value (get location-keyword k)]
-        :when value]
-    value))
+  (as-> location-keyword keyword
+    (vals keyword)
+    (remove nil? keyword)))
 
 (defn- leaf-value
   "Returns the leaf value of the location-keyword object to be put in a SpatialKeywords list"
@@ -54,13 +49,6 @@
   "Converts a list of LocationKeyword maps to a list of SpatialKeywords"
   [location-keyword-list]
   (map #(leaf-value %) location-keyword-list))
-
-(defn- location-values
-  "Returns the location keyword values so they can be indexed for searching"
-  [location-keyword]
-  (as-> location-keyword keyword
-        (vals keyword)
-        (remove nil? keyword)))
 
 (defn location-keywords->spatial-keywords-for-indexing
   "Converts a list of LocationKeyword maps to a list of SpatialKeywords"
