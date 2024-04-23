@@ -106,18 +106,18 @@
 
 (defmethod create-elastic :in-memory
   [_]
-  (let [http-port (elastic-config/elastic-port)]
-    (elastic-server/create-server http-port
-                                  {:log-level (name @in-memory-elastic-log-level-atom)
-                                   :kibana-port (dev-config/embedded-kibana-port)
-                                   :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
-                                               "es_libs" "elasticsearch/es_libs"
-                                               "embedded-security.policy" "elasticsearch/embedded-security.policy"
-                                               "plugins" "elasticsearch/plugins"}})))
+  ((info "Creating in-memory elastic for dev-system")
+   elastic-server/create-server
+   {:log-level (name @in-memory-elastic-log-level-atom)
+    :with-kibana true
+    :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
+                "es_libs" "elasticsearch/es_libs"
+                "embedded-security.policy" "elasticsearch/embedded-security.policy"
+                "plugins" "elasticsearch/plugins"}}))
 
 (defmethod create-elastic :external
   [_]
-  (elastic-config/set-elastic-port! 9209))
+  (info "Using external elastic for dev-system"))
 
 (defmulti create-redis
   "Sets redis configuration values and returns an instance of a Redis component to run
@@ -127,8 +127,7 @@
 
 (defmethod create-redis :in-memory
   [_]
-  (let [port (redis-config/redis-port)]
-    (redis-server/create-redis-server port)))
+  (redis-server/create-redis-server))
 
 (defmethod create-redis :external
   [_]
@@ -313,6 +312,7 @@
   (reduce (fn [system component]
             (update-in system [components-key component]
                        #(try
+                          (info (format "Starting %s component" component))
                           (when % (lifecycle/start % system))
                           (catch Exception e
                             (error e "Failure during startup")

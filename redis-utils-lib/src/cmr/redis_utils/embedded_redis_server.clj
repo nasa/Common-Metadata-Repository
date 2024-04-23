@@ -2,11 +2,10 @@
   "Used to run a Redis server inside a docker container."
   (:require
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer [debug error]])
+   [cmr.common.log :as log :refer [debug error]]
+   [cmr.redis-utils.config :as redis-config])
   (:import
-   (org.testcontainers.containers FixedHostPortGenericContainer Network)))
-
-(def REDIS_DEFAULT_PORT 6379)
+   (org.testcontainers.containers GenericContainer Network)))
 
 (def ^:private redis-image
   "Official redis image."
@@ -14,25 +13,25 @@
 
 (defn- build-redis
   "Setup redis docker image"
-  [http-port network]
-  (doto (FixedHostPortGenericContainer. redis-image)
-    (.withFixedExposedPort (int http-port) REDIS_DEFAULT_PORT)
+  [network]
+  (doto (GenericContainer. redis-image)
+    (.withExposedPorts(int 6379))
     (.withNetwork network)))
 
 (defrecord RedisServer
     [
-     http-port
      opts]
 
   lifecycle/Lifecycle
 
   (start
     [this system]
-    (debug "Starting Redis server on port" http-port)
     (let [network (Network/newNetwork)
-          ^FixedHostPortGenericContainer redis (build-redis http-port network)]
+          ^GenericContainer redis (build-redis network)]
       (try
         (.start redis)
+        (redis-config/set-redis-port! (.getMappedPort redis 6379))
+        (debug "Started redis with port " (.getMappedPort redis 6379))
         (assoc this :redis redis)
         (catch Exception e
           (error "Redis failed to start.")
@@ -46,11 +45,9 @@
 
 (defn create-redis-server
   ([]
-   (create-redis-server REDIS_DEFAULT_PORT))
-  ([http-port]
-   (create-redis-server http-port {}))
-  ([http-port opts]
-   (->RedisServer http-port opts)))
+   (create-redis-server {}))
+  ([opts]
+   (->RedisServer opts)))
 
 (comment
 
