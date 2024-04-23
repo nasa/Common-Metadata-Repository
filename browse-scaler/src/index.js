@@ -31,16 +31,16 @@ const buildResponse = image => {
  */
 const getImageUrlFromConcept = async (conceptId, conceptType, imageSrc) => {
   console.log(`Concept id: ${conceptId} of conceptType ${conceptType}`);
-  // conceptType is 'search' which is why it is skipping this... but why did it work before in SIT?
+  // conceptType is 'search' and therefore does not attempt to find image.
 
   if (!conceptId) {
     return null;
   }
 
-  if (conceptType === 'granules' || conceptType === 'search') {
+  if (conceptType === 'granules') {
     return getGranuleLevelBrowseImage(conceptId, imageSrc);
   }
-  if (conceptType === 'datasets' || conceptType === 'search') {
+  if (conceptType === 'datasets') {
     return getCollectionLevelBrowseImage(conceptId);
   }
 
@@ -136,7 +136,7 @@ const parseArguments = event => {
  */
 export const handler = async event => {
   const args = parseArguments(event);
-  const { conceptType, conceptId, w, h, imageSrc = '' } = args;
+  const { conceptType, conceptId, w, h, imageSrc = '' } = args; // where is this conceptType being created?
   console.log(`Attempting to resize browse image for concept: ${JSON.stringify(args)}`);
   console.log(`NEW LOG HERE!!!`);
   const resizedImage = await resizeImageFromConceptId(conceptType, conceptId, h, w, imageSrc);
