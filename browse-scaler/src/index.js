@@ -135,6 +135,7 @@ export const handler = async event => {
   const args = parseArguments(event);
   const { conceptType, conceptId, w, h, imageSrc = '' } = args;
   console.log(`Attempting to resize browse image for concept: ${JSON.stringify(args)}`);
+  console.log(`NEW LOG HERE!!!`);
   const resizedImage = await resizeImageFromConceptId(conceptType, conceptId, h, w, imageSrc);
   return resizedImage;
 };
