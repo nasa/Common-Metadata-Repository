@@ -3,8 +3,6 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [clojure.string :as string]
-   [cmr.elastic-utils.es-group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as qm]
    [cmr.common.util :as u]
