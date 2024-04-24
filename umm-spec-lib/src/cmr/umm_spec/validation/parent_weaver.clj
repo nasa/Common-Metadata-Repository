@@ -1,14 +1,16 @@
 (ns cmr.umm-spec.validation.parent-weaver
   "Provides functions to thread together a granule and collection parent objects for validation.
   It weaves together the objects so matching items within the granule and collection are combined"
-  (:require [cmr.common.util :as u])
+  (:require 
+   [cmr.common.util :as u])
   #_{:clj-kondo/ignore [:unused-import]}
-  (:import [cmr.umm.umm_granule
-            UmmGranule
-            PlatformRef
-            InstrumentRef
-            SensorRef
-            TwoDCoordinateSystem]))
+  (:import 
+   [cmr.umm.umm_granule
+    UmmGranule
+    PlatformRef
+    InstrumentRef
+    SensorRef
+    TwoDCoordinateSystem]))
 
 (defprotocol ParentWeaver
   (set-parent [obj parent] "Sets the parent attribute on this object with the given parent"))

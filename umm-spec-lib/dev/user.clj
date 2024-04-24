@@ -1,8 +1,8 @@
 (ns user
-  (:require [cmr.common.dev.capture-reveal]
-            [clojure.tools.namespace.repl :refer (refresh)]
-            [cmr.common.dev.util :as dev-util]
-            proto-repl.saved-values))
+  (:require
+   [clojure.tools.namespace.repl :refer (refresh)]
+   [cmr.common.dev.capture-reveal]
+   [cmr.common.dev.util :as dev-util]))
 
 (defn reset []
   ;; Force the JSON Schemas to be reloaded since clojure tools namespace can't tell that those

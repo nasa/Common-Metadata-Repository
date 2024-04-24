@@ -101,12 +101,6 @@
   (= (select-keys value (keys find-value))
      find-value))
 
-;(defmulti apply-umm-list-update
-;  "Apply the umm update by type. Assumes that the update-field is a list in
-;  the umm collection. Update-field should be a vector to handle nested fields."
-;  (fn [update-type umm update-field update-value find-value]
-;    update-type))
-
 (defn- remove-duplicates
   "Remove duplicates in update-field, whoes value is [map(s)] for bulk updates."
   [umm update-field]

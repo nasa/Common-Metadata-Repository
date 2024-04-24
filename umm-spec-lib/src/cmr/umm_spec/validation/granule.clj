@@ -1,18 +1,19 @@
 (ns cmr.umm-spec.validation.granule
   "Defines validations for UMM granules"
-  (:require [clj-time.core :as t]
-            [clojure.set :as set]
-            [clojure.string :as str]
-            [cmr.common.validations.core :as v]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.start-end-date :as sed]
-            [cmr.umm-spec.time :as umm-spec-time]
-            [cmr.spatial.validation :as sv]
-            [cmr.umm.validation.validation-utils :as vu]
-            [cmr.umm.validation.validation-helper :as h]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.collection.entry-id :as eid]
-            [cmr.umm-spec.validation.additional-attribute :as aav]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clj-time.core :as t]
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [cmr.common.validations.core :as v]
+   [cmr.spatial.validation :as sv]
+   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm.start-end-date :as sed]
+   [cmr.umm-spec.time :as umm-spec-time]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.umm.validation.validation-utils :as vu]
+   [cmr.umm.validation.validation-helper :as h]
+   [cmr.umm-spec.validation.additional-attribute :as aav]))
 
 (defn- spatial-extent->granule-spatial-representation
   "Returns the granule spatial representation given a parent collection spatial extent"
@@ -34,7 +35,7 @@
       {(conj spatial-coverage-path field)
        [(format
           "[%%s] cannot be set when the parent collection's GranuleSpatialRepresentation is %s"
-          (str/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
+          (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
 
 (defn- spatial-field-is-required
   "Create a function which takes in :orbit or :geometries as input and returns an error if the field does not exist"
@@ -44,7 +45,7 @@
       {(conj spatial-coverage-path field)
        [(format
           "[%%s] must be provided when the parent collection's GranuleSpatialRepresentation is %s"
-          (str/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
+          (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
 
 (defn spatial-matches-granule-spatial-representation
   "Validates the consistency of granule's spatial information with the granule spatial representation present in its collection."
@@ -129,13 +130,13 @@
 (defn- projects-reference-collection
   "Validate projects in granule must reference those in the parent collection"
   [_ granule]
-  (let [project-ref-names (set (map str/lower-case (:project-refs granule)))
-        parent-project-names (->> granule :parent :Projects (map :ShortName) (map str/lower-case) set)
+  (let [project-ref-names (set (map string/lower-case (:project-refs granule)))
+        parent-project-names (->> granule :parent :Projects (map :ShortName) (map string/lower-case) set)
         missing-project-refs (seq (set/difference project-ref-names parent-project-names))]
     (when missing-project-refs
       {[:project-refs]
        [(format "%%s have [%s] which do not reference any projects in parent collection."
-                (str/join ", " missing-project-refs))]})))
+                (string/join ", " missing-project-refs))]})))
 
 (defn- matches-collection-identifier-validation
   "Validates the granule collection-ref field matches the corresponding field in the parent collection."
@@ -208,7 +209,7 @@
     (when missing-operation-modes
       {field-path
        [(format "The following list of Instrument operation modes did not exist in the referenced parent collection: [%s]."
-                (str/join ", " missing-operation-modes))]})))
+                (string/join ", " missing-operation-modes))]})))
 
 (def sensor-ref-validations
   "Defines the sensor validations for granules"

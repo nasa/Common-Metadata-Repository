@@ -3,7 +3,7 @@
   (:require
    [clj-time.format :as f]
    [clj-time.core :as time-core]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.date-time-parser :as p]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.xml.parse :refer [value-of]]
@@ -50,7 +50,7 @@
   "Get the date at the location in the doc and parse it into a UMM DateType"
   [doc date-location type]
   (when-let [date (value-of doc date-location)]
-    (cmn/map->DateType {:Date (f/parse (str/trim date))
+    (cmn/map->DateType {:Date (f/parse (string/trim date))
                         :Type type})))
 
 (defn latest-date-of-type
@@ -79,7 +79,7 @@
   [date sanitize?]
   (if sanitize?
     (if-let [parsed-date (some-> date
-                                 (str/replace "/" "-")
+                                 (string/replace "/" "-")
                                  f/parse)]
       (p/clj-time->date-time-str parsed-date)
       date)
