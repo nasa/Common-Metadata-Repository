@@ -2,8 +2,6 @@
   "Implements the search index protocols for searching against Elasticsearch."
   (:require
    [clojure.string :as string]
-   [clojurewerkz.elastisch.query :as q]
-   [clojurewerkz.elastisch.rest.document :as esd]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.hash-cache :as hcache]
@@ -12,6 +10,7 @@
    [cmr.elastic-utils.search.es-index :as common-esi]
    [cmr.elastic-utils.search.es-index-name-cache :as index-names-cache]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-wrapper :as q]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
    [cmr.search.services.query-walkers.provider-id-extractor :as pex])
   ;; Required to be available at runtime.
@@ -22,6 +21,7 @@
 ;; id of the index-set that CMR is using, hard code for now
 (def index-set-id 1)
 
+(declare collections-index-alias)
 (defconfig collections-index-alias
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
@@ -153,12 +153,11 @@
                                                           #"-" "_")))
      :type-name (name concept-type)}))
 
-(defn context->conn
+(defn- context->conn
   [context]
   (get-in context [:system :search-index :conn]))
 
-;;TODO: where does this belong? cmr.elastic-utils.search.es-index?
-(defn get-collection-permitted-groups
+(comment defn- get-collection-permitted-groups
   "NOTE: Use for debugging only. Gets collections along with their currently permitted groups. This
    won't work if more than 10,000 collections exist in the CMR.
    called by dev-system/src/cmr/dev_system/control.clj only"
