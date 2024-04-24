@@ -14,7 +14,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
-   [clojurewerkz.elastisch.query :as esq]
+   [cmr.elastic-utils.search.es-wrapper :as esq]
    [cmr.common-app.services.search :as common-search]
    [cmr.common.concepts :as cc]
    [cmr.common.log :refer (info)]

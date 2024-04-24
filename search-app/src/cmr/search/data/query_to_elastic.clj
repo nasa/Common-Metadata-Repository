@@ -3,7 +3,7 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as str]
-   [clojurewerkz.elastisch.query :as eq]
+   [cmr.elastic-utils.search.es-wrapper :as eq]
    [cmr.elastic-utils.search.query-transform :as c2s]
    [cmr.common.services.search.query-model :as q]
    [cmr.elastic-utils.search.es-query-order-by-expense :as query-expense]
