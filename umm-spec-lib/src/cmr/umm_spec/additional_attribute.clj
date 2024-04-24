@@ -86,7 +86,7 @@
       "TIME" (f/parse (find-formatter value time-regex->formatter) value)
       "DATE" (let [value (str/replace value "Z" "")]
                (f/parse (f/formatters :date) value))
-      :else (str value))))
+      (str value))))
 
 ;(defmethod parse-value "DATETIME"
 ;  [data-type value]
@@ -140,7 +140,7 @@
     (case data-type
       (:time "TIME") (f/unparse (f/formatters :hour-minute-second-ms) value)
       (:date "DATE") (f/unparse (f/formatters :date) value)
-      :else (str value))))
+      (str value))))
 
 
 ;(defmulti gen-value

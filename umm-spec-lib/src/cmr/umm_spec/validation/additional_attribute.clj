@@ -1,9 +1,10 @@
 (ns cmr.umm-spec.validation.additional-attribute
   "Defines validations for UMM collection product specific attribute."
-  (:require [cmr.common.validations.core :as v]
-            [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]
-            [cmr.common.util :as util]
-            [cmr.umm-spec.additional-attribute :as aa]))
+  (:require
+   [cmr.common.validations.core :as v]
+   [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]
+   [cmr.common.util :as util]
+   [cmr.umm-spec.additional-attribute :as aa]))
 
 (def no-range-data-types
   "Set of data-types of additional attribute that do not support parameter range"

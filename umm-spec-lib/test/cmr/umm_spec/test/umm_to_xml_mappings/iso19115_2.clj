@@ -824,8 +824,7 @@
 
 (deftest data-quality-info-additional-attributes
   (testing "additional attributes that should go to dataQualityInfo section are written out correctly"
-    (let [parsed (#'parser/parse-iso19115-xml {}
-                                              iso-with-use-constraints u/default-parsing-options)
+    (let [parsed (#'parser/parse-iso19115-xml iso-with-use-constraints u/default-parsing-options)
           ;; all the parsed additional attributes are from dataQualityInfo and we use it as the expected value
           expected-additional-attributes (:AdditionalAttributes parsed)
           generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
@@ -839,16 +838,14 @@
 
 (deftest granule-spatial-representation
   (testing "granule spatial representation is parsed correctly"
-    (let [parsed (#'parser/parse-iso19115-xml {}
-                                              iso-with-use-constraints u/default-parsing-options)
+    (let [parsed (#'parser/parse-iso19115-xml iso-with-use-constraints u/default-parsing-options)
           gran-spatial-representation (get-in parsed [:SpatialExtent :GranuleSpatialRepresentation])]
       (is (= "CARTESIAN" gran-spatial-representation)))))
 
 (deftest direct-distribution-information-test
   (testing "direct distribution information that should go to distribution section are
             written out correctly."
-    (let [parsed (#'parser/parse-iso19115-xml {}
-                                              iso-with-use-constraints u/default-parsing-options)
+    (let [parsed (#'parser/parse-iso19115-xml iso-with-use-constraints u/default-parsing-options)
           ;; use the parsed out direct distribution info as the expected value
           expected-direct-distribution (:DirectDistributionInformation parsed)
           generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
@@ -864,8 +861,7 @@
 (deftest associated-doi-test
   (testing "Testing the associated DOIs"
     (are3 [iso-record expect-empty]
-          (let [parsed (#'parser/parse-iso19115-xml {}
-                                                    iso-record
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
                                                     u/default-parsing-options)
                 ;; use the parsed associated DOIs as the expected value
                 expected-associated-dois (:AssociatedDOIs parsed)
@@ -891,8 +887,7 @@
 (deftest associated-metadata-test
   (testing "Testing the associated metadata"
     (are3 [iso-record expect-empty]
-          (let [parsed (#'parser/parse-iso19115-xml {}
-                                                    iso-record
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
                                                     u/default-parsing-options)
                 ;; use the parsed associated DOIs as the expected value
                 expected-metadata-associations (:MetadataAssociations parsed)
@@ -917,8 +912,7 @@
 (deftest previous-version-test
   (testing "Testing the previous version metadata"
     (are3 [iso-record expect-empty]
-          (let [parsed (#'parser/parse-iso19115-xml {}
-                                                    iso-record
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
                                                     u/default-parsing-options)
                 ;; use the parsed doi previous version as the expected value
                 expected-previous-version (get-in parsed [:DOI :PreviousVersion])
@@ -943,8 +937,7 @@
 (deftest other-identifiers-test
   (testing "Testing the Other Identifiers translation"
     (are3 [iso-record expect-empty]
-          (let [parsed (#'parser/parse-iso19115-xml {}
-                                                    iso-record
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
                                                     u/default-parsing-options)
                 ;; use the parsed other identifiers as the expected value
                 expected-other-identifier (:OtherIdentifiers parsed)
@@ -969,8 +962,7 @@
 (deftest file-naming-convention-test
   (testing "Testing file naming convention translation"
     (are3 [iso-record expect-empty]
-          (let [parsed (#'parser/parse-iso19115-xml {}
-                                                    iso-record
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
                                                     u/default-parsing-options)
                 ;; use the parsed file naming resource as the expected value
                 expected-convention (:FileNamingConvention parsed)
@@ -995,8 +987,7 @@
 (deftest archive-format-test
   (testing "Testing the archive format translation"
     (are3 [iso-record expect-empty]
-          (let [parsed (#'parser/parse-iso19115-xml {}
-                                                    iso-record
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
                                                     u/default-parsing-options)
                 ;; use the parsed archive format as the expected value
                 expected-format (get-in parsed [:ArchiveAndDistributionInformation :FileArchiveInformation])
@@ -1021,8 +1012,7 @@
 (deftest data-maturity-test
   (testing "Testing the data maturity translation"
     (are3 [iso-record expect-empty]
-          (let [parsed (#'parser/parse-iso19115-xml {}
-                                                    iso-record
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
                                                     u/default-parsing-options)
                 ;; use the parsed archive format as the expected value
                 expected-maturity (:DataMaturity parsed)
@@ -1046,8 +1036,7 @@
 
 (deftest temporal-extent-with-no-temporal-data-test
   (testing "Testing the temporal extent translation with no temporal data"
-    (let [parsed (#'parser/parse-iso19115-xml {}
-                                              iso-no-use-constraints
+    (let [parsed (#'parser/parse-iso19115-xml iso-no-use-constraints
                                               u/default-parsing-options)
           generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
           ;; use the parsed temporal extent as the expected value
@@ -1072,8 +1061,7 @@
 
 (deftest temporal-extent-with-temporal-data-test
   (testing "Testing the temporal extent translation"
-    (let [parsed (#'parser/parse-iso19115-xml {}
-                                              iso-with-use-constraints
+    (let [parsed (#'parser/parse-iso19115-xml iso-with-use-constraints
                                               u/default-parsing-options)
           generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
           ;; use the parsed temporal extent as the expected value
