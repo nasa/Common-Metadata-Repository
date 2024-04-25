@@ -1,9 +1,9 @@
-(ns cmr.access-control.data.access-control-index
+(ns cmr.elastic-utils.search.access-control-index
   "Performs search and indexing of access control data."
   (:require
    [clojure.edn :as edn]
    [clojure.string :as str]
-   [cmr.access-control.data.acls :as acls]
+   [cmr.common.data.acls :as acls]
    [cmr.common.log :refer [info error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]

@@ -1,4 +1,4 @@
-(ns cmr.search.data.elastic-results-to-query-results
+(ns cmr.elastic_utils.search.elastic-results-to-query-results
   "Contains functions to convert elasticsearch results to query results."
   (:require
    [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]))

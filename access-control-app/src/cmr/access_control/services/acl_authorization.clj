@@ -1,16 +1,16 @@
 (ns cmr.access-control.services.acl-authorization
   (:require
-    [cmr.access-control.data.access-control-index :as index]
     [cmr.access-control.data.acl-schema :as schema]
     [cmr.access-control.services.acl-util :as acl-util]
     [cmr.access-control.services.auth-util :as auth-util]
     [cmr.access-control.services.group-service :as group-service]
     [cmr.acl.core :as acl]
+    [cmr.common.services.errors :as errors]
+    [cmr.common.services.search.query-model :as qm]
+    [cmr.common.util :as util :refer [defn-timed]]
+    [cmr.elastic-utils.search.access-control-index :as index]
     [cmr.elastic-utils.search.es-group-query-conditions :as gc]
     [cmr.elastic-utils.search.query-execution :as qe]
-    [cmr.common.services.search.query-model :as qm]
-    [cmr.common.services.errors :as errors]
-    [cmr.common.util :as util :refer [defn-timed]]
     [cmr.transmit.config :as transmit-config]))
 
 (declare acls-granting-acl-read context)

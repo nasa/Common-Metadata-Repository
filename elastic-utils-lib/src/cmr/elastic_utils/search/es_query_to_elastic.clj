@@ -1,5 +1,6 @@
 (ns cmr.elastic-utils.search.es-query-to-elastic
-  "Defines protocols and functions to map from a query model to elastic search query"
+  "Defines protocols and functions to map from a query model to elastic search query
+   NOTE: this originally lived at cmr.common-app.services.search.query-to-elastic"
   (:require
    [clojure.string :as str]
    [clojurewerkz.elastisch.query :as query]

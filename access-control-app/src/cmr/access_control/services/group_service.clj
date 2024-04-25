@@ -4,7 +4,7 @@
     [cheshire.core :as json]
     [clojure.edn :as edn]
     [clojure.string :as str]
-    [cmr.access-control.data.access-control-index :as index]
+    [cmr.elastic-utils.search.access-control-index :as index]
     [cmr.access-control.services.acl-util :as acl-util]
     [cmr.access-control.services.auth-util :as auth]
     [cmr.access-control.services.group-service-messages :as g-msg]
