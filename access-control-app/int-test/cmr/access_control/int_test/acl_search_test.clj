@@ -5,8 +5,8 @@
    [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
-   [cmr.common.util :as util :refer [are3]]
    [cmr.common-app.api.routes :as routes]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.elastic-utils.config :as elastic-config]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.transmit.access-control :as ac]))

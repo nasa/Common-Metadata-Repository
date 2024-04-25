@@ -1,4 +1,4 @@
-(ns cmr.access-control.data.acls
+(ns cmr.common.data.acls
   "Misc. functions for working with ACL structures."
   (:require
     [cmr.common.concepts :as concepts]))

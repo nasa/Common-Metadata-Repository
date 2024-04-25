@@ -2,7 +2,7 @@
   "Provides functions for subscribing to and handling events."
   (:require
     [cmr.access-control.config :as config]
-    [cmr.access-control.data.access-control-index :as index]
+    [cmr.elastic-utils.search.access-control-index :as index]
     [cmr.access-control.services.acl-service :as acl-service]
     [cmr.common.concepts :as concepts]
     [cmr.message-queue.queue.queue-protocol :as queue-protocol]

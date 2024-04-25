@@ -1,7 +1,7 @@
 (ns cmr.access-control.test.data.access-control-index-test
   (:require
    [clojure.test :refer [deftest is testing]]
-   [cmr.access-control.data.access-control-index :as a]))
+   [cmr.elastic-utils.search.access-control-index :as a]))
 
 (deftest acl-display-name
   (testing "system identity display name"

@@ -1,4 +1,4 @@
-(ns cmr.search.data.keywords-to-elastic
+(ns cmr.elastic-utils.search.keywords-to-elastic
   "Contains functions for generating keyword search components for elastic.
   Keyword queries are done as follows:
   1. The keywords string is split on whitespace and lower-cased to generate a list of keywords.
