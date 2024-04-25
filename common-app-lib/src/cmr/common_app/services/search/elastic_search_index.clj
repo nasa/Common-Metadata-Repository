@@ -317,6 +317,4 @@
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."
   []
-  (info "Creating elastic-search-index " (es-config/elastic-config))
-  (info "elatic port is " (es-config/elastic-port))
   (->ElasticSearchIndex (es-config/elastic-config) nil))

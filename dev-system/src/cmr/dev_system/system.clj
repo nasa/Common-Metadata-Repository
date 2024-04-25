@@ -106,18 +106,18 @@
 
 (defmethod create-elastic :in-memory
   [_]
-  ((info "Creating in-memory elastic for dev-system")
-   elastic-server/create-server
-   {:log-level (name @in-memory-elastic-log-level-atom)
-    :with-kibana true
-    :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
-                "es_libs" "elasticsearch/es_libs"
-                "embedded-security.policy" "elasticsearch/embedded-security.policy"
-                "plugins" "elasticsearch/plugins"}}))
+  (let [http-port (elastic-config/elastic-port)]
+    (elastic-server/create-server http-port
+                                  {:log-level (name @in-memory-elastic-log-level-atom)
+                                   :kibana-port (dev-config/embedded-kibana-port)
+                                   :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
+                                               "es_libs" "elasticsearch/es_libs"
+                                               "embedded-security.policy" "elasticsearch/embedded-security.policy"
+                                               "plugins" "elasticsearch/plugins"}})))
 
 (defmethod create-elastic :external
   [_]
-  (info "Using external elastic for dev-system"))
+  (elastic-config/set-elastic-port! 9209))
 
 (defmulti create-redis
   "Sets redis configuration values and returns an instance of a Redis component to run
@@ -127,7 +127,8 @@
 
 (defmethod create-redis :in-memory
   [_]
-  (redis-server/create-redis-server))
+  (let [port (redis-config/redis-port)]
+    (redis-server/create-redis-server port)))
 
 (defmethod create-redis :external
   [_]

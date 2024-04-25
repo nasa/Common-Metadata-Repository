@@ -14,7 +14,7 @@
 
 (defconfig elastic-port
   "Port elastic is listening on."
-  {:default 9200 :type Long})
+  {:default 9210 :type Long})
 
 (defconfig elastic-admin-token
     "Token used for basic auth authentication with elastic."
