@@ -11,7 +11,7 @@
    [cmr.common.concepts :as cc]
    [cmr.common.mime-types :as mt]
    [cmr.common.date-time-parser :as dt-parser]
-   [cmr.elastic-utils.search.parameter-parser :as parser]
+   [cmr.common.parameter-parser :as parser]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.elastic-utils.search.keywords-to-elastic :as k2e]
