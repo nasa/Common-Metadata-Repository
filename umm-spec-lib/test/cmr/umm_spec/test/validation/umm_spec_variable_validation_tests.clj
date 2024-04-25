@@ -1,12 +1,8 @@
 (ns cmr.umm-spec.test.validation.umm-spec-variable-validation-tests
   "This has tests for UMM variable validations."
   (:require
-   [clojure.test :refer :all]
-   [cmr.common.util :as u :refer [are3]]
-   [cmr.umm-spec.models.umm-common-models :as cm]
-   [cmr.umm-spec.models.umm-variable-models :as vm]
-   [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as helpers]
-   [cmr.umm-spec.validation.umm-spec-validation-core :as v]))
+   [clojure.test :refer [deftest is]]
+   [cmr.umm-spec.models.umm-variable-models :as vm]))
 
 (deftest umm-variable-creation
   (is (= [:AdditionalIdentifiers

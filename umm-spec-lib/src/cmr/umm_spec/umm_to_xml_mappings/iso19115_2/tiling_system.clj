@@ -1,5 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system
   "Functions for generating ISO XML tiling system elements."
+  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [clojure.string :as string]
    [cmr.common.xml.gen :refer :all]

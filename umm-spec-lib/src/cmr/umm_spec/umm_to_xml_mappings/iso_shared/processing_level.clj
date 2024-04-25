@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.processing-level
   "Functions for generating ISO-19115 and ISO-SMAP XML elements from UMM processing level element."
   (:require
-    [cmr.umm-spec.util :as su :refer [char-string]]))
+   [cmr.umm-spec.util :as su :refer [char-string]]))
 
 (def processing-level-code-space-string "gov.nasa.esdis.umm.processinglevelid")
 

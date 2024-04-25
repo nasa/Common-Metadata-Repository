@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.test.umm-to-xml-mappings.dif9
   "Tests to verify that dif9 records are generated correctly."
-  (:require [cmr.umm-spec.umm-to-xml-mappings.dif9 :as dif9]
-            [cmr.umm-spec.umm-to-xml-mappings.dif9.spatial-extent :as spatial]
-            [clojure.test :refer :all]))
+  (:require 
+   [clojure.test :refer [deftest is testing]]
+   [cmr.umm-spec.umm-to-xml-mappings.dif9.spatial-extent :as spatial]))
 
 (def expected-full-double-vertical-coverage
   [{:Minimum_Altitude "0",

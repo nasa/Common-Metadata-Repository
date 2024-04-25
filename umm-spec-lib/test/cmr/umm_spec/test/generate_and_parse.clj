@@ -5,10 +5,10 @@
    [clj-time.core :as t]
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as ext :refer [checking checking-with-seed]]
-   [cmr.common.util :as util :refer [update-in-each update-in-all are3]]
+   [cmr.common.util :as util :refer [update-in-each update-in-all]]
    [cmr.common.xml.simple-xpath :refer [select context]]
    [cmr.redis-utils.test.test-util :as redis-embedded-fixture]
    [cmr.umm-spec.iso-keywords :as kws]
@@ -178,7 +178,7 @@
 
 (deftest validate-umm-json-example-record
   ;; Test that going from any format to UMM generates valid UMM.
-  (doseq [[format filename] collection-format-examples
+  (doseq [[format _filename] collection-format-examples
           :let [umm-c-record (xml-round-trip :collection format expected-conversion/example-collection-record)]]
     (testing (str format " to :umm-json")
       (is (empty? (generate-and-validate-xml :collection :umm-json umm-c-record))))))
@@ -211,6 +211,7 @@
 ;; to UMM and then back to the other format then compares the
 ;; expected output with the result of the actual conversions. This test runs a record
 ;; through all of the supported formats.
+(declare umm-record metadata-format)
 (deftest roundtrip-generated-collection-records
   (checking "collection round tripping" 100
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)

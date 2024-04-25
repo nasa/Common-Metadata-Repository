@@ -8,7 +8,6 @@
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as test]
    [cmr.common.util :as util :refer [update-in-each]]
-   [cmr.umm-spec.models.umm-tool-models :as umm-t]
    [cmr.umm-spec.util :as spec-util]))
 
 (defn- set-if-exist
@@ -183,10 +182,10 @@
   "Sanitize a record with ContactInformation"
   [records concept-type]
   (seq (for [record records]
-         (if-let [contact-info (:ContactInformation record)]
-           (update-in record
-                      [:ContactInformation :RelatedUrls]
-                      #(sanitize-related-urls % concept-type))
+         (if (:ContactInformation record)
+          (update-in record
+                     [:ContactInformation :RelatedUrls]
+                     #(sanitize-related-urls % concept-type))
            record))))
 
 (defn- sanitize-data-centers

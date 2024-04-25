@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.iso-shared.distributions-related-url
   (:require
    [clojure.java.io :as io]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :refer [are3]]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as sru]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url :as smap-ru]
@@ -187,6 +187,7 @@
       (is (= expected-distribution-related-url-record-CMR-5366
              (sru/parse-online-urls doc sanitize? mends-ru/service-url-path mends-ru/distributor-xpaths-map))))))
 
+(declare string expected)
 (deftest description-string-parsing-keyword-test
   (testing (str "Parsing given string and converting it to a map then converting the left hand"
                 "strings to keywords.")

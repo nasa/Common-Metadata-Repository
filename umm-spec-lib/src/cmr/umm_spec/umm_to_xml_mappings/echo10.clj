@@ -1,17 +1,15 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10
   "Defines mappings from a UMM record into ECHO10 XML"
   (:require
-   [clojure.string :as string]
    [cmr.common.date-time-parser :as p]
    [cmr.common.util :as util]
-   [cmr.common.xml.gen :refer :all]
+   [cmr.common.xml.gen :refer [elements-from xml]]
    [cmr.umm-spec.date-util :as dates]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.related-url :as ru]
    [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.umm-to-xml-mappings.echo10.spatial :as spatial]
-   [cmr.umm-spec.util :refer [with-default]]
-   [cmr.umm-spec.util :as spec-util]))
+   [cmr.umm-spec.util :as spec-util :refer [with-default]]))
 
 (defn characteristic-mapping
   [data]
@@ -223,7 +221,7 @@
                  ;; If price is not a number string just ignore it. ECHO10
                  ;; expectes a string in %9.2f format, so we have to
                  ;;ignore 'Free', 'Gratis', etc.
-                 (catch NumberFormatException e)))]
+                 (catch NumberFormatException _e)))]
      ;; Go through all of the FileDistributionInformation elements and set the
      ;; ECHO 10 DataFormats.
      (for [data-format (get-in c [:ArchiveAndDistributionInformation :FileDistributionInformation])]

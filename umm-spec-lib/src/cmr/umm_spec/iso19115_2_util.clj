@@ -3,7 +3,7 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]))
 
 (def long-name-xpath
@@ -61,13 +61,6 @@
 (def umm-metadata-date-types
  "A map of ISO metadata date definitions to UMM date type enum"
  (set/map-invert iso-metadata-type-definitions))
-
-(def eos-echo-attributes-info
-  [:eos:otherPropertyType
-   [:gco:RecordType
-    {:xlink:href
-     "http://earthdata.nasa.gov/metadata/schema/eos/1.0/eos.xsd#xpointer(//element[@name='AdditionalAttributes'])"}
-    "Echo Additional Attributes"]])
 
 (def gmd-echo-attributes-info
   [:gmd:otherPropertyType

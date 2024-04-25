@@ -4,6 +4,7 @@
   (:require
    [cmr.umm-spec.umm-g.instrument :as instrument]
    [cmr.umm.umm-granule :as g])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn- umm-g-platform->PlatformRef

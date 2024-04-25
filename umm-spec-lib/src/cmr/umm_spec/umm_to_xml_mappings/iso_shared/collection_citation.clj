@@ -1,5 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-citation
   "Functions for generating ISO XML elements from UMM collection-citation records."
+  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [clojure.string :as str]
    [cmr.common.xml.gen :refer :all]

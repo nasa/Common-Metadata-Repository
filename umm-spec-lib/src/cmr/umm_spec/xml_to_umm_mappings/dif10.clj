@@ -5,7 +5,7 @@
    [clojure.string :as string]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as util]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [date-at date-at-str dates-at-str fields-from value-of values-at]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.dif-util :as dif-util]
@@ -261,7 +261,7 @@
 (defn- parse-associated-dois
   "Parse the associated DOIs."
   [doc]
-  (if-let [assoc-dois (select doc "DIF/Associated_DOIs")]
+  (when-let [assoc-dois (select doc "DIF/Associated_DOIs")]
     (into []
       (for [assoc-doi assoc-dois]
         {:DOI (value-of assoc-doi "DOI")
@@ -273,7 +273,7 @@
 (defn- parse-other-identifiers
   "Parse the other identifiers."
   [doc]
-  (if-let [other-ids (select doc "DIF/Other_Identifiers")]
+  (when-let [other-ids (select doc "DIF/Other_Identifiers")]
     (into []
       (for [other-id other-ids]
         {:Identifier (value-of other-id "Identifier")

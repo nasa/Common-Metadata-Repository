@@ -1,9 +1,9 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.project-element
   "Functions for generating ISO-19115 and ISO-SMAP XML elements from UMM project records."
+  #_{:clj-kondo/ignore [:refer-all]}
   (:require
-    [cmr.common.xml.gen :refer :all]
-    [cmr.umm-spec.iso19115-2-util :as iso]
-    [cmr.umm-spec.util :as su :refer [char-string]]))
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.util :as su :refer [char-string]]))
 
 (defn- generate-date-string
   "Generate date string for ISO"

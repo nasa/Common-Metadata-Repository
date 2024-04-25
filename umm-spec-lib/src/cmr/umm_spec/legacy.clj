@@ -7,7 +7,7 @@
    [cmr.umm-spec.umm-spec-core :as umm-spec]))
 
 (defn- parse-umm-json-concept
-  [context {:keys [concept-type metadata format] :as concept-map}]
+  [context {:keys [concept-type metadata format]}]
   (umm-spec/parse-metadata context concept-type format metadata))
 
 (defn parse-concept
@@ -48,7 +48,7 @@
 
 (defmulti generate-metadata
   "Returns metadata string from UMM record (old or new)."
-  (fn [context umm format-key]
+  (fn [_context umm _format-key]
     (type umm)))
 
 (defmethod generate-metadata cmr.umm_spec.models.umm_collection_models.UMM-C

@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.dif10.related-url
-  (:require [clj-time.core :as t]
-            [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [cmr.common.util :as common-util :refer [are3]]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.related-url :as ru]))
 
@@ -51,24 +50,25 @@
               </DIF>"
               true)))))
 
+;; This tests the DIF 10 related-url GET CAPABILITIES XML to UMM-C translation
+(declare expected record)
 (deftest dif10-related-urls-get-capabilities-test
-  "This tests the DIF 10 related-url GET CAPABILITIES XML to UMM-C translation"
 
   (are3 [expected record]
-    (let [result (ru/parse-related-urls record true)]
-      (is (= expected result)))
+        (let [result (ru/parse-related-urls record true)]
+          (is (= expected result)))
 
-    "Parsing USE SERVICE API into GET CAPABILITIES"
-    [{:URL "http://someurl.com/"
-      :Description "Some description"
-      :URLContentType "DistributionURL"
-      :Type "GET CAPABILITIES"
-      :Subtype "OpenSearch"
-      :GetData {:Format "Not provided"
-                :Size 0.0,
-                :Unit "KB",
-                :MimeType "application/opensearchdescription+xml"}}]
-    "<DIF>
+        "Parsing USE SERVICE API into GET CAPABILITIES"
+        [{:URL "http://someurl.com/"
+          :Description "Some description"
+          :URLContentType "DistributionURL"
+          :Type "GET CAPABILITIES"
+          :Subtype "OpenSearch"
+          :GetData {:Format "Not provided"
+                    :Size 0.0,
+                    :Unit "KB",
+                    :MimeType "application/opensearchdescription+xml"}}]
+        "<DIF>
        <Related_URL>
          <URL_Content_Type>
            <Type>USE SERVICE API</Type>
@@ -80,20 +80,20 @@
        </Related_URL>
      </DIF>"
 
-    "Checking USE SERVICE API and mime-type is not the right value."
-    [{:URL "http://someurl.com/"
-      :Description "Some description"
-      :URLContentType "DistributionURL"
-      :Type "USE SERVICE API"
-      :Subtype "OpenSearch"
-      :GetService
-        {:MimeType "opensearchdescription+xml",
-         :FullName "Not provided",
-         :Format "Not provided",
-         :DataID "Not provided",
-         :DataType "Not provided",
-         :Protocol "HTTP"}}]
-    "<DIF>
+        "Checking USE SERVICE API and mime-type is not the right value."
+        [{:URL "http://someurl.com/"
+          :Description "Some description"
+          :URLContentType "DistributionURL"
+          :Type "USE SERVICE API"
+          :Subtype "OpenSearch"
+          :GetService
+          {:MimeType "opensearchdescription+xml",
+           :FullName "Not provided",
+           :Format "Not provided",
+           :DataID "Not provided",
+           :DataType "Not provided",
+           :Protocol "HTTP"}}]
+        "<DIF>
        <Related_URL>
          <URL_Content_Type>
            <Type>USE SERVICE API</Type>
@@ -105,14 +105,14 @@
        </Related_URL>
      </DIF>"
 
-    "Checking USE SERVICE API and mime-type does not exist."
-    [{:URL "http://someurl.com/"
-      :Description "Some description"
-      :URLContentType "DistributionURL"
-      :Type "USE SERVICE API"
-      :Subtype "OpenSearch"
-      :GetService nil}]
-    "<DIF>
+        "Checking USE SERVICE API and mime-type does not exist."
+        [{:URL "http://someurl.com/"
+          :Description "Some description"
+          :URLContentType "DistributionURL"
+          :Type "USE SERVICE API"
+          :Subtype "OpenSearch"
+          :GetService nil}]
+        "<DIF>
        <Related_URL>
          <URL_Content_Type>
            <Type>USE SERVICE API</Type>
@@ -123,20 +123,20 @@
        </Related_URL>
      </DIF>"
 
-    "Checking USE SERVICE API and SubType is not the right value."
-    [{:URL "http://someurl.com/"
-      :Description "Some description"
-      :URLContentType "DistributionURL"
-      :Type "USE SERVICE API"
-      :Subtype "OPENDAP DATA"
-      :GetService
-        {:MimeType "application/opensearchdescription+xml",
-         :FullName "Not provided",
-         :Format "Not provided",
-         :DataID "Not provided",
-         :DataType "Not provided",
-         :Protocol "HTTP"}}]
-    "<DIF>
+        "Checking USE SERVICE API and SubType is not the right value."
+        [{:URL "http://someurl.com/"
+          :Description "Some description"
+          :URLContentType "DistributionURL"
+          :Type "USE SERVICE API"
+          :Subtype "OPENDAP DATA"
+          :GetService
+          {:MimeType "application/opensearchdescription+xml",
+           :FullName "Not provided",
+           :Format "Not provided",
+           :DataID "Not provided",
+           :DataType "Not provided",
+           :Protocol "HTTP"}}]
+        "<DIF>
        <Related_URL>
          <URL_Content_Type>
            <Type>USE SERVICE API</Type>
@@ -148,19 +148,19 @@
        </Related_URL>
      </DIF>"
 
-    "Checking USE SERVICE API and SubType doesn't exist."
-    [{:URL "http://someurl.com/"
-      :Description "Some description"
-      :URLContentType "DistributionURL"
-      :Type "USE SERVICE API"
-      :GetService
-        {:MimeType "application/opensearchdescription+xml",
-         :FullName "Not provided",
-         :Format "Not provided",
-         :DataID "Not provided",
-         :DataType "Not provided",
-         :Protocol "HTTP"}}]
-    "<DIF>
+        "Checking USE SERVICE API and SubType doesn't exist."
+        [{:URL "http://someurl.com/"
+          :Description "Some description"
+          :URLContentType "DistributionURL"
+          :Type "USE SERVICE API"
+          :GetService
+          {:MimeType "application/opensearchdescription+xml",
+           :FullName "Not provided",
+           :Format "Not provided",
+           :DataID "Not provided",
+           :DataType "Not provided",
+           :Protocol "HTTP"}}]
+        "<DIF>
        <Related_URL>
          <URL_Content_Type>
            <Type>USE SERVICE API</Type>
@@ -171,17 +171,17 @@
        </Related_URL>
      </DIF>"
 
-    "Checking GET CAPABILITIES."
-    [{:URL "http://someurl.com/"
-      :Description "Some description"
-      :URLContentType "DistributionURL"
-      :Type "GET CAPABILITIES"
-      :Subtype "OpenSearch"
-      :GetData {:Format "Not provided"
-                :Size 0.0,
-                :Unit "KB",
-                :MimeType "application/opensearchdescription+xml"}}]
-    "<DIF>
+        "Checking GET CAPABILITIES."
+        [{:URL "http://someurl.com/"
+          :Description "Some description"
+          :URLContentType "DistributionURL"
+          :Type "GET CAPABILITIES"
+          :Subtype "OpenSearch"
+          :GetData {:Format "Not provided"
+                    :Size 0.0,
+                    :Unit "KB",
+                    :MimeType "application/opensearchdescription+xml"}}]
+        "<DIF>
        <Related_URL>
          <URL_Content_Type>
            <Type>GET CAPABILITIES</Type>
@@ -193,16 +193,16 @@
        </Related_URL>
      </DIF>"
 
-    "Checking GET CAPABILITIES without Subtype."
-    [{:URL "http://someurl.com/"
-      :Description "Some description"
-      :URLContentType "DistributionURL"
-      :Type "GET CAPABILITIES"
-      :GetData {:Format "Not provided"
-                :Size 0.0,
-                :Unit "KB",
-                :MimeType "application/opensearchdescription+xml"}}]
-    "<DIF>
+        "Checking GET CAPABILITIES without Subtype."
+        [{:URL "http://someurl.com/"
+          :Description "Some description"
+          :URLContentType "DistributionURL"
+          :Type "GET CAPABILITIES"
+          :GetData {:Format "Not provided"
+                    :Size 0.0,
+                    :Unit "KB",
+                    :MimeType "application/opensearchdescription+xml"}}]
+        "<DIF>
        <Related_URL>
          <URL_Content_Type>
            <Type>GET CAPABILITIES</Type>
@@ -213,14 +213,14 @@
        </Related_URL>
      </DIF>"
 
-    "Checking GET CAPABILITIES without mime type."
-    [{:URL "http://someurl.com/"
-      :Description "Some description"
-      :URLContentType "DistributionURL"
-      :Type "GET CAPABILITIES"
-      :Subtype "OpenSearch"
-      :GetData nil}]
-    "<DIF>
+        "Checking GET CAPABILITIES without mime type."
+        [{:URL "http://someurl.com/"
+          :Description "Some description"
+          :URLContentType "DistributionURL"
+          :Type "GET CAPABILITIES"
+          :Subtype "OpenSearch"
+          :GetData nil}]
+        "<DIF>
        <Related_URL>
          <URL_Content_Type>
            <Type>GET CAPABILITIES</Type>
@@ -231,13 +231,13 @@
        </Related_URL>
      </DIF>"
 
-    "Checking GET CAPABILITIES without subtype and mime type."
-    [{:URL "http://someurl.com/"
-      :Description "Some description"
-      :URLContentType "DistributionURL"
-      :Type "GET CAPABILITIES"
-      :GetData nil}]
-    "<DIF>
+        "Checking GET CAPABILITIES without subtype and mime type."
+        [{:URL "http://someurl.com/"
+          :Description "Some description"
+          :URLContentType "DistributionURL"
+          :Type "GET CAPABILITIES"
+          :GetData nil}]
+        "<DIF>
        <Related_URL>
          <URL_Content_Type>
            <Type>GET CAPABILITIES</Type>

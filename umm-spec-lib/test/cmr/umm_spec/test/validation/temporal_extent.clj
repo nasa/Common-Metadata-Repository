@@ -2,7 +2,7 @@
   "This has tests for UMM temporal extent validations."
   (:require
    [clj-time.core :as time]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest testing]]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as util :refer [are3]]
    [cmr.umm-spec.models.umm-collection-models :as coll]
@@ -79,6 +79,7 @@
             [:TemporalExtents 0 :SingleDateTimes 1]
             ["Date should be in the past."]))))))
 
+(declare range-date-times ends-at-present?)
 (deftest ends-at-present-validation
   (let [r1 (h/range-date-time "1999-12-30T19:00:00Z" "2000-12-30T19:00:01Z")
         r2 (h/range-date-time "2001-12-30T19:00:00Z" nil)

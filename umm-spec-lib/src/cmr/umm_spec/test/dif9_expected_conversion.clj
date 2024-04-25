@@ -1,18 +1,12 @@
 (ns cmr.umm-spec.test.dif9-expected-conversion
  "DIF 9 specific expected conversion functionality"
  (:require
-  [clj-time.core :as t]
-  [clj-time.format :as f]
-  [clojure.string :as string]
   [cmr.common.util :as util :refer [update-in-each]]
   [cmr.umm-spec.date-util :as date]
   [cmr.umm-spec.json-schema :as js]
-  [cmr.umm-spec.location-keywords :as lk]
   [cmr.umm-spec.models.umm-collection-models :as umm-c]
   [cmr.umm-spec.models.umm-common-models :as cmn]
-  [cmr.umm-spec.related-url :as ru-gen]
   [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-  [cmr.umm-spec.test.location-keywords-helper :as lkt]
   [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]
   [cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact :as contact]
   [cmr.umm-spec.umm-to-xml-mappings.dif9.spatial-extent :as spatial]
@@ -152,7 +146,7 @@
   or contact person"
   [contact role-expected-mapping]
   (let [contact (if (:GroupName contact)
-                  (let [{:keys [Roles ContactInformation Addresses GroupName]} contact]
+                  (let [{:keys [Roles ContactInformation GroupName]} contact]
                     (cmn/map->ContactPersonType {:Roles Roles
                                                  :ContactInformation ContactInformation
                                                  :FirstName nil

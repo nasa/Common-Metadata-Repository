@@ -1,12 +1,13 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.platform
   "Functions for generating ISOSMAP XML elements from UMM platform records."
+  #_{:clj-kondo/ignore [:refer-all]}
   (:require
-    [cmr.common.xml.gen :refer :all]
-    [cmr.umm-spec.iso19115-2-util :as iso]
-    [cmr.umm-spec.iso-keywords :as kws]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.instrument :as inst]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.characteristics-and-operationalmodes :as ch]
-    [cmr.umm-spec.util :as su :refer [with-default char-string]]))
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.iso-keywords :as kws]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.instrument :as inst]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.characteristics-and-operationalmodes :as ch]
+   [cmr.umm-spec.util :as su :refer [with-default char-string]]))
 
 (defn- platform-with-id
   "Returns the platform with generated ids for ISO xml generation"
@@ -63,5 +64,4 @@
 
       ;; Characteristics
       (when-let [characteristics (:Characteristics platform)]
-        iso/eos-echo-attributes-info
         (ch/generate-characteristics "platformInformation" characteristics))]]))

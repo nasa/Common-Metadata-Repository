@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif9.paleo-temporal
   "Defines mappings from DIF 9 Paleo_Temporal_Coverage elements into UMM records"
-  (:require [cmr.common.xml.parse :refer :all]
-            [cmr.common.xml.simple-xpath :refer [select text]]))
+  (:require [cmr.common.xml.parse :refer [value-of]]
+            [cmr.common.xml.simple-xpath :refer [select]]))
 
 (defn parse-paleo-temporal-from-xpath
   "Returns UMM-C PaleoTemporalCoverage map from XML document for the given xpath string."

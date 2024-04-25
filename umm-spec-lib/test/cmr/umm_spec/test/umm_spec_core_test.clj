@@ -1,10 +1,11 @@
 (ns cmr.umm-spec.test.umm-spec-core-test
   "Tests for cmr.umm-spec.core functions"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [clj-time.core :as t]
-   [cmr.common.util :as util :refer [are3]]
+   [cmr.common.joda-time :as joda]
    [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.redis-utils.test.test-util :as redis-embedded-fixture]
    [cmr.umm-spec.umm-spec-core :as core]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
@@ -54,6 +55,7 @@
            %))
        (map util/remove-nil-keys)))
 
+(declare expected)
 (deftest parse-concept-temporal-test
   (testing "parse collection temporal"
     (are3 [format expected]
@@ -74,7 +76,7 @@
       [{:RangeDateTimes
         [{:BeginningDateTime "2012-01-01T00:00:00.000Z",
           :EndingDateTime
-          #=(cmr.common.joda-time/date-time 1325376000000 "UTC")}]}]
+          #=(joda/date-time 1325376000000 "UTC")}]}]
 
       "dif10"
       :dif10

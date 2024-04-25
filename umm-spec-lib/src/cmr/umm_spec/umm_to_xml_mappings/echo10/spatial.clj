@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.echo10.spatial
   (:require
-   [cmr.common.xml.gen :refer :all]
+   [cmr.common.xml.gen :refer [elements-from]]
    [cmr.umm-spec.migration.version.collection :as version-collection]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as u]))

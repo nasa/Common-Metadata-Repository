@@ -63,17 +63,17 @@
 
 (defmethod interface/migrate-umm-version [:variable "1.0" "1.1"]
   ;; Migrate up to 1.1
-  [context v & _]
+  [_context v & _]
   (dissoc v :Services))
 
 (defmethod interface/migrate-umm-version [:variable "1.1" "1.0"]
   ;; Migrate down to 1.0
-  [context v & _]
+  [_context v & _]
   v)
 
 (defmethod interface/migrate-umm-version [:variable "1.1" "1.2"]
   ;; Migrate up to 1.2
-  [context v & _]
+  [_context v & _]
   (-> v
       (assoc :MeasurementIdentifiers (->> (:Measurements v)
                                           (map measurement-1-1->1-2)
@@ -87,7 +87,7 @@
 
 (defmethod interface/migrate-umm-version [:variable "1.2" "1.1"]
   ;; Migrate down to 1.1
-  [context v & _]
+  [_context v & _]
   (-> v
       (assoc :Measurements (map measurement-1-2->1-1 (:MeasurementIdentifiers v)))
       (update :Dimensions dimensions-1-2->1-1)
@@ -101,7 +101,7 @@
               :VariableSubType)))
 
 (defmethod interface/migrate-umm-version [:variable "1.3" "1.2"]
-  [context v & _]
+  [_context v & _]
   ;; Migrate down to 1.2
   (-> v
       (dissoc :SizeEstimation
@@ -109,11 +109,11 @@
 
 (defmethod interface/migrate-umm-version [:variable "1.2" " 1.3"]
   ;; Migrate up to 1.3
-  [context v & _]
+  [_context v & _]
   v)
 
 (defmethod interface/migrate-umm-version [:variable "1.4" "1.3"]
-  [context v & _]
+  [_context v & _]
   ;; Migrate down to 1.3
   (if-let [avg-comp-info (get-in v [:SizeEstimation :AverageCompressionInformation])]
     (as-> v m
@@ -129,7 +129,7 @@
 
 (defmethod interface/migrate-umm-version [:variable "1.3" "1.4"]
   ;; Migrate up to 1.4
-  [context v & _]
+  [_context v & _]
   (let [avg-comp-info-ascii (when-let [rate (get-in v [:SizeEstimation :AvgCompressionRateASCII])]
                               [{:Rate rate :Format "ASCII"}])
         avg-comp-info-netcdf4 (when-let [rate (get-in v [:SizeEstimation :AvgCompressionRateNetCDF4])]
@@ -142,11 +142,11 @@
       v)))
 
 (defmethod interface/migrate-umm-version [:variable "1.5" "1.4"]
-  [context v & _]
+  [_context v & _]
   (dissoc v :AcquisitionSourceName))
 
 (defmethod interface/migrate-umm-version [:variable "1.4" "1.5"]
-  [context v & _]
+  [_context v & _]
   (assoc v :AcquisitionSourceName "Not Provided"))
 
 (def ^:private default-measurement-object
@@ -189,23 +189,23 @@
                            :MeasurementQuantities quantities})))
 
 (defmethod interface/migrate-umm-version [:variable "1.6" "1.5"]
-  [context v & _]
+  [_context v & _]
   (-> v
       (util/update-in-each [:MeasurementIdentifiers] measurement_1_6->measurement_1_5)
       (util/update-in-each [:Dimensions] dimension_1_6->dimension_1_5)))
 
 (defmethod interface/migrate-umm-version [:variable "1.5" "1.6"]
-  [context v & _]
+  [_context v & _]
   (util/update-in-each v [:MeasurementIdentifiers] measurement_1_5->measurement_1_6))
 
 (defmethod interface/migrate-umm-version [:variable "1.6" "1.7"]
-  [context v & _]
+  [_context v & _]
   (-> v
       (assoc :IndexRanges (get-in v [:Characteristics :IndexRanges]))
       (dissoc :Alias :AcquisitionSourceName :Characteristics :SizeEstimation)))
 
 (defmethod interface/migrate-umm-version [:variable "1.7" "1.6"]
-  [context v & _]
+  [_context v & _]
   (-> v
       (assoc :AcquisitionSourceName spec-util/not-provided)
       (assoc-in [:Characteristics :IndexRanges] (get v :IndexRanges))
@@ -215,27 +215,27 @@
 ;; migrations for 1.8 **********************************************************
 
 (defmethod interface/migrate-umm-version [:variable "1.7" "1.8"]
-  [context umm-v & _]
+  [_context umm-v & _]
   ;; insert a metadata specification
   (-> umm-v
       (m-spec/update-version :variable "1.8")))
 
 (defmethod interface/migrate-umm-version [:variable "1.8" "1.7"]
   ;; drop metadata specification and related urls
-  [context umm-v & _]
+  [_context umm-v & _]
   (-> umm-v
       (dissoc :MetadataSpecification :RelatedURLs)))
 
 ;; migrations for 1.8.1 **********************************************************
 
 (defmethod interface/migrate-umm-version [:variable "1.8" "1.8.1"]
-  [context umm-v & _]
+  [_context umm-v & _]
   ;; update the MetadataSpecification
   (-> umm-v
       (m-spec/update-version :variable "1.8.1")))
 
 (defmethod interface/migrate-umm-version [:variable "1.8.1" "1.8"]
-  [context umm-v & _]
+  [_context umm-v & _]
   ;; Update the MetadataSpecification and Convert VariableType and VariableSubType
   (-> umm-v
       (update :VariableType #(if (= "COORDINATE" %) "OTHER" %))

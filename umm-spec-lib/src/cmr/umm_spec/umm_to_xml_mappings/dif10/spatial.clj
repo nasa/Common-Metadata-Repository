@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10.spatial
   (:require
    [camel-snake-kebab.core :as csk]
-   [cmr.common.xml.gen :refer :all]
+   [cmr.common.xml.gen :refer [elements-from]]
    [cmr.umm-spec.migration.version.collection :as version-collection]
    [cmr.umm-spec.util :as u]))
 

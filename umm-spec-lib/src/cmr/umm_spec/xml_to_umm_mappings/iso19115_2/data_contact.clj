@@ -2,10 +2,9 @@
  "Functions to parse DataCenters and ContactPersons from ISO 19115-2"
  (:require
   [clojure.string :as str]
-  [cmr.common.xml.parse :refer :all]
-  [cmr.common.xml.simple-xpath :refer [select text]]
+  [cmr.common.xml.parse :refer [value-of]]
+  [cmr.common.xml.simple-xpath :refer [select]]
   [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
-  [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as related-url]
   [cmr.umm-spec.url :as url]
   [cmr.umm-spec.util :as util]))
 
@@ -66,8 +65,7 @@
 (defn- parse-urls
  [contact-info-xml url-content-type sanitize?]
  (for [url (select contact-info-xml "gmd:onlineResource/gmd:CI_OnlineResource")
-       :let [name (char-string-value url "gmd:name")
-             url-link (value-of url "gmd:linkage/gmd:URL")]
+       :let [url-link (value-of url "gmd:linkage/gmd:URL")]
        :when url-link]
    {:URL (url/format-url url-link sanitize?)
     :Description (char-string-value url "gmd:description")

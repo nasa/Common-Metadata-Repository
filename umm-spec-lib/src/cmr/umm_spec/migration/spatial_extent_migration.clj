@@ -1,6 +1,7 @@
 (ns cmr.umm-spec.migration.spatial-extent-migration
   "Contains helper functions for migrating between different versions of UMM related urls"
   (:require
+   [clojure.string :as string]
    [cmr.common.util :refer [update-in-each remove-nils-empty-maps-seqs remove-nil-keys]]
    [cmr.umm-spec.util :as umm-spec-util]))
 
@@ -345,7 +346,7 @@
   "This function returns nil if the resolution unit has a value of Not provided.
    This essentially removes these resolutions from the end result."
   [resolution]
-  (when-not (clojure.string/includes? (:Unit resolution) "Not provided")
+  (when-not (string/includes? (:Unit resolution) "Not provided")
     resolution))
 
 (defn migrate-resolution-units-down-to_1_15_1

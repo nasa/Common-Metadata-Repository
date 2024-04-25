@@ -4,13 +4,11 @@
    [camel-snake-kebab.core :as csk]
    [clojure.string :as string]
    [cmr.common.util :as util]
-   [cmr.spatial.derived :as d]
    [cmr.spatial.encoding.gmd :as gmd]
    [cmr.spatial.line-string :as ls]
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.relations :as r]
    [cmr.spatial.ring-relations :as rr]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm.umm-spatial :as umm-s]))

@@ -4,7 +4,7 @@
    [clojure.string :as string]
    [cmr.common.date-time-parser :as p]
    [cmr.common.util :as util]
-   [cmr.common.xml.gen :refer :all]
+   [cmr.common.xml.gen :refer [xml]]
    [cmr.umm-spec.date-util :as date-util]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso]
