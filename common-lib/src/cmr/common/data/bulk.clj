@@ -1,4 +1,4 @@
-(ns cmr.access-control.data.bulk
+(ns cmr.common.data.bulk
   "Implementation of elastisch bulk index preparation that supports version and version_type.
   The original implementation is in clojurewerkz.elastisch.rest.bulk namespace.")
 

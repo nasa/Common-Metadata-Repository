@@ -4,7 +4,7 @@
     [clj-time.core :as t]
     [clojure.string :as str]
     [clojure.test :refer :all]
-    [cmr.access-control.data.access-control-index :as access-control-index]
+    [cmr.elastic-utils.search.access-control-index :as access-control-index]
     [cmr.access-control.int-test.fixtures :as fixtures]
     [cmr.access-control.test.util :as u]
     [cmr.common.util :as util :refer [are3]]

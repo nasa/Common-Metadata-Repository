@@ -1,28 +1,19 @@
 (ns cmr.bootstrap.data.bulk-index
   "Functions to support concurrent bulk indexing."
   (:require
-    [cheshire.core :as json]
-    [clj-http.client :as client]
     [clj-time.coerce :as time-coerce]
     [clojure.core.async :as ca :refer [<!!]]
-    [clojure.java.jdbc :as j]
-    [clojure.string :as str]
-    [cmr.access-control.data.access-control-index :as access-control-index]
     [cmr.access-control.data.bulk-index :as ac-bulk-index]
-    [cmr.bootstrap.data.bulk-migration :as bm]
     [cmr.bootstrap.embedded-system-helper :as helper]
     [cmr.common.concepts :as cc]
-    [cmr.common.log :refer (debug info warn error)]
+    [cmr.common.log :refer (info warn error)]
     [cmr.common.util :as util]
     [cmr.indexer.data.elasticsearch :as es]
     [cmr.indexer.data.index-set :as index-set]
     [cmr.indexer.services.index-service :as index]
     [cmr.indexer.services.index-set-service :as index-set-service]
     [cmr.metadata-db.data.concepts :as db]
-    [cmr.metadata-db.data.providers :as p]
-    [cmr.metadata-db.services.provider-service :as provider-service]
-    [cmr.oracle.connection :as oc]
-    [cmr.transmit.config :as transmit-config]))
+    [cmr.metadata-db.data.providers :as p]))
 
 (def ^:private system-concept-provider
   "Provider name for indexing system concepts"

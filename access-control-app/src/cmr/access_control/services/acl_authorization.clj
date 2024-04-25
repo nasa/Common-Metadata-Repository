@@ -3,7 +3,7 @@
     [cmr.access-control.services.acl-util :as acl-util]
     [cmr.access-control.services.auth-util :as auth-util]
     [cmr.access-control.services.group-service :as group-service]
-    [cmr.access-control.data.access-control-index :as index]
+    [cmr.elastic-utils.search.access-control-index :as index]
     [cmr.access-control.data.acl-schema :as schema]
     [cmr.acl.core :as acl]
     [cmr.elastic-utils.search.es-group-query-conditions :as gc]

@@ -3,7 +3,7 @@
    [clojure.edn :as edn]
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.access-control.data.access-control-index :as index]
+   [cmr.elastic-utils.search.access-control-index :as index]
    [cmr.access-control.data.acl-schema :as schema]
    [cmr.access-control.services.acl-authorization :as acl-auth]
    [cmr.access-control.services.acl-service-messages :as acl-msg]

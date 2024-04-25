@@ -2,12 +2,12 @@
   "Defines protocols and functions to extract keywords from a query. The extraction is done
   during pre-processing of the query to get the temporal conditions result feature."
   (:require
-   [cmr.common.services.search.query-model :as cqm]
-   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.search.models.query :as qm])
+   ;;[cmr.search.models.query :as qm]
+   )
   (:import cmr.common.services.search.query_model.Query
-           cmr.common.services.search.query_model.ConditionGroup))
+           cmr.common.services.search.query_model.ConditionGroup
+           cmr.search.models.query.TemporalCondition))
 
 (defprotocol ExtractTemporalRanges
   "Defines a function to extract temporal ranges. Temporal ranges are returned in the format

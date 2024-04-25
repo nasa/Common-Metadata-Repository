@@ -2,7 +2,7 @@
   (:require
    [clj-time.core :as t]
    [cmr.access-control.config :as access-control-config]
-   [cmr.access-control.data.acls :as acls]
+   [cmr.common.data.acls :as acls]
    [cmr.access-control.services.group-service :as group-service]
    [cmr.access-control.services.messages :as msg]
    [cmr.acl.core :as acl]

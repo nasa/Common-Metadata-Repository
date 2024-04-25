@@ -4,7 +4,7 @@
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
    [cmr.access-control.config :as config]
-   [cmr.access-control.data.access-control-index :as access-control-index]
+   [cmr.elastic-utils.search.access-control-index :as access-control-index]
    [cmr.access-control.services.event-handler :as event-handler]
    [cmr.access-control.test.bootstrap :as bootstrap]
    [cmr.access-control.routes :as routes]

@@ -52,7 +52,7 @@
     cmr.search.data.complex-to-simple-converters.spatial
     cmr.search.data.complex-to-simple-converters.temporal
     cmr.search.data.complex-to-simple-converters.two-d-coordinate-system
-    cmr.search.data.elastic-results-to-query-results
+    cmr.elastic-utils.search.elastic-results-to-query-results
     cmr.search.services.aql.converters.attribute
     cmr.search.services.aql.converters.attribute-name
     cmr.search.services.aql.converters.science-keywords

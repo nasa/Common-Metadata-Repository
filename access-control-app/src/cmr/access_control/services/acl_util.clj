@@ -6,8 +6,8 @@
    [clojure.set :as set]
    [clojure.string :as str]
    [cmr.access-control.config :as config]
-   [cmr.access-control.data.access-control-index :as index]
-   [cmr.access-control.data.acls :as acls]
+   [cmr.elastic-utils.search.access-control-index :as index]
+   [cmr.common.data.acls :as acls]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.common.services.search.query-model :as qm]
@@ -96,7 +96,7 @@
 
 (defn get-acl-concepts-by-identity-type-and-target
   "Returns ACLs with given identity-type string and target string.
-   Valid identity types are defined in cmr.access-control.data.access-control-index.
+   Valid identity types are defined in cmr.elastic-utils.search.access-control-index.
    Valid targets can be found in cmr.access-control.data.acl-schema."
   [context identity-type target]
   (let [identity-type-condition (qm/string-condition :identity-type identity-type true false)

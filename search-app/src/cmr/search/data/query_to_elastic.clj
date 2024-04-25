@@ -3,16 +3,16 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as str]
-   [cmr.elastic-utils.search.es-wrapper :as eq]
-   [cmr.elastic-utils.search.query-transform :as c2s]
-   [cmr.common.services.search.query-model :as q]
-   [cmr.elastic-utils.search.es-query-order-by-expense :as query-expense]
-   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.services.errors :as errors]
+   [cmr.common.services.search.query-model :as q]
+   [cmr.elastic-utils.search.es-query-order-by-expense :as query-expense]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-wrapper :as eq]
+   [cmr.elastic-utils.search.keywords-to-elastic :as k2e]
+   [cmr.elastic-utils.search.query-transform :as c2s]
    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
-   [cmr.search.data.keywords-to-elastic :as k2e]
    [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor])
   (:require
    ;; require it so it will be available

@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [cmr.access-control.config :as access-control-config]
-   [cmr.access-control.data.access-control-index :as index]
+   [cmr.elastic-utils.search.access-control-index :as index]
    [cmr.access-control.data.acl-schema :as acl-schema]
    [cmr.access-control.data.group-schema :as group-schema]
    [cmr.access-control.services.acl-search-service :as acl-search]

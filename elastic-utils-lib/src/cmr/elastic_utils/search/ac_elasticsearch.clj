@@ -1,10 +1,10 @@
-(ns cmr.access-control.data.elasticsearch
+(ns cmr.elastic-utils.search.ac-elasticsearch
   "Functions related to indexing access control data in Elasticsearch."
   (:require
-   [cmr.access-control.data.access-control-index :as access-control-index]
-   [cmr.access-control.data.bulk :as cmr-bulk]
+   [cmr.elastic-utils.search.access-control-index :as access-control-index]
+   [cmr.common.data.bulk :as cmr-bulk]
    [cmr.common.concepts :as cs]
-   [cmr.common.log :refer [info error]]
+   [cmr.common.log :refer [error]]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.es-helper :as es-helper]))
 
@@ -19,7 +19,7 @@
 
 (defmulti parsed-concept->elastic-doc
   "Returns elastic json that can be used to insert into Elasticsearch for the given concept"
-  (fn [context concept parsed-concept]
+  (fn [_context concept _parsed-concept]
     (cs/concept-id->type (:concept-id concept))))
 
 (defmethod parsed-concept->elastic-doc :acl
@@ -36,9 +36,9 @@
 
 (defn- concept->bulk-elastic-docs
   "Converts a concept map into an elastic document suitable for bulk indexing."
-  [context concept {:keys [all-revisions-index?] :as options}]
+  [context concept {:keys [_all-revisions-index?] :as _options}]
   (try
-    (let [{:keys [concept-id revision-id]} concept
+    (let [{:keys [concept-id _revision-id]} concept
           type (concept->type concept)
           elastic-version (:revision-id concept)
           index-name (access-control-index/concept-type->index-name type)
