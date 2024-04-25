@@ -3,9 +3,7 @@
   (:require
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :as log :refer [debug info warn error]]
-   [cmr.common.util :as util]
-   [cmr.dev-system.config :as dev-config]
-   [cmr.elastic-utils.config :as elastic-config])
+   [cmr.common.util :as util])
   (:import
    (java.time Duration)
    (org.testcontainers.containers FixedHostPortGenericContainer Network)
@@ -59,15 +57,12 @@
      ;; You would probably be better off just connecting to the docker machine.
      (when data-dir
        (.withFileSystemBind container data-dir "/usr/share/elasticsearch/data"))
-     (when log-level
-       (.withEnv container "logger.level" (name log-level)))
      (doto container
        (.withEnv "indices.breaker.total.use_real_memory" "false")
        (.withEnv "node.name" "embedded-elastic")
        (.withNetwork network)
        (.withNetworkAliases (into-array String ["elasticsearch"]))
        (.withFixedExposedPort (int http-port) 9200)
-       (.withStartupTimeout (Duration/ofSeconds 720))
        (.waitingFor
         (Wait/forLogMessage ".*\"message\": \"started\".*" 1)))
      {:elasticsearch container
