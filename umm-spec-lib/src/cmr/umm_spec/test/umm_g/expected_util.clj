@@ -19,7 +19,7 @@
   "Get size in megabytes based on the size-unit."
   [size size-unit]
   (condp = size-unit
-    "KB" (/ size 1024)
+    "KB" (double (/ size 1024))
     "MB" size
     "GB" (* size 1024)
     "TB" (* size 1024 1024)
@@ -112,7 +112,7 @@
                                 {:value "E51569BF48DD0FD0640C6503A46D4753"
                                  :algorithm "MD5"})
                     :size-unit "MB"
-                    :size (+ (/ 23552 (* 1024 1024)) (/ 11 1024))
+                    :size (+ (double (/ 23552 (* 1024 1024))) (double (/ 11 1024)))
                     :format "ZIP"
                     :files [(umm-lib-g/map->File
                              {:name "GranuleFileName1"

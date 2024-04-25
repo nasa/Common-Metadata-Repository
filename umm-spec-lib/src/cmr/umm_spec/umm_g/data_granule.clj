@@ -42,7 +42,7 @@
 
 (def unit-megabytes-map
   "Mapping SizeUnit to megabytes."
-  {"KB" (/ 1 1024)
+  {"KB" (double (/ 1 1024))
    "MB" 1 
    "GB" 1024
    "TB" (* 1024 1024)
@@ -53,12 +53,14 @@
   "Get either SizeInBytes or Size(and convert it in Bytes)"
   [file-info]
   (let [size-in-bytes (get file-info :SizeInBytes)
-        size (get file-info :Size 0)
-        size-unit (get file-info :SizeUnit "NA")
+        size (get file-info :Size)
+        size-unit (get file-info :SizeUnit)
         convert-to-megabytes-factor (get unit-megabytes-map size-unit)]
     (if size-in-bytes
-      (/ size-in-bytes (* 1024 1024))
-      (* size convert-to-megabytes-factor))))
+      (double (/ size-in-bytes (* 1024 1024)))
+      (if (and size convert-to-megabytes-factor)
+        (* size convert-to-megabytes-factor)
+        0))))
 
 (defn- add-up-granule-file-sizes
   "Add up all the granule file sizes from ArchiveAndDistributionInformation."
