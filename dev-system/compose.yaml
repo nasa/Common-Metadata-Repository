@@ -10,7 +10,7 @@ services:
     container_name: cmr-elasticsearch
     image: docker.elastic.co/elasticsearch/elasticsearch:7.17.14
     ports: 
-      - 9210:9210
+      - 9210:9200
       - 9300:9300
     environment:
       - discovery.type=single-node
@@ -21,7 +21,7 @@ services:
         aliases:
           - elasticsearch
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9200/_cat/health?v&pretty"]
+      test: ["CMD", "curl", "-f", "http://localhost:9210/_cat/health?v&pretty"]
       interval: 30s
       timeout: 3m
       retries: 6

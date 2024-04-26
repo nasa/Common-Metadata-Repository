@@ -117,7 +117,7 @@
 
 (defmethod create-elastic :external
   [_]
-  (elastic-config/set-elastic-port! 9209))
+  nil)
 
 (defmulti create-redis
   "Sets redis configuration values and returns an instance of a Redis component to run
