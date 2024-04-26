@@ -3,7 +3,7 @@
   (:require
    [clj-time.format :as f]
    [clojure.string :as str]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]))
 
 (defn- xml-elem->additional-attribute

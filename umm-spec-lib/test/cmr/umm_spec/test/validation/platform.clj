@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.test.validation.platform
   "This has tests for UMM collection platform validations."
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest testing]]
             [cmr.umm-spec.models.umm-common-models :as c]
             [cmr.umm-spec.models.umm-collection-models :as coll]
             [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as h]))

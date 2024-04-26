@@ -1,9 +1,10 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.collection-progress
   "Functions for generating ISO XML elements from UMM collection-progress records."
+  #_{:clj-kondo/ignore [:refer-all]}
   (:require
-    [clojure.string :as string]
-    [cmr.common.xml.gen :refer :all]
-    [cmr.umm-spec.iso19115-2-util :as iso]))
+   [clojure.string :as string]
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.iso19115-2-util :as iso]))
 
 (def coll-progress-mapping
   "Mapping from known collection progress values to values supported for ISO ProgressCode."

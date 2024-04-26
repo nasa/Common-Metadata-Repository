@@ -2,11 +2,12 @@
   (:require
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :refer [are3]]
    [cmr.common.xml.simple-xpath :as xpath]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial :as spatial]))
 
+(declare expected)
 (deftest test-iso19115-2-spatial-xml-to-umm-conversion
   (testing "test the defmacro to see if it creates the correct map"
 
@@ -39,8 +40,8 @@
                   (spatial/parse-coordinate-system))]
     (is (= "GEODETIC" value))))
 
+;; Testing the ability to handle parsing a number that exceeds the max integer value
 (deftest test-coordinate-system-parsing-large-num
-  "Testing the ability to handle parsing a number that exceeds the max integer value"
 
   (let [value (spatial/parse-horizontal-data-resolutions
                (slurp (io/resource "example-data/iso19115/artificial_test_data_large_num.xml")))]

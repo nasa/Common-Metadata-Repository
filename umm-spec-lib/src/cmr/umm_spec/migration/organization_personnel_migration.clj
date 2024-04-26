@@ -50,15 +50,6 @@
     (when (seq (util/remove-nil-keys contact-information))
       [contact-information])))
 
-(defn- person->contact-persons
-  "Convert a person to a vector of contact persons. If a role is not provided,
-  fill in a default role"
-  [person]
-  (when (seq person)
-   (if (empty? (:Roles person))
-     [(assoc person :Roles [u/not-provided-contact-person-role])]
-     [person])))
-
 (defn- organization->data-center
   "Convert an organization to a data center"
   [organization]

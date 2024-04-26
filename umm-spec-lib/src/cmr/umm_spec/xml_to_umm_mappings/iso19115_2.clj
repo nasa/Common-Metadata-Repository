@@ -3,9 +3,8 @@
   (:require
    [clj-time.format :as f]
    [clojure.string :as string]
-   [cmr.common.log :refer [warn]]
    [cmr.common.util :as util]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [date-at date-at-str value-of values-at]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.iso-keywords :as kws]
@@ -261,7 +260,7 @@
 
 (defn- parse-publication-references
   "Returns the publication references."
-  [doc md-data-id-el sanitize?]
+  [md-data-id-el sanitize?]
   (for [publication (select md-data-id-el publication-xpath)
         :let [role-xpath "gmd:citedResponsibleParty/gmd:CI_ResponsibleParty[gmd:role/gmd:CI_RoleCode/@codeListValue='%s']"
               online-resource (parse-online-resource publication sanitize?)
@@ -336,7 +335,7 @@
 
 (defn- parse-iso19115-xml
   "Returns UMM-C collection structure from ISO19115-2 collection XML document."
-  [context doc {:keys [sanitize?]}]
+  [doc {:keys [sanitize?]}]
   (let [md-data-id-el (first (select doc md-data-id-base-xpath))
         citation-el (first (select doc citation-base-xpath))
         id-el (first (select doc identifier-base-xpath))
@@ -387,7 +386,7 @@
       :Platforms (platform/parse-platforms doc "" sanitize? alt-xpath-options)
       :Projects (project/parse-projects doc projects-xpath sanitize?)
 
-      :PublicationReferences (parse-publication-references doc md-data-id-el sanitize?)
+      :PublicationReferences (parse-publication-references md-data-id-el sanitize?)
       :MetadataAssociations (ma/xml-elem->metadata-associations doc)
       :AncillaryKeywords (descriptive-keywords-type-not-equal
                           md-data-id-el
@@ -411,5 +410,5 @@
 (defn iso19115-2-xml-to-umm-c
   "Returns UMM-C collection record from ISO19115-2 collection XML document. The :sanitize? option
   tells the parsing code to set the default values for fields when parsing the metadata into umm."
-  [context metadata options]
-  (js/parse-umm-c (parse-iso19115-xml context metadata options)))
+  [_context metadata options]
+  (js/parse-umm-c (parse-iso19115-xml metadata options)))

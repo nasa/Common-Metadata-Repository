@@ -8,23 +8,6 @@
   (:import
    (org.apache.commons.validator.routines UrlValidator)))
 
-(defn- valid-url-content-types-combo?
-  "Returns true if valid Type and Subtype for URLContentType, nil otherwise."
-  [url-content-type type sub-type]
-  (when (and (some #(= type %) (su/valid-types-for-url-content-type url-content-type))
-             (or (nil? sub-type)
-                 (some #(= sub-type %) (su/valid-subtypes-for-type url-content-type type))))
-    true))
-
-(defn- related-url-type-validation
-  "Validate the Type and Subtype being valid for the accompanying URLContentType"
-  [field-path value]
-  (let [{:keys [URLContentType Type Subtype]} value]
-    (when-not (valid-url-content-types-combo? URLContentType Type Subtype)
-      {field-path
-       [(vu/escape-error-string (format "URLContentType: %s, Type: %s, Subtype: %s is not a vaild URLContentType/Type/Subtype combination."
-                                        URLContentType Type Subtype))]})))
-
 (defn- data-center-url-content-type-validation
   "Validates the URLContentType for DataCenter ContactInformation"
   [field-path value]
@@ -95,9 +78,6 @@
                (not (seq Description)))
       {field-path
        [(vu/escape-error-string "RelatedUrl does not have a description.")]})))
-
-(def urls-validation
-  {:URL url-validation})
 
 (def related-url-validations
   [{:URL url-validation}

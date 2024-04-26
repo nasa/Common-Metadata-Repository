@@ -1,9 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap
   "Defines mappings from UMM records into ISO SMAP XML."
   (:require
-   [clojure.string :as string]
-   [cmr.common.util :as util]
-   [cmr.common.xml.gen :refer :all]
+   [cmr.common.xml.gen :refer [xml]]
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso]
@@ -21,7 +19,7 @@
    [cmr.umm-spec.umm-to-xml-mappings.iso-smap.data-contact :as data-contact]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :as iso19115-spatial-conversion]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.tiling-system :as tiling]
-   [cmr.umm-spec.util :as su :refer [with-default char-string]]))
+   [cmr.umm-spec.util :as su :refer [char-string]]))
 
 (def iso-smap-xml-namespaces
   {:xmlns:gmd "http://www.isotc211.org/2005/gmd"

@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.iso19115-2.data-contact
   (:require
    [clojure.java.io :as io]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as data-contact]))
 
 

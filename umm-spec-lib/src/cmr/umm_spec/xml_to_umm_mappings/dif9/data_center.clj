@@ -1,17 +1,10 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif9.data-center
   "Defines mappings and parsing from DIF 9 elements into UMM records data center fields."
   (:require
-   [clojure.set :as set]
-   [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer [select text]]
-   [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]
+   [cmr.common.xml.parse :refer [value-of]]
+   [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.xml-to-umm-mappings.dif9.data-contact :as contact]))
-
-(def dif9-data-center-contact-role->umm-contact-role
-  "DIF9 data center contact role to UMM conatct role mapping. Here we only define the roles that
-  do not map to Data Center Contact which is our default."
-  (set/map-invert center/umm-contact-role->dif9-data-center-contact-role))
 
 (defn parse-processing-centers
   "Returns the UMM data centers from parsing DIF9 Extended_Metadata for Metadata with name

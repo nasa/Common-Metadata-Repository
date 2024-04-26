@@ -11,6 +11,7 @@
    [cmr.umm-spec.umm-g.track :as track]
    [cmr.umm.umm-granule :as g]
    [cmr.umm.umm-spatial :as umm-s])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn- umm-g-point->Point

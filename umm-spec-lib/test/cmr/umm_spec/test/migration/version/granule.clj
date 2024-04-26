@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.test.migration.version.granule
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
@@ -22,6 +22,7 @@
     (is (= [["1.6.1" "1.6.2"] ["1.6.2" "1.6.3"] ["1.6.3" "1.6.4"]] (#'vm/version-steps :granule "1.6.1" "1.6.4")))
     (is (= [["1.6.4" "1.6.5"]] (#'vm/version-steps :granule "1.6.4" "1.6.5")))))
 
+(declare all-migrations-produce-valid-umm-spec umm-record dest-version)
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-g-generator)
             dest-version (gen/elements (v/versions :granule))]
@@ -632,8 +633,8 @@
           :Version "1.6.2"}
          (:MetadataSpecification (vm/migrate-umm {} :granule "1.6.1" "1.6.2" expected-granule-1-6-1)))))
 
+;; Check that the specify-metadata function returns the correct structure
 (deftest verify-update-version
-  "Check that the specify-metadata function returns the correct structure"
   (let [expected {:OtherMetadata :content-to-ignore
                   :MetadataSpecification
                   {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v0.0.0"
@@ -681,8 +682,8 @@
                                                  "1.6.3"
                                                  sample-granule-1-6-2)))))
 
+;; Make sure the unwanted url type is gone
 (deftest migrate-1-6-3-down-to-1-6-2
-  "Make sure the unwanted url type is gone"
   (let [converted (vm/migrate-umm {}
                                   :granule
                                   "1.6.3"
@@ -744,8 +745,8 @@
         "Specification must be 1.6.4")
     (is (= "NETCDF-4" (:Format (nth (:RelatedUrls converted) 3))) "Confirm that existing values are not touched")))
 
+;; Make sure the unwanted url type is gone
 (deftest migrate-1-6-4-down-to-1-6-3
-  "Make sure the unwanted url type is gone"
   (let [converted (vm/migrate-umm {} :granule "1.6.4" "1.6.3" granule-1-6-4)
         specification (:MetadataSpecification converted)
         urls (:RelatedUrls converted)

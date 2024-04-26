@@ -1,9 +1,6 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.dif10.additional-attribute
-  (:require [clj-time.core :as t]
-            [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.additional-attribute :as umm-aa]
-            [cmr.umm-spec.models.umm-common-models :as cmn]
             [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]))
 
 

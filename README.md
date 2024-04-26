@@ -6,6 +6,11 @@ The Common Metadata Repository (CMR) is an earth science metadata repository
 for [NASA](https://www.nasa.gov/) [EOSDIS](https://earthdata.nasa.gov) data. The CMR
 Search API provides access to this metadata.
 
+### Associated Projects
+
+[cmr-token-service-client](https://github.com/nasa/cmr-token-service-client)
+[cmr-tea-config-generator](https://github.com/nasa/cmr-tea-config-generator)
+
 ## [Prerequisites](#prerequisites)
 
 ### Java 17

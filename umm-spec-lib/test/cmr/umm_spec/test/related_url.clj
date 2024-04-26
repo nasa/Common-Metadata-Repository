@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.test.related-url
   "Tests for cmr.umm-spec.related-url functions"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :refer [are3]]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.models.umm-common-models :as cmn]
@@ -12,6 +12,7 @@
   (is (= {:URLContentType "DistributionURL" :Type "GET DATA" :Subtype "Earthdata Search"}
          (get dif-util/dif-url-content-type->umm-url-types ["GET DATA" "Earthdata Search"] su/default-url-type))))
 
+(declare expected content-type subtype)
 (deftest related-url->title
   (are3 [expected content-type type subtype]
         (is (= expected

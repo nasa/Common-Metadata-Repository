@@ -1,20 +1,7 @@
 (ns cmr.umm-spec.migration.version.core
   "Contains functions for migrating between versions of UMM schema."
   (:require
-   [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common-app.services.kms-fetcher :as kf]
-   [cmr.common.log :as log]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util :refer [update-in-each]]
-   [cmr.umm-spec.dif-util :as dif-util]
-   [cmr.umm-spec.location-keywords :as lk]
-   [cmr.umm-spec.migration.contact-information-migration :as ci]
-   [cmr.umm-spec.migration.distance-units-migration :as distance-units-migration]
-   [cmr.umm-spec.migration.geographic-coordinate-units-migration :as geographic-coordinate-units-migration]
-   [cmr.umm-spec.migration.organization-personnel-migration :as op]
-   [cmr.umm-spec.migration.related-url-migration :as related-url]
-   [cmr.umm-spec.migration.spatial-extent-migration :as spatial-extent]
    [cmr.umm-spec.migration.version.collection]
    [cmr.umm-spec.migration.version.granule]
    [cmr.umm-spec.migration.version.interface :as interface]
@@ -22,10 +9,7 @@
    [cmr.umm-spec.migration.version.subscription]
    [cmr.umm-spec.migration.version.tool]
    [cmr.umm-spec.migration.version.variable]
-   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
-   [cmr.umm-spec.util :as u]
-   [cmr.umm-spec.versioning :as versioning]
-   [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]))
+   [cmr.umm-spec.versioning :as versioning]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Utility Functions

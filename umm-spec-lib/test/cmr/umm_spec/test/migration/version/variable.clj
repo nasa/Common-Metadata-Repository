@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.test.migration.version.variable
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
@@ -147,7 +147,7 @@
     (is (= [["1.4" "1.3"]] (#'vm/version-steps :variable "1.4" "1.3")))
     (is (= [["1.4" "1.3"] ["1.3" "1.2"] ["1.2" "1.1"] ["1.1" "1.0"]] (#'vm/version-steps :variable "1.4" "1.0")))))
 
-
+(declare all-migrations-produce-valid-umm-spec umm-record dest-version)
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record   (gen/no-shrink umm-gen/umm-var-generator)
             dest-version (gen/elements (v/versions :variable))]

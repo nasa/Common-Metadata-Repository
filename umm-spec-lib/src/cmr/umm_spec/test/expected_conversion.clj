@@ -4,9 +4,7 @@
   can be lossy if some fields are not supported by that format"
   (:require
    [clj-time.core :as t]
-   [clj-time.format :as f]
    [clojure.string :as string]
-   [cmr.common.util :as util :refer [update-in-each]]
    [cmr.common-app.config :as common-config]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.migration.version.core :as core]
@@ -16,7 +14,6 @@
    [cmr.umm-spec.test.dif10-expected-conversion :as dif10]
    [cmr.umm-spec.test.dif9-expected-conversion :as dif9]
    [cmr.umm-spec.test.echo10-expected-conversion :as echo10]
-   [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
    [cmr.umm-spec.test.iso-smap-expected-conversion :as iso-smap]
    [cmr.umm-spec.test.iso19115-expected-conversion :as iso19115]
    [cmr.umm-spec.util :as su]
@@ -668,7 +665,7 @@
 (defmulti ^:private umm->expected-convert
   "Returns UMM collection that would be expected when converting the source UMM-C record into the
   destination XML format and parsing it back to a UMM-C record."
-  (fn [umm-coll metadata-format]
+  (fn [_umm-coll metadata-format]
     metadata-format))
 
 (defmethod umm->expected-convert :default
@@ -703,7 +700,7 @@
 
 (defn- dissoc-not-implemented-fields
   "Removes not implemented fields since they can't be used for comparison"
-  [record metadata-format]
+  [record]
   (reduce (fn [r field]
             (assoc r field nil))
           record
@@ -719,7 +716,7 @@
      umm-record
      (-> umm-record
          (umm->expected-convert metadata-format)
-         (dissoc-not-implemented-fields metadata-format))))
+         (dissoc-not-implemented-fields))))
   ([umm-record src dest]
    (-> umm-record
        (convert src)

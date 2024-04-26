@@ -118,7 +118,7 @@
   ["associateddoi" "childdataset" "collaborativeotheragency" "fieldcampaign" "parentdataset" "relateddataset" "other"])
 
 (def associated-doi-code-umm-map
-  ""
+  "Map of associated DOI codes with their English names for the ISO code types."
   {"associateddoi" nil
    "childdataset" "Child Dataset"
    "collaborativeotheragency" "Collaborative/Other Agency"

@@ -2,11 +2,8 @@
   "Functions for parsing UMM iso topic categories out of ISO XML documents."
   (:require
     [clojure.set :as set]
-    [cmr.common.util :as util]
-    [cmr.common.xml.parse :refer :all]
-    [cmr.common.xml.simple-xpath :refer [select text]]
-    [cmr.umm-spec.iso19115-2-util :as iso]
-    [cmr.umm-spec.util :as su :refer [without-default-value-of]]))
+    [cmr.common.xml.parse :refer [value-of]]
+    [cmr.common.xml.simple-xpath :refer [select]]))
 
 (def iso-topic-category-xpath
   (str "/gmi:MI_Metadata/gmd:identificationInfo"

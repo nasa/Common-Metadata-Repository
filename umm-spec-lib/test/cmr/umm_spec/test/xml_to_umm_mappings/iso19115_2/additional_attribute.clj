@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.iso19115-2.additional-attribute
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.umm-spec.util :as spec-util]
    [cmr.common.util :as util]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]))

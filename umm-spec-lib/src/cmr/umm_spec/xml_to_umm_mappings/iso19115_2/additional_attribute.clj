@@ -2,8 +2,8 @@
   "Functions for parsing UMM additional attribute records out of ISO19115-2 XML documents."
   (:require
    [clojure.string :as s]
-   [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.common.xml.parse :refer [value-of]]
+   [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
    [cmr.umm-spec.util :as su]))
 

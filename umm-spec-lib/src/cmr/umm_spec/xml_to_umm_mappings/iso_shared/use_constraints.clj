@@ -4,8 +4,8 @@
    [clojure.string :as string]
    [cmr.common.log :refer (warn)]
    [cmr.common.util :as util]
-   [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
+   [cmr.common.xml.simple-xpath :refer [select text]]
    [cmr.umm-spec.models.umm-collection-models :as umm-coll-models]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn-models]
    [cmr.umm-spec.util :as su]))
@@ -160,7 +160,7 @@
                        sanitize?)
          :Value (when value
                   (try (Double/parseDouble (string/trim value))
-                    (catch Exception e
+                    (catch Exception _e
                       (warn (str "Exception thrown while trying to parse a non parsable ISO access "
                                  "constraint value number. The document is " doc)))))}]
     (when (seq (util/remove-nil-keys access-constraints-record))

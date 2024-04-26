@@ -2,11 +2,12 @@
   "Tests for cmr.umm-spec.date-util functions"
   (:require
    [clj-time.format :as f]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :refer [are3]]
    [cmr.umm-spec.date-util :as date]))
 
+(declare d sanitize? expected)
 (deftest sanitize-and-parse-dates
   (are3 [d sanitize? expected]
         (is (= (date/sanitize-and-parse-date d sanitize?)
@@ -27,6 +28,7 @@
         "No sanitization"
         "2003/08" false "2003/08"))
 
+(declare date expected-output)
 (deftest date-in-past
   (time-keeper/set-time-override! (f/parse "2016-09-27T13:34:03.000Z"))
   (are3 [date expected-output]

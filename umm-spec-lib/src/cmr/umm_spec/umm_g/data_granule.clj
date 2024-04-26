@@ -3,9 +3,9 @@
    DataGranule and generating UMM-G JSON DataGranule from umm-lib granule model DataGranule."
   (:require
    [clojure.set :as set]
-   [clojure.string :as string]
    [cmr.umm-spec.util :as util]
    [cmr.umm.umm-granule :as g])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (def umm-lib-day-night->umm-g-day-night

@@ -2,10 +2,9 @@
   "Defines mappings and parsing from ECHO10 contact elements into UMM records
    data center and contact person fields."
   (:require
-   [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.common.xml.parse :refer [value-of values-at]]
+   [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.umm-to-xml-mappings.echo10.data-contact :as dc]
    [cmr.umm-spec.util :as u]))
 
@@ -174,7 +173,7 @@
   (let [center (value-of doc (str "/Collection/" center-name))
         short-name (u/truncate-with-default center u/SHORTNAME_MAX sanitize?)
         long-name (when (and sanitize? (truncate-short-name? center)) center)]
-    (if center
+    (when center
       ;; Check to see if we already have an entry for this data center - the role and short name
       ;; match. If so, don't create a new record.
       (when (not-any?

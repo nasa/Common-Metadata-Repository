@@ -150,7 +150,7 @@
  ;;; Granule Migration Implementations
 
 (defmethod interface/migrate-umm-version [:granule "1.4" "1.5"]
-  [context g & _]
+  [_context g & _]
   (-> g
       (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.5"
                                      :Name "UMM-G"
@@ -164,7 +164,7 @@
       util/remove-empty-maps))
 
 (defmethod interface/migrate-umm-version [:granule "1.5" "1.4"]
-  [context g & _]
+  [_context g & _]
   (-> g
       (dissoc :MetadataSpecification)
       dissoc-track
@@ -177,7 +177,7 @@
       util/remove-empty-maps))
 
 (defmethod interface/migrate-umm-version [:granule "1.6" "1.5"]
-  [context g & _]
+  [_context g & _]
   (-> g
       (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.5"
                                      :Name "UMM-G"
@@ -186,14 +186,14 @@
       (update-in [:DataGranule :Identifiers] truncate-filename-type)))
 
 (defmethod interface/migrate-umm-version [:granule "1.5" "1.6"]
-  [context g & _]
+  [_context g & _]
   (-> g
       (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6"
                                      :Name "UMM-G"
                                      :Version "1.6"})))
 
 (defmethod interface/migrate-umm-version [:granule "1.6.1" "1.6"]
-  [context g & _]
+  [_context g & _]
   (-> g
       (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6"
                                      :Name "UMM-G"
@@ -202,14 +202,14 @@
       (update :RelatedUrls downgrade-formats-and-mimetypes-to-1-6)))
 
 (defmethod interface/migrate-umm-version [:granule "1.6" "1.6.1"]
-  [context g & _]
+  [_context g & _]
   (-> g
       (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.1"
                                      :Name "UMM-G"
                                      :Version "1.6.1"})))
 
 (defmethod interface/migrate-umm-version [:granule "1.6.2" "1.6.1"]
-  [context g & _]
+  [_context g & _]
   (-> g
       (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.1"
                                      :Name "UMM-G"
@@ -217,7 +217,7 @@
       (util/update-in-each [:RelatedUrls] v1-6-2-related-url-type->1-6-1)))
 
 (defmethod interface/migrate-umm-version [:granule "1.6.1" "1.6.2"]
-  [context g & _]
+  [_context g & _]
   (-> g
       (assoc :MetadataSpecification {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.2"
                                      :Name "UMM-G"
@@ -233,13 +233,13 @@
 ;; v1.6.3 migrations
 
 (defmethod interface/migrate-umm-version [:granule "1.6.3" "1.6.2"]
-  [context g & _]
+  [_context g & _]
   (-> g
       (m-spec/update-version :granule "1.6.2")
       (update :RelatedUrls drop-1-6-3-related-urls)))
 
 (defmethod interface/migrate-umm-version [:granule "1.6.2" "1.6.3"]
-  [context g & _]
+  [_context g & _]
   (-> g
       (m-spec/update-version :granule "1.6.3")))
 
@@ -257,7 +257,7 @@
 (defmethod interface/migrate-umm-version [:granule "1.6.4" "1.6.3"]
   ;; When downgrading metadata, preserve formats which are on the old SCHEMA list
   ;; and set the others to 'Not provided'"
-  [context granule & _]
+  [_context granule & _]
   (-> granule
       (util/update-in-each-vector [:RelatedUrls] map-1-6-4-format-keywords)
       (util/update-in-each-vector [:DataGranule :ArchiveAndDistributionInformation]
@@ -265,7 +265,7 @@
       (m-spec/update-version :granule "1.6.3")))
 
 (defmethod interface/migrate-umm-version [:granule "1.6.3" "1.6.4"]
-  [context granule & _]
+  [_context granule & _]
   (-> granule
       (m-spec/update-version :granule "1.6.4")))
 
@@ -274,12 +274,12 @@
 (defmethod interface/migrate-umm-version [:granule "1.6.5" "1.6.4"]
   ;; truncate PGEVersion to 10 characters if it has more than 10
   ;; characters long.
-  [context g & _]
+  [_context g & _]
   (-> g
       (update :PGEVersionClass truncate-pge-version-size)
       (m-spec/update-version :granule "1.6.4")))
 
 (defmethod interface/migrate-umm-version [:granule "1.6.4" "1.6.5"]
-  [context g & _]
+  [_context g & _]
   (-> g
       (m-spec/update-version :granule "1.6.5")))

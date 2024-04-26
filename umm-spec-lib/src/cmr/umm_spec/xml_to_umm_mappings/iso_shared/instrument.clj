@@ -3,8 +3,8 @@
   (:require
     [clojure.string :as string]
     [cmr.common.util :as util]
-    [cmr.common.xml.parse :refer :all]
-    [cmr.common.xml.simple-xpath :refer [select text]]
+    [cmr.common.xml.parse :refer [value-of]]
+    [cmr.common.xml.simple-xpath :refer [select]]
     [cmr.umm-spec.iso19115-2-util :as iso :refer [char-string-value]]
     [cmr.umm-spec.util :refer [without-default-value-of]]
     [cmr.umm-spec.xml-to-umm-mappings.iso-shared.characteristics-and-operationalmodes :as char-and-opsmode]))
@@ -99,7 +99,7 @@
           :Characteristics (char-and-opsmode/parse-characteristics instrument-elem)
           :Technique (without-default-value-of instrument-elem "gmi:type/gco:CharacterString")
           :OperationalModes (char-and-opsmode/parse-operationalmodes instrument-elem)}))))
-  ([doc base-xpath instrument-elem options]
+  ([_doc _base-xpath instrument-elem _options]
    ;; This is the NOAA case where instruments are from alternative xpath.
    ;; See CMR-4885 for more details.
    (when-let [short-long-name (value-of instrument-elem iso/short-name-xpath)]
@@ -122,7 +122,7 @@
         (when-not (some #(= (.replaceAll mounted-on-id "#" "") %) all-possible-instrument-ids)
           (let [instrument (xml-elem->instrument doc base-xpath instrument-elem)]
             [(str "#" id) (assoc instrument :mounted-on-id mounted-on-id)]))
-        :default
+        :else
         (let [instrument (xml-elem->instrument doc base-xpath instrument-elem)]
           [(str "#" id) instrument]))))
   ([doc base-xpath instrument-elem options]

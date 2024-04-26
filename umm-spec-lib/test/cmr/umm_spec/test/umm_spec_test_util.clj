@@ -1,11 +1,11 @@
 (ns cmr.umm-spec.test.umm-spec-test-util
   "Tests for cmr.umm-spec.util functions"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing]]
    [cmr.common.util :refer [are3]]
    [cmr.umm-spec.util :as util]))
 
-
+(declare s expected)
 (deftest test-parse-data-sizes
   (are [s expected] (= expected
                        (util/parse-data-sizes s))
@@ -43,6 +43,7 @@
   (is (= [{:Size 92.4 :Unit "MB"} {:Size 0.4 :Unit "GB"}]
          (util/parse-data-sizes (util/data-size-str [{:Size 92.4 :Unit "MB"} {:Size 0.4 :Unit "GB"}])))))
 
+(declare original-isbn formatted-isbn)
 (deftest format-isbn
   (are3 [original-isbn formatted-isbn]
     (is (= formatted-isbn (util/format-isbn original-isbn)))
@@ -62,6 +63,7 @@
     "No numbers"
     "ISBN" nil))
 
+(declare size sanitize?)
 (deftest truncation
   (testing "truncation with sanitize? option"
     (are3 [str size sanitize? expected]

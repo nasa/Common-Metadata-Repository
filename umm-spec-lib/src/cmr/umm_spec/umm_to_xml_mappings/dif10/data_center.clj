@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10.data-center
   "Functions for generating DIF10 XML elements from UMM data centers."
-  (:require [cmr.umm-spec.util :as u]
-            [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
-
+  (:require
+   [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]))
 
 (defn generate-organizations
   "Returns the DIF10 Organization elements (Data Centers) from the given UMM collection."

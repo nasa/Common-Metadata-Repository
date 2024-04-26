@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-smap.spatial
   "Functions for parsing UMM spatial records out of ISO SMAP XML documents."
   (:require
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.util :as su]

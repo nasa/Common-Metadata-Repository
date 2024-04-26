@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.validation.umm-spec-validation-core
   "Defines validations UMM concept types."
   (:require
-   [clj-time.core :as t]
    [cmr.common.validations.core :as v]
    [cmr.umm-spec.validation.umm-spec-collection-validation :as vc]
    [cmr.umm-spec.validation.umm-spec-variable-validation :as vv]

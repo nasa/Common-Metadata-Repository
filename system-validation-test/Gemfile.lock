@@ -28,6 +28,7 @@ GEM
     cucumber-tag-expressions (4.1.0)
     diff-lcs (1.5.0)
     ffi (1.15.5)
+    ffi (1.15.5-java)
     httparty (0.21.0)
       mini_mime (>= 1.0.0)
       multi_xml (>= 0.5.2)
@@ -40,11 +41,16 @@ GEM
     multi_json (1.15.0)
     multi_test (1.1.0)
     multi_xml (0.6.0)
-    nokogiri (1.15.5-arm64-darwin)
+    nokogiri (1.15.6-arm64-darwin)
       racc (~> 1.4)
-    nokogiri (1.15.5-x86_64-darwin)
+    nokogiri (1.15.6-java)
+      racc (~> 1.4)
+    nokogiri (1.15.6-x86_64-darwin)
+      racc (~> 1.4)
+    nokogiri (1.15.6-x86_64-linux)
       racc (~> 1.4)
     racc (1.7.3)
+    racc (1.7.3-java)
     rspec (3.12.0)
       rspec-core (~> 3.12.0)
       rspec-expectations (~> 3.12.0)
@@ -63,7 +69,9 @@ GEM
 
 PLATFORMS
   arm64-darwin-21
+  universal-java-17
   x86_64-darwin-22
+  x86_64-linux
 
 DEPENDENCIES
   cucumber
