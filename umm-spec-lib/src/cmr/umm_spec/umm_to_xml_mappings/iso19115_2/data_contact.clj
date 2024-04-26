@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.data-contact
   "Functions for generating ISO19115-2 XML elements from UMM DataCenters, ContactPersons and ContactGroups."
-  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [clojure.set :as set]
    [clojure.string :as str]

@@ -16,7 +16,6 @@
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization])
- #_{:clj-kondo/ignore [:use]}
  (:use
    [cmr.umm-spec.models.umm-collection-models]
    [cmr.umm-spec.models.umm-common-models]))

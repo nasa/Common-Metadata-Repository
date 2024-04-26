@@ -202,7 +202,7 @@
       [:Last_DIF_Revision_Date (f/unparse (f/formatters :date) last-revision-date)])
     [:Extended_Metadata
      (center/generate-processing-centers c)
-     (for [{:keys [Group Name Description DataType Value ParamRangeBegin ParamRangeEnd UpdateDate]}
+     (for [{:keys [Name Description DataType Value ParamRangeBegin ParamRangeEnd UpdateDate]}
            (:AdditionalAttributes c)
            ;; DIF9 does not support ranges in Extended_Metadata - Order of preference for the value
            ;; is value, then parameter-range-begin, then parameter-range-end.

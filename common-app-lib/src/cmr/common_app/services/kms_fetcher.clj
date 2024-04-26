@@ -19,7 +19,9 @@
    [cmr.common.util :as util]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
-   [cmr.transmit.kms :as kms]))
+   [cmr.transmit.kms :as kms])
+  (:import #_{:clj-kondo/ignore [:unused-import]}
+           (clojure.lang ExceptionInfo)))
 
 (def nested-fields-mappings
   "Mapping from field name to the list of subfield names in order from the top of the hierarchy to

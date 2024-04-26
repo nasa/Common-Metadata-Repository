@@ -18,7 +18,6 @@
 
   (testing "basic check"
     (let [request->uri #'cmr.common-app.api.request-logger/request->uri
-          _request {:query-params {} :schemes "" :server-names "" :server-port "" :uri ""}
           request {}
           expected "null://null:nullnull"
           actual (request->uri request)]

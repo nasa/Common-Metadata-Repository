@@ -23,38 +23,24 @@
    "tiling_system_name" [[:TilingIdentificationSystems :TilingIdentificationSystemName]]
    "granule_data_format" [[:ArchiveAndDistributionInformation :FileDistributionInformation :Format]]})
 
-(defmulti to-human
+(defn to-human
   "Map of humanizer JSON type values to functions which take a field value and
-  humanizer configuration and return a transformed field value. The functions
-  can assume that the humanizer should be applied to the value."
-  (fn [humanizer _value]
-    (:type humanizer)))
-
-(defmethod to-human "trim_whitespace"
-  [_humanizer value]
-  (assoc value
-         :value (str/trim (str/replace (:value value) #"\s+" " "))))
-
-(defmethod to-human "capitalize"
-  [_humanizer value]
-  (assoc value
-         :value (->> (str/split (:value value) #"\b")
-                     (map str/capitalize)
-                     str/join)))
-
-(defmethod to-human "alias"
+    humanizer configuration and return a transformed field value. The functions
+    can assume that the humanizer should be applied to the value."
   [humanizer value]
-  (assoc value
-         :value (:replacement_value humanizer)))
-
-(defmethod to-human "ignore"
-  [_humanizer _value]
-  nil)
-
-(defmethod to-human "priority"
-  [humanizer value]
-  (assoc value
-         :priority (:priority humanizer)))
+  (case (:type humanizer)
+    "trim_whitespace" (assoc value
+                             :value (str/trim (str/replace (:value value)
+                                                           #"\s+" " ")))
+    "capitalize" (assoc value
+                        :value (->> (str/split (:value value) #"\b")
+                                    (map str/capitalize)
+                                    str/join))
+    "alias" (assoc value
+                   :value (:replacement_value humanizer))
+    "ignore" nil
+    "priority" (assoc value
+                      :priority (:priority humanizer))))
 
 (defn- transform-in-all
   "(Convenience method) Similar to update-in-all but calls fn with the parent of the

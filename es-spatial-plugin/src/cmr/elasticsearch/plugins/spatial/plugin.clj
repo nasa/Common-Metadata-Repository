@@ -1,5 +1,4 @@
 (ns cmr.elasticsearch.plugins.spatial.plugin
-  #_{:clj-kondo/ignore [:unused-import]}
   (:import
    (org.elasticsearch.script ScriptModule)
    (org.elasticsearch.plugins ScriptPlugin)

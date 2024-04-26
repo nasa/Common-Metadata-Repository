@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association
   "Functions for generating ISO19115-2 XML elements from UMM instrument records."
-  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.iso19115-2-util :as iso]))

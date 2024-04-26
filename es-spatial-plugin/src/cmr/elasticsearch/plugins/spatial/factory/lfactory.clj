@@ -73,7 +73,6 @@
 
 (import 'cmr.elasticsearch.plugins.SpatialScriptLeafFactory)
 
-#_{:clj-kondo/ignore [:unused-private-var]}
 (defn- -init [^Map params ^SearchLookup lookup]
   [[] {:params params
        :lookup lookup}])

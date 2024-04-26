@@ -161,20 +161,18 @@
 ;; Job for refreshing ACLs in the cache.
 
 (declare ctx system)
-#_{:clj-kondo/ignore [:unresolved-symbol]}
+
 (defjob RefreshAclCacheJob
-  [ctx system]
+  [_ctx system]
   (refresh-acl-cache {:system system}))
 
-#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn refresh-acl-cache-job
   [job-key]
   {:job-type RefreshAclCacheJob
    :job-key job-key
    :interval 3600})
 
-(comment
-  #_{:clj-kondo/ignore [:unresolved-namespace]}
+(comment 
   (do
     (def context (cmr.access-control.test.util/conn-context))
     (process-search-for-acls (assoc context :token (config/echo-system-token)) [:catalog-item])

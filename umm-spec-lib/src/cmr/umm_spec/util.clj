@@ -345,7 +345,7 @@
   If data sanitization is enabled convert bytes to KB since bytes is not a UMM valid unit."
   [s]
   (seq
-    (for [[_ num-str unit-str :as results] (re-seq data-size-re
+    (for [[_ num-str unit-str] (re-seq data-size-re
                                                    (-> s str .toLowerCase))
           :when (and num-str (not (string/blank? unit-str)))]
       (if (= (string/lower-case unit-str) "bytes")

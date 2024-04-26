@@ -3,7 +3,6 @@
   It weaves together the objects so matching items within the granule and collection are combined"
   (:require 
    [cmr.common.util :as u])
-  #_{:clj-kondo/ignore [:unused-import]}
   (:import 
    [cmr.umm.umm_granule
     UmmGranule

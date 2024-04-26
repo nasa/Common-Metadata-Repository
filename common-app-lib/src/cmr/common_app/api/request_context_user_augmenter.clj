@@ -84,7 +84,6 @@
   It expects the request context is already associated with the request."
   [handler]
   (fn [request]
-    (let [{:keys [_request-context]} request]
-      (-> request
-          (update-in [:request-context] add-user-id-and-sids-to-context)
-          (handler)))))
+    (-> request
+        (update-in [:request-context] add-user-id-and-sids-to-context)
+        (handler))))

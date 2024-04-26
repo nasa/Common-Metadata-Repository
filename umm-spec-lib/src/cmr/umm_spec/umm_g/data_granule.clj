@@ -5,7 +5,6 @@
    [clojure.set :as set]
    [cmr.umm-spec.util :as util]
    [cmr.umm.umm-granule :as g])
-  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (def umm-lib-day-night->umm-g-day-night
