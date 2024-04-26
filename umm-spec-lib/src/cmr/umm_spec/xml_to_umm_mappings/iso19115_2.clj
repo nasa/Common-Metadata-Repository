@@ -182,7 +182,7 @@
     (when (and element
                (or (nil? group-key)
                    (= group-key attribute-value)))
-      (date-at-str element "/"))))
+      (date-at-str (first element) "gml:timePosition"))))
 
 (defn parse-temporal-extents
   "Parses the collection temporal extents from the the collection document
