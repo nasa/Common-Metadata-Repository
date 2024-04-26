@@ -1310,10 +1310,10 @@
                     <gmd:temporalElement>
                         <gmd:EX_TemporalExtent>
                             <gmd:extent>
-                                <gml:TimePeriod gml:id="ded8dfcb1-9c2b-4eaa-8548-cdccfb708dbb">
-                                    <gml:beginPosition>2003-11-20T00:00:00.000Z</gml:beginPosition>
-                                    <gml:endPosition>2005-05-01T23:59:59.999Z</gml:endPosition>
-                                </gml:TimePeriod>
+                              <gml:TimeInstant gml:id="boundingTemporalExtent-1-2">
+                                <gml:description> | Currentness: Ground Condition</gml:description>
+                                <gml:timePosition>1971-11-20</gml:timePosition>
+                              </gml:TimeInstant>
                             </gmd:extent>
                         </gmd:EX_TemporalExtent>
                     </gmd:temporalElement>
