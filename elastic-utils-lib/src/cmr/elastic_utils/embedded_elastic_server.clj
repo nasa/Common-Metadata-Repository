@@ -23,7 +23,8 @@
   [http-port network]
   (doto (FixedHostPortGenericContainer. kibana-official-docker-image)
     (.withFixedExposedPort (int http-port) 5601)
-    (.withNetwork network)))
+    (.withNetwork network)
+    (.withStartupTimeout (Duration/ofSeconds 240))))
 
 (defn- build-node
   "Build cluster node with settings. The elasticsearch server is actually
