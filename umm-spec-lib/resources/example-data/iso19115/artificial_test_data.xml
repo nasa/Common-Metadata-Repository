@@ -1255,6 +1255,7 @@ Distribution liability: NOAA and NCEI make no warranty, expressed or implied, re
                   <gmd:EX_TemporalExtent>
                     <gmd:extent>
                       <gml:TimeInstant gml:id="temporal_extent_3">
+                        <gml:description> | Currentness: Ground Condition</gml:description>
                         <gml:timePosition>2003-07-15T23:59:59.999Z</gml:timePosition>
                        </gml:TimeInstant>
                     </gmd:extent>
