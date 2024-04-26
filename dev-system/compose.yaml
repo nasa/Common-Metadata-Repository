@@ -39,4 +39,3 @@ services:
 networks:
   elasticsearch-network: {}
   redis-network: {}
-    

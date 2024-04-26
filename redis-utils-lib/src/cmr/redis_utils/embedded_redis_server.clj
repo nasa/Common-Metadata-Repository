@@ -1,10 +1,10 @@
 (ns cmr.redis-utils.embedded-redis-server
   "Used to run a Redis server inside a docker container."
   (:require
-  [cmr.common.lifecycle :as lifecycle]
-  [cmr.common.log :as log :refer [debug error]])
- (:import
-  (org.testcontainers.containers FixedHostPortGenericContainer Network)))
+   [cmr.common.lifecycle :as lifecycle]
+   [cmr.common.log :as log :refer [debug error]])
+  (:import
+   (org.testcontainers.containers FixedHostPortGenericContainer Network)))
 
 (def REDIS_DEFAULT_PORT 6379)
 
@@ -20,7 +20,8 @@
     (.withNetwork network)))
 
 (defrecord RedisServer
-           [http-port
+           [
+            http-port
             opts]
 
   lifecycle/Lifecycle
@@ -37,6 +38,7 @@
           (error "Redis failed to start.")
           (debug "Dumping logs:\n" (.getLogs redis))
           (throw (ex-info "Redis failure" {:exception e}))))))
+
   (stop
     [this system]
     (when-let [redis (:redis this)]
