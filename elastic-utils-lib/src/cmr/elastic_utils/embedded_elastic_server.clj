@@ -64,7 +64,8 @@
        (.withNetworkAliases (into-array String ["elasticsearch"]))
        (.withFixedExposedPort (int http-port) 9200)
        (.waitingFor
-        (Wait/forLogMessage ".*\"message\": \"started\".*" 1)))
+        (Wait/forLogMessage ".*\"message\": \"started\".*" 1))
+       (.withStartupTimeout (Duration/ofSeconds 240)))
      {:elasticsearch container
       :kibana kibana})))
 
