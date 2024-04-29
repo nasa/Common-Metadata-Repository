@@ -6,6 +6,7 @@
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
    [cmr.common.util :as util :refer [are3]]
+   [cmr.common-app.api.routes :as routes]
    [cmr.elastic-utils.config :as elastic-config]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.transmit.access-control :as ac]))
@@ -192,6 +193,15 @@
         system-group-acl (e/get-provider-group-acls (u/conn-context))
         provider-group-acls (e/get-system-group-acls (u/conn-context))
         all-acls (concat system-acls provider-acls single-instance-acls catalog-item-acls provider-group-acls system-group-acl)]
+
+    (testing "passing search-after header"
+      (let [results-with-headers (ac/search-for-acls-with-returned-headers (u/conn-context) {:page-size 1})
+            search-after1 (get-in results-with-headers [:headers routes/SEARCH_AFTER_HEADER])
+            results-with-headers (ac/search-for-acls-with-returned-headers (u/conn-context)
+                                                                           {:page-size 1}
+                                                                           {:headers {routes/SEARCH_AFTER_HEADER search-after1}})
+            search-after2 (get-in results-with-headers [:headers routes/SEARCH_AFTER_HEADER])]
+        (is (not= search-after1 search-after2))))
 
     (testing "Find all ACLs"
       (let [response (ac/search-for-acls (u/conn-context) {:page_size 20})]

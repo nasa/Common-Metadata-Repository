@@ -2,6 +2,7 @@
   "Defines the HTTP URL routes for the access-control API."
   (:require
    [cheshire.core :as json]
+   [clojure.string :as string]
    [cmr.access-control.config :as access-control-config]
    [cmr.access-control.data.access-control-index :as index]
    [cmr.access-control.data.acl-schema :as acl-schema]
@@ -151,12 +152,26 @@
       (util/map-keys->snake_case)
       api-response))
 
+(defn- validate-search-after-value
+  "Validate the search-after value is in the form of a JSON array; otherwise throw 400 error"
+  [search-after]
+  (try
+    (seq (json/parse-string search-after))
+    (catch Exception e
+      (error (format "search-after header value is invalid, error: %s" (.getMessage e)))
+      (errors/throw-service-error
+       :bad-request
+       "search-after header value is invalid, must be in the form of a JSON array."))))
+
 (defn- search-for-acls
   "Returns a Ring response with ACL search results for the given params."
   [ctx headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
-  (-> (acl-search/search-for-acls ctx params)
-      common-routes/search-response))
+  (let [search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
+        decoded-search-after (validate-search-after-value search-after)
+        ctx (assoc ctx :search-after decoded-search-after)]
+    (common-routes/search-response
+    (acl-search/search-for-acls ctx params))))
 
 (defn- get-page
   "Extracts a specific page from a vector of values based on the given page size and page number."

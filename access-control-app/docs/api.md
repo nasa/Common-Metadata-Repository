@@ -295,7 +295,76 @@ The response is always returned in JSON and includes the following parts.
     * `location` - A URL to retrieve the ACL
     * `acl` - full JSON of the ACL. Included if `include_full_acl=true` parameter is set.
 
+The response also returns some headers. search-after header is one of them. 
+
+* CMR-Search-After Any search against CMR that has results not fully returned in the current request will return a `search-after` value in the `CMR-Search-After` header of the search response. A user can then pass this returned value in the `CMR-Search-After` header of the following request to retrieve the next page of result based on the specified page_size. Each search request will result in a new `search-after` value returned in the `CMR-Search-After` response header. Supplying the new `search-after` value in the following request's `CMR-Search-After` header will retrieve the next page. 
+
 ##### ACL Search Examples
+
+###### Using search-after header 
+
+```
+curl -XPOST -i "%CMR-ENDPOINT%/acls/search?pretty=true&page_size=1"
+or
+curl -i "%CMR-ENDPOINT%/acls?pretty=true&page_size=1"
+
+HTTP/1.1 200 OK
+Date: Sun, 28 Apr 2024 22:59:39 GMT
+Access-Control-Allow-Origin: *
+CMR-Request-Id: d0d436f8-7450-41db-a044-9fdd955b11d0
+CMR-Search-After: ["8a4659c7-6636-44e3-bc6c-7941a6aa75a7","ACL1200000005-CMR"]
+CMR-Hits: 9
+Access-Control-Expose-Headers: CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Search-After, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count, CMR-Shapefile-Simplified-Point-Count
+CMR-Took: 96
+Content-Type: application/json;charset=utf-8
+X-Request-Id: d0d436f8-7450-41db-a044-9fdd955b11d0
+Content-Length: 272
+Server: Jetty(9.4.53.v20231009)
+
+{
+  "hits" : 9,
+  "took" : 82,
+  "items" : [ {
+    "concept_id" : "ACL1200000005-CMR",
+    "revision_id" : 1,
+    "identity_type" : "Catalog Item",
+    "name" : "8a4659c7-6636-44e3-bc6c-7941a6aa75a7",
+    "location" : "http://localhost:3011/acls/ACL1200000005-CMR"
+  } ]
+}
+
+Notice the CMR-Search-After header returned above. 1 of 9 acls is returned in the response. To see the next ACL, we need to pass the CMR-Search-After header.
+Keep making the request using the newly returned CMR-Search-After value until the value doesn't change anymore, which indicates the end of the result.
+
+curl -XPOST -i -H "CMR-Search-After: [\"8a4659c7-6636-44e3-bc6c-7941a6aa75a7\",\"ACL1200000005-CMR\"]" "%CMR-ENDPOINT%/acls/search?pretty=true&page_size=1"
+or
+curl -i -H "CMR-Search-After: [\"8a4659c7-6636-44e3-bc6c-7941a6aa75a7\",\"ACL1200000005-CMR\"]" "%CMR-ENDPOINT%/acls?pretty=true&page_size=1"
+
+HTTP/1.1 200 OK
+Date: Sun, 28 Apr 2024 22:03:59 GMT
+Access-Control-Allow-Origin: *
+CMR-Request-Id: 185f7367-4490-410c-8134-c70720d0fa5c
+CMR-Search-After: ["c6876f09-c05b-4c84-a1ec-ae0034995c17","ACL1200000001-CMR"]
+CMR-Hits: 9
+Access-Control-Expose-Headers: CMR-Hits, CMR-Request-Id, X-Request-Id, CMR-Scroll-Id, CMR-Search-After, CMR-Timed-Out, CMR-Shapefile-Original-Point-Count, CMR-Shapefile-Simplified-Point-Count
+CMR-Took: 14
+Content-Type: application/json;charset=utf-8
+X-Request-Id: 185f7367-4490-410c-8134-c70720d0fa5c
+Content-Length: 272
+Server: Jetty(9.4.53.v20231009)
+
+{
+  "hits" : 9,
+  "took" : 11,
+  "items" : [ {
+    "concept_id" : "ACL1200000001-CMR",
+    "revision_id" : 1,
+    "identity_type" : "Catalog Item",
+    "name" : "c6876f09-c05b-4c84-a1ec-ae0034995c17",
+    "location" : "http://localhost:3011/acls/ACL1200000001-CMR"
+  } ]
+}
+```
 
 ###### By permitted_group
 
