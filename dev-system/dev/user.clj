@@ -209,7 +209,7 @@
   ;; a means of self-documentation.
   [& {:keys [_elastic _echo _db _messaging _redis] :as new-modes}]
 
-  (config/reset-config-values) 
+  (config/reset-config-values)
 
   (jobs/set-default-job-start-delay! (* 3 3600))
 
