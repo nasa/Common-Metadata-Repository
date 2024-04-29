@@ -45,6 +45,22 @@
              body)
      :content-type content-type}))
 
+(defn- http-response->raw-response-with-headers
+  "Parses a clj-http response and returns only the keys that we would normally be interested in.
+  Parses the json in the body if the content type is JSON. The \"raw\" response body is considered
+  useful in cases where the exact status code is required such as in testing."
+  [{:keys [status body headers]}]
+  (let [content-type (mt/mime-type->format
+                       (mt/content-type-mime-type headers)
+                       ;; don't return a default
+                       nil)]
+    {:status status
+     :body (if (= content-type :json)
+             (safe-parse-json body)
+             body)
+     :content-type content-type
+     :headers headers}))
+
 (defn- handle-raw-fetch-or-delete-response
   "Used to convert a raw response when fetching or deleting something into the actual result."
   [{:keys [status body] :as resp}]
@@ -104,6 +120,35 @@
                               {:headers {config/token-header (config/echo-system-token)}})
                             http-options)))]
     (response-handler request response)))
+
+(defn request-with-returned-headers
+  "Makes an HTTP request with the given options and parses the response. The arguments in the
+  options map have the following effects.
+
+  * :url-fn - A function taking a transmit connection and returning the URL to use.
+  * :method - the HTTP method. :get, :post, etc.
+  * :raw? - indicates whether the raw HTTP response (as returned by http-response->raw-response ) is
+  desired. Defaults to false.
+  * :use-system-token? - indicates if the ECHO system token should be put in the header
+  * :http-options - a map of additional HTTP options to send to the clj-http.client/request function.
+  * :response-handler - a function to handle the response. Defaults to default-response-handler"
+  [context app-name {:keys [url-fn method http-options response-handler use-system-token?] :as request}]
+  (let [conn (config/context->app-connection context app-name)
+        response-handler (or response-handler default-response-handler)
+        connection-params (config/conn-params conn)
+        ;; Validate that a connection manager is always present. This can cause poor performance if not.
+        _ (when-not (:connection-manager connection-params)
+            (errors/internal-error! (format "No connection manager created for [%s] in current application" app-name)))
+        response (http-response->raw-response-with-headers
+                   (client/request
+                     (merge connection-params
+                            {:url (url-fn conn)
+                             :method method
+                             :throw-exceptions false}
+                            (when use-system-token?
+                              {:headers {config/token-header (config/echo-system-token)}})
+                            http-options)))]
+    response))
 
 (defn include-request-id
   "Includes the request id of the caller in the http request, so that it is easier to
@@ -261,6 +306,39 @@
              token# (or token# (:token context#))
              headers# (when token# {config/token-header token#})]
          (request context# ~app-name
+                  {:url-fn ~url-fn
+                   :method method#
+                   :raw? raw?#
+                   :http-options (merge {:headers headers#
+                                         :accept :json}
+                                        ;; Merge these params depending on what the HTTP method is.
+                                        (case method#
+                                          :get {:query-params params#}
+                                          ;; POST as form params, no JSON support yet. Sorry.
+                                          :post {:form-params params#})
+                                        http-options#)}))))))
+
+(defmacro defsearcher-with-returned-headers
+  "Creates a function that can be used to send find items matching parameters."
+  ([fn-name app-name url-fn]
+   `(defsearcher-with-returned-headers ~fn-name ~app-name ~url-fn nil))
+  ([fn-name app-name url-fn default-options]
+   `(defn ~fn-name
+      "Sends a request to find items by parameters. Valid options are
+      * :raw? - set to true to indicate the raw response should be returned. See
+      cmr.transmit.http-helper for more info. Default false.
+      * token - the user token to use when creating the group. If not set the token in the context will
+      be used.
+      * http-options - Other http-options to be sent to clj-http."
+      ([context# params#]
+       (~fn-name context# params# nil))
+      ([context# params# options#]
+       (let [options# (merge options# ~default-options)
+             {raw?# :raw? token# :token http-options# :http-options headers# :headers} options#
+             method# (get options# :method :get)
+             token# (or token# (:token context#))
+             headers# (merge headers# (when token# {config/token-header token#}))]
+         (request-with-returned-headers context# ~app-name
                   {:url-fn ~url-fn
                    :method method#
                    :raw? raw?#
