@@ -1,12 +1,10 @@
 (ns cmr.system-int-test.search.tagging.enable-disable-test
   "Search tag / tag association peristence enable/disable endpoint test"
   (:require
-    [clojure.test :refer :all]
-    [cmr.common.util :refer [are2] :as util]
+    [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
     [cmr.system-int-test.utils.tag-util :as tags]
-    [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.collection :as dc]
     [cmr.mock-echo.client.echo-util :as e]
     [cmr.system-int-test.system :as s]
@@ -26,10 +24,10 @@
         tag3 (tags/make-tag {:tag-key tag3-key})]
 
     (testing "Successful creation before disable"
-      (let [{:keys [status concept-id revision-id]} (tags/create-tag token tag)]
+      (let [{:keys [status _concept-id _revision-id]} (tags/create-tag token tag)]
         (is (= 201 status)))
-      ;; create a second tag so we can use it to test updating/deleting after disable
-      (let [{:keys [status concept-id revision-id]} (tags/create-tag token tag2)]
+      ;; create a second tag, so we can use it to test updating/deleting after disable
+      (let [{:keys [status _concept-id _revision-id]} (tags/create-tag token tag2)]
         (is (= 201 status))))
 
     (testing "Update tag before disable"
@@ -50,7 +48,7 @@
       (let [tag-key "tag2"
             tag (tags/make-tag {:tag-key tag-key})
             token (e/login (s/context) "user1")
-            {:keys [status concept-id revision-id]} (tags/create-tag token tag)]
+            {:keys [status _concept-id _revision-id]} (tags/create-tag token tag)]
         (is (= 503 status))))
 
     (testing "Update tag fails after disable"
@@ -68,7 +66,7 @@
     (search/enable-writes {:headers {transmit-config/token-header (transmit-config/echo-system-token)}})
 
     (testing "Successful creation after re-enable"
-      (let [{:keys [status concept-id revision-id]} (tags/create-tag token tag3)]
+      (let [{:keys [status _concept-id _revision-id]} (tags/create-tag token tag3)]
         (is (= 201 status))))
 
     (testing "Update tag after re-enable"

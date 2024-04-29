@@ -10,16 +10,6 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}
                                           {:grant-all-ingest? false}))
 
-(def test-body
-  "Default request body to use for testing"
-  {:concept-ids ["C1", "C2", "C3"]
-   :update-type "ADD_TO_EXISTING"
-   :update-field "SCIENCE_KEYWORDS"
-   :update-value {:Category "EARTH SCIENCE"
-                  :Topic "HUMAN DIMENSIONS"
-                  :Term "ENVIRONMENTAL IMPACTS"
-                  :VariableLevel1 "HEAVY METALS CONCENTRATION"}})
-
 (defn- grant-permissions-create-token
   "Test setup to create read/update ingest permissions for bulk update and
   return a token. Bulk update uses update permissions for the actual bulk update
@@ -44,18 +34,16 @@
       (is (= ["You do not have permission to perform that action."]
              errors))))
   (testing "No provider permissions"
-    (let [token (echo-util/login (system/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
-      (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {:token token})]
+    (let [token (echo-util/login (system/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])
+          {:keys [status errors]} (ingest/bulk-update-collections "PROV1" {:token token})]
         (is (= 401 status))
-        (is (= ["You do not have permission to perform that action."]
-               errors)))))
+        (is (= ["You do not have permission to perform that action."] errors))))
   (testing "Read permissions only"
     (echo-util/grant-group-provider-admin (system/context) "prov-admin-read-update-group-guid" "provguid1" :read)
-    (let [token (echo-util/login (system/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
-      (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {:token token})]
+    (let [token (echo-util/login (system/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])
+          {:keys [status errors]} (ingest/bulk-update-collections "PROV1" {:token token})]
         (is (= 401 status))
-        (is (= ["You do not have permission to perform that action."]
-               errors))))))
+        (is (= ["You do not have permission to perform that action."] errors)))))
 
 (deftest bulk-update-collection-endpoint-body-validation
   (let [token (grant-permissions-create-token)]
@@ -232,14 +220,14 @@
       (is (= ["You do not have permission to perform that action."]
              errors))))
   (testing "No provider permissions"
-    (let [token (echo-util/login (system/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
+    (let [_token (echo-util/login (system/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
         (is (= 401 status))
         (is (= ["You do not have permission to perform that action."]
                errors)))))
   (testing "Update permissions only"
     (echo-util/grant-group-provider-admin (system/context) "prov-admin-read-update-group-guid" "provguid1" :update)
-    (let [token (echo-util/login (system/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
+    (let [_token (echo-util/login (system/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
         (is (= 401 status))
         (is (= ["You do not have permission to perform that action."]
@@ -259,14 +247,14 @@
       (is (= ["You do not have permission to perform that action."]
              errors))))
   (testing "No provider permissions"
-    (let [token (echo-util/login (system/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
+    (let [_token (echo-util/login (system/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
         (is (= 401 status))
         (is (= ["You do not have permission to perform that action."]
                errors)))))
   (testing "Update permissions only"
     (echo-util/grant-group-provider-admin (system/context) "prov-admin-read-update-group-guid" "provguid1" :update)
-    (let [token (echo-util/login (system/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
+    (let [_token (echo-util/login (system/context) "prov-admin-read-update" ["prov-admin-read-update-group-guid"])]
       (let [{:keys [status errors]} (ingest/bulk-update-collections "PROV1" {})]
         (is (= 401 status))
         (is (= ["You do not have permission to perform that action."]

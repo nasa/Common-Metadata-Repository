@@ -4,7 +4,6 @@
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.data2.atom :as da]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]
@@ -12,7 +11,6 @@
    [cmr.system-int-test.search.facets.facet-responses :as fr]
    [cmr.system-int-test.search.facets.facets-util :as fu]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
@@ -106,7 +104,7 @@
 
 (deftest all-hierarchical-fields-test
   (grant-permissions)
-  (let [coll1 (fu/make-coll 1 "PROV1"
+  (let [_coll1 (fu/make-coll 1 "PROV1"
                             (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
                             (fu/projects "proj1" "PROJ2")
                             (fu/platforms fu/FROM_KMS 2 2 1)
@@ -118,7 +116,7 @@
                                                                                  :Type "AFRICA",
                                                                                  :Subregion1 "CENTRAL AFRICA",
                                                                                  :Subregion2 "ANGOLA"})]})
-        coll2 (fu/make-coll 2 "PROV1"
+        _coll2 (fu/make-coll 2 "PROV1"
                             (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7)
                             (fu/projects "proj1" "PROJ2")
                             (fu/platforms fu/FROM_KMS 2 2 1)
@@ -145,8 +143,8 @@
 ;; hierarchical facets report just one collection with "Popular" below each category.
 (deftest nested-duplicate-topics
   (grant-permissions)
-  (let [coll1 (fu/make-coll 1 "PROV1" (fu/science-keywords sk3))
-        coll2 (fu/make-coll 2 "PROV1" (fu/science-keywords sk5))
+  (let [_coll1 (fu/make-coll 1 "PROV1" (fu/science-keywords sk3))
+        _coll2 (fu/make-coll 2 "PROV1" (fu/science-keywords sk5))
         expected-hierarchical-facets [{:field "project", :value-counts []}
                                       {:field "sensor", :value-counts []}
                                       {:field "two_d_coordinate_system_name", :value-counts []}
@@ -218,7 +216,7 @@
 
 (deftest detailed-variable-test
   (grant-permissions)
-  (let [coll1 (fu/make-coll 1 "PROV1" (fu/science-keywords sk8))
+  (let [_coll1 (fu/make-coll 1 "PROV1" (fu/science-keywords sk8))
         expected-hierarchical-facets [{:field "project", :value-counts []}
                                       {:field "sensor", :value-counts []}
                                       {:field "two_d_coordinate_system_name", :value-counts []}
@@ -770,7 +768,7 @@
                                                                       :VariableLevel3 " Level1-3    "
                                                                       :DetailedVariable "  Detail1 "})
 
-        coll1 (fu/make-coll 1 "PROV1"
+        _coll1 (fu/make-coll 1 "PROV1"
                             (fu/projects "proj1" "PROJ2")
                             (fu/platforms "A" 2 2 1)
                             (fu/twod-coords "MISR")
@@ -778,7 +776,7 @@
                             (fu/processing-level-id "PL1")
                             {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER" "PROCESSOR"]
                                                                        :ShortName "Larc"})]})
-        coll2 (fu/make-coll 2 "PROV2"
+        _coll2 (fu/make-coll 2 "PROV2"
                             (fu/projects "proj3" "PROJ2")
                             (fu/platforms "B" 2 2 1)
                             (fu/science-keywords sk1 sk2 sk3)
@@ -787,13 +785,13 @@
                                                                        :ShortName "GSFC"})
                                            (data-umm-spec/data-center {:Roles ["PROCESSOR"]
                                                                        :ShortName "Proc"})]})
-        coll3 (fu/make-coll 3 "PROV2"
+        _coll3 (fu/make-coll 3 "PROV2"
                             (fu/science-keywords sk1-leading-ws))
 
-        coll4 (fu/make-coll 4 "PROV2"
+        _coll4 (fu/make-coll 4 "PROV2"
                             (fu/science-keywords sk1-trailing-ws))
 
-        coll5 (fu/make-coll 5 "PROV2"
+        _coll5 (fu/make-coll 5 "PROV2"
                             (fu/platforms " A" 1)
                             (fu/projects "proj3 " " PROJ2")
                             (fu/science-keywords sk1-leading-and-trailing-ws))]
@@ -883,12 +881,12 @@
 
 (deftest flat-facet-case-insensitivity-test
   (grant-permissions)
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
+  (let [_coll1 (d/ingest "PROV1" (dc/collection {:entry-title "coll1"
                                                 :platforms [(dc/platform
                                                               {:short-name "smap"
                                                                :instruments [(dc/instrument {:short-name "atm"})]})]
                                                 :organizations [(dc/org :archive-center "OR-STATE/eoarc")]}))
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
+        _coll2 (d/ingest "PROV1" (dc/collection {:entry-title "coll2"
                                                 :platforms [(dc/platform
                                                               {:short-name "sMaP"
                                                                :instruments [(dc/instrument {:short-name "aTM"})]})]

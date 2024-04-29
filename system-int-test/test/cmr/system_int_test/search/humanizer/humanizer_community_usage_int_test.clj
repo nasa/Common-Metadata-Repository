@@ -3,10 +3,7 @@
    is to test the two types of data being saved in the same metadata file. The humanizer and
    community usage APIs are tested individually in other test files in this folder."
   (:require
-   [clojure.string :as str]
    [clojure.test :refer :all]
-   [cmr.access-control.test.util :as u]
-   [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.humanizer-util :as hu]
@@ -33,7 +30,7 @@
         _  (e/grant-group-admin (s/context) admin-update-group-concept-id :update)
         token (e/login (s/context) "admin" [admin-update-group-concept-id])
         humanizers (hu/make-humanizers)
-        {:keys [status concept-id revision-id]} (hu/update-humanizers token humanizers)]
+        {:keys [_status concept-id _revision-id]} (hu/update-humanizers token humanizers)]
 
     (testing "update community usage metrics"
       (let [existing-concept-id concept-id

@@ -4,7 +4,6 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
-   [cmr.common.log :as log :refer (debug info warn error)]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as system]

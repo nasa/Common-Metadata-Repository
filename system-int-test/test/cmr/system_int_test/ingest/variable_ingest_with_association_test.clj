@@ -18,19 +18,19 @@
   (let [;; ingest 4 collections, each with 2 revisions
         coll1-PROV1-1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                            :ShortName "S1"}))
-        coll1-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+        _coll1-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                             :ShortName "S1"}))
         coll2-PROV1-1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
                                                                                             :ShortName "S2"}))
-        coll2-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+        _coll2-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
                                                                                             :ShortName "S2"}))
         coll1-PROV2-1 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E1"
                                                                                             :ShortName "S1"}))
         coll1-PROV2-2 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E1"
                                                                                             :ShortName "S1"}))
-        coll2-PROV2-1 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
+        _coll2-PROV2-1 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
                                                                                             :ShortName "S2"}))
-        coll2-PROV2-2 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
+        _coll2-PROV2-2 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
                                                                                             :ShortName "S2"}))
         _ (index/wait-until-indexed)]
 
@@ -210,11 +210,11 @@
   (let [;; ingest 4 collections, each with 2 revisions
         coll1-PROV1-1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                            :ShortName "S1"}))
-        coll1-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+        _coll1-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                             :ShortName "S1"}))
         coll2-PROV1-1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
                                                                                            :ShortName "S2"}))
-        coll2-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+        _coll2-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
                                                                                             :ShortName "S2"}))
         _ (index/wait-until-indexed)]
 
@@ -227,7 +227,7 @@
                       :coll-concept-id (:concept-id coll1-PROV1-1)})
             {:keys [concept-id revision-id variable-association]}
               (variable-util/ingest-variable-with-association concept)
-            var-concept-id concept-id
+            _var-concept-id concept-id
             va-concept-id-1 (:concept-id variable-association)
             va-revision-id-1 (:revision-id variable-association)]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))

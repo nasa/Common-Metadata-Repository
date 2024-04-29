@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.service.service-revisions-search-test
   "Integration test for service all revisions search"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
@@ -26,10 +26,10 @@
         service2 {:native-id "SVC2"
                   :Name "Service2"
                   :provider-id "PROV2"}
-        service1s (doall (for [n (range 12)]
+        service1s (doall (for [_n (range 12)]
                            (service/ingest-service
                              (service/make-service-concept service1))))
-        service2s (doall (for [n (range 10)]
+        service2s (doall (for [_n (range 10)]
                         (service/ingest-service
                           (service/make-service-concept service2))))
         all-services-after-cleanup (concat (drop 2 service1s) service2s)]

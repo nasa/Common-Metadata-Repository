@@ -2,14 +2,9 @@
   "This tests the CMR Search API's tagging capabilities"
   (:require
     [clojure.test :refer :all]
-    [cmr.common.util :refer [are2]]
     [cmr.mock-echo.client.echo-util :as e]
-    [cmr.system-int-test.data2.collection :as dc]
-    [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.system :as s]
-    [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.search-util :as search]
     [cmr.system-int-test.utils.tag-util :as tags]
     [cmr.transmit.config :as transmit-config]))
 
@@ -61,7 +56,7 @@
 
     (testing "Update permissions"
       (let [tag (uniq-tag)
-            {:keys [concept-id revision-id]} (tags/create-tag all-user tag)]
+            {:keys [_concept-id _revision-id]} (tags/create-tag all-user tag)]
         (testing "Success"
           (are
             [token]
@@ -114,7 +109,7 @@
 
     (testing "Associate with Collections permissions"
       (let [tag (uniq-tag)
-            {:keys [concept-id revision-id]} (tags/create-tag all-user tag)]
+            {:keys [_concept-id _revision-id]} (tags/create-tag all-user tag)]
         (testing "Success"
           (are
             [token]
@@ -139,7 +134,7 @@
 
     (testing "Dissociate with Collections permissions"
       (let [tag (uniq-tag)
-            {:keys [concept-id revision-id]} (tags/create-tag all-user tag)]
+            {:keys [_concept-id _revision-id]} (tags/create-tag all-user tag)]
         (testing "Success"
           (are
             [token]

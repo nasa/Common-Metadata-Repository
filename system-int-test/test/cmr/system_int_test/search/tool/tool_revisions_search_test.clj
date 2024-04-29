@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.tool.tool-revisions-search-test
   "Integration test for search all revisions search"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
@@ -26,9 +26,9 @@
         tool2 {:native-id "TL2"
                :Name "Tool2"
                :provider-id "PROV2"}
-        tool1s (doall (for [n (range 12)]
+        tool1s (doall (for [_n (range 12)]
                         (tool/ingest-tool (tool/make-tool-concept tool1))))
-        tool2s (doall (for [n (range 10)]
+        tool2s (doall (for [_n (range 10)]
                         (tool/ingest-tool (tool/make-tool-concept tool2))))
         all-tools-after-cleanup (concat (drop 2 tool1s) tool2s)]
     (index/wait-until-indexed)

@@ -12,7 +12,6 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as u :refer [are3]]
    [cmr.indexer.data.index-set :as index-set]
-   [cmr.indexer.system :as indexer-system]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as granule]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -44,7 +43,7 @@
         _ (ingest/ingest-concept orig-coll)
 
         ;; delete the collection
-        deleted-response (ingest/delete-concept orig-coll)
+        _deleted-response (ingest/delete-concept orig-coll)
 
         ;; Create collection again with same details but a different native id
         new-coll (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection (assoc common-fields :native-id "native2")))

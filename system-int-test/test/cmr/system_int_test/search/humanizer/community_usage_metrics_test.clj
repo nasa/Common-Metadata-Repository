@@ -2,7 +2,7 @@
   "This tests the CMR Search API's community usage metric capabilities"
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are3]]
+   [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -256,7 +256,7 @@
 
     (testing "Version is removed if length exceeds 20 characters"
       (let [long-value (apply str (repeat 21 "x"))
-            {:keys [status concept-id revision-id]} (humanizer-util/update-community-usage-metrics
+            {:keys [_status _concept-id _revision-id]} (humanizer-util/update-community-usage-metrics
                                                      admin-update-token
                                                      (format "Product,ProductVersion,Hosts\nAST_09XT,%s,4" long-value))
             {:keys [status body]} (humanizer-util/get-community-usage-metrics)]

@@ -52,7 +52,7 @@
    integration tests. If send-subscription-emails is called in tests without send-email being mocked,
    errors will be returned when attempting to connect to the mail server in
    postal-core/send-message."
-  [email-settings email-content])
+  [_email-settings _email-content])
 
 (deftest ^:oracle subscription-job-manual-time-constraint-test
   "This test is used to validate that email-subscription-processing will use a
@@ -161,9 +161,9 @@
                                                        (data-umm-c/collection {:ShortName "coll1"
                                                                                :EntryTitle "entry-title1"})
                                                        {:token "mock-echo-system-token"})
-           gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
+           _gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
          ;; Setup subscriptions
-           sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")]
+           _sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")]
 
        (testing "Using the manual endpoint does not update last-notified-at for subscriptions"
          (let [system-context (system/context)
@@ -207,13 +207,13 @@
                                                                                :EntryTitle "entry-title1"})
                                                        {:token "mock-echo-system-token"})
 
-           coll2 (data-core/ingest-umm-spec-collection "PROV1"
+           _coll2 (data-core/ingest-umm-spec-collection "PROV1"
                                                        (data-umm-c/collection {:ShortName "coll2"
                                                                                :EntryTitle "entry-title2"})
                                                        {:token "mock-echo-system-token"})
            _ (index/wait-until-indexed)
          ;; Setup subscriptions
-           sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")]
+           _sub1 (subscription-util/create-subscription-and-index coll1 "test_sub_prov1" "user2" "provider=PROV1")]
 
        (testing "First query executed does not have a last-notified-at and looks back 24 hours"
          (let [gran1 (create-granule-and-index "PROV1" coll1 "Granule1")
@@ -256,126 +256,126 @@
      (testing "Tests subscriber-id filtering in subscription email processing job"
        (let [user1-group-id (echo-util/get-or-create-group (system/context) "group1")
            ;; User 1 is in group1
-             user1-token    (echo-util/login (system/context) "user1" [user1-group-id])
-             _              (echo-util/ungrant (system/context)
-                                               (-> (access-control/search-for-acls (system/context)
-                                                                                   {:provider      "PROV1"
-                                                                                    :identity-type "catalog_item"}
-                                                                                   {:token "mock-echo-system-token"})
-                                                   :items
-                                                   first
-                                                   :concept_id))
-             _              (echo-util/ungrant (system/context)
-                                               (-> (access-control/search-for-acls (system/context)
-                                                                                   {:provider      "PROV2"
-                                                                                    :identity-type "catalog_item"}
-                                                                                   {:token "mock-echo-system-token"})
-                                                   :items
-                                                   first
-                                                   :concept_id))
-             _              (echo-util/grant (system/context)
-                                             [{:group_id    user1-group-id
-                                               :permissions [:read]}]
-                                             :catalog_item_identity
-                                             {:provider_id           "PROV1"
-                                              :name                  "Provider collection/granule ACL"
-                                              :collection_applicable true
-                                              :granule_applicable    true
-                                              :granule_identifier    {:access_value {:include_undefined_value true
-                                                                                     :min_value               1
-                                                                                     :max_value               50}}
-                                              :collection_identifier    {:access_value {:include_undefined_value true
-                                                                                        :min_value               1
-                                                                                        :max_value               50}}})
-             _              (echo-util/grant (system/context)
-                                             [{:user_type   :registered
-                                               :permissions [:read]}]
-                                             :catalog_item_identity
-                                             {:provider_id           "PROV2"
-                                              :name                  "Provider collection/granule ACL registered users"
-                                              :collection_applicable true
-                                              :granule_applicable    true
-                                              :granule_identifier    {:access_value {:include_undefined_value true
-                                                                                     :min_value               100
-                                                                                     :max_value               200}}})
-             _              (ac-util/wait-until-indexed)
-             _              (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
-                                                                    {:provider-id         "PROV1"
-                                                                     :Name                "test_coll_sub_prov1"
-                                                                     :SubscriberId        "user1"
-                                                                     :Type                "collection"
-                                                                     :EmailAddress        "user1@nasa.gov"
-                                                                     :Query               "doi=10.5678/TestDOI"})
-                                                                   {:token "mock-echo-system-token"})
-             _              (index/wait-until-indexed)
+             _user1-token (echo-util/login (system/context) "user1" [user1-group-id])
+             _ (echo-util/ungrant (system/context)
+                                  (-> (access-control/search-for-acls (system/context)
+                                                                      {:provider "PROV1"
+                                                                       :identity-type "catalog_item"}
+                                                                      {:token "mock-echo-system-token"})
+                                      :items
+                                      first
+                                      :concept_id))
+             _ (echo-util/ungrant (system/context)
+                                  (-> (access-control/search-for-acls (system/context)
+                                                                      {:provider "PROV2"
+                                                                       :identity-type "catalog_item"}
+                                                                      {:token "mock-echo-system-token"})
+                                      :items
+                                      first
+                                      :concept_id))
+             _ (echo-util/grant (system/context)
+                                [{:group_id    user1-group-id
+                                  :permissions [:read]}]
+                                :catalog_item_identity
+                                {:provider_id  "PROV1"
+                                 :name "Provider collection/granule ACL"
+                                 :collection_applicable true
+                                 :granule_applicable true
+                                 :granule_identifier {:access_value {:include_undefined_value true
+                                                                     :min_value 1
+                                                                     :max_value 50}}
+                                 :collection_identifier {:access_value {:include_undefined_value true
+                                                                        :min_value  1
+                                                                        :max_value 50}}})
+             _ (echo-util/grant (system/context)
+                                [{:user_type   :registered
+                                  :permissions [:read]}]
+                                :catalog_item_identity
+                                {:provider_id "PROV2"
+                                 :name "Provider collection/granule ACL registered users"
+                                 :collection_applicable true
+                                 :granule_applicable true
+                                 :granule_identifier {:access_value {:include_undefined_value true
+                                                                     :min_value 100
+                                                                     :max_value 200}}})
+             _  (ac-util/wait-until-indexed)
+             _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
+                                                        {:provider-id "PROV1"
+                                                         :Name "test_coll_sub_prov1"
+                                                         :SubscriberId "user1"
+                                                         :Type "collection"
+                                                         :EmailAddress "user1@nasa.gov"
+                                                         :Query "doi=10.5678/TestDOI"})
+                                                      {:token "mock-echo-system-token"})
+             _ (index/wait-until-indexed)
            ;; Setup collections
-             coll1          (data-core/ingest-umm-spec-collection "PROV1"
-                                                                  (data-umm-c/collection {:ShortName  "coll1"
-                                                                                          :EntryTitle "entry-title1"})
-                                                                  {:token "mock-echo-system-token"})
-             coll2          (data-core/ingest-umm-spec-collection "PROV2"
-                                                                  (data-umm-c/collection {:ShortName  "coll2"
-                                                                                          :EntryTitle "entry-title2"})
-                                                                  {:token "mock-echo-system-token"})
-             coll3          (data-core/ingest-umm-spec-collection "PROV1"
-                                                                  (data-umm-c/collection
-                                                                   {:ShortName  "coll3"
-                                                                    :EntryTitle "entry-title3"
-                                                                    :AccessConstraints (data-umm-c/access-constraints
-                                                                                        {:Value 51 :Description "Those files are for British eyes only."})})
-                                                                  {:token "mock-echo-system-token"})
-             coll4          (data-core/ingest-umm-spec-collection "PROV1"
-                                                                  (data-umm-c/collection
-                                                                   {:ShortName  "coll4"
-                                                                    :EntryTitle "entry-title4"
-                                                                    :DOI {:DOI "10.5679/TestDOI2"}})
-                                                                  {:token "mock-echo-system-token"})
-             _              (index/wait-until-indexed)
+             coll1 (data-core/ingest-umm-spec-collection "PROV1"
+                                                         (data-umm-c/collection {:ShortName "coll1"
+                                                                                 :EntryTitle "entry-title1"})
+                                                         {:token "mock-echo-system-token"})
+             coll2 (data-core/ingest-umm-spec-collection "PROV2"
+                                                         (data-umm-c/collection {:ShortName "coll2"
+                                                                                 :EntryTitle "entry-title2"})
+                                                         {:token "mock-echo-system-token"})
+             _coll3 (data-core/ingest-umm-spec-collection "PROV1"
+                                                          (data-umm-c/collection
+                                                            {:ShortName "coll3"
+                                                             :EntryTitle "entry-title3"
+                                                             :AccessConstraints (data-umm-c/access-constraints
+                                                                                  {:Value 51 :Description "Those files are for British eyes only."})})
+                                                          {:token "mock-echo-system-token"})
+             _coll4 (data-core/ingest-umm-spec-collection "PROV1"
+                                                          (data-umm-c/collection
+                                                            {:ShortName "coll4"
+                                                             :EntryTitle "entry-title4"
+                                                             :DOI {:DOI "10.5679/TestDOI2"}})
+                                                          {:token "mock-echo-system-token"})
+             _ (index/wait-until-indexed)
            ;; Setup subscriptions for each collection, for user1
-             _              (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
-                                                                    {:Name                "test_sub_prov1"
-                                                                     :SubscriberId        "user1"
-                                                                     :EmailAddress        "user1@nasa.gov"
-                                                                     :CollectionConceptId (:concept-id coll1)
-                                                                     :Type                "granule"
-                                                                     :Query               " "})
-                                                                   {:token "mock-echo-system-token"})
-             _              (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
-                                                                    {:provider-id         "PROV2"
-                                                                     :Name                "test_sub_prov2"
-                                                                     :SubscriberId        "user1"
-                                                                     :Type                "granule"
-                                                                     :EmailAddress        "user1@nasa.gov"
-                                                                     :CollectionConceptId (:concept-id coll2)
-                                                                     :Query               " "})
-                                                                   {:token "mock-echo-system-token"})
-             _              (index/wait-until-indexed)
+             _ (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
+                                                        {:Name "test_sub_prov1"
+                                                         :SubscriberId "user1"
+                                                         :EmailAddress "user1@nasa.gov"
+                                                         :CollectionConceptId (:concept-id coll1)
+                                                         :Type "granule"
+                                                         :Query " "})
+                                                      {:token "mock-echo-system-token"})
+             _  (subscription-util/ingest-subscription (subscription-util/make-subscription-concept
+                                                         {:provider-id "PROV2"
+                                                          :Name "test_sub_prov2"
+                                                          :SubscriberId "user1"
+                                                          :Type "granule"
+                                                          :EmailAddress "user1@nasa.gov"
+                                                          :CollectionConceptId (:concept-id coll2)
+                                                          :Query " "})
+                                                       {:token "mock-echo-system-token"})
+             _ (index/wait-until-indexed)
            ;; Setup granules, gran1 and gran3 with acl matched access-value
            ;; gran 2 does not match, and should not be readable by user1
-             gran1          (data-core/ingest "PROV1"
-                                              (data-granule/granule-with-umm-spec-collection coll1
-                                                                                             (:concept-id coll1)
-                                                                                             {:granule-ur   "Granule1"
-                                                                                              :access-value 33})
-                                              {:token "mock-echo-system-token"})
-             gran2          (data-core/ingest "PROV1"
-                                              (data-granule/granule-with-umm-spec-collection coll1
-                                                                                             (:concept-id coll1)
-                                                                                             {:granule-ur   "Granule2"
-                                                                                              :access-value 66})
-                                              {:token "mock-echo-system-token"})
-             gran3          (data-core/ingest "PROV2"
-                                              (data-granule/granule-with-umm-spec-collection coll2
-                                                                                             (:concept-id coll2)
-                                                                                             {:granule-ur   "Granule3"
-                                                                                              :access-value 133})
-                                              {:token "mock-echo-system-token"})
-             _              (index/wait-until-indexed)
-             expected       (set [(:concept-id gran1) (:concept-id gran3) (:concept-id coll1) (:concept-id coll2)])
-             actual         (->> (system/context)
-                                 (jobs/email-subscription-processing)
-                                 (map #(nth % 1))
-                                 flatten
-                                 (map :concept-id)
-                                 set)]
+             gran1 (data-core/ingest "PROV1"
+                                     (data-granule/granule-with-umm-spec-collection coll1
+                                                                                    (:concept-id coll1)
+                                                                                    {:granule-ur "Granule1"
+                                                                                     :access-value 33})
+                                     {:token "mock-echo-system-token"})
+             _gran2 (data-core/ingest "PROV1"
+                                      (data-granule/granule-with-umm-spec-collection coll1
+                                                                                     (:concept-id coll1)
+                                                                                     {:granule-ur "Granule2"
+                                                                                      :access-value 66})
+                                      {:token "mock-echo-system-token"})
+             gran3 (data-core/ingest "PROV2"
+                                     (data-granule/granule-with-umm-spec-collection coll2
+                                                                                    (:concept-id coll2)
+                                                                                    {:granule-ur "Granule3"
+                                                                                     :access-value 133})
+                                     {:token "mock-echo-system-token"})
+             _ (index/wait-until-indexed)
+             expected (set [(:concept-id gran1) (:concept-id gran3) (:concept-id coll1) (:concept-id coll2)])
+             actual (->> (system/context)
+                         (jobs/email-subscription-processing)
+                         (map #(nth % 1))
+                         flatten
+                         (map :concept-id)
+                         set)]
          (is (= expected actual)))))))

@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.service.service-association-test
   "This tests associating services with collections."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.collection :as collection]
    [cmr.system-int-test.data2.core :as data-core]
@@ -9,7 +9,6 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
-   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.service-util :as service-util]
    [cmr.system-int-test.utils.association-util :as association-util]))
 
@@ -33,7 +32,7 @@
   ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
   (let [[c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2
-         c1-p3 c2-p3 c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
+         _c1-p3 _c2-p3 _c3-p3 c4-p3] (doall (for [p ["PROV1" "PROV2" "PROV3"]
                                                n (range 1 5)]
                                            (:concept-id (data-core/ingest
                                                          p
@@ -41,8 +40,8 @@
                                                           {:short-name (str "S" n)
                                                            :version-id (str "V" n)
                                                            :entry-title (str "ET" n)})))))
-        all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
-        all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
+        _all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
+        _all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         token (echo-util/login (system/context) "user1")
         {:keys [concept-id]} (service-util/ingest-service-with-attrs {:Name "service1"})]
     (index/wait-until-indexed)
@@ -117,7 +116,7 @@
         serv-concept (service-util/make-service-concept {:native-id native-id
                                                          :Name "service1"
                                                          :provider-id "PROV1"})
-        {:keys [concept-id revision-id]} (service-util/ingest-service serv-concept)
+        {:keys [concept-id _revision-id]} (service-util/ingest-service serv-concept)
         coll-concept-id (:concept-id (data-core/ingest "PROV1" (collection/collection)))]
     (testing "Associate service using query sent with invalid content type"
       (are [associate-service-fn request-json]
@@ -235,7 +234,7 @@
   (let [service-name "service1"
         token (echo-util/login (system/context) "user1")
         serv-concept (service-util/make-service-concept {:Name service-name})
-        {:keys [concept-id revision-id]} (service-util/ingest-service serv-concept)
+        {:keys [concept-id _revision-id]} (service-util/ingest-service serv-concept)
         coll-concept-id (:concept-id (data-core/ingest "PROV1" (collection/collection)))]
 
     (testing "Dissociate service using query sent with invalid content type"
@@ -316,7 +315,7 @@
   ;; Grant all collections in PROV1
   (echo-util/grant-registered-users (system/context)
                                     (echo-util/coll-catalog-item-id "PROV1"))
-  (let [[coll1 coll2 coll3] (doall (for [n (range 1 4)]
+  (let [[coll1 coll2 coll3] (doall (for [_n (range 1 4)]
                                      (data-core/ingest "PROV1" (collection/collection))))
         [coll1-id coll2-id coll3-id] (map :concept-id [coll1 coll2 coll3])
         token (echo-util/login (system/context) "user1")

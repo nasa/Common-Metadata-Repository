@@ -2,7 +2,6 @@
   "This tests associating tags with collection revisions."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :refer [are2] :as util]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
@@ -19,7 +18,7 @@
 
 (defn- assert-tag-association
   "Assert the collections are associated with the tag for the given tag-key.
-  If the options has :all-revisions true, the collections will be search on all collection revisions."
+  If the options have :all-revisions true, the collections will be search on all collection revisions."
   ([token colls tag-key]
    (assert-tag-association token colls tag-key {}))
   ([token colls tag-key options]
@@ -39,12 +38,12 @@
         coll1-2-tombstone (merge (ingest/delete-concept concept1) concept1 {:deleted true})
         coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
 
-        coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
+        _coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
         coll2-2 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
         concept2 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll2-2)}
-        coll2-3-tombstone (merge (ingest/delete-concept concept2) concept2 {:deleted true})
+        _coll2-3-tombstone (merge (ingest/delete-concept concept2) concept2 {:deleted true})
 
         coll3 (d/ingest "PROV2" (dc/collection {}))
         coll4 (d/ingest "PROV3" (dc/collection {}))
@@ -176,7 +175,7 @@
         concept2 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll2-2)}
-        coll2-3-tombstone (merge (ingest/delete-concept concept2) concept2 {:deleted true})
+        _coll2-3-tombstone (merge (ingest/delete-concept concept2) concept2 {:deleted true})
 
         coll3 (d/ingest "PROV2" (dc/collection {}))
         coll4 (d/ingest "PROV3" (dc/collection {}))

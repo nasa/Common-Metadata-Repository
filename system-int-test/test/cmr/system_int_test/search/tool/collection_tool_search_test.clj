@@ -2,7 +2,7 @@
   "Tests searching for collections with associated tools"
   (:require
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as data2-collection]
@@ -22,7 +22,7 @@
 
 (deftest collection-tool-search-test
   (let [token (e/login (s/context) "user1")
-        [coll1 coll2 coll3 coll4 coll5] (doall (for [n (range 1 6)]
+        [coll1 coll2 coll3 coll4 _coll5] (doall (for [n (range 1 6)]
                                                  (d/ingest-umm-spec-collection
                                                   "PROV1"
                                                   (data-umm-c/collection n {})

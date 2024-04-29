@@ -2,7 +2,7 @@
   "This tests searching tools."
   (:require
    [cheshire.core :as json]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
@@ -327,7 +327,7 @@
         tl2 (tool/ingest-tool-with-attrs {:native-id "tl-2"
                                           :Name "Tool 2"
                                           :RelatedURLs [url2]})
-        tl3 (tool/ingest-tool-with-attrs {:native-id "tl-3"
+        _tl3 (tool/ingest-tool-with-attrs {:native-id "tl-3"
                                           :Name "Tool 3"})]
     (index/wait-until-indexed)
 
@@ -359,7 +359,7 @@
   (let [tl1 (tool/ingest-tool-with-attrs {:native-id "tl-1"
                                           :Name "Tool 1"
                                           :ContactGroups [(data-umm-t/contact-group)]})
-        tl2 (tool/ingest-tool-with-attrs {:native-id "tl-2"
+        _tl2 (tool/ingest-tool-with-attrs {:native-id "tl-2"
                                           :Name "Tool 2"})]
     (index/wait-until-indexed)
 
@@ -379,7 +379,7 @@
   (let [tl1 (tool/ingest-tool-with-attrs {:native-id "tl-1"
                                           :Name "Tool 1"
                                           :ContactPersons [(data-umm-t/contact-person)]})
-        tl2 (tool/ingest-tool-with-attrs {:native-id "tl-2"
+        _tl2 (tool/ingest-tool-with-attrs {:native-id "tl-2"
                                           :Name "Tool 2"})]
     (index/wait-until-indexed)
 
@@ -403,7 +403,7 @@
   (let [tl1 (tool/ingest-tool-with-attrs {:native-id "tl-1"
                                           :Name "Tool 1"
                                           :ToolKeywords [(data-umm-t/tool-keywords)]})
-        tl2 (tool/ingest-tool-with-attrs {:native-id "tl-2"
+        _tl2 (tool/ingest-tool-with-attrs {:native-id "tl-2"
                                           :Name "Tool 2"})]
     (index/wait-until-indexed)
 

@@ -2,10 +2,9 @@
   "This tests searching subscriptions."
   (:require
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.access-control.test.util :as ac-util]
    [cmr.common.date-time-parser :as dt-parser]
-   [cmr.common.mime-types :as mime-types]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.mock-echo.client.mock-urs-client :as mock-urs]
@@ -545,7 +544,7 @@
                 {:ShortName "coll1"
                  :EntryTitle "entry-title1"})
                {:token "mock-echo-system-token"})
-        sub1 (subscriptions/ingest-subscription-with-attrs {:native-id "Sub1"
+        _sub1 (subscriptions/ingest-subscription-with-attrs {:native-id "Sub1"
                                                             :Name "Subscription1"
                                                             :SubscriberId "SubId1"
                                                             :Query "platform=NOAA-6"

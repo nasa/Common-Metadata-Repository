@@ -3,7 +3,6 @@
   (:require
    [clojure.test :refer :all]
    [clojure.string :as str]
-   [cmr.common.services.messages :as msg]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.index-util :as index]

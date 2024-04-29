@@ -1,15 +1,11 @@
 (ns cmr.system-int-test.virtual-product.virtual-product-test
   (:require
-   [cheshire.core :as json]
    [clojure.string :as str]
    [clojure.test :refer :all]
-   [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
-   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -18,7 +14,6 @@
    [cmr.system-int-test.utils.virtual-product-util :as vp]
    [cmr.umm.echo10.granule :as g]
    [cmr.umm.umm-collection :as umm-c]
-   [cmr.umm.umm-granule :as umm-g]
    [cmr.umm-spec.util :as umm-spec-util]
    [cmr.virtual-product.config]
    [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
@@ -35,7 +30,6 @@
       (ingest/create-provider {:provider-guid (str p "_guid") :provider-id p})))
 
   (dissoc (first isc) :revision-id :native-id :concept-id :entry-id)
-
 
   (def isc (vp/ingest-source-collections))
 
@@ -86,7 +80,7 @@
 
     (testing "Update source granule"
       ;; Update the source granule so that the projects referenced are different than original
-      (let [ast-l1a-gran-r2 (vp/ingest-source-granule "LPDAAC_ECS"
+      (let [_ast-l1a-gran-r2 (vp/ingest-source-granule "LPDAAC_ECS"
                                                       (assoc ast-l1a-gran
                                                              :project-refs ["proj2" "proj3"]
                                                              :revision-id nil))]
@@ -109,7 +103,7 @@
         (is (= 0 (:hits (search/find-refs :granule {}))))))
 
     (testing "Recreate source granule"
-      (let [ast-l1a-gran-r4 (vp/ingest-source-granule "LPDAAC_ECS"
+      (let [_ast-l1a-gran-r4 (vp/ingest-source-granule "LPDAAC_ECS"
                                                       (dissoc ast-l1a-gran :revision-id :concept-id))]
         (index/wait-until-indexed)
         (testing "Find all granules"
@@ -209,7 +203,7 @@
                             {:entry-title ast-entry-title
                              :short-name "AST_L1A"})
                           :provider-id "LP_ALIAS")])
-          vp-colls (vp/ingest-virtual-collections [ast-coll])
+          _vp-colls (vp/ingest-virtual-collections [ast-coll])
           granule-ur "SC:AST_L1A.003:2006227710"
           ast-l1a-gran (vp/ingest-source-granule "LP_ALIAS"
                                                  (dg/granule ast-coll {:granule-ur granule-ur}))
@@ -244,7 +238,7 @@
                           {:entry-title ast-entry-title
                            :short-name "AST_L1A"})
                         :provider-id "LPDAAC_ECS")] {:client-id "ECHO"})
-        vp-colls (vp/ingest-virtual-collections [ast-coll] {:client-id "ECHO"})
+        _vp-colls (vp/ingest-virtual-collections [ast-coll] {:client-id "ECHO"})
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
                                                (dg/granule ast-coll {:granule-ur granule-ur})
@@ -273,9 +267,9 @@
                                           " Dose Daily L3 Global 1.0x1.0 deg Grid V003 (OMUVBd) at GES DISC")
                         :short-name "OMUVBd"})
                       :provider-id "GES_DISC")])
-        vp-colls (vp/ingest-virtual-collections [omi-coll])
+        _vp-colls (vp/ingest-virtual-collections [omi-coll])
         granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2015m0103_v003-2015m0107t093002.he5"
-        [ur-prefix ur-suffix] (str/split granule-ur #":")
+        [_ur-prefix ur-suffix] (str/split granule-ur #":")
         opendap-dir-path "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/"
         opendap-file-path (str opendap-dir-path granule-ur)]
     (util/are2 [src-granule-ur source-related-urls expected-related-url-maps]
@@ -390,7 +384,7 @@
                              :short-name "AST_L1A"
                              :projects (dc/projects "proj1" "proj2" "proj3" umm-spec-util/not-provided)})
                           :provider-id "LPDAAC_ECS")])
-          vp-colls (vp/ingest-virtual-collections [ast-coll])
+          _vp-colls (vp/ingest-virtual-collections [ast-coll])
           granule-ur "SC:AST_L1A.003:2006227720"
           granule (vp/add-granule-attributes "LPDAAC_ECS"
                                               (dg/granule ast-coll {:granule-ur granule-ur

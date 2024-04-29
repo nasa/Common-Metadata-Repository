@@ -5,7 +5,7 @@
   * /concepts/:concept-id/:revision-id"
   (:require
    [cheshire.core :as json]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.access-control.test.util :as ac-util]
    [cmr.common.mime-types :as mt]
    [cmr.mock-echo.client.echo-util :as e]
@@ -62,7 +62,7 @@
 (defmulti handle-retrieve-concept-error
   "Execute the retrieve concept call with the given parameters and returns the status and errors
   based on the result format."
-  (fn [concept-id revision-id accept-format]
+  (fn [_concept-id _revision-id accept-format]
     accept-format))
 
 (defmethod handle-retrieve-concept-error mt/umm-json

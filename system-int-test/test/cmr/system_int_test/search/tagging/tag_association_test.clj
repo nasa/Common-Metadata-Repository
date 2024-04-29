@@ -2,7 +2,6 @@
   "This tests associating tags with collections."
   (:require
    [clojure.test :refer :all]
-   [cmr.common.util :refer [are2] :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.collection :as collection]
    [cmr.system-int-test.data2.core :as data-core]
@@ -32,7 +31,7 @@
   ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
   (let [[c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2
-         c1-p3 c2-p3 c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
+         _c1-p3 _c2-p3 _c3-p3 _c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
                                         n (range 1 5)]
                                     (:concept-id (data-core/ingest
                                                   p
@@ -40,12 +39,12 @@
                                                    {:short-name (str "S" n)
                                                     :version-id (str "V" n)
                                                     :entry-title (str "ET" n)}))))
-        all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
-        all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
+        _all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
+        _all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         tag (tags/make-tag)
         tag-key (:tag-key tag)
         token (echo-util/login (system/context) "user1")
-        {:keys [concept-id]} (tags/create-tag token tag)]
+        {:keys [_concept-id]} (tags/create-tag token tag)]
     (index/wait-until-indexed)
 
     (testing "Successfully Associate tag with collections"
@@ -93,7 +92,7 @@
   ;; {:entry-id "S1_V1", :entry_title "ET1", :short-name "S1", :version-id "V1"}
   (let [[c1-p1 c2-p1 c3-p1 c4-p1
          c1-p2 c2-p2 c3-p2 c4-p2
-         c1-p3 c2-p3 c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
+         _c1-p3 _c2-p3 _c3-p3 c4-p3] (for [p ["PROV1" "PROV2" "PROV3"]
                                         n (range 1 5)]
                                     (:concept-id (data-core/ingest
                                                   p
@@ -101,12 +100,12 @@
                                                    {:short-name (str "S" n)
                                                     :version-id (str "V" n)
                                                     :entry-title (str "ET" n)}))))
-        all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
-        all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
+        _all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
+        _all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (echo-util/login (system/context) "user1")
-        {:keys [concept-id]} (tags/create-tag token tag)]
+        {:keys [_concept-id]} (tags/create-tag token tag)]
     (index/wait-until-indexed)
 
     (testing "Associate tag with collections by concept-ids"
@@ -176,9 +175,9 @@
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (echo-util/login (system/context) "user1")
-        {:keys [concept-id revision-id]} (tags/create-tag token tag)
+        {:keys [_concept-id _revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
-        tag (assoc tag :originator-id "user1")
+        _tag (assoc tag :originator-id "user1")
         coll-concept-id (:concept-id (data-core/ingest
                                       "PROV1"
                                       (collection/collection)))]
@@ -254,7 +253,7 @@
         prov3-token (echo-util/login (system/context)
                                      "prov3-user"
                                      [group1-concept-id])
-        {:keys [concept-id]} (tags/create-tag token tag)
+        {:keys [_concept-id]} (tags/create-tag token tag)
         assert-tag-associated (partial tags/assert-tag-associated-with-query
                                        prov3-token {:tag-key "tag1"})]
     (index/wait-until-indexed)
@@ -310,14 +309,14 @@
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
         all-prov3-colls [c1-p3 c2-p3 c3-p3 c4-p3]
-        all-colls (concat all-prov1-colls all-prov2-colls all-prov3-colls)
+        _all-colls (concat all-prov1-colls all-prov2-colls all-prov3-colls)
         tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (echo-util/login (system/context) "user1")
         prov3-token (echo-util/login (system/context)
                                      "prov3-user"
                                      [group1-concept-id])
-        {:keys [concept-id]} (tags/create-tag token tag)
+        {:keys [_concept-id]} (tags/create-tag token tag)
         assert-tag-associated (partial tags/assert-tag-associated-with-query
                                        prov3-token {:tag-key "tag1"})]
     (index/wait-until-indexed)
@@ -369,9 +368,9 @@
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (echo-util/login (system/context) "user1")
-        {:keys [concept-id revision-id]} (tags/create-tag token tag)
+        {:keys [_concept-id _revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
-        tag (assoc tag :originator-id "user1")
+        _tag (assoc tag :originator-id "user1")
         coll-concept-id (:concept-id (data-core/ingest
                                       "PROV1"
                                       (collection/collection)))]
@@ -418,13 +417,13 @@
                                     (echo-util/coll-catalog-item-id "PROV1"))
   (testing "dissociate tag with only some of the collections matching the query are associated with the tag is OK"
     (let [coll1 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET1"}))
-          coll2 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET2"}))
+          _coll2 (data-core/ingest "PROV1" (collection/collection {:entry-title "ET2"}))
           token (echo-util/login (system/context) "user1")
           _ (index/wait-until-indexed)
-          tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
+          _tag (tags/save-tag token (tags/make-tag {:tag-key "tag1"}) [coll1])
           assert-tag-associated (partial tags/assert-tag-associated-with-query token {:tag-key "tag1"})]
       (assert-tag-associated [coll1])
-      (let [{:keys [status errors]} (tags/dissociate-by-query token "tag1" {:provider "PROV1"})]
+      (let [{:keys [status _errors]} (tags/dissociate-by-query token "tag1" {:provider "PROV1"})]
         (is (= 200 status))
         (assert-tag-associated [])))))
 
@@ -523,7 +522,7 @@
   ;; Grant all collections in PROV1
   (echo-util/grant-registered-users (system/context)
                                     (echo-util/coll-catalog-item-id "PROV1"))
-  (let [[coll1 coll2 coll3] (for [n (range 1 4)]
+  (let [[coll1 coll2 coll3] (for [_n (range 1 4)]
                               (data-core/ingest "PROV1" (collection/collection)))
         [coll1-id coll2-id coll3-id] (map :concept-id [coll1 coll2 coll3])
         token (echo-util/login (system/context) "user1")]

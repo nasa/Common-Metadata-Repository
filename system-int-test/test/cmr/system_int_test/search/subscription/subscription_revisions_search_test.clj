@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.subscription.subscription-revisions-search-test
   "Integration test for search all revisions search"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
@@ -46,10 +46,10 @@
                        :CollectionConceptId (:concept-id coll2)
                        :Name "Sub2"
                        :provider-id "PROV2"}
-        subscription1s (doall (for [n (range 2)]
+        subscription1s (doall (for [_n (range 2)]
                                (subscription/ingest-subscription
                                  (subscription/make-subscription-concept subscription1))))
-        subscription2s (doall (for [n (range 1)]
+        subscription2s (doall (for [_n (range 1)]
                                (subscription/ingest-subscription
                                  (subscription/make-subscription-concept subscription2))))
         all-subscriptions-after-cleanup (concat (drop 1 subscription1s) subscription2s)]

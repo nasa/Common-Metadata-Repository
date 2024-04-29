@@ -26,7 +26,7 @@
         concept1 {:provider-id "PROV1"
                   :concept-type :collection
                   :native-id (:entry-title coll1-1)}
-        coll1-2-tombstone (merge (ingest/delete-concept concept1) concept1 {:deleted true})
+        _coll1-2-tombstone (merge (ingest/delete-concept concept1) concept1 {:deleted true})
         coll1-3 (d/ingest "PROV1" (dc/collection {:entry-title "et1"}))
 
         coll2-1 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))
@@ -36,9 +36,9 @@
         coll4-1 (d/ingest "PROV2" (dc/collection {:entry-title "et4"}))
 
         token (e/login (s/context) "user1")
-        tag1 (tags/save-tag token (tags/make-tag {:tag-key "tag1"}))
-        tag2 (tags/save-tag token (tags/make-tag {:tag-key "tag2"}))
-        tag3 (tags/save-tag token (tags/make-tag {:tag-key "tag3"}))]
+        _tag1 (tags/save-tag token (tags/make-tag {:tag-key "tag1"}))
+        _tag2 (tags/save-tag token (tags/make-tag {:tag-key "tag2"}))
+        _tag3 (tags/save-tag token (tags/make-tag {:tag-key "tag3"}))]
     (index/wait-until-indexed)
 
     (tags/associate-by-concept-ids token "tag1" [{:concept-id (:concept-id coll1-1)
@@ -100,7 +100,7 @@
       (assert-collection-refs-found [coll2-2] {:tag-data {"tag2" "cloud"} :all-revisions true})
 
       ;; update the collection
-      (let [coll2-3 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))]
+      (let [_coll2-3 (d/ingest "PROV1" (dc/collection {:entry-title "et2"}))]
         (index/wait-until-indexed)
 
         ;; Found no collections without all-revisions true

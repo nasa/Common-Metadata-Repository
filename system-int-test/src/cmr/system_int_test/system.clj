@@ -7,10 +7,9 @@
    [clj-http.conn-mgr :as conn-mgr]
    [cmr.bootstrap.config :as bootstrap-config]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log]
    [cmr.common.system :as common-sys]
    [cmr.metadata-db.services.util :as mdb-util]
-   [cmr.oracle.connection :as oracle]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]))
 

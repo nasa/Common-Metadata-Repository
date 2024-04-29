@@ -34,7 +34,7 @@
 (defmulti handle-retrieve-concept-error
   "Execute the retrieve concept call with the given parameters and returns the status and errors
   based on the result format."
-  (fn [concept-id revision-id accept-format]
+  (fn [_concept-id _revision-id accept-format]
     accept-format))
 
 (defmethod handle-retrieve-concept-error mt/umm-json

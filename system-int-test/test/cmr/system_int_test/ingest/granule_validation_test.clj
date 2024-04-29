@@ -11,7 +11,6 @@
     [cmr.ingest.services.messages :as msg]
     [cmr.spatial.line-string :as l]
     [cmr.spatial.mbr :as m]
-    [cmr.spatial.point :as p]
     [cmr.spatial.polygon :as poly]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]

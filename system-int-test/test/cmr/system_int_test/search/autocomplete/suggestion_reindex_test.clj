@@ -3,7 +3,7 @@
   (:require
    [clj-time.core :as time]
    [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are3]]
+   [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
@@ -15,8 +15,7 @@
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]
-   [cmr.transmit.access-control :as ac]))
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (defn- scores-descending?
   [results]
@@ -101,7 +100,7 @@
 (defn autocomplete-reindex-fixture
   [f]
   (let [admin-read-group-concept-id (e/get-or-create-group (s/context) "admin-read-group")
-        coll1 (d/ingest "PROV1"
+        _coll1 (d/ingest "PROV1"
                         (dc/collection
                          {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]
                           :ArchiveAndDistributionInformation gdf1
@@ -110,7 +109,7 @@
                           (fu/projects "proj1" "PROJ2")
                           (fu/platforms fu/FROM_KMS 2 2 1)
                           (fu/science-keywords sk1 sk2)}))
-        coll2 (fu/make-coll 2 "PROV1"
+        _coll2 (fu/make-coll 2 "PROV1"
                             (fu/science-keywords sk1 sk3)
                             (fu/projects "proj1" "PROJ2")
                             (fu/platforms fu/FROM_KMS 2 2 1)
@@ -118,12 +117,12 @@
                             {:DataCenters [(data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})]}
                             (fu/science-keywords sk1 sk2))
 
-        coll3 (d/ingest-concept-with-metadata-file "CMR-6287/C1000000029-EDF_OPS.xml"
+        _coll3 (d/ingest-concept-with-metadata-file "CMR-6287/C1000000029-EDF_OPS.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
                                                     :format-key :echo10})
-        coll4 (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7 sk8 sk9 sk11))
-        coll5 (d/ingest-umm-spec-collection
+        _coll4 (fu/make-coll 1 "PROV1" (fu/science-keywords sk1 sk2 sk3 sk4 sk5 sk6 sk7 sk8 sk9 sk11))
+        _coll5 (d/ingest-umm-spec-collection
                "PROV2"
                (data-umm-spec/collection
                 {:EntryTitle "Secret Collection"
@@ -133,7 +132,7 @@
                  :AccessConstraints (data-umm-spec/access-constraints
                                      {:Value 1 :Description "Those files are for British eyes only."})})
                {:format :umm-json})
-        coll6 (d/ingest-umm-spec-collection
+        _coll6 (d/ingest-umm-spec-collection
                "PROV2"
                (data-umm-spec/collection
                 {:ShortName "short but not so short that it's not unique"
@@ -141,15 +140,15 @@
                  :Projects (:Projects (fu/projects "DMSP 5B/F3"))
                  :Platforms (:Platforms (fu/platforms fu/FROM_KMS 2 2 1))})
                {:format :umm-json})
-        c1-echo (d/ingest "PROV1"
+        _c1-echo (d/ingest "PROV1"
                           (dc/collection {:entry-title "c1-echo" :access-value 1})
                           {:format :echo10})
         group1-concept-id (e/get-or-create-group (s/context) "group1")
         group2-concept-id (e/get-or-create-group (s/context) "group2")
-        group3-concept-id (e/get-or-create-group (s/context) "group3")
-        group-acl (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))
-        group2-acl (e/grant-group (s/context) group2-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))
-        group3-acl (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2" (e/coll-id ["Registered Collection"])))]
+        _group3-concept-id (e/get-or-create-group (s/context) "group3")
+        _group-acl (e/grant-group (s/context) group1-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))
+        _group2-acl (e/grant-group (s/context) group2-concept-id (e/coll-catalog-item-id "PROV2" (e/coll-id ["Secret Collection"])))
+        _group3-acl (e/grant-registered-users (s/context) (e/coll-catalog-item-id "PROV2" (e/coll-id ["Registered Collection"])))]
 
     (ingest/reindex-collection-permitted-groups "mock-echo-system-token")
     (index/wait-until-indexed)
@@ -232,7 +231,7 @@
   (testing "The suggestions from these old collections shouldn't be found"
     (are3 [query expected]
       (let [_ (dev-sys-util/freeze-time! "2020-01-01T10:00:00Z")
-            coll7 (d/ingest-umm-spec-collection
+            _coll7 (d/ingest-umm-spec-collection
                    "PROV1"
                    (data-umm-spec/collection
                     {:ShortName "This one is old and should be cleaned up"
@@ -241,7 +240,7 @@
                      :Platforms (:Platforms (fu/platforms "STALE" 2 2 1))}))
 
             _ (dev-sys-util/freeze-time! (time/yesterday))
-            coll8 (d/ingest-umm-spec-collection
+            _coll8 (d/ingest-umm-spec-collection
                    "PROV2"
                    (data-umm-spec/collection
                     {:ShortName "Yesterday's news"

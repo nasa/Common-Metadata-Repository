@@ -2,7 +2,7 @@
   "This tests searching services."
   (:require
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.mime-types :as mime-types]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
@@ -318,7 +318,7 @@
         svc2 (services/ingest-service-with-attrs {:native-id "svc-2"
                                                   :Name "Service 2"
                                                   :URL url2})
-        svc3 (services/ingest-service-with-attrs {:native-id "svc-3"
+        _svc3 (services/ingest-service-with-attrs {:native-id "svc-3"
                                                   :Name "Service 3"
                                                   :URL nil})]
     (index/wait-until-indexed)
@@ -339,7 +339,7 @@
   (let [svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
                                                   :Name "Service 1"
                                                   :ContactGroups [(data-umm-s/contact-group)]})
-        svc2 (services/ingest-service-with-attrs {:native-id "svc-2"
+        _svc2 (services/ingest-service-with-attrs {:native-id "svc-2"
                                                   :Name "Service 2"})]
     (index/wait-until-indexed)
 
@@ -359,7 +359,7 @@
   (let [svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
                                                   :Name "Service 1"
                                                   :ContactPersons [(data-umm-s/contact-person)]})
-        svc2 (services/ingest-service-with-attrs {:native-id "svc-2"
+        _svc2 (services/ingest-service-with-attrs {:native-id "svc-2"
                                                   :Name "Service 2"})]
     (index/wait-until-indexed)
 
@@ -384,7 +384,7 @@
   (let [svc1 (services/ingest-service-with-attrs {:native-id "svc-1"
                                                   :Name "Service 1"
                                                   :ServiceKeywords [(data-umm-s/service-keywords)]})
-        svc2 (services/ingest-service-with-attrs {:native-id "svc-2"
+        _svc2 (services/ingest-service-with-attrs {:native-id "svc-2"
                                                   :Name "Service 2"})]
     (index/wait-until-indexed)
 

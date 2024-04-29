@@ -6,8 +6,7 @@
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]
-   [cmr.system-int-test.data2.umm-spec-common :as umm-spec-common]))
+   [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]))
 
 (defn make-coll
   "Helper for creating and ingesting an ECHO10 collection"

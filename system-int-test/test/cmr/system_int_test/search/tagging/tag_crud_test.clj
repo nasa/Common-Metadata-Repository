@@ -5,12 +5,9 @@
    [clojure.test :refer :all]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
-   [cmr.common.util :refer [are2]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as system]
-   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.tag-util :as tags]))
 
 (use-fixtures :each (join-fixtures

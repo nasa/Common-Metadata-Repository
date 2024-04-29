@@ -4,7 +4,6 @@
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.virtual-product-util :as vp]
-            [cmr.system-int-test.data2.core :as d]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.system :as s]
@@ -28,7 +27,7 @@
                            :short-name "AST_L1A"})
                         :provider-id "LPDAAC_ECS")]
                      {:token provider-admin-update-token})
-        vp-colls (vp/ingest-virtual-collections [ast-coll] {:token provider-admin-update-token})
+        _vp-colls (vp/ingest-virtual-collections [ast-coll] {:token provider-admin-update-token})
         granule-ur "SC:AST_L1A.003:2006227720"
         ast-l1a-gran (vp/ingest-source-granule "LPDAAC_ECS"
                                     (dg/granule ast-coll {:granule-ur granule-ur})

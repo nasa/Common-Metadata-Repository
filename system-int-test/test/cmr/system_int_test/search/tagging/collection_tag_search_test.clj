@@ -3,7 +3,7 @@
   (:require
    [clojure.string :as str]
    [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are2]]
+   [cmr.common.util :refer [are2]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.atom :as atom]
    [cmr.system-int-test.data2.collection :as collection]
@@ -62,21 +62,21 @@
 
         tag3-colls [c3-p1 c3-p2]
 
-        tag1 (tags/save-tag
+        _tag1 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "Tag1"})
                tag1-colls)
-        tag2 (tags/save-tag
+        _tag2 (tags/save-tag
                user2-token
                (tags/make-tag {:tag-key "tag2"})
                tag2-colls)
 
-        tag3 (tags/save-tag
+        _tag3 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "tag other"})
                tag3-colls)
         ;; Tag 4 is not associated with any collections
-        tag4 (tags/save-tag
+        _tag4 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "tag4"}))]
     (index/wait-until-indexed)
@@ -209,25 +209,25 @@
         user1-token (echo-util/login (system/context) "user1")
         user2-token (echo-util/login (system/context) "user2")
 
-        tag1-colls [coll1 coll5]
+        _tag1-colls [coll1 coll5]
         tag2-colls [coll1 coll2]
         tag3-colls [coll3]
 
-        tag1 (tags/save-tag user1-token (tags/make-tag {:tag-key "tag1"}))
+        _tag1 (tags/save-tag user1-token (tags/make-tag {:tag-key "tag1"}))
         ;; Wait until collections are indexed so tags can be associated with them
         _ (index/wait-until-indexed)
 
-        tag2 (tags/save-tag
+        _tag2 (tags/save-tag
                user2-token
                (tags/make-tag {:tag-key "Tag2"})
                tag2-colls)
 
-        tag3 (tags/save-tag
+        _tag3 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "cmr.other"})
                tag3-colls)
         ;; Tag 4 is not associated with any collections
-        tag4 (tags/save-tag
+        _tag4 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "tag4"}))]
 
@@ -373,13 +373,13 @@
                                                        {:entry-title (str "coll" n)})))
         all-prov1-colls [coll1 coll2 coll3 coll4]
         user1-token (echo-util/login (system/context) "user1")
-        tag1 (tags/save-tag
+        _tag1 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "tag1"}))
-        tag2 (tags/save-tag
+        _tag2 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "tag2"}))
-        tag3 (tags/save-tag
+        _tag3 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "tag3"}))]
     (index/wait-until-indexed)
@@ -430,15 +430,15 @@
                                     (data-core/ingest "PROV1"
                                                       (collection/collection
                                                        {:entry-title (str "coll" n)})))
-        all-prov1-colls [coll1 coll2 coll3 coll4]
+        _all-prov1-colls [coll1 coll2 coll3 coll4]
         user1-token (echo-util/login (system/context) "user1")
-        tag1 (tags/save-tag
+        _tag1 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "tag1"}))
-        tag2 (tags/save-tag
+        _tag2 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "tag2"}))
-        tag3 (tags/save-tag
+        _tag3 (tags/save-tag
                user1-token
                (tags/make-tag {:tag-key "tag3"}))]
     (index/wait-until-indexed)

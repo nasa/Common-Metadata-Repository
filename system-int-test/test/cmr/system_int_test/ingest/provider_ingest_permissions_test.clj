@@ -66,7 +66,7 @@
         prov-admin-update-delete-group-concept-id (echo-util/get-or-create-group
                                                    (s/context)
                                                    "prov-admin-update-delete-group")
-        prov-admin-read-update-delete-group-concept-id (echo-util/get-or-create-group
+        _prov-admin-read-update-delete-group-concept-id (echo-util/get-or-create-group
                                                         (s/context)
                                                         "prov-admin-read-update-delete-group")
         another-prov-admin-group-concept-id (echo-util/get-or-create-group
@@ -107,7 +107,7 @@
                            (s/context)
                            "super-admin"
                            [ingest-super-admin-group-concept-id])
-        non-existant-token "not-exist"
+        _non-existant-token "not-exist"
 
         ;; Grant provider admin permission
         _ (echo-util/grant-group-provider-admin

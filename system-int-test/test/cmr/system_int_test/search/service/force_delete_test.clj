@@ -47,14 +47,14 @@
         svc (data-umm-s/service-concept {:Name "S1"
                                          :native-id "Force-Delete-S1"})
         ;; Make three revisions, capturing the third
-        svc-concept (last (for [n (range 3)] (service/ingest-service svc)))
+        svc-concept (last (for [_n (range 3)] (service/ingest-service svc)))
         {svc-concept-id :concept-id} svc-concept
         _ (index/wait-until-indexed)
         {[assn-response] :body} (au/associate-by-concept-ids
                                  token
                                  svc-concept-id
                                  [{:concept-id coll-concept-id}])
-        {{svc-assn-concept-id :concept-id} :service-association} assn-response]
+        {{_svc-assn-concept-id :concept-id} :service-association} assn-response]
     (testing "initial conditions"
       (is (= 3 (:revision-id svc-concept)))
       ;; make sure that the collection's `associations` field is present, that

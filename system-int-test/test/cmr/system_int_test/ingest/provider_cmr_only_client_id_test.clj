@@ -7,8 +7,7 @@
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
-    [cmr.system-int-test.utils.search-util :as search]
-    [cmr.umm.umm-granule :as umm-g]))
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "GES_DISC"}))

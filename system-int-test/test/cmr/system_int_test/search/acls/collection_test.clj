@@ -3,9 +3,6 @@
   (:require
    [clojure.string :as str]
    [clojure.test :refer :all]
-   [cmr.acl.acl-fetcher :as acl-fetcher]
-   [cmr.common-app.test.side-api :as side]
-   [cmr.common.services.messages :as msg]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.atom :as da]
@@ -16,9 +13,7 @@
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as tc]))
 
 (use-fixtures :each (join-fixtures
@@ -72,32 +67,32 @@
         c1-echo (d/ingest "PROV1" (dc/collection {:entry-title "c1-echo"
                                                   :access-value 1})
                           {:format :echo10})
-        c2-echo (d/ingest "PROV1" (dc/collection {:entry-title "c2-echo"
+        _c2-echo (d/ingest "PROV1" (dc/collection {:entry-title "c2-echo"
                                                   :access-value 0})
                           {:format :echo10})
         c1-dif (d/ingest "PROV1" (dc/collection-dif {:entry-title "c1-dif"
                                                      :access-value 1})
                          {:format :dif})
-        c2-dif (d/ingest "PROV1" (dc/collection-dif {:entry-title "c2-dif"
+        _c2-dif (d/ingest "PROV1" (dc/collection-dif {:entry-title "c2-dif"
                                                      :access-value 0})
                          {:format :dif})
         c1-dif10 (d/ingest "PROV1" (dc/collection-dif10 {:entry-title "c1-dif10"
                                                          :access-value 1})
                            {:format :dif10})
-        c2-dif10 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "c2-dif10"
+        _c2-dif10 (d/ingest "PROV2" (dc/collection-dif10 {:entry-title "c2-dif10"
                                                          :access-value 0})
                            {:format :dif10})
         c1-iso (d/ingest "PROV1" (dc/collection {:entry-title "c1-iso"
                                                  :access-value 1})
                          {:format :iso19115})
-        c2-iso (d/ingest "PROV1" (dc/collection {:entry-title "c2-iso"
+        _c2-iso (d/ingest "PROV1" (dc/collection {:entry-title "c2-iso"
                                                  :access-value 0})
                          {:format :iso19115})
         ;; access-value is not supported in ISO-SMAP, so it won't be found
-        c1-smap (d/ingest "PROV1" (dc/collection {:entry-title "c1-smap"
+        _c1-smap (d/ingest "PROV1" (dc/collection {:entry-title "c1-smap"
                                                   :access-value 1})
                           {:format :iso-smap})
-        coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"}))]
+        _coll3 (d/ingest "PROV1" (dc/collection {:entry-title "coll3"}))]
     (index/wait-until-indexed)
 
     ;; grant restriction flag acl
@@ -159,12 +154,12 @@
                                                    :native-id "coll11"
                                                    :access-value 32.0}))
         ;; tombstone
-        coll11-2 (assoc (ingest/delete-concept (d/item->concept coll11-1) {:token (tc/echo-system-token)})
+        _coll11-2 (assoc (ingest/delete-concept (d/item->concept coll11-1) {:token (tc/echo-system-token)})
                         :entry-title "coll11"
                         :deleted true
                         :revision-id 2)
         ;; no permissions to read this revision since entry-title has changed
-        coll11-3 (d/ingest "PROV4" (dc/collection {:entry-title "coll11"
+        _coll11-3 (d/ingest "PROV4" (dc/collection {:entry-title "coll11"
                                                    :native-id "coll11"
                                                    :access-value 34.0}))
         ;; group 3 has permission to read this collection revision
@@ -176,7 +171,7 @@
                                                    :access-value 34.0
                                                    :native-id "coll12"}))
         ;; no permision to see this tombstone since it has same entry-title as coll12-2
-        coll12-3 (assoc (ingest/delete-concept (d/item->concept coll12-2))
+        _coll12-3 (assoc (ingest/delete-concept (d/item->concept coll12-2))
                         :deleted true
                         :revision-id 2)
 

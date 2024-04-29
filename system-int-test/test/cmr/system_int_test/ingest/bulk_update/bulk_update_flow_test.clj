@@ -5,9 +5,7 @@
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
-   [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]))
 
@@ -36,51 +34,50 @@
                                          :Term "ENVIRONMENTAL IMPACTS"
                                          :VariableLevel1 "HEAVY METALS CONCENTRATION"}}]
     (testing "Provider task status response sorting"
-       (let [response-json1 (ingest/parse-bulk-update-body :json
+       (let [_response-json1 (ingest/parse-bulk-update-body :json
                              (ingest/bulk-update-collections "PROV1"
                               (assoc bulk-update-body :name "TEST NAME 1")
                               {:accept-format :json :raw? true}))
-             response-json2 (ingest/parse-bulk-update-body :json
+             _response-json2 (ingest/parse-bulk-update-body :json
                              (ingest/bulk-update-collections "PROV1"
                               (assoc bulk-update-body :name "TEST NAME 2")
                               {:accept-format :json :raw? true}))
-             response-json3 (ingest/parse-bulk-update-body :json
+             _response-json3 (ingest/parse-bulk-update-body :json
                              (ingest/bulk-update-collections "PROV1"
                               (assoc bulk-update-body :name "TEST NAME 3")
                               {:accept-format :json :raw? true}))
-             response-json4 (ingest/parse-bulk-update-body :json
+             _response-json4 (ingest/parse-bulk-update-body :json
                              (ingest/bulk-update-collections "PROV1"
                               (assoc bulk-update-body :name "TEST NAME 4")
                               {:accept-format :json :raw? true}))
-             response-json5 (ingest/parse-bulk-update-body :json
+             _response-json5 (ingest/parse-bulk-update-body :json
                              (ingest/bulk-update-collections "PROV1"
                               (assoc bulk-update-body :name "TEST NAME 5")
                               {:accept-format :json :raw? true}))
-             response-json6 (ingest/parse-bulk-update-body :json
+             _response-json6 (ingest/parse-bulk-update-body :json
                              (ingest/bulk-update-collections "PROV1"
                               (assoc bulk-update-body :name "TEST NAME 6")
                               {:accept-format :json :raw? true}))
-             response-json7 (ingest/parse-bulk-update-body :json
+             _response-json7 (ingest/parse-bulk-update-body :json
                              (ingest/bulk-update-collections "PROV1"
                               (assoc bulk-update-body :name "TEST NAME 7")
                               {:accept-format :json :raw? true}))
-             response-json8 (ingest/parse-bulk-update-body :json
+             _response-json8 (ingest/parse-bulk-update-body :json
                              (ingest/bulk-update-collections "PROV1"
                               (assoc bulk-update-body :name "TEST NAME 8")
                               {:accept-format :json :raw? true}))
-             response-json9 (ingest/parse-bulk-update-body :json
+             _response-json9 (ingest/parse-bulk-update-body :json
                              (ingest/bulk-update-collections "PROV1"
                               (assoc bulk-update-body :name "TEST NAME 9")
                               {:accept-format :json :raw? true}))
-             response-json10 (ingest/parse-bulk-update-body :json
+             _response-json10 (ingest/parse-bulk-update-body :json
                              (ingest/bulk-update-collections "PROV1"
                               (assoc bulk-update-body :name "TEST NAME 10")
                               {:accept-format :json :raw? true}))
-             response-json11 (ingest/parse-bulk-update-body :json
+             _response-json11 (ingest/parse-bulk-update-body :json
                              (ingest/bulk-update-collections "PROV1"
                               (assoc bulk-update-body :name "TEST NAME 11")
                               {:accept-format :json :raw? true}))
-             _ (println "response-json10: " response-json11)
              response (ingest/bulk-update-provider-status
                        "PROV1"
                        {:accept-format :json})
@@ -97,7 +94,7 @@
                                                 (data-umm-c/collection x {}))
                                               :concept-id
                                               (generate-concept-id x "PROV1"))))))
-        _ (index/wait-until-indexed)
+        _ (index/wait-until-indexed) ;; TODO this does a full elastic refresh for the index. Is that necessary?
         bulk-update-body {:concept-ids concept-ids
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"
@@ -126,7 +123,7 @@
         ;; Create another bulk update event with PROV2 to make sure we're just
         ;; getting PROV1 statuses
         (ingest/bulk-update-collections "PROV2" bulk-update-body)
-        (qb-side-api/wait-for-terminal-states)
+        (qb-side-api/wait-for-terminal-states) ;; how long does this take if other tests are using the message queue too?
 
         (are3 [accept-format]
           (let [response (ingest/bulk-update-provider-status "PROV1"

@@ -5,14 +5,13 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.search.services.query-execution.facets.collection-v2-facets :as frf2]
+   [cmr.search.services.query-execution.facets.collection-v2-facets]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]
    [cmr.system-int-test.data2.umm-spec-common :as umm-spec-common]
    [cmr.system-int-test.search.facets.facet-responses :as fr]
    [cmr.system-int-test.search.facets.facets-util :as fu]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
@@ -149,7 +148,7 @@
   (dev-sys-util/eval-in-dev-sys
    `(cmr.search.services.query-execution.facets.collection-v2-facets/set-include-variable-facets!
      true))
-  (let [token (e/login (s/context) "user1")
+  (let [_token (e/login (s/context) "user1")
         coll1 (fu/make-coll 1 "PROV1"
                             (fu/science-keywords sk1 sk2)
                             (fu/projects "proj1" "PROJ2")
@@ -174,8 +173,8 @@
                       {:Name "Variable2"
                        :LongName "Measurement2"}
                       {:coll-concept-id (:concept-id coll2)})
-        {variable1-concept-id :concept-id} (variable-util/ingest-variable-with-association var1-concept)
-        {variable2-concept-id :concept-id} (variable-util/ingest-variable-with-association var2-concept)])
+        {_variable1-concept-id :concept-id} (variable-util/ingest-variable-with-association var1-concept)
+        {_variable2-concept-id :concept-id} (variable-util/ingest-variable-with-association var2-concept)])
   (index/wait-until-indexed)
   (testing "No fields applied for facets"
     (is (= fr/expected-v2-facets-apply-links (search-and-return-v2-facets))))
@@ -546,20 +545,20 @@
 
 
 (deftest platform-facets-v2-test
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+  (let [_coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll1"
                                                       :ShortName "S1"
                                                       :VersionId "V1"
                                                       :Platforms (data-umm-spec/platforms
                                                                   (get-in sample-platforms [:diadem :short-name]))}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
                                                       :VersionId "V2"
                                                       :Platforms (data-umm-spec/platforms
                                                                   (get-in sample-platforms [:diadem :short-name])
                                                                   (get-in sample-platforms [:dmsp :short-name]))}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
                                                       :VersionId "V3"
@@ -567,7 +566,7 @@
                                                                    {:ShortName (get-in sample-platforms [:dmsp :short-name])
                                                                     :Instruments [(data-umm-spec/instrument {:ShortName "I3"})]})]
                                                       :Projects (umm-spec-common/projects "proj3")}))
-        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll4"
                                                       :ShortName "S4"
                                                       :VersionId "V4"
@@ -635,7 +634,7 @@
         (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
 
 (deftest hierarchy-facets-v2-test-more-complex-test
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+  (let [_coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll1"
                                                       :ShortName "S1"
                                                       :VersionId "V1"
@@ -685,7 +684,7 @@
   "Tests for keys that are missing in the hierarchy. If science keywords are used, DetailedVariable
   can exist after Term, VariableLevel1, VariableLevel2, or VariableLevel3.  For Platform keywords
   short-name can exist after category or sub-category."
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+  (let [_coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll1"
                                                       :ShortName "S1"
                                                       :VersionId "V1"
@@ -697,7 +696,7 @@
                                                                            :VariableLevel2 "Level1-2"
                                                                            :VariableLevel3 "Level1-3"
                                                                            :DetailedVariable "Detail1"})]}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
                                                       :VersionId "V1"
@@ -708,7 +707,7 @@
                                                                                  :VariableLevel1 "Level2-1"
                                                                                  :VariableLevel2 "Level2-2"
                                                                                  :DetailedVariable "Detail2"})]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
                                                       :VersionId "V1"
@@ -718,7 +717,7 @@
                                                                                  :Term "Term3"
                                                                                  :VariableLevel1 "Level3-1"
                                                                                  :DetailedVariable "Detail3"})]}))
-        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll4"
                                                       :ShortName "S4"
                                                       :VersionId "V1"
@@ -765,7 +764,7 @@
 (deftest platforms2-facets-v2-test-simple
   "Tests for keys that are missing in the hierarchy. For Platform keywords
   short-name can exist after category or sub-category."
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+  (let [_coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll1"
                                                       :ShortName "S1"
                                                       :VersionId "V1"
@@ -773,7 +772,7 @@
                                                                    {:ShortName "NASA S-3B VIKING"
                                                                     :LongName "NASA S-3B VIKING"
                                                                     :Type "Jet"})]}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
                                                       :VersionId "V1"
@@ -781,7 +780,7 @@
                                                                    {:ShortName "AEROS-1"
                                                                     :LongName "AEROS-1"
                                                                     :Type "Earth Observation Satellites"})]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
                                                       :VersionId "V1"
@@ -789,7 +788,7 @@
                                                                    {:ShortName "Aqua"
                                                                     :LongName "Earth Observing System, Aqua"
                                                                     :Type "Earth Observation Satellites"})]}))
-        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll4"
                                                       :ShortName "S4"
                                                       :VersionId "V1"
@@ -829,7 +828,7 @@
      "International Space Station")))
 
 (deftest science-keywords-facets-v2-test
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+  (let [_coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll1"
                                                       :ShortName "S1"
                                                       :VersionId "V1"
@@ -843,7 +842,7 @@
                                                                            :VariableLevel2 "Level1-2"
                                                                            :VariableLevel3 "Level1-3"
                                                                            :DetailedVariable "Detail1"})]}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
                                                       :VersionId "V2"
@@ -855,7 +854,7 @@
                                                                            :Term "Term2"
                                                                            :VariableLevel1 "Level2-1"
                                                                            :VariableLevel2 "Level2-2"})]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
                                                       :VersionId "V3"
@@ -922,23 +921,23 @@
   (let [org1 (data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "DOI/USGS/CMG/WHSC"})
         org2 (data-umm-spec/data-center {:Roles ["PROCESSOR"] :ShortName "LPDAAC"})
         org3 (data-umm-spec/data-center {:Roles ["ARCHIVER"] :ShortName "NSIDC"})
-        coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll1"
                                                       :ShortName "S1"
                                                       :VersionId "V1"
                                                       :DataCenters [org1]}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
                                                       :VersionId "V2"
                                                       :DataCenters [org2]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
                                                       :VersionId "V3"
                                                       :DataCenters [org1 org2]
                                                       :Projects (data-umm-spec/projects "proj3")}))
-        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll4"
                                                       :ShortName "S4"
                                                       :VersionId "V4"
@@ -991,7 +990,7 @@
         (assert-facet-field-not-exist facets-result "Projects" "proj3")))))
 
 (deftest variables-facets-v2-test
-  (let [token (e/login (s/context) "user1")
+  (let [_token (e/login (s/context) "user1")
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll1"
                                                       :ShortName "S1"
@@ -1002,7 +1001,7 @@
                                                       :ShortName "S2"
                                                       :VersionId "V2"
                                                       :Platforms (data-umm-spec/platforms "P2")}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll3"
                                                       :ShortName "S3"
                                                       :VersionId "V3"
@@ -1026,9 +1025,9 @@
                       {:Name "SomeVariable"
                        :LongName "Measurement2"}
                       {:coll-concept-id (:concept-id coll4)})
-        {variable1-concept-id :concept-id} (variable-util/ingest-variable-with-association var1-concept)
-        {variable2-concept-id :concept-id} (variable-util/ingest-variable-with-association var2-concept)
-        {variable3-concept-id :concept-id} (variable-util/ingest-variable-with-association var3-concept)]
+        {_variable1-concept-id :concept-id} (variable-util/ingest-variable-with-association var1-concept)
+        {_variable2-concept-id :concept-id} (variable-util/ingest-variable-with-association var2-concept)
+        {_variable3-concept-id :concept-id} (variable-util/ingest-variable-with-association var3-concept)]
     (index/wait-until-indexed)
     (testing "variable facets are disabled by default"
       (let [facets-result (search-and-return-v2-facets
@@ -1122,20 +1121,20 @@
 
 (deftest latency-facet-v2-test
    "Test the latency facets ingest, indexing, and search."
-   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+   (let [_coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                       {:EntryTitle "coll1"
                                                        :ShortName "S1"
                                                        :SpatialExtent spatial
                                                        :CollectionDataType "NEAR_REAL_TIME"
                                                        :Projects [{:ShortName "Proj1"
                                                                    :LongName "Proj1 Long Name"}]}))
-         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+         _coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                       {:EntryTitle "coll2"
                                                        :ShortName "S2"
                                                        :CollectionDataType "LOW_LATENCY"
                                                        :Projects [{:ShortName "Proj2"
                                                                    :LongName "Proj2 Long Name"}]}))
-         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+         _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                       {:EntryTitle "coll3"
                                                        :ShortName "S3"
                                                        :CollectionDataType "EXPEDITED"
@@ -1211,14 +1210,14 @@
 
 (deftest horizontal-data-resolution-range-facet-v2-test
   "Test the horizontal data resolution facets ingest, indexing, and search."
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+  (let [_coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll1"
                                                       :ShortName "S1"
                                                       :SpatialExtent spatial
                                                       :Projects [{:ShortName "Proj4"
                                                                   :LongName "Proj4 Long Name"}]})
                                                     {:format :umm-json})
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
+        _coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-spec/collection
                                                      {:EntryTitle "coll2"
                                                       :ShortName "S2"
                                                       :Projects [{:ShortName "Proj3"
