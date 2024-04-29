@@ -117,7 +117,7 @@
 
 (defmethod create-elastic :external
   [_]
-  (elastic-config/set-elastic-port! 9209))
+  nil)
 
 (defmulti create-redis
   "Sets redis configuration values and returns an instance of a Redis component to run
@@ -313,6 +313,7 @@
   (reduce (fn [system component]
             (update-in system [components-key component]
                        #(try
+                          (info (format "Starting %s component" component))
                           (when % (lifecycle/start % system))
                           (catch Exception e
                             (error e "Failure during startup")

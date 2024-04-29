@@ -22,13 +22,13 @@
   "Build kibana in an embedded docker."
   [http-port network]
   (doto (FixedHostPortGenericContainer. kibana-official-docker-image)
-        (.withFixedExposedPort (int http-port) 5601)
-        (.withNetwork network)))
+    (.withFixedExposedPort (int http-port) 5601)
+    (.withNetwork network)
+    (.withStartupTimeout (Duration/ofSeconds 240))))
 
 (defn- build-node
   "Build cluster node with settings. The elasticsearch server is actually
   started on the default port 9200/9300. Only changing host port mapping. Args:
-
   http-port -> http port host will reach elasticsearch container on.
   opts ->
        data-dir -> Data directory to mount. None is default.
@@ -58,25 +58,22 @@
      ;; You would probably be better off just connecting to the docker machine.
      (when data-dir
        (.withFileSystemBind container data-dir "/usr/share/elasticsearch/data"))
-     (when log-level
-       (.withEnv container "logger.level" (name log-level)))
      (doto container
-           (.withEnv "indices.breaker.total.use_real_memory" "false")
-           (.withEnv "node.name" "embedded-elastic")
-           (.withNetwork network)
-           (.withNetworkAliases (into-array String ["elasticsearch"]))
-           (.withFixedExposedPort (int http-port) 9200)
-           (.withStartupTimeout (Duration/ofSeconds 240))
-           (.waitingFor
-            (.forStatusCode (Wait/forHttp "/_cat/health?v&pretty") 200)))
+       (.withEnv "indices.breaker.total.use_real_memory" "false")
+       (.withEnv "node.name" "embedded-elastic")
+       (.withNetwork network)
+       (.withNetworkAliases (into-array String ["elasticsearch"]))
+       (.withFixedExposedPort (int http-port) 9200)
+       (.waitingFor
+        (Wait/forLogMessage ".*\"message\": \"started\".*" 1))
+       (.withStartupTimeout (Duration/ofSeconds 240)))
      {:elasticsearch container
       :kibana kibana})))
 
 (defrecord ElasticServer
-    [
-     http-port
-     opts
-     node]
+           [http-port
+            opts
+            node]
 
   lifecycle/Lifecycle
 

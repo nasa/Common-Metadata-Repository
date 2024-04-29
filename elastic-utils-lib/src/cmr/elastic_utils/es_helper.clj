@@ -39,8 +39,7 @@
    (let [result (if (empty? opts)
                   (rest/get conn (rest/record-url conn index "_doc" id))
                   (rest/get conn (rest/record-url conn index "_doc" id) {:query-params opts}))]
-     (if (not-found? result)
-       nil
+     (when-not (not-found? result)
        result))))
 
 (defn put
