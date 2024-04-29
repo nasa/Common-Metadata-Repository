@@ -120,7 +120,7 @@
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not a datetime." field value))
       value)))
 
-(defn- oribt-parse-double
+(defn- orbit-parse-double
   "Coerce's string to double, catches exceptions and logs error message and returns nil if
   value is not parseable."
   [field value]
@@ -181,10 +181,10 @@
   "Update values in the orbit-str-map with the parsed values."
   [orbit-str-map]
   (-> orbit-str-map
-      (update :ascending-crossing #(oribt-parse-double :ascending-crossing %))
-      (update :start-lat #(oribt-parse-double :start-lat %))
+      (update :ascending-crossing #(orbit-parse-double :ascending-crossing %))
+      (update :start-lat #(orbit-parse-double :start-lat %))
       (update :start-direction #(convert-direction %))
-      (update :end-lat #(oribt-parse-double :end-lat %))
+      (update :end-lat #(orbit-parse-double :end-lat %))
       (update :end-direction #(convert-direction %))))
 
 (defn- parse-values-for-ocsd
@@ -194,7 +194,7 @@
       (update :orbit-number #(parse-integer :orbit-number %))
       (update :start-orbit-number #(parse-integer :start-orbit-number %))
       (update :stop-orbit-number #(parse-integer :stop-orbit-number %))
-      (update :equator-crossing-longitude #(oribt-parse-double :equator-crossing-longitude %))
+      (update :equator-crossing-longitude #(orbit-parse-double :equator-crossing-longitude %))
       (update :equator-crossing-date-time #(parse-datetime :equator-crossing-date-time %))))
 
 (defmethod gmd/encode cmr.umm.umm_granule.Orbit
