@@ -1,11 +1,12 @@
 (ns cmr.umm.iso-mends.collection.project-element
   "Contains functions for parsing and generating the ISO MENDS elements related to UMM project"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [clojure.string :as s]
-            [cmr.umm.iso-mends.collection.keyword :as k]
-            [cmr.umm.iso-mends.collection.helper :as h]))
+  (:require
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [clojure.string :as string]
+   [cmr.umm.iso-mends.collection.keyword :as k]
+   [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn xml-elem->Project
   [project-elem]
@@ -14,7 +15,7 @@
         description (cx/string-at-path project-elem [:description :CharacterString])
         ;; ISO description is built as "short-name > long-name", so here we extract the long-name out
         long-name (when-not (= short-name description)
-                    (s/replace description (str short-name " > ") ""))]
+                    (string/replace description (str short-name " > ") ""))]
     (c/map->Project
       {:short-name short-name
        :long-name long-name})))
@@ -25,7 +26,7 @@
                       (cx/elements-at-path
                         collection-element
                         [:acquisitionInformation :MI_AcquisitionInformation :operation :MI_Operation]))]
-    (when (not (empty? projects))
+    (when (seq projects)
       projects)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

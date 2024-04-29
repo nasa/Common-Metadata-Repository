@@ -1,26 +1,25 @@
 (ns cmr.umm.echo10.echo10-collection
   "Contains functions for parsing and generating the ECHO10 dialect."
-  (:require [clojure.data.xml :as x]
-            [clojure.java.io :as io]
-            [clojure.string :as string]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.common.xml :as v]
-            [cmr.common.util :as util]
-            [cmr.umm.echo10.collection.temporal :as t]
-            [cmr.umm.echo10.collection.personnel :as pe]
-            [cmr.umm.echo10.collection.product-specific-attribute :as psa]
-            [cmr.umm.echo10.collection.progress :as progress]
-            [cmr.umm.echo10.collection.platform :as platform]
-            [cmr.umm.echo10.collection.campaign :as cmpgn]
-            [cmr.umm.echo10.collection.collection-association :as ca]
-            [cmr.umm.echo10.collection.two-d-coordinate-system :as two-d]
-            [cmr.umm.echo10.related-url :as ru]
-            [cmr.umm.echo10.collection.org :as org]
-            [cmr.umm.echo10.collection.science-keyword :as sk]
-            [cmr.umm.echo10.spatial :as s]
-            [cmr.umm.echo10.echo10-core]
-            [camel-snake-kebab.core :as csk])
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.data.xml :as x]
+   [clojure.java.io :as io]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.common.util :as util]
+   [cmr.umm.echo10.collection.temporal :as t]
+   [cmr.umm.echo10.collection.personnel :as pe]
+   [cmr.umm.echo10.collection.product-specific-attribute :as psa]
+   [cmr.umm.echo10.collection.progress :as progress]
+   [cmr.umm.echo10.collection.platform :as platform]
+   [cmr.umm.echo10.collection.campaign :as cmpgn]
+   [cmr.umm.echo10.collection.collection-association :as ca]
+   [cmr.umm.echo10.collection.two-d-coordinate-system :as two-d]
+   [cmr.umm.echo10.related-url :as ru]
+   [cmr.umm.echo10.collection.org :as org]
+   [cmr.umm.echo10.collection.science-keyword :as sk]
+   [cmr.umm.echo10.spatial :as s]
+   [cmr.umm.echo10.echo10-core])
   (:import cmr.umm.umm_collection.UmmCollection))
 
 ;; Parsing XML Structures
@@ -57,7 +56,7 @@
 (defn- xml-elem->SpatialCoverage
   "Returns a UMM SpatialCoverage from a parsed Collection XML structure"
   [xml-struct]
-  (if-let [spatial-elem (cx/element-at-path xml-struct [:Spatial])]
+  (when-let [spatial-elem (cx/element-at-path xml-struct [:Spatial])]
     (let [gsr (some-> (cx/string-at-path spatial-elem [:GranuleSpatialRepresentation])
                       csk/->kebab-case-keyword)
           orbit-params (cx/element-at-path spatial-elem [:OrbitParameters])]
@@ -227,4 +226,4 @@
 (defn validate-xml
   "Validates the XML against the ECHO10 schema."
   [xml]
-  (v/validate-xml (io/resource "schema/echo10/Collection.xsd") xml))
+  (cx/validate-xml (io/resource "schema/echo10/Collection.xsd") xml))

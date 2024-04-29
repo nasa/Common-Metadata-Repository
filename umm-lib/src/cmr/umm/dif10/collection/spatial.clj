@@ -1,16 +1,17 @@
 (ns cmr.umm.dif10.collection.spatial
   "Contains functions for convert spatial to and parsing from DIF10 XML."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.polygon :as poly]
-            [cmr.umm.umm-spatial :as umm-s]
-            [camel-snake-kebab.core :as csk]
-            [cmr.common.util :as util]
-            [cmr.umm.dif10.collection.two-d-coordinate-system :as two-d]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.data.xml :as x]
+   [cmr.common.util :as util]
+   [cmr.common.xml :as cx]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.umm.dif10.collection.two-d-coordinate-system :as two-d]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (defmulti parse-geometry
   "Parses a geometry element based on the tag of the element."
@@ -70,7 +71,7 @@
 (defn xml-elem->SpatialCoverage
   "Returns a UMM SpatialCoverage from a parsed Collection XML structure"
   [xml-struct]
-  (if-let [spatial-elem (cx/element-at-path xml-struct [:Spatial_Coverage])]
+  (when-let [spatial-elem (cx/element-at-path xml-struct [:Spatial_Coverage])]
     (let [gsr (csk/->kebab-case-keyword (cx/string-at-path spatial-elem [:Granule_Spatial_Representation]))
           orbit-params (cx/element-at-path spatial-elem [:Orbit_Parameters])]
       (if-let [geom-elem (cx/element-at-path spatial-elem [:Geometry])]

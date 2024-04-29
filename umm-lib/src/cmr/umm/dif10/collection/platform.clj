@@ -1,11 +1,11 @@
 (ns cmr.umm.dif10.collection.platform
   "Functions to parse and generate DIF10 Platform elements"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.dif.dif-core :as dif]
-            [cmr.umm.dif10.collection.instrument :as inst]
-            [cmr.umm.dif10.collection.characteristic :as char]))
+  (:require
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.dif10.collection.instrument :as inst]
+   [cmr.umm.dif10.collection.characteristic :as char]))
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"

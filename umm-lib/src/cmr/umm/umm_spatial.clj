@@ -1,15 +1,13 @@
 (ns cmr.umm.umm-spatial
   "Contains some code to assist in representing spatial areas in UMM"
-  (:require [camel-snake-kebab.core :as csk]
-            [clojure.string :as str]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.polygon]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.cartesian-ring :as cr]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.string :as string]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.polygon.Polygon
            cmr.spatial.geodetic_ring.GeodeticRing
            cmr.spatial.cartesian_ring.CartesianRing
@@ -45,11 +43,11 @@
 
 (defmulti set-coordinate-system
   "Sets the coordinate system on the shape"
-  (fn [coordinate-system shape]
+  (fn [_coordinate-system shape]
     (type shape)))
 
 (defmethod set-coordinate-system :default
-  [coordinate-system shape]
+  [_coordinate-system shape]
   ;; Does nothing by default
   shape)
 
@@ -79,7 +77,7 @@
 (defn lat-lon-point-str->points
   "Converts a string of lat lon pairs separated by spaces into a list of points"
   [s]
-  (->> (str/split s #" ")
+  (->> (string/split s #" ")
        (map #(Double. ^String %))
        (partition 2)
        (map (fn [[lat lon]]
@@ -88,31 +86,31 @@
 (defmulti lat-lon-point-str->ring
   "Parses a string of lat lon pairs separated by spaces to a ring."
   (fn
-    ([s]
+    ([_s]
      :counter-clockwise)
-    ([s point-order]
+    ([_s point-order]
      point-order)))
 
 (defmethod lat-lon-point-str->ring :counter-clockwise
-  [s & args]
+  [s & _args]
   (ring (lat-lon-point-str->points s)))
 
 (defmethod lat-lon-point-str->ring :clockwise
-  [s & args]
+  [s & _args]
   (ring (reverse (lat-lon-point-str->points s))))
 
 (defmulti ring->lat-lon-point-str
   "Returns the ring represented by a string of lat lon pairs separated by spaces."
   (fn
-    ([s]
+    ([_s]
      :counter-clockwise)
-    ([s point-order]
+    ([_s point-order]
      point-order)))
 
 (defmethod ring->lat-lon-point-str :counter-clockwise
-  [r & args]
-  (str/join " " (mapcat (fn [p] [(:lat p) (:lon p)]) (:points r))))
+  [r & _args]
+  (string/join " " (mapcat (fn [p] [(:lat p) (:lon p)]) (:points r))))
 
 (defmethod ring->lat-lon-point-str :clockwise
-  [r & args]
-  (str/join " " (mapcat (fn [p] [(:lat p) (:lon p)]) (reverse (:points r)))))
+  [r & _args]
+  (string/join " " (mapcat (fn [p] [(:lat p) (:lon p)]) (reverse (:points r)))))

@@ -12,27 +12,21 @@
    [cmr.umm.dif10.dif10-collection :as dif10-c]
    [cmr.umm.iso-mends.iso-mends-core :as iso-mends]
    [cmr.umm.iso-mends.iso-mends-collection :as iso-mends-c]
-   [cmr.umm.iso-mends.granule :as iso-mends-g]
    [cmr.umm.iso-smap.iso-smap-core :as iso-smap]
    [cmr.umm.iso-smap.iso-smap-collection :as iso-smap-c]
    [cmr.umm.iso-smap.granule :as iso-smap-g]
    [cmr.umm.umm-collection]
    [cmr.umm.umm-granule])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.umm.umm_collection.UmmCollection
            cmr.umm.umm_granule.UmmGranule))
 
-(defmulti item->concept-type
+(defn item->concept-type
   "Returns the concept type of the item"
-  (fn [item]
-    (type item)))
-
-(defmethod item->concept-type UmmCollection
   [item]
-  :collection)
-
-(defmethod item->concept-type UmmGranule
-  [item]
-  :granule)
+  (case (type item)
+    UmmCollection :collection
+    UmmGranule :granule))
 
 (defn validate-granule-concept-xml
   "Validates the granule concept metadata against its xml schema."

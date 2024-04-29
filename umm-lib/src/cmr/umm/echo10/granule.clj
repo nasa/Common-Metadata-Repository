@@ -1,22 +1,20 @@
 (ns cmr.umm.echo10.granule
   "Contains functions for parsing and generating the ECHO10 dialect."
-  (:require [clojure.data.xml :as x]
-            [clojure.java.io :as io]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.echo10.echo10-collection :as c]
-            [cmr.umm.echo10.spatial :as s]
-            [cmr.umm.echo10.granule.temporal :as gt]
-            [cmr.umm.echo10.granule.platform-ref :as p-ref]
-            [cmr.umm.echo10.related-url :as ru]
-            [cmr.umm.echo10.granule.product-specific-attribute-ref :as psa]
-            [cmr.umm.echo10.granule.orbit-calculated-spatial-domain :as ocsd]
-            [cmr.umm.echo10.granule.two-d-coordinate-system :as two-d]
-            [cmr.umm.echo10.granule.measured-parameter :as mp]
-            [cmr.common.xml :as v]
-            [cmr.common.util :as util]
-            [cmr.umm.echo10.echo10-core])
+  (:require
+   [clojure.data.xml :as x]
+   [clojure.java.io :as io]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.echo10.spatial :as s]
+   [cmr.umm.echo10.granule.temporal :as gt]
+   [cmr.umm.echo10.granule.platform-ref :as p-ref]
+   [cmr.umm.echo10.related-url :as ru]
+   [cmr.umm.echo10.granule.product-specific-attribute-ref :as psa]
+   [cmr.umm.echo10.granule.orbit-calculated-spatial-domain :as ocsd]
+   [cmr.umm.echo10.granule.two-d-coordinate-system :as two-d]
+   [cmr.umm.echo10.granule.measured-parameter :as mp]
+   [cmr.common.util :as util]
+   [cmr.umm.echo10.echo10-core])
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn xml-elem->project-refs
@@ -29,7 +27,7 @@
 (defn generate-project-refs
   "Generates the Campaigns element of an ECHO10 XML from a UMM Granule project-refs entry."
   [prefs]
-  (when (not (empty? prefs))
+  (when (seq prefs)
     (x/element :Campaigns {}
                (for [pref prefs]
                  (x/element :Campaign {}
@@ -208,7 +206,7 @@
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
             :keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains
                    platform-refs project-refs cloud-cover related-urls product-specific-attributes
-                   spatial-coverage orbit two-d-coordinate-system measured-parameters pge-version-class]} granule]
+                   spatial-coverage two-d-coordinate-system measured-parameters pge-version-class]} granule]
        (x/emit-str
          (x/element :Granule {}
                     (x/element :GranuleUR {} granule-ur)
@@ -247,4 +245,4 @@
 (defn validate-xml
   "Validates the XML against the Granule ECHO10 schema."
   [xml]
-  (v/validate-xml (io/resource "schema/echo10/Granule.xsd") xml))
+  (cx/validate-xml (io/resource "schema/echo10/Granule.xsd") xml))

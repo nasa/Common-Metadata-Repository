@@ -1,21 +1,19 @@
 (ns cmr.umm.iso-smap.iso-smap-collection
   "Contains functions for parsing and generating the SMAP ISO dialect."
-  (:require [clojure.data.xml :as x]
-            [clojure.java.io :as io]
-            [clojure.string :as s]
-            [clj-time.core :as time]
-            [clj-time.format :as f]
-            [cmr.common.xml :as cx]
-            [cmr.umm.iso-smap.iso-smap-core :as core]
-            [cmr.umm.umm-collection :as c]
-            [cmr.common.xml :as v]
-            [cmr.umm.iso-smap.collection.personnel :as pe]
-            [cmr.umm.iso-smap.collection.org :as org]
-            [cmr.umm.iso-smap.collection.keyword :as kw]
-            [cmr.umm.iso-smap.collection.progress :as progress]
-            [cmr.umm.iso-smap.collection.spatial :as spatial]
-            [cmr.umm.iso-smap.collection.temporal :as t]
-            [cmr.umm.iso-smap.helper :as h])
+  (:require
+   [clojure.data.xml :as x]
+   [clojure.java.io :as io]
+   [clj-time.format :as f]
+   [cmr.common.xml :as cx]
+   [cmr.umm.iso-smap.iso-smap-core :as core]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.iso-smap.collection.personnel :as pe]
+   [cmr.umm.iso-smap.collection.org :as org]
+   [cmr.umm.iso-smap.collection.keyword :as kw]
+   [cmr.umm.iso-smap.collection.progress :as progress]
+   [cmr.umm.iso-smap.collection.spatial :as spatial]
+   [cmr.umm.iso-smap.collection.temporal :as t]
+   [cmr.umm.iso-smap.helper :as h])
   (:import cmr.umm.umm_collection.UmmCollection))
 
 (defn- xml-elem-with-id-tag
@@ -82,7 +80,6 @@
                                :citation :CI_Citation :otherCitationDetails :CharacterString])
         product-elem (xml-elem-with-id-tag id-elems "The ECS Short Name")
         product (xml-elem->Product product-elem version-description)
-        {:keys [short-name version-id]} product
         data-provider-timestamps (xml-elem->DataProviderTimestamps id-elems)
         dataset-id-elem (h/xml-elem-with-title-tag id-elems "DataSetId")
         keywords (kw/xml-elem->keywords xml-struct)]
@@ -247,6 +244,6 @@
 (defn validate-xml
   "Validates the XML against the ISO schema."
   [xml]
-  (v/validate-xml (io/resource "schema/iso_smap/schema.xsd") xml))
+  (cx/validate-xml (io/resource "schema/iso_smap/schema.xsd") xml))
 
 

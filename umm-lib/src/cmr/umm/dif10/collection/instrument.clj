@@ -1,11 +1,11 @@
 (ns cmr.umm.dif10.collection.instrument
   "Functions to parse and generate DIF10 Instrument elements which are part of Platform elements"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.dif.dif-core :as dif]
-            [cmr.umm.dif10.collection.sensor :as sensor]
-            [cmr.umm.dif10.collection.characteristic :as ch]))
+  (:require
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.dif10.collection.sensor :as sensor]
+   [cmr.umm.dif10.collection.characteristic :as ch]))
 
 (defn xml-elem->Instrument
   [instrument-elem]

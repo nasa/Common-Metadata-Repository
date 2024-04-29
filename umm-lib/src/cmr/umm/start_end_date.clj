@@ -1,7 +1,8 @@
 (ns cmr.umm.start-end-date
   "Contains functions to convert UMM temporal structure to start and end dates."
-  (:require [clj-time.core :as t]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clj-time.core :as t]
+   [cmr.umm.umm-collection :as c]))
 
 (defn- single-date-times->range-date-times
   "Convert a list of single date times to a list of range date times"
@@ -42,36 +43,24 @@
     ;; If some are nil, we will return nil instead of an end-date to indicate an open range.
       (first (sort t/after? ending-dates)))))
 
-(defmulti start-date
+(defn start-date
   "Returns start-date of the temporal coverage"
-  (fn [concept-type temporal]
-    concept-type))
+  [concept-type temporal]
+  (case concept-type
+    :collection (range-start-date (temporal->range-date-times temporal))
+    :granule (let [{:keys [range-date-time single-date-time]} temporal]
+               (if single-date-time
+                 single-date-time
+                 (when range-date-time (:beginning-date-time range-date-time))))))
 
-(defmulti end-date
+(defn end-date
   "Returns end-date of the temporal coverage"
-  (fn [concept-type temporal]
-    concept-type))
-
-(defmethod start-date :collection
   [concept-type temporal]
-  (range-start-date (temporal->range-date-times temporal)))
-
-(defmethod end-date :collection
-  [concept-type temporal]
-  ;; Return nil if ends-at-present-flag is true, otherwise returns the latest end_date_time of all the given range_date_times
-  (when-not (:ends-at-present-flag temporal)
-    (range-end-date (temporal->range-date-times temporal))))
-
-(defmethod start-date :granule
-  [concept-type temporal]
-  (let [{:keys [range-date-time single-date-time]} temporal]
-    (if single-date-time
-      single-date-time
-      (when range-date-time (:beginning-date-time range-date-time)))))
-
-(defmethod end-date :granule
-  [concept-type temporal]
-  (let [{:keys [range-date-time single-date-time]} temporal]
-    (if single-date-time
-      single-date-time
-      (when range-date-time (:ending-date-time range-date-time)))))
+  (case concept-type
+    ;; Return nil if ends-at-present-flag is true, otherwise returns the latest end_date_time of all the given range_date_times
+    :collection (when-not (:ends-at-present-flag temporal)
+                  (range-end-date (temporal->range-date-times temporal)))
+    :granule (let [{:keys [range-date-time single-date-time]} temporal]
+               (if single-date-time
+                 single-date-time
+                 (when range-date-time (:ending-date-time range-date-time))))))

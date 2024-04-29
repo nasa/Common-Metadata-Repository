@@ -1,30 +1,29 @@
 (ns cmr.umm.dif10.dif10-collection
   "Contains functions for parsing and generating the DIF dialect."
-  (:require [clojure.data.xml :as x]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [cmr.common.util :as util]
-            [cmr.common.xml :as cx]
-            [cmr.umm.dif10.dif10-core :as dif10-core]
-            [cmr.umm.umm-collection :as c]
-            [cmr.common.xml :as v]
-            [cmr.umm.dif10.collection.temporal :as t]
-            [cmr.umm.dif10.collection.project-element :as pj]
-            [cmr.umm.dif10.collection.related-url :as ru]
-            [cmr.umm.dif10.collection.science-keyword :as sk]
-            [cmr.umm.dif.collection.location-keywords :as lk]
-            [cmr.umm.dif10.collection.spatial :as s]
-            [cmr.umm.dif10.collection.org :as org]
-            [cmr.umm.dif10.collection.platform :as platform]
-            [cmr.umm.dif10.collection.progress :as progress]
-            [cmr.umm.dif10.collection.related-url :as ru]
-            [cmr.umm.dif10.collection.reference :as ref]
-            [cmr.umm.dif10.collection.personnel :as personnel]
-            [cmr.umm.dif10.collection.product-specific-attribute :as psa]
-            [cmr.umm.dif10.collection.metadata-association :as ma]
-            [cmr.umm.dif10.collection.two-d-coordinate-system :as two-d]
-            [cmr.umm.dif.collection.extended-metadata :as em]
-            [cmr.common.date-time-parser :as dtp])
+  (:require
+   [clojure.data.xml :as x]
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [cmr.common.xml :as cx]
+   [cmr.umm.dif10.dif10-core :as dif10-core]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.dif10.collection.temporal :as t]
+   [cmr.umm.dif10.collection.project-element :as pj]
+   [cmr.umm.dif10.collection.related-url :as ru]
+   [cmr.umm.dif10.collection.science-keyword :as sk]
+   [cmr.umm.dif.collection.location-keywords :as lk]
+   [cmr.umm.dif10.collection.spatial :as s]
+   [cmr.umm.dif10.collection.org :as org]
+   [cmr.umm.dif10.collection.platform :as platform]
+   [cmr.umm.dif10.collection.progress :as progress]
+   [cmr.umm.dif10.collection.reference :as ref]
+   [cmr.umm.dif10.collection.personnel :as personnel]
+   [cmr.umm.dif10.collection.product-specific-attribute :as psa]
+   [cmr.umm.dif10.collection.metadata-association :as ma]
+   [cmr.umm.dif10.collection.two-d-coordinate-system :as two-d]
+   [cmr.umm.dif.collection.extended-metadata :as em]
+   [cmr.common.date-time-parser :as dtp])
   (:import cmr.umm.umm_collection.UmmCollection))
 
 (defn- xml-elem->Product
@@ -110,7 +109,7 @@
   "Returns the given product-level-id in DIF10 format."
   [product-level-id]
   (when product-level-id
-    (product-levels (str/replace product-level-id #"Level " ""))))
+    (product-levels (string/replace product-level-id #"Level " ""))))
 
 (extend-protocol dif10-core/UmmToDif10Xml
   UmmCollection
@@ -118,9 +117,9 @@
     ([collection]
      (let [{{:keys [short-name version-id collection-data-type]} :product
             {:keys [insert-time update-time delete-time]} :data-provider-timestamps
-            :keys [entry-title summary purpose temporal organizations science-keywords
+            :keys [entry-title summary purpose organizations science-keywords
                    platforms product-specific-attributes projects related-urls
-                   temporal-keywords personnel collection-associations quality use-constraints
+                   personnel collection-associations quality use-constraints
                    publication-references temporal access-value]} collection]
        (x/emit-str
         (x/element :DIF dif10-header-attributes
@@ -171,4 +170,4 @@
 (defn validate-xml
   "Validates the XML against the DIF schema."
   [xml]
-  (v/validate-xml (io/resource "schema/dif10/dif_v10.2.xsd") xml))
+  (cx/validate-xml (io/resource "schema/dif10/dif_v10.2.xsd") xml))

@@ -1,41 +1,31 @@
 (ns cmr.umm.test.unit.dif10.dif10-collection-tests
   "Tests parsing and generating DIF 10 Collection XML."
-  (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :refer [defspec]]
-            [clj-time.core :as t]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [clojure.string :as s]
-            [cmr.common.joda-time]
-            [cmr.common.date-time-parser :as p]
-            [cmr.common.util :as util]
-            [cmr.umm.test.generators.collection :as coll-gen]
-            [cmr.umm.dif10.dif10-collection :as c]
-            [cmr.umm.echo10.echo10-collection :as echo10-c]
-            [cmr.umm.echo10.echo10-core :as echo10]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.dif10.dif10-core :as dif10]
-            [cmr.spatial.mbr :as m]
-            [cmr.umm.dif10.collection.platform :as platform]
-            [cmr.umm.dif10.collection.personnel :as personnel]
-            [cmr.umm.test.unit.echo10.echo10-collection-tests :as test-echo10]
-            [cmr.umm.collection.product-specific-attribute :as psa]
-            [cmr.common.test.test-check-ext :as ext :refer [checking]])
+  (:require
+   [clj-time.core :as t]
+   [clojure.test :refer [deftest is testing]]
+   [clojure.test.check.properties :refer [for-all]]
+   [clojure.string :as string]
+   [cmr.common.joda-time]
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.test.test-check-ext :refer [defspec checking]]
+   [cmr.umm.test.generators.collection :as coll-gen]
+   [cmr.umm.dif10.dif10-collection :as c]
+   [cmr.umm.echo10.echo10-collection :as echo10-c]
+   [cmr.umm.echo10.echo10-core :as echo10]
+   [cmr.umm.umm-collection :as umm-c]
+   [cmr.umm.dif10.dif10-core :as dif10]
+   [cmr.spatial.mbr :as m]
+   [cmr.umm.dif10.collection.platform :as platform]
+   [cmr.umm.dif10.collection.personnel :as personnel]
+   [cmr.umm.test.unit.echo10.echo10-collection-tests :as test-echo10])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.spatial.mbr.Mbr))
 
+(declare generate-collection-is-valid-xml-test failing-value)
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
            (let [xml (dif10/umm->dif10-xml collection)]
              (empty? (c/validate-xml xml)))))
-
-(comment
-
-
-  ((let [xml (dif10/umm->dif10-xml failing-value)]
-     (c/validate-xml xml))))
-
-
-
 
 (defn- related-urls->expected-parsed
   [related-urls]
@@ -66,7 +56,6 @@
                                  :topic    umm-c/not-provided
                                  :term     umm-c/not-provided})]
     science-keywords))
-
 
 (defn- instrument->expected-parsed
   [instruments]
@@ -148,6 +137,7 @@
         (update-in [:product] (product->expected-parsed short-name version-id long-name))
         umm-c/map->UmmCollection)))
 
+(declare collection)
 (deftest generate-and-parse-collection-test
   (checking "dif10 collection round tripping" 100
             [collection coll-gen/collections]
@@ -214,7 +204,7 @@
   parsed back to UMM. The fields are modified during the creation of the XML to satisfy the schema
   constraints of DIF 10."
   [coll original-coll]
-  (let [{:keys [platforms spatial-coverage product personnel product-specific-attributes]} original-coll]
+  (let [{:keys [platforms spatial-coverage product personnel]} original-coll]
     (-> coll
         (update-in [:platforms] revert-platform-type platforms)
         (update-in [:spatial-coverage] revert-spatial-coverage spatial-coverage)
@@ -231,6 +221,7 @@
       remove-dif10-place-holder-fields
       (rectify-dif10-fields orig-umm)))
 
+(declare generate-and-parse-collection-between-formats-test)
 (defspec generate-and-parse-collection-between-formats-test 100
   (for-all [collection coll-gen/collections]
     (let [xml (dif10/umm->dif10-xml collection)
@@ -694,4 +685,4 @@
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":ISO_Topic_Category,"
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Ancillary_Keyword,"
                  " \"http://gcmd.gsfc.nasa.gov/Aboutus/xml/dif/\":Platform}' is expected.")]
-           (c/validate-xml (s/replace dif10-collection-xml "Platform" "XXXX"))))))
+           (c/validate-xml (string/replace dif10-collection-xml "Platform" "XXXX"))))))

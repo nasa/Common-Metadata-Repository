@@ -1,8 +1,9 @@
 (ns cmr.umm.echo10.granule.orbit-calculated-spatial-domain
   "Contains functions for parsing and generating the ECHO10 dialect for orbit calculated spatial domains."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-granule :as g]))
+  (:require
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-granule :as g]))
 
 (defn xml-elem->OrbitCalculatedSpatialDomain
   [ocsd-elem]
@@ -30,7 +31,7 @@
   "Generates the OrbitCalculatedSpatialDomains element of ECHO10 XML from a UMM Granule
   orbit-calcualated-spatial-domains record."
   [ocsds]
-  (when (not (empty? ocsds))
+  (when (seq ocsds)
     (x/element
       :OrbitCalculatedSpatialDomains {}
       (for [{:keys [orbital-model-name

@@ -1,11 +1,12 @@
 (ns cmr.umm.echo10.related-url
   "Contains functions for parsing and generating the ECHO10 OnlineResources and OnlineAccessURLs
   into UMM related urls."
-  (:require [clojure.string :as string]
-            [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.related-url-helper :as h]))
+  (:require
+   [clojure.string :as string]
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.related-url-helper :as h]))
 
 (def resource-type->related-url-types
   "A mapping of ECHO10 OnlineResource's type to UMM RelatedURL's type and sub-type.
@@ -191,7 +192,7 @@
     (x/element
       :OnlineResources {}
       (for [related-url urls]
-        (let [{:keys [url description type mime-type]} related-url]
+        (let [{:keys [url description mime-type]} related-url]
           (x/element :OnlineResource {}
                      (x/element :URL {} url)
                      (when description (x/element :Description {} description))

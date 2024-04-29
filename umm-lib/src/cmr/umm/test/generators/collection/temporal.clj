@@ -1,10 +1,10 @@
 (ns cmr.umm.test.generators.collection.temporal
   "Provides clojure.test.check generators for use in testing other projects."
-  (:require [clojure.test.check.generators :as gen]
-            [clj-time.core :as t]
-            [cmr.common.test.test-check-ext :as ext-gen]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.collection.temporal :as tc]))
+  (:require
+   [clojure.test.check.generators :as gen]
+   [cmr.common.test.test-check-ext :as ext-gen]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.collection.temporal :as tc]))
 
 ;; temporal attributes
 (def time-types

@@ -1,12 +1,12 @@
 (ns cmr.umm.dif10.collection.org
   "Data Center elements of DIF10 are mapped to umm organization elements."
-  (:require [clojure.data.xml :as x]
-            [clojure.string :as str]
-            [clojure.set :as set]
-            [cmr.common.xml :as cx]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.dif.dif-core :as dif]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.data.xml :as x]
+   [clojure.string :as string]
+   [clojure.set :as set]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (def dif10-umm-org-type-mapping
   "Mapping of organization types between DIF10 and UMM. The keys are DIF10 organization
@@ -35,7 +35,7 @@
   (for [org orgs]
     (x/element :Organization {}
                (x/element :Organization_Type {}
-                          (str/upper-case
+                          (string/upper-case
                             (name ((:type org)
                                    (set/map-invert dif10-umm-org-type-mapping)))))
                (x/element :Organization_Name {}

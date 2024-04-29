@@ -7,7 +7,7 @@
    [clj-time.coerce :as tc]
    [clojure.data.xml :as x]
    [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [clojure.walk]
    [cmr.common-app.api.routes :as routes]
    [cmr.common-app.test.side-api :as side]
@@ -31,9 +31,6 @@
    [cmr.system-int-test.utils.dev-system-util :as dev-util]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]
-   [cmr.umm.dif.dif-collection]
-   [cmr.umm.iso-mends.iso-mends-collection]
-   [cmr.umm.iso-smap.iso-smap-collection]
    [ring.util.codec :as codec]))
 
 (defn enable-writes
@@ -516,12 +513,8 @@
       (when (seq items)
         (into {} items))))))
 
-(defmulti parse-reference-response
-  (fn [echo-compatible? response]
-    echo-compatible?))
-
-(defmethod parse-reference-response :default
-  [_ response]
+(defn- parse-reference-response-default
+  [response]
   (let [parsed (-> response :body x/parse-str)
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
@@ -548,8 +541,8 @@
       :took took
       :facets facets})))
 
-(defmethod parse-reference-response true
-  [_ response]
+(defn- parse-reference-response-true
+  [response]
   (let [parsed (-> response :body x/parse-str)
         references-type (get-in parsed [:attrs :type])
         refs (map (fn [ref-elem]
@@ -562,6 +555,13 @@
     (util/remove-nil-keys
      {:refs refs
       :type references-type})))
+
+(defn parse-reference-response
+  "Parse the reference response."
+  [echo-compatible? response]
+  (if echo-compatible?
+    (parse-reference-response-true response)
+    (parse-reference-response-default response)))
 
 (defn- parse-reference-response-with-headers
   "Parse the response and include headers"

@@ -1,9 +1,9 @@
 (ns cmr.umm.dif10.collection.related-url
   "Provide functions to parse and generate DIF10 Related_URL elements."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.dif.dif-core :as dif]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (defn multimedia->RelatedUrl
   [elem]

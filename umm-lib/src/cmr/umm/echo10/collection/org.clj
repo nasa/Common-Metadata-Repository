@@ -40,23 +40,3 @@
   "Return processing center ignoring other type of organization like archive center"
   [orgs]
   (generate-center :processing-center orgs))
-
-(comment
-  ;;;;;;;;;
-  (x/parse-str cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml)
-  (parse-collection cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml)
-  (xml-elem->Campaigns (x/parse-str cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml))
-  (cx/elements-at-path
-    (x/parse-str cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml)
-    [:ArchiveCenter])
-
-  (xml-elem->Organizations (x/parse-str cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml))
-  (let [orgs (vector (c/map->Organization {:type :archive-center :org-name "ac se"})
-                     (c/map->Organization {:type :processing-center :org-name "pro se"}))
-        arctr (generate-archive-center orgs)
-        prctr (generate-processing-center orgs)]
-    (vector arctr prctr))
-
-  (clojure.repl/dir camel-snake-kebab))
-
-  ;;;;;;;;;;;;

@@ -1,12 +1,13 @@
 (ns cmr.umm.test.generators.granule
   "Provides clojure.test.check generators for use in testing other projects."
-  (:require [clojure.test.check.generators :as gen]
-            [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
-            [cmr.umm.test.generators.collection :as c]
-            [cmr.umm.test.generators.granule.temporal :as gt]
-            [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.test.generators.spatial :as spatial-gen]))
+  (:require
+   [clojure.test.check.generators :as gen]
+   [cmr.common.test.test-check-ext :as ext-gen]
+   [cmr.umm.test.generators.collection :as c]
+   [cmr.umm.test.generators.granule.temporal :as gt]
+   [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.test.generators.spatial :as spatial-gen]))
 
 ;;; granule related
 (def granule-urs

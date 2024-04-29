@@ -5,13 +5,12 @@
    [clojure.data.xml :as x]
    [clojure.java.io :as io]
    [cmr.common.xml :as cx]
-   [cmr.common.xml :as v]
    [cmr.umm.echo10.echo10-core]
    [cmr.umm.iso-smap.granule.related-url :as ru]
    [cmr.umm.iso-smap.granule.spatial :as s]
    [cmr.umm.iso-smap.granule.temporal :as gt]
    [cmr.umm.iso-smap.helper :as h]
-   [cmr.umm.iso-smap.iso-smap-collection :as c]
+   [cmr.umm.iso-smap.iso-smap-core :as iso-smap-core]
    [cmr.umm.umm-granule :as g])
   (:import
    (cmr.umm.umm_granule UmmGranule)))
@@ -230,7 +229,7 @@
                 (x/element :gmd:dateTime {}
                            (x/element :gco:DateTime {} (str production-date-time)))))))))))
 
-(extend-protocol cmr.umm.iso-smap.iso-smap-core/UmmToIsoSmapXml
+(extend-protocol iso-smap-core/UmmToIsoSmapXml
   UmmGranule
   (umm->iso-smap-xml
     ([granule]
@@ -273,4 +272,4 @@
 (defn validate-xml
   "Validates the XML against the SMAP ISO schema."
   [xml]
-  (v/validate-xml (io/resource "schema/iso_smap/schema.xsd") xml))
+  (cx/validate-xml (io/resource "schema/iso_smap/schema.xsd") xml))

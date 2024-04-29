@@ -1,19 +1,18 @@
 (ns cmr.umm.test.generators.collection
   "Provides clojure.test.check generators for use in testing other projects."
-  (:require [clojure.test.check.generators :as gen]
-            [cmr.common.test.test-check-ext :as ext-gen]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.test.generators.collection.temporal :as t]
-            [cmr.umm.test.generators.collection.science-keyword :as sk]
-            [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
-            [cmr.umm.test.generators.spatial :as spatial-gen]
-            [cmr.spatial.test.generators :as sgen]))
+  (:require
+   [clojure.test.check.generators :as gen]
+   [cmr.common.test.test-check-ext :as ext-gen]
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
+   [cmr.umm.test.generators.collection.science-keyword :as sk]
+   [cmr.umm.test.generators.collection.temporal :as t]
+   [cmr.umm.test.generators.spatial :as spatial-gen]
+   [cmr.umm.umm-collection :as c]))
 
 (def optional-short-string (ext-gen/optional (ext-gen/string-ascii 1 10)))
 
 (def optional-url (ext-gen/optional ext-gen/file-url-string))
-
-(def optional-number (ext-gen/optional (gen/choose 1 1000)))
 
 (def short-names
   (ext-gen/string-alpha-numeric 1 10))
@@ -204,7 +203,7 @@
 
 (def orbit-params
   (gen/fmap (fn [[swath-width period incl-angle num-orbits start-clat]]
-              (c/->OrbitParameters swath-width period incl-angle num-orbits (when start-clat)))
+              (c/->OrbitParameters swath-width period incl-angle num-orbits start-clat))
             (gen/tuple (ext-gen/choose-double 1 100)
                        (ext-gen/choose-double 10 7200)
                        (ext-gen/choose-double -90 90)
@@ -262,9 +261,8 @@
 
 (def collections
   (gen/fmap (fn [[attribs proc-org archive-org dist-org]]
-              (let [product (:product attribs)]
-                (c/map->UmmCollection (assoc attribs
-                                             :organizations (seq (remove nil? (flatten [proc-org archive-org dist-org])))))))
+              (c/map->UmmCollection (assoc attribs
+                                           :organizations (seq (remove nil? (flatten [proc-org archive-org dist-org]))))))
             (gen/tuple
               (gen/hash-map
                 :entry-title entry-titles

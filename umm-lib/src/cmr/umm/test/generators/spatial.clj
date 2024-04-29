@@ -1,12 +1,12 @@
 (ns cmr.umm.test.generators.spatial
-  (:require [cmr.spatial.test.generators :as sgen]
-            [clojure.test.check.generators :as gen]
-            [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.line-string :as l]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.umm-spatial :as umm-s]))
-
+  (:require
+   [clojure.test.check.generators :as gen]
+   [cmr.common.test.test-check-ext :as ext-gen]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (def longitude
   (ext-gen/choose-double -180 180))

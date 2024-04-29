@@ -1,26 +1,25 @@
 (ns cmr.umm.iso-mends.iso-mends-collection
   "Contains functions for parsing and generating the MENDS ISO dialect."
-  (:require [clojure.data.xml :as x]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [clj-time.core :as time]
-            [cmr.common.util :as util]
-            [cmr.common.xml :as cx]
-            [cmr.umm.iso-mends.iso-mends-core :as core]
-            [cmr.umm.umm-collection :as c]
-            [cmr.common.xml :as v]
-            [cmr.umm.iso-mends.collection.related-url :as ru]
-            [cmr.umm.iso-mends.collection.personnel :as pe]
-            [cmr.umm.iso-mends.collection.org :as org]
-            [cmr.umm.iso-mends.collection.temporal :as t]
-            [cmr.umm.iso-mends.collection.platform :as platform]
-            [cmr.umm.iso-mends.collection.keyword :as k]
-            [cmr.umm.iso-mends.collection.project-element :as proj]
-            [cmr.umm.iso-mends.collection.associated-difs :as dif]
-            [cmr.umm.iso-mends.collection.collection-association :as ca]
-            [cmr.umm.iso-mends.collection.product-specific-attribute :as psa]
-            [cmr.umm.iso-mends.collection.helper :as h]
-            [cmr.umm.iso-mends.spatial :as sp])
+  (:require
+   [clojure.data.xml :as x]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [cmr.common.util :as util]
+   [cmr.common.xml :as cx]
+   [cmr.umm.iso-mends.iso-mends-core :as core]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.iso-mends.collection.related-url :as ru]
+   [cmr.umm.iso-mends.collection.personnel :as pe]
+   [cmr.umm.iso-mends.collection.org :as org]
+   [cmr.umm.iso-mends.collection.temporal :as t]
+   [cmr.umm.iso-mends.collection.platform :as platform]
+   [cmr.umm.iso-mends.collection.keyword :as k]
+   [cmr.umm.iso-mends.collection.project-element :as proj]
+   [cmr.umm.iso-mends.collection.associated-difs :as dif]
+   [cmr.umm.iso-mends.collection.collection-association :as ca]
+   [cmr.umm.iso-mends.collection.product-specific-attribute :as psa]
+   [cmr.umm.iso-mends.collection.helper :as h]
+   [cmr.umm.iso-mends.spatial :as sp])
   (:import cmr.umm.umm_collection.UmmCollection))
 
 (defn- xml-elem->Product
@@ -75,7 +74,6 @@
   [xml-struct]
   (let [id-elem (core/id-elem xml-struct)
         product (xml-elem->Product id-elem)
-        {:keys [version-id]} product
         data-provider-timestamps (xml-elem->DataProviderTimestamps id-elem)]
     (c/map->UmmCollection
       {:entry-title (cx/string-at-path id-elem [:citation :CI_Citation :title :CharacterString])
@@ -94,8 +92,6 @@
        :product-specific-attributes (psa/xml-elem->ProductSpecificAttributes xml-struct)
        :collection-associations (ca/xml-elem->CollectionAssociations id-elem)
        :projects (proj/xml-elem->Projects xml-struct)
-       ;; TwoDCoordinateSystems is not fully supported as documented in CMR-693
-       ; :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
        :related-urls (ru/xml-elem->related-urls xml-struct)
        :personnel (pe/xml-elem->personnel xml-struct)
        :spatial-coverage (sp/xml-elem->SpatialCoverage xml-struct)
@@ -269,8 +265,8 @@
             restriction-flag :access-value
             {:keys [insert-time update-time revision-date-time]} :data-provider-timestamps
             :keys [organizations spatial-keywords temporal-keywords temporal science-keywords
-                   platforms product-specific-attributes collection-associations projects
-                   two-d-coordinate-systems related-urls spatial-coverage summary purpose
+                   platforms collection-associations projects
+                   related-urls spatial-coverage summary purpose
                    associated-difs personnel metadata-language use-constraints
                    product-specific-attributes]} collection
            archive-center (org/get-organization-name :archive-center organizations)
@@ -343,4 +339,4 @@
 (defn validate-xml
   "Validates the XML against the ISO schema."
   [xml]
-  (v/validate-xml (io/resource "schema/iso_mends/schema/1.0/ISO19115-2_EOS.xsd") xml))
+  (cx/validate-xml (io/resource "schema/iso_mends/schema/1.0/ISO19115-2_EOS.xsd") xml))

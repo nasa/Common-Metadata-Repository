@@ -1,24 +1,22 @@
 (ns cmr.umm.test.unit.iso-smap.iso-smap-collection-tests
   "Tests parsing and generating SMAP ISO Collection XML."
-  (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [clojure.string :as s]
-            [clojure.java.io :as io]
-            [cmr.common.joda-time]
-            [cmr.common.date-time-parser :as p]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.umm.test.generators.collection :as coll-gen]
-            [cmr.umm.iso-smap.iso-smap-collection :as c]
-            [cmr.umm.echo10.echo10-collection :as echo10-c]
-            [cmr.umm.echo10.echo10-core :as echo10]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.iso-smap.iso-smap-core :as iso]
-            [clj-time.format :as f]
-            [cmr.umm.test.unit.echo10.echo10-collection-tests :as test-echo10]
-            [cmr.common.test.test-check-ext :as ext :refer [checking]]))
+  (:require
+   [clj-time.format :as f]
+   [clojure.test :refer [deftest is testing]]
+   [clojure.test.check.properties :refer [for-all]]
+   [clojure.string :as string]
+   [clojure.java.io :as io]
+   [cmr.common.joda-time]
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.test.test-check-ext :refer [defspec checking]]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.umm.test.generators.collection :as coll-gen]
+   [cmr.umm.iso-smap.iso-smap-collection :as c]
+   [cmr.umm.echo10.echo10-collection :as echo10-c]
+   [cmr.umm.echo10.echo10-core :as echo10]
+   [cmr.umm.umm-collection :as umm-c]
+   [cmr.umm.iso-smap.iso-smap-core :as iso]
+   [cmr.umm.test.unit.echo10.echo10-collection-tests :as test-echo10]))
 
 (defn- spatial-coverage->expected-parsed
   "Returns the expected parsed spatial-coverage for the given spatial-coverage"
@@ -72,8 +70,7 @@
   "Modifies the UMM record for testing SMAP ISO. ISO contains a subset of the total UMM fields
   so certain fields are removed for comparison of the parsed record"
   [coll]
-  (let [{{:keys [short-name long-name version-id]} :product
-         :keys [entry-title spatial-coverage associated-difs]} coll
+  (let [{:keys [associated-difs]} coll
         range-date-times (get-in coll [:temporal :range-date-times])
         single-date-times (get-in coll [:temporal :single-date-times])
         temporal (if (seq range-date-times)
@@ -86,8 +83,6 @@
                                            :periodic-date-times []})))
         personnel (collection->personnel coll)
         organizations (seq (filter #(not (= :distribution-center (:type %))) (:organizations coll)))
-        org-name (some :org-name organizations)
-        contact-name (or org-name "undefined")
         associated-difs (when (first associated-difs) [(first associated-difs)])]
     (-> coll
         ;; SMAP ISO does not have collection-data-type
@@ -140,6 +135,7 @@
         (dissoc :publication-references)
         umm-c/map->UmmCollection)))
 
+(declare generate-collection-is-valid-xml-test generate-and-parse-collection-test)
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
     (let [xml (iso/umm->iso-smap-xml collection)]
@@ -154,6 +150,7 @@
           expected-parsed (umm->expected-parsed-smap-iso collection)]
       (= parsed expected-parsed))))
 
+(declare collection)
 (deftest generate-and-parse-collection-between-formats-test
   (checking "iso smap parse between formats" 100
     [collection coll-gen/collections]
@@ -272,4 +269,4 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevel, "
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
-           (c/validate-xml (s/replace sample-collection-xml "fileIdentifier" "XXXX"))))))
+           (c/validate-xml (string/replace sample-collection-xml "fileIdentifier" "XXXX"))))))

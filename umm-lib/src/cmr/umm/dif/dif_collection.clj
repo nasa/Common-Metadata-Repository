@@ -1,27 +1,28 @@
 (ns cmr.umm.dif.dif-collection
   "Contains functions for parsing and generating the DIF dialect."
-  (:require [clojure.data.xml :as x]
-            [clojure.java.io :as io]
-            [cmr.common.util :as util]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.collection.entry-id :as eid]
-            [cmr.common.xml :as v]
-            [camel-snake-kebab.core :as csk]
-            [cmr.umm.dif.collection.project-element :as pj]
-            [cmr.umm.dif.collection.related-url :as ru]
-            [cmr.umm.dif.collection.science-keyword :as sk]
-            [cmr.umm.dif.collection.location-keywords :as lk]
-            [cmr.umm.dif.collection.org :as org]
-            [cmr.umm.dif.collection.progress :as progress]
-            [cmr.umm.dif.collection.temporal :as t]
-            [cmr.umm.dif.collection.product-specific-attribute :as psa]
-            [cmr.umm.dif.collection.collection-association :as ca]
-            [cmr.umm.dif.collection.platform :as platform]
-            [cmr.umm.dif.collection.spatial-coverage :as sc]
-            [cmr.umm.dif.collection.extended-metadata :as em]
-            [cmr.umm.dif.collection.personnel :as personnel]
-            [cmr.common.date-time-parser :as dtp])
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clojure.data.xml :as x]
+   [clojure.java.io :as io]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.util :as util]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm.dif.collection.collection-association :as ca]
+   [cmr.umm.dif.collection.extended-metadata :as em]
+   [cmr.umm.dif.collection.location-keywords :as lk]
+   [cmr.umm.dif.collection.org :as org]
+   [cmr.umm.dif.collection.personnel :as personnel]
+   [cmr.umm.dif.collection.platform :as platform]
+   [cmr.umm.dif.collection.product-specific-attribute :as psa]
+   [cmr.umm.dif.collection.progress :as progress]
+   [cmr.umm.dif.collection.project-element :as pj]
+   [cmr.umm.dif.collection.related-url :as ru]
+   [cmr.umm.dif.collection.science-keyword :as sk]
+   [cmr.umm.dif.collection.spatial-coverage :as sc]
+   [cmr.umm.dif.collection.temporal :as t]
+   [cmr.umm.dif.dif-core :as dif-core])
   (:import cmr.umm.umm_collection.UmmCollection))
 
 (defn- get-short-name
@@ -155,7 +156,7 @@
                      :when v]
                  (x/element dif-tag {} v)))))
 
-(extend-protocol cmr.umm.dif.dif-core/UmmToDifXml
+(extend-protocol dif-core/UmmToDifXml
   UmmCollection
   (umm->dif-xml
     ([collection]
@@ -229,4 +230,4 @@
 (defn validate-xml
   "Validates the XML against the DIF schema."
   [xml]
-  (v/validate-xml (io/resource "schema/dif/dif_v9.9.3.xsd") xml))
+  (cx/validate-xml (io/resource "schema/dif/dif_v9.9.3.xsd") xml))

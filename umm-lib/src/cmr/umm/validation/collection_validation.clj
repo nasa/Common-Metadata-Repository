@@ -1,18 +1,19 @@
 (ns cmr.umm.validation.collection-validation
   "Defines validations for UMM collections."
-  (:require [clj-time.core :as t]
-            [cmr.common.validations.core :as v]
-            [cmr.umm.validation.validation-utils :as vu]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.spatial.validation :as sv]
-            [cmr.umm.validation.validation-helper :as h]
-            [cmr.umm.validation.product-specific-attribute :as psa]))
+  (:require
+   [clj-time.core :as t]
+   [cmr.common.validations.core :as v]
+   [cmr.umm.validation.validation-utils :as vu]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.spatial.validation :as sv]
+   [cmr.umm.validation.validation-helper :as h]
+   [cmr.umm.validation.product-specific-attribute :as psa]))
 
 (defn orbit-collection-has-orbit-parameters
   "Validates the existence of orbit parameters when the granule spatial representation is orbit"
   [field-path spatial-coverage-ref]
   (let [{:keys [granule-spatial-representation orbit-parameters]} spatial-coverage-ref]
-    (if (and (= granule-spatial-representation :orbit) (nil? orbit-parameters))
+    (when (and (= granule-spatial-representation :orbit) (nil? orbit-parameters))
       {field-path
        [(str "Orbit Parameters must be defined for a collection "
              "whose granule spatial representation is ORBIT.")]})))

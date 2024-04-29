@@ -1,10 +1,10 @@
 (ns cmr.umm.dif.collection.science-keyword
   "Provide functions to parse and generate DIF Parameters elements."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.dif.dif-core :as dif]
-            [cmr.umm.generator-util :as gu]))
+  (:require
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.generator-util :as gu]))
 
 (defn xml-elem->ScienceKeyword
   [science-keyword-elem]

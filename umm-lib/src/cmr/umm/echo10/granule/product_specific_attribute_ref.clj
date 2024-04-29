@@ -1,9 +1,9 @@
 (ns cmr.umm.echo10.granule.product-specific-attribute-ref
   "Contains functions for parsing and generating the ECHO10 dialect for product specific attribute refs"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-granule :as g]))
-
+  (:require
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-granule :as g]))
 
 (defn xml-elem->ProductSpecificAttributeRef
   [psa-elem]
@@ -17,12 +17,12 @@
                   (cx/elements-at-path
                     granule-element
                     [:AdditionalAttributes :AdditionalAttribute]))]
-    (when (not (empty? psas))
+    (when (seq psas)
       psas)))
 
 (defn generate-product-specific-attribute-refs
   [psas]
-  (when (not (empty? psas))
+  (when (seq psas)
     (x/element
       :AdditionalAttributes {}
       (for [{:keys [name values]} psas]
@@ -31,4 +31,3 @@
                    (x/element :Values {}
                               (for [value values]
                                 (x/element :Value {} value))))))))
-

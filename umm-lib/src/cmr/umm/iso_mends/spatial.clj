@@ -1,22 +1,18 @@
 (ns cmr.umm.iso-mends.spatial
   "Functions for extracting spatial extent information from an
   ISO-MENDS format XML document."
-  (:require [clojure.data.xml :as x]
-            [clojure.string :as str]
-            [camel-snake-kebab.core :as csk]
-            [cmr.common.util :as util]
-            [cmr.common.xml :as cx]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.encoding.gmd :as gmd]
-            [cmr.spatial.line-string :as ls]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.relations :as r]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.iso-mends.iso-mends-core :as core]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.iso-mends.collection.helper :as h]))
+  (:require
+   [clojure.data.xml :as x]
+   [clojure.string :as str]
+   [camel-snake-kebab.core :as csk]
+   [cmr.common.xml :as cx]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.encoding.gmd :as gmd]
+   [cmr.spatial.relations :as r]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.iso-mends.iso-mends-core :as core]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.umm.iso-mends.collection.helper :as h]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing XML

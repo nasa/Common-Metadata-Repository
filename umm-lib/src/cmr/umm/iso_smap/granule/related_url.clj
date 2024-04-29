@@ -1,11 +1,11 @@
 (ns cmr.umm.iso-smap.granule.related-url
   "Contains functions for parsing and generating SMAP ISO OnlineResources and UMM related urls."
-  (:require [clojure.string :as s]
-            [clojure.set :as set]
-            [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.iso-smap.helper :as h]))
+  (:require
+   [clojure.set :as set]
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.iso-smap.helper :as h]))
 
 (def resource-type->related-url-type
   "A mapping of SMAP ISO OnlineResource's type to UMM RelatedURL's type.

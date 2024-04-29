@@ -1,11 +1,10 @@
 (ns cmr.umm.iso-mends.granule
   "Contains functions for parsing and generating the MENDS ISO dialect."
-  (:require [clojure.data.xml :as x]
-            [clojure.java.io :as io]
-            [cmr.common.xml :as cx]
-            [cmr.umm.iso-mends.iso-mends-core :as core]
-            [cmr.umm.umm-granule :as c]
-            [cmr.common.xml :as v])
+  (:require
+   [clojure.data.xml :as x]
+   [clojure.java.io :as io]
+   [cmr.common.xml :as cx]
+   [cmr.umm.iso-mends.iso-mends-core :as core])
   (:import cmr.umm.umm_granule.UmmGranule))
 
 
@@ -22,5 +21,5 @@
 (defn validate-xml
   "Validates the XML against the ISO schema."
   [xml]
-  (v/validate-xml (io/resource "schema/iso_mends/schema/1.0/ISO19115-2_EOS.xsd") xml))
+  (cx/validate-xml (io/resource "schema/iso_mends/schema/1.0/ISO19115-2_EOS.xsd") xml))
 

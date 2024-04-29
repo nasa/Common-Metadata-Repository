@@ -1,7 +1,8 @@
 (ns cmr.umm.collection.temporal
   "Provides functions for collection temporal coverage construction"
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [cmr.common.services.errors :as errors]
+   [cmr.umm.umm-collection :as c]))
 
 ;; default temporal date times map
 (def temporal-date-times {:range-date-times []

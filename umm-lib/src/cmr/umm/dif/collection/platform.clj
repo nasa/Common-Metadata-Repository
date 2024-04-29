@@ -1,8 +1,7 @@
 (ns cmr.umm.dif.collection.platform
   (:require [clojure.data.xml :as x]
             [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.dif.dif-core :as dif]))
+            [cmr.umm.umm-collection :as c]))
 
 (defn xml-elem->Instrument
   [elem]

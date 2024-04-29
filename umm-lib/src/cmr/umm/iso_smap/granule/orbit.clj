@@ -6,7 +6,7 @@
    [clojure.set :as set]
    [clojure.string :as str]
    [cmr.common.date-time-parser :as date-time-parser]
-   [cmr.common.log :refer [info debug error]]
+   [cmr.common.log :refer [info]]
    [cmr.common.util :as util]
    [cmr.common.validations.core :as v]
    [cmr.common.xml :as cx]
@@ -15,6 +15,7 @@
    [cmr.spatial.validation :as sv]
    [cmr.umm.iso-smap.helper :as h]
    [cmr.umm.umm-granule :as g])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import (cmr.umm.umm_granule Orbit)))
 
 (defn- start-end-direction
@@ -31,7 +32,7 @@
     (= "D" direction) :desc
     (= :asc direction) "A"
     (= :desc direction) "D"
-    :default direction))
+    :else direction))
 
 (def orbit-validations
   [{:ascending-crossing [v/required v/validate-number (v/within-range -180.0 180.0)]
@@ -65,7 +66,7 @@
 (extend-protocol sv/SpatialValidation
   nil
   (validate
-    [record]
+    [_record]
     [(str "Unsupported gmd:description inside gmd:EX_GeographicDescription - "
           "The supported ones are: OrbitParameters and OrbitCalculatedSpatialDomains")]))
 
@@ -104,7 +105,7 @@
   [field value]
   (try
     (Integer/parseInt value)
-    (catch Exception e
+    (catch Exception _e
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not an integer." field value))
       value)))
 
@@ -115,17 +116,17 @@
   [field value]
   (try
     (date-time-parser/parse-datetime value)
-    (catch Exception e
+    (catch Exception _e
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not a datetime." field value))
       value)))
 
-(defn- parse-double
+(defn- oribt-parse-double
   "Coerce's string to double, catches exceptions and logs error message and returns nil if
   value is not parseable."
   [field value]
   (try
     (Double/parseDouble value)
-    (catch Exception e
+    (catch Exception _e
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not an double." field value))
       ;; We return nil here instead of value because within-range validation can't handle comparing a
       ;; string to a double.
@@ -180,10 +181,10 @@
   "Update values in the orbit-str-map with the parsed values."
   [orbit-str-map]
   (-> orbit-str-map
-      (update :ascending-crossing #(parse-double :ascending-crossing %))
-      (update :start-lat #(parse-double :start-lat %))
+      (update :ascending-crossing #(oribt-parse-double :ascending-crossing %))
+      (update :start-lat #(oribt-parse-double :start-lat %))
       (update :start-direction #(convert-direction %))
-      (update :end-lat #(parse-double :end-lat %))
+      (update :end-lat #(oribt-parse-double :end-lat %))
       (update :end-direction #(convert-direction %))))
 
 (defn- parse-values-for-ocsd
@@ -193,7 +194,7 @@
       (update :orbit-number #(parse-integer :orbit-number %))
       (update :start-orbit-number #(parse-integer :start-orbit-number %))
       (update :stop-orbit-number #(parse-integer :stop-orbit-number %))
-      (update :equator-crossing-longitude #(parse-double :equator-crossing-longitude %))
+      (update :equator-crossing-longitude #(oribt-parse-double :equator-crossing-longitude %))
       (update :equator-crossing-date-time #(parse-datetime :equator-crossing-date-time %))))
 
 (defmethod gmd/encode cmr.umm.umm_granule.Orbit

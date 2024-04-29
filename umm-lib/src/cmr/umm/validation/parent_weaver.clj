@@ -2,12 +2,9 @@
   "Provides functions to thread together a granule and collection parent objects for validation.
   It weaves together the objects so matching items within the granule and collection are combined"
   (:require
-   [clojure.string :as str]
-   [cmr.common.util :as u]
-   [cmr.umm.umm-collection :as c]
-   [cmr.umm.umm-granule :as g])
+   [cmr.common.util :as u])
   (:import
-   (cmr.umm.umm_granule InstrumentRef PlatformRef SensorRef TwoDCoordinateSystem UmmGranule)))
+   (cmr.umm.umm_granule InstrumentRef PlatformRef SensorRef UmmGranule)))
 
 (defprotocol ParentWeaver
   (set-parent [obj parent] "Sets the parent attribute on this object with the given parent"))

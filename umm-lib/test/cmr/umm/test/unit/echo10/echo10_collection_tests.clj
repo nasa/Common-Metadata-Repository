@@ -3,9 +3,8 @@
   (:require
    ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
    ; [clojure.test.check.clojure-test :refer [defspec]]
-   [clojure.string :as s]
-   [clojure.test :refer :all]
-   [clojure.test.check.generators :as gen]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is testing]]
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.date-time-parser :as p]
    [cmr.common.joda-time]
@@ -22,7 +21,7 @@
   (let [{:keys [type title]} related-url]
     (case type
       ;; For resource type the title becomes description plus resource-type
-      "VIEW RELATED INFORMATION" (assoc related-url :title (s/trim (str title " (USER SUPPORT)")))
+      "VIEW RELATED INFORMATION" (assoc related-url :title (string/trim (str title " (USER SUPPORT)")))
       related-url)))
 
 (defn umm-related-urls->expected-related-urls
@@ -61,8 +60,7 @@
   "Modifies the UMM record for testing ECHO10. ECHO10 contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
-  (let [{{:keys [short-name long-name version-id]} :product} coll
-        related-urls (umm-related-urls->expected-related-urls (:related-urls coll))
+  (let [related-urls (umm-related-urls->expected-related-urls (:related-urls coll))
         personnel (not-empty (umm-personnedl->expected-personnel (:personnel coll)))]
     (-> coll
         ;; ECHO10 does not support Organizations of distribution-center which only exists in DIF.
@@ -82,6 +80,7 @@
         (dissoc :publication-references)
         umm-c/map->UmmCollection)))
 
+(declare generate-collection-is-valid-xml-test generate-and-parse-collection-test)
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
     (let [xml (echo10/umm->echo10-xml collection)]
@@ -91,8 +90,7 @@
 
 (defspec generate-and-parse-collection-test 100
   (for-all [collection coll-gen/collections]
-    (let [{{:keys [short-name version-id]} :product} collection
-          xml (echo10/umm->echo10-xml collection)
+    (let [xml (echo10/umm->echo10-xml collection)
           parsed (c/parse-collection xml)
           expected-parsed (umm->expected-parsed-echo10 collection)]
       (= parsed expected-parsed))))
@@ -559,13 +557,4 @@
             "Exception while parsing invalid XML: Line 4 - cvc-type.3.1.3: The value 'XXXX-12-31T19:00:00-05:00' of element 'InsertTime' is not valid."
             "Exception while parsing invalid XML: Line 5 - cvc-datatype-valid.1.2.1: 'XXXX-12-31T19:00:00-05:00' is not a valid value for 'dateTime'."
             "Exception while parsing invalid XML: Line 5 - cvc-type.3.1.3: The value 'XXXX-12-31T19:00:00-05:00' of element 'LastUpdate' is not valid."]
-           (c/validate-xml (s/replace valid-collection-xml "1999" "XXXX"))))))
-
-(comment
-  ;;;;;;;;;;;;;
-  (let [collection (last (gen/sample coll-gen/collections 1))
-        xml (echo10/umm->echo10-xml collection)
-        parsed (c/parse-collection xml)]
-    (println (= parsed collection))
-    (clojure.data/diff parsed collection)))
-  ;;;;;;;;;;;;'
+           (c/validate-xml (string/replace valid-collection-xml "1999" "XXXX"))))))

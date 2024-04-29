@@ -1,8 +1,9 @@
 (ns cmr.umm.dif.collection.collection-association
   "Provide functions to parse and generate DIF collection associations."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]))
+  (:require
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]))
 
 (defn xml-elem->CollectionAssociations
   [collection-element]

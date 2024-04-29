@@ -1,16 +1,15 @@
 (ns cmr.umm.echo10.spatial
   "Contains functions for convert spatial to and parsing from ECHO10 XML."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.cartesian-ring :as cr]
-            [cmr.umm.umm-spatial :as umm-s]
-            [cmr.umm.umm-granule :as g]
-            [cmr.common.util :as util]))
+  (:require
+   [clojure.data.xml :as x]
+   [cmr.common.xml :as cx]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.polygon :as poly]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.umm.umm-granule :as g]
+   [cmr.common.util :as util]))
 
 (defmulti parse-geometry
   "Parses a geometry element based on the tag of the element."
@@ -79,7 +78,7 @@
 
 (defn generate-orbit-xml
   [orbit]
-  (when-let [{:keys [ascending-crossing start-lat start-direction end-lat end-direction center-point]}
+  (when-let [{:keys [ascending-crossing start-lat start-direction end-lat end-direction]}
              orbit]
     (x/element :Orbit {}
                (x/element :AscendingCrossing {} (util/double->string ascending-crossing))
