@@ -38,7 +38,7 @@
   "Converts a concept map into an elastic document suitable for bulk indexing."
   [context concept]
   (try
-    (let [{:keys [concept-id revision-id]} concept
+    (let [{:keys [concept-id _revision-id]} concept
           type (concept->type concept)
           elastic-version revision-id
           index-name (access-control-index/concept-type->index-name type)
