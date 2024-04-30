@@ -14,6 +14,18 @@
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-lib-g]))
 
+
+(defn- get-size-in-mb
+  "Get size in megabytes based on the size-unit."
+  [size size-unit]
+  (condp = size-unit
+    "KB" (double (/ size 1024))
+    "MB" size
+    "GB" (* size 1024)
+    "TB" (* size 1024 1024)
+    "PB" (* size 1024 1024 1024)
+    0.0))
+
 (defn- expected-qa-flags
   "Converts generated qa-flags to what is expected by using the sanitized flag values."
   [qa-flags]
@@ -67,6 +79,14 @@
       (as-> updated-umm (if (:project-refs updated-umm)
                           (update updated-umm :project-refs #(conj % umm-spec-util/not-provided))
                           updated-umm))
+      (as-> updated-umm (if (:data-granule updated-umm)
+                          (let [size (get-in updated-umm [:data-granule :size])
+                                size-unit (get-in updated-umm [:data-granule :size-unit])
+                                new-size (get-size-in-mb size size-unit)]
+                            (-> updated-umm
+                                (assoc-in [:data-granule :size] new-size)
+                                (assoc-in [:data-granule :size-unit] "MB")))
+                          updated-umm))
       umm-lib-g/map->UmmGranule))
 
 (def expected-sample-granule
@@ -92,7 +112,7 @@
                                 {:value "E51569BF48DD0FD0640C6503A46D4753"
                                  :algorithm "MD5"})
                     :size-unit "MB"
-                    :size 0.023
+                    :size (+ (double (/ 23552 (* 1024 1024))) (double (/ 11 1024)))
                     :format "ZIP"
                     :files [(umm-lib-g/map->File
                              {:name "GranuleFileName1"
