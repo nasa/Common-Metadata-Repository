@@ -72,17 +72,15 @@
    so it is presumed to be in common use."
   [handler]
   (fn [request]
-    (if-not (config/add-hash-headers)
-      (handler request)
-      (let [response (handler request)
+    (let [response (handler request)
             ;; This is run after all responses
-            text (str (:body response))
-            body-md5 (digest/md5 text)
-            body-sha1 (digest/sha-1 text)
-            updated-response (-> response
-                                 (assoc-in [:headers "Content-MD5"] body-md5)
-                                 (assoc-in [:headers "Content-SHA1"] body-sha1))]
-        updated-response))))
+          text (str (:body response))
+          body-md5 (digest/md5 text)
+          body-sha1 (digest/sha-1 text)
+          updated-response (-> response
+                               (assoc-in [:headers "Content-MD5"] body-md5)
+                               (assoc-in [:headers "Content-SHA1"] body-sha1))]
+      updated-response)))
 
 ;; log-ring-request should provide the same info as a standard NCSA Log
 ;; ; 127.0.0.1 - - [2023-12-27 19:04:01.676] "GET /collections?keyword=any HTTP/1.1" 200 112 "-" "curl/8.1.2" 296
@@ -120,7 +118,7 @@
    (log-ring-request handler :ignore-id))
   ([handler id]
    (fn [request]
-     (if-not (config/custom-request-log)
+     (if-not (config/enable-enhanced-http-logging)
        (handler request)
        (let [start (tk/now-ms)
              now (dtp/clj-time->date-time-str (tk/now))
@@ -152,8 +150,6 @@
                              "user-agent" (get-in request [:headers "user-agent"] "unknown")
                              ;; do this last
                              "log-cost-ms" (- (tk/now-ms) start)))]
-         ;; send the log to standard error in the same way that the jetty access log does
-         (when (config/custom-request-log-error) (.println *err* (json/generate-string note)))
          (report (json/generate-string note))
          response)))))
 
