@@ -43,6 +43,13 @@
     (assoc related-url :Subtype changed-sub-type)
     related-url))
 
+(defn- remove-new-subtype
+  "Remove the new Subtype \"BROWSE IMAGE SOURCE\" in related-url when migrating from 1.6.6 to 1.6.5."
+  [related-url]
+  (if (= "BROWSE IMAGE SOURCE" (:Subtype related-url))
+    (dissoc related-url :Subtype)
+    related-url))
+
 (defn- v1-5-related-url-subtype->v1-4-related-url-subtype
   "Migrate v1.5 related url Subtype to v1.4 related url Subtype"
   [related-url]
@@ -283,3 +290,15 @@
   [_context g & _]
   (-> g
       (m-spec/update-version :granule "1.6.5")))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.6" "1.6.5"]
+  ;; Remove the new subtype in each RelatedUrl.
+  [_context g & _]
+  (-> g
+      (util/update-in-each [:RelatedUrls] remove-new-subtype)
+      (m-spec/update-version :granule "1.6.5")))
+
+(defmethod interface/migrate-umm-version [:granule "1.6.5" "1.6.6"]
+  [_context g & _]
+  (-> g
+      (m-spec/update-version :granule "1.6.6")))
