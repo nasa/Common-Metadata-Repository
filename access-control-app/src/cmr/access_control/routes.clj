@@ -8,6 +8,7 @@
    [cmr.access-control.api.routes :as api-routes]
    [cmr.access-control.site.routes :as site-routes]
    [cmr.acl.core :as acl]
+   [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.site.pages :as common-pages]
    [cmr.common.api.context :as context]
@@ -33,4 +34,6 @@
       api-errors/invalid-url-encoding-handler
       api-errors/exception-handler
       common-routes/pretty-print-response-handler
-      params/wrap-params))
+      params/wrap-params
+      req-log/add-body-hashes
+      req-log/log-ring-request))
