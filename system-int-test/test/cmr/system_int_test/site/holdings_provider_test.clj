@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.site.holdings-provider-test
   "Integration tests for provider holdings page."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [clojure.string :refer [trim]]
    [cmr.mock-echo.client.echo-util :as echo]
    [cmr.system-int-test.data2.core :as data]

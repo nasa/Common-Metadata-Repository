@@ -2,7 +2,7 @@
   "Integration tests for validating parameter types.  Performed at the integration
   level due to the tendency for pre-validation code to make assumptions about the
   shape of parameters."
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [cmr.system-int-test.utils.search-util :as search]))
 
 (defn- is-bad-request?

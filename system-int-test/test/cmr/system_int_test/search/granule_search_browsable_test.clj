@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-search-browsable-test
   "Integration tests for searching by browsable"
   (:require 
-    [clojure.test :refer :all]
+    [clojure.test :refer [are deftest is testing use-fixtures]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]

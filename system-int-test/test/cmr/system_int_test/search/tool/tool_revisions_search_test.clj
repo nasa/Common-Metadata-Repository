@@ -78,6 +78,7 @@
         tl3 (tool/ingest-tool tl3-concept)]
     (index/wait-until-indexed)
     (testing "search tools for all revisions"
+      (declare tools params)
       (are3 [tools params]
         (do
           ;; find references with all revisions

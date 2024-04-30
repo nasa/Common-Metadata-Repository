@@ -5,8 +5,7 @@
    [clj-http.client :as client]
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [clojure.test :refer :all]
-   [cmr.common.concepts :as cu]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.spatial.line-string :as l]
@@ -43,7 +42,7 @@
     (ingest/create-provider {:provider-guid "provguid2" :provider-id "PROV2"})))
 
 (deftest simple-search-test-for-gran-echo-1.6.3-schema
-  (let [coll-7340 (d/ingest-concept-with-metadata-file "CMR-7340/Coll-CMR-7340.echo10"
+  (let [_coll-7340 (d/ingest-concept-with-metadata-file "CMR-7340/Coll-CMR-7340.echo10"
                                                   {:provider-id "PROV1"
                                                    :concept-type :collection
                                                    :native-id "echo10-collection"
@@ -77,7 +76,7 @@
       (d/assert-metadata-results-match format-key [g1-echo] response))))
 
 (deftest search-smap-granule-with-size-in-echo10
-  (let [coll (d/ingest-concept-with-metadata-file "CMR-4902/4902_smap_iso_collection.xml"
+  (let [_coll (d/ingest-concept-with-metadata-file "CMR-4902/4902_smap_iso_collection.xml"
                                                   {:provider-id "PROV1"
                                                    :concept-type :collection
                                                    :native-id "iso-smap-collection"
@@ -116,6 +115,7 @@
         umm-g-gran-concept-id (:concept-id (ingest/ingest-concept umm-g-gran))]
     (index/wait-until-indexed)
     (testing "Search UMM-G various formats"
+      (declare format-key granule-concept-id expected-granule accept url-extension)
       (util/are3 [format-key granule-concept-id expected-granule accept url-extension]
         (let [response (search/find-concepts-in-format
                         format-key
@@ -190,6 +190,7 @@
     (testing "Retrieving results in native format"
       ;; Native format for search can be specified using Accept header application/metadata+xml
       ;; or the .native extension.
+      (declare concepts extension)
       (util/are2 [concepts format-key extension accept]
         (let [params {:concept-id (map :concept-id concepts)}
               options (-> {:accept nil}
@@ -650,6 +651,7 @@
 
     (index/wait-until-indexed)
 
+    (declare granule granule-ur)
     (util/are3 [granule granule-ur]
       (let [gran-atom (da/granules->expected-atom [granule]
                                                   [coll1]
@@ -729,6 +731,7 @@
 
     (index/wait-until-indexed)
 
+    (declare params result-map)
     (util/are3 [params result-map]
       (let [response (search/find-concepts-stac
                       :granule
@@ -925,6 +928,7 @@
                  (:errors (json/decode (:body ext-response) true))))))
 
       (testing "stac search with invalid parameters"
+        (declare err-message)
         (util/are3 [params err-message]
           (let [response (search/find-concepts-stac
                           :granule
@@ -953,6 +957,7 @@
                                    :granule
                                    {:provider "PROV1" :scroll true :page-size 1})]
 
+          (declare header-value)
           (util/are3 [header-value err-message]
             (let [response (search/find-concepts-stac
                             :granule
@@ -994,6 +999,7 @@
     (index/wait-until-indexed)
 
     (testing "retrieval of granule concept in STAC format"
+      (declare options)
       (util/are3 [options]
         (let [response (search/retrieve-concept gran-concept-id nil options)]
           (is (search/mime-type-matches-response? response mt/stac))
@@ -1007,6 +1013,7 @@
         {:url-extension "stac"}))
 
     (testing "retrieval of granule concept revisions in STAC format is not supported"
+      (declare err-msg)
       (util/are3 [options err-msg]
         (let [{:keys [status errors]} (search/get-search-failure-data
                                        (search/retrieve-concept
@@ -1028,7 +1035,7 @@
   (let [coll1 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset1"
                                                 :beginning-date-time "1970-01-01T12:00:00Z"}))
         coll-concept-id (:concept-id coll1)
-        gran-spatial (dg/spatial (m/mbr 10 30 20 0))
+        _gran-spatial (dg/spatial (m/mbr 10 30 20 0))
         gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                    :beginning-date-time "2010-01-01T12:00:00.000Z"
                                                    :ending-date-time "2010-01-11T12:00:00.000Z"
@@ -1090,7 +1097,7 @@
 
 (deftest combined-cloud-cover-stac-test
   (let [coll-metadata (slurp (io/resource "stac-test/C2021957295-LPCLOUD.umm_json"))
-        {coll-concept-id :concept-id} (ingest/ingest-concept
+        {_coll-concept-id :concept-id} (ingest/ingest-concept
                                        (ingest/concept :collection
                                                        "PROV1"
                                                        "foo"

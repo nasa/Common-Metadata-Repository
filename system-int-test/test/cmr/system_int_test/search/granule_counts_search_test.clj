@@ -3,18 +3,14 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common.util :as util :refer [are3]]
-   [cmr.common-app.config :as common-config]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
    [cmr.system-int-test.data2.collection :as dc]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.granule-counts :as gran-counts]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
@@ -412,6 +408,7 @@
         (is (gran-counts/granule-counts-match? :xml {coll6745 4} refs))))
 
     (testing "CMR-7692: EDSC temporal search"
+      (declare search-params collection-found? matched-granule-count)
       (are3 [search-params collection-found? matched-granule-count]
         (let [refs (search/find-refs :collection (merge {:include-granule-counts true
                                                          :has-granules-or-cwic true
@@ -525,6 +522,7 @@
             :atom (search/find-concepts-json :collection {:include-has-granules true :include-granule-counts true}))))
 
       (testing "granule_count"
+        (declare result-format results)
         (are3 [result-format results]
           (let [expected-granule-count (util/map-keys :concept-id {coll1 2 coll2 2})
                 actual-granule-count (gran-counts/results->actual-granule-count result-format results)]

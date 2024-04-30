@@ -29,9 +29,9 @@
 (deftest search-collections-by-provider-short-name
   (let [coll1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {}))
         coll2 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection 2 {}))
-        coll3 (data-core/ingest-umm-spec-collection "PROV3" (data-umm-c/collection 3 {}))
+        _coll3 (data-core/ingest-umm-spec-collection "PROV3" (data-umm-c/collection 3 {}))
         coll4 (data-core/ingest-umm-spec-collection "PROV4" (data-umm-c/collection 4 {}))
-        coll5 (data-core/ingest-umm-spec-collection "PROV5" (data-umm-c/collection 5 {}))]
+        _coll5 (data-core/ingest-umm-spec-collection "PROV5" (data-umm-c/collection 5 {}))]
     (index/wait-until-indexed)
 
     (testing "regular searches"

@@ -18,7 +18,7 @@
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                       {:EntryTitle "Dataset with degree ° and smiley face ☺ symbols"
                                        :ShortName "ShortName2"}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection
                                       {:EntryTitle "E3"
                                        :ShortName "S3"}))]
 
@@ -44,7 +44,7 @@
                                        :ShortName "S3"}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "GranuleUR with degree ° and smiley face ☺ symbols"}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "Granule2"}))
-        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule3"}))]
+        _gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll3 (:concept-id coll3) {:granule-ur "Granule3"}))]
 
     (index/wait-until-indexed)
 

@@ -1,8 +1,8 @@
 (ns cmr.system-int-test.search.collection-platform-instrument-sensor-search-test
   "Integration test for CMR collection search by platform, instrument and sensor short-names"
   (:require
-    [clojure.test :refer :all]
-    [cmr.common.util :as util :refer [are3]]
+    [clojure.test :refer [are deftest is testing use-fixtures]]
+    [cmr.common.util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
@@ -52,7 +52,7 @@
                                                                             :EntryTitle "E7"
                                                                             :ShortName "S7"
                                                                             :Version "V7"}))
-        coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E8"
+        _coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E8"
                                                                             :ShortName "S8"
                                                                             :Version "V8"}))
         ;; Added to test SMAP ISO platform and instrument support - note that this collection is
@@ -224,7 +224,7 @@
                                                                             :EntryTitle "E8"
                                                                             :ShortName "S8"
                                                                             :Version "V8"}))
-        coll9 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E9"
+        _coll9 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E9"
                                                                             :ShortName "S9"
                                                                             :Version "V9"}))
         ;; Added to test SMAP ISO platform and instrument support
@@ -415,7 +415,7 @@
                                                                             :EntryTitle "E9"
                                                                             :ShortName "S9"
                                                                             :Version "V9"}))
-        coll10 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E10"
+        _coll10 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E10"
                                                                              :ShortName "S10"
                                                                              :Version "V10"}))]
 

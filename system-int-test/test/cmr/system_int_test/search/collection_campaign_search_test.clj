@@ -1,8 +1,8 @@
 (ns cmr.system-int-test.search.collection-campaign-search-test
   "Integration test for CMR collection search by campaign terms"
   (:require
-    [clojure.test :refer :all]
-    [cmr.common.util :as util :refer [are3]]
+    [clojure.test :refer [are deftest is testing use-fixtures]]
+    [cmr.common.util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
@@ -13,8 +13,8 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))
 
 (deftest search-by-campaign-short-names
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "C1" :ShortName "S1"}))
-        coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Projects [] :EntryTitle "C2" :ShortName "S2"}))
+  (let [_coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "C1" :ShortName "S1"}))
+        _coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Projects [] :EntryTitle "C2" :ShortName "S2"}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:Projects (data-umm-cmn/projects "ESI") :EntryTitle "C3" :ShortName "S3"}))
 
         coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects (data-umm-cmn/projects "ESI" "Esi") :EntryTitle "C4" :ShortName "S4"}))

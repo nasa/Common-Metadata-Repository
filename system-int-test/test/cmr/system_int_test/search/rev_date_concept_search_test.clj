@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.rev-date-concept-search-test
   "Integration test for CMR collection and granule search by revision date"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are2]]
    [cmr.system-int-test.data2.collection :as collection]
    [cmr.system-int-test.data2.core :as data-core]
@@ -47,6 +47,7 @@
       (index/wait-until-indexed)
 
       (testing "search collections with revision_date[] ranges and options"
+        (declare colls value options)
         (are2 [colls value options]
               (let [references (search/find-refs :collection
                                                  (merge {"revision_date[]" value} options))]
@@ -112,6 +113,7 @@
           [coll3 coll4-2 coll5] "revision_date" ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"]))
 
       (testing "search collections with invalid revision date"
+        (declare err-pattern)
         (are2 [value err-pattern]
               (let [{:keys [status errors]} (search/find-refs :collection {"revision_date" value})
                     err (first errors)]
@@ -162,6 +164,7 @@
             [] {:updated_since "2015-01-01T10:00:01Z"}))
 
         (testing "invalid update_time"
+          (declare search exp-errors)
           (are2 [search exp-errors]
                 (let [{:keys [status errors]}
                       (search/find-refs-with-json-query :collection {} search)]
@@ -195,6 +198,7 @@
       (index/wait-until-indexed)
 
       (testing "search granules with revision_date[] ranges and options"
+        (declare grans)
         (are2 [grans value options]
               (let [references (search/find-refs :granule
                                                  (merge {"revision_date[]" value} options))]

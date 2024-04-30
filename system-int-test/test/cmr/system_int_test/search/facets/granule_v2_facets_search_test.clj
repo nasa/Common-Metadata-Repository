@@ -4,7 +4,7 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common-app.services.search.query-validation :as cqv]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
@@ -146,6 +146,7 @@
                            [:results :facets])]
         (is (= "Browse Granules" (:title facets)))))
     (testing "Invalid values"
+      (declare param-value)
       (util/are3
         [param-value]
         (is (= {:status 400
@@ -190,7 +191,7 @@
   "Returns the link type for the given facet title and facets response."
   [title facets]
   (let [facet-node (first (filter #(= title (:title %)) facets))
-        [link-type url] (first (:links facet-node))]
+        [link-type _url] (first (:links facet-node))]
     link-type))
 
 (deftest temporal-facets-test
@@ -250,6 +251,7 @@
       (testing "Years have a type of filter"
         (is (= ["filter" "filter" "filter" "filter"] (map :type year-facets))))
       (testing "Counts correct"
+        (declare title cnt)
         (util/are3
           [title cnt]
           (is (= cnt (get-count-by-title year-facets title)))
@@ -260,7 +262,7 @@
       (testing "All of the years include a link to apply that year to the search."
         (let [links (mapcat :links year-facets)]
           (is (= 4 (count links)))
-          (doseq [[link-type url] links]
+          (doseq [[link-type _url] links]
             (is (= :apply link-type)))))
       (testing "When selecting a link the search results only contain granules for that year."
         (let [response (traverse-link "2010" year-facets)
@@ -352,45 +354,45 @@
                         {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                          :EntryTitle "E2"
                          :ShortName "S2"}))
-        coll1-concept-id (:concept-id coll1)
+        _coll1-concept-id (:concept-id coll1)
         coll2-concept-id (:concept-id coll2)
-        gran1 (ingest-granule-with-track "PROV1" coll1
+        _gran1 (ingest-granule-with-track "PROV1" coll1
                                          {:cycle 1
                                           :passes [{:pass 1}]})
-        gran2 (ingest-granule-with-track "PROV1" coll1
+        _gran2 (ingest-granule-with-track "PROV1" coll1
                                          {:cycle 2
                                           :passes [{:pass 1}]})
-        gran3 (ingest-granule-with-track "PROV1" coll1
+        _gran3 (ingest-granule-with-track "PROV1" coll1
                                          {:cycle 1
                                           :passes [{:pass 2}]})
         ;; granules for testing multiple passes and tiles
-        gran4 (ingest-granule-with-track "PROV2" coll2
+        _gran4 (ingest-granule-with-track "PROV2" coll2
                                          {:cycle 3
                                           :passes [{:pass 1 :tiles ["1L"]}]})
-        gran5 (ingest-granule-with-track "PROV2" coll2
+        _gran5 (ingest-granule-with-track "PROV2" coll2
                                          {:cycle 3
                                           :passes [{:pass 1 :tiles ["1R"]}
                                                    {:pass 2 :tiles ["1L"]}]})
-        gran6 (ingest-granule-with-track "PROV2" coll2
+        _gran6 (ingest-granule-with-track "PROV2" coll2
                                          {:cycle 42
                                           :passes [{:pass 1 :tiles ["1L"]}]})
         ;; granules for testing Full track tiles and multiple tiles
-        gran7 (ingest-granule-with-track "PROV2" coll2
+        _gran7 (ingest-granule-with-track "PROV2" coll2
                                          {:cycle 3
                                           :passes [{:pass 3 :tiles ["1L"]}
                                                    {:pass 4 :tiles ["1L"]}]})
-        gran8 (ingest-granule-with-track "PROV2" coll2
+        _gran8 (ingest-granule-with-track "PROV2" coll2
                                          {:cycle 3
                                           :passes [{:pass 3 :tiles ["1R"]}
                                                    {:pass 4 :tiles ["2L"]}]})
-        gran9 (ingest-granule-with-track "PROV2" coll2
+        _gran9 (ingest-granule-with-track "PROV2" coll2
                                          {:cycle 3
                                           :passes [{:pass 3 :tiles ["1F"]}
                                                    {:pass 4 :tiles ["2L"]}]})
-        gran10 (ingest-granule-with-track "PROV2" coll2
+        _gran10 (ingest-granule-with-track "PROV2" coll2
                                           {:cycle 3
                                            :passes [{:pass 3 :tiles ["5F" "6R"]}]})
-        gran11 (ingest-granule-with-track "PROV2" coll2
+        _gran11 (ingest-granule-with-track "PROV2" coll2
                                           {:cycle 42
                                            :passes [{:pass 3 :tiles ["5R" "6L"]}]})]
     (index/wait-until-indexed)

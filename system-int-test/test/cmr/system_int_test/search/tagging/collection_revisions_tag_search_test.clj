@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.tagging.collection-revisions-tag-search-test
   "This tests searching for collection revisions by tag parameters"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest join-fixtures testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]

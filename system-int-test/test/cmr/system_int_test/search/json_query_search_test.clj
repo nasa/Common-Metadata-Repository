@@ -2,7 +2,8 @@
   "Integration test for JSON Query specific search issues. General JSON query search tests will be
   included in other files by condition."
   (:require
-   [clojure.test :refer :all]
+   [clojure.java.io]
+   [clojure.test :refer [are deftest is testing]]
    [cmr.common.util :as util]
    [cmr.system-int-test.utils.search-util :as search]))
 
@@ -56,6 +57,7 @@
            (search/find-refs-with-json-query :collection {} {}))))
 
   (testing "Invalid bounding boxes"
+    (declare search errors)
     (util/are2
       [search errors]
       (and (= {:status 400 :errors errors}

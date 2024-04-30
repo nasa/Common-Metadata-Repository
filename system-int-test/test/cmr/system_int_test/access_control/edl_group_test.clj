@@ -3,7 +3,7 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.access-control.config :as access-control-config]
    [cmr.access-control.test.util :as u]
    [cmr.common.util :refer [are3]]
@@ -14,7 +14,6 @@
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]))
@@ -297,6 +296,7 @@
                                            :provider_id "PROV1"}})
       (u/wait-until-indexed)
       ;; search by permitted group
+      (declare permitted-groups expected-hits expected-names)
       (are3 [permitted-groups expected-hits expected-names]
         (let [{:keys [hits items]} (ac/search-for-acls
                                     test-context {:permitted-group permitted-groups})]
@@ -342,6 +342,7 @@
         ["group1 read and order" "Provider - PROV1 - INGEST_MANAGEMENT_ACL"])
 
       ;; search by permitted user find both EDL group ACLs
+      (declare permitted-user)
       (are3 [permitted-user expected-hits expected-names]
         (let [{:keys [hits items]} (ac/search-for-acls
                                     test-context {:permitted-user permitted-user})]

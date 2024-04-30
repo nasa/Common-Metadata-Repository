@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.transmit.error-handling-test
   (:require
    [cheshire.core :as json]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))

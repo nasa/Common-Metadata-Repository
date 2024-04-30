@@ -1,13 +1,7 @@
 (ns cmr.system-int-test.search.granule-timeline-test
   "This tests the granule timeline feature of the search api."
   (:require
-   [cheshire.core :as json]
-   [clj-time.coerce :as c]
-   [clj-time.core :as t]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [cmr.common.concepts :as concepts]
-   [cmr.common.dev.util :as dev]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -59,26 +53,26 @@
         gran1 (make-gran coll1 1 "2000-02-01T00:00:00Z" "2000-05-01T00:00:00Z")
         gran2 (make-gran coll1 2 "2000-04-01T00:00:00Z" "2000-06-01T00:00:00Z")
         gran3 (make-gran coll1 3 "2000-06-01T00:00:00Z" "2000-07-01T00:00:00Z")
-        gran4 (make-gran coll1 4 "2000-11-01T00:00:00Z" "2001-01-01T00:00:00Z")
-        gran5 (make-gran coll1 5 "2001-01-01T00:00:00Z" "2001-03-01T00:00:00Z")
-        gran6 (make-gran coll1 6 "2001-06-01T00:00:00Z" "2001-08-01T00:00:00Z")
-        gran7 (make-gran coll1 7 "2001-09-01T00:00:00Z" nil) ; no end date
+        _gran4 (make-gran coll1 4 "2000-11-01T00:00:00Z" "2001-01-01T00:00:00Z")
+        _gran5 (make-gran coll1 5 "2001-01-01T00:00:00Z" "2001-03-01T00:00:00Z")
+        _gran6 (make-gran coll1 6 "2001-06-01T00:00:00Z" "2001-08-01T00:00:00Z")
+        _gran7 (make-gran coll1 7 "2001-09-01T00:00:00Z" nil) ; no end date
 
         ;; Single date granules
         gran8 (make-gran coll1 8 "2000-04-01T00:00:00Z")
         gran9 (make-gran coll1 9 "2000-09-01T00:00:00Z")
-        gran10 (make-gran coll1 10 "2000-11-01T00:00:00Z")
-        gran11 (make-gran coll1 11 "2001-07-01T00:00:00Z")
+        _gran10 (make-gran coll1 10 "2000-11-01T00:00:00Z")
+        _gran11 (make-gran coll1 11 "2001-07-01T00:00:00Z")
 
         ;; Coll2 granules
         ;; These are all daily granules
         gran12 (make-gran coll2 12 "1995-08-01T08:30:45Z" "1995-08-01T17:20:00Z")
         gran13 (make-gran coll2 13 "1995-08-02T08:30:45Z" "1995-08-02T17:20:00Z")
-        gran14 (make-gran coll2 14 "1995-08-03T08:30:45Z" "1995-08-03T17:20:00Z")
-        gran15 (make-gran coll2 15 "1995-08-04T08:30:45Z" "1995-08-04T17:20:00Z")
-        gran16 (make-gran coll2 16 "1995-08-05T08:30:45Z" "1995-08-05T17:20:00Z")
+        _gran14 (make-gran coll2 14 "1995-08-03T08:30:45Z" "1995-08-03T17:20:00Z")
+        _gran15 (make-gran coll2 15 "1995-08-04T08:30:45Z" "1995-08-04T17:20:00Z")
+        _gran16 (make-gran coll2 16 "1995-08-05T08:30:45Z" "1995-08-05T17:20:00Z")
         ;; granule with start-date that is represented as Integer in elasticsearch result (CMR-1061)
-        gran17 (make-gran coll2 17 "1970-01-01T00:00:45Z" "1995-01-05T17:20:00Z")
+        _gran17 (make-gran coll2 17 "1970-01-01T00:00:45Z" "1995-01-05T17:20:00Z")
 
         all-colls [coll1 coll2]
         coll-ids (map :concept-id all-colls)]

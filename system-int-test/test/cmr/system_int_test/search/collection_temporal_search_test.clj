@@ -2,9 +2,8 @@
   "Integration test for CMR collection temporal search"
   (:require
     [clj-time.core :as t]
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
     [cmr.common.date-time-parser :as p]
-    [cmr.common.time-keeper :as tk]
     [cmr.common.util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -34,21 +33,21 @@
                    :TemporalExtents [(data-umm-cmn/temporal-extent
                                        {:beginning-date-time "2000-01-01T00:00:00Z"
                                         :ending-date-time "2010-01-01T00:00:00Z"})]}))
-        c1-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _c1-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                   coll1
                                   (:concept-id coll1)
                                   {:granule-ur "c1-g1"
                                    :beginning-date-time "2003-01-01T00:00:00Z"
                                    :ending-date-time "2004-01-01T00:00:00Z"}))
 
-        c1-g2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _c1-g2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                   coll1
                                   (:concept-id coll1)
                                   {:granule-ur "c1-g2"
                                    :beginning-date-time "2005-01-01T00:00:00Z"
                                    :ending-date-time "2006-01-01T00:00:00Z"}))
 
-        c1-g3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _c1-g3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                   coll1
                                   (:concept-id coll1)
                                   {:granule-ur "c1-g3"
@@ -64,14 +63,14 @@
                                        {:beginning-date-time "2001-01-01T00:00:00Z"
                                         :ending-date-time "2005-01-01T00:00:00Z"})]}))
 
-        c2-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _c2-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                   coll2
                                   (:concept-id coll2)
                                   {:granule-ur "c2-g1"
                                    :beginning-date-time "2001-01-01T00:00:00Z"
                                    :ending-date-time "2002-01-01T00:00:00Z"}))
 
-        c2-g2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _c2-g2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                   coll2
                                   (:concept-id coll2)
                                   {:granule-ur "c2-g2"
@@ -106,14 +105,14 @@
                    :TemporalExtents [(data-umm-cmn/temporal-extent
                                        {:beginning-date-time "2004-01-01T00:00:00Z"})]}))
 
-        c5-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _c5-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                   coll5
                                   (:concept-id coll5)
                                   {:granule-ur "c5-g1"
                                    :beginning-date-time "2006-01-01T00:00:00Z"
                                    :ending-date-time "2007-01-01T00:00:00Z"}))
 
-        c5-g2 (d/ingest "PROV1"
+        _c5-g2 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                           coll5
                           (:concept-id coll5)
@@ -132,7 +131,7 @@
         dt-2-days-ago (p/clj-time->date-time-str (t/minus (t/now) (t/days 2)))
         dt-1-day-ago (p/clj-time->date-time-str (t/minus (t/now) (t/days 1)))
 
-        c6-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _c6-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                   coll6
                                   (:concept-id coll6)
                                   {:granule-ur "c6-g1"
@@ -159,6 +158,7 @@
     (ingest/reindex-all-collections)
     (index/wait-until-indexed)
 
+    (declare items search)
     (are3 [items search]
           (is (d/refs-match? items (search/find-refs :collection search)))
 
@@ -230,7 +230,7 @@
                                          {:beginning-date-time "2000-01-01T00:00:00Z"
                                           :ending-date-time "2010-01-01T00:00:00Z"})]}))
 
-          c1-g2 (d/ingest
+          _c1-g2 (d/ingest
                   "PROV1"
                   (dg/granule-with-umm-spec-collection
                     coll1
@@ -248,7 +248,7 @@
                                          {:beginning-date-time "1998-01-01T00:00:00Z"
                                           :ending-date-time "2010-01-01T00:00:00Z"})]}))
 
-          c2-g1 (d/ingest
+          _c2-g1 (d/ingest
                   "PROV1"
                   (dg/granule-with-umm-spec-collection
                     coll2
@@ -280,15 +280,15 @@
       (let [;; This granule is ingested before partial indexing is run and it's in a timer period that
             ;; won't be found. We should make sure that coll2 isn't found now which indicates we're only
             ;; finding granules updated in about the last hour and reindexing only those collections
-            c2-g2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "c2-g2"
+            _c2-g2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "c2-g2"
                                                                                                     :beginning-date-time "2007-01-01T00:00:00Z"
                                                                                                     :ending-date-time "2008-01-01T00:00:00Z"}))
             ;; Advance time 2 hours
             _ (dev-system/advance-time! (* 3600 2))
-            c1-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "c1-g1"
+            _c1-g1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "c1-g1"
                                                                                                     :beginning-date-time "2003-01-01T00:00:00Z"
                                                                                                     :ending-date-time "2004-01-01T00:00:00Z"}))
-            c1-g3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "c1-g3"
+            _c1-g3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "c1-g3"
                                                                                                     :beginning-date-time "2007-01-01T00:00:00Z"
                                                                                                     :ending-date-time "2008-01-01T00:00:00Z"}))]
         (index/wait-until-indexed)
@@ -487,6 +487,7 @@
             [coll1 coll13 coll9] {"temporal[]" "2010-01-01T10:00:00Z/P10DT2H"}))
 
     (testing "search by temporal date-range with aql"
+      (declare start-date stop-date)
       (are3 [items start-date stop-date]
             (d/refs-match? items (search/find-refs-with-aql :collection [{:temporal {:start-date start-date
                                                                                      :stop-date stop-date}}]))
@@ -583,6 +584,7 @@
 
 (deftest search-temporal-json-error-scenarios
   (testing "search by invalid temporal date format"
+    (declare invalid-field-dates)
     (are3 [search invalid-field-dates]
           (let [{:keys [status errors]} (search/find-refs-with-json-query :collection {} search)
                 expected-errors (map #(apply format "/condition/temporal/%s string \"%s\" is invalid against requested date format(s) [yyyy-MM-dd'T'HH:mm:ssZ, yyyy-MM-dd'T'HH:mm:ss.SSSZ]" %)

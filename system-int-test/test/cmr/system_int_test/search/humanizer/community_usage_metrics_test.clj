@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.humanizer.community-usage-metrics-test
   "This tests the CMR Search API's community usage metric capabilities"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
@@ -220,6 +220,7 @@
              (humanizer-util/update-community-usage-metrics admin-update-token ""))))
 
     (testing "Missing CSV Column"
+      (declare column-name csv)
       (are3 [column-name csv]
         (is (= {:status 422
                 :errors [(format "A '%s' column is required in community usage CSV data"

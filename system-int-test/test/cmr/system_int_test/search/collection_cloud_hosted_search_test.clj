@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.collection-cloud-hosted-search-test
   "Integration tests for searching for records that are cloud hosted"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo]
    [cmr.indexer.data.concepts.tag :as itag]
@@ -50,7 +50,7 @@
     (testing "Search for collections tagged as cloud hosted"
       (let [user1-token (echo/login (system/context) "user1")
             tag1 (tags/make-tag {:tag-key itag/earthdata-cloud-s3-tag})
-            tag_record (tags/save-tag user1-token tag1 [coll1])]
+            _tag_record (tags/save-tag user1-token tag1 [coll1])]
         (index/wait-until-indexed)
 
         (util/are3

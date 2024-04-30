@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.virtual-product.virtual-product-test
   (:require
    [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.util :as util]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
@@ -29,6 +29,7 @@
     (doseq [p vp/virtual-product-providers]
       (ingest/create-provider {:provider-guid (str p "_guid") :provider-id p})))
 
+  (declare isc)
   (dissoc (first isc) :revision-id :native-id :concept-id :entry-id)
 
   (def isc (vp/ingest-source-collections))
@@ -52,6 +53,7 @@
         all-expected-granule-urs (cons (:granule-ur ast-l1a-gran) expected-granule-urs)]
     (index/wait-until-indexed)
 
+    (declare expected query-params)
     (util/are2 [expected query-params]
                (= (set expected)
                   (set (map :name (:refs (search/find-refs :granule query-params)))))
@@ -269,9 +271,11 @@
                       :provider-id "GES_DISC")])
         _vp-colls (vp/ingest-virtual-collections [omi-coll])
         granule-ur "OMUVBd.003:OMI-Aura_L3-OMUVBd_2015m0103_v003-2015m0107t093002.he5"
-        [_ur-prefix ur-suffix] (str/split granule-ur #":")
+        [_ur-prefix _ur-suffix] (str/split granule-ur #":")
         opendap-dir-path "http://acdisc.gsfc.nasa.gov/opendap/HDF-EOS5//Aura_OMI_Level3/OMUVBd.003/2015/"
         opendap-file-path (str opendap-dir-path granule-ur)]
+
+    (declare src-granule-ur source-related-urls expected-related-url-maps)
     (util/are2 [src-granule-ur source-related-urls expected-related-url-maps]
                (let [_ (vp/ingest-source-granule
                         "GES_DISC"

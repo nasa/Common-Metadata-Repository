@@ -1,10 +1,9 @@
 (ns cmr.system-int-test.search.paging-search-test
   "Tests for search paging."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common.concepts :as concepts]
    [cmr.common.util :refer [are3]]
-   [cmr.search.services.parameters.parameter-validation :as pm]
    [cmr.system-int-test.data2.core :as d2c]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]
@@ -54,6 +53,7 @@
 
 (deftest page-depth-test
   (testing "Exceeded page depth"
+    (declare resp)
     (are3 [resp]
       (assert-exceeds-paging-depth resp)
 

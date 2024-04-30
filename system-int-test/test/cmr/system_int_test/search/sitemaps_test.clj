@@ -3,7 +3,7 @@
    [clj-xml-validation.core :as xmlv]
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]

@@ -5,18 +5,18 @@
    [clj-http.client :as client]
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.config :as cfg]
    [cmr.common.generics :as generics]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util :refer [are3]]
+   [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url-helper]
    [cmr.system-int-test.utils.generic-util :as gen-util]
-   [cmr.umm-spec.umm-spec-core :as spec]
+   [cmr.umm-spec.umm-spec-core]
    [inflections.core :as inf])
   (:import
    [java.util UUID]))
@@ -105,6 +105,7 @@
               provider "PROV1"]
           (index/wait-until-indexed)
           (testing "Testing generics name parameter search"
+            (declare search-parameter name-parameter options-flag)
             (are3 [plural-concept-type-name search-parameter name-parameter options-flag]
               (let [results (search-request plural-concept-type-name (str search-parameter "=" name-parameter (if options-flag (str "&" options-flag) (str ""))))
                     status (:status results)
@@ -143,6 +144,7 @@
               "options[name][pattern]=true"))
 
           (testing "Testing generics provider parameter search"
+            (declare provider-parameter)
             (are3 [plural-concept-type-name search-parameter provider-parameter options-flag]
               (let [results (search-request plural-concept-type-name (str search-parameter "=" provider-parameter (if options-flag (str "&" options-flag) (str ""))))
                     status (:status results)
@@ -181,6 +183,7 @@
               "options[provider][pattern]=true"))
 
           (testing "Testing generics concept-id parameter search"
+            (declare concept-id-parameter)
             (are3 [plural-concept-type-name search-parameter concept-id-parameter options-flag]
               (let [results (search-request plural-concept-type-name (str search-parameter "=" concept-id-parameter (if options-flag (str "&" options-flag) (str ""))))
                     status (:status results)
@@ -207,6 +210,7 @@
               nil))
 
         (testing "Testing parameter of native_id"
+          (declare native-id-parameter)
           (are3 [plural-concept-type-name search-parameter native-id-parameter options-flag]
             (let [results (search-request plural-concept-type-name (str search-parameter "=" native-id-parameter (if options-flag (str "&" options-flag) (str ""))))
                   status (:status results)
@@ -249,18 +253,19 @@
             (if (and guid-id
                      (not (string/includes? concept-type-string "draft")))
               (testing "Testing id (GUID), the identifier that was assigned from legacy system in the parameter search"
-              (are3 [plural-concept-type-name search-parameter concept-id-parameter options-flag]
-                (let [results (search-request plural-concept-type-name (str search-parameter "=" concept-id-parameter (if options-flag (str "&" options-flag) (str ""))))
-                      status (:status results)
-                      body (:body results)]
-                  (is (string/includes? body name) "record not found")
-                  (is (= 200 status) "wrong http status"))
+                (are3 [plural-concept-type-name search-parameter concept-id-parameter options-flag]
+                      (let [results (search-request plural-concept-type-name (str search-parameter "=" concept-id-parameter (if options-flag (str "&" options-flag) (str ""))))
+                            status (:status results)
+                            body (:body results)]
+                        (is (string/includes? body name) "record not found")
+                        (is (= 200 status) "wrong http status"))
 
-                "Search using id(guid)"
-                (inf/plural concept-type-string)
-                "id"
-                guid-id
-                nil)))
+                      "Search using id(guid)"
+                      (inf/plural concept-type-string)
+
+                      "id"
+                      guid-id
+                      nil)))
 
           (testing "Check that test the document ingested before going forward with tests"
             (is (= 201 (:status post-results))"failed to ingest test record"))
@@ -326,6 +331,7 @@
               (is (= 200 status) "wrong http status")))
           
            (testing "Searching with non-existent UMM JSON version in the url suffix for generics"
+             (declare url-extension)
              (are3 [url-extension]
                    (let [{:keys [status body]} (search-request-version-url-extension plural-concept-type-name url-extension)]
                      (is (= 400 status))
@@ -345,6 +351,7 @@
                (format "umm_json_v%s" (string/replace (generics/current-generic-version (keyword concept-type-string)) #"\." "_"))))
            
            (testing "Searching with non-existent UMM JSON version for generics passing the accept header"
+             (declare acceptHeader)
              (are3 [acceptHeader]
                    (let [{:keys [status body]} (search-request-version-accept-header plural-concept-type-name acceptHeader)]
                      (is (= 400 status))

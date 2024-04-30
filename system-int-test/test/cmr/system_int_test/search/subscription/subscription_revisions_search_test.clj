@@ -121,6 +121,7 @@
         sub3 (subscription/ingest-subscription sub3-concept)]
     (index/wait-until-indexed)
     (testing "search subscriptions for all revisions"
+      (declare subscriptions params)
       (are3 [subscriptions params]
         (do
           ;; find references with all revisions

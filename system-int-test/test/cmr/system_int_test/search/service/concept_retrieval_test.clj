@@ -5,7 +5,7 @@
   * /concepts/:concept-id/:revision-id"
   (:require
    [cheshire.core :as json]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.mime-types :as mt]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]

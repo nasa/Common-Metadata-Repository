@@ -10,7 +10,7 @@
    [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.url-util :as url-util]
-   [cmr.common.util :as util :refer [are2 are3]]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.search.validators.opendata :as opendata-json]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.line-string :as l]
@@ -183,6 +183,7 @@
                                  c11-echo all-formats})))
         (testing "Retrieving all formats after refreshing cache"
           (testing "Retrieving results in native format"
+            (declare concepts format-key)
             (are3 [concepts format-key]
               (let [params {:concept-id (map :concept-id concepts)}
                     options {:url-extension "native"}
@@ -327,6 +328,7 @@
     (testing "Retrieving results in native format"
       ;; Native format for search can be specified using Accept header application/metadata+xml
       ;; or the .native extension.
+      (declare extension accept)
       (util/are2 [concepts format-key extension accept]
         (let [params {:concept-id (map :concept-id concepts)}
               options (-> {:accept nil}
@@ -427,7 +429,7 @@
 ; ingested and found
 (deftest dif-with-spatial
   (let [c1 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage nil}) {:format :dif})
-        g1 (d/ingest "PROV1" (dg/granule c1))
+        _g1 (d/ingest "PROV1" (dg/granule c1))
 
         ;; A collection with a granule spatial representation
         c2 (d/ingest "PROV1" (dc/collection-dif {:spatial-coverage (dc/spatial {:gsr :geodetic})})
@@ -693,7 +695,7 @@
                 [:status :results])))))))
 
 (deftest search-collection-csv
-  (let [c1 (d/ingest "PROV1" (dc/collection {:short-name "shortie number 1"
+  (let [_c1 (d/ingest "PROV1" (dc/collection {:short-name "shortie number 1"
                                               :version-id "V1"
                                               :long-name "lng nme"
                                               :processing-level-id "L1"
@@ -702,7 +704,7 @@
                                               :platforms [{:short-name "platform #1"
                                                            :long-name "platform #1"
                                                            :type "t"}]}))
-        c2 (d/ingest "PROV2" (dc/collection {:short-name "world's shortest name: so short you won't believe your eyes!"
+        _c2 (d/ingest "PROV2" (dc/collection {:short-name "world's shortest name: so short you won't believe your eyes!"
                                               :version-id "V2"
                                               :long-name "world's longest name"
                                               :processing-level-id "L2"
@@ -886,6 +888,7 @@
         (is (= "mailto:test-address@example.com"
                (get-in opendata-coll-umm [:contactPoint :hasEmail]))))
       (testing "distribution urls"
+        (declare expected-distribution opendata-collection)
         (are3 [expected-distribution opendata-collection]
           (is (contains? (set (:distribution opendata-collection)) expected-distribution))
 
@@ -915,6 +918,7 @@
           {:accessURL "http://example.com/html.html"
            :title "Download this dataset"} opendata-coll-umm))
       (testing "Opendata fields in response."
+        (declare expected-result field-key opendata-test-collection)
         (are3 [expected-result field-key opendata-test-collection]
           (is (= expected-result (field-key opendata-test-collection)))
 
@@ -1130,6 +1134,7 @@
                  :accept-format :json})
       (index/wait-until-indexed)
 
+      (declare short-name expected-orgs)
       (are3 [short-name expected-orgs]
         (let [organizations (-> (search/find-concepts-json :collection {:short-name short-name})
                                 :results
@@ -1169,6 +1174,7 @@
     (index/wait-until-indexed)
 
     (testing "retrieval of collection concept in STAC format"
+      (declare options)
       (util/are3 [options]
         (let [response (search/retrieve-concept coll-concept-id nil options)]
           (is (search/mime-type-matches-response? response mt/stac))
@@ -1182,6 +1188,7 @@
         {:url-extension "stac"}))
 
     (testing "retrieval of granule concept revisions in STAC format is not supported"
+      (declare err-msg)
       (util/are3 [options err-msg]
         (let [{:keys [status errors]} (search/get-search-failure-data
                                        (search/retrieve-concept

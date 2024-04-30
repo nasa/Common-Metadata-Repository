@@ -1,8 +1,8 @@
 (ns cmr.system-int-test.search.collection-latency-search-test
   "Integration tests for collection latency search"
   (:require
-   [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are3]]
+   [clojure.test :refer [deftest testing use-fixtures]]
+   [cmr.common.util :refer [are3]]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as umm-c]
    [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -33,11 +33,11 @@
                "PROV1"
                (umm-c/collection 5 {:CollectionDataType "SCIENCE_QUALITY"})
                {:format :umm-json}) 
-        id1 (:concept-id coll1)
-        id2 (:concept-id coll2)
-        id3 (:concept-id coll3)
-        id4 (:concept-id coll4)
-        id5 (:concept-id coll5)]
+        _id1 (:concept-id coll1)
+        _id2 (:concept-id coll2)
+        _id3 (:concept-id coll3)
+        _id4 (:concept-id coll4)
+        _id5 (:concept-id coll5)]
 
     (index/wait-until-indexed)
 

@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-temporal-facet-search-test
   "Integration test for CMR granule temporal search"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.util :as util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -21,7 +21,7 @@
 
 (deftest search-temporal-facet-no-gran-scenario
   (testing "no granule temporal facets"
-    (let [coll1 (d/ingest-umm-spec-collection
+    (let [_coll1 (d/ingest-umm-spec-collection
                "PROV1" (data-umm-c/collection {:ShortName "SN1"
                                                :Version "V1"
                                                :EntryTitle "ET1"
@@ -42,7 +42,7 @@
         gran1 (ingest-granule-fn {:granule-ur "Granule1"
                                   :beginning-date-time "1501-01-01T12:00:00Z"
                                   :ending-date-time "2010-01-11T12:00:00Z"})
-        gran2 (ingest-granule-fn {:granule-ur "Granule2"
+        _gran2 (ingest-granule-fn {:granule-ur "Granule2"
                                   :beginning-date-time "1888-01-31T12:00:00Z"
                                   :ending-date-time "2010-12-12T12:00:00Z"})
         gran3 (ingest-granule-fn {:granule-ur "Granule3"
@@ -54,16 +54,17 @@
         gran5 (ingest-granule-fn {:granule-ur "Granule5"
                                   :beginning-date-time "1946-02-01T12:00:00Z"
                                   :ending-date-time "2011-03-01T12:00:00Z"})
-        gran6 (ingest-granule-fn {:granule-ur "Granule6"
+        _gran6 (ingest-granule-fn {:granule-ur "Granule6"
                                   :beginning-date-time "1952-01-30T12:00:00Z"})
-        gran7 (ingest-granule-fn {:granule-ur "Granule7"
+        _gran7 (ingest-granule-fn {:granule-ur "Granule7"
                                   :beginning-date-time "1983-12-12T12:00:00Z"})
-        gran8 (ingest-granule-fn {:granule-ur "Granule8"
+        _gran8 (ingest-granule-fn {:granule-ur "Granule8"
                                   :beginning-date-time "2011-12-13T12:00:00Z"})
-        gran9 (ingest-granule-fn {:granule-ur "Granule9"})]
+        _gran9 (ingest-granule-fn {:granule-ur "Granule9"})]
     (index/wait-until-indexed)
 
     (testing "Temporal facets search"
+      (declare params expected)
       (util/are3
         [params expected]
         (d/assert-refs-match expected (search/find-refs :granule params))
@@ -94,6 +95,7 @@
 ;; Just some symbolic invalid temporal facet testing, more complete test coverage is in unit tests
 (deftest search-temporal-facet-error-scenarios
   (testing "Invalid temporal facets"
+    (declare msg)
     (util/are3
       [params msg]
       (let [{:keys [status errors]} (search/find-refs :granule params)]

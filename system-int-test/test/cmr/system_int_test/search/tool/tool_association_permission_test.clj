@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.tool.tool-association-permission-test
   "This tests associating tools with collections."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is use-fixtures]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]

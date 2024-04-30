@@ -1,11 +1,11 @@
 (ns cmr.system-int-test.search.autocomplete-collection-facet-search-test
   "Integration tests for autocomplete collection search facets"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
     [cheshire.core :as json]
     [clojurewerkz.elastisch.rest :as esr]
     [clojurewerkz.elastisch.rest.document :as esd]
-    [cmr.common.log :as log :refer [debug]]
+    [cmr.common.log :refer [debug]]
     [cmr.common.util :refer [are3]]
     [cmr.system-int-test.utils.url-helper :as url]
     [cmr.system-int-test.utils.ingest-util :as ingest]
@@ -133,13 +133,12 @@
   (testing "page_size test"
    (are3
     [query expected cmr-hits]
-    (do
-      (let [response (search/get-autocomplete-suggestions query)
-            headers (:headers response)
-            body (json/parse-string (:body response) true)
-            entry (:entry (:feed body))]
-        (is (= (str cmr-hits) (:CMR-Hits headers)))
-        (is (= expected (count entry)))))
+    (let [response (search/get-autocomplete-suggestions query)
+          headers (:headers response)
+          body (json/parse-string (:body response) true)
+          entry (:entry (:feed body))]
+      (is (= (str cmr-hits) (:CMR-Hits headers)))
+      (is (= expected (count entry))))
 
     "page size 0"
     "q=gulf&page_size=0" 0 5

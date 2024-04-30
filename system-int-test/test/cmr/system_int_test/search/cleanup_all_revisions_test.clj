@@ -1,28 +1,24 @@
 (ns cmr.system-int-test.search.cleanup-all-revisions-test
   "This tests that when metadata db cleans up old revisions of superseded collections they will no
   longer be found in the all revisions search."
-  (:require 
-    [clj-http.client :as client]
-    [clj-http.client :as client]
-    [clojure.test :refer :all]
-    [cmr.elastic-utils.config :as elastic-config]
+  (:require
+    [clojure.test :refer [deftest is use-fixtures]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.metadata-db-util :as mdb]
-    [cmr.system-int-test.utils.search-util :as search]
-    [cmr.system-int-test.utils.url-helper :as url-helper]))
+    [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"}))
 
 (deftest cleanup-all-revisions-test
   (let [umm-c (data-umm-c/collection {:EntryTitle "coll1"})
-        coll1s (doall (for [n (range 12)]
+        coll1s (doall (for [_n (range 12)]
                         (d/ingest-umm-spec-collection "PROV1" umm-c)))
-        coll2s (doall (for [n (range 3)]
+        coll2s (doall (for [_n (range 3)]
                         (d/ingest-umm-spec-collection "PROV2" umm-c)))
         all-collections (concat coll1s coll2s)
         all-collections-after-cleanup (concat (drop 2 coll1s) coll2s)
@@ -54,7 +50,7 @@
 (deftest reindex-all-revisions-test
   ;; Generate a collection and ingest it twice.
   (let [umm-c (data-umm-c/collection {:EntryTitle "coll1"})
-        coll1s (doall (for [n (range 2)]
+        coll1s (doall (for [_n (range 2)]
                         (d/ingest-umm-spec-collection "PROV1" umm-c)))
         collection-to-delete (first coll1s)]
     (index/wait-until-indexed)

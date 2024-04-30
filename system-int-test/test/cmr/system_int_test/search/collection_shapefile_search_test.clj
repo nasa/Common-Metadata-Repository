@@ -1,10 +1,9 @@
 (ns cmr.system-int-test.search.collection-shapefile-search-test
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest testing use-fixtures]]
     [clojure.java.io :as io]
-    [cmr.common.log :refer [debug]]
     [cmr.common.mime-types :as mt]
-    [cmr.common.util :as util :refer [are3]]
+    [cmr.common.util :refer [are3]]
     [cmr.common-app.test.side-api :as side]
     [cmr.search.services.parameters.converters.shapefile :as shapefile]
     [cmr.spatial.line-string :as l]
@@ -12,8 +11,6 @@
     [cmr.spatial.point :as p]
     [cmr.spatial.polygon :as poly]
     [cmr.system-int-test.data2.core :as d]
-    [cmr.system-int-test.data2.granule :as dg]
-    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
@@ -64,8 +61,8 @@
                               (m/mbr -20 0 -10 -10))
 
         ;; Polygons
-        wide-north (make-coll :geodetic "wide-north" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
-        wide-south (make-coll :geodetic "wide-south" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
+        _wide-north (make-coll :geodetic "wide-north" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
+        _wide-south (make-coll :geodetic "wide-south" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
         across-am-poly (make-coll :geodetic "across-am-poly" (polygon 170 -10, -175 -10, -170 10, 175 10, 170 -10))
         on-np (make-coll :geodetic "on-np" (polygon 45 85, 135 85, -135 85, -45 85, 45 85))
         on-sp (make-coll :geodetic "on-sp" (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85))
@@ -77,7 +74,7 @@
         polygon-with-holes  (make-coll :geodetic "polygon-with-holes" (poly/polygon [outer hole1 hole2]))
 
         ;; Cartesian Polygons
-        wide-north-cart (make-coll :cartesian "wide-north-cart" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
+        _wide-north-cart (make-coll :cartesian "wide-north-cart" (polygon -70 20, 70 20, 70 30, -70 30, -70 20))
         wide-south-cart (make-coll :cartesian "wide-south-cart" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
         very-wide-cart (make-coll :cartesian "very-wide-cart" (polygon -180 40, -180 35, 180 35, 180 40, -180 40))
         very-tall-cart (make-coll :cartesian "very-tall-cart" (polygon -160 90, -160 -90, -150 -90, -150 90, -160 90))
@@ -92,14 +89,15 @@
         richmond (make-coll :geodetic "richmond" (p/point -77.4 37.54))
         north-pole (make-coll :geodetic "north-pole" (p/point 0 90))
         south-pole (make-coll :geodetic "south-pole" (p/point 0 -90))
-        normal-point (make-coll :geodetic "normal-point" (p/point 10 22))
+        _normal-point (make-coll :geodetic "normal-point" (p/point 10 22))
         am-point (make-coll :geodetic "am-point" (p/point 180 22))
-        esri-point (make-coll :geodetic "esri-point" (p/point -80 35))]
+        _esri-point (make-coll :geodetic "esri-point" (p/point -80 35))]
     (index/wait-until-indexed)
 
     (doseq [fmt (keys formats)
             :let [{extension :extension mime-type :mime-type} (get formats fmt)]]
       (testing (format "Search by %s shapefile" fmt)
+        (declare shapefile items)
         (are3 [shapefile items]
               (let [found (search/find-refs-with-multi-part-form-post
                             :collection

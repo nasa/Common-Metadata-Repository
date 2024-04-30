@@ -4,17 +4,15 @@
    are deleted after a given revision date."
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.test :refer :all]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.util :refer [are2] :as util]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
+   [cmr.common.util :as util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]
-   [cmr.umm-spec.umm-spec-core :as umm-spec]))
+   [cmr.system-int-test.utils.search-util :as search]))
 
 (use-fixtures :each (join-fixtures
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
@@ -31,13 +29,13 @@
                   :concept-type :collection
                   :native-id (:EntryTitle coll1-1)}
         _ (ingest/delete-concept concept1)
-        coll1-3 (d/ingest-umm-spec-collection "PROV1"
+        _coll1-3 (d/ingest-umm-spec-collection "PROV1"
                                               (data-umm-c/collection {:EntryTitle "Dataset1"
                                                                       :Version "v2"
                                                                       :ShortName "s1"}))
 
         ;; coll2 is a collection that is deleted
-        coll2-1 (d/ingest-umm-spec-collection "PROV1"
+        _coll2-1 (d/ingest-umm-spec-collection "PROV1"
                                               (data-umm-c/collection {:EntryTitle "Dataset2"
                                                                       :Version "v1"
                                                                       :ShortName "s2"}))
@@ -66,7 +64,7 @@
         _ (ingest/delete-concept concept3)
 
         ;; coll4 is a collection that has no deleted revisions
-        coll4 (d/ingest-umm-spec-collection "PROV1"
+        _coll4 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection {:EntryTitle "Dataset4"
                                                                     :Version "v4"
                                                                     :ShortName "s4"}))]
@@ -111,13 +109,14 @@
                                     :native-id (:EntryTitle coll3-1)})
 
          ;;; coll4 is a collection that has no deleted revisions
-          coll4 (d/ingest-umm-spec-collection "PROV1"
+          _coll4 (d/ingest-umm-spec-collection "PROV1"
                                               (data-umm-c/collection {:EntryTitle "Dataset4"
                                                                       :Version "v4"
                                                                       :ShortName "s4"}))]
       (index/wait-until-indexed)
 
       (testing "search for deleted collections with revision date"
+        (declare colls revision-date)
         (util/are2 [colls revision-date]
                    (let [references (search/find-deleted-collections {"revision_date[]" revision-date})]
                      (d/refs-match? colls references))

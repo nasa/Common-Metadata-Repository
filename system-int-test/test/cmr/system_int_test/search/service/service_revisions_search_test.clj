@@ -80,6 +80,7 @@
         svc3 (service/ingest-service svc3-concept)]
     (index/wait-until-indexed)
     (testing "search services for all revisions"
+      (declare services params)
       (are3 [services params]
         (do
           ;; find references with all revisions

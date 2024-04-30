@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.tagging.tag-acl-test
   "This tests the CMR Search API's tagging capabilities"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [are deftest testing use-fixtures]]
     [cmr.mock-echo.client.echo-util :as e]
     [cmr.system-int-test.system :as s]
     [cmr.system-int-test.utils.ingest-util :as ingest]

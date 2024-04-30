@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -88,7 +88,7 @@
         coll1-concept-id (:concept-id coll1)
         coll1-revision-id (:revision-id coll1)
         coll2-concept-id (:concept-id coll2)
-        coll2-revision-id (:revision-id coll2)
+        _coll2-revision-id (:revision-id coll2)
         _ (index/wait-until-indexed)
         tl1 (tool-util/ingest-tool-with-attrs {:native-id "tl1" :Name "tool1"})
         tl2 (tool-util/ingest-tool-with-attrs {:native-id "tl2" :Name "tool2"})
@@ -296,7 +296,7 @@
         coll1-concept-id (:concept-id coll1)
         coll1-revision-id (:revision-id coll1)
         coll2-concept-id (:concept-id coll2)
-        coll2-revision-id (:revision-id coll2)
+        _coll2-revision-id (:revision-id coll2)
         _ (index/wait-until-indexed)
         sv1 (service-util/ingest-service-with-attrs {:native-id "sv1"
                                                      :Name "service1"})

@@ -2,7 +2,7 @@
   "Integration test for CMR collection search by doi"
   (:require
     [clojure.test :refer :all]
-    [cmr.common.util :as util :refer [are3]]
+    [cmr.common.util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]

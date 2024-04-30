@@ -80,7 +80,7 @@
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:AdditionalAttributes [psa1 psa2]}))
         gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:product-specific-attributes [(dg/psa "alpha" ["ab" "bc"])
                                                                                      (dg/psa "bravo" ["cd" "bf"])]}))
-        gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:product-specific-attributes [(dg/psa "bravo" ["ab"])]}))]
+        _gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:product-specific-attributes [(dg/psa "bravo" ["ab"])]}))]
 
     (index/wait-until-indexed)
 

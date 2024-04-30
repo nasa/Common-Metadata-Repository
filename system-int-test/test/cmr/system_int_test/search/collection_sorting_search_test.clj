@@ -423,7 +423,7 @@
                         (t/plus (t/now) (t/years 1)))
         year-in-past (p/clj-time->date-time-str
                       (t/minus (t/now) (t/years 1)))
-        far-future (p/clj-time->date-time-str
+        _far-future (p/clj-time->date-time-str
                     (t/plus (t/now) (t/years 3000)))
         coll1 (d/ingest-umm-spec-collection
                "PROV1"

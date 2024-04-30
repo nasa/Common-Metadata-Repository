@@ -2,7 +2,7 @@
   "This tests the CMR Search API's humanizers capabilities"
   (:require
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -199,7 +199,7 @@
           ;; sanity check
           _ (is (= humanizers returned-humanizers))
           ;; Ingest collections that will use those humanizers
-          coll1 (data-core/ingest-umm-spec-collection
+          _coll1 (data-core/ingest-umm-spec-collection
                   "PROV1"
                   (assoc expected-conversion/example-collection-record
                          :ScienceKeywords [{:Category "earth science"
@@ -232,7 +232,7 @@
               returned-humanizers (:body (humanizer-util/get-humanizers))
               ;; sanity check
               _ (is (= humanizers returned-humanizers))
-              coll2 (data-core/ingest-umm-spec-collection
+              _coll2 (data-core/ingest-umm-spec-collection
                       "PROV1"
                       (assoc expected-conversion/example-collection-record
                              :ShortName "NewSN"

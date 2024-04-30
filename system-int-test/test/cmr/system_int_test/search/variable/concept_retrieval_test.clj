@@ -5,7 +5,7 @@
   * /concepts/:concept-id/:revision-id"
   (:require
    [cheshire.core :as json]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.mime-types :as mt]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as data2-coll]
@@ -146,7 +146,7 @@
                        :LongName var1-long-name}
                       {:coll-concept-id (:concept-id coll1)})
         var1-v1 (variable/ingest-variable-with-association var1-concept)
-        var1-v2 (variable/ingest-variable-with-attrs {:Name var1-name
+        _var1-v2 (variable/ingest-variable-with-attrs {:Name var1-name
                                                       :LongName var1-long-name-new
                                                       :native-id (:native-id var1-v1)})
         _ (index/wait-until-indexed)

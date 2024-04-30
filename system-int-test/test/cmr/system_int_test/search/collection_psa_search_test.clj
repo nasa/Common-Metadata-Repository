@@ -1,8 +1,7 @@
 (ns cmr.system-int-test.search.collection-psa-search-test
   "Tests searching for granules by product specific attributes."
   (:require
-   [clj-http.client :as client]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest testing use-fixtures]]
    [cmr.common.util :as util]
    [cmr.search.services.messages.attribute-messages :as attribute-messages]
    [cmr.system-int-test.data2.collection :as collection]

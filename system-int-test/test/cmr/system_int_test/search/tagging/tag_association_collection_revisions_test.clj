@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.tagging.tag-association-collection-revisions-test
   "This tests associating tags with collection revisions."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]

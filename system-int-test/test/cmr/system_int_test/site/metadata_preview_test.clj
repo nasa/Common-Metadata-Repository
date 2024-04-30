@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.site.metadata-preview-test
   "Integration tests for metadata preview page"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.system-int-test.data2.core :as data]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]

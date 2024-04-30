@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-periodic-temporal-search-test
   "Integration test for CMR granule periodic temporal search"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [are deftest is testing use-fixtures]]
     [cmr.common.util :refer [are2]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -17,7 +17,7 @@
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:TemporalExtents
                                                                             [(data-umm-cmn/temporal-extent
                                                                               {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
-        gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule1"
+        _gran1 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule1"
                                                    :beginning-date-time "2000-01-01T12:00:00Z"
                                                    :ending-date-time "2000-02-14T12:00:00Z"}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule2"
@@ -71,10 +71,11 @@
         gran19 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule19"
                                                     :beginning-date-time "2001-11-15T12:00:00Z"
                                                     :ending-date-time "2001-12-15T12:00:00Z"}))
-        gran20 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule20"}))]
+        _gran20 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule20"}))]
     (index/wait-until-indexed)
 
     (testing "Search granules with periodic temporal parameter"
+      (declare grans temporal-params)
       (are2 [grans temporal-params]
             (d/refs-match? grans (search/find-refs :granule {"temporal[]" temporal-params
                                                              :page_size 100}))

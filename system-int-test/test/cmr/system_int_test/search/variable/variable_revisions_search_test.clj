@@ -1,17 +1,15 @@
 (ns cmr.system-int-test.search.variable.variable-revisions-search-test
   "Integration test for variable all revisions search"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.metadata-db-util :as metadata-db]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.variable-util :as variable]
    [cmr.umm-spec.versioning :as umm-version]))
@@ -60,6 +58,7 @@
         var2 (merge var2 associations2 scienceKeywords definition)]
     (index/wait-until-indexed)
     (testing "search variables for all revisions"
+      (declare variables params)
       (are3 [variables params]
         (do
           ;; find references with all revisions

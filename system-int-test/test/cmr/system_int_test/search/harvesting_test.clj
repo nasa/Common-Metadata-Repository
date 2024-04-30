@@ -1,8 +1,7 @@
 (ns cmr.system-int-test.search.harvesting-test
   "Tests for using the scroll parameter to harvest metadata"
   (:require
-   [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are3]]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.system-int-test.data2.collection :as data2-collection]
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.granule :as data2-granule]
@@ -51,7 +50,7 @@
                                                                       :producer-gran-id "p5"})
                                    {:format :echo10})
         _ (dev-system-util/freeze-time! "2015-01-01T10:00:00Z")
-        g6-echo (data2-core/ingest "PROV1"
+        _g6-echo (data2-core/ingest "PROV1"
                                    (data2-granule/granule coll2-echo {:granule-ur "g6"
                                                                       :producer-gran-id "p6"})
                                    {:format :echo10})

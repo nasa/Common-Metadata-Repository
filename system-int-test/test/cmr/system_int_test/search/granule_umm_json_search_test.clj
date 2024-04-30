@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-umm-json-search-test
   "Integration tests for searching granules in UMM JSON format"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.mime-types :as mt]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -26,7 +26,7 @@
                   :collection-ref (umm-g/map->CollectionRef {:entry-title entry-title})})
         gran-concept (d/item->concept granule metadata-format)
         umm-g-gran (d/item->concept granule :umm-json)
-        {:keys [concept-id revision-id status] :as response} (ingest/ingest-concept gran-concept)]
+        {:keys [_concept-id _revision-id status] :as response} (ingest/ingest-concept gran-concept)]
     (if (#{200 201} status)
       (merge umm-g-gran response {:format metadata-format})
       response)))

@@ -1319,6 +1319,7 @@
   (every? true? (map #(= (get obj %) (get matcher %)) (keys matcher))))
 
 (deftest hierarchical-query-responses
+  (declare response)
   (are3 [query response]
     (is (subset-matches? (search/find-concepts-json :collection query)
                          response))

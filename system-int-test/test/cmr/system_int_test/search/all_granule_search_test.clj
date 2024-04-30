@@ -43,7 +43,7 @@
         ;; With allow-all-granule-params-flag being set to false, all granule query is allowed
         ;; only when client-id is present and allow-all-gran header is set to true.
         result1 (search/find-refs :granule {} {:headers header1})
-        ;; allow-all-gran header is case insensitive
+        ;; allow-all-gran header is case-insensitive
         result1-insensitive (search/find-refs :granule {} {:headers header1-insensitive})
 
         ;; Without the proper headers and collection constriants, these should be rejected

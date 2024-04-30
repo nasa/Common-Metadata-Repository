@@ -1,8 +1,8 @@
 (ns cmr.system-int-test.search.granule-search-entry-id-test
   "Integration tests for searching by collection entry_id"
   (:require
-   [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are3]]
+   [clojure.test :refer [deftest testing use-fixtures]]
+   [cmr.common.util :refer [are3]]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -28,6 +28,7 @@
     (index/wait-until-indexed)
 
     (testing "search granule by collection entry-id on"
+      (declare items entry-ids options)
       (are3 [items entry-ids options]
         (let [params (merge options {:entry_id entry-ids})]
           (d/refs-match? items (search/find-refs :granule params)))

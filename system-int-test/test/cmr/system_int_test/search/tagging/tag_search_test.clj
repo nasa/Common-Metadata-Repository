@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.tagging.tag-search-test
   "This tests associating tags with collections."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are2]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
@@ -47,6 +47,7 @@
         all-tags [tag1 tag2 tag3 tag4]]
     (index/wait-until-indexed)
 
+    (declare expected-tags query)
     (are2 [expected-tags query]
           (tags/assert-tag-search expected-tags (tags/search query))
 

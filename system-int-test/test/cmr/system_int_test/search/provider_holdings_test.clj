@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.provider-holdings-test
   "Integration tests for provider holdings"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.search.api.providers :as providers]
    [cmr.system-int-test.data2.collection :as dc]
@@ -63,7 +63,7 @@
         prov2-holdings (map (partial collection-holding "PROV2") prov2-colls prov2-granule-counts)
 
         ;; Provider 3
-        prov3-colls (doall (for [n (range 0 prov3-collection-count)]
+        prov3-colls (doall (for [_n (range 0 prov3-collection-count)]
                              (d/ingest "PROV3" (dc/collection))))
         prov3-holdings (doall (map #(collection-holding "PROV3" % 0) prov3-colls))]
 
@@ -71,14 +71,14 @@
     (dotimes [n prov1-collection-count]
       (let [coll (nth prov1-colls n)
             granule-count (nth prov1-granule-counts n)]
-        (dotimes [m granule-count]
+        (dotimes [_m granule-count]
           (d/ingest "PROV1" (dg/granule coll)))))
 
     ;; Create provider 2 granules
     (dotimes [n prov2-collection-count]
       (let [coll (nth prov2-colls n)
             granule-count (nth prov2-granule-counts n)]
-        (dotimes [m granule-count]
+        (dotimes [_m granule-count]
           (d/ingest "PROV2" (dg/granule coll)))))
 
     (index/wait-until-indexed)

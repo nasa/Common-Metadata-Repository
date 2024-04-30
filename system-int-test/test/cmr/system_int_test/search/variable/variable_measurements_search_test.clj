@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.variable.variable-measurements-search-test
   "Integration test for CMR variable search by measurement identifiers"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
     [cmr.common.util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -56,12 +56,12 @@
         var1 (ingest-variable-with-measurements 1 [m1])
         ;; var2 has context-medium "Atmosphere" and object "air" accross measurement identifiers
         var2 (ingest-variable-with-measurements 2 [m2 m21])
-        var3 (ingest-variable-with-measurements 3 [m3])
+        _var3 (ingest-variable-with-measurements 3 [m3])
         var4 (ingest-variable-with-measurements 4 [m4])
         var5 (ingest-variable-with-measurements 5 [m5])
         var6 (ingest-variable-with-measurements 6 [m6])
         var7 (ingest-variable-with-measurements 7 [m7])
-        var-no-measurements (ingest-variable-with-measurements 100 nil)]
+        _var-no-measurements (ingest-variable-with-measurements 100 nil)]
     (index/wait-until-indexed)
 
     (testing "search variables by measurement identifier."
@@ -83,6 +83,7 @@
         :quantity "AreA" [var5]))
 
     (testing "search by measurement identifier, combined."
+      (declare field-params items)
       (are3 [field-params items]
         (is (d/refs-match? items
                            (search/find-refs

@@ -3,33 +3,20 @@
   /concepts/:concept-id/:revision-id endpoints."
   (:require
    [cheshire.core :as json]
-   [clj-http.client :as client]
-   [clj-time.format :as f]
    [clojure.data.xml :as x]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common.mime-types :as mt]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.util :refer [are3] :as util]
+   [cmr.common.util :refer [are3]]
    [cmr.common.xml :as cx]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.spatial.codec :as codec]
-   [cmr.spatial.line-string :as l]
-   [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
-   [cmr.spatial.polygon :as poly]
-   [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.atom :as da]
    [cmr.system-int-test.data2.atom-json :as dj]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.granule :as dg]
-   [cmr.system-int-test.data2.kml :as dk]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.test.expected-conversion :as expected-conversion]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
@@ -37,9 +24,7 @@
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.versioning :as ver]
    [cmr.umm.echo10.echo10-collection :as c]
-   [cmr.umm.iso-mends.iso-mends-collection :as umm-c]
-   [cmr.umm.umm-core :as umm]
-   [cmr.umm.umm-spatial :as umm-s]))
+   [cmr.umm.umm-core :as umm]))
 
 (use-fixtures
   :each
@@ -64,7 +49,7 @@
 
 (defmulti result-matches?
   "Compare UMM record to the response from concept retrieval"
-  (fn [original-format format-key umm response]
+  (fn [_original-format format-key _umm _response]
     format-key))
 
 (defn- update-iso-entry-title
@@ -100,10 +85,10 @@
   (let [umm-coll (dc/collection {:entry-title "coll1"
                                  :projects (dc/projects "ESI_3")})
         coll1 (d/ingest "PROV1" umm-coll)
-        coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"}))
+        _coll2 (d/ingest "PROV1" (dc/collection {:entry-title "Dataset2"}))
         del-coll (d/ingest "PROV1" (dc/collection))
         ;; tokens
-        guest-token (e/login-guest (s/context))
+        _guest-token (e/login-guest (s/context))
         user1-token (e/login (s/context) "user1")]
     (ingest/delete-concept (d/item->concept del-coll :echo10))
     (index/wait-until-indexed)
@@ -277,7 +262,7 @@
                                                          :entry-title "ET9"
                                                          :long-name "ET9"})
                            {:format :dif10})
-        all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10]]
+        _all-colls [c1-echo c2-echo c3-dif c4-dif c5-iso c6-iso c7-smap c8-dif10 c9-dif10]]
     (index/wait-until-indexed)
 
     (testing "Get by concept id in formats"
@@ -383,16 +368,16 @@
         ;; to vars to make it easier to see what is being ingested.
 
         ;; Ingest a collection twice.
-        coll1-1 (d/ingest "PROV1" umm-coll1-1)
-        coll1-2 (d/ingest "PROV1" umm-coll1-2)
+        _coll1-1 (d/ingest "PROV1" umm-coll1-1)
+        _coll1-2 (d/ingest "PROV1" umm-coll1-2)
 
         ;; Ingest collection once, delete, then ingest again.
         coll2-1 (d/ingest "PROV1" umm-coll2-1)
         _ (ingest/delete-concept (d/item->concept coll2-1))
-        coll2-3 (d/ingest "PROV1" umm-coll2-3)
+        _coll2-3 (d/ingest "PROV1" umm-coll2-3)
 
         ;; Ingest a collection for PROV2 that is not visible to guests.
-        coll3 (d/ingest "PROV2" (dc/collection {:entry-title "et1"
+        _coll3 (d/ingest "PROV2" (dc/collection {:entry-title "et1"
                                                 :version-id "v1"
                                                 :short-name "s1"}))]
     (index/wait-until-indexed)
@@ -443,7 +428,7 @@
               umm-coll1-2 :echo10 mt/native "C1200000019-PROV1" 2))
 
       (testing "Requests for tombstone revision returns a 400 error"
-        (let [{:keys [status errors] :as response} (search/get-search-failure-xml-data
+        (let [{:keys [status errors] :as _response} (search/get-search-failure-xml-data
                                                      (search/retrieve-concept
                                                        (:concept-id coll2-1) 2 {:throw-exceptions true}))]
           (is (= 400 status))

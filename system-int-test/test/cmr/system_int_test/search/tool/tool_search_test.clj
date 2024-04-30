@@ -83,6 +83,7 @@
         all-tools (concat prov1-tools prov2-tools)]
     (index/wait-until-indexed)
 
+    (declare expected-tools query)
     (are3 [expected-tools query]
       (do
         (testing "XML references format"
@@ -235,6 +236,7 @@
                                           :AncillaryKeywords ["stuff" "things"]})]
     (index/wait-until-indexed)
 
+    (declare keyword-query)
     (are3 [expected-tools keyword-query]
       (tool/assert-tool-search
        expected-tools (tool/search-json {:keyword keyword-query}))
@@ -470,6 +472,7 @@
                                             :provider-id "PROV1"})]
     (index/wait-until-indexed)
 
+    (declare sort-key)
     (are3 [sort-key expected-tools]
       (is (d/refs-match-order?
            expected-tools
@@ -559,6 +562,7 @@
         (is (= tool-associations [tool1-concept-id])))
 
       ;; verify tool search UMM JSON response is correct.
+      (declare umm-version options)
       (are3 [umm-version options]
         (data-umm-json/assert-tool-umm-jsons-match
          umm-version [expected-tool1 expected-tool2]

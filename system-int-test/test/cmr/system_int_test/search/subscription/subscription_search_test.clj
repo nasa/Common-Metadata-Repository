@@ -55,6 +55,7 @@
                                                         {:token "mock-echo-system-token"})]
     (index/wait-until-indexed)
     (is (= 201 (:status subscription)))
+    (declare expected-subscriptions query)
     (are3 [expected-subscriptions query]
       (do
         (testing "XML references format"
@@ -599,6 +600,7 @@
                         :provider-id "PROV1"})]
     (index/wait-until-indexed)
 
+    (declare sort-key)
     (are3 [sort-key expected-subscriptions]
       (is (data2-core/refs-match-order?
            expected-subscriptions

@@ -1,10 +1,10 @@
 (ns cmr.system-int-test.search.search-after-search-test
   "Tests for using search-after header to retrieve search results"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common-app.api.routes :as routes]
    [cmr.common.mime-types :as mime-types]
-   [cmr.common.util :as util :refer [are3]]
+   [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.granule :as data2-granule]
@@ -50,6 +50,7 @@
     (index/wait-until-indexed)
 
     (testing "UMM-JSON search-after"
+      (declare concept-type accept extension all-refs)
       (are3 [concept-type accept extension all-refs]
         (let [params {:page-size 1
                       :provider "PROV1"}
@@ -122,7 +123,7 @@
 
 (deftest granule-search-after
   (let [admin-read-group-concept-id (e/get-or-create-group (s/context) "admin-read-group")
-        admin-read-token (e/login (s/context) "admin" [admin-read-group-concept-id])
+        _admin-read-token (e/login (s/context) "admin" [admin-read-group-concept-id])
         _ (e/grant-group-admin (s/context) admin-read-group-concept-id :read)
         coll1 (data2-core/ingest-umm-spec-collection "PROV1"
                                                      (data-umm-c/collection {:EntryTitle "E1"
@@ -207,6 +208,7 @@
 
 (deftest search-after-invalid-parameters
   (testing "invalid parameters"
+    (declare query expected-status err-msg)
     (are3 [query expected-status err-msg]
       (let [{:keys [status errors]} (search/find-refs :granule
                                                       query
@@ -238,6 +240,7 @@
       "scroll is not allowed with search-after"))
 
   (testing "invalid search-after header value"
+    (declare value)
     (are3 [value err-msg]
           (let [{:keys [status errors]} (search/find-refs :granule
                                                           {:provider "PROV1"}

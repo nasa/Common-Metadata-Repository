@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-search-feature-id-crid-id-test
   "Search CMR granules by feature ids and crid ids"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [are deftest testing use-fixtures]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -30,7 +30,7 @@
                                                  :feature-ids ["FEATURE2"]
                                                  :crid-ids ["CRID2"]})
                         {:format :umm-json})
-        gran3 (d/ingest "PROV1"
+        _gran3 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                          coll1 coll1-concept-id {:day-night "DAY"
                                                  :feature-ids ["super_power"]
@@ -48,7 +48,7 @@
                                                  :feature-ids ["feature123"]
                                                  :crid-ids ["crid123"]})
                         {:format :umm-json})
-        gran6 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-concept-id))]
+        _gran6 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-concept-id))]
     (index/wait-until-indexed)
 
     (testing "search by feature-id"

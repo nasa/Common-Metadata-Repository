@@ -2,10 +2,8 @@
   (:require
    [clojure.test :refer :all]
    [clojure.java.io :as io]
-   [cheshire.core :as json]
-   [cmr.common.log :refer [debug info]]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util :refer [are3]]
+   [cmr.common.util :refer [are3]]
    [cmr.common-app.test.side-api :as side]
    [cmr.search.services.parameters.converters.shapefile :as shapefile]
    [cmr.search.middleware.shapefile :as shapefile-middleware]
@@ -48,6 +46,7 @@
                                      {:name "provider"
                                       :content "PROV1"}]))))))
     (testing "Failure cases"
+      (declare shapefile regex)
       (are3 [shapefile regex]
             (is (re-find regex
                          (first (:errors (search/find-refs-with-multi-part-form-post
@@ -93,23 +92,23 @@
 
         ;; Lines
         normal-line (make-gran "normal-line" (l/ords->line-string :geodetic [22.681 -8.839, 18.309 -11.426, 22.705 -6.557]))
-        along-am-line (make-gran "along-am-line" (l/ords->line-string :geodetic [-180 0 -180 85]))
+        _along-am-line (make-gran "along-am-line" (l/ords->line-string :geodetic [-180 0 -180 85]))
         normal-line-cart (make-cart-gran "normal-line-cart" (l/ords->line-string :cartesian [16.439 -13.463, 31.904 -13.607, 31.958 -10.401]))
 
         ;; Bounding rectangles
         whole-world (make-gran "whole-world" (m/mbr -180 90 180 -90))
-        touches-np (make-gran "touches-np" (m/mbr 45 90 55 70))
-        touches-sp (make-gran "touches-sp" (m/mbr -160 -70 -150 -90))
-        across-am-br (make-gran "across-am-br" (m/mbr 170 10 -170 -10))
+        _touches-np (make-gran "touches-np" (m/mbr 45 90 55 70))
+        _touches-sp (make-gran "touches-sp" (m/mbr -160 -70 -150 -90))
+        _across-am-br (make-gran "across-am-br" (m/mbr 170 10 -170 -10))
         normal-brs (make-gran "normal-brs"
                               (m/mbr 10 10 20 0)
                               (m/mbr -20 0 -10 -10))
 
         ;; Geodetic Polygons
         wide-south (make-gran "wide-south" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
-        across-am-poly (make-gran "across-am-poly" (polygon 170 -10, -175 -10, -170 10, 175 10, 170 -10))
-        on-np (make-gran "on-np" (polygon 45 85, 135 85, -135 85, -45 85, 45 85))
-        on-sp (make-gran "on-sp" (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85))
+        _across-am-poly (make-gran "across-am-poly" (polygon 170 -10, -175 -10, -170 10, 175 10, 170 -10))
+        _on-np (make-gran "on-np" (polygon 45 85, 135 85, -135 85, -45 85, 45 85))
+        _on-sp (make-gran "on-sp" (polygon -45 -85, -135 -85, 135 -85, 45 -85, -45 -85))
 
         ;; polygon with holes
         outer (umm-s/ords->ring -5.26,-2.59, 11.56,-2.77, 10.47,8.71, -5.86,8.63, -5.26,-2.59)
@@ -120,24 +119,25 @@
         ;; Cartesian Polygons
         wide-south-cart (make-cart-gran "wide-south-cart" (polygon -70 -30, 70 -30, 70 -20, -70 -20, -70 -30))
         very-wide-cart (make-cart-gran "very-wide-cart" (polygon -180 40, -180 35, 180 35, 180 40, -180 40))
-        very-tall-cart (make-cart-gran "very-tall-cart" (polygon -160 90, -160 -90, -150 -90, -150 90, -160 90))
+        _very-tall-cart (make-cart-gran "very-tall-cart" (polygon -160 90, -160 -90, -150 -90, -150 90, -160 90))
 
         outer-cart (umm-s/ords->ring -5.26 -22.59 11.56 -22.77 10.47 -11.29 -5.86 -11.37 -5.26 -22.59)
         hole1-cart (umm-s/ords->ring 6.95 -17.95 2.98 -17.94 3.92 -20.08 6.95 -17.95)
         hole2-cart (umm-s/ords->ring 5.18 -13.08 -1.79 -12.99 -2.65 -15 4.29 -14.95 5.18 -13.08)
-        polygon-with-holes-cart (make-cart-gran "polygon-with-holes-cart" (poly/polygon [outer-cart hole1-cart hole2-cart]))
+        _polygon-with-holes-cart (make-cart-gran "polygon-with-holes-cart" (poly/polygon [outer-cart hole1-cart hole2-cart]))
 
         ;; Points
         washington-dc (make-gran "washington-dc" (p/point -77 38.9))
         richmond (make-gran "richmond" (p/point -77.4 37.54))
-        north-pole (make-gran "north-pole" (p/point 0 90))
-        south-pole (make-gran "south-pole" (p/point 0 -90))
-        am-point (make-gran "am-point" (p/point 180 22))]
+        _north-pole (make-gran "north-pole" (p/point 0 90))
+        _south-pole (make-gran "south-pole" (p/point 0 -90))
+        _am-point (make-gran "am-point" (p/point 180 22))]
     (index/wait-until-indexed)
 
     (doseq [fmt (keys formats)
             :let [{extension :extension mime-type :mime-type} (get formats fmt)]]
       (testing (format "Search by %s shapefile with simplification" fmt)
+        (declare point-counts items)
         (are3 [shapefile point-counts items]
               (let [found (search/find-refs-with-multi-part-form-post
                            :granule

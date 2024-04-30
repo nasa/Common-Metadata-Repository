@@ -89,7 +89,7 @@
 (defmulti handle-retrieve-concept-as-subscriber-error
   "Execute the retrieve concept call with the given parameters and returns the status and errors
   based on the result format."
-  (fn [concept-id revision-id accept-format token]
+  (fn [_concept-id _revision-id accept-format _token]
     accept-format))
 
 (defmethod handle-retrieve-concept-as-subscriber-error mt/umm-json

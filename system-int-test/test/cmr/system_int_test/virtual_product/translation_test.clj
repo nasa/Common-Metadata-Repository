@@ -2,7 +2,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.util :as util]
    [cmr.system-int-test.data2.collection :as collection]
    [cmr.system-int-test.data2.core :as data-core]
@@ -123,6 +123,7 @@
          ast-coll-entry (assoc (select-keys ast-coll [:entry-title :concept-id]) :granule-ur  nil)]
 
      (testing "Valid input to translate-granule-entries end-point"
+       (declare request-json expected-response-json)
        (util/are2 [request-json expected-response-json]
          (let [response (virtual-product-util/translate-granule-entries
                          (json/generate-string request-json))]
@@ -157,6 +158,7 @@
          [source-granule non-virtual-granule1 ast-coll-entry source-granule]))
 
      (testing "Translating a granule which is deleted"
+       (declare deleted-granule)
        (util/are2 [deleted-granule request-json expected-response-json]
          (let [_ (ingest/delete-concept (data-core/item->concept deleted-granule))
                _ (index/wait-until-indexed)
@@ -254,7 +256,7 @@
   (let [source-collections (virtual-product-util/ingest-source-collections)
         ;; Ingest the virtual collections. For each virtual collection associate it with the source
         ;; collection to use later.
-        vp-colls (reduce (fn [new-colls source-coll]
+        _vp-colls (reduce (fn [new-colls source-coll]
                            (into new-colls (map #(assoc % :source-collection source-coll)
                                                 (virtual-product-util/ingest-virtual-collections
                                                  [source-coll]))))
@@ -275,11 +277,10 @@
         all-virt-entries (mapcat second virt-gran-entries-by-src)
         expected-src-entries (mapcat
                                #(repeat (count (second %)) (granule->entry (first %)))
-                               virt-gran-entries-by-src)]
-
-    (let [response (virtual-product-util/translate-granule-entries
-                     (json/generate-string all-virt-entries))]
-      (= expected-src-entries (json/parse-string (:body response) true)))))
+                               virt-gran-entries-by-src)
+        response (virtual-product-util/translate-granule-entries
+                   (json/generate-string all-virt-entries))]
+    (is (= expected-src-entries (json/parse-string (:body response) true)))))
 
 (defn- make-grans
   "Ingest n granules for the given collection"

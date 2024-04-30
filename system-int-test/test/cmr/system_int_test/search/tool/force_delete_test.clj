@@ -3,7 +3,7 @@
   service/collection associations."
   (:require
    [cheshire.core :as json]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-tool :as data-umm-t]
@@ -47,14 +47,14 @@
         tl (data-umm-t/tool-concept {:Name "Tl1"
                                      :native-id "Force-Delete-Tl1"})
         ;; Make three revisions, capturing the third
-        tl-concept (last (for [n (range 3)] (tool/ingest-tool tl)))
+        tl-concept (last (for [_n (range 3)] (tool/ingest-tool tl)))
         {tl-concept-id :concept-id} tl-concept
         _ (index/wait-until-indexed)
         {[assn-response] :body} (au/associate-by-concept-ids
                                  token
                                  tl-concept-id
                                  [{:concept-id coll-concept-id}])
-        {{tl-assn-concept-id :concept-id} :tool-association} assn-response]
+        {{_tl-assn-concept-id :concept-id} :tool-association} assn-response]
     (testing "initial conditions"
       (is (= 3 (:revision-id tl-concept)))
       ;; make sure that the collection's `associations` field is present, that

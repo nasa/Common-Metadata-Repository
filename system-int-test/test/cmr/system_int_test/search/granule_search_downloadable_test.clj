@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.search.granule-search-downloadable-test
   "Integration tests for searching by downloadable"
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [are deftest is testing use-fixtures]]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]

@@ -1,17 +1,14 @@
 (ns cmr.system-int-test.search.granule-orbit-search-test
   "Tests for spatial search with orbital back tracking."
   (:require
-   [clojure.string :as s]
-   [clojure.test :refer :all]
+   [clojure.java.shell]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common.util :as u]
    [cmr.spatial.codec :as codec]
-   [cmr.spatial.derived :as derived]
    [cmr.spatial.kml :as kml]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as point]
-   [cmr.spatial.polygon :as poly]
-   [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -46,7 +43,7 @@
                 other-attribs))))))
 
 (deftest orbit-bug-CMR-4722
-  (let [coll (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
+  (let [_coll (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
                                                   {:provider-id "PROV1"
                                                    :concept-type :collection
                                                    :native-id "OMSO2-collection"
@@ -60,6 +57,7 @@
     (index/wait-until-indexed)
 
     (testing "Orbit search crossing the equator for OMSO2 granules."
+      (declare items wnes)
       (u/are3
         [items wnes]
         (let [found (search/find-refs :granule
@@ -82,12 +80,12 @@
         [] [-128.32 53.602 -46.758 -1.241]))))
 
 (deftest orbit-bug-CMR-6431
-  (let [coll (d/ingest-concept-with-metadata-file "CMR-6431/sample-orbit-collection.xml"
+  (let [_coll (d/ingest-concept-with-metadata-file "CMR-6431/sample-orbit-collection.xml"
                                                   {:provider-id "PROV1"
                                                    :concept-type :collection
                                                    :native-id "orbit-collection"
                                                    :format-key :dif10})
-        coll2 (d/ingest-concept-with-metadata-file "CMR-6431/iso-orbit-collection.xml"
+        _coll2 (d/ingest-concept-with-metadata-file "CMR-6431/iso-orbit-collection.xml"
                                                    {:provider-id "PROV1"
                                                     :concept-type :collection
                                                     :native-id "orbit-collection-2"
@@ -111,7 +109,7 @@
         (d/refs-match? [] found)))))
 
 (deftest orbit-bug-CMR-5007
-  (let [coll (d/ingest-concept-with-metadata-file "CMR-5007/dif10_Collection_C1239966837-GES_DISC.xml"
+  (let [_coll (d/ingest-concept-with-metadata-file "CMR-5007/dif10_Collection_C1239966837-GES_DISC.xml"
                                                   {:provider-id "PROV1"
                                                    :concept-type :collection
                                                    :native-id "GES_DISC-collection"
@@ -125,6 +123,7 @@
     (index/wait-until-indexed)
 
     (testing "Polygon search for granules near poles."
+      (declare coords params)
       (u/are3 [items coords params]
               (let [found (search/find-refs
                             :granule
@@ -282,7 +281,7 @@
         g3 (make-gran coll1 "gran3" 127.73 81.8 :desc -81.8 :desc)
         g4 (make-gran coll1 "gran4" 103 -81.8 :asc 81.8 :asc)
         g5 (make-gran coll2 "gran5" 79.88192 50 :asc 50 :desc)
-        g6 (make-gran coll2 "gran6" 55.67938 -50 :asc 50 :asc)
+        _g6 (make-gran coll2 "gran6" 55.67938 -50 :asc 50 :asc)
         g7 (make-gran coll2 "gran7" 31.48193 50 :desc -50 :desc)
         g8 (make-gran coll2 "gran8" 7.28116 -50 :asc 50 :asc)
         g9 (make-gran coll3 "gran9" 127.73 81.8 :desc -81.8 :desc)]
@@ -314,7 +313,7 @@
               [g2] [145 45 -145 -45] {:concept-id (:concept-id coll1)}))
 
     (testing "point searches"
-      (are [items lon_lat params]
+      (are [items lon_lat _params]
            (let [found (search/find-refs :granule {:point (codec/url-encode (apply point/point lon_lat))
                                                    :provider "PROV1"
                                                    :page-size 50})
@@ -394,7 +393,7 @@
                            :spatial-coverage (dc/spatial {:gsr :orbit
                                                           :orbit op2})}))
         g1 (make-gran coll1 "gran1" 104.0852 50 :asc 50 :asc)
-        g2 (make-gran coll2 "gran2" 31.946 70.113955 :asc  -71.344289 :desc)]
+        _g2 (make-gran coll2 "gran2" 31.946 70.113955 :asc  -71.344289 :desc)]
     (index/wait-until-indexed)
 
     (testing "bounding rectangle searches"
@@ -437,7 +436,7 @@
               ; [] [0 1 6 0] nil
 
 (deftest ascending-crossing-precision-test
-  (let [coll (d/ingest-concept-with-metadata-file "iso-samples/CMR-5269-IsoMendsCollection.xml"
+  (let [_coll (d/ingest-concept-with-metadata-file "iso-samples/CMR-5269-IsoMendsCollection.xml"
                                                   {:provider-id "PROV1"
                                                    :concept-type :collection
                                                    :format-key :iso19115})

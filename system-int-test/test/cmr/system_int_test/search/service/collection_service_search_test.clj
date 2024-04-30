@@ -2,7 +2,7 @@
   "Tests searching for collections with associated services"
   (:require
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as dc]
@@ -391,7 +391,7 @@
 
 (deftest collection-service-search-test
   (let [token (e/login (s/context) "user1")
-        [coll1 coll2 coll3 coll4 coll5] (doall (for [n (range 1 6)]
+        [coll1 coll2 coll3 coll4 _coll5] (doall (for [n (range 1 6)]
                                                  (d/ingest-umm-spec-collection
                                                   "PROV1"
                                                   (data-umm-c/collection n {})
@@ -425,6 +425,7 @@
     (index/wait-until-indexed)
 
     (testing "search collections by service names"
+      (declare items service options)
       (are3 [items service options]
         (let [params (merge {:service_name service}
                             (when options

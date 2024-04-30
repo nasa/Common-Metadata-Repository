@@ -1,11 +1,10 @@
 (ns cmr.system-int-test.search.granule-shapefile-search-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [clojure.java.io :as io]
    [cmr.common-app.api.routes :as routes]
-   [cmr.common.log :refer [debug]]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util :refer [are3]]
+   [cmr.common.util :refer [are3]]
    [cmr.common-app.test.side-api :as side]
    [cmr.search.services.parameters.converters.shapefile :as shapefile]
    [cmr.search.middleware.shapefile :as shapefile-middleware]
@@ -45,6 +44,7 @@
         _ (side/eval-form `(shapefile/set-max-shapefile-points! 50))]
 
     (testing "ESRI Shapefile Failure cases"
+      (declare shapefile additional-params regex)
       (are3 [shapefile additional-params regex]
         (is (re-find regex
                       (first (:errors (search/find-refs-with-multi-part-form-post
@@ -214,6 +214,7 @@
     (doseq [fmt (keys formats)
             :let [{extension :extension mime-type :mime-type} (get formats fmt)]]
       (testing (format "Search by %s shapefile" fmt)
+        (declare items)
         (are3 [shapefile items]
               (let [found (search/find-refs-with-multi-part-form-post
                             :granule
@@ -259,7 +260,7 @@
 
       (testing (format "Scrolling with results on first page for %s shapefile" fmt)
         (let [expected-items [whole-world touches-sp on-sp very-tall-cart south-pole]
-              {:keys [hits headers] :as initial-scroll-request}
+              {:keys [_hits headers] :as initial-scroll-request}
               (search/find-refs-with-multi-part-form-post
                 :granule
                 [{:name "shapefile"
@@ -283,7 +284,7 @@
 
       (testing (format "Deferred scrolling for %s shapefile" fmt)
         (let [expected-items [whole-world very-wide-cart washington-dc richmond]
-              {:keys [hits headers]}
+              {:keys [_hits headers]}
               (search/find-refs-with-multi-part-form-post
                 :granule
                 [{:name "shapefile"

@@ -4,8 +4,9 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -28,7 +29,7 @@
 ;; 1. Run a test
 ;; 2. Refresh the metadata cache.
 (comment
-  (cmr.search.data.metadata-retrieval.metadata-cache/refresh-cache
+  (metadata-cache/refresh-cache
     {:system (get-in user/system [:apps :search])}))
 ;;3. Retrieve the reporting
 ;;  curl http://localhost:3003/humanizers/report
@@ -104,7 +105,7 @@
 (deftest search-by-platform-humanized
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [(data-umm-cmn/platform {:ShortName "TERRA"})]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Platforms [(data-umm-cmn/platform {:ShortName "AM-1"})]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Platforms [(data-umm-cmn/platform {:ShortName "Aqua"})]}))]
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Platforms [(data-umm-cmn/platform {:ShortName "Aqua"})]}))]
     (index/wait-until-indexed)
     (testing "search collections by humanized platform"
       (is (d/refs-match? [coll1 coll2]
@@ -127,7 +128,7 @@
 
         coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Platforms [p1]}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Platforms [p2]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Platforms [p3]}))]
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Platforms [p3]}))]
     (index/wait-until-indexed)
     (testing "search collections by humanized instrument"
       (is (d/refs-match? [coll1 coll2]
@@ -136,7 +137,7 @@
 (deftest search-by-project-humanized
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:Projects (data-umm-cmn/projects "USGS SOFIA")}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:Projects (data-umm-cmn/projects "USGS_SOFIA")}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Projects (data-umm-cmn/projects "OPENDAP")}))]
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:Projects (data-umm-cmn/projects "OPENDAP")}))]
     (index/wait-until-indexed)
     (testing "search collections by humanized project"
       (is (d/refs-match? [coll1 coll2]
@@ -151,7 +152,7 @@
                                                      {:DataCenters [(data-umm-cmn/data-center
                                                                      {:Roles ["ARCHIVER"]
                                                                       :ShortName "NASA/NSIDC_DAAC"})]}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3
                                                      {:DataCenters [(data-umm-cmn/data-center
                                                                      {:Roles ["ARCHIVER"]
                                                                       :ShortName "ASF"})]}))]
@@ -163,7 +164,7 @@
 (deftest search-by-processing-level-id-humanized
   (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:ProcessingLevel {:Id "1T"}}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:ProcessingLevel {:Id "L1T"}}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:ProcessingLevel {:Id "3"}}))]
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:ProcessingLevel {:Id "3"}}))]
     (index/wait-until-indexed)
     (testing "search collections by humanized processing-level-id"
       (is (d/refs-match? [coll1 coll2]
@@ -189,7 +190,7 @@
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:ScienceKeywords [sk2]}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:ScienceKeywords [sk3]}))
         coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:ScienceKeywords [sk4]}))
-        coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {:ScienceKeywords [sk5]}))]
+        _coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {:ScienceKeywords [sk5]}))]
     (index/wait-until-indexed)
     (testing "search collections by humanized science keyword"
       (is (d/refs-match? [coll1 coll3]

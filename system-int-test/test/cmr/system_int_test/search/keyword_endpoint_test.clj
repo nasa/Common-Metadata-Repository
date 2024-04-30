@@ -1,6 +1,6 @@
 (ns cmr.system-int-test.search.keyword-endpoint-test
   "Integration test for CMR search endpoint returning GCMD Keywords"
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [cmr.common.util :as util]
             [cmr.system-int-test.utils.search-util :as search]))
 
@@ -792,6 +792,7 @@
                          {"value" "1A", "uuid" "87fdeb97-2d3e-4812-8540-b88f425d920c"}]}})
 
 (deftest get-keywords-test
+  (declare keyword-scheme expected-keywords)
   (util/are3
     [keyword-scheme expected-keywords]
     (is (= {:status 200 :results expected-keywords}

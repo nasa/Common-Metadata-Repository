@@ -1,9 +1,8 @@
 (ns cmr.system-int-test.search.granule-spatial-search-test
   (:require
    [clojure.java.io :as io]
-   [clojure.string :as string]
-   [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are3]]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
+   [cmr.common.util :refer [are3]]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
@@ -42,6 +41,7 @@
 (deftest spatial-search-validation-test
   (testing "All granules spatial"
     (testing "Success"
+      (declare params)
       (are3 [params]
         (let [response (search/find-refs :granule params)]
           (is (zero? (:hits response))
@@ -527,13 +527,13 @@
          normal-poly-cart]))))
 
 (deftest granule-with-multiple-spatial-features-test
-  (let [coll (d/ingest-concept-with-metadata-file "CMR-8076/C2036880739-POCLOUD-Collection.iso19115"
+  (let [_coll (d/ingest-concept-with-metadata-file "CMR-8076/C2036880739-POCLOUD-Collection.iso19115"
                                                   {:provider-id "PROV1"
                                                    :concept-type :collection
                                                    :native-id "orbit-parent"
                                                    :format-key :iso19115})
         _ (index/wait-until-indexed)
-        granule1 (d/ingest-concept-with-metadata-file "CMR-8076/G2226084285-POCLOUD.echo10"
+        _granule1 (d/ingest-concept-with-metadata-file "CMR-8076/G2226084285-POCLOUD.echo10"
                                                       {:provider-id "PROV1"
                                                        :concept-type :granule
                                                        :native-id "inside"
@@ -583,6 +583,7 @@
     ;; This particular polygon is problematic. We can't find an interial rectangle for it. So we
     ;; are using one of the points in the polyson to create a mbr to replace it.
     (index/wait-until-indexed)
+    (declare ords items)
     (are3 [ords items]
       (let [found (search/find-refs :granule {:polygon (apply search-poly ords)
                                               :provider "PROV1"})]
@@ -616,6 +617,7 @@
 
 (deftest circle-parameter-validation
   (testing "invalid circle parameters"
+    (declare error-msgs)
     (are3 [params error-msgs]
       (let [{:keys [status errors]} (search/find-refs :granule {:circle params
                                                                 :provider "PROV1"})]

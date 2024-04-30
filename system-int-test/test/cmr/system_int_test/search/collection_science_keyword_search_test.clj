@@ -61,7 +61,7 @@
         coll7 (d/ingest "PROV2" (dc/collection {:science-keywords [sk4 sk5]}))
         coll8 (d/ingest "PROV2" (dc/collection {:science-keywords [sk6]}))
         coll9 (d/ingest "PROV2" (dc/collection {:science-keywords [sk7]}))
-        coll10 (d/ingest "PROV2" (dc/collection {}))
+        _coll10 (d/ingest "PROV2" (dc/collection {}))
         coll11 (d/ingest "PROV1" (dc/collection {:science-keywords [sk8 sk9]}))]
 
     (index/wait-until-indexed)

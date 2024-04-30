@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.system-int-test.data2.umm-spec-collection :as umm-spec-collection]
    [cmr.system-int-test.utils.cache-util :as cache-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
@@ -45,7 +45,7 @@
 
   (testing "ingest and search by data format of a collection with data formats."
     (let [concept (umm-spec-collection/collection-concept sample-data-format-collection-test)
-          {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
+          {:keys [_concept-id _revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
       (cache-util/refresh-cache (url/refresh-collection-metadata-cache-url) (transmit-config/echo-system-token))
       (is (= 1

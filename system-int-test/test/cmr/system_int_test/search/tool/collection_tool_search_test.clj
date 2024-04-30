@@ -56,6 +56,7 @@
     (index/wait-until-indexed)
 
     (testing "search collections by tool names"
+      (declare items tool options)
       (are3 [items tool options]
         (let [params (merge {:tool_name tool}
                             (when options

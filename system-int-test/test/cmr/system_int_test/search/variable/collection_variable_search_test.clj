@@ -2,7 +2,7 @@
   "Tests searching for collections by associated variables"
   (:require
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.atom :as atom]
@@ -24,7 +24,7 @@
 
 (deftest collection-variable-search-test
   (let [token (e/login (s/context) "user1")
-        [coll1 coll2 coll3 coll4 coll5] (doall (for [n (range 1 6)]
+        [coll1 coll2 coll3 coll4 _coll5] (doall (for [n (range 1 6)]
                                                  (d/ingest-umm-spec-collection
                                                   "PROV1"
                                                   (data-umm-c/collection n {})
@@ -55,12 +55,13 @@
                        :coll-concept-id (:concept-id coll4)})
         {variable1-concept-id :concept-id} (vu/ingest-variable-with-association var1-concept)
         {variable2-concept-id :concept-id} (vu/ingest-variable-with-association var2-concept)
-        {variable3-concept-id :concept-id} (vu/ingest-variable-with-association var3-concept)
+        {_variable3-concept-id :concept-id} (vu/ingest-variable-with-association var3-concept)
         {variable4-concept-id :concept-id} (vu/ingest-variable-with-association var4-concept)]
 
     (index/wait-until-indexed)
 
     (testing "search collections by variables"
+      (declare items variable options)
       (are3 [items variable options]
         (let [params (merge {:variable_name variable}
                             (when options
@@ -160,6 +161,7 @@
         [] "VAR1" {:ignore-case false}))
 
     (testing "search collections by measurements"
+      (declare measurement)
       (are3 [items measurement options]
         (let [params (merge {:measurement measurement}
                             (when options
@@ -198,6 +200,7 @@
 
 
     (testing "search collections by variables-h"
+      (declare params)
       (are3 [items params options]
         (let [search-params (merge {:variables-h params}
                                    (when options
@@ -374,6 +377,7 @@
     (index/wait-until-indexed)
 
     (testing "search collections in ATOM format has-variables field"
+      (declare coll expected-fields)
       (are3 [coll expected-fields]
         (let [coll-with-extra-fields (merge coll expected-fields)
               {:keys [entry-title]} coll

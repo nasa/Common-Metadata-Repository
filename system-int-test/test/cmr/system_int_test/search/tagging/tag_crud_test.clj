@@ -2,7 +2,7 @@
   "This tests the CMR Search API's tagging capabilities"
   (:require
    [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
    [cmr.mock-echo.client.echo-util :as echo-util]
@@ -159,7 +159,7 @@
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (echo-util/login (system/context) "user1")
-        {:keys [concept-id revision-id]} (tags/create-tag token tag)]
+        {:keys [concept-id _revision-id]} (tags/create-tag token tag)]
 
     (testing "Update with originator id"
       (let [updated-tag (-> tag
@@ -184,7 +184,7 @@
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (echo-util/login (system/context) "user1")
-        {:keys [concept-id revision-id]} (tags/create-tag token tag)
+        {:keys [concept-id _revision-id]} (tags/create-tag token tag)
         ;; The stored updated tag would have user1 in the originator id
         tag (assoc tag :originator-id "user1")]
 
@@ -230,7 +230,7 @@
   (let [tag-key "tag1"
         tag (tags/make-tag {:tag-key tag-key})
         token (echo-util/login (system/context) "user1")
-        {:keys [concept-id revision-id]} (tags/create-tag token tag)]
+        {:keys [concept-id _revision-id]} (tags/create-tag token tag)]
 
     (testing "Delete without token"
       (is (= {:status 401

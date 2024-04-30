@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.variable.variable-search-test
   "This tests searching variables."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
@@ -9,7 +9,6 @@
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -77,7 +76,7 @@
                                       "PROV1"
                                       (data-umm-c/collection n {})
                                       {:token token})))
-        [coll4 coll5 coll6] (doall (for [n (range 1 4)]
+        [coll4 coll5 _coll6] (doall (for [n (range 1 4)]
                                      (d/ingest-umm-spec-collection
                                       "PROV2"
                                       (data-umm-c/collection n {})
@@ -126,6 +125,7 @@
 
     (index/wait-until-indexed)
 
+    (declare expected-variables query)
     (are3 [expected-variables query]
       (d/refs-match? expected-variables (search/find-refs :variable query))
 
@@ -455,7 +455,7 @@
         variable3 (variables/ingest-variable-with-association var3-concept)
         associations3 {:associations {:collections [(:concept-id coll3)]}
                        :association-details {:collections [{:concept-id (:concept-id coll3)}]}}
-        variable3 (merge variable3 associations3 definition)]
+        _variable3 (merge variable3 associations3 definition)]
     (index/wait-until-indexed)
 
     (are3 [expected-variables keyword]
@@ -692,6 +692,7 @@
         variable4 (merge variable4 associations4 scienceKeywords definition)]
     (index/wait-until-indexed)
 
+    (declare sort-key)
     (are3 [sort-key expected-variables]
       (variables/assert-variable-search-order
        expected-variables

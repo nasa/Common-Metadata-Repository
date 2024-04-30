@@ -1,10 +1,10 @@
 (ns cmr.system-int-test.search.granule-orbit-number-search-test
   "Integration test for CMR granule orbit number search"
   (:require 
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is testing use-fixtures]]
     [cmr.common-app.services.search.messages :as m]
     [cmr.common.services.messages :as cm]
-    [cmr.common.util :as util :refer [are3]]
+    [cmr.common.util :refer [are3]]
     [cmr.search.services.messages.orbit-number-messages :as on-m]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -59,6 +59,7 @@
     (index/wait-until-indexed)
 
     (testing "search by exact orbit number"
+      (declare items orbit-range)
       (are3 [items orbit-range]
             (d/refs-match? items (search/find-refs :granule {:orbit-number orbit-range}))
 
@@ -88,11 +89,11 @@
     (testing "non-numeric orbit-number"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "ABC"})]
         (is (= 400 status))
-        (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-msg java.lang.Double "ABC")]))))
+        (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-msg Double "ABC")]))))
     (testing "non-numeric orbit-number in range"
       (let [{:keys [status errors]} (search/find-refs :granule {:orbit-number "1,X"})]
         (is (= 400 status))
-        (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-msg java.lang.Double "X")]))))
+        (is (= errors [(on-m/invalid-orbit-number-msg) (cm/invalid-msg Double "X")]))))
     (testing "catalog-rest-style-orbit-number"
       (let [references (search/find-refs :granule {"orbit-number[value]" "1"})]
         (is (d/refs-match? [gran1 gran2 gran3] references))))

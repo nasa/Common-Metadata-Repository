@@ -2,7 +2,7 @@
 (ns cmr.system-int-test.search.granule-retrieval-test
   "Integration test for granule retrieval with cmr-concept-id"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is testing use-fixtures]]
     [cmr.common.mime-types :as mt]
     [cmr.common.util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
@@ -12,7 +12,6 @@
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
-    [cmr.umm-spec.legacy :as legacy]
     [cmr.umm-spec.versioning :as versioning]
     [cmr.umm.echo10.granule :as g]
     [cmr.umm.umm-granule :as umm-g]))
@@ -23,11 +22,11 @@
   (let [coll1 (d/ingest-umm-spec-collection "PROV1"
                                             (data-umm-c/collection
                                              {:Projects (data-umm-cmn/projects "ABC" "KLM" "XYZ")}))
-        gran1 (d/ingest "PROV1"
+        _gran1 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                          coll1 (:concept-id coll1) {:granule-ur "Granule1"
                                                     :project-refs ["ABC"]}))
-        gran1 (d/ingest "PROV1"
+        _gran1 (d/ingest "PROV1"
                         (dg/granule-with-umm-spec-collection
                          coll1 (:concept-id coll1) {:granule-ur "Granule1"
                                                     :project-refs ["KLM"]}))
@@ -92,6 +91,7 @@
          umm-g-gran-revision-id :revision-id} (ingest/ingest-concept umm-g-gran)]
     (index/wait-until-indexed)
     (testing "retrieve UMM-G granule in UMM JSON format in latest UMM version"
+      (declare accept-format)
       (are3
         [accept-format]
         (let [response (search/retrieve-concept

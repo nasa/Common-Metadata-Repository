@@ -2,7 +2,7 @@
   "This tests searching for collections by tag parameters"
   (:require
    [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are2]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.atom :as atom]
@@ -82,6 +82,7 @@
     (index/wait-until-indexed)
 
     (testing "All tag parameters with XML references"
+      (declare expected-tags-colls query)
       (are2 [expected-tags-colls query]
             (data-core/refs-match? (distinct (apply concat expected-tags-colls))
                                    (search/find-refs :collection query))
@@ -240,6 +241,7 @@
     (index/wait-until-indexed)
 
     (testing "include-tags in atom/json format has proper tags added to atom/json response."
+      (declare include-tags dataset-id-tags)
       (are2
         [include-tags dataset-id-tags]
         (let [expected-result
@@ -340,6 +342,7 @@
 
     (testing "Invalid include-tags params"
       (testing "include-tags in collection search with result formats orther than JSON is invalid."
+        (declare search-fn format-type)
         (are2 [search-fn format-type]
           (= {:status 400
               :errors [(format "Parameter [include_tags] is not supported for %s format search."
@@ -487,6 +490,7 @@
            [] {:tag-data {"tag1" "cloud" "tag2" "cloud"}}))
 
     (testing "search with invalid tag-data format"
+      (declare params)
       (are2 [params]
             (= {:status 400
                 :errors ["Tag data search must be in the form of tag-data[tag-key]=tag-value"]}

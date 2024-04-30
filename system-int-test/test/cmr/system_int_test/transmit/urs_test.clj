@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.transmit.urs-test
   "Test namespace for URS requests."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.mock-echo.client.mock-urs-client :as mock-urs-client]
    [cmr.system-int-test.system :as system]
    [cmr.transmit.urs :as urs]))

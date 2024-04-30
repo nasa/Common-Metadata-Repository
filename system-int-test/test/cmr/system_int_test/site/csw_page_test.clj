@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.site.csw-page-test
   "Integration tests for csw retirement page"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :refer [are3]]
    [cmr.system-int-test.utils.html-helper :refer [find-element-by-type]]
    [cmr.system-int-test.utils.url-helper :as url]
@@ -9,6 +9,7 @@
 
 (deftest csw-retirement-test
   (testing "Page renders"
+    (declare sub-url)
     (are3 [sub-url]
       (let [page-data (html/parse (format (str "%s" sub-url) (url/search-root)))
             links (->> page-data

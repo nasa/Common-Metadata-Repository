@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.tagging.tag-reindex-test
   "This tests re-index tags."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest join-fixtures use-fixtures]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]

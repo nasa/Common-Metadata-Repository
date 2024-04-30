@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-search-test
   "Integration test for CMR granule search"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common-app.services.search.messages :as cmsg]
    [cmr.common.services.messages :as msg]
    [cmr.common.util :refer [are3]]
@@ -42,6 +42,7 @@
         gran5 (d/ingest "PROV2" (dg/granule-with-umm-spec-collection coll2 coll2-cid {:granule-ur "Granule5"}))]
     (index/wait-until-indexed)
 
+    (declare items search)
     (are3 [items search]
           (is (d/refs-match? items (search/find-refs :granule search)))
 
@@ -167,7 +168,7 @@
       (let [{:keys [refs]} (search/find-refs :granule {:dataset-id "AnotherCollectionV1"})]
         (is (= 1 (count refs)))
         (let [ref (first refs)
-              {:keys [name id location]} ref]
+              {:keys [name id _location]} ref]
           (is (= "Granule3" name))
           (is (re-matches #"G[0-9]+-PROV1" id)))))
 
@@ -383,7 +384,7 @@
         gran1-cid (get-in gran1 [:concept-id])
         gran2-cid (get-in gran2 [:concept-id])
         gran3-cid (get-in gran3 [:concept-id])
-        gran4-cid (get-in gran4 [:concept-id])]
+        _gran4-cid (get-in gran4 [:concept-id])]
     (index/wait-until-indexed)
     (testing "fetch all granules with cloud-cover attrib"
       (are [cc-search items] (d/refs-match? items (search/find-refs :granule cc-search))

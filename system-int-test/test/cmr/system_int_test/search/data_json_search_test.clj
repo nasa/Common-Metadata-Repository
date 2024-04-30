@@ -1,10 +1,8 @@
 (ns cmr.system-int-test.search.data-json-search-test
   "This namespace contains tests for the data.json endpoint."
   (:require
-   [clojure.test :refer :all]
-   [cmr.common-app.test.side-api :as side-api]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures] ]
    [cmr.mock-echo.client.echo-util :as echo-util]
-   [cmr.search.api.concepts-search :as concepts-search]
    [cmr.system-int-test.data2.core :as core]
    [cmr.system-int-test.data2.umm-spec-collection :as umm-spec-collection]
    [cmr.system-int-test.system :as system]
@@ -65,7 +63,7 @@
         public-collections-with-tag (create-collections 7)
         public-collections-without-tag (create-collections 6)
         private-collections-with-tag (create-collections 5)
-        private-collections-without-tag (create-collections 4)]
+        _private-collections-without-tag (create-collections 4)]
     (tag-util/create-tag (config/echo-system-token) tag)
 
     ;; Make collections public

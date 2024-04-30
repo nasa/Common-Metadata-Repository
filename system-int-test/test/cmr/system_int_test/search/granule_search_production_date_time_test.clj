@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-search-production-date-time-test
   "Integration tests for granule search by production date time"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.common.date-time-parser :as p]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -33,6 +33,7 @@
     (index/wait-until-indexed)
 
     (testing "search granules with production_date[] ranges and options"
+      (declare grans value options)
       (are3 [grans value options]
         (let [references (search/find-refs :granule
                                            (merge {"production_date[]" value} options))]
@@ -83,6 +84,7 @@
         {"options[production_date][and]" "true"}))
 
     (testing "search granules with production_date is OK"
+      (declare param)
       (are3 [grans param value]
         (let [references (search/find-refs :granule {param value})]
           (is (d/refs-match? grans references)))
@@ -97,6 +99,7 @@
         ["2000-04-01T10:00:00Z," "2000-03-01T10:00:00Z,2000-05-01T10:00:00Z"]))
 
     (testing "search granules with invalid production_date date"
+      (declare err-pattern)
       (are3 [value err-pattern]
         (let [{:keys [status errors]} (search/find-refs :granule {"production_date" value})
               err (first errors)]

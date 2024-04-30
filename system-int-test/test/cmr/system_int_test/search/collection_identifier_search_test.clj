@@ -2,10 +2,8 @@
   "Tests searching for collections using basic collection identifiers"
   (:require
    [clojure.java.shell :as shell]
-   [clojure.string :as s]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common-app.services.search.messages :as cmsg]
-   [cmr.common.services.messages :as msg]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]
@@ -571,7 +569,7 @@
         dummy-cid "C1000000004-PROV2"
         all-prov1-colls [c1-p1 c2-p1 c3-p1 c4-p1]
         all-prov2-colls [c1-p2 c2-p2 c3-p2 c4-p2]
-        all-colls (concat all-prov1-colls all-prov2-colls)]
+        _all-colls (concat all-prov1-colls all-prov2-colls)]
     (index/wait-until-indexed)
     (testing "echo collection id search"
       (are [items cid options]
@@ -650,11 +648,11 @@
 
 
 (deftest search-with-slashes-in-dataset-id
-  (let [coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:EntryTitle "Dataset1"}))
+  (let [_coll1 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 1 {:EntryTitle "Dataset1"}))
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 2 {:EntryTitle "Dataset/With/Slashes"}))
-        coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:EntryTitle "Dataset3"}))
-        coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:EntryTitle "Dataset/With/More/Slashes"}))
-        coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {}))]
+        _coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 3 {:EntryTitle "Dataset3"}))
+        _coll4 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 4 {:EntryTitle "Dataset/With/More/Slashes"}))
+        _coll5 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection 5 {}))]
 
     (index/wait-until-indexed)
 

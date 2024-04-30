@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-search-readable-granule-name-test
   "Integration tests for searching by readable granule name"
   (:require 
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is testing use-fixtures]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -83,7 +83,7 @@
                                                        :producer-gran-id "SpecialOne"}))
         gran2 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "Granule2"
                                                        :producer-gran-id "SpecialTwo"}))
-        gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "SpecialOne"
+        _gran3 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "SpecialOne"
                                                        :producer-gran-id "NotSoSpecial"}))
         gran4 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "Granule44"
                                                        :producer-gran-id "SuperSpecial"}))

@@ -1,8 +1,7 @@
 (ns cmr.system-int-test.search.granule-equator-crossing-date-search-test
   "Integration test for CMR granule temporal search"
   (:require 
-    [clojure.test :refer :all]
-    [cmr.common.services.messages :as cm]
+    [clojure.test :refer [are deftest testing use-fixtures]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -31,7 +30,7 @@
         g2 (make-gran "2011-02-02T12:00:00Z")
         g3 (make-gran "2011-02-02T12:00:01Z")
         g4 (make-gran "2011-02-02T12:00:10Z")
-        g5 (make-gran "2011-02-02T12:01:00Z")
+        _g5 (make-gran "2011-02-02T12:01:00Z")
         g6 (make-gran "2011-02-03T12:10:00Z")
         g7 (make-gran "2011-02-07T12:01:00Z")
         g8 (make-gran "2011-02-07T12:01:00.100Z")

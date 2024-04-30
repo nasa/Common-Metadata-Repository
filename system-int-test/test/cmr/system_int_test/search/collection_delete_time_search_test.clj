@@ -3,8 +3,7 @@
   with their granules"
   (:require 
     [clj-time.core :as t]
-    [clojure.test :refer :all]
-    [cmr.common.date-time-parser :as p]
+    [clojure.test :refer [deftest join-fixtures testing use-fixtures]]
     [cmr.common.time-keeper :as tk]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]

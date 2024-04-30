@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-platform-instrument-sensor-search-test
   "Integration test for CMR granule search by platform, instrument and sensor short-names"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [are deftest testing use-fixtures]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -36,7 +36,7 @@
         gran4 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:platform-refs [pr3]}))
         gran5 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:platform-refs [pr4]}))
         gran6 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {}))
-        gran7 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:platform-refs [pr5]}))
+        _gran7 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:platform-refs [pr5]}))
         gran8 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:platform-refs [pr6]}))
         gran9 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:platform-refs [pr7]}))]
 
@@ -139,7 +139,7 @@
         gran5 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "gran5" :platform-refs [pr4]}))
         gran6 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:granule-ur "gran6" :platform-refs [pr5]}))
         gran7 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "gran7" }))
-        gran8 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "gran8" :platform-refs [pr6]}))
+        _gran8 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "gran8" :platform-refs [pr6]}))
         gran9 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "gran9" :platform-refs [pr7]}))
         gran10 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:granule-ur "gran10" :platform-refs [pr8]}))]
 
@@ -275,7 +275,7 @@
         gran6 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:platform-refs [pr5]}))
         gran7 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {:platform-refs [pr6]}))
         gran8 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {}))
-        gran9 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:platform-refs [pr7]}))
+        _gran9 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:platform-refs [pr7]}))
         gran10 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:platform-refs [pr8]}))
         gran11 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll2 (:concept-id coll2) {:platform-refs [pr9]}))]
 

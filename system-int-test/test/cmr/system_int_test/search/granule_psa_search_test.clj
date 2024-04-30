@@ -1,16 +1,13 @@
 (ns cmr.system-int-test.search.granule-psa-search-test
   "Tests searching for granules by product specific attributes."
-  (:require [clojure.test :refer :all]
-            [clj-time.core :as t]
-            [clj-time.format :as f]
+  (:require [clojure.test :refer [are deftest is testing use-fixtures]]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.data2.collection :as dc]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.search.services.messages.attribute-messages :as am]
-            [clj-http.client :as client]))
+            [cmr.search.services.messages.attribute-messages :as am]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -67,13 +64,13 @@
         gran2 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "bool" [false])]}))
 
         gran3 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "dts" ["2012-01-01T01:02:03Z"])]}))
-        gran4 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "dts" ["2012-01-02T01:02:03Z"])]}))
+        _gran4 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "dts" ["2012-01-02T01:02:03Z"])]}))
 
         gran5 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ts" ["01:02:03Z"])]}))
-        gran6 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ts" ["01:02:04Z"])]}))
+        _gran6 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ts" ["01:02:04Z"])]}))
 
         gran7 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-01"])]}))
-        gran8 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-02"])]}))]
+        _gran8 (d/ingest "PROV1" (dg/granule coll {:product-specific-attributes [(dg/psa "ds" ["2012-01-02"])]}))]
     (index/wait-until-indexed)
 
     (testing "granule psa search by string value"

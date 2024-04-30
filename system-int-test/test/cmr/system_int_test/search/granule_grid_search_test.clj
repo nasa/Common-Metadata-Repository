@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-grid-search-test
   "Integration test for CMR granule grid search"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [are deftest is testing use-fixtures]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -115,7 +115,7 @@
                                                               :end-coordinate-1 120
                                                               :start-coordinate-2 300
                                                               :end-coordinate-2 320})}))
-        gran12 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {}))]
+        _gran12 (d/ingest "PROV1" (dg/granule-with-umm-spec-collection coll1 (:concept-id coll1) {}))]
     (index/wait-until-indexed)
 
     (testing "search granules by grid"

@@ -6,8 +6,6 @@
    the Oracle database server time for setting created-at and revision-date. With the in-memory
    database we are able to use timekeeper so we can set the dates to the values we want."
   (:require
-   [clj-http.client :as client]
-   [clojure.string :as string]
    [clojure.test :refer :all]
    [cmr.common.util :as util]
    [cmr.spatial.mbr :as mbr]
@@ -21,8 +19,6 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.utils.url-helper :as url-helper]
-   [cmr.umm-spec.models.umm-common-models :as umm-cmn]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]))
 
 (use-fixtures :each (join-fixtures
@@ -39,7 +35,7 @@
                                    {:EntryTitle "may2010"
                                     :ShortName "may2010"}))
         _ (dev-system-util/freeze-time! "2010-05-01T10:00:00Z")
-        may-2010-granule (d/ingest "PROV1"
+        _may-2010-granule (d/ingest "PROV1"
                                   (dg/granule-with-umm-spec-collection
                                     coll-w-may-2010-granule (:concept-id coll-w-may-2010-granule)))
         coll-w-may-2015-granule (d/ingest-umm-spec-collection
@@ -48,7 +44,7 @@
                                    {:EntryTitle "may2015"
                                     :ShortName "Regular"}))
         _ (dev-system-util/freeze-time! "2015-05-01T10:00:00Z")
-        may-2015-granule (d/ingest "PROV2"
+        _may-2015-granule (d/ingest "PROV2"
                                    (dg/granule-with-umm-spec-collection
                                      coll-w-may-2015-granule (:concept-id coll-w-may-2015-granule)))
         coll-w-june-2016-granule (d/ingest-umm-spec-collection
@@ -57,7 +53,7 @@
                                          {:EntryTitle "june2016"
                                           :ShortName "june2016"}))
         _ (dev-system-util/freeze-time! "2016-06-07T10:00:00Z")
-        june-2016-granule (d/ingest "PROV1"
+        _june-2016-granule (d/ingest "PROV1"
                                     (dg/granule-with-umm-spec-collection
                                       coll-w-june-2016-granule
                                       (:concept-id coll-w-june-2016-granule)))
@@ -66,7 +62,7 @@
                                          (data-umm-c/collection
                                            {:EntryTitle "june2016"
                                             :ShortName "june2016"}))
-        prov2-june-2016-granule (d/ingest "PROV2"
+        _prov2-june-2016-granule (d/ingest "PROV2"
                                           (dg/granule-with-umm-spec-collection
                                             coll-prov2-w-june-2016-granule
                                             (:concept-id coll-prov2-w-june-2016-granule)))
@@ -104,13 +100,13 @@
                                      {:beginning-date-time "1970-01-01T00:00:00Z"})]}))
 
         _ (dev-system-util/freeze-time! "2011-06-07T10:00:00Z")
-        gran-temporal-match (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _gran-temporal-match (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                                coll-temporal-match
                                                (:concept-id coll-temporal-match)
                                                {:beginning-date-time "2010-12-12T12:00:00Z"
                                                 :ending-date-time "2011-01-03T12:00:00Z"}))
 
-        gran-no-temporal-match (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _gran-no-temporal-match (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                                   coll-temporal-no-match
                                                   (:concept-id coll-temporal-no-match)
                                                   {:beginning-date-time "2000-12-12T12:00:00Z"
@@ -131,7 +127,7 @@
                                                       {:gsr "GEODETIC"
                                                        :sr "GEODETIC"
                                                        :hsd hsd})}))
-        gran-spatial-match (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
+        _gran-spatial-match (d/ingest "PROV1" (dg/granule-with-umm-spec-collection
                                               coll-spatial-match
                                               (:concept-id coll-spatial-match)
                                               {:spatial-coverage (dg/spatial (mbr/mbr 45 90 55 70))}))
@@ -143,7 +139,7 @@
                                       :DataCenters [(data-umm-cmn/data-center
                                                      {:Roles ["ARCHIVER"]
                                                       :ShortName "NSIDC"})]}))
-        gran-archive-center-match (d/ingest "PROV2"
+        _gran-archive-center-match (d/ingest "PROV2"
                                             (dg/granule-with-umm-spec-collection
                                              coll-archive-center-match
                                              (:concept-id coll-archive-center-match)))
@@ -154,13 +150,13 @@
                                                      :EntryTitle "coll-platform-match"
                                                      :ShortName "coll-platform-match"}))
         _ (dev-system-util/freeze-time! "2016-06-07T10:00:00Z")
-        gran-platform-match (d/ingest "PROV1"
+        _gran-platform-match (d/ingest "PROV1"
                                       (dg/granule-with-umm-spec-collection
                                        coll-platform-match
                                        (:concept-id coll-platform-match)
                                        {:platform-refs [(dg/platform-ref {:short-name "AQUA"})]}))
         _ (dev-system-util/freeze-time! "2011-06-07T10:00:00Z")
-        gran-platform-no-match (d/ingest "PROV1"
+        _gran-platform-no-match (d/ingest "PROV1"
                                       (dg/granule-with-umm-spec-collection
                                        coll-platform-match
                                        (:concept-id coll-platform-match)))]
@@ -192,6 +188,7 @@
                   coll-spatial-match coll-archive-center-match coll-platform-match]}
           (create-test-collections-and-granules)]
       (testing "has_granules_created_at parameter by itself"
+        (declare date-ranges expected-results)
         (util/are3
           [date-ranges expected-results]
           (let [actual-results (search/find-refs :collection {:has-granules-created-at date-ranges})]
@@ -221,6 +218,7 @@
           [",2090-01-01T12:34:56ZZ"] []))
 
       (testing "Parameters are correctly passed to the granule query"
+        (declare params)
         (util/are3
           [params expected-results]
           (let [date-range ["2015-06-01T16:13:12Z,"]

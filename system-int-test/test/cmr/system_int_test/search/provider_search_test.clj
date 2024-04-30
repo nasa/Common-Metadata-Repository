@@ -2,7 +2,7 @@
   "Integration tests for providers search"
   (:require
    [clojure.walk :as walk]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]))
 

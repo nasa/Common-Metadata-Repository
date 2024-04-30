@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-search-short-name-version-test
   "Integration tests for searching by short_name and version"
   (:require 
-    [clojure.test :refer :all]
+    [clojure.test :refer [are deftest is testing use-fixtures]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -54,7 +54,7 @@
       (let [{:keys [refs]} (search/find-refs :granule {:short_name "OnlyShort"})]
         (is (= 1 (count refs)))
         (let [ref (first refs)
-              {:keys [name id location]} ref]
+              {:keys [name id _location]} ref]
           (is (= "Granule2" name))
           (is (re-matches #"G[0-9]+-PROV1" id)))))
 
@@ -122,7 +122,7 @@
       (let [{:keys [refs]} (search/find-refs :granule {:version "2"})]
         (is (= 1 (count refs)))
         (let [ref (first refs)
-              {:keys [name id location]} ref]
+              {:keys [name id _location]} ref]
           (is (= "Granule3" name))
           (is (re-matches #"G[0-9]+-PROV1" id)))))
 

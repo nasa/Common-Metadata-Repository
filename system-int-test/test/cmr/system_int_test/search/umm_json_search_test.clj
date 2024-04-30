@@ -1,11 +1,9 @@
 (ns cmr.system-int-test.search.umm-json-search-test
   "Integration test for UMM-JSON format search"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util :refer [are3]]
-   [cmr.spatial.point :as p]
-   [cmr.system-int-test.data2.collection :as dc]
+   [cmr.common.util :refer [are3]]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-json :as du]
    [cmr.system-int-test.utils.index-util :as index]
@@ -49,6 +47,7 @@
                         {:user-id "user3"})]
     (index/wait-until-indexed)
     (testing "find collections in legacy UMM JSON format"
+      (declare url-extension collections params)
       (are3 [url-extension collections params]
         (du/assert-legacy-umm-jsons-match
          collections (search/find-concepts-umm-json :collection params {:url-extension url-extension}))
@@ -70,6 +69,7 @@
         {:all-revisions true}))
 
     (testing "finding collections in different versions of UMM JSON"
+      (declare version accept-header)
       (are3 [version accept-header url-extension]
         (let [options (if accept-header
                         {:accept accept-header}

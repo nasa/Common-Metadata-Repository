@@ -1,12 +1,11 @@
 (ns cmr.system-int-test.search.granule-search-by-track-test
   "Search CMR granules by track info, i.e. cycle, pass, tile."
   (:require
-    [clojure.test :refer :all]
-    [cmr.common.util :as util :refer [are3]]
+    [clojure.test :refer [deftest is testing use-fixtures]]
+    [cmr.common.util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]))
@@ -33,8 +32,8 @@
                         {:SpatialExtent (data-umm-c/spatial {:gsr "GEODETIC"})
                          :EntryTitle "E2"
                          :ShortName "S2"}))
-        coll1-concept-id (:concept-id coll1)
-        coll2-concept-id (:concept-id coll2)
+        _coll1-concept-id (:concept-id coll1)
+        _coll2-concept-id (:concept-id coll2)
         gran1 (ingest-granule-with-track "PROV1" coll1
                                          {:cycle 1
                                           :passes [{:pass 1}]})
@@ -52,7 +51,7 @@
                                          {:cycle 3
                                           :passes [{:pass 1 :tiles ["1R"]}
                                                    {:pass 2 :tiles ["1L"]}]})
-        gran6 (ingest-granule-with-track "PROV2" coll2
+        _gran6 (ingest-granule-with-track "PROV2" coll2
                                          {:cycle 4
                                           :passes [{:pass 1 :tiles ["1L"]}]})
         ;; granules for testing Full track tiles and multiple tiles
@@ -60,7 +59,7 @@
                                          {:cycle 3
                                           :passes [{:pass 3 :tiles ["1L"]}
                                                    {:pass 4 :tiles ["1L"]}]})
-        gran8 (ingest-granule-with-track "PROV2" coll2
+        _gran8 (ingest-granule-with-track "PROV2" coll2
                                          {:cycle 3
                                           :passes [{:pass 3 :tiles ["1R"]}
                                                    {:pass 4 :tiles ["2L"]}]})
@@ -80,6 +79,7 @@
     (index/wait-until-indexed)
 
     (testing "search by cycles"
+      (declare items params)
       (are3 [items params]
         (is (d/refs-match? items (search/find-refs :granule params)))
 
@@ -96,6 +96,7 @@
         [] {:cycle [12]}))
 
     (testing "search by cycle and passes"
+      (declare options)
       (are3 [items params options]
         (is (d/refs-match? items (search/find-refs :granule (merge params options))))
 
@@ -279,6 +280,7 @@
              errors))))
 
   (testing "search by passes invalid format"
+    (declare passes-param)
     (are3 [passes-param]
       (let [{:keys [status errors]} (search/find-refs :granule (merge {:cycle 1} passes-param))]
         (is (= 400 status))

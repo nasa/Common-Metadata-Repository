@@ -83,6 +83,7 @@
         all-services (concat prov1-services prov2-services)]
     (index/wait-until-indexed)
 
+    (declare expected-services query)
     (are3 [expected-services query]
       (do
         (testing "XML references format"
@@ -275,6 +276,7 @@
                                                   :AncillaryKeywords ["stuff" "things"]})]
     (index/wait-until-indexed)
 
+    (declare keyword-query)
     (are3 [expected-services keyword-query]
       (services/assert-service-search
        expected-services (services/search-json {:keyword keyword-query}))
@@ -487,6 +489,7 @@
                                                       :provider-id "PROV1"})]
     (index/wait-until-indexed)
 
+    (declare sort-key)
     (are3 [sort-key expected-services]
       (is (d/refs-match-order?
            expected-services
@@ -576,6 +579,7 @@
       (index/wait-until-indexed)
 
       ;; verify service search UMM JSON response is correct.
+      (declare umm-version options)
       (are3 [umm-version options]
         (data-umm-json/assert-service-umm-jsons-match
          umm-version [expected-service1 expected-service2]

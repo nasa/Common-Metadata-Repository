@@ -20,6 +20,7 @@
   ;; original elasticsearch indexes stored the value as a signed integer, now it is stored as an unsigned_long
   (testing "whether concepts can be indexed with values larger than 2^31 - 1 as concept-seq-id"
     (let [preserved-values (atom [])]
+      (declare concept-id)
       (are3
        [concept-id]
        (let [concept (d/ingest-umm-spec-collection "PROV1"

@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.collection-keyword-search-test
   "Integration test for CMR collection search by keyword terms"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [are deftest is testing use-fixtures]]
     [cmr.common.util :refer [are3]]
     [cmr.search.data.keywords-to-elastic :as k2e]
     [cmr.system-int-test.data2.core :as d]
@@ -22,7 +22,7 @@
         project-boost (k2e/get-boost nil :project)
         platform-boost (k2e/get-boost nil :platform)
         instrument-boost (k2e/get-boost nil :instrument)
-        concept-id-boost (k2e/get-boost nil :concept-id)
+        _concept-id-boost (k2e/get-boost nil :concept-id)
         provider-boost (k2e/get-boost nil :provider)
         entry-title-boost (k2e/get-boost nil :entry-title)
         two-d-boost (k2e/get-boost nil :two-d-coord-name)
@@ -117,7 +117,7 @@
         coll2 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "Mitch made a (merry-go-round)"
                                                                             :ShortName "ABC!XYZ" :Version "V001"}))
         coll3 (d/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "coll3" :ShortName "S3" :CollectionDataType "OTHER"}))
-        coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll4" :ShortName "S4" :CollectionDataType "OTHER"}))
+        _coll4 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll4" :ShortName "S4" :CollectionDataType "OTHER"}))
         coll5 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll5" :ShortName "Space!Laser"}))
         coll6 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll6"
                                                                             :ShortName "S6"
@@ -125,7 +125,7 @@
                                                                             :Projects pr2
                                                                             :Platforms [p7]}))
         coll7 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll7" :ShortName "S7" :Version "Laser"}))
-        coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll8" :ShortName "S8" :ProcessingLevel {:Id "PDQ123"}}))
+        _coll8 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll8" :ShortName "S8" :ProcessingLevel {:Id "PDQ123"}}))
 
         coll9 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll09" :ShortName "S9" :ScienceKeywords [sk1 sk2]}))
 
@@ -138,16 +138,16 @@
                                                                              :AdditionalAttributes [psa5]}))
         coll12 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll12" :ShortName "S12"
                                                                              :AdditionalAttributes [psa1 psa2 psa3 psa4]}))
-        coll13 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll13" :ShortName "S13"
+        _coll13 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll13" :ShortName "S13"
                                                                              :TilingIdentificationSystems [tdcs1 tdcs2]}))
         coll14 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll14" :ShortName "spoonA laser"}))
         coll15 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll15" :ShortName "S15" :ProcessingLevel {:Id  "plid1"}
                                                                              :CollectionDataType "SCIENCE_QUALITY" :Platforms [p1]
                                                                              :Abstract "summary" :TemporalKeywords ["tk1" "tk2"]}))
-        coll16 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll16" :ShortName "entryid4"}) {:format :dif})
+        _coll16 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll16" :ShortName "entryid4"}) {:format :dif})
         ;;coll17 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:associated-difs ["DIF-1" "DIF-2"]}))
-        coll18 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll18" :ShortName "SNFoobar"}))
-        coll20 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects pr1 :EntryTitle "Mixed" :ShortName "S20"}))
+        _coll18 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll18" :ShortName "SNFoobar"}))
+        _coll20 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:Projects pr1 :EntryTitle "Mixed" :ShortName "S20"}))
         coll21 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll21" :ShortName "Laser"}))
         coll22 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll22" :CollectionDataType "NEAR_REAL_TIME"
                                                                              :ShortName "Mixed"}))
@@ -156,7 +156,7 @@
         ;; Adding personnel here to test keyword search using DataCenter contacts
         coll25 (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "coll25" :ShortName "S25"
                                                                              :RelatedUrls [url1 url2] :ContactPersons [personnel3]}))
-        coll-boost (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "boost"
+        _coll-boost (d/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "boost"
                                                                                  :ShortName "boost"
                                                                                  :Platforms [pboost]
                                                                                  :ScienceKeywords [skboost]}))
@@ -689,7 +689,7 @@
         (is (not-any? :score (:refs refs))))))))
 
 ;; This test is separated out from the rest of the keyword search tests because we need to
-;; ingest this UMM-SPEC collection but it contains some keyword values other tests are using.
+;; ingest this UMM-SPEC collection, but it contains some keyword values other tests are using.
 ;; This would break other tests when doing the keyword searches.
 (deftest search-by-more-keywords
   (let [coll1 (d/ingest "PROV1"
