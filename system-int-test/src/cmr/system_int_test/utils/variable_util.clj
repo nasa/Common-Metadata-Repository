@@ -9,7 +9,6 @@
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-variable :as data-umm-v]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.transmit.search :as transmit-search]
@@ -212,7 +211,7 @@
   "Returns the expected variable association for the given collection concept id to
   variable association mapping, which is in the format of, e.g.
   {[C1200000000-CMR 1] {:concept-id \"VA1200000005-CMR\" :revision-id 1}}."
-  [coll-variable-association error?]
+  [coll-variable-association _error?]
   (let [[[coll-concept-id coll-revision-id] variable-association] coll-variable-association
         {:keys [concept-id revision-id]} variable-association
         associated-item (if coll-revision-id
@@ -240,7 +239,7 @@
   ([coll-variable-associations response]
    (assert-variable-association-response-ok? coll-variable-associations response true))
   ([coll-variable-associations response error?]
-   (let [{:keys [status body errors]} response
+   (let [{:keys [status body _errors]} response
          expected-tas (map #(coll-variable-association->expected-variable-association % error?)
                            coll-variable-associations)]
      (is (= [200
@@ -252,7 +251,7 @@
   ([coll-variable-associations response]
    (assert-variable-association-bad-request coll-variable-associations response true))
   ([coll-variable-associations response error?]
-   (let [{:keys [status body errors]} response
+   (let [{:keys [status body _errors]} response
          expected-tas (map #(coll-variable-association->expected-variable-association % error?)
                            coll-variable-associations)]
      (is (= [400

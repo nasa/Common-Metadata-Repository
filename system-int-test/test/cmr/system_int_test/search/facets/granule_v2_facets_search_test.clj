@@ -80,6 +80,7 @@
 (deftest single-collection-validation-tests
   (single-collection-test-setup)
   (testing "Allowed single collection queries"
+    (declare query-params)
     (util/are3
       [query-params]
       (let [response (search/find-concepts-json :granule (merge query-params
@@ -95,6 +96,7 @@
       "Short name and version combination" {:short-name "SN2" :version "V1"}))
 
   (testing "Rejected multi-collection queries"
+    (declare query-params num-matched)
     (util/are3
       [query-params num-matched]
       (let [response (search/find-concepts-json :granule (merge query-params
@@ -327,7 +329,7 @@
                         parsed-body (json/parse-string (:body response) true)
                         updated-facets (get-in parsed-body [:feed :facets])
                         granules-response (get-in parsed-body [:feed :entry])
-                        updated-year-facets (-> updated-facets :children first :children first :children)
+                        _updated-year-facets (-> updated-facets :children first :children first :children)
                         updated-month-facets (-> updated-facets :children first :children first
                                                  :children first :children first :children)]
                     (assert-granules-match [gran2010-1 gran2010-2 gran2010-3] granules-response)

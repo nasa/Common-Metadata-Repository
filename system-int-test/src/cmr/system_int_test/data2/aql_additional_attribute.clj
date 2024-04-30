@@ -30,47 +30,47 @@
 
 (defmulti generate-attribute-value-element
   "Returns the additional attribute value element of the given type, value and options"
-  (fn [type value ignore-case pattern]
+  (fn [type _value _ignore-case _pattern]
     type))
 
 (defmethod generate-attribute-value-element :string
-  [type value ignore-case pattern]
+  [_type value ignore-case pattern]
   (a/generate-string-value-element value ignore-case pattern))
 
 (defmethod generate-attribute-value-element :range
-  [type value ignore-case pattern]
+  [_type value _ignore-case _pattern]
   (a/generate-range-element value))
 
 (defmethod generate-attribute-value-element :float
-  [type value ignore-case pattern]
+  [_type value _ignore-case _pattern]
   (x/element :float {} value))
 
 (defmethod generate-attribute-value-element :floatRange
-  [type value ignore-case pattern]
+  [_type value _ignore-case _pattern]
   (a/generate-range-element :floatRange value))
 
 (defmethod generate-attribute-value-element :int
-  [type value ignore-case pattern]
+  [_type value _ignore-case _pattern]
   (x/element :int {} value))
 
 (defmethod generate-attribute-value-element :intRange
-  [type value ignore-case pattern]
+  [_type value _ignore-case _pattern]
   (a/generate-range-element :intRange value))
 
 (defmethod generate-attribute-value-element :date
-  [type value ignore-case pattern]
+  [_type value _ignore-case _pattern]
   (a/generate-date-element value))
 
 (defmethod generate-attribute-value-element :dateRange
-  [type value ignore-case pattern]
+  [_type value _ignore-case _pattern]
   (apply a/generate-date-range-value-element value))
 
 (defmethod generate-attribute-value-element :time
-  [type value ignore-case pattern]
+  [_type value _ignore-case _pattern]
   (generate-time-element value))
 
 (defmethod generate-attribute-value-element :timeRange
-  [type value ignore-case pattern]
+  [_type value _ignore-case _pattern]
   (apply generate-time-range-value-element value))
 
 (defn- generate-additional-attribute-element

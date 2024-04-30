@@ -3,7 +3,6 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clj-time.format :as f]
    [clojure.data.xml :as x]
    [clojure.string :as str]
    [cmr.common.concepts :as cu]
@@ -12,7 +11,6 @@
    [cmr.search.results-handlers.atom-results-handler :as atom-results-handler]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
    [cmr.umm-spec.date-util :as date-util]
    [cmr.system-int-test.data2.core :as data-core]
@@ -131,11 +129,11 @@
 
 (defmulti xml-elem->entry
   "Retrns an atom entry from a parsed atom xml structure"
-  (fn [concept-type xml-elem]
+  (fn [concept-type _xml-elem]
     concept-type))
 
 (defmethod xml-elem->entry :collection
-  [concept-type entry-elem]
+  [_concept-type entry-elem]
   (util/remove-nil-keys
     {:id (cx/string-at-path entry-elem [:id])
      :consortiums (seq (cx/strings-at-path entry-elem [:consortium]))
@@ -177,7 +175,7 @@
              (into {} tags))}))
 
 (defmethod xml-elem->entry :granule
-  [concept-type entry-elem]
+  [_concept-type entry-elem]
   (util/remove-nil-keys
     {:id (cx/string-at-path entry-elem [:id])
      :title (cx/string-at-path entry-elem [:title])
@@ -298,7 +296,7 @@
         archive-org (first (filter #(= :archive-center (:type %)) organizations))
         archive-center (when archive-org (:org-name archive-org))
         ;; not really fool proof to get start/end datetime, just get by with the current test setting
-        {:keys [beginning-date-time ending-date-time]} (first (get-in collection
+        {:keys [_beginning-date-time _ending-date-time]} (first (get-in collection
                                                                       [:temporal :range-date-times]))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))
@@ -337,8 +335,8 @@
       :orbit-parameters (when orbit-parameters (into {} orbit-parameters))
       :shapes (seq shapes)
       :associated-difs associated-difs
-      :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))
-      :browse-flag (not (empty? (ru/browse-urls related-urls)))
+      :online-access-flag (seq (ru/downloadable-urls related-urls))
+      :browse-flag (seq (ru/browse-urls related-urls))
       :has-variables (boolean has-variables)
       :has-formats (boolean has-formats)
       :has-transforms (boolean has-transforms)
@@ -399,7 +397,7 @@
   "Returns the atom map of the granule"
   [granule coll]
   (let [{:keys [concept-id granule-ur producer-gran-id size related-urls
-                beginning-date-time ending-date-time single-date-time day-night cloud-cover format-key
+                _beginning-date-time _ending-date-time _single-date-time day-night cloud-cover format-key
                 orbit-calculated-spatial-domains]} granule
         coll-concept-id (:concept-id coll)
         related-urls (add-collection-links coll related-urls)
@@ -428,8 +426,8 @@
       :orbit-calculated-spatial-domains (seq orbit-calculated-spatial-domains)
       :start (some->> (:temporal granule) (sed/start-date :granule))
       :end (some->> (:temporal granule) (sed/end-date :granule))
-      :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))
-      :browse-flag (not (empty? (ru/browse-urls related-urls)))
+      :online-access-flag (seq (ru/downloadable-urls related-urls))
+      :browse-flag (seq (ru/browse-urls related-urls))
       :day-night-flag day-night
       :cloud-cover cloud-cover
       :shapes (seq shapes)})))

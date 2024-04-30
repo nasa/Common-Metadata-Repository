@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.collection-periodic-temporal-search-test
   "Integration test for CMR collection periodic temporal search"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is testing use-fixtures]]
     [cmr.common.util :refer [are2]]
     [cmr.system-int-test.data2.core :as data-core]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -261,6 +261,7 @@
 
 (deftest search-period-temporal-json-error-scenarios
   (testing "search by invalid temporal day format"
+    (declare search error-field field-type expected-type)
     (are2 [search error-field field-type expected-type]
           (let [{:keys [status errors]} (search/find-refs-with-json-query :collection {} search)
                 expected-error (format "#/condition/temporal/%s: expected type: %s, found: %s"

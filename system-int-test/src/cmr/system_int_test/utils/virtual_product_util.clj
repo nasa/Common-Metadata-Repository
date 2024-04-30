@@ -1,8 +1,7 @@
 (ns cmr.system-int-test.utils.virtual-product-util
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [are is]]
             [clj-http.client :as client]
             [cmr.system-int-test.system :as s]
-            [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.virtual-product.config]
@@ -163,11 +162,11 @@
      (get-in granule [:collection-ref :short-name])]))
 
 (defmethod add-granule-attributes :default
-  [provider-id granule]
+  [_provider-id granule]
   granule)
 
 (defmethod add-granule-attributes ["LPDAAC_ECS" "AST_L1A"]
-  [provider-id granule]
+  [_provider-id granule]
   (let [psa1 (dg/psa "TIR_ObservationMode" ["ON"])
         psa2 (dg/psa "SWIR_ObservationMode" ["ON"])
         psa3 (dg/psa "VNIR1_ObservationMode" ["ON"])
@@ -180,7 +179,7 @@
         (assoc :product-specific-attributes [psa1 psa2 psa3 psa4]))))
 
 (defmethod add-granule-attributes ["LPDAAC_ECS" "AST_L1T"]
-  [provider-id granule]
+  [_provider-id granule]
   (let [frbt (dg/psa "FullResolutionThermalBrowseAvailable" ["YES"])
         frbv (dg/psa "FullResolutionVisibleBrowseAvailable" ["YES"])]
     (assoc granule :product-specific-attributes [frbt frbv])))

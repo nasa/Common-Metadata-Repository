@@ -4,7 +4,7 @@
   cmr.system-int-test.search.collection-relevancy.collection-relevancy namespace.
   For all of the tests in this namespace we bin each integer value to its own bin."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]

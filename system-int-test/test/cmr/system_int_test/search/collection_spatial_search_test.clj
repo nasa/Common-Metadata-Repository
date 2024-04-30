@@ -600,6 +600,7 @@
 
 (deftest tile-search-single-shape-test
   (testing "bounding box search"
+    (declare wnes tiles)
     (u/are2 [wnes tiles]
             (assert-tiles-found {:bounding-box (codec/url-encode (apply m/mbr wnes))} tiles)
 
@@ -653,6 +654,7 @@
 
 (deftest tile-search-multi-shape-test
   (testing "search involving multiple shapes"
+    (declare ords-vectors)
     (u/are2 [ords-vectors tiles]
             (assert-tiles-found (reduce add-param {} ords-vectors) tiles)
 
@@ -681,6 +683,7 @@
 
 (deftest circle-parameter-validation
   (testing "invalid circle parameters"
+    (declare params error-msgs)
     (are3 [params error-msgs]
       (let [{:keys [status errors]} (search/find-refs :collection {:circle params})]
         (is (= [400 error-msgs]

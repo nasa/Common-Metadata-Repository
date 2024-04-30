@@ -5,8 +5,6 @@
    [clj-http.client :as client]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mime-types]
-   [cmr.common.mime-types :as mt]
-   [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.search.results-handlers.atom-results-handler :as handler]
    [cmr.system-int-test.data2.atom :as atom]
@@ -223,7 +221,7 @@
                                       expected-fields
                                       {:tools tool-concept-ids
                                        :variables var-concept-ids})
-        options {:accept (mt/with-version mt/umm-json-results versioning/current-collection-version)}
+        options {:accept (mime-types/with-version mime-types/umm-json-results versioning/current-collection-version)}
         {:keys [entry-title]} coll
         response (search/find-concepts-umm-json :collection {:entry-title entry-title} options)]
     (du/assert-umm-jsons-match
@@ -242,7 +240,7 @@
   "Returns the expected tool association for the given collection concept id to
   tool association mapping, which is in the format of, e.g.
   {[C1200000000-CMR 1] {:concept-id \"TLA1200000005-CMR\" :revision-id 1}}."
-  [coll-tool-association error?]
+  [coll-tool-association _error?]
   (let [[[coll-concept-id coll-revision-id] tool-association] coll-tool-association
         {:keys [concept-id revision-id]} tool-association
         associated-item (if coll-revision-id
@@ -270,7 +268,7 @@
   ([coll-tool-associations response]
    (assert-tool-association-response-ok? coll-tool-associations response true))
   ([coll-tool-associations response error?]
-   (let [{:keys [status body errors]} response
+   (let [{:keys [status body _errors]} response
          expected-sas (map #(coll-tool-association->expected-tool-association % error?)
                            coll-tool-associations)]
      (is (= [200
@@ -282,7 +280,7 @@
   ([coll-tool-associations response]
    (assert-tool-association-bad-request coll-tool-associations response true))
   ([coll-tool-associations response error?]
-   (let [{:keys [status body errors]} response
+   (let [{:keys [status body _errors]} response
          expected-tas (map #(coll-tool-association->expected-tool-association % error?)
                            coll-tool-associations)]
      (is (= [400
@@ -305,7 +303,7 @@
   "Assert the collections found by the tool query matches the given collection revisions.
   Temporary using search metadata-db for tool associations. Will change to search search-app
   for collections once that is implemented in issues like CMR-4280."
-  [token query expected-colls]
+  [_token query expected-colls]
   (let [{:keys [status body]} (search-for-tool-associations (assoc query :latest true))
         colls (->> body
                    (filter #(false? (:deleted %)))

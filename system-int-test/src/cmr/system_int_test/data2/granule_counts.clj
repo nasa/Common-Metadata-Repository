@@ -7,11 +7,11 @@
 (defmulti granule-counts-match?
   "Takes a map of collections to counts and actual results and checks that the references
   were found and that the granule counts are correct."
-  (fn [result-format expected-counts result]
+  (fn [result-format _expected-counts _result]
     result-format))
 
 (defmethod granule-counts-match? :xml
-  [result-format expected-counts refs-result]
+  [_result-format expected-counts refs-result]
   (let [count-map (into {} (for [[coll granule-count] expected-counts]
                              [(:entry-title coll) granule-count]))
         actual-count-map (into {} (for [{:keys [name granule-count]} (:refs refs-result)]
@@ -27,7 +27,7 @@
     (and refs-match? counts-match?)))
 
 (defmethod granule-counts-match? :echo10
-  [result-format expected-counts results]
+  [_result-format expected-counts results]
   (let [items (:items results)
         count-map (into {} (for [[coll granule-count] expected-counts]
                              [(:concept-id coll) granule-count]))
@@ -62,57 +62,57 @@
     (and results-match? counts-match?)))
 
 (defmethod granule-counts-match? :atom
-  [result-format expected-counts atom-results]
+  [_result-format expected-counts atom-results]
   (atom-json-collection-results-match?
    da/atom-collection-results-match? expected-counts atom-results))
 
 (defmethod granule-counts-match? :json
-  [result-format expected-counts atom-results]
+  [_result-format expected-counts atom-results]
   (atom-json-collection-results-match?
    da/json-collection-results-match? expected-counts atom-results))
 
 (defmulti results->actual-has-granules
   "Converts the results into a map of collection ids to the has-granules value"
-  (fn [result-format results]
+  (fn [result-format _results]
     result-format))
 
 (defmethod results->actual-has-granules :xml
-  [result-format results]
+  [_result-format results]
   (into {} (for [{:keys [id has-granules]} (:refs results)]
              [id has-granules])))
 
 (defmethod results->actual-has-granules :echo10
-  [result-format results]
+  [_result-format results]
   (into {} (for [{:keys [concept-id has-granules]} (:items results)]
              [concept-id has-granules])))
 
 (defmethod results->actual-has-granules :iso19115
-  [result-format results]
+  [_result-format results]
   (into {} (for [{:keys [concept-id has-granules]} (:items results)]
              [concept-id has-granules])))
 
 (defmethod results->actual-has-granules :atom
-  [result-format results]
+  [_result-format results]
   (into {} (for [{:keys [id has-granules]} (get-in results [:results :entries])]
              [id has-granules])))
 
 (defmulti results->actual-granule-count
   "Converts the results into a map of collection ids to the granule-count value"
-  (fn [result-format results]
+  (fn [result-format _results]
     result-format))
 
 (defmethod results->actual-granule-count :xml
-  [result-format results]
+  [_result-format results]
   (into {} (for [{:keys [id granule-count]} (:refs results)]
              [id granule-count])))
 
 (defmethod results->actual-granule-count :echo10
-  [result-format results]
+  [_result-format results]
   (into {} (for [{:keys [concept-id granule-count]} (:items results)]
              [concept-id granule-count])))
 
 (defmethod results->actual-granule-count :iso19115
-  [result-format results]
+  [_result-format results]
   (into {} (for [{:keys [concept-id granule-count]} (:items results)]
              [concept-id granule-count])))
 
@@ -124,14 +124,14 @@
              [concept-id granule-count])))
 
 (defmethod results->actual-granule-count :umm_json
-  [result-format results]
+  [_result-format results]
   (results->actual-granule-count-umm-json results))
 
 (defmethod results->actual-granule-count :legacy-umm-json
-  [result-format results]
+  [_result-format results]
   (results->actual-granule-count-umm-json results))
 
 (defmethod results->actual-granule-count :atom
-  [result-format results]
+  [_result-format results]
   (into {} (for [{:keys [id granule-count]} (get-in results [:results :entries])]
              [id granule-count])))

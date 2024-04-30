@@ -71,6 +71,7 @@
         (is (= nil consortiums-in-json3))))
 
     (testing "consortium parameter search"
+      (declare items consortium options)
       (are3 [items consortium options]
         (let [params (merge {:consortium consortium}
                             options)]

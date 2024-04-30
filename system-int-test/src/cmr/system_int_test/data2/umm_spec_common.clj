@@ -2,15 +2,11 @@
   "Contains support functions common to all data generators for example-based
   testing in system integration tests."
   (:require
-    [clj-time.core :as t]
-    [clj-time.format :as f]
     [cmr.common.date-time-parser :as p]
-    [cmr.common.util :as util]
     [cmr.system-int-test.data2.core :as d]
     [cmr.umm-spec.additional-attribute :as aa]
     [cmr.umm-spec.models.umm-common-models :as umm-cmn]
-    [cmr.umm-spec.temporal :as umm-spec-temporal]
-    [cmr.umm-spec.util :as u]))
+    [cmr.umm-spec.temporal :as umm-spec-temporal]))
 
 (defn additional-attribute
   "Creates an AdditionalAttribute"

@@ -1,15 +1,14 @@
 (ns cmr.system-int-test.utils.queue
   "Functions to support testing while using the message queue"
-  (:require [cmr.message-queue.services.queue :as queue]
-            [cmr.indexer.config :as config]
-            [cmr.common.log :as log :refer (debug info warn error)]
+  (:require [cmr.indexer.config :as config]
+            [cmr.common.log :refer (debug)]
             [clj-http.client :as client]
             [cheshire.core :as json]))
 
 (defn- queue-message-count
   "Use the RabbitMQ API to get the count of all messages (ready or unacked) for the given queue
   and its associated wait queues"
-  [queue-name]
+  [_queue-name]
   (let [status (-> (client/get "http://localhost:15672/api/queues/%2f"
                                {:basic-auth ["cmr" "cmr"]})
                    :body
@@ -24,7 +23,7 @@
 
 (defn- wait-for-queue
   "Repeatedly checks to see if the given queue is empty, sleeping in between checks"
-  [queue-broker queue-name]
+  [_queue-broker _queue-name]
   (Thread/sleep 2000)
   (loop [msg-count (queue-message-count "cmr_index")]
     (when (pos? msg-count)

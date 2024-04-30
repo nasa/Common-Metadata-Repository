@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.concept-special-character-search-test
   "Integration tests for searching with special characters"
   (:require 
-    [clojure.test :refer :all]
+    [clojure.test :refer [are deftest testing use-fixtures]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]

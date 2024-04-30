@@ -3,11 +3,8 @@
   (:require
     [cheshire.core :as json]
     [clj-http.client :as client]
-    [clj-time.core :as t]
-    [clj-time.format :as f]
     [clojure.test :refer [is]]
     [cmr.bootstrap.test.catalog-rest :as cat-rest]
-    [cmr.common.lifecycle :as lifecycle]
     [cmr.common.util :as util]
     [cmr.metadata-db.config :as mdb-config]
     [cmr.system-int-test.system :as s]

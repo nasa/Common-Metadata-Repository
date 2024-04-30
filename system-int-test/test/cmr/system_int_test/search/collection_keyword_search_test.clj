@@ -514,6 +514,7 @@
     (testing "Combine keyword and param boosts"
      ;; Check that the scores are very close to account for slight difference in
      ;; number coming from elastic.
+     (declare params score)
      (are3 [params score]
         (is (< (Math/abs
                 (double (- (/ score 2.0)

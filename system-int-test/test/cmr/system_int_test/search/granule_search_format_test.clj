@@ -390,7 +390,7 @@
         ru3 (dc/related-url {:type "GET RELATED VISUALIZATION" :url "http://example.com/browse"})
         coll1 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1970-01-01T12:00:00Z"}))
         coll2 (d/ingest "PROV1" (dc/collection {:beginning-date-time "1970-01-01T12:00:00Z"}))
-        gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
+        _gran1 (d/ingest "PROV1" (dg/granule coll1 {:granule-ur "Granule1"
                                                    :beginning-date-time "2010-01-01T12:00:00Z"
                                                    :ending-date-time "2010-01-11T12:00:00Z"
                                                    :producer-gran-id "Granule #1"
@@ -398,7 +398,7 @@
                                                    :size 100
                                                    :cloud-cover 50
                                                    :related-urls [ru1 ru2 ru3]}))
-        gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule2"
+        _gran2 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule2"
                                                    :beginning-date-time "2011-01-01T12:00:00Z"
                                                    :ending-date-time "2011-01-11T12:00:00Z"
                                                    :producer-gran-id "Granule #2"
@@ -406,7 +406,7 @@
                                                    :size 80
                                                    :cloud-cover 30
                                                    :related-urls [ru1]}))
-        gran3 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule3"
+        _gran3 (d/ingest "PROV1" (dg/granule coll2 {:granule-ur "Granule3"
                                                    :beginning-date-time "2012-01-01T12:00:00Z"
                                                    :ending-date-time "2012-01-11T12:00:00Z"
                                                    :producer-gran-id "Granule #3"
@@ -480,7 +480,7 @@
                                 :ending-date-time "2010-01-11T12:00:00Z"
                                 :producer-gran-id "Granule #1"
                                 :day-night "DAY"
-                                :size (Double/MAX_VALUE)
+                                :size Double/MAX_VALUE
                                 :cloud-cover 50.0
                                 :orbit-calculated-spatial-domains [{:orbital-model-name "MODEL NAME"
                                                                     :orbit-number 2
@@ -590,7 +590,7 @@
 
       (testing "granule size is double"
         (let [response (search/find-concepts-atom :granule {:concept-id (:concept-id gran1)})]
-          (is (= (Double/MAX_VALUE)
+          (is (= Double/MAX_VALUE
                  (-> response :results :entries first :size))))))
 
     (testing "json"
@@ -698,12 +698,12 @@
         (is (not-any? #(string/includes? % "s3#") response-links))))
 
     (testing "testing to ISO 19115."
-      (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
+      (let [_gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
             response (search/find-metadata :granule :iso19115 {:granule-ur "Granule3"})]
         (is (string/includes? response "s3://aws.com"))))
 
     (testing "testing to ECHO 10"
-      (let [gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
+      (let [_gran-atom (da/granules->expected-atom [gran-umm] [coll1] "granules.atom?granule_ur=Granule3")
             response (search/find-metadata :granule :echo10 {:granule-ur "Granule3"})]
         (is (string/includes? response "s3://aws.com"))))))
 

@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.collection-provider-short-name-search-test
   "Integration tests for searching collections with provider short names."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -88,6 +88,7 @@
         "PROV4" ["NoMatch"] {}))))
 
 (deftest search-collections-by-provider-short-name-error-cases
+  (declare provider-short-names options expected-errors)
   (are3
     [provider-short-names options expected-errors]
     (is (= {:status 400 :errors expected-errors}

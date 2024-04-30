@@ -5,11 +5,9 @@
    [clj-http.client :as client]
    [clojure.string :as string]
    [clojure.test :refer [is]]
-   [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.indexer.config :as config]
+   [cmr.common.log :refer (warn)]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.queue :as queue]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]))
 
@@ -103,7 +101,7 @@
 
 (defn doc-present?
   "If doc is present return true, otherwise return false"
-  [index-name type-name doc-id]
+  [index-name _type-name doc-id]
   (let [response (client/get
                   (format "%s/%s/_doc/_search?q=_id:%s" (url/elastic-root) index-name doc-id)
                   {:throw-exceptions false

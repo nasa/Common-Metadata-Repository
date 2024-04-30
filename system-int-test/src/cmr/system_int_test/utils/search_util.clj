@@ -7,7 +7,7 @@
    [clj-time.coerce :as tc]
    [clojure.data.xml :as x]
    [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [clojure.walk]
    [cmr.common-app.api.routes :as routes]
    [cmr.common-app.test.side-api :as side]
@@ -517,7 +517,7 @@
         (into {} items))))))
 
 (defmulti parse-reference-response
-  (fn [echo-compatible? response]
+  (fn [echo-compatible? _response]
     echo-compatible?))
 
 (defmethod parse-reference-response :default

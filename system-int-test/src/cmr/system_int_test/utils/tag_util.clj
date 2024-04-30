@@ -116,7 +116,7 @@
   along with :concept-id, :revision-id, :errors, and :status"
   ([token tag]
    (let [tag-to-save (select-keys tag [:tag-key :description :revision-date])
-         response (if-let [concept-id (:concept-id tag)]
+         response (if-let [_concept-id (:concept-id tag)]
                     (update-tag token (:tag-key tag) tag-to-save)
                     (create-tag token tag-to-save))
          tag (-> tag
@@ -200,7 +200,7 @@
   "Returns the expected tag association for the given collection concept id to tag association
   mapping, which is in the format of, e.g.
   {[C1200000000-CMR 1] {:concept-id \"TA1200000005-CMR\" :revision-id 1}}."
-  [coll-tag-association error?]
+  [coll-tag-association _error?]
   (let [[[coll-concept-id coll-revision-id] tag-association] coll-tag-association
         {:keys [concept-id revision-id]} tag-association
         tagged-item (if coll-revision-id
@@ -228,7 +228,7 @@
   ([coll-tag-associations response]
    (assert-tag-association-response-ok? coll-tag-associations response true))
   ([coll-tag-associations response error?]
-   (let [{:keys [status body errors]} response
+   (let [{:keys [status body _errors]} response
          expected-tas (map #(coll-tag-association->expected-tag-association % error?)
                            coll-tag-associations)]
      (is (= [200
@@ -240,7 +240,7 @@
   ([coll-tag-associations response]
    (assert-tag-association-response-error? coll-tag-associations response true))
   ([coll-tag-associations response error?]
-   (let [{:keys [status body errors]} response
+   (let [{:keys [status body _errors]} response
          expected-tas (map #(coll-tag-association->expected-tag-association % error?)
                            coll-tag-associations)]
      (is (= [400
@@ -260,7 +260,7 @@
 (defn assert-invalid-data-error
   "Assert tag association response when status code is 422 is correct"
   [expected-errors response]
-  (let [{:keys [status body errors]} response]
+  (let [{:keys [status _body errors]} response]
     (is (= [422 (set expected-errors)]
            [status (set errors)]))))
 

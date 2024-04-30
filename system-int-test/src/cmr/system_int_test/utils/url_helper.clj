@@ -1,7 +1,6 @@
 (ns cmr.system-int-test.utils.url-helper
   "helper to provide the urls to various service endpoints"
   (:require
-   [cmr.common.config :as config]
    [cmr.elastic-utils.config :as es-config]
    [cmr.transmit.config :as transmit-config]
    [inflections.core :as inf]
@@ -446,7 +445,7 @@
 
 (defn retrieve-concept-url
   ([type concept-id] (retrieve-concept-url type concept-id nil))
-  ([type concept-id revision-id]
+  ([_type concept-id revision-id]
    (str "http://localhost:" (transmit-config/search-port) "/concepts/" concept-id
         (when revision-id (str "/" revision-id)))))
 
@@ -742,6 +741,7 @@
   []
   (format "http://localhost:%s" (transmit-config/indexer-port)))
 
+#_{:clj-kondo/ignore true}
 (defn ingest-generic-crud-url
   "Get the URL for Creating a Generic Document"
   [concept-type provider-id native-id]

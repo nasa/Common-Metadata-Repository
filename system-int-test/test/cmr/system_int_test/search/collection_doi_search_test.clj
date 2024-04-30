@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.collection-doi-search-test
   "Integration test for CMR collection search by doi"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest testing use-fixtures]]
     [cmr.common.util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.utils.index-util :as index]
@@ -52,6 +52,7 @@
     (index/wait-until-indexed)
 
     (testing "search collections by doi"
+      (declare items doi options)
       (are3 [items doi options]
             (let [params (merge {:doi doi}
                                 (when options
@@ -72,6 +73,7 @@
        "search for collections with both doi1 and doi2 returns nothing"
        [] ["Doi1" "doI2"] {:and true}))
     (testing "search doi with json query"
+      (declare json-search)
       (are3 [items json-search]
             (d/refs-match? items (search/find-refs-with-json-query
                                   :collection {} json-search))

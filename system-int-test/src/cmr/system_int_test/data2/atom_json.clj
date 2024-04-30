@@ -2,7 +2,6 @@
   "Contains helper functions for converting concepts into the expected map of
   parsed json results."
   (:require [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
             [cmr.spatial.mbr :as m]
             [cheshire.core :as json]
@@ -49,14 +48,16 @@
 
 (defmulti json-entry->entry
   "Retrns an entry from a parsed json entry"
-  (fn [concept-type json-entry]
+  (fn [concept-type _json-entry]
     concept-type))
 
+#_{:clj-kondo/ignore true}
 (defn parse-long
   [^String v]
   (when-not (str/blank? v)
     (Long. v)))
 
+#_{:clj-kondo/ignore true}
 (defn parse-double
   [^String v]
   (when-not (str/blank? v)
@@ -99,13 +100,13 @@
                 :equator-crossing-longitude (parse-double (:equator-crossing-longitude ocsd))})))
 
 (defmethod json-entry->entry :collection
-  [concept-type json-entry]
+  [_concept-type json-entry]
   (let [tags (util/map-keys name (:tags json-entry))
         json-entry (util/map-keys->kebab-case json-entry)
         {:keys [id title short-name version-id summary updated dataset-id collection-data-type
                 processing-level-id original-format data-center archive-center time-start time-end
                 links dif-ids online-access-flag browse-flag coordinate-system score platforms
-                shapes points boxes polygons lines granule-count has-granules has-granules-or-cwic
+                _shapes points boxes polygons lines granule-count has-granules _has-granules-or-cwic
                 has-variables has-formats has-transforms has-combine has-spatial-subsetting
                 has-temporal-subsetting cloud-hosted orbit-parameters highlighted-summary-snippets
                 organizations service-features associations consortiums eula-identifiers]} json-entry]
@@ -152,7 +153,7 @@
        :eula_identifiers eula-identifiers})))
 
 (defmethod json-entry->entry :granule
-  [concept-type json-entry]
+  [_concept-type json-entry]
   (let [json-entry (util/map-keys->kebab-case json-entry)
         {:keys [id title updated dataset-id producer-granule-id granule-size original-format
                 data-center links time-start time-end online-access-flag browse-flag day-night-flag
@@ -223,7 +224,7 @@
 (defn- update-inherited-link
   "Update the inherited field from string to boolean value"
   [link]
-  (if-let [inherited (:inherited link)]
+  (if-let [_inherited (:inherited link)]
     (update-in link [:inherited] = "true")
     link))
 

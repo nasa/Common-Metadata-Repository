@@ -1017,7 +1017,7 @@
                  (:landingPage opendata-coll-5138-2))))))))
 
 (deftest formats-have-scores-test
-  (let [coll1 (d/ingest "PROV1" (dc/collection {:short-name "ABC!XYZ" :entry-title "Foo"}))]
+  (let [_coll1 (d/ingest "PROV1" (dc/collection {:short-name "ABC!XYZ" :entry-title "Foo"}))]
     (index/wait-until-indexed)
     (testing "XML references"
       (testing "XML has score for keyword search."
@@ -1227,7 +1227,7 @@
 
 (deftest search-with-empty-json
   (let [coll1 (d/ingest "PROV1" (dc/collection))
-        coll-concept-id (:concept-id coll1)
+        _coll-concept-id (:concept-id coll1)
         _ (index/wait-until-indexed)
         response1 (client/get
                    (url/search-url :collection)

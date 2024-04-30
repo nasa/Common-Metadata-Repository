@@ -20,6 +20,7 @@
                                                                             :Version "V2"}))]
     (index/wait-until-indexed)
 
+    (declare items search)
     (are3 [items search]
       (is (d/refs-match? items (search/find-refs :collection search)))
 

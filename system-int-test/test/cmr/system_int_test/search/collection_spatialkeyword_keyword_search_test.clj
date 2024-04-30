@@ -20,6 +20,7 @@
     (index/wait-until-indexed)
 
     (testing "search by keywords."
+      (declare keyword-str items)
       (are3 [keyword-str items]
         (let [parameter-refs (search/find-refs :collection {:keyword keyword-str})
               json-refs (search/find-refs-with-json-query :collection {} {:keyword keyword-str})]
@@ -30,6 +31,7 @@
         "in" [coll1]))
 
     (testing "Default boosts on fields"
+      (declare params scores)
       (are3 [params scores] (is (= (map #(/ % 2.0) scores)
                                    (map :score (:refs (search/find-refs :collection params)))))
         "spatial-keyword"

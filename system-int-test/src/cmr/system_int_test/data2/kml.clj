@@ -14,9 +14,7 @@
    [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.granule :as dg])
   (:import
-   (cmr.spatial.mbr Mbr)
-   (cmr.umm.umm_granule UmmGranule)
-   (cmr.umm.umm_collection UmmCollection)))
+   (cmr.spatial.mbr Mbr)))
 
 (defn coordinates-container-elem->points
   "Takes an XML element that contains a child called 'coordinates' and returns a list of the points
@@ -34,7 +32,7 @@
 
 (defmulti shape-element->shape
   "Converts an XML shape element into a cmr spatial shape record."
-  (fn [coordinate-system shape-elem]
+  (fn [_coordinate-system shape-elem]
     (:tag shape-elem)))
 
 (defmethod shape-element->shape :Polygon
@@ -58,7 +56,7 @@
   (l/line-string coordinate-system (coordinates-container-elem->points shape-elem)))
 
 (defmethod shape-element->shape :Point
-  [coordinate-system shape-elem]
+  [_coordinate-system shape-elem]
   (first (coordinates-container-elem->points shape-elem)))
 
 (defn placemark-elem->item
@@ -137,7 +135,7 @@
 (defn- update-result-shapes
   "Returns the result with shapes in a set if applicable"
   [result]
-  (if-let [shapes (:shapes result)]
+  (if-let [_shapes (:shapes result)]
     (update-in result [:shapes] #(when % (set %)))
     result))
 

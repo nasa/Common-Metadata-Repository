@@ -1,12 +1,9 @@
 (ns cmr.system-int-test.utils.dev-system-util
   "Methods for accessing the dev system control api."
   (:require
-   [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.string :as str]
-   [clojure.test :refer [is]]
-   [cmr.common.log :as log :refer [debug info warn error]]
-   [cmr.common.util :as util]
+   [cmr.common.log :refer [error]]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]

@@ -12,7 +12,6 @@
   (:import [cmr.umm.umm_collection
             Product
             DataProviderTimestamps
-            ScienceKeyword
             UmmCollection]))
 
 (defn psa

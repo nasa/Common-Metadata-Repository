@@ -4,7 +4,7 @@
    [clj-http.client :as client]
    [clojure.data.xml :as x]
    [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [is]]
    [cmr.acl.core :as acl]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
@@ -220,14 +220,14 @@
 
 (defmulti parse-ingest-body
   "Parse the ingest response body as a given format"
-  (fn [response-format body]
+  (fn [response-format _body]
     response-format))
 
 (defmethod parse-ingest-body :xml
-  [response-format response]
+  [_response-format response]
   (try
     (let [xml-elem (x/parse-str (:body response))]
-      (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
+      (if-let [_errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         (util/remove-nil-keys
          {:concept-id (cx/string-at-path xml-elem [:concept-id])
@@ -241,7 +241,7 @@
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
 
 (defmethod parse-ingest-body :json
-  [response-format response]
+  [_response-format response]
   (try
     (assoc (json/decode (:body response) true) :body (:body response))
     (catch Exception e
@@ -261,15 +261,15 @@
 
 (defmulti parse-validate-body
   "Parse the validate response body as a given format"
-  (fn [response-format body]
+  (fn [response-format _body]
     response-format))
 
 (defmethod parse-validate-body :xml
-  [response-format response]
+  [_response-format response]
   (when (not-empty (:body response))
     (try
       (let [xml-elem (x/parse-str (:body response))]
-        (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
+        (if-let [_errors (seq (cx/strings-at-path xml-elem [:error]))]
           (parse-xml-error-response-elem xml-elem)
           {:warnings (cx/string-at-path xml-elem [:warnings])}))
 
@@ -277,7 +277,7 @@
         (throw (Exception. (str "Error parsing validate-format body: " (pr-str (:body response)) e)))))))
 
 (defmethod parse-validate-body :json
-  [response-format response]
+  [_response-format response]
   (try
     (json/decode (:body response) true)
     (catch Exception e
@@ -425,7 +425,7 @@
   ([concept]
    (ingest-subscription-concept concept {}))
   ([concept options]
-   (let [{:keys [metadata format concept-type concept-id revision-id native-id]} concept
+   (let [{:keys [metadata format _concept-type concept-id revision-id native-id]} concept
          {:keys [token client-id user-id validate-keywords validate-umm-c cmr-request-id x-request-id test-existing-errors]} options
          accept-format (:accept-format options)
          method (get options :method :put)
@@ -454,7 +454,7 @@
   ([concept]
    (delete-subscription-concept concept {}))
   ([concept options]
-   (let [{:keys [concept-type native-id]} concept
+   (let [{:keys [_concept-type native-id]} concept
          {:keys [token client-id accept-format revision-id user-id]} options
          headers (util/remove-nil-keys {"Authorization" token
                                         "Client-Id" client-id
@@ -579,14 +579,14 @@
 
 (defmulti parse-bulk-update-body
   "Parse the bulk update response body as a given format"
-  (fn [response-format body]
+  (fn [response-format _body]
     response-format))
 
 (defmethod parse-bulk-update-body :xml
-  [response-format response]
+  [_response-format response]
   (try
     (let [xml-elem (x/parse-str (:body response))]
-      (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
+      (if-let [_errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:task-id (cx/string-at-path xml-elem [:task-id])
          :status (:status response)}))
@@ -594,7 +594,7 @@
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
 
 (defmethod parse-bulk-update-body :json
-  [response-format response]
+  [_response-format response]
   (try
     (json/parse-string (:body response) true)
     (catch Exception e
@@ -652,14 +652,14 @@
 
 (defmulti parse-bulk-update-provider-status-body
   "Parse the bulk update provider status response body as a given format"
-  (fn [response-format body]
+  (fn [response-format _body]
     response-format))
 
 (defmethod parse-bulk-update-provider-status-body :default
-  [response-format response]
+  [_response-format response]
   (try
     (let [xml-elem (x/parse-str (:body response))]
-      (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
+      (if-let [_errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:tasks (seq (for [task (cx/elements-at-path xml-elem [:tasks :task])]
                       {:created-at (cx/string-at-path task [:created-at])
@@ -672,7 +672,7 @@
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
 
 (defmethod parse-bulk-update-provider-status-body :json
-  [response-format response]
+  [_response-format response]
   (try
     (json/parse-string (:body response) true)
     (catch Exception e
@@ -741,14 +741,14 @@
 
 (defmulti parse-bulk-update-task-status-body
   "Parse the bulk update task status response body as a given format"
-  (fn [response-format body]
+  (fn [response-format _body]
     response-format))
 
 (defmethod parse-bulk-update-task-status-body :xml
-  [response-format response]
+  [_response-format response]
   (try
     (let [xml-elem (x/parse-str (:body response))]
-      (if-let [errors (seq (cx/strings-at-path xml-elem [:error]))]
+      (if-let [_errors (seq (cx/strings-at-path xml-elem [:error]))]
         (parse-xml-error-response-elem xml-elem)
         {:created-at (cx/string-at-path xml-elem [:created-at])
          :name (cx/string-at-path xml-elem [:name])
@@ -764,7 +764,7 @@
       (throw (Exception. (str "Error parsing ingest body: " (pr-str (:body response)) e))))))
 
 (defmethod parse-bulk-update-task-status-body :json
-  [response-format response]
+  [_response-format response]
   (try
     (json/parse-string (:body response) true)
     (catch Exception e
@@ -852,7 +852,7 @@
   ([provider-map]
    (create-provider provider-map {}))
   ([provider-map options]
-   (let [{:keys [provider-guid provider-id short-name small cmr-only consortiums]} provider-map
+   (let [{:keys [_provider-guid provider-id _short-name small cmr-only consortiums]} provider-map
          short-name provider-id ;; no production provider needs this, so make it official
          cmr-only (if (some? cmr-only) cmr-only (get options :cmr-only true))
          small (if (some? small) small (get options :small false))

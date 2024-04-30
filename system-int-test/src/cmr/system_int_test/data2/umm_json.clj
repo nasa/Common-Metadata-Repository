@@ -2,7 +2,7 @@
   "Contains helper functions for UMM JSON testing."
   (:require
    [cheshire.core :as json]
-   [clojure.test :refer :all]
+   [clojure.test :refer [is]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.search.results-handlers.results-handler-util :as rs-util]
@@ -149,7 +149,7 @@
 
 (defn- granule->umm-json
   "Returns the UMM JSON search result of the given granule."
-  [version granule]
+  [_version granule]
   ;; Currently there is no version migration
   ;; We need to handle version migration later when it is supported for UMM-G
   (let [{:keys [metadata]} granule]
@@ -178,7 +178,7 @@
 
 (defn- variable->umm-json
   "Returns the UMM JSON result of the given variable."
-  [version variable]
+  [_version variable]
   (if (:deleted variable)
     {:meta (merge {:user-id "ECHO_SYS"} (variable->umm-json-meta variable))
      :associations {:collections #{}}}
@@ -230,7 +230,7 @@
 
 (defn- service->umm-json
   "Returns the UMM JSON result of the given service."
-  [version service]
+  [_version service]
   (if (:deleted service)
     {:meta (service->umm-json-meta service)}
     (let [;; use the original metadata for now, add version migration when service versioning is added
@@ -240,7 +240,7 @@
 
 (defn- tool->umm-json
   "Returns the UMM JSON result of the given tool."
-  [version tool]
+  [_version tool]
   (if (:deleted tool)
     {:meta (tool->umm-json-meta tool)}
     (let [;; use the original metadata for now, add version migration when tool versioning is added
@@ -250,7 +250,7 @@
 
 (defn- subscription->umm-json
   "Returns the UMM JSON result of the given subscription."
-  [version subscription]
+  [_version subscription]
   (if (:deleted subscription)
     {:meta (subscription->umm-json-meta subscription)}
     (let [;; use the original metadata for now, add version migration when subscription versioning is added

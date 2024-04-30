@@ -1089,6 +1089,7 @@
        "time" "10:00:00.000Z"))
 
 (deftest json-query-validation-errors-test
+  (declare search errors)
   (util/are2
     [search errors]
     (= {:status 400 :errors errors}
@@ -1179,6 +1180,7 @@
     (index/wait-until-indexed)
 
     (testing "search for extended metadata fields"
+      (declare items)
       (util/are2
         [items search]
         (data-core/refs-match? items (search/find-refs-with-json-query :collection {} search))

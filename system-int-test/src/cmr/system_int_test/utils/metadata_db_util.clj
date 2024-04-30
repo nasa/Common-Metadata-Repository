@@ -1,5 +1,5 @@
 (ns cmr.system-int-test.utils.metadata-db-util
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [is]]
             [clj-http.client :as client]
             [cheshire.core :as json]
             [cmr.system-int-test.data2.provider-holdings :as ph]

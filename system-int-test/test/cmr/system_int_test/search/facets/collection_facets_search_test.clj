@@ -2,7 +2,7 @@
   "This tests the retrieving facets when searching for collections"
   (:require
    [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]

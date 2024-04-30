@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.facets.collection-facets-v2-search-test
   "This tests retrieving v2 facets when searching for collections"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
@@ -797,6 +797,7 @@
                                                                     :LongName "International Space Station"
                                                                     :Type "Space Stations/Crewed Spacecraft"})]}))]
 
+    (declare short-name)
     (are3
      [query short-name]
      (let [facets-result (search-and-return-v2-facets query)]

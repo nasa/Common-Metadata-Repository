@@ -1,35 +1,21 @@
 (ns cmr.system-int-test.data2.opendata
   "Contains functions for parsing opendata results."
   (:require
-   [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clojure.data.xml :as x]
    [clojure.string :as str]
    [clojure.test :refer [is]]
-   [clojure.test]
    [cmr.common.util :as util]
    [cmr.search.validators.opendata :as opendata-json]
    [cmr.search.results-handlers.opendata-results-handler :as odrh]
-   [cmr.spatial.line-string :as l]
-   [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
-   [cmr.spatial.polygon :as poly]
-   [cmr.spatial.relations :as r]
-   [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.umm-spec.date-util :as date-util]
-   [cmr.umm-spec.util :as umm-spec-util]
-   [cmr.umm.echo10.spatial :as echo-s]
    [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed]
-   [cmr.umm.umm-spatial :as umm-s])
-  (:import
-   (cmr.spatial.mbr Mbr)
-   (cmr.umm.umm_collection UmmCollection)))
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (defn parse-opendata-result
   "Returns the opendata result from a json string"
-  [concept-type json-str]
+  [_concept-type json-str]
   (let [json-struct (json/decode json-str true)]
     json-struct))
 
@@ -71,15 +57,15 @@
   "Convert to expcted opendata. First convert to native format metadata then back to UMM to mimic
   ingest. If umm-json leave as is since parse-concept will convert to echo10."
   [collection]
-  (let [{:keys [format-key concept-id data-format provider-id]} collection
+  (let [{:keys [format-key concept-id _data-format provider-id]} collection
         ;; Normally :revision-date field doesn't exist in collection. Only when
         ;; it's needed to populate modified field, this field is manually added
         ;; in the test from umm-json result.
         revision-date (:revision-date collection)
         collection-citations (:collection-citations collection)
         collection (data-core/mimic-ingest-retrieve-metadata-conversion collection)
-        {:keys [short-name keywords projects related-urls summary entry-title organizations
-                access-value personnel publication-references]} collection
+        {:keys [_short-name _keywords projects related-urls summary entry-title organizations
+                _access-value personnel publication-references]} collection
         spatial-representation (get-in collection [:spatial-coverage :spatial-representation])
         temporal (:temporal collection)
         start-date  (if temporal

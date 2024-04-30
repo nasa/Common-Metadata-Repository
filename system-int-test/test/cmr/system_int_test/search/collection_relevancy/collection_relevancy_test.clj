@@ -2,8 +2,8 @@
   "Test the integration between different kinds of relevancy: Keyword, Temporal, and
    Community Usage."
   (:require
-   [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are3]]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
+   [cmr.common.util :refer [are3]]
    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -61,6 +61,7 @@
     (index/wait-until-indexed)
 
     (testing "Keyword and temporal"
+      (declare expected-collections search-params)
       (are3 [expected-collections search-params]
         (is (d/refs-match-order? expected-collections (search/find-refs :collection search-params)))
 

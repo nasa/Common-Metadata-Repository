@@ -239,6 +239,7 @@
 
     (doseq [field [:instrument :instrument-h]]
       (testing (str "Testing collection search by " (name field))
+        (declare items instrument-sn options)
         (are3 [items instrument-sn options]
               (let [params (merge {field instrument-sn}
                                   (when options

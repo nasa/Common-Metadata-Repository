@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-counts-search-test
   "This tests the granule counts search feature which allows retrieving counts of granules per collection."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common.util :as util :refer [are3]]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.mbr :as m]

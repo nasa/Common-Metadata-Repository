@@ -3,7 +3,7 @@
   (:require
    [clj-time.core :as t]
    [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.common-app.services.search.messages :as msg]
    [cmr.common.date-time-parser :as p]
    [cmr.indexer.config :as indexer-config]

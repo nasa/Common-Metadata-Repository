@@ -2,8 +2,8 @@
   "This tests the CMR Search API's temporal relevancy scoring and ranking
   capabilities"
   (:require
-   [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are3]]
+   [clojure.test :refer [deftest is testing use-fixtures]]
+   [cmr.common.util :refer [are3]]
    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as umm-c]
@@ -69,6 +69,7 @@
                                                                                 :ending-date-time "1968-10-01T00:00:00Z"})]}))]
     (index/wait-until-indexed)
 
+    (declare temporal-search-ranges expected-collections)
     (are3 [temporal-search-ranges expected-collections]
       (is (d/refs-match-order? expected-collections (search/find-refs :collection {:temporal temporal-search-ranges})))
 

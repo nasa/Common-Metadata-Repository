@@ -9,7 +9,6 @@
    [cmr.common.mime-types :as mime-types]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as d]
-   [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-subscription :as data-umm-sub]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
@@ -18,7 +17,6 @@
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.url-helper :as urls]
    [cmr.transmit.config :as config]
-   [cmr.transmit.connection :as conn]
    [cmr.transmit.search :as transmit-search]
    [cmr.umm.echo10.echo10-core :as echo10]
    [cmr.umm-spec.versioning :as versioning]))
@@ -67,8 +65,8 @@
                  (config/conn-params (s/context))
                  {:accept :xml :throw-exceptions false})
         response (client/put request-url request)
-        {:keys [headers body]} response
-        status (int (:status response))]
+        {:keys [_headers _body]} response
+        _status (int (:status response))]
     response))
 
 (defn make-subscription-concept

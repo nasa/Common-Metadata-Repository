@@ -27,6 +27,7 @@
     (index/wait-until-indexed)
 
     (testing "Search by the StandardProduct flag only"
+      (declare expected items)
       (util/are3
        [expected items]
        (data2/refs-match? items (search/find-refs :collection {:standard-product expected}))
