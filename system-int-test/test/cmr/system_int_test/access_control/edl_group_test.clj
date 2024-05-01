@@ -142,7 +142,7 @@
         response (client/request {:url cfc-url
                                   :method :get
                                   :query-params {:token "mock-echo-system-token"}
-                                  :connection-manager (s/conn-mgr)
+                                  :connection-manager (system/conn-mgr)
                                   :throw-exceptions false})
         cfc-cache (:body response)]
 
@@ -167,7 +167,7 @@
       (let  [response (client/request {:url cfc-url
                                        :method :get
                                        :query-params {:token "mock-echo-system-token"}
-                                       :connection-manager (s/conn-mgr)
+                                       :connection-manager (system/conn-mgr)
                                        :throw-exceptions false})
              cfc-cache (:body response)]
         (is (string/includes? cfc-cache coll1))))))
