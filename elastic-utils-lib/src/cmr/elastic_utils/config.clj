@@ -59,7 +59,9 @@
   "Search type to use with scrolling - either 'scan' or 'query_then_fetch'"
   {:default "query_then_fetch"})
 
-;; note for review, is this next value redundent with
+;; Note: this config is common in multiple packages as they all need to have this value but we do
+;; not want to require these apps to depend on each other just to get the defconf. If you rename,
+;; do so in all three locations.
 ;; indexer-app/src/cmr/indexer/data/index_set.clj
 ;; search-app/src/cmr/search/data/elastic_search_index.clj
 (declare collections-index-alias)

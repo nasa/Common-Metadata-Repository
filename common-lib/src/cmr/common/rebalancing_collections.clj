@@ -4,7 +4,7 @@
   (:require
    [cmr.common.services.errors :as errors]))
 
-;; TODO: move to elastic-utils when indexer-app has code moved into that lib
+;; TODO: move to elastic-utils when indexer-app has code moved into that lib - CMR-9886
 
 (def allowed-targets
   "The potential targets for a rebalancing collections operation."
