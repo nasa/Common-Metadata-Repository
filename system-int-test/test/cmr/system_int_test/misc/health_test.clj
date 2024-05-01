@@ -100,3 +100,13 @@
   (s/only-with-real-database
     (is (= [200 {:metadata-db good-metadata-db-health}]
            (get-app-health (url/access-control-health-url))))))
+
+(deftest ^:oracle multi-threaded-health-test
+  (s/only-with-real-database
+    @(future (is (= [200 {:metadata-db good-metadata-db-health}]
+           (get-app-health (url/access-control-health-url)))))
+
+    @(future (is (= [200 {:ingest good-ingest-health
+                 :metadata-db good-metadata-db-health
+                 :message-queue {:ok? true}}]
+           (get-app-health (url/virtual-product-health-url)))))))
