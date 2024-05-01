@@ -3,6 +3,7 @@
   (:require
    [cmr.acl.core :as acl]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common.api.context :as context]
    [cmr.common.api.errors :as errors]
@@ -87,4 +88,6 @@
       nested-params/wrap-nested-params
       ring-json/wrap-json-body
       common-routes/pretty-print-response-handler
-      params/wrap-params))
+      params/wrap-params
+      req-log/add-body-hashes
+      req-log/log-ring-request))
