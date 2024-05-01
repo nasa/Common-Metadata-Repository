@@ -4,7 +4,8 @@
    [clojure.data.xml :as xml]
    [clojure.java.io :as io]
    [cmr.common.xml :as cx]
-   [cmr.umm.iso-mends.iso-mends-core :as core])
+   [cmr.umm.iso-mends.iso-mends-core :as core]
+   [cmr.umm.umm-granule :as granule])
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (extend-protocol core/UmmToIsoMendsXml
@@ -24,3 +25,5 @@
   [xml]
   (cx/validate-xml (io/resource schema-location) xml))
 
+(comment
+  (granule/map->Track nil))
