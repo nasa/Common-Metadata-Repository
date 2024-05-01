@@ -1,14 +1,9 @@
 (ns cmr.search.results-handlers.atom-spatial-results-handler
   "A helper for converting spatial shapes into ATOM results"
-  (:require [clojure.data.xml :as xml]
-            [clojure.string :as string]
-            ;[cmr.spatial.polygon :as poly]
-            ;[cmr.spatial.point :as p]
-            ;[cmr.spatial.mbr :as m]
-            ;[cmr.spatial.geodetic-ring :as gr]
-            ;[cmr.spatial.cartesian-ring :as cr]
-            ;[cmr.spatial.line-string :as l]
-            [cmr.common.util :as util]))
+  (:require
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
+   [cmr.common.util :as util]))
 
 (defn- points-map->points-str
   "Converts a map containing :points into the lat lon space separated points string of atom"
