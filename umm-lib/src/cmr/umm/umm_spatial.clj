@@ -3,8 +3,8 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [clojure.string :as string]
-   [cmr.spatial.line-string :as l]
-   [cmr.spatial.point :as p]
+   [cmr.spatial.line-string :as line-string]
+   [cmr.spatial.point :as point]
    [cmr.spatial.polygon]
    [cmr.spatial.ring-relations :as rr]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
@@ -31,7 +31,7 @@
 (defn ords->ring
   "Takes all arguments as coordinates for points, lon1, lat1, lon2, lat2, and creates a ring."
   [& ords]
-  (ring (p/ords->points ords)))
+  (ring (point/ords->points ords)))
 
 (def valid-coord-systems #{:geodetic :cartesian})
 
@@ -60,7 +60,7 @@
 
 (defmethod set-coordinate-system LineString
   [coordinate-system line]
-  (l/set-coordinate-system line coordinate-system))
+  (line-string/set-coordinate-system line coordinate-system))
 
 (defmethod set-coordinate-system GeodeticRing
   [coordinate-system {:keys [points]}]
@@ -81,7 +81,7 @@
        (map #(Double. ^String %))
        (partition 2)
        (map (fn [[lat lon]]
-              (p/point lon lat)))))
+              (point/point lon lat)))))
 
 (defmulti lat-lon-point-str->ring
   "Parses a string of lat lon pairs separated by spaces to a ring."

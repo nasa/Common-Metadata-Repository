@@ -1,12 +1,12 @@
 (ns cmr.umm.validation.collection-validation
   "Defines validations for UMM collections."
   (:require
-   [clj-time.core :as t]
-   [cmr.common.validations.core :as v]
+   [clj-time.core :as time.core]
+   [cmr.common.validations.core :as validations]
    [cmr.umm.validation.validation-utils :as vu]
    [cmr.umm.umm-spatial :as umm-s]
    [cmr.spatial.validation :as sv]
-   [cmr.umm.validation.validation-helper :as h]
+   [cmr.umm.validation.validation-helper :as v-helper]
    [cmr.umm.validation.product-specific-attribute :as psa]))
 
 (defn orbit-collection-has-orbit-parameters
@@ -38,11 +38,11 @@
 (def spatial-coverage-validations
   "Defines spatial coverage validations for collections."
   [orbit-collection-has-orbit-parameters
-   (v/pre-validation
+   (validations/pre-validation
      ;; The spatial representation has to be set on the geometries before the conversion because
      ;;polygons etc do not know whether they are geodetic or not.
      set-geometries-spatial-representation
-     {:geometries (v/every sv/spatial-validation)})])
+     {:geometries (validations/every sv/spatial-validation)})])
 
 (def sensor-validations
   "Defines the sensor validations for collections"
@@ -50,13 +50,13 @@
 
 (def instrument-validations
   "Defines the instrument validations for collections"
-  {:sensors [(v/every sensor-validations)
+  {:sensors [(validations/every sensor-validations)
              (vu/unique-by-name-validator :short-name)]
    :characteristics (vu/unique-by-name-validator :name)})
 
 (def platform-validations
   "Defines the platform validations for collections"
-  {:instruments [(v/every instrument-validations)
+  {:instruments [(validations/every instrument-validations)
                  (vu/unique-by-name-validator :short-name)]
    :characteristics (vu/unique-by-name-validator :name)})
 
@@ -64,7 +64,7 @@
   "Defines range-date-time validation"
   [field-path value]
   (let [{:keys [beginning-date-time ending-date-time]} value]
-    (when (and beginning-date-time ending-date-time (t/after? beginning-date-time ending-date-time))
+    (when (and beginning-date-time ending-date-time (time.core/after? beginning-date-time ending-date-time))
       {field-path [(format "BeginningDateTime [%s] must be no later than EndingDateTime [%s]"
                            (str beginning-date-time) (str ending-date-time))]})))
 
@@ -88,26 +88,26 @@
 
 (def science-keyword-validations
   "Defines the science keyword validations for collections"
-  {:category v/required
-   :topic v/required
-   :term v/required})
+  {:category validations/required
+   :topic validations/required
+   :term validations/required})
 
 (def collection-validations
   "Defines validations for collections"
   {:product-specific-attributes [(vu/unique-by-name-validator :name)
-                                 (v/every psa/psa-validations)]
+                                 (validations/every psa/psa-validations)]
    :projects (vu/unique-by-name-validator :short-name)
    :spatial-coverage [spatial-representation-present-validation
                       spatial-coverage-validations]
-   :platforms [(v/every platform-validations)
+   :platforms [(validations/every platform-validations)
                (vu/unique-by-name-validator :short-name)]
    :associated-difs (vu/unique-by-name-validator identity)
-   :temporal {:range-date-times (v/every range-date-time-validation)}
-   :related-urls h/online-access-urls-validation
+   :temporal {:range-date-times (validations/every range-date-time-validation)}
+   :related-urls v-helper/online-access-urls-validation
    :two-d-coordinate-systems [(vu/unique-by-name-validator :name)
-                              (v/every two-d-coord-validations)]
+                              (validations/every two-d-coord-validations)]
    :collection-associations (vu/unique-by-name-validator collection-association-name)
-   :science-keywords (v/every science-keyword-validations)})
+   :science-keywords (validations/every science-keyword-validations)})
 
 
 

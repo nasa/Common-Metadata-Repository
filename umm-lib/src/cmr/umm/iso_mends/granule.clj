@@ -7,8 +7,7 @@
    [cmr.umm.iso-mends.iso-mends-core :as core])
   (:import cmr.umm.umm_granule.UmmGranule))
 
-
-(extend-protocol cmr.umm.iso-mends.iso-mends-core/UmmToIsoMendsXml
+(extend-protocol core/UmmToIsoMendsXml
   UmmGranule
   (umm->iso-mends-xml
     ([granule]

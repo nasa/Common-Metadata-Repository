@@ -3,13 +3,13 @@
   (:require
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as ext-gen]
-   [cmr.umm.umm-collection :as c]
+   [cmr.umm.umm-collection :as coll]
    [cmr.umm.granule.temporal :as tc]))
 
 (def range-date-time
   (let [dates-gen (gen/fmap sort (gen/vector ext-gen/date-time 1 2))]
     (gen/fmap (fn [[begin end]]
-                (c/->RangeDateTime begin end))
+                (coll/->RangeDateTime begin end))
               dates-gen)))
 
 (def temporal-range

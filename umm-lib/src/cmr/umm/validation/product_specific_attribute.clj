@@ -1,9 +1,9 @@
 (ns cmr.umm.validation.product-specific-attribute
   "Defines validations for UMM collection product specific attribute."
   (:require
-   [cmr.common.validations.core :as v]
+   [cmr.common.validations.core :as valid]
    [cmr.common.util :as util]
-   [cmr.umm.umm-collection :as c]
+   [cmr.umm.umm-collection :as coll]
    [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (def no-range-data-types
@@ -17,7 +17,7 @@
 (defn- data-type-validator
   "Validates data-type is one of the valid product specific attribute data types"
   [field-path value]
-  (when-not (some #{value} c/product-specific-attribute-types)
+  (when-not (some #{value} coll/product-specific-attribute-types)
     {field-path [(format "Additional Attribute %%s [%s] is not a valid data type."
                          (if value
                            (psa/gen-data-type value)
@@ -31,7 +31,7 @@
     nil
     (catch Exception _
       [(format "%s [%s] is not a valid value for type [%s]."
-               (v/humanize-field field) value (psa/gen-data-type data-type))])))
+               (valid/humanize-field field) value (psa/gen-data-type data-type))])))
 
 (defn- values-match-data-type-validation
   "Validates additional attribute values match the data type"
@@ -50,7 +50,7 @@
         value-fn (fn [field value]
                    (when value
                      [(format "%s is not allowed for type [%s]"
-                              (v/humanize-field field) (psa/gen-data-type data-type))]))]
+                              (valid/humanize-field field) (psa/gen-data-type data-type))]))]
     (when (no-range-data-types data-type)
       (->> (select-keys aa [:parameter-range-begin :parameter-range-end])
            (mapcat #(apply value-fn %))

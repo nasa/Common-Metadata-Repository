@@ -2,17 +2,17 @@
   "Defines validations for UMM granules"
   (:require
    [camel-snake-kebab.core :as csk]
-   [clj-time.core :as t]
+   [clj-time.core :as time-core]
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common.validations.core :as v]
+   [cmr.common.validations.core :as valid]
    [cmr.spatial.validation :as sv]
    [cmr.umm.collection.entry-id :as eid]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm.umm-spatial :as umm-s]
    [cmr.umm.validation.product-specific-attribute :as psa]
    [cmr.umm.validation.validation-utils :as vu]
-   [cmr.umm.validation.validation-helper :as h]))
+   [cmr.umm.validation.validation-helper :as v-helper]))
 
 (defn- spatial-field-not-allowed
   "Create a function which takes in :orbit or :geometries as input and returns an error if the field exists"
@@ -70,12 +70,12 @@
 
 (def spatial-coverage-validations
   "Defines spatial coverage validations for granules"
-  [(v/pre-validation
+  [(valid/pre-validation
      ;; The spatial representation has to be set on the geometries before the conversion because
      ;; polygons etc do not know whether they are geodetic or not.
      set-geometries-spatial-representation
-     {:geometries (v/every sv/spatial-validation)
-      :orbit (v/when-present sv/spatial-validation)})])
+     {:geometries (valid/every sv/spatial-validation)
+      :orbit (valid/when-present sv/spatial-validation)})])
 
 (defn- within-range?
   "Checks if value falls within the closed bounds defined by min-value and max-value. One or both of
@@ -129,7 +129,7 @@
           parent-value (if (= :entry-id field)
                          (eid/umm->entry-id (:parent collection-ref))
                          (get-in collection-ref (concat [:parent] parent-field-path)))
-          field-name (v/humanize-field field)]
+          field-name (valid/humanize-field field)]
       (when (and value (not= value parent-value))
         {[:collection-ref]
          [(format "%%s %s [%s] does not match the %s of the parent collection [%s]"
@@ -152,22 +152,22 @@
   ;; NOTE: nil values for coll-end or gran-end are considered to be infinitely
   ;; far in the future
   (cond
-    (t/before? gran-start coll-start)
+    (time-core/before? gran-start coll-start)
     (format "Granule start date [%s] is earlier than collection start date [%s]."
             gran-start coll-start)
 
-    (and coll-end (t/after? gran-start coll-end))
+    (and coll-end (time-core/after? gran-start coll-end))
     (format "Granule start date [%s] is later than collection end date [%s]."
             gran-start coll-end)
 
-    (and coll-end gran-end (t/after? gran-end coll-end))
+    (and coll-end gran-end (time-core/after? gran-end coll-end))
     (format "Granule end date [%s] is later than collection end date [%s]."
             gran-end coll-end)
 
     (and coll-end (nil? gran-end))
     (format "There is no granule end date whereas collection has an end date of [%s]" coll-end)
 
-    (and gran-end (t/after? gran-start gran-end))
+    (and gran-end (time-core/after? gran-start gran-end))
     (format "Granule start date [%s] is later than granule end date [%s]."
             gran-start gran-end)))
 
@@ -205,14 +205,14 @@
                           (vu/has-parent-validator :name "Characteristic Reference name")]
     :sensor-refs [(vu/unique-by-name-validator :short-name)
                   (vu/has-parent-validator :short-name "Sensor short name")
-                  (v/every sensor-ref-validations)]}
+                  (valid/every sensor-ref-validations)]}
    operation-modes-reference-collection])
 
 (def platform-ref-validations
   "Defines the platform validations for granules"
   {:instrument-refs [(vu/unique-by-name-validator :short-name)
                      (vu/has-parent-validator :short-name "Instrument short name")
-                     (v/every instrument-ref-validations)]})
+                     (valid/every instrument-ref-validations)]})
 
 (def granule-validations
   "Defines validations for granules"
@@ -225,12 +225,12 @@
     :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")
-                    (v/every platform-ref-validations)]
+                    (valid/every platform-ref-validations)]
     :two-d-coordinate-system [(vu/has-parent-validator :name "2D Coordinate System name")
                               two-d-coordinates-range-validation]
     :product-specific-attributes [(vu/has-parent-validator :name "Product Specific Attribute")
-                                  (v/every psa/psa-ref-validations)]
+                                  (valid/every psa/psa-ref-validations)]
     :project-refs (vu/unique-by-name-validator identity)
-    :related-urls h/online-access-urls-validation}
+    :related-urls v-helper/online-access-urls-validation}
    projects-reference-collection
    spatial-matches-granule-spatial-representation])
