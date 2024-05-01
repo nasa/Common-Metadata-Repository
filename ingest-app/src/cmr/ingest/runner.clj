@@ -10,5 +10,5 @@
   [& args]
   (let [system (system/start (system/create-system))]
     (cfg/check-env-vars)
-    (events/stop-on-exit-hook #(system/stop system))
+    (events/stop-on-exit-hook (:instance-name system) #(system/stop system))
     (events/dump-on-exit-hook (:instance-name system))))

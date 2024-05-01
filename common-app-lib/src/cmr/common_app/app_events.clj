@@ -54,7 +54,7 @@
   "Add a shutdown hook to call the CMR app stop command found in most if not all
    CMR microservices. Caller must supply a function that calls the application's
    stop function such as: #(cmr.search.system/stop system)"
-  [stop-thread]
+  [_app-name stop-thread]
   (.addShutdownHook (Runtime/getRuntime) (new Thread stop-thread)))
 
 (defn dump-on-exit-hook
