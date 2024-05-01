@@ -1,14 +1,14 @@
 (ns cmr.umm.echo10.collection.campaign
   (:require
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common.xml :as cx]
-   [cmr.umm.umm-collection :as c]))
+   [cmr.umm.umm-collection :as coll]))
 
 (defn xml-elem->Campaign
   [campaign-elem]
   (let [short-name (cx/string-at-path campaign-elem [:ShortName])
         long-name (cx/string-at-path campaign-elem [:LongName])]
-    (c/map->Project
+    (coll/map->Project
       {:short-name short-name
        :long-name long-name})))
 
@@ -23,11 +23,11 @@
 (defn generate-campaigns
   [projects]
   (when (seq projects)
-    (x/element
+    (xml/element
       :Campaigns {}
       (for [proj projects]
         (let [{:keys [short-name long-name]} proj]
-          (x/element :Campaign {}
-                     (x/element :ShortName {} short-name)
+          (xml/element :Campaign {}
+                     (xml/element :ShortName {} short-name)
                      (when long-name
-                       (x/element :LongName {} long-name))))))))
+                       (xml/element :LongName {} long-name))))))))

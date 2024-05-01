@@ -14,9 +14,7 @@
    [cmr.umm.iso-mends.iso-mends-collection :as iso-mends-c]
    [cmr.umm.iso-smap.iso-smap-core :as iso-smap]
    [cmr.umm.iso-smap.iso-smap-collection :as iso-smap-c]
-   [cmr.umm.iso-smap.granule :as iso-smap-g]
-   [cmr.umm.umm-collection]
-   [cmr.umm.umm-granule])
+   [cmr.umm.iso-smap.granule :as iso-smap-g])
   #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.umm.umm_collection.UmmCollection
            cmr.umm.umm_granule.UmmGranule))
@@ -24,9 +22,9 @@
 (defn item->concept-type
   "Returns the concept type of the item"
   [item]
-  (case (type item)
-    UmmCollection :collection
-    UmmGranule :granule))
+  (cond
+    (= cmr.umm.umm_collection.UmmCollection (type item)) :collection
+    (= cmr.umm.umm_granule.UmmGranule (type item)) :granule))
 
 (defn validate-granule-concept-xml
   "Validates the granule concept metadata against its xml schema."

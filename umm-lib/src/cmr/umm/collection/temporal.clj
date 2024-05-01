@@ -2,7 +2,7 @@
   "Provides functions for collection temporal coverage construction"
   (:require
    [cmr.common.services.errors :as errors]
-   [cmr.umm.umm-collection :as c]))
+   [cmr.umm.umm-collection :as coll]))
 
 ;; default temporal date times map
 (def temporal-date-times {:range-date-times []
@@ -21,4 +21,4 @@
   "Constructs a temporal coverage record with the given map, verifies only one of the temporal datetimes can exist."
   [temporal-map]
   (validate-temporal-map temporal-map)
-  (c/map->Temporal (merge temporal-date-times temporal-map)))
+  (coll/map->Temporal (merge temporal-date-times temporal-map)))

@@ -6,9 +6,9 @@
    [cmr.spatial.test.generators :as sgen]
    [cmr.umm.test.generators.collection.product-specific-attribute :as psa]
    [cmr.umm.test.generators.collection.science-keyword :as sk]
-   [cmr.umm.test.generators.collection.temporal :as t]
+   [cmr.umm.test.generators.collection.temporal :as temporal]
    [cmr.umm.test.generators.spatial :as spatial-gen]
-   [cmr.umm.umm-collection :as c]))
+   [cmr.umm.umm-collection :as coll]))
 
 (def optional-short-string (ext-gen/optional (ext-gen/string-ascii 1 10)))
 
@@ -33,7 +33,7 @@
   (gen/elements ["SCIENCE_QUALITY" "NEAR_REAL_TIME" "OTHER"]))
 
 (def products
-  (ext-gen/model-gen c/->Product
+  (ext-gen/model-gen coll/->Product
                      short-names
                      long-names
                      version-ids
@@ -42,7 +42,7 @@
                      (ext-gen/optional collection-data-types)))
 
 (def data-provider-timestamps
-  (ext-gen/model-gen c/->DataProviderTimestamps
+  (ext-gen/model-gen coll/->DataProviderTimestamps
                      ext-gen/date-time ext-gen/date-time (ext-gen/optional ext-gen/date-time) ext-gen/date-time))
 
 (def entry-ids
@@ -73,7 +73,7 @@
   (ext-gen/string-ascii 1 10))
 
 (def characteristics
-  (ext-gen/model-gen c/->Characteristic characteric-names
+  (ext-gen/model-gen coll/->Characteristic characteric-names
                      characteric-descriptions
                      characteristic-datatypes
                      characteristic-units
@@ -89,7 +89,7 @@
   (ext-gen/string-ascii 1 10))
 
 (def sensors
-  (ext-gen/model-gen c/->Sensor sensor-short-names
+  (ext-gen/model-gen coll/->Sensor sensor-short-names
                      (ext-gen/optional sensor-long-names)
                      (ext-gen/optional sensor-techniques)
                      (ext-gen/nil-if-empty (gen/vector characteristics 0 4))))
@@ -107,7 +107,7 @@
   (ext-gen/string-ascii 1 10))
 
 (def instruments
-  (ext-gen/model-gen c/->Instrument
+  (ext-gen/model-gen coll/->Instrument
                      instrument-short-names
                      (ext-gen/optional instrument-long-names)
                      (ext-gen/optional instrument-techniques)
@@ -125,7 +125,7 @@
   (ext-gen/string-alpha-numeric 1 10))
 
 (def platforms
-  (ext-gen/model-gen c/->Platform
+  (ext-gen/model-gen coll/->Platform
                      platform-short-names
                      platform-long-names
                      platform-types
@@ -139,7 +139,7 @@
   (ext-gen/string-ascii 1 10))
 
 (def collection-associations
-  (ext-gen/model-gen c/->CollectionAssociation ca-short-names ca-version-ids))
+  (ext-gen/model-gen coll/->CollectionAssociation ca-short-names ca-version-ids))
 
 (def campaign-short-names
   (ext-gen/string-ascii 1 10))
@@ -148,7 +148,7 @@
   (ext-gen/string-ascii 1 10))
 
 (def campaigns
-  (ext-gen/model-gen c/->Project campaign-short-names (ext-gen/optional campaign-long-names)))
+  (ext-gen/model-gen coll/->Project campaign-short-names (ext-gen/optional campaign-long-names)))
 
 (def two-d-names
   (ext-gen/string-ascii 1 10))
@@ -157,23 +157,23 @@
   (let [coords-gen (gen/fmap sort (gen/vector (ext-gen/choose-double 0 1000) 0 2))]
     (ext-gen/model-gen (fn [[min-value max-value]]
                          (when (or min-value max-value)
-                           (c/->Coordinate min-value max-value)))
+                           (coll/->Coordinate min-value max-value)))
                        coords-gen)))
 
 (def two-d-coordinate-systems
-  (ext-gen/model-gen c/->TwoDCoordinateSystem two-d-names coordinates coordinates))
+  (ext-gen/model-gen coll/->TwoDCoordinateSystem two-d-names coordinates coordinates))
 
 (def org-names
   (ext-gen/string-ascii 1 10))
 
 (def archive-center-organizations
-  (ext-gen/model-gen c/->Organization (gen/return :archive-center) org-names))
+  (ext-gen/model-gen coll/->Organization (gen/return :archive-center) org-names))
 
 (def processing-center-organizations
-  (ext-gen/model-gen c/->Organization (gen/return :processing-center) org-names))
+  (ext-gen/model-gen coll/->Organization (gen/return :processing-center) org-names))
 
 (def distribution-center-organizations
-  (ext-gen/model-gen c/->Organization (gen/return :distribution-center) org-names))
+  (ext-gen/model-gen coll/->Organization (gen/return :distribution-center) org-names))
 
 (def related-url-types
   (gen/elements ["GET DATA" "GET RELATED VISUALIZATION" "VIEW RELATED INFORMATION"]))
@@ -184,17 +184,17 @@
 (def related-url
   (gen/fmap (fn [[type url description size mime-type]]
               (if (= type "GET RELATED VISUALIZATION")
-                (c/map->RelatedURL {:url url
-                                    :type type
-                                    :description description
-                                    :title description
-                                    :size size
-                                    :mime-type mime-type})
-                (c/map->RelatedURL {:url url
-                                    :type type
-                                    :description description
-                                    :title description
-                                    :mime-type mime-type})))
+                (coll/map->RelatedURL {:url url
+                                       :type type
+                                       :description description
+                                       :title description
+                                       :size size
+                                       :mime-type mime-type})
+                (coll/map->RelatedURL {:url url
+                                       :type type
+                                       :description description
+                                       :title description
+                                       :mime-type mime-type})))
             (gen/tuple related-url-types
                        ext-gen/file-url-string
                        (ext-gen/string-ascii 1 10)
@@ -203,7 +203,7 @@
 
 (def orbit-params
   (gen/fmap (fn [[swath-width period incl-angle num-orbits start-clat]]
-              (c/->OrbitParameters swath-width period incl-angle num-orbits start-clat))
+              (coll/->OrbitParameters swath-width period incl-angle num-orbits start-clat))
             (gen/tuple (ext-gen/choose-double 1 100)
                        (ext-gen/choose-double 10 7200)
                        (ext-gen/choose-double -90 90)
@@ -212,9 +212,9 @@
 
 (def spatial-coverages
   (gen/fmap (fn [[gsr sr geoms orbit-params]]
-              (c/->SpatialCoverage gsr (when geoms sr) geoms orbit-params))
-            (gen/tuple (gen/elements c/granule-spatial-representations)
-                       (gen/elements c/spatial-representations)
+              (coll/->SpatialCoverage gsr (when geoms sr) geoms orbit-params))
+            (gen/tuple (gen/elements coll/granule-spatial-representations)
+                       (gen/elements coll/spatial-representations)
                        (ext-gen/optional (gen/vector spatial-gen/geometries 1 5))
                        orbit-params)))
 
@@ -223,13 +223,13 @@
 
 (def contacts
   (gen/fmap (fn [[type value]]
-              (c/->Contact type value))
+              (coll/->Contact type value))
             (gen/tuple (gen/elements [:email :phone :fax])
                        (ext-gen/string-ascii 10 30))))
 
 (def personnels
   (gen/fmap (fn [[first-name middle-name last-name roles contacts]]
-              (c/->Personnel first-name middle-name last-name roles contacts))
+              (coll/->Personnel first-name middle-name last-name roles contacts))
             (gen/tuple person-names
                        (ext-gen/optional person-names)
                        person-names
@@ -238,7 +238,7 @@
 
 (def publication-references
   (gen/fmap (fn [ref-map]
-              (c/map->PublicationReference ref-map))
+              (coll/map->PublicationReference ref-map))
             (gen/hash-map
               :author optional-short-string
               :publication-date optional-short-string
@@ -257,12 +257,12 @@
               :other-reference-details optional-short-string)))
 
 (def collection-progress
-  (ext-gen/optional (gen/elements c/collection-progress-states)))
+  (ext-gen/optional (gen/elements coll/collection-progress-states)))
 
 (def collections
   (gen/fmap (fn [[attribs proc-org archive-org dist-org]]
-              (c/map->UmmCollection (assoc attribs
-                                           :organizations (seq (remove nil? (flatten [proc-org archive-org dist-org]))))))
+              (coll/map->UmmCollection (assoc attribs
+                                              :organizations (seq (remove nil? (flatten [proc-org archive-org dist-org]))))))
             (gen/tuple
               (gen/hash-map
                 :entry-title entry-titles
@@ -274,7 +274,7 @@
                 :quality (ext-gen/optional (ext-gen/string-ascii 1 10))
                 :use-constraints (ext-gen/optional (ext-gen/string-ascii 1 10))
                 :data-provider-timestamps data-provider-timestamps
-                :temporal t/temporals
+                :temporal temporal/temporals
                 :spatial-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 10) 0 4))
                 :temporal-keywords (ext-gen/nil-if-empty (gen/vector (ext-gen/string-alpha-numeric 1 10) 0 4))
                 :science-keywords (ext-gen/nil-if-empty (gen/vector sk/science-keywords 0 3))
@@ -299,7 +299,7 @@
 (def basic-collections
   (gen/fmap (fn [[entry-title product]]
               (let [entry-id (str (:short-name product) "_" (:version-id product))]
-                (c/map->UmmCollection
+                (coll/map->UmmCollection
                   {:entry-id entry-id
                    :entry-title entry-title
                    :product product})))

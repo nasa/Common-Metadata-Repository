@@ -1,8 +1,8 @@
 (ns cmr.umm.dif10.collection.product-specific-attribute
   (:require
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common.xml :as cx]
-   [cmr.umm.umm-collection :as c]
+   [cmr.umm.umm-collection :as coll]
    [cmr.umm.generator-util :as gu]
    [cmr.umm.collection.product-specific-attribute :as psa]
    [cmr.umm.dif.collection.product-specific-attribute :as d9-psa]))
@@ -15,7 +15,7 @@
         begin (cx/string-at-path psa-elem [:ParameterRangeBegin])
         end (cx/string-at-path psa-elem [:ParameterRangeEnd])
         value (cx/string-at-path psa-elem [:Value])]
-    (c/map->ProductSpecificAttribute
+    (coll/map->ProductSpecificAttribute
       {:name name
        :description description
        :data-type data-type
@@ -42,12 +42,12 @@
   (for [psa psas]
     (let [{:keys [data-type name description parameter-range-begin parameter-range-end value]} psa
           description (if (empty? description)
-                        c/not-provided
+                        coll/not-provided
                         description)]
-      (x/element :Additional_Attributes {}
-                 (x/element :Name {} name)
-                 (x/element :DataType {} (psa/gen-data-type data-type))
-                 (x/element :Description {} description)
+      (xml/element :Additional_Attributes {}
+                 (xml/element :Name {} name)
+                 (xml/element :DataType {} (psa/gen-data-type data-type))
+                 (xml/element :Description {} description)
                  (gu/optional-elem :ParameterRangeBegin parameter-range-begin)
                  (gu/optional-elem :ParameterRangeEnd parameter-range-end)
                  (gu/optional-elem :Value value)))))

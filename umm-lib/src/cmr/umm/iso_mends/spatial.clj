@@ -2,17 +2,17 @@
   "Functions for extracting spatial extent information from an
   ISO-MENDS format XML document."
   (:require
-   [clojure.data.xml :as x]
-   [clojure.string :as str]
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
    [camel-snake-kebab.core :as csk]
    [cmr.common.xml :as cx]
-   [cmr.spatial.derived :as d]
+   [cmr.spatial.derived :as derived]
    [cmr.spatial.encoding.gmd :as gmd]
-   [cmr.spatial.relations :as r]
-   [cmr.umm.umm-collection :as c]
+   [cmr.spatial.relations :as relations]
+   [cmr.umm.umm-collection :as coll]
    [cmr.umm.iso-mends.iso-mends-core :as core]
    [cmr.umm.umm-spatial :as umm-s]
-   [cmr.umm.iso-mends.collection.helper :as h]))
+   [cmr.umm.iso-mends.collection.helper :as helper]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Parsing XML
@@ -47,7 +47,7 @@
     (when description
       (some-> (re-matches #".*SpatialGranuleSpatialRepresentation=(.*)$" description)
               second
-              (str/split #"," 2)
+              (string/split #"," 2)
               first
               csk/->kebab-case-keyword))))
 
@@ -61,7 +61,7 @@
         geometries (parse-geometries xml)
         coord-sys  (parse-coordinate-system xml)]
     (when (or gran-spatial-rep (seq geometries))
-      (c/map->SpatialCoverage
+      (coll/map->SpatialCoverage
         {:spatial-representation coord-sys
          :granule-spatial-representation (or gran-spatial-rep :no-spatial)
          :geometries (seq (map #(umm-s/set-coordinate-system coord-sys %) geometries))}))))
@@ -70,7 +70,7 @@
   "Returns ISO MENDS coordinate system XML element from the given SpatialCoverage."
   [{:keys [spatial-representation]}]
   (when spatial-representation
-    (reduce (fn [content tag] (x/element tag {} content))
+    (reduce (fn [content tag] (xml/element tag {} content))
             (.toUpperCase (name spatial-representation))
             (reverse ref-sys-path-with-ns))))
 
@@ -79,9 +79,9 @@
   [{:keys [spatial-representation geometries]}]
   (->> geometries
        (map (partial umm-s/set-coordinate-system spatial-representation))
-       (map d/calculate-derived)
+       (map derived/calculate-derived)
        ;; ISO MENDS interleaves MBRs and actual spatial areas
-       (mapcat (juxt r/mbr identity))
+       (mapcat (juxt relations/mbr identity))
        (map gmd/encode)))
 
 (defn spatial-coverage->extent-description-xml
@@ -90,7 +90,7 @@
   granule spatial representation. This field is lossy in a round trip from xml to xml."
   [{:keys [granule-spatial-representation]}]
   (when granule-spatial-representation
-    (h/iso-string-element
+    (helper/iso-string-element
       :gmd:description
       (str "SpatialGranuleSpatialRepresentation="
            (some-> granule-spatial-representation csk/->SCREAMING_SNAKE_CASE_STRING)))))

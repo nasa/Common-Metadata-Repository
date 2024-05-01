@@ -2,10 +2,10 @@
   "Provides clojure.test.check generators for product specific attributes"
   (:require
    [clojure.test.check.generators :as gen]
-   [clj-time.core :as t]
-   [clj-time.format :as f]
+   [clj-time.core :as time.core]
+   [clj-time.format :as time.format]
    [cmr.common.test.test-check-ext :as ext-gen]
-   [cmr.umm.umm-collection :as c]
+   [cmr.umm.umm-collection :as coll]
    [cmr.umm.collection.product-specific-attribute :as psa]))
 
 (def names
@@ -15,7 +15,7 @@
   (ext-gen/string-alpha-numeric 1 10))
 
 (def data-types
-  (gen/elements c/product-specific-attribute-types))
+  (gen/elements coll/product-specific-attribute-types))
 
 (def string-values
   (ext-gen/string-alpha-numeric 1 10))
@@ -33,14 +33,14 @@
   "Generates date values without a time component"
   (gen/fmap
     (fn [t]
-      (t/date-time (t/year t) (t/month t) (t/day t)))
+      (time.core/date-time (time.core/year t) (time.core/month t) (time.core/day t)))
     ext-gen/date-time))
 
 (def time-values
   "Generates time values without a date component"
   (gen/fmap
     (fn [t]
-      (t/date-time 1970 1 1 (t/hour t) (t/minute t) (t/second t) (t/milli t)))
+      (time.core/date-time 1970 1 1 (time.core/hour t) (time.core/minute t) (time.core/second t) (time.core/milli t)))
     ext-gen/date-time))
 
 (def datetime-values
@@ -57,9 +57,9 @@
     :date date-values
     :time time-values
     :datetime datetime-values
-    :date-string (gen/fmap #(f/unparse (f/formatters :year-month-day) %)
+    :date-string (gen/fmap #(time.format/unparse (time.format/formatters :year-month-day) %)
                            date-values)
-    :time-string (gen/fmap #(f/unparse (f/formatters :hour-minute-second-fraction) %)
+    :time-string (gen/fmap #(time.format/unparse (time.format/formatters :hour-minute-second-fraction) %)
                            time-values)
     :datetime-string (gen/fmap str datetime-values)))
 
@@ -100,6 +100,6 @@
                              :parsed-parameter-range-end end
                              :parameter-range-end (psa/gen-value data-type end))
                       attribs)]
-        (c/map->ProductSpecificAttribute attribs)))
+        (coll/map->ProductSpecificAttribute attribs)))
     (gen/tuple names descriptions data-type-with-values gen/boolean gen/boolean)))
 

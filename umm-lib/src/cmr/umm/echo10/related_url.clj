@@ -3,10 +3,10 @@
   into UMM related urls."
   (:require
    [clojure.string :as string]
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common.xml :as cx]
-   [cmr.umm.umm-collection :as c]
-   [cmr.umm.related-url-helper :as h]))
+   [cmr.umm.umm-collection :as coll]
+   [cmr.umm.related-url-helper :as url-helper]))
 
 (def resource-type->related-url-types
   "A mapping of ECHO10 OnlineResource's type to UMM RelatedURL's type and sub-type.
@@ -86,7 +86,7 @@
                                  (re-find #"^.*OPENDAP.*$" (string/upper-case resource-type)))
                           ["USE SERVICE API" "OPENDAP DATA"]
                           [type sub-type])]
-    (c/map->RelatedURL
+    (coll/map->RelatedURL
      {:url url
       :description description
       :title (string/trim (str description " (" resource-type ")"))
@@ -112,7 +112,7 @@
         type (if (string/includes? (string/lower-case url) "s3://")
                "GET DATA VIA DIRECT ACCESS"
                "GET DATA")]
-    (c/map->RelatedURL
+    (coll/map->RelatedURL
       {:url url
        :description description
        :title description
@@ -135,7 +135,7 @@
         size (cx/long-at-path elem [:FileSize])
         description (cx/string-at-path elem [:Description])
         mime-type (cx/string-at-path elem [:MimeType])]
-    (c/map->RelatedURL
+    (coll/map->RelatedURL
       {:url url
        :size size
        :description description
@@ -162,16 +162,16 @@
   "Generates the OnlineAccessURLs element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
   (when-let [urls (seq (concat
-                         (h/downloadable-urls related-urls)
-                         (h/s3-urls related-urls)))]
-    (x/element
+                         (url-helper/downloadable-urls related-urls)
+                         (url-helper/s3-urls related-urls)))]
+    (xml/element
       :OnlineAccessURLs {}
       (for [related-url urls]
         (let [{:keys [url description mime-type]} related-url]
-          (x/element :OnlineAccessURL {}
-                     (x/element :URL {} url)
-                     (when description (x/element :URLDescription {} description))
-                     (when mime-type (x/element :MimeType {} mime-type))))))))
+          (xml/element :OnlineAccessURL {}
+                       (xml/element :URL {} url)
+                       (when description (xml/element :URLDescription {} description))
+                       (when mime-type (xml/element :MimeType {} mime-type))))))))
 
 (defn- related-url->online-resource
   "Related-url-types->resource-types does not handle the use case for matching a
@@ -188,29 +188,29 @@
 (defn generate-resource-urls
   "Generates the OnlineResources element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
-  (when-let [urls (seq (h/resource-urls related-urls))]
-    (x/element
+  (when-let [urls (seq (url-helper/resource-urls related-urls))]
+    (xml/element
       :OnlineResources {}
       (for [related-url urls]
         (let [{:keys [url description mime-type]} related-url]
-          (x/element :OnlineResource {}
-                     (x/element :URL {} url)
-                     (when description (x/element :Description {} description))
-                     ;; There is not a well defined one to one mapping between related url type and resource type.
-                     ;; This default value of "USER SUPPORT" is to get us by the xml schema validation.
-                     (x/element :Type {} (related-url->online-resource related-url))
-                     (when mime-type (x/element :MimeType {} mime-type))))))))
+          (xml/element :OnlineResource {}
+                       (xml/element :URL {} url)
+                       (when description (xml/element :Description {} description))
+                       ;; There is not a well defined one to one mapping between related url type and resource type.
+                       ;; This default value of "USER SUPPORT" is to get us by the xml schema validation.
+                       (xml/element :Type {} (related-url->online-resource related-url))
+                       (when mime-type (xml/element :MimeType {} mime-type))))))))
 
 (defn generate-browse-urls
   "Generates the AssociatedBrowseImageUrls element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
-  (when-let [urls (seq (h/browse-urls related-urls))]
-    (x/element
+  (when-let [urls (seq (url-helper/browse-urls related-urls))]
+    (xml/element
       :AssociatedBrowseImageUrls {}
       (for [related-url urls]
         (let [{:keys [url size description mime-type]} related-url]
-          (x/element :ProviderBrowseUrl {}
-                     (x/element :URL {} url)
-                     (when size (x/element :FileSize {} size))
-                     (when description (x/element :Description {} description))
-                     (when mime-type (x/element :MimeType {} mime-type))))))))
+          (xml/element :ProviderBrowseUrl {}
+                       (xml/element :URL {} url)
+                       (when size (xml/element :FileSize {} size))
+                       (when description (xml/element :Description {} description))
+                       (when mime-type (xml/element :MimeType {} mime-type))))))))

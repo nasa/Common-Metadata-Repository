@@ -1,19 +1,19 @@
 (ns cmr.umm.dif10.dif10-collection
   "Contains functions for parsing and generating the DIF dialect."
   (:require
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.umm.dif10.dif10-core :as dif10-core]
-   [cmr.umm.umm-collection :as c]
-   [cmr.umm.dif10.collection.temporal :as t]
+   [cmr.umm.umm-collection :as coll]
+   [cmr.umm.dif10.collection.temporal :as temporal]
    [cmr.umm.dif10.collection.project-element :as pj]
    [cmr.umm.dif10.collection.related-url :as ru]
    [cmr.umm.dif10.collection.science-keyword :as sk]
    [cmr.umm.dif.collection.location-keywords :as lk]
-   [cmr.umm.dif10.collection.spatial :as s]
+   [cmr.umm.dif10.collection.spatial :as spatial]
    [cmr.umm.dif10.collection.org :as org]
    [cmr.umm.dif10.collection.platform :as platform]
    [cmr.umm.dif10.collection.progress :as progress]
@@ -29,7 +29,7 @@
 (defn- xml-elem->Product
   "Returns a UMM Product from a parsed Collection Content XML structure"
   [collection-content]
-  (c/map->Product
+  (coll/map->Product
     {:short-name (cx/string-at-path collection-content [:Entry_ID :Short_Name])
      :long-name (util/trunc
                   (cx/string-at-path collection-content [:Entry_Title])
@@ -44,7 +44,7 @@
         update-time (cx/string-at-path collection-content [:Metadata_Dates :Data_Last_Revision])
         delete-time (cx/string-at-path collection-content [:Metadata_Dates :Metadata_Delete])]
     (when (or insert-time update-time)
-      (c/map->DataProviderTimestamps
+      (coll/map->DataProviderTimestamps
         {:insert-time (dtp/try-parse-datetime insert-time) 
          :update-time (dtp/try-parse-datetime update-time) 
          :revision-date-time (dtp/try-parse-datetime update-time)
@@ -53,14 +53,14 @@
 (defn- xml-elem->Collection
   "Returns a UMM Product from a parsed Collection XML structure"
   [xml-struct]
-  (c/map->UmmCollection
+  (coll/map->UmmCollection
     {:entry-title (cx/string-at-path xml-struct [:Entry_Title])
      :personnel (personnel/xml-elem->personnel xml-struct)
      :science-keywords (sk/xml-elem->ScienceKeywords xml-struct)
      :platforms (platform/xml-elem->Platforms xml-struct)
-     :temporal (t/xml-elem->Temporal xml-struct)
+     :temporal (temporal/xml-elem->Temporal xml-struct)
      :collection-progress (progress/parse xml-struct)
-     :spatial-coverage (s/xml-elem->SpatialCoverage xml-struct)
+     :spatial-coverage (spatial/xml-elem->SpatialCoverage xml-struct)
      :two-d-coordinate-systems (two-d/xml-elem->TwoDCoordinateSystems xml-struct)
      :projects (pj/xml-elem->Projects xml-struct)
      :quality (cx/string-at-path xml-struct [:Quality])
@@ -82,17 +82,17 @@
 (defn parse-collection
   "Parses DIF 10 XML into a UMM Collection record."
   [xml]
-  (xml-elem->Collection (x/parse-str xml)))
+  (xml-elem->Collection (xml/parse-str xml)))
 
 (defn parse-temporal
   "Parses the XML and extracts the temporal data."
   [xml]
-  (t/xml-elem->Temporal (x/parse-str xml)))
+  (temporal/xml-elem->Temporal (xml/parse-str xml)))
 
 (defn parse-access-value
   "Parses the XML and extracts the access value"
   [xml]
-  (em/xml-elem->access-value (x/parse-str xml)))
+  (em/xml-elem->access-value (xml/parse-str xml)))
 
 (def dif10-header-attributes
   "The set of attributes that go on the dif root element"
@@ -103,7 +103,7 @@
 
 (def product-levels
   "The set of values that DIF 10 defines for Processing levels as enumerations in its schema"
-  #{c/not-provided "0" "1" "1A" "1B" "1T" "2" "2G" "2P" "3" "4" "NA"})
+  #{coll/not-provided "0" "1" "1A" "1B" "1T" "2" "2G" "2P" "3" "4" "NA"})
 
 (defn- dif10-product-level-id
   "Returns the given product-level-id in DIF10 format."
@@ -121,53 +121,55 @@
                    platforms product-specific-attributes projects related-urls
                    personnel collection-associations quality use-constraints
                    publication-references temporal access-value]} collection]
-       (x/emit-str
-        (x/element :DIF dif10-header-attributes
-                   (x/element :Entry_ID {}
-                              (x/element :Short_Name {} short-name)
-                              (x/element :Version {} version-id))
-                   (x/element :Entry_Title {} entry-title)
+       (xml/emit-str
+        (xml/element :DIF dif10-header-attributes
+                   (xml/element :Entry_ID {}
+                              (xml/element :Short_Name {} short-name)
+                              (xml/element :Version {} version-id))
+                   (xml/element :Entry_Title {} entry-title)
                    (ref/generate-dataset-citations collection)
                    (personnel/generate-personnel personnel)
                    (sk/generate-science-keywords science-keywords)
                    (platform/generate-platforms platforms)
-                   (t/generate-temporal temporal)
+                   (temporal/generate-temporal temporal)
                    (progress/generate collection)
-                   (s/generate-spatial-coverage collection)
+                   (spatial/generate-spatial-coverage collection)
                    (pj/generate-projects projects)
-                   (x/element :Quality {} quality)
-                   (x/element :Use_Constraints {} use-constraints)
+                   (xml/element :Quality {} quality)
+                   (xml/element :Use_Constraints {} use-constraints)
                    (org/generate-organizations organizations)
                    (ref/generate-references publication-references)
-                   (x/element :Summary {}
-                              (x/element :Abstract {} summary)
-                              (x/element :Purpose {} purpose))
+                   (xml/element :Summary {}
+                              (xml/element :Abstract {} summary)
+                              (xml/element :Purpose {} purpose))
                    (ru/generate-related-urls related-urls)
                    (ma/generate-metadata-associations collection-associations)
-                   (x/element :Metadata_Name {} "CEOS IDN DIF")
-                   (x/element :Metadata_Version {} "VERSION 10.2")
-                   (x/element :Metadata_Dates {}
+                   (xml/element :Metadata_Name {} "CEOS IDN DIF")
+                   (xml/element :Metadata_Version {} "VERSION 10.2")
+                   (xml/element :Metadata_Dates {}
                               ;; No equivalent UMM fields exist for the next two elements.
-                              (x/element :Metadata_Creation {} "1970-01-01T00:00:00")
-                              (x/element :Metadata_Last_Revision {} "1970-01-01T00:00:00")
+                              (xml/element :Metadata_Creation {} "1970-01-01T00:00:00")
+                              (xml/element :Metadata_Last_Revision {} "1970-01-01T00:00:00")
                               (when delete-time
-                                (x/element :Metadata_Delete {} (str delete-time)))
-                              (x/element :Data_Creation {} (str insert-time))
-                              (x/element :Data_Last_Revision {} (str update-time)))
+                                (xml/element :Metadata_Delete {} (str delete-time)))
+                              (xml/element :Data_Creation {} (str insert-time))
+                              (xml/element :Data_Last_Revision {} (str update-time)))
                    (psa/generate-product-specific-attributes product-specific-attributes)
                    (let [processing-level-id
                          (dif10-product-level-id (get-in collection [:product :processing-level-id]))]
                      (when-not (empty? processing-level-id)
-                       (x/element :Product_Level_Id {} processing-level-id)))
+                       (xml/element :Product_Level_Id {} processing-level-id)))
                    (when collection-data-type
-                     (x/element :Collection_Data_Type {} collection-data-type))
+                     (xml/element :Collection_Data_Type {} collection-data-type))
                    (when access-value
-                     (x/element :Extended_Metadata {}
+                     (xml/element :Extended_Metadata {}
                                 (em/generate-metadata-elements
                                  [{:name em/restriction_flag_external_meta_name
                                    :value access-value}])))))))))
 
+(def schema-location "schema/dif10/dif_v10.2.xsd")
+
 (defn validate-xml
   "Validates the XML against the DIF schema."
   [xml]
-  (cx/validate-xml (io/resource "schema/dif10/dif_v10.2.xsd") xml))
+  (cx/validate-xml (io/resource schema-location) xml))

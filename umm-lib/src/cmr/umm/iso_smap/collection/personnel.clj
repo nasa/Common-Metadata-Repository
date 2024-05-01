@@ -2,7 +2,7 @@
   "Contains functions for parsing and generating the ISO SMAP personnel"
   (:require
    [cmr.common.xml :as cx]
-   [cmr.umm.umm-collection :as c]))
+   [cmr.umm.umm-collection :as coll]))
 
 (defn- xml-elem->PersonnelRecord
   "Returns a Personnel record from a parsed xml structure"
@@ -18,14 +18,14 @@
                                                  :electronicMailAddress
                                                  :CharacterString])
         email (when email-str
-                [(c/map->Contact {:type :email
-                                  :value email-str})])
+                [(coll/map->Contact {:type :email
+                                     :value email-str})])
         role (cx/string-at-path xml-struct [:role
                                             :CI_RoleCode])]
     (when contact-name
-      (c/map->Personnel {:roles [role]
-                         :last-name contact-name
-                         :contacts email}))))
+      (coll/map->Personnel {:roles [role]
+                            :last-name contact-name
+                            :contacts email}))))
 
 (defn xml-elem->personnel
   "Returns the personnel field of a UMM Collection from a parsed XML structure"

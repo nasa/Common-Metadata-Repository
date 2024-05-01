@@ -1,15 +1,15 @@
 (ns cmr.umm.dif10.collection.platform
   "Functions to parse and generate DIF10 Platform elements"
   (:require
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common.xml :as cx]
-   [cmr.umm.umm-collection :as c]
+   [cmr.umm.umm-collection :as coll]
    [cmr.umm.dif10.collection.instrument :as inst]
    [cmr.umm.dif10.collection.characteristic :as char]))
 
 (def platform-types
   "The set of values that DIF 10 defines for platform types as enumerations in its schema"
-  #{c/not-provided
+  #{coll/not-provided
     "Aircraft"
     "Balloons/Rockets"
     "Earth Observation Satellites"
@@ -24,7 +24,7 @@
 
 (defn xml-elem->Platform
   [platform-elem]
-  (c/map->Platform
+  (coll/map->Platform
     {:short-name (cx/string-at-path platform-elem [:Short_Name])
      :long-name (cx/string-at-path platform-elem [:Long_Name])
      :type (cx/string-at-path platform-elem [:Type])
@@ -42,14 +42,14 @@
   [platforms]
   (if (seq platforms)
     (for [{:keys [short-name long-name type instruments characteristics]} platforms]
-      (x/element :Platform {}
-                 (x/element :Type {} (or (platform-types type) c/not-provided))
-                 (x/element :Short_Name {} short-name)
-                 (x/element :Long_Name {} long-name)
+      (xml/element :Platform {}
+                 (xml/element :Type {} (or (platform-types type) coll/not-provided))
+                 (xml/element :Short_Name {} short-name)
+                 (xml/element :Long_Name {} long-name)
                  (char/generate-characteristics characteristics)
                  (inst/generate-instruments instruments)))
     ;; Added since Platforms is a required field in DIF10. CMRIN-77 & CMRIN-79
-    (x/element :Platform {}
-               (x/element :Type {} c/not-provided)
-               (x/element :Short_Name {} c/not-provided)
+    (xml/element :Platform {}
+               (xml/element :Type {} coll/not-provided)
+               (xml/element :Short_Name {} coll/not-provided)
                (inst/generate-instruments []))))

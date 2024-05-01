@@ -3,7 +3,7 @@
   (:require
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as ext-gen]
-   [cmr.umm.umm-collection :as c]
+   [cmr.umm.umm-collection :as coll]
    [cmr.umm.collection.temporal :as tc]))
 
 ;; temporal attributes
@@ -25,7 +25,7 @@
 (def range-date-times
   (let [dates-gen (gen/fmap sort (gen/vector ext-gen/date-time 1 2))]
     (gen/fmap (fn [[begin end]]
-                (c/->RangeDateTime begin end))
+                (coll/->RangeDateTime begin end))
               dates-gen)))
 
 ;; periodic-date-time attributes
@@ -48,7 +48,7 @@
                 (let [[duration-unit duration-value] duration
                       [periodic-duration-unit period-cycle-duration-value] periodic-duration
                       [begin end] date-range]
-                  (c/map->PeriodicDateTime
+                  (coll/map->PeriodicDateTime
                     {:name name
                      :start-date begin
                      :end-date end

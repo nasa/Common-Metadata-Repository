@@ -1,14 +1,14 @@
 (ns cmr.umm.echo10.spatial
   "Contains functions for convert spatial to and parsing from ECHO10 XML."
   (:require
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common.xml :as cx]
-   [cmr.spatial.point :as p]
+   [cmr.spatial.point :as point]
    [cmr.spatial.mbr :as mbr]
-   [cmr.spatial.line-string :as l]
+   [cmr.spatial.line-string :as line-string]
    [cmr.spatial.polygon :as poly]
    [cmr.umm.umm-spatial :as umm-s]
-   [cmr.umm.umm-granule :as g]
+   [cmr.umm.umm-granule :as granule]
    [cmr.common.util :as util]))
 
 (defmulti parse-geometry
@@ -26,11 +26,11 @@
   [element]
   (let [lon (cx/double-at-path element [:PointLongitude])
         lat (cx/double-at-path element [:PointLatitude])]
-    (p/point lon lat)))
+    (point/point lon lat)))
 
 (defmethod parse-geometry :Line
   [element]
-  (l/line-string (map parse-geometry (:content element))))
+  (line-string/line-string (map parse-geometry (:content element))))
 
 (defmethod parse-geometry :Boundary
   [element]
@@ -70,22 +70,22 @@
 (defn xml-elem->Orbit
   "Returns a UMM Orbit record from a parsed Orbit XML structure"
   [orbit]
-  (g/map->Orbit {:ascending-crossing (cx/double-at-path orbit [:AscendingCrossing])
-                 :start-lat (cx/double-at-path orbit [:StartLat])
-                 :start-direction (orbit-direction->key (cx/string-at-path orbit [:StartDirection]))
-                 :end-lat (cx/double-at-path orbit [:EndLat])
-                 :end-direction (orbit-direction->key (cx/string-at-path orbit [:EndDirection]))}))
+  (granule/map->Orbit {:ascending-crossing (cx/double-at-path orbit [:AscendingCrossing])
+                       :start-lat (cx/double-at-path orbit [:StartLat])
+                       :start-direction (orbit-direction->key (cx/string-at-path orbit [:StartDirection]))
+                       :end-lat (cx/double-at-path orbit [:EndLat])
+                       :end-direction (orbit-direction->key (cx/string-at-path orbit [:EndDirection]))}))
 
 (defn generate-orbit-xml
   [orbit]
   (when-let [{:keys [ascending-crossing start-lat start-direction end-lat end-direction]}
              orbit]
-    (x/element :Orbit {}
-               (x/element :AscendingCrossing {} (util/double->string ascending-crossing))
-               (x/element :StartLat {} (util/double->string start-lat))
-               (x/element :StartDirection {} (key->orbit-direction start-direction))
-               (x/element :EndLat {} (util/double->string end-lat))
-               (x/element :EndDirection {} (key->orbit-direction end-direction)))))
+    (xml/element :Orbit {}
+                 (xml/element :AscendingCrossing {} (util/double->string ascending-crossing))
+                 (xml/element :StartLat {} (util/double->string start-lat))
+                 (xml/element :StartDirection {} (key->orbit-direction start-direction))
+                 (xml/element :EndLat {} (util/double->string end-lat))
+                 (xml/element :EndDirection {} (key->orbit-direction end-direction)))))
 
 (defprotocol ShapeToXml
   "Protocol for converting a shape into XML."
@@ -96,42 +96,42 @@
 
 (defn generate-geometry-xml
   [geometries]
-  (x/element :Geometry {}
-             (map shape-to-xml geometries)))
+  (xml/element :Geometry {}
+               (map shape-to-xml geometries)))
 
 
 (defn- ring-to-xml
   [ring]
-  (x/element :Boundary {}
-             (map shape-to-xml
-                  ;; Points must be specified in clockwise order and not closed.
-                  (-> (:points ring)
-                      ; drop first point since last point will match
-                      drop-last
-                      ; counter clocwise to clockwise
-                      reverse))))
+  (xml/element :Boundary {}
+               (map shape-to-xml
+                    ;; Points must be specified in clockwise order and not closed.
+                    (-> (:points ring)
+                        ; drop first point since last point will match
+                        drop-last
+                        ; counter clocwise to clockwise
+                        reverse))))
 
 (extend-protocol ShapeToXml
   cmr.spatial.point.Point
   (shape-to-xml
     [{:keys [lon lat]}]
-    (x/element :Point {}
-               (x/element :PointLongitude {} (util/double->string lon))
-               (x/element :PointLatitude {} (util/double->string lat))))
+    (xml/element :Point {}
+                 (xml/element :PointLongitude {} (util/double->string lon))
+                 (xml/element :PointLatitude {} (util/double->string lat))))
 
   cmr.spatial.mbr.Mbr
   (shape-to-xml
     [{:keys [west north east south]}]
-    (x/element :BoundingRectangle {}
-               (x/element :WestBoundingCoordinate {} (util/double->string west))
-               (x/element :NorthBoundingCoordinate {} (util/double->string north))
-               (x/element :EastBoundingCoordinate {} (util/double->string east))
-               (x/element :SouthBoundingCoordinate {} (util/double->string south))))
+    (xml/element :BoundingRectangle {}
+                 (xml/element :WestBoundingCoordinate {} (util/double->string west))
+                 (xml/element :NorthBoundingCoordinate {} (util/double->string north))
+                 (xml/element :EastBoundingCoordinate {} (util/double->string east))
+                 (xml/element :SouthBoundingCoordinate {} (util/double->string south))))
 
   cmr.spatial.line_string.LineString
   (shape-to-xml
     [{:keys [points]}]
-    (x/element :Line {} (map shape-to-xml points)))
+    (xml/element :Line {} (map shape-to-xml points)))
 
   cmr.spatial.geodetic_ring.GeodeticRing
   (shape-to-xml
@@ -153,8 +153,8 @@
     [{:keys [rings]}]
     (let [boundary (first rings)
           holes (seq (rest rings))]
-      (x/element :GPolygon {}
-                 (shape-to-xml boundary)
-                 (when holes
-                   (x/element :ExclusiveZone {} (map shape-to-xml holes)))))))
+      (xml/element :GPolygon {}
+                   (shape-to-xml boundary)
+                   (when holes
+                     (xml/element :ExclusiveZone {} (map shape-to-xml holes)))))))
 

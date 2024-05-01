@@ -1,15 +1,15 @@
 (ns cmr.umm.dif10.collection.project-element
   "Provide functions to parse and generate DIF10 Project elements."
   (:require
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common.xml :as cx]
-   [cmr.umm.umm-collection :as c]))
+   [cmr.umm.umm-collection :as coll]))
 
 (defn xml-elem->Project
   [project-elem]
   (let [short-name (cx/string-at-path project-elem [:Short_Name])
         long-name (cx/string-at-path project-elem [:Long_Name])]
-    (c/map->Project
+    (coll/map->Project
       {:short-name short-name
        :long-name long-name})))
 
@@ -22,10 +22,10 @@
   [projects]
   (if (seq projects)
     (for [{:keys [short-name long-name]} projects]
-      (x/element :Project {}
-                 (x/element :Short_Name {} short-name)
+      (xml/element :Project {}
+                 (xml/element :Short_Name {} short-name)
                  (when long-name
-                   (x/element :Long_Name {} long-name))))
+                   (xml/element :Long_Name {} long-name))))
     ;; Added since Project is a required field in DIF10. CMRIN-78
-    (x/element :Project {}
-               (x/element :Short_Name {} c/not-provided))))
+    (xml/element :Project {}
+               (xml/element :Short_Name {} coll/not-provided))))
