@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.collection-shapefile-simplification-search-test
   (:require
    [clojure.test :refer [deftest is testing use-fixtures]]
-   [clojure.java.io :as io]-
+   [clojure.java.io :as io]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3]]
    [cmr.common-app.test.side-api :as side]
