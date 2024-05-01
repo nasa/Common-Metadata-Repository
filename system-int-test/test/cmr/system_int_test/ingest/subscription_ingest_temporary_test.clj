@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.ingest.subscription-ingest-temporary-test ;;Related to CMR-8270 -- Can we delete this test and all corresponding funcs if this has been done already?
+(ns cmr.system-int-test.ingest.subscription-ingest-temporary-test
   "CMR subscription ingest integration temproary tests.
   These tests are temporary and test against the new subscription API routes.
   Once we get clients to switch to the new subscription API routes, we will update the

@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.test :refer :all]
-   [cmr.common.util :as util :refer [are3]]
+   [cmr.common.util :refer [are3]]
    [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]

@@ -10,7 +10,7 @@
    [clojure.string :as str]
    [clojure.test :refer :all]
    [cmr.common.time-keeper :as tk]
-   [cmr.common.util :as u :refer [are3]]
+   [cmr.common.util :refer [are3]]
    [cmr.indexer.data.index-set :as index-set]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.granule :as granule]
