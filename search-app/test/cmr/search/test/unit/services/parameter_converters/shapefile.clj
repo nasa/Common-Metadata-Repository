@@ -6,11 +6,7 @@
     [cmr.common.util :as util :refer [are3]]
     [cmr.search.services.parameters.converters.shapefile :as shapefile]
     [cmr.search.services.parameters.converters.geometry :as geometry]
-    [cmr.search.services.messages.attribute-messages :as msg]
-    [cmr.search.models.query :as qm]
-    [cmr.common-app.services.search.group-query-conditions :as gc]
-    [cmr.common-app.services.search.params :as p]
-    [cmr.common.util :as u])
+    [cmr.search.services.messages.attribute-messages :as msg])
   (:import
     (java.io BufferedInputStream File FileReader FileOutputStream FileInputStream)
     (java.nio.file Files)

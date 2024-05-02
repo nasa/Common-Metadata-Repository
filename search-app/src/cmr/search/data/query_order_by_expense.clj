@@ -4,7 +4,7 @@
   be placed last."
   (:require [cmr.common.services.errors :as errors]
             [cmr.search.models.query :as qm]
-            [cmr.common-app.services.search.query-order-by-expense :as qobe])
+            [cmr.elastic-utils.search.es-query-order-by-expense :as qobe])
   (:import [cmr.search.models.query
             CollectionQueryCondition
             SpatialCondition

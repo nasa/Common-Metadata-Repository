@@ -3,16 +3,7 @@
   (:require
     [cheshire.core :as json]
     [clojure.java.io :as io]
-    [clojure.string :as str]
-    [cmr.common.config :as cfg :refer [defconfig]]
-    [cmr.common.log :refer [debug]]
-    [cmr.common.mime-types :as mt]
-    [cmr.common-app.services.search.group-query-conditions :as gc]
-    [cmr.common-app.services.search.params :as p]
-    [cmr.common.services.errors :as errors]
-    [cmr.search.models.query :as qm]
-    [cmr.search.services.parameters.converters.geometry :as geo]
-    [cmr.common.util :as util]))
+    [cmr.common.services.errors :as errors]))
 
 (defn- remove-features-with-no-geometry
   "Removes features that have null geometry value"

@@ -3,16 +3,16 @@
   (:require
    [cheshire.core :as json]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]
    [cmr.search.results-handlers.umm-json-results-helper :as results-helper]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:service :umm-json-results]
-  [concept-type query]
+  [_concept-type _query]
   results-helper/meta-fields)
 
 (defmethod results-helper/elastic-result+metadata->umm-json-item :service
-  [concept-type elastic-result metadata]
+  [_concept-type elastic-result metadata]
   {:meta (results-helper/elastic-result->meta :service elastic-result)
    :umm (json/decode metadata)})
 
@@ -21,5 +21,5 @@
   (results-helper/query-elastic-results->query-results context :service query elastic-results))
 
 (defmethod qs/search-results->response [:service :umm-json-results]
-  [context query results]
+  [_context _query results]
   (json/generate-string (select-keys results [:hits :took :items])))

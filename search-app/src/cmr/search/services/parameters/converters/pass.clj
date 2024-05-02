@@ -1,9 +1,9 @@
 (ns cmr.search.services.parameters.converters.pass
   "Contains functions for converting passes query parameters to conditions"
   (:require
-   [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.params :as p]))
+   [cmr.elastic-utils.search.nested-field :as nf]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as p]))
 
 ;; Converts passes parameter and values into conditions
 (defmethod p/parameter->condition :passes

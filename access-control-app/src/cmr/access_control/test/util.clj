@@ -3,7 +3,7 @@
    [clj-http.client :as client]
    [clojure.string :as str]
    [clojure.test :refer [is]]
-   [cmr.access-control.data.access-control-index :as access-control-index]
+   [cmr.elastic-utils.search.access-control-index :as access-control-index]
    [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]

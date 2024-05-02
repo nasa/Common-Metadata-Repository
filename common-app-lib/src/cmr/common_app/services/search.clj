@@ -1,20 +1,17 @@
 (ns cmr.common-app.services.search
   "This contains common code for implementing search capabilities in a CMR application"
   (:require
-   [cmr.common.util :as u]
-   [cmr.common.cache.fallback-cache :as fallback-cache]
-   [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-   [cmr.common.config :as cfg :refer [defconfig]]
-   [cmr.common.log :refer (debug info warn error)]
-   [cmr.common.services.errors :as errors]
    [cmr.common.cache :as cache]
-   [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common-app.services.search.query-validation :as qv]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.log :refer (info)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.search.query-model :as qm]
+   [cmr.common.util :as u]
+   [cmr.elastic-utils.search.es-query-validation :as qv]
+   [cmr.elastic-utils.search.query-execution :as qe]
    ;; Must be required to be available
-   [cmr.common-app.services.search.validators.numeric-range]
-   [cmr.common-app.services.search.validators.date-range]
+   [cmr.elastic-utils.validators.date-range]
+   [cmr.elastic-utils.validators.numeric-range]
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]))
 
@@ -39,7 +36,7 @@
    :default 900})
 
 (defn create-scroll-id-cache
-  "Returns a cache backed by Redis. This cache is used to store a map of cmr scroll-ids to ES scroll-ids 
+  "Returns a cache backed by Redis. This cache is used to store a map of cmr scroll-ids to ES scroll-ids
    in a consistent way acrosss all instances of search."
   []
   (redis-cache/create-redis-cache {:ttl (scroll-id-cache-ttl)
@@ -47,7 +44,7 @@
                                    :primary-connection (redis-config/redis-conn-opts)}))
 
 (defn create-scroll-first-page-cache
-  "Returns a cache backed by Redis. This cache is used to store a map of cmr scroll-ids to the first 
+  "Returns a cache backed by Redis. This cache is used to store a map of cmr scroll-ids to the first
    page of results in a consistent way acrosss all instances of search. This is used to support scrolling with
    sessions intitiated with a HEAD, GET, or POS request."
   []

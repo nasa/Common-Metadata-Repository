@@ -1,11 +1,9 @@
 (ns cmr.search.data.complex-to-simple-converters.attribute
   "Defines functions that implement the reduce-query-condition method of the ComplexQueryToSimple
   protocol for product specific attribute search fields."
-  (:require [clojure.string :as s]
-            [cmr.common-app.services.search.complex-to-simple :as c2s]
-            [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common-app.services.search.datetime-helper :as h]))
+  (:require [cmr.elastic-utils.search.query-transform :as c2s]
+            [cmr.common.services.search.query-model :as qm]
+            [cmr.elastic-utils.search.es-group-query-conditions :as gc]))
 
 (defmulti value-condition->value-filter
   "Converts an additional attribute value condition into the nested filter to use."

@@ -1,21 +1,13 @@
 (ns cmr.system-int-test.search.granule-search-with-json-query-test
   "Integration test for CMR granule search"
   (:require
-   [clojure.string :as s]
    [clojure.test :refer :all]
-   [cmr.common-app.services.search.messages :as cmsg]
-   [cmr.common-app.services.search.messages :as vmsg]
-   [cmr.common.services.messages :as msg]
    [cmr.common.util :refer [are3]]
-   [cmr.mock-echo.client.echo-util :as e]
-   [cmr.search.services.messages.common-messages :as smsg]
    [cmr.spatial.mbr :as m]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
-   [cmr.system-int-test.system :as int-s]
-   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]

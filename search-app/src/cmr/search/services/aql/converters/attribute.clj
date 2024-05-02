@@ -4,7 +4,7 @@
             [cmr.common.xml :as cx]
             [cmr.search.services.aql.conversion :as a]
             [cmr.search.models.query :as qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
+            [cmr.elastic-utils.search.es-group-query-conditions :as gc]
             [cmr.search.services.parameters.converters.attribute :as p]
             [cmr.search.services.messages.attribute-messages :as msg]
             [cmr.common.date-time-parser :as date-time-parser]

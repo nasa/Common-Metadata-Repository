@@ -1,14 +1,17 @@
 (ns cmr.search.services.query-walkers.collection-query-resolver
   "Defines protocols and functions to resolve collection query conditions"
-  (:require [cmr.search.models.query :as qm]
-            [cmr.common-app.services.search.query-model :as cqm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]
-            [cmr.common.services.errors :as errors]
-            [cmr.common-app.services.search.elastic-search-index :as idx]
-            [cmr.common-app.services.search.complex-to-simple :as c2s]
-            [cmr.common.log :refer (debug info warn error)]
-            [clojure.set :as set])
-  (:import cmr.search.models.query.CollectionQueryCondition))
+  (:require
+   [clojure.set :as set]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.search.query-model :as cqm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-index :as idx]
+   [cmr.elastic-utils.search.query-transform :as c2s]
+   [cmr.search.models.query :as qm])
+  (:import cmr.search.models.query.CollectionQueryCondition
+           cmr.common.services.search.query_model.Query
+           cmr.common.services.search.query_model.NegatedCondition
+           cmr.common.services.search.query_model.ConditionGroup))
 
 (defprotocol ResolveCollectionQuery
   "Defines a function to resolve a collection query condition into conditions of
@@ -86,7 +89,7 @@
 
 (extend-protocol ResolveCollectionQuery
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.Query
+  cmr.common.services.search.query_model.Query
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries
@@ -98,7 +101,7 @@
    [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.NegatedCondition
+  cmr.common.services.search.query_model.NegatedCondition
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries
@@ -110,7 +113,7 @@
    [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.ConditionGroup
+  cmr.common.services.search.query_model.ConditionGroup
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries

@@ -11,12 +11,12 @@
    [cmr.elastic-utils.connect :as elastic-conn]
    [cmr.ingest.api.translation :as ingest-translation-api]
    [cmr.message-queue.test.queue-broker-side-api :as queue-broker-side-api]
-   [cmr.search.data.elastic-search-index :as es]
+   [cmr.elastic-utils.search.es-debug :as es]
    [cmr.transmit.access-control :as ac]
    [compojure.core :refer :all]
    [compojure.route :as route]
 
-   ;; Services for reseting
+   ;; Services for resetting
    [cmr.access-control.api.routes :as access-control]
    [cmr.common.cache :as cache]
    [cmr.indexer.services.index-service :as indexer-service]

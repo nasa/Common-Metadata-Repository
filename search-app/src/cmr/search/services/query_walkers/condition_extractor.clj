@@ -1,9 +1,8 @@
 (ns cmr.search.services.query-walkers.condition-extractor
   "Defines protocols and functions to extract conditions."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common-app.services.search.query-model :as cqm]
+  (:require [cmr.common.services.search.query-model :as cqm]
             [cmr.search.models.query :as qm])
-  (:import [cmr.common_app.services.search.query_model
+  (:import [cmr.common.services.search.query_model
             Query
             ConditionGroup
             NegatedCondition

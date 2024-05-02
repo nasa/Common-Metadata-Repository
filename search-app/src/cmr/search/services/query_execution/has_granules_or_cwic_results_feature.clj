@@ -1,20 +1,20 @@
 (ns cmr.search.services.query-execution.has-granules-or-cwic-results-feature
-  "This enables the :has-granules-or-cwic and :has-granules-or-opensearch feature for collection search results.
-  When it is enabled collection search results will include a boolean flag indicating whether the collection has
-  any granules at all as indicated by provider holdings."
+  "This enables the :has-granules-or-cwic and :has-granules-or-opensearch feature for collection
+   search results. When it is enabled collection search results will include a boolean flag
+   indicating whether the collection has any granules at all as indicated by provider holdings."
   (:require
    [cmr.common-app.config :as common-config]
-   [cmr.common-app.services.search.elastic-search-index :as common-esi]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.cache :as cache]
-   [cmr.common.jobs :refer [defjob]]
-   [cmr.redis-utils.config :as redis-config]
-   [cmr.redis-utils.redis-cache :as redis-cache]
-   [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.common.cache.fallback-cache :as fallback-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
-   [cmr.search.data.elastic-search-index :as idx]))
+   [cmr.common.jobs :refer [defjob]]
+   [cmr.common.services.search.query-model :as qm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-index :as common-esi]
+   [cmr.redis-utils.config :as redis-config]
+   [cmr.redis-utils.redis-cache :as redis-cache]
+   [cmr.search.data.elastic-search-index :as idx]
+   [cmr.transmit.cache.consistent-cache :as consistent-cache]))
 
 (def REFRESH_HAS_GRANULES_OR_CWIC_MAP_JOB_INTERVAL
   "The frequency in seconds of the refresh-has-granules-or-cwic-map-job"

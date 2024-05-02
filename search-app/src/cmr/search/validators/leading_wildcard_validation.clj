@@ -5,7 +5,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.search.services.query-walkers.condition-extractor :as extractor])
   (:import
-   (cmr.common_app.services.search.query_model StringCondition)))
+   (cmr.common.services.search.query_model StringCondition)))
 
 (defconfig max-number-of-leading-wildcard-patterns
   "Configures the maximum number of leading wildcard patterns that can appear in a single query.

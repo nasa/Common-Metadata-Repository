@@ -3,9 +3,9 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.query-execution :as qe]
+   [cmr.common.services.search.query-model :as cqm]
    [cmr.common.concepts :as c]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]

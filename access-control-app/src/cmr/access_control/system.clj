@@ -4,7 +4,7 @@
   http://stuartsierra.com/2013/09/15/lifecycle-composition and related posts."
   (:require
    [cmr.access-control.config :as config]
-   [cmr.access-control.data.access-control-index :as access-control-index]
+   [cmr.elastic-utils.search.access-control-index :as access-control-index]
    [cmr.access-control.services.event-handler :as event-handler]
    [cmr.access-control.test.bootstrap :as bootstrap]
    [cmr.access-control.routes :as routes]
@@ -15,17 +15,18 @@
    [cmr.common-app.services.cache-info :as cache-info]
    [cmr.common-app.services.jvm-info :as jvm-info]
    [cmr.common-app.services.provider-cache :as provider-cache]
-   [cmr.common-app.services.search.elastic-search-index :as search-index]
    [cmr.common.api.web-server :as web-server]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs]
    [cmr.common.log :as log :refer [info]]
    [cmr.common.nrepl :as nrepl]
    [cmr.common.system :as common-sys]
+   [cmr.elastic-utils.search.es-index :as search-index]
    [cmr.message-queue.queue.queue-broker :as queue-broker]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.launchpad-user-cache :as launchpad-user-cache]
-   [cmr.transmit.urs :as urs]))
+   [cmr.transmit.urs :as urs]
+   [cmr.access-control.config :as access-control-config]))
 
 (declare access-control-nrepl-port)
 (defconfig access-control-nrepl-port

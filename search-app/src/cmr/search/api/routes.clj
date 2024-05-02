@@ -24,7 +24,7 @@
    ;; XXX This is not a good pattern for large software systems; we need to
    ;;     find a different way to accomplish this goal ... possibly use protocols
    ;;     instead.
-   [cmr.search.data.elastic-results-to-query-results]
+   [cmr.elastic-utils.search.elastic-results-to-query-results]
    ;;
    ;; Result handlers - required here to avoid circular dependency in query service
    [cmr.search.results-handlers.autocomplete-results-handler]

@@ -1,13 +1,13 @@
 (ns cmr.elastic-utils.connect
   "Provide functions to invoke elasticsearch"
-  (:require [clojurewerkz.elastisch.rest :as esr]
-            [clojurewerkz.elastisch.rest.admin :as admin]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.services.health-helper :as hh]
-            [clj-http.conn-mgr :as conn-mgr]
-            [cmr.common.api.web-server :as web-server]
-            [clojurewerkz.elastisch.rest.admin :as admin]))
+  (:require
+   [clj-http.conn-mgr :as conn-mgr]
+   [clojurewerkz.elastisch.rest :as esr]
+   [clojurewerkz.elastisch.rest.admin :as admin]
+   [cmr.common.api.web-server :as web-server]
+   [cmr.common.log :as log :refer (info)]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.health-helper :as hh]))
 
 (def ELASTIC_CONNECTION_TIMOUT
   "The number of milliseconds to wait before timeing out a connection attempt to elasticsearch.

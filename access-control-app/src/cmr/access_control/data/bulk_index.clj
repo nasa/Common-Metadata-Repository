@@ -2,7 +2,7 @@
   "Performs bulk indexing of access control data."
   (:require
    [clj-time.format :as f]
-   [cmr.access-control.data.elasticsearch :as es]
+   [cmr.elastic-utils.search.ac-elasticsearch :as es]
    [cmr.common.concepts :as cs]
    [cmr.common.util :as util]))
 

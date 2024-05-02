@@ -1,9 +1,9 @@
 (ns cmr.search.services.acls.draft-acls
   "Contains functions for manipulating draft acls"
   (:require
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.query-execution :as qe]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.common.concepts :as cc]
    [cmr.search.services.acls.acl-helper :as acl-helper]
    [cmr.transmit.config :as tc]))
@@ -22,4 +22,4 @@
                              (map #(get-in % [:provider-identity :provider-id]) pc-acls)
                              ["non-existing-provider-id"])
               acl-cond (qm/string-conditions :provider-id provider-ids true)]
-          (update-in query [:condition] #(gc/and-conds [acl-cond %])))))))  
+          (update-in query [:condition] #(gc/and-conds [acl-cond %])))))))

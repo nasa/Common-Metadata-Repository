@@ -1,7 +1,7 @@
 (ns cmr.mock-echo.data.token-db
   (:require
    [clj-time.core :as t]
-   [cmr.common-app.services.search.datetime-helper :as datetime-helper]
+   [cmr.elastic-utils.datetime-helper :as datetime-helper]
    [cmr.common.time-keeper :as tk]
    [cmr.transmit.config :as transmit-config]))
 
