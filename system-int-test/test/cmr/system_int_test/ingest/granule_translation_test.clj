@@ -70,9 +70,14 @@
   (doseq [input-format valid-input-formats
           output-format valid-output-formats]
     (testing (format "Translating %s to %s" (name input-format) (name output-format))
-      (let [input-str (umm-legacy/generate-metadata
-                       test-context expected-util/expected-sample-granule input-format)
-            expected (umm->umm-for-comparison expected-util/expected-sample-granule)
+      (let [;; CMR-9839 requires the SizeInBytes and Size to be consistent for the tests in this to pass.
+            ;; because it doesn't involve any granule json file that contains multiple sizes that need to be
+            ;; added together, while in other cases, there is a need. 
+            sample-granule-with-consistent-sizes
+            (assoc-in expected-util/expected-sample-granule [:data-granule :size] (double (/ 23552 (* 1024 1024))))
+            input-str (umm-legacy/generate-metadata
+                       test-context sample-granule-with-consistent-sizes input-format)
+            expected (umm->umm-for-comparison sample-granule-with-consistent-sizes)
             {:keys [status headers body]} (ingest/translate-metadata
                                            :granule input-format input-str output-format)
             content-type (first (mime-types/extract-mime-types (:content-type headers)))
