@@ -2,19 +2,18 @@
   "Handles extracting elasticsearch subscription results and converting them into a JSON search response."
   (:require
    [cheshire.core :as json]
-   [clojure.edn :as edn]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-   [cmr.common.util :as util]))
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:subscription :json]
-  [concept-type query]
+  [_concept-type _query]
   ["concept-id" "revision-id" "deleted" "provider-id" "native-id" "subscription-name"
    "subscriber-id" "collection-concept-id" "type"])
 
 (defmethod elastic-results/elastic-result->query-result-item [:subscription :json]
-  [context query elastic-result]
+  [_context _query elastic-result]
   (let [{{subscription-name :subscription-name
           subscriber-id :subscriber-id
           collection-concept-id :collection-concept-id
@@ -38,5 +37,5 @@
       result-item)))
 
 (defmethod qs/search-results->response [:subscription :json]
-  [context query results]
+  [_context _query results]
   (json/generate-string (select-keys results [:hits :took :items])))

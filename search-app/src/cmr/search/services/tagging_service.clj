@@ -3,7 +3,7 @@
   (:require
     [cheshire.core :as json]
     [clojure.edn :as edn]
-    [cmr.common-app.services.search.query-execution :as qe]
+    [cmr.elastic-utils.search.query-execution :as qe]
     [cmr.common.api.context :as context-util]
     [cmr.common.log :as log :refer [debug info]]
     [cmr.common.mime-types :as mt]

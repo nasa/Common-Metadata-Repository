@@ -1,13 +1,10 @@
 (ns cmr.umm.validation.validation-core
   "Defines validations UMM concept types."
   (:require
-   [clj-time.core :as t]
    [cmr.common.validations.core :as v]
    [cmr.umm.validation.collection-validation :as vc]
    [cmr.umm.validation.granule :as vg]
    [cmr.umm.validation.parent-weaver :as pw]
-   [cmr.umm.validation.validation-utils :as vu]
-
    ;; Required so that the spatial validations will be available.
    [cmr.spatial.ring-validations]
    [cmr.common.services.errors :as e]

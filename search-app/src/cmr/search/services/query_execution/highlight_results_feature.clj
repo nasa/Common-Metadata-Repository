@@ -1,11 +1,11 @@
 (ns cmr.search.services.query-execution.highlight-results-feature
   "This enables returning highlighted snippets with collection search results based on the
   provided keyword search."
-  (:require [cmr.common-app.services.search.query-execution :as query-execution]
-            [cmr.common-app.services.search.results-model :as r]
-            [cmr.common-app.services.search.query-to-elastic :as q2e]
-            [clojure.string :as str]
-            [cmr.common.util :as util]))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.util :as util]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.query-execution :as query-execution]))
 
 (defn get-keyword-conditions
   "Returns a list of the keyword text conditions from a condition"
@@ -39,7 +39,7 @@
   (when-let [keyword-conditions (get-keyword-conditions (:condition query))]
     (let [{:keys [begin-tag end-tag snippet-length num-snippets]}
           (get-in query [:result-options :highlights])
-          conditions-as-string (str/join " " (map :query-str keyword-conditions))
+          conditions-as-string (string/join " " (map :query-str keyword-conditions))
           query-map {:fields
                      {:summary {:highlight_query
                                 {:query_string
@@ -72,6 +72,6 @@
         item))))
 
 (defmethod query-execution/post-process-query-result-feature :highlights
-  [context query elastic-results query-results feature]
+  [_context _query elastic-results query-results _feature]
   (assoc query-results
          :items (replace-fields-with-highlighted-fields query-results elastic-results)))

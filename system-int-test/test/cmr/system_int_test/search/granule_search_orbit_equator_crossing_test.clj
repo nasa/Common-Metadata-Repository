@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-search-orbit-equator-crossing-test
   "Integration test for CMR granule temporal search"
-  (:require 
-    [clojure.test :refer [are deftest is testing use-fixtures]]
+  (:require
+    [clojure.test :refer :all]
     [cmr.common.services.messages :as cm]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.granule :as dg]
@@ -62,7 +62,7 @@
     (testing "non-numeric value in range"
       (let [{:keys [status errors]} (search/find-refs :granule {:equator-crossing-longitude "1,X"})]
         (is (= 400 status))
-        (is (= errors [(cm/invalid-msg Double "X")]))))
+        (is (= errors [(cm/invalid-msg java.lang.Double "X")]))))
     (testing "catalog-rest-style-equator-crossing-longitude full range"
       (let [references (search/find-refs :granule {"equator-crossing-longitude[minValue]" "10"
                                                    "equator-crossing-longitude[maxValue]" "150"})]
@@ -76,7 +76,7 @@
     (testing "non-numeric value in catalog rest style range"
       (let [{:keys [status errors]} (search/find-refs :granule {"equator-crossing-longitude[maxValue]" "X"})]
         (is (= 400 status))
-        (is (= errors [(cm/invalid-msg Double "X")]))))
+        (is (= errors [(cm/invalid-msg java.lang.Double "X")]))))
 
     (testing "search by orbit equator crossing with aql"
       (are [items crossing-range]

@@ -1,14 +1,13 @@
 (ns cmr.umm.test.unit.validation.granule-validation-tests
   "This has tests for UMM validations."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing]]
    [cmr.umm.validation.validation-core :as v]
    [cmr.umm.umm-collection :as c]
    [cmr.umm.umm-granule :as g]
    [cmr.umm.test.unit.validation.validation-test-helpers :as helpers]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
-   [cmr.common.date-time-parser :as dtp]
    [cmr.common.services.errors :as e]
    [cmr.common.util :as u]
    [cmr.umm.collection.product-specific-attribute :as psa]))
@@ -278,7 +277,6 @@
                                :operation-modes ["OM3" "OM4"]})
         i3 (c/map->Instrument {:short-name "I3"
                                :sensors [s2 s3]})
-        i4 (c/map->Instrument {:short-name "I3"})
         p1 (c/map->Platform {:short-name "p1"
                              :instruments [i1 i2]})
         p2 (c/map->Platform {:short-name "p2"
@@ -636,6 +634,7 @@
         [:related-urls]
         [(format "Related Urls must be unique. This contains duplicates named [%s]." url)]))))
 
+(declare coord-system-name start1 end1 start2 end2 expected-errors)
 (deftest granule-two-d-coordinate-system-validation
   (let [collection (make-collection {:two-d-coordinate-systems
                                      [{:name "name"
@@ -648,6 +647,7 @@
                                                            :coordinate-1 {:min-value 0}
                                                            :coordinate-2 {:max-value 17}}]})]
     (testing "granules with valid 2D coordinate system"
+      #_{:clj-kondo/ignore [:deprecated-var]}
       (u/are2 [collection start1 end1 start2 end2]
               (empty? (v/validate-granule
                         collection
@@ -667,6 +667,7 @@
               "valid granule with some coordinate bounds missing in the collection"
               collection-with-missing-bounds 3 26 8 15))
     (testing "granules with invalid 2D coordinate system"
+      #_{:clj-kondo/ignore [:deprecated-var]}
       (u/are2 [collection coord-system-name start1 end1 start2 end2 expected-errors]
               (= (set (map e/map->PathErrors expected-errors))
                  (set (v/validate-granule

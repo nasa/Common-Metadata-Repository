@@ -1,20 +1,18 @@
 (ns cmr.umm.validation.granule
   "Defines validations for UMM granules"
   (:require
-   [clj-time.core :as t]
-   [clojure.set :as set]
-   [clojure.string :as str]
-   [cmr.common.validations.core :as v]
-   [cmr.common.util :as util]
-   [cmr.umm.umm-spatial :as umm-s]
-   [cmr.umm.start-end-date :as sed]
-   [cmr.spatial.validation :as sv]
-   [cmr.umm.validation.validation-utils :as vu]
-   [cmr.umm.validation.validation-helper :as h]
-   [cmr.common.services.errors :as errors]
    [camel-snake-kebab.core :as csk]
+   [clj-time.core :as time-core]
+   [clojure.set :as set]
+   [clojure.string :as string]
+   [cmr.common.validations.core :as valid]
+   [cmr.spatial.validation :as sv]
    [cmr.umm.collection.entry-id :as eid]
-   [cmr.umm.validation.product-specific-attribute :as psa]))
+   [cmr.umm.start-end-date :as sed]
+   [cmr.umm.umm-spatial :as umm-s]
+   [cmr.umm.validation.product-specific-attribute :as psa]
+   [cmr.umm.validation.validation-utils :as vu]
+   [cmr.umm.validation.validation-helper :as v-helper]))
 
 (defn- spatial-field-not-allowed
   "Create a function which takes in :orbit or :geometries as input and returns an error if the field exists"
@@ -24,17 +22,17 @@
       {(conj spatial-coverage-path field)
        [(format
           "[%%s] cannot be set when the parent collection's GranuleSpatialRepresentation is %s"
-          (str/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
+          (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
 
 (defn- spatial-field-is-required
-  [spatial-coverage-path spatial-coverage-ref granule-spatial-representation]
   "Create a function which takes in :orbit or :geometries as input and returns an error if the field does not exist"
+  [spatial-coverage-path spatial-coverage-ref granule-spatial-representation]
   (fn [field]
     (when-not (field spatial-coverage-ref)
       {(conj spatial-coverage-path field)
        [(format
           "[%%s] must be provided when the parent collection's GranuleSpatialRepresentation is %s"
-          (str/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
+          (string/upper-case (csk/->SCREAMING_SNAKE_CASE (name granule-spatial-representation))))]})))
 
 (defn spatial-matches-granule-spatial-representation
   "Validates the consistency of granule's spatial information with the granule spatial representation present in its collection."
@@ -72,12 +70,12 @@
 
 (def spatial-coverage-validations
   "Defines spatial coverage validations for granules"
-  [(v/pre-validation
+  [(valid/pre-validation
      ;; The spatial representation has to be set on the geometries before the conversion because
      ;; polygons etc do not know whether they are geodetic or not.
      set-geometries-spatial-representation
-     {:geometries (v/every sv/spatial-validation)
-      :orbit (v/when-present sv/spatial-validation)})])
+     {:geometries (valid/every sv/spatial-validation)
+      :orbit (valid/when-present sv/spatial-validation)})])
 
 (defn- within-range?
   "Checks if value falls within the closed bounds defined by min-value and max-value. One or both of
@@ -121,7 +119,7 @@
     (when missing-project-refs
       {[:project-refs]
        [(format "%%s have [%s] which do not reference any projects in parent collection."
-                (str/join ", " missing-project-refs))]})))
+                (string/join ", " missing-project-refs))]})))
 
 (defn- matches-collection-identifier-validation
   "Validates the granule collection-ref field matches the corresponding field in the parent collection."
@@ -131,7 +129,7 @@
           parent-value (if (= :entry-id field)
                          (eid/umm->entry-id (:parent collection-ref))
                          (get-in collection-ref (concat [:parent] parent-field-path)))
-          field-name (v/humanize-field field)]
+          field-name (valid/humanize-field field)]
       (when (and value (not= value parent-value))
         {[:collection-ref]
          [(format "%%s %s [%s] does not match the %s of the parent collection [%s]"
@@ -154,22 +152,22 @@
   ;; NOTE: nil values for coll-end or gran-end are considered to be infinitely
   ;; far in the future
   (cond
-    (t/before? gran-start coll-start)
+    (time-core/before? gran-start coll-start)
     (format "Granule start date [%s] is earlier than collection start date [%s]."
             gran-start coll-start)
 
-    (and coll-end (t/after? gran-start coll-end))
+    (and coll-end (time-core/after? gran-start coll-end))
     (format "Granule start date [%s] is later than collection end date [%s]."
             gran-start coll-end)
 
-    (and coll-end gran-end (t/after? gran-end coll-end))
+    (and coll-end gran-end (time-core/after? gran-end coll-end))
     (format "Granule end date [%s] is later than collection end date [%s]."
             gran-end coll-end)
 
     (and coll-end (nil? gran-end))
     (format "There is no granule end date whereas collection has an end date of [%s]" coll-end)
 
-    (and gran-end (t/after? gran-start gran-end))
+    (and gran-end (time-core/after? gran-start gran-end))
     (format "Granule start date [%s] is later than granule end date [%s]."
             gran-start gran-end)))
 
@@ -194,7 +192,7 @@
     (when missing-operation-modes
       {field-path
        [(format "The following list of Instrument operation modes did not exist in the referenced parent collection: [%s]."
-                (str/join ", " missing-operation-modes))]})))
+                (string/join ", " missing-operation-modes))]})))
 
 (def sensor-ref-validations
   "Defines the sensor validations for granules"
@@ -207,14 +205,14 @@
                           (vu/has-parent-validator :name "Characteristic Reference name")]
     :sensor-refs [(vu/unique-by-name-validator :short-name)
                   (vu/has-parent-validator :short-name "Sensor short name")
-                  (v/every sensor-ref-validations)]}
+                  (valid/every sensor-ref-validations)]}
    operation-modes-reference-collection])
 
 (def platform-ref-validations
   "Defines the platform validations for granules"
   {:instrument-refs [(vu/unique-by-name-validator :short-name)
                      (vu/has-parent-validator :short-name "Instrument short name")
-                     (v/every instrument-ref-validations)]})
+                     (valid/every instrument-ref-validations)]})
 
 (def granule-validations
   "Defines validations for granules"
@@ -227,12 +225,12 @@
     :temporal temporal-validation
     :platform-refs [(vu/unique-by-name-validator :short-name)
                     (vu/has-parent-validator :short-name "Platform short name")
-                    (v/every platform-ref-validations)]
+                    (valid/every platform-ref-validations)]
     :two-d-coordinate-system [(vu/has-parent-validator :name "2D Coordinate System name")
                               two-d-coordinates-range-validation]
     :product-specific-attributes [(vu/has-parent-validator :name "Product Specific Attribute")
-                                  (v/every psa/psa-ref-validations)]
+                                  (valid/every psa/psa-ref-validations)]
     :project-refs (vu/unique-by-name-validator identity)
-    :related-urls h/online-access-urls-validation}
+    :related-urls v-helper/online-access-urls-validation}
    projects-reference-collection
    spatial-matches-granule-spatial-representation])

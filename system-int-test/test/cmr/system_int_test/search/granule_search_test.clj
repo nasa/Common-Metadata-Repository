@@ -1,8 +1,8 @@
 (ns cmr.system-int-test.search.granule-search-test
   "Integration test for CMR granule search"
   (:require
-   [clojure.test :refer [are deftest is testing use-fixtures]]
-   [cmr.common-app.services.search.messages :as cmsg]
+   [clojure.test :refer :all]
+   [cmr.elastic-utils.search.es-messenger :as cmsg]
    [cmr.common.services.messages :as msg]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]

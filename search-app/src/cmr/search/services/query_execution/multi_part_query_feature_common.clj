@@ -5,12 +5,10 @@
    - has_granules_created_at
    - has_granules_revised_at"
   (:require
-   [clojure.set :as set]
-   [cmr.common-app.services.search.group-query-conditions :as group-query-conditions]
-   [cmr.common-app.services.search.params :as common-params]
-   [cmr.common-app.services.search.query-execution :as query-execution]
-   [cmr.common-app.services.search.query-model :as query-model]
-   [cmr.common-app.services.search.query-to-elastic :as query-to-elastic]
+   [cmr.elastic-utils.search.es-group-query-conditions :as group-query-conditions]
+   [cmr.elastic-utils.search.es-params-converter :as common-params]
+   [cmr.common.services.search.query-model :as query-model]
+   [cmr.elastic-utils.search.es-query-to-elastic :as query-to-elastic]
    [cmr.search.services.parameters.conversion :as parameters]
    [cmr.search.services.query-walkers.update-field-resolver :as update-field-resolver]))
 

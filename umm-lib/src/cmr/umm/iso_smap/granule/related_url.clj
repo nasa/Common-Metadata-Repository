@@ -1,11 +1,11 @@
 (ns cmr.umm.iso-smap.granule.related-url
   "Contains functions for parsing and generating SMAP ISO OnlineResources and UMM related urls."
-  (:require [clojure.string :as s]
-            [clojure.set :as set]
-            [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.iso-smap.helper :as h]))
+  (:require
+   [clojure.set :as set]
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as coll]
+   [cmr.umm.iso-smap.helper :as helper]))
 
 (def resource-type->related-url-type
   "A mapping of SMAP ISO OnlineResource's type to UMM RelatedURL's type.
@@ -24,7 +24,7 @@
                         (resource-type->related-url-type name "VIEW RELATED INFORMATION")
                         "GET DATA")
         mime-type (cx/string-at-path elem [:applicationProfile :CharacterString])]
-    (c/map->RelatedURL
+    (coll/map->RelatedURL
       {:url url
        :mime-type mime-type
        :type resource-type})))
@@ -46,18 +46,18 @@
   (when (seq related-urls)
     (for [related-url related-urls]
       (let [{:keys [url type mime-type]} related-url]
-        (x/element
+        (xml/element
           :gmd:distributorTransferOptions {}
-          (x/element
+          (xml/element
             :gmd:MD_DigitalTransferOptions {}
-            (x/element
+            (xml/element
               :gmd:onLine {}
-              (x/element
+              (xml/element
                 :gmd:CI_OnlineResource {}
-                (x/element :gmd:linkage {}
-                           (x/element :gmd:URL {} url))
-                (h/iso-string-element :gmd:applicationProfile mime-type)
+                (xml/element :gmd:linkage {}
+                             (xml/element :gmd:URL {} url))
+                (helper/iso-string-element :gmd:applicationProfile mime-type)
                 (when-not (= "GET DATA" type)
-                  (h/iso-string-element
+                  (helper/iso-string-element
                     :gmd:name
                     ((set/map-invert resource-type->related-url-type) type)))))))))))

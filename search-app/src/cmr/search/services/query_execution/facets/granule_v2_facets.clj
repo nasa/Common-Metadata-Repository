@@ -2,7 +2,7 @@
   "Functions for generating v2 granule facets. Similar structure as v2 collection facets, but
   granule fields. First major use case is supporting OPeNDAP virutal directories capability."
   (:require
-   [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as v2-facets]
@@ -135,7 +135,7 @@
 (defn create-cycle-facet
   "Returns a filter facet node for a cycle."
   [base-url query-params applied? aggs]
-  (v2h/generate-filter-node 
+  (v2h/generate-filter-node
     base-url
     query-params
     "cycle"

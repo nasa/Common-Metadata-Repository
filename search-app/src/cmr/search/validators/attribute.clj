@@ -1,10 +1,10 @@
 (ns cmr.search.validators.attribute
   "Contains functions for validating attribute condition"
-  (:require [cmr.search.services.messages.attribute-messages :as attrib-msg]
-            [cmr.common-app.services.search.query-validation :as v]))
+  (:require
+   [cmr.search.services.messages.attribute-messages :as attrib-msg]
+   [cmr.elastic-utils.search.es-query-validation :as val]))
 
-
-(extend-protocol v/Validator
+(extend-protocol val/Validator
   cmr.search.models.query.AttributeRangeCondition
   (validate
     [{:keys [min-value max-value]}]

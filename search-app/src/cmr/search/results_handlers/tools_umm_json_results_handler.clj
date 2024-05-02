@@ -3,8 +3,8 @@
   (:require
    [cheshire.core :as json]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]
    [cmr.search.results-handlers.umm-json-results-helper :as results-helper]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:tool :umm-json-results]

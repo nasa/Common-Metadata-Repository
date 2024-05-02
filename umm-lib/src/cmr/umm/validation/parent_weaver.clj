@@ -2,12 +2,9 @@
   "Provides functions to thread together a granule and collection parent objects for validation.
   It weaves together the objects so matching items within the granule and collection are combined"
   (:require
-   [clojure.string :as str]
-   [cmr.common.util :as u]
-   [cmr.umm.umm-collection :as c]
-   [cmr.umm.umm-granule :as g])
+   [cmr.common.util :as util])
   (:import
-   (cmr.umm.umm_granule InstrumentRef PlatformRef SensorRef TwoDCoordinateSystem UmmGranule)))
+   (cmr.umm.umm_granule InstrumentRef PlatformRef SensorRef UmmGranule)))
 
 (defprotocol ParentWeaver
   (set-parent [obj parent] "Sets the parent attribute on this object with the given parent"))
@@ -20,7 +17,7 @@
    (set-parents-by-name objs parent-objs :name))
   ([objs parent-objs name-field]
    ;; We'll assume there's only a single parent object with a given name
-   (let [parent-obj-by-name (u/map-values first (group-by name-field parent-objs))]
+   (let [parent-obj-by-name (util/map-values first (group-by name-field parent-objs))]
      (for [child objs
            :let [parent (parent-obj-by-name (name-field child))]]
        (set-parent child parent)))))
@@ -30,7 +27,7 @@
   multiple objects but there is only one child object(in granule) i.e. child object is not a list of
   values but a single value with a reference to its parent"
   [obj parent-objs name-field]
-  (let [parent-obj-by-name (u/map-values first (group-by name-field parent-objs))]
+  (let [parent-obj-by-name (util/map-values first (group-by name-field parent-objs))]
     (set-parent obj (parent-obj-by-name (name-field obj)))))
 
 (extend-protocol

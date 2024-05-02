@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.granule-search-with-json-query-test
   "Integration test for CMR granule search"
   (:require
-   [clojure.test :refer [deftest is testing use-fixtures]]
+   [clojure.test :refer :all]
    [cmr.common.util :refer [are3]]
    [cmr.spatial.mbr :as m]
    [cmr.system-int-test.data2.core :as d]

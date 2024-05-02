@@ -4,9 +4,9 @@
   - coll-by-concept-id-cache = collection-for-gran-acls-by-concept-id-cache"
   (:require
    [clojure.walk :as walk]
-   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as q-mod]
+   [cmr.elastic-utils.search.es-acl-parser :as acl-rhh]
+   [cmr.elastic-utils.search.query-execution :as qe]
+   [cmr.common.services.search.query-model :as q-mod]
    [cmr.common.date-time-parser :as time-parser]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]

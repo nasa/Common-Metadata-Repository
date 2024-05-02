@@ -2,9 +2,9 @@
   "Service for autocomplete functionality"
   (:require
     [cmr.acl.acl-fetcher :as af]
-    [cmr.common-app.services.search.group-query-conditions :as gc]
-    [cmr.common-app.services.search.query-execution :as qe]
-    [cmr.common-app.services.search.query-model :as qm]))
+    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+    [cmr.elastic-utils.search.query-execution :as qe]
+    [cmr.common.services.search.query-model :as qm]))
 
 (def public-collections-condition
   (qm/boolean-condition :contains-public-collections true))

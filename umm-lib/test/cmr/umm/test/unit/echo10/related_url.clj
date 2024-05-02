@@ -1,10 +1,11 @@
 (ns cmr.umm.test.unit.echo10.related-url
   "Tests functions for granule related urls"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :as util :refer [are3]]
    [cmr.umm.echo10.related-url :as rurl]))
 
+(declare expected actual-type actual-subtype)
 (deftest validate-xml
   (testing
     "Validate that the related-url->online-resource function correctly returns

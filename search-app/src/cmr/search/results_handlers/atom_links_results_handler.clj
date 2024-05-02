@@ -4,14 +4,12 @@
   that are not browse type should be included in the granule atom links as inherited.
   This handles the retrieval of collection atom links by collection concept ids."
   (:require
+
    [cheshire.core :as json]
-   [clj-time.core :as time]
-   [clojure.data.xml :as x]
-   [clojure.string :as str]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as qm]))
+   [cmr.common.services.search.query-model :as qm]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]
+   [cmr.elastic-utils.search.query-execution :as qe]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :atom-links]
   [concept-type query]

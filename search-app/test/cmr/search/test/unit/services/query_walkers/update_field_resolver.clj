@@ -3,7 +3,7 @@
   (:require
     [clj-time.core :as time]
     [clojure.test :refer :all]
-    [cmr.common-app.services.search.query-model :as qm]
+    [cmr.common.services.search.query-model :as qm]
     [cmr.common.util :refer [are3]]
     [cmr.search.models.query :as query]
     [cmr.search.services.query-walkers.update-field-resolver :as update-field-resolver]

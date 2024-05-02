@@ -1,9 +1,14 @@
 (ns cmr.search.services.query-walkers.update-field-resolver
   "Defines protocols and functions to resolve conditions for a provided field."
   (:require
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-model :as cqm]
-   [cmr.common.util :as util]))
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.common.services.search.query-model :as cqm]
+   [cmr.common.util :as util])
+  (:import cmr.common.services.search.query_model.Query
+           cmr.common.services.search.query_model.NestedCondition
+           cmr.common.services.search.query_model.RelatedItemQueryCondition
+           cmr.common.services.search.query_model.ConditionGroup
+           cmr.common.services.search.query_model.NumericRangeIntersectionCondition))
 
 (defprotocol UpdateQueryForField
   "Defines functions to adjust query to either remove a field from the query or update the name of
@@ -52,82 +57,82 @@
    :remove-field remove-field-within-condition
    :rename-field rename-field-within-condition})
 
-(extend cmr.common_app.services.search.query_model.Query
+(extend cmr.common.services.search.query_model.Query
         UpdateQueryForField
         (merge condition-matching-fns
                {:remove-field remove-field-within-root-query}))
 
-(extend cmr.common_app.services.search.query_model.NestedCondition
+(extend cmr.common.services.search.query_model.NestedCondition
         UpdateQueryForField
         condition-matching-fns)
 
-(extend cmr.common_app.services.search.query_model.NegatedCondition
+(extend cmr.common.services.search.query_model.NegatedCondition
         UpdateQueryForField
         condition-matching-fns)
 
-(extend cmr.common_app.services.search.query_model.RelatedItemQueryCondition
+(extend cmr.common.services.search.query_model.RelatedItemQueryCondition
         UpdateQueryForField
         condition-matching-fns)
 
 (extend-protocol UpdateQueryForField
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.ConditionGroup
+  cmr.common.services.search.query_model.ConditionGroup
   (has-field?
-   [cg field-key]
-   (let [conditions (:conditions cg)]
-     (util/any-true? #(has-field? % field-key) conditions)))
+    [cg field-key]
+    (let [conditions (:conditions cg)]
+      (util/any-true? #(has-field? % field-key) conditions)))
 
   (remove-field
-   [cg field-key]
-   (let [{:keys [operation conditions]} cg
-         conditions (keep #(remove-field % field-key) conditions)]
-     (when (seq conditions)
-       (gc/group-conds operation conditions))))
+    [cg field-key]
+    (let [{:keys [operation conditions]} cg
+          conditions (keep #(remove-field % field-key) conditions)]
+      (when (seq conditions)
+        (gc/group-conds operation conditions))))
 
   (rename-field
-   [cg field-key new-field-key]
-   (let [{:keys [operation conditions]} cg
-         conditions (keep #(rename-field % field-key new-field-key) conditions)]
-     (when (seq conditions)
-       (gc/group-conds operation conditions))))
+    [cg field-key new-field-key]
+    (let [{:keys [operation conditions]} cg
+          conditions (keep #(rename-field % field-key new-field-key) conditions)]
+      (when (seq conditions)
+        (gc/group-conds operation conditions))))
 
-  cmr.common_app.services.search.query_model.NumericRangeIntersectionCondition
+  cmr.common.services.search.query_model.NumericRangeIntersectionCondition
   (has-field?
-   [c field-key]
-   (or (= (:min-field c) field-key)
-       (= (:max-field c) field-key)))
+    [c field-key]
+    (or (= (:min-field c) field-key)
+        (= (:max-field c) field-key)))
 
   (remove-field
-   [c field-key]
+    [c field-key]
    ;; If the field matches either the min-field or max-field remove it
-   (when-not (has-field? c field-key)
-     c))
+    (when-not (has-field? c field-key)
+      c))
 
   (rename-field
-   [c field-key new-field-key]
-   (if (has-field? c field-key)
+    [c field-key new-field-key]
+    (if (has-field? c field-key)
      ;; Same field key for both min and max we rename both of them
-     (if (= field-key (:max-field c) (:min-field c))
-       (assoc c :max-field new-field-key :min-field new-field-key)
-       (if (= field-key (:max-field c))
-         (assoc c :max-field new-field-key)
-         (assoc c :min-field new-field-key)))
-     c))
+      (if (= field-key (:max-field c) (:min-field c))
+        (assoc c :max-field new-field-key :min-field new-field-key)
+        (if (= field-key (:max-field c))
+          (assoc c :max-field new-field-key)
+          (assoc c :min-field new-field-key)))
+      c))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   ;; catch all resolver
   java.lang.Object
   (has-field?
-   [this field-key]
-   (= (:field this) field-key))
+    [this field-key]
+    (= (:field this) field-key))
 
   (remove-field
-   [this field-key]
-   (when-not (has-field? this field-key)
-     this))
+    [this field-key]
+    (when-not (has-field? this field-key)
+      this))
 
   (rename-field
-   [this field-key new-field-key]
-   (if (has-field? this field-key)
-     (assoc this :field new-field-key)
-     this)))
+    [this field-key new-field-key]
+    (if (has-field? this field-key)
+      (assoc this :field new-field-key)
+      this)))

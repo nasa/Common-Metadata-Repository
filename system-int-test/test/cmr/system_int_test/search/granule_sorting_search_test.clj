@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.granule-sorting-search-test
   "Tests searching for collections using basic collection identifiers"
-  (:require [clojure.test :refer [are deftest is testing use-fixtures]]
+  (:require [clojure.test :refer :all]
+            [clojure.string :as str]
             [cmr.system-int-test.utils.ingest-util :as ingest]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.system-int-test.utils.index-util :as index]
@@ -8,7 +9,8 @@
             [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
             [cmr.system-int-test.data2.granule :as dg]
             [cmr.system-int-test.data2.core :as d]
-            [cmr.common-app.services.search.messages :as cmsg]))
+            [cmr.elastic-utils.search.es-messenger :as cmsg]
+            [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]))
 
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"}))

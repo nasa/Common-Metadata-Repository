@@ -1,11 +1,11 @@
 (ns cmr.search.test.unit.validators.attribute
   "Contains tests for validating additional attribute conditions"
-  (:require [clojure.test :refer :all]
-            [cmr.common-app.services.search.query-validation :as v]
-            [cmr.search.validators.attribute]
-            [cmr.search.services.messages.attribute-messages :as msg]
-            [cmr.search.models.query :as q]))
-
+  (:require
+   [clojure.test :refer :all]
+   [cmr.elastic-utils.search.es-query-validation :as v]
+   [cmr.search.models.query :as q]
+   [cmr.search.services.messages.attribute-messages :as msg]
+   [cmr.search.validators.attribute]))
 
 (deftest validate-range-test
   (are [errors type minv maxv]

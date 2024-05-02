@@ -1,27 +1,25 @@
 (ns cmr.umm.iso-smap.iso-smap-collection
   "Contains functions for parsing and generating the SMAP ISO dialect."
-  (:require [clojure.data.xml :as x]
-            [clojure.java.io :as io]
-            [clojure.string :as s]
-            [clj-time.core :as time]
-            [clj-time.format :as f]
-            [cmr.common.xml :as cx]
-            [cmr.umm.iso-smap.iso-smap-core :as core]
-            [cmr.umm.umm-collection :as c]
-            [cmr.common.xml :as v]
-            [cmr.umm.iso-smap.collection.personnel :as pe]
-            [cmr.umm.iso-smap.collection.org :as org]
-            [cmr.umm.iso-smap.collection.keyword :as kw]
-            [cmr.umm.iso-smap.collection.progress :as progress]
-            [cmr.umm.iso-smap.collection.spatial :as spatial]
-            [cmr.umm.iso-smap.collection.temporal :as t]
-            [cmr.umm.iso-smap.helper :as h])
+  (:require
+   [clojure.data.xml :as xml]
+   [clojure.java.io :as io]
+   [clj-time.format :as time.format]
+   [cmr.common.xml :as cx]
+   [cmr.umm.iso-smap.iso-smap-core :as core]
+   [cmr.umm.umm-collection :as coll]
+   [cmr.umm.iso-smap.collection.personnel :as pe]
+   [cmr.umm.iso-smap.collection.org :as org]
+   [cmr.umm.iso-smap.collection.keyword :as kw]
+   [cmr.umm.iso-smap.collection.progress :as progress]
+   [cmr.umm.iso-smap.collection.spatial :as spatial]
+   [cmr.umm.iso-smap.collection.temporal :as temporal]
+   [cmr.umm.iso-smap.helper :as helper])
   (:import cmr.umm.umm_collection.UmmCollection))
 
 (defn- xml-elem-with-id-tag
   "Returns the identification element with the given tag"
   [id-elems tag]
-  (h/xml-elem-with-path-value id-elems [:citation :CI_Citation :identifier :MD_Identifier
+  (helper/xml-elem-with-path-value id-elems [:citation :CI_Citation :identifier :MD_Identifier
                                         :description :CharacterString] tag))
 
 (defn- xml-elem->Product
@@ -29,14 +27,14 @@
   [product-elem version-description]
   (let [long-name (cx/string-at-path product-elem [:citation :CI_Citation :title :CharacterString])
         id-elems (cx/elements-at-path product-elem [:citation :CI_Citation :identifier :MD_Identifier])
-        short-name-elem (h/xml-elem-with-path-value id-elems [:description :CharacterString] "The ECS Short Name")
+        short-name-elem (helper/xml-elem-with-path-value id-elems [:description :CharacterString] "The ECS Short Name")
         short-name (cx/string-at-path short-name-elem [:code :CharacterString])
-        version-elem (h/xml-elem-with-path-value id-elems [:description :CharacterString] "The ECS Version ID")
+        version-elem (helper/xml-elem-with-path-value id-elems [:description :CharacterString] "The ECS Version ID")
         version-id (cx/string-at-path version-elem [:code :CharacterString])]
-    (c/map->Product {:short-name short-name
-                     :long-name long-name
-                     :version-id version-id
-                     :version-description version-description})))
+    (coll/map->Product {:short-name short-name
+                        :long-name long-name
+                        :version-id version-id
+                        :version-description version-description})))
 
 (defn- xml-elem->RevisionDate
   "Returns revision date from a parsed XML structure"
@@ -49,14 +47,14 @@
 (defn xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed XML structure"
   [id-elems]
-  (let [insert-time-elem (h/xml-elem-with-title-tag id-elems "InsertTime")
-        update-time-elem (h/xml-elem-with-title-tag id-elems "UpdateTime")
+  (let [insert-time-elem (helper/xml-elem-with-title-tag id-elems "InsertTime")
+        update-time-elem (helper/xml-elem-with-title-tag id-elems "UpdateTime")
         insert-time (cx/datetime-at-path insert-time-elem [:citation :CI_Citation :date :CI_Date :date :DateTime])
         update-time (cx/datetime-at-path update-time-elem [:citation :CI_Citation :date :CI_Date :date :DateTime])
         revision-elem (xml-elem-with-id-tag id-elems "The ECS Short Name")
         revision-date (xml-elem->RevisionDate revision-elem)]
     (when (or insert-time update-time)
-      (c/map->DataProviderTimestamps
+      (coll/map->DataProviderTimestamps
         {:insert-time insert-time
          :update-time update-time
          :revision-date-time revision-date}))))
@@ -65,7 +63,7 @@
   "Returns associated difs from a parsed XML structure"
   [id-elems]
   ;; There can be no more than one DIF ID for SMAP ISO
-  (let [dif-elem (h/xml-elem-with-title-tag id-elems "DIFID")
+  (let [dif-elem (helper/xml-elem-with-title-tag id-elems "DIFID")
         dif-id (cx/string-at-path
                  dif-elem
                  [:citation :CI_Citation :identifier :MD_Identifier :code :CharacterString])]
@@ -82,11 +80,10 @@
                                :citation :CI_Citation :otherCitationDetails :CharacterString])
         product-elem (xml-elem-with-id-tag id-elems "The ECS Short Name")
         product (xml-elem->Product product-elem version-description)
-        {:keys [short-name version-id]} product
         data-provider-timestamps (xml-elem->DataProviderTimestamps id-elems)
-        dataset-id-elem (h/xml-elem-with-title-tag id-elems "DataSetId")
+        dataset-id-elem (helper/xml-elem-with-title-tag id-elems "DataSetId")
         keywords (kw/xml-elem->keywords xml-struct)]
-    (c/map->UmmCollection
+    (coll/map->UmmCollection
       {:entry-title (cx/string-at-path
                       dataset-id-elem
                       [:aggregationInfo :MD_AggregateInformation :aggregateDataSetIdentifier
@@ -97,7 +94,7 @@
                                                          :CharacterString])
        :product product
        :data-provider-timestamps data-provider-timestamps
-       :temporal (t/xml-elem->Temporal xml-struct)
+       :temporal (temporal/xml-elem->Temporal xml-struct)
        :science-keywords (kw/keywords->ScienceKeywords keywords)
        :platforms (kw/keywords->Platforms keywords)
        :spatial-coverage (spatial/xml-elem->SpatialCoverage xml-struct)
@@ -109,12 +106,12 @@
 (defn parse-collection
   "Parses ISO XML into a UMM Collection record."
   [xml]
-  (xml-elem->Collection (x/parse-str xml)))
+  (xml-elem->Collection (xml/parse-str xml)))
 
 (defn parse-temporal
   "Parses the XML and extracts the temporal data."
   [xml]
-  (t/xml-elem->Temporal (x/parse-str xml)))
+  (temporal/xml-elem->Temporal (xml/parse-str xml)))
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -123,41 +120,41 @@
 (defn- iso-aggregation-info-element
   "Defines the iso-aggregation-info element"
   [dataset-id]
-  (x/element
+  (xml/element
     :gmd:aggregationInfo {}
-    (x/element
+    (xml/element
       :gmd:MD_AggregateInformation {}
-      (x/element :gmd:aggregateDataSetIdentifier {}
-                 (x/element :gmd:MD_Identifier {}
-                            (h/iso-string-element :gmd:code dataset-id)))
-      (x/element :gmd:associationType {}
-                 (x/element :gmd:DS_AssociationTypeCode
-                            {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
-                             :codeListValue "largerWorkCitation"}
-                            "largerWorkCitation"))
-      (x/element :gmd:initiativeType {}
-                 (x/element :gmd:DS_InitiativeTypeCode
-                            {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
-                             :codeListValue "mission"}
-                            "mission")))))
+      (xml/element :gmd:aggregateDataSetIdentifier {}
+                   (xml/element :gmd:MD_Identifier {}
+                                (helper/iso-string-element :gmd:code dataset-id)))
+      (xml/element :gmd:associationType {}
+                   (xml/element :gmd:DS_AssociationTypeCode
+                                {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
+                                 :codeListValue "largerWorkCitation"}
+                                "largerWorkCitation"))
+      (xml/element :gmd:initiativeType {}
+                   (xml/element :gmd:DS_InitiativeTypeCode
+                                {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
+                                 :codeListValue "mission"}
+                                "mission")))))
 
 (defn- generate-dif-element
   "Returns the smap iso DIFID element"
   [dif-id datetime]
-  (x/element
+  (xml/element
     :gmd:identificationInfo {}
-    (x/element
+    (xml/element
       :gmd:MD_DataIdentification {}
-      (x/element :gmd:citation {}
-                 (x/element :gmd:CI_Citation {}
-                            (h/iso-string-element :gmd:title "DIFID")
-                            (h/iso-date-element "revision" datetime)
-                            (x/element :gmd:identifier {}
-                                       (x/element :gmd:MD_Identifier {}
-                                                  (h/iso-string-element :gmd:code dif-id)))))
-      (h/iso-string-element :gmd:abstract "DIFID")
-      (h/iso-string-element :gmd:purpose "DIFID")
-      (h/iso-string-element :gmd:language "eng"))))
+      (xml/element :gmd:citation {}
+                   (xml/element :gmd:CI_Citation {}
+                                (helper/iso-string-element :gmd:title "DIFID")
+                                (helper/iso-date-element "revision" datetime)
+                                (xml/element :gmd:identifier {}
+                                             (xml/element :gmd:MD_Identifier {}
+                                                          (helper/iso-string-element :gmd:code dif-id)))))
+      (helper/iso-string-element :gmd:abstract "DIFID")
+      (helper/iso-string-element :gmd:purpose "DIFID")
+      (helper/iso-string-element :gmd:language "eng"))))
 
 (def publication-title
   "Product Specification Document for the SMAP Level 1A Radar Product (L1A_Radar)")
@@ -168,17 +165,17 @@
 (defn- generate-version-description-element
   "Returns the smap iso version description element."
   [version-description update-time]
-  (x/element
+  (xml/element
     :gmd:identificationInfo {}
-    (x/element
+    (xml/element
       :gmd:MD_DataIdentification {}
-      (x/element :gmd:citation {}
-                 (x/element :gmd:CI_Citation {}
-                            (h/iso-string-element :gmd:title publication-title)
-                            (h/iso-date-element "publication" update-time)
-                            (h/iso-string-element :gmd:otherCitationDetails version-description)))
-      (h/iso-string-element :gmd:abstract publication-abstract)
-      (h/iso-string-element :gmd:language "eng"))))
+      (xml/element :gmd:citation {}
+                   (xml/element :gmd:CI_Citation {}
+                                (helper/iso-string-element :gmd:title publication-title)
+                                (helper/iso-date-element "publication" update-time)
+                                (helper/iso-string-element :gmd:otherCitationDetails version-description)))
+      (helper/iso-string-element :gmd:abstract publication-abstract)
+      (helper/iso-string-element :gmd:language "eng"))))
 
 (extend-protocol cmr.umm.iso-smap.iso-smap-core/UmmToIsoSmapXml
   UmmCollection
@@ -194,59 +191,59 @@
            ;; To work around this problem, we list all instruments under each platform.
            ;; In other words, all platforms will have the same instruments.
            instruments (when (first platforms) (:instruments (first platforms)))]
-       (x/emit-str
-         (x/element
-           :gmd:DS_Series h/iso-header-attributes
-           (x/element :gmd:composedOf {:gco:nilReason "inapplicable"})
-           (x/element
+       (xml/emit-str
+         (xml/element
+           :gmd:DS_Series helper/iso-header-attributes
+           (xml/element :gmd:composedOf {:gco:nilReason "inapplicable"})
+           (xml/element
              :gmd:seriesMetadata {}
-             (x/element
+             (xml/element
                :gmi:MI_Metadata {}
-               (h/iso-string-element :gmd:language metadata-language)
-               h/iso-charset-element
-               (h/iso-hierarchy-level-element "series")
-               (x/element :gmd:contact {})
-               (x/element :gmd:dateStamp {}
-                          (x/element :gco:Date {} (f/unparse (f/formatters :date) update-time)))
-               (x/element
+               (helper/iso-string-element :gmd:language metadata-language)
+               helper/iso-charset-element
+               (helper/iso-hierarchy-level-element "series")
+               (xml/element :gmd:contact {})
+               (xml/element :gmd:dateStamp {}
+                            (xml/element :gco:Date {} (time.format/unparse (time.format/formatters :date) update-time)))
+               (xml/element
                  :gmd:identificationInfo {}
-                 (x/element
+                 (xml/element
                    :gmd:MD_DataIdentification {}
-                   (x/element
+                   (xml/element
                      :gmd:citation {}
-                     (x/element
+                     (xml/element
                        :gmd:CI_Citation {}
-                       (h/iso-string-element :gmd:title long-name)
-                       (h/iso-date-element "revision" revision-date-time true)
-                       (h/generate-short-name-element short-name)
-                       (h/generate-version-id-element version-id)
+                       (helper/iso-string-element :gmd:title long-name)
+                       (helper/iso-date-element "revision" revision-date-time true)
+                       (helper/generate-short-name-element short-name)
+                       (helper/generate-version-id-element version-id)
                        (org/generate-processing-center organizations)))
-                   (h/iso-string-element :gmd:abstract summary)
-                   (h/iso-string-element :gmd:purpose purpose)
-                   (h/iso-string-element :gmd:credit "National Aeronautics and Space Administration (NASA)")
+                   (helper/iso-string-element :gmd:abstract summary)
+                   (helper/iso-string-element :gmd:purpose purpose)
+                   (helper/iso-string-element :gmd:credit "National Aeronautics and Space Administration (NASA)")
                    (progress/generate collection)
                    (org/generate-archive-center organizations)
                    (kw/generate-keywords science-keywords)
                    (kw/generate-keywords instruments)
                    (kw/generate-keywords platforms)
                    (iso-aggregation-info-element dataset-id)
-                   (h/iso-string-element :gmd:language "eng")
-                   (x/element
+                   (helper/iso-string-element :gmd:language "eng")
+                   (xml/element
                      :gmd:extent {}
-                     (x/element
+                     (xml/element
                        :gmd:EX_Extent {}
                        (spatial/generate-spatial spatial-coverage)
-                       (t/generate-temporal temporal)))))
+                       (temporal/generate-temporal temporal)))))
                (generate-version-description-element version-description update-time)
-               (h/generate-dataset-id-element dataset-id update-time)
-               (h/generate-datetime-element "InsertTime" "creation" insert-time)
-               (h/generate-datetime-element "UpdateTime" "revision" update-time)
+               (helper/generate-dataset-id-element dataset-id update-time)
+               (helper/generate-datetime-element "InsertTime" "creation" insert-time)
+               (helper/generate-datetime-element "UpdateTime" "revision" update-time)
                (generate-dif-element (first associated-difs) update-time)))))))))
 
 
 (defn validate-xml
   "Validates the XML against the ISO schema."
   [xml]
-  (v/validate-xml (io/resource "schema/iso_smap/schema.xsd") xml))
+  (cx/validate-xml (io/resource "schema/iso_smap/schema.xsd") xml))
 
 

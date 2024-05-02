@@ -1,12 +1,12 @@
 (ns cmr.umm.test.generators.spatial
-  (:require [cmr.spatial.test.generators :as sgen]
-            [clojure.test.check.generators :as gen]
-            [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.line-string :as l]
-            [cmr.umm.umm-granule :as g]
-            [cmr.umm.umm-spatial :as umm-s]))
-
+  (:require
+   [clojure.test.check.generators :as gen]
+   [cmr.common.test.test-check-ext :as ext-gen]
+   [cmr.spatial.line-string :as line-string]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.umm.umm-granule :as granule]
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (def longitude
   (ext-gen/choose-double -180 180))
@@ -26,7 +26,7 @@
 
 (def orbit-calculated-spatial-domains
   (gen/fmap (fn [[omn on son spon ecl ecdt]]
-              (g/->OrbitCalculatedSpatialDomain omn on son spon ecl ecdt))
+              (granule/->OrbitCalculatedSpatialDomain omn on son spon ecl ecdt))
             (gen/tuple orbital-model-name
                        orbit-number
                        s-orbit-number
@@ -47,7 +47,7 @@
             (gen/vector generic-rings 1 4)))
 
 (def lines
-  (gen/fmap l/line-string
+  (gen/fmap line-string/line-string
             (gen/bind (gen/choose 2 6) sgen/non-antipodal-points)))
 
 (def geometries
@@ -61,7 +61,7 @@
 (def orbits
   "A generator returning an Orbit record for a spatial domain."
   (ext-gen/model-gen
-    g/map->Orbit
+    granule/map->Orbit
     (gen/hash-map
       :ascending-crossing longitude
       :start-lat latitude

@@ -1,7 +1,7 @@
 (ns cmr.umm.test.perf.echo10.granule
   "Tests performance of converting granules from ECHO 10 XML to UMM JSON"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [criterium.core :as criterium]
    [cmr.umm.echo10.granule :as g]))
 

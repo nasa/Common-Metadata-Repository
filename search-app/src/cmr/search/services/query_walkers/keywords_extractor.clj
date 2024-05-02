@@ -2,9 +2,14 @@
   "Defines protocols and functions to extract keywords from a query."
   (:require
    [clojure.string :as str]
-   [cmr.common-app.services.search.query-model :as cqm]
-   [cmr.common.services.errors :as errors]
-   [cmr.search.models.query :as qm]))
+   [cmr.common.services.search.query-model :as cqm]
+   [cmr.common.services.errors :as errors])
+  (:import cmr.common.services.search.query_model.Query
+           cmr.common.services.search.query_model.ConditionGroup
+           cmr.common.services.search.query_model.NestedCondition
+           cmr.common.services.search.query_model.TextCondition
+           cmr.common.services.search.query_model.StringCondition
+           cmr.common.services.search.query_model.StringsCondition))
 
 (defprotocol ExtractKeywords
   "Defines a function to extract keywords"
@@ -65,80 +70,80 @@
 
 (extend-protocol ExtractKeywords
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.Query
+  cmr.common.services.search.query_model.Query
   (extract-keywords-seq
-   [query]
-   (extract-keywords-seq (:condition query)))
+    [query]
+    (extract-keywords-seq (:condition query)))
   (contains-keyword-condition?
-   [query]
-   (contains-keyword-condition? (:condition query)))
+    [query]
+    (contains-keyword-condition? (:condition query)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.ConditionGroup
+  cmr.common.services.search.query_model.ConditionGroup
   (extract-keywords-seq
-   [{:keys [conditions]}]
-   (apply merge-with concat (map extract-keywords-seq conditions)))
+    [{:keys [conditions]}]
+    (apply merge-with concat (map extract-keywords-seq conditions)))
   (contains-keyword-condition?
-   [{:keys [conditions]}]
-   (reduce (fn [_ condition]
-             (when (contains-keyword-condition? condition)
-               (reduced true)))
-           false
-           conditions))
+    [{:keys [conditions]}]
+    (reduce (fn [_ condition]
+              (when (contains-keyword-condition? condition)
+                (reduced true)))
+            false
+            conditions))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.NestedCondition
+  cmr.common.services.search.query_model.NestedCondition
   (extract-keywords-seq
-   [{:keys [condition]}]
-   (extract-keywords-seq condition))
+    [{:keys [condition]}]
+    (extract-keywords-seq condition))
   (contains-keyword-condition?
-   [{:keys [condition]}]
-   (contains-keyword-condition? condition))
+    [{:keys [condition]}]
+    (contains-keyword-condition? condition))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.TextCondition
+  cmr.common.services.search.query_model.TextCondition
   (extract-keywords-seq
-   [{:keys [field query-str]}]
-   (when (= field :keyword)
-     {:keywords (extract-keywords-seq-from-keyword-value query-str)}))
+    [{:keys [field query-str]}]
+    (when (= field :keyword)
+      {:keywords (extract-keywords-seq-from-keyword-value query-str)}))
   (contains-keyword-condition?
-   [{:keys [field]}]
-   (= field :keyword))
+    [{:keys [field]}]
+    (= field :keyword))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.StringCondition
+  cmr.common.services.search.query_model.StringCondition
   (extract-keywords-seq
-   [{:keys [field value]}]
-   (when (contains? keyword-string-fields field)
-     {:field-keywords (extract-keywords-seq-from-value value)}))
+    [{:keys [field value]}]
+    (when (contains? keyword-string-fields field)
+      {:field-keywords (extract-keywords-seq-from-value value)}))
   (contains-keyword-condition?
-   [_]
-   false)
+    [_]
+    false)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.StringsCondition
+  cmr.common.services.search.query_model.StringsCondition
   (extract-keywords-seq
-   [{:keys [field values]}]
-   (when (contains? keyword-string-fields field)
-     {:field-keywords (mapcat extract-keywords-seq-from-value values)}))
+    [{:keys [field values]}]
+    (when (contains? keyword-string-fields field)
+      {:field-keywords (mapcat extract-keywords-seq-from-value values)}))
   (contains-keyword-condition?
-   [_]
-   false)
+    [_]
+    false)
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.search.models.query.CollectionQueryCondition
   (extract-keywords-seq
-   [_]
-   (errors/internal-error! "extract-keywords-seq does not support CollectionQueryCondition"))
+    [_]
+    (errors/internal-error! "extract-keywords-seq does not support CollectionQueryCondition"))
   (contains-keyword-condition?
-   [_]
-   (errors/internal-error! "contains-keyword-condition? does not support CollectionQueryCondition"))
+    [_]
+    (errors/internal-error! "contains-keyword-condition? does not support CollectionQueryCondition"))
 
   ;; catch all extractor
   java.lang.Object
   (extract-keywords-seq
-   [this]
-   nil)
+    [this]
+    nil)
   (contains-keyword-condition?
-   [this]
-   false))
+    [this]
+    false))

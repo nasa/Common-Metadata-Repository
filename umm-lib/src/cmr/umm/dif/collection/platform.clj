@@ -1,27 +1,27 @@
 (ns cmr.umm.dif.collection.platform
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.dif.dif-core :as dif]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as coll]))
 
 (defn xml-elem->Instrument
   [elem]
   (let [short-name (cx/string-at-path elem [:Short_Name])
         long-name (cx/string-at-path elem [:Long_Name])]
-    (c/map->Instrument
-      {:short-name short-name
-       :long-name long-name})))
+    (coll/map->Instrument
+     {:short-name short-name
+      :long-name long-name})))
 
 (defn xml-elem->Platform
   [elem]
   (let [short-name (cx/string-at-path elem [:Short_Name])
         long-name (cx/string-at-path elem [:Long_Name])]
-    (c/map->Platform
-      {:short-name short-name
-       :long-name long-name
-       ;; DIF does not have platform type in its xml, but it is a required field in ECHO10.
-       ;; We make a dummy type here to facilitate cross format conversion
-       :type c/not-provided})))
+    (coll/map->Platform
+     {:short-name short-name
+      :long-name long-name
+      ;; DIF does not have platform type in its xml, but it is a required field in ECHO10.
+      ;; We make a dummy type here to facilitate cross format conversion
+      :type coll/not-provided})))
 
 (defn xml-elem->Platforms
   [collection-element]
@@ -34,10 +34,10 @@
     (if (= 1 (count platforms))
       (map #(assoc % :instruments instruments) platforms)
       (if instruments
-        (conj platforms (c/map->Platform {:short-name c/not-provided
-                                          :long-name c/not-provided
-                                          :type c/not-provided
-                                          :instruments instruments}))
+        (conj platforms (coll/map->Platform {:short-name coll/not-provided
+                                             :long-name coll/not-provided
+                                             :type coll/not-provided
+                                             :instruments instruments}))
         platforms))))
 
 (defn- generate-element
@@ -45,9 +45,9 @@
   [elem-key values]
   (for [value values]
     (let [{:keys [short-name long-name]} value]
-      (x/element elem-key {}
-                 (x/element :Short_Name {} short-name)
-                 (x/element :Long_Name {} long-name)))))
+      (xml/element elem-key {}
+                 (xml/element :Short_Name {} short-name)
+                 (xml/element :Long_Name {} long-name)))))
 
 (defn generate-instruments
   [instruments]

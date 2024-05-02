@@ -1,9 +1,10 @@
 (ns cmr.umm.test.unit.collection.temporal
   "Test construction of temporal coverage"
-  (:require [clojure.test :refer :all]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.collection.temporal :as tc]
-            [cmr.common.date-time-parser :as p]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.collection.temporal :as tc]
+   [cmr.common.date-time-parser :as p]))
 
 (deftest validate-temporal-map
   (testing "empty map is valid"

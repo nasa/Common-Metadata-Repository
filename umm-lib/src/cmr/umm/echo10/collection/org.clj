@@ -2,9 +2,9 @@
   "Archive and Processing Center elements of echo10 are mapped umm organization elements."
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common.xml :as cx]
-   [cmr.umm.umm-collection :as c]))
+   [cmr.umm.umm-collection :as coll]))
 
 (defn xml-elem->Organizations
   "Return organizations or []"
@@ -13,9 +13,9 @@
         processing-ctr (cx/string-at-path collection-element [:ProcessingCenter])]
     (seq (concat
            (when processing-ctr
-             [(c/map->Organization {:type :processing-center :org-name processing-ctr})])
+             [(coll/map->Organization {:type :processing-center :org-name processing-ctr})])
            (when archive-ctr
-             [(c/map->Organization {:type :archive-center :org-name archive-ctr})])))))
+             [(coll/map->Organization {:type :archive-center :org-name archive-ctr})])))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
@@ -29,7 +29,7 @@
                         name
                         csk/->PascalCase
                         keyword)]
-      (x/element elem-name {} (:org-name center)))))
+      (xml/element elem-name {} (:org-name center)))))
 
 (defn generate-archive-center
   "Return archive center ignoring other type of organization like processing center"
@@ -40,23 +40,3 @@
   "Return processing center ignoring other type of organization like archive center"
   [orgs]
   (generate-center :processing-center orgs))
-
-(comment
-  ;;;;;;;;;
-  (x/parse-str cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml)
-  (parse-collection cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml)
-  (xml-elem->Campaigns (x/parse-str cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml))
-  (cx/elements-at-path
-    (x/parse-str cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml)
-    [:ArchiveCenter])
-
-  (xml-elem->Organizations (x/parse-str cmr.umm.test.echo10.echo10-collection-tests/all-fields-collection-xml))
-  (let [orgs (vector (c/map->Organization {:type :archive-center :org-name "ac se"})
-                     (c/map->Organization {:type :processing-center :org-name "pro se"}))
-        arctr (generate-archive-center orgs)
-        prctr (generate-processing-center orgs)]
-    (vector arctr prctr))
-
-  (clojure.repl/dir camel-snake-kebab))
-
-  ;;;;;;;;;;;;

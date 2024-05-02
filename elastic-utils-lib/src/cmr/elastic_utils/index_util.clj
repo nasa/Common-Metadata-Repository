@@ -1,10 +1,8 @@
 (ns cmr.elastic-utils.index-util
   "Defines different types and functions for defining mappings"
   (:require
-   [clj-time.format :as f]
-   [clojurewerkz.elastisch.rest.document :as doc]
-   [cmr.common.date-time-parser :as p]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.date-time-parser :as time-parser]
+   [cmr.common.log :as log :refer (info)]
    [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.es-helper :as es-helper]
    [cmr.elastic-utils.es-index-helper :as esi-helper]
@@ -14,7 +12,7 @@
   "Takes a clj-time date and returns it in a format suitable for indexing in elasticsearch."
   [date-time]
   (when date-time
-    (p/clj-time->date-time-str date-time)))
+    (time-parser/clj-time->date-time-str date-time)))
 
 (def string-field-mapping
   {:type "keyword"})
