@@ -4,9 +4,8 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clojure.string :as str]
-   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
+   [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.services.humanizers.humanizer-report-service :as hrs]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -29,7 +28,7 @@
 ;; 1. Run a test
 ;; 2. Refresh the metadata cache.
 (comment
-  (metadata-cache/refresh-cache
+  (cmr.search.data.metadata-retrieval.metadata-cache/refresh-cache
     {:system (get-in user/system [:apps :search])}))
 ;;3. Retrieve the reporting
 ;;  curl http://localhost:3003/humanizers/report

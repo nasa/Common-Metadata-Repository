@@ -55,3 +55,4 @@
           actual-job-state (:state (json/decode (:body state-response) true))]
       (is (= 200 response-status))
       (is (= "NORMAL" actual-job-state)))))
+

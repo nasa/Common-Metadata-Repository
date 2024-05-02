@@ -4,15 +4,19 @@
   (:require
    [clojure.test :refer :all]
    [cmr.common-app.test.side-api :as side]
+   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.mime-types :as mt]
    [cmr.common.util :as c-util :refer [are3]]
    [cmr.ingest.config :as ingest-config]
    [cmr.system-int-test.data2.core :as data-core]
+   [cmr.system-int-test.data2.collection :as data-coll]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.variable-util :as variable-util]
+   [cmr.umm.umm-collection :as umm-c]
    [cmr.umm-spec.models.umm-variable-models :as umm-v]
    [cmr.umm-spec.versioning :as spec-ver]))
 

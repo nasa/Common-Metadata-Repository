@@ -1,7 +1,8 @@
 (ns cmr.system-int-test.utils.queue
   "Functions to support testing while using the message queue"
-  (:require [cmr.indexer.config :as config]
-            [cmr.common.log :refer (debug)]
+  (:require [cmr.message-queue.services.queue :as queue]
+            [cmr.indexer.config :as config]
+            [cmr.common.log :as log :refer (debug info warn error)]
             [clj-http.client :as client]
             [cheshire.core :as json]))
 

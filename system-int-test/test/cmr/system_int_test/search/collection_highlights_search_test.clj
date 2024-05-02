@@ -2,7 +2,8 @@
   "This tests the highlighting capability when searching for collections"
   (:require
    [clojure.set :as set]
-   [clojure.test :refer [are deftest is testing use-fixtures]]
+   [clojure.string :as str]
+   [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.system-int-test.data2.core :as d]

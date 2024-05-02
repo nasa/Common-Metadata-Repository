@@ -1,13 +1,18 @@
 (ns cmr.system-int-test.ingest.bulk-update.bulk-update-test
   "CMR bulk update. Test the actual update "
   (:require
+   [cheshire.core :as json]
    [clojure.test :refer :all]
    [clojure.java.io :as io]
    [cmr.common-app.test.side-api :as side]
+   [cmr.common.time-keeper :as time-keeper]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.ingest.config :as ingest-config]
+   [cmr.message-queue.test.queue-broker-side-api :as qb-side-api]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as data2-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
+   [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]

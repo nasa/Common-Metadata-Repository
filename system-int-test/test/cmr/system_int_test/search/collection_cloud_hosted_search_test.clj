@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.collection-cloud-hosted-search-test
   "Integration tests for searching for records that are cloud hosted"
   (:require
-   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
+   [clojure.test :refer :all]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo]
    [cmr.indexer.data.concepts.tag :as itag]

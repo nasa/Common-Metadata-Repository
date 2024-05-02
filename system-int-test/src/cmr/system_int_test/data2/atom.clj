@@ -3,6 +3,7 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
+   [clj-time.format :as f]
    [clojure.data.xml :as x]
    [clojure.string :as str]
    [cmr.common.concepts :as cu]
@@ -11,6 +12,7 @@
    [cmr.search.results-handlers.atom-results-handler :as atom-results-handler]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
    [cmr.umm-spec.date-util :as date-util]
    [cmr.system-int-test.data2.core :as data-core]

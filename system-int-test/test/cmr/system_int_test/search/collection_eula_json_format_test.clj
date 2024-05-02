@@ -1,6 +1,7 @@
 (ns cmr.system-int-test.search.collection-eula-json-format-test
   (:require
-   [clojure.test :refer [deftest is use-fixtures]]
+   [clojure.test :refer :all]
+   [cmr.common.util :as util]
    [cmr.system-int-test.data2.core :as data2]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]

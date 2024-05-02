@@ -1,9 +1,9 @@
 (ns cmr.system-int-test.search.collection-concept-revision-search-test
   "Integration test for collection all revisions search"
   (:require
-   [clojure.test :refer [are deftest is testing use-fixtures]]
+   [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :refer [are2]]
+   [cmr.common.util :refer [are2] :as util]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]

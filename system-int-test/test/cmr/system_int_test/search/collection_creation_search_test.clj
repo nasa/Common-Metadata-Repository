@@ -6,8 +6,8 @@
    the Oracle database server time for setting created-at and revision-date. With the in-memory
    database we are able to use timekeeper, so we can set the dates to the values we want."
   (:require
-   [clojure.string :as clj-str]
-   [clojure.test :refer [are deftest join-fixtures testing use-fixtures]]
+   [clj-http.client :as client]
+   [clojure.test :refer :all]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.system :as s]

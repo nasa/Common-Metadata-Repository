@@ -49,7 +49,7 @@
                            :short-name short-name
                            :cmr-only (if (some? cmr-only) cmr-only false)
                            :small (if (some? small) small false)
-                           :consortiums (when (seq consortiums) consortiums)
+                           :consortiums (when (not (empty? consortiums)) consortiums)
                            :metadata metadata})))
 
 (defn minimum-provider->metadata-only

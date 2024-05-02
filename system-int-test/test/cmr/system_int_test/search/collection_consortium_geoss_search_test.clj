@@ -1,8 +1,8 @@
 (ns cmr.system-int-test.search.collection-consortium-geoss-search-test
   "Integration tests for collection consortium search"
   (:require
-   [clojure.test :refer [deftest testing use-fixtures]]
-   [cmr.common.util :refer [are3]]
+   [clojure.test :refer :all]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as umm-c]
    [cmr.system-int-test.utils.ingest-util :as ingest]

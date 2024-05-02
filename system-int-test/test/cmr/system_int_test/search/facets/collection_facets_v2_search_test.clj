@@ -1,17 +1,18 @@
 (ns cmr.system-int-test.search.facets.collection-facets-v2-search-test
   "This tests retrieving v2 facets when searching for collections"
   (:require
-   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
+   [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.search.services.query-execution.facets.collection-v2-facets]
+   [cmr.search.services.query-execution.facets.collection-v2-facets :as frf2]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]
    [cmr.system-int-test.data2.umm-spec-common :as umm-spec-common]
    [cmr.system-int-test.search.facets.facet-responses :as fr]
    [cmr.system-int-test.search.facets.facets-util :as fu]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]

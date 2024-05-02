@@ -5,6 +5,8 @@
    [clj-http.client :as client]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mime-types]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.search.results-handlers.atom-results-handler :as handler]
    [cmr.system-int-test.data2.atom :as atom]

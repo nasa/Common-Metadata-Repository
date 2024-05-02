@@ -1,9 +1,10 @@
 (ns cmr.system-int-test.search.collection-shapefile-search-test
   (:require
-    [clojure.test :refer [deftest testing use-fixtures]]
+    [clojure.test :refer :all]
     [clojure.java.io :as io]
+    [cmr.common.log :refer [debug]]
     [cmr.common.mime-types :as mt]
-    [cmr.common.util :refer [are3]]
+    [cmr.common.util :as util :refer [are3]]
     [cmr.common-app.test.side-api :as side]
     [cmr.search.services.parameters.converters.shapefile :as shapefile]
     [cmr.spatial.line-string :as l]
@@ -11,6 +12,8 @@
     [cmr.spatial.point :as p]
     [cmr.spatial.polygon :as poly]
     [cmr.system-int-test.data2.core :as d]
+    [cmr.system-int-test.data2.granule :as dg]
+    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]

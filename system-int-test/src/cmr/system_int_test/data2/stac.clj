@@ -2,7 +2,8 @@
   "Contains helper functions for converting granules into the expected map of parsed stac results."
   (:require
    [cmr.common.util :as util]
-   [cmr.system-int-test.utils.url-helper :as url]))
+   [cmr.system-int-test.utils.url-helper :as url]
+   [ring.util.codec :as codec]))
 
 (defn- href
   "Returns the link href"

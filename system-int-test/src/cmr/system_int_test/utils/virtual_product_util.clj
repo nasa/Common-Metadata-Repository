@@ -1,7 +1,8 @@
 (ns cmr.system-int-test.utils.virtual-product-util
-  (:require [clojure.test :refer [are is]]
+  (:require [clojure.test :refer :all]
             [clj-http.client :as client]
             [cmr.system-int-test.system :as s]
+            [cmr.system-int-test.utils.index-util :as index]
             [cmr.system-int-test.utils.url-helper :as url]
             [cmr.system-int-test.utils.search-util :as search]
             [cmr.virtual-product.config]

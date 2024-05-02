@@ -2,10 +2,16 @@
   "This tests a running CMR site's directory links at all levels: top-most,
   eosdis, and provider."
   (:require
-   [clojure.string :as clj-str]
-   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
+   [clj-http.client :as client]
+   [clojure.string :as string]
+   [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.search.services.content-service :as content-service]
+   [cmr.search.site.static :as static]
+   [cmr.search.site.data :as site-data]
+   [cmr.search.site.routes :as r]
    [cmr.system-int-test.data2.core :as d]
+   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]

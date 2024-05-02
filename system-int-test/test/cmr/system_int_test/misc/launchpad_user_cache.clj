@@ -1,5 +1,6 @@
 (ns cmr.system-int-test.misc.launchpad-user-cache
   (:require
+   [clj-time.core :as t]
    [clojure.test :refer :all]
    [cmr.mock-echo.api.urs :as mock-urs]
    [cmr.mock-echo.client.echo-util :as echo-util]

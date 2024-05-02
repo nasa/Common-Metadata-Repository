@@ -5,6 +5,7 @@
    [clj-http.client :as client]
    [clojure.java.io :as jio]
    [clojure.string :as string]
+   [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as sys]

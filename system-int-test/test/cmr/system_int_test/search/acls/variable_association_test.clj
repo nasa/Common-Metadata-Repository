@@ -1,7 +1,9 @@
 (ns cmr.system-int-test.search.acls.variable-association-test
   "Tests searching for variables associations with ACLs in place."
   (:require
+   [clojure.string :as string]
    [clojure.test :refer :all]
+   [cmr.common.util :refer [are3]]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.system :as s]

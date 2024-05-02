@@ -3,7 +3,7 @@
   (:require
    [clj-time.core :as time]
    [clojure.test :refer :all]
-   [cmr.common.util :refer [are3]]
+   [cmr.common.util :as util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
@@ -15,7 +15,8 @@
    [cmr.system-int-test.utils.humanizer-util :as hu]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.system-int-test.utils.search-util :as search]))
+   [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.access-control :as ac]))
 
 (defn- scores-descending?
   [results]

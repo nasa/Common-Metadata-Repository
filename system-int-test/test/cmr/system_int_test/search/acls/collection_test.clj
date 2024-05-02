@@ -3,6 +3,9 @@
   (:require
    [clojure.string :as str]
    [clojure.test :refer :all]
+   [cmr.acl.acl-fetcher :as acl-fetcher]
+   [cmr.common-app.test.side-api :as side]
+   [cmr.common.services.messages :as msg]
    [cmr.common.util :as util]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.atom :as da]
@@ -13,7 +16,9 @@
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
+   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.system-int-test.utils.search-util :as search]
+   [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as tc]))
 
 (use-fixtures :each (join-fixtures

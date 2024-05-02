@@ -1,8 +1,8 @@
 (ns cmr.system-int-test.search.collection-campaign-search-test
   "Integration test for CMR collection search by campaign terms"
   (:require
-    [clojure.test :refer [are deftest is testing use-fixtures]]
-    [cmr.common.util :refer [are3]]
+    [clojure.test :refer :all]
+    [cmr.common.util :as util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]

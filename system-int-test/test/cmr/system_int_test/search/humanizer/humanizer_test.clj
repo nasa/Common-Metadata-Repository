@@ -2,7 +2,7 @@
   "This tests the CMR Search API's humanizers capabilities"
   (:require
    [clojure.string :as string]
-   [clojure.test :refer [are deftest is testing use-fixtures]]
+   [clojure.test :refer :all]
    [cmr.common-app.config :as common-config]
    [cmr.common-app.test.side-api :as side]
    [cmr.mock-echo.client.echo-util :as echo-util]

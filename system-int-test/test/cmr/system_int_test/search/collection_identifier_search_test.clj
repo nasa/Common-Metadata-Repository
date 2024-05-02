@@ -2,8 +2,10 @@
   "Tests searching for collections using basic collection identifiers"
   (:require
    [clojure.java.shell :as shell]
-   [clojure.test :refer [are deftest is testing use-fixtures]]
-   [cmr.common-app.services.search.messages :as cmsg]
+   [clojure.string :as s]
+   [clojure.test :refer :all]
+   [cmr.elastic-utils.search.es-messenger :as cmsg]
+   [cmr.common.services.messages :as msg]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.utils.index-util :as index]

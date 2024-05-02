@@ -2,6 +2,7 @@
   "Contains helper functions for converting concepts into the expected map of
   parsed json results."
   (:require [cmr.spatial.polygon :as poly]
+            [cmr.spatial.point :as p]
             [cmr.spatial.line-string :as l]
             [cmr.spatial.mbr :as m]
             [cheshire.core :as json]

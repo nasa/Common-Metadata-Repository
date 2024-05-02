@@ -2,7 +2,7 @@
   "Contains helper functions for UMM JSON testing."
   (:require
    [cheshire.core :as json]
-   [clojure.test :refer [is]]
+   [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.search.results-handlers.results-handler-util :as rs-util]

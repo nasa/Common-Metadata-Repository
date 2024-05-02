@@ -5,8 +5,8 @@
    [cheshire.core :as json]
    [clj-http.client :as client]
    [clj-time.coerce :as tc]
-   [clojure.data.xml :as x]
-   [clojure.string :as str]
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
    [clojure.test :refer [deftest is]]
    [clojure.walk]
    [cmr.common-app.api.routes :as routes]
@@ -17,17 +17,17 @@
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
-   [cmr.spatial.point :as p]
+   [cmr.spatial.point :as point]
    [cmr.spatial.points-validation-helpers :as pv]
    [cmr.system-int-test.data2.aql :as aql]
    [cmr.system-int-test.data2.aql-additional-attribute]
    [cmr.system-int-test.data2.atom :as da]
    [cmr.system-int-test.data2.atom-json :as dj]
-   [cmr.system-int-test.data2.facets :as f]
+   [cmr.system-int-test.data2.facets :as facets]
    [cmr.system-int-test.data2.kml :as dk]
    [cmr.system-int-test.data2.opendata :as od]
    [cmr.system-int-test.data2.provider-holdings :as ph]
-   [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.dev-system-util :as dev-util]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.config :as transmit-config]
@@ -58,9 +58,9 @@
 (defn csv-response->granule-urs
   "Parses the csv response and returns the first column which is the granule ur."
   [csv-response]
-  (->> (str/split (:body csv-response) #"\n")
+  (->> (string/split (:body csv-response) #"\n")
        (drop 1)
-       (map #(str/split % #","))
+       (map #(string/split % #","))
        (map first)))
 
 (defn csv->tuples
@@ -69,7 +69,7 @@
    (csv->tuples nil csv))
   ([index csv]
    (let [attribute (if index (format "attribute[%s]" index) "attribute[]")
-         [type name min-value max-value] (str/split csv #"," -1)
+         [type name min-value max-value] (string/split csv #"," -1)
          tuples [[(str attribute "[name]") name]
                  [(str attribute "[type]") type]]]
      (cond
@@ -94,8 +94,8 @@
           (let [k (if (keyword? k) (name k) k)]
             (-> k
                 csk/->snake_case
-                (str/replace "_[" "[")
-                (str/replace "_]" "]")))))
+                (string/replace "_[" "[")
+                (string/replace "_]" "]")))))
        clojure.walk/keywordize-keys))
 
 (deftest params->snake_case-test
@@ -124,7 +124,7 @@
 (defn safe-parse-error-xml
   [xml]
   (try
-    (cx/strings-at-path (x/parse-str xml) [:error])
+    (cx/strings-at-path (xml/parse-str xml) [:error])
     (catch Exception e
       (.printStackTrace e)
       [xml])))
@@ -145,7 +145,7 @@
   [concept-type query]
   (let [url (url/search-url concept-type)]
     (get-search-failure-data
-     (client/get (str url query) {:connection-manager (s/conn-mgr)}))))
+     (client/get (str url query) {:connection-manager (system/conn-mgr)}))))
 
 (defn process-response
   "Returns the response body with response status added."
@@ -163,7 +163,7 @@
   ([options]
    (let [url (url/data-json-url)
          args (merge {:throw-exceptions false
-                      :connection-manager (s/conn-mgr)}
+                      :connection-manager (system/conn-mgr)}
                      options)
          response (client/get url args)
          {:keys [status body]} response]
@@ -189,7 +189,7 @@
                url)
          args (merge {:accept (when-not url-extension format-mime-type)
                       :throw-exceptions false
-                      :connection-manager (s/conn-mgr)}
+                      :connection-manager (system/conn-mgr)}
                      options)]
      (client/get url args))))
 
@@ -214,7 +214,7 @@
                       :accept accept
                       :headers headers
                       :throw-exceptions throw-exceptions?
-                      :connection-manager (s/conn-mgr)}
+                      :connection-manager (system/conn-mgr)}
          request-map (if (= :post (:method request-map))
                        (assoc request-map
                               :form-params params
@@ -240,7 +240,7 @@
                    :body (json/generate-string {:condition json-as-map})
                    :query-params query-params
                    :throw-exceptions true
-                   :connection-manager (s/conn-mgr)}))))
+                   :connection-manager (system/conn-mgr)}))))
 
 (defn get-autocomplete-suggestions
   "Executes a query to the autocomplete endpoint with the given value and returns the results."
@@ -294,13 +294,13 @@
                      (client/get url {:accept accept
                                       :headers headers
                                       :query-params params
-                                      :connection-manager (s/conn-mgr)})
+                                      :connection-manager (system/conn-mgr)})
                      (client/post url
                                   {:accept accept
                                    :headers headers
                                    :content-type mime-types/form-url-encoded
                                    :body (codec/form-encode params)
-                                   :connection-manager (s/conn-mgr)})))]
+                                   :connection-manager (system/conn-mgr)})))]
      (if (= 200 (:status response))
        (if include-headers?
          (assoc response :results (parse-timeline-response (:body response)))
@@ -458,9 +458,9 @@
           scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
           search-after (get-in response [:headers routes/SEARCH_AFTER_HEADER])
           body (:body response)
-          parsed (x/parse-str body)
+          parsed (xml/parse-str body)
           hits (cx/long-at-path parsed [:hits])
-          metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
+          metadatas (for [match (drop 1 (string/split body #"(?ms)<result "))]
                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
           items (map (fn [result metadata]
                        (let [{{:keys [concept-id collection-concept-id revision-id granule-count format
@@ -482,7 +482,7 @@
                            :metadata metadata})))
                      (cx/elements-at-path parsed [:result])
                      metadatas)
-          facets (f/parse-facets-xml (cx/element-at-path parsed [:facets]))]
+          facets (facets/parse-facets-xml (cx/element-at-path parsed [:facets]))]
       (util/remove-nil-keys {:items items
                              :facets facets
                              :hits hits
@@ -499,15 +499,15 @@
     (let [format-mime-type (mime-types/format->mime-type format-key)
           response (find-concepts-in-format format-mime-type concept-type params options)
           body (:body response)
-          parsed (x/parse-str body)
+          parsed (xml/parse-str body)
            ;; First we parse out the metadata and tags from each result, then we parse tags out.
-          metadatas (for [match (drop 1 (str/split body #"(?ms)<result "))]
+          metadatas (for [match (drop 1 (string/split body #"(?ms)<result "))]
                       (second (re-matches #"(?ms)[^>]*>(.*)</result>.*" match)))
           items (map (fn [result metadata]
                        (let [{{:keys [concept-id]} :attrs} result
-                             tags (when-let [tags-metadata (second (str/split metadata #"<tags>"))]
+                             tags (when-let [tags-metadata (second (string/split metadata #"<tags>"))]
                                     (->> (cx/elements-at-path
-                                          (x/parse-str (str "<tags>" tags-metadata)) [:tag])
+                                          (xml/parse-str (str "<tags>" tags-metadata)) [:tag])
                                          (map da/xml-elem->tag)
                                          (into {})))]
                          [concept-id tags]))
@@ -516,13 +516,9 @@
       (when (seq items)
         (into {} items))))))
 
-(defmulti parse-reference-response
-  (fn [echo-compatible? _response]
-    echo-compatible?))
-
-(defmethod parse-reference-response :default
-  [_ response]
-  (let [parsed (-> response :body x/parse-str)
+(defn- parse-reference-response-default
+  [response]
+  (let [parsed (-> response :body xml/parse-str)
         hits (cx/long-at-path parsed [:hits])
         took (cx/long-at-path parsed [:took])
         scroll-id (get-in response [:headers routes/SCROLL_ID_HEADER])
@@ -538,7 +534,7 @@
                       :has-granules (cx/bool-at-path ref-elem [:has-granules])
                       :score (cx/double-at-path ref-elem [:score])}))
                   (cx/elements-at-path parsed [:references :reference]))
-        facets (f/parse-facets-xml
+        facets (facets/parse-facets-xml
                 (cx/element-at-path parsed [:facets]))]
     (util/remove-nil-keys
      {:refs refs
@@ -548,9 +544,9 @@
       :took took
       :facets facets})))
 
-(defmethod parse-reference-response true
-  [_ response]
-  (let [parsed (-> response :body x/parse-str)
+(defn- parse-reference-response-true
+  [response]
+  (let [parsed (-> response :body xml/parse-str)
         references-type (get-in parsed [:attrs :type])
         refs (map (fn [ref-elem]
                     (util/remove-nil-keys
@@ -562,6 +558,13 @@
     (util/remove-nil-keys
      {:refs refs
       :type references-type})))
+
+(defn parse-reference-response
+  "Parse the reference response."
+  [echo-compatible? response]
+  (if echo-compatible?
+    (parse-reference-response-true response)
+    (parse-reference-response-default response)))
 
 (defn- parse-reference-response-with-headers
   "Parse the response and include headers"
@@ -575,8 +578,8 @@
 (defn- parse-echo-facets-response
   "Returns the parsed facets by parsing the given facets according to catalog-rest facets format"
   [response]
-  (let [parsed (-> response :body x/parse-str)]
-    (f/parse-echo-facets-xml parsed)))
+  (let [parsed (-> response :body xml/parse-str)]
+    (facets/parse-echo-facets-xml parsed)))
 
 (defn- parse-refs-response
   "Parse the find-refs response based on expected format and retruns the parsed result"
@@ -607,7 +610,7 @@
                                 :content-type mime-types/form-url-encoded
                                 :body (codec/form-encode params)
                                 :throw-exceptions false
-                                :connection-manager (s/conn-mgr)})]
+                                :connection-manager (system/conn-mgr)})]
      (parse-reference-response (:echo-compatible params) response))))
 
 (defn find-refs-with-multi-part-form-post
@@ -621,7 +624,7 @@
                                 (merge {:accept mime-types/xml
                                         :multipart form
                                         :throw-exceptions true
-                                        :connection-manager (s/conn-mgr)}
+                                        :connection-manager (system/conn-mgr)}
                                        options))]
       (parse-reference-response-with-headers false response)))))
 
@@ -647,7 +650,7 @@
                                         :content-type content-type
                                         :body aql
                                         :query-params {:page-size 100}
-                                        :connection-manager (s/conn-mgr)}
+                                        :connection-manager (system/conn-mgr)}
                                        options))]
       (parse-reference-response (get-in options [:query-params :echo_compatible]) response)))))
 
@@ -674,7 +677,7 @@
   (let [url (str (url/search-url concept-type) "?" param-str)]
     (get-search-failure-xml-data
      (parse-reference-response false
-                               (client/get url {:connection-manager (s/conn-mgr)})))))
+                               (client/get url {:connection-manager (system/conn-mgr)})))))
 
 (defn mime-type-matches-response?
   "Checks that the response's content type mime type is the given mime type."
@@ -697,7 +700,7 @@
                         [(url/provider-holdings-url) format-mime-type])
          response (client/get url {:accept accept
                                    :query-params params
-                                   :connection-manager (s/conn-mgr)})
+                                   :connection-manager (system/conn-mgr)})
          {:keys [status body headers]} response]
      (if (= status 200)
        {:status status
@@ -710,7 +713,7 @@
   ([]
   (find-providers nil))
   ([provider-id]
-  (let [response (client/get (str (url/search-provider-url) "/" provider-id) {:connection-manager (s/conn-mgr) :throw-exceptions false})]
+  (let [response (client/get (str (url/search-provider-url) "/" provider-id) {:connection-manager (system/conn-mgr) :throw-exceptions false})]
     (if (= 200 (:status response))
       {:status (:status response)
        :results (json/decode (:body response))}
@@ -720,7 +723,7 @@
   "Returns the tiles that are found by searching with the input params"
   [params]
   (let [response (client/get (url/search-tile-url) {:query-params params
-                                                    :connection-manager (s/conn-mgr)
+                                                    :connection-manager (system/conn-mgr)
                                                     :throw-exceptions false})]
     (if (= 200 (:status response))
       {:status (:status response)
@@ -736,7 +739,7 @@
                   (mime-types/format->mime-type format-key))
          response (client/get (url/search-deleted-collections-url)
                               {:query-params params
-                               :connection-manager (s/conn-mgr)
+                               :connection-manager (system/conn-mgr)
                                :accept accept})]
      (parse-reference-response false response))))
 
@@ -749,7 +752,7 @@
                   (mime-types/format->mime-type format-key))
          response (client/get (url/search-deleted-granules-url)
                               {:query-params params
-                               :connection-manager (s/conn-mgr)
+                               :connection-manager (system/conn-mgr)
                                :accept accept})]
      response)))
 
@@ -757,7 +760,7 @@
   "Clears caches in the search application"
   []
   (client/post (url/search-clear-cache-url)
-               {:connection-manager (s/conn-mgr)
+               {:connection-manager (system/conn-mgr)
                 :headers {transmit-config/token-header (transmit-config/echo-system-token)}}))
 
 (defn get-keywords-by-keyword-scheme
@@ -767,7 +770,7 @@
   ([keyword-scheme search-parameters]
    (get-search-failure-data
     (let [response (client/get (url/search-keywords-url keyword-scheme search-parameters)
-                               {:connection-manager (s/conn-mgr)})
+                               {:connection-manager (system/conn-mgr)})
           {:keys [status body]} response]
       (if (= 200 status)
         {:status status
@@ -779,7 +782,7 @@
   ([]
    (get-humanizers-report-raw {}))
   ([params]
-   (client/get (url/humanizers-report-url) {:connection-manager (s/conn-mgr)
+   (client/get (url/humanizers-report-url) {:connection-manager (system/conn-mgr)
                                             :query-params params
                                             :throw-exceptions false})))
 
@@ -819,10 +822,10 @@
   3-arity from path."
   ([response elements-path]
    (map #(get-in % [:attrs :concept-id])
-        (cx/elements-at-path (x/parse-str response) elements-path)))
+        (cx/elements-at-path (xml/parse-str response) elements-path)))
   ([response elements-path concept-id-path]
    (map #(cx/string-at-path % concept-id-path)
-        (cx/elements-at-path (x/parse-str response) elements-path))))
+        (cx/elements-at-path (xml/parse-str response) elements-path))))
 
 (defn search-concept-ids-in-format
   "Call search in format and return concept-ids from those results."
@@ -853,7 +856,7 @@
                 {:content-type mime-types/json
                  :body (json/generate-string {:scroll_id scroll-id})
                  :throw-exceptions true
-                 :connection-manager (s/conn-mgr)})))
+                 :connection-manager (system/conn-mgr)})))
 
 (defn remove-duplicate-points
   [{:keys [points]}]
@@ -869,22 +872,20 @@
 (defn make-excessive-points-without-dups
   "Returns a list of n-ish unique points."
   [n]
-  (str/join ","
-            (flatten
-             (map #(depointify (get (first %) 1))
-                  (let [points {:points (map #(p/point %1 %2)
-                                             (repeatedly n
-                                                         #(first (shuffle (range -180 180))))
-                                             (repeatedly n
-                                                         #(first (shuffle (range -90 90)))))}]
-                    (remove-duplicate-points points))))))
+  (string/join ","
+               (flatten
+                (map #(depointify (get (first %) 1))
+                     (let [points {:points (map #(point/point %1 %2)
+                                                (repeatedly n
+                                                            #(first (shuffle (range -180 180))))
+                                                (repeatedly n
+                                                            #(first (shuffle (range -90 90)))))}]
+                       (remove-duplicate-points points))))))
 
 (defn make-excessive-points
   "Returns a list of n points."
   [n]
-  (str/join ","
-             (interleave
-               (repeatedly n
-                           #(first (shuffle (range -180 180))))
-               (repeatedly n
-                           #(first (shuffle (range -90 90)))))))
+  (string/join
+   ","
+   (interleave (repeatedly n #(first (shuffle (range -180 180))))
+               (repeatedly n #(first (shuffle (range -90 90)))))))

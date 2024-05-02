@@ -2,8 +2,9 @@
   "This tests the retrieving facets when searching for collections"
   (:require
    [clojure.string :as str]
-   [clojure.test :refer [are deftest is testing use-fixtures]]
+   [clojure.test :refer :all]
    [cmr.mock-echo.client.echo-util :as e]
+   [cmr.system-int-test.data2.atom :as da]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-spec]
@@ -11,6 +12,7 @@
    [cmr.system-int-test.search.facets.facet-responses :as fr]
    [cmr.system-int-test.search.facets.facets-util :as fu]
    [cmr.system-int-test.system :as s]
+   [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]

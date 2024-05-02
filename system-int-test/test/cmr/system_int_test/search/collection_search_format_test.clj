@@ -10,7 +10,7 @@
    [cmr.common-app.test.side-api :as side]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.url-util :as url-util]
-   [cmr.common.util :as util :refer [are3]]
+   [cmr.common.util :as util :refer [are2 are3]]
    [cmr.search.validators.opendata :as opendata-json]
    [cmr.spatial.codec :as codec]
    [cmr.spatial.line-string :as l]

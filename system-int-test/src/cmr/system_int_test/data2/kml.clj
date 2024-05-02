@@ -14,7 +14,9 @@
    [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.granule :as dg])
   (:import
-   (cmr.spatial.mbr Mbr)))
+   (cmr.spatial.mbr Mbr)
+   (cmr.umm.umm_granule UmmGranule)
+   (cmr.umm.umm_collection UmmCollection)))
 
 (defn coordinates-container-elem->points
   "Takes an XML element that contains a child called 'coordinates' and returns a list of the points

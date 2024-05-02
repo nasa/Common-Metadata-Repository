@@ -2,14 +2,18 @@
   "This tests that when metadata db cleans up old revisions of superseded collections they will no
   longer be found in the all revisions search."
   (:require
-    [clojure.test :refer [deftest is use-fixtures]]
+    [clj-http.client :as client]
+    [clj-http.client :as client]
+    [clojure.test :refer :all]
+    [cmr.elastic-utils.config :as elastic-config]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.metadata-db-util :as mdb]
-    [cmr.system-int-test.utils.search-util :as search]))
+    [cmr.system-int-test.utils.search-util :as search]
+    [cmr.system-int-test.utils.url-helper :as url-helper]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"
                                            "provguid2" "PROV2"}))

@@ -1,8 +1,8 @@
 (ns cmr.system-int-test.search.collection-native-id-search-test
   "Integration test for CMR collection search by doi"
   (:require
-    [clojure.test :refer [deftest is use-fixtures]]
-    [cmr.common.util :refer [are3]]
+    [clojure.test :refer :all]
+    [cmr.common.util :as util :refer [are3]]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.utils.index-util :as index]

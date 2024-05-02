@@ -5,11 +5,13 @@
    [cmr.common.util :as util]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.orbits.swath-geometry :as swath]
+   [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.umm.collection.entry-id :as eid]
    [cmr.umm.granule.temporal :as gt]
    [cmr.umm.umm-collection :as c]
-   [cmr.umm.umm-granule :as g])
+   [cmr.umm.umm-granule :as g]
+   [cmr.umm.umm-spatial :as umm-s])
   (:import
    [cmr.umm.umm_granule Orbit DataProviderTimestamps]))
 

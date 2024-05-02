@@ -1,9 +1,9 @@
 (ns cmr.system-int-test.search.collection-keyword-search-test
   "Integration test for CMR collection search by keyword terms"
   (:require
-    [clojure.test :refer [are deftest is testing use-fixtures]]
+    [clojure.test :refer :all]
     [cmr.common.util :refer [are3]]
-    [cmr.search.data.keywords-to-elastic :as k2e]
+    [cmr.elastic-utils.search.keywords-to-elastic :as k2e]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]

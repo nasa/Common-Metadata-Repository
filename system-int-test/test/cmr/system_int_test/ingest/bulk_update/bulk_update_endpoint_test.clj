@@ -10,6 +10,16 @@
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}
                                           {:grant-all-ingest? false}))
 
+(def test-body
+  "Default request body to use for testing"
+  {:concept-ids ["C1", "C2", "C3"]
+   :update-type "ADD_TO_EXISTING"
+   :update-field "SCIENCE_KEYWORDS"
+   :update-value {:Category "EARTH SCIENCE"
+                  :Topic "HUMAN DIMENSIONS"
+                  :Term "ENVIRONMENTAL IMPACTS"
+                  :VariableLevel1 "HEAVY METALS CONCENTRATION"}})
+
 (defn- grant-permissions-create-token
   "Test setup to create read/update ingest permissions for bulk update and
   return a token. Bulk update uses update permissions for the actual bulk update
