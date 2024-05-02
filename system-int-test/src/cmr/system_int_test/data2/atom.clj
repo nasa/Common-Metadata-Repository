@@ -337,8 +337,8 @@
       :orbit-parameters (when orbit-parameters (into {} orbit-parameters))
       :shapes (seq shapes)
       :associated-difs associated-difs
-      :online-access-flag (seq (ru/downloadable-urls related-urls))
-      :browse-flag (seq (ru/browse-urls related-urls))
+      :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))
+      :browse-flag (not (empty? (ru/browse-urls related-urls)))
       :has-variables (boolean has-variables)
       :has-formats (boolean has-formats)
       :has-transforms (boolean has-transforms)

@@ -52,13 +52,11 @@
   (fn [concept-type _json-entry]
     concept-type))
 
-#_{:clj-kondo/ignore true}
 (defn parse-long
   [^String v]
   (when-not (str/blank? v)
     (Long. v)))
 
-#_{:clj-kondo/ignore true}
 (defn parse-double
   [^String v]
   (when-not (str/blank? v)

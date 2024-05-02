@@ -521,7 +521,6 @@
                                                           :equator-crossing-longitude 46.602737
                                                           :equator-crossing-date-time "2003-09-27T17:16:56Z"}]})]))
 
-#_{:clj-kondo/ignore true}
 (defn- ingest-orbit-coll-and-granules-north-pole
   []
   (let [coll (d/ingest "PROV1"
@@ -540,7 +539,6 @@
 
     [coll (make-gran coll "gran1" 31.48193 50 :desc -50 :desc)]))
 
-#_{:clj-kondo/ignore true}
 (defn- ingest-orbit-coll-and-granules-prime-meridian
   []
   (let [coll (d/ingest "PROV1"
@@ -556,7 +554,6 @@
 
     [coll (make-gran coll "gran1" 7.28116 -50 :asc 50 :asc)]))
 
-#_{:clj-kondo/ignore true}
 (defn- ingest-CMR-4722-data
   []
   (let [coll1 (d/ingest-concept-with-metadata-file "CMR-4722/OMSO2.003-collection.xml"
@@ -572,7 +569,6 @@
                                                  :format-key :echo10})]
     [coll1 g1]))
 
-#_{:clj-kondo/ignore true}
 (defn- ingest-CMR-5765-data-1
   []
   (let [coll1 (d/ingest-concept-with-metadata-file "CMR-5765/C1200190069-EDF_DEV05.xml"

@@ -742,7 +742,6 @@
   []
   (format "http://localhost:%s" (transmit-config/indexer-port)))
 
-#_{:clj-kondo/ignore true}
 (defn ingest-generic-crud-url
   "Get the URL for Creating a Generic Document"
   [concept-type provider-id native-id]
