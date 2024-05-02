@@ -1,27 +1,23 @@
 (ns cmr.umm.test.unit.dif.dif-collection-tests
   "Tests parsing and generating DIF Collection XML."
-  (:require [clojure.test :refer :all]
-
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [defspec]]
-
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [clojure.string :as s]
-            [cmr.common.joda-time]
-            [cmr.common.date-time-parser :as p]
-            [cmr.common.util :as util]
-            [cmr.umm.test.generators.collection :as coll-gen]
-            [cmr.umm.dif.dif-collection :as c]
-            [cmr.umm.echo10.echo10-collection :as echo10-c]
-            [cmr.umm.echo10.echo10-core :as echo10]
-            [cmr.umm.umm-collection :as umm-c]
-            [cmr.umm.dif.dif-core :as dif]
-            [cmr.spatial.mbr :as m]
-            [cmr.umm.test.unit.echo10.echo10-collection-tests :as test-echo10]
-            [cmr.umm.validation.validation-core :as v]
-            [cmr.common.test.test-check-ext :as ext :refer [checking]])
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [clojure.test.check.properties :refer [for-all]]
+   [clojure.string :as s]
+   [cmr.common.joda-time]
+   [cmr.common.date-time-parser :as p]
+   [cmr.common.util :as util]
+   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+   [cmr.common.test.test-check-ext :refer [defspec checking]]
+   [cmr.umm.test.generators.collection :as coll-gen]
+   [cmr.umm.dif.dif-collection :as c]
+   [cmr.umm.echo10.echo10-collection :as echo10-c]
+   [cmr.umm.echo10.echo10-core :as echo10]
+   [cmr.umm.umm-collection :as umm-c]
+   [cmr.umm.dif.dif-core :as dif]
+   [cmr.spatial.mbr :as m]
+   [cmr.umm.test.unit.echo10.echo10-collection-tests :as test-echo10]
+   [cmr.umm.validation.validation-core :as v])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn- spatial-coverage->expected-parsed
@@ -29,9 +25,7 @@
   from the dif."
   [spatial-coverage]
   (when spatial-coverage
-    (let [{:keys [granule-spatial-representation
-                  spatial-representation
-                  geometries]} spatial-coverage
+    (let [{:keys [granule-spatial-representation geometries]} spatial-coverage
           ;; DIF only support bounding rectangles
           geometries (seq (filter (comp (partial = Mbr) type) geometries))
           ;; DIF only supports the cartesian coordinate system for the collection spatial representation
@@ -111,7 +105,7 @@
   fields are removed for comparison of the parsed record"
   [coll]
   (let [{{:keys [short-name version-id processing-level-id collection-data-type]} :product
-         :keys [entry-title spatial-coverage personnel]} coll
+         :keys [entry-title personnel]} coll
         range-date-times (get-in coll [:temporal :range-date-times])
         temporal (if (seq range-date-times)
                    (umm-c/map->Temporal {:range-date-times range-date-times
@@ -175,6 +169,7 @@
                                psas))))
         umm-c/map->UmmCollection)))
 
+(declare generate-collection-is-valid-xml-test collection)
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
     (let [xml (dif/umm->dif-xml collection)]

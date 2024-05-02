@@ -1,11 +1,12 @@
 (ns cmr.umm.iso-mends.collection.project-element
   "Contains functions for parsing and generating the ISO MENDS elements related to UMM project"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [clojure.string :as s]
-            [cmr.umm.iso-mends.collection.keyword :as k]
-            [cmr.umm.iso-mends.collection.helper :as h]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as coll]
+   [clojure.string :as string]
+   [cmr.umm.iso-mends.collection.keyword :as k-word]
+   [cmr.umm.iso-mends.collection.helper :as helper]))
 
 (defn xml-elem->Project
   [project-elem]
@@ -14,8 +15,8 @@
         description (cx/string-at-path project-elem [:description :CharacterString])
         ;; ISO description is built as "short-name > long-name", so here we extract the long-name out
         long-name (when-not (= short-name description)
-                    (s/replace description (str short-name " > ") ""))]
-    (c/map->Project
+                    (string/replace description (str short-name " > ") ""))]
+    (coll/map->Project
       {:short-name short-name
        :long-name long-name})))
 
@@ -25,7 +26,7 @@
                       (cx/elements-at-path
                         collection-element
                         [:acquisitionInformation :MI_AcquisitionInformation :operation :MI_Operation]))]
-    (when (not (empty? projects))
+    (when (seq projects)
       projects)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -36,14 +37,14 @@
   (for [proj projects]
     (let [{:keys [short-name long-name]} proj
           description (if (empty? long-name) short-name (str short-name " > " long-name))]
-      (x/element :gmi:operation {}
-                 (x/element :gmi:MI_Operation {}
-                            (h/iso-string-element :gmi:description description)
-                            (x/element :gmi:identifier {}
-                                       (x/element :gmd:MD_Identifier {}
-                                                  (h/iso-string-element :gmd:code short-name)))
-                            (x/element :gmi:status {})
-                            (x/element :gmi:parentOperation {:gco:nilReason "inapplicable"}))))))
+      (xml/element :gmi:operation {}
+                   (xml/element :gmi:MI_Operation {}
+                                (helper/iso-string-element :gmi:description description)
+                                (xml/element :gmi:identifier {}
+                                             (xml/element :gmd:MD_Identifier {}
+                                                          (helper/iso-string-element :gmd:code short-name)))
+                                (xml/element :gmi:status {})
+                                (xml/element :gmi:parentOperation {:gco:nilReason "inapplicable"}))))))
 
 (defn- project->keyword
   "Returns the ISO keyword for the given project"
@@ -56,7 +57,7 @@
 (defn generate-project-keywords
   [projects]
   (let [keywords (map project->keyword projects)]
-    (k/generate-keywords "project" keywords)))
+    (k-word/generate-keywords "project" keywords)))
 
 
 

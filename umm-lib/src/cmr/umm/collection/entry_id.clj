@@ -1,6 +1,5 @@
 (ns cmr.umm.collection.entry-id
-  "Functions to create and retrieve entry-id for collections."
-  (:require [clojure.string :as str]))
+  "Functions to create and retrieve entry-id for collections.")
 
 (def DEFAULT_VERSION "Not provided")
 

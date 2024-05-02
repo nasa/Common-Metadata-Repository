@@ -18,7 +18,7 @@
   ([range-date-times]
    (coll-with-range-date-times range-date-times nil))
   ([range-date-times ends-at-present?]
-   c/map->UmmCollection
-   {:temporal (c/map->Temporal {:range-date-times range-date-times
-                                :ends-at-present-flag ends-at-present?})
-    :entry-title "et"}))
+   (c/map->UmmCollection
+    {:temporal (c/map->Temporal {:range-date-times range-date-times
+                                 :ends-at-present-flag ends-at-present?})
+     :entry-title "et"})))

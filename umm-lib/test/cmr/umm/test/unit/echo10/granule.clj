@@ -2,13 +2,12 @@
   "Tests parsing and generating ECHO10 Granule XML."
   (:require
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :refer [for-all]]
    ; [clojure.test.check.clojure-test :refer [defspec]]
    ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
    [cmr.common.test.test-check-ext :refer [defspec]]
-
    [cmr.common.date-time-parser :as p]
    [cmr.common.xml :as cx]
    [cmr.umm.echo10.granule :as g]
@@ -36,6 +35,7 @@
       (update-in [:data-granule] data-granule->expected)
       umm-g/map->UmmGranule))
 
+(declare generate-granule-is-valid-xml-test generate-and-parse-granule-test)
 (defspec generate-granule-is-valid-xml-test 100
   (for-all [granule gran-gen/granules]
     (let [xml (echo10/umm->echo10-xml granule)]
