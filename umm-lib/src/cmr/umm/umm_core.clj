@@ -1,5 +1,6 @@
 (ns cmr.umm.umm-core
   "Functions to transform concepts between formats."
+  #_{:clj-kondo/ignore [:unused-namespace]}
   (:require
    [cmr.common.mime-types :as mt]
    [cmr.common.xml :as cx]
@@ -10,6 +11,8 @@
    [cmr.umm.dif10.dif10-core :as dif10]
    [cmr.umm.dif.dif-collection :as dif-c]
    [cmr.umm.dif10.dif10-collection :as dif10-c]
+   ;; The iso-mends-g is needed for tests.
+   [cmr.umm.iso-mends.granule :as iso-mends-g]
    [cmr.umm.iso-mends.iso-mends-core :as iso-mends]
    [cmr.umm.iso-mends.iso-mends-collection :as iso-mends-c]
    [cmr.umm.iso-smap.iso-smap-core :as iso-smap]
