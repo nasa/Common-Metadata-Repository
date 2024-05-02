@@ -4,6 +4,7 @@
     [cheshire.core :as json]
     [clojure.java.io :as io]
     [cmr.common.services.errors :as errors]))
+
 (defn- remove-features-with-no-geometry
   "Removes features that have null geometry value"
   [geojson]

@@ -6,7 +6,7 @@
    [cmr.common.services.search.query-model :as qm]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
-   [cmr.common.log :as log :refer (info debug)]
+   [cmr.common.log :as log :refer (debug)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]

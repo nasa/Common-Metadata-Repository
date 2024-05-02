@@ -5,7 +5,6 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as q]
    [cmr.elastic-utils.search.es-condition-merger :as condition-merger])
-
   (:refer-clojure :exclude [and or])
   (:import cmr.common.services.search.query_model.ConditionGroup))
 
