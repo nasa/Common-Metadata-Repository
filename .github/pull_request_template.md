@@ -24,4 +24,4 @@ List impacted areas.
 - [ ] I have cleaned up integration tests by doing one or more of the following:
   - de-duped, consolidated, removed dead int tests
   - transformed applicable int tests into unit tests
-  - refactored to reduce number of system state resets by updating fixtures (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"})) to be :once instead of :each
+  - refactored to reduce number of system state resets by updating fixtures (use-fixtures :each (ingest/reset-fixture {})) to be :once instead of :each
