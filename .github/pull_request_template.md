@@ -21,7 +21,7 @@ List impacted areas.
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation
 - [ ] My changes generate no new warnings
-- [ ] I have cleaned up integration tests related to my changed by doing one of the following:
+- [ ] I have cleaned up integration tests by doing one or more of the following:
   - de-duped, consolidated, removed dead int tests
   - transformed applicable int tests into unit tests
-  - reduced number of system state resets for every test namespace to be once instead of each deftest
+  - refactored to reduce number of system state resets by updating fixtures (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"})) to be :once instead of :each
