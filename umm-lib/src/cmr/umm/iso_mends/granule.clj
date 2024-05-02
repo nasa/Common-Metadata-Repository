@@ -6,7 +6,8 @@
    [cmr.common.xml :as cx]
    [cmr.umm.iso-mends.iso-mends-core :as core]
    [cmr.umm.umm-granule :as granule])
-  (:import cmr.umm.umm_granule.UmmGranule))
+  (:import
+   (cmr.umm.umm_granule UmmGranule)))
 
 (extend-protocol core/UmmToIsoMendsXml
   UmmGranule
@@ -25,5 +26,6 @@
   [xml]
   (cx/validate-xml (io/resource schema-location) xml))
 
-(comment
+(def bring-in-granule
+  "Here to load in the granule into the jar file."
   (granule/map->Track nil))
