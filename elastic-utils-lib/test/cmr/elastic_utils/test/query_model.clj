@@ -1,4 +1,5 @@
 (ns cmr.elastic-utils.test.query-model
+  "Tests for the query-model."
   (:require [clojure.test :refer [deftest is testing]]
             [cmr.elastic-utils.test.helpers :refer [and-conds or-conds other]]
             [cmr.common.services.search.query-model :as q-mod]
@@ -61,5 +62,3 @@
     (testing "MatchAll overrules other conditions"
       (is (= q-mod/match-all
              (or-conds (other 1) (other 2) q-mod/match-all))))))
-
-

@@ -33,7 +33,8 @@
   (get-in elastic-results [:hits :hits]))
 
 (defmulti elastic-result->query-result-item
-  "Converts the Elasticsearch result into the result expected from execute-query for the given format."
+  "Converts the Elasticsearch result into the result expected from execute-query for the given
+   format."
   (fn [_context query _elastic-result]
     (let [result-format (common-qm/base-result-format query)]
       (if (= :query-specified result-format)
@@ -42,7 +43,8 @@
         [(:concept-type query) result-format]))))
 
 (defn- default-query-specified-elastic-result-item-processor
-  "The default function that will be used to process an elastic result into a result for the caller."
+  "The default function that will be used to process an elastic result into a result for the
+   caller."
   [_context query elastic-result]
   (let [{concept-id :_id
          field-values :_source} elastic-result]

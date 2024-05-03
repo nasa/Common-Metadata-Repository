@@ -52,8 +52,9 @@
         (u/lazy-assoc :TemporalExtents
                       (let [elastic-start-date (parse-elastic-datetime elastic-start-date)
                             elastic-end-date (parse-elastic-datetime elastic-end-date)]
-                        [{:RangeDateTimes (when elastic-start-date [{:BeginningDateTime elastic-start-date
-                                                                     :EndingDateTime elastic-end-date}])}])))))
+                        [{:RangeDateTimes (when elastic-start-date
+                                            [{:BeginningDateTime elastic-start-date
+                                              :EndingDateTime elastic-end-date}])}])))))
 
 (defmethod parse-elastic-item :granule
   [concept-type elastic-result]

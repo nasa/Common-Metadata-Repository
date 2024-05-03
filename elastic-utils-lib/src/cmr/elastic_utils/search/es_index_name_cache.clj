@@ -1,6 +1,6 @@
 (ns cmr.elastic-utils.search.es-index-name-cache
-  "Implements a cache to store Elasticsearch information used when searching
-  elastic search for concepts."
+  "Implements a cache to store Elasticsearch information used when searching elastic search for
+   concepts."
   (:require
    [cmr.common.hash-cache :as hcache]
    [cmr.common.jobs :refer [defjob]]
@@ -47,7 +47,10 @@
   (let [fetched-index-set (indexer/get-index-set context index-set-id)
         ;; We want to make sure collections in the process of being moved to a separate granule
         ;; index continue to use the small collections index for search.
-        rebalancing-targets-map (get-in fetched-index-set [:index-set :granule :rebalancing-targets])
+        rebalancing-targets-map (get-in fetched-index-set
+                                        [:index-set
+                                         :granule
+                                         :rebalancing-targets])
         moving-to-separate-index (get-collections-moving-to-separate-index rebalancing-targets-map)
         index-names-map (get-in fetched-index-set [:index-set :concepts])]
     {:index-names index-names-map
@@ -61,7 +64,10 @@
         index-names (:index-names index-names-map)
         cache (hcache/context->cache context index-names-cache-key)]
     (hcache/set-values cache index-names-cache-key index-names)
-    (hcache/set-value cache index-names-cache-key :rebalancing-collections (:rebalancing-collections index-names-map))
+    (hcache/set-value cache
+                      index-names-cache-key
+                      :rebalancing-collections
+                      (:rebalancing-collections index-names-map))
     (info "Refreshed search index-names cache.")))
 
 (declare ctx system)

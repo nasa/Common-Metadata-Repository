@@ -1,4 +1,5 @@
 (ns cmr.elastic-utils.test.condition-merger
+  "Contains tests for es_condition-merger."
   (:require
    [clojure.test :refer [deftest is testing]]
    [cmr.common.services.search.query-model :as q]
@@ -59,10 +60,12 @@
     (testing "Merges if all three fields match"
       (let [cond1 (generic :a)
             cond2 (generic :b)]
-        (does-merge-and [(related-item-cond :collection [:a :b] processor-fn1 (and-conds cond1 cond2))]
+        (does-merge-and [(related-item-cond :collection [:a :b] processor-fn1 (and-conds cond1
+                                                                                         cond2))]
                         [(related-item-cond :collection [:a :b] processor-fn1 cond1)
                          (related-item-cond :collection [:a :b] processor-fn1 cond2)])
-        (does-merge-or [(related-item-cond :collection [:a :b] processor-fn1 (or-conds cond1 cond2))]
+        (does-merge-or [(related-item-cond :collection [:a :b] processor-fn1 (or-conds cond1
+                                                                                       cond2))]
                        [(related-item-cond :collection [:a :b] processor-fn1 cond1)
                         (related-item-cond :collection [:a :b] processor-fn1 cond2)])))
 
@@ -192,4 +195,3 @@
        ;; non string conditiosn ignored
        (q/numeric-value-condition :entry-title 7)
        (q/numeric-value-condition :entry-title 8)])))
-

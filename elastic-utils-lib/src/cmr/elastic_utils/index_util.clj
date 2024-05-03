@@ -128,7 +128,8 @@
               :properties ~properties}))))
 
 (defn create-index-or-update-mappings
-  "Creates the index needed in Elasticsearch for data storage or updates it. Parameters are as follows:
+  "Creates the index needed in Elasticsearch for data storage or updates it. Parameters are as
+   follows:
 
   * index-name - the name of the index to use in elastic search.
   * index-settings - A map of index settings to pass to elastic search.
@@ -151,8 +152,8 @@
     (esi-helper/refresh conn index-name)))
 
 (defmacro try-elastic-operation
-  "Handles any Elasticsearch exceptions from the body and converts them to internal errors. We do this
-  because an ExceptionInfo exceptions in the CMR are considered CMR exceptions."
+  "Handles any Elasticsearch exceptions from the body and converts them to internal errors. We do
+   this because an ExceptionInfo exceptions in the CMR are considered CMR exceptions."
   [& body]
   `(try
      ~@body
@@ -189,7 +190,8 @@
          elastic-options (merge {:version version
                                  :version_type "external_gte"}
                                 ;; Force refresh of the index when specified.
-                                ;; NOTE: This has performance implications and should be used sparingly.
+                                ;; NOTE: This has performance implications and should be used
+                                ;; sparingly.
                                 (when refresh?
                                   {:refresh "true"}))
          result (try-elastic-operation
@@ -198,7 +200,8 @@
        (if (= 409 (:status result))
          (if ignore-conflict?
            (info (str "Ignore conflict: " (str result)))
-           (errors/throw-service-error :conflict (str "Save to Elasticsearch failed " (str result))))
+           (errors/throw-service-error :conflict
+                                       (str "Save to Elasticsearch failed " (str result))))
          (errors/internal-error! (str "Save to Elasticsearch failed " (str result))))))))
 
 (defn delete-by-id
@@ -228,5 +231,5 @@
 
 (defn create-index-alias
   "Creates the alias for the index."
-  [conn index alias]
-  (esi-helper/update-aliases conn [{:add {:index index :alias alias}}]))
+  [conn index alias-name]
+  (esi-helper/update-aliases conn [{:add {:index index :alias alias-name}}]))

@@ -29,12 +29,17 @@
     (when-not (get (supported-result-formats concept-type) result-format)
       (if-let [version (mt/version-of mime-type)]
         [(format "The mime type [%s] with version [%s] is not supported for %s."
-                 (mt/base-mime-type-of mime-type) version (concepts/pluralize-concept-type-name (name concept-type)))]
-        [(format "The mime type [%s] is not supported for %s." mime-type (concepts/pluralize-concept-type-name (name concept-type)))]))))
+                 (mt/base-mime-type-of mime-type)
+                 version
+                 (concepts/pluralize-concept-type-name (name concept-type)))]
+        [(format "The mime type [%s] is not supported for %s."
+                 mime-type
+                 (concepts/pluralize-concept-type-name (name concept-type)))]))))
 
 (defprotocol Validator
   "Defines the protocol for validating query conditions.
-  A sequence of errors should be returned if validation fails, otherwise an empty sequence is returned."
+    A sequence of errors should be returned if validation fails, otherwise an empty sequence is
+    returned."
   (validate
     [c]
     "Validate condition and return errors if found"))

@@ -1,4 +1,5 @@
 (ns cmr.elastic-utils.test.query-order-by-expense
+  "Tests for the query-order-by-expense."
   (:require
    [clojure.test :refer [deftest is testing]]
    [cmr.common.services.search.query-model :as q-mod]
