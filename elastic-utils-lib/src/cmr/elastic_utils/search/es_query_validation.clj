@@ -3,8 +3,8 @@
   (:require
    [cmr.common.concepts :as concepts]
    [cmr.common.mime-types :as mt]
-   ;[cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.validators.max-number-of-conditions :as max-conditions])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.common.services.search.query_model.Query
            cmr.common.services.search.query_model.ConditionGroup))
 
@@ -66,4 +66,4 @@
 
   ;; catch all validator
   java.lang.Object
-  (validate [this] []))
+  (validate [_this] []))

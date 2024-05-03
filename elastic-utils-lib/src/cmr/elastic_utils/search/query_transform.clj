@@ -1,5 +1,4 @@
-(ns cmr.elastic-utils.search.query-transform
-  (:require [cmr.common.services.search.query-model :as qm]))
+(ns cmr.elastic-utils.search.query-transform)
 
 (defprotocol ComplexQueryToSimple
   "Defines a function to convert a complex / high level query/condition into simpler ones that

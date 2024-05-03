@@ -38,7 +38,7 @@
   #{:concept-id :collection-concept-id :entry-title :provider :granule-ur :short-name :version})
 
 (defn condition->merge-strategy
-  "Returns the merge strategy to use if the condition is mergeable."
+  "Returns the merge strategy to use if the condition is able to be merged."
   [c]
   (when-let [merge-strategy (merge-type->merge-strategy (type c))]
     (case merge-strategy
@@ -50,7 +50,7 @@
       :related-item)))
 
 (defmulti merge-string-condition-group
-  "Multimethod merges together a group of mergable conditions.
+  "Multi-method merges together a group of conditions that can be merged.
   Arguments:
    * group-operation - the group operation i.e. :and or :or
    * group-info - the map of common group fields.

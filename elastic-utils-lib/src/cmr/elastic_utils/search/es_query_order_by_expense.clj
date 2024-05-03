@@ -2,8 +2,6 @@
   "Sorts query conditions within a query by their execution expense. Elasticsearch recommend putting
   cached filters before uncached filters. Expensive queries like exact spatial intersection should
   be placed last."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common.services.search.query-model :as qm])
   (:import [cmr.common.services.search.query_model
             Query
             ScriptCondition
@@ -62,30 +60,30 @@
 
   ScriptCondition
   (order-conditions [c] c)
-  (expense [c] 100)
+  (expense [_c] 100)
 
   ;; Numeric type conditions
 
   DateValueCondition
   (order-conditions [c] c)
-  (expense [c] 10)
+  (expense [_c] 10)
 
   DateRangeCondition
   (order-conditions [c] c)
-  (expense [c] 10)
+  (expense [_c] 10)
 
   NumericValueCondition
   (order-conditions [c] c)
-  (expense [c] 10)
+  (expense [_c] 10)
 
   NumericRangeCondition
   (order-conditions [c] c)
-  (expense [c] 10)
+  (expense [_c] 10)
 
   NumericRangeIntersectionCondition
   (order-conditions [c] c)
-  (expense [c] 10)
+  (expense [_c] 10)
 
   java.lang.Object
   (order-conditions [o] o)
-  (expense [o] 1))
+  (expense [_o] 1))

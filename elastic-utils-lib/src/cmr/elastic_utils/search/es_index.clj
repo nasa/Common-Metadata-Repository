@@ -39,13 +39,13 @@
     [concept-type (qm/base-result-format query)]))
 
 (defmethod concept-type+result-format->fields [:granule :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["granule-ur"
    "provider-id"
    "concept-id"])
 
 (defmethod concept-type+result-format->fields [:collection :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["entry-title"
    "provider-id"
    "short-name"
@@ -102,7 +102,7 @@
 
 (defmulti handle-es-exception
   "Handles exceptions from ES. Unexpected exceptions are simply re-thrown."
-  (fn [ex scroll-id]
+  (fn [ex _scroll-id]
     (:status (ex-data ex))))
 
 (defmethod handle-es-exception 404
@@ -112,7 +112,7 @@
     (throw ex)))
 
 (defmethod handle-es-exception :default
-  [ex _]
+  [ex _scroll-id]
   (throw ex))
 
 (defn- scroll-search
@@ -134,7 +134,7 @@
          (context->conn context) (:index-name index-info) [(:type-name index-info)] query))
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
 
-    (catch UnknownHostException e
+    (catch UnknownHostException _e
       (info (format
              (str "Execute ES query failed due to UnknownHostException. Retry in %.3f seconds."
                   " Will retry up to %d times.")
@@ -199,7 +199,7 @@
 
 (defmulti send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
-  (fn [context query]
+  (fn [_context query]
     (:page-size query)))
 
 (defmethod send-query-to-elastic :default
