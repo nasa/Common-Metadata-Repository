@@ -2,7 +2,7 @@
   "Defines protocols and functions to map from a query model to elastic search query
    NOTE: this originally lived at cmr.common-app.services.search.query-to-elastic"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojurewerkz.elastisch.query :as query]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as qm]
@@ -38,7 +38,8 @@
   [field concept-type]
   (get (concept-type->field-mappings concept-type) (keyword field) field))
 
-(defn- elastic-field->query-field
+; TODO: remove at pull request if there is no build issues
+(comment defn- elastic-field->query-field
   "Returns the query field name for the equivalent elastic field name."
   [field concept-type]
   (get (elastic-field->query-field-mappings concept-type) field field))
@@ -51,17 +52,17 @@
   "Fixes special characters that were doubly escaped by the reserved character escaping."
   [query]
   (-> query
-      (str/replace "\\\\?" "\\?")
-      (str/replace "\\\\*" "\\*")
-      (str/replace "\\\\&&" "\\&&")
-      (str/replace "\\\\||" "\\||")))
+      (string/replace "\\\\?" "\\?")
+      (string/replace "\\\\*" "\\*")
+      (string/replace "\\\\&&" "\\&&")
+      (string/replace "\\\\||" "\\||")))
 
 (defn escape-query-string
   "Takes the provided string and escapes any special characters reserved within elastic
   query_string queries."
   [query-str]
   (fix-double-escapes
-   (str/replace query-str
+   (string/replace query-str
                 query-string-reserved-characters-regex
                 "\\\\$1")))
 
@@ -157,7 +158,7 @@
    (range-condition->elastic field min-value max-value execution true))
   ([field min-value max-value execution use-cache]
    (range-condition->elastic field min-value max-value execution use-cache false))
-  ([field min-value max-value execution use-cache exclusive?]
+  ([field min-value max-value _execution _use-cache exclusive?]
    (let [[greater-than less-than] (if exclusive?
                                     [:gt :lt]
                                     [:gte :lte])]
@@ -214,7 +215,7 @@
     (let [field (if case-sensitive?
                   (query-field->elastic-field field concept-type)
                   (field->lowercase-field concept-type field))
-          value (if case-sensitive? value (str/lower-case value))]
+          value (if case-sensitive? value (string/lower-case value))]
       (if pattern?
         {:wildcard {field value}}
         {:term {field value}})))
@@ -225,7 +226,7 @@
     (let [field (if case-sensitive?
                   (query-field->elastic-field field concept-type)
                   (field->lowercase-field concept-type field))
-          values (if case-sensitive? values (map str/lower-case values))]
+          values (if case-sensitive? values (map string/lower-case values))]
       {:terms {field values}}))
 
   cmr.common.services.search.query_model.BooleanCondition
@@ -241,7 +242,7 @@
 
   cmr.common.services.search.query_model.ScriptCondition
   (condition->elastic
-    [{:keys [source lang params]} concept-type]
+    [{:keys [source lang params]} _concept-type]
     {:script {:script {:source source
                        :params params
                        :lang lang}}})
@@ -314,7 +315,7 @@
 
   cmr.common.services.search.query_model.DateValueCondition
   (condition->elastic
-    [{:keys [field value]} concept-type]
+    [{:keys [field value]} _concept-type]
     {:term {field (dt-help/utc-time->elastic-time value)}})
 
   cmr.common.services.search.query_model.MatchAllCondition

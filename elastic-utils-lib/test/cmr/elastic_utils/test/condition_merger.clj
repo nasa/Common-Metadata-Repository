@@ -1,9 +1,9 @@
 (ns cmr.elastic-utils.test.condition-merger
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.services.search.query-model :as q]
    [cmr.elastic-utils.search.es-condition-merger :as ecm]
-   [cmr.elastic-utils.test.helpers :refer :all]))
+   [cmr.elastic-utils.test.helpers :refer [and-conds generic or-conds]]))
 
 (defn does-not-merge
   [op conditions]

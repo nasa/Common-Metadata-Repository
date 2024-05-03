@@ -101,7 +101,7 @@
      :age int-field-mapping})"
   ([mapping-name mapping-type docstring properties]
    `(defmapping ~mapping-name ~mapping-type ~docstring nil ~properties))
-  ([mapping-name mapping-type docstring mapping-settings properties]
+  ([mapping-name _mapping-type docstring mapping-settings properties]
    `(def ~mapping-name
       ~docstring
       (merge {:dynamic "strict"
@@ -185,7 +185,7 @@
    (save-elastic-doc elastic-store index-name type-name elastic-id doc version nil))
   ([elastic-store index-name type-name elastic-id doc version options]
    (let [conn (:conn elastic-store)
-         {:keys [ttl ignore-conflict? refresh?]} options
+         {:keys [ignore-conflict? refresh?]} options
          elastic-options (merge {:version version
                                  :version_type "external_gte"}
                                 ;; Force refresh of the index when specified.
@@ -194,7 +194,7 @@
                                   {:refresh "true"}))
          result (try-elastic-operation
                  (es-helper/put conn index-name type-name elastic-id doc elastic-options))]
-     (if (:error result)
+     (when (:error result)
        (if (= 409 (:status result))
          (if ignore-conflict?
            (info (str "Ignore conflict: " (str result)))
@@ -212,7 +212,7 @@
      :refresh? - to synchronously force the index to make the change searchable. Use with care.
 
     Returns a hashmap of the HTTP response"
-  ([elastic-store index-name type-name id version]
+  ([elastic-store index-name type-name id _version]
    (delete-by-id elastic-store index-name type-name id nil))
   ([elastic-store index-name type-name id version options]
    (let [elastic-options (merge {:version version

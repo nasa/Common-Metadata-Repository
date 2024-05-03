@@ -2,7 +2,7 @@
   "Performs search and indexing of access control data."
   (:require
    [clojure.edn :as edn]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.data.acls :as acls]
    [cmr.common.log :refer [info error]]
    [cmr.common.services.errors :as errors]
@@ -66,7 +66,7 @@
           (assoc :name-lowercase (util/safe-lowercase name)
                  :provider-id-lowercase (util/safe-lowercase provider-id)
                  :members (:members group)
-                 :members-lowercase (map str/lower-case members)
+                 :members-lowercase (map string/lower-case members)
                  :legacy-guid-lowercase (util/safe-lowercase legacy-guid)
                  :member-count (count members))))
     (catch Exception e
@@ -269,9 +269,9 @@
   (let [{:keys [group-id user-type permissions]} group-permission
         gid (or group-id user-type)]
     {:permitted-group gid
-     :permitted-group-lowercase (str/lower-case gid)
+     :permitted-group-lowercase (string/lower-case gid)
      :permission permissions
-     :permission-lowercase (map str/lower-case permissions)}))
+     :permission-lowercase (map string/lower-case permissions)}))
 
 (defn- identifier-applicable-elastic-doc-map
   "Returns map for identifier and applicable booleans"
@@ -350,10 +350,10 @@
      (identifier-applicable-elastic-doc-map acl)
      (assoc (select-keys concept-map [:concept-id :revision-id])
             :display-name display-name
-            :display-name-lowercase (str/lower-case display-name)
+            :display-name-lowercase (string/lower-case display-name)
             :identity-type (acl->identity-type acl)
             :permitted-group permitted-groups
-            :permitted-group-lowercase (map str/lower-case permitted-groups)
+            :permitted-group-lowercase (map string/lower-case permitted-groups)
             :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
             :target target
             :target-lowercase (util/safe-lowercase target)
@@ -363,7 +363,7 @@
             :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))
             :legacy-guid (:legacy-guid acl)
             :legacy-guid-lowercase (when-let [legacy-guid (:legacy-guid acl)]
-                                     (str/lower-case legacy-guid))))))
+                                     (string/lower-case legacy-guid))))))
 
 (defn index-acl
   "Indexes ACL concept map. options is an optional map of options. Only :synchronous? is currently supported."
@@ -424,7 +424,7 @@
   (m/delete-by-query (esi/context->search-index context)
                      acl-index-name
                      acl-type-name
-                     {:term {:target-provider-id-lowercase (str/lower-case provider-id)}}))
+                     {:term {:target-provider-id-lowercase (string/lower-case provider-id)}}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common public functions

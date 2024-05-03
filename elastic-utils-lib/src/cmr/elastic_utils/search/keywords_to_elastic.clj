@@ -41,7 +41,7 @@
 
   See http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html
   for details on the function score query."
-  (:require [clojure.string :as str]))
+  (:require [clojure.string :as string]))
 
 (def default-boost
   "Field boost to use if not provided or not found in the default-boosts list"
@@ -77,8 +77,8 @@
   "Appends a '.' to wildcard symbols (? and *) and escapes characters that are Regex operators
   in elastic"
   [keyword]
-  (let [escaped-keyword (str/replace keyword elastic-regex-special-chars-re "\\$1")]
-    (str/replace escaped-keyword elastic-regex-wildcard-chars-re ".$1")))
+  (let [escaped-keyword (string/replace keyword elastic-regex-special-chars-re "\\$1")]
+    (string/replace escaped-keyword elastic-regex-wildcard-chars-re ".$1")))
 
 (defn- keyword-regexp-filter
   "Create a regexp filter for a given field and keyword (allows wildcards)"
@@ -149,7 +149,7 @@
                 {:should
                  (concat
                   (when-let [keywords (:keywords keywords)]
-                   (science-keywords-or-filter (str/join " " keywords)))
+                   (science-keywords-or-filter (string/join " " keywords)))
                   (when-let [field-keywords (:field-keywords keywords)]
                    (mapcat science-keywords-or-filter field-keywords)))}}}}}}})
 
@@ -161,7 +161,7 @@
             {:should
              (concat
               (when-let [keywords (:keywords keywords)]
-               [(keyword-exact-match-filter field (str/join " " keywords))])
+               [(keyword-exact-match-filter field (string/join " " keywords))])
               (when-let [field-keywords (:field-keywords keywords)]
                [{:bool {:should (map (partial keyword-regexp-filter field) field-keywords)}}]))}}})
 
