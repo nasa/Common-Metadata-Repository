@@ -126,7 +126,11 @@
   (gc/or-conds
    (map (fn [[exclude-param exclude-val]]
           (qm/map->NegatedCondition
-           {:condition (parameter->condition context concept-type exclude-param exclude-val options)}))
+           {:condition (parameter->condition context
+                                             concept-type
+                                             exclude-param
+                                             exclude-val
+                                             options)}))
         value)))
 
 (defmethod parameter->condition :boolean
@@ -139,7 +143,9 @@
       qm/match-all
 
       :else
-      (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]" param value)))))
+      (errors/internal-error! (format "Boolean condition for %s has invalid value of [%s]"
+                                      param
+                                      value)))))
 
 (defmethod parameter->condition :num-range
   [_context _concept-type param value _options]
@@ -206,11 +212,11 @@
   "Extracts parameters apply at the query level page-size and result format and returns a tuple of
    leftover parameters and a map as query attributes.
 
-   The function takes the entire set of parameters from the API, converts some of them into attributes
-   that will go in the query, and returns the leftover parameters along with the query attributes.
-   Anything that is not a parameter that becomes a condition is a query level parameter. There are
-   different query level parameters for different concept types. Collections have many of these like
-   include_granule_counts, include_facets, and echo_compatible."
+   The function takes the entire set of parameters from the API, converts some of them into
+   attributes that will go in the query, and returns the leftover parameters along with the query
+   attributes. Anything that is not a parameter that becomes a condition is a query level parameter.
+   There are different query level parameters for different concept types. Collections have many of
+   these like include_granule_counts, include_facets, and echo_compatible."
   (fn [concept-type _params]
     concept-type))
 

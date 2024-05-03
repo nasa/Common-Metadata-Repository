@@ -267,7 +267,11 @@
     [{:keys [field min-value max-value exclusive?]} concept-type]
     (range-condition->elastic
      (query-field->elastic-field field concept-type)
-     min-value max-value (config/numeric-range-execution-mode) (config/numeric-range-use-cache) exclusive?))
+     min-value
+     max-value
+     (config/numeric-range-execution-mode)
+     (config/numeric-range-use-cache)
+     exclusive?))
 
   cmr.common.services.search.query_model.NumericRangeIntersectionCondition
   (condition->elastic
@@ -284,12 +288,14 @@
                                          (config/numeric-range-execution-mode)
                                          (config/numeric-range-use-cache))
                {:bool
-                {:must [(range-condition->elastic (query-field->elastic-field min-field concept-type)
+                {:must [(range-condition->elastic (query-field->elastic-field min-field
+                                                                              concept-type)
                                                   nil
                                                   min-value
                                                   (config/numeric-range-execution-mode)
                                                   (config/numeric-range-use-cache))
-                        (range-condition->elastic (query-field->elastic-field max-field concept-type)
+                        (range-condition->elastic (query-field->elastic-field max-field
+                                                                              concept-type)
                                                   max-value
                                                   nil
                                                   (config/numeric-range-execution-mode)
@@ -310,8 +316,12 @@
                        (dt-help/utc-time->elastic-time start-date)
                        dt-help/earliest-start-date-elastic-time)
           end-value (when end-date (dt-help/utc-time->elastic-time end-date))]
-      (range-condition->elastic
-       field from-value end-value (config/numeric-range-execution-mode) (config/numeric-range-use-cache) exclusive?)))
+      (range-condition->elastic field
+                                from-value
+                                end-value
+                                (config/numeric-range-execution-mode)
+                                (config/numeric-range-use-cache)
+                                exclusive?)))
 
   cmr.common.services.search.query_model.DateValueCondition
   (condition->elastic

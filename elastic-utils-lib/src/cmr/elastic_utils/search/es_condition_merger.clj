@@ -68,7 +68,8 @@
   ;; When we have a series of AND'd conditions we will extract each set of values which are OR'd
   ;; and create a set of each one.
   (let [value-sets (map (comp set extract-values) conditions)
-        ;; Find the intersections of all the sets which is a set of values that should be OR'd together.
+        ;; Find the intersections of all the sets which is a set of values that should be OR'd
+        ;; together.
         values (seq (apply set/intersection value-sets))]
     (if values
       (q/string-conditions field values case-sensitive?)
@@ -97,7 +98,9 @@
 (defmethod merge-conditions-with-strategy :related-item
   [_ group-operation conditions]
   ;; Split the mergable conditions into separate groups.
-  (let [mergable-groups (group-by #(select-keys % [:concept-type :result-fields :results-to-condition-fn])
+  (let [mergable-groups (group-by #(select-keys % [:concept-type
+                                                   :result-fields
+                                                   :results-to-condition-fn])
                                   conditions)]
     ;; The conditions within each group can be merged together.
     (map (fn [[common-fields grouped-conds]]
@@ -115,6 +118,3 @@
   (mapcat (fn [[strategy strategy-conds]]
             (merge-conditions-with-strategy strategy group-operation strategy-conds))
           (group-by condition->merge-strategy conditions)))
-
-
-

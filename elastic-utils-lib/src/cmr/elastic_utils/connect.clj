@@ -20,11 +20,13 @@
   (let [{:keys [host port retry-handler]} config
         http-options {:conn-mgr (conn-mgr/make-reusable-conn-manager
                                   {;; Maximum number of threads that will be used for connecting.
-                                   ;; Very important that this matches the maximum number of threads that will be running
+                                   ;; Very important that this matches the maximum number of threads
+                                   ;; that will be running
                                    :threads (web-server/MAX_THREADS)
                                    ;; Maximum number of simultaneous connections per host
-                                   ;; There's usually one elasticsearch hostname and we always connect
-                                   ;; to the same host so it makes sense to make this larger.
+                                   ;; There's usually one elasticsearch hostname and we always
+                                   ;; connect to the same host so it makes sense to make this
+                                   ;; larger.
                                    :default-per-route (web-server/MAX_THREADS)
                                    ;; This is the length of time in _seconds_ that a connection will
                                    ;; be left open for reuse. The default is 5 seconds which is way
@@ -34,7 +36,8 @@
                       :socket-timeout ELASTIC_CONNECTION_TIMOUT
                       :conn-timeout ELASTIC_CONNECTION_TIMOUT}]
 
-    (info (format "Connecting to single ES on %s %d using retry-handler %s" host port retry-handler))
+    (info (format "Connecting to single ES on %s %d using retry-handler %s"
+                  host port retry-handler))
     (esr/connect (str "http://" host ":" port) http-options)))
 
 (defn try-connect

@@ -1,5 +1,5 @@
 (ns cmr.elastic-utils.search.query-transform)
-
+"A query transformer"
 (defprotocol ComplexQueryToSimple
   "Defines a function to convert a complex / high level query/condition into simpler ones that
   can be optimized more easily."

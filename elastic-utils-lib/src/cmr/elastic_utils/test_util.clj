@@ -1,4 +1,5 @@
 (ns cmr.elastic-utils.test-util
+  "Common utility functions for tests."
   (:require [cmr.elastic-utils.config :as config]
             [cmr.elastic-utils.embedded-elastic-server :as ees]
             [cmr.elastic-utils.connect :as conn]
@@ -11,7 +12,8 @@
     (:ok? (conn/health {:system {:db {:conn c}}} :db))))
 
 (defn run-elastic-fixture
-  "Test fixture that will automatically run elasticsearch if it's not detected as currently running."
+  "Test fixture that will automatically run elasticsearch if it is not detected as currently
+   running."
   [f]
   (if (elastic-running?)
     (f)
