@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url
   "Functions for generating ISO XML elements from UMM related-url records."
-  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [clojure.string :as str]
    [cmr.common.xml.gen :refer :all]

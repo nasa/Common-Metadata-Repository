@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation
   "Functions for parsing UMM collection citation records out of ISO 19115-2 XML documents."
-  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [clojure.string :as str]
    [cmr.common.util :as util]

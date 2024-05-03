@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.iso-topic-categories
   "Functions for generating ISO-19115 and ISO-SMAP XML elements from UMM ISO topic categories."
-  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer :all]

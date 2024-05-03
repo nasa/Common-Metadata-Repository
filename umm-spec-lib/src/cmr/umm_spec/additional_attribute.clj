@@ -1,6 +1,5 @@
  (ns cmr.umm-spec.additional-attribute
   "Defines helper functions for parsing additional attributes."
-  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [camel-snake-kebab.core :as csk]
    [clj-time.format :as f]

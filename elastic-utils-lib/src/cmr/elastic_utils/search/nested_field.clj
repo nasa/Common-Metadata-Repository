@@ -81,7 +81,7 @@
 
 (defmulti nested-field+value->condition
   "Converts a nested field and its value into a condition"
-  (fn [parent-field subfield-name subfield-value case-sensitive? pattern?]
+  (fn [_parent-field subfield-name _subfield-value _case-sensitive? _pattern?]
     (subfield-name->condition-type subfield-name)))
 
 (defmethod nested-field+value->condition :int

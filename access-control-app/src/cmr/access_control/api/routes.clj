@@ -287,7 +287,6 @@
      :body (json/generate-string s3-list)}))
 
 ;;; Handler
-#_{:clj-kondo/ignore [:unused-binding]}
 (defn build-routes [system]
   (routes
     (context (:relative-root-url system) []
@@ -341,7 +340,7 @@
                                   (:managing_group_id params))))
 
           (context "/:group-id" [group-id]
-            (OPTIONS "/" req (common-routes/options-response))
+            (OPTIONS "/" _req (common-routes/options-response))
             ;; Get a group
             (GET "/"
                  {ctx :request-context params :params}
@@ -363,7 +362,7 @@
                  (update-group ctx headers (slurp body) group-id))
 
             (context "/members" []
-              (OPTIONS "/" req (common-routes/options-response))
+              (OPTIONS "/" _req (common-routes/options-response))
               (GET "/"
                    {ctx :request-context params :params}
                    (pv/validate-group-route-params params)
@@ -405,7 +404,7 @@
               (create-acl ctx headers (slurp body)))
 
         (context "/:concept-id" [concept-id]
-          (OPTIONS "/" req (common-routes/options-response))
+          (OPTIONS "/" _req (common-routes/options-response))
 
           ;; Update an ACL
           (PUT "/"

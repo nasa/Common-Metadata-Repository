@@ -1,5 +1,4 @@
 (ns cmr.elasticsearch.plugins.spatial.engine.core
-  #_{:clj-kondo/ignore [:unused-import]}
   (:import
    (cmr.elasticsearch.plugins SpatialScriptFactory) 
    (org.elasticsearch.script FilterScript ScriptContext ScriptEngine)
@@ -15,14 +14,13 @@
   [^SpatialScriptEngine _this]
   "cmr_spatial")
 
-#_{:clj-kondo/ignore [:unused-binding]}
 (defn -compile
   "Compile script."
   [^SpatialScriptEngine this
-   ^String script-name
+   ^String _script-name
    ^String script-source
    ^ScriptContext context
-   ^Map params]
+   ^Map _params]
   (cond
     (not (.equals context FilterScript/CONTEXT))
     (throw (new IllegalArgumentException

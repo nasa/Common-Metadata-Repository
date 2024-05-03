@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.sensor
   "Functions for generating ISO19115-2 XML elements from UMM sensor records."
-  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.characteristics-and-operationalmodes :as ch]

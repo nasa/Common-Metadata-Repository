@@ -54,7 +54,7 @@
   "Add a shutdown hook to call the CMR app stop command found in most if not all
    CMR microservices. Caller must supply a function that calls the application's
    stop function such as: #(cmr.search.system/stop system)"
-  [app-name stop-thread]
+  [_app-name stop-thread]
   (.addShutdownHook (Runtime/getRuntime) (new Thread stop-thread)))
 
 (defn dump-on-exit-hook
@@ -70,5 +70,5 @@
 (comment
   ;; use these to create a memory file locally for use in Visual VM
   (config/set-dump-diagnostics-on-exit-to! "/tmp/dump-auto.txt")
-  (dump-heap "/tmp/dump.txt" true)
-  (dump-heap "/tmp/dump.hprof" false))
+  (dump-heap "appname1" "/tmp/dump.txt" true)
+  (dump-heap "appname2" "/tmp/dump.hprof" false))

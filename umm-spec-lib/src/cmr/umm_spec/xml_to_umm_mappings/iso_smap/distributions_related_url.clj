@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url
   "Functions for parsing UMM related-url records out of ISO SMAP XML documents."
-  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer :all]

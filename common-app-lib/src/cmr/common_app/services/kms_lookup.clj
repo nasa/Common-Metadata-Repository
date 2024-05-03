@@ -29,7 +29,8 @@
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-hash-cache :as rhcache]
    [cmr.transmit.kms :as kms])
-  (:import (clojure.lang ExceptionInfo)))
+  (:import #_{:clj-kondo/ignore [:unused-import]}
+           (clojure.lang ExceptionInfo)))
 
 (def kms-short-name-cache-key
   "The key used to store the data generated from KMS into a short name index cache

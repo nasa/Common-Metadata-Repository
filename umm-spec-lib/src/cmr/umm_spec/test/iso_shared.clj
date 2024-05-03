@@ -8,7 +8,6 @@
     [cmr.umm-spec.util :as su]
     [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as xml-to-umm-data-contact]
     [cmr.umm-spec.xml-to-umm-mappings.iso-shared.iso-topic-categories :as iso-topic-categories])
-  #_{:clj-kondo/ignore [:use]}
   (:use
    [cmr.umm-spec.models.umm-collection-models]
    [cmr.umm-spec.models.umm-common-models]))

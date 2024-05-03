@@ -36,6 +36,5 @@
                                 :skip-member-validation? true})))
 
 
-(comment
-  #_{:clj-kondo/ignore [:unresolved-namespace]}
+(comment 
  (bootstrap (get-in user/system [:apps :access-control])))

@@ -4,7 +4,6 @@
   granule model OrbitCalculatedSpatialDomains."
   (:require
    [cmr.umm.umm-granule :as g])
-  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.umm.umm_granule.OrbitCalculatedSpatialDomain))
 
 (defn- umm-g-orbit-calculated-spatial-domain->OrbitCalculatedSpatialDomain

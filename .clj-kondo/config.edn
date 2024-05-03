@@ -1,0 +1,19 @@
+{:skip-comments true
+ :ns-groups [{:pattern "cmr.elasticsearch.plugins.spatial\\..*" :name es-spatial-group}
+             {:pattern "cmr.umm-spec\\..*" :name umm-spec-lib}] 
+ :config-in-ns {user {:ignore true} ;; no linting for all dev/user.clj namespaces
+                es-spatial-group {:linters {:unused-import {:level :off} ;; are actually used in compile
+                                            :unused-private-var {:level :off}
+                                            :non-arg-vec-return-type-hint {:level :off}}}
+                umm-spec-lib {:linters {:refer-all {:level :off} ;; no suggestions given by linter
+                                        :use {:level :off} ;; see above; :refer-all linter is supposed to govern this as well but is not doing so for some reason.
+                                        :unused-import {:level :off}}}}
+ ;; CMR custom macros
+ :lint-as {cmr.common.config/defconfig clojure.core/def
+           cmr.common.jobs/defjob clojure.core/defn
+           cmr.common.jobs/def-stateful-job clojure.core/defn
+           cmr.common.util/are3 clj-kondo.lint-as/def-catch-all
+           cmr.common.util/are2 clj-kondo.lint-as/def-catch-all} 
+ :linters {:unresolved-var {:exclude [digest/md5 digest/sha-1]} ;; dynamically generated
+           ;; our defs with ^:dynamic metadata are being caught by this with no clear way to selectively turn off
+           :uninitialized-var {:level :off}}}

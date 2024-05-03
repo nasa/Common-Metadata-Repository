@@ -11,6 +11,7 @@
                      {...}]}
          :providers [...]}"
   (:require
+   [clojure.string :as string]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common.cache :as cache]
    [cmr.common.log :refer [error]]
@@ -19,7 +20,8 @@
    [cmr.redis-utils.config :as redis-config]
    [cmr.redis-utils.redis-cache :as redis-cache]
    [cmr.transmit.kms :as kms])
-  (:import (clojure.lang ExceptionInfo)))
+  (:import #_{:clj-kondo/ignore [:unused-import]}
+           (clojure.lang ExceptionInfo)))
 
 (def nested-fields-mappings
   "Mapping from field name to the list of subfield names in order from the top of the hierarchy to
@@ -77,7 +79,7 @@
                   [keyword-scheme keyword-scheme-value]
                   [keyword-scheme (get kms-cache-value keyword-scheme)])))))
     (catch Exception e
-      (if (clojure.string/includes? (ex-message e) "Carmine connection error")
+      (if (string/includes? (ex-message e) "Carmine connection error")
         (error "fetch-gcmd-keywords-map found redis carmine exception. Will return nil result." e)
         (throw e)))))
 

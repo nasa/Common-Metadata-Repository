@@ -55,20 +55,20 @@
 (defn validate-query
   "Validates a query model. Throws an exception to return to user with errors.
   Returns the query model if validation is successful so it can be chained with other calls."
-  [context query]
+  [_context query]
   (if-let [errors (seq (qv/validate query))]
     (errors/throw-service-errors :bad-request errors)
     query))
 
 (defmulti search-results->response
   "Converts query search results into a string response."
-  (fn [context query results]
+  (fn [_context query _results]
     [(:concept-type query) (qm/base-result-format query)]))
 
 (defmulti single-result->response
   "Returns a string representation of a single concept in the format
   specified in the query."
-  (fn [context query results]
+  (fn [_context query _results]
     [(:concept-type query) (qm/base-result-format query)]))
 
 (defn- add-scroll-results-to-cache

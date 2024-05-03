@@ -1,5 +1,4 @@
 (ns cmr.umm-spec.related-url
-  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [clojure.string :as str]
    [cmr.common.xml.gen :refer :all]

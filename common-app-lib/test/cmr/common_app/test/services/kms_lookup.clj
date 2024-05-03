@@ -1,7 +1,7 @@
 (ns cmr.common-app.test.services.kms-lookup
   "Unit tests for KMS lookup namespace."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.common-app.services.kms-lookup :as kms-lookup]
    [cmr.common.util :refer [are3]]
    [cmr.redis-utils.test.test-util :as redis-embedded-fixture]))

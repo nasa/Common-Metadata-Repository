@@ -54,8 +54,9 @@
                 :headers {"Content-Type" "text"}
                 :throw-exceptions true}))
 
-(defn make-api-fn [routes-fn]
+(defn make-api-fn
   "Returns a function that can be used to create the side routes API."
+  [routes-fn]
   (fn [system]
    (-> (build-routes routes-fn system)
        keyword-params/wrap-keyword-params

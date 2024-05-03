@@ -2,7 +2,7 @@
   "Unit tests for health checks"
   (:require
    [cheshire.core :as json]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common-app.api.health :as health]
    [cmr.common.lifecycle :as lifecycle]))
 
@@ -16,12 +16,12 @@
   {:system {:caches {health/health-cache-key (lifecycle/start (health/create-health-cache) nil)}}})
 
 (defn- healthy-fn
-  [context]
+  [_context]
   {:ok? true
    :dependencies {:test-resource {:ok? true}}})
 
 (defn- unhealthy-fn
-  [context]
+  [_context]
   {:ok? false
    :dependencies {:test-resource {:ok? false :problem "Resource is not responding."}}})
 

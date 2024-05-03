@@ -4,7 +4,6 @@
   granule model ProductSpecificAttributeRefs."
   (:require
    [cmr.umm.umm-granule :as g])
-  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.umm.umm_granule.ProductSpecificAttributeRef))
 
 (defn- umm-g-additional-attribute->ProductSpecificAttributeRef

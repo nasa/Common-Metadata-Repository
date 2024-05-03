@@ -13,7 +13,6 @@
    [cmr.umm-spec.umm-g.tiling-system :as tiling-system]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as g])
-  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (def ^:private umm-g-metadata-specification

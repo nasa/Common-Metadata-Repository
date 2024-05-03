@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.instrument
   "Functions for generating ISOSMAP XML elements from UMM instrument records."
-  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.iso19115-2-util :as iso]

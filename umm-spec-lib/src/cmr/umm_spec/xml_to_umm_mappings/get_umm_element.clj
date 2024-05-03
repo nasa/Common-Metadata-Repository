@@ -1,6 +1,5 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.get-umm-element
   "Functions for getting UMM element out of XML documents of other formats."
-  #_{:clj-kondo/ignore [:refer-all]}
   (:require
    [clojure.string :as string]
    [cmr.common.xml.parse :refer [value-of]]

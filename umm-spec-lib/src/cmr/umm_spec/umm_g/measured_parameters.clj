@@ -3,7 +3,6 @@
   (:require
    [cmr.umm.umm-granule :as g]
    [cmr.common.util :as util])
-  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.umm.umm_granule.UmmGranule))
 
 (defn- umm-g-qa-stats->QAStats
