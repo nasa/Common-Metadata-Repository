@@ -4,7 +4,7 @@
 
    Note that we can only perform these tests with the in-memory database because with Oracle we use
    the Oracle database server time for setting created-at and revision-date. With the in-memory
-   database we are able to use timekeeper, so we can set the dates to the values we want."
+   database we are able to use timekeeper so we can set the dates to the values we want."
   (:require
    [clj-http.client :as client]
    [clojure.test :refer :all]
@@ -20,10 +20,14 @@
                       [(ingest/reset-fixture {"provguid1" "PROV1"})
                        (dev-system-util/freeze-resume-time-fixture)]))
 
+(defn- current-time
+  []
+  (str (first (clojure.string/split (str (java.time.LocalDateTime/now)) #"\.")) "Z"))
+
 (deftest ^:in-memory-db search-for-new-collections
   (s/only-with-in-memory-database
     (let [_ (dev-system-util/freeze-time! "2010-01-01T10:00:00Z")
-          _oldest-collection (d/ingest-umm-spec-collection
+          oldest-collection (d/ingest-umm-spec-collection
                               "PROV1"
                               (data-umm-c/collection
                                 {:EntryTitle "oldie"
@@ -31,7 +35,7 @@
                                  :ShortName "Oldie"}))
 
           _ (dev-system-util/freeze-time! "2012-01-01T10:00:00Z")
-          _elder-collection (d/ingest-umm-spec-collection
+          elder-collection (d/ingest-umm-spec-collection
                              "PROV1"
                              (data-umm-c/collection
                                {:EntryTitle "new"
@@ -89,7 +93,7 @@
         (are [params]
             (let [{:keys [status errors]} (search/find-concepts-with-param-string "collection" params)]
               (= [400 [(format "Parameter [%s] was not recognized."
-                               (first (clj-str/split params #"=")))]]
+                               (first (clojure.string/split params #"=")))]]
                  [status errors]))
           "insert_time=2011-01-01T00:00:00Z"
           "birthday=2012-01-01T00:00:00Z")))))

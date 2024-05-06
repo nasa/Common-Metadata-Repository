@@ -80,7 +80,7 @@
 (defn assert-invalid-data-error
   "Assert association response when status code is 422 is correct"
   [expected-errors response]
-  (let [{:keys [status _body errors]} response]
+  (let [{:keys [status body errors]} response]
     (is (= [422 (set expected-errors)]
            [status (set errors)]))))
 

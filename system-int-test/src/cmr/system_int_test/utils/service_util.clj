@@ -164,7 +164,7 @@
   "Returns the expected service association for the given collection concept id to
   service association mapping, which is in the format of, e.g.
   {[C1200000000-CMR 1] {:concept-id \"SA1200000005-CMR\" :revision-id 1}}."
-  [coll-service-association _error?]
+  [coll-service-association error?]
   (let [[[coll-concept-id coll-revision-id] service-association] coll-service-association
         {:keys [concept-id revision-id]} service-association
         associated-item (if coll-revision-id
@@ -192,7 +192,7 @@
   ([coll-service-associations response]
    (assert-service-association-response-ok? coll-service-associations response true))
   ([coll-service-associations response error?]
-   (let [{:keys [status body _errors]} response
+   (let [{:keys [status body errors]} response
          expected-sas (map #(coll-service-association->expected-service-association % error?)
                            coll-service-associations)]
      (is (= [200
@@ -204,7 +204,7 @@
   ([coll-service-associations response]
    (assert-service-association-bad-request coll-service-associations response true))
   ([coll-service-associations response error?]
-   (let [{:keys [status body _errors]} response
+   (let [{:keys [status body errors]} response
          expected-sas (map #(coll-service-association->expected-service-association % error?)
                            coll-service-associations)]
      (is (= [400
@@ -238,7 +238,7 @@
   "Assert the collections found by the service query matches the given collection revisions.
   Temporary using search metadata-db for service associations. Will change to search search-app
   for collections once that is implemented in issues like CMR-4280."
-  [_token query expected-colls]
+  [token query expected-colls]
   (let [{:keys [status body]} (search-for-service-associations (assoc query :latest true))
         colls (->> body
                    (filter #(false? (:deleted %)))
@@ -309,7 +309,7 @@
                                       expected-fields
                                       {:services serv-concept-ids
                                        :variables var-concept-ids})
-        options {:accept (mime-types/with-version mime-types/umm-json-results versioning/current-collection-version)}
+        options {:accept (mt/with-version mt/umm-json-results versioning/current-collection-version)}
         {:keys [entry-title]} coll
         response (search/find-concepts-umm-json :collection {:entry-title entry-title} options)]
     (du/assert-umm-jsons-match

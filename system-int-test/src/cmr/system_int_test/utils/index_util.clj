@@ -103,7 +103,7 @@
 
 (defn doc-present?
   "If doc is present return true, otherwise return false"
-  [index-name _type-name doc-id]
+  [index-name type-name doc-id]
   (let [response (client/get
                   (format "%s/%s/_doc/_search?q=_id:%s" (url/elastic-root) index-name doc-id)
                   {:throw-exceptions false
