@@ -18,7 +18,7 @@
 
 (defn- assert-tag-association
   "Assert the collections are associated with the tag for the given tag-key.
-  If the options have :all-revisions true, the collections will be search on all collection revisions."
+  If the options has :all-revisions true, the collections will be search on all collection revisions."
   ([token colls tag-key]
    (assert-tag-association token colls tag-key {}))
   ([token colls tag-key options]

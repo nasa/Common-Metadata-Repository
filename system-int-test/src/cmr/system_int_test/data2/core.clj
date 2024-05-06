@@ -319,7 +319,7 @@
 
 (defmethod item->metadata-result true
   [_ format-key item]
-  (let [{:keys [concept-id _revision-id collection-concept-id]} item
+  (let [{:keys [concept-id collection-concept-id]} item
         original-format (:format-key item)
         ;; Remove test core added fields so they don't end up in the expected UMM JSON
         item (remove-ingest-associated-keys item)

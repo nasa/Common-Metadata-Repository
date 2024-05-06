@@ -96,7 +96,7 @@
                                                 (data-umm-c/collection x {}))
                                               :concept-id
                                               (generate-concept-id x "PROV1"))))))
-        _ (index/wait-until-indexed) ;; TODO this does a full elastic refresh for the index. Is that necessary?
+        _ (index/wait-until-indexed)
         bulk-update-body {:concept-ids concept-ids
                           :update-type "ADD_TO_EXISTING"
                           :update-field "SCIENCE_KEYWORDS"

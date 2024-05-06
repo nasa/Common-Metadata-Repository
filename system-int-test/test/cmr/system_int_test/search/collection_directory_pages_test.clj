@@ -33,83 +33,83 @@
 
 (defn expected-header-link?
   [body]
-  (clj-str/includes? body "site/collections/directory"))
+  (string/includes? body "site/collections/directory"))
 
 (defn expected-top-level-links?
   [body]
-  (clj-str/includes? body "site/collections/directory/eosdis"))
+  (string/includes? body "site/collections/directory/eosdis"))
 
 (defn expected-eosdis-level-links?
   [body]
   (let [url "site/collections/directory"
         tag "gov.nasa.eosdis"]
     (and
-      (clj-str/includes? body (format "%s/%s/%s" url "PROV1" tag))
-      (clj-str/includes? body (format "%s/%s/%s" url "PROV2" tag))
-      (clj-str/includes? body (format "%s/%s/%s" url "PROV3" tag))
-      (clj-str/includes? body (format "%s/%s/%s" url "SOMEADMIN" tag))
-      (not (clj-str/includes? body "NOCOLLS"))
-      (not (clj-str/includes? body "NONEOSDIS"))
-      (not (clj-str/includes? body "ONLYADMIN")))))
+      (string/includes? body (format "%s/%s/%s" url "PROV1" tag))
+      (string/includes? body (format "%s/%s/%s" url "PROV2" tag))
+      (string/includes? body (format "%s/%s/%s" url "PROV3" tag))
+      (string/includes? body (format "%s/%s/%s" url "SOMEADMIN" tag))
+      (not (string/includes? body "NOCOLLS"))
+      (not (string/includes? body "NONEOSDIS"))
+      (not (string/includes? body "ONLYADMIN")))))
 
 (defn expected-provider1-level-links?
   [body]
-  (clj-str/includes? body "EOSDIS holdings for the PROV1 provider")
+  (string/includes? body "EOSDIS holdings for the PROV1 provider")
   (let [url "concepts"
         colls (@test-collections "PROV1")]
     (and
-      (clj-str/includes? body (format "%s/%s" url (nth colls 1)))
-      (clj-str/includes? body (format "%s/%s" url (nth colls 2)))
-      (clj-str/includes? body "Collection Item 2</a>")
-      (clj-str/includes? body "Collection Item 3</a>")
-      (not (clj-str/includes? body "Collection Item 1")))))
+      (string/includes? body (format "%s/%s" url (nth colls 1)))
+      (string/includes? body (format "%s/%s" url (nth colls 2)))
+      (string/includes? body "Collection Item 2</a>")
+      (string/includes? body "Collection Item 3</a>")
+      (not (string/includes? body "Collection Item 1")))))
 
 (defn expected-provider2-level-links?
   [body]
-  (clj-str/includes? body "EOSDIS holdings for the PROV2 provider")
+  (string/includes? body "EOSDIS holdings for the PROV2 provider")
   (let [url "concepts"
         colls (@test-collections "PROV2")]
     (and
-      (clj-str/includes? body (format "%s/%s" url (nth colls 1)))
-      (clj-str/includes? body (format "%s/%s" url (nth colls 2)))
-      (clj-str/includes? body "Collection Item 2</a>")
-      (clj-str/includes? body "Collection Item 3</a>")
-      (clj-str/includes? body "Collection Item 1001</a>")
-      (clj-str/includes? body "Collection Item 1016</a>")
-      (not (clj-str/includes? body "Collection Item 1</a>"))
-      (not (clj-str/includes? body "Collection Item 4</a>")))))
+      (string/includes? body (format "%s/%s" url (nth colls 1)))
+      (string/includes? body (format "%s/%s" url (nth colls 2)))
+      (string/includes? body "Collection Item 2</a>")
+      (string/includes? body "Collection Item 3</a>")
+      (string/includes? body "Collection Item 1001</a>")
+      (string/includes? body "Collection Item 1016</a>")
+      (not (string/includes? body "Collection Item 1</a>"))
+      (not (string/includes? body "Collection Item 4</a>")))))
 
 (defn expected-provider3-level-links?
   [body]
-  (clj-str/includes? body "EOSDIS holdings for the PROV3 provider")
+  (string/includes? body "EOSDIS holdings for the PROV3 provider")
   (let [url "https://doi.org"]
     (and
-      (clj-str/includes? body (format "%s/%s" url "doi102"))
-      (clj-str/includes? body (format "%s/%s" url "doi103"))
-      (clj-str/includes? body "Collection Item 102</a>")
-      (clj-str/includes? body "Collection Item 103</a>")
-      (not (clj-str/includes? body "Collection Item 101</a>")))))
+      (string/includes? body (format "%s/%s" url "doi102"))
+      (string/includes? body (format "%s/%s" url "doi103"))
+      (string/includes? body "Collection Item 102</a>")
+      (string/includes? body "Collection Item 103</a>")
+      (not (string/includes? body "Collection Item 101</a>")))))
 
 (defn expected-provider1-col1-link?
   [body]
   (let [url "concepts"
         colls (@test-collections "PROV1")]
     (and
-      (clj-str/includes? body (format "%s/%s" url (first colls)))
-      (clj-str/includes? body "Collection Item 1</a>"))))
+      (string/includes? body (format "%s/%s" url (first colls)))
+      (string/includes? body "Collection Item 1</a>"))))
 
 (defn expected-someadmin-level-links?
   "Test that the collections with guest permissions show up on the directory
   page and the rest do not"
   [body]
   (and
-    (clj-str/includes? body "EOSDIS holdings for the SOMEADMIN provider")
-    (clj-str/includes? body "Collection Item 120</a>")
-    (clj-str/includes? body "Collection Item 121</a>")
-    (clj-str/includes? body "Collection Item 122</a>")
-    (not (clj-str/includes? body "Collection Item 130</a>"))
-    (not (clj-str/includes? body "Collection Item 131</a>"))
-    (not (clj-str/includes? body "Collection Item 132</a>"))))
+    (string/includes? body "EOSDIS holdings for the SOMEADMIN provider")
+    (string/includes? body "Collection Item 120</a>")
+    (string/includes? body "Collection Item 121</a>")
+    (string/includes? body "Collection Item 122</a>")
+    (not (string/includes? body "Collection Item 130</a>"))
+    (not (string/includes? body "Collection Item 131</a>"))
+    (not (string/includes? body "Collection Item 132</a>"))))
 
 (def expected-over-ten-count
   "<td class=\"align-r\">\n        18\n      </td>")
@@ -215,7 +215,7 @@
           all-colls (flatten [over-ten-colls nodoi-colls doi-colls non-eosdis-provider-colls])
           tag-colls (conj (concat over-ten-colls someadmin-guest-colls someadmin-invisible-colls)
                           c2-p1 c2-p2 c2-p3 c3-p1 c3-p2 c3-p3 admin-1 admin-2)
-          _tag (tags/save-tag
+          tag (tags/save-tag
                 user-token
                 (tags/make-tag {:tag-key "gov.nasa.eosdis"})
                 tag-colls)]
@@ -281,16 +281,16 @@
       (is (expected-eosdis-level-links? body)))
     (testing "providers should be sorted by name"
       (is (and
-            (< (clj-str/index-of body "PROV1")
-               (clj-str/index-of body "PROV2"))
-            (< (clj-str/index-of body "PROV2")
-               (clj-str/index-of body "PROV3")))))
+           (< (string/index-of body "PROV1")
+              (string/index-of body "PROV2"))
+           (< (string/index-of body "PROV2")
+              (string/index-of body "PROV3")))))
     (testing "eosdis-level directory page should have header links"
       (is (expected-header-link? body)))
     (testing "provider page should have header links"
       (is (expected-header-link? body)))
     (testing "collection count is greater than the default 10-limit"
-      (is (clj-str/includes? body expected-over-ten-count)))))
+      (is (string/includes? body expected-over-ten-count)))))
 
 (deftest provider1-level-links
   (let [provider "PROV1"
@@ -367,9 +367,9 @@
   (testing "eosdis collections collections directory page returns content"
     (let [response (site/get-search-response "site/collections/directory/eosdis")]
       (is (= (:status response) 200))
-      (is (clj-str/includes?
+      (is (string/includes?
            (:body response)
            "Provider Holdings Directory"))
-      (is (clj-str/includes?
+      (is (string/includes?
            (:body response)
            "EOSDIS")))))

@@ -2,11 +2,13 @@
   "Tests for using the scroll parameter to retrieve search results"
   (:require
    [clj-http.client :as client]
-   [clojure.test :refer [deftest is testing use-fixtures]]
+   [clojure.string :as string]
+   [clojure.test :refer :all]
    [cmr.common-app.api.routes :as routes]
    [cmr.common-app.services.search :as cs]
    [cmr.common.mime-types :as mime-types]
-   [cmr.common.util :refer [are3]]
+   [cmr.common.util :as util :refer [are3]]
+   [cmr.elastic-utils.config :as es-config]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.utils.cache-util :as cache-util]
    [cmr.system-int-test.data2.core :as data2-core]
@@ -55,7 +57,6 @@
     (index/wait-until-indexed)
 
     (testing "UMM-JSON scrolling"
-      (declare concept-type accept extension all-refs)
       (are3 [concept-type accept extension all-refs]
             (let [response (search/find-concepts-umm-json
                             concept-type
@@ -281,9 +282,9 @@
     ;; The following test should not be removed and only uncommented during manual testing.
 
     #_(testing "Expired scroll-id is invalid"
-        (let [timeout (cmr.elastic-utils.config/elastic-scroll-timeout)
+        (let [timeout (es-config/elastic-scroll-timeout)
               ;; Set the timeout to one second
-              _ (cmr.elastic-utils.config/set-elastic-scroll-timeout! "1s")
+              _ (es-config/set-elastic-scroll-timeout! "1s")
               {:keys [scroll-id] :as result} (search/find-refs
                                               :granule
                                               {:provider "PROV1" :scroll true :page-size 2})]
@@ -301,7 +302,7 @@
               (is (= 404 (:status response)))
               (is (= (str "Scroll session [" scroll-id "] does not exist")
                      (first (:errors response))))))
-          (cmr.elastic-utils.config/set-elastic-scroll-timeout! timeout)))
+          (es-config/set-elastic-scroll-timeout! timeout)))
 
     (testing "disable scrolling"
       (dev-sys-util/eval-in-dev-sys
@@ -316,7 +317,6 @@
        `(cmr.common-app.services.search.parameter-validation/set-scrolling-enabled! true)))
 
     (testing "invalid parameters"
-      (declare query options status err-msg)
       (are3 [query options status err-msg]
             (let [response (search/find-refs :granule query (merge options {:allow-failure? true}))]
               (is (= status (:status response)))

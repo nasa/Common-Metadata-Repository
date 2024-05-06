@@ -137,9 +137,9 @@
 (defn- update-result-shapes
   "Returns the result with shapes in a set if applicable"
   [result]
-  (if-let [_shapes (:shapes result)]
-    (update-in result [:shapes] #(when % (set %)))
-    result))
+  (when (:shapes result)
+    (update-in result [:shapes] #(when % (set %))))
+  result)
 
 (defn- results-for-comparison
   "Returns the results that is suitable for comparison"

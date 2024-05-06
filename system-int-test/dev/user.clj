@@ -9,7 +9,7 @@
 
 (defn reset []
   (s/stop)
-  ; Refreshes all the code in repl
+  ;; Refreshes all the code in repl
   (refresh))
 
 (println "Custom user.clj loaded.")
