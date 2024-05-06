@@ -21,3 +21,7 @@ List impacted areas.
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation
 - [ ] My changes generate no new warnings
+- [ ] I have cleaned up integration tests by doing one or more of the following:
+  - de-duped, consolidated, removed dead int tests
+  - transformed applicable int tests into unit tests
+  - refactored to reduce number of system state resets by updating fixtures (use-fixtures :each (ingest/reset-fixture {})) to be :once instead of :each
