@@ -1,7 +1,7 @@
 (ns cmr.common-app.test.services.kms-lookup-errors-test
   "Unit tests for specific connection errors coming from kms-lookup"
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is testing]]
     [cmr.common-app.services.kms-lookup :as kms-lookup]
     [cmr.redis-utils.redis-hash-cache :as redis-hash-cache]))
 

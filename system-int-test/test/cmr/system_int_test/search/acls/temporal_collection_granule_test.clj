@@ -1,20 +1,16 @@
 (ns cmr.system-int-test.search.acls.temporal-collection-granule-test
   "Tests searching for collections and granules with temporal ACLs in place."
   (:require
-   [clj-time.core :as t]
    [clojure.string :as str]
    [clojure.test :refer :all]
-   [cmr.common.services.messages :as msg]
    [cmr.common.test.time-util :as tu]
    [cmr.common.util :refer [are2 are3] :as util]
    [cmr.mock-echo.client.echo-util :as e]
-   [cmr.redis-utils.test.test-util :as test-util]
    [cmr.system-int-test.data2.atom :as da]
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.data2.granule-counts :as gran-counts]
-   [cmr.system-int-test.data2.opendata :as od]
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]

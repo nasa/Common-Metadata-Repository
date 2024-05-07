@@ -1,10 +1,10 @@
 (ns cmr.umm.test.unit.collection.product-specific-attribute
   "Tests parsing product specific attribute components"
-  (:require [clojure.test :refer :all]
-            [cmr.umm.collection.product-specific-attribute :as psa]
-            [cmr.umm.umm-collection :as umm-c]
-            [clj-time.core :as t]))
-
+  (:require
+   [clj-time.core :as t]
+   [clojure.test :refer [are deftest is testing]]
+   [cmr.umm.collection.product-specific-attribute :as psa]
+   [cmr.umm.umm-collection :as umm-c]))
 
 (deftest parse-value-test
   (testing "parse int"

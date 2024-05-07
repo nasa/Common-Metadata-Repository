@@ -1,17 +1,15 @@
 (ns cmr.access-control.int-test.acl-crud-test
   (:require
-    [cheshire.core :as json]
-    [clj-http.client :as client]
-    [clojure.string :as string]
-    [clojure.test :refer :all]
-    [cmr.access-control.int-test.fixtures :as fixtures]
-    [cmr.access-control.services.acl-validation :as acl-validation]
-    [cmr.access-control.test.util :as test-util]
-    [cmr.common.util :as util :refer [are3]]
-    [cmr.mock-echo.client.echo-util :as echo-util]
-    [cmr.transmit.access-control :as access-control]
-    [cmr.transmit.config :as transmit-config]
-    [cmr.transmit.metadata-db2 :as metadata-db2]))
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
+   [cmr.access-control.int-test.fixtures :as fixtures]
+   [cmr.access-control.test.util :as test-util]
+   [cmr.common.util :as util :refer [are3]]
+   [cmr.mock-echo.client.echo-util :as echo-util]
+   [cmr.transmit.access-control :as access-control]
+   [cmr.transmit.config :as transmit-config]
+   [cmr.transmit.metadata-db2 :as metadata-db2]))
 
 (use-fixtures :each
               (fixtures/int-test-fixtures)
@@ -137,8 +135,7 @@
         any-acl-group-id (:concept_id any-acl-group)
         prov-obj-acl-group (test-util/ingest-group token-user1 {:name "prov obj acl group"} ["user2"])
         prov-obj-acl-group-id (:concept_id prov-obj-acl-group)
-        cat-item-prov-acl-group (test-util/ingest-group token-user1 {:name "cat item prov acl"} ["user3"])
-        cat-item-prov-acl-group-id (:concept_id cat-item-prov-acl-group)]
+        _cat-item-prov-acl-group (test-util/ingest-group token-user1 {:name "cat item prov acl"} ["user3"])]
 
     ;; Update ANY_ACL fixture to remove permissions to create from registered users.
     (access-control/update-acl (merge {:token guest-token} (test-util/conn-context))
@@ -147,6 +144,7 @@
                                 :group_permissions [{:user_type "guest" :permissions ["create" "update"]}]})
 
     (testing "Without permissions"
+      (declare token acl)
       (are3 [token acl]
         (let [{:keys [status body]} (access-control/create-acl
                                      (merge {:token token} (test-util/conn-context))
@@ -330,10 +328,11 @@
   (let [token (echo-util/login (test-util/conn-context) "admin")
         group1 (test-util/ingest-group token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
-        provider-id (:provider_id (:provider_identity (access-control/create-acl
+        _provider-id (:provider_id (:provider_identity (access-control/create-acl
                                                        (test-util/conn-context)
                                                        provider-acl
                                                        {:token token})))]
+    (declare re)
     (are3 [re acl]
           (is (thrown-with-msg? Exception re (access-control/create-acl
                                               (test-util/conn-context)
@@ -439,6 +438,7 @@
 
 (deftest acl-catalog-item-identity-validation-test
   (let [token (echo-util/login-guest (test-util/conn-context))]
+    (declare errors)
     (are3 [errors acl] (is (= errors (:errors (test-util/create-acl token acl {:raw? true}))))
 
           "An error is returned if creating a catalog item identity that does not grant permission
@@ -665,6 +665,7 @@
           ;; SingleInstanceIdentity ACL with a group that does not have legacy guid
           acl4 (test-util/single-instance-acl group2-concept-id)]
 
+      (declare expected-acl)
       (are3 [expected-acl acl]
         (let [concept-id (:concept_id (access-control/create-acl (test-util/conn-context) acl {:token token}))]
           (is (= expected-acl (access-control/get-acl (test-util/conn-context)
@@ -910,6 +911,7 @@
                                                             [:single_instance_identity :target_id]
                                                             group1-concept-id)
                                                   {:token token})]
+    (declare concept-id)
     (are3 [re acl concept-id]
           (is (thrown-with-msg? Exception re (access-control/update-acl (test-util/conn-context) concept-id acl {:token token})))
           ;; Acceptance criteria: I receive an error if creating an ACL missing required fields.
@@ -1301,6 +1303,7 @@
                                    {:token token})))
 
     (testing "DASHBOARD MDQ CURATOR  Acl permissions"
+      (declare perms params)
       (are3 [perms params]
         (is (= {"DASHBOARD_MDQ_CURATOR" perms}
                (json/parse-string
@@ -1373,12 +1376,11 @@
 (deftest CMR-5797-draft-mmt-acl-test
   (let [token (echo-util/login (test-util/conn-context) "admin")
         user1-token (echo-util/login (test-util/conn-context) "user1")
-        user2-token (echo-util/login (test-util/conn-context) "user2")
-        guest-token (echo-util/login-guest (test-util/conn-context))
+        _user2-token (echo-util/login (test-util/conn-context) "user2")
+        _guest-token (echo-util/login-guest (test-util/conn-context))
         group1 (test-util/ingest-group user1-token {:name "group1"} ["user1"])
-        group2 (test-util/ingest-group user1-token {:name "group2"} ["user2"])
+        _group2 (test-util/ingest-group user1-token {:name "group2"} ["user2"])
         group1-concept-id (:concept_id group1)
-        group2-concept-id (:concept_id group2)
         draft-acl {:group_permissions [{:user_type "guest"
                                         :permissions ["read"]}
                                        {:user_type "registered"
@@ -1467,7 +1469,7 @@
 (deftest CMR-5128-mmt-dashboard-acl-test
   (let [token (echo-util/login (test-util/conn-context) "admin")
         user1-token (echo-util/login (test-util/conn-context) "user1")
-        guest-token (echo-util/login-guest (test-util/conn-context))
+        _guest-token (echo-util/login-guest (test-util/conn-context))
         group1 (test-util/ingest-group user1-token {:name "group1"} ["user1"])
         group1-concept-id (:concept_id group1)
         dash-daac {:group_permissions [{:user_type "guest"

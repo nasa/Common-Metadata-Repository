@@ -1,6 +1,6 @@
 (ns cmr.common-app.test.data.humanizer-alias-cache-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache])
   (:import (clojure.lang ExceptionInfo)))
 

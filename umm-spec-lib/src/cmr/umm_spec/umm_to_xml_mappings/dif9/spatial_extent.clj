@@ -13,7 +13,7 @@
       (keyword (str "Minimum_Altitude"))
       (when (.contains elevation-type "Max")
         (keyword (str "Maximum_Altitude"))))
-    (if (.contains elevation-type "Depth")
+    (when (.contains elevation-type "Depth")
       (if (.contains elevation-type "Min")
         (keyword (str "Minimum_Depth"))
         (when (.contains elevation-type "Max")
@@ -68,5 +68,5 @@
   "This function creates a vector of maps that contain vertical spatial domain data.
    This data structure is used so that we can fill in the DIF 9 XML vertical spatail domain elements more easily."
   [c]
-  (if-let [vert (-> c :SpatialExtent :VerticalSpatialDomains)]
+  (when-let [vert (-> c :SpatialExtent :VerticalSpatialDomains)]
     (create-vertical-domain-maps vert [])))

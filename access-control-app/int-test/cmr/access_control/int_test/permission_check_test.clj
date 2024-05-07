@@ -5,7 +5,7 @@
    [clj-http.client :as client]
    [clj-time.core :as t]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
    [cmr.common.util :refer [are3]]
@@ -24,6 +24,7 @@
               (fixtures/grant-all-group-fixture ["PROV1" "PROV2"])
               (fixtures/grant-all-acl-fixture))
 
+(declare expected-response)
 (deftest permission-get-and-post-request-test
   (let [save-basic-collection (fn [short-name]
                                   (u/save-collection {:entry-title (str short-name " entry title")
@@ -237,6 +238,7 @@
                {:user_type (name user)}
                {:user_id user})))))
 
+(declare user permissions)
 (deftest collection-simple-catalog-item-identity-permission-check-test
   ;; tests ACLs which grant access to collections based on provider id and/or entry title
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
@@ -691,6 +693,7 @@
             :registered []
             "user1" ["read"]))))))
 
+(declare permissions1 permissions2)
 (deftest granule-permissions-with-collection-identifier-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
@@ -813,7 +816,7 @@
 (deftest granule-permissions-with-access-value-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
-        created-group-concept-id (:concept_id (u/create-group token group))
+        _ (u/create-group token group)
         save-prov1-collection #(u/save-collection {:provider-id "PROV1"
                                                    :entry-title (str % " entry title")
                                                    :native-id %
@@ -833,26 +836,26 @@
         gran6 (u/save-granule coll1 {:access-value 9} :umm-json)
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
         ;; guest read coll1 granules with undefined access value
-        acl1 (create-acl {:group_permissions [{:permissions [:read]
-                                               :user_type :guest}]
-                          :catalog_item_identity {:name "prov1 granules w/ undefined access value"
-                                                  :granule_applicable true
-                                                  :granule_identifier {:access_value {:include_undefined_value true}}
-                                                  :provider_id "PROV1"}})
+        _acl1 (create-acl {:group_permissions [{:permissions [:read]
+                                                :user_type :guest}]
+                           :catalog_item_identity {:name "prov1 granules w/ undefined access value"
+                                                   :granule_applicable true
+                                                   :granule_identifier {:access_value {:include_undefined_value true}}
+                                                   :provider_id "PROV1"}})
         ;; registered read granules with access value up to 7
-        acl2 (create-acl {:group_permissions [{:permissions [:read]
-                                               :user_type :registered}]
-                          :catalog_item_identity {:name "prov1 granules w/ max access value"
-                                                  :granule_applicable true
-                                                  :granule_identifier {:access_value {:min_value 0 :max_value 7}}
-                                                  :provider_id "PROV1"}})
+        _acl2 (create-acl {:group_permissions [{:permissions [:read]
+                                                :user_type :registered}]
+                           :catalog_item_identity {:name "prov1 granules w/ max access value"
+                                                   :granule_applicable true
+                                                   :granule_identifier {:access_value {:min_value 0 :max_value 7}}
+                                                   :provider_id "PROV1"}})
         ;; specific group read granules with access value 7 or higher
-        acl3 (create-acl {:group_permissions [{:permissions [:read]
-                                               :user_type :registered}]
-                          :catalog_item_identity {:name "prov1 granules w/ min access value"
-                                                  :granule_applicable true
-                                                  :granule_identifier {:access_value {:min_value 7 :max_value 1000}}
-                                                  :provider_id "PROV1"}})
+        _acl3 (create-acl {:group_permissions [{:permissions [:read]
+                                                :user_type :registered}]
+                           :catalog_item_identity {:name "prov1 granules w/ min access value"
+                                                   :granule_applicable true
+                                                   :granule_identifier {:access_value {:min_value 7 :max_value 1000}}
+                                                   :provider_id "PROV1"}})
         ;;remove some ACLs created in fixtures which we dont want polluting tests
         fixture-acls (:items (u/search-for-acls (transmit-config/echo-system-token) {:target "INGEST_MANAGEMENT_ACL"}))
         _ (doseq [fixture-acl fixture-acls]
@@ -875,7 +878,7 @@
 (deftest granule-permissions-with-temporal-value-test
   (let [token (e/login (u/conn-context) "user1" ["group-create-group"])
         group (u/make-group {:name "groupwithuser1" :members ["user1"]})
-        created-group-concept-id (:concept_id (u/create-group token group))
+        _ (u/create-group token group)
         save-prov1-collection #(u/save-collection {:provider-id "PROV1"
                                                    :entry-title (str % " entry title")
                                                    :native-id %
@@ -903,23 +906,23 @@
 
         create-acl #(:concept_id (ac/create-acl (u/conn-context) % {:token token}))
 
-        acl1 (create-acl {:group_permissions [{:permissions [:read]
-                                               :user_type :guest}]
-                          :catalog_item_identity {:name "prov1 granules between 2000 and 2011"
-                                                  :granule_applicable true
-                                                  :granule_identifier {:temporal {:start_date "2000-01-01T00:00:00Z"
-                                                                                  :stop_date "2011-01-01T00:00:00Z"
-                                                                                  :mask "contains"}}
-                                                  :provider_id "PROV1"}})
+        _acl1 (create-acl {:group_permissions [{:permissions [:read]
+                                                :user_type :guest}]
+                           :catalog_item_identity {:name "prov1 granules between 2000 and 2011"
+                                                   :granule_applicable true
+                                                   :granule_identifier {:temporal {:start_date "2000-01-01T00:00:00Z"
+                                                                                   :stop_date "2011-01-01T00:00:00Z"
+                                                                                   :mask "contains"}}
+                                                   :provider_id "PROV1"}})
 
-        acl2 (create-acl {:group_permissions [{:permissions [:read]
-                                               :user_type :registered}]
-                          :catalog_item_identity {:name "prov1 granules before 2000"
-                                                  :granule_applicable true
-                                                  :granule_identifier {:temporal {:start_date "1900-01-01T00:00:00Z"
-                                                                                  :stop_date "2000-01-01T00:00:00Z"
-                                                                                  :mask "contains"}}
-                                                  :provider_id "PROV1"}})
+        _acl2 (create-acl {:group_permissions [{:permissions [:read]
+                                                :user_type :registered}]
+                           :catalog_item_identity {:name "prov1 granules before 2000"
+                                                   :granule_applicable true
+                                                   :granule_identifier {:temporal {:start_date "1900-01-01T00:00:00Z"
+                                                                                   :stop_date "2000-01-01T00:00:00Z"
+                                                                                   :mask "contains"}}
+                                                   :provider_id "PROV1"}})
         ;;remove some ACLs created in fixtures which we dont want polluting tests
         fixture-acls (:items (u/search-for-acls (transmit-config/echo-system-token) {:target "INGEST_MANAGEMENT_ACL"}))
         _ (doseq [fixture-acl fixture-acls]

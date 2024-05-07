@@ -14,6 +14,7 @@
    [cmr.common.cache :as cache]
    [cmr.common.log :as log :refer [debug info warn error]]
    [cmr.common-app.api.health :as common-health]
+   [cmr.common-app.api.request-logger :as req-log]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.indexer.data.concepts.collection]
    [cmr.indexer.data.concepts.granule]
@@ -173,4 +174,6 @@
       handler/site
       common-routes/pretty-print-response-handler
       ring-json/wrap-json-body
-      ring-json/wrap-json-response))
+      ring-json/wrap-json-response
+      req-log/add-body-hashes
+      req-log/log-ring-request))

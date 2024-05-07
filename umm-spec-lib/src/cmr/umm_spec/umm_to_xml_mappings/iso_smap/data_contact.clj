@@ -111,9 +111,8 @@
           :let [umm-roles (set umm-roles)
                 dc-roles (set (:Roles data-center))
                 valid-roles (set/intersection umm-roles dc-roles)]
-          :when (not (empty? valid-roles))
-          :let [contact-info (:ContactInformation data-center)
-                data-center-name (generate-data-center-name data-center)
+          :when (seq valid-roles)
+          :let [data-center-name (generate-data-center-name data-center)
                 persons (:ContactPersons data-center)]]
     (for [person persons
           :let [roles (:Roles person)
@@ -146,7 +145,7 @@
          :let [umm-roles (set umm-roles)
                dc-roles (set (:Roles data-center))
                valid-roles (set/intersection umm-roles dc-roles)]
-         :when (not (empty? valid-roles))
+         :when (seq valid-roles)
          :let [contact-info (:ContactInformation data-center)
                data-center-name (generate-data-center-name data-center)]]
     (distinct

@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.test.location-keywords
   "Unit tests for GCMD Spatial Keywords -> LocationKeywords translation"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.redis-utils.test.test-util :as redis-embedded-fixture]
    [cmr.umm-spec.location-keywords :as lk]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]

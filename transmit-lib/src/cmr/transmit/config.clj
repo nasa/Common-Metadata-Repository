@@ -85,12 +85,13 @@
                "application is deployed in an environment where it is accessed through a VIP.")
          {:default ~(get defaults :relative-root-url "")}))))
 
+(declare access-control bootstrap indexer ingest kms ordering metadata-db search
+         urs virtual-product)
 (def-app-conn-config access-control {:port 3011})
 (def-app-conn-config bootstrap {:port 3006})
 (def-app-conn-config indexer {:port 3004})
 (def-app-conn-config ingest {:port 3002})
 (def-app-conn-config kms {:port 2999, :relative-root-url "/kms"})
-;; nothing is here, no respones is needed at this time
 (def-app-conn-config ordering {:port 2999, :relative-root-url "/ordering/api"})
 (def-app-conn-config metadata-db {:port 3001})
 ;; CMR open search is 3010
@@ -98,6 +99,7 @@
 (def-app-conn-config urs {:port 3008})
 (def-app-conn-config virtual-product {:port 3009})
 
+(declare kms-scheme-override-json)
 (defconfig kms-scheme-override-json
   "Allow for KMS schema urls to be overriden by setting this value to a JSON
    strings such as:
@@ -113,19 +115,23 @@
     "
   {:default ""})
 
+(declare urs-username)
 (defconfig urs-username
   "Defines the username that is sent from the CMR to URS to authenticate the CMR."
   {:default "mock-urs-username"})
 
+(declare urs-password)
 (defconfig urs-password
   "Defines the password that is sent from the CMR to URS to authenticate the CMR."
   {})
 
+(declare local-edl-verification)
 (defconfig local-edl-verification
   "Controls when cmr uses the EDL public key to locally verify JWT tokens."
   {:type Boolean
    :default true})
 
+(declare edl-public-key)
 (defconfig edl-public-key
   "Defines the EDL public key which is used to validate EDL JWT tokens locally.  Default is set to
    a locally generated EDL test jwk and is used in token unit tests"
@@ -136,6 +142,7 @@
   [mins]
   (* mins 60000))
 
+(declare http-socket-timeout)
 (defconfig http-socket-timeout
   "The number of milliseconds before an HTTP request will timeout."
   ;; This is set to a value bigger than what appears to the VIP timeout. There's a problem with
@@ -146,35 +153,43 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ECHO Rest
 
+(declare echo-rest-protocol)
 (defconfig echo-rest-protocol
   "The protocol to use when contructing ECHO Rest URLs."
   {:default "http"})
 
+(declare echo-rest-host)
 (defconfig echo-rest-host
   "The host name to use for connections to ECHO Rest."
   {:default "localhost"})
 
+(declare echo-rest-port set-echo-rest-port!)
 (defconfig echo-rest-port
   "The port to use for connections to ECHO Rest"
   {:default 3008 :type Long})
 
+(declare mock-echo-port set-mock-echo-port!)
 (defconfig mock-echo-port
   "The port to start mock echo and urs on"
   {:default 3008 :type Long})
 
+(declare mock-echo-relative-root-url)
 (defconfig mock-echo-relative-root-url
   "The relative root url for connections to Mock ECHO."
   {:default ""})
 
+(declare echo-rest-context)
 (defconfig echo-rest-context
   "The root context for connections to ECHO Rest."
   {:default ""})
 
+(declare echo-http-socket-timeout)
 (defconfig echo-http-socket-timeout
   "The number of milliseconds before an HTTP request to ECHO will timeout."
   {:default (mins->ms 60)
    :type Long})
 
+(declare echo-system-token)
 (defconfig echo-system-token
   "The ECHO system token to use for request to ECHO."
   {:default mock-echo-system-token})
@@ -184,6 +199,7 @@
   [context]
   (assoc context :token (echo-system-token)))
 
+(declare echo-system-username)
 (defconfig echo-system-username
   "The ECHO system token to use for request to ECHO."
   {:default "ECHO_SYS"})
@@ -196,10 +212,12 @@
       (= (echo-system-token) (:token token-or-context))
       (= (echo-system-username) (util/lazy-get token-or-context :user-id))))
 
+(declare administrators-group-name)
 (defconfig administrators-group-name
   "The name of the Administrators group which the echo system user belongs to."
   {:default "Administrators"})
 
+(declare administrators-group-legacy-guid)
 (defconfig administrators-group-legacy-guid
   "The legacy guid of the administrators guid."
   {:default mock-echo-system-group-guid})
@@ -208,6 +226,17 @@
   "The default values for connections."
   {:protocol "http"
    :context ""})
+
+(declare metadata-db-protocol metadata-db-host metadata-db-port metadata-db-relative-root-url set-metadata-db-port!
+         ingest-protocol ingest-host ingest-port ingest-relative-root-url
+         access-control-protocol access-control-host access-control-port access-control-relative-root-url set-access-control-port!
+         search-protocol search-host search-port search-relative-root-url
+         indexer-protocol indexer-host indexer-port indexer-relative-root-url
+         bootstrap-protocol bootstrap-host bootstrap-port bootstrap-relative-root-url
+         virtual-product-protocol virtual-product-host virtual-product-port virtual-product-relative-root-url
+         kms-protocol kms-host kms-port kms-relative-root-url
+         ordering-protocol ordering-host ordering-port ordering-relative-root-url
+         urs-protocol urs-host urs-port set-urs-port! urs-relative-root-url)
 
 (defn app-conn-info
   "Returns the current application connection information as a map by application name"
@@ -309,6 +338,7 @@
   [context]
   (format-public-root-url (get-in context [:system :public-conf])))
 
+(declare status-app-url)
 (defconfig status-app-url
   "The URL to be used for the status app in tophat"
   {:default "https://status.earthdata.nasa.gov/api/v1/notifications"

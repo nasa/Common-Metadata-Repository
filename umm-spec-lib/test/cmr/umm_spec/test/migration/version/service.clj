@@ -2,7 +2,7 @@
   (:require
    [cheshire.core :refer [decode]]
    [clojure.java.io :as io]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
@@ -43,6 +43,7 @@
     (is (= [["1.0" "1.1"]] (#'vm/version-steps :service "1.0" "1.1")))
     (is (= [["1.1" "1.0"]] (#'vm/version-steps :service "1.1" "1.0")))))
 
+(declare all-migrations-produce-valid-umm-spec umm-record dest-version)
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record   (gen/no-shrink umm-gen/umm-var-generator)
             dest-version (gen/elements (v/versions :service))]
@@ -189,73 +190,75 @@
                                    :ShortName "EED2"}]
            :OperationMetadata []}))))
 
+;; Test the create-main-url-for-1_3 function
+(declare expected-result related-urls)
 (deftest create-main-url-for-v1-3-test
-  "Test the create-main-url-for-1_3 function"
 
   (are3 [expected-result related-urls]
-    (is (= expected-result
-           (service/create-main-url-for-1_3 related-urls)))
+        (is (= expected-result
+               (service/create-main-url-for-1_3 related-urls)))
 
-    "Replace the RelatedURLs with the first DistributionURL."
-    {:Description "OPeNDAP Service for AIRX3STD.006"
-     :URLContentType "DistributionURL"
-     :Type "GET SERVICE"
-     :Subtype "OPENDAP DATA"
-     :URLValue "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"}
-    {:RelatedURLs
-      [{:Description "User Guide"
-        :URLContentType "PublicationURL"
-        :Type "VIEW RELATED INFORMATION"
-        :Subtype "USER'S GUIDE"
-        :URL "http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_L3_User_Guide.pdf"}
-       {:Description "OPeNDAP Service for AIRX3STD.006"
-        :URLContentType "DistributionURL"
-        :Type "GET SERVICE"
-        :Subtype "OPENDAP DATA"
-        :URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"}
-       {:Description "User Guide"
-        :URLContentType "PublicationURL"
-        :Type "VIEW RELATED INFORMATION"
-        :Subtype "USER'S GUIDE"
-        :URL "http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_L3_User_Guide.pdf"}]}
-
-    "Since DistributionURL doesn't exist nil is returned."
-    nil
-    {:RelatedURLs
-      [{:Description "User Guide"
-        :URLContentType "PublicationURL"
-        :Type "VIEW RELATED INFORMATION"
-        :Subtype "USER'S GUIDE"
-        :URL "http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_L3_User_Guide.pdf"}
-       {:Description "User Guide"
-        :URLContentType "PublicationURL"
-        :Type "VIEW RELATED INFORMATION"
-        :Subtype "USER'S GUIDE"
-        :URL "http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_L3_User_Guide.pdf"}]}))
-
-(deftest create-main-url-for-v1-2-test
-  "Test the create-main-url-for-1_2 function"
-
-  (are3 [expected-result url]
-    (is (= expected-result
-           (service/create-main-related-urls-for-1_2 url)))
-
-    "Replace the URL sub element with those from RelatedURL."
-    [{:Description "OPeNDAP Service for AIRX3STD.006"
-      :URLContentType "DistributionURL"
-      :Type "GET SERVICE"
-      :Subtype "OPENDAP DATA"
-      :URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"}]
-    {:URL {:Description "OPeNDAP Service for AIRX3STD.006"
+        "Replace the RelatedURLs with the first DistributionURL."
+        {:Description "OPeNDAP Service for AIRX3STD.006"
+         :URLContentType "DistributionURL"
+         :Type "GET SERVICE"
+         :Subtype "OPENDAP DATA"
+         :URLValue "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"}
+        {:RelatedURLs
+         [{:Description "User Guide"
+           :URLContentType "PublicationURL"
+           :Type "VIEW RELATED INFORMATION"
+           :Subtype "USER'S GUIDE"
+           :URL "http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_L3_User_Guide.pdf"}
+          {:Description "OPeNDAP Service for AIRX3STD.006"
            :URLContentType "DistributionURL"
            :Type "GET SERVICE"
            :Subtype "OPENDAP DATA"
-           :URLValue "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"}}
+           :URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"}
+          {:Description "User Guide"
+           :URLContentType "PublicationURL"
+           :Type "VIEW RELATED INFORMATION"
+           :Subtype "USER'S GUIDE"
+           :URL "http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_L3_User_Guide.pdf"}]}
+
+        "Since DistributionURL doesn't exist nil is returned."
+        nil
+        {:RelatedURLs
+         [{:Description "User Guide"
+           :URLContentType "PublicationURL"
+           :Type "VIEW RELATED INFORMATION"
+           :Subtype "USER'S GUIDE"
+           :URL "http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_L3_User_Guide.pdf"}
+          {:Description "User Guide"
+           :URLContentType "PublicationURL"
+           :Type "VIEW RELATED INFORMATION"
+           :Subtype "USER'S GUIDE"
+           :URL "http://docserver.gesdisc.eosdis.nasa.gov/repository/Mission/AIRS/3.3_ScienceDataProductDocumentation/3.3.4_ProductGenerationAlgorithms/V6_L3_User_Guide.pdf"}]}))
+
+;; Test the create-main-url-for-1_2 function
+(declare url)
+(deftest create-main-url-for-v1-2-test
+
+  (are3 [expected-result url]
+        (is (= expected-result
+               (service/create-main-related-urls-for-1_2 url)))
+
+        "Replace the URL sub element with those from RelatedURL."
+        [{:Description "OPeNDAP Service for AIRX3STD.006"
+          :URLContentType "DistributionURL"
+          :Type "GET SERVICE"
+          :Subtype "OPENDAP DATA"
+          :URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"}]
+        {:URL {:Description "OPeNDAP Service for AIRX3STD.006"
+               :URLContentType "DistributionURL"
+               :Type "GET SERVICE"
+               :Subtype "OPENDAP DATA"
+               :URLValue "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"}}
 
 
-    "Since there are no RelatedURLs none should come back."
-    nil
-    nil))
+        "Since there are no RelatedURLs none should come back."
+        nil
+        nil))
 
 (def remove-get-data-service-1-2->1-3-test-input
   {:Roles ["SCIENCE CONTACT"]
@@ -296,16 +299,17 @@
                                      :PostalCode "20771"}]}
    :GroupName "Main Level Group Name 1"})
 
+;; Test the remove-get-data-service-1-2->1-3 function
+(declare contact)
 (deftest remove-get-data-service-1-2->1-3-test
-  "Test the remove-get-data-service-1-2->1-3 function"
 
   (are3 [expected-result contact]
-    (is (= expected-result
-           (service/remove-get-data-service-1-2->1-3 contact)))
+        (is (= expected-result
+               (service/remove-get-data-service-1-2->1-3 contact)))
 
-    "Remove the GetService from the ContactGroups RelatedUrls element."
-    remove-get-data-service-1-2->1-3-test-expected
-    remove-get-data-service-1-2->1-3-test-input))
+        "Remove the GetService from the ContactGroups RelatedUrls element."
+        remove-get-data-service-1-2->1-3-test-expected
+        remove-get-data-service-1-2->1-3-test-input))
 
 (def service-org-contact-groups-v2
  '({:Roles ["SCIENCE CONTACT"],
@@ -383,15 +387,16 @@
     :MiddleName "Service Org MiddleName",
     :LastName "LastName Service Org"}))
 
+;; Test the update-service-organization-1_2->1_3 function
+(declare test-record)
 (deftest update-service-organization-1-2->1-3-test
-  "Test the update-service-organization-1_2->1_3 function"
 
   (let [s1-2 (decode
-               (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/Service_v1.2->v1.3.json")))
-               true)
+              (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/Service_v1.2->v1.3.json")))
+              true)
         s1-3 (decode
-               (slurp (io/file (io/resource "example-data/umm-json/service/v1.3/Service_v1.3-from-v1.2.json")))
-               true)
+              (slurp (io/file (io/resource "example-data/umm-json/service/v1.3/Service_v1.3-from-v1.2.json")))
+              true)
         serv-orgs [{:Roles ["SERVICE PROVIDER"],
                     :ShortName "NASA/GESDISC",
                     :LongName "GES DISC SERVICE HELP DESK SUPPORT GROUP"}
@@ -399,15 +404,15 @@
                     :ShortName "NASA/GESDISC-2",
                     :LongName "GES DISC SERVICE HELP DESK SUPPORT GROUP 2"}]]
     (are3 [expected-result test-record]
-      (let [actual-result (service/update-service-organization-1_2->1_3 test-record)]
-        (is (= (:ServiceOrganizations expected-result)
-               (:ServiceOrganizations actual-result)))
-        (is (= (:ContactGroups expected-result)
-               (:ContactGroups actual-result)))
-        (is (= (:ContactPersons expected-result)
-               (:ContactPersons actual-result))))
+          (let [actual-result (service/update-service-organization-1_2->1_3 test-record)]
+            (is (= (:ServiceOrganizations expected-result)
+                   (:ServiceOrganizations actual-result)))
+            (is (= (:ContactGroups expected-result)
+                   (:ContactGroups actual-result)))
+            (is (= (:ContactPersons expected-result)
+                   (:ContactPersons actual-result))))
 
-      "Move the ServiceOrganizations ContactGroups and ContactPersons to the main level ContactGroups
+          "Move the ServiceOrganizations ContactGroups and ContactPersons to the main level ContactGroups
        and ContactPersons.
        The input contains 2 ServiceOrganizations. The first ServiceOrganization contains 2 contact
        groups and 1 contact persons. The second has 1 contact group and no contact persons. The main
@@ -415,93 +420,94 @@
        person.
        In the output there are 2 ServiceOrganizations with no contact information in them. The main
        level contact groups contains 5 contact groups and the main level contact persons contains 2."
-      s1-3
-      s1-2
+          s1-3
+          s1-2
 
-      "Tests when ServiceOrganizations do not have any contacts and there no Contact Groups or Persons."
-      (-> s1-3
-          (assoc :ServiceOrganizations serv-orgs)
-          (dissoc :ContactGroups)
-          (dissoc :ContactPersons))
-      (-> s1-2
-          (assoc :ServiceOrganizations serv-orgs)
-          (dissoc :ContactGroups)
-          (dissoc :ContactPersons))
+          "Tests when ServiceOrganizations do not have any contacts and there no Contact Groups or Persons."
+          (-> s1-3
+              (assoc :ServiceOrganizations serv-orgs)
+              (dissoc :ContactGroups)
+              (dissoc :ContactPersons))
+          (-> s1-2
+              (assoc :ServiceOrganizations serv-orgs)
+              (dissoc :ContactGroups)
+              (dissoc :ContactPersons))
 
-      "Tests when no main level contact persons or groups exist"
-      (-> s1-3
-          (assoc :ContactGroups service-org-contact-groups-v2)
-          (assoc :ContactPersons service-org-contact-persons-v2))
-      (-> s1-2
-          (dissoc :ContactGroups)
-          (dissoc :ContactPersons)))))
+          "Tests when no main level contact persons or groups exist"
+          (-> s1-3
+              (assoc :ContactGroups service-org-contact-groups-v2)
+              (assoc :ContactPersons service-org-contact-persons-v2))
+          (-> s1-2
+              (dissoc :ContactGroups)
+              (dissoc :ContactPersons)))))
 
+;; Test the create-online-resource function.
+(declare serv-orgs)
 (deftest create-online-resource-test
-  "Test the create-online-resource function."
 
   (are3 [expected-result serv-orgs]
-    (is (= expected-result
-           (service/create-online-resource serv-orgs)))
+        (is (= expected-result
+               (service/create-online-resource serv-orgs)))
 
-    "Test getting the first ContactInformation RelatedURLs where the URLContentType is DataCenterURL.
+        "Test getting the first ContactInformation RelatedURLs where the URLContentType is DataCenterURL.
      The output is an OnlineResource structure."
-    {:Linkage "https://daacscenter1.org"
-     :Description "A description"
-     :Name "HOME PAGE"}
-    {:ContactInformation {:ServiceHours "1-4"
-                          :RelatedUrls [{:URLContentType "CollectionURL"
-                                         :Type "PROJECT HOME PAGE"
-                                         :URL "https://daacscenter1.org"}
-                                        {:URLContentType "DataCenterURL"
-                                         :Type "HOME PAGE"
-                                         :URL "https://daacscenter1.org"
-                                         :Description "A description"}]
-                          :ContactInstruction "instructions"}}
+        {:Linkage "https://daacscenter1.org"
+         :Description "A description"
+         :Name "HOME PAGE"}
+        {:ContactInformation {:ServiceHours "1-4"
+                              :RelatedUrls [{:URLContentType "CollectionURL"
+                                             :Type "PROJECT HOME PAGE"
+                                             :URL "https://daacscenter1.org"}
+                                            {:URLContentType "DataCenterURL"
+                                             :Type "HOME PAGE"
+                                             :URL "https://daacscenter1.org"
+                                             :Description "A description"}]
+                              :ContactInstruction "instructions"}}
 
-    "Tests When ContactInformation don't exist."
-    nil
-    nil
+        "Tests When ContactInformation don't exist."
+        nil
+        nil
 
-    "Tests when I don't have any RelatedURLs."
-    nil
-    {:ContactInformation {:ServiceHours "1-4",
-                          :ContactInstruction "instructions"}}))
+        "Tests when I don't have any RelatedURLs."
+        nil
+        {:ContactInformation {:ServiceHours "1-4",
+                              :ContactInstruction "instructions"}}))
 
+;; Test the update-service-organization-1_3->1_2 function
 (deftest update-service-organization-1-3->1-2-test
-  "Test the update-service-organization-1_3->1_2 function"
 
   (let [s1-2 (decode
-               (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/Service_v1.2-from-v1.3.json")))
-               true)
+              (slurp (io/file (io/resource "example-data/umm-json/service/v1.2/Service_v1.2-from-v1.3.json")))
+              true)
         s1-3 (decode
-               (slurp (io/file (io/resource "example-data/umm-json/service/v1.3/Service_v1.3->v1.2.json")))
-               true)]
+              (slurp (io/file (io/resource "example-data/umm-json/service/v1.3/Service_v1.3->v1.2.json")))
+              true)]
     (are3 [expected-result test-record]
-      (let [actual-result (service/update-service-organization-1_3->1_2 test-record)]
-        (is (= (:ServiceOrganizations expected-result)
-               actual-result)))
-      "Add the version 1.3 OnlineResource to ContactInformation RelatedUrls. Remove OnlineResource."
-      s1-2
-      s1-3)))
+          (let [actual-result (service/update-service-organization-1_3->1_2 test-record)]
+            (is (= (:ServiceOrganizations expected-result)
+                   actual-result)))
+          "Add the version 1.3 OnlineResource to ContactInformation RelatedUrls. Remove OnlineResource."
+          s1-2
+          s1-3)))
 
+;; Test the updated-service-type-1_3->1_2 function
 (deftest update-service-type-1-3->1-2-test
-  "Test the updated-service-type-1_3->1_2 function"
 
   (are3 [expected-result test-record]
-    (is (= expected-result
-           (service/update-service-type-1_3->1_2 test-record)))
+        (is (= expected-result
+               (service/update-service-type-1_3->1_2 test-record)))
 
-    "Test that WMTS gets translated to WMTS"
-    {:Type "WMS"}
-    {:Type "WMTS"}
+        "Test that WMTS gets translated to WMTS"
+        {:Type "WMS"}
+        {:Type "WMTS"}
 
-    "Test that EGI - No Processing is translated to WEB SERVICES"
-    {:Type "WEB SERVICES"}
-    {:Type "EGI - No Processing"}
+        "Test that EGI - No Processing is translated to WEB SERVICES"
+        {:Type "WEB SERVICES"}
+        {:Type "EGI - No Processing"}
 
-    "Testing that other values pass through"
-    {:Type "ECHO ORDERS"}
-    {:Type "ECHO ORDERS"}))
+        "Testing that other values pass through"
+        {:Type "ECHO ORDERS"}
+        {:Type "ECHO ORDERS"}))
 
 (defn- load-service-file
   "Load a test data file for services"
@@ -513,8 +519,8 @@
               slurp)
           true))
 
+(declare source-version source-file destination-version destination-file)
 (deftest migrations-up-and-down
-  ""
   (are3
    [source-version source-file destination-version destination-file]
    (let [expected (load-service-file destination-file)
@@ -609,7 +615,15 @@
 
    "Migrating up from 1.5.1 to 1.5.2"
    "1.5.1" "v1.5.1/Service_v1.5.1.json"
-   "1.5.2" "v1.5.2/Service_v1.5.1-to-v1.5.2.json"))
+   "1.5.2" "v1.5.2/Service_v1.5.1-to-v1.5.2.json"
+
+   "Migrating down from 1.5.3 to 1.5.2."
+   "1.5.3" "v1.5.3/Service_v1.5.3.json"
+   "1.5.2" "v1.5.3/Service_v1.5.3-to-v1.5.2.json"
+
+   "Migrating up from 1.5.2 to 1.5.3"
+   "1.5.2" "v1.5.2/Service_v1.5.2.json"
+   "1.5.3" "v1.5.3/Service_v1.5.2-to-v1.5.3.json"))
 
 (comment
 

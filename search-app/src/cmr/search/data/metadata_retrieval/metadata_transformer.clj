@@ -3,10 +3,10 @@
   (:require
    [cheshire.core :as json]
    [clojure.java.io :as io]
-   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer (debug)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as u]
@@ -128,7 +128,7 @@
                                                        (legacy/generate-metadata context umm target-format)))
                                               {}
                                               target-formats))]
-    (info "transform-with-strategy umm-lib: "
+    (debug "transform-with-strategy umm-lib: "
           "legacy/parse-concept time: " t1
           "reduce w/ legacy/generate-metadata time: " t2
           "concept-mime-type: " concept-mime-type
@@ -167,7 +167,7 @@
                                                                         (json/decode metadata true))))))
                                              {}
                                              target-formats))]
-    (info "transform-with-strategy migrate-umm-json: "
+    (debug "transform-with-strategy migrate-umm-json: "
           "time: " t
           "concept-mime-type: " concept-mime-type
           "concept-type: " concept-type
@@ -206,7 +206,7 @@
     (let [strategy (transform-strategy concept target-format)
           target-format-result-map (transform-with-strategy
                                     context concept strategy [target-format])]
-      (info (format "transform: concept: [%s] target-format: [%s] transform-strategy: [%s]"
+      (debug (format "transform: concept: [%s] target-format: [%s] transform-strategy: [%s]"
                     (:concept-id concept)
                     target-format
                     strategy))

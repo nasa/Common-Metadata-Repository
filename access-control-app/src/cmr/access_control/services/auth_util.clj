@@ -2,15 +2,16 @@
   (:require
    [cmr.access-control.config :as access-control-config]
    [cmr.acl.core :as acl]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.query-execution :as qe]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.tokens :as tokens]
    [cmr.transmit.urs :as urs]))
 
+(declare get-sids context username-or-type)
 (defn-timed get-sids
   "Returns a seq of sids for the given username string or user type keyword
    for use in checking permissions against acls."

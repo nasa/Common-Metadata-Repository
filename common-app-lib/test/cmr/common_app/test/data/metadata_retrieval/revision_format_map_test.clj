@@ -1,6 +1,6 @@
 (ns cmr.common-app.test.data.metadata-retrieval.revision-format-map-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.data.metadata-retrieval.revision-format-map :as crfm]
    [cmr.common.hash-cache :as hash-cache]
@@ -76,7 +76,7 @@
 
 (defn transform-multiple
   "moch test function to pass back an example of what the transform function returns."
-  [context concept target-formats ignore-exceptions?]
+  [_context _concept _target-formats _ignore-exceptions?]
   {:echo10 "<Collection><ShortName>SWOT_L2..."
    :dif "<DIF xmlns=\"http://gcmd.gsfc.n..."
    :dif10 "<DIF xmlns=\"http://gcmd.gsfc.n..."
@@ -85,12 +85,12 @@
 
 (defn transform-one
   "moch test function to pass back an example of what the transform function returns."
-  [context concept target-format]
+  [_context _concept _target-format]
   "<Collection><ShortName>SWOT_L2...")
 
 (defn transform-multiple-return-none
   "moch test function to pass back an example of what the transform function returns."
-  [context concept target-formats ignore-exceptions?]
+  [_context _concept _target-formats _ignore-exceptions?]
   nil)
 
 (deftest cached-formats-test

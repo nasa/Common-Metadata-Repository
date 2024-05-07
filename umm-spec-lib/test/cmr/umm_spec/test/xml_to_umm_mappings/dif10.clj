@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.dif10
   (:require [clj-time.core :as t]
-            [clojure.test :refer :all]
+            [clojure.test :refer [deftest is testing]]
             [cmr.common.util :as common-util :refer [are3]]
             [cmr.umm-spec.xml-to-umm-mappings.dif10 :as parse]))
 
@@ -151,14 +151,14 @@
              first
              :EndingDateTime))))
 
+;; Testing the direct distribution information translation from dif10 to UMM-C.
 (deftest dif10-direct-distribution-information-test
-  "Testing the direct distribution information translation from dif10 to UMM-C."
   (is (= {:Region "us-west-1"
           :S3BucketAndObjectPrefixNames ["bucket1" "bucket2"]
           :S3CredentialsAPIEndpoint "https://www.credAPIURL.org"
           :S3CredentialsAPIDocumentationURL "https://www.credAPIDocURL.org"}
          (:DirectDistributionInformation
-           (parse/parse-dif10-xml "<DIF>
+          (parse/parse-dif10-xml "<DIF>
                                      <DirectDistributionInformation>
                                        <Region>us-west-1</Region>
                                        <S3BucketAndObjectPrefixName>bucket1</S3BucketAndObjectPrefixName>
@@ -167,35 +167,36 @@
                                        <S3CredentialsAPIDocumentationURL>https://www.credAPIDocURL.org</S3CredentialsAPIDocumentationURL>
                                      </DirectDistributionInformation>
                                    </DIF>"
-                                   options)))))
+                                 options)))))
 
+;; Testing the direct distribution information translation from dif10 to UMM-C when its nil.
 (deftest dif10-direct-distribution-information-nil-test
-  "Testing the direct distribution information translation from dif10 to UMM-C when its nil."
   (is (= nil
          (:DirectDistributionInformation
-           (parse/parse-dif10-xml "<DIF>
+          (parse/parse-dif10-xml "<DIF>
                                    </DIF>"
-                                   options)))))
+                                 options)))))
 
+;; This tests the DIF 10 DOI translation from dif10 to UMM-C.
+(declare expected-doi-result expected-associated-doi-result test-string)
 (deftest dif10-doi-translation-test
-  "This tests the DIF 10 DOI translation from dif10 to UMM-C."
 
   (are3 [expected-doi-result expected-associated-doi-result test-string]
-    (let [result (parse/parse-dif10-xml test-string options)]
-      (is (= expected-doi-result
-             (:DOI result))
-          (= expected-associated-doi-result
-             (:AssociatedDOIs result))))
+        (let [result (parse/parse-dif10-xml test-string options)]
+          (is (= expected-doi-result
+                 (common-util/remove-nil-keys (:DOI result)))
+              (= expected-associated-doi-result
+                 (:AssociatedDOIs result))))
 
-    "Test the nominal success case."
-    {:DOI "10.5067/IAGYM8Q26QRE"}
-    [{:DOI "10.5678/assoc-doi-1"
-      :Title "Title1"
-      :Authority "doi.org"}
-     {:DOI "10.5678/assoc-doi-2"
-      :Title "Title2"
-      :Authority "doi.org"}]
-    "<DIF>
+        "Test the nominal success case."
+        {:DOI "10.5067/IAGYM8Q26QRE"}
+        [{:DOI "10.5678/assoc-doi-1"
+          :Title "Title1"
+          :Authority "doi.org"}
+         {:DOI "10.5678/assoc-doi-2"
+          :Title "Title2"
+          :Authority "doi.org"}]
+        "<DIF>
         <Dataset_Citation>
             <Dataset_Creator>JAXA</Dataset_Creator>
             <!--Dataset_Title was trimmed-->
@@ -219,12 +220,12 @@
         </AssociatedDOIs>
      </DIF>"
 
-    "Test missing Collection DOI."
-    {:MissingReason "Unknown",
-     :Explanation "It is unknown if this record has a DOI."}
-    [{:DOI "10.5678/assoc-doi-1", :Title "Title1", :Authority "doi.org"}
-     {:DOI "10.5678/assoc-doi-2", :Title "Title2", :Authority "doi.org"}]
-    "<DIF>
+        "Test missing Collection DOI."
+        {:MissingReason "Unknown",
+         :Explanation "It is unknown if this record has a DOI."}
+        [{:DOI "10.5678/assoc-doi-1", :Title "Title1", :Authority "doi.org"}
+         {:DOI "10.5678/assoc-doi-2", :Title "Title2", :Authority "doi.org"}]
+        "<DIF>
         <Dataset_Citation>
             <Dataset_Creator>JAXA</Dataset_Creator>
             <!--Dataset_Title was trimmed-->
@@ -244,10 +245,10 @@
         </AssociatedDOIs>
      </DIF>"
 
-    "Test missing AssociatedDOIs."
-    {:DOI "10.5067/IAGYM8Q26QRE"}
-    nil
-    "<DIF>
+        "Test missing AssociatedDOIs."
+        {:DOI "10.5067/IAGYM8Q26QRE"}
+        nil
+        "<DIF>
         <Dataset_Citation>
             <Dataset_Creator>JAXA</Dataset_Creator>
             <!--Dataset_Title was trimmed-->
@@ -259,15 +260,15 @@
         </Dataset_Citation>
      </DIF>"
 
-    "Test missing both Collection DOI and AssociatedDOIs."
-    {:MissingReason "Unknown",
-     :Explanation "It is unknown if this record has a DOI."}
-    nil
-    "<DIF>
+        "Test missing both Collection DOI and AssociatedDOIs."
+        {:MissingReason "Unknown",
+         :Explanation "It is unknown if this record has a DOI."}
+        nil
+        "<DIF>
      </DIF>"))
 
+;; Testing the dif10 use constraint translation from dif10 to umm-c.
 (deftest dif10-use-constraints-test
-  "Testing the dif10 use constraint translation from dif10 to umm-c."
 
   (testing "dif10 use constraints description test"
     (let [actual-data "<DIF>
@@ -378,24 +379,25 @@
       (is (= "Description" (:Description umm-result)))
       (is (= "License Text" (:LicenseText umm-result))))))
 
+;; This tests the DIF 10 related-url GET CAPABILITIES XML to UMM-C translation
+(declare expected record)
 (deftest dif10-related-urls-get-capabilities-test
-  "This tests the DIF 10 related-url GET CAPABILITIES XML to UMM-C translation"
 
   (are3 [expected record]
-    (let [result (parse/parse-dif10-xml record options)]
-      (is (= expected (:RelatedUrls result))))
+        (let [result (parse/parse-dif10-xml record options)]
+          (is (= expected (:RelatedUrls result))))
 
-    "Parsing USE SERVICE API into GET CAPABILITIES"
-    [{:URL "http://someurl.com/"
-      :Description "Some description"
-      :URLContentType "DistributionURL"
-      :Type "GET CAPABILITIES"
-      :Subtype "OpenSearch"
-      :GetData {:Format "Not provided"
-                :Size 0.0,
-                :Unit "KB",
-                :MimeType "application/opensearchdescription+xml"}}]
-    "<DIF>
+        "Parsing USE SERVICE API into GET CAPABILITIES"
+        [{:URL "http://someurl.com/"
+          :Description "Some description"
+          :URLContentType "DistributionURL"
+          :Type "GET CAPABILITIES"
+          :Subtype "OpenSearch"
+          :GetData {:Format "Not provided"
+                    :Size 0.0,
+                    :Unit "KB",
+                    :MimeType "application/opensearchdescription+xml"}}]
+        "<DIF>
        <Related_URL>
          <URL_Content_Type>
            <Type>USE SERVICE API</Type>
@@ -407,14 +409,14 @@
        </Related_URL>
      </DIF>"
 
-    "Checking USE SERVICE API and mime-type does not exist."
-    [{:URL "http://someurl.com/"
-      :Description "Some description"
-      :URLContentType "DistributionURL"
-      :Type "USE SERVICE API"
-      :Subtype "OpenSearch"
-      :GetService nil}]
-    "<DIF>
+        "Checking USE SERVICE API and mime-type does not exist."
+        [{:URL "http://someurl.com/"
+          :Description "Some description"
+          :URLContentType "DistributionURL"
+          :Type "USE SERVICE API"
+          :Subtype "OpenSearch"
+          :GetService nil}]
+        "<DIF>
        <Related_URL>
          <URL_Content_Type>
            <Type>USE SERVICE API</Type>

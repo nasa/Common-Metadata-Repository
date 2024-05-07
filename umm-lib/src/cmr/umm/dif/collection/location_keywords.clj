@@ -1,14 +1,9 @@
 (ns cmr.umm.dif.collection.location-keywords
   "Provide functions to parse and generate DIF location / spatial keyword elements."
   (:require
-   [clojure.data.xml :as x]
+   [clojure.set :as set]
    [cmr.common.xml :as cx]
-   [cmr.umm.umm-collection :as c]
-   [cmr.umm.dif.dif-core :as dif]
-   [cmr.umm.generator-util :as gu]
-   [cmr.common-app.services.kms-lookup :as kms-lookup]
-   [clojure.string :as str]
-   [clojure.set :as set]))
+   [cmr.common-app.services.kms-lookup :as kms-lookup]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; The following functions are all copied directly from the cmr.umm-spec.location-keywords namespace

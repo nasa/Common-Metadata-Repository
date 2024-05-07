@@ -4,19 +4,15 @@
   the same query. It is currently limited to spatial and temporal conditions within collection queries.
   Other types of conditions will not be included in limiting the granule counts."
   (:require
-   [clojure.data :as data]
    [clojure.string :as string]
-   [cmr.common-app.services.search.complex-to-simple :as c2s]
-   [cmr.common-app.services.search.elastic-search-index :as idx]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-execution :as query-execution]
-   [cmr.common-app.services.search.query-model :as q]
-   [cmr.common-app.services.search.query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.query-execution :as query-execution]
+   [cmr.common.services.search.query-model :as q]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.common.services.errors :as errors]
    [cmr.search.models.query :as qm]
-   [cmr.search.services.acl-service :as acl-service]
    [cmr.search.services.query-walkers.condition-extractor :as condition-extractor])
-  (:import [cmr.common_app.services.search.query_model
+  (:import [cmr.common.services.search.query_model
             Query
             ConditionGroup]
            [cmr.search.models.query

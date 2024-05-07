@@ -13,7 +13,7 @@
 
 (defmulti ^:private schema-type->generator
   "Converts a schema type into a Clojure test.check generator."
-  (fn [schema type-name schema-type]
+  (fn [_schema _type-name schema-type]
     (cond
       (:type schema-type) (:type schema-type)
       (:oneOf schema-type) "oneOf"
@@ -24,7 +24,7 @@
       (:$ref schema-type) :$ref)))
 
 (defmethod schema-type->generator :default
-  [schema type-name schema-type]
+  [_schema _type-name schema-type]
   (throw (Exception. (str "No method for " (pr-str schema-type)))))
 
 (defn- rejected-unexpected-fields
@@ -49,6 +49,7 @@
    []
    selected-properties))
 
+(declare num-optional-fields selected-properties selected-prop-gens prop-map)
 (defn- object-like-schema-type->generator
   "Takes an object-like schema type and generates a generator. By \"object-like\" it means a map
   with keys properties, required, and additionalProperties. This is used to handle a normal object
@@ -126,7 +127,6 @@
       ;; Using oneOfs with each only specifying :required
       (let [field-sets (mapv (comp set (partial mapv keyword)) (mapv :required one-of))
             all-required-fields (reduce into field-sets)
-            all-fields (set (keys (:properties schema-type)))
             one-of-types (for [field-set field-sets
                                :let [excluded-fields (set/difference all-required-fields field-set)]]
                            (-> schema-type
@@ -146,8 +146,8 @@
   [schema type-name schema-type]
   (rejected-unexpected-fields #{:properties :additionalProperties :required :oneOf
                                 :anyOf :allOf :if :then :else :not :dependencies :$id :title} schema-type)
-  (if-let [one-of (:oneOf schema-type)]
-    (object-one-of->generator schema type-name schema-type)
+  (if (:oneOf schema-type)
+   (object-one-of->generator schema type-name schema-type)
     ;; else
     (if-let [any-of (:anyOf schema-type)]
       (->> any-of
@@ -201,7 +201,7 @@
       (gen/vector item-generator minItems maxItems))))
 
 (defmethod schema-type->generator :$ref
-  [schema type-name schema-type]
+  [schema _type-name schema-type]
   (rejected-unexpected-fields #{:$ref} schema-type)
   (let [[ref-schema ref-schema-type] (js/lookup-ref schema schema-type)]
     (schema-type->generator ref-schema
@@ -215,7 +215,7 @@
    :maxLength 10})
 
 (defmethod schema-type->generator "string"
-  [schema type-name schema-type]
+  [_schema _type-name schema-type]
   (rejected-unexpected-fields #{:format :enum :minLength :maxLength :pattern :title} schema-type)
   (cond
     (= (:format schema-type) "date-time")

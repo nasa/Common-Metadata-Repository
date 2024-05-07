@@ -3,8 +3,6 @@
    [clojure.test :refer [deftest testing is use-fixtures]]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common.util :refer [are3]]
-   [cmr.common.log :as log]
    [cmr.common-app.services.cache-info :as cache-info]))
 
 (def log-content (atom []))

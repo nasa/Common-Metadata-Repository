@@ -1,7 +1,6 @@
 (ns cmr.umm-spec.migration.version.tool
   "Contains functions for migrating between versions of the UMM tool schema."
   (:require
-   [clojure.string :as string]
    [cmr.umm-spec.metadata-specification :as m-spec]
    [cmr.umm-spec.migration.version.interface :as interface]))
 
@@ -153,37 +152,37 @@
     tool)) 
  
 (defmethod interface/migrate-umm-version [:tool "1.0" "1.1"]
-  [context t & _]
+  [_context t & _]
   (-> t
       (dissoc :SearchAction)
       (m-spec/update-version :tool "1.1")))
 
 (defmethod interface/migrate-umm-version [:tool "1.1" "1.0"]
-  [context t & _]
+  [_context t & _]
   (-> t
       (dissoc :PotentialAction)
       (m-spec/update-version :tool "1.0")))
 
 (defmethod interface/migrate-umm-version [:tool "1.1" "1.1.1"]
-  [context t & _]
+  [_context t & _]
   (-> t
       (migrate-related-urls-1_1->1_1_1)
       (migrate-url-1_1->1_1_1)
       (m-spec/update-version :tool "1.1.1")))
 
 (defmethod interface/migrate-umm-version [:tool "1.1.1" "1.1"]
-  [context t & _]
+  [_context t & _]
   (-> t
       (migrate-related-urls-1_1_1->1_1)
       (migrate-url-1_1_1->1_1)
       (m-spec/update-version :tool "1.1")))
 
 (defmethod interface/migrate-umm-version [:tool "1.1.1" "1.2.0"]
-  [context t & _]
+  [_context t & _]
   (m-spec/update-version t :tool "1.2.0"))
 
 (defmethod interface/migrate-umm-version [:tool "1.2.0" "1.1.1"]
-  [context t & _]
+  [_context t & _]
   (-> t
       (migrate-related-urls-1_2_0->1_1_1) 
       (m-spec/update-version :tool "1.1.1")))

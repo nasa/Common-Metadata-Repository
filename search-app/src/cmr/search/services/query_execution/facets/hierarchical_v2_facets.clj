@@ -8,7 +8,7 @@
    [clojure.string :as string]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common.util :as util]
-   [cmr.common-app.services.search.parameters.converters.nested-field :as nested-field]
+   [cmr.elastic-utils.search.nested-field :as nested-field]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.search.services.query-execution.facets.hierarchical-links-helper :as hlh]
@@ -457,7 +457,7 @@
 
 (defn- get-facet-terms-for-subfield
   "Iterates through all nodes in facet tree collecting the field and title values.
-   
+
    Args
    hierarchical-facet-list - list of maps - nodes for facets
 
@@ -479,8 +479,8 @@
 (defn- search-terms-facets-diff
   "Given a map of facets and a map of search-terms, compares each key collecting any values
    from the search-terms that are not represented in the matching facet.
-   
-   Args 
+
+   Args
    fields - list of keywords - (:basis :category :sub-category :short-name)
    search-terms-grouped-by-field - map of sets of terms where keys are values in fields {:basis #{term-1 term-2} ...}
    facets-grouped-by-field - map of sets of terms where keys are values in fields {:basis #{term-1 term-2} ...}
@@ -501,7 +501,7 @@
 (defn- get-missing-subfield-term-tuples
   "Compares the provided facet object and query-params to find any query-params
    that are not included in the provided facet.
-   
+
    Args
    field - keyword - Facet type: platform, keyword, instrument, ...
    field-hierarchy - list of keywords - (:basis :category :sub-category :short-name)

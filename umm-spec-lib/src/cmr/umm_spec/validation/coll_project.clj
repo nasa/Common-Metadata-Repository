@@ -3,7 +3,6 @@
   (:require
    [clj-time.core :as time]
    [cmr.common.validations.core :as v]
-   [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]))
 
 (defn- project-date-validation

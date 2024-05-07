@@ -3,10 +3,10 @@
   (:require
    [clojure.string :as string]
    [cmr.common.util :as util]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as parsing-util]
-   [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value gmx-anchor-value]]))
+   [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]))
 
 (defn parse-formats
   "Parses Format and FormatType values from ISO XML.
@@ -19,7 +19,7 @@
                                   (parsing-util/convert-iso-description-string-to-map
                                     specification
                                     (re-pattern "FormatType:|FormatDescription:")))
-              [href href-type block-id] (re-matches #"(.*)_(\d+)$" (or (get-in format [:attrs :xlink/href]) ""))]
+              [_href _href-type block-id] (re-matches #"(.*)_(\d+)$" (or (get-in format [:attrs :xlink/href]) ""))]
         :when block-id]
     {:block-id (read-string block-id)
      :Format format-name
@@ -32,7 +32,7 @@
    The block-id is used to associated the correct values for each FileDistributionInformation."
   [transfer-options]
   (for [transfer-option transfer-options
-        :let [[href href-type block-id] (re-matches #"(.*)_(\d+)$" (or (get-in transfer-option [:attrs :xlink/href] "")))]
+        :let [[_href href-type block-id] (re-matches #"(.*)_(\d+)$" (get-in transfer-option [:attrs :xlink/href] ""))]
         :when block-id
         :let [AverageFileSize (when (= href-type "FileDistributionInformation_AverageFileSize")
                                 (value-of transfer-option "gmd:MD_DigitalTransferOptions/gmd:transferSize/gco:Real"))
@@ -56,7 +56,7 @@
    The block-id is used to associated the correct values for each FileDistributionInformation."
   [distributors]
   (for [distributor distributors
-        :let [[href href-type block-id] (re-matches #"(.*)_(\d+)$" (or (get-in distributor [:attrs :xlink/href]) ""))]
+        :let [[_href _href-type block-id] (re-matches #"(.*)_(\d+)$" (or (get-in distributor [:attrs :xlink/href]) ""))]
         :when block-id]
     {:block-id (read-string block-id)
      :Fees (char-string-value distributor "gmd:MD_Distributor/gmd:distributionOrderProcess/gmd:MD_StandardOrderProcess/gmd:fees")
@@ -120,20 +120,22 @@
    archive-info-xpath is what differentiates between the two, the calling function will pass
    the relevant path."
   [doc archive-info-xpath]
-  (for [archive (select doc archive-info-xpath)
-        :let [{:keys [FormatType FormatDescription AverageFileSize
-                      AverageFileSizeUnit TotalCollectionFileSize
-                      TotalCollectionFileSizeUnit Description]} (parse-archive-info-specification archive)]]
-    {:Format (char-string-value archive "gmd:MD_Format/gmd:name")
-     :FormatType FormatType
-     :FormatDescription FormatDescription
-     :AverageFileSize (when AverageFileSize
-                        (read-string AverageFileSize))
-     :AverageFileSizeUnit AverageFileSizeUnit
-     :TotalCollectionFileSize (when TotalCollectionFileSize
-                                (read-string TotalCollectionFileSize))
-     :TotalCollectionFileSizeUnit TotalCollectionFileSizeUnit
-     :Description Description}))
+  (seq
+   (for [archive (select doc archive-info-xpath)
+         :let [{:keys [FormatType FormatDescription AverageFileSize
+                       AverageFileSizeUnit TotalCollectionFileSize
+                       TotalCollectionFileSizeUnit Description]} (parse-archive-info-specification archive)]
+         :when (not (= "FileNamingConvention" (char-string-value archive "gmd:MD_Format/gmd:name")))]
+     {:Format (char-string-value archive "gmd:MD_Format/gmd:name")
+      :FormatType FormatType
+      :FormatDescription FormatDescription
+      :AverageFileSize (when AverageFileSize
+                         (read-string AverageFileSize))
+      :AverageFileSizeUnit AverageFileSizeUnit
+      :TotalCollectionFileSize (when TotalCollectionFileSize
+                                 (read-string TotalCollectionFileSize))
+      :TotalCollectionFileSizeUnit TotalCollectionFileSizeUnit
+      :Description Description})))
 
 (defn parse-archive-dist-info
   "Parses ArchiveAndDistributionInformation from ISO MENDS and SMAP XML."
@@ -169,7 +171,7 @@
   [distributor]
   (into {}
     (for [transfer-option (select distributor "gmd:MD_Distributor/gmd:distributorTransferOptions")
-          :let [[href href-type] (re-matches #"(.*)$" (or (get-in transfer-option [:attrs :xlink/href] "")))]
+          :let [[_href href-type] (re-matches #"(.*)$" (get-in transfer-option [:attrs :xlink/href] ""))]
           :when (string/includes? href-type "DirectDistributionInformation_S3CredentialsAPI")]
       (cond
         (= href-type "DirectDistributionInformation_S3CredentialsAPIEndpoint")
@@ -186,7 +188,7 @@
   [doc dist-info-xpath]
   (first
     (for [distributor (select doc (str dist-info-xpath "/gmd:distributor"))
-          :let [[href href-type] (re-matches #"(.*)$" (or (get-in distributor [:attrs :xlink/href]) ""))
+          :let [[_href href-type] (re-matches #"(.*)$" (or (get-in distributor [:attrs :xlink/href]) ""))
                 {:keys [Region
                         S3BucketAndObjectPrefixNames]}
                 (parse-direct-dist-info-instruction distributor)

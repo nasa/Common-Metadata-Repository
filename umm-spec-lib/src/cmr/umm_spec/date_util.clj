@@ -3,10 +3,10 @@
   (:require
    [clj-time.format :as f]
    [clj-time.core :as time-core]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.date-time-parser :as p]
    [cmr.common.time-keeper :as time-keeper]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
    [cmr.umm-spec.models.umm-common-models :as cmn]))
 
 (def default-date-value "1970-01-01T00:00:00")
@@ -50,7 +50,7 @@
   "Get the date at the location in the doc and parse it into a UMM DateType"
   [doc date-location type]
   (when-let [date (value-of doc date-location)]
-    (cmn/map->DateType {:Date (f/parse (str/trim date))
+    (cmn/map->DateType {:Date (f/parse (string/trim date))
                         :Type type})))
 
 (defn latest-date-of-type
@@ -79,7 +79,7 @@
   [date sanitize?]
   (if sanitize?
     (if-let [parsed-date (some-> date
-                                 (str/replace "/" "-")
+                                 (string/replace "/" "-")
                                  f/parse)]
       (p/clj-time->date-time-str parsed-date)
       date)
@@ -93,7 +93,7 @@
       (time-core/equal? date
                      date)
       (catch
-        Exception e nil))))
+        Exception _e nil))))
 
 (defn is-in-past?
   "Parse date and return true if date is in the past, false if not or date is nil"

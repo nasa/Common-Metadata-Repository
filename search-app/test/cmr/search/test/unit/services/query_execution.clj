@@ -3,10 +3,9 @@
   queries are given the correct execution strategy."
   (:require
    [clojure.test :refer :all]
-   [cmr.common-app.services.search.params :as pc]
-   [cmr.common-app.services.search.query-execution :as qe]
+   [cmr.elastic-utils.search.es-params-converter :as pc]
+   [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.search.services.query-execution :as search-qe]))
-
 
 (defn- params->query-execution-strategy
   "Converts parameters to a query and then returns the query execution strategy used on that."

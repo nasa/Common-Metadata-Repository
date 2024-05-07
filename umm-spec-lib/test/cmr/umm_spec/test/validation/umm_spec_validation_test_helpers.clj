@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.test.validation.umm-spec-validation-test-helpers
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [is]]
    [cmr.common.date-time-parser :as dtp]
    [cmr.umm-spec.models.umm-common-models :as c]
    [cmr.umm-spec.models.umm-collection-models :as coll]

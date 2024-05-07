@@ -5,6 +5,8 @@
    [cmr.common.util :as util :refer [update-in-each]]
    [cmr.umm-spec.date-util :as du]
    [cmr.umm-spec.iso-keywords :as kws]
+   [cmr.umm-spec.iso19115-2-util :as iso-util]
+   [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
@@ -30,14 +32,6 @@
                (update :Description #(when % (string/trim %)))
                iso-shared/expected-related-url-get-data
                iso-shared/expected-related-url-get-service)))))
-
-(defn- normalize-smap-instruments
-  "Collects all instruments across given platforms and returns a seq of platforms with all
-  instruments under each one."
-  [platforms]
-  (let [all-instruments (seq (mapcat :Instruments platforms))]
-    (for [platform platforms]
-      (assoc platform :Instruments all-instruments))))
 
 (defn- expected-smap-iso-spatial-extent
   "Returns the expected SMAP ISO spatial extent"
@@ -111,11 +105,13 @@
      (-> (remove #(= % "ARCHIVER") roles)
          vec
          add-archiver)
+     
      (archiver? roles)
      (add-distributor roles)
+
      (distributor? roles)
      (add-archiver roles)
-     :default roles)))
+     :else roles)))
 
 (defn- expected-data-center-roles
   "Returns data center with :Roles modified to what is expected"
@@ -248,6 +244,7 @@
   "Changes the temporal extent to the expected outcome of a ISO SMAP translation."
   [temporal-extents]
   (->> temporal-extents
+       (map #(dissoc % :TemporalResolution))
        (map #(assoc % :PrecisionOfSeconds nil))
        iso-shared/fixup-iso-ends-at-present
        (iso-shared/split-temporals :RangeDateTimes)
@@ -310,5 +307,9 @@
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:Platforms] char-data-type-normalization/normalize-platform-characteristics-data-type)
       (update :DOI iso-shared/expected-doi)
+      (update :DOI #(dissoc % :PreviousVersion))
       (update :ArchiveAndDistributionInformation iso-shared/expected-archive-dist-info)
-      (dissoc :StandardProduct)))
+      (dissoc :StandardProduct :DataMaturity :OtherIdentifiers :FileNamingConvention)
+      (update-in-each [:AssociatedDOIs] #(-> %
+                                             (update :DescriptionOfOtherType iso-util/safe-trim)))
+      js/parse-umm-c))

@@ -5,9 +5,9 @@
   (:import
    (java.net URL MalformedURLException)))
 
-(defn ^URL url
+(defn url
   "Attempts to return a URL from the provided value. Returns nil if the value is not a URL."
-  [x]
+  ^URL [x]
   (if (isa? x URL)
     x
     (try

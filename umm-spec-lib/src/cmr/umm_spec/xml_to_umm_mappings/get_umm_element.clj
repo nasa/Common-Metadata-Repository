@@ -2,7 +2,7 @@
   "Functions for getting UMM element out of XML documents of other formats."
   (:require
    [clojure.string :as string]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer :all]
    [cmr.umm-spec.util :as umm-spec-util]))
 

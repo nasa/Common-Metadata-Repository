@@ -1,13 +1,14 @@
 (ns cmr.umm.test.unit.validation.collection-validation-tests
   "This has tests for UMM validations."
-  (:require [clojure.test :refer :all]
-            [cmr.umm.validation.validation-core :as v]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.test.unit.validation.validation-test-helpers :as helpers]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.point :as p]
-            [cmr.common.services.errors :as e]
-            [cmr.umm.collection.product-specific-attribute :as psa]))
+  (:require
+   [clojure.test :refer [are deftest is testing]]
+   [cmr.common.services.errors :as e]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.umm.collection.product-specific-attribute :as psa]
+   [cmr.umm.test.unit.validation.validation-test-helpers :as helpers]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.validation.validation-core :as v]))
 
 (defn assert-valid
   "Asserts that the given collection is valid."

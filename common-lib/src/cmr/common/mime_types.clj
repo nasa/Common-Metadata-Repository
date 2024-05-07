@@ -59,7 +59,9 @@
 
 ;; The following media types are recognized by the CMR for use in various places. The map below is used
 ;; to dynamically create vars containing the recognized base MIME type for each keyword on the left.
-
+;; To keep the linters happy, please declare any var that will be used in this namespace from this function.
+(declare json umm-json umm-json-results legacy-umm-json timeline xml form-url-encoded echo10 iso-smap iso19115
+         dif dif10 csv html atom kml opendatastac native edn opendap octet-stream shapefile geojson multi-part-form)
 (def ^:private base-format->mime-type
   "A map of format keywords to MIME types. Each keyword will have a corresponding var def'ed in this
   namespace for other namespaces to reference."

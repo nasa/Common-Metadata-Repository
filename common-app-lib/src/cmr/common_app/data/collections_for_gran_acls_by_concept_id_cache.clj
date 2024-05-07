@@ -4,9 +4,9 @@
   - coll-by-concept-id-cache = collection-for-gran-acls-by-concept-id-cache"
   (:require
    [clojure.walk :as walk]
-   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as q-mod]
+   [cmr.elastic-utils.search.es-acl-parser :as acl-rhh]
+   [cmr.elastic-utils.search.query-execution :as qe]
+   [cmr.common.services.search.query-model :as q-mod]
    [cmr.common.date-time-parser :as time-parser]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
@@ -119,8 +119,8 @@
      collection-found))
 
 (defn get-collection-for-gran-acls
-  [context coll-concept-id]
   "Gets a single collection from the cache by concept id. If collection is not found in cache, but exists in elastic, it will add it to the cache and will return the found collection."
+  [context coll-concept-id]
   (let [coll-by-concept-id-cache (hash-cache/context->cache context coll-by-concept-id-cache-key)
         collection (hash-cache/get-value coll-by-concept-id-cache
                                          coll-by-concept-id-cache-key
@@ -132,7 +132,7 @@
       (time-strs->clj-times collection))))
 
 (defjob RefreshCollectionsCacheForGranuleAclsJob
-        [ctx system]
+        [_ctx system]
         (refresh-entire-cache {:system system}))
 
 (defn refresh-collections-cache-for-granule-acls-job

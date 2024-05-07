@@ -4,7 +4,7 @@
   (:require
     [clojure.test :refer :all]
     [cmr.common.util :refer [are3]]
-    [cmr.search.data.keywords-to-elastic :as k2e]
+    [cmr.elastic-utils.search.keywords-to-elastic :as k2e]
     [cmr.system-int-test.data2.collection :as dc]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.utils.index-util :as index]

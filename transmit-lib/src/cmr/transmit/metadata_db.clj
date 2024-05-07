@@ -5,13 +5,11 @@
   they do not throw exceptions except in exceptional cases like an invalid status code. A concept
   not being found is not considered an exceptional case."
   (:require
-   [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.string :as str]
-   [clojure.walk :as walk]
+   [clojure.string :as string]
    [cmr.common.api.context :as ch]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info warn)]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
    [cmr.common.util :as util :refer [defn-timed]]
@@ -21,6 +19,7 @@
    [ring.util.codec :as codec]
    [cmr.transmit.http-helper :as h]))
 
+(declare get-concept context concept-id revision-id)
 (defn-timed get-concept
   "Retrieve the concept with the given concept and revision-id"
   [context concept-id revision-id]
@@ -29,6 +28,7 @@
         :not-found
         (str "Failed to retrieve concept " concept-id "/" revision-id " from metadata-db."))))
 
+(declare get-latest-concept context concept-id throw-service-error?)
 (defn-timed get-latest-concept
   "Retrieve the latest version of the concept"
   ([context concept-id]
@@ -40,6 +40,7 @@
            :not-found
            (str "Failed to retrieve concept " concept-id " from metadata-db."))))))
 
+(declare get-concept-id context concept-type provider-id native-id throw-service-error?)
 (defn-timed get-concept-id
   "Return the concept-id for the concept matches the given arguments.
   By default, throw-service-error? is true and a 404 error is thrown if the concept is not found in
@@ -73,6 +74,7 @@
              err-msg (str "Concept id fetch failed. MetadataDb app response status code: "  status)]
          (errors/internal-error! (str err-msg  " " errors-str)))))))
 
+(declare get-concept-revisions context concept-tuples allow-missing?)
 (defn-timed get-concept-revisions
   "Search metadata db and return the concepts given by the concept-id, revision-id tuples."
   ([context concept-tuples]
@@ -106,6 +108,7 @@
                                     " "
                                     response))))))
 
+(declare get-latest-concepts context concept-ids allow-missing?)
 (defn-timed get-latest-concepts
   "Search metadata db and return the latest-concepts given by the concept-id list"
   ([context concept-ids]
@@ -163,7 +166,7 @@
       ;; default
       (errors/internal-error!
         (format "%s search failed. status: %s body: %s"
-                (str/capitalize (name concept-type)) status body)))))
+                (string/capitalize (name concept-type)) status body)))))
 
 (defn find-latest-concept
   "Searches metadata db for the latest concept matching the given parameters. Do not throw serivce
@@ -177,7 +180,7 @@
       ;; default
       (errors/internal-error!
         (format "%s search failed. status: %s body: %s"
-                (str/capitalize (name concept-type)) status body)))))
+                (string/capitalize (name concept-type)) status body)))))
 
 (defn get-associations-by-collection-concept-id
   "Get all the associations of the given type (including tombstones) for a collection
@@ -293,6 +296,7 @@
       (errors/internal-error!
        (format "association search failed. status: %s body: %s" status body)))))
 
+(declare find-collections params)
 (defn-timed find-collections
   "Searches metadata db for concepts matching the given parameters."
   [context params]
@@ -314,6 +318,7 @@
        ;; It's important this step is done lazily.
        (map #(get-concept-revisions context %))))
 
+(declare get-expired-collection-concept-ids)
 (defn-timed get-expired-collection-concept-ids
   "Searches metadata db for collections in a provider that have expired and returns their concept ids."
   [context provider-id]
@@ -347,6 +352,7 @@
                   :throw-exceptions false
                   :http-options (h/include-request-id context {})})))
 
+(declare create-provider provider)
 (defn-timed create-provider
   "Create the provider with the given provider id"
   [context provider]
@@ -356,6 +362,7 @@
         (format "Failed to create provider status: %s body: %s"
                 status body)))))
 
+(declare read-provider)
 (defn-timed read-provider
   "Reads a provider with the given provider id"
   [context provider-id]
@@ -366,6 +373,7 @@
                  :throw-exceptions false
                  :http-options (h/include-request-id context {})})))
 
+(declare read-providers)
 (defn-timed read-providers
   "Reads all providers"
   [context]
@@ -399,6 +407,7 @@
                                 :headers {config/token-header (config/echo-system-token)}
                                 :http-options (h/include-request-id context {})})))
 
+(declare delete-provider)
 (defn-timed delete-provider
   "Delete the provider with the matching provider-id from the CMR metadata repo."
   [context provider-id]
@@ -431,6 +440,7 @@
                                      :method :get 
                                      :http-options (h/include-request-id context {:query-params {:meta true}})})))
 
+(declare get-providers)
 (defn-timed get-providers
   "Returns the list of provider ids configured in the metadata db"
   [context]
@@ -441,6 +451,7 @@
       ;; default
       (errors/internal-error! (format "Failed to get providers status: %s body: %s" status body)))))
 
+(declare save-concept concept)
 (defn-timed save-concept
   "Saves a concept in metadata db"
   [context concept]
@@ -482,6 +493,7 @@
        (format "Save concept failed. MetadataDb app response status code: %s response: %s"
                status response)))))
 
+(declare delete-draft)
 (defn-timed delete-draft
   "delete a draft in metadata db"
   [context concept]

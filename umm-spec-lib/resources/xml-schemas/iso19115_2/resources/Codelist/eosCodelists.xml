@@ -187,4 +187,53 @@
          </gmx:codeEntry>
       </gmx:CodeListDictionary>
    </gmx:codelistItem>
+   <!--=== DS_AssociationTypeCode ===-->
+   <gmx:codelistItem>
+      <gmx:CodeListDictionary gml:id="EOS_AssociationTypeCode">
+         <gml:description>justification for the correlation of two datasets</gml:description>
+         <gml:identifier codeSpace="gov.nasa.esdis.umm">EOS_AssociationTypeCode</gml:identifier>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AssociationTypeCode_childDataset">
+               <gml:description>reference from one dataset to another</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis.umm">Child_Dataset</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AssociationTypeCode_collaborativeOtherAgency">
+               <gml:description>reference to a master dataset of which this one is a part</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis.umm">Collaborative_Other_Agency</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AssociationTypeCode_fieldCampaign">
+               <gml:description>part of the same structured set of data held in a computer</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis.umm">Field_Campaign</gml:identifier>
+         </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AssociationTypeCode_parentDataset">
+               <gml:description>mapping and charting information from which the dataset content originates</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis.umm">Parent_Dataset</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AssociationTypeCode_relatedDataset">
+               <gml:description>part of a set of imagery that when used together, provides three-dimensional images</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis.umm">Related_Dataset</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AssociationTypeCode_other">
+               <gml:description>part of a set of larger works that is identified by a digital object identifier.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis.umm">Other</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+         <gmx:codeEntry>
+            <gmx:CodeDefinition gml:id="EOS_AssociationTypeCode_doiPreviousVersion">
+               <gml:description>part of a set of larger works that is identified by a digital object identifier.</gml:description>
+               <gml:identifier codeSpace="gov.nasa.esdis.umm">DOI_Previous_Version</gml:identifier>
+            </gmx:CodeDefinition>
+         </gmx:codeEntry>
+      </gmx:CodeListDictionary>
+   </gmx:codelistItem>
 </gmx:CT_CodelistCatalogue>

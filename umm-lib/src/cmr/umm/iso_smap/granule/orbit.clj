@@ -2,19 +2,20 @@
   "Functions for parsing the orbit information from ISO SMAP granule metadata as well as
   generating ISO SMAP granule metadata XML from the UMM granule model."
   (:require
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.date-time-parser :as date-time-parser]
-   [cmr.common.log :refer [info debug error]]
+   [cmr.common.log :refer [info]]
    [cmr.common.util :as util]
-   [cmr.common.validations.core :as v]
+   [cmr.common.validations.core :as v-core]
    [cmr.common.xml :as cx]
    [cmr.spatial.encoding.gmd :as gmd]
    [cmr.spatial.messages :as msg]
    [cmr.spatial.validation :as sv]
-   [cmr.umm.iso-smap.helper :as h]
-   [cmr.umm.umm-granule :as g])
+   [cmr.umm.iso-smap.helper :as helper]
+   [cmr.umm.umm-granule :as granule])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import (cmr.umm.umm_granule Orbit)))
 
 (defn- start-end-direction
@@ -31,12 +32,12 @@
     (= "D" direction) :desc
     (= :asc direction) "A"
     (= :desc direction) "D"
-    :default direction))
+    :else direction))
 
 (def orbit-validations
-  [{:ascending-crossing [v/required v/validate-number (v/within-range -180.0 180.0)]
-    :start-lat [v/required v/validate-number (v/within-range -90.0 90.0)]
-    :end-lat [v/required v/validate-number (v/within-range -90.0 90.0)]
+  [{:ascending-crossing [v-core/required v-core/validate-number (v-core/within-range -180.0 180.0)]
+    :start-lat [v-core/required v-core/validate-number (v-core/within-range -90.0 90.0)]
+    :end-lat [v-core/required v-core/validate-number (v-core/within-range -90.0 90.0)]
     :start-direction start-end-direction
     :end-direction start-end-direction}])
 
@@ -44,28 +45,28 @@
   cmr.umm.umm_granule.Orbit
   (validate
     [record]
-    (v/create-error-messages (v/validate orbit-validations record))))
+    (v-core/create-error-messages (v-core/validate orbit-validations record))))
 
 (def ocsd-validations
-  [{:orbit-number [v/validate-integer]
-    :start-orbit-number [v/validate-integer]
-    :stop-orbit-number [v/validate-integer]
+  [{:orbit-number [v-core/validate-integer]
+    :start-orbit-number [v-core/validate-integer]
+    :stop-orbit-number [v-core/validate-integer]
     ;; note we don't need to validate that it's a number because
     ;; it's been checked in the parse-double, and if it's not a number,
     ;; it will be returned as nil to ensure a string is not passed to within-range.
-    :equator-crossing-longitude [(v/within-range -180.0 180.0)]
-    :equator-crossing-date-time [v/validate-datetime]}])
+    :equator-crossing-longitude [(v-core/within-range -180.0 180.0)]
+    :equator-crossing-date-time [v-core/validate-datetime]}])
 
 (extend-protocol sv/SpatialValidation
   cmr.umm.umm_granule.OrbitCalculatedSpatialDomain
   (validate
     [record]
-    (v/create-error-messages (v/validate ocsd-validations record))))
+    (v-core/create-error-messages (v-core/validate ocsd-validations record))))
 
 (extend-protocol sv/SpatialValidation
   nil
   (validate
-    [record]
+    [_record]
     [(str "Unsupported gmd:description inside gmd:EX_GeographicDescription - "
           "The supported ones are: OrbitParameters and OrbitCalculatedSpatialDomains")]))
 
@@ -104,7 +105,7 @@
   [field value]
   (try
     (Integer/parseInt value)
-    (catch Exception e
+    (catch Exception _e
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not an integer." field value))
       value)))
 
@@ -115,17 +116,17 @@
   [field value]
   (try
     (date-time-parser/parse-datetime value)
-    (catch Exception e
+    (catch Exception _e
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not a datetime." field value))
       value)))
 
-(defn- parse-double
+(defn- orbit-parse-double
   "Coerce's string to double, catches exceptions and logs error message and returns nil if
   value is not parseable."
   [field value]
   (try
     (Double/parseDouble value)
-    (catch Exception e
+    (catch Exception _e
       (info (format "For Orbit calculated spatial domain field [%s] the value [%s] is not an double." field value))
       ;; We return nil here instead of value because within-range validation can't handle comparing a
       ;; string to a double.
@@ -160,16 +161,16 @@
   [orbit-str]
   (let [;; Add a special string around each field and trim all the spaces around the values.
         orbit-str (-> orbit-str
-                      (str/replace orbit-str-field-re-pattern #(str "HSTRING" %1 "TSTRING"))
-                      (str/trim)
-                      (str/replace #"\s+HSTRING" "HSTRING")
-                      (str/replace #":TSTRING\s+" ":TSTRING"))
+                      (string/replace orbit-str-field-re-pattern #(str "HSTRING" %1 "TSTRING"))
+                      (string/trim)
+                      (string/replace #"\s+HSTRING" "HSTRING")
+                      (string/replace #":TSTRING\s+" ":TSTRING"))
         ;; split against the special string - now each element in orbit-str-list
         ;; contains things like "OrbitModelName:TSTRINGModel:Name"
-        orbit-str-list (str/split orbit-str #"HSTRING")]
+        orbit-str-list (string/split orbit-str #"HSTRING")]
     (->> orbit-str-list
          ;; split each string in the orbit-str-list
-         (map #(str/split % #":TSTRING"))
+         (map #(string/split % #":TSTRING"))
          ;; keep the ones with values.
          (filter #(= 2 (count %)))
          (into {})
@@ -180,10 +181,10 @@
   "Update values in the orbit-str-map with the parsed values."
   [orbit-str-map]
   (-> orbit-str-map
-      (update :ascending-crossing #(parse-double :ascending-crossing %))
-      (update :start-lat #(parse-double :start-lat %))
+      (update :ascending-crossing #(orbit-parse-double :ascending-crossing %))
+      (update :start-lat #(orbit-parse-double :start-lat %))
       (update :start-direction #(convert-direction %))
-      (update :end-lat #(parse-double :end-lat %))
+      (update :end-lat #(orbit-parse-double :end-lat %))
       (update :end-direction #(convert-direction %))))
 
 (defn- parse-values-for-ocsd
@@ -193,30 +194,30 @@
       (update :orbit-number #(parse-integer :orbit-number %))
       (update :start-orbit-number #(parse-integer :start-orbit-number %))
       (update :stop-orbit-number #(parse-integer :stop-orbit-number %))
-      (update :equator-crossing-longitude #(parse-double :equator-crossing-longitude %))
+      (update :equator-crossing-longitude #(orbit-parse-double :equator-crossing-longitude %))
       (update :equator-crossing-date-time #(parse-datetime :equator-crossing-date-time %))))
 
 (defmethod gmd/encode cmr.umm.umm_granule.Orbit
   [orbit]
-  (x/element :gmd:geographicElement {}
-             (x/element :gmd:EX_GeographicDescription {}
-                        (x/element :gmd:geographicIdentifier {}
-                         (x/element :gmd:MD_Identifier {}
-                                    (h/iso-string-element :gmd:code (build-orbit-string orbit))
-                                    (h/iso-string-element :gmd:codeSpace
-                                                          "gov.nasa.esdis.umm.orbitparameters")
-                                    (h/iso-string-element :gmd:description "OrbitParameters"))))))
+  (xml/element :gmd:geographicElement {}
+               (xml/element :gmd:EX_GeographicDescription {}
+                            (xml/element :gmd:geographicIdentifier {}
+                             (xml/element :gmd:MD_Identifier {}
+                                          (helper/iso-string-element :gmd:code (build-orbit-string orbit))
+                                          (helper/iso-string-element :gmd:codeSpace
+                                                                     "gov.nasa.esdis.umm.orbitparameters")
+                                          (helper/iso-string-element :gmd:description "OrbitParameters"))))))
 
 (defmethod gmd/encode cmr.umm.umm_granule.OrbitCalculatedSpatialDomain
   [ocsd]
-  (x/element :gmd:geographicElement {}
-             (x/element :gmd:EX_GeographicDescription {}
-                        (x/element :gmd:geographicIdentifier {}
-                         (x/element :gmd:MD_Identifier {}
-                                    (h/iso-string-element :gmd:code (build-ocsd-string ocsd))
-                                    (h/iso-string-element :gmd:codeSpace
-                                                          "gov.nasa.esdis.umm.orbitcalculatedspatialdomains")
-                                    (h/iso-string-element :gmd:description "OrbitCalculatedSpatialDomains"))))))
+  (xml/element :gmd:geographicElement {}
+               (xml/element :gmd:EX_GeographicDescription {}
+                            (xml/element :gmd:geographicIdentifier {}
+                             (xml/element :gmd:MD_Identifier {}
+                                          (helper/iso-string-element :gmd:code (build-ocsd-string ocsd))
+                                          (helper/iso-string-element :gmd:codeSpace
+                                                                     "gov.nasa.esdis.umm.orbitcalculatedspatialdomains")
+                                          (helper/iso-string-element :gmd:description "OrbitCalculatedSpatialDomains"))))))
 
 (defmethod gmd/decode-geo-content :EX_GeographicDescription
   [geo-desc]
@@ -228,8 +229,8 @@
     (case description-type
       "OrbitParameters"
       (let [orbit-map (parse-values-for-orbit orbit-str-map)]
-        (g/map->Orbit orbit-map))
+        (granule/map->Orbit orbit-map))
       "OrbitCalculatedSpatialDomains"
       (let [ocsd-map (parse-values-for-ocsd orbit-str-map)]
-        (g/map->OrbitCalculatedSpatialDomain ocsd-map))
+        (granule/map->OrbitCalculatedSpatialDomain ocsd-map))
       nil)))

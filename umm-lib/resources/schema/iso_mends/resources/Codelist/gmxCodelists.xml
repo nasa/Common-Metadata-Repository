@@ -282,6 +282,12 @@ DESCRIPTION :
 				</CodeDefinition>
 			</codeEntry>
 			<codeEntry>
+				<CodeDefinition gml:id="CI_RoleCode_authority">
+					<gml:description>party who has the authority to issue the resource</gml:description>
+					<gml:identifier codeSpace="ISOTC211/19115">author</gml:identifier>
+				</CodeDefinition>
+			</codeEntry>
+			<codeEntry>
 				<CodeDefinition gml:id="CI_RoleCode_scienceParty">
 					<gml:description>party who conducted the research</gml:description>
 					<gml:identifier codeSpace="ISOTC211/19115">scienceParty</gml:identifier>
@@ -349,6 +355,12 @@ DESCRIPTION :
 					<gml:identifier codeSpace="ISOTC211/19115">stereoMate</gml:identifier>
 				</CodeDefinition>
 			</codeEntry>
+            <codeEntry>
+			    <CodeDefinition gml:id="DS_AssociationTypeCode_associatedDoi">
+			        <gml:description>part of a set of larger works that is identified by a digital object identifier.</gml:description>
+			        <gml:identifier codeSpace="gov.nasa.esdis">associatedDoi</gml:identifier>
+			    </CodeDefinition>
+            </codeEntry>
 		</CodeListDictionary>
 	</codelistItem>
 	<!--=== DS_InitiativeTypeCode ===-->

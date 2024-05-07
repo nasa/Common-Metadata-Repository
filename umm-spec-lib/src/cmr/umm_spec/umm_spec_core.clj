@@ -191,7 +191,7 @@
                     mt/echo10 (echo10-to-umm/parse-temporal metadata)
                     mt/dif (dif9-to-umm/parse-temporal-extents metadata true)
                     mt/dif10 (dif10-to-umm/parse-temporal-extents metadata true)
-                    mt/iso19115 (iso19115-2-to-umm/parse-doc-temporal-extents metadata)
+                    mt/iso19115 (iso19115-2-to-umm/parse-temporal-extents metadata)
                     mt/iso-smap (iso-smap-to-umm/parse-temporal-extents (first (xpath/select metadata iso-smap-to-umm/md-identification-base-xpath)))
                     mt/umm-json (:TemporalExtents (json/parse-string metadata true))
                     nil)

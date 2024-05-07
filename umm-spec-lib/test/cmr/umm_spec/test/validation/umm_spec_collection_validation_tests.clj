@@ -2,7 +2,7 @@
   "This has tests for UMM validations."
   (:require
    [clj-time.core :as time]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest testing]]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.umm-spec.models.umm-collection-models :as coll]
    [cmr.umm-spec.models.umm-common-models :as c]

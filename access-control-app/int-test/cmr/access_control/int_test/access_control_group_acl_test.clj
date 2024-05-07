@@ -1,7 +1,6 @@
 (ns cmr.access-control.int-test.access-control-group-acl-test
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as u]
    [cmr.mock-echo.client.echo-util :as e]
@@ -202,8 +201,7 @@
         prov-group (u/make-group {:provider_id "PROV1" :legacy_guid "prov1-group-guid"})
         prov-group-id (:concept_id (u/create-group prov-token prov-group))
 
-        prov2-group-id (:concept_id (u/create-group prov2-token
-                                                    (u/make-group {:provider_id "PROV2"})))]
+        _ (u/create-group prov2-token (u/make-group {:provider_id "PROV2"}))]
     (testing "deleting system groups"
       (testing "without permission"
         (is (= {:status 401
@@ -260,8 +258,7 @@
         prov-group-id (:concept_id (u/create-group prov-token prov-group))
 
         prov2-group (u/make-group {:provider_id "PROV2"})
-        prov2-group-id (:concept_id (u/create-group prov2-token
-                                                    prov2-group))]
+        _ (u/create-group prov2-token prov2-group)]
 
     (testing "updating system groups"
       (testing "without permission"

@@ -2,7 +2,6 @@
   "Contains functions for converting a UMM into JSON and back out of JSON."
   (:require
    [cheshire.core :as json]
-   [clojure.set :as set]
    [cmr.common.date-time-parser :as dtp]
    ;; To get ability to convert joda time to json
    [cmr.common.joda-time]
@@ -50,7 +49,7 @@
   locate the correct UMM Clojure Record.
   * schema-type - the is the definition of the type being parsed from the schema.
   * js-data - This is Clojure data that was parsed initially from a JSON string."
-  (fn [schema type-name-path type-name schema-type js-data]
+  (fn [_schema _type-name-path _type-name schema-type _js-data]
     (cond
       (:type schema-type) (:type schema-type)
       (:oneOf schema-type) "oneOf"
@@ -118,7 +117,7 @@
 
 ;; A ref refers to another type. We lookup that type and then parse the JSON data using that type.
 (defmethod parse-json :$ref
-  [schema type-name-path type-name schema-type js-data]
+  [schema type-name-path _type-name schema-type js-data]
   (let [[ref-schema ref-schema-type] (js/lookup-ref schema schema-type)
         type-name (get-in schema-type [:$ref :type-name])]
     (parse-json ref-schema

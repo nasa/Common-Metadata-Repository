@@ -7,10 +7,8 @@
   anything from writing on the NGAP side while we are transitioning."
   (:require
    [cheshire.core :as json]
-   [cmr.common.api.context :as context]
    [cmr.transmit.cache.consistent-cache :as consistent-cache]
    [cmr.common.cache :as cache]
-   [cmr.common.cache.in-memory-cache :as mem-cache]
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer [error warn]]

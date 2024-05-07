@@ -1,19 +1,14 @@
 (ns cmr.search.results-handlers.atom-spatial-results-handler
   "A helper for converting spatial shapes into ATOM results"
-  (:require [clojure.data.xml :as x]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.cartesian-ring :as cr]
-            [cmr.spatial.line-string :as l]
-            [clojure.string :as s]
-            [cmr.common.util :as u]))
+  (:require
+   [clojure.data.xml :as xml]
+   [clojure.string :as string]
+   [cmr.common.util :as util]))
 
 (defn- points-map->points-str
   "Converts a map containing :points into the lat lon space separated points string of atom"
   [{:keys [points]}]
-  (s/join " " (mapcat #(vector (u/double->string (:lat %)) (u/double->string (:lon %))) points)))
+  (string/join " " (mapcat #(vector (util/double->string (:lat %)) (util/double->string (:lon %))) points)))
 
 
 (defprotocol AtomSpatialHandler
@@ -29,11 +24,11 @@
   cmr.spatial.point.Point
   (shape->string
     [{:keys [lon lat]}]
-    (str (u/double->string lat) " " (u/double->string lon)))
+    (str (util/double->string lat) " " (util/double->string lon)))
 
   (shape->xml-element
     [point]
-    (x/element :georss:point {} (shape->string point)))
+    (xml/element :georss:point {} (shape->string point)))
 
 
   cmr.spatial.line_string.LineString
@@ -43,17 +38,17 @@
 
   (shape->xml-element
     [line]
-    (x/element :georss:line {} (shape->string line)))
+    (xml/element :georss:line {} (shape->string line)))
 
 
   cmr.spatial.mbr.Mbr
   (shape->string
     [{:keys [west north east south]}]
-    (s/join " " (map u/double->string [south west north east])))
+    (string/join " " (map util/double->string [south west north east])))
 
   (shape->xml-element
     [mbr]
-    (x/element :georss:box {} (shape->string mbr)))
+    (xml/element :georss:box {} (shape->string mbr)))
 
 
   cmr.spatial.geodetic_ring.GeodeticRing
@@ -63,8 +58,8 @@
 
   (shape->xml-element
     [ring]
-    (x/element :gml:LinearRing {}
-               (x/element :gml:posList {}
+    (xml/element :gml:LinearRing {}
+               (xml/element :gml:posList {}
                           (shape->string ring))))
 
   cmr.spatial.cartesian_ring.CartesianRing
@@ -74,21 +69,21 @@
 
   (shape->xml-element
     [ring]
-    (x/element :gml:LinearRing {}
-               (x/element :gml:posList {}
+    (xml/element :gml:LinearRing {}
+               (xml/element :gml:posList {}
                           (shape->string ring))))
 
   cmr.spatial.polygon.Polygon
   (shape->xml-element
     [{:keys [rings]}]
     (if (= (count rings) 1)
-      (x/element :georss:polygon {} (shape->string (first rings)))
+      (xml/element :georss:polygon {} (shape->string (first rings)))
       (let [boundary (first rings)
             holes (rest rings)]
-        (x/element :georss:where {}
-                   (x/element :gml:Polygon {}
-                              (x/element :gml:exterior {} (shape->xml-element boundary))
-                              (x/element :gml:interior {} (map shape->xml-element holes))))))))
+        (xml/element :georss:where {}
+                   (xml/element :gml:Polygon {}
+                              (xml/element :gml:exterior {} (shape->xml-element boundary))
+                              (xml/element :gml:interior {} (map shape->xml-element holes))))))))
 
 
 (defn- polygon->json

@@ -9,7 +9,7 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer [warn]]
    [cmr.common.mime-types :as mt]
-   [compojure.core :refer :all]))
+   [compojure.core :refer [GET OPTIONS context]]))
 
 (def health-cache-key
   "The key used to store the health cache in the system cache map."
@@ -56,6 +56,6 @@
   working as expected."
   [health-fn]
   (context "/health" []
-    (OPTIONS "/" req (common-routes/options-response))
+    (OPTIONS "/" _req (common-routes/options-response))
     (GET "/" {:keys [request-context]}
       (get-app-health request-context health-fn))))

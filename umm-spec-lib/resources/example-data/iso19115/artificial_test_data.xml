@@ -160,6 +160,7 @@ Dissolved oxygen, nutrients, pH, phosphate, salinity, and temperature collected 
                             </gmd:code>
                         </gmd:MD_Identifier>
                     </gmd:identifier>
+                    <!-- DOI -->
                     <gmd:identifier>
                        <gmd:MD_Identifier>
                          <gmd:authority>
@@ -190,6 +191,34 @@ Dissolved oxygen, nutrients, pH, phosphate, salinity, and temperature collected 
                              <gco:CharacterString>DOI</gco:CharacterString>
                           </gmd:description>
                        </gmd:MD_Identifier>
+                    </gmd:identifier>
+                    <!-- Other Identifiers -->
+                    <gmd:identifier>
+                      <gmd:MD_Identifier>
+                        <gmd:code>
+                          <gco:CharacterString>B28C32HIKEHIKE</gco:CharacterString>
+                        </gmd:code>
+                        <gmd:codeSpace>
+                          <gco:CharacterString>gov.nasa.esdis.umm.otheridentifier</gco:CharacterString>
+                        </gmd:codeSpace>
+                        <gmd:description>
+                          <gco:CharacterString>Type: Other DescriptionOfOtherType: DAAC-ID</gco:CharacterString>
+                        </gmd:description>
+                      </gmd:MD_Identifier>
+                    </gmd:identifier>
+                    <!-- Data Maturity -->
+                    <gmd:identifier>
+                      <gmd:MD_Identifier>
+                        <gmd:code>
+                          <gco:CharacterString>Stage 1 Validation</gco:CharacterString>
+                        </gmd:code>
+                        <gmd:codeSpace>
+                          <gco:CharacterString>gov.nasa.esdis.umm.datamaturity</gco:CharacterString>
+                        </gmd:codeSpace>
+                        <gmd:description>
+                          <gco:CharacterString>Data Maturity</gco:CharacterString>
+                        </gmd:description>
+                      </gmd:MD_Identifier>
                     </gmd:identifier>
                     <gmd:citedResponsibleParty>
                         <gmd:CI_ResponsibleParty>
@@ -548,6 +577,18 @@ Main NCEI website providing links to access data and data services.
                     </gmd:specification>
                 </gmd:MD_Format>
             </gmd:resourceFormat>
+            <!-- File Naming Convention-->
+            <gmd:resourceFormat>
+             <gmd:MD_Format>
+               <gmd:name>
+                  <gco:CharacterString>FileNamingConvention</gco:CharacterString>
+               </gmd:name>
+               <gmd:version gco:nilReason="inapplicable"/>
+               <gmd:specification>
+                  <gco:CharacterString>FileNameConvention: YYYYDDMM.ZIPO ConventionDescription: Some test value</gco:CharacterString>
+               </gmd:specification>
+             </gmd:MD_Format>
+           </gmd:resourceFormat>
             <gmd:descriptiveKeywords>
                 <gmd:MD_Keywords>
                     <gmd:keyword>
@@ -938,6 +979,218 @@ Distribution liability: NOAA and NCEI make no warranty, expressed or implied, re
                     </gmd:useLimitation>
                 </gmd:MD_LegalConstraints>
             </gmd:resourceConstraints>
+            <!-- Metadata association-->
+            <gmd:aggregationInfo>
+              <gmd:MD_AggregateInformation>
+                <gmd:aggregateDataSetName>
+                  <gmd:CI_Citation>
+                    <gmd:title>
+                      <gco:CharacterString>Entry Id</gco:CharacterString>
+                    </gmd:title>
+                    <gmd:date gco:nilReason="unknown"></gmd:date>
+                    <gmd:edition>
+                       <gco:CharacterString>6.1NRT</gco:CharacterString>
+                    </gmd:edition>
+                    <gmd:otherCitationDetails>
+                      <gco:CharacterString>Parent collection for child product MYD021KM.</gco:CharacterString>
+                    </gmd:otherCitationDetails>
+                  </gmd:CI_Citation>
+                </gmd:aggregateDataSetName>
+                <gmd:aggregateDataSetIdentifier>
+                  <gmd:MD_Identifier>
+                    <gmd:code>
+                      <gco:CharacterString>Entry Id</gco:CharacterString>
+                    </gmd:code>
+                  </gmd:MD_Identifier>
+                </gmd:aggregateDataSetIdentifier>
+                <gmd:associationType>
+                  <gmd:DS_AssociationTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
+                                              codeListValue="parent">PARENT
+                  </gmd:DS_AssociationTypeCode>
+                </gmd:associationType>
+              </gmd:MD_AggregateInformation>
+            </gmd:aggregationInfo>
+            <!-- Associatd DOIs -->
+            <gmd:aggregationInfo>
+              <gmd:MD_AggregateInformation>
+                <gmd:aggregateDataSetName>
+                  <gmd:CI_Citation>
+                    <gmd:title>
+                      <gco:CharacterString>DOI 1 landing page title</gco:CharacterString>
+                    </gmd:title>
+                    <gmd:date gco:nilReason="unknown"/>
+                  </gmd:CI_Citation>
+                </gmd:aggregateDataSetName>
+                <gmd:aggregateDataSetIdentifier>
+                  <gmd:MD_Identifier>
+                    <gmd:authority>
+                      <gmd:CI_Citation>
+                        <gmd:title/>
+                        <gmd:date gco:nilReason="unknown"/>
+                        <gmd:citedResponsibleParty>
+                          <gmd:CI_ResponsibleParty>
+                            <gmd:organisationName>
+                              <gco:CharacterString>https://doi.org</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:role>
+                              <gmd:CI_RoleCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="authority">
+                                authority
+                              </gmd:CI_RoleCode>
+                            </gmd:role>
+                          </gmd:CI_ResponsibleParty>
+                        </gmd:citedResponsibleParty>
+                      </gmd:CI_Citation>
+                    </gmd:authority>
+                    <gmd:code>
+                      <gco:CharacterString>10.5678/AssociatedDOI1</gco:CharacterString>
+                    </gmd:code>
+                    <gmd:codeSpace>
+                      <gco:CharacterString>gov.nasa.esdis.umm.associateddoi</gco:CharacterString>
+                    </gmd:codeSpace>
+                    <gmd:description>
+                      <gco:CharacterString>Assocaited DOI 1</gco:CharacterString>
+                    </gmd:description>
+                  </gmd:MD_Identifier>
+                </gmd:aggregateDataSetIdentifier>
+                <gmd:associationType>
+                  <gmd:DS_AssociationTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"
+                                              codeListValue="associatedDOI">associatedDOI
+                  </gmd:DS_AssociationTypeCode>
+                </gmd:associationType>
+              </gmd:MD_AggregateInformation>
+            </gmd:aggregationInfo>
+            <gmd:aggregationInfo>
+              <gmd:MD_AggregateInformation>
+                <gmd:aggregateDataSetName>
+                  <gmd:CI_Citation>
+                    <gmd:title>
+                      <gco:CharacterString>DOI 2 landing page title</gco:CharacterString>
+                    </gmd:title>
+                    <gmd:date gco:nilReason="unknown"/>
+                  </gmd:CI_Citation>
+                </gmd:aggregateDataSetName>
+                <gmd:aggregateDataSetIdentifier>
+                  <gmd:MD_Identifier>
+                    <gmd:authority>
+                      <gmd:CI_Citation>
+                        <gmd:title/>
+                        <gmd:date gco:nilReason="unknown"/>
+                        <gmd:citedResponsibleParty>
+                          <gmd:CI_ResponsibleParty>
+                            <gmd:organisationName>
+                              <gco:CharacterString>https://doi.org</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:role>
+                              <gmd:CI_RoleCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="authority">
+                                authority
+                              </gmd:CI_RoleCode>
+                            </gmd:role>
+                          </gmd:CI_ResponsibleParty>
+                        </gmd:citedResponsibleParty>
+                      </gmd:CI_Citation>
+                    </gmd:authority>
+                    <gmd:code>
+                      <gco:CharacterString>10.5678/AssociatedDOI2</gco:CharacterString>
+                    </gmd:code>
+                    <gmd:codeSpace>
+                      <gco:CharacterString>gov.nasa.esdis.umm.associateddoi</gco:CharacterString>
+                    </gmd:codeSpace>
+                    <gmd:description>
+                      <gco:CharacterString>Assocaited DOI 2</gco:CharacterString>
+                    </gmd:description>
+                  </gmd:MD_Identifier>
+                </gmd:aggregateDataSetIdentifier>
+                <gmd:associationType>
+                  <gmd:DS_AssociationTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#DS_AssociationTypeCode"
+                                              codeListValue="parentDataset">Parent_Dataset
+                  </gmd:DS_AssociationTypeCode>
+                </gmd:associationType>
+              </gmd:MD_AggregateInformation>
+            </gmd:aggregationInfo>
+            <gmd:aggregationInfo>
+              <gmd:MD_AggregateInformation>
+                <gmd:aggregateDataSetName>
+                  <gmd:CI_Citation>
+                    <gmd:title>
+                      <gco:CharacterString>DOI 3 landing page title</gco:CharacterString>
+                    </gmd:title>
+                    <gmd:date gco:nilReason="unknown"/>
+                  </gmd:CI_Citation>
+                </gmd:aggregateDataSetName>
+                <gmd:aggregateDataSetIdentifier>
+                  <gmd:MD_Identifier>
+                    <gmd:authority>
+                      <gmd:CI_Citation>
+                        <gmd:title/>
+                        <gmd:date gco:nilReason="unknown"/>
+                        <gmd:citedResponsibleParty>
+                          <gmd:CI_ResponsibleParty>
+                            <gmd:organisationName>
+                              <gco:CharacterString>https://doi.org</gco:CharacterString>
+                            </gmd:organisationName>
+                            <gmd:role>
+                              <gmd:CI_RoleCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode" codeListValue="authority">
+                                authority
+                              </gmd:CI_RoleCode>
+                            </gmd:role>
+                          </gmd:CI_ResponsibleParty>
+                        </gmd:citedResponsibleParty>
+                      </gmd:CI_Citation>
+                    </gmd:authority>
+                    <gmd:code>
+                      <gco:CharacterString>10.5678/AssociatedDOI2</gco:CharacterString>
+                    </gmd:code>
+                    <gmd:codeSpace>
+                      <gco:CharacterString>gov.nasa.esdis.umm.associateddoi</gco:CharacterString>
+                    </gmd:codeSpace>
+                    <gmd:description>
+                      <gco:CharacterString>Assocaited DOI 3</gco:CharacterString>
+                    </gmd:description>
+                  </gmd:MD_Identifier>
+                </gmd:aggregateDataSetIdentifier>
+                <gmd:associationType>
+                  <gmd:DS_AssociationTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#DS_AssociationTypeCode"
+                                              codeListValue="other">Description type of other
+                  </gmd:DS_AssociationTypeCode>
+                </gmd:associationType>
+              </gmd:MD_AggregateInformation>
+            </gmd:aggregationInfo>
+            <!-- DOI Previous Version -->
+            <gmd:aggregationInfo>
+              <gmd:MD_AggregateInformation>
+                <gmd:aggregateDataSetName>
+                  <gmd:CI_Citation>
+                    <gmd:title>
+                      <gco:CharacterString>DOI Previous Version</gco:CharacterString>
+                    </gmd:title>
+                    <gmd:date gco:nilReason="missing"/>
+                  </gmd:CI_Citation>
+                </gmd:aggregateDataSetName>
+                <gmd:aggregateDataSetIdentifier>
+                  <gmd:MD_Identifier>
+                    <gmd:authority>
+                      <gmd:CI_Citation>
+                        <gmd:title gco:nilReason="inapplicable"/>
+                        <gmd:date gco:nilReason="inapplicable"/>
+                        <gmd:edition>
+                          <gco:CharacterString>Previous Version Version</gco:CharacterString>
+                        </gmd:edition>
+                        <gmd:editionDate><gco:Date>2024-01-01</gco:Date></gmd:editionDate>
+                        <gmd:otherCitationDetails>
+                          <gco:CharacterString>Previous Version Description Text</gco:CharacterString>
+                        </gmd:otherCitationDetails>
+                      </gmd:CI_Citation>
+                    </gmd:authority>
+                    <gmd:code><gco:CharacterString>10.5067/7ZGTHVZFAIDG</gco:CharacterString></gmd:code>
+                    <gmd:codeSpace><gco:CharacterString>gov.nasa.esdis.umm.doi.previousversion</gco:CharacterString></gmd:codeSpace>
+                    <gmd:description><gco:CharacterString>DOI Previous Version</gco:CharacterString></gmd:description>
+                  </gmd:MD_Identifier>
+                </gmd:aggregateDataSetIdentifier>
+                <gmd:associationType>
+                  <gmd:DS_AssociationTypeCode codeList="https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AssociationTypeCode" codeListValue="doiPreviousVersion">DOI_Previous_Version</gmd:DS_AssociationTypeCode>
+                </gmd:associationType>
+              </gmd:MD_AggregateInformation>
+            </gmd:aggregationInfo>
             <gmd:language>
                 <gmd:LanguageCode codeList="http://www.loc.gov/standards/iso639-2/php/code_list.php" codeListValue="eng">eng</gmd:LanguageCode>
             </gmd:language>
@@ -951,34 +1204,73 @@ Distribution liability: NOAA and NCEI make no warranty, expressed or implied, re
                 <gmd:MD_TopicCategoryCode>oceans</gmd:MD_TopicCategoryCode>
             </gmd:topicCategory>
             <gmd:extent>
-                <gmd:EX_Extent id="boundingExtent">
-                    <gmd:geographicElement>
-                        <gmd:EX_GeographicBoundingBox id="boundingGeographicBoundingBox">
-                            <gmd:westBoundLongitude>
-                                <gco:Decimal>92.85</gco:Decimal>
-                            </gmd:westBoundLongitude>
-                            <gmd:eastBoundLongitude>
-                                <gco:Decimal>-137.183333</gco:Decimal>
-                            </gmd:eastBoundLongitude>
-                            <gmd:southBoundLatitude>
-                                <gco:Decimal>-76.483333</gco:Decimal>
-                            </gmd:southBoundLatitude>
-                            <gmd:northBoundLatitude>
-                                <gco:Decimal>-48.016667</gco:Decimal>
-                            </gmd:northBoundLatitude>
-                        </gmd:EX_GeographicBoundingBox>
-                    </gmd:geographicElement>
-                    <gmd:temporalElement>
-                        <gmd:EX_TemporalExtent id="boundingTemporalExtent">
-                            <gmd:extent>
-                                <gml:TimePeriod gml:id="boundingTemporalExtentPeriod">
-                                    <gml:beginPosition>1972-01-12</gml:beginPosition>
-                                    <gml:endPosition>1988-02-21</gml:endPosition>
-                                </gml:TimePeriod>
-                            </gmd:extent>
-                        </gmd:EX_TemporalExtent>
-                    </gmd:temporalElement>
-                </gmd:EX_Extent>
+              <gmd:EX_Extent id="boundingExtent">
+                <gmd:geographicElement>
+                  <gmd:EX_GeographicBoundingBox id="boundingGeographicBoundingBox">
+                    <gmd:westBoundLongitude>
+                      <gco:Decimal>92.85</gco:Decimal>
+                    </gmd:westBoundLongitude>
+                    <gmd:eastBoundLongitude>
+                      <gco:Decimal>-137.183333</gco:Decimal>
+                    </gmd:eastBoundLongitude>
+                    <gmd:southBoundLatitude>
+                      <gco:Decimal>-76.483333</gco:Decimal>
+                    </gmd:southBoundLatitude>
+                    <gmd:northBoundLatitude>
+                      <gco:Decimal>-48.016667</gco:Decimal>
+                    </gmd:northBoundLatitude>
+                  </gmd:EX_GeographicBoundingBox>
+                </gmd:geographicElement>
+                <gmd:temporalElement uuidref="temporal_extent_1">
+                  <gmd:EX_TemporalExtent>
+                    <gmd:extent>
+                      <gml:TimePeriod gml:id="temporal_extent_1">
+                        <gml:beginPosition>2003-03-26T00:00:00.000Z</gml:beginPosition>
+                        <gml:endPosition>2003-07-15T23:59:59.999Z</gml:endPosition>
+                        <gml:timeInterval unit="second">30</gml:timeInterval>
+                      </gml:TimePeriod>
+                    </gmd:extent>
+                  </gmd:EX_TemporalExtent>
+                </gmd:temporalElement>
+                <gmd:temporalElement uuidref="temporal_extent_2">
+                  <gmd:EX_TemporalExtent>
+                    <gmd:extent>
+                      <gml:TimePeriod gml:id="temporal_extent_2">
+                        <gml:beginPosition>2003-03-26T00:00:00.000Z</gml:beginPosition>
+                        <gml:endPosition indeterminatePosition="now"/>
+                      </gml:TimePeriod>
+                    </gmd:extent>
+                  </gmd:EX_TemporalExtent>
+                </gmd:temporalElement>
+                <gmd:temporalElement uuidref="temporal_extent_2">
+                  <gmd:EX_TemporalExtent>
+                    <gmd:extent>
+                      <gml:TimeInstant gml:id="temporal_extent_2_resolution">
+                        <gml:timePosition>Varies</gml:timePosition>
+                      </gml:TimeInstant>
+                    </gmd:extent>
+                  </gmd:EX_TemporalExtent>
+                </gmd:temporalElement>
+                <gmd:temporalElement uuidref="temporal_extent_3">
+                  <gmd:EX_TemporalExtent>
+                    <gmd:extent>
+                      <gml:TimeInstant gml:id="temporal_extent_3">
+                        <gml:description> | Currentness: Ground Condition</gml:description>
+                        <gml:timePosition>2003-07-15T23:59:59.999Z</gml:timePosition>
+                       </gml:TimeInstant>
+                    </gmd:extent>
+                  </gmd:EX_TemporalExtent>
+                </gmd:temporalElement>
+                <gmd:temporalElement uuidref="temporal_extent_3">
+                  <gmd:EX_TemporalExtent>
+                    <gmd:extent>
+                      <gml:TimeInstant gml:id="temporal_extent_3_resolution">
+                        <gml:timePosition>Constant</gml:timePosition>
+                      </gml:TimeInstant>
+                    </gmd:extent>
+                  </gmd:EX_TemporalExtent>
+                </gmd:temporalElement>
+              </gmd:EX_Extent>
             </gmd:extent>
             <gmd:supplementalInformation>
                 <gco:CharacterString>
@@ -1192,6 +1484,38 @@ NOAA created the National Centers for Environmental Information (NCEI) by mergin
             </gmd:lineage>
         </gmd:DQ_DataQuality>
     </gmd:dataQualityInfo>
+    <gmd:dataQualityInfo>
+        <gmd:DQ_DataQuality>
+           <gmd:scope>
+              <gmd:DQ_Scope>
+                 <gmd:level>
+                    <gmd:MD_ScopeCode codeList="http://www.ngdc.noaa.gov/metadata/published/xsd/schema/resources/Codelist/gmxCodelists.xml#MD_ScopeCode" codeListValue="series">series</gmd:MD_ScopeCode>
+                 </gmd:level>
+              </gmd:DQ_Scope>
+           </gmd:scope>
+           <gmd:report uuidref="temporal_extent_2">
+             <gmd:DQ_AccuracyOfATimeMeasurement>
+               <gmd:measureIdentification>
+                 <gmd:MD_Identifier>
+                   <gmd:code>
+                     <gco:CharacterString>PrecisionOfSeconds</gco:CharacterString>
+                   </gmd:code>
+                 </gmd:MD_Identifier>
+               </gmd:measureIdentification>
+               <gmd:result>
+                 <gmd:DQ_QuantitativeResult>
+                   <gmd:valueUnit gco:nilReason="inapplicable"/>
+                   <gmd:value>
+                     <gco:Record xsi:type="gco:Real_PropertyType">
+                       <gco:Real>30</gco:Real>
+                     </gco:Record>
+                   </gmd:value>
+                 </gmd:DQ_QuantitativeResult>
+               </gmd:result>
+             </gmd:DQ_AccuracyOfATimeMeasurement>
+           </gmd:report>
+        </gmd:DQ_DataQuality>
+     </gmd:dataQualityInfo>
     <gmd:metadataMaintenance>
         <gmd:MD_MaintenanceInformation>
             <gmd:maintenanceAndUpdateFrequency>

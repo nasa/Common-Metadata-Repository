@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.test.acl-matchers-test
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.common.test.time-util :as tu]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :refer [are2 are3]]
@@ -32,6 +32,7 @@
     :EntryTitle (or entry-title "entry title")
     :AccessConstraints {:Value access-value}}))
 
+(declare applicable? tf coll)
 (deftest collection-applicable-acl-test
   (testing "collection-applicable flag false"
     (is (not (a/coll-applicable-acl?

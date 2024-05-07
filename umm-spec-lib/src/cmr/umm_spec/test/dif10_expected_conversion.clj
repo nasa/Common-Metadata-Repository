@@ -1,19 +1,14 @@
 (ns cmr.umm-spec.test.dif10-expected-conversion
  "DIF 10 specific expected conversion functionality"
  (:require
-  [clj-time.core :as t]
-  [clj-time.format :as f]
   [clojure.string :as string]
   [cmr.common.util :as util :refer [update-in-each]]
   [cmr.umm-spec.date-util :as date]
   [cmr.umm-spec.json-schema :as js]
-  [cmr.umm-spec.location-keywords :as lk]
   [cmr.umm-spec.models.umm-collection-models :as umm-c]
   [cmr.umm-spec.models.umm-common-models :as cmn]
-  [cmr.umm-spec.related-url :as ru-gen]
   [cmr.umm-spec.spatial-conversion :as spatial-conversion]
   [cmr.umm-spec.test.expected-conversion-util :as conversion-util]
-  [cmr.umm-spec.test.location-keywords-helper :as lkt]
   [cmr.umm-spec.umm-to-xml-mappings.dif10 :as dif10]
   [cmr.umm-spec.url :as url]
   [cmr.umm-spec.util :as su]
@@ -79,11 +74,6 @@
   [ma]
   (update-in ma [:Type] #(or % "SCIENCE ASSOCIATED")))
 
-(defn- expected-dif10-related-urls
-  [related-urls]
-  (seq (for [related-url related-urls]
-         (assoc related-url :FileSize nil :MimeType nil))))
-
 (defn- expected-horizontal-data-resolution
   [horizontal-data-resolution]
   (let [x (:XDimension horizontal-data-resolution)
@@ -107,23 +97,10 @@
     (when (seq horizontal-data-resolution)
       horizontal-data-resolution)))
 
-(defn- translate-non-exist-spatial-coverage-type
-  "For SpatialCoverageType DIF 10 doesn't have an ORBITAL_VERTICAL value so it gets
-   translated into HORIZONTAL_VERTICAL. Also it doesn't have HORIZONTAL_ORBITAL and
-   HORIZONTAL_VERTICAL_ORBITAL either. They both get translated to ORBITAL"
-  [spatial-extent]
-  (let [sct (:SpatialCoverageType spatial-extent)]
-    (if (= sct "ORBITAL_VERTICAL")
-      (assoc spatial-extent :SpatialCoverageType "HORIZONTAL_VERTICAL")
-      (if (or (= sct "HORIZONTAL_ORBITAL")
-              (= sct "HORIZONTAL_VERTICAL_ORBITAL"))
-        (assoc spatial-extent :SpatialCoverageType "ORBITAL")
-        spatial-extent))))
-
 (defn- expected-dif10-spatial-extent
   "Get the expected dif10 spatial extent."
   [spatial-extent]
-  (-> (translate-non-exist-spatial-coverage-type spatial-extent)
+  (-> spatial-extent
       (update-in [:HorizontalSpatialDomain :Geometry] conversion-util/geometry-with-coordinate-system)
       (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem] dissoc :Description)
       (update-in [:HorizontalSpatialDomain :ResolutionAndCoordinateSystem :GeodeticModel] umm-c/map->GeodeticModelType)
@@ -217,8 +194,8 @@
       expected-contacts)))
 
 (defn- expected-dif10-contacts
-  [contacts]
   "Returns the expected DIF 10 data center contact persons or contact groups for the given UMM collection."
+  [contacts]
   (let [expected-contacts
         (conversion-util/expected-contact-information-urls
          (mapv #(contact->expected-dif10-collection %) contacts)
@@ -332,6 +309,15 @@
       (update collection-citation :OnlineResource #(select-keys % [:Linkage]))
       collection-citation)))
 
+(defn- expected-temporal-resolution
+  "Add _type to the temporal resolution"
+  [temporal-extent]
+  (if (:TemporalResolution temporal-extent)
+    (-> temporal-extent
+        (update-in [:TemporalResolution] cmn/map->TemporalResolutionType)
+        util/remove-nil-keys)
+    (util/remove-nil-keys temporal-extent)))
+
 (def coll-progress-enum-list
   "Part of the enum list for CollectionProgress in v1.10. that could be converted from dif10"
   (set ["PLANNED" "ACTIVE" "COMPLETE" "NOT PROVIDED"]))
@@ -406,6 +392,7 @@
       (update-in [:CollectionCitations] expected-collection-citations)
       (update :TilingIdentificationSystems spatial-conversion/expected-tiling-id-systems-name)
       (update-in-each [:TemporalExtents] update :EndsAtPresentFlag #(if % % false)) ; true or false, not nil
+      (update-in-each [:TemporalExtents] expected-temporal-resolution)
       (update :UseConstraints expected-echo10-use-constraints)
       (update :ArchiveAndDistributionInformation expected-archive-dist-info)
       js/parse-umm-c))

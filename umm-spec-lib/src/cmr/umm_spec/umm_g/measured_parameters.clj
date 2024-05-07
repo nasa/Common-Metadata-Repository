@@ -60,16 +60,16 @@
     flag-type))
 
 (defmethod flag-enum :automatic-quality-flag
-  [flag-type]
+  [_flag-type]
   ["Passed" "Failed" "Suspect" enum-default-value])
 
 (defmethod flag-enum :operational-quality-flag
-  [flag-type]
+  [_flag-type]
   ["Passed" "Failed" "Being Investigated" "Not Investigated"
    "Inferred Passed" "Inferred Failed" "Suspect" enum-default-value])
 
 (defmethod flag-enum :science-quality-flag
-  [flag-type]
+  [_flag-type]
   ["Passed" "Failed" "Being Investigated" "Not Investigated"
    "Inferred Passed" "Inferred Failed" "Suspect" "Hold" enum-default-value])
 

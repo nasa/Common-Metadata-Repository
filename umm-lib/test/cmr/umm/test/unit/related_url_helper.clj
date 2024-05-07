@@ -1,12 +1,13 @@
 (ns cmr.umm.test.unit.related-url-helper
   "Tests functions that categorize related urls."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.test.url-util :as url-util]
    [cmr.common.util :as util :refer [are3]]
    [cmr.umm.related-url-helper :as related-url-helper]
    [cmr.umm.umm-collection :as umm-c]))
 
+(declare expected-mime-type url)
 (deftest guess-url-mime-type
   (testing "guess mime type based on url"
     (are3 [expected-mime-type url]
@@ -24,6 +25,7 @@
       "test nil"
       nil nil)))
 
+(declare downloadable? mime-type)
 (deftest downloadable-mime-type
   (testing "Mime type is downloadable"
     (are3 [downloadable? mime-type]
@@ -69,6 +71,7 @@
       (is (= [documentation-url] (related-url-helper/documentation-urls related-urls)))
       (is (= [metadata-url] (related-url-helper/metadata-urls related-urls))))))
 
+(declare expected-url url-to-encode)
 (deftest related-url->encoded-url
   (testing "encode related urls"
     (are3 [expected-url url-to-encode]

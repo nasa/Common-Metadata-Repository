@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif9.data-contact
-  "Functions for generating DIF9 XML elements from UMM data contacts."
-  (:require [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.util :as u]))
+  "Functions for generating DIF9 XML elements from UMM data contacts." 
+  (:require
+   [cmr.common.xml.gen :refer :all]))
 
 (def umm-contact-role->dif9-role
   "Mapping of umm data contact role to DIF9 role"

@@ -3,10 +3,10 @@
   (:require
    [clojure.edn :as edn]
    [clojure.string :as string]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
-   [cmr.common-app.services.search.results-model :as results]
    [cmr.common.mime-types :as mt]
+   [cmr.common.services.search.results-model :as results]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.search.es-results-to-query-results :as er-to-qr]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.results-handlers.results-handler-util :as rs-util]))
 

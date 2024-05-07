@@ -1,15 +1,14 @@
 (ns cmr.access-control.services.permitted-concept-id-search
   "Contains ACL search functions for permitted-concept-id searches"
   (:require
-    [clj-time.core :as t]
-    [cmr.common-app.services.search.group-query-conditions :as gc]
-    [cmr.common-app.services.search.query-model :as common-qm]
-    [cmr.elastic-utils.index-util :as index-util]
-    [cmr.transmit.metadata-db2 :as mdb2]
-    [cmr.umm-spec.legacy :as legacy]
-    [cmr.umm-spec.time :as spec-time]
-    [cmr.umm-spec.umm-spec-core :as umm-spec]
-    [cmr.umm.start-end-date :as umm-lib-time]))
+   [clj-time.core :as t]
+   [cmr.common.services.search.query-model :as common-qm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.transmit.metadata-db2 :as mdb2]
+   [cmr.umm-spec.legacy :as legacy]
+   [cmr.umm-spec.time :as spec-time]
+   [cmr.umm-spec.umm-spec-core :as umm-spec]
+   [cmr.umm.start-end-date :as umm-lib-time]))
 
 (defn- make-keyword
   "Merges concept-type and keyword into one keyword."
@@ -131,7 +130,7 @@
 
 (defmulti get-permitted-concept-id-conditions
   "Returns the query to search for ACLs that could permit the given concept"
-  (fn [context concept]
+  (fn [_context concept]
     (:concept-type concept)))
 
 (defmethod get-permitted-concept-id-conditions :collection

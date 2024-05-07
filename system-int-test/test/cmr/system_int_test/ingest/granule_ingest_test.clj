@@ -678,7 +678,7 @@
                                                                      :identifiers [:identifier "a very nice granule :)"
                                                                                    :identifier-type "a type of identifier"]})})
                         (data-core/item->concept {:format :umm-json
-                                                  :version "1.6.5"}))
+                                                  :version "1.6.6"}))
             {:keys [status] :as response} (ingest/ingest-concept granule)]
         (is (#{200 201} status) (pr-str response))))
 

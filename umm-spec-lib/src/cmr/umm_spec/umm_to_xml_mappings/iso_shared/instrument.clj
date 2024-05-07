@@ -1,12 +1,12 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.instrument
   "Functions for generating ISOSMAP XML elements from UMM instrument records."
   (:require
-    [cmr.common.xml.gen :refer :all]
-    [cmr.umm-spec.iso19115-2-util :as iso]
-    [cmr.umm-spec.iso-keywords :as kws]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.characteristics-and-operationalmodes :as ch]
-    [cmr.umm-spec.umm-to-xml-mappings.iso-shared.sensor :as sensor]
-    [cmr.umm-spec.util :as su :refer [with-default char-string]]))
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.iso-keywords :as kws]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.characteristics-and-operationalmodes :as ch]
+   [cmr.umm-spec.umm-to-xml-mappings.iso-shared.sensor :as sensor]
+   [cmr.umm-spec.util :as su :refer [with-default char-string]]))
 
 (defn- instrument-with-id
   "Returns the instrument with generated ids for ISO xml generation"

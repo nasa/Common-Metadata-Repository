@@ -26,13 +26,13 @@
  "Get phone/fax contact mechanisms from contact info. ISO only supports phone, fax, and email
  so first translate the UMM types to those 3 and filter by phone and fax."
  [contact-info]
- (when-let [contact-mechanisms (:ContactMechanisms contact-info)]
+ (when (:ContactMechanisms contact-info)
   (let [contact-mechanisms
         (map #(assoc % :Type (get translated-contact-mechanism-types (:Type %)))
              (:ContactMechanisms contact-info))]
-   (filter #(or (= "Telephone" (:Type %))
-                (= "Fax" (:Type %)))
-           contact-mechanisms))))
+    (filter #(or (= "Telephone" (:Type %))
+                 (= "Fax" (:Type %)))
+            contact-mechanisms))))
 
 (defn generate-contact-info
   "Generate contact info xml from ContactInformation"

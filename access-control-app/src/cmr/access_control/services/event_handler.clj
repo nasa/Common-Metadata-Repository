@@ -2,10 +2,9 @@
   "Provides functions for subscribing to and handling events."
   (:require
     [cmr.access-control.config :as config]
-    [cmr.access-control.data.access-control-index :as index]
+    [cmr.elastic-utils.search.access-control-index :as index]
     [cmr.access-control.services.acl-service :as acl-service]
     [cmr.common.concepts :as concepts]
-    [cmr.common.log :refer (debug info warn error)]
     [cmr.message-queue.queue.queue-protocol :as queue-protocol]
     [cmr.transmit.config :as transmit-config]
     [cmr.transmit.metadata-db2 :as mdb]
@@ -14,7 +13,7 @@
 (defmulti handle-provider-event
   "Handle the various messages that are posted to the provider queue.
   Dispatches on the message action."
-  (fn [context {:keys [action] :as msg}]
+  (fn [_context {:keys [action]}]
     (keyword action)))
 
 (defmethod handle-provider-event :provider-delete
@@ -33,7 +32,7 @@
 (defmulti handle-indexing-event
   "Handle the various messages that are posted to the indexing queue. Dispatches on a vector of
   action and concept type keywords like [:concept-delete :access-group]."
-  (fn [context {:keys [action concept-id] :as msg}]
+  (fn [_context {:keys [action concept-id]}]
     [(keyword action)
      (when concept-id
        (:concept-type (concepts/parse-concept-id concept-id)))]))
@@ -106,7 +105,7 @@
   "Subscribe to event messages on various queues"
   [context]
   (let [queue-broker (get-in context [:system :queue-broker])]
-    (dotimes [n (config/index-queue-listener-count)]
+    (dotimes [_n (config/index-queue-listener-count)]
       (queue-protocol/subscribe queue-broker
                        (config/provider-queue-name)
                        #(handle-provider-event context %))

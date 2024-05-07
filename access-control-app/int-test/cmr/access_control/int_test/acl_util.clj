@@ -1,6 +1,6 @@
 (ns cmr.access-control.int-test.acl-util
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.services.acl-util :as acl-util]
    [cmr.access-control.test.util :as test-util]
@@ -11,6 +11,7 @@
 (use-fixtures :each (fixtures/reset-fixture
                      {"prov1guid" "PROV1"}))
 
+(declare new-acl existing-acl action expected-message)
 (deftest acl-log-message
   (let [token (echo-util/login (test-util/conn-context) "admin")]
     (testing "Create, update, and delete ACL log message function"

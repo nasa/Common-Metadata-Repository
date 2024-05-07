@@ -3,21 +3,22 @@
   (:require
    [clojure.set :as set]
    [clojure.string :as str]
-   [clojurewerkz.elastisch.query :as eq]
-   [cmr.common-app.services.search.complex-to-simple :as c2s]
-   [cmr.common-app.services.search.query-model :as q]
-   [cmr.common-app.services.search.query-order-by-expense :as query-expense]
-   [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.services.errors :as errors]
+   [cmr.common.services.search.query-model :as q]
+   [cmr.elastic-utils.search.es-query-order-by-expense :as query-expense]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-wrapper :as eq]
+   [cmr.elastic-utils.search.keywords-to-elastic :as k2e]
+   [cmr.elastic-utils.search.query-transform :as c2s]
    [cmr.search.data.elastic-relevancy-scoring :as elastic-relevancy-scoring]
-   [cmr.search.data.keywords-to-elastic :as k2e]
    [cmr.search.services.query-walkers.keywords-extractor :as keywords-extractor])
   (:require
    ;; require it so it will be available
    [cmr.search.data.query-order-by-expense]))
 
+(declare use-doc-values-fields)
 (defconfig use-doc-values-fields
   "Indicates whether search fields should use the doc-values fields or not. If false the field data
   cache fields will be used. This is a temporary configuration to toggle the feature off if there

@@ -1,7 +1,7 @@
 (ns cmr.access-control.services.group-service-messages
-  (:require [clojure.string :as str]
-            [clojure.edn :as edn]
-            [cmr.common.util :as util]))
+  (:require
+   [clojure.edn :as edn]
+   [cmr.common.util :as util]))
 
 (defn- get-group-name-from-concept
   "Gets a group name from a access-group concept's metadata.

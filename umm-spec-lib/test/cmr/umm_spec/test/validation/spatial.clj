@@ -1,15 +1,9 @@
 (ns cmr.umm-spec.test.validation.spatial
   "This has tests for UMM validations."
   (:require
-   [clojure.string :as string]
-   [clojure.test :refer :all]
-   [cmr.common.services.errors :as e]
-   [cmr.common.util :as util :refer [are3]]
-   [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
+   [clojure.test :refer [deftest testing]]
    [cmr.umm-spec.models.umm-collection-models :as coll]
-   [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as helpers]
-   [cmr.umm-spec.validation.umm-spec-validation-core :as v]))
+   [cmr.umm-spec.test.validation.umm-spec-validation-test-helpers :as helpers]))
 
 (defn- umm-spec-point
   "Returns a point for a umm-spec model."

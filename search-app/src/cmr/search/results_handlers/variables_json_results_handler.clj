@@ -4,9 +4,9 @@
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]
    [cmr.search.results-handlers.results-handler-util :as rs-util]))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:variable :json]
@@ -39,7 +39,7 @@
                      {:concept_id concept-id
                       :revision_id revision-id
                       :provider_id provider-id
-                      :definition definition 
+                      :definition definition
                       :native_id native-id
                       :name variable-name
                       :long_name measurement

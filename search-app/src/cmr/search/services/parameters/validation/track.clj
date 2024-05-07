@@ -2,7 +2,7 @@
   "Contains functions for validating track related parameters."
   (:require
    [clojure.string :as string]
-   [cmr.common-app.services.search.params :as common-params]
+   [cmr.elastic-utils.search.es-params-converter :as common-params]
    [cmr.search.services.messages.common-messages :as msg]
    [cmr.search.services.parameters.validation.util :as validation-util]
    [cmr.common.util :as util])

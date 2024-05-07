@@ -5,13 +5,13 @@
    [clojure.string :as string]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as util]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [date-at date-at-str dates-at-str fields-from value-of values-at]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
-   [cmr.umm-spec.url :as url]
+   [cmr.umm-spec.models.umm-common-models :as cmn]
    [cmr.umm-spec.util :as su :refer [without-default-value-of]]
    [cmr.umm-spec.xml-to-umm-mappings.characteristics-data-type-normalization :as char-data-type-normalization]
    [cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute :as aa]
@@ -160,7 +160,13 @@
                                                      :DurationUnit (value-of pdt "Duration_Unit")
                                                      :DurationValue (value-of pdt "Duration_Value")
                                                      :PeriodCycleDurationUnit (value-of pdt "Period_Cycle_Duration_Unit")
-                                                     :PeriodCycleDurationValue (value-of pdt "Period_Cycle_Duration_Value")})})]
+                                                     :PeriodCycleDurationValue (value-of pdt "Period_Cycle_Duration_Value")})
+                               :TemporalResolution
+                                (if-let [value (value-of temporal "Temporal_Info/Temporal_Resolution/Value")]
+                                  {:Value (read-string value)
+                                   :Unit (value-of temporal "Temporal_Info/Temporal_Resolution/Unit")}
+                                  (when-let [unit (value-of temporal "Temporal_Info/Temporal_Resolution/Unit")]
+                                    {:Unit unit}))})]
     (when (seq temporal-extent)
       ;; Do this after testing if the map is empty. The map will never be empty if we use the bool value
       (update temporal-extent :EndsAtPresentFlag #(Boolean/valueOf %)))))
@@ -239,7 +245,14 @@
   (let [first-doi
          (first (remove nil? (for [dsc (select doc "/DIF/Dataset_Citation")]
                                (when (= (value-of dsc "Persistent_Identifier/Type") "DOI")
-                                 {:DOI (value-of dsc "Persistent_Identifier/Identifier")}))))]
+                                 {:DOI (value-of dsc "Persistent_Identifier/Identifier")
+                                  :PreviousVersion
+                                  (let [pv (util/remove-nil-keys
+                                            {:Version (value-of dsc "Persistent_Identifier/Previous_Version/Version")
+                                             :Description (value-of dsc "Persistent_Identifier/Previous_Version/Description")
+                                             :DOI (value-of dsc "Persistent_Identifier/Previous_Version/DOI")
+                                             :Published (date-at dsc "Persistent_Identifier/Previous_Version/Published")})]
+                                    (when-not (empty? pv) (cmn/map->PreviousVersionType pv)))}))))]
     (if first-doi
       first-doi
       {:MissingReason "Unknown"
@@ -248,12 +261,31 @@
 (defn- parse-associated-dois
   "Parse the associated DOIs."
   [doc]
-  (if-let [assoc-dois (select doc "DIF/Associated_DOIs")]
+  (when-let [assoc-dois (select doc "DIF/Associated_DOIs")]
     (into []
       (for [assoc-doi assoc-dois]
         {:DOI (value-of assoc-doi "DOI")
          :Title (value-of assoc-doi "Title")
-         :Authority (value-of assoc-doi "Authority")}))))
+         :Authority (value-of assoc-doi "Authority")
+         :Type (value-of assoc-doi "Type")
+         :DescriptionOfOtherType (value-of assoc-doi "Description_Of_Other_Type")}))))
+
+(defn- parse-other-identifiers
+  "Parse the other identifiers."
+  [doc]
+  (when-let [other-ids (select doc "DIF/Other_Identifiers")]
+    (into []
+      (for [other-id other-ids]
+        {:Identifier (value-of other-id "Identifier")
+         :Type (value-of other-id "Type")
+         :DescriptionOfOtherType (value-of other-id "Description_Of_Other_Type")}))))
+
+(defn- parse-file-naming-convention
+  "Parse the file naming convention."
+  [doc]
+  (when-let [[fnc] (select doc "/DIF/File_Naming_Convention")]
+    {:Convention (value-of fnc "Convention")
+     :Description (value-of fnc "Description")}))
 
 (defn parse-use-constraints
   "Parse the XML collection Use Constraints into the UMM-C counterparts."
@@ -285,6 +317,7 @@
   [doc {:keys [sanitize?]}]
   {:EntryTitle (value-of doc "/DIF/Entry_Title")
    :DOI (parse-doi doc)
+   :OtherIdentifiers (parse-other-identifiers doc)
    :AssociatedDOIs (parse-associated-dois doc)
    :ShortName (value-of doc "/DIF/Entry_ID/Short_Name")
    :Version (value-of doc "/DIF/Entry_ID/Version")
@@ -303,6 +336,7 @@
                          doc
                          "/DIF/Dataset_Progress"
                          sanitize?)
+   :DataMaturity (value-of doc "/DIF/Data_Maturity")
    :LocationKeywords (for [lk (select doc "/DIF/Location")]
                        {:Category (value-of lk "Location_Category")
                         :Type (value-of lk "Location_Type")
@@ -324,6 +358,7 @@
                  :Characteristics (parse-characteristics platform)
                  :Instruments (parse-instruments platform sanitize?)})
    :TemporalExtents (parse-temporal-extents doc sanitize?)
+   :FileNamingConvention (parse-file-naming-convention doc)
    :PaleoTemporalCoverages (pt/parse-paleo-temporal doc)
    :SpatialExtent (spatial/parse-spatial doc)
    :TilingIdentificationSystems (spatial/parse-tiling doc)

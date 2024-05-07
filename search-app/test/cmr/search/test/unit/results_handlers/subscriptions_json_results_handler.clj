@@ -3,7 +3,7 @@
   (:require
    [clojure.test :refer :all]
    [cmr.search.results-handlers.subscriptions-json-results-handler]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]))
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]))
 
 (deftest results-formatting-test
   (let [result {:_source {:subscription-name "subscription-name"
@@ -16,11 +16,11 @@
                           :concept-id "concept-id"}}
         query {:concept-type :subscription
                :format :json}]
-    (is (= #{:concept_id 
+    (is (= #{:concept_id
              :revision_id
              :provider_id
              :native_id
              :name
              :subscriber_id
-             :collection_concept_id} 
+             :collection_concept_id}
            (set (keys (elastic-results/elastic-result->query-result-item nil query result)))))))

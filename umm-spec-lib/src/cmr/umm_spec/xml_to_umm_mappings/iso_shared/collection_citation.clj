@@ -3,12 +3,10 @@
   (:require
    [clojure.string :as str]
    [cmr.common.util :as util]
-   [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
+   [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.date-util :as date]
-   [cmr.umm-spec.iso19115-2-util :refer :all]
-   [cmr.umm-spec.url :as url]
-   [cmr.umm-spec.util :as su]))
+   [cmr.umm-spec.iso19115-2-util :refer :all]))
 
 (def individual-name-xpath
   "gmd:individualName/gco:CharacterString")

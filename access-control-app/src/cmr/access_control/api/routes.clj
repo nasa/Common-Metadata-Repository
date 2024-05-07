@@ -2,13 +2,13 @@
   "Defines the HTTP URL routes for the access-control API."
   (:require
    [cheshire.core :as json]
+   [clojure.string :as string]
    [cmr.access-control.config :as access-control-config]
-   [cmr.access-control.data.access-control-index :as index]
+   [cmr.elastic-utils.search.access-control-index :as index]
    [cmr.access-control.data.acl-schema :as acl-schema]
    [cmr.access-control.data.group-schema :as group-schema]
    [cmr.access-control.services.acl-search-service :as acl-search]
    [cmr.access-control.services.acl-service :as acl-service]
-   [cmr.access-control.services.acl-util :as acl-util]
    [cmr.access-control.services.group-service :as group-service]
    [cmr.access-control.services.parameter-validation :as pv]
    [cmr.access-control.test.bootstrap :as bootstrap]
@@ -18,19 +18,14 @@
    [cmr.common-app.api.launchpad-token-validation :as lt-validation]
    [cmr.common-app.api.routes :as common-routes]
    [cmr.common-app.services.search.parameter-validation :as cpv]
-   [cmr.common.api.errors :as api-errors]
    [cmr.common.cache :as cache]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info error)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
-   [cmr.common.validations.core :as validation]
-   [compojure.core :refer :all]
-   [compojure.handler :as handler]
-   [ring.middleware.keyword-params :as keyword-params]
-   [ring.middleware.nested-params :as nested-params]
-   [ring.middleware.params :as params])
+   [compojure.core :refer [DELETE GET OPTIONS POST PUT context routes]])
   (:import
+   #_{:clj-kondo/ignore [:unused-import]}
    (org.json JSONException)))
 
 (defn- api-response
@@ -152,17 +147,31 @@
 
 (defn- get-acl
   "Returns a Ring response with the metadata of the ACL identified by concept-id."
-  [ctx headers concept-id params]
+  [ctx concept-id params]
   (-> (acl-service/get-acl ctx concept-id params)
       (util/map-keys->snake_case)
       api-response))
+
+(defn- validate-search-after-value
+  "Validate the search-after value is in the form of a JSON array; otherwise throw 400 error"
+  [search-after]
+  (try
+    (seq (json/parse-string search-after))
+    (catch Exception e
+      (error (format "search-after header value is invalid, error: %s" (.getMessage e)))
+      (errors/throw-service-error
+       :bad-request
+       "search-after header value is invalid, must be in the form of a JSON array."))))
 
 (defn- search-for-acls
   "Returns a Ring response with ACL search results for the given params."
   [ctx headers params]
   (mt/extract-header-mime-type #{mt/json mt/any} headers "accept" true)
-  (-> (acl-search/search-for-acls ctx params)
-      common-routes/search-response))
+  (let [search-after (get headers (string/lower-case common-routes/SEARCH_AFTER_HEADER))
+        decoded-search-after (validate-search-after-value search-after)
+        ctx (assoc ctx :search-after decoded-search-after)]
+    (common-routes/search-response
+    (acl-search/search-for-acls ctx params))))
 
 (defn- get-page
   "Extracts a specific page from a vector of values based on the given page size and page number."
@@ -183,7 +192,7 @@
       util/map-keys->kebab-case
       pv/validate-page-size-and-num)
   (let [start-time (System/currentTimeMillis)
-        {:keys [concept_id system_object target target_group_id page_size page_num]} params
+        {:keys [concept_id page_size page_num]} params
         client-id (:client-id context)
         ;; Default and max page_size is 2000
         page_size (if (and page_size
@@ -278,7 +287,6 @@
      :body (json/generate-string s3-list)}))
 
 ;;; Handler
-
 (defn build-routes [system]
   (routes
     (context (:relative-root-url system) []
@@ -332,7 +340,7 @@
                                   (:managing_group_id params))))
 
           (context "/:group-id" [group-id]
-            (OPTIONS "/" req (common-routes/options-response))
+            (OPTIONS "/" _req (common-routes/options-response))
             ;; Get a group
             (GET "/"
                  {ctx :request-context params :params}
@@ -354,7 +362,7 @@
                  (update-group ctx headers (slurp body) group-id))
 
             (context "/members" []
-              (OPTIONS "/" req (common-routes/options-response))
+              (OPTIONS "/" _req (common-routes/options-response))
               (GET "/"
                    {ctx :request-context params :params}
                    (pv/validate-group-route-params params)
@@ -396,7 +404,7 @@
               (create-acl ctx headers (slurp body)))
 
         (context "/:concept-id" [concept-id]
-          (OPTIONS "/" req (common-routes/options-response))
+          (OPTIONS "/" _req (common-routes/options-response))
 
           ;; Update an ACL
           (PUT "/"
@@ -412,18 +420,18 @@
 
           ;; Retrieve an ACL
           (GET "/"
-               {ctx :request-context params :params headers :headers}
-               (get-acl ctx headers concept-id params))))
+               {ctx :request-context params :params}
+               (get-acl ctx concept-id params))))
 
       (context "/permissions" []
         (OPTIONS "/" [] (common-routes/options-response))
 
         (GET "/"
-             {ctx :request-context headers :headers params :params}
+             {ctx :request-context params :params}
              (get-permissions ctx params))
 
         (POST "/"
-              {ctx :request-context headers :headers params :params}
+              {ctx :request-context params :params}
               (get-permissions ctx params)))
 
       (context "/current-sids" []

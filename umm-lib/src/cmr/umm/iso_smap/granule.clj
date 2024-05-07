@@ -1,25 +1,24 @@
 (ns cmr.umm.iso-smap.granule
   "Contains functions for parsing and generating the SMAP ISO dialect."
   (:require
-   [clj-time.format :as f]
-   [clojure.data.xml :as x]
+   [clj-time.format :as time-format]
+   [clojure.data.xml :as xml]
    [clojure.java.io :as io]
    [cmr.common.xml :as cx]
-   [cmr.common.xml :as v]
    [cmr.umm.echo10.echo10-core]
    [cmr.umm.iso-smap.granule.related-url :as ru]
-   [cmr.umm.iso-smap.granule.spatial :as s]
+   [cmr.umm.iso-smap.granule.spatial :as spatial]
    [cmr.umm.iso-smap.granule.temporal :as gt]
-   [cmr.umm.iso-smap.helper :as h]
-   [cmr.umm.iso-smap.iso-smap-collection :as c]
-   [cmr.umm.umm-granule :as g])
+   [cmr.umm.iso-smap.helper :as helper]
+   [cmr.umm.iso-smap.iso-smap-core :as iso-smap-core]
+   [cmr.umm.umm-granule :as granule])
   (:import
    (cmr.umm.umm_granule UmmGranule)))
 
 (defn- xml-elem->CollectionRef
   "Returns a UMM ref element from a parsed Granule XML structure"
   [id-elems]
-  (let [dataset-id-elem (h/xml-elem-with-title-tag id-elems "DataSetId")
+  (let [dataset-id-elem (helper/xml-elem-with-title-tag id-elems "DataSetId")
         entry-title (cx/string-at-path
                       dataset-id-elem
                       [:aggregationInfo :MD_AggregateInformation :aggregateDataSetIdentifier
@@ -28,20 +27,20 @@
                      #(cx/elements-at-path % [:citation :CI_Citation :identifier :MD_Identifier])
                      id-elems)
         parse-fn (fn [tag]
-                   (let [elem (h/xml-elem-with-path-value
+                   (let [elem (helper/xml-elem-with-path-value
                                 coll-elems
                                 [:description :CharacterString] tag)]
                      (cx/string-at-path elem [:code :CharacterString])))
         short-name (parse-fn "The ECS Short Name")
         version-id (parse-fn "The ECS Version ID")]
-    (g/map->CollectionRef {:entry-title entry-title
-                           :short-name short-name
-                           :version-id version-id})))
+    (granule/map->CollectionRef {:entry-title entry-title
+                                 :short-name short-name
+                                 :version-id version-id})))
 
 (defn- xml-elem->granule-ur
   "Returns a UMM granule ur from a parsed Granule XML structure"
   [id-elems]
-  (let [granule-ur-elem (h/xml-elem-with-path-value
+  (let [granule-ur-elem (helper/xml-elem-with-path-value
                           id-elems [:purpose :CharacterString] "GranuleUR")]
     (cx/string-at-path
       granule-ur-elem
@@ -65,14 +64,14 @@
                                 :DQ_DataQuality :lineage :LI_Lineage :processStep :LE_ProcessStep
                                 :dateTime :DateTime])]
     (when (or producer-gran-id production-date-time)
-      (g/map->DataGranule {:size size
-                           :producer-gran-id producer-gran-id
-                           :production-date-time production-date-time}))))
+      (granule/map->DataGranule {:size size
+                                 :producer-gran-id producer-gran-id
+                                 :production-date-time production-date-time}))))
 
 (defn- xml-elem->access-value
   "Returns a UMM access value from a parsed Granule XML structure"
   [id-elems]
-  (let [restriction-flag-elem (h/xml-elem-with-title-tag id-elems "RestrictionFlag")]
+  (let [restriction-flag-elem (helper/xml-elem-with-title-tag id-elems "RestrictionFlag")]
     (cx/double-at-path
       restriction-flag-elem
       [:resourceConstraints :MD_LegalConstraints :otherConstraints :CharacterString])))
@@ -80,12 +79,12 @@
 (defn xml-elem->DataProviderTimestamps
   "Returns a UMM DataProviderTimestamps from a parsed XML structure"
   [id-elems]
-  (let [insert-time-elem (h/xml-elem-with-title-tag id-elems "InsertTime")
-        update-time-elem (h/xml-elem-with-title-tag id-elems "UpdateTime")
+  (let [insert-time-elem (helper/xml-elem-with-title-tag id-elems "InsertTime")
+        update-time-elem (helper/xml-elem-with-title-tag id-elems "UpdateTime")
         insert-time (cx/datetime-at-path insert-time-elem [:citation :CI_Citation :date :CI_Date :date :DateTime])
         update-time (cx/datetime-at-path update-time-elem [:citation :CI_Citation :date :CI_Date :date :DateTime])]
     (when (or insert-time update-time)
-      (g/map->DataProviderTimestamps
+      (granule/map->DataProviderTimestamps
         {:insert-time insert-time
          :update-time update-time}))))
 
@@ -101,51 +100,51 @@
   "Returns a UMM Product from a parsed Granule XML structure"
   [xml-struct]
   (let [id-elems (get-id-elems xml-struct)]
-    (g/map->UmmGranule
+    (granule/map->UmmGranule
       {:granule-ur (xml-elem->granule-ur id-elems)
        :data-provider-timestamps (xml-elem->DataProviderTimestamps id-elems)
        :collection-ref (xml-elem->CollectionRef id-elems)
        :data-granule (xml-elem->DataGranule xml-struct)
        :access-value (xml-elem->access-value id-elems)
        :temporal (gt/xml-elem->Temporal xml-struct)
-       :orbit-calculated-spatial-domains (s/xml-elem->OrbitCalculatedSpatialDomains xml-struct)
-       :spatial-coverage (s/xml-elem->SpatialCoverage xml-struct)
+       :orbit-calculated-spatial-domains (spatial/xml-elem->OrbitCalculatedSpatialDomains xml-struct)
+       :spatial-coverage (spatial/xml-elem->SpatialCoverage xml-struct)
        :related-urls (ru/xml-elem->related-urls xml-struct)})))
 
 (defn parse-granule
   "Parses SMAP XML into a UMM Granule record."
   [xml]
-  (xml-elem->Granule (x/parse-str xml)))
+  (xml-elem->Granule (xml/parse-str xml)))
 
 (defn parse-temporal
   "Parses the XML and extracts the temporal data."
   [xml]
-  (gt/xml-elem->Temporal (x/parse-str xml)))
+  (gt/xml-elem->Temporal (xml/parse-str xml)))
 
 (defn parse-spatial
   "Parses the XML and extracts the SpatialCoverage data."
   [xml]
-  (s/xml-elem->SpatialCoverage (x/parse-str xml)))
+  (spatial/xml-elem->SpatialCoverage (xml/parse-str xml)))
 
 (defn parse-access-value
   "Parses the XML and extracts the access value"
   [xml]
-  (xml-elem->access-value (get-id-elems (x/parse-str xml))))
+  (xml-elem->access-value (get-id-elems (xml/parse-str xml))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Generators
 
 (defn- generate-granule-ur-element
   [granule-ur update-time]
-  (x/element :gmd:identificationInfo {}
-             (x/element :gmd:MD_DataIdentification {}
-                        (x/element :gmd:citation {}
-                                   (x/element :gmd:CI_Citation {}
-                                              (h/iso-string-element :gmd:title granule-ur)
-                                              (h/iso-date-element "creation" update-time)))
-                        (h/iso-string-element :gmd:abstract "GranuleUR")
-                        (h/iso-string-element :gmd:purpose "GranuleUR")
-                        (h/iso-string-element :gmd:language "eng"))))
+  (xml/element :gmd:identificationInfo {}
+               (xml/element :gmd:MD_DataIdentification {}
+                            (xml/element :gmd:citation {}
+                                         (xml/element :gmd:CI_Citation {}
+                                                      (helper/iso-string-element :gmd:title granule-ur)
+                                                      (helper/iso-date-element "creation" update-time)))
+                            (helper/iso-string-element :gmd:abstract "GranuleUR")
+                            (helper/iso-string-element :gmd:purpose "GranuleUR")
+                            (helper/iso-string-element :gmd:language "eng"))))
 
 (def identification-abstract
   "Returns the abstract. Not sure if we can hard-code it like this."
@@ -155,54 +154,54 @@
 (defn- generate-identification-info-element
   "Returns the main identification info element that contains most of the SMAP ISO granule fields"
   [producer-gran-id update-time short-name version-id spatial-coverage temporal ocsds]
-  (x/element
+  (xml/element
     :gmd:identificationInfo {}
-    (x/element
+    (xml/element
       :gmd:MD_DataIdentification {}
-      (x/element
+      (xml/element
         :gmd:citation {}
-        (x/element
+        (xml/element
           :gmd:CI_Citation {}
-          (x/element :gmd:title {}
-                     (x/element :gmx:FileName {} producer-gran-id))
-          (h/iso-date-element "creation" update-time)
-          (h/iso-string-element :gmd:edition version-id)
-          (h/generate-short-name-element short-name)
-          (h/generate-version-id-element version-id)))
+          (xml/element :gmd:title {}
+                       (xml/element :gmx:FileName {} producer-gran-id))
+          (helper/iso-date-element "creation" update-time)
+          (helper/iso-string-element :gmd:edition version-id)
+          (helper/generate-short-name-element short-name)
+          (helper/generate-version-id-element version-id)))
       ;; This probably shouldn't be hard-coded
-      (h/iso-string-element :gmd:abstract identification-abstract)
-      (h/iso-string-element :gmd:language "eng")
-      (x/element :gmd:extent {}
-                 (x/element :gmd:EX_Extent {}
-                            (s/generate-spatial spatial-coverage)
-                            (s/generate-orbit-calculated-spatial-domains ocsds)
-                            (gt/generate-temporal temporal))))))
+      (helper/iso-string-element :gmd:abstract identification-abstract)
+      (helper/iso-string-element :gmd:language "eng")
+      (xml/element :gmd:extent {}
+                   (xml/element :gmd:EX_Extent {}
+                                (spatial/generate-spatial spatial-coverage)
+                                (spatial/generate-orbit-calculated-spatial-domains ocsds)
+                                (gt/generate-temporal temporal))))))
 
 (defn- generate-restriction-flag-element
   "Returns the smap iso restriction flag element"
   [access-value update-time]
-  (x/element
+  (xml/element
     :gmd:identificationInfo {}
-    (x/element
+    (xml/element
       :gmd:MD_DataIdentification {}
-      (h/generate-citation-element "RestrictionFlag" "revision" update-time)
-      (h/iso-string-element :gmd:abstract "RestrictionFlag")
-      (h/iso-string-element :gmd:purpose "RestrictionFlag")
-      (x/element :gmd:resourceConstraints {}
-                 (x/element :gmd:MD_LegalConstraints {}
-                            (h/iso-string-element :gmd:otherConstraints access-value)))
-      (h/iso-string-element :gmd:language "eng"))))
+      (helper/generate-citation-element "RestrictionFlag" "revision" update-time)
+      (helper/iso-string-element :gmd:abstract "RestrictionFlag")
+      (helper/iso-string-element :gmd:purpose "RestrictionFlag")
+      (xml/element :gmd:resourceConstraints {}
+                   (xml/element :gmd:MD_LegalConstraints {}
+                                (helper/iso-string-element :gmd:otherConstraints access-value)))
+      (helper/iso-string-element :gmd:language "eng"))))
 
 (defn- generate-distribution-info-element
   [related-urls]
-  (x/element
+  (xml/element
     :gmd:distributionInfo {}
-    (x/element
+    (xml/element
       :gmd:MD_Distribution {}
-      (x/element :gmd:distributor {}
-                 (x/element :gmd:MD_Distributor {}
-                            (x/element :gmd:distributorContact {})
-                            (ru/generate-related-urls related-urls))))))
+      (xml/element :gmd:distributor {}
+                   (xml/element :gmd:MD_Distributor {}
+                                (xml/element :gmd:distributorContact {})
+                                (ru/generate-related-urls related-urls))))))
 
 (def processing-step-description
   "Returns the processing step description. Not sure if we can hard-code it like this."
@@ -213,24 +212,24 @@
 (defn- generate-data-quality-info-element
   [production-date-time]
   (when production-date-time
-    (x/element
+    (xml/element
       :gmd:dataQualityInfo {}
-      (x/element
+      (xml/element
         :gmd:DQ_DataQuality {}
-        (x/element :gmd:scope {})
-        (x/element
+        (xml/element :gmd:scope {})
+        (xml/element
           :gmd:lineage {}
-          (x/element
+          (xml/element
             :gmd:LI_Lineage {}
-            (x/element
+            (xml/element
               :gmd:processStep {}
-              (x/element
+              (xml/element
                 :gmi:LE_ProcessStep {}
-                (h/iso-string-element :gmd:description processing-step-description)
-                (x/element :gmd:dateTime {}
-                           (x/element :gco:DateTime {} (str production-date-time)))))))))))
+                (helper/iso-string-element :gmd:description processing-step-description)
+                (xml/element :gmd:dateTime {}
+                             (xml/element :gco:DateTime {} (str production-date-time)))))))))))
 
-(extend-protocol cmr.umm.iso-smap.iso-smap-core/UmmToIsoSmapXml
+(extend-protocol iso-smap-core/UmmToIsoSmapXml
   UmmGranule
   (umm->iso-smap-xml
     ([granule]
@@ -239,38 +238,40 @@
             :keys [granule-ur data-granule access-value temporal orbit-calculated-spatial-domains
                    related-urls spatial-coverage]} granule
            {:keys [producer-gran-id production-date-time]} data-granule]
-       (x/emit-str
-         (x/element
-           :gmd:DS_Series h/iso-header-attributes
-           (x/element
+       (xml/emit-str
+         (xml/element
+           :gmd:DS_Series helper/iso-header-attributes
+           (xml/element
              :gmd:composedOf {}
-             (x/element
+             (xml/element
                :gmd:DS_DataSet {}
-               (x/element
+               (xml/element
                  :gmd:has {}
-                 (x/element
+                 (xml/element
                    :gmi:MI_Metadata {}
-                   (x/element :gmd:fileIdentifier {}
-                              (x/element :gmx:FileName {} producer-gran-id))
-                   (h/iso-string-element :gmd:language "eng")
-                   h/iso-charset-element
-                   (h/iso-hierarchy-level-element "dataset")
-                   (x/element :gmd:contact {})
-                   (x/element :gmd:dateStamp {}
-                              (x/element :gco:Date {} (f/unparse (f/formatters :date) update-time)))
+                   (xml/element :gmd:fileIdentifier {}
+                              (xml/element :gmx:FileName {} producer-gran-id))
+                   (helper/iso-string-element :gmd:language "eng")
+                   helper/iso-charset-element
+                   (helper/iso-hierarchy-level-element "dataset")
+                   (xml/element :gmd:contact {})
+                   (xml/element :gmd:dateStamp {}
+                                (xml/element :gco:Date {} (time-format/unparse (time-format/formatters :date) update-time)))
                    (generate-granule-ur-element granule-ur update-time)
                    (generate-identification-info-element
                      producer-gran-id update-time short-name version-id
                      spatial-coverage temporal orbit-calculated-spatial-domains)
-                   (h/generate-dataset-id-element entry-title update-time)
-                   (h/generate-datetime-element "InsertTime" "creation" insert-time)
-                   (h/generate-datetime-element "UpdateTime" "revision" update-time)
+                   (helper/generate-dataset-id-element entry-title update-time)
+                   (helper/generate-datetime-element "InsertTime" "creation" insert-time)
+                   (helper/generate-datetime-element "UpdateTime" "revision" update-time)
                    (generate-restriction-flag-element access-value update-time)
                    (generate-distribution-info-element related-urls)
                    (generate-data-quality-info-element production-date-time)))))
-           (x/element :gmd:seriesMetadata {:gco:nilReason "inapplicable"})))))))
+           (xml/element :gmd:seriesMetadata {:gco:nilReason "inapplicable"})))))))
+
+(def schema-location "schema/iso_smap/schema.xsd")
 
 (defn validate-xml
   "Validates the XML against the SMAP ISO schema."
   [xml]
-  (v/validate-xml (io/resource "schema/iso_smap/schema.xsd") xml))
+  (cx/validate-xml (io/resource schema-location) xml))

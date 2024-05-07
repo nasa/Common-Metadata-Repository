@@ -1,19 +1,23 @@
 (ns cmr.umm-spec.test.umm-to-xml-mappings.iso19115-2
   "Tests to verify that ISO19115-2 is generated correctly."
   (:require
-    [clojure.data.xml :as x]
-    [clojure.string :as string]
-    [clojure.test :refer :all]
-    [cmr.common.util :refer [are3]]
-    [cmr.common.xml :as xml]
-    [cmr.umm-spec.models.umm-collection-models :as coll]
-    [cmr.umm-spec.umm-spec-core :as core]
-    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
-    [cmr.umm-spec.util :as u]
-    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as parser]
-    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
-    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.archive-and-dist-info :as dist-info]
-    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.doi :as doi]))
+   [clojure.data.xml :as x]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is testing]]
+   [cmr.common.date-time-parser :as dtp]
+   [cmr.common.util :as util :refer [are3]]
+   [cmr.common.xml :as xml]
+   [cmr.common.xml.parse :refer [value-of]]
+   [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.models.umm-collection-models :as coll]
+   [cmr.umm-spec.umm-spec-core :as core]
+   [cmr.umm-spec.umm-to-xml-mappings.iso19115-2 :as iso]
+   [cmr.umm-spec.util :as u]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as parser]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.additional-attribute :as aa]
+   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.metadata-association :as ma]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.archive-and-dist-info :as dist-info]
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.doi :as doi]))
 
 (def iso-no-use-constraints "<?xml version=\"1.0\" encoding=\"UTF-8\"?>
 <gmi:MI_Metadata xmlns:gmi=\"http://www.isotc211.org/2005/gmi\" xmlns:eos=\"http://earthdata.nasa.gov/schema/eos\" xmlns:gco=\"http://www.isotc211.org/2005/gco\" xmlns:gmd=\"http://www.isotc211.org/2005/gmd\" xmlns:gml=\"http://www.opengis.net/gml/3.2\" xmlns:gmx=\"http://www.isotc211.org/2005/gmx\" xmlns:gsr=\"http://www.isotc211.org/2005/gsr\" xmlns:gss=\"http://www.isotc211.org/2005/gss\" xmlns:gts=\"http://www.isotc211.org/2005/gts\" xmlns:srv=\"http://www.isotc211.org/2005/srv\" xmlns:swe=\"http://schemas.opengis.net/sweCommon/2.0/\" xmlns:xlink=\"http://www.w3.org/1999/xlink\" xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">
@@ -231,6 +235,45 @@
                        </gmd:description>
                     </gmd:MD_Identifier>
                  </gmd:identifier>
+                 <gmd:identifier>
+                   <gmd:MD_Identifier>
+                     <gmd:code>
+                       <gco:CharacterString>10.5067/7ZGTHVZFAIDT</gco:CharacterString>
+                     </gmd:code>
+                     <gmd:codeSpace>
+                       <gco:CharacterString>gov.nasa.esdis.umm.doi</gco:CharacterString>
+                     </gmd:codeSpace>
+                     <gmd:description>
+                       <gco:CharacterString>A Digital Object Identifier (DOI)</gco:CharacterString>
+                     </gmd:description>
+                   </gmd:MD_Identifier>
+                 </gmd:identifier>
+                 <gmd:identifier>
+                   <gmd:MD_Identifier>
+                     <gmd:code>
+                       <gco:CharacterString>B28C32HIKEHIKE</gco:CharacterString>
+                     </gmd:code>
+                     <gmd:codeSpace>
+                       <gco:CharacterString>gov.nasa.esdis.umm.otheridentifier</gco:CharacterString>
+                     </gmd:codeSpace>
+                     <gmd:description>
+                       <gco:CharacterString>Type: Other DescriptionOfOtherType: DAAC-ID</gco:CharacterString>
+                     </gmd:description>
+                   </gmd:MD_Identifier>
+                 </gmd:identifier>
+                 <gmd:identifier>
+                   <gmd:MD_Identifier>
+                     <gmd:code>
+                       <gco:CharacterString>Stage 1 Validation</gco:CharacterString>
+                     </gmd:code>
+                     <gmd:codeSpace>
+                       <gco:CharacterString>gov.nasa.esdis.umm.datamaturity</gco:CharacterString>
+                     </gmd:codeSpace>
+                     <gmd:description>
+                       <gco:CharacterString>Data Maturity</gco:CharacterString>
+                     </gmd:description>
+                   </gmd:MD_Identifier>
+                 </gmd:identifier>
                  <gmd:otherCitationDetails>
                     <gco:CharacterString />
                  </gmd:otherCitationDetails>
@@ -253,6 +296,59 @@
                  </gmd:otherConstraints>
               </gmd:MD_LegalConstraints>
            </gmd:resourceConstraints>
+          <gmd:resourceFormat>
+             <gmd:MD_Format>
+               <gmd:name>
+                  <gco:CharacterString>FileNamingConvention</gco:CharacterString>
+               </gmd:name>
+               <gmd:version gco:nilReason=\"inapplicable\"/>
+               <gmd:specification>
+                  <gco:CharacterString>FileNameConvention: YYYYDDMM.ZIPO ConventionDescription: Some test value</gco:CharacterString>
+               </gmd:specification>
+             </gmd:MD_Format>
+           </gmd:resourceFormat>
+           <gmd:resourceFormat>
+             <gmd:MD_Format>
+               <gmd:name>
+                  <gco:CharacterString>Binary</gco:CharacterString>
+               </gmd:name>
+               <gmd:version gco:nilReason=\"inapplicable\"/>
+               <gmd:specification>
+                 <gco:CharacterString>FormatDescription: ABC Binary FormatType: Supported</gco:CharacterString>
+               </gmd:specification>
+             </gmd:MD_Format>
+           </gmd:resourceFormat>
+           <!-- Metadata association-->
+           <gmd:aggregationInfo>
+             <gmd:MD_AggregateInformation>
+               <gmd:aggregateDataSetName>
+                 <gmd:CI_Citation>
+                   <gmd:title>
+                     <gco:CharacterString>Entry Id</gco:CharacterString>
+                   </gmd:title>
+                   <gmd:date gco:nilReason=\"unknown\"></gmd:date>
+                   <gmd:edition>
+                      <gco:CharacterString>6.1NRT</gco:CharacterString>
+                   </gmd:edition>
+                   <gmd:otherCitationDetails>
+                     <gco:CharacterString>Parent collection for child product MYD021KM.</gco:CharacterString>
+                   </gmd:otherCitationDetails>
+                 </gmd:CI_Citation>
+               </gmd:aggregateDataSetName>
+               <gmd:aggregateDataSetIdentifier>
+                 <gmd:MD_Identifier>
+                   <gmd:code>
+                     <gco:CharacterString>Entry Id</gco:CharacterString>
+                   </gmd:code>
+                 </gmd:MD_Identifier>
+               </gmd:aggregateDataSetIdentifier>
+               <gmd:associationType>
+                 <gmd:DS_AssociationTypeCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode\"
+                                             codeListValue=\"parent\">PARENT
+                 </gmd:DS_AssociationTypeCode>
+               </gmd:associationType>
+             </gmd:MD_AggregateInformation>
+           </gmd:aggregationInfo>
            <!-- Associatd DOIs -->
            <gmd:aggregationInfo>
              <gmd:MD_AggregateInformation>
@@ -275,9 +371,9 @@
                              <gco:CharacterString>https://doi.org</gco:CharacterString>
                            </gmd:organisationName>
                            <gmd:role>
-                             <gmd:RoleCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"authority\">
+                             <gmd:CI_RoleCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"authority\">
                                authority
-                             </gmd:RoleCode>
+                             </gmd:CI_RoleCode>
                            </gmd:role>
                          </gmd:CI_ResponsibleParty>
                        </gmd:citedResponsibleParty>
@@ -322,9 +418,9 @@
                              <gco:CharacterString>https://doi.org</gco:CharacterString>
                            </gmd:organisationName>
                            <gmd:role>
-                             <gmd:RoleCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"authority\">
+                             <gmd:CI_RoleCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"authority\">
                                authority
-                             </gmd:RoleCode>
+                             </gmd:CI_RoleCode>
                            </gmd:role>
                          </gmd:CI_ResponsibleParty>
                        </gmd:citedResponsibleParty>
@@ -342,9 +438,91 @@
                  </gmd:MD_Identifier>
                </gmd:aggregateDataSetIdentifier>
                <gmd:associationType>
-                 <gmd:DS_AssociationTypeCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode\"
-                                             codeListValue=\"associatedDOI\">associatedDOI
+                 <gmd:DS_AssociationTypeCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#DS_AssociationTypeCode\"
+                                             codeListValue=\"parentDataset\">Parent_Dataset
                  </gmd:DS_AssociationTypeCode>
+               </gmd:associationType>
+             </gmd:MD_AggregateInformation>
+           </gmd:aggregationInfo>
+           <gmd:aggregationInfo>
+             <gmd:MD_AggregateInformation>
+               <gmd:aggregateDataSetName>
+                 <gmd:CI_Citation>
+                   <gmd:title>
+                     <gco:CharacterString>DOI 3 landing page title</gco:CharacterString>
+                   </gmd:title>
+                 </gmd:CI_Citation>
+               </gmd:aggregateDataSetName>
+               <gmd:aggregateDataSetIdentifier>
+                 <gmd:MD_Identifier>
+                   <gmd:authority>
+                     <gmd:CI_Citation>
+                       <gmd:title/>
+                       <gmd:date/>
+                       <gmd:citedResponsibleParty>
+                         <gmd:CI_ResponsibleParty>
+                           <gmd:organisationName>
+                             <gco:CharacterString>https://doi.org</gco:CharacterString>
+                           </gmd:organisationName>
+                           <gmd:role>
+                             <gmd:CI_RoleCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/gmxCodelists.xml#CI_RoleCode\" codeListValue=\"authority\">
+                               authority
+                             </gmd:CI_RoleCode>
+                           </gmd:role>
+                         </gmd:CI_ResponsibleParty>
+                       </gmd:citedResponsibleParty>
+                     </gmd:CI_Citation>
+                   </gmd:authority>
+                   <gmd:code>
+                     <gco:CharacterString>10.5678/AssociatedDOI2</gco:CharacterString>
+                   </gmd:code>
+                   <gmd:codeSpace>
+                     <gco:CharacterString>gov.nasa.esdis.umm.associateddoi</gco:CharacterString>
+                   </gmd:codeSpace>
+                   <gmd:description>
+                     <gco:CharacterString>Assocaited DOI 3</gco:CharacterString>
+                   </gmd:description>
+                 </gmd:MD_Identifier>
+               </gmd:aggregateDataSetIdentifier>
+               <gmd:associationType>
+                 <gmd:DS_AssociationTypeCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#DS_AssociationTypeCode\"
+                                             codeListValue=\"other\">Description type of other
+                 </gmd:DS_AssociationTypeCode>
+               </gmd:associationType>
+             </gmd:MD_AggregateInformation>
+           </gmd:aggregationInfo>
+           <gmd:aggregationInfo>
+             <gmd:MD_AggregateInformation>
+               <gmd:aggregateDataSetName>
+                 <gmd:CI_Citation>
+                   <gmd:title>
+                     <gco:CharacterString>DOI Previous Version</gco:CharacterString>
+                   </gmd:title>
+                   <gmd:date gco:nilReason=\"missing\"/>
+                 </gmd:CI_Citation>
+               </gmd:aggregateDataSetName>
+               <gmd:aggregateDataSetIdentifier>
+                 <gmd:MD_Identifier>
+                   <gmd:authority>
+                     <gmd:CI_Citation>
+                       <gmd:title gco:nilReason=\"inapplicable\"/>
+                       <gmd:date gco:nilReason=\"inapplicable\"/>
+                       <gmd:edition>
+                         <gco:CharacterString>Previous Version Version</gco:CharacterString>
+                       </gmd:edition>
+                       <gmd:editionDate><gco:Date>2024-01-01</gco:Date></gmd:editionDate>
+                       <gmd:otherCitationDetails>
+                         <gco:CharacterString>Previous Version Description Text</gco:CharacterString>
+                       </gmd:otherCitationDetails>
+                     </gmd:CI_Citation>
+                   </gmd:authority>
+                   <gmd:code><gco:CharacterString>10.5067/7ZGTHVZFAIDG</gco:CharacterString></gmd:code>
+                   <gmd:codeSpace><gco:CharacterString>gov.nasa.esdis.umm.doi.previousversion</gco:CharacterString></gmd:codeSpace>
+                   <gmd:description><gco:CharacterString>DOI Previous Version</gco:CharacterString></gmd:description>
+                 </gmd:MD_Identifier>
+               </gmd:aggregateDataSetIdentifier>
+               <gmd:associationType>
+                 <gmd:DS_AssociationTypeCode codeList=\"https://cdn.earthdata.nasa.gov/iso/resources/Codelist/eosCodelists.xml#EOS_AssociationTypeCode\" codeListValue=\"doiPreviousVersion\">DOI_Previous_Version</gmd:DS_AssociationTypeCode>
                </gmd:associationType>
              </gmd:MD_AggregateInformation>
            </gmd:aggregationInfo>
@@ -375,20 +553,84 @@
                   </gmd:northBoundLatitude>
                 </gmd:EX_GeographicBoundingBox>
               </gmd:geographicElement>
-            </gmd:EX_Extent>
+              <gmd:temporalElement uuidref=\"temporal_extent_1\">
+                <gmd:EX_TemporalExtent>
+                  <gmd:extent>
+                    <gml:TimePeriod gml:id=\"temporal_extent_1\">
+                      <gml:beginPosition>2003-03-26T00:00:00.000Z</gml:beginPosition>
+                      <gml:endPosition>2003-07-15T23:59:59.999Z</gml:endPosition>
+                      <gml:timeInterval unit=\"second\">30</gml:timeInterval>
+                    </gml:TimePeriod>
+                  </gmd:extent>
+                </gmd:EX_TemporalExtent>
+              </gmd:temporalElement>
+              <gmd:temporalElement uuidref=\"temporal_extent_2\">
+                <gmd:EX_TemporalExtent>
+                  <gmd:extent>
+                    <gml:TimePeriod gml:id=\"temporal_extent_2\">
+                      <gml:beginPosition>2003-03-26T00:00:00.000Z</gml:beginPosition>
+                      <gml:endPosition indeterminatePosition=\"now\"/>
+                    </gml:TimePeriod>
+                  </gmd:extent>
+                </gmd:EX_TemporalExtent>
+              </gmd:temporalElement>
+              <gmd:temporalElement uuidref=\"temporal_extent_2\">
+                <gmd:EX_TemporalExtent>
+                  <gmd:extent>
+                    <gml:TimeInstant gml:id=\"temporal_extent_2_resolution\">
+                      <gml:timePosition>Varies</gml:timePosition>
+                    </gml:TimeInstant>
+                  </gmd:extent>
+                </gmd:EX_TemporalExtent>
+              </gmd:temporalElement>
+              <gmd:temporalElement uuidref=\"temporal_extent_3\">
+                <gmd:EX_TemporalExtent>
+                  <gmd:extent>
+                    <gml:TimeInstant gml:id=\"temporal_extent_3\">
+                      <gml:timePosition>2003-07-15T23:59:59.999Z</gml:timePosition>
+                     </gml:TimeInstant>
+                  </gmd:extent>
+                </gmd:EX_TemporalExtent>
+              </gmd:temporalElement>
+              <gmd:temporalElement uuidref=\"temporal_extent_3\">
+                <gmd:EX_TemporalExtent>
+                  <gmd:extent>
+                    <gml:TimeInstant gml:id=\"temporal_extent_3_resolution\">
+                      <gml:timePosition>Constant</gml:timePosition>
+                    </gml:TimeInstant>
+                  </gmd:extent>
+                </gmd:EX_TemporalExtent>
+              </gmd:temporalElement>
+             </gmd:EX_Extent>
            </gmd:extent>
-           <gmd:supplementalInformation />
            <gmd:processingLevel>
               <gmd:MD_Identifier>
                  <gmd:code>
-                    <gco:CharacterString />
+                    <gco:CharacterString/>
                  </gmd:code>
                  <gmd:description>
-                    <gco:CharacterString />
+                    <gco:CharacterString/>
                  </gmd:description>
               </gmd:MD_Identifier>
            </gmd:processingLevel>
         </gmd:MD_DataIdentification>
+     </gmd:identificationInfo>
+     <gmd:identificationInfo>
+       <gmd:MD_DataIdentification>
+         <gmd:extent>
+           <gmd:EX_Extent>
+             <gmd:temporalElement uuidref=\"temporal_extent_4\">
+                <gmd:EX_TemporalExtent>
+                  <gmd:extent>
+                    <gml:TimeInstant gml:id=\"temporal_extent_4_resolution\">
+                      <gml:timePosition>Varies</gml:timePosition>
+                    </gml:TimeInstant>
+                  </gmd:extent>
+                </gmd:EX_TemporalExtent>
+              </gmd:temporalElement>
+           </gmd:EX_Extent>
+         </gmd:extent>
+       </gmd:MD_DataIdentification>
      </gmd:identificationInfo>
      <gmd:distributionInfo>
         <gmd:MD_Distribution>
@@ -443,6 +685,27 @@
                  </gmd:level>
               </gmd:DQ_Scope>
            </gmd:scope>
+           <gmd:report uuidref=\"temporal_extent_2\">
+             <gmd:DQ_AccuracyOfATimeMeasurement>
+               <gmd:measureIdentification>
+                 <gmd:MD_Identifier>
+                   <gmd:code>
+                     <gco:CharacterString>PrecisionOfSeconds</gco:CharacterString>
+                   </gmd:code>
+                 </gmd:MD_Identifier>
+               </gmd:measureIdentification>
+               <gmd:result>
+                 <gmd:DQ_QuantitativeResult>
+                   <gmd:valueUnit gco:nilReason=\"inapplicable\"/>
+                   <gmd:value>
+                     <gco:Record xsi:type=\"gco:Real_PropertyType\">
+                       <gco:Real>30</gco:Real>
+                     </gco:Record>
+                   </gmd:value>
+                 </gmd:DQ_QuantitativeResult>
+               </gmd:result>
+             </gmd:DQ_AccuracyOfATimeMeasurement>
+           </gmd:report>
            <gmd:lineage>
               <gmd:LI_Lineage>
                  <gmd:processStep>
@@ -524,6 +787,7 @@
 
 (def constraints-path [:identificationInfo :MD_DataIdentification :resourceConstraints])
 
+(declare expected-iso umm-map)
 (deftest iso-constraints
   (testing "Use constraints"
    (are3 [expected-iso umm-map]
@@ -560,8 +824,7 @@
 
 (deftest data-quality-info-additional-attributes
   (testing "additional attributes that should go to dataQualityInfo section are written out correctly"
-    (let [parsed (#'parser/parse-iso19115-xml {}
-                                              iso-with-use-constraints u/default-parsing-options)
+    (let [parsed (#'parser/parse-iso19115-xml iso-with-use-constraints u/default-parsing-options)
           ;; all the parsed additional attributes are from dataQualityInfo and we use it as the expected value
           expected-additional-attributes (:AdditionalAttributes parsed)
           generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
@@ -570,21 +833,19 @@
                                          generated-iso (:sanitize? u/default-parsing-options))]
       ;; validate against xml schema
       (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
-      (is (not (empty? parsed-additional-attributes)))
+      (is (seq parsed-additional-attributes))
       (is (= expected-additional-attributes parsed-additional-attributes)))))
 
 (deftest granule-spatial-representation
   (testing "granule spatial representation is parsed correctly"
-    (let [parsed (#'parser/parse-iso19115-xml {}
-                                              iso-with-use-constraints u/default-parsing-options)
+    (let [parsed (#'parser/parse-iso19115-xml iso-with-use-constraints u/default-parsing-options)
           gran-spatial-representation (get-in parsed [:SpatialExtent :GranuleSpatialRepresentation])]
       (is (= "CARTESIAN" gran-spatial-representation)))))
 
 (deftest direct-distribution-information-test
   (testing "direct distribution information that should go to distribution section are
             written out correctly."
-    (let [parsed (#'parser/parse-iso19115-xml {}
-                                              iso-with-use-constraints u/default-parsing-options)
+    (let [parsed (#'parser/parse-iso19115-xml iso-with-use-constraints u/default-parsing-options)
           ;; use the parsed out direct distribution info as the expected value
           expected-direct-distribution (:DirectDistributionInformation parsed)
           generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
@@ -593,32 +854,278 @@
                                          generated-iso parser/dist-info-xpath)]
       ;; validate against xml schema
       (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
-      (is (not (empty? parsed-direct-distribution)))
+      (is (seq parsed-direct-distribution))
       (is (= expected-direct-distribution parsed-direct-distribution)))))
 
+(declare iso-record expect-empty)
 (deftest associated-doi-test
-  "Testing the associated DOIs"
-  (are3 [iso-record expect-empty]
-    (let [parsed (#'parser/parse-iso19115-xml {}
-                                              iso-record
+  (testing "Testing the associated DOIs"
+    (are3 [iso-record expect-empty]
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
+                                                    u/default-parsing-options)
+                ;; use the parsed associated DOIs as the expected value
+                expected-associated-dois (:AssociatedDOIs parsed)
+                generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
+                ;; parse out the associated DOIs
+                parsed-associated-dois (doi/parse-associated-dois
+                                        generated-iso parser/associated-doi-xpath)]
+            ;; validate against xml schema
+            (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
+            (if expect-empty
+              (is (empty? parsed-associated-dois))
+              (is (seq parsed-associated-dois)))
+            (is (= expected-associated-dois parsed-associated-dois)))
+
+          "Associated DOIs are written out correctly."
+          iso-with-use-constraints
+          false
+
+          "Associated DOIs not used"
+          iso-no-use-constraints
+          true)))
+
+(deftest associated-metadata-test
+  (testing "Testing the associated metadata"
+    (are3 [iso-record expect-empty]
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
+                                                    u/default-parsing-options)
+                ;; use the parsed associated DOIs as the expected value
+                expected-metadata-associations (:MetadataAssociations parsed)
+                generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
+                ;; parse out the associated DOIs
+                parsed-metadata-associations (ma/xml-elem->metadata-associations generated-iso)]
+            ;; validate against xml schema
+            (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
+            (if expect-empty
+              (is (empty? parsed-metadata-associations))
+              (is (seq parsed-metadata-associations)))
+            (is (= expected-metadata-associations parsed-metadata-associations)))
+
+           "Associated Metadata are written out correctly."
+           iso-with-use-constraints
+           false
+
+           "Associated Metadata are not used"
+           iso-no-use-constraints
+           true)))
+
+(deftest previous-version-test
+  (testing "Testing the previous version metadata"
+    (are3 [iso-record expect-empty]
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
+                                                    u/default-parsing-options)
+                ;; use the parsed doi previous version as the expected value
+                expected-previous-version (get-in parsed [:DOI :PreviousVersion])
+                generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
+                ;; parse out the doi previous version
+                parsed-previous-version (doi/parse-previous-version generated-iso)]
+            ;; validate against xml schema
+            (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
+            (if expect-empty
+              (is (empty? parsed-previous-version))
+              (is (seq parsed-previous-version)))
+            (is (= expected-previous-version parsed-previous-version)))
+
+          "Previous version is written out correctly."
+          iso-with-use-constraints
+          false
+
+          "Previous Version is not used"
+          iso-no-use-constraints
+          true)))
+
+(deftest other-identifiers-test
+  (testing "Testing the Other Identifiers translation"
+    (are3 [iso-record expect-empty]
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
+                                                    u/default-parsing-options)
+                ;; use the parsed other identifiers as the expected value
+                expected-other-identifier (:OtherIdentifiers parsed)
+                generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
+                ;; parse out the other identifiers
+                parsed-other-identifier (parser/parse-other-identifiers generated-iso)]
+            ;; validate against xml schema
+            (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
+            (if expect-empty
+              (is (empty? parsed-other-identifier))
+              (is (seq parsed-other-identifier)))
+            (is (= expected-other-identifier parsed-other-identifier)))
+
+          "Other identifiers is written out correctly."
+          iso-with-use-constraints
+          false
+
+          "Other identifiers is not used"
+          iso-no-use-constraints
+          true)))
+
+(deftest file-naming-convention-test
+  (testing "Testing file naming convention translation"
+    (are3 [iso-record expect-empty]
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
+                                                    u/default-parsing-options)
+                ;; use the parsed file naming resource as the expected value
+                expected-convention (:FileNamingConvention parsed)
+                generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
+                ;; parse out the resource format
+                parsed-convention (parser/parse-file-naming-convention generated-iso)]
+            ;; validate against xml schema
+            (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
+            (if expect-empty
+              (is (empty? parsed-convention))
+              (is (seq parsed-convention)))
+            (is (= expected-convention parsed-convention)))
+
+          "Naming Convention is written out correctly."
+          iso-with-use-constraints
+          false
+
+          "Naming Convention is not used"
+          iso-no-use-constraints
+          true)))
+
+(deftest archive-format-test
+  (testing "Testing the archive format translation"
+    (are3 [iso-record expect-empty]
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
+                                                    u/default-parsing-options)
+                ;; use the parsed archive format as the expected value
+                expected-format (get-in parsed [:ArchiveAndDistributionInformation :FileArchiveInformation])
+                generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
+                ;; parse out the archive format
+                parsed-format (dist-info/parse-archive-info generated-iso parser/archive-info-xpath)]
+            ;; validate against xml schema
+            (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
+            (if expect-empty
+              (is (empty? parsed-format))
+              (is (seq parsed-format)))
+            (is (= expected-format parsed-format)))
+
+          "Archive format is written out correctly."
+          iso-with-use-constraints
+          false
+
+          "Archive format is not used"
+          iso-no-use-constraints
+          true)))
+
+(deftest data-maturity-test
+  (testing "Testing the data maturity translation"
+    (are3 [iso-record expect-empty]
+          (let [parsed (#'parser/parse-iso19115-xml iso-record
+                                                    u/default-parsing-options)
+                ;; use the parsed archive format as the expected value
+                expected-maturity (:DataMaturity parsed)
+                generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
+                ;; parse out the archive format
+                parsed-maturity (parser/parse-data-maturity generated-iso)]
+            ;; validate against xml schema
+            (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
+            (if expect-empty
+              (is (empty? parsed-maturity))
+              (is (seq parsed-maturity)))
+            (is (= expected-maturity parsed-maturity)))
+
+          "Data maturity is written out correctly."
+          iso-with-use-constraints
+          false
+
+          "Data Maturity is not used"
+          iso-no-use-constraints
+          true)))
+
+(deftest temporal-extent-with-no-temporal-data-test
+  (testing "Testing the temporal extent translation with no temporal data"
+    (let [parsed (#'parser/parse-iso19115-xml iso-no-use-constraints
                                               u/default-parsing-options)
-          ;; use the parsed associated DOIs as the expected value
-          expected-associated-dois (:AssociatedDOIs parsed)
           generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
-          ;; parse out the associated DOIs
-          parsed-associated-dois (doi/parse-associated-dois
-                                         generated-iso parser/associated-doi-xpath)]
+          ;; use the parsed temporal extent as the expected value
+          expected-temporal-extent (:TemporalExtents parsed)
+          expected-date-time (-> expected-temporal-extent
+                                 first
+                                 (:RangeDateTimes)
+                                 first
+                                 (:BeginningDateTime)
+                                 dtp/clj-time->date-time-str)
+
+          ;; parse out the temporal extent
+          parsed-temporal-extent (parser/parse-temporal-extents generated-iso)
+          parsed-date-time (-> parsed-temporal-extent
+                                  first
+                                  (:RangeDateTimes)
+                                  first
+                                  (:BeginningDateTime))]
       ;; validate against xml schema
       (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
-      (if expect-empty
-        (is (empty? parsed-associated-dois))
-        (is (not (empty? parsed-associated-dois))))
-      (is (= expected-associated-dois parsed-associated-dois)))
+      (is (= expected-date-time parsed-date-time)))))
 
-    "Associated DOIs are written out correctly."
-    iso-with-use-constraints
-    false
+(deftest temporal-extent-with-temporal-data-test
+  (testing "Testing the temporal extent translation"
+    (let [parsed (#'parser/parse-iso19115-xml iso-with-use-constraints
+                                              u/default-parsing-options)
+          generated-iso (iso/umm-c-to-iso19115-2-xml parsed)
+          ;; use the parsed temporal extent as the expected value
+          expected-temporal-extent (set (:TemporalExtents parsed))
 
-    "Associated DOIs not used"
-    iso-no-use-constraints
-    true))
+          ;; parse out the temporal extent
+          parsed-temporal-extent (set (parser/parse-temporal-extents generated-iso))]
+      ;; validate against xml schema
+      (is (empty? (core/validate-xml :collection :iso19115 generated-iso)))
+      (is (seq parsed-temporal-extent))
+      (is (= expected-temporal-extent parsed-temporal-extent)))))
+
+(deftest find-temporal-resolution-non-value-unit-test
+  (testing "Finding the temporal resolution non value unit"
+    (let [temporal-extents-list (select iso-with-use-constraints (str parser/temporal-xpath
+                                                                      "[contains(@uuidref,'temporal_extent_2')]"))]
+      (is (= "Varies"
+             (some #(parser/find-temporal-resolution-non-value-unit % "temporal_extent_2_resolution")
+                   temporal-extents-list))))))
+
+(deftest find-temporal-resolution-value-unit-test
+  (testing "Finding the temporal resolution value and unit"
+    (let [temporal-extents-list (select iso-with-use-constraints (str parser/temporal-xpath
+                                                                      "[contains(@uuidref,'temporal_extent_1')]"))]
+      (is (= {:Unit "Second"
+              :Value 30}
+             (some #(parser/find-temporal-resolution-value-unit %) temporal-extents-list))))))
+
+(deftest parse-temporal-resolution-test
+  (testing "testing parse temporal resolution"
+    (is (= '({:Value 30 :Unit "Second"}
+             {:Unit "Varies"}
+             {:Unit "Constant"}
+             {:Unit "Varies"})
+        (for [temporal-group (group-by #(value-of % "@uuidref") (select iso-with-use-constraints parser/temporal-xpath))
+              :let [temporal-extents-list (val temporal-group)]]
+          (parser/parse-temporal-resolution temporal-extents-list (key temporal-group)))))))
+
+(def umm-temporal-test-record
+  {:TemporalExtents
+   [{:SingleDateTimes [(dtp/parse-datetime "1982-09-13T10:57:10.054Z")
+                       (dtp/parse-datetime "2055-08-18T04:35:47.867Z")]
+     :TemporalResolution {:Unit "Week", :Value 0.0}}
+    {:PrecisionOfSeconds 0
+     :SingleDateTimes [(dtp/parse-datetime "1995-07-12T07:40:24.568Z")
+                       (dtp/parse-datetime "2079-05-10T11:44:01.003Z")
+                       (dtp/parse-datetime "2013-06-28T19:40:49.678Z")]
+     :TemporalResolution {:Unit "Month", :Value 1.0}}
+    {:RangeDateTimes [{:BeginningDateTime (dtp/parse-datetime "2047-09-02T00:47:50.343Z")
+                       :EndingDateTime (dtp/parse-datetime "2048-06-27T07:50:49.335Z")}]
+     :TemporalResolution {:Unit "Varies"}}]})
+
+(deftest generate-temporal-umm-maps-test
+  (testing "Testing generating the temporal extent temporary structure to simplify adding this data to ISO."
+    (is (= '({:Id "temporal_extent_6" :Begin "2047-09-02T00:47:50.343Z" :End "2048-06-27T07:50:49.335Z"}
+             {:Id "temporal_extent_6" :Instant "" :Unit "Varies"}
+             {:Id "temporal_extent_3" :Instant "1995-07-12T07:40:24.568Z"}
+             {:Id "temporal_extent_3" :Begin "" :End "" :Value 1.0 :Unit "month"}
+             {:Id "temporal_extent_4" :Instant "2079-05-10T11:44:01.003Z"}
+             {:Id "temporal_extent_4" :Begin "" :End "" :Value 1.0 :Unit "month"}
+             {:Id "temporal_extent_5" :Instant "2013-06-28T19:40:49.678Z"}
+             {:Id "temporal_extent_5" :Begin "" :End "" :Value 1.0 :Unit "month"}
+             {:Id "temporal_extent_1" :Instant "1982-09-13T10:57:10.054Z"}
+             {:Id "temporal_extent_1" :Begin "" :End "" :Value 0.0 :Unit "day"}
+             {:Id "temporal_extent_2" :Instant "2055-08-18T04:35:47.867Z"}
+             {:Id "temporal_extent_2" :Begin "" :End "" :Value 0.0 :Unit "day"})
+           (flatten (util/remove-nils-empty-maps-seqs (iso/generate-temporal-umm-maps (:TemporalExtents umm-temporal-test-record))))))))

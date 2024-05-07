@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso19115-2.metadata-association
   "Functions for generating ISO19115-2 XML elements from UMM instrument records."
-  (:require [cmr.common.xml.gen :refer :all]
-            [cmr.umm-spec.iso19115-2-util :as iso]
-            [cmr.umm-spec.util :as spec-util]))
+  (:require
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.iso19115-2-util :as iso]))
 
 (defn- output-character-string
   "Write a gco:CharacterString element or a gco:nilReason"
@@ -24,8 +24,7 @@
       [:gmd:date {:gco:nilReason "unknown"}]
       (output-character-string :gmd:edition (:Version ma))]]]])
 
-(def code-list-url (str "https://cdn.earthdata.nasa.gov/iso"
-                        "/resources/Codelist/gmxCodelists.xml#DS_AssociationTypeCode"))
+(def code-list-url (str (:earthdata-iso iso/code-lists) "#DS_AssociationTypeCode"))
 
 (defn generate-metatdata-association
   [ma]

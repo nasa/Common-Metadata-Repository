@@ -3,8 +3,7 @@
   (:require
    [clojure.java.io :as io]
    [clojure.string :as s]
-   [clojure.test :refer :all]
-   [clojure.test.check.generators :as gen]
+   [clojure.test :refer [deftest is testing]]
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.date-time-parser :as p]
    [cmr.common.joda-time]
@@ -12,9 +11,7 @@
    ;; this is not needed until the ECHO to ISO XSLT is fixed
    ;; [cmr.common.xml.xslt :as xslt]
    [cmr.spatial.derived :as d]
-   [cmr.spatial.encoding.gmd :as gmd]
-   [cmr.spatial.relations :as r]
-   [cmr.umm.echo10.collection.personnel :as echo-pe]
+   [cmr.spatial.mbr :as mbr]
    [cmr.umm.echo10.echo10-collection :as echo10-c]
    [cmr.umm.echo10.echo10-core :as echo10]
    [cmr.umm.iso-mends.iso-mends-collection :as c]
@@ -29,7 +26,7 @@
   calculate-derived. This function fixes that since the rounding error occurs
   in :center-point."
   [mbr]
-  (cmr.spatial.mbr/mbr
+  (mbr/mbr
    (:west mbr) (:north mbr) (:east mbr) (:south mbr)))
 
 (defmulti create-bounding-box
@@ -42,7 +39,7 @@
 
 (defmethod create-bounding-box cmr.spatial.point.Point
   [geometry]
-  (cmr.spatial.mbr/point->mbr geometry))
+  (mbr/point->mbr geometry))
 
 (defmethod create-bounding-box cmr.spatial.line_string.LineString
   [geometry]
@@ -72,11 +69,6 @@
       {:spatial-representation spatial-representation
        :granule-spatial-representation (or granule-spatial-representation :no-spatial)
        :geometries (seq (map #(umm-s/set-coordinate-system spatial-representation %) geometries))})))
-
-(defn- related-urls->expected-parsed
-  "Returns the expected parsed related-urls for the given related-urls."
-  [related-urls]
-  (seq (map #(assoc % :size nil) related-urls)))
 
 (defn- sensors->expected-parsed
   "Return the expected parsed sensors for the given sensors."
@@ -128,8 +120,7 @@
   "Modifies the UMM record for testing ISO. ISO contains a subset of the total UMM fields so certain
   fields are removed for comparison of the parsed record"
   [coll]
-  (let [{:keys [spatial-coverage]} coll
-        range-date-times (get-in coll [:temporal :range-date-times])
+  (let [range-date-times (get-in coll [:temporal :range-date-times])
         single-date-times (get-in coll [:temporal :single-date-times])
         temporal (if (seq range-date-times)
                    (umm-c/map->Temporal {:range-date-times range-date-times
@@ -153,14 +144,12 @@
         (assoc-in [:data-provider-timestamps :update-time] revision-date-time)
         ;; ISO does not have periodic-date-times
         (assoc :temporal temporal)
-        ;; ISO does not support mime-type in RelatedURLs
+        ;; ISO does not support mime-type and size in RelatedURLs
         (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not have distribution centers as Organization
         (assoc :organizations organizations)
         ;; ISO does not support sensor technique or platform characteristics
         (update-in [:platforms] platforms->expected-parsed)
-        ;; ISO does not support size in RelatedURLs
-        (update-in [:related-urls] related-urls->expected-parsed)
         ;; ISO does not fully support two-d-coordinate-systems
         (dissoc :two-d-coordinate-systems)
         ;; It looks like ISO-19115-2 does not have a string we can extract representing quality.
@@ -183,6 +172,7 @@
     (let [derive #(d/calculate-derived (umm-s/set-coordinate-system cs %))]
       (update-in sc [:geometries] (partial map derive)))))
 
+(declare generate-collection-is-valid-xml-test)
 (defspec generate-collection-is-valid-xml-test 100
   (for-all [collection coll-gen/collections]
     (let [xml (iso/umm->iso-mends-xml collection)]
@@ -190,6 +180,7 @@
         (> (count xml) 0)
         (= 0 (count (c/validate-xml xml)))))))
 
+(declare collection)
 (deftest generate-and-parse-collection-test
   (checking "collection round tripping" 100
     [collection coll-gen/collections]
@@ -218,10 +209,12 @@
   ;; This test is currently failing pending an update to the XSLT file
   ;; to generate closed polygons per the GML spec
 
+  #_{:clj-kondo/ignore [:unresolved-namespace]}
   (def echo-to-iso-xslt
     (xslt/read-template
       (io/resource "schema/iso_mends/resources/transforms/ECHOToISO.xsl")))
-
+  (declare umm-to-echo-to-iso-mends-via-xslt-to-umm-test)
+  #_{:clj-kondo/ignore [:unresolved-namespace]}
   (defspec umm-to-echo-to-iso-mends-via-xslt-to-umm-test 100
     (for-all [collection coll-gen/collections]
       (let [echo10-xml (echo10/umm->echo10-xml collection)

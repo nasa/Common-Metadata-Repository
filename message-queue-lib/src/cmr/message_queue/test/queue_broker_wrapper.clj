@@ -9,7 +9,7 @@
    [clojure.set :as set]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer (debug trace info warn error)]
+   [cmr.common.log :as log :refer (trace info warn)]
    [cmr.common.util :as util]
    [cmr.message-queue.config :as iconfig]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
@@ -103,10 +103,12 @@
          (Thread/sleep 10)
          (if (< (- (System/currentTimeMillis) start-time) ms-to-wait)
            (recur (set (current-message-states broker-wrapper)))
-           (warn (format "Waited %d ms for messages to complete, but they did not complete. In progress: %s"
-                         ms-to-wait
-                         (pr-str (remove #(contains? terminal-states (:state %))
-                                         (current-messages broker-wrapper)))))))))))
+           (warn
+            (format
+             "Waited %d ms for messages to complete, but they did not complete. In progress: %s"
+             ms-to-wait
+             (pr-str (remove #(contains? terminal-states (:state %))
+                             (current-messages broker-wrapper)))))))))))
 
 (defn- publish-to-queue
   "Publishes a message to the queue and captures the actions with the queue history."
@@ -119,7 +121,8 @@
     (update-message-queue-history broker queue-name :enqueue tagged-msg :initial)
     (trace "Updated message queue history")
     ;; Mark the enqueue as failed if we are timing things out or it fails
-    (if (or @timeout?-atom (not (queue-protocol/publish-to-queue queue-broker queue-name tagged-msg)))
+    (if (or @timeout?-atom
+            (not (queue-protocol/publish-to-queue queue-broker queue-name tagged-msg)))
       (do
         (trace "Published; preparing to update history ...")
         (update-message-queue-history broker queue-name :enqueue tagged-msg :failure)
@@ -263,7 +266,7 @@
         (reset! resetting?-atom false))))
 
   (health
-    [this]
+    [_this]
     (queue-protocol/health queue-broker)))
 
 (record-pretty-printer/enable-record-pretty-printing BrokerWrapper)

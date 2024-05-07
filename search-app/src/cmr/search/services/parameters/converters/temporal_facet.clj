@@ -2,11 +2,9 @@
   "Contains functions for converting temporal facets query parameters to conditions"
   (:require
    [clj-time.core :as clj-time]
-   [clojure.string :as str]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
-   [cmr.common-app.services.search.params :as p]
-   [cmr.common-app.services.search.query-model :as qm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as p]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.common.date-time-parser :as parser]))
 
 (defn- temporal-facet-map->clj-time-interval

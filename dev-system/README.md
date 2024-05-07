@@ -17,6 +17,13 @@ following:
 $ cmr setup dev
 ```
 
+There is also a Docker Compose file available to startup a local Redis, Elasticsearch,
+and Kibana. That is simply run with:
+
+```
+$ docker compose up
+```
+
 ## Running Tests
 
 There are several ways in which you can run tests with dev-system. The

@@ -5,7 +5,7 @@
    [camel-snake-kebab.core :as csk]
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common-app.services.search.query-execution :as query-execution]
+   [cmr.elastic-utils.search.query-execution :as query-execution]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]

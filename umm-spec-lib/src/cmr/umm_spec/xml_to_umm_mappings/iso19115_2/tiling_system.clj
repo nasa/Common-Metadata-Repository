@@ -2,7 +2,7 @@
   (:require
    [clojure.string :as string]
    [cmr.common.util :as util]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
@@ -16,8 +16,8 @@
   [str]
   (try
     (Double/parseDouble str)
-    (catch NumberFormatException e nil)
-    (catch NullPointerException e nil)))
+    (catch NumberFormatException _e nil)
+    (catch NullPointerException _e nil)))
 
 (defn- parse-tiling-system-coordinates
   "Returns a map containing :Coordinate1 and :Coordinate2 from an encoded ISO tiling system

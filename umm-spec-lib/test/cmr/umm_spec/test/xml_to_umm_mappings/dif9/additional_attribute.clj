@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.dif9.additional-attribute
   (:require
    [clojure.java.io :as io]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as aa]))
 
 (defn- additional-attributes-test-file

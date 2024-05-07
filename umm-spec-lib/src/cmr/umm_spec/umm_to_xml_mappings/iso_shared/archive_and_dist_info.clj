@@ -2,7 +2,6 @@
   (:require
    [clojure.string :as string]
    [cmr.common.xml.gen :refer :all]
-   [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.util :refer [char-string]]))
 
 (defn generate-specification-string

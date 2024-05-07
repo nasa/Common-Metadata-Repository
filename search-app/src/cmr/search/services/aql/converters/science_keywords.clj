@@ -2,8 +2,8 @@
   "Contains functions for parsing, validating and converting scienceKeywords aql element to query conditions"
   (:require [cmr.common.xml :as cx]
             [cmr.search.services.aql.conversion :as a]
-            [cmr.common-app.services.search.query-model :as qm]
-            [cmr.common-app.services.search.group-query-conditions :as gc]))
+            [cmr.common.services.search.query-model :as qm]
+            [cmr.elastic-utils.search.es-group-query-conditions :as gc]))
 
 (defmulti keyword-element->condition
   "Returns the query condition of the given keyword element"

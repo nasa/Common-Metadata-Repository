@@ -9,14 +9,14 @@
    [cmr.access-control.services.group-service :as groups]
    [cmr.access-control.services.permitted-concept-id-search :as pcs]
    [cmr.common-app.services.search :as cs]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
    [cmr.common-app.services.search.parameter-validation :as cpv]
-   [cmr.common-app.services.search.parameters.converters.nested-field :as nf]
-   [cmr.common-app.services.search.params :as cp]
-   [cmr.common-app.services.search.query-model :as common-qm]
-   [cmr.common.log :refer [warn info debug]]
+   [cmr.common.log :refer [warn info]]
    [cmr.common.services.errors :as errors]
+   [cmr.common.services.search.query-model :as common-qm]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-params-converter :as cp]
+   [cmr.elastic-utils.search.nested-field :as nf]
    [cmr.transmit.metadata-db2 :as mdb2]
    [cmr.umm.collection.product-specific-attribute :as psa])
   ;; Must be required to be available at runtime
@@ -57,7 +57,7 @@
 
 (defn- permitted-concept-id-validation
   "Validates permitted concept id parameter"
-  [context params]
+  [_context params]
   (when-let [permitted-concept-id (:permitted-concept-id params)]
     (when-not (re-matches #"(C|G)\d+-[A-Za-z0-9_]+" permitted-concept-id)
       [(format "Must be collection or granule concept id.")])))
@@ -104,7 +104,7 @@
                       :1 {:permission \"order\"}}}
 
   which corresponds to acls that grant read permission to guests for order permission (to anyone)."
-  [context params]
+  [_context params]
   (concat (group-permission-parameter-index-validation params)
           (group-permission-parameter-subfield-validation params)
           (group-permission-permission-validation params)))
@@ -123,7 +123,7 @@
 
 (defn- identity-type-validation
   "Validates identity-type parameters."
-  [context params]
+  [_context params]
   (let [identity-types (util/seqify (:identity-type params))]
     (when-let [invalid-types (seq (remove valid-identity-type? identity-types))]
       [(format (str "Parameter identity_type has invalid values [%s]. "
@@ -133,7 +133,7 @@
 (defn- target-id-validation
   "Validates that when target-id parameter is specified,
   identity-type=single_instance is also specified"
-  [context params]
+  [_context params]
   (let [target-ids (util/seqify (:target-id params))
         identity-types (util/seqify (:identity-type params))]
     (when (and target-ids
@@ -162,7 +162,7 @@
    :id ::id})
 
 (defmethod cp/parse-query-level-params :acl
-  [concept-type params]
+  [_concept-type params]
   (let [[params query-attribs] (cp/default-parse-query-level-params :acl params)]
     [(dissoc params :include-full-acl :include-legacy-group-guid)
      (merge query-attribs
@@ -172,7 +172,7 @@
               {:result-features [:include-full-acl :include-legacy-group-guid]}))]))
 
 (defmethod cp/parameter->condition :permitted-concept-id
- [context concept-type param value options]
+ [context _concept-type _param value _options]
  (if-let [concept (mdb2/get-latest-concept context value {:http-options {:query-params {:include_umm_metadata true}}})]
    (pcs/get-permitted-concept-id-conditions context concept)
    (errors/throw-service-error :bad-request (format "permitted_concept_id does not exist."))))
@@ -186,7 +186,7 @@
      (cp/string-parameter->condition concept-type param value options))))
 
 (defmethod cp/parameter->condition :acl-permitted-user
-  [context concept-type param value options]
+  [context concept-type _param value options]
   ;; reject non-existent users
   (groups/validate-members-exist context [value])
   (let [groups (->> (auth-util/get-sids context value)
@@ -201,11 +201,11 @@
      (cp/string-parameter->condition concept-type :permitted-group groups options))))
 
 (defmethod cp/parameter->condition :legacy-guid
-  [context concept-type param value options]
+  [_context concept-type _param value options]
   (cp/string-parameter->condition concept-type :legacy-guid value options))
 
 (defmethod cp/parameter->condition ::id
-  [context concept-type param value options]
+  [_context concept-type _param value options]
   (gc/or
     (cp/string-parameter->condition concept-type :concept-id value options)
     (cp/string-parameter->condition concept-type :legacy-guid value options)))

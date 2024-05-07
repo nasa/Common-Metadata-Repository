@@ -3,11 +3,12 @@
    models. Eventually all models will include this node, so a common set of
    functions is needed."
   (:require
-   [clojure.test :refer :all]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :refer [are3]]
-   [cmr.umm-spec.versioning :as ver]
    [cmr.umm-spec.metadata-specification :as m-spec]))
 
+(declare version expected-name expected-url)
 (deftest spec-content-test
   (testing
     "Test the utility function that builds the MetadataSpecification structure"
@@ -21,7 +22,7 @@
     (are3 [format version expected-name expected-url]
           (let [content (m-spec/metadata-spec-content format version)]
             (is (= expected-name (:Name content)))
-            (is (clojure.string/ends-with? (:URL content) expected-url))
+            (is (string/ends-with? (:URL content) expected-url))
             (is (= version (:Version content))))
 
           "Collection"
@@ -42,15 +43,15 @@
           "Visualization"
           :visualization "0.1" "UMM-Vis" "/umm/visualization/v0.1")))
 
+;; Test the update-version function and make sure it can update metadata as expected
 (deftest update-version-test
-  "Test the update-version function and make sure it can update metadata as expected"
   (testing
-    "Populate MetadataSpecification if missing"
+   "Populate MetadataSpecification if missing"
     (let [expected {:MetadataSpecification (m-spec/metadata-spec-content :granule "0.1")}
           actual (m-spec/update-version {} :granule "0.1")]
       (is (= expected actual))))
   (testing
-    "Do not overwrite unrelated data while updating"
+   "Do not overwrite unrelated data while updating"
     (let [expected {:SomeMetaValue "Science Happens Here"
                     :MetadataSpecification (m-spec/metadata-spec-content :granule "0.1")}
           metadata {:SomeMetaValue "Science Happens Here"

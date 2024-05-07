@@ -1,8 +1,8 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-smap.collection-citation
   "Functions for generating ISO XML elements from UMM collection-citation records."
   (:require
-    [cmr.common.xml.gen :refer :all]
-    [cmr.umm-spec.util :as util]))
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.util :as util]))
 
 ;; The Title and Version of the collection citation are sharing the same xml elements as
 ;; EntryTitle and Version of umm in iso19115.  And the xml elements are populated by the

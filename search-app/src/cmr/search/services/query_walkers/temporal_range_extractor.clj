@@ -2,11 +2,10 @@
   "Defines protocols and functions to extract keywords from a query. The extraction is done
   during pre-processing of the query to get the temporal conditions result feature."
   (:require
-   [clojure.string :as str]
-   [cmr.common-app.services.search.query-model :as cqm]
-   [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
-   [cmr.search.models.query :as qm]))
+   [cmr.common.util :as util])
+  (:import cmr.common.services.search.query_model.Query
+           cmr.common.services.search.query_model.ConditionGroup
+           cmr.search.models.query.TemporalCondition))
 
 (defprotocol ExtractTemporalRanges
   "Defines a function to extract temporal ranges. Temporal ranges are returned in the format
@@ -29,7 +28,7 @@
 
 (extend-protocol ExtractTemporalRanges
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.Query
+  cmr.common.services.search.query_model.Query
   (extract-temporal-ranges
    [query]
    (extract-temporal-ranges (:condition query)))
@@ -38,7 +37,7 @@
    (contains-temporal-range-condition? (:condition query)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.ConditionGroup
+  cmr.common.services.search.query_model.ConditionGroup
   (extract-temporal-ranges
    [{:keys [conditions]}]
    (mapcat extract-temporal-ranges conditions))

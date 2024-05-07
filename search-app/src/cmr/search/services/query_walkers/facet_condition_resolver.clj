@@ -2,10 +2,14 @@
   "Defines protocols and functions to resolve facet conditions by removing the conditions that
    match the given facet field."
   (:require
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-model :as cqm]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.common.services.search.query-model :as cqm]
    [cmr.common.util :as util]
-   [cmr.search.services.query-execution.facets.facets-v2-results-feature :as fvrf]))
+   [cmr.search.services.query-execution.facets.facets-v2-results-feature :as fvrf])
+  (:import cmr.common.services.search.query_model.Query
+           cmr.common.services.search.query_model.ConditionGroup
+           cmr.common.services.search.query_model.NestedCondition
+           cmr.common.services.search.query_model.StringCondition))
 
 (defn- string-condition-for-v2-facet-field?
   "Returns true if the given string condition is on the given v2 facet field"
@@ -33,7 +37,7 @@
 
 (extend-protocol AdjustFacetQuery
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.Query
+  cmr.common.services.search.query_model.Query
   (has-field?
    [query field-key]
    (has-field? (:condition query) field-key))
@@ -45,7 +49,7 @@
      (assoc query :condition cqm/match-all)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  cmr.common_app.services.search.query_model.ConditionGroup
+  cmr.common.services.search.query_model.ConditionGroup
   (has-field?
    [cg field-key]
    (let [conditions (:conditions cg)]
@@ -58,7 +62,7 @@
      (when (seq conditions)
        (gc/group-conds operation conditions))))
 
-  cmr.common_app.services.search.query_model.NestedCondition
+  cmr.common.services.search.query_model.NestedCondition
   (has-field?
    [c field-key]
    (has-field? (:condition c) field-key))
@@ -69,7 +73,7 @@
    (when-not (has-field? (:condition c) field-key)
      c))
 
-  cmr.common_app.services.search.query_model.StringCondition
+  cmr.common.services.search.query_model.StringCondition
   (has-field?
    [c field-key]
    (string-condition-for-v2-facet-field? c field-key))

@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.dif10.additional-attribute
   (:require [cmr.common.xml.simple-xpath :refer [select]]
-            [cmr.common.xml.parse :refer :all]
+            [cmr.common.xml.parse :refer [value-of]]
             [cmr.common.util :as util]
             [cmr.umm-spec.util :as su]
             [cmr.umm-spec.xml-to-umm-mappings.dif9.additional-attribute :as d9-aa]))

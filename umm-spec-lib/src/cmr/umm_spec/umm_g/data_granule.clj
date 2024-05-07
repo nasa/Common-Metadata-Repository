@@ -3,7 +3,6 @@
    DataGranule and generating UMM-G JSON DataGranule from umm-lib granule model DataGranule."
   (:require
    [clojure.set :as set]
-   [clojure.string :as string]
    [cmr.umm-spec.util :as util]
    [cmr.umm.umm-granule :as g])
   (:import cmr.umm.umm_granule.UmmGranule))
@@ -40,6 +39,35 @@
   [files]
   (when files (map umm-g-file->File files)))
 
+(def unit-megabytes-map
+  "Mapping SizeUnit to megabytes."
+  {"KB" (double (/ 1 1024))
+   "MB" 1 
+   "GB" 1024
+   "TB" (* 1024 1024)
+   "PB" (* 1024 1024 1024)
+   "NA" 0})
+
+(defn- get-file-size-in-megabytes
+  "Get either SizeInBytes or Size(and convert it in Bytes)"
+  [file-info]
+  (let [size-in-bytes (get file-info :SizeInBytes)
+        size (get file-info :Size)
+        size-unit (get file-info :SizeUnit)
+        convert-to-megabytes-factor (get unit-megabytes-map size-unit)]
+    (if size-in-bytes
+      (double (/ size-in-bytes (* 1024 1024)))
+      (if (and size convert-to-megabytes-factor)
+        (* size convert-to-megabytes-factor)
+        0))))
+
+(defn- add-up-granule-file-sizes
+  "Add up all the granule file sizes from ArchiveAndDistributionInformation."
+  [ArchiveAndDistributionInformation]
+  (let [sizes (map #(get-file-size-in-megabytes %) ArchiveAndDistributionInformation)
+        granule_size (apply + sizes)]
+    granule_size))
+
 (defn umm-g-data-granule->DataGranule
   "Returns the umm-lib granule model DataGranule from the given UMM-G DataGranule."
   [data-granule]
@@ -47,7 +75,8 @@
     (g/map->DataGranule
       (let [{:keys [Identifiers DayNightFlag ProductionDateTime
                     ArchiveAndDistributionInformation]} data-granule
-            first-arch-dist-info (first ArchiveAndDistributionInformation)]
+            first-arch-dist-info (first ArchiveAndDistributionInformation)
+            size (add-up-granule-file-sizes ArchiveAndDistributionInformation)]
         {:day-night (get umm-g-day-night->umm-lib-day-night DayNightFlag "UNSPECIFIED")
          :producer-gran-id (->> Identifiers
                                 (some #(when (= "ProducerGranuleId" (:IdentifierType %)) %))
@@ -61,10 +90,9 @@
                            (map :Identifier)
                            seq)
          :production-date-time ProductionDateTime
-         :size (get (first ArchiveAndDistributionInformation) :Size)
-         :size-unit (let [SizeUnit (get (first ArchiveAndDistributionInformation) :SizeUnit)]
-                      (when (not= "NA" SizeUnit)
-                        SizeUnit))
+         :size size 
+         :size-unit (when size 
+                      "MB")
          :files (umm-g-files->Files (:Files first-arch-dist-info))
          :format (get first-arch-dist-info :Format)
          :size-in-bytes (get first-arch-dist-info :SizeInBytes)

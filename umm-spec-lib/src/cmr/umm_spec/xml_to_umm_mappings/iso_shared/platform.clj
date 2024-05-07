@@ -3,8 +3,8 @@
   (:require
    [clojure.string :as string]
    [cmr.common.util :as util]
-   [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.common.xml.parse :refer [value-of]]
+   [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.util :as su :refer [without-default-value-of]]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.characteristics-and-operationalmodes :as char-and-opsmode]
@@ -16,7 +16,7 @@
 
 (defn xml-elem->platform
   "Returns platform record using the platform element and instrument-id/instrument-record mapping"
-  ([doc base-xpath instruments-mapping platform-elem]
+  ([instruments-mapping platform-elem]
    (let [platform-id (get-in platform-elem [:attrs :id])
          instrument-ids (keep #(get-in % [:attrs :xlink/href]) (select platform-elem "gmi:instrument"))
          instruments (->> (concat
@@ -31,7 +31,7 @@
         :Type (without-default-value-of platform-elem "gmi:description/gco:CharacterString")
         :Characteristics (char-and-opsmode/parse-characteristics platform-elem)
         :Instruments instruments})))
-  ([doc base-xpath platform-elem]
+  ([platform-elem]
     ;; This is the case when platform-elem is from alternative path. This platform will only contain ShortName and LongName.
    (when-let [short-long-name (value-of platform-elem iso/short-name-xpath)]
     (let [short-long-name-list (string/split short-long-name #">")]
@@ -45,7 +45,7 @@
   ([doc base-xpath sanitize?]
    ;; This is iso-smap case, where alternative xpath for instruments and platforms doesn't apply.
    (let [instruments-mapping (inst/xml-elem->instruments-mapping doc base-xpath)
-         platforms (seq (map #(xml-elem->platform doc base-xpath instruments-mapping %)
+         platforms (seq (map #(xml-elem->platform instruments-mapping %)
                              (select doc (str base-xpath platforms-xpath))))]
      (or (seq platforms) (when sanitize? su/not-provided-platforms))))
   ([doc base-xpath sanitize? alt-xpath-options]
@@ -58,12 +58,12 @@
          plat-elems (select doc (str base-xpath platforms-xpath))
          instruments-mapping (inst/xml-elem->instruments-mapping doc base-xpath inst-alt-xpath)
          platforms (if (or (map? instruments-mapping) (nil? (seq instruments-mapping)))
-                     (seq (map #(xml-elem->platform doc base-xpath instruments-mapping %) plat-elems))
+                     (seq (map #(xml-elem->platform instruments-mapping %) plat-elems))
                      ;; NOAA case when instruments are not associated with any platforms.
                      ;; Platforms are the combination of platforms from alternative xpath
                      ;; and the not-provided-platforms that contain the instruments from alternative xpath.
                      (let [plat-elems (select doc (str base-xpath plat-alt-xpath))
-                           plats-alt-xpath (seq (map #(xml-elem->platform doc base-xpath %) plat-elems))
+                           plats-alt-xpath (seq (map #(xml-elem->platform %) plat-elems))
                            not-provided-plats (seq (map #(assoc % :Instruments instruments-mapping)
                                                         su/not-provided-platforms))]
                        (into [] (concat plats-alt-xpath not-provided-plats))))]

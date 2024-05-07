@@ -1,10 +1,11 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.test.test-util :as tu]
    [cmr.common.util :refer [are3]]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as util]))
 
+(declare string regex expected number-key-list)
 (deftest description-string-parsing
   (testing "Parsing given string and converting it to a string map"
     (are3 [string regex expected]

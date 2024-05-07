@@ -147,7 +147,7 @@
    [cmr.common-app.site.pages :as pages]
    [cmr.common.generics-documentation :as gdocs]
    [compojure.route :as route]
-   [compojure.core :refer :all]
+   [compojure.core :refer [GET context routes]]
    [ring.util.response :as response]
    [ring.util.request :as request]
    [selmer.parser :as selmer])

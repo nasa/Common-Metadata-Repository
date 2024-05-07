@@ -1,9 +1,9 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.characteristics-and-operationalmodes
   "Functions for generating ISOSMAP XML elements from UMM characteristics and operationalmodes records."
   (:require
-    [cmr.common.xml.gen :refer :all]
-    [cmr.umm-spec.iso19115-2-util :as iso]
-    [cmr.umm-spec.util :refer [char-string]]))
+   [cmr.common.xml.gen :refer :all]
+   [cmr.umm-spec.iso19115-2-util :as iso]
+   [cmr.umm-spec.util :refer [char-string]]))
 
 (defn generate-characteristics
   "Returns the generated characteristics content generator instructions, with the type

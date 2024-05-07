@@ -1,5 +1,6 @@
 (ns cmr.umm.umm-core
   "Functions to transform concepts between formats."
+  #_{:clj-kondo/ignore [:unused-namespace]}
   (:require
    [cmr.common.mime-types :as mt]
    [cmr.common.xml :as cx]
@@ -10,29 +11,23 @@
    [cmr.umm.dif10.dif10-core :as dif10]
    [cmr.umm.dif.dif-collection :as dif-c]
    [cmr.umm.dif10.dif10-collection :as dif10-c]
+   ;; The iso-mends-g is needed for tests.
+   [cmr.umm.iso-mends.granule :as iso-mends-g]
    [cmr.umm.iso-mends.iso-mends-core :as iso-mends]
    [cmr.umm.iso-mends.iso-mends-collection :as iso-mends-c]
-   [cmr.umm.iso-mends.granule :as iso-mends-g]
    [cmr.umm.iso-smap.iso-smap-core :as iso-smap]
    [cmr.umm.iso-smap.iso-smap-collection :as iso-smap-c]
-   [cmr.umm.iso-smap.granule :as iso-smap-g]
-   [cmr.umm.umm-collection]
-   [cmr.umm.umm-granule])
+   [cmr.umm.iso-smap.granule :as iso-smap-g])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.umm.umm_collection.UmmCollection
            cmr.umm.umm_granule.UmmGranule))
 
-(defmulti item->concept-type
+(defn item->concept-type
   "Returns the concept type of the item"
-  (fn [item]
-    (type item)))
-
-(defmethod item->concept-type UmmCollection
   [item]
-  :collection)
-
-(defmethod item->concept-type UmmGranule
-  [item]
-  :granule)
+  (cond
+    (= cmr.umm.umm_collection.UmmCollection (type item)) :collection
+    (= cmr.umm.umm_granule.UmmGranule (type item)) :granule))
 
 (defn validate-granule-concept-xml
   "Validates the granule concept metadata against its xml schema."

@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.dif10.spatial
   (:require
    [camel-snake-kebab.core :as csk]
-   [cmr.common.xml.gen :refer :all]
+   [cmr.common.xml.gen :refer [elements-from]]
    [cmr.umm-spec.migration.version.collection :as version-collection]
    [cmr.umm-spec.util :as u]))
 
@@ -11,9 +11,11 @@
    "VERTICAL" "Vertical"
    "ORBITAL" "Orbit"
    "HORIZONTAL_VERTICAL" "HorizontalVertical"
-   "ORBITAL_VERTICAL" "HorizontalVertical"
-   "HORIZONTAL_ORBITAL" "Orbit"
-   "HORIZONTAL_VERTICAL_ORBITAL" "Orbit"})
+   "ORBITAL_VERTICAL" "Orbital_Vertical"
+   "HORIZONTAL_ORBITAL" "Horizontal_Orbital"
+   "HORIZONTAL_VERTICAL_ORBITAL" "Horizontal_Vertical_Orbital"
+   "LUNAR" "Lunar"
+   "EARTH/GLOBAL" "Earth/Global"})
 
 (defn- point-contents
   "Returns the inner lon/lat elements for a DIF Point element from a UMM PointType record."

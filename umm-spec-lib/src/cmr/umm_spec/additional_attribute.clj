@@ -1,51 +1,23 @@
  (ns cmr.umm-spec.additional-attribute
   "Defines helper functions for parsing additional attributes."
-  (:require [cmr.common.xml.parse :refer :all]
-            [cmr.common.xml.simple-xpath :refer [select text]]
-            [cmr.common.services.errors :as errors]
-            [camel-snake-kebab.core :as csk]
-            [clojure.string :as str]
-            [clj-time.format :as f]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [clj-time.format :as f]
+   [clojure.string :as string]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.xml.parse :refer :all]))
 
 (defn parse-data-type
   "Parses the string data type from the XML into the uppercase UMM data type."
   [data-type]
   (when data-type
-    (str/upper-case data-type)))
+    (string/upper-case data-type)))
 
 (defn gen-data-type
   "Generates the string data type for errors from the keyword data type."
   [data-type]
   (when data-type
     (csk/->SCREAMING_SNAKE_CASE_STRING (name data-type))))
-
-(defmulti parse-value
-  "Parses a value based on the data type given"
-  (fn [data-type value]
-    data-type))
-
-(defmethod parse-value :default
-  [data-type value]
-  (when value
-    (str value)))
-
-(defmethod parse-value "INT"
-  [data-type ^String value]
-  (when value (Long. value)))
-
-(defmethod parse-value "FLOAT"
-  [data-type ^String value]
-  (when value (Double. value)))
-
-(defmethod parse-value "BOOLEAN"
-  [data-type ^String value]
-  (when value
-    (case value
-      "true" true
-      "false" false
-      "1" true
-      "0" false
-      :else (errors/internal-error! (format "Unexpected boolean value [%s]" value)))))
 
 (def datetime-regex->formatter
   "A map of regular expressions matching a date time to the formatter to use"
@@ -64,26 +36,29 @@
 (defn find-formatter
   [datetime regex-formatter-map]
   (->> regex-formatter-map
-       (filter (fn [[regex formatter]]
+       (filter (fn [[regex _formatter]]
                  (re-matches regex datetime)))
        first
        second))
 
-(defmethod parse-value "DATETIME"
+(defn parse-value
+  "Parses a value based on the data type given"
   [data-type value]
   (when value
-    (f/parse (find-formatter value datetime-regex->formatter) value)))
-
-(defmethod parse-value "TIME"
-  [data-type value]
-  (when value
-    (f/parse (find-formatter value time-regex->formatter) value)))
-
-(defmethod parse-value "DATE"
-  [data-type value]
-  (when value
-    (let [value (str/replace value "Z" "")]
-      (f/parse (f/formatters :date) value))))
+    (case data-type
+      "INT" (Long. value)
+      "FLOAT" (Double. value)
+      "BOOLEAN" (case value
+                  "true" true
+                  "false" false
+                  "1" true
+                  "0" false
+                  :else (errors/internal-error! (format "Unexpected boolean value [%s]" value)))
+      "DATETIME" (f/parse (find-formatter value datetime-regex->formatter) value)
+      "TIME" (f/parse (find-formatter value time-regex->formatter) value)
+      "DATE" (let [value (string/replace value "Z" "")]
+               (f/parse (f/formatters :date) value))
+      (str value))))
 
 (defn safe-parse-value
   "Returns the parsed value. It is different from parse-value function in that it will catch any
@@ -114,32 +89,11 @@
   [umm-c]
   (update umm-c :AdditionalAttributes #(mapv attribute-with-parsed-value %)))
 
-(defmulti gen-value
+(defn gen-value
   "Converts the given value to a string for error messages."
-  (fn [data-type value]
-    data-type))
-
-(defmethod gen-value :default
-  [data-type value]
-  (when-not (nil? value)
-    (str value)))
-
-(defmethod gen-value :time
   [data-type value]
   (when value
-    (f/unparse (f/formatters :hour-minute-second-ms) value)))
-
-(defmethod gen-value "TIME" 
-  [data-type value]
-  (when value
-    (f/unparse (f/formatters :hour-minute-second-ms) value)))
-
-(defmethod gen-value :date
-  [data-type value]
-  (when value
-    (f/unparse (f/formatters :date) value)))
-
-(defmethod gen-value "DATE" 
-  [data-type value]
-  (when value
-    (f/unparse (f/formatters :date) value)))
+    (case data-type
+      (:time "TIME") (f/unparse (f/formatters :hour-minute-second-ms) value)
+      (:date "DATE") (f/unparse (f/formatters :date) value)
+      (str value))))

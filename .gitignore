@@ -19,7 +19,6 @@ browse-scaler/src/node_modules
 .cider-repl-history
 **/ignore.*
 .calva*
-*.clj-kondo
 *.ruby-version
 .cljfmt.edn
 dev-system/local.edn

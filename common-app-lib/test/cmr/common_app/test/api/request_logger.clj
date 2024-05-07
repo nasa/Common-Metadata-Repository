@@ -1,7 +1,7 @@
 (ns cmr.common-app.test.api.request-logger
   "Unit tests for the functions supporting the request-logger"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common-app.api.request-logger :as req-logger]
    [cmr.common.util :as util :refer [are3]]))
 
@@ -18,7 +18,6 @@
 
   (testing "basic check"
     (let [request->uri #'cmr.common-app.api.request-logger/request->uri
-          request {:query-params {} :schemes "" :server-names "" :server-port "" :uri ""}
           request {}
           expected "null://null:nullnull"
           actual (request->uri request)]

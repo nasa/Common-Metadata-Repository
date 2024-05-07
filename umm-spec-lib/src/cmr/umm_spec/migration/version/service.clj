@@ -18,7 +18,7 @@
 (defn- migrate-types-down
   "Migrates CoverageSpatialExtent and CoverageTemporalExtent types from 1.1 to 1.0"
   [coverage-type]
-  (if-let [type (get-in coverage-type [:CoverageSpatialExtent :CoverageSpatialExtentTypeType])]
+  (when-let [type (get-in coverage-type [:CoverageSpatialExtent :CoverageSpatialExtentTypeType])]
     (-> coverage-type
         (assoc :Type type)
         (assoc-in [:CoverageSpatialExtent :Type] type))))
@@ -384,7 +384,7 @@
  ;;; Service Migration Implementations
 
 (defmethod interface/migrate-umm-version [:service "1.0" "1.1"]
-  [context s & _]
+  [_context s & _]
   (-> s
       (assoc :AccessConstraints (first (:AccessConstraints s)))
       (assoc :RelatedURLs [(:RelatedURL s)])
@@ -395,7 +395,7 @@
       util/remove-empty-maps))
 
 (defmethod interface/migrate-umm-version [:service "1.1" "1.0"]
-  [context s & _]
+  [_context s & _]
   (-> s
       (assoc :AccessConstraints [(util/trunc (:AccessConstraints s) 1024)])
       (assoc :UseConstraints [(util/trunc (:UseConstraints s) 1024)])
@@ -407,7 +407,7 @@
       util/remove-empty-maps))
 
 (defmethod interface/migrate-umm-version [:service "1.1" "1.2"]
-  [context s & _]
+  [_context s & _]
   (-> s
       (update :ServiceOptions service-options/v1-1-service-options->v1-2-service-options)
       (fix-contacts :ContactGroups)
@@ -418,7 +418,7 @@
       util/remove-empty-maps))
 
 (defmethod interface/migrate-umm-version [:service "1.2" "1.1"]
-  [context s & _]
+  [_context s & _]
   (-> s
       (update :ServiceOptions service-options/v1-2-service-options->v1-1-service-options)
       (update :Type v1-2-type->v1-1-type)
@@ -427,7 +427,7 @@
       util/remove-empty-maps))
 
 (defmethod interface/migrate-umm-version [:service "1.2" "1.3"]
-  [context s & _]
+  [_context s & _]
   (let [url (create-main-url-for-1_3 s)
         op-metadata (map #(update-operation-metadata-1_2->1_3 %) (:OperationMetadata s))]
     (-> s
@@ -440,7 +440,7 @@
                 :Platforms))))
 
 (defmethod interface/migrate-umm-version [:service "1.3" "1.2"]
-  [context s & _]
+  [_context s & _]
   (let [url (create-main-related-urls-for-1_2 s)
         service-orgs (update-service-organization-1_3->1_2 s)
         op-metadata (remove nil?
@@ -457,17 +457,17 @@
                 :VersionDescription))))
 
 (defmethod interface/migrate-umm-version [:service "1.3" "1.3.1"]
-  [context s & _]
+  [_context s & _]
   (-> s
       (update :URL update-url-1_3->1_3_1)
       (service-options/update-service-options-1_3->1_3_1)))
 
 (defmethod interface/migrate-umm-version [:service "1.3.1" "1.3"]
-  [context s & _]
+  [_context s & _]
   (service-options/update-service-options-1_3_1->1_3 s))
 
 (defmethod interface/migrate-umm-version [:service "1.3.1" "1.3.2"]
-  [context s & _]
+  [_context s & _]
   (-> s
       (update :URL #(dissoc % :URLContentType :Type :Subtype))
       (update :UseConstraints #(set/rename-keys % {:LicenseUrl :LicenseURL}))
@@ -475,7 +475,7 @@
       (update :ContactPersons update-contacts-1_3_1->1_3_2)))
 
 (defmethod interface/migrate-umm-version [:service "1.3.2" "1.3.1"]
-  [context s & _]
+  [_context s & _]
   (-> s
       (update :URL #(assoc % :URLContentType "DistributionURL"
                              :Type "GET SERVICE"))
@@ -484,32 +484,30 @@
       (update :ContactPersons update-contacts-1_3_2->1_3_1)))
 
 (defmethod interface/migrate-umm-version [:service "1.3.2" "1.3.3"]
-  [context s & _]
+  [_context s & _]
   ;; There is nothing to migrate up. New supported format enumerations were added in 1.3.3.
   s)
 
 (defmethod interface/migrate-umm-version [:service "1.3.3" "1.3.2"]
-  [context s & _]
+  [_context s & _]
   (-> s
       (update-in [:ServiceOptions :SupportedInputFormats] service-options/remove-non-valid-formats-1_3_3-to-1_3_2)
       (update-in [:ServiceOptions :SupportedOutputFormats] service-options/remove-non-valid-formats-1_3_3-to-1_3_2)
       (update-in [:ServiceOptions :SupportedReformattings] service-options/remove-reformattings-non-valid-formats)))
 
 (defmethod interface/migrate-umm-version [:service "1.3.3" "1.3.4"]
-  [context s & _]
-  (def s s)
-  (let [type (:Type s)]
-    (-> s
-        (assoc-in [:ServiceOptions :Subset] (service-options/create-subset-type-1_3_3-to-1_3_4 s))
-        (update-in [:ServiceOptions :SupportedReformattings]
-                   #(service-options/move-supported-formats-to-reformattings-for-1_3_4
-                     %
-                     (get-in s [:ServiceOptions :SupportedInputFormats])
-                     (get-in s [:ServiceOptions :SupportedOutputFormats])))
-        (update-in [:ServiceOptions] dissoc :SubsetTypes :SupportedInputFormats :SupportedOutputFormats))))
+  [_context s & _]
+  (-> s
+      (assoc-in [:ServiceOptions :Subset] (service-options/create-subset-type-1_3_3-to-1_3_4 s))
+      (update-in [:ServiceOptions :SupportedReformattings]
+                 #(service-options/move-supported-formats-to-reformattings-for-1_3_4
+                   %
+                   (get-in s [:ServiceOptions :SupportedInputFormats])
+                   (get-in s [:ServiceOptions :SupportedOutputFormats])))
+      (update-in [:ServiceOptions] dissoc :SubsetTypes :SupportedInputFormats :SupportedOutputFormats)))
 
 (defmethod interface/migrate-umm-version [:service "1.3.4" "1.3.3"]
-  [context s & _]
+  [_context s & _]
   (-> s
       (update :Type #(if (= % "Harmony")
                        "NOT PROVIDED"
@@ -522,33 +520,33 @@
                  service-options/remove-reformattings-non-valid-formats-1_3_4-to-1_3_3)))
 
 (defmethod interface/migrate-umm-version [:service "1.3.4" "1.4"]
-  [context umm-s & _]
+  [_context umm-s & _]
   (-> umm-s
       (m-spec/update-version :service "1.4")))
 
 (defmethod interface/migrate-umm-version [:service "1.4" "1.3.4"]
-  [context umm-s & _]
+  [_context umm-s & _]
   (-> umm-s
       (dissoc :MetadataSpecification :RelatedURLs)))
 
 (defmethod interface/migrate-umm-version [:service "1.4" "1.4.1"]
-  [context umm-s & _]
+  [_context umm-s & _]
   (-> umm-s
       (migrate-related-urls-1_4->1_4_1)
       (m-spec/update-version :service "1.4.1")))
 
 (defmethod interface/migrate-umm-version [:service "1.4.1" "1.4"]
-  [context umm-s & _]
+  [_context umm-s & _]
   (-> umm-s
       (migrate-related-urls-1_4_1->1_4)
       (m-spec/update-version :service "1.4")))
 
 (defmethod interface/migrate-umm-version [:service "1.4.1" "1.5.0"]
-  [context umm-s & _]
+  [_context umm-s & _]
   (m-spec/update-version umm-s :service "1.5.0"))
 
 (defmethod interface/migrate-umm-version [:service "1.5.0" "1.4.1"]
-  [context umm-s & _]
+  [_context umm-s & _]
   (-> umm-s
       (migrate-related-urls-1_5_0->1_4_1)
       (m-spec/update-version :service "1.4.1")))
@@ -618,4 +616,19 @@
               (util/dissoc-in [:CoupledResource :DataResource :DataResourceSpatialType])))]
     (-> umm-s
         (assoc :OperationMetadata operation-metadata)
+        (m-spec/update-version :service "1.5.2"))))
+
+(defmethod interface/migrate-umm-version [:service "1.5.2" "1.5.3"]
+  [_context umm-s & _]
+  (-> umm-s
+      (m-spec/update-version :service "1.5.3")))
+
+(defmethod interface/migrate-umm-version [:service "1.5.3" "1.5.2"]
+  [_context umm-s & _]
+  (let [service-type (:Type umm-s)
+        service-type (if (= service-type "SWODLR")
+                       "NOT PROVIDED"
+                       service-type)]
+    (-> umm-s
+        (assoc :Type service-type)
         (m-spec/update-version :service "1.5.2"))))

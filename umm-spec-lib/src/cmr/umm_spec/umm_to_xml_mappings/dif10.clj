@@ -3,7 +3,6 @@
   (:require
     [camel-snake-kebab.core :as csk]
     [clj-time.format :as f]
-    [clojure.set :as set]
     [clojure.string :as string]
     [cmr.common.util :as util]
     [cmr.common.xml.gen :as gen]
@@ -12,7 +11,7 @@
     [cmr.umm-spec.umm-to-xml-mappings.dif10.data-center :as center]
     [cmr.umm-spec.umm-to-xml-mappings.dif10.data-contact :as contact]
     [cmr.umm-spec.umm-to-xml-mappings.dif10.spatial :as spatial]
-    [cmr.umm-spec.util :as u :refer [with-default]]))
+    [cmr.umm-spec.util :as u]))
 
 (def coll-progress-mapping
   "Mapping from known collection progress values to values supported for DIF10 Dataset_Progress."
@@ -48,6 +47,34 @@
 
 (defn- temporal-coverage-without-temporal-keywords
   "Returns the temporal coverage content without the temporal keywords"
+  [extent]
+  [:Temporal_Coverage
+   [:Precision_Of_Seconds (:PrecisionOfSeconds extent)]
+   [:Ends_At_Present_Flag (:EndsAtPresentFlag extent)]
+
+   (for [rdt (:RangeDateTimes extent)]
+     [:Range_DateTime
+      [:Beginning_Date_Time (:BeginningDateTime rdt)]
+      [:Ending_Date_Time (:EndingDateTime rdt)]])
+
+   (for [sdt (:SingleDateTimes extent)]
+     [:Single_DateTime sdt])
+
+   (for [pdt (:PeriodicDateTimes extent)]
+     [:Periodic_DateTime
+      (gen/elements-from pdt :Name)
+      [:Start_Date (:StartDate pdt)]
+      [:End_Date (:EndDate pdt)]
+      [:Duration_Unit (:DurationUnit pdt)]
+      [:Duration_Value (:DurationValue pdt)]
+      [:Period_Cycle_Duration_Unit (:PeriodCycleDurationUnit pdt)]
+      [:Period_Cycle_Duration_Value (:PeriodCycleDurationValue pdt)]])
+   (when-let [tr (:TemporalResolution extent)]
+     [:Temporal_Info
+      [:Temporal_Resolution (gen/elements-from tr :Value :Unit)]])])
+
+(defn- temporal-coverage-without-temporal-keywords-and-resolution
+  "Returns the temporal coverage content without the temporal keywords and resolution"
   [extent]
   [:Temporal_Coverage
    [:Precision_Of_Seconds (:PrecisionOfSeconds extent)]
@@ -224,13 +251,16 @@
 (defn generate-dataset-citation
   "Returns the dif10 Data_Set_Citations from UMM-C."
   [c]
-  (let [doi (get-in c [:DOI :DOI])]
+  (let [doi (get-in c [:DOI :DOI])
+        pv (get-in c [:DOI :PreviousVersion])]
     (if (empty? (:CollectionCitations c))
       (when (seq doi)
         [:Dataset_Citation
          [:Persistent_Identifier
           [:Type "DOI"]
-          [:Identifier doi]]])
+          [:Identifier doi]
+          (when (seq pv)
+              [:Previous_Version (gen/elements-from pv :Version :Description :DOI :Published)])]])
       (for [collection-citation (:CollectionCitations c)]
         [:Dataset_Citation
          [:Dataset_Creator (:Creator collection-citation)]
@@ -247,7 +277,9 @@
          (when (seq doi)
            [:Persistent_Identifier
             [:Type "DOI"]
-            [:Identifier doi]])
+            [:Identifier doi]
+            (when (seq pv)
+              [:Previous_Version (gen/elements-from pv :Version :Description :DOI :Published)])])
          (when-let [online-resource (:OnlineResource collection-citation)]
            [:Online_Resource (:Linkage online-resource)])]))))
 
@@ -258,7 +290,18 @@
     [:Associated_DOIs
      [:DOI (:DOI assoc-doi)]
      [:Title (:Title assoc-doi)]
-     [:Authority (:Authority assoc-doi)]]))
+     [:Authority (:Authority assoc-doi)]
+     [:Type (:Type assoc-doi)]
+     [:Description_Of_Other_Type (:DescriptionOfOtherType assoc-doi)]]))
+
+(defn- generate-other-identifiers
+  "Returns the DIF 10 XML other identifiers from a UMM-C collection record."
+  [c]
+  (for [other-identifier (get c :OtherIdentifiers)]
+    [:Other_Identifiers
+     [:Identifier (:Identifier other-identifier)]
+     [:Type (:Type other-identifier)]
+     [:Description_Of_Other_Type (:DescriptionOfOtherType other-identifier)]]))
 
 (defn umm-c-to-dif10-xml
   "Returns DIF10 XML from a UMM-C collection record."
@@ -272,6 +315,7 @@
     [:Version_Description (:VersionDescription c)]
     [:Entry_Title (or (:EntryTitle c) u/not-provided)]
     (generate-dataset-citation c)
+    (generate-other-identifiers c)
     (generate-associated-dois c)
     (contact/generate-collection-personnel c)
     (if-let [sks (:ScienceKeywords c)]
@@ -317,10 +361,14 @@
     ;; be associated with. This is something DIF10 team will look into at improving, but in the
     ;; mean time, we put the TemporalKeywords on the first TemporalExtent element.
     (let [extent (-> c :TemporalExtents first)]
-      (conj (temporal-coverage-without-temporal-keywords extent)
+      (conj (temporal-coverage-without-temporal-keywords-and-resolution extent)
             [:Temporal_Info
-             (for [tkw (:TemporalKeywords c)]
-               [:Ancillary_Temporal_Keyword tkw])]))
+              (concat
+               (for [tkw (:TemporalKeywords c)]
+                 [:Ancillary_Temporal_Keyword tkw])
+               (when-let [tr (:TemporalResolution extent)]
+                       [[:Temporal_Resolution (gen/elements-from tr :Value :Unit)]]))]))
+
 
     (map temporal-coverage-without-temporal-keywords (drop 1 (:TemporalExtents c)))
     (generate-paleo-temporal (:PaleoTemporalCoverages c))
@@ -336,6 +384,7 @@
        [:Detailed_Location (:DetailedLocation location-keyword-map)]])
     (generate-projects (:Projects c))
     [:Quality (:Quality c)]
+    [:Data_Maturity (:DataMaturity c)]
     [:Access_Constraints (-> c :AccessConstraints :Description)]
     (when-let [use-constraints (get c :UseConstraints)]
       [:Use_Constraints
@@ -398,6 +447,7 @@
      [:Abstract (u/with-default (:Abstract c))]
      [:Purpose (:Purpose c)]]
     (generate-related-urls c)
+    [:File_Naming_Convention (gen/elements-from (:FileNamingConvention c) :Convention :Description)]
     (for [ma (:MetadataAssociations c)
           :when (contains? #{"SCIENCE ASSOCIATED" "DEPENDENT" "INPUT" "PARENT" "CHILD" "RELATED" nil} (:Type ma))]
       [:Metadata_Association

@@ -12,22 +12,21 @@
   (:require
    [clojure.string :as string]
    [cmr.common-app.config :as common-config]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.query-execution :as query-exec]
-   [cmr.common-app.services.search.query-model :as query-model]
-   [cmr.common-app.services.search.query-to-elastic :as q2e]
    [cmr.common-app.site.data :as common-data]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.doi :as doi]
    [cmr.common.log :refer [debug error]]
    [cmr.common.mime-types :as mt]
+   [cmr.common.services.search.query-model :as query-model]
    [cmr.common.util :refer [defn-timed]]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.query-execution :as query-exec]
    [cmr.search.services.query-execution.granule-counts-results-feature :as gcrf]
    [cmr.search.services.query-service :as query-svc]
    [cmr.search.site.util :as util]
    [cmr.transmit.config :as transmit-config]
    [cmr.transmit.metadata-db :as mdb]))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;; Data utility functions
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

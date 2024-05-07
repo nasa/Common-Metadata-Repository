@@ -2,16 +2,15 @@
   "Implements the search index protocols for searching against Elasticsearch."
   (:require
    [clojure.string :as string]
-   [clojurewerkz.elastisch.query :as q]
-   [clojurewerkz.elastisch.rest.document :as esd]
-   [cmr.common-app.services.search.elastic-search-index :as common-esi]
-   [cmr.common-app.services.search.elastic-search-index-names-cache :as index-names-cache]
-   [cmr.common-app.services.search.query-model :as qm]
-   [cmr.common-app.services.search.query-to-elastic :as q2e]
-   [cmr.common.hash-cache :as hcache]
    [cmr.common.concepts :as concepts]
    [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.hash-cache :as hcache]
    [cmr.common.services.errors :as e]
+   [cmr.common.services.search.query-model :as qm]
+   [cmr.elastic-utils.search.es-index :as common-esi]
+   [cmr.elastic-utils.search.es-index-name-cache :as index-names-cache]
+   [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
+   [cmr.elastic-utils.search.es-wrapper :as q]
    [cmr.search.services.query-walkers.collection-concept-id-extractor :as cex]
    [cmr.search.services.query-walkers.provider-id-extractor :as pex])
   ;; Required to be available at runtime.
@@ -22,6 +21,7 @@
 ;; id of the index-set that CMR is using, hard code for now
 (def index-set-id 1)
 
+(declare collections-index-alias)
 (defconfig collections-index-alias
   "The alias to use for the collections index."
   {:default "collection_search_alias" :type String})
@@ -145,21 +145,22 @@
 
 (doseq [concept-type (concepts/get-generic-concept-types-array)]
   (defmethod common-esi/concept-type->index-info concept-type
-    [context _ query] 
+    [context _ query]
     {:index-name (if (:all-revisions? query)
-                   (format "1_all_generic_%s_revisions" (string/replace (name concept-type) 
+                   (format "1_all_generic_%s_revisions" (string/replace (name concept-type)
                                                                         #"-" "_"))
-                   (format "1_generic_%s" (string/replace (name concept-type) 
+                   (format "1_generic_%s" (string/replace (name concept-type)
                                                           #"-" "_")))
      :type-name (name concept-type)}))
 
-(defn context->conn
+(defn- context->conn
   [context]
   (get-in context [:system :search-index :conn]))
 
-(defn get-collection-permitted-groups
+(comment defn- get-collection-permitted-groups
   "NOTE: Use for debugging only. Gets collections along with their currently permitted groups. This
-  won't work if more than 10,000 collections exist in the CMR."
+   won't work if more than 10,000 collections exist in the CMR.
+   called by dev-system/src/cmr/dev_system/control.clj only"
   [context]
   (let [index-info (common-esi/concept-type->index-info context :collection nil)
         results (esd/search (context->conn context)

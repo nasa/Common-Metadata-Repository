@@ -1,13 +1,10 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-smap.data-contact
  "Functions to parse DataCenters and ContactPersons from ISO 19115-2"
  (:require
-  [clojure.string :as str]
-  [cmr.common.xml.parse :refer :all]
-  [cmr.common.xml.simple-xpath :refer [select text]]
+  [cmr.common.xml.parse :refer [value-of]]
+  [cmr.common.xml.simple-xpath :refer [select]]
   [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
-  [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.distributions-related-url :as related-url]
   [cmr.umm-spec.xml-to-umm-mappings.iso19115-2.data-contact :as iso]
-  [cmr.umm-spec.url :as url]
   [cmr.umm-spec.util :as util]))
 
 (def metadata-authors-xpath

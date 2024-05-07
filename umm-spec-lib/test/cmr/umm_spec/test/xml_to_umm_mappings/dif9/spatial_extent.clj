@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.dif9.spatial-extent
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.umm-spec.xml-to-umm-mappings.dif9.spatial-extent :as spatial]))
 
 (def full-double-spatial-coverage

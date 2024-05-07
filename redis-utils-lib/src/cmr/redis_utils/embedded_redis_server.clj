@@ -20,9 +20,9 @@
     (.withNetwork network)))
 
 (defrecord RedisServer
-    [
-     http-port
-     opts]
+           [
+            http-port
+            opts]
 
   lifecycle/Lifecycle
 

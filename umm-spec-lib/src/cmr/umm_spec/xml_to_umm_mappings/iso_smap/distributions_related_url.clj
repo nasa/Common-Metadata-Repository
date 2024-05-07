@@ -1,12 +1,10 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-smap.distributions-related-url
   "Functions for parsing UMM related-url records out of ISO SMAP XML documents."
   (:require
-   [clojure.string :as str]
    [cmr.common.xml.parse :refer :all]
    [cmr.common.xml.simple-xpath :refer :all]
    [cmr.umm-spec.iso19115-2-util :refer :all]
-   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as sdru]
-   [cmr.umm-spec.url :as url]))
+   [cmr.umm-spec.xml-to-umm-mappings.iso-shared.distributions-related-url :as sdru]))
 
 (def distributor-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata"
@@ -18,14 +16,8 @@
 (def distributor-format-xpath
   "gmd:MD_Distributor/gmd:distributorFormat/gmd:MD_Format/gmd:name/gco:CharacterString")
 
-(def distributor-media-xpath
-  "gmd:MD_Distributor/gmd:distributorFormat/gmd:MD_Format/gmd:specification/gco:CharacterString")
-
 (def distributor-transfer-options-xpath
   "gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions")
-
-(def distributor-online-url-xpath
-  (str distributor-xpath "/gmd:MD_Distributor/gmd:distributorTransferOptions/gmd:MD_DigitalTransferOptions/gmd:onLine/gmd:CI_OnlineResource"))
 
 (def browse-graphic-xpath
   (str "/gmd:DS_Series/gmd:seriesMetadata"
@@ -58,4 +50,4 @@
   (seq (concat (sdru/parse-online-and-service-urls
                  doc sanitize? service-url-path distributor-xpaths-map service-online-resource-xpath)
                (sdru/parse-browse-graphics doc sanitize? browse-graphic-xpath)
-               (sdru/parse-publication-urls doc sanitize? publication-url-path))))
+               (sdru/parse-publication-urls doc publication-url-path))))

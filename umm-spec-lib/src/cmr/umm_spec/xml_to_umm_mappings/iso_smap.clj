@@ -1,15 +1,13 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-smap
   "Defines mappings from ISO-SMAP XML to UMM records"
   (:require
-   [clojure.string :as string]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [date-at-str dates-at-str value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.common.util :as util]
    [cmr.umm-spec.iso-keywords :as kws]
    [cmr.umm-spec.iso19115-2-util :as iso-util :refer [char-string-value]]
    [cmr.umm-spec.json-schema :as js]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
-   [cmr.umm-spec.util :as u :refer [without-default-value-of]]
    [cmr.umm-spec.util :as u]
    [cmr.umm-spec.xml-to-umm-mappings.get-umm-element :as get-umm-element]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.archive-and-dist-info :as archive-and-dist-info]

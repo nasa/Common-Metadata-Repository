@@ -1,16 +1,16 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso19115-2.spatial
   "Functions for parsing UMM spatial records out of ISO 19115-2 XML documents."
   (:require
+   [clojure.data.xml :as c-xml]
+   [clojure.set :as c-set]
    [clojure.string :as string]
-   [cmr.common.util :as util]
-   [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer [select text]]
+   [cmr.common.xml.parse :refer [value-of]]
+   [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.spatial.encoding.gmd :as gmd]
    [cmr.umm-spec.iso19115-2-util :as iso-util]
    [cmr.umm-spec.models.umm-collection-models :as umm-c]
    [cmr.umm-spec.spatial-conversion :as spatial-conversion]
    [cmr.umm-spec.umm-to-xml-mappings.iso19115-2.spatial :refer [generate-horizontal-resolution-code-name-map]]
-   [cmr.umm-spec.util :as umm-spec-util]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.shared-iso-parsing-util :as iso-xml-parsing-util]))
 
 (def coordinate-system-xpath
@@ -131,7 +131,7 @@
   [doc]
   (when-let [orbit-foot-prints (select doc orbit-foot-prints-xpath)]
     (for [orbit-foot-print orbit-foot-prints
-          :let [ofp-string (value-of (clojure.data.xml/emit-str orbit-foot-print) "CharacterString")
+          :let [ofp-string (value-of (c-xml/emit-str orbit-foot-print) "CharacterString")
                 ofp-map (iso-xml-parsing-util/convert-iso-description-string-to-map
                          ofp-string
                          (re-pattern "Footprint:|FootprintUnit:|Description:")
@@ -234,7 +234,7 @@
    is contained in the ISO record."
   []
   (into {}
-    (for [x (clojure.set/map-invert generate-horizontal-resolution-code-name-map)]
+    (for [x (c-set/map-invert generate-horizontal-resolution-code-name-map)]
       {(first (first x)) (second x)
        (second (first x)) (second x)})))
 
@@ -248,7 +248,6 @@
   This map is used later to programatically pull out the UMM-C class name. in this example it
   would be GenericResolutions"
   [xpath-parsed-resolution-element map]
-  (def res1 xpath-parsed-resolution-element)
   (let [x (get-in xpath-parsed-resolution-element [:tag])]
     (assoc map x (-> xpath-parsed-resolution-element
                      (get-in [:content])
@@ -265,7 +264,7 @@
    First look at :codeSpace to see if it
    exists to parse out the UMM-C type, otherwise look at :description."
   [m]
-  (if (:codeSpace m)
+  (when (:codeSpace m)
        (-> (:codeSpace m)
            name
            (string/split #"_")

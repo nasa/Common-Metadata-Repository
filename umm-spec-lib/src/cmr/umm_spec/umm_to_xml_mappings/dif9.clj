@@ -3,10 +3,8 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [clj-time.format :as f]
-   [clojure.set :as set]
-   [clojure.string :as string]
    [cmr.common.util :as common-util]
-   [cmr.common.xml.gen :refer :all]
+   [cmr.common.xml.gen :refer [xml]]
    [cmr.umm-spec.date-util :as date]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.umm-to-xml-mappings.dif9.data-center :as center]
@@ -204,7 +202,7 @@
       [:Last_DIF_Revision_Date (f/unparse (f/formatters :date) last-revision-date)])
     [:Extended_Metadata
      (center/generate-processing-centers c)
-     (for [{:keys [Group Name Description DataType Value ParamRangeBegin ParamRangeEnd UpdateDate]}
+     (for [{:keys [Name Description DataType Value ParamRangeBegin ParamRangeEnd UpdateDate]}
            (:AdditionalAttributes c)
            ;; DIF9 does not support ranges in Extended_Metadata - Order of preference for the value
            ;; is value, then parameter-range-begin, then parameter-range-end.

@@ -5,9 +5,9 @@
    [clojure.edn :as edn]
    [clojure.set :as set]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as elastic-results]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as elastic-results]
    [cmr.transmit.config :as tconfig]))
 
 (defn- reference-root
@@ -22,13 +22,13 @@
   (conj base-fields "acl-gzip-b64"))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:acl :json]
-  [concept-type query]
+  [_concept-type query]
   (if (some #{:include-full-acl} (:result-features query))
     fields-with-full-acl
     base-fields))
 
 (defmethod elastic-results/elastic-result->query-result-item [:acl :json]
-  [context query elastic-result]
+  [context _query elastic-result]
   (let [result-source (:_source elastic-result)
         item (if-let [acl-gzip (:acl-gzip-b64 result-source)]
                (-> result-source
@@ -41,6 +41,6 @@
         util/remove-nil-keys)))
 
 (defmethod qs/search-results->response [:acl :json]
-  [context query results]
+  [_context _query results]
   (let [results (select-keys results [:hits :took :items])]
     (json/generate-string (util/map-keys->snake_case results))))

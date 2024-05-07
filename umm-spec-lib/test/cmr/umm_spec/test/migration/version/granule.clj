@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.test.migration.version.granule
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [clojure.test.check.generators :as gen]
    [cmr.common.mime-types :as mt]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]
@@ -13,15 +13,17 @@
 
 (deftest test-version-steps
   (with-bindings {#'cmr.umm-spec.versioning/versions
-                  {:granule ["1.4" "1.5" "1.6" "1.6.1" "1.6.2" "1.6.3" "1.6.4" "1.6.5"]}}
+                  {:granule ["1.4" "1.5" "1.6" "1.6.1" "1.6.2" "1.6.3" "1.6.4" "1.6.5" "1.6.6"]}}
     (is (= [] (#'vm/version-steps :granule "1.5" "1.5")))
     (is (= [["1.4" "1.5"]] (#'vm/version-steps :granule "1.4" "1.5")))
     (is (= [["1.5" "1.4"]] (#'vm/version-steps :granule "1.5" "1.4")))
     (is (= [["1.4" "1.5"] ["1.5" "1.6"]] (#'vm/version-steps :granule "1.4" "1.6")))
     (is (= [["1.4" "1.5"] ["1.5" "1.6"] ["1.6" "1.6.1"]] (#'vm/version-steps :granule "1.4" "1.6.1")))
     (is (= [["1.6.1" "1.6.2"] ["1.6.2" "1.6.3"] ["1.6.3" "1.6.4"]] (#'vm/version-steps :granule "1.6.1" "1.6.4")))
-    (is (= [["1.6.4" "1.6.5"]] (#'vm/version-steps :granule "1.6.4" "1.6.5")))))
+    (is (= [["1.6.4" "1.6.5"]] (#'vm/version-steps :granule "1.6.4" "1.6.5")))
+    (is (= [["1.6.5" "1.6.6"]] (#'vm/version-steps :granule "1.6.5" "1.6.6")))))
 
+(declare all-migrations-produce-valid-umm-spec umm-record dest-version)
 (defspec all-migrations-produce-valid-umm-spec 100
   (for-all [umm-record (gen/no-shrink umm-gen/umm-g-generator)
             dest-version (gen/elements (v/versions :granule))]
@@ -632,8 +634,8 @@
           :Version "1.6.2"}
          (:MetadataSpecification (vm/migrate-umm {} :granule "1.6.1" "1.6.2" expected-granule-1-6-1)))))
 
+;; Check that the specify-metadata function returns the correct structure
 (deftest verify-update-version
-  "Check that the specify-metadata function returns the correct structure"
   (let [expected {:OtherMetadata :content-to-ignore
                   :MetadataSpecification
                   {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v0.0.0"
@@ -681,8 +683,8 @@
                                                  "1.6.3"
                                                  sample-granule-1-6-2)))))
 
+;; Make sure the unwanted url type is gone
 (deftest migrate-1-6-3-down-to-1-6-2
-  "Make sure the unwanted url type is gone"
   (let [converted (vm/migrate-umm {}
                                   :granule
                                   "1.6.3"
@@ -735,6 +737,25 @@
                    :Format "NETCDF-4"       ;; this has always been a valid format
                    :MimeType "application/x-netcdf"}]})
 
+(def granule-1-6-6
+  {:MetadataSpecification
+    {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.6"
+     :Name "UMM-G"
+     :Version "1.6.6"}
+    :DataGranule {:ArchiveAndDistributionInformation [{:Format "ASCII"} {:Format "ComicSans"}]}
+    :PGEVersionClass {:PGEName "A PGE Name"
+                      :PGEVersion "12345678901234567890123456789012345678901234567890"}
+    :RelatedUrls [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+                   :Type "GET SERVICE"
+                   :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+                   :MimeType "APPEARS"
+                   :Format "Future-Type"}   ;; this was a bad format
+                  {:URL "s3://amazon.something.com/get-data"
+                   :Type "GET DATA"
+                   :Subtype "BROWSE IMAGE SOURCE"
+                   :Format "NETCDF-4"       ;; this has always been a valid format
+                   :MimeType "application/x-netcdf"}]})
+
 (deftest migrate-1-6-3-up-to-1-6-4
   (let [converted (vm/migrate-umm {} :granule "1.6.3" "1.6.4" sample-granule-1-6-3)]
     (is (= {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.4"
@@ -744,8 +765,8 @@
         "Specification must be 1.6.4")
     (is (= "NETCDF-4" (:Format (nth (:RelatedUrls converted) 3))) "Confirm that existing values are not touched")))
 
+;; Make sure the unwanted url type is gone
 (deftest migrate-1-6-4-down-to-1-6-3
-  "Make sure the unwanted url type is gone"
   (let [converted (vm/migrate-umm {} :granule "1.6.4" "1.6.3" granule-1-6-4)
         specification (:MetadataSpecification converted)
         urls (:RelatedUrls converted)
@@ -780,3 +801,31 @@
         "Specification must be 1.6.4")
     (is (= {:PGEName "A PGE Name" :PGEVersion "1234567890"}
            (:PGEVersionClass converted)))))
+
+(deftest migrate-1-6-5-up-to-1-6-6
+  (let [converted (vm/migrate-umm {} :granule "1.6.5" "1.6.6" granule-1-6-5)]
+    (is (= {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.6"
+            :Name "UMM-G"
+            :Version "1.6.6"}
+           (:MetadataSpecification converted))
+        "Specification must be 1.6.6")
+    (is (= (:RelatedUrls granule-1-6-5)
+           (:RelatedUrls converted)))))
+
+(deftest migrate-1-6-6-down-to-1-6-5
+  (let [converted (vm/migrate-umm {} :granule "1.6.6" "1.6.5" granule-1-6-6)]
+    (is (= {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.5"
+            :Name "UMM-G"
+            :Version "1.6.5"}
+           (:MetadataSpecification converted))
+        "Specification must be 1.6.5")
+    (is (= [{:URL "https://acdisc.gesdisc.eosdis.nasa.gov/opendap/Aqua_AIRS_Level3/AIRX3STD.006/"
+             :Type "GET SERVICE"
+             :Subtype "ALGORITHM THEORETICAL BASIS DOCUMENT (ATBD)"
+             :MimeType "APPEARS"
+             :Format "Future-Type"}   ;; this was a bad format
+            {:URL "s3://amazon.something.com/get-data"
+             :Type "GET DATA"
+             :Format "NETCDF-4"       ;; this has always been a valid format
+             :MimeType "application/x-netcdf"}]
+           (:RelatedUrls converted)))))

@@ -2,7 +2,7 @@
   "Contains functions for converting query parameters to collection query condition"
   (:require
    [cmr.search.models.query :as qm]
-   [cmr.common-app.services.search.params :as p]))
+   [cmr.elastic-utils.search.es-params-converter :as p]))
 
 ;; Converts parameter and values into collection query condition
 (defmethod p/parameter->condition :collection-query

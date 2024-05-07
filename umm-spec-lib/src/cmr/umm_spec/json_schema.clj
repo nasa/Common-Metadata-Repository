@@ -6,7 +6,6 @@
    [clojure.java.io :as io]
    [clojure.string :as str]
    [cmr.common.date-time-parser :as dtp]
-   [cmr.common.log :as log]
    [cmr.common.validations.json-schema :as js-validations]
    [cmr.umm-spec.models.umm-common-models :as umm-cmn]
    [cmr.umm-spec.versioning :as ver]))
@@ -84,7 +83,7 @@
   "Recursively resolves references to other types within the JSON schema type definition. When a
   reference is found it is replaced with a map containing the type name referenced and the name of
   the other schema that was referenced."
-  (fn [schema-name type-def]
+  (fn [_schema-name type-def]
     (reference-processor-selector type-def)))
 
 (defn- resolve-ref-deflist
@@ -371,7 +370,7 @@
 
 (defn- resolve-$refs
   "Recursively resolves $refs, as some are multi-level $refs to other types."
-  [[schema definition :as pair]]
+  [[_schema definition :as pair]]
   (if (:$ref definition)
     (recur (apply lookup-ref pair))
     pair))
@@ -454,7 +453,7 @@
                                                   (let [coerced (coerce schema item-type-def x)]
                                                     (when (some? coerced)
                                                       {:value coerced}))
-                                                  (catch Exception e
+                                                  (catch Exception _e
                                                     (let [msg (parse-error-msg item-type-def x)]
                                                       {:error msg}))))
                                       results (remove nil? results)]
@@ -467,7 +466,7 @@
                                     (if (some? parsed)
                                       (assoc m k parsed)
                                       m))
-                                  (catch Exception e
+                                  (catch Exception _e
                                     (let [msg (parse-error-msg prop-type-definition v)]
                                       (assoc-in m [:_errors k] msg)))))))
                           nil
@@ -485,7 +484,11 @@
   ;; wrap the LicenseURL as a defrecord. This supports a UMM-C schema change that was needed for
   ;; MMT and preferred by the CMR in 1.16.2.
   (let [coerced (coerce umm-c-schema x)
-        license-url (get-in coerced [:UseConstraints :LicenseURL])]
-    (if license-url
-      (assoc-in coerced [:UseConstraints :LicenseURL] (umm-cmn/map->OnlineResourceType license-url))
+        license-url (get-in coerced [:UseConstraints :LicenseURL])
+        coerced (if license-url
+                  (assoc-in coerced [:UseConstraints :LicenseURL] (umm-cmn/map->OnlineResourceType license-url))
+                  coerced)
+        previous-version (get-in coerced [:DOI :PreviousVersion])]
+    (if previous-version
+      (assoc-in coerced [:DOI :PreviousVersion] (umm-cmn/map->PreviousVersionType previous-version))
       coerced)))

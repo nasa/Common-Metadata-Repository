@@ -3,9 +3,9 @@
   (:require
    [clojure.string :as str]
    [cmr.common.util :as util]
-   [cmr.common.xml.parse :refer :all]
-   [cmr.common.xml.simple-xpath :refer :all]
-   [cmr.umm-spec.iso19115-2-util :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
+   [cmr.common.xml.simple-xpath :refer [select]]
+   [cmr.umm-spec.iso19115-2-util :refer [char-string-value]]
    [cmr.umm-spec.opendap-util :as opendap-util]
    [cmr.umm-spec.url :as url]
    [cmr.umm-spec.util :as su]
@@ -68,7 +68,7 @@
                            (str/trim description))}
            (util/remove-nil-keys
             {:GetService (when (or MimeType full-name DataID protocol DataType Format
-                                  (not (empty? uris)))
+                                  (seq uris))
                            {:MimeType (su/with-default MimeType sanitize?)
                             :FullName (su/with-default full-name sanitize?)
                             :DataID (su/with-default DataID sanitize?)
@@ -92,13 +92,12 @@
   (for [distributor (select doc (get distributor-xpaths-map :Root))
         :let [fees (util/trunc (value-of distributor (get distributor-xpaths-map :Fees)) size-of-related-url-fees)
               format (parse-distributor-format distributor distributor-xpaths-map)
-              [href href-type] (re-matches #"(.*)$" (or (get-in distributor [:attrs :xlink/href]) ""))]
+              [_href href-type] (re-matches #"(.*)$" (or (get-in distributor [:attrs :xlink/href]) ""))]
         transfer-option (select distributor (get distributor-xpaths-map :TransferOptions))
         :let [size (value-of transfer-option "gmd:transferSize")
               unit (value-of transfer-option "gmd:unitsOfDistribution/gco:CharacterString")]
         url (select transfer-option (get distributor-xpaths-map :URL))
-        :let [name (char-string-value url "gmd:name")
-              code (value-of url "gmd:function/gmd:CI_OnlineFunctionCode")
+        :let [code (value-of url "gmd:function/gmd:CI_OnlineFunctionCode")
               url-link (value-of url "gmd:linkage/gmd:URL")
               url-link (when url-link (url/format-url url-link sanitize?))
               opendap-type (when (= code "GET DATA : OPENDAP DATA (DODS)")
@@ -136,8 +135,7 @@
   but may contain additional needed type information. Filter out dup service URLs."
   [doc sanitize? service-url-path distributor-xpaths-map service-online-resource-xpath]
   (let [service-urls (parse-service-urls doc sanitize? service-url-path service-online-resource-xpath)
-        online-urls (parse-online-urls doc sanitize? service-urls distributor-xpaths-map)
-        online-url-urls (set (map :URL online-urls))]
+        online-urls (parse-online-urls doc sanitize? service-urls distributor-xpaths-map)]
     (concat
      online-urls
      service-urls)))
@@ -160,13 +158,12 @@
 
 (defn parse-publication-urls
  "Parse PublicationURL and CollectionURL from the publication location."
- [doc sanitize? publication-url-path]
+ [doc publication-url-path]
  (for [url (select doc publication-url-path)
        :let [description (char-string-value url "gmd:description")]
        :when (and (some? description)
                   (not (str/includes? description "PublicationReference:")))
-       :let [types-and-desc (parse-url-types-from-description description)
-             url-content-type (or (:URLContentType types-and-desc) "PublicationURL")]]
+       :let [types-and-desc (parse-url-types-from-description description)]]
   {:URL (value-of url "gmd:linkage/gmd:URL")
    :Description (:Description types-and-desc)
    :URLContentType (or (:URLContentType types-and-desc) "PublicationURL")

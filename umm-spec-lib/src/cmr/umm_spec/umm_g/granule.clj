@@ -17,9 +17,9 @@
 
 (def ^:private umm-g-metadata-specification
   "Defines the current UMM-G MetadataSpecification"
-  {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.5"
+  {:URL "https://cdn.earthdata.nasa.gov/umm/granule/v1.6.6"
    :Name "UMM-G"
-   :Version "1.6.5"})
+   :Version "1.6.6"})
 
 (defn- get-date-by-type
   "Returns the date of the given type from the given provider dates"
@@ -106,9 +106,9 @@
   [granule]
   (let [{:keys [granule-ur data-granule pge-version-class access-value temporal orbit-calculated-spatial-domains
                 platform-refs project-refs cloud-cover related-urls product-specific-attributes
-                spatial-coverage orbit two-d-coordinate-system measured-parameters
+                spatial-coverage two-d-coordinate-system measured-parameters
                 collection-ref data-provider-timestamps]} granule
-        {:keys [entry-title short-name version-id entry-id]} collection-ref
+        {:keys [entry-title short-name version-id]} collection-ref
         {:keys [insert-time update-time delete-time]} data-provider-timestamps
         insert-time (when insert-time
                       {:Date (str insert-time)

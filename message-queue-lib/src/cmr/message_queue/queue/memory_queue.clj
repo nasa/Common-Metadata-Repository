@@ -1,12 +1,12 @@
 (ns cmr.message-queue.queue.memory-queue
-  "Defines an in memory implementation of the Queue protocol. It uses core.async for message passing."
+  "Defines an in memory implementation of the Queue protocol. It uses core.async
+   for message passing."
   (:require
    [cheshire.core :as json]
    [clojure.core.async :as a]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer [debug info warn error]]
-   [cmr.common.services.errors :as errors]
+   [cmr.common.log :as log :refer [info warn error]]
    [cmr.common.util :as u]
    [cmr.message-queue.config :as config]
    [cmr.message-queue.queue.queue-protocol :as queue-protocol]
@@ -29,9 +29,10 @@
         (info (format "Retrying with retry-count =%d" new-retry-count))
         (queue-protocol/publish-to-queue queue-broker queue-name msg)))))
 
+(declare msg)
 (defn- create-async-handler
-  "Creates a go block that will asynchronously pull messages off the queue, pass them to the handler,
-  and process the response."
+  "Creates a go block that will asynchronously pull messages off the queue, pass
+   them to the handler, and process the response."
   [queue-broker queue-name handler]
   (let [queue-ch (get-in queue-broker [:queues-to-channels queue-name])]
     (a/go
@@ -56,33 +57,34 @@
       (when-not (= :done (first (a/alts!! (vec channels) :default :done)))
         (recur)))))
 
-(defrecord MemoryQueueBroker
-  [
-   ;; A list of queue names
-   queues
+(defrecord
+ MemoryQueueBroker
+ [;; A list of queue names
+  queues
 
    ;; A map of exchange names to sets of queue names to which the exchange will broadcast.
-   exchanges-to-queue-sets
+  exchanges-to-queue-sets
 
    ;; A map of queue names to core async channels containing messages to deliver
-   queues-to-channels
+  queues-to-channels
 
    ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    ;; Running State
 
-   ;; An atom containing a sequence of channels returned by the go block processors for each handler.
-   handler-channels-atom]
+   ;; An atom containing a sequence of channels returned by the go block processors
+   ;; for each handler.
+  handler-channels-atom]
 
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
   (start
-    [this system]
+    [this _system]
     this)
 
   (stop
-    [this system]
+    [this _system]
     (drain-channels (vals queues-to-channels))
 
     ;; Wait for go blocks to finish
@@ -99,14 +101,15 @@
   queue-protocol/Queue
 
   (publish-to-queue
-    [this queue-name msg]
+    [_this queue-name msg]
     ;; Puts the message on the channel. It is encoded as json to simulate the Rabbit MQ behavior
     (if-let [chan (queues-to-channels queue-name)]
       (a/>!! chan (json/generate-string msg))
-      (throw (IllegalArgumentException. (str "Could not find channel bound to queue " queue-name)))))
+      (throw (IllegalArgumentException.
+              (str "Could not find channel bound to queue " queue-name)))))
 
   (get-queues-bound-to-exchange
-    [this exchange-name]
+    [_this exchange-name]
     (seq (exchanges-to-queue-sets exchange-name)))
 
   (publish-to-exchange
@@ -120,7 +123,7 @@
     nil)
 
   (reset
-    [this]
+    [_this]
     ;; clear all channels
     (drain-channels (vals queues-to-channels)))
 
@@ -134,7 +137,7 @@
     this)
 
   (health
-    [this]
+    [_this]
     {:ok? true}))
 (record-pretty-printer/enable-record-pretty-printing MemoryQueueBroker)
 

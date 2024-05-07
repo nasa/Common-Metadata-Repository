@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.test.fingerprint-util
   "This tests variable fingerprint generation."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [cmr.umm-spec.fingerprint-util :as fingerprint]))
 
 (def ^:private variable-metadata-partial

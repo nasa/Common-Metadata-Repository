@@ -2,7 +2,7 @@
   "Defines mappings from DIF 9 Spatial_Coverage elements into UMM records"
   (:require
    [clojure.string :as string]
-   [cmr.common.xml.parse :refer :all]
+   [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.util :refer [default-granule-spatial-representation]]))
 
@@ -64,7 +64,7 @@
   "This method returns a vertical domain map that consists of {:Type type :Value value} if a value exists
   otherwise it returns nil."
   [spatial-coverage elevation-type]
-  (if-let [value (value-of spatial-coverage elevation-type)]
+  (when-let [value (value-of spatial-coverage elevation-type)]
     (into {}
        {:Type (string/replace elevation-type "_" " ")
         :Value value})))
@@ -98,7 +98,7 @@
   "Create the vertical spatial domains part of the spatial extent."
   [doc]
   (when-let [vertical-domains (vec (flatten (create-vertical-domains doc)))]
-    (if (not-empty vertical-domains)
+    (when (not-empty vertical-domains)
       {:VerticalSpatialDomains vertical-domains})))
 
 (defn- parse-granule-representation

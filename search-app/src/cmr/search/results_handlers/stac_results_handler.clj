@@ -4,15 +4,14 @@
    [cheshire.core :as json]
    [clojure.string :as string]
    [cmr.common-app.services.search :as qs]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as er-to-qr]
-   [cmr.common-app.services.search.elastic-search-index :as elastic-search-index]
-   [cmr.common-app.services.search.results-model :as r]
    [cmr.common.services.errors :as svc-errors]
+   [cmr.common.services.search.results-model :as r-model]
    [cmr.common.util :as util]
-   [cmr.search.models.query :as q]
+   [cmr.elastic-utils.search.es-acl-parser :as acl-rhh]
+   [cmr.elastic-utils.search.es-index :as elastic-search-index]
+   [cmr.elastic-utils.search.es-results-to-query-results :as er-to-qr]
    [cmr.search.results-handlers.orbit-swath-results-helper :as orbit-swath-helper]
    [cmr.search.results-handlers.stac-spatial-results-handler :as ssrh]
-   [cmr.common-app.services.search.acl-results-handler-helper :as acl-rhh]
    [cmr.search.services.url-helper :as url]
    [cmr.spatial.serialize :as srl]
    [ring.util.codec :as codec]))
@@ -26,7 +25,7 @@
   1000000)
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:collection :stac]
- [concept-type query]
+ [_concept-type _query]
  (let [stac-fields ["summary"
                     "entry-title"
                     "start-date"
@@ -36,7 +35,7 @@
   (distinct (concat stac-fields acl-rhh/collection-elastic-fields))))
 
 (defmethod elastic-search-index/concept-type+result-format->fields [:granule :stac]
- [concept-type query]
+ [_concept-type _query]
  (let [stac-fields ["granule-ur"
                     "concept-id"
                     "collection-concept-id"
@@ -122,7 +121,7 @@
         items (if (= :granule (:concept-type query))
                 (granule-elastic-results->query-result-items context query elastic-matches)
                 (map collection-elastic-result->query-result-item elastic-matches))]
-    (r/map->Results {:hits hits
+    (r-model/map->Results {:hits hits
                      :items items
                      :timed-out timed-out
                      :result-format (:result-format query)})))

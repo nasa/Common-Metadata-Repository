@@ -1,8 +1,7 @@
 (ns cmr.umm-spec.test.iso-keywords
   (:require
    [clojure.java.io :as io]
-   [clojure.test :refer :all]
-   [cmr.common.util :refer [are3]]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.xml.simple-xpath :refer [select]]
    [cmr.umm-spec.iso-keywords :as iso-keywords]))
 

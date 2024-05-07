@@ -13,10 +13,10 @@
 
 (defn -getScriptEngine
   "Spatial script engine."
-  [this ^Settings settings ^Collection contexts]
+  [_this ^Settings _settings ^Collection _contexts]
   (new SpatialScriptEngine))
 
 (defn -getContexts
   "Return script contexts."
-  [this]
+  [_this]
   (Collections/emptyList))

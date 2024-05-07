@@ -1,14 +1,14 @@
 (ns cmr.search.services.query-execution
   (:require
    [clojure.set :as set]
-   [cmr.common-app.services.search.complex-to-simple :as c2s]
-   [cmr.common-app.services.search.elastic-results-to-query-results :as rc]
-   [cmr.common-app.services.search.elastic-search-index :as idx]
-   [cmr.common-app.services.search.query-execution :as common-qe]
-   [cmr.common-app.services.search.query-model :as cqm]
-   [cmr.common-app.services.search.related-item-resolver :as related-item-resolver]
-   [cmr.common-app.services.search.results-model :as results]
+   [cmr.common.services.search.query-model :as cqm]
+   [cmr.common.services.search.results-model :as results]
    [cmr.common.util :as util]
+   [cmr.elastic-utils.search.es-index :as idx]
+   [cmr.elastic-utils.search.es-related-item-resolver :as related-item-resolver]
+   [cmr.elastic-utils.search.es-results-to-query-results :as rc]
+   [cmr.elastic-utils.search.query-execution :as common-qe]
+   [cmr.elastic-utils.search.query-transform :as c2s]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
    [cmr.search.data.metadata-retrieval.metadata-transformer :as mt]
    [cmr.search.services.acl-service :as acl-service]
@@ -18,7 +18,7 @@
    [cmr.search.services.query-walkers.facet-condition-resolver :as facet-condition-resolver]
    [cmr.transmit.config :as tc])
   (:import
-   (cmr.common_app.services.search.query_model Query StringCondition StringsCondition ConditionGroup)
+   (cmr.common.services.search.query_model Query StringCondition StringsCondition ConditionGroup)
    (cmr.search.models.query CollectionQueryCondition)))
 
 (def specific-elastic-items-format?

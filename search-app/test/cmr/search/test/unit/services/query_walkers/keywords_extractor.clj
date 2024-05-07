@@ -1,7 +1,7 @@
 (ns cmr.search.test.unit.services.query-walkers.keywords-extractor
  (:require
   [clojure.test :refer :all]
-  [cmr.common-app.services.search.query-model :as qm]
+  [cmr.common.services.search.query-model :as qm]
   [cmr.search.services.query-walkers.keywords-extractor :as ke]
   [cmr.search.test.unit.models.helpers :as h :refer :all]))
 

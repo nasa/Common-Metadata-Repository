@@ -187,7 +187,6 @@
   "Format all of the URLs in Data Centers, including the data center contact info,
   the contact groups contact info, and the contact persons contact info"
   [data-centers]
-  (def data-centers data-centers)
   (seq (for [dc (expected-contact-information-urls data-centers "DataCenterURL")]
          (-> dc
              (update :ContactPersons expected-contact-information-urls "DataContactURL")
@@ -207,7 +206,11 @@
   (let [updated-doi (util/remove-nil-keys
                      (dissoc doi :Authority :MissingReason :Explanation))]
     (if (seq updated-doi)
-      (cmn/map->DoiDoiType updated-doi)
+      (if (:PreviousVersion updated-doi)
+        (-> updated-doi
+            (update-in [:PreviousVersion] cmn/map->PreviousVersionType)
+            cmn/map->DoiDoiType)
+        (cmn/map->DoiDoiType updated-doi))
       {:Explanation "It is unknown if this record has a DOI.",
        :MissingReason "Unknown"})))
 

@@ -1,6 +1,6 @@
 (ns cmr.elasticsearch.plugins.spatial.engine.core
   (:import
-   (cmr.elasticsearch.plugins SpatialScriptFactory)
+   (cmr.elasticsearch.plugins SpatialScriptFactory) 
    (org.elasticsearch.script FilterScript ScriptContext ScriptEngine)
    (java.util Map))
   (:gen-class
@@ -11,16 +11,16 @@
 
 (defn -getType
   "Get script lang."
-  [^SpatialScriptEngine this]
+  [^SpatialScriptEngine _this]
   "cmr_spatial")
 
 (defn -compile
   "Compile script."
   [^SpatialScriptEngine this
-   ^String script-name
+   ^String _script-name
    ^String script-source
    ^ScriptContext context
-   ^Map params]
+   ^Map _params]
   (cond
     (not (.equals context FilterScript/CONTEXT))
     (throw (new IllegalArgumentException
@@ -34,7 +34,8 @@
     :else
     (-> context .factoryClazz (.cast (new SpatialScriptFactory)))))
 
+#_{:clj-kondo/ignore [:redundant-do]}
 (defn -close
   "Do nothing."
-  [this]
+  [_this]
   (do))

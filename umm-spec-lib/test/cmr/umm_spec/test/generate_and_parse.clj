@@ -5,10 +5,10 @@
    [clj-time.core :as t]
    [clojure.java.io :as io]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [clojure.test.check.generators :as gen]
    [cmr.common.test.test-check-ext :as ext :refer [checking checking-with-seed]]
-   [cmr.common.util :as util :refer [update-in-each update-in-all are3]]
+   [cmr.common.util :as util :refer [update-in-each update-in-all]]
    [cmr.common.xml.simple-xpath :refer [select context]]
    [cmr.redis-utils.test.test-util :as redis-embedded-fixture]
    [cmr.umm-spec.iso-keywords :as kws]
@@ -28,19 +28,20 @@
 
 (def tested-collection-formats
   "Seq of formats to use in round-trip conversion and XML validation tests."
-  [:echo10])
+  [:dif10 :echo10 :iso19115 :iso-smap])
 
 (def test-context lkt/create-context)
 
 (def collection-destination-formats
   "Converting to these formats is tested in the roundrobin test."
-  [:echo10])
+  [:echo10 :dif10 :iso19115 :iso-smap])
 
 (def collection-format-examples
   "Map of format type to example file"
-  {
+  {:dif10 "dif10.xml"
    :echo10 "echo10.xml"
-   })
+   :iso19115 "iso19115.xml"
+   :iso-smap "iso_smap.xml"})
 
 (defn- convert-to-sets
   "Convert lists in the umm record to sets so order doesn't matter during comparison"
@@ -53,7 +54,10 @@
       (update-in-each [:DataCenters] update :ContactPersons set)
       (update :DataCenters set)
       (update :ContactPersons set)
-      (update-in [:SpatialExtent] update :VerticalSpatialDomains set)))
+      (update-in [:SpatialExtent] update :VerticalSpatialDomains set)
+      (update-in-each [:TemporalExtents] update :RangeDateTimes set)
+      (update-in-each [:TemporalExtents] update :SingleDateTimes set)
+      (update :TemporalExtents set)))
 
 (defn xml-round-trip
   "Returns record after being converted to XML and back to UMM through
@@ -78,11 +82,6 @@
   "Returns a set of example metadata files in the given format."
   [metadata-format]
   (seq (.listFiles (io/file (io/resource (str "example-data/" (name metadata-format)))))))
-
-(defn- remove-vertical-spatial-domains
-  "Remove the VerticalSpatialDomains from the SpatialExtent of the record."
-  [record]
-  (update-in record [:SpatialExtent] dissoc :VerticalSpatialDomains))
 
 (deftest roundtrip-example-metadata
   (let [failed-atom (atom false)
@@ -129,26 +128,20 @@
                                #(assoc % :NumberOfInstruments (let [ct (count (:ComposedOf %))]
                                                                 (when (> ct 0) ct)))))
                     ;; Change fields to sets for comparison
-                    ;; Also, dif9 changes VerticalSpatialDomain values when they contain Max and Min
-                    ;;  Remove them from the comparison.
-                    expected (convert-to-sets (if (= :dif target-format)
-                                                (remove-vertical-spatial-domains expected)
-                                                ;; Footprints don't exist in dif10 and echo10
-                                                ;; it needs to be removed for round-trip comparison.
-                                                (if (or (= :dif10 target-format)
-                                                        (= :echo10 target-format)
-                                                        (not (get-in expected
-                                                              [:SpatialExtent :OrbitParameters :Footprints])))
-                                                  (update-in expected [:SpatialExtent :OrbitParameters]
-                                                             dissoc :Footprints)
-                                                    expected)))
-                    actual (convert-to-sets (if (= :dif target-format)
-                                              (remove-vertical-spatial-domains actual)
-                                              ;; remove Footprints if it's nil
-                                              (if (get-in actual [:SpatialExtent :OrbitParameters :Footprints])
-                                                actual
-                                                (update-in actual [:SpatialExtent :OrbitParameters]
-                                                           dissoc :Footprints))))
+                    ;; Footprints don't exist in dif10 and echo10
+                    ;; it needs to be removed for round-trip comparison.
+                    expected (convert-to-sets (if (or (= :dif10 target-format)
+                                                      (= :echo10 target-format)
+                                                      (not (get-in expected
+                                                                   [:SpatialExtent :OrbitParameters :Footprints])))
+                                                (update-in expected [:SpatialExtent :OrbitParameters]
+                                                           dissoc :Footprints)
+                                                expected))
+                    ;; remove Footprints if it's nil
+                    actual (convert-to-sets (if (get-in actual [:SpatialExtent :OrbitParameters :Footprints])
+                                              actual
+                                              (update-in actual [:SpatialExtent :OrbitParameters]
+                                                         dissoc :Footprints)))
                     expected (util/remove-nil-keys expected)
                     actual (util/remove-nil-keys actual)]]
 
@@ -185,7 +178,7 @@
 
 (deftest validate-umm-json-example-record
   ;; Test that going from any format to UMM generates valid UMM.
-  (doseq [[format filename] collection-format-examples
+  (doseq [[format _filename] collection-format-examples
           :let [umm-c-record (xml-round-trip :collection format expected-conversion/example-collection-record)]]
     (testing (str format " to :umm-json")
       (is (empty? (generate-and-validate-xml :collection :umm-json umm-c-record))))))
@@ -218,6 +211,7 @@
 ;; to UMM and then back to the other format then compares the
 ;; expected output with the result of the actual conversions. This test runs a record
 ;; through all of the supported formats.
+(declare umm-record metadata-format)
 (deftest roundtrip-generated-collection-records
   (checking "collection round tripping" 100
     [umm-record (gen/no-shrink umm-gen/umm-c-generator)
@@ -249,7 +243,6 @@
                        (update-in umm-record [:UseConstraints] assoc :EULAIdentifiers nil)
                        umm-record)
           umm-record (trim-tiling-system-values umm-record)
-          
           expected (expected-conversion/convert umm-record metadata-format)
           actual (xml-round-trip :collection metadata-format umm-record)
 
@@ -258,6 +251,7 @@
           ;; Change fields to sets for comparison
           expected (convert-to-sets expected)
           actual (convert-to-sets actual)]
+
       (is (= expected actual)
           (str "Unable to roundtrip with format " metadata-format)))))
 

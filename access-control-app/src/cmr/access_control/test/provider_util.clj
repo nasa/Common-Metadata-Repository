@@ -51,7 +51,7 @@
                            :short-name short-name
                            :cmr-only (if (some? cmr-only) cmr-only false)
                            :small (if (some? small) small false)
-                           :consortiums (when (not (empty? consortiums)) consortiums)
+                           :consortiums (when (seq consortiums) consortiums)
                            :metadata metadata})))
 
 (defn minimum-provider->metadata-only
@@ -62,7 +62,6 @@
   (let [data (minimum-provider->metadata minimum-provider)
         cmr-only (:cmr-only data)
         small (:small data)
-        consortiums (:consortiums data)
         metadata (-> (:metadata data)
                      (assoc :small small
                             :cmr-only cmr-only)

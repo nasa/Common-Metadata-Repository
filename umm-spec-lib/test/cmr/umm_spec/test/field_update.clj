@@ -1,10 +1,11 @@
 (ns cmr.umm-spec.test.field-update
  "Unit tests for UMM field update functionality"
  (:require
-  [clojure.test :refer :all]
+  [clojure.test :refer [deftest is testing]]
   [cmr.common.util :refer [are3]]
   [cmr.umm-spec.field-update :as field-update]))
 
+(declare update-type update-value find-value result)
 (deftest science-keyword-field-updates
   (testing "Existing science keywords"
     (let [umm {:EntryTitle "Test"

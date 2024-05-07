@@ -41,22 +41,9 @@
   {:default 200000
    :type Long})
 
-(defconfig custom-request-log
+(defconfig enable-enhanced-http-logging
   "True issues an additional custom request log for all activity received from
    this server"
-  {:default true
-   :type Boolean})
-
-(defconfig custom-request-log-error
-  "True issues an additional custom request log for all activity received from
-   this server and sends it to standard error. custom-request-log must be true
-   as well."
-  {:default false
-   :type Boolean})
-
-(defconfig add-hash-headers
-  "True will add MD5 and SHA-1 hash values to the response headers and include
-   them in the custome request log controlled by custom-request-log"
   {:default true
    :type Boolean})
 

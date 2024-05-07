@@ -1,10 +1,8 @@
 (ns cmr.access-control.int-test.access-control-group-search-test
   "Tests searching for access control groups"
     (:require
-     [clojure.set :as set]
-     [clojure.test :refer :all]
+     [clojure.test :refer [deftest is testing use-fixtures]]
      [cmr.access-control.int-test.fixtures :as fixtures]
-     [cmr.access-control.test.bootstrap :as bootstrap]
      [cmr.access-control.test.util :as u]
      [cmr.common.util :as util :refer [are3]]
      [cmr.mock-echo.client.echo-util :as e]
@@ -152,6 +150,7 @@
 
 
 (deftest group-search-test
+  (declare expected-groups params)
   (let [token (e/login (u/conn-context) "user1")
         existing-admin-group (get-existing-admin-group)
         cmr-group1 (u/ingest-group token {:name "group1"} ["user1"])

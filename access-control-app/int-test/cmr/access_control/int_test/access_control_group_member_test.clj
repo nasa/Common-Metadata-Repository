@@ -1,8 +1,9 @@
 (ns cmr.access-control.int-test.access-control-group-member-test
-  (:require [clojure.test :refer :all]
-            [cmr.mock-echo.client.echo-util :as e]
-            [cmr.access-control.int-test.fixtures :as fixtures]
-            [cmr.access-control.test.util :as u]))
+  (:require
+   [clojure.test :refer [deftest is testing use-fixtures]]
+   [cmr.mock-echo.client.echo-util :as e]
+   [cmr.access-control.int-test.fixtures :as fixtures]
+   [cmr.access-control.test.util :as u]))
 
 (use-fixtures :once (fixtures/int-test-fixtures))
 (use-fixtures :each
@@ -17,15 +18,14 @@
 (deftest group-members-test
   (let [token (e/login (u/conn-context) "user1")
         group (u/make-group)
-        {:keys [status concept_id revision_id]} (u/create-group token group)]
+        {:keys [concept_id]} (u/create-group token group)]
 
     (testing "Initially no members are in the group"
       (assert-group-member-count-correct token concept_id 0)
       (is (= {:status 200 :body []} (u/get-members token concept_id))))
 
     (testing "Successful add members to group"
-      (let [token2 (e/login (u/conn-context) "user1")
-            response (u/add-members token concept_id ["user1" "user2" "user1"])]
+      (let [response (u/add-members token concept_id ["user1" "user2" "user1"])]
         (assert-group-member-count-correct token concept_id 2)
         (is (= {:status 200 :concept_id concept_id :revision_id 2} response))
         (is (= {:status 200 :body ["user1" "user2"]} (u/get-members token concept_id)))))

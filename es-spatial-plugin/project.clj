@@ -1,3 +1,4 @@
+#_{:clj-kondo/ignore [:unresolved-namespace]}
 (def version
   "Parses the version out of this file to use in names of referenced files"
   (let [project-clj-lines (-> "project.clj" slurp (clojure.string/split #"\n"))]

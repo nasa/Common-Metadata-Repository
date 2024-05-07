@@ -9,18 +9,18 @@
    [cmr.bootstrap.api.virtual-products :as virtual-products]
    [cmr.bootstrap.data.metadata-retrieval.collection-metadata-cache :as cmc]
    [cmr.bootstrap.services.health-service :as hs]
-   [cmr.common.api.context :as context]
-   [cmr.common.api.errors :as errors]
    [cmr.common-app.api.health :as common-health]
    [cmr.common-app.api.routes :as common-routes]
+   [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as coll-for-gran-acls-caches]
    [cmr.common-app.data.humanizer-alias-cache :as humanizer-alias-cache]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as mc]
-   [cmr.common-app.data.collections-for-gran-acls-by-concept-id-cache :as coll-for-gran-acls-caches]
    [cmr.common-app.services.kms-fetcher :as kms-fetcher]
    [cmr.common-app.services.provider-cache :as provider-cache]
-   [cmr.common-app.services.search.elastic-search-index-names-cache :as elastic-search-index-names-cache]
-   [cmr.common.log :refer [info]]
+   [cmr.common.api.context :as context]
+   [cmr.common.api.errors :as errors]
    [cmr.common.generics :as common-generic]
+   [cmr.common.log :refer [info]]
+   [cmr.elastic-utils.search.es-index-name-cache :as elastic-search-index-names-cache]
    [cmr.search.services.query-execution.has-granules-or-cwic-results-feature :as has-granules-or-cwic-results-feature]
    [compojure.core :refer :all]
    [compojure.route :as route]
@@ -88,7 +88,7 @@
           (acl/verify-ingest-management-permission request-context :update)
           (bulk-index/delete-concepts-by-id request-context body params))
         ;; generating pluralized endpoints for each generic document type & converting to singular in call
-        (context ["/:concept-type" :concept-type 
+        (context ["/:concept-type" :concept-type
                   (re-pattern common-generic/plural-generic-concept-types-reg-ex)] [concept-type]
           (POST "/" {:keys [request-context params]}
             (acl/verify-ingest-management-permission request-context :update)

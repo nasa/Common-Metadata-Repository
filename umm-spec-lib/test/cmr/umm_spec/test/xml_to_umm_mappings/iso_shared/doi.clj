@@ -1,6 +1,6 @@
 (ns cmr.umm-spec.test.xml-to-umm-mappings.iso-shared.doi
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.umm-spec.xml-to-umm-mappings.iso-shared.doi :as doi]
    [cmr.umm-spec.xml-to-umm-mappings.iso-smap :as smap]
    [cmr.umm-spec.xml-to-umm-mappings.iso19115-2 :as mends]))

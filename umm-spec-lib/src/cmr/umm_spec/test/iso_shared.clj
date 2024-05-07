@@ -3,7 +3,6 @@
   (:require
     [clojure.string :as string]
     [cmr.common.util :as util :refer [update-in-each]]
-    [cmr.umm-spec.iso19115-2-util :as iso-util]
     [cmr.umm-spec.models.umm-collection-models :as umm-c]
     [cmr.umm-spec.models.umm-common-models :as cmn]
     [cmr.umm-spec.util :as su]
@@ -72,9 +71,13 @@
 (defn sort-by-date-type-iso
   "Returns temporal extent records to match the order in which they are generated in ISO XML."
   [extents]
-  (let [ranges (filter :RangeDateTimes extents)
-        singles (filter :SingleDateTimes extents)]
-    (seq (concat ranges singles))))
+  (let [all (filter #(or (:RangeDateTimes %)
+                         (:SingleDateTimes %)
+                         (:TemporalResolution %))
+                    extents)
+        all (for [one all]
+              (assoc one :PeriodicDateTimes nil))]
+    (seq all)))
 
 (defn fixup-iso-ends-at-present
   "Updates temporal extents to be true only when they have both :EndsAtPresentFlag = true AND values
@@ -89,7 +92,8 @@
                                                         (when-not ends-at-present
                                                           x)))
           (assoc :EndsAtPresentFlag
-                 (boolean (and rdts ends-at-present)))))))
+                 (boolean (and rdts
+                               ends-at-present)))))))
 
 (defn expected-iso-topic-categories
   "Update ISOTopicCategories values to a default value if it's not one of the specified values."

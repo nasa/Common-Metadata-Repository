@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.test.validation.related-url
   "This has tests for UMM Related URL validations."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :as util :refer [are3]]
    [cmr.umm-spec.dif-util :as dif-util]
    [cmr.umm-spec.models.umm-collection-models :as coll]
@@ -394,6 +394,7 @@
                                         {:URL "https://www.foo.com"
                                          :Description "Description"})]})))))
 
+(declare s3-value comparitor)
 (deftest bucket-validation
   (testing "S3 bucket validation"
     (are3 [s3-value comparitor]

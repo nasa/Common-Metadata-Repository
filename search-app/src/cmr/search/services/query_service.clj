@@ -13,22 +13,20 @@
   - Convert query results into requested format"
   (:require
    [cheshire.core :as json]
-   [clj-time.format :as time-format]
    [clojure.set :as set]
-   [clojure.string :as string]
-   [clojurewerkz.elastisch.query :as esq]
-   [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.search.es-wrapper :as esq]
    [cmr.common-app.services.search :as common-search]
-   [cmr.common-app.services.search.elastic-search-index :as common-idx]
-   [cmr.common-app.services.search.group-query-conditions :as gc]
-   [cmr.common-app.services.search.params :as common-params]
-   [cmr.common-app.services.search.query-execution :as qe]
-   [cmr.common-app.services.search.query-model :as qm]
    [cmr.common.concepts :as cc]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
+   [cmr.common.services.search.query-model :as qm]
    [cmr.common.util :as u]
+   [cmr.elastic-utils.es-helper :as es-helper]
+   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
+   [cmr.elastic-utils.search.es-index :as common-idx]
+   [cmr.elastic-utils.search.es-params-converter :as common-params]
+   [cmr.elastic-utils.search.query-execution :as qe]
    [cmr.search.api.core :refer [log-search-result-metadata]]
    [cmr.search.data.elastic-search-index :as idx]
    [cmr.search.data.metadata-retrieval.metadata-cache :as metadata-cache]
@@ -54,7 +52,7 @@
     cmr.search.data.complex-to-simple-converters.spatial
     cmr.search.data.complex-to-simple-converters.temporal
     cmr.search.data.complex-to-simple-converters.two-d-coordinate-system
-    cmr.search.data.elastic-results-to-query-results
+    cmr.elastic-utils.search.elastic-results-to-query-results
     cmr.search.services.aql.converters.attribute
     cmr.search.services.aql.converters.attribute-name
     cmr.search.services.aql.converters.science-keywords
