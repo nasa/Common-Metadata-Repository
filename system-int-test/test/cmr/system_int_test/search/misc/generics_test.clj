@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.generics-test
+(ns cmr.system-int-test.search.misc.generics-test
   "Tests for the Generic Concept Search API"
   (:require
    [cheshire.core :as json]
