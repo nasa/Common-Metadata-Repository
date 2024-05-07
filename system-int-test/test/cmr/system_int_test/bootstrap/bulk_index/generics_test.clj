@@ -8,7 +8,7 @@
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-json :as data-umm-json]
-   [cmr.system-int-test.search.generic-association-test :as association-test]
+   [cmr.system-int-test.search.misc.generic-association-test :as association-test]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.association-util :as association-util]
    [cmr.system-int-test.utils.bootstrap-util :as bootstrap]
