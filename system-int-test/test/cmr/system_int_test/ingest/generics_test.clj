@@ -9,7 +9,7 @@
    [cmr.common.generics :as gcfg]
    [cmr.ingest.api.generic-documents :as gdocs]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
-   [cmr.system-int-test.search.generics-test :as search-generics-test]
+   [cmr.system-int-test.search.misc.generics-test :as search-generics-test]
    [cmr.system-int-test.system :as system]
    [cmr.system-int-test.utils.generic-util :as gen-util]
    [cmr.system-int-test.utils.index-util :as index]
