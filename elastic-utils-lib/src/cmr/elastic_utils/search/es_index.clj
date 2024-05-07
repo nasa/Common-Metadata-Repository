@@ -138,7 +138,7 @@
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]
   (try
-    (if (> max-retries 0)
+    (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
         (scroll-search context scroll-id)
         (es-helper/search
@@ -152,7 +152,7 @@
              (/ (es-config/elastic-unknown-host-retry-interval-ms) 1000.0)
              max-retries))
       (Thread/sleep (es-config/elastic-unknown-host-retry-interval-ms))
-      (do-send-with-retry context index-info query (- max-retries 1)))
+      (do-send-with-retry context index-info query (dec max-retries)))
 
     (catch clojure.lang.ExceptionInfo e
       (when-let [body (:body (ex-data e))]
