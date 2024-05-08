@@ -8,4 +8,6 @@
  "test/cmr/system_int_test/search/subscription"
  "test/cmr/system_int_test/search/tagging"
  "test/cmr/system_int_test/search/tool"
- "test/cmr/system_int_test/search/variable"]
+ "test/cmr/system_int_test/search/variable"
+ "test/cmr/system_int_test/search/granule"
+ "test/cmr/system_int_test/search/collection"]
