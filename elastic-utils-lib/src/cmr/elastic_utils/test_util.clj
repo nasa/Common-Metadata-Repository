@@ -15,7 +15,8 @@
   [f]
   (if (elastic-running?)
     (f)
-    (let [server (l/start (ees/create-server) nil)]
+    (let [port (config/elastic-port)
+          server (l/start (ees/create-server port) nil)]
       (try
         (f)
         (finally

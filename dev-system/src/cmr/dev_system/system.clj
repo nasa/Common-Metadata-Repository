@@ -106,8 +106,8 @@
 
 (defmethod create-elastic :in-memory
   [_]
-  (let []
-    (elastic-server/create-server
+  (let [http-port (elastic-config/elastic-port)]
+    (elastic-server/create-server http-port
                                   {:log-level (name @in-memory-elastic-log-level-atom)
                                    :kibana-port (dev-config/embedded-kibana-port)
                                    :image-cfg {"Dockerfile" "elasticsearch/Dockerfile.elasticsearch"
