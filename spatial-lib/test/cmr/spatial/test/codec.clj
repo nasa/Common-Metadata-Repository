@@ -1,6 +1,6 @@
 (ns cmr.spatial.test.codec
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest testing]]
 
    ; [clojure.test.check.clojure-test :refer [defspec]]
    ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
@@ -11,13 +11,8 @@
    ;; my code
    [cmr.spatial.codec :as c]
    [cmr.spatial.derived :as d]
-   [cmr.spatial.geodetic-ring :as gr]
    [cmr.spatial.line-string :as l]
-   [cmr.spatial.math :refer :all]
-   [cmr.spatial.mbr :as m]
    [cmr.spatial.messages :as smesg]
-   [cmr.spatial.point :as p]
-   [cmr.spatial.polygon :as poly]
    [cmr.spatial.test.generators :as sgen]))
 
 (deftest url-decode-test
@@ -91,23 +86,28 @@
       "1,2,3,"
       "1,2,3,4")))
 
+(declare point-encode-decode-test)
 (defspec point-encode-decode-test 100
   (for-all [shape sgen/points]
     (= shape (c/url-decode :point (c/url-encode shape)))))
 
+(declare polygon-encode-decode-test)
 (defspec polygon-encode-decode-test 100
   ;; polygons with a single ring
   (for-all [shape sgen/geodetic-polygons-without-holes]
     (= shape (c/url-decode :polygon (c/url-encode shape)))))
 
+(declare circle-encode-decode-test)
 (defspec circle-encode-decode-test 100
   (for-all [shape sgen/circles]
     (= shape (c/url-decode :circle (c/url-encode shape)))))
 
+(declare mbr-encode-decode-test)
 (defspec mbr-encode-decode-test 100
   (for-all [shape sgen/mbrs]
     (= shape (c/url-decode :bounding-box (c/url-encode shape)))))
 
+(declare line-encode-decode-test)
 (defspec line-encode-decode-test 100
   (for-all [shape (gen/fmap #(l/set-coordinate-system % :geodetic)
                             sgen/lines)]

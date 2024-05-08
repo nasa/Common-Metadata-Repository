@@ -1,12 +1,10 @@
 (ns cmr.spatial.points-validation-helpers
   "Defines functions for validating shapes with points."
-  (:require [cmr.spatial.math :refer :all]
-            [primitive-math]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg]
-            [cmr.spatial.arc :refer [arc]]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.vector :as cmr-vector]))
+  (:require
+   [cmr.spatial.messages :as msg]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.validation :as v]
+   [primitive-math]))
 (primitive-math/use-primitive-operators)
 
 (def elasticsearch-rounding-precision
@@ -60,8 +58,8 @@
         duplicate-point-lists (->> rounded-point-map
                                    vals
                                    (filter #(> (count %) 1))
-                                   ;; reversing lists of duplicate points to put points in indexed order
-                                   ;; for more pleasing messages.
+                                   ;; reversing lists of duplicate points to put points in indexed
+                                   ;; order for more pleasing messages.
                                    (map reverse))]
     (map msg/duplicate-points duplicate-point-lists)))
 

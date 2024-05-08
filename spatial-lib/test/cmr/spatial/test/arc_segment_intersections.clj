@@ -1,14 +1,12 @@
 (ns cmr.spatial.test.arc-segment-intersections
    (:require
-    [clojure.string :as str]
-    [clojure.test :refer :all]
-    [clojure.test.check.generators :as gen]
+    [clojure.test :refer [are deftest]]
     [clojure.test.check.properties :refer [for-all]]
     [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
     [cmr.spatial.arc :as a]
     [cmr.spatial.arc-line-segment-intersections :as asi]
     [cmr.spatial.line-segment :as s]
-    [cmr.spatial.math :refer :all]
+    [cmr.spatial.math :refer [approx=]]
     [cmr.spatial.mbr :as m]
     [cmr.spatial.point :as p]
     [cmr.spatial.test.generators :as sgen]))
@@ -35,6 +33,7 @@
       (and (s/point-on-segment? ls point)
            (a/point-on-arc? arc point))))
 
+(declare arc-segment-intersections-spec)
 (defspec arc-segment-intersections-spec {:times 100 :printer-fn print-failure}
   (for-all [arc sgen/arcs
             ls sgen/line-segments]

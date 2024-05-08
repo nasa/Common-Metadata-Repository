@@ -1,18 +1,21 @@
 (ns cmr.spatial.test.math
-  (:require [clojure.test :refer :all]
+  (:refer-clojure :exclude [abs])
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   ; [clojure.test.check.clojure-test :refer [defspec]]
+   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+   [cmr.common.test.test-check-ext :as gen-ext :refer [defspec]]
 
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :as gen-ext :refer [defspec]]
+   [clojure.test.check.properties :refer [for-all]]
+   [clojure.test.check.generators :as gen]
 
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-
-            ;;my code
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.math :refer :all]
-            [cmr.common.util :as u]))
+   ;;my code
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.spatial.math :refer  [PI abs acos antipodal-lon approx= asin atan atan2 cos degrees
+                              double->float float->double float-type? radians range-intersects?
+                              round sin sqrt tan within-range?]]
+   [cmr.common.util :as u]
+   [primitive-math]))
 
 (primitive-math/use-primitive-operators)
 
@@ -28,6 +31,7 @@
 
 ;; Tests the accuracy of the math functions provided by the Jafama library. It ensures they are up
 ;; to par with the Java Math.
+(declare test-math-accuracy)
 (defspec test-math-accuracy 2000
   (for-all [dvalue doubles-gen]
     (let [^double d dvalue]
@@ -41,6 +45,7 @@
         (math-values-close? (Math/abs d) (abs d))
         (math-values-close? (Math/sqrt d) (sqrt d))))))
 
+(declare test-math-atan2-accuracy)
 (defspec test-math-atan2-accuracy 2000
   (for-all [dvalue1 doubles-gen
             dvalue2 doubles-gen]
@@ -48,6 +53,7 @@
           ^double d2 dvalue2]
       (math-values-close? (Math/atan2 d1 d2) (atan2 d1 d2)))))
 
+(declare double-to-float-round-up-spec)
 (defspec double-to-float-round-up-spec 2000
   (for-all [^double dvalue doubles-gen]
     (let [fvalue (double->float dvalue true)
@@ -55,6 +61,7 @@
       (and (float-type? fvalue)
            (>= dvalue2 dvalue)))))
 
+(declare double-to-float-round-down-spec)
 (defspec double-to-float-round-down-spec 2000
   (for-all [^double dvalue doubles-gen]
     (let [fvalue (double->float dvalue false)
@@ -62,12 +69,14 @@
       (and (float-type? fvalue)
            (<= dvalue2 dvalue)))))
 
+(declare round-spec)
 (defspec round-spec 2000
   (for-all [precision (gen/choose 0 10)
             n (gen-ext/choose-double -100 100)]
     (= (Double. (format (str "%." precision "f") n))
        (round precision n))))
 
+(declare radians-degrees-spec)
 (defspec radians-degrees-spec 100
   (for-all [d (gen-ext/choose-double -360 360)]
     (let [r (radians d)
@@ -103,13 +112,15 @@
     (is (not (approx= {} [])))
     (is (not (approx= [] {})))))
 
+(declare antipodal-lon-spec)
 (defspec antipodal-lon-spec 100
-  (for-all [lon sgen/lons]
+  (for-all [_lon sgen/lons]
     (let [lon 76.85714285714286
           ^double opposite-lon (antipodal-lon lon)]
       (and (within-range? opposite-lon -180.0 180.0)
            (approx= (+ (abs opposite-lon) (abs lon)) 180.0)))))
 
+(declare range-intersects-commutative-spec)
 (defspec range-intersects-commutative-spec 1000
   (for-all [r1min doubles-gen
             r1size (gen/fmap #(abs ^double %) doubles-gen)
@@ -121,12 +132,12 @@
           ^double r2size r2size
           r1max (+ r1min r1size)
           r2max (+ r2min r2size)]
-      (= (range-intersects? r1min r1max r2min r2max)
-         (range-intersects? r2min r2max r1min r1max)))))
+      (is (= (range-intersects? r1min r1max r2min r2max)
+         (range-intersects? r2min r2max r1min r1max))))))
 
 (deftest range-intersects-test
   (testing "intersect cases"
-    (u/are2 [r1min r1max r2min r2max]
+    (u/are3 [r1min r1max r2min r2max]
             (true? (range-intersects? r1min r1max r2min r2max))
             "Completely contained"
             1 10, 2 5
@@ -143,7 +154,7 @@
             "identical"
             1 10, 1 10))
   (testing "does not intersect cases"
-    (u/are2 [r1min r1max r2min r2max]
+    (u/are3 [r1min r1max r2min r2max]
             (not (range-intersects? r1min r1max r2min r2max))
             "before"
             1 10, -1 0

@@ -1,27 +1,21 @@
 (ns cmr.spatial.test.lr-binary-search
-  (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-            [clojure.math.combinatorics :as combo]
-            [clojure.string :as str]
+  (:require
+   [clojure.test :refer [deftest is]]
+   [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
+   [clojure.test.check.properties :refer [for-all]]
+   [clojure.test.check.generators :as gen]
 
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.lr-binary-search :as lbs]
-            [cmr.spatial.relations :as relations])
+   ;; my code
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.spatial.lr-binary-search :as lbs])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.spatial.point.Point))
 
 
-
+(declare all-rings-have-lrs)
 (defspec all-rings-have-lrs {:times 100 :printer-fn sgen/print-failed-ring}
   (for-all [ring (gen/bind sgen/coordinate-system sgen/rings)]
     (let [lr (lbs/find-lr ring false)]
@@ -35,18 +29,21 @@
     (and lr
          (poly/covers-br? polygon lr))))
 
+(declare simple-geodetic-polygon-with-holes-has-lr)
 (defspec simple-geodetic-polygon-with-holes-has-lr {:times 100 :printer-fn sgen/print-failed-ring}
   (let [boundary (d/calculate-derived (rr/ords->ring :geodetic [0 0, 10 0, 10 10, 0 10, 0 0]))]
     (for-all [hole (sgen/rings-in-ring boundary)]
       (let [polygon (d/calculate-derived (poly/polygon :geodetic [boundary hole]))]
         (polygon-has-valid-lr? polygon)))))
 
+(declare simple-cartesian-polygon-with-holes-has-lr)
 (defspec simple-cartesian-polygon-with-holes-has-lr {:times 100 :printer-fn sgen/print-failed-ring}
   (let [boundary (d/calculate-derived (rr/ords->ring :cartesian [0 0, 10 0, 10 10, 0 10, 0 0]))]
     (for-all [hole (sgen/rings-in-ring boundary)]
       (let [polygon (d/calculate-derived (poly/polygon :cartesian [boundary hole]))]
         (polygon-has-valid-lr? polygon)))))
 
+(declare all-polygons-with-holes-have-lrs)
 (defspec all-polygons-with-holes-have-lrs {:times 100 :printer-fn sgen/print-failed-polygon}
   (for-all [polygon (gen/no-shrink sgen/polygons-with-holes)]
     (polygon-has-valid-lr? polygon)))
@@ -93,7 +90,3 @@
                                                        (mapv (partial rr/ords->ring :geodetic)
                                                              polygon-ordses)))]
         (is (polygon-has-valid-lr? polygon))))))
-
-
-
-

@@ -1,13 +1,18 @@
 (ns cmr.spatial.point
   "This namespace defines a Point type along with functions for working with points."
-  (:require [cmr.spatial.math :refer :all]
-            [primitive-math]
-            [clojure.pprint]
-            [pjstadig.assertions :as pj]
-            [cmr.spatial.derived :as d]
-            [cmr.common.util :as util]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg]))
+  (:refer-clojure :exclude [abs])
+  (:require
+   [cmr.spatial.math
+    :as smath
+    :refer [ApproximateEquivalency DELTA EARTH_RADIUS_METERS GREATER_THAN LESS_THAN abs
+            antipodal-lon approx= asin atan2 cos degrees double-approx= mid radians round sin sq
+            sqrt]]
+   [primitive-math]
+   [clojure.pprint]
+   [pjstadig.assertions :as pj]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.validation :as v]
+   [cmr.spatial.messages :as msg]))
 
 (primitive-math/use-primitive-operators)
 
@@ -123,7 +128,7 @@
     [this k v]
     (.assoc this k v))
   (without
-    [_ k]
+    [_ _k]
     (throw (Exception. "Dissassociation not supported on a point")))
 
   clojure.lang.Associative
@@ -140,9 +145,9 @@
               (.equals this o)))
   ;; Don't know what I am doing, put the following three functions here to deal with CI build error:
   ;; java.lang.AbstractMethodError: Method cmr/spatial/point/Point.count()I is abstract
-  (count [this] 100)
-  (cons [this _o] nil)
-  (empty [this] nil)
+  (count [_this] 100)
+  (cons [_this _o] nil)
+  (empty [_this] nil)
 
   clojure.lang.Seqable
   (seq
@@ -195,7 +200,7 @@
           (point lon lat (radians lon) (radians lat)))
   (^Point [lon lat geodetic-equality]
           (point lon lat (radians lon) (radians lat) geodetic-equality))
-  (^Point [lon lat lon-rad lat-rad]
+  (^Point [lon lat _lon-rad _lat-rad]
           (point lon lat (radians lon) (radians lat) true))
   (^Point [lon lat lon-rad lat-rad geodetic-equality]
           (pj/assert (double-approx= (radians lon) ^double lon-rad))
