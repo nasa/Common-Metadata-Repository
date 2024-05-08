@@ -138,7 +138,7 @@
 (deftest range-intersects-test
   (testing "intersect cases"
     (u/are3 [r1min r1max r2min r2max]
-            (true? (range-intersects? r1min r1max r2min r2max))
+            (is (true? (range-intersects? r1min r1max r2min r2max)))
             "Completely contained"
             1 10, 2 5
             "intersects beginning"
@@ -155,7 +155,7 @@
             1 10, 1 10))
   (testing "does not intersect cases"
     (u/are3 [r1min r1max r2min r2max]
-            (not (range-intersects? r1min r1max r2min r2max))
+            (is (not (range-intersects? r1min r1max r2min r2max)))
             "before"
             1 10, -1 0
             "after"
