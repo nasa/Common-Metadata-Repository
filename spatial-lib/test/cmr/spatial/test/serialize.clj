@@ -1,23 +1,24 @@
 (ns cmr.spatial.test.serialize
-  (:require [clojure.test :refer :all]
+  (:require
+   [clojure.test :refer [deftest is]]
 
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
+   ; [clojure.test.check.clojure-test :refer [defspec]]
+   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+   [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
 
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
+   [clojure.test.check.generators :as gen]
 
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.cartesian-ring :as cr]
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.serialize :as srl])
+   ;; my code
+   [cmr.spatial.math :refer [round]]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.cartesian-ring :as cr]
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.spatial.serialize :as srl])
   (:import cmr.spatial.geodetic_ring.GeodeticRing
            cmr.spatial.cartesian_ring.CartesianRing
            cmr.spatial.polygon.Polygon
@@ -56,6 +57,7 @@
   [polygon]
   (poly/polygon (:coordinate-system polygon) (map round-shape (:rings polygon))))
 
+(declare ordinate-to-stored-test)
 (defspec ordinate-to-stored-test
   (for-all [d (gen/fmap double gen/ratio)]
     (let [rounded (round 7 d)]
@@ -70,6 +72,7 @@
   (doseq [shape shapes]
     (sgen/print-failed-polygon type shape)))
 
+(declare ords-serialize-test)
 (defspec ords-serialize-test {:times 100}
   (for-all [shapes (gen/fmap #(map round-shape %)
                              (gen/vector sgen/geometries 1 5))]

@@ -7,11 +7,9 @@
     [cmr.common.util :as util]
     [cmr.spatial.arc :as a]
     [cmr.spatial.arc-line-segment-intersections :as asi]
-    [cmr.spatial.conversion :as c]
     [cmr.spatial.derived :as d]
-    [cmr.spatial.geodetic-ring :as gr]
     [cmr.spatial.line-segment :as s]
-    [cmr.spatial.math :refer :all]
+    [cmr.spatial.math :refer [mid mid-lon]]
     [cmr.spatial.mbr :as m]
     [cmr.spatial.point :as p]
     [cmr.spatial.polygon :as poly]
@@ -60,7 +58,7 @@
     ;; Can compute middle value for binary search
     (partial mid-br (set directions))
     ;; Determines if binary search is done.
-    (fn [current-br inner-br outer-br ^long depth]
+    (fn [current-br inner-br _outer-br ^long depth]
       (let [current-in-shape (relations/covers-br? shape current-br)]
         (if (> depth max-search-depth)
           ;; Exceeded the recursion depth. Take our best choice
@@ -132,7 +130,7 @@
   "Returns the intersection points of the line with the ring to use for finding lr search points
   Also includes the north and south pole if the ring covers them."
   [arc ring]
-  (let [{:keys [mbr contains-north-pole contains-south-pole]} ring
+  (let [{:keys [contains-north-pole contains-south-pole]} ring
         ;; Find the intersections of the arc through the ring. It will intersect an even number of times.
         intersections (mapcat (partial asi/intersections arc) (rr/segments ring))]
     ;; Add pole to intersections if it contains a pole

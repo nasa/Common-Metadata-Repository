@@ -1,20 +1,19 @@
 (ns cmr.spatial.test.conversion
-  (:require [clojure.test :refer :all]
+  (:require
+   ; [clojure.test.check.clojure-test :refer [defspec]]
+   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+   [cmr.common.test.test-check-ext :refer [defspec]]
 
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [defspec]]
+   [clojure.test.check.properties :refer [for-all]]
 
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
+   ;;my code
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.spatial.math :refer [approx=]]
+   [cmr.spatial.conversion :as c]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.vector :as v]))
 
-            ;;my code
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.conversion :as c]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.vector :as v]))
-
+(declare lon-lat-cross-product-test)
 (defspec lon-lat-cross-product-test 100
   (for-all [p1 sgen/points
             p2 sgen/points]
@@ -31,12 +30,14 @@
         (or (approx= cp1 cpv)
             (approx= cp1 (p/antipodal cpv)))))))
 
+(declare point->vector-conversion)
 (defspec point->vector-conversion 100
   (for-all
     [point sgen/points]
     (approx= point (c/vector->point
                      (c/point->vector point)))))
 
+(declare vector->point-conversion)
 (defspec vector->point-conversion 100
   (for-all
     [v sgen/vectors]

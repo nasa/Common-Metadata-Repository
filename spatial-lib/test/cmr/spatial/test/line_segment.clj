@@ -1,20 +1,19 @@
 (ns cmr.spatial.test.line-segment
-  (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
+  (:refer-clojure :exclude [abs])
+  (:require
+   [clojure.test :refer [are deftest]]
+   [cmr.common.test.test-check-ext :refer [defspec]]
+   [clojure.test.check.properties :refer [for-all]]
+   [clojure.test.check.generators :as gen]
 
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.line-segment :as s]
-            [cmr.spatial.derived :as d]
+   ;; my code
+   [cmr.spatial.math :refer [abs approx= avg]]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.line-segment :as s]
 
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg]
-            [clojure.string :as str]))
+   [cmr.spatial.test.generators :as sgen]
+   [primitive-math]))
 
 (primitive-math/use-primitive-operators)
 
@@ -23,6 +22,7 @@
   (and (not (Double/isInfinite v))
        (not (Double/isNaN v))))
 
+(declare line-segment-calculate-derived-spec)
 (defspec line-segment-calculate-derived-spec {:times 1000 :printer-fn sgen/print-failed-line-segments}
   (for-all [ls sgen/line-segments]
     (let [{:keys [b m mbr point1 point2]} ls]
@@ -36,6 +36,7 @@
         (m/cartesian-covers-point? mbr point1)
         (m/cartesian-covers-point? mbr point2)))))
 
+(declare segment+lon->lat-spec)
 (defspec segment+lon->lat-spec {:times 1000 :printer-fn sgen/print-failed-line-segments}
   (for-all [ls (gen/such-that (complement s/vertical?) sgen/line-segments)]
     (let [{:keys [point1 point2]} ls]
@@ -43,6 +44,7 @@
         (approx= (:lat point1) (s/segment+lon->lat ls (:lon point1)))
         (approx= (:lat point2) (s/segment+lon->lat ls (:lon point2)))))))
 
+(declare segment+lat->lon-spec)
 (defspec segment+lat->lon-spec {:times 1000 :printer-fn sgen/print-failed-line-segments}
   (for-all [ls (gen/such-that (complement s/horizontal?) sgen/line-segments)]
     (let [{:keys [point1 point2]} ls]
@@ -50,6 +52,7 @@
         (approx= (:lon point1) (s/segment+lat->lon ls (:lat point1)))
         (approx= (:lon point2) (s/segment+lat->lon ls (:lat point2)))))))
 
+(declare densify-line-segment)
 (defspec densify-line-segment {:times 1000 :printer-fn sgen/print-failed-line-segments}
   (for-all [ls sgen/line-segments]
     (let [;; picked a larger amount to keep test fast since points may be very far apart
@@ -82,6 +85,7 @@
                 ;; The last distance should be less than or equal to the densification distance
                 (<= ^double (last distances) densification-dist))))))))
 
+(declare line-segment-intersection-spec)
 (defspec line-segment-intersection-spec {:times 1000 :printer-fn sgen/print-failed-line-segments}
   (for-all [ls1 sgen/line-segments
             ls2 sgen/line-segments]
@@ -176,6 +180,7 @@
          (m/cartesian-covers-point? ls-mbr point 0.00001)
          (s/point-on-segment? ls point))))
 
+(declare subselect-spec)
 (defspec subselect-spec {:times 1000 :printer-fn print-subselect-failure}
   (for-all [ls sgen/line-segments
             mbr sgen/mbrs]

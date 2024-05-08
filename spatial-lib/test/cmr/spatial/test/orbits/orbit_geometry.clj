@@ -1,10 +1,11 @@
 (ns cmr.spatial.test.orbits.orbit-geometry
-  (:require [clojure.test :refer :all]
-            [clj-time.core :as t]
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.orbits.orbits :refer :all]
-            [cmr.spatial.orbits.swath-geometry :refer :all]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [clj-time.core :as t]
+   [cmr.spatial.math :refer [approx=]]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.orbits.orbits :refer [swath-width-rad]]
+   [cmr.spatial.orbits.swath-geometry :refer [to-swaths]]))
 
 (defn close-to-swath?
   [[p0 p1] [[lon0 lat0] [lon1 lat1]]]

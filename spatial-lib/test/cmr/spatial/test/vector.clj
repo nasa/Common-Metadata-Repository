@@ -1,25 +1,28 @@
 (ns cmr.spatial.test.vector
-  (:require [clojure.test :refer :all]
+  (:refer-clojure :exclude [abs])
+  (:require
+   [clojure.test :refer [deftest is testing]]
 
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [defspec]]
+   ; [clojure.test.check.clojure-test :refer [defspec]]
+   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
+   [cmr.common.test.test-check-ext :refer [defspec]]
 
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
+   [clojure.test.check.generators :as gen]
 
-            ;;my code
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.vector :as v]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.conversion :as c]
-            [cmr.spatial.math :refer :all]))
+   ;;my code
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.spatial.vector :as v]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.conversion :as c]
+   [cmr.spatial.math :refer [abs approx=]]))
 
 (deftest vector-equality-test
   (testing "long versus double"
     (is (= (v/new-vector 0 0 0)
            (v/new-vector 0.0 0.0 0.0)))))
 
+(declare vector-lengths-spec)
 (defspec vector-lengths-spec 100
   (for-all [value (gen/choose -10 10)]
     (every?
@@ -30,6 +33,7 @@
                      (assoc {:x 0.0 :y 0.0 :z 0.0} field (double value))))))
       [:x :y :z])))
 
+(declare normalized-vectors-have-a-length-of-1)
 (defspec normalized-vectors-have-a-length-of-1 100
   (for-all [v (gen/such-that (fn [v]
                                (> (v/length v) 0))
@@ -38,6 +42,7 @@
           length (v/length normalized)]
       (approx= 1.0 length))))
 
+(declare parallel-vectors-spec)
 (defspec parallel-vectors-spec 100
   (for-all [v sgen/vectors]
     (let [v (v/normalize v)
@@ -45,6 +50,7 @@
           vectors [v opposite-vector]]
       (every? #(apply v/parallel? %) (for [v1 vectors v2 vectors] [v1 v2])))))
 
+(declare lon-lat-cross-product)
 (defspec lon-lat-cross-product 100
   (for-all [p1 sgen/points
             p2 sgen/points]

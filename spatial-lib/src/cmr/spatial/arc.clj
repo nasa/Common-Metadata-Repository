@@ -1,10 +1,17 @@
 (ns cmr.spatial.arc
+  ;; cmr.spatial.arc is the first file in the project so here will be the only explination of the
+  ;; following :refer-clojure call. This is needed to remove the "WARNING: abs already refers to..."
+  ;; message seen when loading a file like this. The reason for this warning is that the spatial
+  ;; math package does not currently use a third party library for abs like all the other functions
+  ;; but instead uses the default version. Clojure has decided to warn us of a name change even
+  ;; though the same math/abs version is the actual provider of the solution.
+  (:refer-clojure :exclude [abs])
   (:require
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
-   [cmr.common.util :as util]
    [cmr.spatial.conversion :as c]
    [cmr.spatial.derived :as d]
-   [cmr.spatial.math :refer :all]
+   [cmr.spatial.math :refer [PI TAU abs acos approx= atan atan2 cos degrees double-approx= mid
+                             mid-lon radians sin sq sqrt]]
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.point :as p]
    [cmr.spatial.vector :as v]
@@ -345,7 +352,7 @@
         (crosses-north-pole? arc)
         (let [west-dist (- 90.0 (.lat west-point))
               east-dist (- 90.0 (.lat east-point))
-              middle-dist (mid west-dist east-dist)]
+              _middle-dist (mid west-dist east-dist)]
           (cond
             (= west-dist east-dist) p/north-pole
             (< west-dist east-dist) (p/point (.lon east-point)

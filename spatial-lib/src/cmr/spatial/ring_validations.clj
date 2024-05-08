@@ -1,18 +1,13 @@
 (ns cmr.spatial.ring-validations
-  (:require [cmr.spatial.point :as p]
-            [cmr.spatial.math :refer :all]
-            [cmr.common.util :as util]
-            [primitive-math]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.conversion :as c]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.cartesian-ring :as cr]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.points-validation-helpers :as pv]
-            [cmr.spatial.messages :as msg])
+  (:require
+   [cmr.spatial.cartesian-ring :as cr]
+   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.messages :as msg]
+   [cmr.spatial.points-validation-helpers :as pv]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.validation :as v]
+   [primitive-math])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.spatial.arc.Arc))
 (primitive-math/use-primitive-operators)
 

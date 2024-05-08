@@ -1,11 +1,9 @@
 (ns cmr.spatial.geodetic-ring
   (:require
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
-   [cmr.common.util :as util]
    [cmr.spatial.arc :as a]
-   [cmr.spatial.conversion :as c]
    [cmr.spatial.derived :as d]
-   [cmr.spatial.math :refer :all]
+   [cmr.spatial.math :refer [odd-long? rotation-direction]]
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.point :as p]
    [primitive-math])
@@ -214,7 +212,6 @@
           (mbr/mbr -180.0 (:north br) 180.0 -90.0)
           br))))
 
-
 (defn ring->external-points
   "Determines external points that are not in the ring."
   [^GeodeticRing ring]
@@ -239,5 +236,3 @@
             (ring->pole-containment ring)
             (assoc ring :mbr (ring->mbr ring))
             (assoc ring :external-points (ring->external-points ring))))))
-
-

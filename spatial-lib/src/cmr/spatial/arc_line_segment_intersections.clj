@@ -1,14 +1,12 @@
 (ns cmr.spatial.arc-line-segment-intersections
   "Provides intersection functions for finding the intersection of spherical arcs and cartesian segments"
-  (:require [cmr.spatial.point :as p]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.mbr :as m]
-            [cmr.common.util :as u]
-            [cmr.spatial.line-segment :as s]
-            [cmr.common.services.errors :as errors]
-            [cmr.spatial.math :refer :all]
-            [primitive-math]
-            [pjstadig.assertions :as pj])
+  (:require
+   [cmr.spatial.point :as p]
+   [cmr.spatial.arc :as a]
+   [cmr.spatial.mbr :as m]
+   [cmr.common.util :as u]
+   [cmr.spatial.line-segment :as s]
+   [primitive-math])
   (:import cmr.spatial.arc.Arc
            cmr.spatial.line_segment.LineSegment
            cmr.spatial.point.Point))

@@ -1,7 +1,8 @@
 (ns cmr.spatial.vector
-  (:require [cmr.spatial.math :refer :all]
-            [primitive-math]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
+  (:require
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
+   [cmr.spatial.math :refer [double-approx= sqrt]]
+   [primitive-math]))
 (primitive-math/use-primitive-operators)
 
 (defrecord Vector
@@ -66,7 +67,3 @@
   [v1 v2]
   (or (vector-approx= v1 v2)
       (vector-approx= (opposite v1) v2)))
-
-
-
-
