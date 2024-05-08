@@ -111,7 +111,7 @@
 
 (defmethod url-decode :polygon
   [_type s]
-  (when (re-matches polygon-regex s)
+  (if (re-matches polygon-regex s)
     (let [ordinates (map #(Double. ^String %) (string/split s #","))]
       (poly/polygon :geodetic [(rr/ords->ring :geodetic ordinates)]))
     {:errors [(smsg/shape-decode-msg :polygon s)]}))
@@ -134,7 +134,7 @@
           {:errors [(smsg/line-too-many-points-msg :line s)]}
           (let [ordinates (map #(Double. ^String %) split-line-str)]
             (l/ords->line-string :geodetic ordinates)))))
-    (when (re-matches line-regex s)
+    (if (re-matches line-regex s)
       (let [ordinates (map #(Double. ^String %) (string/split s #","))]
         (l/ords->line-string :geodetic ordinates))
       {:errors [(smsg/shape-decode-msg :line s)]})))
