@@ -1,11 +1,10 @@
 (ns cmr.spatial.test.line-string
   (:require
    [clojure.test :refer [are deftest is testing]]
-   ;; my code
-   [cmr.spatial.point :as p]
    [cmr.spatial.line-string :as l]
-   [cmr.spatial.validation :as v]
-   [cmr.spatial.messages :as msg]))
+   [cmr.spatial.messages :as msg]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.validation :as v]))
 
 (deftest line-string-validation
   (testing "geodetic line string"

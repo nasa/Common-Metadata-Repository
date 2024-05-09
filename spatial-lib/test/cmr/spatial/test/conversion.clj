@@ -1,16 +1,11 @@
 (ns cmr.spatial.test.conversion
   (:require
-   ; [clojure.test.check.clojure-test :refer [defspec]]
-   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-   [cmr.common.test.test-check-ext :refer [defspec]]
-
    [clojure.test.check.properties :refer [for-all]]
-
-   ;;my code
-   [cmr.spatial.test.generators :as sgen]
-   [cmr.spatial.math :refer [approx=]]
+   [cmr.common.test.test-check-ext :refer [defspec]]
    [cmr.spatial.conversion :as c]
+   [cmr.spatial.math :refer [approx=]]
    [cmr.spatial.point :as p]
+   [cmr.spatial.test.generators :as sgen]
    [cmr.spatial.vector :as v]))
 
 (declare lon-lat-cross-product-test)

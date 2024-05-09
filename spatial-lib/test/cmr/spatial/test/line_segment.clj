@@ -2,16 +2,13 @@
   (:refer-clojure :exclude [abs])
   (:require
    [clojure.test :refer [are deftest]]
-   [cmr.common.test.test-check-ext :refer [defspec]]
-   [clojure.test.check.properties :refer [for-all]]
    [clojure.test.check.generators :as gen]
-
-   ;; my code
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :refer [defspec]]
+   [cmr.spatial.line-segment :as s]
    [cmr.spatial.math :refer [abs approx= avg]]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
-   [cmr.spatial.line-segment :as s]
-
    [cmr.spatial.test.generators :as sgen]
    [primitive-math]))
 

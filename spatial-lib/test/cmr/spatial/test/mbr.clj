@@ -1,17 +1,15 @@
 (ns cmr.spatial.test.mbr
   (:require
    [clojure.test :refer [are deftest is testing]]
-   [cmr.common.test.test-check-ext :refer [defspec]]
-   [clojure.test.check.properties :refer [for-all]]
    [clojure.test.check.generators :as gen]
-
-   ;; my code
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :refer [defspec]]
    [cmr.spatial.math :refer [avg float->double float-type?]]
    [cmr.spatial.mbr :as m]
+   [cmr.spatial.messages :as msg]
    [cmr.spatial.point :as p]
    [cmr.spatial.test.generators :as sgen]
-   [cmr.spatial.validation :as v]
-   [cmr.spatial.messages :as msg]))
+   [cmr.spatial.validation :as v]))
 
 (deftest on-antimeridian
   (testing "west on antimeridian"

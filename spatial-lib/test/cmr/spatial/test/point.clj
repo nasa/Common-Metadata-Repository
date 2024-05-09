@@ -1,19 +1,13 @@
 (ns cmr.spatial.test.point
   (:require
    [clojure.test :refer [are deftest is testing]]
-
-   ; [clojure.test.check.clojure-test :refer [defspec]]
-   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-   [cmr.common.test.test-check-ext :refer [defspec]]
-
    [clojure.test.check.properties :refer [for-all]]
-
-   ;;my code
-   [cmr.spatial.test.generators :as sgen]
-   [cmr.spatial.point :as p]
-   [cmr.spatial.validation :as v]
+   [cmr.common.test.test-check-ext :refer [defspec]]
+   [cmr.spatial.math :refer [approx= degrees radians]]
    [cmr.spatial.messages :as msg]
-   [cmr.spatial.math :refer [approx= degrees radians]])
+   [cmr.spatial.point :as p]
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.spatial.validation :as v])
   (:import cmr.spatial.point.Point))
 
 (defn- point-matches? [^Point p1 ^Point p2]

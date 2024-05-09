@@ -1,14 +1,9 @@
 (ns cmr.spatial.test.codec
   (:require
    [clojure.test :refer [are deftest testing]]
-
-   ; [clojure.test.check.clojure-test :refer [defspec]]
-   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-   [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
-
-   [clojure.test.check.properties :refer [for-all]]
    [clojure.test.check.generators :as gen]
-   ;; my code
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
    [cmr.spatial.codec :as c]
    [cmr.spatial.derived :as d]
    [cmr.spatial.line-string :as l]

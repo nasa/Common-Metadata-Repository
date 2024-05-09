@@ -38,12 +38,6 @@
   [field concept-type]
   (get (concept-type->field-mappings concept-type) (keyword field) field))
 
-; TODO: remove at pull request if there is no build issues
-(comment defn- elastic-field->query-field
-  "Returns the query field name for the equivalent elastic field name."
-  [field concept-type]
-  (get (elastic-field->query-field-mappings concept-type) field field))
-
 (def ^:private query-string-reserved-characters-regex
   "Characters reserved for elastic query_string queries. These must be escaped."
   #"([+\-\[\]!\^:/{}\\\(\)\"\~]|&&|\|\|)")

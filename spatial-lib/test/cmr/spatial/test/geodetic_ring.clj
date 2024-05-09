@@ -2,16 +2,14 @@
   (:require
    [clojure.test :refer [deftest is testing]]
    [cmr.common.util :refer [are3]]
-
-   ;; my code
-   [cmr.spatial.point :as p]
-   [cmr.spatial.mbr :as m]
-   [cmr.spatial.geodetic-ring :as gr]
-   [cmr.spatial.ring-validations]
-   [cmr.spatial.ring-relations :as rr]
    [cmr.spatial.derived :as d]
-   [cmr.spatial.validation :as v]
-   [cmr.spatial.messages :as msg]))
+   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.messages :as msg]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.ring-validations]
+   [cmr.spatial.validation :as v]))
 
 (deftest ring-covers-br-test
   (testing "concave ring"

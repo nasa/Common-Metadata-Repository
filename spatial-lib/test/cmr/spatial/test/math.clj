@@ -2,19 +2,14 @@
   (:refer-clojure :exclude [abs])
   (:require
    [clojure.test :refer [deftest is testing]]
-   ; [clojure.test.check.clojure-test :refer [defspec]]
-   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-   [cmr.common.test.test-check-ext :as gen-ext :refer [defspec]]
-
-   [clojure.test.check.properties :refer [for-all]]
    [clojure.test.check.generators :as gen]
-
-   ;;my code
-   [cmr.spatial.test.generators :as sgen]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :as gen-ext :refer [defspec]]
+   [cmr.common.util :as u]
    [cmr.spatial.math :refer  [PI abs acos antipodal-lon approx= asin atan atan2 cos degrees
                               double->float float->double float-type? radians range-intersects?
                               round sin sqrt tan within-range?]]
-   [cmr.common.util :as u]
+   [cmr.spatial.test.generators :as sgen]
    [primitive-math]))
 
 (primitive-math/use-primitive-operators)

@@ -1,19 +1,14 @@
 (ns cmr.spatial.test.arc
   (:require
    [clojure.test :refer [are deftest is testing]]
-   ; [clojure.test.check.clojure-test :refer [defspec]]
-   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-   [cmr.common.test.test-check-ext :refer [defspec]]
-
    [clojure.test.check.properties :refer [for-all]]
-
-   ;; my code
-   [cmr.spatial.math :refer [approx=]]
+   [cmr.common.test.test-check-ext :refer [defspec]]
    [cmr.spatial.arc :as a]
-   [cmr.spatial.point :as p]
-   [cmr.spatial.vector :as v]
+   [cmr.spatial.math :refer [approx=]]
    [cmr.spatial.mbr :as mbr]
-   [cmr.spatial.test.generators :as sgen]))
+   [cmr.spatial.point :as p]
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.spatial.vector :as v]))
 
 (declare arc-equivalency-spec)
 (defspec arc-equivalency-spec 1000

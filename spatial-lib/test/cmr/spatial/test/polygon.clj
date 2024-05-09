@@ -1,12 +1,10 @@
 (ns cmr.spatial.test.polygon
   (:require
    [clojure.test :refer [deftest is testing]]
-
-   ;; my code
+   [cmr.spatial.messages :as msg]
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.ring-relations :as rr]
-   [cmr.spatial.validation :as v]
-   [cmr.spatial.messages :as msg]))
+   [cmr.spatial.validation :as v]))
 
 (deftest polygon-validation
   (testing "geodetic polygons"

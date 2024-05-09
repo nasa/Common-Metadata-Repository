@@ -2,20 +2,14 @@
   (:refer-clojure :exclude [abs])
   (:require
    [clojure.test :refer [deftest is testing]]
-
-   ; [clojure.test.check.clojure-test :refer [defspec]]
-   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-   [cmr.common.test.test-check-ext :refer [defspec]]
-
-   [clojure.test.check.properties :refer [for-all]]
    [clojure.test.check.generators :as gen]
-
-   ;;my code
-   [cmr.spatial.test.generators :as sgen]
-   [cmr.spatial.vector :as v]
-   [cmr.spatial.point :as p]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :refer [defspec]]
    [cmr.spatial.conversion :as c]
-   [cmr.spatial.math :refer [abs approx=]]))
+   [cmr.spatial.math :refer [abs approx=]]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.spatial.vector :as v]))
 
 (deftest vector-equality-test
   (testing "long versus double"

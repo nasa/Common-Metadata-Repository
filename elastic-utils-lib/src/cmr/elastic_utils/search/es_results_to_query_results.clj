@@ -50,8 +50,8 @@
          field-values :_source} elastic-result]
     ;; Discuse at review, are these next three statments the same?
     ;;(reduce #(assoc %1 %2 (-> field-values %2))
-    ;;(reduce #(assoc %1 %2 (%2 field-values))
-    (reduce #(assoc %1 %2 (get field-values %2))
+    (reduce #(assoc %1 %2 (%2 field-values))
+    ;;(reduce #(assoc %1 %2 (get field-values %2))
             {:concept-id concept-id}
             (:result-fields query))))
 

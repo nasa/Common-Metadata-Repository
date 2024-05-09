@@ -1,16 +1,14 @@
 (ns cmr.spatial.test.lr-binary-search
   (:require
    [clojure.test :refer [deftest is]]
-   [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
-   [clojure.test.check.properties :refer [for-all]]
    [clojure.test.check.generators :as gen]
-
-   ;; my code
-   [cmr.spatial.ring-relations :as rr]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
    [cmr.spatial.derived :as d]
+   [cmr.spatial.lr-binary-search :as lbs]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.test.generators :as sgen]
-   [cmr.spatial.lr-binary-search :as lbs])
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.test.generators :as sgen])
   #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.spatial.point.Point))
 

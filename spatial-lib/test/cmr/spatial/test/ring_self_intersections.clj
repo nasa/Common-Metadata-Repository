@@ -1,13 +1,11 @@
 (ns cmr.spatial.test.ring-self-intersections
-  "Tests the function for determing if a ring has self intersections"
+  "Tests the function for determining if a ring has self intersections"
   (:require
    [clojure.test :refer [deftest is]]
-
-   ;; my code
+   [cmr.spatial.derived :as d]
    [cmr.spatial.math :refer [approx=]]
    [cmr.spatial.point :as p]
-   [cmr.spatial.ring-relations :as rr]
-   [cmr.spatial.derived :as d]))
+   [cmr.spatial.ring-relations :as rr]))
 
 (declare ring-examples)
 

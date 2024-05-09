@@ -1,24 +1,18 @@
 (ns cmr.spatial.test.serialize
   (:require
    [clojure.test :refer [deftest is]]
-
-   ; [clojure.test.check.clojure-test :refer [defspec]]
-   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-   [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
-
-   [clojure.test.check.properties :refer [for-all]]
    [clojure.test.check.generators :as gen]
-
-   ;; my code
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
+   [cmr.spatial.cartesian-ring :as cr]
+   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.line-string :as l]
    [cmr.spatial.math :refer [round]]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.line-string :as l]
-   [cmr.spatial.geodetic-ring :as gr]
-   [cmr.spatial.cartesian-ring :as cr]
-   [cmr.spatial.test.generators :as sgen]
-   [cmr.spatial.serialize :as srl])
+   [cmr.spatial.serialize :as srl]
+   [cmr.spatial.test.generators :as sgen])
   (:import cmr.spatial.geodetic_ring.GeodeticRing
            cmr.spatial.cartesian_ring.CartesianRing
            cmr.spatial.polygon.Polygon
