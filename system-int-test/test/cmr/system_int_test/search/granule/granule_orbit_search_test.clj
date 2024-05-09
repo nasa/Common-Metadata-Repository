@@ -15,7 +15,7 @@
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
-   [cmr.system-int-test.search.granule-spatial-search-test :as st]
+   [cmr.system-int-test.search.granule.granule-spatial-search-test :as st]
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
