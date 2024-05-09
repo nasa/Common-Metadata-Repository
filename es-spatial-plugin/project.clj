@@ -32,18 +32,24 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                                       [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
+             :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
+                                       :exclusions [[com.fasterxml.jackson.core/jackson-core]
+                                                    [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
+                                                    [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
+                                                    [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
+                                       [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT" 
+                                        :exclusions [[com.fasterxml.jackson.core/jackson-core]
+                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
+                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
+                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
                                        [org.elasticsearch/elasticsearch "7.17.14"]
 
                                        [org.clojure/tools.reader "1.3.2"]
 
                                        [org.yaml/snakeyaml "1.31"]]}
-             :es-deps {:exclusions [];[cheshire]
-                                    ;[org.clojure/tools.reader]]
-                       :dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
+             :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
-                                       :exclusions [[com.dadrox/quiet-slf4j] 
+                                       :exclusions [[com.dadrox/quiet-slf4j]
                                                     [com.fasterxml.jackson.core/jackson-core]
                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
@@ -57,15 +63,13 @@
                                                     [org.locationtech.jts/jts-core]
                                                     [org.locationtech.jts.JTSVersion]
                                                     [org.slf4j/slf4j-api]]]
-                                      [cheshire "5.12.0"]
                                       [org.clojure/tools.reader "1.3.2"]
                                       [org.clojure/clojure "1.11.2"]]
                        :target-path ~es-deps-target-path
                        :uberjar-name ~es-deps-uberjar-name
                        :jar-name ~es-deps-jar-name
                        :aot []}
-             :es-plugin {:dependencies [[cheshire "5.12.0"]]
-                         :aot [cmr.elasticsearch.plugins.spatial.script.core
+             :es-plugin {:aot [cmr.elasticsearch.plugins.spatial.script.core
                                cmr.elasticsearch.plugins.spatial.factory.lfactory
                                cmr.elasticsearch.plugins.spatial.factory.core
                                cmr.elasticsearch.plugins.spatial.engine.core
