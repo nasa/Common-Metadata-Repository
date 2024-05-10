@@ -48,10 +48,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/dev-system"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :exclusions [;[commons-codec/commons-codec]
-               ;[org.clojure/clojure]
-               ;[ring/ring-codec]
-               ]
+  :exclusions []
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            [org.clojure/clojure "1.11.2"]
                            [ring/ring-codec "1.1.1"]]
@@ -75,7 +72,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
-             :dev-dependencies {:exclusions [];[org.clojure/tools.nrepl]]
+             :dev-dependencies {:exclusions []
                                 :dependencies [[criterium "0.4.4"]
                                                [debugger "0.2.0"]
                                                [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]

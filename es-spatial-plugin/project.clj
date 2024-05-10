@@ -74,7 +74,7 @@
                                cmr.elasticsearch.plugins.spatial.factory.core
                                cmr.elasticsearch.plugins.spatial.engine.core
                                cmr.elasticsearch.plugins.spatial.plugin]}
-             :dev {:exclusions [];[org.clojure/tools.nrepl] [cheshire] [org.clojure/tools.reader]]
+             :dev {:exclusions []
                    :dependencies [[criterium "0.4.4"]
 
                                   [cheshire "5.12.0"]

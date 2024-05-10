@@ -2,10 +2,7 @@
   :description "The Transmit Library is responsible for defining the common transmit
                 libraries that invoke services within the CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/transmit-lib"
-  :exclusions [];[commons-codec/commons-codec]
-               ;[commons-io]
-               ;[org.apache.httpcomponents/httpcore]
-               ;[potemkin]]
+  :exclusions []
   :dependencies [[clj-http "3.11.0"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]

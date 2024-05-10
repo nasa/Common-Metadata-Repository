@@ -1,8 +1,7 @@
 (defproject nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"
   :description "Contains utilities for retreiving and working with ACLs."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/acl-lib"
-  :exclusions [];[commons-io]
-               ;[potemkin]]
+  :exclusions []
   :dependencies [[commons-io "2.6"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
@@ -13,7 +12,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions [];[org.clojure/tools.nrepl]]
+             :dev {:exclusions []
                    :dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]]

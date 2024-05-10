@@ -28,13 +28,7 @@
 (defproject nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"
   :description "Implements the CMR access control application."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/access-control-app"
-  :exclusions [];[cheshire]
-               ;[clj-time]
-               ;[com.fasterxml.jackson.core/jackson-core]
-               ;[commons-codec/commons-codec]
-               ;[commons-io]
-               ;[org.clojure/tools.reader]
-               ;[ring/ring-codec]]
+  :exclusions []
   :dependencies ~(concat '[[cheshire "5.12.0"]
                            [clj-time "0.15.1"]
                            [com.fasterxml.jackson.core/jackson-core "2.13.2"]
@@ -58,7 +52,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions [];[org.clojure/tools.nrepl]]
+             :dev {:exclusions []
                    :dependencies [[org.apache.httpcomponents/httpclient "4.5.13"]
                                   [org.clojure/core.async "0.4.500"]
                                   [org.clojure/tools.namespace "0.2.11"]

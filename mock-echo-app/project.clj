@@ -1,9 +1,7 @@
 (defproject nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"
   :description "Mocks out the ECHO REST API."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/mock-echo-app"
-  :exclusions [];[commons-io]
-               ;[instaparse]
-               ;[org.clojure/tools.reader]]
+  :exclusions []
   :dependencies [[commons-io "2.6"]
                  [compojure "1.6.1"]
                  [instaparse "1.4.10"]
