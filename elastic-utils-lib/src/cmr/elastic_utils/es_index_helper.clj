@@ -5,6 +5,7 @@
    [clojurewerkz.elastisch.rest :as rest]
    [clojurewerkz.elastisch.rest.index :as esi]
    [clojurewerkz.elastisch.rest.utils :refer [join-names]])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import clojurewerkz.elastisch.rest.Connection))
 
 (defn exists?
@@ -13,7 +14,7 @@
 
 (defn update-mapping
   "Register or modify specific mapping definition"
-  [conn index-name-or-names type-name opts]
+  [conn index-name-or-names _type-name opts]
   (let [{:keys [mapping]} opts]
     (rest/put conn
               (rest/index-mapping-url conn (join-names index-name-or-names))

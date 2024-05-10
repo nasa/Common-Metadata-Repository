@@ -5,7 +5,7 @@
   concepts that is returned. This contains the functions to get the right data out of elastic and
   format the results so that the ACL filtering can be applied."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.util :as u]))
 
@@ -29,7 +29,7 @@
   "Parses a date time string received from Elasticsearch"
   [dts]
   (when dts
-    (dtp/parse-datetime (str/replace dts "+0000" "Z"))))
+    (dtp/parse-datetime (string/replace dts "+0000" "Z"))))
 
 (defmulti parse-elastic-item
   "Parses the Elasticsearch response into a map that can be used to enforce ACLs."
@@ -52,8 +52,9 @@
         (u/lazy-assoc :TemporalExtents
                       (let [elastic-start-date (parse-elastic-datetime elastic-start-date)
                             elastic-end-date (parse-elastic-datetime elastic-end-date)]
-                        [{:RangeDateTimes (when elastic-start-date [{:BeginningDateTime elastic-start-date
-                                                                     :EndingDateTime elastic-end-date}])}])))))
+                        [{:RangeDateTimes (when elastic-start-date
+                                            [{:BeginningDateTime elastic-start-date
+                                              :EndingDateTime elastic-end-date}])}])))))
 
 (defmethod parse-elastic-item :granule
   [concept-type elastic-result]

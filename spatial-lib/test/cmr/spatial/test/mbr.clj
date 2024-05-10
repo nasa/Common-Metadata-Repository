@@ -1,16 +1,15 @@
 (ns cmr.spatial.test.mbr
-  (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg]))
+  (:require
+   [clojure.test :refer [are deftest is testing]]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :refer [defspec]]
+   [cmr.spatial.math :refer [avg float->double float-type?]]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.messages :as msg]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.spatial.validation :as v]))
 
 (deftest on-antimeridian
   (testing "west on antimeridian"
@@ -69,6 +68,7 @@
   [{:keys [west north east south]}]
   (m/mbr (float->double west) (float->double north) (float->double east) (float->double south)))
 
+(declare round-to-float-map)
 (defspec round-to-float-map 1000
   (for-all [mbr sgen/mbrs]
     (let [rounded-smaller-map (m/round-to-float-map mbr false)
@@ -108,6 +108,7 @@
     (is (= [(msg/br-north-less-than-south 46 47)]
            (v/validate (m/mbr 0 46 0 47))))))
 
+(declare external-points-spec)
 (defspec external-points-spec 100
   (for-all [mbr (gen/such-that (complement m/whole-world?) sgen/mbrs)]
     (let [external-points (m/external-points mbr)]
@@ -115,6 +116,7 @@
            (every? (complement (partial m/geodetic-covers-point? mbr))
                    external-points)))))
 
+(declare geodetic-covers-point-spec)
 (defspec geodetic-covers-point-spec 100
   (for-all [mbr sgen/mbrs]
     (let [{w :west n :north e :east s :south} mbr
@@ -251,6 +253,7 @@
         (is (not (m/covers-mbr? :geodetic m2 m4)))
         (is (not (m/covers-mbr? :geodetic m4 m2)))))))
 
+(declare intersects-br-spec)
 (defspec intersects-br-spec
   (for-all [mbr1 sgen/mbrs
             mbr2 sgen/mbrs]
@@ -322,6 +325,7 @@
          -9 -26 9 -27)))
 
 
+(declare intersections-br-spec)
 (defspec intersections-br-spec 100
   (for-all [mbr1 sgen/mbrs
             mbr2 sgen/mbrs]
@@ -334,6 +338,7 @@
                          (m/covers-mbr? :geodetic mbr2 %))
                    intersections))))))
 
+(declare union-test)
 (defspec union-test 100
   (for-all [mbr1 sgen/mbrs
             mbr2 sgen/mbrs]
@@ -356,6 +361,7 @@
         (every? #(m/covers-lat? unioned %)
                 (mapcat #(map (fn [k] (k %)) [:north :south]) [mbr1 mbr2]))))))
 
+(declare union-not-crossing-antimeridian-test)
 (defspec union-not-crossing-antimeridian-test 100
   (for-all [mbr1 sgen/mbrs-not-crossing-antimeridian
             mbr2 sgen/mbrs-not-crossing-antimeridian]
@@ -372,6 +378,7 @@
         (every? #(m/covers-lat? unioned %)
                 (mapcat #(map (fn [k] (k %)) [:north :south]) [mbr1 mbr2]))))))
 
+(declare union-self-test)
 (defspec union-self-test 100
   (for-all [mbr sgen/mbrs]
     (and
@@ -525,4 +532,3 @@
               br2 (m/mbr 166 10 172 -1)
               expected (m/mbr 166 10 lon -1)]
           (is (= (m/union br1 br2) expected)))))))
-

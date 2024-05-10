@@ -1,17 +1,11 @@
 (ns cmr.spatial.cartesian-ring
-  (:require [cmr.spatial.point :as p]
-            [cmr.spatial.math :refer :all]
-            [cmr.common.util :as util]
-            [primitive-math]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.conversion :as c]
-            [cmr.spatial.line-segment :as s]
-            [cmr.spatial.derived :as d]
-            [clojure.math.combinatorics :as combo]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg]
-            [cmr.spatial.arc-line-segment-intersections :as asi]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
+  (:require
+   [cmr.spatial.point :as p]
+   [primitive-math]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.line-segment :as s]
+   [cmr.spatial.derived :as d]
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import cmr.spatial.line_segment.LineSegment))
 (primitive-math/use-primitive-operators)
 
@@ -119,6 +113,3 @@
      (let [^CartesianRing ring (assoc ring :point-set (set (.points ring)))
            ^CartesianRing ring (assoc ring :line-segments (ring->line-segments ring))]
        (assoc ring :mbr (ring->mbr ring))))))
-
-
-

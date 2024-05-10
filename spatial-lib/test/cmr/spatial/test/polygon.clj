@@ -1,20 +1,10 @@
 (ns cmr.spatial.test.polygon
-  (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.polygon :as poly]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [cmr.spatial.messages :as msg]
+   [cmr.spatial.polygon :as poly]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.validation :as v]))
 
 (deftest polygon-validation
   (testing "geodetic polygons"

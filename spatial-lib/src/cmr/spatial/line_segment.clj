@@ -5,13 +5,10 @@
    [clojure.math.combinatorics :as combo]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
    [cmr.spatial.derived :as d]
-   [cmr.spatial.math :refer :all]
+   [cmr.spatial.math :refer [approx= atan cos degrees infinity sin sq sqrt within-range?]]
    [cmr.spatial.mbr :as m]
-   [cmr.spatial.messages :as msg]
    [cmr.spatial.point :as p]
-   [pjstadig.assertions :as pj]
    [primitive-math])
   (:import cmr.spatial.point.Point
            cmr.spatial.mbr.Mbr))
@@ -192,7 +189,7 @@
            lon1 (.lon p1)
            lat1 (.lat p1)
            lon2 (.lon p2)
-           lat2 (.lat p2)
+           _lat2 (.lat p2)
            m (.m ls)
            ;; convert slope to angle
            angle-a (atan m)

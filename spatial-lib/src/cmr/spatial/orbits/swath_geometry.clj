@@ -4,15 +4,15 @@
    [clj-time.coerce :as c]
    [clj-time.core :as t]
    [clojure.core.matrix :as cm]
-   [cmr.common.services.errors :as errors]
    [cmr.spatial.geodetic-ring :as gr]
-   [cmr.spatial.math :refer :all]
+   [cmr.spatial.math :refer [EARTH_ANGULAR_VELOCITY_RAD_S asin atan2 degrees radians]]
    [cmr.spatial.orbits.orbits :as orbits]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
    [mikera.vectorz.core :as v]
    [mikera.vectorz.matrix :as m]
    [primitive-math])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import (mikera.matrixx AMatrix)))
 
 ;; This module constructs orbit geometries as strings of lat/lon edge points by

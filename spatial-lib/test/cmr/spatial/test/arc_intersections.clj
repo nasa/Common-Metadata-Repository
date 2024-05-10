@@ -3,13 +3,11 @@
    ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
    ;; [clojure.test.check.clojure-test :refer [defspec]]
    [clojure.set]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [clojure.test.check.generators :as gen]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is testing]]
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.test.test-check-ext :refer [defspec]]
    [cmr.spatial.arc :as a]
-   [cmr.spatial.math :refer :all]
    [cmr.spatial.point :as p]
    [cmr.spatial.test.generators :as sgen]))
 
@@ -22,8 +20,8 @@
         a2 (example-arcs arc-name2)
         run-it-msg (str "Run it: "
                         (pr-str `(a/intersections (example-arcs ~arc-name1) (example-arcs ~arc-name2))))
-        ords1 (str/join "," (a/arc->ords a1))
-        ords2 (str/join "," (a/arc->ords a2))
+        ords1 (string/join "," (a/arc->ords a1))
+        ords2 (string/join "," (a/arc->ords a2))
         url (str "http://testbed.echo.nasa.gov/spatial-viz/arc_intersection?arc1_ordinates="
                  ords1 "&arc2_ordinates=" ords2)]
     (str base-msg " " run-it-msg " " url)))
@@ -72,9 +70,7 @@
                    "ords:" (pr-str (a/arc->ords a2)))
           (recur (a/arc p1 p2)))))))
 
-
-
-
+(declare arc-intersection-spec)
 (defspec arc-intersection-spec 100
   (for-all [arc sgen/arcs]
     (and

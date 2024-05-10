@@ -1,16 +1,10 @@
 (ns cmr.spatial.test.ring-generators
   "Tests that sanity check the ring generators"
   (:require
-   [clojure.math.combinatorics :as combo]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.test.test-check-ext :as ext-gen :refer [defspec]]
-   [cmr.spatial.arc :as a]
-   [cmr.spatial.derived :as d]
    [cmr.spatial.geodetic-ring :as gr]
-   [cmr.spatial.math :refer :all]
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.point :as p]
    [cmr.spatial.ring-relations :as rr]
@@ -99,29 +93,33 @@
   [type ring]
   (try
     (println type "Ring failed" (test-ring ring))
-    (catch Throwable e
+    (catch Throwable _e
       ;; ignore
       (println type "Ring failed with exception")))
   (sgen/print-failed-ring type ring))
 
 
 ;; Verifies that the three point rings have some fundamental things correct
+(declare rings-3-point-test)
 (defspec rings-3-point-test {:times 100 :printer-fn print-failure}
   (for-all [ring (gen/bind sgen/coordinate-system sgen/rings-3-point)]
     (let [failed-tests (test-ring ring)]
       (empty? failed-tests))))
 
+(declare geodetic-rings-generator-test)
 (defspec geodetic-rings-generator-test {:times 100 :printer-fn print-failure}
   (for-all [ring (sgen/rings :geodetic)]
     (let [failed-tests (test-ring ring)]
       (and (empty? failed-tests)
            (empty? (v/validate ring))))))
 
+(declare cartesian-rings-generator-test)
 (defspec cartesian-rings-generator-test {:times 100 :printer-fn print-failure}
   (for-all [ring (sgen/rings :cartesian)]
     (let [failed-tests (test-ring ring)]
       (empty? failed-tests))))
 
+(declare polygon-with-holes-generator-test)
 (defspec polygon-with-holes-generator-test {:times 50}
   (for-all [polygon sgen/polygons-with-holes]
     (let [rings (:rings polygon)

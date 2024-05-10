@@ -2,7 +2,7 @@
   "Performs search and indexing of access control data."
   (:require
    [clojure.edn :as edn]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.data.acls :as acls]
    [cmr.common.log :refer [info error]]
    [cmr.common.services.errors :as errors]
@@ -66,7 +66,7 @@
           (assoc :name-lowercase (util/safe-lowercase name)
                  :provider-id-lowercase (util/safe-lowercase provider-id)
                  :members (:members group)
-                 :members-lowercase (map str/lower-case members)
+                 :members-lowercase (map string/lower-case members)
                  :legacy-guid-lowercase (util/safe-lowercase legacy-guid)
                  :member-count (count members))))
     (catch Exception e
@@ -223,13 +223,16 @@
   "Returns the display name to index with the ACL. This will be the catalog item identity name or a
   string containing \"<identity type> - <target>\". For example \"System - PROVIDER\""
   [acl]
-  (let [{:keys [system-identity provider-identity single-instance-identity catalog-item-identity]} acl]
+  (let [{:keys [system-identity
+                provider-identity
+                single-instance-identity
+                catalog-item-identity]} acl]
     (cond
       system-identity          (str "System - " (:target system-identity))
-      ;; We index the display name for a single instance identity using "Group" because they're only for
-      ;; groups currently. We use the group concept id here instead of the name. We could support
-      ;; indexing the group name with the ACL but then if the group name changes we'd have to
-      ;; locate and reindex the related acls. We'll do it this way for now and file a new issue
+      ;; We index the display name for a single instance identity using "Group" because they're only
+      ;; for groups currently. We use the group concept id here instead of the name. We could
+      ;; support indexing the group name with the ACL but then if the group name changes we'd have
+      ;; to locate and reindex the related acls. We'll do it this way for now and file a new issue
       ;; if this feature is desired.
       single-instance-identity (str "Group - " (:target-id single-instance-identity))
       provider-identity        (format "Provider - %s - %s"
@@ -269,9 +272,9 @@
   (let [{:keys [group-id user-type permissions]} group-permission
         gid (or group-id user-type)]
     {:permitted-group gid
-     :permitted-group-lowercase (str/lower-case gid)
+     :permitted-group-lowercase (string/lower-case gid)
      :permission permissions
-     :permission-lowercase (map str/lower-case permissions)}))
+     :permission-lowercase (map string/lower-case permissions)}))
 
 (defn- identifier-applicable-elastic-doc-map
   "Returns map for identifier and applicable booleans"
@@ -319,7 +322,10 @@
 (defn- entry-title-elastic-doc-map
   "Returns map for entry titles to be merged into full elastic doc"
   [acl]
-  (when-let [entry-titles (get-in acl [:catalog-item-identity :collection-identifier :entry-titles])]
+  (when-let [entry-titles (get-in acl
+                                  [:catalog-item-identity
+                                   :collection-identifier
+                                   :entry-titles])]
     {:entry-title entry-titles}))
 
 (defn- concept-ids-elastic-doc-map
@@ -350,10 +356,10 @@
      (identifier-applicable-elastic-doc-map acl)
      (assoc (select-keys concept-map [:concept-id :revision-id])
             :display-name display-name
-            :display-name-lowercase (str/lower-case display-name)
+            :display-name-lowercase (string/lower-case display-name)
             :identity-type (acl->identity-type acl)
             :permitted-group permitted-groups
-            :permitted-group-lowercase (map str/lower-case permitted-groups)
+            :permitted-group-lowercase (map string/lower-case permitted-groups)
             :group-permission (map acl-group-permission->elastic-doc (:group-permissions acl))
             :target target
             :target-lowercase (util/safe-lowercase target)
@@ -363,10 +369,11 @@
             :acl-gzip-b64 (util/string->gzip-base64 (:metadata concept-map))
             :legacy-guid (:legacy-guid acl)
             :legacy-guid-lowercase (when-let [legacy-guid (:legacy-guid acl)]
-                                     (str/lower-case legacy-guid))))))
+                                     (string/lower-case legacy-guid))))))
 
 (defn index-acl
-  "Indexes ACL concept map. options is an optional map of options. Only :synchronous? is currently supported."
+  "Indexes ACL concept map. options is an optional map of options. Only :synchronous? is currently
+   supported."
   ([context concept-map]
    (index-acl context concept-map {}))
   ([context concept-map options]
@@ -424,7 +431,7 @@
   (m/delete-by-query (esi/context->search-index context)
                      acl-index-name
                      acl-type-name
-                     {:term {:target-provider-id-lowercase (str/lower-case provider-id)}}))
+                     {:term {:target-provider-id-lowercase (string/lower-case provider-id)}}))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Common public functions

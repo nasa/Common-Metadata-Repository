@@ -38,7 +38,7 @@
   #{:concept-id :collection-concept-id :entry-title :provider :granule-ur :short-name :version})
 
 (defn condition->merge-strategy
-  "Returns the merge strategy to use if the condition is mergeable."
+  "Returns the merge strategy to use if the condition is able to be merged."
   [c]
   (when-let [merge-strategy (merge-type->merge-strategy (type c))]
     (case merge-strategy
@@ -50,7 +50,7 @@
       :related-item)))
 
 (defmulti merge-string-condition-group
-  "Multimethod merges together a group of mergable conditions.
+  "Multi-method merges together a group of conditions that can be merged.
   Arguments:
    * group-operation - the group operation i.e. :and or :or
    * group-info - the map of common group fields.
@@ -68,7 +68,8 @@
   ;; When we have a series of AND'd conditions we will extract each set of values which are OR'd
   ;; and create a set of each one.
   (let [value-sets (map (comp set extract-values) conditions)
-        ;; Find the intersections of all the sets which is a set of values that should be OR'd together.
+        ;; Find the intersections of all the sets which is a set of values that should be OR'd
+        ;; together.
         values (seq (apply set/intersection value-sets))]
     (if values
       (q/string-conditions field values case-sensitive?)
@@ -97,7 +98,9 @@
 (defmethod merge-conditions-with-strategy :related-item
   [_ group-operation conditions]
   ;; Split the mergable conditions into separate groups.
-  (let [mergable-groups (group-by #(select-keys % [:concept-type :result-fields :results-to-condition-fn])
+  (let [mergable-groups (group-by #(select-keys % [:concept-type
+                                                   :result-fields
+                                                   :results-to-condition-fn])
                                   conditions)]
     ;; The conditions within each group can be merged together.
     (map (fn [[common-fields grouped-conds]]
@@ -115,6 +118,3 @@
   (mapcat (fn [[strategy strategy-conds]]
             (merge-conditions-with-strategy strategy group-operation strategy-conds))
           (group-by condition->merge-strategy conditions)))
-
-
-

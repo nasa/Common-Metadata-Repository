@@ -6,12 +6,12 @@
    [clojure.string :as string]
    [clojurewerkz.elastisch.rest :as rest]
    [clojurewerkz.elastisch.rest.document :as doc]
-   [clojurewerkz.elastisch.rest.response :refer [not-found? hits-from]]
+   [clojurewerkz.elastisch.rest.response :refer [not-found?]]
    [clojurewerkz.elastisch.rest.utils :refer [join-names]]))
 
 (defn search
   "Performs a search query across one or more indexes and one or more mapping types"
-  [conn index mapping-type opts]
+  [conn index _mapping-type opts]
   (let [qk [:search_type :scroll :routing :preference :ignore_unavailable]
         qp (merge {:track_total_hits true}
                   (select-keys opts qk))
@@ -35,7 +35,7 @@
   "Fetches and returns a document by id or `nil` if it does not exist."
   ([conn index mapping-type id]
    (doc-get conn index mapping-type id nil))
-  ([conn index mapping-type id opts]
+  ([conn index _mapping-type id opts]
    (let [result (if (empty? opts)
                   (rest/get conn (rest/record-url conn index "_doc" id))
                   (rest/get conn (rest/record-url conn index "_doc" id) {:query-params opts}))]
@@ -46,7 +46,7 @@
   "Creates or updates a document in the search index, using the provided document id"
   ([conn index mapping-type id document]
    (put conn index mapping-type id document nil))
-  ([conn index mapping-type id document opts]
+  ([conn index _mapping-type id document opts]
    (rest/put conn (rest/record-url conn index "_doc" id)
              {:content-type :json
               :body document
@@ -56,7 +56,7 @@
   "Deletes document from the index."
   ([conn index mapping-type id]
    (delete conn index mapping-type id nil))
-  ([conn index mapping-type id opts]
+  ([conn index _mapping-type id opts]
    (-> (rest/record-url conn index "_doc" id)
        (http/delete (merge {:throw-exceptions false}
                            (.http-opts conn)
@@ -71,7 +71,7 @@
   otherwise specifying a string suffices."
   ([conn index mapping-type query]
    (delete-by-query conn index mapping-type query nil))
-  ([conn index mapping-type query opts]
+  ([conn index _mapping-type query opts]
    (rest/post conn
               (rest/delete-by-query-url
                conn

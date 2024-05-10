@@ -1,9 +1,7 @@
 (ns cmr.spatial.orbits.orbits
   "Useful constants and transformation for orbit parameters"
   (:require
-   [clj-time.core :as t]
-   [cmr.common.services.errors :as errors]
-   [cmr.spatial.math :refer :all]
+   [cmr.spatial.math :refer [EARTH_RADIUS_METERS PI TAU radians]]
    [primitive-math]))
 
 (primitive-math/use-primitive-operators)

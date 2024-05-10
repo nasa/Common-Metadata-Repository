@@ -1,8 +1,9 @@
 (ns cmr.spatial.conversion
-  (:require [cmr.spatial.point :as p]
-            [cmr.spatial.vector :as v]
-            [cmr.spatial.math :refer :all]
-            [primitive-math])
+  (:require
+   [cmr.spatial.point :as p]
+   [cmr.spatial.vector :as v]
+   [cmr.spatial.math :refer [atan2 cos degrees sin sqrt]]
+   [primitive-math])
   (:import cmr.spatial.point.Point
            cmr.spatial.vector.Vector))
 (primitive-math/use-primitive-operators)

@@ -1,18 +1,12 @@
 (ns cmr.spatial.polygon
-  (:require [cmr.spatial.point :as p]
-            [cmr.spatial.math :refer :all]
-            [cmr.common.util :as util]
-            [cmr.common.services.errors :as errors]
-            [primitive-math]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.conversion :as c]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg]
-            [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
-            [clojure.math.combinatorics :as combo]))
+  (:require
+   [clojure.math.combinatorics :as combo]
+   [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.messages :as msg]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.validation :as v]
+   [primitive-math]))
 
 (primitive-math/use-primitive-operators)
 
@@ -129,5 +123,3 @@
         (let [polygon (d/calculate-derived polygon)]
           (seq (concat (holes-inside-boundary-validation polygon)
                        (holes-do-not-intersect-validation polygon)))))))
-
-
