@@ -45,7 +45,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
-             :dev {:exclusions [[org.clojure/tools.nrepl]]
+             :dev {:exclusions []
                    :dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
