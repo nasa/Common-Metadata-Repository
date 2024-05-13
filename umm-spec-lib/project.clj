@@ -19,7 +19,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions [[org.clojure/tools.nrepl]]
+             :dev {:exclusions []
                    :dependencies [[clj-http "2.3.0"]
                                   [criterium "0.4.4"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]

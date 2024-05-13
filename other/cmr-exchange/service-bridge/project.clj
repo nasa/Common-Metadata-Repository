@@ -20,8 +20,7 @@
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :exclusions [[org.clojure/clojurescript]
-               [org.eclipse.emf/org.eclipse.emf.ecore]]
+  :exclusions [[org.eclipse.emf/org.eclipse.emf.ecore]]
   :dependencies [[cheshire "5.12.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]

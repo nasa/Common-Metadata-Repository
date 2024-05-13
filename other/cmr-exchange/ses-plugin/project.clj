@@ -24,7 +24,7 @@
   :url "https://github.com/cmr-exchange/cmr-sizing-plugin"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :exclusions [gov.nasa.earthdata/cmr-http-kit]
+  :exclusions []
   :dependencies [[gov.nasa.earthdata/cmr-authz "0.1.3"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.3-SNAPSHOT"]
