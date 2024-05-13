@@ -1,19 +1,13 @@
 (ns cmr.spatial.test.point
-  (:require [clojure.test :refer :all]
-
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [defspec]]
-
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-
-            ;;my code
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg]
-            [cmr.spatial.math :refer :all])
+  (:require
+   [clojure.test :refer [are deftest is testing]]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :refer [defspec]]
+   [cmr.spatial.math :refer [approx= degrees radians]]
+   [cmr.spatial.messages :as msg]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.spatial.validation :as v])
   (:import cmr.spatial.point.Point))
 
 (defn- point-matches? [^Point p1 ^Point p2]
@@ -35,6 +29,7 @@
         ;;Otherwise the points should not be equal
         (not= p1 p2))))
 
+(declare point-hashCode-equals-consistency)
 (defspec point-hashCode-equals-consistency 1000
   (for-all [^Point p1 sgen/points
             ^Point p2 sgen/points]
@@ -112,6 +107,7 @@
          0 -90.1 (msg/point-lat-invalid -90.1))))
 
 ;; Tests that when associating a new subvalue to a point it stays consistent.
+(declare point-assoc)
 (defspec point-assoc 100
   (for-all [p sgen/points
             lon sgen/lons
@@ -210,6 +206,7 @@
     [p1 p2]
     [p2 p1]))
 
+(declare order-points-test)
 (defspec order-points-test 100
   (for-all [p1 sgen/points
             p2 sgen/points]
@@ -223,6 +220,7 @@
         (= [op1 op2] (order-points op2 op1))
         (crosses-at-most-180? (:lon op1) (:lon op2))))))
 
+(declare compare-longitudes-test)
 (defspec compare-longitudes-test 100
   (for-all [lon1 sgen/lons
             lon2 sgen/lons]
@@ -231,6 +229,7 @@
       (or (not= compare-l1-l2 compare-l2-l1)
           (= lon1 lon2)))))
 
+(declare angular-distance-spec)
 (defspec angular-distance-spec 100
   (for-all [[p1 p2] (sgen/non-antipodal-points 2)]
     (let [a1 (degrees (p/angular-distance p1 p2))
@@ -250,6 +249,7 @@
         (approx= 0 (p/angular-distance p1 p1))
         (approx= 0 (p/angular-distance p2 p2))))))
 
+(declare course-spec)
 (defspec course-spec 100
   (for-all [[p1 p2] (sgen/non-antipodal-points 2)]
     (let [course (p/course p1 p2)]

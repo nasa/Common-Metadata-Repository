@@ -16,13 +16,10 @@
   7) Map the densified points back to its original quadrant.
   8) Convert the points from planar coordinates to geodetic coordinates. Convert from radians to
      degrees."
+  (:refer-clojure :exclude [abs])
   (:require
-   [clojure.java.io :as io]
    [cmr.spatial.derived :as d]
-   [cmr.spatial.geodetic-ring :as gr]
-   [cmr.spatial.line-segment :as s]
-   [cmr.spatial.math :refer :all]
-   [cmr.spatial.point :as p]
+   [cmr.spatial.math :refer [DELTA TAU abs acos approx= cos degrees]]
    [cmr.spatial.relations :as rel]
    [cmr.spatial.ring-relations :as rr]
    [primitive-math]))
@@ -143,18 +140,18 @@
   anti-meridian and they divide fictional points from real points on a tile edge.
   The function arguments are coordinates of the two points and a vector of points holding the
   densified segement between the two points from which all fictional points are removed."
-  (fn [[^double x1 ^double y1] [^double x2 ^double y2] densified-segment]
+  (fn [[^double x1 ^double y1] [^double x2 ^double y2] _densified-segment]
       (cond
          (= y1 y2) (if (< x1 x2) :left-right :right-left)
          (= x1 x2) (if (< y1 y2) :bottom-top :top-bottom)
          :else (throw (Exception. "Either x or y-coordinates of the given points must be equal")))))
 
 (defmethod add-edge-point :left-right
-  [p1 [x2 y2] densified-segment]
+  [_p1 [_x2 y2] densified-segment]
   (concat densified-segment [[(max-x-for-y y2) y2]]))
 
 (defmethod add-edge-point :bottom-top
-  [[x1 y1] p2 densified-segment]
+  [[x1 y1] _p2 densified-segment]
   (let [max-y1 (max-y-for-x x1)]
     ;;The if condition avoids duplicate points which occur when only real point on the line segment
     ;;is an end-point. Same is true for the next function.
@@ -163,14 +160,14 @@
       (concat densified-segment [[x1 max-y1]]))))
 
 (defmethod add-edge-point :right-left
-  [p1 [x2 y2] densified-segment]
+  [_p1 [x2 y2] densified-segment]
   (let [max-x2 (max-x-for-y y2)]
     (if (approx= x2 max-x2 DELTA)
       densified-segment
       (concat [[max-x2 y2]] densified-segment))))
 
 (defmethod add-edge-point :top-bottom
-  [[x1 y1] p2 densified-segment]
+  [[x1 _y1] _p2 densified-segment]
   (concat [[x1 (max-y-for-x x1)]] densified-segment))
 
 (defn- coord
@@ -219,9 +216,9 @@
   (let [quadrant (find-tile-quadrant h v)
         [h-ur v-ur] (tile->ur-quadrant-tile h v)
         [p1 p2 p3 p4] (tile->corner-vertices h-ur v-ur)
-        [x1 y1] p1
+        [_x1 y1] p1
         [x4 y4] p4]
-    (if-not (or (fictional-point? x4 y4) (degenerate-tile? y1 x4))
+    (when-not (or (fictional-point? x4 y4) (degenerate-tile? y1 x4))
       (->> (densify-tile [p1 p2 p3 p4])
            (#(concat % [(first %)]))
            (map #(ur-quadrant-point->point % quadrant))

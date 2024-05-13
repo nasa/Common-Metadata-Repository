@@ -2,17 +2,14 @@
   "Contains functions on rings that are common to cartesian and geodetic rings."
   (:require
    [clojure.math.combinatorics :as combo]
-   [cmr.common.util :as util]
    [cmr.spatial.arc-line-segment-intersections :as asi]
    [cmr.spatial.cartesian-ring :as cr]
-   [cmr.spatial.conversion :as c]
    [cmr.spatial.geodetic-ring :as gr]
    [cmr.spatial.line-segment :as s]
-   [cmr.spatial.line-string :as ls]
-   [cmr.spatial.math :refer :all]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.point :as p]
    [primitive-math])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import
    cmr.spatial.cartesian_ring.CartesianRing
    cmr.spatial.geodetic_ring.GeodeticRing
@@ -224,4 +221,3 @@
                     a2 (nth lines n2)]
                 (asi/intersections a1 a2)))
             line-test-indices)))
-

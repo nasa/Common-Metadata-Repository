@@ -10,7 +10,7 @@
   geographic transactions on the Internet.
 
   http://www.opengeospatial.org/standards/gml"
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [clojure.string :as string]
             [cmr.common.util :as util]
             [cmr.common.xml :as cx]
@@ -67,8 +67,8 @@
 (defn- gml-linear-ring
   "Returns a gml:LinearRing element from a CMR ring structure. Assumes anti-clockwise point ordering."
   [{:keys [points]}]
-  (x/element :gml:LinearRing {}
-             (x/element :gml:posList {} (lat-lon-string points))))
+  (xml/element :gml:LinearRing {}
+             (xml/element :gml:posList {} (lat-lon-string points))))
 
 (defn- make-id
   []
@@ -78,8 +78,8 @@
 
 (defmethod encode cmr.spatial.point.Point
   [point]
-  (x/element :gml:Point {:gml:id (make-id)}
-             (x/element :gml:pos {} (lat-lon-string [point]))))
+  (xml/element :gml:Point {:gml:id (make-id)}
+             (xml/element :gml:pos {} (lat-lon-string [point]))))
 
 (defmethod decode :Point
   [element]
@@ -89,8 +89,8 @@
 
 (defmethod encode cmr.spatial.line_string.LineString
   [line]
-  (x/element :gml:LineString {:gml:id (make-id)}
-             (x/element :gml:posList {} (lat-lon-string (:points line)))))
+  (xml/element :gml:LineString {:gml:id (make-id)}
+             (xml/element :gml:posList {} (lat-lon-string (:points line)))))
 
 (defmethod decode :LineString
   [element]
@@ -100,10 +100,10 @@
 
 (defmethod encode cmr.spatial.polygon.Polygon
   [polygon]
-  (x/element :gml:Polygon {:gml:id (make-id)
+  (xml/element :gml:Polygon {:gml:id (make-id)
                            :srsName (srs-url (:coordinate-system polygon))}
-             (x/element :gml:exterior {} (gml-linear-ring (poly/boundary polygon)))
-             (map #(x/element :gml:interior {} (gml-linear-ring %)) (poly/holes polygon))))
+             (xml/element :gml:exterior {} (gml-linear-ring (poly/boundary polygon)))
+             (map #(xml/element :gml:interior {} (gml-linear-ring %)) (poly/holes polygon))))
 
 (defmethod decode :Polygon
   [element]

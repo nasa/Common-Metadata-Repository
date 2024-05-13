@@ -1,1 +1,11 @@
-["test/cmr/system_int_test/search"]
+["test/cmr/system_int_test/search/acls"
+ "test/cmr/system_int_test/search/autocomplete"
+ "test/cmr/system_int_test/search/collection_relevancy"
+ "test/cmr/system_int_test/search/facets"
+ "test/cmr/system_int_test/search/humanizer"
+ "test/cmr/system_int_test/search/misc"
+ "test/cmr/system_int_test/search/service"
+ "test/cmr/system_int_test/search/subscription"
+ "test/cmr/system_int_test/search/tagging"
+ "test/cmr/system_int_test/search/tool"
+ "test/cmr/system_int_test/search/variable"]

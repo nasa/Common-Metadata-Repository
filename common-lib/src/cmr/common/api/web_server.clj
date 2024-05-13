@@ -19,6 +19,7 @@
   ring jetty adapter default of 8."
   8)
 
+(declare MAX_THREADS)
 (defconfig MAX_THREADS
   "The maximum number of threads for Jetty to use to process requests. This was originally set to
   the ring jetty adapter default of 50.

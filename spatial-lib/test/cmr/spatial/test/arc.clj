@@ -1,20 +1,16 @@
 (ns cmr.spatial.test.arc
-  (:require [clojure.test :refer :all]
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :refer [defspec]]
+  (:require
+   [clojure.test :refer [are deftest is testing]]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :refer [defspec]]
+   [cmr.spatial.arc :as a]
+   [cmr.spatial.math :refer [approx=]]
+   [cmr.spatial.mbr :as mbr]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.test.generators :as sgen]
+   [cmr.spatial.vector :as v]))
 
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.arc :as a]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.vector :as v]
-            [cmr.spatial.mbr :as mbr]
-            [cmr.spatial.test.generators :as sgen]))
-
+(declare arc-equivalency-spec)
 (defspec arc-equivalency-spec 1000
   (for-all [arc sgen/arcs]
     (let [{:keys [west-point east-point]} arc]
@@ -24,9 +20,10 @@
            (not= arc (a/arc (p/antipodal west-point) east-point))
            (not= arc (a/arc west-point (p/antipodal east-point)))))))
 
+(declare arc-great-circles-spec)
 (defspec arc-great-circles-spec 1000
   (for-all [arc sgen/arcs]
-    (let [{:keys [west-point east-point great-circle]} arc
+    (let [{:keys [west-point east-point]} arc
           antipodal-arc (a/arc (p/antipodal west-point) (p/antipodal east-point))
           gc1 (:great-circle arc)
           gc2 (:great-circle antipodal-arc)]
@@ -44,6 +41,7 @@
     (is (approx= expected-northern northernmost-point))
     (is (approx= expected-southern southernmost-point))))
 
+(declare arc-midpoint-spec)
 (defspec arc-midpoint-spec 1000
   (for-all [arc sgen/arcs]
     (let [midpoint (a/midpoint arc)]
@@ -130,6 +128,7 @@
       (p/point 0 45.4385485867423)
       (p/point 180 -45.4385485867423))))
 
+(declare point-on-arc-spec)
 (defspec point-on-arc-spec 1000
   (for-all [arc sgen/arcs]
     (let [midpoint (a/midpoint arc)]
@@ -171,8 +170,7 @@
             on-points (concat (p/ords->points on-ords)
                               arc-points)
             off-points (concat (p/ords->points off-ords)
-                               (map p/antipodal arc-points))
-            on-arc? (partial a/point-on-arc? arc)]
+                               (map p/antipodal arc-points))]
         (doseq [p on-points]
           (is (a/point-on-arc? arc p)
               (pr-str `(a/point-on-arc? (a/ords->arc ~@(a/arc->ords arc))
@@ -183,10 +181,11 @@
                                         (p/point ~(:lon p) ~(:lat p))))))))))
 
 (defn print-points-at-lat-failure
-  [type arc lat]
+  [_type arc lat]
   (println "arc:" (pr-str `(~'a/ords->arc ~@(a/arc->ords arc))))
   (println "lat:" lat))
 
+(declare points-at-lat-spec)
 (defspec points-at-lat-spec {:times 100 :printer-fn print-points-at-lat-failure}
   (for-all [a sgen/arcs
             lat sgen/lats]
@@ -198,18 +197,17 @@
 
 
 (defn print-lat-segment-intersections-failure
-  [type arc lat lon-w lon-e]
+  [_type arc lat lon-w lon-e]
   (println "arc:" (pr-str `(~'a/ords->arc ~@(a/arc->ords arc))))
   (println "lat:" lat "lon-w" lon-w "lon-e" lon-e))
 
+(declare lat-segment-intersections-spec)
 (defspec lat-segment-intersections-spec {:times 100 :printer-fn print-lat-segment-intersections-failure}
   (for-all [arc sgen/arcs
             lat sgen/lats
             lon-w sgen/lons
             lon-e sgen/lons]
-    (let [intersections (a/lat-segment-intersections arc lat lon-w lon-e)
-          brs (a/mbrs arc)
-          lat-br (mbr/mbr lon-w lat lon-e lat)]
+    (let [intersections (a/lat-segment-intersections arc lat lon-w lon-e)]
       ;; If there are intersections they should all be on the arc
       (every? (partial a/point-on-arc? arc) intersections))))
 
@@ -310,7 +308,7 @@
       (let [arc (apply a/ords->arc arc-ords)]
         (doseq [on-ords on-ord-tuples]
           (let [intersections (apply a/lat-segment-intersections arc on-ords)]
-            (is (not (empty? intersections)) (fail-printer arc on-ords))
+            (is (seq intersections) (fail-printer arc on-ords))
             (is (every? (partial a/point-on-arc? arc) intersections) (fail-printer arc on-ords))))
         (doseq [off-ords off-ord-tuples]
           (is (empty? (apply a/lat-segment-intersections arc off-ords))
@@ -332,6 +330,7 @@
      (is (not (over-south -180,85, 0,85)))
      (is (not (over-south 1,2 3,4))))))
 
+(declare arc-bounding-rectangles-spec)
 (defspec arc-bounding-rectangles-spec 1000
   (for-all [arc sgen/arcs]
     (let [brs (a/mbrs arc)]

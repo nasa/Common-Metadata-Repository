@@ -1,21 +1,14 @@
 (ns cmr.spatial.test.cartesian-ring
-  (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.cartesian-ring :as cr]
-            [cmr.spatial.ring-validations]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg]
-            [cmr.common.util :as u]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.cartesian-ring :as cr]
+   [cmr.spatial.ring-validations]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.validation :as v]
+   [cmr.spatial.messages :as msg]
+   [cmr.common.util :as u]))
 
 (deftest ring-winding-test
   (testing "clockwise"
@@ -36,7 +29,7 @@
     (testing "points on opposite sides of the antimeridian"
       (is (nil? (seq (v/validate (rr/ords->ring :cartesian [0 -70, -180.0 -70, 180.0 -90.0, 180.0 -70, 0.0 -70])))))))
   (testing "invalid rings"
-    (u/are2
+    (u/are3
       [ords msgs]
       (is (= (seq msgs)
              (seq (v/validate (rr/ords->ring :cartesian ords)))))

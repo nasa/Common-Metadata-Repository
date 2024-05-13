@@ -39,9 +39,10 @@
   :query {:bool {:must {:match-all {}}
   :filter primary-query}}}}
 
-  See http://www.elasticsearch.org/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html
-  for details on the function score query."
-  (:require [clojure.string :as str]))
+  See following url for details on the function score query:
+  https://elastic.co/guide/en/elasticsearch/reference/current/query-dsl-function-score-query.html"
+
+  (:require [clojure.string :as string]))
 
 (def default-boost
   "Field boost to use if not provided or not found in the default-boosts list"
@@ -76,20 +77,20 @@
 (defn- process-keyword
   "Appends a '.' to wildcard symbols (? and *) and escapes characters that are Regex operators
   in elastic"
-  [keyword]
-  (let [escaped-keyword (str/replace keyword elastic-regex-special-chars-re "\\$1")]
-    (str/replace escaped-keyword elastic-regex-wildcard-chars-re ".$1")))
+  [keyword-value]
+  (let [escaped-keyword (string/replace keyword-value elastic-regex-special-chars-re "\\$1")]
+    (string/replace escaped-keyword elastic-regex-wildcard-chars-re ".$1")))
 
 (defn- keyword-regexp-filter
   "Create a regexp filter for a given field and keyword (allows wildcards)"
-  [field keyword]
-  (let [regex (str ".*" (process-keyword keyword) ".*")]
+  [field keyword-value]
+  (let [regex (str ".*" (process-keyword keyword-value) ".*")]
     {:regexp {field regex}}))
 
 (defn- keyword-exact-match-filter
   "Create a filter that checks for an exact match on a field (allows wildcards)"
-  [field keyword]
-  (let [regex (process-keyword keyword)]
+  [field keyword-value]
+  (let [regex (process-keyword keyword-value)]
     {:regexp {field regex}}))
 
 (defn- keywords->regex-filter
@@ -149,7 +150,7 @@
                 {:should
                  (concat
                   (when-let [keywords (:keywords keywords)]
-                   (science-keywords-or-filter (str/join " " keywords)))
+                   (science-keywords-or-filter (string/join " " keywords)))
                   (when-let [field-keywords (:field-keywords keywords)]
                    (mapcat science-keywords-or-filter field-keywords)))}}}}}}})
 
@@ -161,7 +162,7 @@
             {:should
              (concat
               (when-let [keywords (:keywords keywords)]
-               [(keyword-exact-match-filter field (str/join " " keywords))])
+               [(keyword-exact-match-filter field (string/join " " keywords))])
               (when-let [field-keywords (:field-keywords keywords)]
                [{:bool {:should (map (partial keyword-regexp-filter field) field-keywords)}}]))}}})
 
@@ -186,7 +187,9 @@
     [;; long-name
      (keywords->regex-filter :long-name-lowercase keywords (get-boost-fn :short-name))
      ;; short-name
-     (keywords->boosted-exact-match-filter :short-name-lowercase keywords (get-boost-fn :short-name))
+     (keywords->boosted-exact-match-filter :short-name-lowercase
+                                           keywords
+                                           (get-boost-fn :short-name))
      ;; entry-id
      (keywords->boosted-exact-match-filter :entry-id-lowercase keywords (get-boost-fn :entry-id))
 

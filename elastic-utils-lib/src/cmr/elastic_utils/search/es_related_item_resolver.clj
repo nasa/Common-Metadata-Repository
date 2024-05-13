@@ -5,6 +5,7 @@
    [cmr.common.services.search.query-model :as qm]
    [cmr.elastic-utils.search.es-index :as idx]
    [cmr.elastic-utils.search.query-transform :as c2s])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import cmr.common.services.search.query_model.Query
            cmr.common.services.search.query_model.ConditionGroup
            cmr.common.services.search.query_model.NegatedCondition

@@ -6,7 +6,6 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.spatial.circle :as spatial-circle]
-   [cmr.spatial.geodetic-ring :as gr]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as mbr]
    [cmr.spatial.messages :as smsg]
@@ -63,7 +62,7 @@
 (defmulti url-decode
   "Decodes a url encoded spatial shape back into the spatial shape. If there is an error decoding
   It returns a map with :errors key"
-  (fn [type s]
+  (fn [type _s]
     type))
 
 (def point-regex
@@ -93,14 +92,14 @@
                                 "," captured-num))))
 
 (defmethod url-decode :point
-  [type s]
+  [_type s]
   (if-let [match (re-matches point-regex s)]
     (let [[_ ^String lon-s ^String lat-s] match]
       (p/point (Double. lon-s) (Double. lat-s)))
     {:errors [(smsg/shape-decode-msg :point s)]}))
 
 (defmethod url-decode :bounding-box
-  [type s]
+  [_type s]
   (if-let [match (re-matches mbr-regex s)]
     (let [[_
            ^String w
@@ -111,14 +110,14 @@
     {:errors [(smsg/shape-decode-msg :bounding-box s)]}))
 
 (defmethod url-decode :polygon
-  [type s]
-  (if-let [match (re-matches polygon-regex s)]
+  [_type s]
+  (if (re-matches polygon-regex s)
     (let [ordinates (map #(Double. ^String %) (string/split s #","))]
       (poly/polygon :geodetic [(rr/ords->ring :geodetic ordinates)]))
     {:errors [(smsg/shape-decode-msg :polygon s)]}))
 
 (defmethod url-decode :line
-  [type s]
+  [_type s]
   ;; If the line string is too large, we will experience a StackOverflowError in the java Regex code.
   ;; To avoid this, when the string is large enough we just split the string verify each token is a number
   ;; And that here is an even amount. Through testing we've determined about 660ish points is the limit,
@@ -135,13 +134,13 @@
           {:errors [(smsg/line-too-many-points-msg :line s)]}
           (let [ordinates (map #(Double. ^String %) split-line-str)]
             (l/ords->line-string :geodetic ordinates)))))
-    (if-let [match (re-matches line-regex s)]
+    (if (re-matches line-regex s)
       (let [ordinates (map #(Double. ^String %) (string/split s #","))]
         (l/ords->line-string :geodetic ordinates))
       {:errors [(smsg/shape-decode-msg :line s)]})))
 
 (defmethod url-decode :circle
-  [type s]
+  [_type s]
   (if-let [match (re-matches circle-regex s)]
     (let [[_ ^String lon ^String lat ^String radius] match]
       (if-let [error-msgs (spatial-circle/validate-radius (Double. radius))]

@@ -2,7 +2,7 @@
   "Contains error messages for spatial validation."
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.util :as u]
    [pjstadig.assertions :as pj]))
@@ -59,7 +59,7 @@
   (let [point-msg-parts (map indexed-point->-msg-part points-w-index)]
     (format (str "The shape contained duplicate points. "
                  "Points %s and %s were considered equivalent or very close.")
-            (str/join ", " (drop-last point-msg-parts))
+            (string/join ", " (drop-last point-msg-parts))
             (last point-msg-parts))))
 
 (defn consecutive-antipodal-points
@@ -81,7 +81,7 @@
   "Takes a list of points where the ring intersects itself"
   [intersections]
   (format "The polygon boundary intersected itself at the following points: %s"
-          (str/join "," (map point->human-readable intersections))))
+          (string/join "," (map point->human-readable intersections))))
 
 (defn ring-contains-both-poles
   []

@@ -45,10 +45,11 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
+                    :global-vars {*warn-on-reflection* false}
                     :plugins [[jonase/eastwood "1.4.2"]
                               [lein-ancient "0.7.0"]
-                              [lein-bikeshed "0.5.0"]
-                              [lein-kibit "0.1.6"]]}
+                              [lein-bikeshed "0.5.2"]
+                              [lein-kibit "0.1.8"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
@@ -68,10 +69,11 @@
             "kibit" ["do"
                      ["with-profile" "lint" "shell" "echo" "== Kibit =="]
                      ["with-profile" "lint" "kibit"]]
+            "kondo" ["do" ["shell" "clj-kondo" "--lint" "src" "--lint" "test" "'-parallel"]]'
             "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]
-            "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
+            "lint" ["do" ["check"] ["kibit"] ["kondo"]]
             ;; Placeholder for future docs and enabler of top-level alias
             "generate-static" ["with-profile" "static" "shell" "echo"]})

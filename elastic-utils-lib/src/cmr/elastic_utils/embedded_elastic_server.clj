@@ -2,7 +2,7 @@
   "Used to run an Elasticsearch server inside an embedded docker container."
   (:require
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [cmr.common.log :as log :refer [debug error]]
    [cmr.common.util :as util])
   (:import
    (java.time Duration)
@@ -43,7 +43,7 @@
   ([http-port]
    (build-node http-port {}))
   ([http-port opts]
-   (let [{:keys [data-dir image-cfg log-level kibana-port]} opts
+   (let [{:keys [data-dir image-cfg kibana-port]} opts
          image (if (get image-cfg "Dockerfile")
                  (let [docker-image (ImageFromDockerfile.)]
                    (doseq [[k v] image-cfg]
@@ -78,7 +78,7 @@
   lifecycle/Lifecycle
 
   (start
-    [this system]
+    [this _system]
     (debug "Starting elastic server on port" http-port)
     (let [containers (build-node http-port opts)
           ^FixedHostPortGenericContainer node (:elasticsearch containers)
@@ -96,13 +96,13 @@
             (debug "Dumping kibana logs:\n" (.getLogs kibana)))
           (throw e)))))
   (stop
-    [this system]
+    [this _system]
     (let [containers (:containers this)
           ^FixedHostPortGenericContainer node (:elasticsearch containers)
           ^FixedHostPortGenericContainer kibana (:kibana containers)]
       (when node
         (.stop node))
-      (when-let [data-dir (get-in this [:opts :data-dir])]
+      (when (get-in this [:opts :data-dir])
         (util/delete-recursively (:data-dir this)))
       (when kibana
         (.stop kibana)))
