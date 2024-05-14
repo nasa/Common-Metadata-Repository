@@ -53,11 +53,9 @@
                    :dependencies [[criterium "0.4.4"]
                                   [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/core.async "0.4.490"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]
-                                  [ring/ring-jetty-adapter "1.10.0"]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
                    :resource-paths ["resources" "test/resources"]
@@ -70,8 +68,7 @@
              ;; before allowing the JVM to shutdown since no call to shutdown-agents is
              ;; made. Generate docs with: lein generate-static (the alias makes use of the
              ;; static profile).
-             :static {:dependencies [[org.clojure/core.async "0.4.490"]
-                                     [ring/ring-jetty-adapter "1.10.0"]]}
+             :static {}
              :uberjar {:main cmr.search.runner
                        :aot :all}
 

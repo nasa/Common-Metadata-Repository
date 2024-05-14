@@ -6,7 +6,6 @@
   :dependencies [[clj-http "3.11.0"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
-                 [com.fasterxml.jackson.core/jackson-core "2.13.2"]
                  [inflections "0.13.0"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
@@ -26,8 +25,6 @@
                    :dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
-                                  [ring/ring-core "1.10.0"]
-                                  [ring/ring-jetty-adapter "1.10.0"]
                                   ]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}

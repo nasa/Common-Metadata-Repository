@@ -73,14 +73,10 @@
              ;; allowing the JVM to shutdown since no call to shutdown-agents is made.
              ;; Generate docs with: lein generate-static (the alias makes use of the
              ;; static profile).
-             :static {:dependencies [[org.apache.httpcomponents/httpclient "4.5.13"]
-                                     [org.clojure/core.async "0.4.500"]
-                                     [org.clojure/tools.namespace "0.2.11"]
+             :static {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                      [org.clojure/tools.nrepl "0.2.13"]
                                      [pjstadig/humane-test-output "0.9.0"]
                                      [proto-repl "0.3.1"]
-                                     [ring/ring-codec "1.1.3"]
-                                     [ring/ring-jetty-adapter "1.10.0"]
                                      [ring-mock "0.1.5"]]}
              :uberjar {:main cmr.access-control.runner
                        :aot :all}
@@ -90,8 +86,7 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[com.github.clj-kondo/lein-clj-kondo "2024.02.12"]
-                              [jonase/eastwood "1.4.2"]
+                    :plugins [[jonase/eastwood "1.4.2"]
                               [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}

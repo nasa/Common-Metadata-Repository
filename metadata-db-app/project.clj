@@ -33,8 +33,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[io.github.noahtheduke/splint "1.14.0"]
-                                  [nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
+             :dev {:dependencies [[nasa-cmr/cmr-mock-echo-app "0.1.0-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
@@ -89,5 +88,4 @@
             "check-sec" ["with-profile" "security" "dependency-check"]
             "lint" ["do" ["check"] ["kibit"] ["eastwood"]]
             ;; Placeholder for future docs and enabler of top-level alias
-            "generate-static" ["with-profile" "static" "shell" "echo"]
-            "splint" ["run" "-m" "noahtheduke.splint"]})
+            "generate-static" ["with-profile" "static" "shell" "echo"]})

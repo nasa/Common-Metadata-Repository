@@ -34,10 +34,8 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[org.clojure/core.async "0.4.500"]
-                                  [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [ring/ring-jetty-adapter "1.10.0"]]
+             :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
+                                  [org.clojars.gjahad/debug-repl "0.3.3"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :uberjar {:main cmr.bootstrap.runner
@@ -49,8 +47,7 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[com.github.clj-kondo/lein-clj-kondo "2024.02.12"]
-                              [jonase/eastwood "1.4.2"]
+                    :plugins [[jonase/eastwood "1.4.2"]
                               [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}

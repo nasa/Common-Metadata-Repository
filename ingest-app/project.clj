@@ -44,11 +44,8 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:dependencies [[clj-time "0.15.1"]
-                                  [org.clojars.gjahad/debug-repl "0.3.3"]
-                                  [org.clojure/core.async "0.4.500"] ;"0.4.490"] ;"1.6.681"]
+             :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [ring/ring-jetty-adapter "1.10.0"]
                                   [ring-mock "0.1.5"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
@@ -56,9 +53,7 @@
              ;; profile. An agent pool is being started when using the default profile which causes the wait of
              ;; 60 seconds before allowing the JVM to shutdown since no call to shutdown-agents is made.
              ;; Generate docs with: lein generate-static
-             :static {:dependencies [[clj-time "0.15.1"]
-                                     [org.clojure/core.async "0.4.490"]
-                                     [ring/ring-jetty-adapter "1.10.0"]]}
+             :static {}
              :uberjar {:main cmr.ingest.runner
                        :aot :all}
              ;; This profile is used for linting and static analysis. To run for this

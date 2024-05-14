@@ -43,9 +43,7 @@
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
                                                      [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
                                        [org.elasticsearch/elasticsearch "7.17.14"]
-
                                        [org.clojure/tools.reader "1.3.2"]
-
                                        [org.yaml/snakeyaml "1.31"]]}
              :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
@@ -76,10 +74,8 @@
                                cmr.elasticsearch.plugins.spatial.plugin]}
              :dev {:exclusions []
                    :dependencies [[criterium "0.4.4"]
-
                                   [cheshire "5.12.0"]
                                   [org.clojure/tools.reader "1.3.2"]
-
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                                   [org.elasticsearch/elasticsearch "7.17.14"]

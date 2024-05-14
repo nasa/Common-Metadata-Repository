@@ -3,7 +3,6 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/indexer-app"
   :exclusions []
   :dependencies [[compojure "1.6.1"]
-                 [com.fasterxml.jackson.core/jackson-core "2.13.2"]
                  [instaparse "1.4.10"]
                  [nasa-cmr/cmr-acl-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
