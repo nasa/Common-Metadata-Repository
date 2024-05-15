@@ -58,7 +58,7 @@ function build_uberjar_proj {
         (cd $CMR_DIR/$PROJ && \
             lein with-profile +uberjar,+internal-repos do clean, uberjar)
     else
-        (cd $CMR_DIR/$PROJ && pwd && \
+        (cd $CMR_DIR/$PROJ && \
             lein with-profile +uberjar do clean, uberjar)
     fi
     if [ $? -ne 0 ] ; then
