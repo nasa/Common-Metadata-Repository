@@ -19,11 +19,9 @@
   :url "https://github.com/cmr-exchange/cmr-exchange-query"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[cheshire "5.10.0"
-                  :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
+  :dependencies [[cheshire "5.10.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [com.stuartsierra/component "1.0.0"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [org.clojure/clojure "1.10.1"]
@@ -38,7 +36,8 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
-                        :exclusions [;; The following are excluded due to their being flagged as a CVE
+                        :exclusions [
+                                     ;; The following are excluded due to their being flagged as a CVE
                                      [com.google.protobuf/protobuf-java]
                                      [com.google.javascript/closure-compiler-unshaded]
                                      ;; The following is excluded because it stomps on twig's logger
@@ -70,7 +69,8 @@
                                      :integration :integration
                                      :system :system
                                      :default (complement :system)}}}
-  :aliases {;; Dev & Testing Aliases
+  :aliases {
+            ;; Dev & Testing Aliases
             "repl" ["do"
                     ["clean"]
                     ["with-profile" "+local,+system" "repl"]]

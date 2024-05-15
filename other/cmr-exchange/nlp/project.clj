@@ -19,12 +19,10 @@
   :url "https://github.com/cmr-exchange/cmr-nlp"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[cheshire "5.8.1"
-                  :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
+  :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.0"]
                  [clojure-opennlp "0.5.0"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [com.neovisionaries/nv-i18n "1.23"]
                  [com.stuartsierra/component "0.3.2"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
@@ -41,7 +39,8 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
-                        :exclusions [;; The following are excluded due to their being flagged as a CVE
+                        :exclusions [
+                                     ;; The following are excluded due to their being flagged as a CVE
                                      [com.google.protobuf/protobuf-java]
                                      [com.google.javascript/closure-compiler-unshaded]
                                      ;; The following is excluded because it stomps on twig's logger
@@ -76,7 +75,8 @@
              :ingest {:main cmr.nlp.elastic.ingest
                       :jvm-opts ^replace ["-Dlogging.level=debug"
                                           "-Dlogging.color=true"]}}
-  :aliases {;; Dev & Testing Aliases
+  :aliases {
+            ;; Dev & Testing Aliases
             "download-models" ["with-profile" "+local"
                                "shell" "resources/scripts/download-models"]
             "download-geonames" ["with-profile" "+local"

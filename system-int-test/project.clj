@@ -3,12 +3,10 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/system-int-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :dependencies [[cheshire "5.10.0"
-                  :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
+  :dependencies [[cheshire "5.10.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [clj-xml-validation "1.0.2"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [com.google.code.findbugs/jsr305 "3.0.2"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]

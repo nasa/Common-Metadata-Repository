@@ -1,8 +1,7 @@
 (defproject nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"
   :description "Library containing application services code common to multiple CMR applications."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-app-lib"
-  :dependencies [[cheshire "5.10.0"
-                  :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
+  :dependencies [[cheshire "5.10.0"]
                  [clj-time "0.15.1"]
                  [compojure "1.6.1"]
                  [digest "1.4.8"]
@@ -12,7 +11,6 @@
                  [nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [com.vladsch.flexmark/flexmark-all "0.64.0"]
                  [ring/ring-core "1.10.0"]
                  [ring/ring-json "0.5.1"]

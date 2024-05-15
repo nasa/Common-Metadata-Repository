@@ -4,11 +4,9 @@
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :dependencies [[buddy/buddy-sign "3.4.333"]
-                 [cheshire "5.8.1"
-                  :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
+                 [cheshire "5.8.1"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.0"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [com.stuartsierra/component "0.3.2"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [gov.nasa.earthdata/cmr-http-kit "0.2.0"]
@@ -24,7 +22,8 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
-                        :exclusions [;; The following are excluded due to their being flagged as a CVE
+                        :exclusions [
+                                     ;; The following are excluded due to their being flagged as a CVE
                                      [com.google.protobuf/protobuf-java]
                                      [com.google.javascript/closure-compiler-unshaded]]}
              :lint {:source-paths ^:replace ["src"]
@@ -38,7 +37,8 @@
                                      :integration :integration
                                      :system :system
                                      :default (complement :system)}}}
-  :aliases {;; Dev & Testing Aliases
+  :aliases {
+            ;; Dev & Testing Aliases
             "repl" ["do"
                     ["clean"]
                     ["repl"]]

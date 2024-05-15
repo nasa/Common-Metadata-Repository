@@ -20,23 +20,23 @@
   :license {:name "Apache License 2.0"
             :url "https://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [org.clojure/clojure]
-  :dependencies [[cheshire "5.8.1"
-                  :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
+  :dependencies [[cheshire "5.8.1"]
                  [clojusc/trifl "0.4.0"]
                  [clojusc/twig "0.4.0"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [com.stuartsierra/component "0.3.2"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [me.raynes/conch "0.8.0"]
                  [org.clojure/clojure "1.9.0"]
                  [org.clojure/core.async "0.4.474"]]
-  :profiles {;; Tasks
+  :profiles {
+             ;; Tasks
              :ubercompile {:aot :all}
              :security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
-                        :exclusions [;; The following are excluded due to their being flagged as a CVE
+                        :exclusions [
+                                     ;; The following are excluded due to their being flagged as a CVE
                                      [com.google.protobuf/protobuf-java]
                                      [com.google.javascript/closure-compiler-unshaded]]}
              ;; Environments
@@ -67,25 +67,26 @@
                             :themes [:eosdis]
                             :html {:transforms [[:head]
                                                 [:append
-                                                 [:script {:src "https://cdn.earthdata.nasa.gov/tophat2/tophat2.js"
-                                                           :id "earthdata-tophat-script"
-                                                           :data-show-fbm "true"
-                                                           :data-show-status "true"
-                                                           :data-status-api-url "https://status.earthdata.nasa.gov/api/v1/notifications"
-                                                           :data-status-polling-interval "10"}]]
+                                                  [:script {:src "https://cdn.earthdata.nasa.gov/tophat2/tophat2.js"
+                                                            :id "earthdata-tophat-script"
+                                                            :data-show-fbm "true"
+                                                            :data-show-status "true"
+                                                            :data-status-api-url "https://status.earthdata.nasa.gov/api/v1/notifications"
+                                                            :data-status-polling-interval "10"}]]
                                                 [:body]
                                                 [:prepend
-                                                 [:div {:id "earthdata-tophat2"
-                                                        :style "height: 32px;"}]]
+                                                  [:div {:id "earthdata-tophat2"
+                                                         :style "height: 32px;"}]]
                                                 [:body]
                                                 [:append
-                                                 [:script {:src "https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
-                                                           :type "text/javascript"}]]]}
+                                                  [:script {:src "https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
+                                                            :type "text/javascript"}]]]}
                             :doc-paths ["resources/docs/markdown"]
                             :output-path "docs/current"
                             :namespaces [#"^cmr\.process\.manager\.(?!test)"]
                             :metadata {:doc/format :markdown}}}}
-  :aliases {;; Dev & Testing Aliases
+  :aliases {
+            ;; Dev & Testing Aliases
             "repl" ["with-profile" "+custom-repl" "do"
                     ["clean"]
                     ["repl"]]
