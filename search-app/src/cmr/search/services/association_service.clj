@@ -4,7 +4,7 @@
   So the code is slightly different and we have pushed off the potential refactoring until later."
   (:require
    [clojure.string :as string]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer (debug info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
@@ -26,8 +26,8 @@
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
   [context]
-  (if-let [token (:token context)]
-    (util/lazy-get context :user-id)
+  (if (:token context)
+   (util/lazy-get context :user-id)
     (errors/throw-service-error
      :unauthorized "Associations cannot be modified without a valid user token.")))
 
@@ -79,7 +79,7 @@
 
 (defmethod association->concept-map :variable
   [variable-association]
-  (let [{:keys [source-concept-id originator-id native-id user-id data errors]
+  (let [{:keys [source-concept-id originator-id native-id user-id data]
          coll-concept-id :concept-id
          coll-revision-id :revision-id} variable-association]
     {:concept-type :variable-association
@@ -99,7 +99,7 @@
 
 (defmethod association->concept-map :service
   [service-association]
-  (let [{:keys [source-concept-id originator-id native-id user-id data errors]
+  (let [{:keys [source-concept-id originator-id native-id user-id data]
          coll-concept-id :concept-id
          coll-revision-id :revision-id} service-association]
     {:concept-type :service-association
@@ -119,7 +119,7 @@
 
 (defmethod association->concept-map :tool
   [tool-association]
-  (let [{:keys [source-concept-id originator-id native-id user-id data errors]
+  (let [{:keys [source-concept-id originator-id native-id user-id data]
          coll-concept-id :concept-id
          coll-revision-id :revision-id} tool-association]
     {:concept-type :tool-association
@@ -231,17 +231,12 @@
      (format "%s could not be found with concept id [%s]"
              (string/capitalize (name concept-type)) concept-id))))
 
-(defn- link-to-collections
+(defn link-to-collections
   "Associate/Dissociate a variable/service to a list of collections in the associations json
    based on the given operation type. The operation type can be either :insert or :delete.
    Throws service error if the variable/service with the given concept-id is not found."
-  [context concept-type concept-id associations-json operation-type]
+  [context concept-type concept-id associations operation-type]
   (let [concept (fetch-concept context concept-type concept-id)
-        ;; Variable/Service association will reuse the same json schema for tag associations.
-        ;; The only difference between variable/service association and tag association is
-        ;; variable/service association uses concept-id as the key and tag association
-        ;; uses tag-key as the key.
-        associations (assoc-validation/associations-json->associations associations-json)
         [validation-time associations]
         (util/time-execution
          (assoc-validation/validate-associations
@@ -250,14 +245,23 @@
     (debug "link-to-collections validation-time:" validation-time)
     (update-associations context concept associations operation-type)))
 
+(defn associations-json->associations
+  "Convert the json association to edn.
+  Variable/Service/tool to collection association will reuse the same json schema for tag associations.
+  The only difference between variable/service association and tag association is variable/service/tool
+  association uses concept-id as the key and tag association uses tag-key as the key."
+  [context concept-type concept-id associations-json operation-type]
+  (let [associations (assoc-validation/associations-json->associations associations-json)]
+    (link-to-collections context concept-type concept-id associations operation-type)))
+
 (defn associate-to-collections
   "Associates the given concept by concept-type and concept-id to
   the given list of associations in json."
   [context concept-type concept-id associations-json]
-  (link-to-collections context concept-type concept-id associations-json :insert))
+  (associations-json->associations context concept-type concept-id associations-json :insert))
 
 (defn dissociate-from-collections
   "Dissociates the given concept by concept-type and concept-id from
   the given list of associations in json."
   [context concept-type concept-id associations-json]
-  (link-to-collections context concept-type concept-id associations-json :delete))
+  (associations-json->associations context concept-type concept-id associations-json :delete))

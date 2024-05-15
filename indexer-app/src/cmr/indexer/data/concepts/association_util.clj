@@ -2,7 +2,6 @@
   "Contains functions to parse and convert generic associations to a map structure 
   for each generic concept type."
   (:require
-   [clojure.set :as s]
    [cmr.common.concepts :as cc]
    [cmr.common.util :as util]))
 

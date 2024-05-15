@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.tool.tool-association-test
   "This tests associating tools with collections."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.collection :as collection]
    [cmr.system-int-test.data2.core :as data-core]
@@ -9,7 +9,6 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
-   [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.tool-util :as tool-util]
    [cmr.system-int-test.utils.association-util :as association-util]))
 
