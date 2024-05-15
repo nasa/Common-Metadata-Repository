@@ -1,7 +1,6 @@
 (defproject nasa-cmr/cmr-umm-spec-lib "0.1.0-SNAPSHOT"
   :description "Defines the Unified Metadata Model and mappings from various metadata standards into UMM."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/umm-spec-lib"
-  :exclusions []
   :dependencies [[commons-io "2.6"]
                  [commons-validator/commons-validator "1.7"]
                  [digest "1.4.8"]
@@ -19,8 +18,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions []
-                   :dependencies [[clj-http "2.3.0"]
+             :dev {:dependencies [[clj-http "2.3.0"]
                                   [criterium "0.4.4"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]

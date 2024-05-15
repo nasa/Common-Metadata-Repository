@@ -1,9 +1,8 @@
 (defproject nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
   :description "Provides common utility code for CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
-  :exclusions []
   :dependencies [[camel-snake-kebab "0.4.0"]
-                 [cheshire "5.12.0"]
+                 [cheshire "5.10.0"]
                  [clj-time "0.15.1"]
                  [clojail "1.0.6"]
                  [gov.nasa.earthdata/quartzite "2.2.1-SNAPSHOT"]

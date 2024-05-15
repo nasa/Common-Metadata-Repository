@@ -9,7 +9,6 @@
 (defproject nasa-cmr/cmr-redis-utils-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handling cacheing with the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/redis-utils-lib"
-  :exclusions []
   :dependencies [[com.taoensso/carmine "3.0.1"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [org.clojure/clojure "1.11.2"]
@@ -24,8 +23,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions []
-                   :dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
+             :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]]
                    :jvm-opts ^:replace ["-server"]

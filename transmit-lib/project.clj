@@ -2,7 +2,6 @@
   :description "The Transmit Library is responsible for defining the common transmit
                 libraries that invoke services within the CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/transmit-lib"
-  :exclusions []
   :dependencies [[clj-http "3.11.0"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
@@ -21,11 +20,9 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions []
-                   :dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
+             :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
-                                  [org.clojure/tools.nrepl "0.2.13"]
-                                  ]
+                                  [org.clojure/tools.nrepl "0.2.13"]]
                    :jvm-opts ^:replace ["-server"]
                    :source-paths ["src" "dev" "test"]}
              :static {}

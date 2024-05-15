@@ -1,8 +1,7 @@
 (defproject nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"
   :description "Library containing application services code common to multiple CMR applications."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-app-lib"
-  :exclusions []
-  :dependencies [[cheshire "5.12.0"]
+  :dependencies [[cheshire "5.10.0"]
                  [clj-time "0.15.1"]
                  [compojure "1.6.1"]
                  [digest "1.4.8"]
@@ -22,8 +21,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions []
-                   :dependencies [[org.clojure/tools.namespace "0.2.11"]
+             :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]]
                    :jvm-opts ^:replace ["-server"]

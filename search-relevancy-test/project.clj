@@ -3,9 +3,8 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-relevancy-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :exclusions []
   :dependencies [[camel-snake-kebab "0.4.0"]
-                 [cheshire "5.12.0"]
+                 [cheshire "5.10.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]

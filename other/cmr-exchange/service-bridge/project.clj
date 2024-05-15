@@ -21,7 +21,7 @@
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [[org.eclipse.emf/org.eclipse.emf.ecore]]
-  :dependencies [[cheshire "5.12.0"]
+  :dependencies [[cheshire "5.10.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
                  [com.fasterxml.jackson.core/jackson-core "2.12.1"]

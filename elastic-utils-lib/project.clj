@@ -3,8 +3,7 @@
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/elastic-utils-lib"
-  :exclusions []
-  :dependencies [[cheshire "5.12.0"]
+  :dependencies [[cheshire "5.10.0"]
                  [clj-http "3.11.0"]
                  [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
@@ -17,8 +16,7 @@
                  [org.apache.commons/commons-compress "1.26.0"]
                  [org.testcontainers/testcontainers "1.19.7"]
                  [org.yaml/snakeyaml "1.31"]
-                 [potemkin "0.4.5"]
-                 ]
+                 [potemkin "0.4.5"]]
   :plugins [[lein-shell "0.5.0"]]
   :jvm-opts ^:replace ["-server"
                        "-Dclojure.compiler.direct-linking=true"]
@@ -27,8 +25,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions []
-                   :dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
+             :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]]
                    :jvm-opts ^:replace ["-server"]

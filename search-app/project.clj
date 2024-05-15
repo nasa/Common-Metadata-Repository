@@ -1,8 +1,7 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
-  :exclusions []
-  :dependencies [[cheshire "5.12.0"]
+  :dependencies [[cheshire "5.8.1"]
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io/commons-io "2.6"]
@@ -49,8 +48,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
-             :dev {:exclusions []
-                   :dependencies [[criterium "0.4.4"]
+             :dev {:dependencies [[criterium "0.4.4"]
                                   [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]

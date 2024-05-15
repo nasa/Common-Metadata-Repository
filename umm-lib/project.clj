@@ -3,7 +3,6 @@
                model for Metadata Concepts in the CMR along with code to parse and generate the
                various dialects of each concept."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/umm-lib"
-  :exclusions []
   :dependencies [[nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
@@ -17,8 +16,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions []
-                   :dependencies [[criterium "0.4.4"]
+             :dev {:dependencies [[criterium "0.4.4"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]

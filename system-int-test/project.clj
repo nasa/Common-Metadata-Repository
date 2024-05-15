@@ -3,8 +3,7 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/system-int-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :exclusions []
-  :dependencies [[cheshire "5.12.0"]
+  :dependencies [[cheshire "5.10.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [clj-xml-validation "1.0.2"]
@@ -45,8 +44,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
-             :dev {:exclusions []
-                   :dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
+             :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]]

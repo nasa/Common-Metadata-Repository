@@ -1,8 +1,7 @@
 (defproject nasa-cmr/cmr-bootstrap-app "0.1.0-SNAPSHOT"
   :description "Bootstrap is a CMR application that can bootstrap the CMR with data from Catalog REST."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/bootstrap-app"
-  :exclusions []
-  :dependencies [[cheshire "5.12.0"]
+  :dependencies [[cheshire "5.10.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
