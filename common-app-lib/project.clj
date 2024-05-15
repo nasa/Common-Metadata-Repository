@@ -1,7 +1,7 @@
 (defproject nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"
   :description "Library containing application services code common to multiple CMR applications."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-app-lib"
-  :dependencies [[cheshire "5.10.0"]
+  :dependencies [[cheshire "5.12.0"]
                  [clj-time "0.15.1"]
                  [compojure "1.6.1"]
                  [digest "1.4.8"]

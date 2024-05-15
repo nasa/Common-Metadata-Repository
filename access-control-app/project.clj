@@ -28,7 +28,7 @@
 (defproject nasa-cmr/cmr-access-control-app "0.1.0-SNAPSHOT"
   :description "Implements the CMR access control application."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/access-control-app"
-  :dependencies ~(concat '[[cheshire "5.10.0"]
+  :dependencies ~(concat '[[cheshire "5.12.0"]
                            [clj-time "0.15.1"]
                            [com.fasterxml.jackson.core/jackson-core "2.13.2"]
                            [commons-codec/commons-codec "1.11"]
