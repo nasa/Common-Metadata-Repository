@@ -3,7 +3,7 @@ end_of_line = lf
 indent_size = 2
 indent_style = space
 
-[*.md]
+[{*.md,*.py}]
 indent_size = 4 #this is important, the markdown for API docs will not see 2 spaces
 indent_style = space
 insert_final_newline = true
