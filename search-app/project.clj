@@ -1,10 +1,12 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.8.1"
+                  :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
                  [clj-time "0.15.1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io/commons-io "2.6"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-common-app-lib "0.1.0-SNAPSHOT"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]

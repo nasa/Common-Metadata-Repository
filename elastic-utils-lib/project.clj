@@ -3,11 +3,13 @@
 (defproject nasa-cmr/cmr-elastic-utils-lib "0.1.0-SNAPSHOT"
   :description "A library containing utilities for dealing with Elasticsearch."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/elastic-utils-lib"
-  :dependencies [[cheshire "5.10.0"]
+  :dependencies [[cheshire "5.10.0"
+                  :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
                  [clj-http "3.11.0"]
                  [clojurewerkz/elastisch "5.0.0-beta1"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [nasa-cmr/cmr-transmit-lib "0.1.0-SNAPSHOT"]
                  [org.apache.logging.log4j/log4j-api "2.15.0"]

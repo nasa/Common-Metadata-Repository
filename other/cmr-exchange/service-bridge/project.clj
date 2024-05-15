@@ -21,7 +21,8 @@
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
   :exclusions [[org.eclipse.emf/org.eclipse.emf.ecore]]
-  :dependencies [[cheshire "5.10.0"]
+  :dependencies [[cheshire "5.10.0"
+                  :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
                  [com.fasterxml.jackson.core/jackson-core "2.12.1"]
@@ -70,8 +71,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
-                        :exclusions [
-                                     ;; The following are excluded due to their being flagged as a CVE
+                        :exclusions [;; The following are excluded due to their being flagged as a CVE
                                      [com.google.protobuf/protobuf-java]
                                      [com.google.javascript/closure-compiler-unshaded]
                                      ;; The following is excluded because it stomps on twig's logger
@@ -121,25 +121,24 @@
                             :themes [:eosdis]
                             :html {:transforms [[:head]
                                                 [:append
-                                                  [:script {:src "https://cdn.earthdata.nasa.gov/tophat2/tophat2.js"
-                                                            :id "earthdata-tophat-script"
-                                                            :data-show-fbm "true"
-                                                            :data-show-status "true"
-                                                            :data-status-api-url "https://status.earthdata.nasa.gov/api/v1/notifications"
-                                                            :data-status-polling-interval "10"}]]
+                                                 [:script {:src "https://cdn.earthdata.nasa.gov/tophat2/tophat2.js"
+                                                           :id "earthdata-tophat-script"
+                                                           :data-show-fbm "true"
+                                                           :data-show-status "true"
+                                                           :data-status-api-url "https://status.earthdata.nasa.gov/api/v1/notifications"
+                                                           :data-status-polling-interval "10"}]]
                                                 [:body]
                                                 [:prepend
-                                                  [:div {:id "earthdata-tophat2"
-                                                         :style "height: 32px;"}]]
+                                                 [:div {:id "earthdata-tophat2"
+                                                        :style "height: 32px;"}]]
                                                 [:body]
                                                 [:append
-                                                  [:script {:src "https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
-                                                            :type "text/javascript"}]]]}
+                                                 [:script {:src "https://fbm.earthdata.nasa.gov/for/CMR/feedback.js"
+                                                           :type "text/javascript"}]]]}
                             :doc-paths ["resources/docs/markdown"]
                             :output-path "resources/public/docs/service-bridge/docs/current/reference"}}
              :slate {:plugins [[lein-shell "0.5.0"]]}}
-  :aliases {
-            ;; Dev & Testing Aliases
+  :aliases {;; Dev & Testing Aliases
             "repl" ["do"
                     ["clean"]
                     ["with-profile" "+local,+system" "repl"]]

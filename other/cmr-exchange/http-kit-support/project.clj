@@ -17,12 +17,13 @@
 (defproject gov.nasa.earthdata/cmr-http-kit "0.2.0"
   :description "Utilities, wrappers, middleware, and components for http-kit interop"
   :url "https://github.com/cmr-exchange/cmr-http-kit"
-  :license {
-            :name "Apache License, Version 2.0"
+  :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.8.1"
+                  :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.0"]
+                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [gov.nasa.earthdata/cmr-jar-plugin "0.1.2"]
                  [http-kit "2.5.3"]
@@ -38,13 +39,11 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
-                        :exclusions [
-                                     ;; The following are excluded due to their being flagged as a CVE
+                        :exclusions [;; The following are excluded due to their being flagged as a CVE
                                      [com.google.protobuf/protobuf-java]
                                      [com.google.javascript/closure-compiler-unshaded]
                                      [commons-fileupload]]
-                        :dependencies [
-                                       ;; The following pull required deps that have been either been
+                        :dependencies [;; The following pull required deps that have been either been
                                        ;; explicitly or implicitly excluded above due to CVEs and need
                                        ;; declare secure versions of the libs pulled in
                                        [commons-fileupload "1.3.3"]
@@ -69,8 +68,7 @@
                                      :integration :integration
                                      :system :system
                                      :default (complement :system)}}}
-  :aliases {
-            ;; Dev & Testing Aliases
+  :aliases {;; Dev & Testing Aliases
             "repl" ["do"
                     ["clean"]
                     ["repl"]]
