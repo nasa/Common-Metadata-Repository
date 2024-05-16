@@ -59,5 +59,3 @@
         expected-context {:token "params-token" :client-id acl_core/CURL_CLIENT_ID}]
     (println (fun context params headers))
     (is (= (fun context params headers) expected-context))))
-
-(deftest request-sids-test)
