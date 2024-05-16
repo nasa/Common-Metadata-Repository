@@ -3,6 +3,7 @@ FROM clojure:temurin-17-lein-bullseye@sha256:b6714f29ab9697cf29f2a5049a04b73085e
 RUN apt-get update \
  && DEBIAN_FRONTEND=noninteractive \
     apt-get install --assume-yes \
+      python3 \
       curl \
       netbase \
       unzip \

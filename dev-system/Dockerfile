@@ -1,5 +1,10 @@
 FROM eclipse-temurin:17
 
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive \
+    apt-get install --assume-yes \
+      python3
+
 RUN mkdir /opt/cmr
 
 EXPOSE 2999-3012
