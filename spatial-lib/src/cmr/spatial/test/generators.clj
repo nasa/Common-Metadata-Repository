@@ -1,14 +1,12 @@
 (ns cmr.spatial.test.generators
   (:require
-   [clojure.math.combinatorics :as combo]
    [clojure.string :as string]
    [clojure.test.check.generators :as gen]
-   [cmr.common.test.test-check-ext :as ext-gen :refer [optional]]
+   [cmr.common.test.test-check-ext :as ext-gen]
    [cmr.spatial.arc :as a]
    [cmr.spatial.arc-line-segment-intersections :as asi]
    [cmr.spatial.circle :as spatial-circle]
    [cmr.spatial.derived :as d]
-   [cmr.spatial.geodetic-ring :as gr]
    [cmr.spatial.line-segment :as s]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
@@ -16,7 +14,6 @@
    [cmr.spatial.polygon :as poly]
    [cmr.spatial.ring-relations :as rr]
    [cmr.spatial.vector :as v]
-   [pjstadig.assertions :as pj]
    [primitive-math]))
 
 (comment
@@ -57,7 +54,7 @@
 (defn print-failed-line-segments
   "A printer function that can be used with the defspec defined in cmr.common to print out a failed
   line segment"
-  [type & lss]
+  [_type & lss]
   ;; Print out the line segment in a way that it can be easily copied to the test.
   (doseq [ls lss]
     (println (pr-str (concat `(s/ords->line-segment) (s/line-segment->ords ls))))))
@@ -83,7 +80,7 @@
   (gen/fmap sort (gen/tuple lats lats)))
 
 (defn print-failed-mbrs
-  [type & mbrs]
+  [_type & mbrs]
   (doseq [br mbrs :let [{:keys [west north east south]} br]]
     (println (pr-str (concat `(m/mbr) [west north east south])))))
 
@@ -113,7 +110,7 @@
 
 (defn print-failed-arc
   "A printer function that can be used with the defspec defined in cmr.common"
-  [type arc]
+  [_type arc]
   ;; Print out the ring in a way that it can be easily copied to the test.
   (println (pr-str (concat `(a/ords->arc) (a/arc->ords arc)))))
 
@@ -165,17 +162,17 @@
 
 (defmulti valid-consecutive-points?
   "Returns true if the points are valid consecutive points in the given coordinate system."
-  (fn [coord-sys p1 p2]
+  (fn [coord-sys _p1 _p2]
     coord-sys))
 
 (defmethod valid-consecutive-points? :geodetic
-  [coord-sys p1 p2]
+  [_coord-sys p1 p2]
   (and (not= p1 p2)
        (not (p/antipodal? p1 p2))
        (< (p/angular-distance p1 p2) 180.0)))
 
 (defmethod valid-consecutive-points? :cartesian
-  [coord-sys p1 p2]
+  [_coord-sys p1 p2]
   (not= p1 p2))
 
 (defn insert-point-at
@@ -248,7 +245,7 @@
 (defn print-failed-ring
   "A printer function that can be used with the defspec defined in cmr.common to print out a failed
   ring."
-  [type ring]
+  [_type ring]
   (let [coord-sys (rr/coordinate-system ring)]
     ;; Print out the ring in a way that it can be easily copied to the test.
     (println (pr-str (concat `(rr/ords->ring ~coord-sys) (rr/ring->ords ring))))
@@ -261,7 +258,7 @@
 (defn print-failed-polygon
   "A printer function that can be used with the defspec defined in cmr.common to print out a failed
   polygon"
-  [type polygon]
+  [_type polygon]
   ;; Print out the polygon in a way that it can be easily copied to the test.
   (println (pr-str (concat `(poly/polygon ~(:coordinate-system polygon))
                            [(vec (map (fn [ring]

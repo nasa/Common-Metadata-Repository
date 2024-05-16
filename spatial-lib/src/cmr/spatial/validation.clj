@@ -1,6 +1,5 @@
 (ns cmr.spatial.validation
-  "Defines common spatial validations"
-  (:require [cmr.common.validations.core :as v]))
+  "Defines common spatial validations")
 
 (defprotocol SpatialValidation
   (validate

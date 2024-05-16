@@ -1,6 +1,7 @@
 (ns cmr.spatial.math
+  ;; This line is needed to prevent a confusion on which abs should be used as reported by clj-kondo
+  (:refer-clojure :exclude [abs])
   [:require
-   [cmr.common.util :as util]
    [primitive-math]]
   (:import
    (net.jafama StrictFastMath)))

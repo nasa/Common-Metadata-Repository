@@ -9,9 +9,8 @@
    [cmr.spatial.arc-line-segment-intersections :as asi]
    [cmr.spatial.derived :as d]
    [cmr.spatial.line-segment :as s]
-   [cmr.spatial.math :refer :all]
+   [cmr.spatial.math]
    [cmr.spatial.mbr :as m]
-   [cmr.spatial.messages :as msg]
    [cmr.spatial.point :as p]
    [cmr.spatial.points-validation-helpers :as pv]
    [cmr.spatial.validation :as v]
@@ -177,7 +176,7 @@
            (loop [segments segments]
              (when-let [segment (first segments)]
                (let [intersects? (loop [mbr-segments mbr-segments]
-                                   (if-let [mbr-segment (first mbr-segments)]
+                                   (when-let [mbr-segment (first mbr-segments)]
                                      (or (seq (asi/intersections segment mbr-segment))
                                          (recur (rest mbr-segments)))))]
                  (or intersects? (recur (rest segments))))))))))))

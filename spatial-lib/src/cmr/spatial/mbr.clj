@@ -1,6 +1,6 @@
 (ns cmr.spatial.mbr
   (:require
-   [cmr.spatial.math :as math :refer :all]
+   [cmr.spatial.math :as math :refer [double->float double-approx= mid mid-lon range-intersects?]]
    [primitive-math]
    [cmr.spatial.point :as p]
    [cmr.spatial.derived :as d]
@@ -98,10 +98,10 @@
       crosses-antimeridian
       (or (>= lon west) (<= lon east))
 
-      (= (abs lon) 180.0)
+      (= (math/abs lon) 180.0)
       (let [within-180 (- 180.0 tolerance)]
-        (or (>= (abs west) within-180)
-            (>= (abs east) within-180)))
+        (or (>= (math/abs west) within-180)
+            (>= (math/abs east) within-180)))
 
       :else
       (and (>= lon west) (<= lon east)))))

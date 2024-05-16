@@ -1,6 +1,6 @@
 (ns cmr.spatial.circle
   (:require
-   [cmr.spatial.math :as math :refer :all]
+   [cmr.spatial.math :as math :refer [PI asin atan2 cos degrees sin]]
    [primitive-math]
    [cmr.spatial.point :as p]
    [cmr.spatial.derived :as d]
@@ -8,6 +8,7 @@
    [cmr.spatial.validation :as sv]
    [cmr.spatial.polygon :as poly]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import
    cmr.spatial.geodetic_ring.GeodeticRing
    cmr.spatial.polygon.Polygon

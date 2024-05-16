@@ -1,27 +1,22 @@
 (ns cmr.spatial.test.geodetic-ring
-  (:require [clojure.test :refer :all]
-            [cmr.common.util :refer [are3]]
-            [cmr.common.test.test-check-ext :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.ring-validations]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.messages :as msg]))
-
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [cmr.common.util :refer [are3]]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.geodetic-ring :as gr]
+   [cmr.spatial.mbr :as m]
+   [cmr.spatial.messages :as msg]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.ring-relations :as rr]
+   [cmr.spatial.ring-validations]
+   [cmr.spatial.validation :as v]))
 
 (deftest ring-covers-br-test
   (testing "concave ring"
     (is (not (rr/covers-br? (d/calculate-derived
-                              (rr/ords->ring :geodetic [-0.11,2.79,2.53,1.44,-0.01,3.79,-2.2,2.28,-0.11,2.79]))
+                              (rr/ords->ring
+                               :geodetic
+                               [-0.11,2.79,2.53,1.44,-0.01,3.79,-2.2,2.28,-0.11,2.79]))
                             (m/mbr -0.7921474469772579
                                    3.2516294093733533
                                    0.5732165527343749

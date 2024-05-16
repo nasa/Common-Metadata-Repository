@@ -7,14 +7,10 @@
 
   see: http://www.isotc211.org/schemas/2005/gmd/"
   (:require
-   [clojure.data.xml :as x]
-   [clojure.string :as str]
-   [cmr.common.util :as util]
-   [cmr.common.validations.core :as v]
+   [clojure.data.xml :as xml]
    [cmr.common.xml :as cx]
    [cmr.spatial.encoding.gml :as gml]
-   [cmr.spatial.mbr :as mbr]
-   [cmr.spatial.validation :as sv]))
+   [cmr.spatial.mbr :as mbr]))
 
 (declare decode-geo-content)
 
@@ -39,12 +35,12 @@
   [geometry]
   (let [{:keys [west north east south]} geometry
         gen-point-fn (fn [tag content]
-                       (x/element tag {}
-                                  (x/element :gco:Decimal {} content)))]
-    (x/element :gmd:geographicElement {}
-               (x/element :gmd:EX_GeographicBoundingBox {:id (str "geo-" (java.util.UUID/randomUUID))}
-                          (x/element :gmd:extentTypeCode {}
-                                     (x/element :gco:Boolean {} 1))
+                       (xml/element tag {}
+                                  (xml/element :gco:Decimal {} content)))]
+    (xml/element :gmd:geographicElement {}
+               (xml/element :gmd:EX_GeographicBoundingBox {:id (str "geo-" (java.util.UUID/randomUUID))}
+                          (xml/element :gmd:extentTypeCode {}
+                                     (xml/element :gco:Boolean {} 1))
                           (gen-point-fn :gmd:westBoundLongitude west)
                           (gen-point-fn :gmd:eastBoundLongitude east)
                           (gen-point-fn :gmd:southBoundLatitude south)
@@ -60,18 +56,18 @@
 
 (defmethod encode :default
   [polygon]
-  (x/element
+  (xml/element
    :gmd:geographicElement {}
-   (x/element
+   (xml/element
     :gmd:EX_BoundingPolygon {}
-    (x/element :gmd:extentTypeCode {}
-               (x/element :gco:Boolean {} 1))
-    (x/element :gmd:polygon {}
+    (xml/element :gmd:extentTypeCode {}
+               (xml/element :gco:Boolean {} 1))
+    (xml/element :gmd:polygon {}
                (gml/encode polygon)))))
 
 (defmethod decode-geo-content :EX_BoundingPolygon
   [bounding-polygon-element]
   ;; EXBoundingPolygon elements contain a gmd:polygon which contains a
   ;; single gml geometry element
-  (let [polygons (-> bounding-polygon-element (cx/elements-at-path [:polygon]))]
+  (let [polygons (cx/elements-at-path bounding-polygon-element [:polygon])]
     (map #(-> % :content first gml/decode) polygons)))

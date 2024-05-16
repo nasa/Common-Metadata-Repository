@@ -1,18 +1,10 @@
 (ns cmr.spatial.test.line-string
-  (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.line-string :as l]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.test.generators :as sgen]
-            [cmr.spatial.validation :as v]
-            [cmr.spatial.points-validation-helpers :as pv]
-            [cmr.spatial.messages :as msg]))
+  (:require
+   [clojure.test :refer [are deftest is testing]]
+   [cmr.spatial.line-string :as l]
+   [cmr.spatial.messages :as msg]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.validation :as v]))
 
 (deftest line-string-validation
   (testing "geodetic line string"
@@ -38,4 +30,3 @@
               (v/validate (l/ords->line-string :cartesian ords)))
            [0 0, 1 1, 1 1] (msg/duplicate-points [[1 (p/point 1 1)] [2 (p/point 1 1)]])
            [0 0, 181 0] (msg/shape-point-invalid 1 (msg/point-lon-invalid 181))))))
-

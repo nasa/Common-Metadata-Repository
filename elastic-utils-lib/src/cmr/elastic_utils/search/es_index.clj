@@ -39,13 +39,13 @@
     [concept-type (qm/base-result-format query)]))
 
 (defmethod concept-type+result-format->fields [:granule :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["granule-ur"
    "provider-id"
    "concept-id"])
 
 (defmethod concept-type+result-format->fields [:collection :xml]
-  [concept-type query]
+  [_concept-type _query]
   ["entry-title"
    "provider-id"
    "short-name"
@@ -78,7 +78,14 @@
   and is stripped out before calling elastisch to determine whether a normal search call or a
   scroll call should be made."
   [query]
-  (let [{:keys [page-size offset concept-type aggregations highlights scroll scroll-id search-after]} query
+  (let [{:keys [page-size
+                offset
+                concept-type
+                aggregations
+                highlights
+                scroll
+                scroll-id
+                search-after]} query
         scroll-timeout (when scroll (es-config/elastic-scroll-timeout))
         search-type (if scroll
                       (es-config/elastic-scroll-search-type)
@@ -86,7 +93,8 @@
         sort-params (q2e/query->sort-params query)
         fields (query-fields->elastic-fields
                 concept-type
-                (or (:result-fields query) (concept-type+result-format->fields concept-type query)))]
+                (or (:result-fields query)
+                    (concept-type+result-format->fields concept-type query)))]
     {:version true
      :timeout (es-config/elastic-query-timeout)
      :sort sort-params
@@ -102,7 +110,7 @@
 
 (defmulti handle-es-exception
   "Handles exceptions from ES. Unexpected exceptions are simply re-thrown."
-  (fn [ex scroll-id]
+  (fn [ex _scroll-id]
     (:status (ex-data ex))))
 
 (defmethod handle-es-exception 404
@@ -112,14 +120,17 @@
     (throw ex)))
 
 (defmethod handle-es-exception :default
-  [ex _]
+  [ex _scroll-id]
   (throw ex))
 
 (defn- scroll-search
   "Performs a scroll search, handling errors where possible."
   [context scroll-id]
   (try
-    (es-helper/scroll (context->conn context) scroll-id {:scroll (es-config/elastic-scroll-timeout)})
+    (es-helper/scroll
+     (context->conn context)
+     scroll-id
+     {:scroll (es-config/elastic-scroll-timeout)})
     (catch ExceptionInfo e
       (handle-es-exception e scroll-id))))
 
@@ -127,21 +138,21 @@
   "Sends a query to ES, either normal or using a scroll query."
   [context index-info query max-retries]
   (try
-    (if (> max-retries 0)
+    (if (pos? max-retries)
       (if-let [scroll-id (:scroll-id query)]
         (scroll-search context scroll-id)
         (es-helper/search
          (context->conn context) (:index-name index-info) [(:type-name index-info)] query))
       (errors/throw-service-error :service-unavailable "Exhausted retries to execute ES query"))
 
-    (catch UnknownHostException e
+    (catch UnknownHostException _e
       (info (format
              (str "Execute ES query failed due to UnknownHostException. Retry in %.3f seconds."
                   " Will retry up to %d times.")
              (/ (es-config/elastic-unknown-host-retry-interval-ms) 1000.0)
              max-retries))
       (Thread/sleep (es-config/elastic-unknown-host-retry-interval-ms))
-      (do-send-with-retry context index-info query (- max-retries 1)))
+      (do-send-with-retry context index-info query (dec max-retries)))
 
     (catch clojure.lang.ExceptionInfo e
       (when-let [body (:body (ex-data e))]
@@ -151,10 +162,11 @@
           (errors/throw-service-error
            :too-many-requests
            "CMR is currently experiencing too many scroll searches to complete this request.
-           Scroll is deprecated in CMR. Please consider switching your scroll requests to use search-after.
-           See https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#search-after.
-           This will make your workflow simpler (no more clear-scroll calls) and improve the stability of both your searches and CMR.
-           Thank you!"))
+            Scroll is deprecated in CMR. Please consider switching your scroll requests to use
+            search-after. See
+            https://cmr.earthdata.nasa.gov/search/site/docs/search/api.html#search-after.
+            This will make your workflow simpler (no more clear-scroll calls) and improve the
+            stability of both your searches and CMR. Thank you!"))
 
         (when (re-find #"Trying to create too many buckets" body)
           (errors/throw-service-error
@@ -169,7 +181,8 @@
         (when (re-find #"Cannot normalize a vector length 0" body)
           (errors/throw-service-error
            :bad-request
-           "The search shapefile points are too close together and have too much precision. Please reduce precision or simplify your shapefile."))
+           "The search shapefile points are too close together and have too much precision. Please
+            reduce precision or simplify your shapefile."))
 
         (when (and (or (re-find #"\"type\":\"illegal_argument_exception\"" body)
                        (re-find #"\"type\":\"parsing_exception\"" body))
@@ -179,7 +192,9 @@
                             str)]
             (errors/throw-service-error
              :bad-request
-             (format "The search failed with error: %s. Please double check your search_after header." err-msg))))
+             (format
+              "The search failed with error: %s. Please double check your search_after header."
+              err-msg))))
 
         (throw (ex-info "An unhandled exception occurred" {} e)))
       ;; for other errors, rethrow the exception
@@ -199,7 +214,7 @@
 
 (defmulti send-query-to-elastic
   "Created to trace only the sending of the query off to elastic search."
-  (fn [context query]
+  (fn [_context query]
     (:page-size query)))
 
 (defmethod send-query-to-elastic :default
@@ -243,21 +258,28 @@
 (defmethod send-query-to-elastic :unlimited
   [context query]
   (when (:aggregations query)
-    (errors/internal-error! "Aggregations are not supported with queries with an unlimited page size."))
+    (errors/internal-error!
+     "Aggregations are not supported with queries with an unlimited page size."))
 
   (loop [offset 0 prev-items [] took-total 0 timed-out false]
     (let [results (send-query-to-elastic
-                   context (assoc query :offset offset :page-size (es-config/es-unlimited-page-size)))
+                   context (assoc query
+                                  :offset
+                                  offset
+                                  :page-size
+                                  (es-config/es-unlimited-page-size)))
           total-hits (get-in results [:hits :total :value])
           current-items (get-in results [:hits :hits])]
 
       (when (> total-hits (es-config/es-max-unlimited-hits))
         (errors/internal-error!
-         (format "Query with unlimited page size matched %s items which exceeds maximum of %s. Query: %s"
-                 total-hits (es-config/es-max-unlimited-hits) (pr-str query))))
+         (format
+          "Query with unlimited page size matched %s items which exceeds maximum of %s. Query: %s"
+          total-hits (es-config/es-max-unlimited-hits) (pr-str query))))
 
       (if (>= (+ (count prev-items) (count current-items)) total-hits)
-        ;; We've got enough results now. We'll return the query like we got all of them back in one request
+        ;; We've got enough results now. We'll return the query like we got all of them back in one
+        ;; request
         (-> results
             (update-in [:took] + took-total)
             (update-in [:hits :hits] concat prev-items)
@@ -276,8 +298,8 @@
         e-results (send-query-to-elastic context query)
         elapsed (- (System/currentTimeMillis) start)
         hits (get-in e-results [:hits :total :value])]
-    (info "Elastic query for concept-type:" (:concept-type query) " and result format: " (:result-format query)
-          "took" (:took e-results) "ms. Connection elapsed:" elapsed "ms")
+    (info "Elastic query for concept-type:" (:concept-type query) " and result format: "
+          (:result-format query) "took" (:took e-results) "ms. Connection elapsed:" elapsed "ms")
     (when (and (= :unlimited (:page-size query)) (> hits (count (get-in e-results [:hits :hits]))))
       (errors/internal-error! "Failed to retrieve all hits."))
     e-results))
@@ -289,21 +311,15 @@
   (esri/refresh (context->conn context)))
 
 (defrecord ElasticSearchIndex
-           [config
-
-   ;; The connection to elastic
-            conn]
-
+           ;; conn is the connection to elastic
+           [config conn]
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   lifecycle/Lifecycle
 
-  (start
-    [this _system]
-    (assoc this :conn (es/try-connect (:config this))))
+  (start [this _system] (assoc this :conn (es/try-connect (:config this))))
 
-  (stop [this _system]
-    this))
+  (stop [this _system] this))
 
 (defn create-elastic-search-index
   "Creates a new instance of the elastic search index."

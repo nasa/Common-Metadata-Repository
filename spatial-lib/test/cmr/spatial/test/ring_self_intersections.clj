@@ -1,18 +1,11 @@
 (ns cmr.spatial.test.ring-self-intersections
-  "Tests the function for determing if a ring has self intersections"
-  (:require [clojure.test :refer :all]
-            [cmr.common.test.test-check-ext :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]
-
-            ;; my code
-            [cmr.spatial.math :refer :all]
-            [cmr.spatial.point :as p]
-            [cmr.spatial.mbr :as m]
-            [cmr.spatial.geodetic-ring :as gr]
-            [cmr.spatial.ring-relations :as rr]
-            [cmr.spatial.derived :as d]
-            [cmr.spatial.test.generators :as sgen]))
+  "Tests the function for determining if a ring has self intersections"
+  (:require
+   [clojure.test :refer [deftest is]]
+   [cmr.spatial.derived :as d]
+   [cmr.spatial.math :refer [approx=]]
+   [cmr.spatial.point :as p]
+   [cmr.spatial.ring-relations :as rr]))
 
 (declare ring-examples)
 

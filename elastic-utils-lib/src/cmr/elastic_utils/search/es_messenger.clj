@@ -1,4 +1,5 @@
 (ns cmr.elastic-utils.search.es-messenger
+  "Common messages for the elastic service"
   (:require [camel-snake-kebab.core :as csk]))
 
 (defn invalid-opt-for-param
@@ -8,17 +9,18 @@
        "] is not supported for param [" (csk/->snake_case_string param) "]"))
 
 (defn invalid-sort-key
-  [sort-key type]
-  (format "The sort key [%s] is not a valid field for sorting %ss." sort-key (name type)))
+  [sort-key sort-type]
+  (format "The sort key [%s] is not a valid field for sorting %ss." sort-key (name sort-type)))
 
 (defn nil-min-max-msg
   []
   "The min and max values of a numeric range cannot both be nil.")
 
 (defn min-value-greater-than-max
-  [min max]
-  (format "The maximum value [%f] of the range must be greater than or equal to the minimum value [%f]."
-          max min))
+  [min-value max-value]
+  (format
+   "The maximum value [%f] of the range must be greater than or equal to the minimum value [%f]."
+   max-value min-value))
 
 (defn invalid-or-opt-setting-msg
   "Creates a message saying which parameter is not allowed to use the 'or' option."
