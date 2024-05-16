@@ -24,7 +24,6 @@
   :url "https://github.com/cmr-exchange/cmr-sizing-plugin"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :exclusions [gov.nasa.earthdata/cmr-http-kit]
   :dependencies [[gov.nasa.earthdata/cmr-authz "0.1.3"]
                  [gov.nasa.earthdata/cmr-exchange-common "0.3.3"]
                  [gov.nasa.earthdata/cmr-exchange-query "0.3.3-SNAPSHOT"]
@@ -44,8 +43,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}
                         :source-paths ^:replace ["src"]
-                        :exclusions [
-                                     ;; The following are excluded due to their being flagged as a CVE
+                        :exclusions [;; The following are excluded due to their being flagged as a CVE
                                      [com.google.protobuf/protobuf-java]
                                      [com.google.javascript/closure-compiler-unshaded]]}
              :system {:dependencies [[clojusc/system-manager "0.3.0"]]}
@@ -63,8 +61,8 @@
                                   :init ~(println (get-banner))}}
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.3.5"]
-                              [lein-ancient "0.6.15"]
+                    :plugins [[jonase/eastwood "1.4.2"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.2"]
                               [lein-kibit "0.1.8"]]}
              :test {:dependencies [[clojusc/ltest "0.3.0"]]
@@ -73,8 +71,7 @@
                                      :integration :integration
                                      :system :system
                                      :default (complement :system)}}}
-  :aliases {
-            ;; Dev & Testing Aliases
+  :aliases {;; Dev & Testing Aliases
             "repl" ["with-profile" "+local,+system,+dev" "do"
                     ["clean"]
                     ["repl"]]

@@ -1,7 +1,6 @@
 (defproject nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
   :description "A spatial library for the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/spatial-lib"
-  :exclusions [[org.clojure/clojure]]
   :dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                  [net.jafama/jafama "2.3.1"]
                  [net.mikera/core.matrix "0.54.0"]
@@ -19,8 +18,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions [[org.clojure/tools.nrepl]]
-                   :dependencies [[criterium "0.4.4"]
+             :dev {:dependencies [[criterium "0.4.4"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
@@ -69,8 +67,7 @@
             "kibit" ["do"
                      ["with-profile" "lint" "shell" "echo" "== Kibit =="]
                      ["with-profile" "lint" "kibit"]]
-            "kondo" ["do" ["shell" "clj-kondo" "--lint" "src" "--lint" "test" "'-parallel"]]'
-            "eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
+            "kondo" ["do" ["shell" "clj-kondo" "--lint" "src" "--lint" "test" "'-parallel"]] '"eastwood" ["with-profile" "lint" "eastwood" "{:namespaces [:source-paths]}"]
             "bikeshed" ["with-profile" "lint" "bikeshed" "--max-line-length=100"]
             "check-deps" ["with-profile" "lint" "ancient" ":all"]
             "check-sec" ["with-profile" "security" "dependency-check"]

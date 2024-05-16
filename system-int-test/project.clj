@@ -3,26 +3,10 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/system-int-test"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :exclusions [[cheshire]
-               [clj-time]
-               [com.fasterxml.jackson.core/jackson-core]
-               [com.google.code.findbugs/jsr305]
-               [commons-codec/commons-codec]
-               [commons-io]
-               [org.apache.httpcomponents/httpclient]
-               [org.apache.httpcomponents/httpcore]
-               [org.clojure/tools.logging]
-               [org.clojure/tools.reader]
-               [org.jsoup/jsoup]
-               [potemkin]
-               [ring/ring-codec]]
-  :dependencies [[cheshire "5.10.0"]
+  :dependencies [[cheshire "5.12.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
                  [clj-xml-validation "1.0.2"]
-                 [com.fasterxml.jackson.core/jackson-core "2.13.2"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [com.google.code.findbugs/jsr305 "3.0.2"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
@@ -60,8 +44,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
-             :dev {:exclusions [[org.clojure/tools.nrepl]]
-                   :dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
+             :dev {:dependencies [[org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
                                   [org.clojure/tools.nrepl "0.2.13"]
                                   [pjstadig/humane-test-output "0.9.0"]]
@@ -77,8 +60,8 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                    :plugins [[jonase/eastwood "1.4.2"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's

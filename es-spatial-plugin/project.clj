@@ -32,9 +32,18 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
-                                       [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
+             :provided {:dependencies [[nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
+                                        :exclusions [[com.fasterxml.jackson.core/jackson-core]
+                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
+                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
+                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
+                                       [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
+                                        :exclusions [[com.fasterxml.jackson.core/jackson-core]
+                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]
+                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-smile]
+                                                     [com.fasterxml.jackson.dataformat/jackson-dataformat-yaml]]]
                                        [org.elasticsearch/elasticsearch "7.17.14"]
+                                       [org.clojure/tools.reader "1.3.2"]
                                        [org.yaml/snakeyaml "1.31"]]}
              :es-deps {:dependencies [[nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"
                                        ;; These exclusions will be provided by elasticsearch.
@@ -52,6 +61,7 @@
                                                     [org.locationtech.jts/jts-core]
                                                     [org.locationtech.jts.JTSVersion]
                                                     [org.slf4j/slf4j-api]]]
+                                      [org.clojure/tools.reader "1.3.2"]
                                       [org.clojure/clojure "1.11.2"]]
                        :target-path ~es-deps-target-path
                        :uberjar-name ~es-deps-uberjar-name
@@ -62,8 +72,9 @@
                                cmr.elasticsearch.plugins.spatial.factory.core
                                cmr.elasticsearch.plugins.spatial.engine.core
                                cmr.elasticsearch.plugins.spatial.plugin]}
-             :dev {:exclusions [[org.clojure/tools.nrepl]]
-                   :dependencies [[criterium "0.4.4"]
+             :dev {:dependencies [[criterium "0.4.4"]
+                                  [cheshire "5.12.0"]
+                                  [org.clojure/tools.reader "1.3.2"]
                                   [nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"]
                                   [nasa-cmr/cmr-spatial-lib "0.1.0-SNAPSHOT"]
                                   [org.elasticsearch/elasticsearch "7.17.14"]
@@ -76,13 +87,13 @@
                          cmr.elasticsearch.plugins.spatial.factory.core
                          cmr.elasticsearch.plugins.spatial.engine.core
                          cmr.elasticsearch.plugins.spatial.plugin]
-                   :global-vars {*warn-on-reflection* true
+                   :global-vars {*warn-on-reflection* false
                                  *assert* false}}
              :static {}
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                    :plugins [[jonase/eastwood "1.4.2"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
@@ -95,12 +106,15 @@
                                "with-profile" "es-deps,provided" "clean,"
                                "with-profile" "es-deps,provided" "uberjar,"
                                ;; target-path is being ignored for uberjar. move uberjar to es-deps-target-path.
+                               ["shell" "echo" "inst-es-deps"]
                                "shell" "mv" ~(str "target/" es-deps-uberjar-name) ~es-deps-target-path]
             "install-es-plugin" ["do"
+                                 ["shell" "echo" "inst-es-plugin"]
                                  "with-profile" "es-plugin,provided" "clean,"
                                  "with-profile" "es-plugin,provided" "uberjar,"]
             "package-es-plugin" ["do"
                                  "install-es-plugin"
+                                 ["shell" "echo" "pack-es-deps"]
                                  "shell"
                                  "zip"
                                  "-j"
@@ -108,6 +122,7 @@
                                  ~uberjar-name
                                  "resources/plugin/plugin-descriptor.properties"]
             "build-all" ["do"
+                         ["shell" "echo" "build-all"]
                          "install-es-deps,"
                          "install-es-plugin,"]
 
@@ -121,6 +136,7 @@
             "ci-utest" ["utest" "--profile" ":ci"]
 
             "package-all" ["do"
+                           ["shell" "echo" "package-all"]
                            "install-es-deps,"
                            "package-es-plugin,"
                            "shell"
@@ -131,4 +147,4 @@
                            ~(str es-deps-target-path "/" es-deps-uberjar-name)]
             "check-sec" ["with-profile" "security" "dependency-check"]
             ;; Placeholder for future docs and enabler of top-level alias
-            "generate-static" ["with-profile" "static" "shell" "echo"]})
+            "generate-static" ["with-profile" "static" "shell" "echo" "no generate-static action needed"]})

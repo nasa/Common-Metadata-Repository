@@ -54,6 +54,7 @@ export PATH=$PATH:$BIN_DIR
 
 # Load this first
 source $BIN_DIR/functions/common.sh
+source $BIN_DIR/functions/common_console.sh
 
 # The rest of these depend upon common.sh
 source $BIN_DIR/functions/build.sh

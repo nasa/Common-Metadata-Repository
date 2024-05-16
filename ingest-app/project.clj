@@ -1,13 +1,6 @@
 (defproject nasa-cmr/cmr-ingest-app "0.1.0-SNAPSHOT"
   :description "Ingest is an external facing CMR service facilitating providers to create and  update their concepts in CMR. Internally it delegates concept persistence operations to metadata db and indexer micro services."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/ingest-app"
-  :exclusions [[commons-codec/commons-codec]
-               [commons-io]
-               [instaparse]
-               [org.apache.httpcomponents/httpclient]
-               [org.apache.httpcomponents/httpcore]
-               [org.slf4j/slf4j-api]
-               [ring/ring-codec]]
   :dependencies [[camel-snake-kebab "0.4.2"]
                  [clj-http "2.3.0"]
                  [com.draines/postal "2.0.3"]
@@ -68,8 +61,8 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                    :plugins [[jonase/eastwood "1.4.2"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]
                               [lein-shell "0.5.0"]]}
