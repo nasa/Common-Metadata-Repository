@@ -162,4 +162,8 @@
   (->> (j/query db ["SELECT count(1) FROM providers where provider_id = ?" provider-id])
        first vals first (== 0))
 
-  (j/delete! db :providers ["provider_id = ?" "FOO"]))
+  (j/delete! db :providers ["provider_id = ?" "FOO"])
+
+  ;; To see the providers compressed blob metadata from DbVisualizer you can use the following command
+  ;; select utl_raw.cast_to_varchar2(utl_compress.lz_uncompress( METADATA)) from METADATA_DB.PROVIDERS where PROVIDER_ID = 'OB_CLDSIT';
+  )

@@ -36,7 +36,7 @@
 (defn cannot-assoc-msg
   [concept-id assoc-concept-ids]
   (format (str "The following concept ids [%s] can not be associated with concept id [%s] "
-               "because collection/[service|tool|variable] associations are not supported "
+               "because collection/variable associations are not supported "
                "by the new generic association api.")
           assoc-concept-ids concept-id))
  

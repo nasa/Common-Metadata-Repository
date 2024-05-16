@@ -2,10 +2,8 @@
   "Defines common functions used by associations with collections in the CMR."
   (:require
    [cheshire.core :as json]
-   [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
-   [cmr.common.concepts :as concepts]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.search.services.association-service :as assoc-service]
@@ -27,34 +25,20 @@
     :body (json/generate-string (util/snake-case-data data))
     :headers {"Content-Type" mt/json}}))
 
-(defn- verify-association-permission
-  "Verifies the current user has been granted permission to make associations."
-  [context concept-id permission-type]
-  (let [provider-id (concepts/concept-id->provider-id concept-id)]
-    (acl/verify-ingest-management-permission
-      context :update :provider-object provider-id)))
-
 (defn- results-contain-errors?
   "Returns true if the results contain :errors"
   [results]
   (seq (filter #(some? (:errors %)) results)))
 
-(defmulti association-results->status-code
+(defn association-results->status-code
   "Check for concept-types requiring error status to be returned. This is currently :service and :variable
   If the concept-type is error-sensitive the function will check for any errors in the results, and will return 400 if
   any are errors are present. Otherwise it will return 200"
-  (fn [concept-type results]
-    (when (some #{concept-type} '(:variable :service :tool))
-      :error-sensitive)))
-
-(defmethod association-results->status-code :default
-  [_ _]
-  200)
-
-(defmethod association-results->status-code :error-sensitive
-  [_ results]
-  (if (results-contain-errors? results)
-    400
+  [concept-type results]
+  (if (some #{concept-type} '(:variable :service :tool))
+    (if (results-contain-errors? results)
+      400
+      200)
     200))
 
 (defn associate-concept-to-collections
