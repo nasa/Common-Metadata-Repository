@@ -20,9 +20,8 @@
   :url "https://github.com/cmr-exchange/cmr-service-bridge"
   :license {:name "Apache License, Version 2.0"
             :url "http://www.apache.org/licenses/LICENSE-2.0"}
-  :exclusions [[org.clojure/clojurescript]
-               [org.eclipse.emf/org.eclipse.emf.ecore]]
-  :dependencies [[cheshire "5.10.0"]
+  :exclusions [[org.eclipse.emf/org.eclipse.emf.ecore]]
+  :dependencies [[cheshire "5.12.0"]
                  [clojusc/trifl "0.4.2"]
                  [clojusc/twig "0.4.1"]
                  [com.fasterxml.jackson.core/jackson-core "2.12.1"]
@@ -92,8 +91,8 @@
                                   :init ~(println (get-banner))}}
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.3.5"]
-                              [lein-ancient "0.6.15"]
+                    :plugins [[jonase/eastwood "1.4.2"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.2"]
                               [lein-kibit "0.1.8"]
                               [venantius/yagni "0.1.7"]]}

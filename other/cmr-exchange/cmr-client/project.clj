@@ -39,8 +39,8 @@
                                              [org.clojure/tools.namespace "0.2.11"]]
                     :source-paths ^:replace ["src/clj" "src/cljc"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                    :plugins [[jonase/eastwood "1.4.2"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.1"]
                               [lein-kibit "0.1.8"]]}
              :cljs {:source-paths ^:replace ["src/cljs" "src/cljc"]}

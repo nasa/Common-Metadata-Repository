@@ -51,8 +51,10 @@ EOH
 
 function build_uberjar_proj {
     PROJ=$1
-    echo "Building '$PROJ' uberjar ..."
+    cprintln $RED2$GREEN$UNDERLINE "Building '$PROJ' uberjar ..."
+    
     if [ "$CMR_INTERNAL_NEXUS_REPO" = "true" ]; then
+        cprintln $RED$BLINK "with nexus"
         (cd $CMR_DIR/$PROJ && \
             lein with-profile +uberjar,+internal-repos do clean, uberjar)
     else
@@ -60,7 +62,7 @@ function build_uberjar_proj {
             lein with-profile +uberjar do clean, uberjar)
     fi
     if [ $? -ne 0 ] ; then
-        echo "Failed to generate '$PROJ' uberjar" >&2
+        cprintln $RED "Failed to generate '$PROJ' uberjar" >&2
         exit 127
     fi
 }
@@ -102,17 +104,28 @@ function build_site_templates_uberjar {
 
 function build_all {
     cd $CMR_DIR && \
+    RED='\033[0;31m'
+    GREEN='\033[0;32m'
+    YELLOW='\033[0;33m'
+    NC='\033[0m'
+    printf "${GREEN}Install Jars & Docs${NC}\n"
     cmr install jars,docs && \
+    printf "${GREEN}Install orbits-gems${NC}\n"
     cmr install orbits-gems && \
+    printf "${GREEN}Install spatial plugin${NC}\n"
     cmr install local spatial_plugin && \
     mv ./es-spatial-plugin/target/cmr-es-spatial-plugin-*-SNAPSHOT.zip . && \
     if [ "$CMR_DEV_SYSTEM_DB_TYPE" = "external" ] ; then
+	    printf "${GREEN}Setup db${NC}\n"
         (cd $CMR_DIR && cmr setup db )
         if [ $? -ne 0 ] ; then
             echo "Failed to perform DB setup tasks" >&2
             exit 127
         fi
     fi
+    echo "---------------------------------------------"
+    printf "${GREEN}Build Uber Jars${NC}\n"
+    echo about to use $CMR_BUILD_UBERJARS .
     if [ "$CMR_BUILD_UBERJARS" = "true" ] ; then
         build_uberjars
     fi

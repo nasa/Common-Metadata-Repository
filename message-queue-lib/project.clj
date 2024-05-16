@@ -5,26 +5,11 @@
 (defproject nasa-cmr/cmr-message-queue-lib "0.1.0-SNAPSHOT"
   :description "Library containing code to handle message queue interactions within the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/message-queue-lib"
-  :exclusions [[cheshire]
-               [clj-http]
-               [clj-time]
-               [commons-codec/commons-codec]
-               [commons-io]
-               [commons-logging]
-               [org.apache.httpcomponents/httpclient]
-               [org.apache.httpcomponents/httpcore]
-               [org.clojure/tools.reader]
-               [potemkin]]
-  :dependencies [[cheshire "5.10.0"]
+  :dependencies [[cheshire "5.12.0"]
                  [clj-http "2.3.0"]
                  [clj-time "0.15.1"]
-                 [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version
-                  :exclusions [com.fasterxml.jackson.core/jackson-databind]]
+                 [com.amazonaws/aws-java-sdk-sns ~aws-java-sdk-version]
                  [com.amazonaws/aws-java-sdk-sqs ~aws-java-sdk-version]
-                 [com.fasterxml.jackson.core/jackson-core "2.13.2"]
-                 [com.fasterxml.jackson.core/jackson-annotations "2.13.2"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io "2.6"]
                  [commons-logging "1.2"]
@@ -44,8 +29,7 @@
   :profiles {:security {:plugins [[com.livingsocial/lein-dependency-check "1.4.1"]]
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"}}
-             :dev {:exclusions [[org.clojure/tools.nrepl]]
-                   :dependencies [[org.clojure/tools.namespace "0.2.11"]
+             :dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.nrepl "0.2.13"]]
                    :jvm-opts ^:replace ["-server"]
