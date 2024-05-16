@@ -1,4 +1,4 @@
-(ns cmr.acl.acl-fetcher-test
+(ns cmr.acl.test.acl-fetcher-test
   "test functions in acl-fetcher"
   (:require
     [clojure.test :refer [deftest is testing]]
