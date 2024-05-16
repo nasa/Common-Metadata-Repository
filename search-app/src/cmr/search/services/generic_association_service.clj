@@ -1,17 +1,17 @@
 (ns cmr.search.services.generic-association-service
   "Provides functions for associating and dissociating generic concepts."
   (:require
-   [clojure.string :as string]
+   [clojure.set :refer [rename-keys]]
    [cmr.common.concepts :as concepts]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer (debug info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.metadata-db.services.concept-service :as mdb-cs]
    [cmr.metadata-db.services.search-service :as mdb-ss]
+   [cmr.search.services.association-service :as assoc-service]
    [cmr.search.services.association-validation :as assoc-validation]
-   [cmr.search.services.messages.association-messages :as assoc-msg]
-   [cmr.transmit.metadata-db :as mdb]))
+   [cmr.search.services.messages.association-messages :as assoc-msg]))
 
 (def ^:private native-id-separator-character
   "This is the separator character used when creating the native id for an association."
@@ -25,7 +25,7 @@
 (defn- context->user-id
   "Returns user id of the token in the context. Throws an error if no token is provided"
   [context]
-  (if-let [token (:token context)]
+  (if (:token context)
     (util/lazy-get context :user-id)
     (errors/throw-service-error
      :unauthorized "Associations cannot be modified without a valid user token.")))
@@ -81,7 +81,7 @@
   "Returns the concept-map for inserting into metadata-db for the given association."
   [generic-association]
   (let [{:keys [source-concept-id source-revision-id concept-id
-                revision-id originator-id native-id user-id data errors]} generic-association]
+                revision-id originator-id native-id user-id data]} generic-association]
     {:concept-type :generic-association
      :native-id native-id
      :user-id user-id
@@ -137,9 +137,7 @@
                                       revision-id)
         association (sort-association association)
         {source-concept-id :source-concept-id
-         source-revision-id :source-revision-id
          concept-id :concept-id
-         revision-id :revision-id
          errors :errors} association
         native-id (association->native-id association)
         source-concept-type-str (name (concepts/concept-id->type source-concept-id))
@@ -212,15 +210,14 @@
   "Associate/Dissociate a concept to a list of concepts in the associations json
    based on the given operation type. The operation type can be either :insert or :delete.
    Throws service error if the concept with the given concept-id and revision-id is not found."
-  [context concept-type concept-id revision-id associations-json operation-type]
+  [context concept-type concept-id revision-id associations operation-type]
   (let [revision-id (when revision-id
                       (read-string revision-id))
         concept {:concept-id concept-id :revision-id revision-id}
         ;;validate the user has the permission to access the concept
         ;;and the concept is not tomb-stoned.
         _ (assoc-validation/validate-concept-for-generic-associations context concept)
-        associations (->> associations-json
-                          (assoc-validation/associations-json->associations)
+        associations (->> associations
                           (assoc-validation/validate-generic-association-combination-types concept)
                           (assoc-validation/validate-no-same-concept-generic-association concept)
                           (assoc-validation/validate-generic-association-types concept))
@@ -231,14 +228,74 @@
     (debug "link-to-concepts validation-time:" validation-time)
     (update-generic-associations context concept associations operation-type)))
 
+(defn- separate-out-concept-type
+  "Separate the associations out for the passed in concept type from the
+  rest of the associations and put them into a map."
+  [concept-type associations]
+  {:concept-assoc (seq (filter #(= (concepts/concept-id->type (:concept-id %)) concept-type) associations))
+   :the-rest (seq (filter #(not (= (concepts/concept-id->type (:concept-id %)) concept-type)) associations))})
+
+(defn create-collection-associated-concepts
+  "Set the collections concept-id revision-id and data so that we can
+  invert the association and call the tool or service to collection
+  assocation function."
+  [context coll-concept-id coll-revision-id concept-assoc operation-type]
+  (let [coll-assoc (list (util/remove-nil-keys
+                          {:concept-id coll-concept-id
+                           :revision-id coll-revision-id
+                           :data (:data concept-assoc)}))]
+    (assoc-service/link-to-collections context
+                                       (concepts/concept-id->type (:concept-id concept-assoc))
+                                       (:concept-id concept-assoc)
+                                       coll-assoc
+                                       operation-type)))
+
+(defn concept-appropriate-links-to-concepts
+  "Separate out from a list of associations the tool or service concept to collection associations.
+  Then ingest/delete those association. Then ingest/delete the rest of the assocations.
+  Return the concatenated results."
+  [context concept-type concept-id revision-id associations operation-type swap-keyword]
+  (let [to-be-assoc (separate-out-concept-type :collection associations)
+        coll-assoc (when (:concept-assoc to-be-assoc)
+                     (assoc-service/link-to-collections context concept-type concept-id (:concept-assoc to-be-assoc) operation-type))
+        updated-coll-assoc (map #(rename-keys % {swap-keyword :generic-association}) coll-assoc)
+        other-assoc (when (:the-rest to-be-assoc)
+                      (link-to-concepts context concept-type concept-id revision-id (:the-rest to-be-assoc) operation-type))]
+    (concat other-assoc updated-coll-assoc)))
+
+(defn call-appropriate-link-to-concepts
+  "For tool or service to collection assocations, separate them out and call the original assocation functions
+  otherwise go ahead and call the generic association functions.
+  Return the concatenated results."
+  [context concept-type concept-id revision-id associations-json operation-type]
+  (let [associations (assoc-validation/associations-json->associations associations-json)]
+    (case concept-type
+      :tool (concept-appropriate-links-to-concepts context concept-type concept-id revision-id associations operation-type :tool-association)
+      :service (concept-appropriate-links-to-concepts context concept-type concept-id revision-id associations operation-type :service-association)
+      :collection (let [tool-to-be-assoc (separate-out-concept-type :tool associations)
+                        tool-assoc (when (:concept-assoc tool-to-be-assoc)
+                                     (flatten
+                                      (map #(create-collection-associated-concepts context concept-id revision-id % operation-type) (:concept-assoc tool-to-be-assoc))))
+                        updated-tool-assoc (map #(rename-keys % {:tool-association :generic-association}) tool-assoc)
+                        service-to-be-assoc (when (:the-rest tool-to-be-assoc)
+                                             (separate-out-concept-type :service (:the-rest tool-to-be-assoc)))
+                        service-assoc (when (:concept-assoc service-to-be-assoc)
+                                        (flatten
+                                         (map #(create-collection-associated-concepts context concept-id revision-id % operation-type) (:concept-assoc service-to-be-assoc))))
+                        updated-service-assoc (map #(rename-keys % {:service-association :generic-association}) service-assoc)
+                        other-assoc (when (:the-rest service-to-be-assoc)
+                                     (link-to-concepts context concept-type concept-id revision-id (:the-rest service-to-be-assoc) operation-type))]
+                    (concat other-assoc updated-tool-assoc updated-service-assoc))
+      (link-to-concepts context concept-type concept-id revision-id associations operation-type))))
+
 (defn associate-to-concepts
   "Associates the given concept by concept-type, concept-id and revision-id to
   the given list of associations in json."
   [context concept-type concept-id revision-id associations-json]
-  (link-to-concepts context concept-type concept-id revision-id associations-json :insert))
+  (call-appropriate-link-to-concepts context concept-type concept-id revision-id associations-json :insert))
 
 (defn dissociate-from-concepts
   "Dissociates the given concept by concept-type, concept-id and revision-id from
   the given list of associations in json."
   [context concept-type concept-id revision-id associations-json]
-  (link-to-concepts context concept-type concept-id revision-id associations-json :delete))
+  (call-appropriate-link-to-concepts context concept-type concept-id revision-id associations-json :delete))

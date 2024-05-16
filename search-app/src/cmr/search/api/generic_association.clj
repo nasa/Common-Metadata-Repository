@@ -2,10 +2,9 @@
   "Defines common functions used by associations among generic concepts in the CMR."
   (:require
    [cheshire.core :as json]
-   [clojure.string :as string]
    [cmr.common-app.api.enabled :as common-enabled]
    [cmr.common.concepts :as common-concepts]
-   [cmr.common.log :refer (debug info warn error)]
+   [cmr.common.log :refer (info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
    [cmr.search.services.generic-association-service :as generic-assoc-service]

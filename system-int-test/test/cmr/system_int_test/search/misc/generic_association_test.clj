@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -88,7 +88,6 @@
         coll1-concept-id (:concept-id coll1)
         coll1-revision-id (:revision-id coll1)
         coll2-concept-id (:concept-id coll2)
-        coll2-revision-id (:revision-id coll2)
         _ (index/wait-until-indexed)
         tl1 (tool-util/ingest-tool-with-attrs {:native-id "tl1" :Name "tool1"})
         tl2 (tool-util/ingest-tool-with-attrs {:native-id "tl2" :Name "tool2"})
@@ -104,13 +103,15 @@
             _ (index/wait-until-indexed)
             ;;Search for the tool tl1, it should return the association
             tl1-search-result (get-associations-and-details "tools.umm_json" "native_id=tl1" :collections true)
-
             ;;Search for the collection coll1, it should return the association
             coll1-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title1" :tools true)
-
             ;;Search for the collection coll2, it should return the association
             coll2-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title2" :tools true)]
         (is (= 200 (:status response1)))
+        (is (= 1 (-> (:body response1)
+                     first
+                     :tool-association
+                     :revision-id)))
 
         ;; Search for the tool tl1 returns the coll1 and coll2 as association
         (is (= (set [coll2-concept-id coll1-concept-id])
@@ -128,6 +129,17 @@
         ;; Search for the collection coll2 returns the tl1 as association
         (is (= [tl1-concept-id]
                (:associations coll2-search-result)))))
+
+    (testing "Collection tool assocation through generic API"
+      (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token tl1-concept-id tl1-revision-id [{:concept-id coll1-concept-id :revision-id coll1-revision-id}
+                                                             {:concept-id coll2-concept-id :data "some data"}])]
+        (index/wait-until-indexed)
+        (is (= 200 (:status response1)))
+        (is (= 2 (-> (:body response1)
+                     first
+                     :generic-association
+                     :revision-id)))))
 
     (testing "Associate tool with tool by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
@@ -267,7 +279,16 @@
         (is (= nil (:associations grid-search-result1)))
 
         ;; Search for the tool again doesn't return the grid as generic association
-        (is (= nil  (:associations tl1-search-result1)))))))
+        (is (= nil  (:associations tl1-search-result1)))))
+
+    (testing "Removing the collection tool association through the generic API"
+      (let [_ (association-util/generic-dissociate-by-concept-ids-revision-ids 
+               token tl1-concept-id tl1-revision-id [{:concept-id coll1-concept-id :revision-id coll1-revision-id}
+                                                     {:concept-id coll2-concept-id}])
+            _ (index/wait-until-indexed)
+            ;; Search for the tool tl1, it should return nil in the association
+            tl1-search-result (get-associations-and-details "tools.umm_json" "native_id=tl1" :collections true)]
+        (is (nil? (:associations tl1-search-result)))))))
 
 ;; Test that generic associations can be made between generic documents and services.
 ;; Also test the collection-service associations through the old association api and verify
@@ -296,7 +317,6 @@
         coll1-concept-id (:concept-id coll1)
         coll1-revision-id (:revision-id coll1)
         coll2-concept-id (:concept-id coll2)
-        coll2-revision-id (:revision-id coll2)
         _ (index/wait-until-indexed)
         sv1 (service-util/ingest-service-with-attrs {:native-id "sv1"
                                                      :Name "service1"})
@@ -321,6 +341,10 @@
             ;; Search for the collection coll2, it should return the association
             coll2-search-result (get-associations-and-details "collections.umm-json" "entry_title=entry-title2" :services true)]
         (is (= 200 (:status response1)))
+        (is (= 1 (-> (:body response1)
+                     first
+                     :service-association
+                     :revision-id)))
 
         ;; Search for the service sv1 returns the coll1 as association
         (is (= (set [coll2-concept-id coll1-concept-id])
@@ -336,6 +360,17 @@
         ;; Search for the collection coll2 returns the sv1 as association
         (is (= [sv1-concept-id]
                (:associations coll2-search-result)))))
+
+    (testing "Collection service assocation through generic API"
+      (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token sv1-concept-id sv1-revision-id [{:concept-id coll1-concept-id :revision-id coll1-revision-id}
+                                                             {:concept-id coll2-concept-id :data "some data"}])]
+        (index/wait-until-indexed)
+        (is (= 200 (:status response1)))
+        (is (= 2 (-> (:body response1)
+                     first
+                     :generic-association
+                     :revision-id)))))
 
     (testing "Associate service with service by concept-id and revision-ids"
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
@@ -462,7 +497,16 @@
         (is (= nil (:associations grid-search-result1)))
 
         ;; Search for the service again doesn't return the grid as generic association
-        (is (= nil  (:associations sv1-search-result1)))))))
+        (is (= nil  (:associations sv1-search-result1)))))
+
+    (testing "Removing the collection service association through the generic API"
+      (let [_ (association-util/generic-dissociate-by-concept-ids-revision-ids
+               token sv1-concept-id sv1-revision-id [{:concept-id coll1-concept-id :revision-id coll1-revision-id}
+                                                     {:concept-id coll2-concept-id}])
+            _ (index/wait-until-indexed)
+            ;; Search for the service sv1, it should return nil for the association
+            sv1-search-result (get-associations-and-details "services.umm_json" "native_id=sv1" :services true)]
+        (is (nil? (:associations sv1-search-result)))))))
 
 ;; Test that generic associations can be made between generic documents and variables.
 (deftest test-variable-and-generic-association
@@ -751,7 +795,6 @@
              {(keyword "convert format") {:XYZ "ZYX"}, :allow-regridding "true"} :concept_id grid-concept-id :revision_id grid-revision-id}]
          (:association_details var1-search-result)))))))
 
-
 ;; Test that generic associations can be made between generic documents and collections.
 (deftest test-collection-and-generic-association
   (let [;;First ingest a Grid concept
@@ -775,9 +818,9 @@
 
     (testing "Generic associations can not be made between collection and service,tool and variables."
       (let [response (association-util/generic-associate-by-concept-ids-revision-ids
-                       token coll-concept-id nil [{:concept-id "V1234-PROV1"} {:concept-id "S1234-PROV1"} {:concept-id "TL1234-PROV1"}])]
+                       token coll-concept-id nil [{:concept-id "V1234-PROV1"}])]
         (is (= 422 (:status response)))
-        (is (some? (re-find #"The following concept ids \[\(\"V1234-PROV1\" \"S1234-PROV1\" \"TL1234-PROV1\"\)\] can not be associated with concept id \[C\d*-PROV1\] because collection/\[service\|tool\|variable\] associations are not supported by the new generic association api."
+        (is (some? (re-find #"The following concept ids \[\(\"V1234-PROV1\"\)\] can not be associated with concept id \[C\d*-PROV1\] because collection/variable associations are not supported by the new generic association api."
                             (first (:errors response))))
             "error message did not match")))
 

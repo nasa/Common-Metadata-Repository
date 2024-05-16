@@ -1,7 +1,7 @@
 (ns cmr.search.test.unit.api.association
   "Tests to verify functionality in cmr.search.api.association namespace."
   (:require
-    [clojure.test :refer :all]
+    [clojure.test :refer [deftest is]]
     [cmr.common.util :as util]
     [cmr.search.api.association :as assoc]))
 
