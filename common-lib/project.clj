@@ -1,18 +1,9 @@
 (defproject nasa-cmr/cmr-common-lib "0.1.1-SNAPSHOT"
   :description "Provides common utility code for CMR projects."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/common-lib"
-  :exclusions [[cheshire]
-               [clj-time]
-               [commons-codec/commons-codec]
-               [instaparse]
-               [org.clojure/core.async]
-               [org.clojure/tools.reader]
-               [org.eclipse.jetty/jetty-http]
-               [org.eclipse.jetty/jetty-io]
-               [org.eclipse.jetty/jetty-util]
-               [ring/ring-core]]
   :dependencies [[camel-snake-kebab "0.4.0"]
-                 [cheshire "5.10.0"]
+                 [cheshire "5.12.0"
+                  :exclusions [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor]]
                  [clj-time "0.15.1"]
                  [clojail "1.0.6"]
                  [gov.nasa.earthdata/quartzite "2.2.1-SNAPSHOT"]
@@ -89,16 +80,17 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                    :plugins [[jonase/eastwood "1.4.2"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
              ;; ~/.lein/profiles.clj file.
              :internal-repos {}
-             :kaocha {:dependencies [[lambdaisland/kaocha "1.0.732"]
-                                     [lambdaisland/kaocha-cloverage "1.0.75"]
-                                     [lambdaisland/kaocha-junit-xml "0.0.76"]]}}
+             :kaocha {:dependencies [[org.clojure/tools.namespace "1.2.0"]
+                                     [lambdaisland/kaocha "1.88.1376"]
+                                     [lambdaisland/kaocha-cloverage "1.1.89"]
+                                     [lambdaisland/kaocha-junit-xml "1.17.101"]]}}
   :aliases {;; Kaocha test aliases
             ;; refer to tests.edn for test configuration
             "kaocha" ["with-profile" "+kaocha" "run" "-m" "kaocha.runner"]

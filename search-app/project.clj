@@ -1,24 +1,8 @@
 (defproject nasa-cmr/cmr-search-app "0.1.0-SNAPSHOT"
   :description "Provides a public search API for concepts in the CMR."
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/search-app"
-  :exclusions [cheshire
-               clj-time
-               com.fasterxml.jackson.core/jackson-core
-               com.fasterxml.jackson.dataformat/jackson-dataformat-cbor
-               commons-codec
-               org.apache.httpcomponents/httpclient
-               org.clojure/clojure
-               org.clojure/tools.reader
-               org.eclipse.emf/org.eclipse.emf.common
-               org.eclipse.emf/org.eclipse.emf.ecore
-               ring/ring-codec
-               org.mozilla/rhino]
-  :dependencies [[cheshire "5.8.1"]
+  :dependencies [[cheshire "5.12.0"]
                  [clj-time "0.15.1"]
-                 [com.fasterxml.jackson.core/jackson-annotations "2.13.2"]
-                 [com.fasterxml.jackson.core/jackson-core "2.13.2"]
-                 [com.fasterxml.jackson.core/jackson-databind "2.13.2.1"]
-                 [com.fasterxml.jackson.dataformat/jackson-dataformat-cbor "2.13.2"]
                  [commons-codec/commons-codec "1.11"]
                  [commons-io/commons-io "2.6"]
                  [gov.nasa.earthdata/cmr-site-templates "0.1.1-SNAPSHOT"]
@@ -64,8 +48,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
-             :dev {:exclusions [[org.clojure/tools.nrepl]]
-                   :dependencies [[criterium "0.4.4"]
+             :dev {:dependencies [[criterium "0.4.4"]
                                   [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
                                   [org.clojars.gjahad/debug-repl "0.3.3"]
                                   [org.clojure/tools.namespace "0.2.11"]
@@ -93,8 +76,8 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                    :plugins [[jonase/eastwood "1.4.2"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]
                               [lein-shell "0.5.0"]]}

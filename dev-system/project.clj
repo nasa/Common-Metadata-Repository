@@ -48,9 +48,6 @@
   :url "https://github.com/nasa/Common-Metadata-Repository/tree/master/dev-system"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
-  :exclusions [[commons-codec/commons-codec]
-               [org.clojure/clojure]
-               [ring/ring-codec]]
   :dependencies ~(concat '[[commons-codec/commons-codec "1.11"]
                            [org.clojure/clojure "1.11.2"]
                            [ring/ring-codec "1.1.1"]]
@@ -74,8 +71,7 @@
                         :dependency-check {:output-format [:all]
                                            :suppression-file "resources/security/suppression.xml"
                                            :properties-file "resources/security/dependencycheck.properties"}}
-             :dev-dependencies {:exclusions [[org.clojure/tools.nrepl]]
-                                :dependencies [[criterium "0.4.4"]
+             :dev-dependencies {:dependencies [[criterium "0.4.4"]
                                                [debugger "0.2.0"]
                                                [io.github.jaybarra/drift "1.5.4.2-SNAPSHOT"]
                                                [org.clojars.gjahad/debug-repl "0.3.3"]
@@ -120,8 +116,8 @@
              ;; level directory.
              :lint {:source-paths ^:replace ["src"]
                     :test-paths ^:replace []
-                    :plugins [[jonase/eastwood "0.2.5"]
-                              [lein-ancient "0.6.15"]
+                    :plugins [[jonase/eastwood "1.4.2"]
+                              [lein-ancient "0.7.0"]
                               [lein-bikeshed "0.5.0"]
                               [lein-kibit "0.1.6"]]}
              ;; The following profile is overriden on the build server or in the user's
@@ -144,7 +140,9 @@
 
             ;; Install spatial plugin locally
             "install-spatial-plugin"
-            ["shell" "cmr" "install" "local" "spatial_plugin"]
+            ["do"
+             ["shell" "printf" "\ninstall-spatial-plugin\n"]
+             ["shell" "cmr" "install" "local" "spatial_plugin"]]
             ;; Install with local elasticsearch
             "install"
             ["do"

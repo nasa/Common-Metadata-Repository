@@ -64,25 +64,25 @@ function setup_db () {
 
 function setup_dev () {
     echo "Timestamp:" `date`
-    echo "Installing all apps and generating API documentation ..."
+    cprintln $GREEN$UNDERLINE "Installing all apps and generating API documentation ..."
     cd $CMR_DIR && lein 'install-with-content!'
     if [ $? -ne 0 ] ; then
-        echo "Failed to install apps and generate docs" >&2
+        cprintln $RED "Failed to install apps and generate docs" >&2
         exit 127
     fi
     echo "Timestamp:" `date`
     rm -r $CMR_DIR/dev-system/checkouts
-    echo "Creating dev-system checkouts directory ... "
+    cprintln $GREEN$UNDERLINE "Creating dev-system checkouts directory ... "
     (cd $CMR_DIR/dev-system && lein create-checkouts)
     if [ $? -ne 0 ] ; then
-        echo "Failed to create checkouts directory" >&2
+        cprintln $RED "Failed to create checkouts directory" >&2
         exit 127
     fi
     echo "Timestamp:" `date`
-    echo "Installing orbit library gems ..."
+    cprintln $GREEN$UNDERLINE "Installing orbit library gems ..."
     (cd $CMR_DIR/orbits-lib && lein install-gems)
     if [ $? -ne 0 ] ; then
-        echo "Failed to install gems" >&2
+        cprintln $RED "Failed to install gems" >&2
         exit 127
     fi
 }
