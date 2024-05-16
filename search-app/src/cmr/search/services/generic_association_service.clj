@@ -26,7 +26,7 @@
   "Returns user id of the token in the context. Throws an error if no token is provided"
   [context]
   (if (:token context)
-   (util/lazy-get context :user-id)
+    (util/lazy-get context :user-id)
     (errors/throw-service-error
      :unauthorized "Associations cannot be modified without a valid user token.")))
 
