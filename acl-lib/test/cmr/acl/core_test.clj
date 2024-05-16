@@ -59,3 +59,20 @@
         expected-context {:token "params-token" :client-id acl_core/CURL_CLIENT_ID}]
     (println (fun context params headers))
     (is (= (fun context params headers) expected-context))))
+
+(deftest context->sids-test
+  (testing "get sids from requesting it"
+    (let [context {:keys ["params-token"]}]
+    (with-redefs [cmr.acl.core/request-sids (fn [context] [:guest])]
+      (is (= (acl_core/context->sids context) [:guest]))))
+  (testing "get sids from context"
+    (let [context {:sids ["guest"]}]
+    (is (= (acl_core/context->sids context) ["guest"]))))))
+
+(deftest get-permitting-acls-test
+  (testing "Exception getting acls"
+    (with-redefs [cmr.transmit.access-control/acl-type->acl-key (fn [object-identity-type] (throw (Exception. "Exception to break test")))]
+      (is (nil? (acl_core/get-permitting-acls nil nil nil nil)))))
+  (testing "Exception getting acls with 401 message"
+    (with-redefs [cmr.transmit.access-control/acl-type->acl-key (fn [object-identity-type] (throw (Exception. "Exception to break test with status 401")))]
+      (is (thrown? Exception (acl_core/get-permitting-acls nil nil nil nil))))))
