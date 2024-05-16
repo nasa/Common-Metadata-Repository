@@ -6,7 +6,7 @@
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common.config :as cfg :refer [defconfig]]
+   [cmr.common.config :refer [defconfig]]
    [cmr.common.log :refer (info)]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
