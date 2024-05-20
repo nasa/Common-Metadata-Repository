@@ -2,7 +2,6 @@
   (:require
    [cheshire.core :as json]
    [cmr.common.util :as util]
-   [cmr.common-app.services.ingest.subscription-common :as sub-common]
    [config.mdb-migrate-helper :as helper]))
 
 (defn populate-new-column

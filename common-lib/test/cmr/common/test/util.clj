@@ -972,3 +972,21 @@
 
     "nil as input"
     nil nil))
+
+
+(deftest normalize-parameters-test
+  (testing "Query normalization, should be sorted parameters - With a leading question mark"
+   (let [query "provider=PROV1&instrument=1B&instrument=2B"
+         expected "bc71e563ac03a05d7c557608f868ce6a"
+         actual (util/normalize-parameters query)]
+     (is (= expected actual))))
+  (testing "Query normalization, should be sorted parameters - Without a leading question mark"
+   (let [query "provider=PROV1&instrument=1B&instrument=2B"
+         expected "bc71e563ac03a05d7c557608f868ce6a"
+         actual (util/normalize-parameters query)]
+     (is (= expected actual))))
+  (testing "Query normalization, should be sorted parameters - Empty string"
+   (let [query ""
+         expected "d41d8cd98f00b204e9800998ecf8427e"
+         actual (util/normalize-parameters query)]
+     (is (= expected actual)))))
