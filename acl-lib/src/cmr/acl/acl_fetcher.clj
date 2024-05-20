@@ -10,7 +10,7 @@
    [cmr.common.cache.single-thread-lookup-cache :as stl-cache]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.jobs :refer [defjob]]
-   [cmr.common.log :refer (info)]
+   [cmr.common.log :as log :refer (info)]
    [cmr.common.util :as util]
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as config]))
