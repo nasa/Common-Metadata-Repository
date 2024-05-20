@@ -103,8 +103,6 @@
 (defn- process-search-for-acls
   "Processes response and formats it for get-all-acls"
   [context object-identity-types]
-  (println "inside method")
-  (println (get-all-acls context object-identity-types))
   (->> (get-all-acls context object-identity-types)
        (mapcat :items)
        (map :acl)
@@ -146,8 +144,7 @@
                    "following object-identity-types so we will fetch them "
                    "from access-control each time they are needed. "
                    (pr-str not-cached-oits)))
-        (process-search-for-acls context object-identity-types)
-        (println "about to filter."))
+        (process-search-for-acls context object-identity-types))
       ;; Fetch ACLs using a cache
       (filter
         (fn [acl]
