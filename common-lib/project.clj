@@ -16,6 +16,7 @@
                  [com.taoensso/timbre "5.1.0"]
                  [commons-codec/commons-codec "1.11"]
                  [compojure "1.6.1"]
+                 [digest "1.4.8"]
                  [environ "1.1.0"]
                  [hiccup "1.0.5"]
                  [inflections "0.13.0"]
