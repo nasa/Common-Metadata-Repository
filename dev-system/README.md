@@ -35,6 +35,12 @@ Furthermore, there is a second (and optional) test runner you can use for
 running suites, test namespaces, and individual test functions. See the
 docstring for `run-suites` in `dev/user.clj` for usage information.
 
+### Running Tests Faster
+
+Unit tests can be run in parallel using the python script in [run_unit_tests.py][ut-script].
+This script is meant to be called with `lein ci-utest` by a build system such as
+Bamboo vs `lein modules ci-utest` which is the old serial tester.
+
 ### Testing with a Local SQS/SNS
 
 If you would like to test messaging against a local clone of SQS/SNS, then you
@@ -103,4 +109,6 @@ The `dev-system` service additionally requires `-v /var/run/docker.sock:/var/run
 
 ## License
 
-Copyright © 2014-2023 NASA
+Copyright © 2014-2024 NASA
+
+[ut-script]: ../bin/unit_test_script/run_unit_tests.py "Unit test script"

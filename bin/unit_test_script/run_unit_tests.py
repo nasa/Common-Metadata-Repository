@@ -2,7 +2,12 @@
 
 """
 Run all the unit tests in threads so as to get more of them done in a shorter
-amount of time.
+amount of time. The processing follows a "worker-bee" style solution, where a
+jobs list is populated with the projects to be tested and then workers pull off
+that list and processes them. Jobs can be filtered out either because they do
+not need to be tested (see opt_out) or because they have not been written in
+such a way as to allow them to be run while other tests run, because they use a
+common resource like redis (see run_alone).
 """
 
 from concurrent.futures import ThreadPoolExecutor, wait
@@ -12,12 +17,12 @@ import multiprocessing
 import os
 import time
 
-# Originally written with https://github.com/jceaser/shellwrap, the two files
-# used have instead been included so as to not require any pip actions when
+# Originally written using https://github.com/jceaser/shellwrap, the two files
+# imported have instead been included so as to not require any pip actions when
 # running on bamboo ; trying to be as lights as posible
 #from shellwrap import color, unix
-import color
-import unix
+import color # add color and verbose printing
+import unix # unix command calling
 
 # for a more descriptive run locally, remove these settings
 env = {"color": False, "verbose": color.VMode.ERROR}
