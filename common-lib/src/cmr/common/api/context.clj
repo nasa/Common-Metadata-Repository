@@ -61,6 +61,6 @@
   ([context]
    (context->user-id context "Valid user token required."))
   ([context msg]
-   (if-let [token (:token context)]
+   (if (:token context)
      (util/lazy-get context :user-id)
      (errors/throw-service-error :unauthorized msg))))

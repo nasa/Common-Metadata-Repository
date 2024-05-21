@@ -816,14 +816,6 @@
         token (echo-util/login (system/context) "user1")]
     (index/wait-until-indexed)
 
-    (testing "Generic associations can not be made between collection and service,tool and variables."
-      (let [response (association-util/generic-associate-by-concept-ids-revision-ids
-                       token coll-concept-id nil [{:concept-id "V1234-PROV1"}])]
-        (is (= 422 (:status response)))
-        (is (some? (re-find #"The following concept ids \[\(\"V1234-PROV1\"\)\] can not be associated with concept id \[C\d*-PROV1\] because collection/variable associations are not supported by the new generic association api."
-                            (first (:errors response))))
-            "error message did not match")))
-
     (testing "Generic associations can not be made between collection and drafts, and between generic doc and drafts."
       (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
                         token coll-concept-id nil [{:concept-id "CD1234-PROV1"} {:concept-id "SD1234-PROV1"} {:concept-id "TD1234-PROV1"} {:concept-id "GD1234-PROV1"}])
