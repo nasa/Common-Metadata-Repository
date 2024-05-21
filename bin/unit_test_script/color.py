@@ -13,13 +13,6 @@
 #mark - Imports
 
 from enum import Enum   #Creating Enums
-#import argparse         #command line parsing
-#import code             #interactive shell
-#import os               #file handling
-#import re               #filter in man()
-#import readline         #interactive shell
-#import subprocess       #calling unix commands
-#import sys              #exiting
 
 # ##############################################################################
 #mark - Utility functions - Leave these alone
