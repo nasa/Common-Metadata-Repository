@@ -76,7 +76,7 @@ When running CMR locally, the values in this file do not need to be change, CMR 
 This process will take quite a long time, be patient and monitor progress.
 
 #### Running CMR
-You can run CMR two different ways, everything in one or as separte.
+You can run CMR two different ways, everything in one or as separate.
 
 ##### All Services At Once
 
