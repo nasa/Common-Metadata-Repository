@@ -24,7 +24,6 @@
   ACL cache."
   [":acls-hash-code"])
 
-;;TODO: test later
 (defn create-acl-cache*
   "Creates the acl cache using the given cmr cache protocol implementation and object-identity-types.
   The object-identity-types are specified and stored as extra information in the cache so that when
@@ -47,7 +46,6 @@
   {:default 30
    :type Long})
 
-;; TODO test
 (defn create-consistent-acl-cache
   "Creates the acl cache using the given object-identity-types that uses redis for consistency."
   [object-identity-types]
@@ -99,7 +97,6 @@
                 response))
       [response])))
 
-;; TODO: Test
 (defn- process-search-for-acls
   "Processes response and formats it for get-all-acls"
   [context object-identity-types]
@@ -108,7 +105,6 @@
        (map :acl)
        (map util/map-keys->kebab-case)))
 
-;; TODO: Test
 (defn expire-consistent-cache-hashes
   "Forces the cached hash codes of an ACL consistent cache to expire so that subsequent requests for
    ACLs will check redis for consistency."
@@ -116,7 +112,6 @@
   (let [cache (cache/context->cache context acl-cache-key)]
     (consistent-cache/expire-hash-cache-timeouts (:delegate-cache cache))))
 
-;;TODO: Test
 (defn refresh-acl-cache
   "Refreshes the acls stored in the cache. This should be called from a background job on a timer
   to keep the cache fresh. This will throw an exception if there is a problem fetching ACLs. The
