@@ -72,8 +72,8 @@
     (with-redefs [cmr.acl.core/request-sids (fn [context] [:guest])]
       (is (= (acl_core/context->sids context) [:guest]))))
   (testing "get sids from context"
-    (let [context {:sids ["guest"]}]
-    (is (= (acl_core/context->sids context) ["guest"]))))))
+    (let [context {:sids [:guest]}]
+    (is (= (acl_core/context->sids context) [:guest]))))))
 
 (deftest get-permitting-acls-test
   (testing "Exception getting acls"

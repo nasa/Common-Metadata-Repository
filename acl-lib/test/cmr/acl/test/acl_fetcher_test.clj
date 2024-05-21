@@ -25,8 +25,7 @@
     (is (= acl-fetcher/identity-string-map expected-map))))
 
 (deftest object-identity-types->identity-strings-test
-  (let [fun #'cmr.acl.acl-fetcher/object-identity-types->identity-strings]
-    (is (= (fun object-identity-types-ex) ["system" "provider" "single_instance"]))))
+  (is (= (#'cmr.acl.acl-fetcher/object-identity-types->identity-strings object-identity-types-ex) ["system" "provider" "single_instance"])))
 
 (deftest context->cached-object-identity-types-test
   (let [acl-cache (acl-fetcher/create-consistent-acl-cache object-identity-types-ex)
@@ -60,13 +59,10 @@
   ; }
 
 (deftest get-all-acls-test
-  (let [acl-cache (acl-fetcher/create-consistent-acl-cache object-identity-types-ex)
-        context {:system {:caches {acl-fetcher/acl-cache-key acl-cache}}}
-        fun #'cmr.acl.acl-fetcher/get-all-acls]
     (testing "when there is one page of results"
       (with-redefs [cmr.transmit.access-control/search-for-acls (fn [context params] {:hits 10})]
-        (is (= (fun context object-identity-types-ex) [{:hits 10}]))))
+        (is (= (#'cmr.acl.acl-fetcher/get-all-acls {} object-identity-types-ex) [{:hits 10}]))))
     (testing "when there is more than one page of results"
       (with-redefs [cmr.transmit.access-control/search-for-acls (fn [context params] {:hits 6000})]
         ;; should be 3 pages, so 3 item maps will be returned
-        (is (= (fun context object-identity-types-ex) [{:hits 6000} {:hits 6000} {:hits 6000}]))))))
+        (is (= (#'cmr.acl.acl-fetcher/get-all-acls {} object-identity-types-ex) [{:hits 6000} {:hits 6000} {:hits 6000}])))))
