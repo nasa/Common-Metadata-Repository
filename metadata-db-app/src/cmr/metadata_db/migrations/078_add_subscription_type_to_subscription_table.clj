@@ -1,7 +1,5 @@
 (ns cmr.metadata-db.migrations.078-add-subscription-type-to-subscription-table
   (:require
-   [cheshire.core :as json]
-   [cmr.common.util :as util]
    [config.mdb-migrate-helper :as helper]))
 
 (defn populate-new-column

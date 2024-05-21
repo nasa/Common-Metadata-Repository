@@ -1,7 +1,5 @@
 (ns cmr.metadata-db.migrations.075-add-provider-consortiums
   (:require
-   [cheshire.core :as json]
-   [cmr.common.util :as util]
    [config.mdb-migrate-helper :as helper]))
 
 (defn up
