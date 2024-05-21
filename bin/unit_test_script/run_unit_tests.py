@@ -12,26 +12,23 @@ common resource like redis (see run_alone).
 
 from concurrent.futures import ThreadPoolExecutor, wait
 from threading import Lock
+import argparse
 import datetime
 import multiprocessing
 import os
+import subprocess
 import time
 
-# Originally written using https://github.com/jceaser/shellwrap, the two files
-# imported have instead been included so as to not require any pip actions when
-# running on bamboo ; trying to be as lights as posible
-#from shellwrap import color, unix
-import color # add color and verbose printing
-import unix # unix command calling
+# Originally written using https://github.com/jceaser/shellwrap, the color file
+# imported here is instead included as a file so as to not require any pip
+# actions when running on bamboo
+import color
 
 # for a more descriptive run locally, remove these settings
 env = {"color": False, "verbose": color.VMode.ERROR}
 
-# There is nothing wrong with using a couple of globals vars to manage a bunch
-# of threads because this is way cleaner then doing it all in bash
 # pylint: disable=global-statement
 # pylint: disable=global-variable-not-assigned
-
 lock = Lock() # used to control when the globals are written to
 active_threads = 0 # pylint: disable=invalid-name
 total_time = 0 # pylint: disable=invalid-name
@@ -62,7 +59,9 @@ def update_total_time_locking(durration):
 
 def get_work_list():
     "Get a dump of all the projects that lein manages"
-    raw_work_list = unix.pipe(["lein", "dump"])
+    cmd_result = subprocess.run(["lein", "dump"], check=True, capture_output=True)
+    raw_work_list = cmd_result.stdout.decode('utf-8')
+
     list_of_projects = []
     for item in raw_work_list.split("\n"):
         item = item.strip(" ")
@@ -98,7 +97,7 @@ def worker(_context, id_number):
         # block, to ensure thread never dies
         try:
             os.chdir(base+"/"+task)
-            unix.pipe(["lein", "ci-utest"])
+            subprocess.run(["lein", "ci-utest"], check=True, capture_output=True)
         except Exception as e: # pylint: disable=broad-exception-caught
             color.cprint(color.tcode.red, f"{id_number}: {task} - {e}", environment=env)
         et = time.time()
@@ -111,23 +110,52 @@ def worker(_context, id_number):
 
     color.cprint(color.tcode.red, f"Done {id_number}", environment=env)
 
+def init_argparse() -> argparse.ArgumentParser:
+    " Setup the argparse with the options for this script. "
+    parser = argparse.ArgumentParser(
+        usage="%(prog)s [OPTION]",
+        description="Run the CMR module unit tests in parallel."
+    )
+    parser.add_argument('-c', '--color', action='store_true',
+        help='Print statments using color.')
+    parser.add_argument('-t', '--threads', type=int,
+        help='Number of threads if between 1 and 32, otherwise half the CPUs')
+    parser.add_argument(
+        '-V', '--version', action='version',
+        version = f"{parser.prog} version 1.0.0"
+    )
+    parser.add_argument('-v', '--verbose', action='store_true',
+        help="Print more output")
+    return parser
+
 def main():
     " Main function, called in command line mode "
     global work_list, total_jobs, total_time
+
+    #handle command line input
+    parser = init_argparse()
+    args = parser.parse_args()
+    if args.verbose:
+        env["verbose"] = color.VMode.WARN
+    if args.color:
+        env["color"] = True
+    if args.threads is None or args.threads<1 or args.threads>32:
+        args.threads = int(max(2, min(32, multiprocessing.cpu_count()/2)))
+
     print (f"{datetime.datetime.now()}")
     print ("This is the new script to run unit tests: run_unit_tests.py")
+
     with ThreadPoolExecutor() as executor:
         work_list = get_work_list()
 
-        thread_count = int(max(2, multiprocessing.cpu_count()/2))
         color.cprint(color.tcode.yellow,
-            "Using {thread_count} threads on {len(work_list)} tasks.",
+            "Using {args.threads} threads on {len(work_list)} tasks.",
             environment=env)
 
         jobs = []
 
         # Create all the worker threads
-        for iindex in range(thread_count):
+        for iindex in range(args.threads):
             jobs.append(executor.submit(worker, env, iindex))
         for future in jobs:
             result = future.result()
