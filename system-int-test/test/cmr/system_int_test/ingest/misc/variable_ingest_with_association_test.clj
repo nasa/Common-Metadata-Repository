@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.ingest.misc.variable-ingest-with-association-test
   "CMR variable ingest with association integration tests."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [clojure.string :as string]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -18,19 +18,19 @@
   (let [;; ingest 4 collections, each with 2 revisions
         coll1-PROV1-1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                            :ShortName "S1"}))
-        coll1-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+        _ (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                             :ShortName "S1"}))
         coll2-PROV1-1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
                                                                                             :ShortName "S2"}))
-        coll2-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+        _ (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
                                                                                             :ShortName "S2"}))
         coll1-PROV2-1 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E1"
                                                                                             :ShortName "S1"}))
         coll1-PROV2-2 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E1"
                                                                                             :ShortName "S1"}))
-        coll2-PROV2-1 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
+        _ (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
                                                                                             :ShortName "S2"}))
-        coll2-PROV2-2 (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
+        _ (data-core/ingest-umm-spec-collection "PROV2" (data-umm-c/collection {:EntryTitle "E2"
                                                                                             :ShortName "S2"}))
         _ (index/wait-until-indexed)]
 
@@ -189,7 +189,7 @@
         (is (= 2 (:revision-id variable-association)))
         (is (mdb/concept-exists-in-mdb? (:concept-id variable-association) 1))))
 
-    (testing "Deletion of a collection propagates to deletion of variables associated with the collection."
+    (testing "Deletion of a collection does not propagate to deletion of variables associated with the collection."
       (let [concept (variable-util/make-variable-concept
                       {}
                       {:native-id "var1"
@@ -202,19 +202,19 @@
                         :raw? true})]
          (is (= 200 (:status response)))
          (index/wait-until-indexed)
-         ;; both the variable and variable association should be deleted too.
-         (is (= true (:deleted (mdb/get-concept concept-id))))
+         ;; the variable association should be deleted.
+         (is (= false (:deleted (mdb/get-concept concept-id))))
          (is (= true (:deleted (mdb/get-concept (:concept-id variable-association)))))))))
 
 (deftest variable-ingest-with-association-update-test
   (let [;; ingest 4 collections, each with 2 revisions
         coll1-PROV1-1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                            :ShortName "S1"}))
-        coll1-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
+        _ (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E1"
                                                                                             :ShortName "S1"}))
         coll2-PROV1-1 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
                                                                                            :ShortName "S2"}))
-        coll2-PROV1-2 (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
+        _ (data-core/ingest-umm-spec-collection "PROV1" (data-umm-c/collection {:EntryTitle "E2"
                                                                                             :ShortName "S2"}))
         _ (index/wait-until-indexed)]
 
@@ -227,7 +227,6 @@
                       :coll-concept-id (:concept-id coll1-PROV1-1)})
             {:keys [concept-id revision-id variable-association]}
               (variable-util/ingest-variable-with-association concept)
-            var-concept-id concept-id
             va-concept-id-1 (:concept-id variable-association)
             va-revision-id-1 (:revision-id variable-association)]
         (is (mdb/concept-exists-in-mdb? concept-id revision-id))
@@ -253,8 +252,8 @@
             (is (= 1 va-revision-id-2))
             (is (not= va-concept-id-2 va-concept-id-1))
 
-            ;; Verify va-concept-1 is deleted.
-            (is (= true (:deleted (mdb/get-concept va-concept-id-1))))
+            ;; Verify va-concept-1 is not deleted.
+            (is (= false (:deleted (mdb/get-concept va-concept-id-1))))
 
             (testing  "update the variable above with different collection on PROV1 is OK"
               (let [concept (variable-util/make-variable-concept
@@ -274,6 +273,5 @@
             (is (= 1 va-revision-id-3))
             (is (not= va-concept-id-3 va-concept-id-2))
 
-            ;; Verify va-concept-2 is deleted.
-            (is (= true (:deleted (mdb/get-concept va-concept-id-2))))))))))))
-
+            ;; Verify va-concept-2 is not deleted.
+            (is (= false (:deleted (mdb/get-concept va-concept-id-2))))))))))))
