@@ -5,11 +5,8 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest-util]
-   [cmr.system-int-test.utils.metadata-db-util :as mdb]
    [cmr.transmit.association :as transmit-assoc]
-   [cmr.transmit.generic-association :as transmit-generic-assoc]
-   [cmr.transmit.tokens :as tokens]
-   [cmr.umm-spec.versioning :as versioning]))
+   [cmr.transmit.generic-association :as transmit-generic-assoc]))
 
 (defn generic-associate-by-concept-ids-revision-ids
   "Associates a concept with the given concept id, revision id to a list of concept ids and revision ids."
@@ -80,7 +77,7 @@
 (defn assert-invalid-data-error
   "Assert association response when status code is 422 is correct"
   [expected-errors response]
-  (let [{:keys [status body errors]} response]
+  (let [{:keys [status errors]} response]
     (is (= [422 (set expected-errors)]
            [status (set errors)]))))
 

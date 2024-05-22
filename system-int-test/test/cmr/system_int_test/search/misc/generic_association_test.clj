@@ -539,18 +539,16 @@
                   {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
                                                            :Size 3
                                                            :Type "OTHER"})]}
-                  {:native-id "var1"
-                   :coll-concept-id (:concept-id coll1)})
-        var1 (variable-util/ingest-variable-with-association
+                  {:native-id "var1"})
+        var1 (variable-util/ingest-variable
               concept1
               (variable-util/token-opts token))
         concept2 (variable-util/make-variable-concept
                   {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
                                                            :Size 3
                                                            :Type "OTHER"})]}
-                  {:native-id "var2"
-                   :coll-concept-id (:concept-id coll2)})
-        var2 (variable-util/ingest-variable-with-association
+                  {:native-id "var2"})
+        var2 (variable-util/ingest-variable
               concept2
               (variable-util/token-opts token))
         var1-concept-id (:concept-id var1)
@@ -762,38 +760,55 @@
         ;; Search for the collection coll2 again doesn't return the coll1 as generic association
         (is (= nil
                (:associations coll2-search-result1)))))
-(testing "Associate grid with variable retrieve data using the .json endpoint"
- (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
-                  token grid-concept-id grid-revision-id [{:concept-id var1-concept-id  :revision-id var1-revision-id :data {"convert format" {:XYZ "ZYX"} :allow-regridding "true"}}])
-       ;; Switch the position of grid and variable should return the same concept-id and revision-id is increased by 1.
-       ;; Associate with some mock payload data ensure that data payload is returned in the format it was associated with
-       response2 (association-util/generic-associate-by-concept-ids-revision-ids
-                  token var1-concept-id var1-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id :data {"convert format" {:XYZ "ZYX"} :allow-regridding "true"}}])
 
-       ;; Search for the grid, it should return the association
-       grid-search-result (get-associations-and-details "grids.json" "name=Grid-A7-v1" :variables false)
+    (testing "Associate grid with variable retrieve data using the .json endpoint"
+      (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token grid-concept-id grid-revision-id [{:concept-id var1-concept-id  :revision-id var1-revision-id :data {"convert format" {:XYZ "ZYX"} :allow-regridding "true"}}])
+           ;; Switch the position of grid and variable should return the same concept-id and revision-id is increased by 1.
+           ;; Associate with some mock payload data ensure that data payload is returned in the format it was associated with
+            response2 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token var1-concept-id var1-revision-id [{:concept-id grid-concept-id :revision-id grid-revision-id :data {"convert format" {:XYZ "ZYX"} :allow-regridding "true"}}])
 
-       ;; Search for the variable, it should return the association
-       var1-search-result (get-associations-and-details "variables.json" "native_id=var1" :grids false)]
-   (is (= 200 (:status response1) (:status response2)))
+           ;; Search for the grid, it should return the association
+            grid-search-result (get-associations-and-details "grids.json" "name=Grid-A7-v1" :variables false)
 
-   ;; The first and second associations are creating and updating the same association
-   (is (= (get-in (first (:body response1)) [:generic-association :concept-id])
-          (get-in (first (:body response2)) [:generic-association :concept-id])))
-   (is (= (get-in (first (:body response2)) [:generic-association :revision-id])
-          (+ 1 (get-in (first (:body response1)) [:generic-association :revision-id]))))
+           ;; Search for the variable, it should return the association
+            var1-search-result (get-associations-and-details "variables.json" "native_id=var1" :grids false)]
+        (is (= 200 (:status response1) (:status response2)))
 
-   ;; Search for the grid returns the var1 as generic association
-   (is (= [var1-concept-id]
-          (:associations grid-search-result)))
+       ;; The first and second associations are creating and updating the same association
+        (is (= (get-in (first (:body response1)) [:generic-association :concept-id])
+               (get-in (first (:body response2)) [:generic-association :concept-id])))
+        (is (= (get-in (first (:body response2)) [:generic-association :revision-id])
+               (+ 1 (get-in (first (:body response1)) [:generic-association :revision-id]))))
 
-   ;; Searching the variable returns the grid as generic association
-   (is (= [grid-concept-id]
-          (:associations var1-search-result)))
-   ;; Searching the variable returns the grid's data as the association details
-   (is (= [{:data
-             {(keyword "convert format") {:XYZ "ZYX"}, :allow-regridding "true"} :concept_id grid-concept-id :revision_id grid-revision-id}]
-         (:association_details var1-search-result)))))))
+       ;; Search for the grid returns the var1 as generic association
+        (is (= [var1-concept-id]
+               (:associations grid-search-result)))
+
+       ;; Searching the variable returns the grid as generic association
+        (is (= [grid-concept-id]
+               (:associations var1-search-result)))
+       ;; Searching the variable returns the grid's data as the association details
+        (is (= [{:data
+                 {(keyword "convert format") {:XYZ "ZYX"}, :allow-regridding "true"} :concept_id grid-concept-id :revision_id grid-revision-id}]
+               (:association_details var1-search-result)))))
+
+    (testing "Associate variable with 2 collections."
+      (let [response1 (association-util/generic-associate-by-concept-ids-revision-ids
+                       token var1-concept-id var1-revision-id [{:concept-id coll1-concept-id  :revision-id coll1-revision-id :data {"convert format" {:XYZ "ZYX"} :allow-regridding "true"}}
+                                                               {:concept-id coll2-concept-id  :revision-id coll2-revision-id :data {"convert format" {:XYZ "ZYX"} :allow-regridding "true"}}])
+            ;; Search for the variable, it should return the association
+            var1-search-result (get-associations-and-details "variables.json" "native_id=var1" :collections false)
+
+            ;; Dissociate the association
+            response2 (association-util/generic-dissociate-by-concept-ids-revision-ids
+                       token var1-concept-id var1-revision-id [{:concept-id coll1-concept-id  :revision-id coll1-revision-id}])
+            _ (index/wait-until-indexed)]
+        (is (= 200 (:status response1)))
+        (is [coll1-concept-id coll2-concept-id] (:associations var1-search-result))
+        (is (= 200 (:status response2)))
+        (is [coll2-concept-id] (:associations var1-search-result))))))
 
 ;; Test that generic associations can be made between generic documents and collections.
 (deftest test-collection-and-generic-association
