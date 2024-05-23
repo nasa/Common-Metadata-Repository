@@ -3,10 +3,10 @@
   granule fields. First major use case is supporting OPeNDAP virutal directories capability."
   (:require
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
-   [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as v2-facets]
-   [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]))
+   [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
+   [cmr.umm-spec.validation.util :as v-util]))
 
 (def granule-facet-params->elastic-fields
   "Maps the parameter names for the concept-type to the fields in Elasticsearch."
@@ -67,11 +67,11 @@
 
 (def validations
   "Validation functions to run for v2 granule facets."
-  (util/compose-validations [single-collection-validation]))
+  (v-util/compose-validations [single-collection-validation]))
 
 (defmethod v2-facets/facets-validator :granule
   [_]
-  (util/build-validator :bad-request validations))
+  (v-util/build-validator :bad-request validations))
 
 (def group-nodes-in-order-temporal
   "The titles of temporal facet group nodes in order."

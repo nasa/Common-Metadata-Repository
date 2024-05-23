@@ -5,7 +5,7 @@
     https://github.com/clojure/core.cache/wiki/Using"
   (:require
    [clojure.core.cache :as cc :refer [defcache]]
-   [cmr.common.cache :as c]
+   [cmr.common.cache :as cache]
    [cmr.common.log :refer [debug error]]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
@@ -72,18 +72,18 @@
    ;; Atom containing an in memory cache
    cache-atom]
 
-  c/CmrCache
+  cache/CmrCache
   (get-keys
-    [this]
+    [_this]
     (keys @cache-atom))
 
   (key-exists
-    [this key]
+    [_this _key]
     ;; key is the cache-key. Checks to see if the cache has been setup.
     (some? @cache-atom))
 
   (get-value
-    [this key]
+    [_this key]
     (-> cache-atom
         (swap! (fn [cache]
                  (if (cc/has? cache key)
@@ -96,7 +96,7 @@
         (get key)))
 
   (get-value
-    [this key lookup-fn]
+    [_this key lookup-fn]
     (-> cache-atom
         (swap! (fn [cache]
                  (if (cc/has? cache key)
@@ -105,11 +105,11 @@
         (get key)))
 
   (reset
-    [this]
+    [_this]
     (reset! cache-atom initial-cache))
 
   (set-value
-    [this key value]
+    [_this key value]
     (swap! cache-atom assoc key value))
 
   (cache-size
@@ -120,15 +120,15 @@
 
 (defmulti create-core-cache
   "Create a cache using cmr.core-cache of the given type."
-  (fn [type value opts]
+  (fn [type _value _opts]
     type))
 
 (defmethod create-core-cache :default
-  [type value opts]
+  [_type value _opts]
   (cc/basic-cache-factory value))
 
 (defmethod create-core-cache :lru
-  [type value opts]
+  [_type value opts]
   (apply cc/lru-cache-factory value (flatten (seq opts))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -143,6 +143,11 @@
   (let [ks (map key (filter #(> (- now (val %)) expiry) ttl))]
     #(apply dissoc % ks)))
 
+;(declare TTLCache)
+;(declare cache ttl ttl-ms)
+;(declare lookup has? hit miss seed evict)
+;(declare this item not-found _ miss result base toString)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defcache TTLCache [cache ttl ttl-ms]
   CacheProtocol
   (lookup [this item]
@@ -193,7 +198,7 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defmethod create-core-cache :ttl
-  [type value opts]
+  [_type value opts]
   (apply ttl-cache-factory value (flatten (seq opts))))
 
 (defn create-in-memory-cache

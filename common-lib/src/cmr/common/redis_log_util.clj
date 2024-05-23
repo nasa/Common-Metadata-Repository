@@ -7,7 +7,7 @@
 
 (defconfig redis-health-log-time-check
   "We are creating a set of timing logs for redis interactions. Any timing in milliseconds that is greater
-  than this setting will create info logs so that we can track when redis is getting near its 
+  than this setting will create info logs so that we can track when redis is getting near its
   performance threasholds vs just debug timing information. The unit for this setting is milliseconds."
   {:default 100 :type Long})
 
@@ -37,7 +37,6 @@
 (defn log-redis-write-complete
   "Helper function provides consistent logs across the CMR for redis write durations."
   [function-name key duration]
-  (def duration duration)
   (when (> duration (redis-health-log-time-check))
     (info (format "Redis timed function %s for %s redis write time [%d] ms" function-name key duration))))
 

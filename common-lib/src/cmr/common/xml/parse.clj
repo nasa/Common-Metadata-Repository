@@ -1,13 +1,13 @@
 (ns cmr.common.xml.parse
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.date-time-parser :as dtp]
    [cmr.common.xml.simple-xpath :refer [parse-xpath select text]]))
 
 (defn- blank-to-nil
   "Returns the given string or nil if it is blank."
   [s]
-  (when-not (str/blank? s)
+  (when-not (string/blank? s)
     s))
 
 (defn value-of*

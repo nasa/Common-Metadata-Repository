@@ -1,9 +1,6 @@
 (ns cmr.common.test.runners.ltest
   "This test runner is a CMR adaptor for the ltest Clojure test runner."
   (:require
-   [clojure.stacktrace :as stack]
-   [clojure.string :as string]
-   [clojure.test :as test]
    [cmr.common.test.runners.util :as util]
    [ltest.core :as ltest]
    [potemkin :refer [import-vars]]))

@@ -2,10 +2,9 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [clojure.string :as string]
-   [cmr.common.config :as cfg]
-   [cmr.common.log :refer [error warn info debug]]
+   [cmr.common.log :refer [error info]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]))
 
@@ -50,7 +49,7 @@
   "Converts a set of errors into a string to return in the response body
   formatted according to the requested response format."
 
-  (fn [response-format errors]
+  (fn [response-format _errors]
     response-format))
 
 (defmulti error->json-element
@@ -76,22 +75,22 @@
 
 (defmethod error->xml-element String
   [error]
-  (x/element :error {} (mask-token-error error)))
+  (xml/element :error {} (mask-token-error error)))
 
 (defmethod error->xml-element cmr.common.services.errors.PathErrors
   [error]
   (let [{:keys [path errors]} error]
-    (x/element
+    (xml/element
       :error {}
-      (x/element
+      (xml/element
         :path {} (string/join "/" (keyword-path->string-path path)))
-      (x/element
-        :errors {} (for [error errors] (x/element :error {} error))))))
+      (xml/element
+        :errors {} (for [error errors] (xml/element :error {} error))))))
 
 (defmethod errors->body-string mt/xml
   [_ errors]
-  (x/emit-str
-    (x/element :errors {}
+  (xml/emit-str
+    (xml/element :errors {}
                (map error->xml-element errors))))
 
 (defn- response-type-body

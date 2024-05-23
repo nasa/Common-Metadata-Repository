@@ -19,8 +19,8 @@
   (reverse (sort-by :revision-id (:concepts-atom opts))))
 
 (defn init-next-id
-  [opts]
   "Initialize the provided next-id."
+  [opts]
   (dec (:next-id-atom opts)))
 
 (defn init-next-transaction-id
@@ -62,11 +62,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn start
-  [this system]
+  [this _system]
   this)
 
 (defn stop
-  [this system]
+  [this _system]
   this)
 
 (def behaviour

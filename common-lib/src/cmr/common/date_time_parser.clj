@@ -1,33 +1,32 @@
 (ns cmr.common.date-time-parser
   "Contains helper to parse datetime string to clj-time"
   (:require
-   [clj-time.format :as f]
-   [cmr.common.services.errors :as errors]
+   [clj-time.format :as time-format]
    [cmr.common.services.messages :as msg])
   (:import org.joda.time.IllegalFieldValueException))
 
 (def datetime-regex->formatter
   "A map of regular expressions matching a date time to the formatter to use"
-  {#"^\d\d\d\d-\d\d-\d\d$" (f/formatters :date)
-   #"^\d\d\d\d$" (f/formatters :year)
-   #"^[^T]+T[^.]+\.\d+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :date-time)
-   #"^[^T]+T[^.]+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :date-time-no-ms)
-   #"^[^T]+T[^.]+\.\d+$" (f/formatters :date-hour-minute-second-ms)
-   #"^[^T]+T[^.]+$" (f/formatters :date-hour-minute-second)})
+  {#"^\d\d\d\d-\d\d-\d\d$" (time-format/formatters :date)
+   #"^\d\d\d\d$" (time-format/formatters :year)
+   #"^[^T]+T[^.]+\.\d+(?:(?:[+-]\d\d:\d\d)|Z)$" (time-format/formatters :date-time)
+   #"^[^T]+T[^.]+(?:(?:[+-]\d\d:\d\d)|Z)$" (time-format/formatters :date-time-no-ms)
+   #"^[^T]+T[^.]+\.\d+$" (time-format/formatters :date-hour-minute-second-ms)
+   #"^[^T]+T[^.]+$" (time-format/formatters :date-hour-minute-second)})
 
 (def time-regex->formatter
   "A map of regular expressions matching a time to the formatter to use"
-  {#"^[^.]+\.\d+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :time)
-   #"^[^.]+(?:(?:[+-]\d\d:\d\d)|Z)$" (f/formatters :time-no-ms)
-   #"^[^.]+\.\d+$" (f/formatters :hour-minute-second-ms)
-   #"^[^.]+$" (f/formatters :hour-minute-second)})
+  {#"^[^.]+\.\d+(?:(?:[+-]\d\d:\d\d)|Z)$" (time-format/formatters :time)
+   #"^[^.]+(?:(?:[+-]\d\d:\d\d)|Z)$" (time-format/formatters :time-no-ms)
+   #"^[^.]+\.\d+$" (time-format/formatters :hour-minute-second-ms)
+   #"^[^.]+$" (time-format/formatters :hour-minute-second)})
 
 (defn find-formatter
   "Finds a given format from a map of regular expressions to formatters to use. Uses the regular
   expression to check if the datetime matches."
   [datetime type regex-formatter-map]
   (let [date-format (->> regex-formatter-map
-                         (filter (fn [[regex formatter]]
+                         (filter (fn [[regex _formatter]]
                                    (re-matches regex datetime)))
                          first
                          second)]
@@ -40,7 +39,7 @@
   [type regex-formatter-map]
   (fn [value]
     (try
-      (f/parse (find-formatter value type regex-formatter-map) value)
+      (time-format/parse (find-formatter value type regex-formatter-map) value)
       (catch IllegalFieldValueException e
         (msg/data-error :invalid-data msg/invalid-msg type value (.getMessage e)))
       (catch IllegalArgumentException e
@@ -76,4 +75,4 @@
 (defn clj-time->date-time-str
   "Returns the string representation for the given joda datetime"
   [dt]
-  (f/unparse (f/formatters :date-time) dt))
+  (time-format/unparse (time-format/formatters :date-time) dt))

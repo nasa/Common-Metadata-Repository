@@ -14,9 +14,9 @@
    [clojure.test :as test]
    [clojure.walk :as w]
    [cmr.common.config :as cfg]
-   [cmr.common.log :refer (debug info warn error)]
-   [cmr.common.services.errors :as errors]
+   [cmr.common.log :refer (info error)]
    [hiccup.util :as hp-util])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import
    (java.text DecimalFormat)
    (java.util.zip GZIPInputStream GZIPOutputStream)
@@ -132,7 +132,6 @@
        first))
 
 (defn sequence->fn
-  [vals]
   "Creates a stateful function that returns individual values from the
   sequence. It returns the first value when called the first time, the second
   value on the second call and so on until the sequence is exhausted of
@@ -147,6 +146,7 @@
       3
       user=> (my-ints)
       nil"
+  [vals]
   (let [vals-atom (atom {:curr-val nil :next-vals (seq vals)})]
     (fn []
       (:curr-val (swap! vals-atom
@@ -197,40 +197,6 @@
                      (format
                        "Timed function %s/%s took %d ms."
                        ~ns-str ~fn-name-str elapsed#)))))))))))
-
-(defn ^{:deprecated true} build-validator
-  "Creates a function that will call f with it's arguments. If f returns any
-  errors then it will throw a service error of the type given.
-
-  DEPRECATED: we should use the validations namespace."
-  [error-type f]
-  (fn [& args]
-    (when-let [errors (apply f args)]
-      (when (seq errors)
-        (errors/throw-service-errors error-type errors)))))
-
-(defn ^{:deprecated true} apply-validations
-  "Given a list of validation functions, applies the arguments to each
-  validation, concatenating all errors and returning them. As such, validation
-  functions are expected to only return a list; if the list is empty, it is
-  understood that no errors occurred.
-
-  DEPRECATED: we should use the validations namespace."
-  [validations & args]
-  (reduce (fn [errors validation]
-            (if-let [new-errors (apply validation args)]
-              (concat errors new-errors)
-              errors))
-          []
-          validations))
-
-(defn ^{:deprecated true} compose-validations
-  "Creates a function that will compose together a list of validation functions
-  into a single function that will perform all validations together.
-
-  DEPRECATED: we should use the validations namespace."
-  [validation-fns]
-  (partial apply-validations validation-fns))
 
 (defmacro record-fields
   "Returns the set of fields in a record type as keywords. The record type
@@ -468,11 +434,12 @@
           s (drop-while #(Character/isDigit %) s)]
       (empty? s))))
 
-(defn rename-keys-with [m kmap merge-fn]
+(defn rename-keys-with
   "Returns the map with the keys in kmap renamed to the vals in kmap. Values of
   renamed keys for which there is already existing value will be merged using
   the merge-fn. merge-fn will be called with the original keys value and the
   renamed keys value."
+  [m kmap merge-fn]
   (let [rename-subset (select-keys m (keys kmap))
         renamed-subsets  (map (fn [[k v]]
                                 (set/rename-keys {k v} kmap))
@@ -1029,7 +996,7 @@
             token-header (first token-parts)
             header-raw (try
                          (String. (.decode (java.util.Base64/getDecoder) token-header))
-                         (catch java.lang.IllegalArgumentException e false))]
+                         (catch java.lang.IllegalArgumentException _e false))]
         ;; don't parse the data unless it is really needed to prevent unnecessary
         ;; processing. Check first to see if the data looks like JSON
         (if (and (string/starts-with? header-raw "{")
@@ -1039,7 +1006,7 @@
               (and (= "JWT" (:typ header-data))
                    (= "Earthdata Login" (:origin header-data)))
               false)
-            (catch com.fasterxml.jackson.core.JsonParseException e false))
+            (catch com.fasterxml.jackson.core.JsonParseException _e false))
           false))
       false)))
 

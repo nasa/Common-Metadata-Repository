@@ -2,20 +2,19 @@
   "Common nREPL component for CMR apps."
   (:require
    [clojure.tools.nrepl.server :as nrepl]
-   [cmr.common.config :as config]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [info]]))
 
 (defrecord nREPLComponent [port server]
   lifecycle/Lifecycle
-  (start [component system]
+  (start [_component _system]
     (let [server (nrepl/start-server :port port)
           ;; if the component was specified with a port of 0, a port
           ;; will be automatically chosen by the nREPL
           new-port (:port server)]
       (info "Started nREPL on port" new-port)
       (->nREPLComponent new-port server)))
-  (stop [component system]
+  (stop [_component _system]
     (when server
       (nrepl/stop-server server)
       (info "Stopped nREPL on port" port))

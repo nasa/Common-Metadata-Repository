@@ -12,12 +12,11 @@
   Note that this functionality was originally provided in the `cmr.common.test.test-runner`
   namespace."
   (:require
-   [clojure.set :as set]
-   [clojure.test :as t]
+   [clojure.test :as test]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.dev.util :as du]
    [cmr.common.test.runners.util]
-   [cmr.common.util :as u]
+   [cmr.common.util :as util]
    [potemkin :refer [import-vars]]))
 
 (import-vars
@@ -36,7 +35,7 @@
   [namespaces parallel?]
   (let [map-fn (if parallel? pmap map)]
     (map-fn (fn [test-ns]
-              (let [[millis results] (u/time-execution (t/run-tests (find-ns (symbol test-ns))))]
+              (let [[millis results] (util/time-execution (test/run-tests (find-ns (symbol test-ns))))]
                 (assoc results
                        :took millis
                        :test-ns test-ns)))
@@ -133,7 +132,7 @@
         test-results-handler (fail-fast?->test-results-handler fail-fast?)
         unittest-results (run-tests unit-test-namespaces (unit-test-parallel))
         inttest-results (run-tests integration-test-namespaces false)
-        [took test-results] (u/time-execution
+        [took test-results] (util/time-execution
                               (test-results-handler
                                 (concat unittest-results inttest-results)))]
     (reset! last-test-results test-results)

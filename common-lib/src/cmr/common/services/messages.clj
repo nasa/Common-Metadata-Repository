@@ -1,14 +1,15 @@
 (ns cmr.common.services.messages
   "This namespace provides functions to generate messages used for error reporting, logging, etc.
   Messages used in more than one project should be placed here."
-  (:require [clojure.string :as str]
-            [camel-snake-kebab.core :as csk]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.util :as util]))
+  (:require
+   [camel-snake-kebab.core :as csk]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]))
 
-(defn data-error [error-type msg-fn & args]
+(defn data-error
   "Utility method that uses throw-service-error to generate a response with a specific status code
   and error message."
+  [error-type msg-fn & args]
   (errors/throw-service-error error-type (apply msg-fn args)))
 
 (defn invalid-msg

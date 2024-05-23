@@ -3,6 +3,7 @@
   (:require
    [clojure.java.shell :as sh]
    [clojure.java.io :as io])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import
    (java.awt.datatransfer Clipboard StringSelection)
    (java.awt Toolkit)

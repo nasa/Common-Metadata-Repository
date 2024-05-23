@@ -12,14 +12,12 @@
 
   This cache implements the cmr.common.lifecycle/Lifecycle protocol and must be started and stopped
   because it has a separate running thread."
-  (:require 
+  (:require
    [clojure.core.async :as async]
-   [clojure.string :as string]
-   [cmr.common.cache :as c]
-   [cmr.common.hash-cache :as hc]
-   [cmr.common.log :as log :refer (debug info warn error)]
-   [cmr.common.util :as u]
-   [cmr.common.lifecycle :as l]
+   [cmr.common.cache :as cache]
+   [cmr.common.log :as log :refer (error)]
+   [cmr.common.util :as util]
+   [cmr.common.lifecycle :as life]
    [cmr.common.cache.in-memory-cache :as mc]))
 
 (defn- safely-get-value-or-exception
@@ -27,7 +25,7 @@
   then it will be returned"
   [delegate-cache key lookup-fn]
   (try
-    (c/get-value delegate-cache key lookup-fn)
+    (cache/get-value delegate-cache key lookup-fn)
 
     ;; Guard against exceptions while getting a value from the delegate cache.
     ;; These will most likely come from lookup function.
@@ -46,7 +44,8 @@
   (async/thread
     (try
       ;; Attempt to read messages from the lookup request channel until it's closed.
-      (u/while-let
+      (declare lookup-fn response-channel)
+      (util/while-let
         [{:keys [key lookup-fn response-channel]} (async/<!! lookup-request-channel)]
 
         (try
@@ -81,28 +80,28 @@
 
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-  c/CmrCache
+  cache/CmrCache
   (get-keys
-    [this]
-    (when (c/simple-cache? delegate-cache)
-      (c/get-keys delegate-cache)))
+    [_this]
+    (when (cache/simple-cache? delegate-cache)
+      (cache/get-keys delegate-cache)))
 
   (key-exists
-    [this key]
+    [_this key]
     ;; key is the cache-key. Checks to see if the cache has been setup.
-    (c/key-exists delegate-cache key))
+    (cache/key-exists delegate-cache key))
 
   (get-value
-   [this key]
-   (when (c/simple-cache? delegate-cache)
-     (c/get-value delegate-cache key)))
+   [_this key]
+   (when (cache/simple-cache? delegate-cache)
+     (cache/get-value delegate-cache key)))
 
   (get-value
     [this key lookup-fn]
-    (when (c/simple-cache? delegate-cache)
+    (when (cache/simple-cache? delegate-cache)
       (or
       ;; Get the value out of the cache if it's available
-       (c/get-value this key)
+       (cache/get-value this key)
       ;; Or queue a request to get the value and wait for a response
        (let [response-channel (async/chan)]
          (async/>!! lookup-request-channel {:key key
@@ -117,23 +116,23 @@
 
    (cache-size
     [_]
-    (when (c/simple-cache? delegate-cache)
-      (c/cache-size delegate-cache)))
+    (when (cache/simple-cache? delegate-cache)
+      (cache/cache-size delegate-cache)))
 
    (reset
-    [this]
-    (when (c/simple-cache? delegate-cache)
-      (c/reset delegate-cache)))
+    [_this]
+    (when (cache/simple-cache? delegate-cache)
+      (cache/reset delegate-cache)))
 
    (set-value
-    [this key value]
-    (when (c/simple-cache? delegate-cache)
-      (c/set-value delegate-cache key value)))
+    [_this key value]
+    (when (cache/simple-cache? delegate-cache)
+      (cache/set-value delegate-cache key value)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-   l/Lifecycle
+   life/Lifecycle
    (start
-    [this system]
+    [this _system]
     (if lookup-request-channel
       ;; already running
       this
@@ -144,7 +143,7 @@
                (create-lookup-process-thread the-cache)))))
 
    (stop
-    [this system]
+    [this _system]
     (if lookup-request-channel
       ;; Running
       (-> this
@@ -180,7 +179,7 @@
   ;; a regular memory cache. The values returned will all be the same due to how the cache works.
   (map deref (for [n (range 10)]
                (future
-                 (c/get-value mem-cache :foo lookup-a-value))))
+                 (cache/get-value mem-cache :foo lookup-a-value))))
 
   ;; But the count show it's been called more than 1 time
   (deref counter) ; => 10
@@ -189,14 +188,14 @@
   (reset! counter 0)
 
   ;; Create a single threaded lookup cache and start it
-  (def slc (l/start (create-single-thread-lookup-cache) nil))
+  (def slc (life/start (create-single-thread-lookup-cache) nil))
 
   ;; If we execute a bunch of concurrent requests for a value the lookup will be invoked once.
   (map deref (for [_ (range 10)]
-               (future (c/get-value slc :foo lookup-a-value))))
+               (future (cache/get-value slc :foo lookup-a-value))))
 
   ;; The counter shows it's been called only once.
   (deref counter) ; => 1
 
   ;; Stop the cache
-  (l/stop slc nil))
+  (life/stop slc nil))

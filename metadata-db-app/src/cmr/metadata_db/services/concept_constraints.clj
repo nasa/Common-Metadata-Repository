@@ -5,9 +5,9 @@
    [cmr.common.config :refer [defconfig]]
    [cmr.common.log :as log :refer (warn)]
    [cmr.common.services.errors :as errors]
-   [cmr.common.util :as util]
    [cmr.metadata-db.data.concepts :as c]
-   [cmr.metadata-db.services.messages :as msg])
+   [cmr.metadata-db.services.messages :as msg]
+   [cmr.umm-spec.validation.util :as v-util])
   (:import
    (clojure.lang Keyword)))
 
@@ -167,9 +167,7 @@
   and throws a :conflict error."
   [db provider concept rollback-function]
   (let [constraints ((constraints-by-concept-type) (:concept-type concept))]
-    ;; XXX `util/apply-validations` is deprecated and this is the only place
-    ;; in the CMR codebase where it is used -- we should fix that.
-    (when-let [errors (seq (util/apply-validations constraints db provider concept))]
+    (when-let [errors (seq (v-util/apply-validations constraints db provider concept))]
       (rollback-function)
       (errors/throw-service-errors :conflict errors))))
 

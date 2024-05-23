@@ -6,8 +6,8 @@
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.set :as set]
-   [clojure.string :as str]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [clojure.string :as string]
+   [cmr.common.log :as log :refer [warn]]
    [environ.core :as environ]))
 
 (defonce ^{:private true
@@ -47,14 +47,13 @@
   must be specified for parsing the value out of the environment variable. Do not call this function
   directly. Use defconfig instead."
   [config-name default-value parser-fn]
-  (let [parser-fn (or parser-fn identity)]
-    (let [override-value (get @runtime-config-values config-name)
-          parsed-env-value (some-> (env-var-value (config-name->env-name config-name))
-                               parser-fn)]
+  (let [parser-fn (or parser-fn identity)
+        override-value (get @runtime-config-values config-name)
+        parsed-env-value (some-> (env-var-value (config-name->env-name config-name)) parser-fn)]
       (cond
         (some? parsed-env-value) parsed-env-value
         (some? override-value) override-value
-        :else default-value))))
+        :else default-value)))
 
 (defonce ^{:doc "This contains information about all of the
                  configuration parameters that have been added using
@@ -77,13 +76,13 @@
   (println
     (str
       "Configuration Documentation\n"
-      (str/join
+      (string/join
         "\n"
         ;; Print out the documentation in namespace order
         (for [[config-namespace sub-map] (sort-by first @configs-atom)]
           (str
             "\n-- " config-namespace " --\n"
-            (str/join
+            (string/join
               "\n"
               ;; Within a namespace print it out in config key order
               (for [[config-key {:keys [default doc-string parser] config-type :type}] (sort-by first sub-map)
@@ -248,7 +247,7 @@
    Example  \"grid,order-option\", would prevent grids and order options from being ingested into CMR
    if no concepts should be blocked from ingest set to an empty array"
   {:default []
-   :parser #(map (comp keyword str/trim) (str/split % #","))})
+   :parser #(map (comp keyword string/trim) (string/split % #","))})
 
 (defn check-env-vars
   "Checks any environment variables starting with CMR_ are recognized as known environment variables.

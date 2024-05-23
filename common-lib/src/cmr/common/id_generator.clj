@@ -142,7 +142,7 @@
           ;; Pause 1 millisecond then try generating an id again.
           (try
             (Thread/sleep 1)
-            (catch InterruptedException e
+            (catch InterruptedException _e
               ;; If we're interrupted retry one more time. A secondary interruption will be thown
               ;; out of the function
               (Thread/sleep 1)))

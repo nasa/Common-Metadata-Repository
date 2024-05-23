@@ -6,7 +6,7 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.common.config :as cfg]
-   [cmr.common.log :as log :refer [error, info]]))
+   [cmr.common.log :as log :refer [info]]))
 
 (defn latest-approved-documentation
   "Return a map of all the configured approved generics and their versions
@@ -33,7 +33,7 @@
         (format (name generic-keyword) generic-version (name file-name))
         (io/resource)
         (slurp))
-    (catch Exception e (info (format "generic %s was skipped" generic-keyword))
+    (catch Exception _e (info (format "generic %s was skipped" generic-keyword))
            (str ""))))
 
 (defn all-generic-docs
@@ -72,7 +72,7 @@
    * table-of-content-headers: string list, the headers in the document
    * doc-type: string [ingest | search]
    Returns: string"
-  ([table-of-content-headers doc-type spacer]
+  ([table-of-content-headers _doc-type spacer]
    (let [depth (spacer (count (re-seq #"#" table-of-content-headers)))
          link (peek (re-find #"=\"(.*)\">" table-of-content-headers))
          content (peek (re-find #">\s+([^<]*)$" table-of-content-headers))]

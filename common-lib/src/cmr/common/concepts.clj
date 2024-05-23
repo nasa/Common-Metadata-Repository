@@ -1,11 +1,13 @@
 (ns cmr.common.concepts
   "This contains utility functions and vars related to concepts in the CMR"
-  (:require [clojure.set :as cset]
-            [clojure.string :as string]
-            [cmr.common.util :as util]
-            [cmr.common.generics :as common-generic]
-            [cmr.common.services.errors :as errors]
-            [inflections.core :as inf]))
+  (:require
+   [clojure.set :as cset]
+   [clojure.string :as string]
+   [cmr.common.generics :as common-generic]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [cmr.umm-spec.validation.util :as v-util]
+   [inflections.core :as inf]))
 
 (def generic-concept-types->concept-prefix
   "Gets an array of generic concept types.
@@ -151,7 +153,7 @@
 
 (def validate-concept-id
   "Validates a concept-id and throws an error if invalid"
-  (util/build-validator :bad-request concept-id-validation))
+  (v-util/build-validator :bad-request concept-id-validation))
 
 (defn concept-type-validation
   "Validates a concept type is known. Returns an error if invalid. A string or keyword can be passed in."
@@ -165,7 +167,7 @@
 
 (def validate-concept-type
   "A function that will validate concept-type and thrown and exception if it's invalid"
-  (util/build-validator :bad-request concept-type-validation))
+  (v-util/build-validator :bad-request concept-type-validation))
 
 (defn parse-concept-id
   "Split a concept id into concept-type-prefix, sequence number, and provider id."

@@ -2,9 +2,8 @@
   "Contains XML helpers for extracting data from XML structs created using clojure.data.xml.
   See the test file for examples."
   (:require [cmr.common.date-time-parser :as p]
-            [cmr.common.services.errors :as errors]
-            [clojure.string :as string]
-            [clojure.java.io :as io])
+            [clojure.string :as string])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import javax.xml.validation.SchemaFactory
            javax.xml.XMLConstants
            javax.xml.transform.stream.StreamSource
@@ -95,9 +94,9 @@
   [xml-struct path]
   (map str (apply concat (contents-at-path xml-struct path))))
 
-(defn ^String string-at-path
+(defn string-at-path
   "Extracts a string from the given path in the XML structure."
-  [xml-struct path]
+  ^String [xml-struct path]
   (first (strings-at-path xml-struct path)))
 
 (defn long-at-path
@@ -121,7 +120,7 @@
     ;; allows them to be double. But we need them to be integers.
     (try
       (Integer. s)
-      (catch Exception e
+      (catch Exception _e
         s))))
 
 (defn bool-at-path
@@ -188,7 +187,7 @@
         registry (DOMImplementationRegistry/newInstance)
         ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
         writer (.createLSSerializer impl)
-        dom-config (doto (.getDomConfig writer)
+        _dom-config (doto (.getDomConfig writer)
                      (.setParameter "format-pretty-print" true)
                      (.setParameter "xml-declaration" keep-declaration))
         output (doto (.createLSOutput impl)

@@ -16,10 +16,10 @@
   ;; Make lifecycle work on everything by default.
   java.lang.Object
   (start
-    [this system]
+    [this _system]
     this)
   (stop
-    [this system]
+    [this _system]
     this)
 
   ;; Make it work on maps. Each value in the map will be started

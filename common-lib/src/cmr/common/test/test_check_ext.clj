@@ -1,7 +1,7 @@
 (ns cmr.common.test.test-check-ext
   (:require
-   [clj-time.coerce :as c]
-   [clojure.string :as s]
+   [clj-time.coerce :as c-coerce]
+   [clojure.string :as string]
    [clojure.pprint]
    [clojure.test]
    [clojure.test.check :as test-check]
@@ -9,6 +9,7 @@
    [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :as prop]
    [com.gfredericks.test.chuck.clojure-test :as chuck])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import java.util.Random))
 
 (defn require-proto-repl-saved-values
@@ -140,7 +141,7 @@
   (print-value-in-comment (concat (list 'def 'failing-value) v)))
 
 (defn- assert-check
-  [{:keys [result shrunk fail] :as m} {:keys [printer-fn]}]
+  [{:keys [result shrunk] :as m} {:keys [printer-fn]}]
   (let [printer-fn (or printer-fn print-failing-value)]
 
     (print-value-in-comment m)
@@ -243,18 +244,18 @@
   ([]
    gen/string-ascii)
   ([min-size max-size]
-   (not-whitespace (gen/fmap s/join (gen/vector gen/char-ascii min-size max-size)))))
+   (not-whitespace (gen/fmap string/join (gen/vector gen/char-ascii min-size max-size)))))
 
 (defn string-alpha-numeric
   "Like the clojure.test.check.generators/string-alpha-numeric but allows a min and max length to be set"
   ([]
-   gen/string-alpha-numeric)
+   gen/string-alphanumeric)
   ([min-size max-size]
-   (gen/fmap s/join (gen/vector gen/char-alpha-numeric min-size max-size))))
+   (gen/fmap string/join (gen/vector gen/char-alphanumeric min-size max-size))))
 
 (def date-time
   "A generator that will return a Joda DateTime between 1970-01-01T00:00:00.000Z and 2114-01-01T00:00:00.000Z"
-  (gen/fmap c/from-long (gen/choose 0 4544208000000)))
+  (gen/fmap c-coerce/from-long (gen/choose 0 4544208000000)))
 
 (def http-schemes
   "Some URL schemes."
@@ -273,7 +274,7 @@
   (gen/fmap (fn [[scheme domain domain-ext file-name-base file-ext]]
               (str scheme "://" domain "." domain-ext "/" file-name-base "." file-ext))
             (gen/tuple http-schemes
-                       (gen/not-empty gen/string-alpha-numeric)
+                       (gen/not-empty gen/string-alphanumeric)
                        domain-exts
-                       (gen/not-empty gen/string-alpha-numeric)
+                       (gen/not-empty gen/string-alphanumeric)
                        file-exts)))

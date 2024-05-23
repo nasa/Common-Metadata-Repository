@@ -32,13 +32,13 @@
   lifecycle/Lifecycle
 
   (start
-    [this system]
+    [this _system]
     (when (= (Thread$State/NEW) (.getState thread-ref))
       (.start thread-ref))
     this)
 
   (stop
-    [this system]
+    [this _system]
     (when (and (not= (Thread$State/NEW) (.getState thread-ref))
                (not (.isInterrupted thread-ref)))
       (.interrupt thread-ref))

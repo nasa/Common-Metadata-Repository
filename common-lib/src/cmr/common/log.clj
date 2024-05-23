@@ -2,11 +2,12 @@
   "Defines a Logger component and functions for logging. The functions here
   should be used for logging to limit the dependency on a particular logging
   framework."
-  (:require [cmr.common.lifecycle :as lifecycle]
-            [taoensso.timbre :as t]
-            [taoensso.timbre.appenders.core :as a]
-            [clojure.string :as s]
-            [clojure.java.io :as io]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.string :as string]
+   [cmr.common.lifecycle :as lifecycle]
+   [taoensso.timbre :as tiber]
+   [taoensso.timbre.appenders.core :as a-core]))
 
 (def ^:dynamic *request-id*
   "Request id is a unique identifier to include in log messages. It's expected
@@ -15,7 +16,7 @@
   nil)
 
 (defn- log-formatter
-  [{:keys [level ?err_ msg_ timestamp_ hostname_ ?ns-str] :as data}]
+  [{:keys [level ?err_ msg_ timestamp_ hostname_ ?ns-str] :as _data}]
   ;; <timestamp_> <hostname_> <request id> <LEVEL> [<?ns-str>] - <msg_> <?err_>
   (format "%s %s [%s] %s [%s] - %s%s"
           (force timestamp_)
@@ -23,13 +24,13 @@
           (or *request-id*
               (.getName (Thread/currentThread))
               (.getId (Thread/currentThread)))
-          (-> level name s/upper-case)
+          (-> level name string/upper-case)
           (or ?ns-str "?ns")
           (force msg_)
           (if-let [err (force ?err_)]
             ;; Setting :stacktrace-fonts here to an empty map prevents color
             ;; codes in exception stacktraces.
-            (str "\n" (t/stacktrace err {:stacktrace-fonts {}}))
+            (str "\n" (tiber/stacktrace err {:stacktrace-fonts {}}))
             "")))
 
 ;; Checkout the config before and after
@@ -37,17 +38,17 @@
   "Configures logging using Timbre."
   [{:keys [level file stdout-enabled?]}]
 
-  (t/set-level! (or level :warn))
-  (t/merge-config! {:timestamp-opts {:pattern "yyyy-MM-dd HH:mm:ss.SSS"}})
+  (tiber/set-level! (or level :warn))
+  (tiber/merge-config! {:timestamp-opts {:pattern "yyyy-MM-dd HH:mm:ss.SSS"}})
 
   ;; Enable file logging
   (when file
     ;; Make sure the log directory exists
     (.. (io/file file) getParentFile mkdirs)
-    (t/merge-config! {:appenders {:spit (a/spit-appender {:fname file})}}))
+    (tiber/merge-config! {:appenders {:spit (a-core/spit-appender {:fname file})}}))
 
   ;; Set the format for logging.
-  (t/merge-config!
+  (tiber/merge-config!
     {:output-fn log-formatter
      :appenders {:println {:enabled? stdout-enabled?}}}))
 
@@ -65,34 +66,34 @@
 (defmacro trace
   "Logs a message at the trace level."
   [& body]
-  `(t/trace ~@body))
+  `(tiber/trace ~@body))
 
 (defmacro debug
   "Logs a message at the debug level."
   [& body]
-  `(t/debug ~@body))
+  `(tiber/debug ~@body))
 
 (defmacro info
   "Logs a message at the info level."
   [& body]
-  `(t/info ~@body))
+  `(tiber/info ~@body))
 
 (defmacro warn
   "Logs a message at the warn level."
   [& body]
-  `(t/warn ~@body))
+  `(tiber/warn ~@body))
 
 (defmacro error
   "Logs a message at the error level."
   [& body]
-  `(t/error ~@body))
+  `(tiber/error ~@body))
 
 (defmacro report
   "Log a report level message. Report level logs differ from Error in that they
    always display but are not considered an Error or Fatal event and are already
    supported by the base library."
   [& body]
-  `(t/report ~@body))
+  `(tiber/report ~@body))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Log macros like the above but using a format like all the cool kids do
@@ -100,34 +101,34 @@
 (defmacro tracef
   "Logs a message at the trace level."
   [& body]
-  `(t/tracef ~@body))
+  `(tiber/tracef ~@body))
 
 (defmacro debugf
   "Logs a message at the debug level using a format."
   [& body]
-  `(t/debugf ~@body))
+  `(tiber/debugf ~@body))
 
 (defmacro infof
   "Logs a message at the info level."
   [& body]
-  `(t/infof ~@body))
+  `(tiber/infof ~@body))
 
 (defmacro warnf
   "Logs a message at the warn level."
   [& body]
-  `(t/warnf ~@body))
+  `(tiber/warnf ~@body))
 
 (defmacro errorf
   "Logs a message at the error level."
   [& body]
-  `(t/errorf ~@body))
+  `(tiber/errorf ~@body))
 
 (defmacro reportf
   "Log a report level message. Report level logs differ from Error in that they
    always display but are not considered an Error or Fatal event and are already
    supported by the base library."
   [& body]
-  `(t/reportf ~@body))
+  `(tiber/reportf ~@body))
 
 (defrecord Logger
   [level ; The level to log out
@@ -137,11 +138,11 @@
   lifecycle/Lifecycle
 
   (start
-    [this system]
+    [this _system]
     (setup-logging this)
     this)
 
-  (stop [this system]
+  (stop [this _system]
         this))
 
 (def default-log-options
@@ -163,5 +164,5 @@
    debug."
   [level]
   (let [options (when level
-                  {:level (keyword (s/lower-case level))})]
+                  {:level (keyword (string/lower-case level))})]
     (create-logger options)))

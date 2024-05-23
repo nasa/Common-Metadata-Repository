@@ -2,10 +2,9 @@
   "Defines a web server component."
   (:require
    [clojure.core.reducers :as reducers]
-   [clojure.java.io :as io]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.lifecycle :as lifecycle]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [info error]]
    [cmr.common.mime-types :as mt]
    [ring.adapter.jetty :as jetty])
   (:import
@@ -215,7 +214,7 @@
         (throw e))))
 
   (stop
-    [this system]
+    [this _system]
     (when-let [^Server server (:server this)]
       (.stop server))
     (assoc this :server nil)))
