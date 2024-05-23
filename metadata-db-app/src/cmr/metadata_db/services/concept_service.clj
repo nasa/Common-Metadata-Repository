@@ -3,7 +3,7 @@
   (:require
    [clj-time.core :as t]
    [clojure.set :as set]
-   [cmr.common.api.context :refer (context->user-id)]
+   [cmr.common.api.context :as cmn-context]
    [cmr.common.concepts :as cu]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.date-time-parser :as p]
@@ -331,7 +331,7 @@
         {:message {:warnings [(format "VARIABLE association [%s] is already deleted." concept-id)]}}
         (let [concept {:concept-type :variable-associationn
                        :concept-id concept-id
-                       :user-id (context->user-id mdb-context "Associations cannot be modified without a valid user token.")
+                       :user-id (cmn-context/context->user-id mdb-context msg/associations-need-token)
                        :deleted true}]
           (save-concept-in-mdb mdb-context concept)))
       {:message {:warnings [(msg/delete-association-not-found

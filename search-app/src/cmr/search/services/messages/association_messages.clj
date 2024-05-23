@@ -106,3 +106,5 @@
 (defn delete-generic-association-not-found
   [native-id]
   (format (str "Generic association with native-id [%s] is not found.") native-id))
+
+(def associations-need-token "Associations cannot be modified without a valid user token.")

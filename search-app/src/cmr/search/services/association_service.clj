@@ -4,7 +4,7 @@
   So the code is slightly different and we have pushed off the potential refactoring until later."
   (:require
    [clojure.string :as string]
-   [cmr.common.api.context :refer (context->user-id)]
+   [cmr.common.api.context :as cmn-context]
    [cmr.common.log :as log :refer (debug info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -47,7 +47,7 @@
                                       (string/capitalize source-concept-type-str) concept-id)]}}
         (let [concept {:concept-type assoc-concept-type
                        :concept-id concept-id
-                       :user-id (context->user-id mdb-context "Associations cannot be modified without a valid user token.")
+                       :user-id (cmn-context/context->user-id mdb-context assoc-msg/associations-need-token)
                        :deleted true}]
           (save-concept-in-mdb mdb-context concept)))
       {:message {:warnings [(assoc-msg/delete-association-not-found
@@ -110,7 +110,7 @@
         assoc-concept-type (keyword (str source-concept-type-str "-association"))
         association (-> association
                         (assoc :native-id native-id)
-                        (assoc :user-id (context->user-id mdb-context "Associations cannot be modified without a valid user token.")))
+                        (assoc :user-id (cmn-context/context->user-id mdb-context assoc-msg/associations-need-token)))
         associated-item (util/remove-nil-keys
                          {:concept-id coll-concept-id :revision-id coll-revision-id})]
     (if (seq errors)
