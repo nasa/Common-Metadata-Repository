@@ -234,6 +234,7 @@
         coll-draft (gen-util/ingest-generic-document
                     nil "PROV1" native-id :collection-draft gen-util/collection-draft :post)
         concept-id (:concept-id coll-draft)
+        revision-id (:revision-id coll-draft)
         _ (index/wait-until-indexed)
         ;; search for the draft from elastic search should return result
         search-result (search-generics-test/search-request "collection-drafts" (str "concept_id=" concept-id))
@@ -252,14 +253,14 @@
 
     ;;The first delete removes the draft from database completely and returns concept-id.
     ;;The second delete will not say the draft is already deleted because it no longer exists in the database
-    (is (= result1 {:concept-id concept-id, :revision-id 2,:warnings nil, :existing-errors nil}))
-    (is (= result2 {:errors ["CollectionDraft with native id [NativeId] in provider [PROV1] does not exist."]}))
+    (is (= {:concept-id concept-id, :revision-id (+ 1 revision-id), :warnings nil, :existing-errors nil} result1 ))
+    (is (= {:errors ["CollectionDraft with native id [NativeId] in provider [PROV1] does not exist."]} result2 ))
 
     ;;Verify that searching for the concept from elastic search won't return anything after the delete.
     (let [result (search-generics-test/search-request "collection-drafts" (str "concept_id=" concept-id))
           status (:status result)
           body (:body result)]
-      (is (= status 200))
+      (is (= 200 status))
       (is (string/includes? body "<hits>0</hits>")))))
 
 ;; Test that collection-draft can be published
@@ -351,6 +352,7 @@
         oo-with-same-native-id (gen-util/ingest-generic-document
                                 nil "PROV1" oo-native-id :order-option gen-util/order-option :post)
         oo-concept-id-existing (:concept-id oo-with-same-native-id)
+        oo-revision-id-existing (:revision-id oo-with-same-native-id)
         oo-draft (gen-util/ingest-generic-document
                   nil "PROV1" od-native-id :order-option-draft gen-util/order-option-draft :post)
         od-concept-id (:concept-id oo-draft)
@@ -377,7 +379,7 @@
                              nil "PROV1" od-native-id :order-option-draft gen-util/order-option-draft :delete)]
     ;; Verify that oo-concept-id should be the same as oo-concept-id-existing and oo-revision-id should be 2.
     (is (and (= oo-concept-id oo-concept-id-existing)
-             (= oo-revision-id 2)))
+             (= oo-revision-id (+ 1 oo-revision-id-existing))))
 
     (is (= search-oo-status 200))
     (is (string/includes? search-oo-body "<hits>1</hits>"))
