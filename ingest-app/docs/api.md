@@ -448,7 +448,7 @@ Collection metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPO
   		-H "Authorization:  XXXX" \
   		%CMR-ENDPOINT%/providers/PROV1/collections/sampleNativeId15
 
-Note: When a collection is deleted, all the associations on that collection and the granules in the collection will be deleted, also called tombstoned (tombstoned means to mark record as ready to be deleted but the actual deletion is scheduled for latter) too. With the new requirement that a variable can not exist without an association with a collection, since each variable can only be associated with one collection, all the variables associated with the deleted collection will be deleted too.
+Note: When a collection is deleted, all the associations on that collection and the granules in the collection will be tombstoned. Tombstoned means to mark record as ready to be deleted but the actual deletion is scheduled for later.
 
 #### Successful Response in XML
 
@@ -561,12 +561,13 @@ Granule metadata can be deleted by sending an HTTP DELETE the URL `%CMR-ENDPOINT
 ## <a name="variable"></a> Variable
 ### <a name="create-update-variable"></a> Create / Update a Variable
 
-Create a UMM-V record and associate that variable to a collection. For associations of other UMM documents, see %CMR-ENDPOINT%/site/docs/search/api.html
+This endpoint is deprecated. To ingest a variable without the collection association please switch to the `%CMR-ENDPOINT%/providers/<provider-id>/variables/<native-id>` API route described below this section.
+
+Create a UMM-V record and associate that variable to a collection. For all associations between concepts, see %CMR-ENDPOINT%/site/docs/search/api.html
 
 #### <a name="create-var-coll-endpoint"></a> /collections/&lt;collection-concept-id&gt;/&lt;collection-revision-id&gt;/variables/&lt;native-id&gt;
 
-A new variable ingest endpoint is provided to ensure that variable association is created at variable ingest time.
-Variable concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/collections/<collection-concept-id>/<collection-revision-id>/variables/<native-id>`.  `<collection-revision-id>` is optional. The response will include the [concept id](#concept-id),[revision id](#revision-id), variable-association and associated-item.
+A unique variable ingest endpoint is provided to ensure that variable association is created at variable ingest time. A variable concept can be created or updated by sending an HTTP PUT with the metadata to the URL `%CMR-ENDPOINT%/collections/<collection-concept-id>/<collection-revision-id>/variables/<native-id>`.  `<collection-revision-id>` is optional. The response will include the [concept id](#concept-id),[revision id](#revision-id), variable-association and associated-item.
 
 Variable associations can also have custom data to describe or augment the relationship. CMR makes no use of this extra data, but clients may use the information to derive a meaning from the relationship. The extra "Association Data" can be any valid JSON. When providing Association Data, the API requires that the Variable Metadata and Association Data be sent together, in a JSON wrapper using the same PUT command and URL. The wrapper looks like this:
 
@@ -581,8 +582,8 @@ Variable associations can also have custom data to describe or augment the relat
 
 **Note**:
 
-1. There is no more fingerprint check at variable's ingest/update time because the existing fingerprint is obsolete. The new variable uniqueness is defined by variable name and the collection it's associated with and is checked at variable association creation time.
-2. When using the new variable ingest endpoint to update a variable, the association will be updated too. There can be one and only one association for each variable, with or without collection revision info. This decision is based on the feedback from NSIDC that there is no need for a variable to be associated with multiple revisions of a collection. When a new association info is passed in, the old one will be replaced, when the exact same association info is passed in, a new revision of the old association is created.
+1. Variable uniqueness is defined by variable name and the collection it's associated with and is checked at variable association creation time.
+2. When using this variable ingest endpoint to update a variable, the association will be updated too.
 3. MeasurementNames must conform to values specified by the KMS list: [Measurement Names](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/MeasurementName?format=csv).
 
 Only Variable, no Data:
@@ -1199,9 +1200,9 @@ For lack of a better ACL, ingest permissions for collection subscription are gra
 ## <a name="publish-drafts"></a> Publish Drafts 
 #### <a name="publish-draft-endpoint"></a> /publish/&lt;draft-concept-id&gt;/&lt;native-id&gt;
 
-All drafts can be published, i.e. ingested into the CMR as a new concept through the publishing endpoints. This specific endpoint publishes all draft records. However, since variable ingest requires collection association, when publishing a variable, a collection-concept-id needs to be provided in the request body. Please see the examples below for details.  
+All drafts can be published, i.e. ingested into the CMR as a new concept through the publishing endpoints. This specific endpoint publishes all draft records. If a variable to collection association needs to be created upon publishing a variable, a collection-concept-id needs to be provided in the request body. Please see the examples below for details.
 
-Example: With the exception of variable drafts, publish a draft record such as an order option with the order option draft concept id of OOD1200000005-PROV1 and a new native-id of orderoption1 for the record to be published. Note: The CMR will use the format in the body if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. Also note: when a body is present in the request, the HTTP Content-Type header needs to be provided.
+Example: Publish a draft record such as an order option with the order option draft concept id of OOD1200000005-PROV1 and a new native-id of orderoption1. Note: The CMR will use the format in the body if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. Also note: when a body is present in the request, the HTTP Content-Type header needs to be provided.
 
 ```
 curl -XPUT \
@@ -1222,7 +1223,7 @@ curl -XPUT \
 
 ```
 
-Example: Publish variable draft VD1200000008-PROV1 using native-id var1. Note: collection-concept-id is required in the body; collection-revision-id and format are optional.The CMR will use the format in the body if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. Also note: the HTTP Content-Type header needs to be provided because the body is present.
+Example: Publish variable draft VD1200000008-PROV1 using native-id var1 and the end user needs the variable to be associated to a specific collection upon publish. Note: In this case a collection-concept-id is required in the body collection-revision-id and format are optional. The CMR will use the format in the body if it is passed in to describe the to be published records format. Otherwise the CMR will assume the format of the new record to be published is the same as the draft record. Also note: the HTTP Content-Type header needs to be provided because the body is present.
 
 ```
 curl -XPUT \

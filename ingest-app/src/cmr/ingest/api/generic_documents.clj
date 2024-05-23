@@ -9,7 +9,7 @@
    [cmr.common.generics :as gconfig]
    [cmr.common.concepts :as common-concepts]
    [cmr.common.config :as cfg]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [info]]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util :refer [defn-timed]]
    [cmr.ingest.api.core :as api-core]
@@ -318,64 +318,40 @@
     {:native-id draft-native-id
      :request request}))
 
-(defn- publish-non-variable-draft
-  "Publish a non-variable draft concept. i.e. Ingest the corresponding concept
-  and delete the draft."
-  [request concept-id native-id]
-  (let [{:keys [draft-concept-type provider-id concept-type-in-draft]}
-        (extract-info-from-concept-id concept-id)]
-    ;;Get info from metadata-db. 
-    (let [info (get-info-from-metadata-db request concept-id provider-id concept-type-in-draft)
-          request (:request info)
-          draft-native-id (:native-id info)
-          ;;publish the concept-type-in-draft
-          publish-result (case concept-type-in-draft
-                           :collection (collections/ingest-collection provider-id native-id request)
-                           :tool (tools/ingest-tool provider-id native-id request)
-                           :service (services/ingest-service provider-id native-id request)
-                           (create-generic-document request))]
-      (if (contains? #{200 201} (:status publish-result))
-        ;;construct request to delete the draft.
-        (let [delete-request (-> request
-                                 (assoc-in [:route-params :native-id] draft-native-id)
-                                 (assoc-in [:route-params :concept-type] draft-concept-type)
-                                 (assoc-in [:params :native-id] draft-native-id)
-                                 (assoc-in [:params :concept-type] draft-concept-type))
-              delete-result (delete-generic-document delete-request)]
-          (if (= 200 (:status delete-result))
-            publish-result
-            (errors/throw-service-error
-             :bad-request
-             (format "Publishing draft is successful with info [%s]. Deleting draft failed with info [%s]."
-                     (:body publish-result) (:body delete-result)))))
-        publish-result))))
-    
-(defn- publish-variable-draft
-  "Publish a variable draft concept. i.e. Ingest the corresponding variable and
-  delete the variable draft."
-  [native-id request coll-concept-id coll-revision-id var-draft-id]
-  (let [{:keys [draft-concept-type provider-id concept-type-in-draft]}           
-        (extract-info-from-concept-id var-draft-id) ]
-    ;; Get information from metadata-db. 
-    (let [info (get-info-from-metadata-db request var-draft-id provider-id concept-type-in-draft)
-          request (:request info)
-          draft-native-id (:native-id info)
-          publish-result (variables/ingest-variable provider-id native-id request coll-concept-id coll-revision-id)]
-      (if (contains? #{200 201} (:status publish-result))
-        ;;construct request to delete the draft.
-        (let [delete-request (-> request
-                                 (assoc-in [:route-params :native-id] draft-native-id)
-                                 (assoc-in [:route-params :concept-type] draft-concept-type)
-                                 (assoc-in [:params :native-id] draft-native-id)
-                                 (assoc-in [:params :concept-type] draft-concept-type))
-              delete-result (delete-generic-document delete-request)]
-          (if (= 200 (:status delete-result))
-            publish-result
-            (errors/throw-service-error
-             :bad-request
-             (format "Publishing draft is successful with info [%s]. Deleting draft failed with info [%s]."
-                     (:body publish-result) (:body delete-result)))))
-        publish-result)))) 
+(defn- publish-draft-concept
+  "Publish a draft concept. i.e. Ingest the corresponding concept and delete the draft."
+  ([request concept-id native-id]
+   (publish-draft-concept request concept-id native-id nil nil))
+  ([request concept-id native-id coll-concept-id coll-revision-id]
+   (let [{:keys [draft-concept-type provider-id concept-type-in-draft]}
+         (extract-info-from-concept-id concept-id)
+         info (get-info-from-metadata-db request concept-id provider-id concept-type-in-draft)
+         request (:request info)
+         draft-native-id (:native-id info)
+         ;;publish the concept-type-in-draft
+         publish-result (case concept-type-in-draft
+                          :collection (collections/ingest-collection provider-id native-id request)
+                          :tool (tools/ingest-tool provider-id native-id request)
+                          :service (services/ingest-service provider-id native-id request)
+                          :variable (if coll-concept-id
+                                      (variables/ingest-variable provider-id native-id request coll-concept-id coll-revision-id)
+                                      (variables/ingest-variable provider-id native-id request))
+                          (create-generic-document request))]
+     (if (contains? #{200 201} (:status publish-result))
+       ;;construct request to delete the draft.
+       (let [delete-request (-> request
+                                (assoc-in [:route-params :native-id] draft-native-id)
+                                (assoc-in [:route-params :concept-type] draft-concept-type)
+                                (assoc-in [:params :native-id] draft-native-id)
+                                (assoc-in [:params :concept-type] draft-concept-type))
+             delete-result (delete-generic-document delete-request)]
+         (if (= 200 (:status delete-result))
+           publish-result
+           (errors/throw-service-error
+            :bad-request
+            (format "Publishing draft is successful with info [%s]. Deleting draft failed with info [%s]."
+                    (:body publish-result) (:body delete-result)))))
+       publish-result))))
 
 (defn publish-draft
   "Publish a draft concept, i.e. ingest the corresponding concept and delete the draft."
@@ -390,7 +366,7 @@
                       :bad-request
                       (format "To publish a draft [%s] with a body, a json Content-Type header needs to be provided." concept-id))
                      (try
-                       (cheshire.core/parse-string (string/trim (slurp body)))
+                       (json/parse-string (string/trim (slurp body)))
                        (catch Exception e
                          (errors/throw-service-error
                           :bad-request
@@ -403,11 +379,11 @@
         (let [coll-concept-id (get body-map "collection-concept-id")
               coll-revision-id (get body-map "collection-revision-id")]
           (if coll-concept-id
-            (publish-variable-draft native-id request coll-concept-id coll-revision-id concept-id)
-            (errors/throw-service-error
-             :bad-request
-             (format "To publish variable draft [%s] a collection-concept-id needs to be provided in the body." concept-id)))) 
-        (publish-non-variable-draft request concept-id native-id))
+            (publish-draft-concept request concept-id native-id coll-concept-id coll-revision-id)
+            ;; A variable draft does not have to be associated to a collection, if a collection concept id
+            ;; does not exist, publish the variable anyway.
+            (publish-draft-concept request concept-id native-id)))
+        (publish-draft-concept request concept-id native-id))
       (errors/throw-service-error
        :bad-request
        (format "Only draft can be published in this route. concept-id [%s] does not belong to a draft concept" concept-id)))))
