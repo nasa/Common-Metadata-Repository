@@ -230,7 +230,7 @@
                       ;; rename search-after to search_after for ES execution
                       (set/rename-keys {:search-after :search_after})
                       util/remove-nil-keys)]
-    (info "Executing against indexes [" (:index-name index-info) "] the elastic query:"
+    (debug "Executing against indexes [" (:index-name index-info) "] the elastic query:"
           (pr-str elastic-query)
           "with sort" (pr-str sort-params)
           "with aggregations" (pr-str aggregations)
