@@ -6,7 +6,7 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.common.config :as cfg]
-   [cmr.common.log :as log :refer [error, info]]
+   [cmr.common.log :as log :refer [error, debug]]
    [cmr.schema-validation.json-schema :as js-validater]
    [inflections.core :as inf]))
 
@@ -18,7 +18,7 @@
    Returns: true if schema and version are supported, nil otherwise"
   [schema version]
   (when (and schema version)
-    (info (format "Making a request for Generic [%s] at version [%s]" schema version))
+    (debug (format "Making a request for Generic [%s] at version [%s]" schema version))
     (some #(= version %) (schema (cfg/approved-pipeline-documents)))))
 
 (def approved-generic?
@@ -34,7 +34,7 @@
    string for each one.
    Return {:doc-type \"1.2.3\"}"
   []
-  (info "Making a request for All Generic documents")
+  (debug "Making a request for All Generic documents")
   (reduce (fn [data item]
             (assoc data (first item) (last (second item))))
           {}
@@ -74,7 +74,7 @@
    * generic-version: 0.0.1
    Returns: string"
   [file-name generic-keyword generic-version]
-  (info (format "Making a request for Generic file [%s] [%s] at version [%s]"
+  (debug (format "Making a request for Generic file [%s] [%s] at version [%s]"
                 file-name
                 generic-keyword
                 generic-version))
