@@ -308,6 +308,14 @@
       [variable1 variable3]
       {:keyword "variable1"}
 
+      "By keyword match variable concept id"
+      [variable1]
+      {:keyword (:concept-id variable1)}
+
+      "By keyword match instance information format"
+      [variable1]      
+      {:keyword "Zarr"}
+
       "By keyword match associated collection"
       [variable1]
       {:keyword (:concept-id coll1)}
