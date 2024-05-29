@@ -65,7 +65,7 @@
    * link: string, the link to the location in the document
    Returns: string"
   [depth content link]
-  (str (apply str (repeat depth " ")) (format "* [%s](#%s)\n" link content)))
+  (str (string/join (repeat depth " ")) (format "* [%s](#%s)\n" link content)))
 
 (defn get-toc-data
   "Parses out the toc information from the api.md to build the markdown for the toc

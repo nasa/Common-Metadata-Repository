@@ -259,7 +259,7 @@
                (when (seq clean-map)
                  clean-map))
     (vector? x) (when (seq x)
-                  (into [] (keep remove-nils-empty-maps-seqs x)))
+                  (vec (keep remove-nils-empty-maps-seqs x)))
     (sequential? x) (when (seq x)
                       (keep remove-nils-empty-maps-seqs x))
     :else x))
@@ -516,7 +516,7 @@
     (letfn [(delete-recursive
               [^java.io.File file]
               (when (.isDirectory file)
-                (dorun (map delete-recursive (.listFiles file))))
+                (run! delete-recursive (.listFiles file)))
               (io/delete-file file))]
       (delete-recursive (io/file fname)))))
 
@@ -1043,7 +1043,7 @@
   (let [spaced-sep (str separator " ")]
     (if (< (count coll) 3)
       (string/join (format " %s " final-separator) coll)
-      (let [front (string/join spaced-sep (subvec coll 0 (- (count coll) 1)))
+      (let [front (string/join spaced-sep (subvec coll 0 (dec (count coll))))
             back (format "%s %s %s" separator final-separator (last coll))]
         (str front back)))))
 
@@ -1103,10 +1103,8 @@
 (defn str->num
   "If the string can be converted to a number, return that number, otherwise return nil."
   [s]
-  (if (and (string? s)
-           (numeric? s))
-    (safe-read-string s)
-    nil))
+  (when (and (string? s) (numeric? s))
+    (safe-read-string s)))
 
 (defn html-escape
   "Html escape the given string. it is used to deal with potential xss issues in user input."

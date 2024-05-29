@@ -34,7 +34,7 @@
         files (remove (fn [^File file]
                         (.isDirectory file))
                       files-or-directories)]
-    (dorun (map #(-> % str touch-file) files))))
+    (run! #(-> % str touch-file) files)))
 
 (defn speak
   "Says the specified text outloud."

@@ -32,13 +32,11 @@
 
 (def get-generic-non-draft-concept-types-array
   "Gets all of the generic concept types that are not drafts."
-  (vec
-   (filter #(not (string/includes? % "draft")) (get-generic-concept-types-array))))
+  (filterv #(not (string/includes? % "draft")) (get-generic-concept-types-array)))
 
 (def get-draft-concept-types-array
   "Gets all of the generic concept types that are drafts."
-  (vec
-   (filter #(string/includes? % "draft") (get-generic-concept-types-array))))
+  (filterv #(string/includes? % "draft") (get-generic-concept-types-array)))
 
 (defn get-concept-type-of-draft
   "Gets the concept type of the document that is contained in the draft."
