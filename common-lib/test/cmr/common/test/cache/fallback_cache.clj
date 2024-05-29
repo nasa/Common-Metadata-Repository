@@ -16,4 +16,3 @@
         backup-cache (mem-cache/create-in-memory-cache)
         fallback-cache (fallback-cache/create-fallback-cache primary-cache backup-cache)]
     (fallback-cache-spec/assert-fallback-cache fallback-cache primary-cache backup-cache)))
-

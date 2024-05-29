@@ -1,4 +1,4 @@
-(ns cmr.common.regex-builder
+(ns cmr.spatial.regex-builder
   "Provides functions for programmatically building a regular expression. All of the regular
   expression functions work by joining strings together. Call compile-regex to create the final
   regular expression"
@@ -58,13 +58,16 @@
   (str "(?:" (string/join "|" parts) ")"))
 
 (defn compile-regex
+  "Compile a reg-ex pattern"
   [pattern]
   (re-pattern pattern))
 
 (def digit
+  "the digit"
   "\\d")
 
 (def decimal-number
+  "decimal numbers"
   (let [sign "[+\\-]"]
     (group (optional sign)
            (one-or-more digit)

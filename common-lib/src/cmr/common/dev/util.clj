@@ -10,6 +10,7 @@
    (java.io File)))
 
 (defn touch-file
+  "Use the shell to mark a file as having been modified."
   [file]
   (future
     (try

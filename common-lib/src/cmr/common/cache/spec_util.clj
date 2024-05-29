@@ -26,4 +26,3 @@
      (let [actual-keys (set (cache/get-keys cache))]
        (is (every? actual-keys expected-keys)))
      (is (= (set expected-keys) (set (cache/get-keys cache)))))))
-

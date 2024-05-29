@@ -99,7 +99,8 @@
   (is (= "application/foo" (mt/keep-version "application/foo")))
   (is (= "application/foo" (mt/keep-version "application/foo;bar=bat")))
   (is (= "application/foo;version=1.0" (mt/keep-version "application/foo; version=1.0")))
-  (is (= "application/foo;version=1.0" (mt/keep-version "application/foo; charset=utf-8; version=1.0"))))
+  (is (= "application/foo;version=1.0"
+         (mt/keep-version "application/foo; charset=utf-8; version=1.0"))))
 
 (deftest test-base-mime-type
   (is (= "application/foo" (mt/base-mime-type-of "application/foo;bar=bat")))

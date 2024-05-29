@@ -20,8 +20,9 @@
           (cfg/approved-pipeline-documentation)))
 
 (defn read-generic-doc-file
-  "Return the specific schema's documentation files given the schema keyword name and version number.
-   if the file cannot be read, return an empty string which will have no impact on the API document.
+  "Return the specific schema's documentation files given the schema keyword name and version
+   number. If the file cannot be read, return an empty string which will have no impact on the API
+   document.
    Parameters:
    * file-name: [ingest | search]
    * generic-keyword: [:grid | ...]
@@ -79,8 +80,9 @@
      (build-markdown-toc depth link content))))
 
 (defn format-generic-toc
-  "Return the specific schema's documentation files given the schema keyword name and version number.
-   if the file cannot be read, return an empty string which will have no impact on the API document.
+  "Return the specific schema's documentation files given the schema keyword name and version
+   number. If the file cannot be read, return an empty string which will have no impact on the API
+   document.
    Parameters:
    * file-name: [ingest | search]
    * generic-keyword: [:grid | ...]
@@ -101,7 +103,8 @@
   * file-name: [ingest | search]
   Returns: string"
   [file-name options]
-  (string/join (seq (for [[k,v] (latest-approved-documentation)] (format-generic-toc file-name k (str v) options)))))
+  (string/join (seq (for [[k,v] (latest-approved-documentation)]
+                      (format-generic-toc file-name k (str v) options)))))
 
 (defn format-toc-into-doc
   "To fit generic docs into the toc a few html tags must be removed, this block will

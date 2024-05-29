@@ -12,7 +12,9 @@
   (:import
    (clojure.core.cache CacheProtocol)))
 
-(defmulti size-in-bytes class)
+(defmulti size-in-bytes
+  "Calculate the storage size for different types of data."
+  class)
 
 (defmethod size-in-bytes :default
   [x]
@@ -21,8 +23,8 @@
     (size-in-bytes (str x))
     (catch Exception e
       (error (str "A problem occurred calculating cache size. "
-                 "Cache usage estimates may be incorrect. "
-                 (.getMessage e)))
+                  "Cache usage estimates may be incorrect. "
+                  (.getMessage e)))
       1)))
 
 (defmethod size-in-bytes java.lang.Boolean
@@ -139,14 +141,11 @@
 ;; Clojure itself)
 
 (defn- key-killer
+  "drops expired keys"
   [ttl expiry now]
   (let [ks (map key (filter #(> (- now (val %)) expiry) ttl))]
     #(apply dissoc % ks)))
 
-;(declare TTLCache)
-;(declare cache ttl ttl-ms)
-;(declare lookup has? hit miss seed evict)
-;(declare this item not-found _ miss result base toString)
 #_{:clj-kondo/ignore [:unresolved-symbol]}
 (defcache TTLCache [cache ttl ttl-ms]
   CacheProtocol

@@ -5,6 +5,7 @@
             [cmr.common.cache.spec-util :as su]))
 
 (defn- check-initial-cache-state
+  "Check if cache value is empty or nil"
   [cache]
   (is (empty? (cache/get-keys cache)))
   (is (nil? (cache/get-value cache :foo))))

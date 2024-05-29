@@ -24,26 +24,26 @@
 (defn find-formatter
   "Finds a given format from a map of regular expressions to formatters to use. Uses the regular
   expression to check if the datetime matches."
-  [datetime type regex-formatter-map]
+  [datetime date-type regex-formatter-map]
   (let [date-format (->> regex-formatter-map
                          (filter (fn [[regex _formatter]]
                                    (re-matches regex datetime)))
                          first
                          second)]
     (when-not date-format
-      (msg/data-error :invalid-data msg/invalid-msg type datetime))
+      (msg/data-error :invalid-data msg/invalid-msg date-type datetime))
     date-format))
 
 (defn- make-parser
   "Creates a date parser function"
-  [type regex-formatter-map]
+  [date-type regex-formatter-map]
   (fn [value]
     (try
-      (time-format/parse (find-formatter value type regex-formatter-map) value)
+      (time-format/parse (find-formatter value date-type regex-formatter-map) value)
       (catch IllegalFieldValueException e
-        (msg/data-error :invalid-data msg/invalid-msg type value (.getMessage e)))
+        (msg/data-error :invalid-data msg/invalid-msg date-type value (.getMessage e)))
       (catch IllegalArgumentException e
-        (msg/data-error :invalid-data msg/invalid-msg type value (.getMessage e))))))
+        (msg/data-error :invalid-data msg/invalid-msg date-type value (.getMessage e))))))
 
 (defn- truncate-ms
   "Some dates from providers can contain additional fractional seconds more accurate than a single

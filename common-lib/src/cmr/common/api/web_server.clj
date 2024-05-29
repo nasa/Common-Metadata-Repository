@@ -32,11 +32,12 @@
 (def MIN_GZIP_SIZE
   "The size that will be used to determine if responses should be GZIP'd. See the following Stack
   Overflow question:
-  http://webmasters.stackexchange.com/questions/31750/what-is-recommended-minimum-object-size-for-gzip-performance-benefits
+  https://webmasters.stackexchange.com/questions/31750/
+   what-is-recommended-minimum-object-size-for-gzip-performance-benefits
   Akamai recommend 860 bytes. We're transmitting UTF-8 which should be about a byte a character."
   860)
 
-(def ONE_MB 1048576)
+(def ONE_MB "2^20" 1048576)
 
 (def MAX_REQUEST_HEADER_SIZE
   "The maximum request header size. This is set to 1MB to handle requests with long urls."

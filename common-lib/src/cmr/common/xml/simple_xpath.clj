@@ -390,7 +390,8 @@
                  (some (fn [selected-element]
                          (cond
                            not-equal? (not= (-> selected-element :content first) element-value)
-                           sub-str? (string/includes? (-> selected-element :content first) element-value)
+                           sub-str? (string/includes? (-> selected-element :content first)
+                                                      element-value)
                            :else (= (-> selected-element :content first) element-value)))
                        (process-selectors
                         [element] selectors process-xml-selector)))
@@ -493,6 +494,7 @@
         []))))
 
   (defn- xpath-context?
+    "True if x is a map, has a type, root, and context"
     [x]
     (and (map? x)
          (:type x)

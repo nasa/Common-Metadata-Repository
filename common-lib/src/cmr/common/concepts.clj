@@ -148,20 +148,26 @@
      (let [valid-prefixes (string/join "|" (keys concept-prefix->concept-type))
            regex (re-pattern (str "(" valid-prefixes ")\\d+-[A-Za-z0-9_]+"))]
        (when-not (re-matches regex concept-id)
-         [(format "%s [%s] is not valid." (-> param name string/capitalize) (util/html-escape concept-id))]))
-     [(format "%s [%s] is not valid." (-> param name string/capitalize) (util/html-escape concept-id))])))
+         [(format "%s [%s] is not valid."
+                  (-> param name string/capitalize)
+                  (util/html-escape concept-id))]))
+     [(format "%s [%s] is not valid."
+              (-> param name string/capitalize)
+              (util/html-escape concept-id))])))
 
 (def validate-concept-id
   "Validates a concept-id and throws an error if invalid"
   (v-util/build-validator :bad-request concept-id-validation))
 
 (defn concept-type-validation
-  "Validates a concept type is known. Returns an error if invalid. A string or keyword can be passed in."
+  "Validates a concept type is known. Returns an error if invalid. A string or keyword can be passed
+   in."
   [concept-type]
   (let [concept-type (cond
                        (string? concept-type) (keyword concept-type)
                        (keyword? concept-type) concept-type
-                       :else (errors/internal-error! (format "Received invalid concept-type [%s]" concept-type)))]
+                       :else (errors/internal-error! (format "Received invalid concept-type [%s]"
+                                                             concept-type)))]
     (when-not (concept-types concept-type)
       [(format "[%s] is not a valid concept type." (name concept-type))])))
 

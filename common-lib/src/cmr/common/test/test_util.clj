@@ -1,4 +1,5 @@
 (ns cmr.common.test.test-util
+  "Common utilities for testing code."
   (:require
    [clojure.test :refer [is]]
    [clojure.string :as string]

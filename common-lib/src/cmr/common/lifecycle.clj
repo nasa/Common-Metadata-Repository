@@ -1,4 +1,5 @@
-(ns cmr.common.lifecycle)
+(ns cmr.common.lifecycle
+  "Common lifecycle events for an application which starts services.")
 
 (defprotocol Lifecycle
   "Defines a component with a start and stop functions."

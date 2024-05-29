@@ -11,7 +11,8 @@
 
 ;;; Core Functions
 
-;; These functions are useful for all operations on MIME (or media) types and are not strictly CMR related.
+;; These functions are useful for all operations on MIME (or media) types and are not strictly CMR
+;; related.
 
 (defn- parse-mime-type*
   [mt]
@@ -57,11 +58,13 @@
 
 ;;; Officially-Recognized CMR Media Types
 
-;; The following media types are recognized by the CMR for use in various places. The map below is used
-;; to dynamically create vars containing the recognized base MIME type for each keyword on the left.
-;; To keep the linters happy, please declare any var that will be used in this namespace from this function.
-(declare json umm-json umm-json-results legacy-umm-json timeline xml form-url-encoded echo10 iso-smap iso19115
-         dif dif10 csv html atom kml opendatastac native edn opendap octet-stream shapefile geojson multi-part-form)
+;; The following media types are recognized by the CMR for use in various places. The map below is
+;; used to dynamically create vars containing the recognized base MIME type for each keyword on the
+;; left. To keep the linters happy, please declare any var that will be used in this namespace from
+;; this function.
+(declare json umm-json umm-json-results legacy-umm-json timeline xml form-url-encoded echo10
+         iso-smap iso19115 dif dif10 csv html atom kml opendatastac native edn opendap octet-stream
+         shapefile geojson multi-part-form)
 (def ^:private base-format->mime-type
   "A map of format keywords to MIME types. Each keyword will have a corresponding var def'ed in this
   namespace for other namespaces to reference."
@@ -98,10 +101,10 @@
 (defn format->mime-type
   "Converts a format structure (a keyword or map containing :format and :version) to a mime type.
    The mime type will contain a version if the format does."
-  [format]
-  (if (map? format)
-    (with-version (format->mime-type (:format format)) (:version format))
-    (base-format->mime-type format)))
+  [doc-format]
+  (if (map? doc-format)
+    (with-version (format->mime-type (:format doc-format)) (:version doc-format))
+    (base-format->mime-type doc-format)))
 
 ;; Intern vars for each of the mime type formats, e.g. (def json "application/json")
 
@@ -114,7 +117,7 @@
   (when mt
     (= umm-json (base-mime-type-of mt))))
 
-(def any "*/*")
+(def any "Any mime-type" "*/*")
 
 (def base-mime-type-to-format
   "A map of MIME type strings to CMR data format keywords."
@@ -140,7 +143,8 @@
      (get base-mime-type-to-format default-mime-type))))
 
 (defn format-key
-  "Returns CMR format keyword from given value. Value may be a keyword, a MIME type string or a map."
+  "Returns CMR format keyword from given value. Value may be a keyword, a MIME type string or a
+   map."
   [x]
   (cond
     (string? x) (format-key (mime-type->format x nil))
@@ -162,7 +166,8 @@
 
 ;;; HTTP (Ring) Header-Specific Functions
 
-;; These functions deal with extracting MIME types from HTTP headers, and from Ring request header maps.
+;; These functions deal with extracting MIME types from HTTP headers, and from Ring request header
+;; maps.
 
 (defn extract-mime-types
   "Returns a seq of base MIME types from a HTTP header media range string.
@@ -207,10 +212,10 @@
 
 (defn- parse-versioned-umm-json-path-extension
   "Tries to parse the extension as if it is for version UMM JSON. If the extension is of the format
-   umm_json_vN_N_N (_N can be repeated as many times as needed) where N is a version number separated
-   by underscores then it will return a UMM JSON mime type with the specified version. Example
-   extension umm_json_v12_4F will return nil because 4F is not a valid format. umm_json_v12_44_55 will
-   return application/vnd.nasa.cmr.umm+json;version=12.44.55 "
+   umm_json_vN_N_N (_N can be repeated as many times as needed) where N is a version number
+   separated by underscores then it will return a UMM JSON mime type with the specified version.
+   Example extension umm_json_v12_4F will return nil because 4F is not a valid format.
+   umm_json_v12_44_55 will return application/vnd.nasa.cmr.umm+json;version=12.44.55 "
   [extension]
   (let [test-for-characters (-> extension
                                 (string/replace #"^umm_json_v" "")
@@ -227,20 +232,24 @@
    (path->mime-type search-path-w-extension nil))
   ([search-path-w-extension valid-mime-types]
    (when-let [extension (second (re-matches #"[^.]+(?:\.(.+))$" search-path-w-extension))]
-     ;; Convert extension into a keyword. We don't use camel snake kebab as it would convert "echo10" to "echo-10"
+     ;; Convert extension into a keyword. We don't use camel snake kebab as it would convert
+     ;; "echo10" to "echo-10"
      (let [extension-key (keyword (string/replace extension #"_" "-"))
-           ;; Parse the extension as version UMM JSON extension or look it up using format->mime-type
+           ;; Parse the extension as version UMM JSON extension or look it up using
+           ;; format->mime-type
            mime-type (or (parse-versioned-umm-json-path-extension extension)
                          (format->mime-type (get extension-aliases extension-key extension-key)))]
-       (if (and (some? valid-mime-types) (not (contains? valid-mime-types (base-mime-type-of mime-type))))
+       (if (and (some? valid-mime-types)
+                (not (contains? valid-mime-types (base-mime-type-of mime-type))))
          (svc-errors/throw-service-error
-          :bad-request (format "The URL extension [%s] is not supported." (util/html-escape extension)))
+          :bad-request (format "The URL extension [%s] is not supported."
+                               (util/html-escape extension)))
          mime-type)))))
 
 (defn extract-header-mime-type
   "Extracts the given header value from the headers and returns the first valid preferred mime type.
-  If validate? is true it will throw an error if the header was passed by the client but no mime type
-  in the header value was acceptable."
+   If validate? is true it will throw an error if the header was passed by the client but no mime
+   type in the header value was acceptable."
   [valid-mime-types headers header validate?]
   (when-let [header-value (get headers header)]
     (or (some valid-mime-types (extract-mime-types header-value))

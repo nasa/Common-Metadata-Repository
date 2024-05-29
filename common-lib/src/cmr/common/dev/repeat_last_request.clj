@@ -4,7 +4,7 @@
    requests that have been received and then can rerun them from the repl thread where debug-repl
    works better.")
 
-(def last-request-atom (atom nil))
+(def last-request-atom "where to store the last request" (atom nil))
 
 (defn save-last-request-handler
   "A ring handler that saves the last request received in an atom."

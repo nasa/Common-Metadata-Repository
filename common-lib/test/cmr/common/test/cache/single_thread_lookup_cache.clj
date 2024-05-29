@@ -18,8 +18,8 @@
   []
   (throw (Exception. "failure")))
 
-;; If an exception occurs while looking up something we want to get that exception back to the caller
-;; it should prevent the single thread from dying.
+;; If an exception occurs while looking up something we want to get that exception back to the
+;; caller it should prevent the single thread from dying.
 ;; See CMR-1392
 (deftest exception-in-lookup-test
   (let [cache (l/start (slc/create-single-thread-lookup-cache) nil)]
@@ -33,13 +33,16 @@
       (testing "lookup function that throws exception is passed to the user"
 
         (is (thrown-with-msg?
-              Exception #"failure"
-              ;; Timeout is used here in the case that this doesn't work we don't want it
-              ;; causing tests to hang.
-              (clojail/thunk-timeout #(c/get-value cache :fail fail-lookup-fn) 1000)))
+             Exception #"failure"
+             ;; Timeout is used here in the case that this doesn't work we don't want it causing
+             ;; tests to hang.
+             ;; Additionally, on some local systems, this test fails unless you call the c/get-value
+             ;; directly, that is outside of the thunk-timeout. Not sure why.
+             (clojail/thunk-timeout #(c/get-value cache :fail fail-lookup-fn) 1000))
+            "get-value failed to throw an exception")
 
         ;; test nothing was cached
-        (is (nil? (c/get-value cache :fail))))
+        (is (nil? (c/get-value cache :fail)) "nothing was cached"))
 
       (testing "after failure other values are still cached"
         (is (= "normal value" (c/get-value cache :normal))))
@@ -73,7 +76,8 @@
         (testing "concurrent request for the same key will only invoke lookup once"
           (let [futures (for [n (range 10)]
                           (future (c/get-value cache :foo slow-lookup-fn)))]
-            ;; The lookup function should only be called once and every request ends up with the same value
+            ;; The lookup function should only be called once and every request ends up with the
+            ;; same value
             (is (= #{1} (set (map deref futures))))
             ;; the lookup function was only called once.
             (is (= 1 (deref counter)))))

@@ -76,7 +76,8 @@
                    false false
                    false false false
                    true] #'util/is-launchpad-token?))
-    ;; TODO - add me back in after we remove echo tokens and can move this function from common-app to common-lib like the others
+    ;; TODO - add me back in after we remove echo tokens and can move this function from common-app
+    ;; to common-lib like the others
     #_(testing "get-token-type"
       (test-group ["Echo-Token"
                    "Legacy-EDL" "Legacy-EDL" "Legacy-EDL" "Legacy-EDL"

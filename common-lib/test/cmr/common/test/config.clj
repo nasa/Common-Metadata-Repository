@@ -1,5 +1,5 @@
 (ns cmr.common.test.config
-  (:require 
+  (:require
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.test :refer :all]
@@ -180,6 +180,7 @@
    :type Long})
 
 (deftest test-check-env-vars
-  (is (false? (c/check-env-vars {:cmr-test-default-job-start-delay "common-lib test defconfig",
-                                 :cmr-test-health-check-timeout-seconds "common-lib test defconfig"})))
+  (is (false? (c/check-env-vars
+               {:cmr-test-default-job-start-delay "common-lib test defconfig",
+                :cmr-test-health-check-timeout-seconds "common-lib test defconfig"})))
   (is (true? (c/check-env-vars {:cmr-not-recognizable "not recognized"}))))

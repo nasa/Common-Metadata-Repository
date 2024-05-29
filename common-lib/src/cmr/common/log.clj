@@ -16,6 +16,7 @@
   nil)
 
 (defn- log-formatter
+  "Basic format for the log"
   [{:keys [level ?err_ msg_ timestamp_ hostname_ ?ns-str] :as _data}]
   ;; <timestamp_> <hostname_> <request id> <LEVEL> [<?ns-str>] - <msg_> <?err_>
   (format "%s %s [%s] %s [%s] - %s%s"
@@ -146,6 +147,7 @@
         this))
 
 (def default-log-options
+  "Basic log options to use if non are given."
   {:level :info
    :file nil ; Do not log to a file by default
    :stdout-enabled? true})

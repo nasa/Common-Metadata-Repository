@@ -9,7 +9,8 @@
   (testing "Normal usage with supplied request-id"
     (let [system {:foo "bar"}
           request-id "request-test"]
-      (is (= {:system {:foo "bar"} :request {:request-id "request-test"}} (context/request-context system request-id))))))
+      (is (= {:system {:foo "bar"} :request {:request-id "request-test"}}
+             (context/request-context system request-id))))))
 
 (deftest context->request-id-test
   (testing "Normal usage, pulling request-id from the context"

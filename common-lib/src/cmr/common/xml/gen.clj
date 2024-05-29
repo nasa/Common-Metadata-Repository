@@ -6,6 +6,7 @@
    [cmr.common.xml.simple-xpath :refer [select]]))
 
 (defprotocol GenerateXML
+  "Generates an XML document"
   (generate [x]))
 
 (extend-protocol GenerateXML
@@ -51,9 +52,11 @@
 ;;; Helpers
 
 (defn element-from
+  "just one element"
   [context kw]
   [kw {} (select context (name kw))])
 
 (defn elements-from
+  "multiple elements"
   [context & kws]
   (map (partial element-from context) kws))

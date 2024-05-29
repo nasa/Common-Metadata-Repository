@@ -6,7 +6,9 @@
 
   {\"keys\": [\"alt+super+a\"],
    \"command\": \"run_command_in_repl\",
-   \"args\": {\"command\": \"(def all-tests-future (future (cmr.common.test.runners.default/run-all-tests {:fail-fast? true :speak? true} )))\",
+   \"args\": {\"command\": \"(def all-tests-future
+                                  (future (cmr.common.test.runners.default/run-all-tests
+                                      {:fail-fast? true :speak? true} )))\",
               \"refresh_namespaces\": true}},
 
   Note that this functionality was originally provided in the `cmr.common.test.test-runner`
@@ -35,7 +37,8 @@
   [namespaces parallel?]
   (let [map-fn (if parallel? pmap map)]
     (map-fn (fn [test-ns]
-              (let [[millis results] (util/time-execution (test/run-tests (find-ns (symbol test-ns))))]
+              (let [[millis results] (util/time-execution (test/run-tests
+                                                           (find-ns (symbol test-ns))))]
                 (assoc results
                        :took millis
                        :test-ns test-ns)))
@@ -110,6 +113,7 @@
     doall))
 
 (def last-test-results
+  "get a blank atom for the last results"
   (atom nil))
 
 (defn run-all-tests
@@ -117,8 +121,8 @@
   Options:
    * :speak? - set to true to speak 'success' or 'failure' after tests complete.
    * :fail-fast? - set to true to fail after the first failed test.
-   * :reset-fn - a function to call to perform a reset or wait for completion after tests are finished
-     before printing results.
+   * :reset-fn - a function to call to perform a reset or wait for completion after tests are
+     finished before printing results.
    * :unit-test-namespaces - Allows overriding which unit test namespaces to test
    * :integration-test-namespaces - Allows overriding which integration test namespaces to test"
   [options]

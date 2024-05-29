@@ -91,7 +91,10 @@
                (name file-name)
                (name generic-keyword)
                generic-version
-               (format "schemas/%s/v%s/%s.json" (name generic-keyword) generic-version (name file-name))
+               (format "schemas/%s/v%s/%s.json"
+                       (name generic-keyword)
+                       generic-version
+                       (name file-name))
                (.getMessage e))))))
 
 (def read-schema-file
@@ -189,7 +192,8 @@
        (string/join "|")))
 
 (def plural-generic-concept-types-reg-ex
-  "Creates a pluralized regular expression for all of the generic concepts. Used to create API endpoints."
+  "Creates a pluralized regular expression for all of the generic concepts. Used to create API
+   endpoints."
   (->> (latest-approved-document-types)
        (map inf/plural)
        (string/join "|")))

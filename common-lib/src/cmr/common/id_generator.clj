@@ -1,18 +1,19 @@
 (ns cmr.common.id-generator
   "The id generator allows generation of numeric ids that fit within a Java Long (63 bits). It's
-  based on the described API for Twitter Snowflake (https://github.com/twitter/snowflake/). A single
-  id contains values for the current time in milliseconds, a sequence number, and a worker identifier.
+   based on the described API for Twitter Snowflake (https://github.com/twitter/snowflake/). A
+   single id contains values for the current time in milliseconds, a sequence number, and a worker
+   identifier.
 
-  time - The current time in milliseconds from the epoch as returned by System.currentTimeMillis.
-  sequence - A number from 0 - 255 used if multiple ids are generated in a single millisecond.
-  worker - A number from 0 - 255 identifying a single worker node. This should be unique in a cluster
-  of machines. Ther should be one worker id per JVM process.
+   time - The current time in milliseconds from the epoch as returned by System.currentTimeMillis.
+   sequence - A number from 0 - 255 used if multiple ids are generated in a single millisecond.
+   worker - A number from 0 - 255 identifying a single worker node. This should be unique in a
+   cluster of machines. Ther should be one worker id per JVM process.
 
-  The values map to Java Long in the following order:
-  [time - 6 bytes] [sequence - 1 byte] [worker 1 byte]
-  This allows the generated ids to be sorted in time order. Ids generated across workers will be
-  sortable but not exactly ordered due to clock drift and if multiple ids are generated in a single
-  ms."
+   The values map to Java Long in the following order:
+   [time - 6 bytes] [sequence - 1 byte] [worker 1 byte]
+   This allows the generated ids to be sorted in time order. Ids generated across workers will be
+   sortable but not exactly ordered due to clock drift and if multiple ids are generated in a single
+   ms."
   (:require [cmr.common.util :as util]))
 
 (comment
@@ -25,8 +26,6 @@
   (clojure.pprint/pprint (take 7
                                (map id-from-state
                                     (iterate next-id-state (new-id-state 1))))))
-
-
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Constants
@@ -77,15 +76,15 @@
 
 (defn- valid-sequence?
   "Returns true if the sequence value is valid."
-  [sequence]
-  (and (>= sequence 0)
-       (<= sequence max-sequence)))
+  [sequence-value]
+  (and (>= sequence-value 0)
+       (<= sequence-value max-sequence)))
 
 (defn- valid-time?
   "Returns true if the time value is valid."
-  [time]
-  (and (>= time 0)
-       (<= time max-time)))
+  [time-value]
+  (and (>= time-value 0)
+       (<= time-value max-time)))
 
 (defn- valid-id-state?
   "Returns true if this is a valid id state."
@@ -143,7 +142,7 @@
           (try
             (Thread/sleep 1)
             (catch InterruptedException _e
-              ;; If we're interrupted retry one more time. A secondary interruption will be thown
+              ;; If we're interrupted retry one more time. A secondary interruption will be thrown
               ;; out of the function
               (Thread/sleep 1)))
           (next-id-state state))
@@ -175,7 +174,7 @@
 
 (defn create-id-generator
   "Creates a stateful function that returns a different id everytime it is called. Use one of these
-  for an entire app to guarantee unique ids within a single VM. Use a different worker id on different
-  nodes to guarantee that they will generate unique ids."
+   for an entire app to guarantee unique ids within a single VM. Use a different worker id on
+   different nodes to guarantee that they will generate unique ids."
   [worker-id]
   (util/sequence->fn (ids (new-id-state worker-id))))

@@ -23,15 +23,15 @@
 (defn- safely-get-value-or-exception
   "Gets a value from the delegate cache safely handling any exceptions. If an exception is thrown
   then it will be returned"
-  [delegate-cache key lookup-fn]
+  [delegate-cache cache-key lookup-fn]
   (try
-    (cache/get-value delegate-cache key lookup-fn)
+    (cache/get-value delegate-cache cache-key lookup-fn)
 
     ;; Guard against exceptions while getting a value from the delegate cache.
     ;; These will most likely come from lookup function.
     (catch Exception e
       (error e (format "Exception occurred while fetching key %s: %s"
-                       key (.getMessage e)))
+                       cache-key (.getMessage e)))
       ;; The exception is returned so it will be put on the response channel and
       ;; thrown to the caller.
       e)))
@@ -75,7 +75,8 @@
    ;; cache. Each message will contain a map with the :lookup-fn, :key, and :response-channel
    lookup-request-channel
 
-   ;; The channel returned when creating the single thread processes messages off the lookup-request-channel.
+   ;; The channel returned when creating the single thread processes messages off the
+   ;; lookup-request-channel.
    lookup-process-thread-channel]
 
 
@@ -87,24 +88,24 @@
       (cache/get-keys delegate-cache)))
 
   (key-exists
-    [_this key]
-    ;; key is the cache-key. Checks to see if the cache has been setup.
-    (cache/key-exists delegate-cache key))
+    [_this cache-key]
+    ;; Checks to see if the cache has been setup.
+    (cache/key-exists delegate-cache cache-key))
 
   (get-value
-   [_this key]
+   [_this cache-key]
    (when (cache/simple-cache? delegate-cache)
-     (cache/get-value delegate-cache key)))
+     (cache/get-value delegate-cache cache-key)))
 
   (get-value
-    [this key lookup-fn]
+    [this cache-key lookup-fn]
     (when (cache/simple-cache? delegate-cache)
       (or
       ;; Get the value out of the cache if it's available
-       (cache/get-value this key)
+       (cache/get-value this cache-key)
       ;; Or queue a request to get the value and wait for a response
        (let [response-channel (async/chan)]
-         (async/>!! lookup-request-channel {:key key
+         (async/>!! lookup-request-channel {:key cache-key
                                             :lookup-fn lookup-fn
                                             :response-channel response-channel})
          (let [result (async/<!! response-channel)]
@@ -125,9 +126,9 @@
       (cache/reset delegate-cache)))
 
    (set-value
-    [_this key value]
+    [_this cache-key value]
     (when (cache/simple-cache? delegate-cache)
-      (cache/set-value delegate-cache key value)))
+      (cache/set-value delegate-cache cache-key value)))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
    life/Lifecycle
@@ -175,8 +176,9 @@
   ;; Create a regular memory cache
   (def mem-cache (mc/create-in-memory-cache))
 
-  ;; If we execute a bunch of concurrent requests for a value the lookup will be invoked N times with
-  ;; a regular memory cache. The values returned will all be the same due to how the cache works.
+  ;; If we execute a bunch of concurrent requests for a value the lookup will be invoked N times
+  ;; with a regular memory cache. The values returned will all be the same due to how the cache
+  ;; works.
   (map deref (for [n (range 10)]
                (future
                  (cache/get-value mem-cache :foo lookup-a-value))))

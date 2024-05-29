@@ -1,6 +1,7 @@
-(ns cmr.common.test.regex-builder
-  (:require [clojure.test :refer :all]
-            [cmr.common.regex-builder :refer :all]))
+(ns cmr.spatial.test.regex-builder
+  (:require
+   [clojure.test :refer :all]
+   [cmr.spatial.regex-builder :refer :all]))
 
 (declare regex-examples)
 

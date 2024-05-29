@@ -1,4 +1,5 @@
 (ns cmr.common.xml.parse
+  "Xpath functions for pulling out nodes in a document."
   (:require
    [clojure.string :as string]
    [cmr.common.date-time-parser :as dtp]
@@ -41,6 +42,7 @@
     `(values-at* ~element ~xpath)))
 
 (defn boolean-at*
+  "True if the value pointed to by the xpath is a true"
   [element xpath]
   (= "true" (value-of element xpath)))
 
@@ -54,12 +56,14 @@
     `(boolean-at* ~element ~xpath)))
 
 (defn fields-from
+  "Get all the values for a list"
   [element & kws]
   (zipmap kws
           (for [kw kws]
             (value-of element (name kw)))))
 
 (defn dates-at*
+  "Get the dates pointed to by xpath"
   [element xpath]
   (map #(dtp/parse-datetime (text %)) (select element xpath)))
 
@@ -73,6 +77,7 @@
     `(dates-at* ~element ~xpath)))
 
 (defn date-at*
+  "Get the date pointed to by th expath"
   [element xpath]
   (when-let [value (text (value-of element xpath))]
     (dtp/parse-datetime value)))

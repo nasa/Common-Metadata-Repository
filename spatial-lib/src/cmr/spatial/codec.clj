@@ -2,7 +2,6 @@
   "Makes the spatial areas URL encodeable as accepted on the Catalog REST API"
   (:require
    [clojure.string :as string]
-   [cmr.common.regex-builder :as rb]
    [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.spatial.circle :as spatial-circle]
@@ -11,6 +10,7 @@
    [cmr.spatial.messages :as smsg]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
+   [cmr.spatial.regex-builder :as rb]
    [cmr.spatial.ring-relations :as rr]))
 
 (defprotocol SpatialUrlEncode

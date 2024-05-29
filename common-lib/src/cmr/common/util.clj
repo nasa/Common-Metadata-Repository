@@ -146,8 +146,8 @@
       3
       user=> (my-ints)
       nil"
-  [vals]
-  (let [vals-atom (atom {:curr-val nil :next-vals (seq vals)})]
+  [values]
+  (let [vals-atom (atom {:curr-val nil :next-vals (seq values)})]
     (fn []
       (:curr-val (swap! vals-atom
                         (fn [{:keys [next-vals]}]
@@ -230,10 +230,10 @@
   (w/postwalk-replace {nil filler} m))
 
 (defn nil-if-value
-  "Treat value as nil if matches key."
-  [key value]
-  (when-not (= key value)
-    value))
+  "Treat value (v) as nil if matches key (k)."
+  [k v]
+  (when-not (= k v)
+    v))
 
 (defn remove-empty-maps
   "Recursively removes maps with only nil values."
@@ -297,11 +297,11 @@
 
 (defn mapcatv
   "An eager version of mapcat that returns a vector of the results."
-  [f sequence]
+  [f sequence-of-things]
   (reduce (fn [v i]
             (into v (f i)))
           []
-          sequence))
+          sequence-of-things))
 
 (defn any-true?
   "Returns true if predicate f returns a truthy value against any of the items.
@@ -414,9 +414,9 @@
 
 (defn numeric-string?
   "Returns true if the string can be converted to a double. False otherwise."
-  [val]
+  [value]
   (try
-    (Double. ^String val)
+    (Double. ^String value)
     true
     (catch NumberFormatException _
       false)))
@@ -563,8 +563,8 @@
 
 (defn gzip-bytes->string
   "Convert a byte array of gzipped data into a string."
-  [^bytes bytes]
-  (-> bytes ByteArrayInputStream. GZIPInputStream. slurp))
+  [^bytes data]
+  (-> data ByteArrayInputStream. GZIPInputStream. slurp))
 
 (defn string->gzip-bytes
   "Convert a string to an array of compressed bytes"
@@ -696,9 +696,9 @@
 
 (defn delay-name->key
   "Reverse key name"
-  [key]
-  {:pre [(keyword? key)]}
-  (-> key
+  [key-name]
+  {:pre [(keyword? key-name)]}
+  (-> key-name
       (name)
       (string/replace-first "cmr.common.util/" "")
       (string/replace-first "-delay" "")
@@ -727,11 +727,11 @@
 
 (defn delazy-value
   "Remove a lazy value and replace it with the actual value"
-  [map key]
-  (if-let [actual (lazy-get map key)]
-    (-> map
-        (assoc key actual)
-        (dissoc (key->delay-name key)))
+  [map-obj key-name]
+  (if-let [actual (lazy-get map-obj key-name)]
+    (-> map-obj
+        (assoc key-name actual)
+        (dissoc (key->delay-name key-name)))
     map))
 
 (defn delazy-all
@@ -775,9 +775,11 @@
 
 (defn map-longest
   "Similar to map function, but applies the function to the longest of the
-  sequences, use the given default to pad the shorter sequences.
+   sequences, use the given default to pad the shorter sequences.
 
-  See http://stackoverflow.com/questions/18940629/using-map-with-different-sized-collections-in-clojure"
+   See
+   https://stackoverflow.com/questions/18940629/
+     using-map-with-different-sized-collections-in-clojure"
   [f default & colls]
   (lazy-seq
     (when (some seq colls)
@@ -809,7 +811,8 @@
             ;; Neither is in the map so compare them directly
             :else (compare k1 k2)))))))
 
-;; Copied from clojure.core.incubator. We were having issues referring to this after updating to Clojure 1.7.
+;; Copied from clojure.core.incubator. We were having issues referring to this after updating to
+;; Clojure 1.7.
 (defn dissoc-in
   "Dissociates an entry from a nested associative structure returning a new
   nested structure. keys is a sequence of keys. Any empty maps that result
@@ -1011,7 +1014,7 @@
       false)))
 
 ;; Note: Similar code exists at gov.nasa.echo.kernel.service.authentication
-(def URS_TOKEN_MAX_LENGTH 100)
+(def URS_TOKEN_MAX_LENGTH "Back in the day, this is how you knew it was URS" 100)
 
 ;; TODO - remove legacy token check after legacy token retirement
 (defn is-legacy-token?
@@ -1033,9 +1036,9 @@
            (is-jwt-token? token))))
 
 (defn human-join
-  "Given a vector of strings, return a string joining the elements of the collection with 'separator', except for
-  the last two which are joined with \"'separator' 'final-separator' \".
-  Example: (fancy-join [\"One\" \"Two\" \"Three\"] \",\" \"or\") => \"One, Two, or Three\""
+  "Given a vector of strings, return a string joining the elements of the collection with
+   'separator', except for the last two which are joined with \"'separator' 'final-separator' \".
+   Example: (fancy-join [\"One\" \"Two\" \"Three\"] \",\" \"or\") => \"One, Two, or Three\""
   [coll separator final-separator]
   (let [spaced-sep (str separator " ")]
     (if (< (count coll) 3)

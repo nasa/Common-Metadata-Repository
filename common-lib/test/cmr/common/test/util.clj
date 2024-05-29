@@ -227,7 +227,12 @@
       (let [params {:concept-id #{"G9000000009-PROV2"},
                     :echo-granule-id #{"G1000000006-PROV2"}
                     :echo-collection-id "C1000000002-PROV2"}
-            param-aliases {:echo-granule-id :concept-id :echo-collection-id :concept-id :dummy-key :replace-key}
+            param-aliases {:echo-granule-id
+                           :concept-id
+                           :echo-collection-id
+                           :concept-id
+                           :dummy-key
+                           :replace-key}
             expected {:concept-id #{"G9000000009-PROV2" "C1000000002-PROV2" "G1000000006-PROV2"}}]
         (is (= expected
                (util/rename-keys-with params param-aliases merge-fn)))))))
@@ -246,7 +251,8 @@
       true even? [1 2]
       true even? [2 1 3 7]
 
-      ;; It should return true before it checks everything. The symbol at the end will trigger an exception
+      ;; It should return true before it checks everything. The symbol at the end will trigger an
+      ;; exception
       true #(> (/ 20 %) 2) [20.0 1.0 :not-a-number]))
 
 (defspec map-n-spec 1000
@@ -286,7 +292,8 @@
           find-value 23
           matches-fn (fn [^long v minv maxv ^long depth]
                        (if (> depth range-size)
-                         (throw (Exception. (format "Depth [%d] exceeded max [%d]" depth range-size)))
+                         (throw (Exception.
+                                 (format "Depth [%d] exceeded max [%d]" depth range-size)))
                          (cond
                            (< v find-value) :less-than
                            (> v find-value) :greater-than
@@ -793,11 +800,13 @@
     (is (thrown? NullPointerException
           (try
             (util/fast-map inc [1 nil 3]) ; Will throw NullPointerException
-            ;; If we get to this point, the test failed because the exception was not thrown correctly
+            ;; If we get to this point, the test failed because the exception was not thrown
+            ;; correctly
             (is false "Fast-map did not throw an exception as expected")
             (catch java.util.concurrent.ExecutionException ee
               ; We don't want an ExecutionException, we want to get the null pointer exception
-              (is false "Fast-map threw ExecutionException and should throw NullPointerException")))))))
+              (is false
+                  "Fast-map threw ExecutionException and should throw NullPointerException")))))))
 
 (deftest max-compare-test
   (util/are3

@@ -62,14 +62,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn start
+  "Lifecycle start"
   [this _system]
   this)
 
 (defn stop
+  "Lifecycle stop"
   [this _system]
   this)
 
 (def behaviour
+  "Lifecycles to act on"
   {:start start
    :stop stop})
 

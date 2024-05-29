@@ -51,8 +51,9 @@
 
 (defn update-elements-at-path
   "Calls updater-fn with each element at the specified path. Replaces the element with the result of
-  calling the function. This has not been optimized for speed. Works by recursively replacing elements
-  that are the parents of the updated nodes. Calls updater-fn with the element and any supplied args."
+   calling the function. This has not been optimized for speed. Works by recursively replacing
+   elements that are the parents of the updated nodes. Calls updater-fn with the element and any
+   supplied args."
   [element path updater-fn & args]
   (if (zero? (count path))
     (apply updater-fn (cons element args))

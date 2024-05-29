@@ -1,4 +1,5 @@
 (ns cmr.common.api.errors
+  "Functions for throwing errors in a web service."
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
@@ -9,6 +10,7 @@
    [cmr.common.services.errors :as errors]))
 
 (def type->http-status-code
+  "mappings for standard non-successfull http status codes"
   {:bad-request 400
    :unauthorized 401
    :not-found 404
@@ -20,20 +22,22 @@
    :service-unavailable 503
    :gateway-timeout 504})
 
-(def CONTENT_TYPE_HEADER "Content-Type")
-(def CORS_ORIGIN_HEADER "Access-Control-Allow-Origin")
+(def CONTENT_TYPE_HEADER "An HTTP Header" "Content-Type")
+(def CORS_ORIGIN_HEADER "An HTTP HEADER" "Access-Control-Allow-Origin")
 
 (def internal-error-ring-response
+  "A basic 500 response"
   {:status 500
    :headers {CONTENT_TYPE_HEADER mt/json
              CORS_ORIGIN_HEADER "*"}
    :body {:errors ["An Internal Error has occurred."]}})
 
 (defn mask-token-error
- [error-string]
- (if (re-matches #".*Token .* does not exist.*" error-string)
-  "Token does not exist"
-  error-string))
+  "Replace real tokens with a message"
+  [error-string]
+  (if (re-matches #".*Token .* does not exist.*" error-string)
+    "Token does not exist"
+    error-string))
 
 (defn- keyword-path->string-path
   "Converts a set of keyword field paths into the string equivalent field paths
@@ -45,12 +49,7 @@
            (csk/->PascalCaseString path-item)))
        field-path))
 
-(defmulti errors->body-string
-  "Converts a set of errors into a string to return in the response body
-  formatted according to the requested response format."
-
-  (fn [response-format _errors]
-    response-format))
+;; *************************************
 
 (defmulti error->json-element
   "Converts an individual error element to a clojure data structure
@@ -65,9 +64,7 @@
   [error]
   (update-in error [:path] keyword-path->string-path))
 
-(defmethod errors->body-string mt/json
-  [_ errors]
-  (json/generate-string {:errors (map error->json-element errors)}))
+;; *************************************
 
 (defmulti error->xml-element
   "Converts an individual error element to the equivalent XML structure."
@@ -87,11 +84,26 @@
       (xml/element
         :errors {} (for [error errors] (xml/element :error {} error))))))
 
+;; *************************************
+
+(defmulti errors->body-string
+  "Converts a set of errors into a string to return in the response body
+  formatted according to the requested response format."
+
+  (fn [response-format _errors]
+    response-format))
+
+(defmethod errors->body-string mt/json
+  [_ errors]
+  (json/generate-string {:errors (map error->json-element errors)}))
+
 (defmethod errors->body-string mt/xml
   [_ errors]
   (xml/emit-str
-    (xml/element :errors {}
-               (map error->xml-element errors))))
+   (xml/element :errors {}
+                (map error->xml-element errors))))
+
+;; *************************************
 
 (defn- response-type-body
   "Returns the response content-type and body for the given errors and format."
@@ -117,12 +129,12 @@
 (defn handle-service-error
   "Handles service errors thrown during a request and returns the appropriate
   ring response."
-  [default-format-fn request type errors e]
+  [default-format-fn request e-type errors e]
   (let [results-format (get-results-format
                          (:uri request)
                          (:headers request)
                          (default-format-fn request e))
-        status-code (type->http-status-code type)
+        status-code (type->http-status-code e-type)
         [content-type response-body] (response-type-body
                                       errors results-format)]
     ;; Log exceptions for server errors

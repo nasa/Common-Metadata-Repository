@@ -1,11 +1,9 @@
 (ns cmr.common.test.test-check-ext-test
-  (:require [clojure.test :refer :all]
-            ; [clojure.test.check.clojure-test :refer [defspec]]
-            ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
-            [cmr.common.test.test-check-ext :as ext :refer [defspec]]
-            [clojure.test.check.properties :refer [for-all]]
-            [clojure.test.check.generators :as gen]))
-
+  (:require
+   [clojure.test :refer :all]
+   [clojure.test.check.generators :as gen]
+   [clojure.test.check.properties :refer [for-all]]
+   [cmr.common.test.test-check-ext :as ext :refer [defspec]]))
 
 (def min-max-gen
   "Generator creating min and max integer tuple that will be separated by at least 3"
@@ -28,4 +26,3 @@
       (and (= d (double d))
            (>= d minv)
            (<= d maxv)))))
-
