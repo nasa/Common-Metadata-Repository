@@ -2,12 +2,10 @@
   (:require
    [clj-time.core :as t]
    [clojure.set :as set]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.string :as string]
+   [clojure.test :refer [are deftest is testing]]
    [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :refer [for-all]]
-   ; [clojure.test.check.clojure-test :refer [defspec]]
-   ;; Temporarily included to use the fixed defspec. Remove once issue is fixed.
    [cmr.common.test.test-check-ext :as gen-ext :refer [defspec]]
    [cmr.common.util :as util :refer [defn-timed]]))
 
@@ -59,10 +57,13 @@
 
 (deftest are2-test
   (testing "Normal use"
-    (util/are2
-     [x y] (= x y)
+    (util/are3
+     [x y]
+     (is (= x y))
+
      "The most basic case with 1"
      2 (+ 1 1)
+
      "A more complicated test"
      4 (* 2 2))))
 
@@ -100,6 +101,8 @@
   (testing "False case"
     (is (= false (util/numeric? "0D")))))
 
+(declare test-timed-multi-arity test-timed-single-arity)
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed test-timed-multi-arity
   "The doc string"
   ([f]
@@ -107,10 +110,14 @@
   ([fa fb]
    (test-timed-multi-arity fa fb fa))
   ([fa fb fc]
-   (fa)
-   (fb)
-   (fc)))
+   ;; kondo complains with message below unless content of function is in a do
+   ;; Vector can only be called with 1 arg but was called with: 3
+   (do
+     (fa)
+     (fb)
+     (fc))))
 
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed test-timed-single-arity
   "the doc string"
   [f]
@@ -151,7 +158,7 @@
 (deftest remove-map-keys-test
   (is (= {:a true :c "value" :d false}
          (util/remove-map-keys
-           (fn [v] (or (nil? v) (and (string? v) (str/blank? v))))
+           (fn [v] (or (nil? v) (and (string? v) (string/blank? v))))
            {:a true :b nil :c "value" :d false :e "" :f " "}))))
 
 (deftest remove-empty-maps-test
@@ -255,6 +262,7 @@
       ;; exception
       true #(> (/ 20 %) 2) [20.0 1.0 :not-a-number]))
 
+(declare map-n-spec)
 (defspec map-n-spec 1000
   (for-all [n gen/s-pos-int
             step gen/s-pos-int
@@ -263,6 +271,7 @@
     (= (util/map-n identity n step items)
        (map identity (partition n step items)))))
 
+(declare map-n-all-spec)
 (defspec map-n-all-spec 1000
   (for-all [n gen/s-pos-int
             step gen/s-pos-int
@@ -271,6 +280,7 @@
     (= (util/map-n-all identity n step items)
        (map identity (partition-all n step items)))))
 
+(declare pmap-n-all-spec)
 (defspec pmap-n-all-spec 1000
   (for-all [n gen/s-pos-int
             items (gen/vector gen/int)]
@@ -278,6 +288,7 @@
     (= (util/map-n-all identity n items)
        (util/pmap-n-all identity n items))))
 
+(declare double->string-test)
 (defspec double->string-test 1000
   (for-all [d (gen/fmap double gen/ratio)]
     (let [^String double-str (util/double->string d)
@@ -290,7 +301,7 @@
   (testing "along number line for integer"
     (let [range-size 100
           find-value 23
-          matches-fn (fn [^long v minv maxv ^long depth]
+          matches-fn (fn [^long v _minv _maxv ^long depth]
                        (if (> depth range-size)
                          (throw (Exception.
                                  (format "Depth [%d] exceeded max [%d]" depth range-size)))
@@ -319,9 +330,9 @@
          [(t/date-time 2015 1 14 4 3 27) (t/date-time 1986 10 14 4 3 28)])))
 
 (deftest get-keys-in-test
-  (util/are2
+  (util/are3
     [map-or-coll expected]
-    (= expected (util/get-keys-in map-or-coll))
+    (is (= expected (util/get-keys-in map-or-coll)))
 
     "Simple map"
     {:a "A" :b "B"}
@@ -370,9 +381,9 @@
     #{}))
 
 (deftest map->path-values-test
-  (util/are2
+  (util/are3
     [test-map expected]
-    (= expected (util/map->path-values test-map))
+    (is (= expected (util/map->path-values test-map)))
 
     "Simple map"
     {:a 1 :b 2}
@@ -408,9 +419,9 @@
     {}))
 
 (deftest map-matches-path-values-test
-  (util/are2
+  (util/are3
     [path-values test-map]
-    (util/map-matches-path-values? path-values test-map)
+    (is (util/map-matches-path-values? path-values test-map))
 
     "Simple map"
     {[:a] 1 [:b] 2}
@@ -448,6 +459,7 @@
     "Empty map"
     {}
     {})
+
   (testing "not match"
     (is (not (util/map-matches-path-values? {[:a] 2} {:a 1 :b 2})))))
 
@@ -472,9 +484,9 @@
               {:j "jjj"}
               {:k {:l "L"
                    :m "M"}}]]
-    (util/are2
+    (util/are3
       [matching-map matched]
-      (= matched (util/filter-matching-maps matching-map maps))
+      (is (= matched (util/filter-matching-maps matching-map maps)))
 
       "simple match"
       {:x 1}
@@ -589,10 +601,12 @@
          nil "acd" "z" true
          nil "abc" "zyx" true)))
 
+(declare lz4-compression)
 (defspec lz4-compression 100
   (for-all [s gen/string]
     (= s (-> s util/string->lz4-bytes util/lz4-bytes->string))))
 
+(declare gzip-base64-encode)
 (defspec gzip-base64-encode 100
   (for-all [s gen/string]
     (= s (-> s util/string->gzip-base64 util/gzip-base64->string))))
@@ -803,7 +817,7 @@
             ;; If we get to this point, the test failed because the exception was not thrown
             ;; correctly
             (is false "Fast-map did not throw an exception as expected")
-            (catch java.util.concurrent.ExecutionException ee
+            (catch java.util.concurrent.ExecutionException _ee
               ; We don't want an ExecutionException, we want to get the null pointer exception
               (is false
                   "Fast-map threw ExecutionException and should throw NullPointerException")))))))
@@ -843,14 +857,14 @@
 
 (deftest safe-lower-upper-case-test
   (testing "safe-lowercase"
-    (is (= (util/safe-lowercase false) (str/lower-case false)))
-    (is (= (util/safe-lowercase true) (str/lower-case true)))
-    (is (= (util/safe-lowercase "StRing") (str/lower-case "StRing")))
+    (is (= (util/safe-lowercase false) "false"))
+    (is (= (util/safe-lowercase true) (string/lower-case (.toString (Boolean. true)))))
+    (is (= (util/safe-lowercase "StRing") (string/lower-case "StRing")))
     (is (= (util/safe-lowercase nil) nil)))
   (testing "safe-upperrcase"
-    (is (= (util/safe-uppercase false) (str/upper-case false)))
-    (is (= (util/safe-uppercase true) (str/upper-case true)))
-    (is (= (util/safe-uppercase "StRing") (str/upper-case "StRing")))
+    (is (= (util/safe-uppercase false) (string/upper-case (.toString (Boolean. false)))))
+    (is (= (util/safe-uppercase true) (string/upper-case (.toString (Boolean. true)))))
+    (is (= (util/safe-uppercase "StRing") (string/upper-case "StRing")))
     (is (= (util/safe-uppercase nil) nil))))
 
 (deftest human-join
@@ -882,9 +896,8 @@
                     {:c "description3"}]}}
            (util/update-in-each-vector update-in-each-vector-test-data [:a :b] dissoc :d)))))
 
+;; "Test the conversion of resolution values to meters."
 (deftest convert-resolution-to-meters-test
-  "Test the conversion of resolution values to meters."
-
   (util/are3 [expected test-value test-unit]
     (is (= expected
            (util/convert-to-meters test-value test-unit)))

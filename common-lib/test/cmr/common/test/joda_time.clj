@@ -1,7 +1,7 @@
 (ns cmr.common.test.joda-time
   "Tests joda time."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.joda-time]
    [clj-time.core :as t]))
 

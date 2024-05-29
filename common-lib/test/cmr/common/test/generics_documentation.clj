@@ -1,11 +1,11 @@
 (ns cmr.common.test.generics-documentation
   (:require
-   [cmr.common.generics-documentation :as gdocs]
    [clojure.string :as string]
-   [clojure.test :refer :all]))
+   [clojure.test :refer [deftest is testing]]
+   [cmr.common.generics-documentation :as gdocs]))
 
 ;; These two functions are stubs to be passed to ensure
-;; funtions use correct spacing
+;; functions use correct spacing
 (def options-map-ingest {:spacer #(- (* % 4) 4)})
 (def options-map-search {:spacer #(- (* % 4) 12)})
 

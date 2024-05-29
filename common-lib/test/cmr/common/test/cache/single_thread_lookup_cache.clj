@@ -1,10 +1,11 @@
 (ns cmr.common.test.cache.single-thread-lookup-cache
-  (:require [clojure.test :refer :all]
-            [cmr.common.cache :as c]
-            [cmr.common.cache.single-thread-lookup-cache :as slc]
-            [cmr.common.cache.cache-spec :as cache-spec]
-            [cmr.common.lifecycle :as l]
-            [clojail.core :as clojail]))
+  (:require
+   [clojure.test :refer [deftest is testing]]
+   [cmr.common.cache :as c]
+   [cmr.common.cache.single-thread-lookup-cache :as slc]
+   [cmr.common.cache.cache-spec :as cache-spec]
+   [cmr.common.lifecycle :as l]
+   [clojail.core :as clojail]))
 
 (deftest single-thread-lookup-cache-functions-as-cache-test
   (let [cache (l/start (slc/create-single-thread-lookup-cache) nil)]
@@ -74,7 +75,7 @@
                              (Thread/sleep 200)
                              (swap! counter inc))]
         (testing "concurrent request for the same key will only invoke lookup once"
-          (let [futures (for [n (range 10)]
+          (let [futures (for [_n (range 10)]
                           (future (c/get-value cache :foo slow-lookup-fn)))]
             ;; The lookup function should only be called once and every request ends up with the
             ;; same value

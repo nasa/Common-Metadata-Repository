@@ -1,6 +1,5 @@
 (ns cmr.common.test.test-check-ext-test
   (:require
-   [clojure.test :refer :all]
    [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.test.test-check-ext :as ext :refer [defspec]]))
@@ -19,6 +18,7 @@
               (gen/tuple (gen/return minv) (gen/return maxv) (ext/choose-double minv maxv)))))
 
 
+(declare choose-double-test)
 ;; Tests our double generator to make sure that it creates valid double values.
 (defspec choose-double-test 1000
   (for-all [min-max-d min-max-double-gen]

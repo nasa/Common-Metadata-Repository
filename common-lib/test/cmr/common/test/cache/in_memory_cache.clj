@@ -1,10 +1,11 @@
 (ns cmr.common.test.cache.in-memory-cache
-  (:require [clojure.java.io :as io]
-            [clojure.test :refer :all]
-            [cmr.common.cache :as c]
-            [cmr.common.cache.in-memory-cache :as mem-cache]
-            [cmr.common.cache.cache-spec :as cache-spec]
-            [cmr.common.util :refer [are3 string->lz4-bytes]]))
+  (:require
+   [clojure.java.io :as io]
+   [clojure.test :refer [deftest is testing]]
+   [cmr.common.cache :as c]
+   [cmr.common.cache.cache-spec :as cache-spec]
+   [cmr.common.cache.in-memory-cache :as mem-cache]
+   [cmr.common.util :refer [are3 string->lz4-bytes]]))
 
 (deftest memory-cache-functions-as-cache-test
   (cache-spec/assert-cache (mem-cache/create-in-memory-cache)))

@@ -1,6 +1,6 @@
 (ns cmr.common.test.xml.gen
   (:require [cmr.common.xml.gen :refer [xml]]
-            [clojure.test :refer :all]
+            [clojure.test :refer [deftest is]]
             clojure.data.xml))
 
 (deftest test-xml-gen

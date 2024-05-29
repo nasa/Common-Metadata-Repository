@@ -2,7 +2,7 @@
   "Unit tests for health checks"
   (:require
    [clojure.data.codec.base64 :as base64]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :as util]))
 
 (defn- test-matrix

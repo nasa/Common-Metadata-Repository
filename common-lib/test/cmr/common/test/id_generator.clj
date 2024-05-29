@@ -1,7 +1,8 @@
 (ns cmr.common.test.id-generator
-  (:require [clojure.test :refer :all]
-            [cmr.common.id-generator :as id-generator]
-            [cmr.common.util :as util]))
+  (:require
+   [clojure.test :refer [are deftest is testing]]
+   [cmr.common.id-generator :as id-generator]
+   [cmr.common.util :as util]))
 
 (deftest test-id-from-state
   (testing "positioning"
@@ -79,7 +80,7 @@
     (let [id-state {:worker 1
                     :sequence 254
                     :time 5}
-          expected {:worker 1 :sequence 0 :time 5}]
+          _expected {:worker 1 :sequence 0 :time 5}]
       (with-curr-times
         [5 6]
         (is (= {:worker 1 :sequence 255 :time 5}

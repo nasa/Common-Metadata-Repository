@@ -1,7 +1,7 @@
 (ns cmr.common.test.api.errors
   "This tests capabilities of the API error utilities."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [cmr.common.api.errors :as errors]))
 
 (deftest test-error-masked

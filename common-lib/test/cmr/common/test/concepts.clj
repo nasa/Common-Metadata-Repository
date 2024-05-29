@@ -1,6 +1,6 @@
 (ns cmr.common.test.concepts
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing]]
    [cmr.common.test.test-check-ext :refer [defspec]]
    [clojure.test.check.properties :refer [for-all]]
    [clojure.test.check.generators :as gen]
@@ -41,8 +41,9 @@
   "A generator for concept id maps"
   (gen/hash-map :concept-type (gen/elements (vec c/concept-types))
                 :sequence-number gen/s-pos-int
-                :provider-id (gen/not-empty gen/string-alpha-numeric)))
+                :provider-id (gen/not-empty gen/string-alphanumeric)))
 
+(declare parse-build-concept-id-test)
 ;; Tests that all generated concept id maps can converted to concept ids and parsed.
 (defspec parse-build-concept-id-test 100
   (for-all [concept-id-map concept-id-maps]

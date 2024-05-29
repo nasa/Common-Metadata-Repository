@@ -1,9 +1,9 @@
 (ns cmr.common.test.xml
-  (:require [clojure.test :refer :all]
-            [cmr.common.xml :as cx]
-            [clojure.data.xml :as x]
-            [clj-time.core :as t]))
-
+  (:require
+   [clj-time.core :as t]
+   [clojure.data.xml :as xml]
+   [clojure.test :refer [are deftest is]]
+   [cmr.common.xml :as cx]))
 
 (deftest remove-xml-processing-instructions-test
   ;; expected contains some things that should be left alone
@@ -30,10 +30,10 @@
   </top>")
 
 (def parsed-sample-xml
-  (x/parse-str sample-xml))
+  (xml/parse-str sample-xml))
 
 (deftest element-at-path-test
-  (are [xml path] (= (when xml (x/parse-str xml))
+  (are [xml path] (= (when xml (xml/parse-str xml))
                      (cx/element-at-path parsed-sample-xml path))
        "<alpha>45</alpha>" [:inner :alpha]
        "<bravo>ovarb</bravo>" [:inner :bravo]
@@ -95,10 +95,10 @@
   </top>")
 
 (def parsed-sample-multiple-elements-xml
-  (x/parse-str sample-multiple-elements-xml))
+  (xml/parse-str sample-multiple-elements-xml))
 
 (deftest elements-at-path-test
-  (are [xml path] (= (:content (x/parse-str xml))
+  (are [xml path] (= (:content (xml/parse-str xml))
                      (cx/elements-at-path parsed-sample-multiple-elements-xml path))
        "<a><alpha>45</alpha><alpha>46</alpha></a>" [:inner :alpha]
        "<a><bravo>ovarb</bravo><bravo>ovary</bravo></a>" [:inner :bravo]

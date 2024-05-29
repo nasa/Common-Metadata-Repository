@@ -1,7 +1,7 @@
 (ns cmr.common.test.api.context
   "This tests capabilities of the API context utilities."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.util :as util]
    [cmr.common.api.context :as context]))
 
