@@ -174,9 +174,9 @@
   "Get an existing concept-id from the DB for the given concept or generate one if the concept
   has never been saved. Also validate the parent collection concept-id for granule concept."
   [db provider concept]
-  (if (= :granule (:concept-type concept))
-    (if (:concept-id concept)
-      concept
+  (if (:concept-id concept)
+    concept
+    (if (= :granule (:concept-type concept))
       (let [[existing-concept-id coll-concept-id deleted] (c/get-granule-concept-ids
                                                            db provider (:native-id concept))
             concept-id (if existing-concept-id existing-concept-id (c/generate-concept-id db concept))
@@ -186,9 +186,7 @@
                  (not deleted))
           (errors/throw-service-error
            :invalid-data (msg/granule-collection-cannot-change coll-concept-id parent-concept-id))
-          (assoc concept :concept-id concept-id))))
-    (if (:concept-id concept)
-      concept
+          (assoc concept :concept-id concept-id)))
       (let [concept-id (c/get-concept-id db (:concept-type concept) provider (:native-id concept))
             concept-id (if concept-id concept-id (c/generate-concept-id db concept))]
         (assoc concept :concept-id concept-id)))))

@@ -808,7 +808,49 @@
         (is (= 200 (:status response1)))
         (is [coll1-concept-id coll2-concept-id] (:associations var1-search-result))
         (is (= 200 (:status response2)))
-        (is [coll2-concept-id] (:associations var1-search-result))))))
+        (is [coll2-concept-id] (:associations var1-search-result))))
+
+    (testing "Associate variable with revision tests"
+      (let [coll3_rev1 (data-core/ingest-umm-spec-collection "PROV1"
+                                                             (data-umm-c/collection
+                                                              {:ShortName "coll3"
+                                                               :EntryTitle "entry-title3"})
+                                                             {:token "mock-echo-system-token"})
+            coll3_rev2 (data-core/ingest-umm-spec-collection "PROV1"
+                                                             (data-umm-c/collection
+                                                              {:ShortName "coll3"
+                                                               :EntryTitle "entry-title3"})
+                                                             {:token "mock-echo-system-token"})
+            coll3-concept-id (:concept-id coll3_rev1)
+            coll3-revision-id (:revision-id coll3_rev1)
+            coll3-concept-id-2 (:concept-id coll3_rev2)
+            coll3-revision-id-2 (:revision-id coll3_rev2)
+            _ (index/wait-until-indexed)
+            var-concept3 (variable-util/make-variable-concept
+                          {:Dimensions [(umm-v/map->DimensionType {:Name "Solution_3_Land"
+                                                                   :Size 3
+                                                                   :Type "OTHER"})]}
+                          {:native-id "var3"})
+            var3 (variable-util/ingest-variable
+                  var-concept3
+                  (variable-util/token-opts token))
+            var3-concept-id (:concept-id var3)
+            var3-revision-id (:revision-id var3)
+            _ (index/wait-until-indexed)
+            ;; Association v1 with c1 revision 1
+            _ (association-util/generic-associate-by-concept-ids-revision-ids
+               token var3-concept-id var3-revision-id [{:concept-id coll3-concept-id  :revision-id coll3-revision-id :data {"convert format" {:XYZ "ZYX"} :allow-regridding "true"}}])
+            ;; Search for the variable, it should return the association
+            var3-search-result (get-associations-and-details "variables.json" "native_id=var3" :collections false)
+            ;; Association v1 with c1 revision 2
+            _ (association-util/generic-associate-by-concept-ids-revision-ids
+               token var3-concept-id var3-revision-id [{:concept-id coll3-concept-id-2  :revision-id coll3-revision-id-2 :data {"convert format" {:XYZ "ZYX"} :allow-regridding "true"}}])
+            ;; Search for the variable, it should return two associations.
+            var3-search-result2 (get-associations-and-details "variables.json" "native_id=var3" :collections false)]
+        (is (= [coll3-concept-id]
+               (:associations var3-search-result)))
+        (is (= [coll3-concept-id coll3-concept-id]
+               (:associations var3-search-result2)))))))
 
 ;; Test that generic associations can be made between generic documents and collections.
 (deftest test-collection-and-generic-association

@@ -318,7 +318,8 @@
     {:native-id draft-native-id
      :request request}))
 
-(defn- publish-draft-concept
+;; This function is dynamic to test publish-draft.
+(defn- ^:dynamic publish-draft-concept
   "Publish a draft concept. i.e. Ingest the corresponding concept and delete the draft."
   ([request concept-id native-id]
    (publish-draft-concept request concept-id native-id nil nil))
@@ -353,6 +354,22 @@
                     (:body publish-result) (:body delete-result)))))
        publish-result))))
 
+;; This function is dynamic to test publish draft.
+(defn- ^:dynamic read-body
+  "Checks the content type and reads in the content from a socket stream."
+  [content-type concept-id body]
+  (if (= "application/x-www-form-urlencoded" content-type)
+                       ;; this happens when the body is used but the content-type is not provided.
+    (errors/throw-service-error
+     :bad-request
+     (format "To publish a draft [%s] with a body, a json Content-Type header needs to be provided." concept-id))
+    (try
+      (json/parse-string (string/trim (slurp body)))
+      (catch Exception e
+        (errors/throw-service-error
+         :bad-request
+         (format "The json body for publishing draft contains the following error [%s]." (.getMessage e)))))))
+
 (defn publish-draft
   "Publish a draft concept, i.e. ingest the corresponding concept and delete the draft."
   [request concept-id native-id]
@@ -360,17 +377,7 @@
         content-type (:content-type request)
         body (:body request)
         body-map (when body
-                   (if (= "application/x-www-form-urlencoded" content-type)
-                     ;; this happens when the body is used but the content-type is not provided.
-                     (errors/throw-service-error
-                      :bad-request
-                      (format "To publish a draft [%s] with a body, a json Content-Type header needs to be provided." concept-id))
-                     (try
-                       (json/parse-string (string/trim (slurp body)))
-                       (catch Exception e
-                         (errors/throw-service-error
-                          :bad-request
-                          (format "The json body for publishing draft contains the following error [%s]." (.getMessage e)))))))
+                   (read-body content-type concept-id body))
         ;; associate the "format" in the body to the request and use it to publish the draft. If the format is not provided,
         ;; in the body, the original format for the draft in the database will be used.
         request (assoc request :format (get body-map "format"))]

@@ -2,6 +2,7 @@
   "Contains unit tests for service layer methods and associated utility methods."
   (:require
    [clojure.test :refer [deftest is testing use-fixtures]]
+   [cmr.common.util :refer [are3]]
    [cmr.common.test.test-util :as tu]
    [cmr.metadata-db.data.concepts :as c]
    [cmr.metadata-db.data.memory-db :as memory]
@@ -193,6 +194,7 @@
 
 (def example-granule
   {:concept-id "G1000000001-PROV1"
+   :deleted false
    :concept-type :granule
    :native-id "provider granule id"
    :provider-id "PROV1"
@@ -201,7 +203,8 @@
    :revision-id 1
    :transaction-id 1
    :extra-fields {:entry-title "ET-1"
-                  :entry-id "EID-1"}})
+                  :entry-id "EID-1"
+                  :parent-collection-id "C1000000000-PROV1"}})
 
 (deftest set-created-at-test
   (let [created-at "2000-05-22T00:00:00Z"
@@ -211,9 +214,43 @@
                   :short-name "PROV1"
                   :cmr-only false
                   :small false}]
-    (testing "set-created-at for collection"
-      (is (= created-at (:created-at (cs/set-created-at db provider example-concept)))))
-    (testing "set-created-at for granule"
-      (is (= created-at (:created-at (cs/set-created-at db provider example-granule)))))
-    (testing "set-created-at just returns the concept that when in."
-      (is (= nil (:created-at (cs/set-created-at db provider nil)))))))
+    (testing "set-created-at"
+      (are3
+       [expected example-record]
+       (is (= expected (:created-at (cs/set-created-at db provider example-record))))
+
+       "for a collection"
+       created-at
+       example-concept
+
+       "for a granule"
+       created-at
+       example-granule
+
+       "just returns concept that went in the function"
+       nil
+       nil))))
+
+(deftest set-or-generate-concept-id-test
+  (let [db (memory/create-db [example-concept
+                              example-granule])
+        provider {:provider-id "PROV1"
+                  :short-name "PROV1"
+                  :cmr-only false
+                  :small false}]
+    (testing "set-or-generate-concept-id"
+      (are3
+       [example-record]
+       (is (some? (:concept-id (cs/set-or-generate-concept-id db provider example-record))))
+
+       "for a collection"
+       example-concept
+
+       "for a granule"
+       example-granule
+
+       "sets a granule concept id."
+       (dissoc example-granule :concept-id)
+
+       "sets a collection concept id."
+       (dissoc example-concept :concept-id)))))
