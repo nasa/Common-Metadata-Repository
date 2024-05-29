@@ -57,10 +57,10 @@ echo "source `pwd`/resources/shell/cmr-bash-autocomplete" >> ~/.profile
 
 **If you wish to not use the tool, simply replace all the command that start with `cmr` with `./bin/cmr` to run the scripts directly.**
 
-### Environment Setup 
+### Environment Setup
 
 1. `./bin/cmr setup profile` and then update the new `./dev-system/profiles.clj` file, it will look something like this:
-   
+
 When running CMR locally, the values in this file do not need to be change, CMR just expects that they exist.
 
    ``` clojure
@@ -76,7 +76,7 @@ When running CMR locally, the values in this file do not need to be change, CMR 
 This process will take quite a long time, be patient and monitor progress.
 
 #### Running CMR
-You can run CMR two different ways, everything in one or as separte. 
+You can run CMR two different ways, everything in one or as separate.
 
 ##### All Services At Once
 
@@ -114,7 +114,7 @@ Note: building uberjars will interfere with your repl. If you want to use your r
 `rm -f ./dev-system/target/`
 
 ## Using VS Code Clava extenstion
-VS Code has an extension that allows for easier develop of clojure applications. 
+VS Code has an extension that allows for easier develop of clojure applications.
 Developers can get setup via: [Getting Started with Clava](https://calva.io/getting-started/)
 
 ## Testing CMR
@@ -173,8 +173,18 @@ To run only certain types of tests, you may run the following:
 
 ##### Unit Tests
 
-``` sh
-lein modules utest
+There are two ways to run unit tests, serially and in parallel.
+
+For serial execution use:
+```
+> lein modules utest
+```
+Alternativly unit tests can be run in parallel using the python script in
+[run_unit_tests.py][ut-script]. This script is meant to be called with by a
+build system such as Bamboo.
+
+```
+> lein ci-utest
 ```
 
 ##### Integration Tests
@@ -301,7 +311,7 @@ applications, as well as several libraries and support applications.
    integration testing. You should not expect a perfect or complete
    implementation of ECHO.
   - Main method: cmr.mock_echo.runner
-  
+
 ## License
 
 > Copyright © 2007-2024 United States Government as represented by the Administrator of the National Aeronautics and Space Administration. All Rights Reserved.

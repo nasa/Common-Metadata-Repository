@@ -59,49 +59,79 @@
                    "search-relevancy-test"]}
   :aliases {"kibit"
             ["modules" "kibit"]
+
             "eastwood"
             ["modules" "eastwood"]
+
             "lint"
             ["modules" "lint"]
+
+            ;; The reason for this is to export the current list of modules for use in scripts. For
+            ;; instance, a script may wish to run all the unit tests for sub projects and said
+            ;; script does not want to hard code what modules those are.
+            "dump" ["modules"]
+
             "check-deps"
             ["modules" "check-deps"]
+
             "check-sec"
             ["modules" "check-sec"]
+
             "deps-tree-conflicts"
             ["modules" "deps" ":tree"]
+
             "generate-static"
             ["modules" "generate-static"]
+
             ;; Run a local copy of SQS/SNS
             "start-sqs-sns"
             ["shell" "cmr" "start" "local" "sqs-sns"]
+
             "stop-sqs-sns"
             ["shell" "cmr" "stop" "local" "sqs-sns"]
+
             "restart-sqs-sns"
             ["do"
              ["stop-sqs-sns"]
              ["start-sqs-sns"]]
+
             ;; Dev
             "clean-all" ["modules" "do" "clean"]
+
             "repl"
             ["shell"
              "echo" "You need to be in the `dev-system` directory for that."]
+
             "test"
             ["modules" "test-out"]
+
+            ;; Do not use modules to run unit tests, instead use a script where multiple threads can
+            ;; be used to process the projects faster.
+            "ci-utest"
+            ["shell" ./bin/unit_test_script/run_unit_tests.py]
+
             ;; Install tasks using up-stream .jar repos
             "install-no-clean!"
             ["modules" "do" "clean," "install,"]
+
             "install!"
             ["modules" "do" "clean," "install," "clean"]
+
             "install-with-content-no-clean!"
             ["modules" "do" "clean," "generate-static," "install,"]
+
             "install-with-content!"
             ["modules" "do" "clean," "generate-static," "install," "clean"]
+
             ;; Install tasks using nexus .jar repos proxy
             "internal-install-no-clean!"
             ["modules" "with-profile" "+internal-repos" "do" "clean," "install,"]
+
             "internal-install!"
             ["modules" "with-profile" "+internal-repos" "do" "clean," "install," "clean"]
+
             "internal-install-with-content-no-clean!"
             ["modules" "with-profile" "+internal-repos" "do" "clean," "generate-static," "install,"]
+
             "internal-install-with-content!"
             ["modules" "with-profile" "+internal-repos" "do" "clean," "generate-static," "install," "clean"]})
