@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is join-fixtures testing use-fixtures]]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.common.config :as config]
    [cmr.common.generics :as gcfg]
@@ -22,7 +22,7 @@
   (echo-util/grant-system-ingest-management (system/context) [:read :update] [:read :update])
   (f))
 
-(use-fixtures :each (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
+(use-fixtures :once (join-fixtures [(ingest/reset-fixture {"provguid1" "PROV1" "provguid2" "PROV2"})
                                     grant-all-generic-permission-fixture
                                     ;;allow draft ingest permission for guest on PROV1, but not on PROV2.
                                     (gen-util/grant-all-drafts-fixture {"provguid1" "PROV1"}
@@ -234,6 +234,7 @@
         coll-draft (gen-util/ingest-generic-document
                     nil "PROV1" native-id :collection-draft gen-util/collection-draft :post)
         concept-id (:concept-id coll-draft)
+        revision-id (:revision-id coll-draft)
         _ (index/wait-until-indexed)
         ;; search for the draft from elastic search should return result
         search-result (search-generics-test/search-request "collection-drafts" (str "concept_id=" concept-id))
@@ -252,14 +253,14 @@
 
     ;;The first delete removes the draft from database completely and returns concept-id.
     ;;The second delete will not say the draft is already deleted because it no longer exists in the database
-    (is (= result1 {:concept-id concept-id, :revision-id 2,:warnings nil, :existing-errors nil}))
-    (is (= result2 {:errors ["CollectionDraft with native id [NativeId] in provider [PROV1] does not exist."]}))
+    (is (= {:concept-id concept-id, :revision-id (+ 1 revision-id), :warnings nil, :existing-errors nil} result1 ))
+    (is (= {:errors ["CollectionDraft with native id [NativeId] in provider [PROV1] does not exist."]} result2 ))
 
     ;;Verify that searching for the concept from elastic search won't return anything after the delete.
     (let [result (search-generics-test/search-request "collection-drafts" (str "concept_id=" concept-id))
           status (:status result)
           body (:body result)]
-      (is (= status 200))
+      (is (= 200 status))
       (is (string/includes? body "<hits>0</hits>")))))
 
 ;; Test that collection-draft can be published
@@ -351,6 +352,7 @@
         oo-with-same-native-id (gen-util/ingest-generic-document
                                 nil "PROV1" oo-native-id :order-option gen-util/order-option :post)
         oo-concept-id-existing (:concept-id oo-with-same-native-id)
+        oo-revision-id-existing (:revision-id oo-with-same-native-id)
         oo-draft (gen-util/ingest-generic-document
                   nil "PROV1" od-native-id :order-option-draft gen-util/order-option-draft :post)
         od-concept-id (:concept-id oo-draft)
@@ -377,7 +379,7 @@
                              nil "PROV1" od-native-id :order-option-draft gen-util/order-option-draft :delete)]
     ;; Verify that oo-concept-id should be the same as oo-concept-id-existing and oo-revision-id should be 2.
     (is (and (= oo-concept-id oo-concept-id-existing)
-             (= oo-revision-id 2)))
+             (= oo-revision-id (+ 1 oo-revision-id-existing))))
 
     (is (= search-oo-status 200))
     (is (string/includes? search-oo-body "<hits>1</hits>"))
@@ -440,7 +442,7 @@
   ;; Drafts have permissions to ingest on PROV1, but not on PROV2.
   (let [;; Ingest a collection to be associated with the variable.
         concept (data-umm-c/collection-concept {})
-        {:keys [concept-id revision-id]} (ingest/ingest-concept concept)
+        {:keys [concept-id]} (ingest/ingest-concept concept)
 
         ;; Need to wait till collection is searchable before ingesting variable.
         _ (index/wait-until-indexed)
@@ -451,14 +453,15 @@
 
         ;; first create a variable concept
         va-concept-existing (variables/make-variable-concept
-                              {:Name "Variable"
-                               :provider-id "PROV1"}
-                              {:native-id va-native-id
-                               :coll-concept-id concept-id})
+                             {:Name "Variable"
+                              :provider-id "PROV1"}
+                             {:native-id va-native-id
+                              :coll-concept-id concept-id})
 
         ;; Then ingest the variable
         va-with-same-native-id (variables/ingest-variable-with-association va-concept-existing)
         va-concept-id-existing (:concept-id va-with-same-native-id)
+        va-revision-id-existing (:revision-id va-with-same-native-id)
         ;; Now ingest and publish a va draft.
         va-draft (gen-util/ingest-generic-document
                   nil "PROV1" vd-native-id :variable-draft gen-util/variable-draft :post)
@@ -467,9 +470,8 @@
         _ (index/wait-until-indexed)
         ;; Note publishing is using the same va-native-id as the variable concept above.
         va-published (ingest/publish-draft
-                      vd-concept-id va-native-id {:collection-concept-id concept-id
-                                                  :format "application/vnd.nasa.cmr.umm+json;version=1.8.2"})
-        ;; va-concept-id should be the same as va-concept-id-existing and va-revision-id should be 2.
+                      vd-concept-id va-native-id {:format "application/vnd.nasa.cmr.umm+json;version=1.8.2"})
+        ;; va-concept-id should be the same as va-concept-id-existing and va-revision-id should be one number higher.
         va-concept-id (:concept-id va-published)
         va-revision-id (:revision-id va-published)
 
@@ -486,10 +488,22 @@
 
         ;; deleting the draft should fail.
         draft-delete-result (gen-util/ingest-generic-document
-                             nil "PROV1" vd-native-id :variable-draft gen-util/variable-draft :delete)]
-    ;; Verify that va-concept-id should be the same as va-concept-id-existing and va-revision-id should be 2.
+                             nil "PROV1" vd-native-id :variable-draft gen-util/variable-draft :delete)
+
+        ;; Ingest another variable draft to test publishing without a collection.
+        va-draft2 (gen-util/ingest-generic-document
+                   nil "PROV1" "VD-NativeId2" :variable-draft gen-util/variable-draft-without-private :post)
+        va-published2 (ingest/publish-draft
+                       (:concept-id va-draft2)
+                       "VA-NativeId2"
+                       {:format "application/vnd.nasa.cmr.umm+json;version=1.8.2"})
+        ;; va-concept-id should be the same as va-concept-id-existing and va-revision-id should be one number higher.
+        va-concept-id2 (:concept-id va-published2)]
+
+    ;; Verify that va-concept-id should be the same as va-concept-id-existing and va-revision-id should be 1 revision higher 
+    ;; than va-concept-id-existing.
     (is (and (= va-concept-id va-concept-id-existing)
-             (= va-revision-id 2)))
+             (= va-revision-id (+ 1 va-revision-id-existing))))
     ;; Verify that searching for the published variable from elastic search does return result.
     (is (= search-va-status 200))
     (is (string/includes? search-va-body "<hits>1</hits>"))
@@ -499,7 +513,10 @@
     (is (string/includes? search-draft-body "<hits>0</hits>"))
 
     ;; The draft delete result should indicate the draft does not exist.
-    (is (= draft-delete-result {:errors ["VariableDraft with native id [VD-NativeId] in provider [PROV1] does not exist."]}))))
+    (is (= draft-delete-result {:errors ["VariableDraft with native id [VD-NativeId] in provider [PROV1] does not exist."]}))
+
+    ;; Verify that a draft variable can be published without a collection
+    (is (some? va-concept-id2))))
 
 ;; Test that a Generic Doc can not be ingested when MetadataSpecification is missing or wrong
 ;; and a proper message is returned

@@ -5530,7 +5530,7 @@ A new association API has been developed to achieve the goal of being able to as
 
 #### <a name="associate-any-concepts"></a> Concept to concept association important notes
 
-A concept can only be associated with another concept either with or without revisions, not both. A concept cannot be associated to itself, even with different revisions. It's worth noting that associations between collections and variables cannot be made through the new association API because these associations require different business rules. These existing associations will continue to be made through the existing association API.
+A concept can only be associated with another concept either with or without revisions, not both. A concept cannot be associated to itself, even with different revisions.
 
 #### <a name="concept-associations"></a> Concept associations
 
