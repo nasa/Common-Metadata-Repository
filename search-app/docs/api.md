@@ -16,6 +16,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
     * [Headers](#headers)
     * [Extensions](#extensions)
     * [Request Timeouts](#request-timeouts)
+    * [Moderating Client Request Traffic](#request-moderation)
   * [Supported Result Formats](#supported-result-formats)
     * [ATOM](#atom)
     * [CSV](#csv)
@@ -394,6 +395,10 @@ The CMR operating environment imposes a hard limit of 180 seconds on any request
 returned. To avoid this, the CMR has an internal query timeout of 170 seconds - any query taking longer will time
 out and a subset of the total hit results will be returned instead of an error. The response for queries that time
 out will include the `CMR-Time-Out` header set to `true`.
+
+#### <a name="request-moderation"></a> Moderating Client Request Traffic
+
+In order to provide robust availability and performance for all clients of the service, CMR Search deploys a set of rate throttling rules for request traffic. These rules are defined to target specific request signatures, throttling the allowed rate of these searches in an effort to prevent overall degradation of system performance and availability. If a client request should exceed one of these rate throttling rules, the request will be rejected and a `429` error status returned to the client along with a `retry-after` header value. The suggested practice for any CMR Search client is to honor the `retry-after` header value and delay accordingly before re-issuing the failed request and continuing with its CMR Search processing.
 
 ### <a name="supported-result-formats"></a> Supported Result Formats
 
