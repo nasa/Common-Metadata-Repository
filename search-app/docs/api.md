@@ -16,7 +16,7 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
     * [Headers](#headers)
     * [Extensions](#extensions)
     * [Request Timeouts](#request-timeouts)
-    * [Moderating Client Request Traffic] (#request-moderation)
+    * [Moderating Client Request Traffic](#request-moderation)
   * [Supported Result Formats](#supported-result-formats)
     * [ATOM](#atom)
     * [CSV](#csv)
