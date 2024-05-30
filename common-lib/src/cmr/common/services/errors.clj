@@ -76,7 +76,7 @@
   (try
     (f)
     (catch clojure.lang.ExceptionInfo e
-      (let [{:keys [e-type errors]} (ex-data e)]
-        (if (and e-type errors)
-          (error-handler-func e-type errors e)
+      (let [{:keys [type errors]} (ex-data e)]
+        (if (and type errors)
+          (error-handler-func type errors e)
           (throw e))))))
