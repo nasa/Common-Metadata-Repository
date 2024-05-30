@@ -170,13 +170,9 @@
    ;(error "in cmr.search.models.query.CollectionQueryCondition resolve-collection-query, value of context: " context)
    ;(error "value of condition: " condition)
    (let [{:keys [collection-ids]} context
-         coll-concept-id (get-in context [:query-params :concept_id])
          ;_ (error "Value of coll-concept-id" coll-concept-id)
          ;; Use collection ids in the context to modify the condition that's executed.
          condition (cond
-                     coll-concept-id
-                     (gc/and-conds [(cqm/string-conditions :concept-id [coll-concept-id] true)
-                                    condition])
                      (and collection-ids (empty? collection-ids))
                       ;; The collection ids in the context is an empty set. This query can match
                       ;; nothing.
