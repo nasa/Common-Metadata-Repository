@@ -61,9 +61,8 @@
   [context]
   (let [collection-ids (:query-collection-ids context)
         collection-count (count collection-ids)]
-    (when-not (= 1 collection-count)
-      [(format "Granule V2 facets are limited to a single collection, but query matched %s collections."
-               (if (zero? collection-count) "an undetermined number of" collection-count))])))
+    (when-not (>= 1 collection-count)
+      [(format "Granule V2 facets are limited to a single collection, but query matched %s collections." collection-count)])))
 
 (def validations
   "Validation functions to run for v2 granule facets."

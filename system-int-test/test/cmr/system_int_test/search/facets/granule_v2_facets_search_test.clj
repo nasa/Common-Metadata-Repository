@@ -7,6 +7,7 @@
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
+   [cmr.common.log :refer [error warn info debug]]
    [cmr.elastic-utils.search.es-query-validation :as cqv]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -77,6 +78,20 @@
               :has_children false}
              facets)))))
 
+(deftest nonexistent-collection-tests
+  (single-collection-test-setup)
+  (testing "Single collection that doesn't exist"
+    (util/are3
+     [query-params]
+     (let [response (search/find-concepts-json :granule (merge query-params
+                                                               {:include-facets "v2"}))
+           _ (error "Printing the response " response)]
+       (is (= 200 (:status response)))
+       (is (= 0 (get-in response [:hits]))))
+     
+     "Non-existent collection" {:collection-concept-id "C5-PROV1"}
+     "Non-existent collection concept-id" {:concept-id "C5-PROV1"})))
+
 (deftest single-collection-validation-tests
   (single-collection-test-setup)
   (testing "Allowed single collection queries"
@@ -108,8 +123,7 @@
       "Provider with multiple collections" {:provider "PROV2"} 2
       "Collection concept IDs" {:collection-concept-id ["C1-PROV1" "C1-PROV2" "C2-PROV2"]} 3
       "ECHO Collection IDs" {:echo-collection-id ["C1-PROV2" "C2-PROV2"]} 2
-      "Short name with two matching collection versions" {:short-name "SN2"} 2
-      "All granules query" {} "an undetermined number of")))
+      "Short name with two matching collection versions" {:short-name "SN2"} 2)))
 
 (deftest granule-facets-parameter-validation-tests
   (single-collection-test-setup)

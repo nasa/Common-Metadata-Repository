@@ -1,6 +1,7 @@
 (ns cmr.search.services.query-walkers.collection-concept-id-extractor
   "Defines protocols and functions to extract collection concept ids from the query constructs"
   (:require [cmr.common.services.errors :as errors]
+            [cmr.common.log :refer [error warn info debug]]
             [cmr.common.services.search.query-model :as cqm]
             [cmr.search.models.query :as qm]))
 
@@ -16,6 +17,7 @@
   (extract-collection-concept-ids
     [query]
     ;; This is expected to the entry way into the
+    ;(error "value of query: " query)
     (let [concept-ids (set (extract-collection-concept-ids (:condition query)))]
       (if (or (concept-ids :none) (concept-ids :any))
         #{}

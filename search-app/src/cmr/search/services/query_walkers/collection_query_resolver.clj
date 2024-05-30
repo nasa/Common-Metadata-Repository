@@ -2,6 +2,7 @@
   "Defines protocols and functions to resolve collection query conditions"
   (:require
    [clojure.set :as set]
+   [cmr.common.log :refer [error warn info debug]]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as cqm]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
@@ -85,6 +86,7 @@
 (defn resolve-collection-queries
   [context query]
   (let [query (merge-collection-queries query)]
+        ;_ (error "in first resolve-collection-queries, vlaue of resolve-collection-query query context " (resolve-collection-query query context))]
     (second (resolve-collection-query query context))))
 
 (extend-protocol ResolveCollectionQuery
@@ -93,68 +95,71 @@
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries
-   [query]
-   (update-in query [:condition] merge-collection-queries))
+    [query]
+    ;(error "in cmr.common.services.search.query_model.Query merge-collection-queries, value of query: " query)
+    ;(error "value of return: " (update-in query [:condition] merge-collection-queries))
+    (update-in query [:condition] merge-collection-queries))
 
   (resolve-collection-query
-   [query context]
-   [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
+    [query context]
+    ;(error "in cmr.common.services.search.query_model.Query resolve-collection-query, value of query: " query)
+    [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common.services.search.query_model.NegatedCondition
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries
-   [query]
-   (update-in query [:condition] merge-collection-queries))
+    [query]
+    (update-in query [:condition] merge-collection-queries))
 
   (resolve-collection-query
-   [query context]
-   [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
+    [query context]
+    [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.common.services.search.query_model.ConditionGroup
   (is-collection-query-cond? [_] false)
 
   (merge-collection-queries
-   [{:keys [operation conditions]}]
+    [{:keys [operation conditions]}]
    ;; This is where the real merging happens. Collection queries at the same level in an AND or OR
    ;; can be merged together.
-   (let [conditions (map merge-collection-queries conditions)
-         {coll-q-conds true others false} (group-by is-collection-query-cond? conditions)]
-     (if (seq coll-q-conds)
-       (gc/group-conds
-        operation
-        (concat [(qm/->CollectionQueryCondition
-                  (gc/group-conds operation (map :condition coll-q-conds)))]
-                others))
-       (gc/group-conds operation others))))
+    (let [conditions (map merge-collection-queries conditions)
+          {coll-q-conds true others false} (group-by is-collection-query-cond? conditions)]
+      (if (seq coll-q-conds)
+        (gc/group-conds
+         operation
+         (concat [(qm/->CollectionQueryCondition
+                   (gc/group-conds operation (map :condition coll-q-conds)))]
+                 others))
+        (gc/group-conds operation others))))
 
 
   (resolve-collection-query
-   [{:keys [operation conditions]} context]
-   (if (= :or operation)
-     (resolve-group-conditions operation conditions context)
+    [{:keys [operation conditions]} context]
+    (if (= :or operation)
+      (resolve-group-conditions operation conditions context)
      ;; and operation
-     (let [{:keys [coll-id-conds coll-q-conds others]}
-           (group-by #(cond
-                        (and (= :collection-concept-id (:field %))) :coll-id-conds
-                        (is-collection-query-cond? %) :coll-q-conds
-                        :else :others)
-                     conditions)
+      (let [{:keys [coll-id-conds coll-q-conds others]}
+            (group-by #(cond
+                         (and (= :collection-concept-id (:field %))) :coll-id-conds
+                         (is-collection-query-cond? %) :coll-q-conds
+                         :else :others)
+                      conditions)
            ;; We check if there is only one collection id conditions because this is an AND group.
            ;; The collections we put in the context are OR'd.
-           context (if (= 1 (count coll-id-conds))
-                     (let [coll-id-cond (first coll-id-conds)
-                           collection-ids (cond
-                                            (:value coll-id-cond) #{(:value coll-id-cond)}
-                                            (:values coll-id-cond) (set (:values coll-id-cond))
-                                            :else (errors/internal-error!
-                                                   (str "Unexpected collection id cond: "
-                                                        (pr-str coll-id-cond))))]
-                       (add-collection-ids-to-context context collection-ids))
-                     context)]
-       (resolve-group-conditions operation (concat coll-id-conds coll-q-conds others) context))))
+            context (if (= 1 (count coll-id-conds))
+                      (let [coll-id-cond (first coll-id-conds)
+                            collection-ids (cond
+                                             (:value coll-id-cond) #{(:value coll-id-cond)}
+                                             (:values coll-id-cond) (set (:values coll-id-cond))
+                                             :else (errors/internal-error!
+                                                    (str "Unexpected collection id cond: "
+                                                         (pr-str coll-id-cond))))]
+                        (add-collection-ids-to-context context collection-ids))
+                      context)]
+        (resolve-group-conditions operation (concat coll-id-conds coll-q-conds others) context))))
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
   cmr.search.models.query.CollectionQueryCondition
@@ -162,21 +167,26 @@
 
   (resolve-collection-query
    [{:keys [condition]} context]
-
+   ;(error "in cmr.search.models.query.CollectionQueryCondition resolve-collection-query, value of context: " context)
+   ;(error "value of condition: " condition)
    (let [{:keys [collection-ids]} context
+         coll-concept-id (get-in context [:query-params :concept_id])
+         ;_ (error "Value of coll-concept-id" coll-concept-id)
          ;; Use collection ids in the context to modify the condition that's executed.
          condition (cond
-                     (and collection-ids (empty? collection-ids))
-                     ;; The collection ids in the context is an empty set. This query can match
-                     ;; nothing.
-                     cqm/match-none
-
-                     collection-ids
-                     (gc/and-conds [(cqm/string-conditions :concept-id collection-ids true)
+                     coll-concept-id
+                     (gc/and-conds [(cqm/string-conditions :concept-id [coll-concept-id] true)
                                     condition])
-
+                     (and collection-ids (empty? collection-ids))
+                      ;; The collection ids in the context is an empty set. This query can match
+                      ;; nothing.
+                     cqm/match-none
+                     collection-ids
+                     (gc/and-conds [(cqm/string-conditions :concept-id [collection-ids] true)
+                                    condition])
                      :else
                      condition)
+         ;_ (error "ultimately condition " condition)
          result (idx/execute-query context
                                    (c2s/reduce-query context
                                                      (cqm/query {:concept-type :collection
@@ -186,6 +196,7 @@
          ;; performance issue we could restrict the collections that are found to ones that we know
          ;; have some granules. The has-granule-results-feature has a cache of collections to
          ;; granule counts. That could be refactored to be usable here.
+         ;_ (error "hits from elastic: " (count (get-in result [:hits :hits])))
          collection-concept-ids (map :_id (get-in result [:hits :hits]))]
 
      (if (empty? collection-concept-ids)

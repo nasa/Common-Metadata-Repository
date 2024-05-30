@@ -3,6 +3,7 @@
    query-execution. These will be extended by other files."
   (:require
    [cmr.elastic-utils.search.es-index :as idx]
+   [cmr.common.log :refer (debug info warn error)]
    [cmr.elastic-utils.search.es-results-to-query-results :as rc]
    [cmr.elastic-utils.search.query-transform :as c2s]
    [cmr.transmit.config :as tc]))
@@ -98,11 +99,13 @@
   (let [[context processed-query] (concept-type-specific-query-processing
                                    context query)
         processed-query (pre-process-query-result-features context processed-query)
+        ;_ (error "Heading into elastic query")
         elastic-results (->> processed-query
                              (#(if (or (tc/echo-system-token? context) (:skip-acls? %))
                                  %
                                  (add-acl-conditions-to-query context %)))
                              (c2s/reduce-query context)
                              (idx/execute-query context))
+        ;_ (error "exited elastic query")
         query-results (rc/elastic-results->query-results context processed-query elastic-results)]
     (post-process-query-result-features context query elastic-results query-results)))

@@ -4,6 +4,7 @@
    [cmr.common.services.search.query-model :as cqm]
    [cmr.common.services.search.results-model :as results]
    [cmr.common.util :as util]
+   [cmr.common.log :refer [error warn info debug]]
    [cmr.elastic-utils.search.es-index :as idx]
    [cmr.elastic-utils.search.es-related-item-resolver :as related-item-resolver]
    [cmr.elastic-utils.search.es-results-to-query-results :as rc]
@@ -152,8 +153,12 @@
 
 (defmethod common-qe/concept-type-specific-query-processing :granule
   [context query]
+  ;(error "Value of query in concept-type-specific-query-processing: " query "\n")
   (let [processed-query (r/resolve-collection-queries context query)
-        collection-ids (ce/extract-collection-concept-ids processed-query)]
+        ;_ (error "Value of processed query: " processed-query "\n")
+        collection-ids (ce/extract-collection-concept-ids processed-query)
+        ;_ (error "Value of collections-ids: " collection-ids "\n")]
+  ]
     [(assoc context
             :query-collection-ids collection-ids
             :query-concept-type (:concept-type query))
