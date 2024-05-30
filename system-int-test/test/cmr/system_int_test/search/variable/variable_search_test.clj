@@ -316,10 +316,6 @@
       [variable1]      
       {:keyword "Zarr"}
 
-      "By keyword match instance information format wrong"
-      [variable1]      
-      {:keyword "Zarrwrong"}
-
       "By keyword match associated collection"
       [variable1]
       {:keyword (:concept-id coll1)}
