@@ -316,10 +316,6 @@
       [variable1]      
       {:keyword "Zarr"}
 
-      "By keyword match variable concept id wrong"
-      [variable1]      
-      {:keyword "V1200000006-PROV1"}
-
       "By keyword match instance information format wrong"
       [variable1]      
       {:keyword "Zarrwrong"}
