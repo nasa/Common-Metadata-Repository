@@ -4,6 +4,7 @@
   So the code is slightly different and we have pushed off the potential refactoring until later."
   (:require
    [clojure.string :as string]
+   [cmr.common.api.context :as cmn-context]
    [cmr.common.log :as log :refer (debug info)]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -22,14 +23,6 @@
   "Failed to %s %s [%s] with collection [%s] because it conflicted with a concurrent %s on the
   same %s and collection. This means that someone is sending the same request to the CMR at the
   same time.")
-
-(defn- context->user-id
-  "Returns user id of the token in the context. Throws an error if no token is provided"
-  [context]
-  (if (:token context)
-    (util/lazy-get context :user-id)
-    (errors/throw-service-error
-     :unauthorized "Associations cannot be modified without a valid user token.")))
 
 (defn- save-concept-in-mdb
   "Save the given concept in metadata-db using the given embedded metadata-db context."
@@ -54,7 +47,7 @@
                                       (string/capitalize source-concept-type-str) concept-id)]}}
         (let [concept {:concept-type assoc-concept-type
                        :concept-id concept-id
-                       :user-id (context->user-id mdb-context)
+                       :user-id (cmn-context/context->user-id mdb-context assoc-msg/associations-need-token)
                        :deleted true}]
           (save-concept-in-mdb mdb-context concept)))
       {:message {:warnings [(assoc-msg/delete-association-not-found
@@ -71,71 +64,31 @@
       (str native-id native-id-separator-character coll-revision-id)
       native-id)))
 
-(defmulti association->concept-map
+(defn association->concept-map
   "Returns the concept-map for inserting into metadata-db for the given association.
   It is keyed off on the source concept type of the association, e.g. :variable, :service."
-  (fn [association]
-    (:source-concept-type association)))
-
-(defmethod association->concept-map :variable
-  [variable-association]
+  [association]
   (let [{:keys [source-concept-id originator-id native-id user-id data]
          coll-concept-id :concept-id
-         coll-revision-id :revision-id} variable-association]
-    {:concept-type :variable-association
+         coll-revision-id :revision-id} association
+        [concept-type field] (case (:source-concept-type association)
+                               :tool [:tool-association {:tool-concept-id source-concept-id}]
+                               :service [:service-association {:service-concept-id source-concept-id}]
+                               :variable [:variable-association {:variable-concept-id source-concept-id}])]
+    {:concept-type concept-type
      :native-id native-id
      :user-id user-id
      :format mt/edn
      :metadata (pr-str
-                 (util/remove-nil-keys
-                   {:variable-concept-id source-concept-id
-                    :originator-id originator-id
-                    :associated-concept-id coll-concept-id
-                    :associated-revision-id coll-revision-id
-                    :data data}))
-     :extra-fields {:variable-concept-id source-concept-id
-                    :associated-concept-id coll-concept-id
-                    :associated-revision-id coll-revision-id}}))
-
-(defmethod association->concept-map :service
-  [service-association]
-  (let [{:keys [source-concept-id originator-id native-id user-id data]
-         coll-concept-id :concept-id
-         coll-revision-id :revision-id} service-association]
-    {:concept-type :service-association
-     :native-id native-id
-     :user-id user-id
-     :format mt/edn
-     :metadata (pr-str
-                 (util/remove-nil-keys
-                   {:service-concept-id source-concept-id
-                    :originator-id originator-id
-                    :associated-concept-id coll-concept-id
-                    :associated-revision-id coll-revision-id
-                    :data data}))
-     :extra-fields {:service-concept-id source-concept-id
-                    :associated-concept-id coll-concept-id
-                    :associated-revision-id coll-revision-id}}))
-
-(defmethod association->concept-map :tool
-  [tool-association]
-  (let [{:keys [source-concept-id originator-id native-id user-id data]
-         coll-concept-id :concept-id
-         coll-revision-id :revision-id} tool-association]
-    {:concept-type :tool-association
-     :native-id native-id
-     :user-id user-id
-     :format mt/edn
-     :metadata (pr-str
-                 (util/remove-nil-keys
-                   {:tool-concept-id source-concept-id
-                    :originator-id originator-id
-                    :associated-concept-id coll-concept-id
-                    :associated-revision-id coll-revision-id
-                    :data data}))
-     :extra-fields {:tool-concept-id source-concept-id
-                    :associated-concept-id coll-concept-id
-                    :associated-revision-id coll-revision-id}}))
+                (util/remove-nil-keys
+                 (merge field
+                        {:originator-id originator-id
+                         :associated-concept-id coll-concept-id
+                         :associated-revision-id coll-revision-id
+                         :data data})))
+     :extra-fields (merge field
+                          {:associated-concept-id coll-concept-id
+                           :associated-revision-id coll-revision-id})}))
 
 (defn- update-association
   "Based on the input operation type (:insert or :delete), insert or delete the given association
@@ -157,7 +110,7 @@
         assoc-concept-type (keyword (str source-concept-type-str "-association"))
         association (-> association
                         (assoc :native-id native-id)
-                        (assoc :user-id (context->user-id mdb-context)))
+                        (assoc :user-id (cmn-context/context->user-id mdb-context assoc-msg/associations-need-token)))
         associated-item (util/remove-nil-keys
                          {:concept-id coll-concept-id :revision-id coll-revision-id})]
     (if (seq errors)
@@ -211,7 +164,6 @@
                                           associations))]
     (info "update-associations:" t1)
     result))
-
 
 (defn- fetch-concept
   "Fetches the latest version of a concept by concept-id with proper error handling."

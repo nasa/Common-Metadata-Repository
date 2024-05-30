@@ -16,6 +16,7 @@
    [cmr.common.config :as cfg]
    [cmr.common.log :refer (debug info warn error)]
    [cmr.common.services.errors :as errors]
+   [digest :as digest]
    [hiccup.util :as hp-util])
   (:import
    (java.text DecimalFormat)
@@ -1147,3 +1148,17 @@
   "Tee a copy of input to the console, but does so to allow for inline use with ->"
   ([anything] (println anything) anything)
   ([anything note] (println note anything) anything))
+
+(defn normalize-parameters
+  "Returns a normalized url parameter string by splitting the string of parameters on '&' and
+   sorting them alphabetically"
+  [parameter-string]
+  (when parameter-string
+    (-> (if (string/starts-with? parameter-string "?")
+          (subs parameter-string 1)
+          parameter-string)
+        (string/split #"&")
+        sort
+        (as-> $ (string/join "&" $))
+        string/trim
+        digest/md5)))

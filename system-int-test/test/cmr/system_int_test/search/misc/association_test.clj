@@ -1,4 +1,4 @@
-(ns cmr.system-int-test.search.association-test
+(ns cmr.system-int-test.search.misc.association-test
   "This tests associating tools and services with collections."
   (:require [clojure.test :refer [deftest is testing use-fixtures]]
             [cmr.mock-echo.client.echo-util :as echo-util]

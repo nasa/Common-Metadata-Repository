@@ -246,3 +246,5 @@
               (str/capitalize (name assoc-type)) identifier concept-id revision-id)
       (format "%s [%s] is not associated with collection [%s]."
               (str/capitalize (name assoc-type)) identifier concept-id))))
+
+(def associations-need-token "Associations cannot be modified without a valid user token.")

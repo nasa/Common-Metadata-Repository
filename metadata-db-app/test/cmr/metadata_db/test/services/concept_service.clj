@@ -1,13 +1,15 @@
 (ns cmr.metadata-db.test.services.concept-service
   "Contains unit tests for service layer methods and associated utility methods."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
+   [cmr.common.util :refer [are3]]
    [cmr.common.test.test-util :as tu]
    [cmr.metadata-db.data.concepts :as c]
    [cmr.metadata-db.data.memory-db :as memory]
    [cmr.metadata-db.services.concept-service :as cs]
    [cmr.metadata-db.services.messages :as messages]
    [cmr.metadata-db.services.provider-validation :as pv])
+   #_{:clj-kondo/ignore [:unused-import]}
   (:import
    (clojure.lang ExceptionInfo)))
 
@@ -189,3 +191,66 @@
                 "SMAL_PROV"
                 {:collection '("C1200000002-SMAL_PROV" "C1200000001-SMAL_PROV")}}
                 (#'cs/filter-non-existent-providers split-concept-ids-map providers)))))))
+
+(def example-granule
+  {:concept-id "G1000000001-PROV1"
+   :deleted false
+   :concept-type :granule
+   :native-id "provider granule id"
+   :provider-id "PROV1"
+   :metadata "xml here"
+   :format "echo10"
+   :revision-id 1
+   :transaction-id 1
+   :extra-fields {:entry-title "ET-1"
+                  :entry-id "EID-1"
+                  :parent-collection-id "C1000000000-PROV1"}})
+
+(deftest set-created-at-test
+  (let [created-at "2000-05-22T00:00:00Z"
+        db (memory/create-db [(assoc example-concept :created-at created-at)
+                              (assoc example-granule :created-at created-at)])
+        provider {:provider-id "PROV1"
+                  :short-name "PROV1"
+                  :cmr-only false
+                  :small false}]
+    (testing "set-created-at"
+      (are3
+       [expected example-record]
+       (is (= expected (:created-at (cs/set-created-at db provider example-record))))
+
+       "for a collection"
+       created-at
+       example-concept
+
+       "for a granule"
+       created-at
+       example-granule
+
+       "just returns concept that went in the function"
+       nil
+       nil))))
+
+(deftest set-or-generate-concept-id-test
+  (let [db (memory/create-db [example-concept
+                              example-granule])
+        provider {:provider-id "PROV1"
+                  :short-name "PROV1"
+                  :cmr-only false
+                  :small false}]
+    (testing "set-or-generate-concept-id"
+      (are3
+       [example-record]
+       (is (some? (:concept-id (cs/set-or-generate-concept-id db provider example-record))))
+
+       "for a collection"
+       example-concept
+
+       "for a granule"
+       example-granule
+
+       "sets a granule concept id."
+       (dissoc example-granule :concept-id)
+
+       "sets a collection concept id."
+       (dissoc example-concept :concept-id)))))

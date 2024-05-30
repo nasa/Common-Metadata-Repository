@@ -2,10 +2,10 @@
   "Provides functions for associating and dissociating generic concepts."
   (:require
    [clojure.set :refer [rename-keys]]
+   [cmr.common.api.context :as cmn-context]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :as log :refer (debug info)]
    [cmr.common.mime-types :as mt]
-   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.metadata-db.services.concept-service :as mdb-cs]
    [cmr.metadata-db.services.search-service :as mdb-ss]
@@ -21,14 +21,6 @@
   "Failed to %s %s [%s] with %s [%s] because it conflicted with a concurrent %s on the
   same %s and %s. This means that someone is sending the same request to the CMR at the
   same time.")
-
-(defn- context->user-id
-  "Returns user id of the token in the context. Throws an error if no token is provided"
-  [context]
-  (if (:token context)
-    (util/lazy-get context :user-id)
-    (errors/throw-service-error
-     :unauthorized "Associations cannot be modified without a valid user token.")))
 
 (defn- save-concept-in-mdb
   "Save the given concept in metadata-db using the given embedded metadata-db context."
@@ -52,7 +44,7 @@
                                       concept-id)]}}
         (let [concept {:concept-type assoc-concept-type
                        :concept-id concept-id
-                       :user-id (context->user-id mdb-context)
+                       :user-id (cmn-context/context->user-id mdb-context assoc-msg/associations-need-token)
                        :deleted true}]
           (save-concept-in-mdb mdb-context concept)))
       {:message {:warnings [(assoc-msg/delete-generic-association-not-found
@@ -145,7 +137,7 @@
         assoc-concept-type (keyword "generic-association")
         association (-> association
                         (assoc :native-id native-id)
-                        (assoc :user-id (context->user-id mdb-context)))
+                        (assoc :user-id (cmn-context/context->user-id mdb-context assoc-msg/associations-need-token)))
         associated-item (util/remove-nil-keys
                          {:concept-id associated-item-concept-id
                           :revision-id associated-item-revision-id})]
@@ -272,6 +264,7 @@
     (case concept-type
       :tool (concept-appropriate-links-to-concepts context concept-type concept-id revision-id associations operation-type :tool-association)
       :service (concept-appropriate-links-to-concepts context concept-type concept-id revision-id associations operation-type :service-association)
+      :variable (concept-appropriate-links-to-concepts context concept-type concept-id revision-id associations operation-type :variable-association)
       :collection (let [tool-to-be-assoc (separate-out-concept-type :tool associations)
                         tool-assoc (when (:concept-assoc tool-to-be-assoc)
                                      (flatten
@@ -283,9 +276,14 @@
                                         (flatten
                                          (map #(create-collection-associated-concepts context concept-id revision-id % operation-type) (:concept-assoc service-to-be-assoc))))
                         updated-service-assoc (map #(rename-keys % {:service-association :generic-association}) service-assoc)
-                        other-assoc (when (:the-rest service-to-be-assoc)
-                                     (link-to-concepts context concept-type concept-id revision-id (:the-rest service-to-be-assoc) operation-type))]
-                    (concat other-assoc updated-tool-assoc updated-service-assoc))
+                        variable-to-be-assoc (when (:the-rest service-to-be-assoc)
+                                               (separate-out-concept-type :variable (:the-rest service-to-be-assoc)))
+                        variable-assoc (when (:concept-assoc variable-to-be-assoc)
+                                        (flatten
+                                         (map #(create-collection-associated-concepts context concept-id revision-id % operation-type) (:concept-assoc variable-to-be-assoc))))
+                        other-assoc (when (:the-rest variable-to-be-assoc)
+                                     (link-to-concepts context concept-type concept-id revision-id (:the-rest variable-to-be-assoc) operation-type))]
+                    (concat other-assoc updated-tool-assoc updated-service-assoc variable-assoc))
       (link-to-concepts context concept-type concept-id revision-id associations operation-type))))
 
 (defn associate-to-concepts
