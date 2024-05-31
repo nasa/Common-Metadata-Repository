@@ -3,7 +3,6 @@
   (:require
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]
    [cmr.common.parameter-parser :as pp]
-   [cmr.common.log :refer [error warn info debug]]
    [cmr.common.services.errors :as errors]))
 
 (def default-page-size 10)
@@ -414,7 +413,6 @@
   ([field values case-sensitive?]
    (string-conditions field values case-sensitive? false :or))
   ([field values case-sensitive? pattern? group-operation]
-   ;ß(error "count of vals: " (count values))
    (when-not (seq values)
      (errors/internal-error! (str "Null or empty values for field: " field)))
    (cond

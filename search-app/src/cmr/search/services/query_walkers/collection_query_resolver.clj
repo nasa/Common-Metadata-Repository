@@ -2,8 +2,7 @@
   "Defines protocols and functions to resolve collection query conditions"
   (:require
    [clojure.set :as set]
-   [cmr.common.log :refer [error warn info debug]]
-   [cmr.common.services.errors :as errors]
+    [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as cqm]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.es-index :as idx]
@@ -86,7 +85,6 @@
 (defn resolve-collection-queries
   [context query]
   (let [query (merge-collection-queries query)]
-        ;_ (error "in first resolve-collection-queries, vlaue of resolve-collection-query query context " (resolve-collection-query query context))]
     (second (resolve-collection-query query context))))
 
 (extend-protocol ResolveCollectionQuery
@@ -96,13 +94,10 @@
 
   (merge-collection-queries
     [query]
-    ;(error "in cmr.common.services.search.query_model.Query merge-collection-queries, value of query: " query)
-    ;(error "value of return: " (update-in query [:condition] merge-collection-queries))
     (update-in query [:condition] merge-collection-queries))
 
   (resolve-collection-query
     [query context]
-    ;(error "in cmr.common.services.search.query_model.Query resolve-collection-query, value of query: " query)
     [:all (update-in query [:condition] #(second (resolve-collection-query % context)))])
 
   ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -167,10 +162,7 @@
 
   (resolve-collection-query
    [{:keys [condition]} context]
-   ;(error "in cmr.search.models.query.CollectionQueryCondition resolve-collection-query, value of context: " context)
-   ;(error "value of condition: " condition)
    (let [{:keys [collection-ids]} context
-         ;_ (error "Value of coll-concept-id" coll-concept-id)
          ;; Use collection ids in the context to modify the condition that's executed.
          condition (cond
                      (and collection-ids (empty? collection-ids))
@@ -182,7 +174,6 @@
                                     condition])
                      :else
                      condition)
-         ;_ (error "ultimately condition " condition)
          result (idx/execute-query context
                                    (c2s/reduce-query context
                                                      (cqm/query {:concept-type :collection
@@ -192,7 +183,6 @@
          ;; performance issue we could restrict the collections that are found to ones that we know
          ;; have some granules. The has-granule-results-feature has a cache of collections to
          ;; granule counts. That could be refactored to be usable here.
-         ;_ (error "hits from elastic: " (count (get-in result [:hits :hits])))
          collection-concept-ids (map :_id (get-in result [:hits :hits]))]
 
      (if (empty? collection-concept-ids)

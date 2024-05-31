@@ -5,7 +5,6 @@
    [camel-snake-kebab.core :as csk]
    [clojure.set :as set]
    [clojure.string :as string]
-   [cmr.common.log :refer (debug info warn error)]
    [cmr.elastic-utils.search.query-execution :as query-execution]
    [cmr.common.util :as util]
    [cmr.search.services.query-execution.facets.facets-results-feature :as frf]
@@ -216,8 +215,7 @@
 
 (defmethod query-execution/post-process-query-result-feature :facets-v2
   [context query elastic-results query-results _]
-  (let [;_ (error "in post-process-query-result-feature :facets-v2")
-        concept-type (:concept-type query)
+  (let [concept-type (:concept-type query)
         facet-fields (:facet-fields query)
         facet-fields (or facet-fields (facets-v2-params concept-type))
         aggregations (:aggregations elastic-results)]
