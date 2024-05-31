@@ -2,7 +2,7 @@
   "Defines protocols and functions to resolve collection query conditions"
   (:require
    [clojure.set :as set]
-    [cmr.common.services.errors :as errors]
+   [cmr.common.services.errors :as errors]
    [cmr.common.services.search.query-model :as cqm]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.es-index :as idx]
@@ -161,34 +161,34 @@
   (merge-collection-queries [this] this)
 
   (resolve-collection-query
-   [{:keys [condition]} context]
-   (let [{:keys [collection-ids]} context
+    [{:keys [condition]} context]
+    (let [{:keys [collection-ids]} context
          ;; Use collection ids in the context to modify the condition that's executed.
-         condition (cond
-                     (and collection-ids (empty? collection-ids))
+          condition (cond
+                      (and collection-ids (empty? collection-ids))
                       ;; The collection ids in the context is an empty set. This query can match
                       ;; nothing.
-                     cqm/match-none
-                     collection-ids
-                     (gc/and-conds [(cqm/string-conditions :concept-id [collection-ids] true)
-                                    condition])
-                     :else
-                     condition)
-         result (idx/execute-query context
-                                   (c2s/reduce-query context
-                                                     (cqm/query {:concept-type :collection
-                                                                 :condition condition
-                                                                 :page-size :unlimited})))
+                      cqm/match-none
+                      collection-ids
+                      (gc/and-conds [(cqm/string-conditions :concept-id [collection-ids] true)
+                                     condition])
+                      :else
+                      condition)
+          result (idx/execute-query context
+                                    (c2s/reduce-query context
+                                                      (cqm/query {:concept-type :collection
+                                                                  :condition condition
+                                                                  :page-size :unlimited})))
          ;; It's possible that many collection concept ids could be found here. If this becomes a
          ;; performance issue we could restrict the collections that are found to ones that we know
          ;; have some granules. The has-granule-results-feature has a cache of collections to
          ;; granule counts. That could be refactored to be usable here.
-         collection-concept-ids (map :_id (get-in result [:hits :hits]))]
+          collection-concept-ids (map :_id (get-in result [:hits :hits]))]
 
-     (if (empty? collection-concept-ids)
-       [#{} cqm/match-none]
-       [(set collection-concept-ids)
-        (cqm/string-conditions :collection-concept-id collection-concept-ids true)])))
+      (if (empty? collection-concept-ids)
+        [#{} cqm/match-none]
+        [(set collection-concept-ids)
+         (cqm/string-conditions :collection-concept-id collection-concept-ids true)])))
 
   (is-collection-query-cond? [_] true)
 
