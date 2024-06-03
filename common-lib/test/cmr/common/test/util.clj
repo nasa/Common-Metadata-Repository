@@ -973,3 +973,18 @@
 
     "nil as input"
     nil nil))
+
+
+(deftest normalize-parameters-test
+  (testing "Query normalization"
+    (util/are3 [query expected]
+          (is (= expected (util/normalize-parameters query)))
+          
+          "With a leading question mark"
+          "?provider=PROV1&instrument=1B&instrument=2B" "bc71e563ac03a05d7c557608f868ce6a"
+          
+          "Without a leading question mark"
+          "provider=PROV1&instrument=1B&instrument=2B" "bc71e563ac03a05d7c557608f868ce6a"
+          
+          "Empty string"
+          "" "d41d8cd98f00b204e9800998ecf8427e")))

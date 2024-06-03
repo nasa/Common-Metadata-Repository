@@ -40,12 +40,15 @@
         {:keys [variable-name measurement]} extra-fields
         definition (:Definition parsed-concept)
         instance-information (:InstanceInformation (json/parse-string (:metadata concept) true))
+        instance-format (util/safe-lowercase (:Format instance-information))
         science-keywords (:ScienceKeywords (json/parse-string (:metadata concept) true))
         concept-seq-id (:sequence-number (concepts/parse-concept-id concept-id))
-        schema-keys [:ScienceKeywords :measurement :variable-name :variable-associations :set-names]
+        schema-keys [:ScienceKeywords :measurement :variable-name :variable-associations :set-names :concept-id :instance-format]
         keyword-values (keyword-util/concept-keys->keyword-text
                         (merge parsed-concept extra-fields
-                               {:variable-associations (map :associated-concept-id variable-associations)
+                               {:concept-id concept-id
+                                :instance-format instance-format
+                                :variable-associations (map :associated-concept-id variable-associations)
                                 :set-names (map :Name (:Sets parsed-concept))})
                         schema-keys)
         all-assocs (concat variable-associations generic-associations)]
@@ -86,7 +89,7 @@
        :user-id user-id
        :revision-date revision-date
        :metadata-format (name (mt/format-key format))
-       :instance-format (util/safe-lowercase (:Format instance-information))
+       :instance-format instance-format
        :measurement-identifiers (mapcat measurement-identifier->elastic-doc
                                         (:MeasurementIdentifiers parsed-concept))
        ;; associated collections and generic concepts saved in elasticsearch for retrieving purpose in the format of:

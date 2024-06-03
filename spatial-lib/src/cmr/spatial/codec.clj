@@ -10,7 +10,6 @@
    [cmr.spatial.messages :as smsg]
    [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
-   [cmr.spatial.regex-builder :as rb]
    [cmr.spatial.ring-relations :as rr]))
 
 (defprotocol SpatialUrlEncode
@@ -65,31 +64,15 @@
   (fn [type _s]
     type))
 
-(def point-regex
-  (rb/compile-regex (rb/group (rb/capture rb/decimal-number)
-                              ","
-                              (rb/capture rb/decimal-number))))
+(def point-regex #"(?:((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)))")
 
-(def polygon-regex
-  (let [point (rb/group rb/decimal-number "," rb/decimal-number)]
-    (rb/compile-regex (rb/group point (rb/n-or-more-times 3 "," point)))))
+(def polygon-regex #"(?:(?:(?:[+\-]?\d+(?:\.\d+)?),(?:[+\-]?\d+(?:\.\d+)?))(?:,(?:(?:[+\-]?\d+(?:\.\d+)?),(?:[+\-]?\d+(?:\.\d+)?))){3,})")
 
-(def line-regex
-  (let [point (rb/group rb/decimal-number "," rb/decimal-number)]
-    (rb/compile-regex (rb/group point (rb/n-or-more-times 1 "," point)))))
+(def line-regex #"(?:(?:(?:[+\-]?\d+(?:\.\d+)?),(?:[+\-]?\d+(?:\.\d+)?))(?:,(?:(?:[+\-]?\d+(?:\.\d+)?),(?:[+\-]?\d+(?:\.\d+)?))){1,})")
 
-(def mbr-regex
-  (let [captured-num (rb/capture rb/decimal-number)]
-    (rb/compile-regex (rb/group captured-num
-                                "," captured-num
-                                "," captured-num
-                                "," captured-num))))
+(def mbr-regex #"(?:((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)))")
 
-(def circle-regex
-  (let [captured-num (rb/capture rb/decimal-number)]
-    (rb/compile-regex (rb/group captured-num
-                                "," captured-num
-                                "," captured-num))))
+(def circle-regex #"(?:((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)),((?:[+\-]?\d+(?:\.\d+)?)))")
 
 (defmethod url-decode :point
   [_type s]

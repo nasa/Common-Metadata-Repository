@@ -5,7 +5,6 @@
    [clj-http.client :as client]
    [clojure.java.io :as jio]
    [clojure.string :as string]
-   [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.mock-echo.client.echo-util :as echo-util]
    [cmr.system-int-test.system :as sys]
@@ -41,6 +40,13 @@
                         (jio/resource)
                         (slurp)
                         (json/parse-string true)))
+
+(def variable-draft-without-private
+  (-> "schemas/variable-draft/v1.0.0/metadata_with_private_data.json"
+      (jio/resource)
+      (slurp)
+      (json/parse-string true)
+      (dissoc :_private)))
 
 (defn grant-all-drafts-fixture
   "A test fixture that grants all users the ability to create and modify drafts."

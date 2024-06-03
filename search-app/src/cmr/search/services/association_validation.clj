@@ -170,15 +170,8 @@
                    "please delete one of the conflicting generic associations.")
               concept-id (:concept-id association)))))
 
-(defmulti validate-association-conflict-for-collection
-  "Validate the given association does not conflict with existing tag associations in that
-  a tag/variable cannot be associated with a collection revision and the same collection
-  without revision at the same time."
-  (fn [context assoc-type assoc-id association]
-    assoc-type))
-
-(defmethod validate-association-conflict-for-collection :tag
-  [context assoc-type tag-key tag-association]
+(defn- validate-association-conflict-for-collection-tag
+  [context tag-key tag-association]
   (let [tas (->> (mdb/find-concepts context
                                     {:tag-key tag-key
                                      :associated-concept-id (:concept-id tag-association)
@@ -216,8 +209,8 @@
                    "one of the conflicting tag associations.")
               tag-key (:concept-id tag-association)))))
 
-(defmethod validate-association-conflict-for-collection :variable
-  [context assoc-type variable-concept-id variable-association]
+(defn- validate-association-conflict-for-collection-variable
+  [context variable-concept-id variable-association]
   (let [vas (->> (mdb/find-concepts context
                                     {:variable-concept-id variable-concept-id
                                      :associated-concept-id (:concept-id variable-association)
@@ -256,8 +249,8 @@
                    "please delete one of the conflicting variable associations.")
               variable-concept-id (:concept-id variable-association)))))
 
-(defmethod validate-association-conflict-for-collection :service
-  [context assoc-type service-concept-id service-association]
+(defn- validate-association-conflict-for-collection-service
+  [context service-concept-id service-association]
   (let [vas (->> (mdb/find-concepts context
                                     {:service-concept-id service-concept-id
                                      :associated-concept-id (:concept-id service-association)
@@ -296,8 +289,8 @@
                    "please delete one of the conflicting service associations.")
               service-concept-id (:concept-id service-association)))))
 
-(defmethod validate-association-conflict-for-collection :tool
-  [context assoc-type tool-concept-id tool-association]
+(defn- validate-association-conflict-for-collection-tool
+  [context tool-concept-id tool-association]
   (let [vas (->> (mdb/find-concepts context
                                     {:tool-concept-id tool-concept-id
                                      :associated-concept-id (:concept-id tool-association)
@@ -336,6 +329,17 @@
                    "please delete one of the conflicting tool associations.")
               tool-concept-id (:concept-id tool-association)))))
 
+(defn validate-association-conflict-for-collection
+  "Validate the given association does not conflict with existing tag associations in that
+  a tag/variable cannot be associated with a collection revision and the same collection
+  without revision at the same time."
+  [context assoc-type assoc-id association]
+  (case assoc-type
+    :tag (validate-association-conflict-for-collection-tag context assoc-id association)
+    :variable (validate-association-conflict-for-collection-variable context assoc-id association)
+    :service (validate-association-conflict-for-collection-service context assoc-id association)
+    :tool (validate-association-conflict-for-collection-tool context assoc-id association)))
+
 (defn- validate-association-conflict
   "Validates the association (either on a specific revision or over the whole collection)
   does not conflict with one or more existing associations in Metadata DB. Tag/Variable
@@ -370,7 +374,7 @@
   "Validates the association concept-id and revision-id (if given) satisfy association rules,
   i.e. collection specified exist and are viewable by the token,
   collection specified are not tombstones."
-  [context assoc-type no-permission-concept-ids inaccessible-concept-ids tombstone-coll-revisions
+  [assoc-type no-permission-concept-ids inaccessible-concept-ids tombstone-coll-revisions
    inaccessible-coll-revisions association association?]
   (if (contains? no-permission-concept-ids (:concept-id association))
     (if association?
@@ -385,7 +389,7 @@
   "Validates the association concept-id and revision-id (if given) satisfy association rules,
   i.e. concepts specified exist and are viewable by the token,
   collection specified are not tombstones."
-  [context assoc-type no-permission-concept-ids inaccessible-concept-ids tombstone-revisions
+  [assoc-type no-permission-concept-ids inaccessible-concept-ids tombstone-revisions
    inaccessible-revisions association association?]
   (if (contains? no-permission-concept-ids (:concept-id association))
     (if association?
@@ -509,7 +513,7 @@
     (acl/verify-ingest-management-permission-for-provider
      context :update :provider-object provider-id)
     false
-    (catch Exception e
+    (catch Exception _e
       true)))
 
 (defn- get-no-permission-concept-ids
@@ -521,26 +525,8 @@
         :when (no-ingest-management-permission? context provider-id)]
     concept-id))
 
-(defmulti validate-associations
-  "Validates the associations for the given association type (:tag or :variable) based on the
-  operation type, which is either :insert or :delete. Id is the identifier value of the tag or
-  variable that is associated with the collections. Returns the associations with errors found
-  appended to them. If the provided associations fail the basic rules validation (e.g. empty
-  associations, conflicts within the request), throws a service error."
-  (fn [context assoc-type assoc-id associations operation-type]
-    operation-type))
-
-(defmulti validate-generic-associations
-  "Validates the associations based on the operation type, which is either :insert or :delete.
-  assoc-typeand assoc-id are the concept type and concept id that is associated with the concepts
-  in the associations. Returns the associations with errors found
-  appended to them. If the provided associations fail the basic rules validation (e.g. empty
-  associations, conflicts within the request), throws a service error."
-  (fn [context assoc-type assoc-id assoc-revision-id associations operation-type]
-    operation-type))
-
-(defmethod validate-associations :insert
-  [context assoc-type assoc-id associations operation-type]
+(defn- validate-associations-insert
+  [context assoc-type assoc-id associations]
   (validate-empty-associations assoc-type associations)
   (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
         _ (validate-conflicts-within-request assoc-type concept-id-only-assocs revision-assocs)
@@ -564,7 +550,6 @@
                               inaccessibles)]
     (->> associations
          (map #(validate-collection-identifier
-                context
                 assoc-type
                 (set no-permission-concept-ids)
                 (set inaccessible-concept-ids)
@@ -575,10 +560,10 @@
          (map #(validate-association-data assoc-type %))
          (map #(validate-association-conflict context assoc-type assoc-id %)))))
 
-(defmethod validate-associations :delete
-  [context assoc-type assoc-id associations operation-type]
+(defn- validate-associations-delete
+  [context assoc-type assoc-id associations]
   (validate-empty-associations assoc-type associations)
-  (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
+  (let [[concept-id-only-assocs _revision-assocs] (partition-associations associations)
         ;; A user can delete an association if the user has update permission on
         ;; INGEST_MANAGEMENT_ACL for the provider of the associated service/tool, or the collection
         ;; in the associations.
@@ -604,7 +589,6 @@
                               inaccessibles)]
     (->> associations
          (map #(validate-collection-identifier
-                context
                 assoc-type
                 (set no-permission-concept-ids)
                 (set inaccessible-concept-ids)
@@ -612,6 +596,17 @@
                 (set inaccessibles)
                 %
                 false)))))
+
+(defn validate-associations
+  "Validates the associations for the given association type (:tag or :variable) based on the
+  operation type, which is either :insert or :delete. Id is the identifier value of the tag or
+  variable that is associated with the collections. Returns the associations with errors found
+  appended to them. If the provided associations fail the basic rules validation (e.g. empty
+  associations, conflicts within the request), throws a service error."
+  [context assoc-type assoc-id associations operation-type]
+  (case operation-type
+    :insert (validate-associations-insert context assoc-type assoc-id associations)
+    :delete (validate-associations-delete context assoc-type assoc-id associations)))
 
 (defn- get-bad-concept-revisions
   "Returns the bad concept revisions of the given associations partitioned into a set of
@@ -666,8 +661,8 @@
                       ids))]
       (set/difference (set generic-concept-ids) (set accessible-concept-ids)))))
 
-(defmethod validate-generic-associations :insert
-  [context assoc-type assoc-id assoc-revision-id associations operation-type]
+(defn- validate-generic-associations-insert
+  [context assoc-type assoc-id assoc-revision-id associations]
   (validate-empty-associations assoc-type associations)
   (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
         _ (validate-generic-conflicts-within-request assoc-type concept-id-only-assocs revision-assocs)
@@ -692,7 +687,6 @@
                                        inaccessible-revisions)]
     (->> associations
          (map #(validate-concept-identifier
-                context
                 assoc-type
                 (set no-permission-concept-ids)
                 (set inaccessible-concept-only-concept-ids)
@@ -703,8 +697,8 @@
          (map #(validate-association-data assoc-type %))
          (map #(validate-generic-association-conflict context assoc-id assoc-revision-id %)))))
 
-(defmethod validate-generic-associations :delete
-  [context assoc-type assoc-id assoc-revision-id associations operation-type]
+(defn- validate-generic-associations-delete
+  [context assoc-type associations]
   (validate-empty-associations assoc-type associations)
   (let [[concept-id-only-assocs revision-assocs] (partition-associations associations)
         no-permission-concept-ids (get-no-permission-concept-ids
@@ -728,7 +722,6 @@
                                        inaccessible-revisions)]
     (->> associations
          (map #(validate-concept-identifier
-                context
                 assoc-type
                 (set no-permission-concept-ids)
                 (set inaccessible-concept-only-concept-ids)
@@ -736,6 +729,17 @@
                 (set inaccessible-revisions)
                 %
                 false)))))
+
+(defn validate-generic-associations
+  "Validates the associations based on the operation type, which is either :insert or :delete.
+  assoc-typeand assoc-id are the concept type and concept id that is associated with the concepts
+  in the associations. Returns the associations with errors found
+  appended to them. If the provided associations fail the basic rules validation (e.g. empty
+  associations, conflicts within the request), throws a service error."
+  [context assoc-type assoc-id assoc-revision-id associations operation-type]
+  (case operation-type
+    :insert (validate-generic-associations-insert context assoc-type assoc-id assoc-revision-id associations)
+    :delete (validate-generic-associations-delete context assoc-type associations)))
 
 (defn validate-concept-for-generic-associations
   "Validate the concept is accessible and is not tombstoned."

@@ -3,7 +3,9 @@
   (:require
    [clojure.test :refer [deftest is testing]]
    [cmr.common.util :as util]
-   [cmr.common.api.context :as context]))
+   [cmr.common.api.context :as context])
+  (:import
+   [clojure.lang ExceptionInfo]))
 
 (deftest request-context-test
   (testing "Normal usage with supplied request-id"
@@ -26,4 +28,7 @@
   (testing "Normal usage, pulling user-id from the context"
     (let [context-temp {:request {:request-id "request-test"} :token "test-token"}
           context (util/lazy-assoc context-temp :user-id "test-user")]
-      (is (= "test-user" (context/context->user-id context))))))
+      (is (= "test-user" (context/context->user-id context)))))
+  (testing "Testing getting user id without token"
+    (let [context (util/lazy-assoc {} :user-id "testing")]
+      (is (thrown? ExceptionInfo (context/context->user-id context))))))

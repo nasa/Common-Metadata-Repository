@@ -368,7 +368,7 @@
                                    (and (= :granule (:concept-type c))
                                         (= provider-id (:provider-id c))
                                         (= native-id (:native-id c)))))
-                          (sort-by :revisoin-id)
+                          (sort-by :revision-id)
                           last)
         {:keys [concept-id deleted]} matched-gran
         parent-collection-id (get-in matched-gran [:extra-fields :parent-collection-id])]

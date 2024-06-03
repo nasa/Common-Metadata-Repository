@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.search.variable.variable-search-test
   "This tests searching variables."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.common.util :refer [are3]]
    [cmr.mock-echo.client.echo-util :as e]
    [cmr.system-int-test.data2.core :as d]
@@ -9,7 +9,6 @@
    [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
    [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
    [cmr.system-int-test.system :as s]
-   [cmr.system-int-test.utils.association-util :as au]
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.metadata-db-util :as mdb]
@@ -77,11 +76,11 @@
                                       "PROV1"
                                       (data-umm-c/collection n {})
                                       {:token token})))
-        [coll4 coll5 coll6] (doall (for [n (range 1 4)]
-                                     (d/ingest-umm-spec-collection
-                                      "PROV2"
-                                      (data-umm-c/collection n {})
-                                      {:token token})))
+        [coll4 coll5] (doall (for [n (range 1 3)]
+                               (d/ingest-umm-spec-collection
+                                "PROV2"
+                                (data-umm-c/collection n {})
+                                {:token token})))
         _ (index/wait-until-indexed)
         var1-concept (variables/make-variable-concept
                       {:Name "Variable1"
@@ -308,6 +307,14 @@
       [variable1 variable3]
       {:keyword "variable1"}
 
+      "By keyword match variable concept id"
+      [variable1]
+      {:keyword (:concept-id variable1)}
+
+      "By keyword match instance information format"
+      [variable1]      
+      {:keyword "Zarr"}
+
       "By keyword match associated collection"
       [variable1]
       {:keyword (:concept-id coll1)}
@@ -400,11 +407,11 @@
                                            :VariableLevel3 "Level3-3"
                                            :DetailedVariable "S@PER"})
         token (e/login (s/context) "user1")
-        [coll1 coll2 coll3] (doall (for [n (range 1 4)]
-                                     (d/ingest-umm-spec-collection
-                                      "PROV1"
-                                      (data-umm-c/collection n {})
-                                      {:token token})))
+        [coll1 coll2] (doall (for [n (range 1 3)]
+                               (d/ingest-umm-spec-collection
+                                "PROV1"
+                                (data-umm-c/collection n {})
+                                {:token token})))
         _ (index/wait-until-indexed)
         var1-concept (variables/make-variable-concept
                       {:Name "Variable1"
@@ -418,11 +425,6 @@
                        :ScienceKeywords [sk3]}
                       {:native-id "var2"
                        :coll-concept-id (:concept-id coll2)})
-        var3-concept (variables/make-variable-concept
-                      {:Name "a subsitute for variable2"
-                       :LongName "variable1"}
-                      {:native-id "var3"
-                       :coll-concept-id (:concept-id coll3)})
         var1-scienceKeywords {:science-keywords [{:category "Cat1",
                                              :topic "Topic1",
                                              :term "Term1",
@@ -451,11 +453,7 @@
         variable2 (variables/ingest-variable-with-association var2-concept)
         associations2 {:associations {:collections [(:concept-id coll2)]}
                        :association-details {:collections [{:concept-id (:concept-id coll2)}]}}
-        variable2 (merge variable2 associations2 var2-scienceKeywords definition)
-        variable3 (variables/ingest-variable-with-association var3-concept)
-        associations3 {:associations {:collections [(:concept-id coll3)]}
-                       :association-details {:collections [{:concept-id (:concept-id coll3)}]}}
-        variable3 (merge variable3 associations3 definition)]
+        variable2 (merge variable2 associations2 var2-scienceKeywords definition)]
     (index/wait-until-indexed)
 
     (are3 [expected-variables keyword]
@@ -633,8 +631,9 @@
                     _ (ingest/delete-concept coll1-concept)]
                 (index/wait-until-indexed)
 
-                ;; Now the variable is deleted through collection deletion.
-                (is (= 0 (get-in (search/find-concepts-umm-json
+                ;; Now the variable association is deleted through collection deletion.
+                ;; but the variable still exists.
+                (is (= 1 (get-in (search/find-concepts-umm-json
                                    :variable {:keyword updated-long-name})
                                  [:results :hits])))))))))))
 

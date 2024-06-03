@@ -6,8 +6,6 @@
    [clojure.string :as string]
    [cmr.acl.core :as acl]
    [cmr.common-app.api.enabled :as common-enabled]
-   [cmr.common-app.api.launchpad-token-validation :as lt-validation]
-   [cmr.common-app.services.ingest.subscription-common :as sub-common]
    [cmr.common.concepts :as concepts]
    [cmr.common.log :refer [debug info warn error]]
    [cmr.common.services.errors :as errors]
@@ -19,7 +17,6 @@
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db :as mdb]
-   [cmr.transmit.metadata-db2 :as mdb2]
    [cmr.transmit.search :as search]
    [cmr.transmit.urs :as urs])
   (:import
@@ -322,7 +319,7 @@
     (let [parsed-metadata (assoc parsed :SubscriberId subscriber-id)]
       {:concept (assoc sub-concept
                        :metadata (json/generate-string parsed-metadata)
-                       :normalized-query (sub-common/normalize-parameters (:Query parsed))
+                       :normalized-query (util/normalize-parameters (:Query parsed))
                        :subscription-type (or (:Type parsed) "granule")
                        :provider-id provider-id)
        :parsed parsed-metadata})))
