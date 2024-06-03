@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.validation.util
+(ns cmr.metadata-db.services.validation.util
   "General validators"
   (:require
    [cmr.common.services.errors :as errors]))

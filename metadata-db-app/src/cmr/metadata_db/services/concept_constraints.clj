@@ -7,7 +7,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.metadata-db.data.concepts :as c]
    [cmr.metadata-db.services.messages :as msg]
-   [cmr.umm-spec.validation.util :as v-util])
+   [cmr.metadata-db.services.validation.util :as v-util])
   (:import
    (clojure.lang Keyword)))
 
