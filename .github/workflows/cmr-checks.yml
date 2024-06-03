@@ -19,3 +19,19 @@ jobs:
           rm -rf token-service-client
       - name: Count Lines of Code (cloc)
         uses: djdefi/cloc-action@5
+  kondo:
+    runs-on: checkout
+    steps:
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: Run Kondo Report
+        run: |
+          docker run \
+            -v $PWD/src:/src \
+            --r cljkondo/clj-kondo \
+            clj-kondo --parallel --lint src > report.log
+      - name: Report
+        users: actions/upload-artifact@v4
+        with:
+          name: Kondo-Report.txt
+          path: report.log
