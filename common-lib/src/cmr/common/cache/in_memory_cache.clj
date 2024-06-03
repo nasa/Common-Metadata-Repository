@@ -5,14 +5,16 @@
     https://github.com/clojure/core.cache/wiki/Using"
   (:require
    [clojure.core.cache :as cc :refer [defcache]]
-   [cmr.common.cache :as c]
+   [cmr.common.cache :as cache]
    [cmr.common.log :refer [debug error]]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer])
   (:import
    (clojure.core.cache CacheProtocol)))
 
-(defmulti size-in-bytes class)
+(defmulti size-in-bytes
+  "Calculate the storage size for different types of data."
+  class)
 
 (defmethod size-in-bytes :default
   [x]
@@ -21,8 +23,8 @@
     (size-in-bytes (str x))
     (catch Exception e
       (error (str "A problem occurred calculating cache size. "
-                 "Cache usage estimates may be incorrect. "
-                 (.getMessage e)))
+                  "Cache usage estimates may be incorrect. "
+                  (.getMessage e)))
       1)))
 
 (defmethod size-in-bytes java.lang.Boolean
@@ -72,18 +74,18 @@
    ;; Atom containing an in memory cache
    cache-atom]
 
-  c/CmrCache
+  cache/CmrCache
   (get-keys
-    [this]
+    [_this]
     (keys @cache-atom))
 
   (key-exists
-    [this key]
+    [_this _key]
     ;; key is the cache-key. Checks to see if the cache has been setup.
     (some? @cache-atom))
 
   (get-value
-    [this key]
+    [_this key]
     (-> cache-atom
         (swap! (fn [cache]
                  (if (cc/has? cache key)
@@ -96,7 +98,7 @@
         (get key)))
 
   (get-value
-    [this key lookup-fn]
+    [_this key lookup-fn]
     (-> cache-atom
         (swap! (fn [cache]
                  (if (cc/has? cache key)
@@ -105,11 +107,11 @@
         (get key)))
 
   (reset
-    [this]
+    [_this]
     (reset! cache-atom initial-cache))
 
   (set-value
-    [this key value]
+    [_this key value]
     (swap! cache-atom assoc key value))
 
   (cache-size
@@ -117,19 +119,6 @@
    (reduce + 0 (map size-in-bytes (vals @cache-atom)))))
 
 (record-pretty-printer/enable-record-pretty-printing InMemoryCache)
-
-(defmulti create-core-cache
-  "Create a cache using cmr.core-cache of the given type."
-  (fn [type value opts]
-    type))
-
-(defmethod create-core-cache :default
-  [type value opts]
-  (cc/basic-cache-factory value))
-
-(defmethod create-core-cache :lru
-  [type value opts]
-  (apply cc/lru-cache-factory value (flatten (seq opts))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Time To Live Cache
@@ -139,10 +128,12 @@
 ;; Clojure itself)
 
 (defn- key-killer
+  "drops expired keys"
   [ttl expiry now]
   (let [ks (map key (filter #(> (- now (val %)) expiry) ttl))]
     #(apply dissoc % ks)))
 
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defcache TTLCache [cache ttl ttl-ms]
   CacheProtocol
   (lookup [this item]
@@ -192,9 +183,17 @@
 ;; End of copy
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmethod create-core-cache :ttl
-  [type value opts]
-  (apply ttl-cache-factory value (flatten (seq opts))))
+(defn create-core-cache
+  "Create a cache using cmr.core-cache of the given type."
+  [cache-type value opts]
+  (case cache-type
+    :lru
+    (apply cc/lru-cache-factory value (flatten (seq opts)))
+
+    :ttl
+    (apply ttl-cache-factory value (flatten (seq opts)))
+
+    (cc/basic-cache-factory value)))
 
 (defn create-in-memory-cache
   "Create in memory cache with different cache types for the internal cache.

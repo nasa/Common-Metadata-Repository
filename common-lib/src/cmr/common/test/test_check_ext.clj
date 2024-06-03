@@ -1,7 +1,8 @@
 (ns cmr.common.test.test-check-ext
+  "Testing functions used by many tests, but mostly by umm and spatial test code"
   (:require
-   [clj-time.coerce :as c]
-   [clojure.string :as s]
+   [clj-time.coerce :as c-coerce]
+   [clojure.string :as string]
    [clojure.pprint]
    [clojure.test]
    [clojure.test.check :as test-check]
@@ -9,6 +10,7 @@
    [clojure.test.check.generators :as gen]
    [clojure.test.check.properties :as prop]
    [com.gfredericks.test.chuck.clojure-test :as chuck])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import java.util.Random))
 
 (defn require-proto-repl-saved-values
@@ -21,13 +23,13 @@
 (defn save-last-failed-values
   "Saves the bindings map captured from the given namespace into the Proto REPL saved values atom so
    it can be displayed like normal saved values."
-  [name current-ns bindings-map]
+  [key-name current-ns bindings-map]
   (when (find-ns 'proto-repl.saved-values)
     (let [saved-values-atom (var-get (find-var 'proto-repl.saved-values/saved-values-atom))
           saved-values {:id (.toString (java.util.UUID/randomUUID))
                         :the-ns current-ns
                         :values bindings-map}]
-      (swap! saved-values-atom assoc name [saved-values]))))
+      (swap! saved-values-atom assoc key-name [saved-values]))))
 
 (defn binding-values
   "Macro helper. Takes a binding vector and returns a map of code to quote the binding name to
@@ -37,7 +39,7 @@
              [`(quote ~binding-name) binding-name])))
 
 (defmacro qc-and-report-exception
-  [name final-reports tests bindings & body]
+  [key-name final-reports tests bindings & body]
   `(chuck/report-exception-or-shrunk
     (test-check/quick-check
       ~tests
@@ -48,15 +50,15 @@
           ;; CODE Added to original qc-and-report-exception function
           ;; Saves the values into the Proto REPL saved values atom so they can be displayed.
           (when-not (chuck/pass? reports#)
-            (save-last-failed-values ~name (symbol (str *ns*)) ~(binding-values bindings)))
+            (save-last-failed-values ~key-name (symbol (str *ns*)) ~(binding-values bindings)))
 
           (chuck/pass? reports#))))))
 
 (defmacro qc-and-report-exception-with-seed
-  "This macro re-runs a failed test so that it can capture the information to produce a failed test report.
-   The only difference between this function and the one above is that this one uses a seed value so that
-   the generated values of a UMM record are repeatable."
-  [name seed final-reports tests bindings & body]
+  "This macro re-runs a failed test so that it can capture the information to produce a failed test
+   report. The only difference between this function and the one above is that this one uses a seed
+   value so that the generated values of a UMM record are repeatable."
+  [key-name seed final-reports tests bindings & body]
   `(chuck/report-exception-or-shrunk
     (test-check/quick-check
       ~tests
@@ -67,14 +69,14 @@
           ;; CODE Added to original qc-and-report-exception function
           ;; Saves the values into the Proto REPL saved values atom so they can be displayed.
           (when-not (chuck/pass? reports#)
-            (save-last-failed-values ~name (symbol (str *ns*)) ~(binding-values bindings)))
+            (save-last-failed-values ~key-name (symbol (str *ns*)) ~(binding-values bindings)))
 
           (chuck/pass? reports#)))
       :seed ~seed)))
 
 (defmacro checking
-  "Copied from com.gfredericks.test.chuck.clojure-test so that we can add code to capture the generated
-   values.
+  "Copied from com.gfredericks.test.chuck.clojure-test so that we can add code to capture the
+   generated values.
 
   ORIGINAL DESCRIPTION:
   A macro intended to replace the testing macro in clojure.test with a
@@ -82,21 +84,23 @@
   generative, you simply have to change it to
   (checking \"doubling\" 100 [x gen/int] (is (= (* 2 x) (+ x x)))).
 
-  For more details on this code, see http://blog.colinwilliams.name/clojure/testing/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check.html"
-  [name tests bindings & body]
+  For more details on this code, see
+   https://blog.colinwilliams.name/clojure/testing/2015/01/26/
+      alternative-clojure-dot-test-integration-with-test-dot-check.html"
+  [key-name tests bindings & body]
   `(do
      (require-proto-repl-saved-values)
      (chuck/-testing
-      ~name
+      ~key-name
       (fn []
         (let [final-reports# (atom [])]
-          (qc-and-report-exception ~name final-reports# ~tests ~bindings ~@body)
+          (qc-and-report-exception ~key-name final-reports# ~tests ~bindings ~@body)
           (doseq [r# @final-reports#]
             (chuck/-report r#)))))))
 
 (defmacro checking-with-seed
-  "Copied from com.gfredericks.test.chuck.clojure-test so that we can add code to capture the generated
-   values.
+  "Copied from com.gfredericks.test.chuck.clojure-test so that we can add code to capture the
+   generated values.
 
   ORIGINAL DESCRIPTION:
   A macro intended to replace the testing macro in clojure.test with a
@@ -104,15 +108,17 @@
   generative, you simply have to change it to
   (checking \"doubling\" 100 [x gen/int] (is (= (* 2 x) (+ x x)))).
 
-  For more details on this code, see http://blog.colinwilliams.name/clojure/testing/2015/01/26/alternative-clojure-dot-test-integration-with-test-dot-check.html"
-  [name tests seed bindings & body]
+  For more details on this code, see
+   http://blog.colinwilliams.name/clojure/testing/2015/01/26/
+       alternative-clojure-dot-test-integration-with-test-dot-check.html"
+  [key-name tests seed bindings & body]
   `(do
      (require-proto-repl-saved-values)
      (chuck/-testing
-      ~name
+      ~key-name
       (fn []
         (let [final-reports# (atom [])]
-          (qc-and-report-exception-with-seed ~name ~seed final-reports# ~tests ~bindings ~@body)
+          (qc-and-report-exception-with-seed ~key-name ~seed final-reports# ~tests ~bindings ~@body)
           (doseq [r# @final-reports#]
             (chuck/-report r#)))))))
 
@@ -123,24 +129,28 @@
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; The following two functions were copy and pasted from the clojure test.check library to fix a small
-;; issue relating to the printing out of failed specs.
+;; The following two functions were copy and pasted from the clojure test.check library to fix a
+;; small issue relating to the printing out of failed specs.
 ;; See http://dev.clojure.org/jira/browse/TCHECK-18
-;; I have also changed the argument just after name, options, to be a map of options that can be passed in.
+;; I have also changed the argument just after name, options, to be a map of options that can be
+;; passed in.
 
-(def ^:dynamic  *default-test-count* 100)
+(def ^:dynamic *default-test-count* "limit on tests" 100)
 
 (defn print-value-in-comment
-  "Prints a clojure value to the repl inside a comment block. This helps with code formatting in Sublime"
+  "Prints a clojure value to the repl inside a comment block. This helps with code formatting in
+   Sublime"
   [v]
   (println (pr-str (list 'comment v))))
 
 (defn print-failing-value
+  "wrapper for print-value-in-comment"
   [_ & v]
   (print-value-in-comment (concat (list 'def 'failing-value) v)))
 
 (defn- assert-check
-  [{:keys [result shrunk fail] :as m} {:keys [printer-fn]}]
+  "does an assert check, prints out values"
+  [{:keys [result shrunk] :as m} {:keys [printer-fn]}]
   (let [printer-fn (or printer-fn print-failing-value)]
 
     (print-value-in-comment m)
@@ -167,19 +177,20 @@
   * times: The number of times to run the test.
   * printer-fn: A function that will be called with the first failure and the shrunken failure to
   print out extra information."
-  ([name property]
-   `(defspec ~name {:times ~*default-test-count*} ~property))
+  ([key-name property]
+   `(defspec ~key-name {:times ~*default-test-count*} ~property))
 
-  ([name options property]
+  ([key-name options property]
    (let [options (if (number? options)
                    {:times options}
                    options)
          {:keys [times]} options]
      `(do
-        (defn ~(vary-meta name assoc
+        (defn ~(vary-meta key-name assoc
                           ::defspec true
-                          :test `#(#'cmr.common.test.test-check-ext/assert-check (assoc (~name) :test-var (str '~name)) ~options))
-          ([] (~name ~times))
+                          :test `#(#'cmr.common.test.test-check-ext/assert-check
+                                   (assoc (~key-name) :test-var (str '~key-name)) ~options))
+          ([] (~key-name ~times))
           ([times# & {:keys [seed# max-size#] :as quick-check-opts#}]
            (apply
              clojure.test.check/quick-check
@@ -190,8 +201,6 @@
 
 ;; END OF DEPRECATED
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-
-
 
 (defn optional
   "Returns either nil or the given generator. This should be used for optional
@@ -220,21 +229,23 @@
             g))
 
 (defn choose-double
-  "Creates a generator that returns values between lower and upper inclusive. Min and max values must
-  integers and the must be separated by more than 2."
+  "Creates a generator that returns values between lower and upper inclusive. Min and max values
+   must integers and the must be separated by more than 2."
   [minv maxv]
   {:pre [(< minv maxv)
          (> (Math/abs (double (- maxv minv))) 2)
          (= (int maxv) maxv)
          (= (int minv) minv)]}
   (gen/fmap (fn [[i denominator]]
-              ;; Adds an integer to a fractional component. The fractional component should shrink to 0
+              ;; Adds an integer to a fractional component. The fractional component should shrink
+              ;; to 0
               (+ i (/ 1.0 denominator)))
             (gen/tuple (gen/choose (inc minv) (dec maxv))
                        (gen/such-that (complement zero?) gen/int))))
 
 (defn- not-whitespace
-  "Takes a string generator and returns a new string generator that will not contain only whitespace"
+  "Takes a string generator and returns a new string generator that will not contain only
+   whitespace"
   [generator]
   (gen/such-that #(not (re-matches #"^\s+$" %)) generator))
 
@@ -243,18 +254,20 @@
   ([]
    gen/string-ascii)
   ([min-size max-size]
-   (not-whitespace (gen/fmap s/join (gen/vector gen/char-ascii min-size max-size)))))
+   (not-whitespace (gen/fmap string/join (gen/vector gen/char-ascii min-size max-size)))))
 
 (defn string-alpha-numeric
-  "Like the clojure.test.check.generators/string-alpha-numeric but allows a min and max length to be set"
+  "Like the clojure.test.check.generators/string-alpha-numeric but allows a min and max length to be
+   set"
   ([]
-   gen/string-alpha-numeric)
+   gen/string-alphanumeric)
   ([min-size max-size]
-   (gen/fmap s/join (gen/vector gen/char-alpha-numeric min-size max-size))))
+   (gen/fmap string/join (gen/vector gen/char-alphanumeric min-size max-size))))
 
 (def date-time
-  "A generator that will return a Joda DateTime between 1970-01-01T00:00:00.000Z and 2114-01-01T00:00:00.000Z"
-  (gen/fmap c/from-long (gen/choose 0 4544208000000)))
+  "A generator that will return a Joda DateTime between 1970-01-01T00:00:00.000Z and
+   2114-01-01T00:00:00.000Z"
+  (gen/fmap c-coerce/from-long (gen/choose 0 4544208000000)))
 
 (def http-schemes
   "Some URL schemes."
@@ -273,7 +286,7 @@
   (gen/fmap (fn [[scheme domain domain-ext file-name-base file-ext]]
               (str scheme "://" domain "." domain-ext "/" file-name-base "." file-ext))
             (gen/tuple http-schemes
-                       (gen/not-empty gen/string-alpha-numeric)
+                       (gen/not-empty gen/string-alphanumeric)
                        domain-exts
-                       (gen/not-empty gen/string-alpha-numeric)
+                       (gen/not-empty gen/string-alphanumeric)
                        file-exts)))

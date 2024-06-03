@@ -3,6 +3,7 @@
   The original implementation is in clojurewerkz.elastisch.rest.bulk namespace.")
 
 (def ^:private special-operation-keys
+  "keys with preassigned operations assigned to them"
   [:_index :version :version_type :_id :_routing :_percolate :_parent :_timestamp :_ttl])
 
 (defn index-operation
@@ -20,8 +21,8 @@
 
 (defn create-bulk-index-operations
   "generates the content for a bulk insert operation.  Elasticsearch's bulk operations take a
-  series of lines of index information and documents to updates interleaved. This functions expects
-  that the document will contain the index information. It extracts the index keys from each document
-  and returns a sequence of index info, document, index info, document..., etc."
+   series of lines of index information and documents to updates interleaved. This functions expects
+   that the document will contain the index information. It extracts the index keys from each
+   document and returns a sequence of index info, document, index info, document..., etc."
   ([documents]
    (mapcat index-operation documents)))

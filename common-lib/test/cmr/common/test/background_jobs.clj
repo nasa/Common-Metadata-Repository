@@ -1,7 +1,7 @@
 (ns cmr.common.test.background-jobs
   "Contains tests for background jobs"
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.background-jobs :as background-jobs]
    [cmr.common.lifecycle :as lifecycle]))
 

@@ -6,8 +6,8 @@
    [cheshire.core :as json]
    [clojure.edn :as edn]
    [clojure.set :as set]
-   [clojure.string :as str]
-   [cmr.common.log :as log :refer [debug info warn error]]
+   [clojure.string :as string]
+   [cmr.common.log :as log :refer [warn]]
    [environ.core :as environ]))
 
 (defonce ^{:private true
@@ -21,8 +21,8 @@
   "Sets a config value at runtime. This allows overriding values at runtime without having to
   specify it as a env variable. Prefer using the generated setter methods from defconfig over
   this method of setting values."
-  [name value]
-  (swap! runtime-config-values #(assoc % name value))
+  [value-name value]
+  (swap! runtime-config-values #(assoc % value-name value))
   nil)
 
 (defn reset-config-values
@@ -47,14 +47,13 @@
   must be specified for parsing the value out of the environment variable. Do not call this function
   directly. Use defconfig instead."
   [config-name default-value parser-fn]
-  (let [parser-fn (or parser-fn identity)]
-    (let [override-value (get @runtime-config-values config-name)
-          parsed-env-value (some-> (env-var-value (config-name->env-name config-name))
-                               parser-fn)]
+  (let [parser-fn (or parser-fn identity)
+        override-value (get @runtime-config-values config-name)
+        parsed-env-value (some-> (env-var-value (config-name->env-name config-name)) parser-fn)]
       (cond
         (some? parsed-env-value) parsed-env-value
         (some? override-value) override-value
-        :else default-value))))
+        :else default-value)))
 
 (defonce ^{:doc "This contains information about all of the
                  configuration parameters that have been added using
@@ -77,16 +76,17 @@
   (println
     (str
       "Configuration Documentation\n"
-      (str/join
+      (string/join
         "\n"
         ;; Print out the documentation in namespace order
         (for [[config-namespace sub-map] (sort-by first @configs-atom)]
           (str
             "\n-- " config-namespace " --\n"
-            (str/join
+            (string/join
               "\n"
               ;; Within a namespace print it out in config key order
-              (for [[config-key {:keys [default doc-string parser] config-type :type}] (sort-by first sub-map)
+              (for [[config-key {:keys [default doc-string parser] config-type :type}]
+                    (sort-by first sub-map)
                     :let [env-name (config-name->env-name config-key)
                           current (config-value* config-key default parser)
                           type-name (if (class? config-type)
@@ -177,7 +177,8 @@
              doc-string-value# ~doc-string]
 
          ;; Check that the type of the default value matches the type specified
-         ;; This has to be done here to allow for the default value to be the result of calling a function
+         ;; This has to be done here to allow for the default value to be the result of calling a
+         ;; function
          (when (and (nil? ~parser)
                     (not= :edn ~config-type)
                     (some? default-value#)
@@ -192,7 +193,8 @@
                           ~(assoc options
                                   ;; Assoc in type to show default of string in docs.
                                   :type config-type
-                                  ;; Assoc in parser so that the parser will be used when printing values.
+                                  ;; Assoc in parser so that the parser will be used when printing
+                                  ;; values.
                                   :parser parser-fn))
 
          ;; Create the getter
@@ -245,15 +247,15 @@
 (defconfig generic-ingest-disabled-list
   "This is a toggle to prevent specified generic concepts from being ingested into CMR,
    Should be an array of keys with the name of the schema to be blocked from ingest.
-   Example  \"grid,order-option\", would prevent grids and order options from being ingested into CMR
-   if no concepts should be blocked from ingest set to an empty array"
+   Example  \"grid,order-option\", would prevent grids and order options from being ingested into
+   CMR if no concepts should be blocked from ingest set to an empty array"
   {:default []
-   :parser #(map (comp keyword str/trim) (str/split % #","))})
+   :parser #(map (comp keyword string/trim) (string/split % #","))})
 
 (defn check-env-vars
-  "Checks any environment variables starting with CMR_ are recognized as known environment variables.
-  If any are unrecognized a warning message is logged. Usually this should be called at the start
-  of an application when it first starts up. "
+  "Checks any environment variables starting with CMR_ are recognized as known environment
+   variables. If any are unrecognized a warning message is logged. Usually this should be called at
+   the start of an application when it first starts up."
   ([]
    (check-env-vars environ/env))
   ([env-var-map]
@@ -266,7 +268,8 @@
          unknown-vars (set/difference (set cmr-env-vars) (set known-env-vars))]
      (if (seq unknown-vars)
        (do
-         (warn "POTENTIAL CONFIGURATION ERROR: The following CMR Environment variables were configured but were not recognized:"
+         (warn (str "POTENTIAL CONFIGURATION ERROR: The following CMR Environment variables were "
+                    "configured but were not recognized:")
                (pr-str unknown-vars))
          true)
        false))))

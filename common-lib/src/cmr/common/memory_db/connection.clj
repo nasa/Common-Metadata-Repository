@@ -19,8 +19,8 @@
   (reverse (sort-by :revision-id (:concepts-atom opts))))
 
 (defn init-next-id
-  [opts]
   "Initialize the provided next-id."
+  [opts]
   (dec (:next-id-atom opts)))
 
 (defn init-next-transaction-id
@@ -62,14 +62,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
 (defn start
-  [this system]
+  "Lifecycle start"
+  [this _system]
   this)
 
 (defn stop
-  [this system]
+  "Lifecycle stop"
+  [this _system]
   this)
 
 (def behaviour
+  "Lifecycles to act on"
   {:start start
    :stop stop})
 

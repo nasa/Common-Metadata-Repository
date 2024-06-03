@@ -1,8 +1,8 @@
 (ns cmr.common.date-time-range-parser
   "Contains helper functions to parse datetime range string to clj-time interval"
-  (:require [cmr.common.services.messages :as msg]
-            [clj-time.core :as t]
-            [cmr.common.date-time-parser :as dtp]))
+  (:require
+   [cmr.common.services.messages :as msg]
+   [cmr.common.date-time-parser :as dtp]))
 
 (defn- parse-iso-datetime-range
   "Parse an ISO 8601 time interval"

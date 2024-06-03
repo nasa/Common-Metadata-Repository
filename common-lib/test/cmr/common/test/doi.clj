@@ -1,7 +1,7 @@
 (ns cmr.common.test.doi
   "Unit test DOI functions."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.doi :as doi]))
 
 (def cmr-base-url "http://cmr.test.host/")

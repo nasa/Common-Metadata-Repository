@@ -1,8 +1,10 @@
 (ns cmr.common.test.date-time-range-parser
   "Contains tests for date-time-range-parser"
-  (:require [clojure.test :refer :all]
-            [cmr.common.date-time-range-parser :as p]
-            [clj-time.core :as t])
+  (:require
+   [clj-time.core :as t]
+   [clojure.test :refer [are deftest testing]]
+   [cmr.common.date-time-range-parser :as p])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import clojure.lang.ExceptionInfo))
 
 (defn- to-utc

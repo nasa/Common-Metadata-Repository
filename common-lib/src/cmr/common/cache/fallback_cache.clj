@@ -27,7 +27,7 @@
   needed rather than just a lookup function."
   (:require
    [clojure.set :as set]
-   [cmr.common.cache :as c]
+   [cmr.common.cache :as cache]
    [cmr.common.dev.record-pretty-printer :as record-pretty-printer]))
 
 (defrecord FallbackCache
@@ -37,50 +37,50 @@
    ;; CmrCache protocol.
    backup-cache]
 
-  c/CmrCache
+  cache/CmrCache
   (get-keys
-    [this]
+    [_this]
     ;; Returns any keys present in either the primary or backup store.
-    (set/union (set (c/get-keys primary-cache))
-               (set (c/get-keys backup-cache))))
+    (set/union (set (cache/get-keys primary-cache))
+               (set (cache/get-keys backup-cache))))
 
   (key-exists
-    [this key]
+    [_this key]
     ;; key is the cache-key. Checks to see if the cache has been setup.
-    (c/key-exists primary-cache key))
+    (cache/key-exists primary-cache key))
 
   (get-value
-    [this key]
-    (let [c-value (c/get-value primary-cache key)]
+    [_this key]
+    (let [c-value (cache/get-value primary-cache key)]
       (if (nil? c-value)
-        (when-let [value (c/get-value backup-cache key)]
-          (c/set-value primary-cache key value)
+        (when-let [value (cache/get-value backup-cache key)]
+          (cache/set-value primary-cache key value)
           value)
         c-value)))
 
   (get-value
     [this key lookup-fn]
-    (let [c-value (c/get-value this key)]
+    (let [c-value (cache/get-value this key)]
       (if (nil? c-value)
         (when-let [value (lookup-fn)]
-          (c/set-value this key value)
+          (cache/set-value this key value)
           value)
         c-value)))
 
   (reset
-    [this]
-    (c/reset primary-cache)
-    (c/reset backup-cache))
+    [_this]
+    (cache/reset primary-cache)
+    (cache/reset backup-cache))
 
   (set-value
-    [this key value]
-    (c/set-value backup-cache key value)
-    (c/set-value primary-cache key value))
-  
+    [_this key value]
+    (cache/set-value backup-cache key value)
+    (cache/set-value primary-cache key value))
+
   (cache-size
    [_]
-   (+ (c/cache-size primary-cache)
-      (c/cache-size backup-cache))))
+   (+ (cache/cache-size primary-cache)
+      (cache/cache-size backup-cache))))
 
 (record-pretty-printer/enable-record-pretty-printing FallbackCache)
 

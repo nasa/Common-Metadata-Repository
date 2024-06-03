@@ -1,46 +1,47 @@
 (ns cmr.common.test.mime-types
   "Tests for mime-type functions."
   (:require
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.test :refer [are deftest is testing]]
    [cmr.common.mime-types :as mt]
-   [cmr.common.util :refer [are2]]))
+   [cmr.common.util :refer [are3]]))
 
 ;; Tests various times when the content type should be used when extracting mime types from headers
 (deftest mime-type-from-headers-test
   (testing "accept header"
-    (are2
-      [headers mime-type]
-      (= mime-type (mt/accept-mime-type headers))
+    (are3
+     [headers mime-type]
+     (is (= mime-type (mt/accept-mime-type headers)))
 
-      "extract first preferred valid mime type"
-      {"accept" "text/foo, application/json"} mt/json
+     "extract first preferred valid mime type"
+     {"accept" "text/foo, application/json"} mt/json
 
-      "accept parameters are ignored"
-      {"accept" "application/xml; q=1"} mt/xml
+     "accept parameters are ignored"
+     {"accept" "application/xml; q=1"} mt/xml
 
-      "nil if no accept header"
-      {"content-type" "application/xml; q=1"} nil
+     "nil if no accept header"
+     {"content-type" "application/xml; q=1"} nil
 
-      "nil if no acceptable type"
-      {"accept" "text/foo, application/foo"} nil
+     "nil if no acceptable type"
+     {"accept" "text/foo, application/foo"} nil
 
-      "*/* header is ignored"
-      {"accept" "*/*"} nil))
+     "*/* header is ignored"
+     {"accept" "*/*"} nil))
 
   (testing "content type header"
-    (are2
-      [headers mime-type]
-      (= mime-type (mt/content-type-mime-type headers))
-      "parameters are ignored"
-      {"content-type" "application/xml; q=1"} mt/xml
+    (are3
+     [headers mime-type]
+     (is (= mime-type (mt/content-type-mime-type headers)))
 
-      "nil if no content-type header"
-      {"accept" "application/xml; q=1"} nil
+     "parameters are ignored"
+     {"content-type" "application/xml; q=1"} mt/xml
 
-      "nil if no acceptable type"
-      {"content-type" "text/html2, application/foo"} nil)))
+     "nil if no content-type header"
+     {"accept" "application/xml; q=1"} nil
 
+     "nil if no acceptable type"
+     {"content-type" "text/html2, application/foo"} nil)))
+
+#_{:clj-kondo/ignore [:unresolved-var]}
 (deftest convert-format-extension-to-mime-type
   (testing "valid extensions"
     (is (= mt/json (mt/path->mime-type "granules.json")))
@@ -99,7 +100,8 @@
   (is (= "application/foo" (mt/keep-version "application/foo")))
   (is (= "application/foo" (mt/keep-version "application/foo;bar=bat")))
   (is (= "application/foo;version=1.0" (mt/keep-version "application/foo; version=1.0")))
-  (is (= "application/foo;version=1.0" (mt/keep-version "application/foo; charset=utf-8; version=1.0"))))
+  (is (= "application/foo;version=1.0"
+         (mt/keep-version "application/foo; charset=utf-8; version=1.0"))))
 
 (deftest test-base-mime-type
   (is (= "application/foo" (mt/base-mime-type-of "application/foo;bar=bat")))

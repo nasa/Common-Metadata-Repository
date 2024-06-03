@@ -4,7 +4,7 @@
    [clj-time.core :as t]
    [cmr.common.config :as config :refer [defconfig]]
    [cmr.common.lifecycle :as l]
-   [cmr.common.log :as log :refer (debug info warn error)]
+   [cmr.common.log :as log :refer (info warn error)]
    [cmr.common.services.errors :as errors]
    [clojure.core.async :as async]
    ;; quartzite dependencies
@@ -128,14 +128,14 @@
 
 (defmulti create-trigger
   "Creates a trigger for the given job."
-  (fn [job-key job]
+  (fn [_job-key job]
     (cond
       (:interval job) :interval
       (:daily-at-hour-and-minute job) :daily-at-hour-and-minute
       :else :default)))
 
 (defmethod create-trigger :default
-  [job-key job]
+  [_job-key _job]
   (errors/internal-error!
     (str "Job could not be scheduled. One of :interval or "
          ":daily-at-hour-and-minute should be set.")))
@@ -266,7 +266,7 @@
       (errors/internal-error! "No jobs to schedule.")))
 
   (stop
-    [this system]
+    [this _system]
     (when (:running? this)
       ;; Shutdown and wait for jobs to complete
       (qs/shutdown qz-scheduler true)
@@ -275,17 +275,17 @@
   JobRunner
 
   (pause-jobs
-    [scheduler]
+    [_scheduler]
     (qs/pause-all! qz-scheduler)
     (info "Paused all scheduled jobs."))
 
   (resume-jobs
-    [scheduler]
+    [_scheduler]
     (qs/resume-all! qz-scheduler)
     (info "Resumed all scheduled jobs."))
 
   (paused?
-    [scheduler]
+    [_scheduler]
     (some? (seq (.getPausedTriggerGroups qz-scheduler)))))
 
 ;; A scheduler that does not track or run jobs
@@ -296,25 +296,25 @@
   l/Lifecycle
 
   (start
-    [this system]
+    [this _system]
     this)
 
   (stop
-    [this system]
+    [this _system]
     this)
 
   JobRunner
 
   (pause-jobs
-    [scheduler]
+    [_scheduler]
     (info "Ignoring request to pause jobs on non running scheduler."))
 
   (resume-jobs
-    [scheduler]
+    [_scheduler]
     (info "Ignoring request to resume jobs on non running scheduler."))
 
   (paused?
-    [scheduler]
+    [_scheduler]
     (info (str "Ignoring request to check if jobs are paused on non running "
                "scheduler."))
     false))

@@ -1,23 +1,24 @@
 (ns cmr.common.xml
   "Contains XML helpers for extracting data from XML structs created using clojure.data.xml.
   See the test file for examples."
-  (:require [cmr.common.date-time-parser :as p]
-            [cmr.common.services.errors :as errors]
-            [clojure.string :as string]
-            [clojure.java.io :as io])
-  (:import javax.xml.validation.SchemaFactory
-           javax.xml.XMLConstants
-           javax.xml.transform.stream.StreamSource
-           org.xml.sax.ext.DefaultHandler2
-           java.io.StringReader
-           java.io.StringWriter
-           org.w3c.dom.Node
-           org.w3c.dom.bootstrap.DOMImplementationRegistry
-           org.w3c.dom.ls.DOMImplementationLS
-           org.w3c.dom.ls.LSSerializer
-           org.xml.sax.InputSource
-           org.xml.sax.SAXParseException
-           javax.xml.parsers.DocumentBuilderFactory))
+  (:require
+   [clojure.string :as string]
+   [cmr.common.date-time-parser :as p])
+  #_{:clj-kondo/ignore [:unused-import]}
+  (:import
+   javax.xml.validation.SchemaFactory
+   javax.xml.XMLConstants
+   javax.xml.transform.stream.StreamSource
+   org.xml.sax.ext.DefaultHandler2
+   java.io.StringReader
+   java.io.StringWriter
+   org.w3c.dom.Node
+   org.w3c.dom.bootstrap.DOMImplementationRegistry
+   org.w3c.dom.ls.DOMImplementationLS
+   org.w3c.dom.ls.LSSerializer
+   org.xml.sax.InputSource
+   org.xml.sax.SAXParseException
+   javax.xml.parsers.DocumentBuilderFactory))
 
 (defn remove-xml-processing-instructions
   "Removes xml processing instructions from XML so it can be embedded in another XML document"
@@ -52,8 +53,9 @@
 
 (defn update-elements-at-path
   "Calls updater-fn with each element at the specified path. Replaces the element with the result of
-  calling the function. This has not been optimized for speed. Works by recursively replacing elements
-  that are the parents of the updated nodes. Calls updater-fn with the element and any supplied args."
+   calling the function. This has not been optimized for speed. Works by recursively replacing
+   elements that are the parents of the updated nodes. Calls updater-fn with the element and any
+   supplied args."
   [element path updater-fn & args]
   (if (zero? (count path))
     (apply updater-fn (cons element args))
@@ -95,9 +97,9 @@
   [xml-struct path]
   (map str (apply concat (contents-at-path xml-struct path))))
 
-(defn ^String string-at-path
+(defn string-at-path
   "Extracts a string from the given path in the XML structure."
-  [xml-struct path]
+  ^String [xml-struct path]
   (first (strings-at-path xml-struct path)))
 
 (defn long-at-path
@@ -121,7 +123,7 @@
     ;; allows them to be double. But we need them to be integers.
     (try
       (Integer. s)
-      (catch Exception e
+      (catch Exception _e
         s))))
 
 (defn bool-at-path
@@ -188,7 +190,7 @@
         registry (DOMImplementationRegistry/newInstance)
         ^DOMImplementationLS impl (.getDOMImplementation registry "LS")
         writer (.createLSSerializer impl)
-        dom-config (doto (.getDomConfig writer)
+        _dom-config (doto (.getDomConfig writer)
                      (.setParameter "format-pretty-print" true)
                      (.setParameter "xml-declaration" keep-declaration))
         output (doto (.createLSOutput impl)

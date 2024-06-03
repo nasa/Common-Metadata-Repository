@@ -1,9 +1,8 @@
 (ns cmr.common.parameter-parser
   "Contains helper functions to parse parameter strings."
-  (:require [cmr.common.services.errors :as errors]
-            [cmr.common.services.messages :as msg]
-            [cmr.common.date-time-parser :as dtp]
-            [cmr.common.date-time-range-parser :as dtrp]))
+  (:require
+   [cmr.common.services.messages :as msg]
+   [cmr.common.date-time-range-parser :as dtrp]))
 
 (defn range-parameter->map
   "Parses a range parameter in the form 'value' or 'min-value,max-value' where
@@ -27,11 +26,11 @@
   (try
     (let [value-map (if-let [[_ ^String start ^String stop]
                              (re-find #"^(.*),(.*)$" param-str)]
-                      {:min-value (when (not (empty? start)) (Double. start))
-                       :max-value (when (not (empty? stop)) (Double. stop))}
+                      {:min-value (when (seq start) (Double. start))
+                       :max-value (when (seq stop) (Double. stop))}
                       {:value (java.lang.Double. param-str)})]
       (into {} (filter second value-map))) ; remove nil values
-    (catch NumberFormatException e
+    (catch NumberFormatException _e
       (msg/data-error :invalid-data msg/invalid-numeric-range-msg param-str))))
 
 (defn numeric-range-string-validation
@@ -46,7 +45,7 @@
              (try
                (java.lang.Double. value)
                nil
-               (catch NumberFormatException e
+               (catch NumberFormatException _e
                  (msg/invalid-msg Double value))))
            (vals value-map))
       [(msg/invalid-numeric-range-msg range-str)])))

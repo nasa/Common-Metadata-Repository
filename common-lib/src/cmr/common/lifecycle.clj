@@ -1,4 +1,5 @@
-(ns cmr.common.lifecycle)
+(ns cmr.common.lifecycle
+  "Common lifecycle events for an application which starts services.")
 
 (defprotocol Lifecycle
   "Defines a component with a start and stop functions."
@@ -16,10 +17,10 @@
   ;; Make lifecycle work on everything by default.
   java.lang.Object
   (start
-    [this system]
+    [this _system]
     this)
   (stop
-    [this system]
+    [this _system]
     this)
 
   ;; Make it work on maps. Each value in the map will be started

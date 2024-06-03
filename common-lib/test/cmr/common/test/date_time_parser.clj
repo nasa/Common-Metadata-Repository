@@ -1,9 +1,9 @@
 (ns cmr.common.test.date-time-parser
   "Contains tests for date-time-parser"
-  (:require [clojure.test :refer :all]
-            [cmr.common.date-time-parser :as p]
-            [cmr.common.services.messages :as msg]
-            [clj-time.core :as t])
+  (:require
+   [clj-time.core :as t]
+   [clojure.test :refer [are deftest is testing]]
+   [cmr.common.date-time-parser :as p])
   (:import clojure.lang.ExceptionInfo))
 
 (deftest parse-datetime

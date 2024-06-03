@@ -3,12 +3,11 @@
   (:require
    [clojure.set :as set]
    [cmr.common.concepts :as cc]
-   [cmr.common.log :refer (debug info warn error)]
-   [cmr.common.util :as util]
    [cmr.metadata-db.data.concepts :as c]
    [cmr.metadata-db.services.messages :as msg]
    [cmr.metadata-db.services.provider-service :as provider-service]
-   [cmr.metadata-db.services.util :as db-util]))
+   [cmr.metadata-db.services.util :as db-util]
+   [cmr.metadata-db.services.validation.util :as v-util]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Validations for find concepts
@@ -79,11 +78,11 @@
 
 (def find-params-validation
   "Validates parameters for finding a concept."
-  (util/compose-validations [supported-parameter-combinations-validation]))
+  (v-util/compose-validations [supported-parameter-combinations-validation]))
 
 (def validate-find-params
   "Validates find parameters. Throws an error if invalid."
-  (util/build-validator :bad-request find-params-validation))
+  (v-util/build-validator :bad-request find-params-validation))
 
 (defn- find-providers-for-params
   "Find providers that match the given parameters. If no providers are specified we return all

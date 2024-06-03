@@ -6,18 +6,19 @@
 
   {\"keys\": [\"alt+super+a\"],
    \"command\": \"run_command_in_repl\",
-   \"args\": {\"command\": \"(def all-tests-future (future (cmr.common.test.runners.default/run-all-tests {:fail-fast? true :speak? true} )))\",
+   \"args\": {\"command\": \"(def all-tests-future
+                                  (future (cmr.common.test.runners.default/run-all-tests
+                                      {:fail-fast? true :speak? true} )))\",
               \"refresh_namespaces\": true}},
 
   Note that this functionality was originally provided in the `cmr.common.test.test-runner`
   namespace."
   (:require
-   [clojure.set :as set]
-   [clojure.test :as t]
+   [clojure.test :as test]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.dev.util :as du]
    [cmr.common.test.runners.util]
-   [cmr.common.util :as u]
+   [cmr.common.util :as util]
    [potemkin :refer [import-vars]]))
 
 (import-vars
@@ -36,7 +37,8 @@
   [namespaces parallel?]
   (let [map-fn (if parallel? pmap map)]
     (map-fn (fn [test-ns]
-              (let [[millis results] (u/time-execution (t/run-tests (find-ns (symbol test-ns))))]
+              (let [[millis results] (util/time-execution (test/run-tests
+                                                           (find-ns (symbol test-ns))))]
                 (assoc results
                        :took millis
                        :test-ns test-ns)))
@@ -111,6 +113,7 @@
     doall))
 
 (def last-test-results
+  "get a blank atom for the last results"
   (atom nil))
 
 (defn run-all-tests
@@ -118,8 +121,8 @@
   Options:
    * :speak? - set to true to speak 'success' or 'failure' after tests complete.
    * :fail-fast? - set to true to fail after the first failed test.
-   * :reset-fn - a function to call to perform a reset or wait for completion after tests are finished
-     before printing results.
+   * :reset-fn - a function to call to perform a reset or wait for completion after tests are
+     finished before printing results.
    * :unit-test-namespaces - Allows overriding which unit test namespaces to test
    * :integration-test-namespaces - Allows overriding which integration test namespaces to test"
   [options]
@@ -133,7 +136,7 @@
         test-results-handler (fail-fast?->test-results-handler fail-fast?)
         unittest-results (run-tests unit-test-namespaces (unit-test-parallel))
         inttest-results (run-tests integration-test-namespaces false)
-        [took test-results] (u/time-execution
+        [took test-results] (util/time-execution
                               (test-results-handler
                                 (concat unittest-results inttest-results)))]
     (reset! last-test-results test-results)

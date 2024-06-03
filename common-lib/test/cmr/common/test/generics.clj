@@ -1,7 +1,6 @@
 (ns cmr.common.test.generics
   (:require
-   [clojure.string :as string]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.generics :as gconfig]
    [cmr.common.util :as cutil]))
 

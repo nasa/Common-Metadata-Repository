@@ -1,4 +1,5 @@
 (ns cmr.common.test.runners.util
+  "Utilities for testing code"
   (:require
    [clojure.set :as set]
    [clojure.string :as string]))

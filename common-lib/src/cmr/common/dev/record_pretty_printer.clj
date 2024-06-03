@@ -1,18 +1,18 @@
 (ns cmr.common.dev.record-pretty-printer
   "Changes the way clojure records are pretty printed. Normally records that are pretty printed
-  do not include type information. This pretty prints the records as a map with a type field
-  that contains the object class type. It also prints out the fields in the order they are defined
-  in the record.
+   do not include type information. This pretty prints the records as a map with a type field
+   that contains the object class type. It also prints out the fields in the order they are defined
+   in the record.
 
-  This pretty printing capability is not enabled by default. It must be enabled for a type by calling
-  the enable-record-pretty-printing macro with the record type. This would typically be done directly
-  in the namespace after defining the record."
+   This pretty printing capability is not enabled by default. It must be enabled for a type by
+   calling the enable-record-pretty-printing macro with the record type. This would typically be
+   done directly in the namespace after defining the record."
   (:require [cmr.common.util :as util]
             [clojure.pprint :as pprint]))
 
 (defn mapify-record
   "Converts a record into a map with a :_type key containing a simple name of the key. The map keys
-  are ordered to match the order defined in the record"
+   are ordered to match the order defined in the record"
   ([r]
    (let [type-name (symbol (.getSimpleName ^Class (type r)))]
      (util/remove-nil-keys (into {} (assoc r :_type type-name)))))

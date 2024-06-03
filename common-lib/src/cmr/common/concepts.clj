@@ -1,11 +1,12 @@
 (ns cmr.common.concepts
   "This contains utility functions and vars related to concepts in the CMR"
-  (:require [clojure.set :as cset]
-            [clojure.string :as string]
-            [cmr.common.util :as util]
-            [cmr.common.generics :as common-generic]
-            [cmr.common.services.errors :as errors]
-            [inflections.core :as inf]))
+  (:require
+   [clojure.set :as cset]
+   [clojure.string :as string]
+   [cmr.common.generics :as common-generic]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.util :as util]
+   [inflections.core :as inf]))
 
 (def generic-concept-types->concept-prefix
   "Gets an array of generic concept types.
@@ -30,13 +31,11 @@
 
 (def get-generic-non-draft-concept-types-array
   "Gets all of the generic concept types that are not drafts."
-  (vec
-   (filter #(not (string/includes? % "draft")) (get-generic-concept-types-array))))
+  (filterv #(not (string/includes? % "draft")) (get-generic-concept-types-array)))
 
 (def get-draft-concept-types-array
   "Gets all of the generic concept types that are drafts."
-  (vec
-   (filter #(string/includes? % "draft") (get-generic-concept-types-array))))
+  (filterv #(string/includes? % "draft") (get-generic-concept-types-array)))
 
 (defn get-concept-type-of-draft
   "Gets the concept type of the document that is contained in the draft."
@@ -146,26 +145,43 @@
      (let [valid-prefixes (string/join "|" (keys concept-prefix->concept-type))
            regex (re-pattern (str "(" valid-prefixes ")\\d+-[A-Za-z0-9_]+"))]
        (when-not (re-matches regex concept-id)
-         [(format "%s [%s] is not valid." (-> param name string/capitalize) (util/html-escape concept-id))]))
-     [(format "%s [%s] is not valid." (-> param name string/capitalize) (util/html-escape concept-id))])))
+         [(format "%s [%s] is not valid."
+                  (-> param name string/capitalize)
+                  (util/html-escape concept-id))]))
+     [(format "%s [%s] is not valid."
+              (-> param name string/capitalize)
+              (util/html-escape concept-id))])))
+
+(defn- build-validator
+  "Creates a function that will call f with it's arguments. If f returns any
+   errors then it will throw a service error of the type given.
+   Note: this code is very similar to what is in cmr-umm-spec-lib but that library
+   can not be linked here without increasing dependency."
+  [error-type f]
+  (fn [& args]
+    (when-let [errors (apply f args)]
+      (when (seq errors)
+        (errors/throw-service-errors error-type errors)))))
 
 (def validate-concept-id
   "Validates a concept-id and throws an error if invalid"
-  (util/build-validator :bad-request concept-id-validation))
+  (build-validator :bad-request concept-id-validation))
 
 (defn concept-type-validation
-  "Validates a concept type is known. Returns an error if invalid. A string or keyword can be passed in."
+  "Validates a concept type is known. Returns an error if invalid. A string or keyword can be passed
+   in."
   [concept-type]
   (let [concept-type (cond
                        (string? concept-type) (keyword concept-type)
                        (keyword? concept-type) concept-type
-                       :else (errors/internal-error! (format "Received invalid concept-type [%s]" concept-type)))]
+                       :else (errors/internal-error! (format "Received invalid concept-type [%s]"
+                                                             concept-type)))]
     (when-not (concept-types concept-type)
       [(format "[%s] is not a valid concept type." (name concept-type))])))
 
 (def validate-concept-type
   "A function that will validate concept-type and thrown and exception if it's invalid"
-  (util/build-validator :bad-request concept-type-validation))
+  (build-validator :bad-request concept-type-validation))
 
 (defn parse-concept-id
   "Split a concept id into concept-type-prefix, sequence number, and provider id."

@@ -5,11 +5,11 @@
    [cmr.common.parameter-parser :as pp]
    [cmr.common.services.errors :as errors]))
 
-(def default-page-size 10)
+(def default-page-size "Default page size when non is given" 10)
 
-(def default-page-num 1)
+(def default-page-num "Default page number, the first one" 1)
 
-(def default-offset 0)
+(def default-offset "Default offset" 0)
 
 (defrecord Query
            [;; the concept type that is being queried.
@@ -88,8 +88,8 @@
    ;; Indicates if the search contains pattern matching expressions. Defaults to false.
             pattern?])
 
-
-;; Represents a search for multiple possible values on a single field. The values are essentially OR'd
+;; Represents a search for multiple possible values on a single field. The values are essentially
+;; OR'd
 (defrecord StringsCondition
            [;; The field being searched.
             field
@@ -309,20 +309,22 @@
   (map->NumericValueCondition {:field field :value value}))
 
 (defn numeric-range-condition
-  ([field min max]
-   (numeric-range-condition field min max false))
-  ([field min max exclusive?]
+  "Match a numerical range"
+  ([field min-value max-value]
+   (numeric-range-condition field min-value max-value false))
+  ([field min-value max-value exclusive?]
    (map->NumericRangeCondition {:field field
-                                :min-value min
-                                :max-value max
+                                :min-value min-value
+                                :max-value max-value
                                 :exclusive? exclusive?})))
 
 (defn numeric-range-intersection-condition
-  [min-field max-field min max]
+  "Match a field and value range"
+  [min-field max-field min-value max-value]
   (map->NumericRangeIntersectionCondition {:min-field min-field
                                            :max-field max-field
-                                           :min-value min
-                                           :max-value max}))
+                                           :min-value min-value
+                                           :max-value max-value}))
 
 (defn string-range-condition
   "Create a string range condition."
@@ -354,26 +356,32 @@
   (->NestedCondition path condition))
 
 (def match-none
+  "Match nothing, see also match-all"
   (->MatchNoneCondition))
 
 (def match-all
+  "Match everything, see also match-none"
   (->MatchAllCondition))
 
 (defn match
+  "Match condition with field and value"
   [field value]
   (->MatchCondition field value))
 
 (defn match-bool-prefix
+  "Match a boolean prefix"
   [field value]
   (->MatchBoolPrefixCondition field value))
 
 (defn multi-match
+  "Match more then one thing"
   ([query-type fields value]
    (multi-match query-type fields value {}))
   ([query-type fields value opts]
    (->MultiMatchCondition query-type fields value opts)))
 
 (defn text-condition
+  "Match text"
   [field query-str]
   (->TextCondition field query-str))
 

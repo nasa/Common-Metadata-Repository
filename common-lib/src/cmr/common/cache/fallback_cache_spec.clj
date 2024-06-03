@@ -1,8 +1,8 @@
 (ns cmr.common.cache.fallback-cache-spec
   "Defines a common set of tests for a fallback cache."
   (:require
-   [clojure.test :refer :all]
-   [cmr.common.cache :as c]
+   [clojure.test :refer [is testing]]
+   [cmr.common.cache :as cache]
    [cmr.common.cache.spec-util :as su]))
 
 (defn- basic-fallback-test
@@ -20,44 +20,44 @@
       (su/assert-cache-keys [:foo :bar] fallback-cache true))
 
     (testing "Change a value in the backup cache"
-      (c/set-value backup-cache :foo "new foo value")
+      (cache/set-value backup-cache :foo "new foo value")
 
       (testing "The value is unchanged in the primary cache"
-        (is (= "foo value" (c/get-value primary-cache :foo))))
+        (is (= "foo value" (cache/get-value primary-cache :foo))))
 
       (testing "Value is retrieved from the primary cache when present in both"
-        (is (= "foo value" (c/get-value fallback-cache :foo)))))
+        (is (= "foo value" (cache/get-value fallback-cache :foo)))))
 
     (testing "Add a value to the backup cache"
-      (c/set-value backup-cache :alpha "alpha value")
+      (cache/set-value backup-cache :alpha "alpha value")
 
       (testing "Cache keys contain all keys found in either primary or backup cache"
         (su/assert-cache-keys [:foo :bar :alpha] fallback-cache true))
 
       (testing "The key and value are not present in the primary cache"
         (su/assert-cache-keys [:foo :bar] primary-cache true)
-        (is (nil? (c/get-value primary-cache :alpha))))
+        (is (nil? (cache/get-value primary-cache :alpha))))
 
       (testing "Fallback cache uses the backup cache if value is not found in primary"
-        (is (= "alpha value" (c/get-value fallback-cache :alpha))))
+        (is (= "alpha value" (cache/get-value fallback-cache :alpha))))
 
       (testing "The value is now present in the primary cache"
-        (is (= "alpha value" (c/get-value primary-cache :alpha)))))
+        (is (= "alpha value" (cache/get-value primary-cache :alpha)))))
 
     (testing "Nil returned when value is not in either cache"
-      (is (nil? (c/get-value fallback-cache :beta)))
+      (is (nil? (cache/get-value fallback-cache :beta)))
 
       (testing "Key with nil value is not added to the cache"
         (su/assert-cache-keys [:foo :bar :alpha] fallback-cache true)))
 
     (testing "Add a value to the fallback cache"
-      (c/set-value fallback-cache :omega "The last test")
+      (cache/set-value fallback-cache :omega "The last test")
 
       (testing "The value is added to the primary cache"
-        (is (= "The last test" (c/get-value primary-cache :omega))))
+        (is (= "The last test" (cache/get-value primary-cache :omega))))
 
       (testing "The value is added to the backup cache"
-        (is (= "The last test" (c/get-value backup-cache :omega)))))))
+        (is (= "The last test" (cache/get-value backup-cache :omega)))))))
 
 (defn- clear-cache-test
   "Tests that clear cache on the fallback cache clears both primary and backup stores."
@@ -66,32 +66,32 @@
     (su/put-values-in-caches [fallback-cache] initial-values)
     (su/assert-cache-keys [:foo :bar] primary-cache true)
     (su/assert-cache-keys [:foo :bar] backup-cache true)
-    (c/reset fallback-cache)
-    (is (empty? (c/get-keys fallback-cache)))
-    (is (empty? (c/get-keys primary-cache)))
-    (is (empty? (c/get-keys backup-cache)))
+    (cache/reset fallback-cache)
+    (is (empty? (cache/get-keys fallback-cache)))
+    (is (empty? (cache/get-keys primary-cache)))
+    (is (empty? (cache/get-keys backup-cache)))
     (su/assert-values-in-caches [fallback-cache primary-cache backup-cache] {:foo nil :bar nil})))
 
 (defn- get-value-with-lookup-test
   "Tests that lookup function can be used when retrieving values on a fallback cache."
   [fallback-cache primary-cache backup-cache]
-  (c/set-value primary-cache :foo "foo value")
-  (c/set-value backup-cache :bar "bar value")
+  (cache/set-value primary-cache :foo "foo value")
+  (cache/set-value backup-cache :bar "bar value")
   (let [lookup-fn (constantly "lookup function value")]
     (testing "Lookup function is ignored if value is in primary cache"
-      (is (= "foo value" (c/get-value fallback-cache :foo lookup-fn))))
+      (is (= "foo value" (cache/get-value fallback-cache :foo lookup-fn))))
 
     (testing "Lookup function is ignored if value is in backup cache"
-      (is (= "bar value" (c/get-value fallback-cache :bar lookup-fn))))
+      (is (= "bar value" (cache/get-value fallback-cache :bar lookup-fn))))
 
     (testing "Lookup function is used if value is not in either cache"
-      (is (= "lookup function value" (c/get-value fallback-cache :alpha lookup-fn))))
+      (is (= "lookup function value" (cache/get-value fallback-cache :alpha lookup-fn))))
 
     (testing "Value added by lookup function is in primary cache"
-     (is (= "lookup function value" (c/get-value primary-cache :alpha))))
+     (is (= "lookup function value" (cache/get-value primary-cache :alpha))))
 
     (testing "Value added by lookup function is in backup cache"
-      (is (= "lookup function value" (c/get-value backup-cache :alpha)))))
+      (is (= "lookup function value" (cache/get-value backup-cache :alpha)))))
 
   (testing "Get keys returns all of the keys"
    (su/assert-cache-keys [:foo :bar :alpha] fallback-cache true)))
@@ -108,6 +108,6 @@
   fallback-cache."
   [fallback-cache primary-cache backup-cache]
   (doseq [test-fn-var cache-test-fns]
-    (c/reset fallback-cache)
+    (cache/reset fallback-cache)
     (testing (:name (meta test-fn-var))
       ((var-get test-fn-var) fallback-cache primary-cache backup-cache))))

@@ -1,10 +1,12 @@
 (ns cmr.common.xml.gen
   "Contains functions for generating XML using a Hiccup-style syntax."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.common.xml.simple-xpath :refer [select]]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.common.xml.simple-xpath :refer [select]]))
 
 (defprotocol GenerateXML
+  "Generates an XML document"
   (generate [x]))
 
 (extend-protocol GenerateXML
@@ -15,7 +17,7 @@
                                       [{} (cons maybe-attrs content)])
                   content         (generate content)]
               (when (or (seq content) (seq attrs))
-                (apply x/element tag attrs content))))
+                (apply xml/element tag attrs content))))
 
   clojure.lang.ISeq
   (generate [xs] (seq (keep generate xs)))
@@ -45,16 +47,16 @@
   "Returns XML string from structure describing XML elements."
   [structure]
   (cx/remove-xml-processing-instructions
-   (x/emit-str (generate structure))))
+   (xml/emit-str (generate structure))))
 
 ;;; Helpers
 
 (defn element-from
+  "just one element"
   [context kw]
   [kw {} (select context (name kw))])
 
 (defn elements-from
+  "multiple elements"
   [context & kws]
   (map (partial element-from context) kws))
-
-

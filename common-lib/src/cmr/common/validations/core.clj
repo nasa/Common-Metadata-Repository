@@ -9,7 +9,7 @@
   seq-of-validations."
   (:require
    [camel-snake-kebab.core :as csk]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.date-time-parser :as date-time-parser]
    [cmr.common.services.errors :as errors]
    [cmr.common.validations.messages :as msg]))
@@ -50,9 +50,9 @@
   "Converts a keyword to a humanized field name"
   [field]
   (when field
-    (->> (str/split (csk/->kebab-case (name field)) #"-")
-         (map str/capitalize)
-         (str/join " "))))
+    (->> (string/split (csk/->kebab-case (name field)) #"-")
+         (map string/capitalize)
+         (string/join " "))))
 
 (defn create-error-message
   "Formats a single error message using the field path and the error format."
@@ -122,7 +122,7 @@
 (defn field-cannot-be-blank
   "Validates that the value is not nil, whitespace, or an empty string"
   [field-path value]
-  (when (str/blank? value)
+  (when (string/blank? value)
     {field-path [(msg/required)]}))
 
 (defn required
@@ -153,7 +153,7 @@
     (try
       (date-time-parser/parse-datetime (str value))
       nil
-      (catch Exception e
+      (catch Exception _e
         {field-path [(msg/datetime value)]}))))
 
 (defn validate-number

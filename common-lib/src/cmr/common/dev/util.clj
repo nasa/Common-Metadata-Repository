@@ -3,12 +3,14 @@
   (:require
    [clojure.java.shell :as sh]
    [clojure.java.io :as io])
+  #_{:clj-kondo/ignore [:unused-import]}
   (:import
    (java.awt.datatransfer Clipboard StringSelection)
    (java.awt Toolkit)
    (java.io File)))
 
 (defn touch-file
+  "Use the shell to mark a file as having been modified."
   [file]
   (future
     (try
@@ -32,7 +34,7 @@
         files (remove (fn [^File file]
                         (.isDirectory file))
                       files-or-directories)]
-    (dorun (map #(-> % str touch-file) files))))
+    (run! #(-> % str touch-file) files)))
 
 (defn speak
   "Says the specified text outloud."

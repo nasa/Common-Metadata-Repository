@@ -1,13 +1,15 @@
 {:skip-comments true
  :ns-groups [{:pattern "cmr.elasticsearch.plugins.spatial\\..*" :name es-spatial-group}
-             {:pattern "cmr.umm-spec\\..*" :name umm-spec-lib}] 
+             {:pattern "cmr.umm-spec\\..*" :name umm-spec-lib}
+             {:pattern "cmr.common.cache.in-memory-cache" :name cache-in-mem}]
  :config-in-ns {user {:ignore true} ;; no linting for all dev/user.clj namespaces
                 es-spatial-group {:linters {:unused-import {:level :off} ;; are actually used in compile
                                             :unused-private-var {:level :off}
                                             :non-arg-vec-return-type-hint {:level :off}}}
                 umm-spec-lib {:linters {:refer-all {:level :off} ;; no suggestions given by linter
                                         :use {:level :off} ;; see above; :refer-all linter is supposed to govern this as well but is not doing so for some reason.
-                                        :unused-import {:level :off}}}}
+                                        :unused-import {:level :off}}}
+                cache-in-mem {:linters {:unresolved-symbol {:exclude [cmr.common.cache.in-memory-cache]}}}}
  ;; CMR custom macros
  :lint-as {cmr.common.config/defconfig clojure.core/def
            cmr.common.jobs/defjob clojure.core/defn

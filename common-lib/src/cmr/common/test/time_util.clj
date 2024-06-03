@@ -21,4 +21,3 @@
   "Converts N value to a date time string"
   [n]
   (when n (str (n->date-time n))))
-

@@ -2,27 +2,25 @@
   "This tests capabilities of the web server component."
   (:require
    [clj-http.client :as h]
-   [clojure.java.io :as io]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is testing]]
    [cmr.common.api.web-server :as s]
-   [cmr.common.lifecycle :as l]
-   [cmr.common.util :as u]))
+   [cmr.common.lifecycle :as l]))
 
 (def PORT 3123)
 
 (def long-body
   "A body long enough that it should be compressed"
-  (str/join (repeat (inc s/MIN_GZIP_SIZE) "0")))
+  (string/join (repeat (inc s/MIN_GZIP_SIZE) "0")))
 
 (def short-body
   "A body short enough that it shouldn't be compressed"
-  (str/join (repeat (dec s/MIN_GZIP_SIZE) "0")))
+  (string/join (repeat (dec s/MIN_GZIP_SIZE) "0")))
 
 (defn routes-fn
   "The routes function to use with the web server. Returns a response long enough that it should be
   compressed."
-  [system]
+  [_system]
   (fn [request]
     (if (= (:uri request) "/short")
       {:status 200
@@ -36,7 +34,7 @@
 
 (defn routes-fn-return-body
   "A routes function to use with the web server. Returns back what was sent"
-  [system]
+  [_system]
   (fn [request]
     {:status 200
      :body (:body request)}))
@@ -80,13 +78,13 @@
     (try
       (testing "post body size too large"
         (let [result (h/post (str "http://localhost:" PORT)
-                             {:body (str/join (repeat (inc s/MAX_REQUEST_BODY_SIZE) "0"))
+                             {:body (string/join (repeat (inc s/MAX_REQUEST_BODY_SIZE) "0"))
                               :throw-exceptions false})]
           (is (= 413 (:status result)))
           (is (= "Request body exceeds maximum size" (:body result)))))
       (testing "maximum post body size ok"
         (let [result (h/post (str "http://localhost:" PORT)
-                             {:body (str/join (repeat s/MAX_REQUEST_BODY_SIZE "0"))
+                             {:body (string/join (repeat s/MAX_REQUEST_BODY_SIZE "0"))
                               :throw-exceptions false})]
           (is (= 200 (:status result)))))
       (testing "post request small body"
@@ -106,14 +104,14 @@
    (#'s/wrap-request-body-size-validation (constantly nil)))
 
  ; Large example
- (let [lots-of-bytes (.getBytes (str/join (repeat (dec s/MAX_REQUEST_BODY_SIZE) "0")))]
+ (let [lots-of-bytes (.getBytes (string/join (repeat (dec s/MAX_REQUEST_BODY_SIZE) "0")))]
    (with-progress-reporting
     (quick-bench
      (test-fn {:body (java.io.ByteArrayInputStream. lots-of-bytes)}))))
 
 
  ; Small example
- (let [small-bytes (.getBytes (str/join (repeat 10 "0")))]
+ (let [small-bytes (.getBytes (string/join (repeat 10 "0")))]
    (with-progress-reporting
     (quick-bench
      (test-fn {:body (java.io.ByteArrayInputStream. small-bytes)})))))

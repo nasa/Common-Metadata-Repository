@@ -1,7 +1,7 @@
 (ns cmr.common.test.nrepl
   "Tests for the nREPL component."
   (:require
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is]]
    [clojure.tools.nrepl :as nrepl]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.nrepl :as nrepl-component])

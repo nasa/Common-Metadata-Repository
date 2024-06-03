@@ -1,15 +1,16 @@
 (ns cmr.common.api.errors
+  "Functions for throwing errors in a web service."
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [clojure.string :as string]
-   [cmr.common.config :as cfg]
-   [cmr.common.log :refer [error warn info debug]]
+   [cmr.common.log :refer [error info]]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]))
 
 (def type->http-status-code
+  "mappings for standard non-successfull http status codes"
   {:bad-request 400
    :unauthorized 401
    :not-found 404
@@ -21,20 +22,22 @@
    :service-unavailable 503
    :gateway-timeout 504})
 
-(def CONTENT_TYPE_HEADER "Content-Type")
-(def CORS_ORIGIN_HEADER "Access-Control-Allow-Origin")
+(def CONTENT_TYPE_HEADER "An HTTP Header" "Content-Type")
+(def CORS_ORIGIN_HEADER "An HTTP HEADER" "Access-Control-Allow-Origin")
 
 (def internal-error-ring-response
+  "A basic 500 response"
   {:status 500
    :headers {CONTENT_TYPE_HEADER mt/json
              CORS_ORIGIN_HEADER "*"}
    :body {:errors ["An Internal Error has occurred."]}})
 
 (defn mask-token-error
- [error-string]
- (if (re-matches #".*Token .* does not exist.*" error-string)
-  "Token does not exist"
-  error-string))
+  "Replace real tokens with a message"
+  [error-string]
+  (if (re-matches #".*Token .* does not exist.*" error-string)
+    "Token does not exist"
+    error-string))
 
 (defn- keyword-path->string-path
   "Converts a set of keyword field paths into the string equivalent field paths
@@ -46,12 +49,7 @@
            (csk/->PascalCaseString path-item)))
        field-path))
 
-(defmulti errors->body-string
-  "Converts a set of errors into a string to return in the response body
-  formatted according to the requested response format."
-
-  (fn [response-format errors]
-    response-format))
+;; *************************************
 
 (defmulti error->json-element
   "Converts an individual error element to a clojure data structure
@@ -66,9 +64,7 @@
   [error]
   (update-in error [:path] keyword-path->string-path))
 
-(defmethod errors->body-string mt/json
-  [_ errors]
-  (json/generate-string {:errors (map error->json-element errors)}))
+;; *************************************
 
 (defmulti error->xml-element
   "Converts an individual error element to the equivalent XML structure."
@@ -76,23 +72,32 @@
 
 (defmethod error->xml-element String
   [error]
-  (x/element :error {} (mask-token-error error)))
+  (xml/element :error {} (mask-token-error error)))
 
 (defmethod error->xml-element cmr.common.services.errors.PathErrors
   [error]
   (let [{:keys [path errors]} error]
-    (x/element
-      :error {}
-      (x/element
-        :path {} (string/join "/" (keyword-path->string-path path)))
-      (x/element
-        :errors {} (for [error errors] (x/element :error {} error))))))
+    (xml/element
+     :error {}
+     (xml/element
+      :path {} (string/join "/" (keyword-path->string-path path)))
+     (xml/element
+      :errors {} (for [error errors] (xml/element :error {} error))))))
 
-(defmethod errors->body-string mt/xml
-  [_ errors]
-  (x/emit-str
-    (x/element :errors {}
-               (map error->xml-element errors))))
+;; *************************************
+
+(defn errors->body-string
+  "Converts a set of errors into a string to return in the response body
+  formatted according to the requested response format."
+  [response-format errors]
+  (condp = response-format
+    mt/json
+    (json/generate-string {:errors (map error->json-element errors)})
+
+    mt/xml
+    (xml/emit-str (xml/element :errors {} (map error->xml-element errors)))))
+
+;; *************************************
 
 (defn- response-type-body
   "Returns the response content-type and body for the given errors and format."
@@ -107,8 +112,7 @@
   from the accept and content-type headers. If the format still cannot be
   determined return the default-mime-type as passed in."
   ([path-w-extension headers default-mime-type]
-   (get-results-format
-     path-w-extension headers mt/all-supported-mime-types default-mime-type))
+   (get-results-format path-w-extension headers mt/all-supported-mime-types default-mime-type))
   ([path-w-extension headers valid-mime-types default-mime-type]
    (or (mt/path->mime-type path-w-extension)
        (mt/accept-mime-type headers valid-mime-types)
@@ -118,12 +122,12 @@
 (defn handle-service-error
   "Handles service errors thrown during a request and returns the appropriate
   ring response."
-  [default-format-fn request type errors e]
+  [default-format-fn request e-type errors e]
   (let [results-format (get-results-format
-                         (:uri request)
-                         (:headers request)
-                         (default-format-fn request e))
-        status-code (type->http-status-code type)
+                        (:uri request)
+                        (:headers request)
+                        (default-format-fn request e))
+        status-code (type->http-status-code e-type)
         [content-type response-body] (response-type-body
                                       errors results-format)]
     ;; Log exceptions for server errors
@@ -151,8 +155,8 @@
    (fn [request]
      (try
        (errors/handle-service-errors
-         (partial f request)
-         (partial handle-service-error default-format-fn request))
+        (partial f request)
+        (partial handle-service-error default-format-fn request))
        (catch Throwable e
          (error e)
          internal-error-ring-response)))))
@@ -169,7 +173,6 @@
         (java.net.URLDecoder/decode query-string "UTF-8"))
       (catch Exception e
         (errors/throw-service-error
-          :bad-request
-          (str "Invalid URL encoding: "
-               (string/replace (.getMessage e) #"URLDecoder: " "")))))
+         :bad-request
+         (str "Invalid URL encoding: " (string/replace (.getMessage e) #"URLDecoder: " "")))))
     (f request)))

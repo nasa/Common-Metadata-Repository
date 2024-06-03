@@ -3,10 +3,9 @@
    [clojure.set :as set]
    [cmr.common.concepts :as cc]
    [cmr.common.date-time-parser :as p]
-   [cmr.common.services.errors :as errors]
    [cmr.common.util :as util]
    [cmr.metadata-db.services.messages :as msg]
-   [cmr.metadata-db.services.provider-service :as providers]))
+   [cmr.metadata-db.services.validation.util :as v-util]))
 
 (def MAX_REVISION_ID
   "The maximum value a revision ID can take so as not to conflict with transaction ids.
@@ -157,7 +156,7 @@
 
 (def default-concept-validation
   "Builds a function that validates a concept and returns a list of errors"
-  (util/compose-validations
+  (v-util/compose-validations
     (conj base-concept-validations
           extra-fields-missing-validation
           concept-id-match-fields-validation
@@ -165,46 +164,46 @@
 
 (def tag-concept-validation
   "Builds a function that validates a concept map that has no provider and returns a list of errors"
-  (util/compose-validations (conj base-concept-validations
+  (v-util/compose-validations (conj base-concept-validations
                                   concept-id-matches-concept-fields-validation-no-provider)))
 
 (def association-concept-validation
   "Builds a function that validats a tag association concept map that has no provider and returns
   a list of errors"
-  (util/compose-validations (conj base-concept-validations
+  (v-util/compose-validations (conj base-concept-validations
                                   concept-id-matches-concept-fields-validation-no-provider)))
 
 (def group-concept-validation
   "Builds a function that validates a group concept"
-  (util/compose-validations (conj base-concept-validations
+  (v-util/compose-validations (conj base-concept-validations
                                   concept-id-match-fields-validation
                                   provider-id-missing-validation)))
 
 (def humanizer-concept-validation
   "Builds a function that validates a concept map that has no provider and returns a list of errors"
-  (util/compose-validations (conj base-concept-validations
+  (v-util/compose-validations (conj base-concept-validations
                                   concept-id-matches-concept-fields-validation-no-provider
                                   humanizer-native-id-validation)))
 
 (def validate-concept-default
   "Validates a concept. Throws an error if invalid."
-  (util/build-validator :invalid-data default-concept-validation))
+  (v-util/build-validator :invalid-data default-concept-validation))
 
 (def validate-tag-concept
   "validates a tag concept. Throws an error if invalid."
-  (util/build-validator :invalid-data tag-concept-validation))
+  (v-util/build-validator :invalid-data tag-concept-validation))
 
 (def validate-association-concept
   "Validates a tag association concept. Throws an error if invalid."
-  (util/build-validator :invalid-data association-concept-validation))
+  (v-util/build-validator :invalid-data association-concept-validation))
 
 (def validate-concept-group
   "Validates a group concept. Throws and error if invalid."
-  (util/build-validator :invalid-data group-concept-validation))
+  (v-util/build-validator :invalid-data group-concept-validation))
 
 (def validate-humanizer-concept
   "validates a humanizer concept. Throws an error if invalid."
-  (util/build-validator :invalid-data humanizer-concept-validation))
+  (v-util/build-validator :invalid-data humanizer-concept-validation))
 
 (defmulti validate-concept
   "Validates a concept. Throws an error if invalid."
@@ -258,8 +257,8 @@
                        valid-tombstone-keys)))
 
 (def tombstone-request-validation
-  (util/compose-validations [concept-id-missing-validation
+  (v-util/compose-validations [concept-id-missing-validation
                              validate-tombstone-keys]))
 
 (def validate-tombstone-request
-  (util/build-validator :invalid-data tombstone-request-validation))
+  (v-util/build-validator :invalid-data tombstone-request-validation))

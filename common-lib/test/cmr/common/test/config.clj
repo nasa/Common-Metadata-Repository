@@ -1,8 +1,8 @@
 (ns cmr.common.test.config
-  (:require 
+  (:require
    [cheshire.core :as json]
    [clojure.edn :as edn]
-   [clojure.test :refer :all]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.common.config :as c :refer [defconfig]]
    [cmr.common.test.test-util :refer [with-env-vars]]))
 
@@ -69,6 +69,8 @@
   (testing "String configs"
     (testing "default value"
       (is (= "abc" (test-string))))
+
+    (declare set-test-string!)
     (testing "Overriding the value"
       (set-test-string! "bar")
       (is (= "bar" (test-string)))
@@ -79,6 +81,8 @@
     (testing "String configs with default nil"
       (testing "default value"
         (is (nil? (test-string-with-nil))))
+
+      (declare set-test-string-with-nil!)
       (testing "override"
         (set-test-string-with-nil! "quux")
         (is (= "quux" (test-string-with-nil))))))
@@ -87,6 +91,7 @@
     (testing "default value"
       (is (= 5 (test-long))))
 
+    (declare set-test-long!)
     (testing "Overriding the value"
       (set-test-long! 45)
       (is (= 45 (test-long)))
@@ -99,6 +104,7 @@
     (testing "default value"
       (is (= 0.75 (test-double))))
 
+    (declare set-test-double!)
     (testing "Overriding the value"
       (set-test-double! 47.89)
       (is (= 47.89 (test-double)))
@@ -113,6 +119,7 @@
     (testing "default value false"
       (is (= false (test-bool-false))))
 
+    (declare set-test-bool-true!)
     (testing "Overriding the value"
       (set-test-bool-true! true)
       (is (= true (test-bool-true)))
@@ -125,6 +132,7 @@
     (testing "default value"
       (is (= {} (test-custom-parser))))
 
+    (declare set-test-custom-parser!)
     (testing "Overriding the value"
       (set-test-custom-parser! {:a 1})
       (is (= {:a 1} (test-custom-parser)))
@@ -137,6 +145,7 @@
     (testing "default value"
       (is (= ["CWIC" "FEDEO" "GEOSS" "CEOS" "EOSDIS"] (test-opensearch-consortiums))))
 
+    (declare set-test-opensearch-consortiums!)
     (testing "Overriding the value"
       (set-test-opensearch-consortiums! ["CWIC" "FEDEO"])
       (is (= 2 (count (test-opensearch-consortiums))))
@@ -152,6 +161,7 @@
     (testing "default value"
       (is (= {} (test-edn))))
 
+    (declare set-test-edn!)
     (testing "Overriding the value"
       (set-test-edn! {:a 1})
       (is (= {:a 1} (test-edn)))
@@ -180,6 +190,7 @@
    :type Long})
 
 (deftest test-check-env-vars
-  (is (false? (c/check-env-vars {:cmr-test-default-job-start-delay "common-lib test defconfig",
-                                 :cmr-test-health-check-timeout-seconds "common-lib test defconfig"})))
+  (is (false? (c/check-env-vars
+               {:cmr-test-default-job-start-delay "common-lib test defconfig",
+                :cmr-test-health-check-timeout-seconds "common-lib test defconfig"})))
   (is (true? (c/check-env-vars {:cmr-not-recognizable "not recognized"}))))

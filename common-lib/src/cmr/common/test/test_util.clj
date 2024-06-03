@@ -1,8 +1,10 @@
 (ns cmr.common.test.test-util
-  (:require [clojure.test :refer [is]]
-            [clojure.string :as str]
-            [cmr.common.config :as c]
-            [taoensso.timbre :as t])
+  "Common utilities for testing code."
+  (:require
+   [clojure.test :refer [is]]
+   [clojure.string :as string]
+   [cmr.common.config :as c]
+   [taoensso.timbre :as t])
   (:import clojure.lang.ExceptionInfo))
 
 (defn assert-exception-info-contains-errors
@@ -24,8 +26,8 @@
   Handles escaping special regex characters"
   [msg]
   (-> msg
-      (str/replace #"\[" "\\\\[")
-      (str/replace #"\]" "\\\\]")
+      (string/replace #"\[" "\\\\[")
+      (string/replace #"\]" "\\\\]")
       re-pattern))
 
 (defn silence-logging-fixture

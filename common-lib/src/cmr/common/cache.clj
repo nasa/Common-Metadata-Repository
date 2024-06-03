@@ -18,23 +18,24 @@
     "Returns the list of keys for the given cache. The keys are converted to non-keyword strings.")
 
   (key-exists
-    [cache key]
-    "Returns true if the key exists in the cache. This is used to determine if the cache has been set up.")
+    [cache cache-key]
+    "Returns true if the key exists in the cache. This is used to determine if the cache has been
+     set up.")
 
   (get-value
-    [cache key]
-    [cache key lookup-fn]
+    [cache cache-key]
+    [cache cache-key lookup-fn]
     "Looks up the value of the cached item using the key. If there is a cache miss
-    and a function is provided it will invoke the function given with no arguments, save the
-    returned value in the cache, then return the value. If no function is provided it will return nil
-    for cache misses.")
+     and a function is provided it will invoke the function given with no arguments, save the
+     returned value in the cache, then return the value. If no function is provided it will return
+     nil for cache misses.")
 
   (reset
     [cache]
     "Resets the cache back to its initial state.")
 
   (set-value
-    [cache key value]
+    [cache cache-key value]
     "Associates the value in the cache with the given key.")
 
   (cache-size
@@ -45,7 +46,7 @@
   "Function that takes a cache and checks to see if the cache uses the CmrCache protocol,
    simple cmr.common.cache. Currently there are two protocol types cmr.common.cache and
    cmr.common.hash-cache. This function does the check using string comparison. Using instance?
-   forces non common libraries to be included in common and produces cirular dependencies."
+   forces non common libraries to be included in common and produces circular dependencies."
   [cache]
   (not (string/includes? (str (type cache)) "hash_cache")))
 
@@ -70,5 +71,7 @@
               (try
                 {cache-key (cache-size cache)}
                 (catch java.lang.Exception e
-                  (info (format "Either the Cache %s or its delegate is null. The exception is %s" cache-key e))
+                  (info (format "Either the Cache %s or its delegate is null. The exception is %s"
+                                cache-key
+                                e))
                   {cache-key 0})))))))

@@ -1,11 +1,11 @@
 (ns cmr.common.test.validations.core
   "Contains tests for validations core"
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [are deftest is testing]]
             [cmr.common.validations.core :as v]))
 
 (defn always-valid-validation
   "Simulates a validation that is always successful"
-  [field-path value]
+  [_field-path _value]
   nil)
 
 (defn always-invalid-validation

@@ -6,7 +6,7 @@
    [clojure.java.io :as io]
    [clojure.string :as string]
    [cmr.common.config :as cfg]
-   [cmr.common.log :as log :refer [error, info]]))
+   [cmr.common.log :as log :refer [info]]))
 
 (defn latest-approved-documentation
   "Return a map of all the configured approved generics and their versions
@@ -20,8 +20,9 @@
           (cfg/approved-pipeline-documentation)))
 
 (defn read-generic-doc-file
-  "Return the specific schema's documentation files given the schema keyword name and version number.
-   if the file cannot be read, return an empty string which will have no impact on the API document.
+  "Return the specific schema's documentation files given the schema keyword name and version
+   number. If the file cannot be read, return an empty string which will have no impact on the API
+   document.
    Parameters:
    * file-name: [ingest | search]
    * generic-keyword: [:grid | ...]
@@ -33,7 +34,7 @@
         (format (name generic-keyword) generic-version (name file-name))
         (io/resource)
         (slurp))
-    (catch Exception e (info (format "generic %s was skipped" generic-keyword))
+    (catch Exception _e (info (format "generic %s was skipped" generic-keyword))
            (str ""))))
 
 (defn all-generic-docs
@@ -64,7 +65,7 @@
    * link: string, the link to the location in the document
    Returns: string"
   [depth content link]
-  (str (apply str (repeat depth " ")) (format "* [%s](#%s)\n" link content)))
+  (str (string/join (repeat depth " ")) (format "* [%s](#%s)\n" link content)))
 
 (defn get-toc-data
   "Parses out the toc information from the api.md to build the markdown for the toc
@@ -72,15 +73,16 @@
    * table-of-content-headers: string list, the headers in the document
    * doc-type: string [ingest | search]
    Returns: string"
-  ([table-of-content-headers doc-type spacer]
+  ([table-of-content-headers _doc-type spacer]
    (let [depth (spacer (count (re-seq #"#" table-of-content-headers)))
          link (peek (re-find #"=\"(.*)\">" table-of-content-headers))
          content (peek (re-find #">\s+([^<]*)$" table-of-content-headers))]
      (build-markdown-toc depth link content))))
 
 (defn format-generic-toc
-  "Return the specific schema's documentation files given the schema keyword name and version number.
-   if the file cannot be read, return an empty string which will have no impact on the API document.
+  "Return the specific schema's documentation files given the schema keyword name and version
+   number. If the file cannot be read, return an empty string which will have no impact on the API
+   document.
    Parameters:
    * file-name: [ingest | search]
    * generic-keyword: [:grid | ...]
@@ -101,7 +103,8 @@
   * file-name: [ingest | search]
   Returns: string"
   [file-name options]
-  (string/join (seq (for [[k,v] (latest-approved-documentation)] (format-generic-toc file-name k (str v) options)))))
+  (string/join (seq (for [[k,v] (latest-approved-documentation)]
+                      (format-generic-toc file-name k (str v) options)))))
 
 (defn format-toc-into-doc
   "To fit generic docs into the toc a few html tags must be removed, this block will
