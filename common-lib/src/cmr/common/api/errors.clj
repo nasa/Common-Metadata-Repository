@@ -78,30 +78,24 @@
   [error]
   (let [{:keys [path errors]} error]
     (xml/element
-      :error {}
-      (xml/element
-        :path {} (string/join "/" (keyword-path->string-path path)))
-      (xml/element
-        :errors {} (for [error errors] (xml/element :error {} error))))))
+     :error {}
+     (xml/element
+      :path {} (string/join "/" (keyword-path->string-path path)))
+     (xml/element
+      :errors {} (for [error errors] (xml/element :error {} error))))))
 
 ;; *************************************
 
-(defmulti errors->body-string
+(defn errors->body-string
   "Converts a set of errors into a string to return in the response body
   formatted according to the requested response format."
+  [response-format errors]
+  (condp = response-format
+    mt/json
+    (json/generate-string {:errors (map error->json-element errors)})
 
-  (fn [response-format _errors]
-    response-format))
-
-(defmethod errors->body-string mt/json
-  [_ errors]
-  (json/generate-string {:errors (map error->json-element errors)}))
-
-(defmethod errors->body-string mt/xml
-  [_ errors]
-  (xml/emit-str
-   (xml/element :errors {}
-                (map error->xml-element errors))))
+    mt/xml
+    (xml/emit-str (xml/element :errors {} (map error->xml-element errors)))))
 
 ;; *************************************
 
@@ -118,8 +112,7 @@
   from the accept and content-type headers. If the format still cannot be
   determined return the default-mime-type as passed in."
   ([path-w-extension headers default-mime-type]
-   (get-results-format
-     path-w-extension headers mt/all-supported-mime-types default-mime-type))
+   (get-results-format path-w-extension headers mt/all-supported-mime-types default-mime-type))
   ([path-w-extension headers valid-mime-types default-mime-type]
    (or (mt/path->mime-type path-w-extension)
        (mt/accept-mime-type headers valid-mime-types)
@@ -131,9 +124,9 @@
   ring response."
   [default-format-fn request e-type errors e]
   (let [results-format (get-results-format
-                         (:uri request)
-                         (:headers request)
-                         (default-format-fn request e))
+                        (:uri request)
+                        (:headers request)
+                        (default-format-fn request e))
         status-code (type->http-status-code e-type)
         [content-type response-body] (response-type-body
                                       errors results-format)]
@@ -162,8 +155,8 @@
    (fn [request]
      (try
        (errors/handle-service-errors
-         (partial f request)
-         (partial handle-service-error default-format-fn request))
+        (partial f request)
+        (partial handle-service-error default-format-fn request))
        (catch Throwable e
          (error e)
          internal-error-ring-response)))))
@@ -180,7 +173,6 @@
         (java.net.URLDecoder/decode query-string "UTF-8"))
       (catch Exception e
         (errors/throw-service-error
-          :bad-request
-          (str "Invalid URL encoding: "
-               (string/replace (.getMessage e) #"URLDecoder: " "")))))
+         :bad-request
+         (str "Invalid URL encoding: " (string/replace (.getMessage e) #"URLDecoder: " "")))))
     (f request)))

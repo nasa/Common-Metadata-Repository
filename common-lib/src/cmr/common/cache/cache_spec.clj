@@ -1,8 +1,9 @@
 (ns cmr.common.cache.cache-spec
   "Defines a common set of tests for checking cache implementations"
-  (:require [clojure.test :refer [are is testing]]
-            [cmr.common.cache :as cache]
-            [cmr.common.cache.spec-util :as su]))
+  (:require
+   [clojure.test :refer [are is testing]]
+   [cmr.common.cache :as cache]
+   [cmr.common.cache.spec-util :as su]))
 
 (defn- check-initial-cache-state
   "Check if cache value is empty or nil"

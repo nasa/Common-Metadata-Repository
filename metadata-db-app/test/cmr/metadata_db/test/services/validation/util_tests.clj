@@ -1,8 +1,8 @@
-(ns cmr.umm-spec.test.validation.util-tests
+(ns cmr.metadata-db.test.services.validation.util-tests
   "This has tests for general validations."
   (:require
    [clojure.test :refer [is deftest]]
-   [cmr.umm-spec.validation.util :as v-util]))
+   [cmr.metadata-db.services.validation.util :as v-util]))
 
 (deftest build-validator-test
   (let [error-type :not-found

@@ -120,19 +120,6 @@
 
 (record-pretty-printer/enable-record-pretty-printing InMemoryCache)
 
-(defmulti create-core-cache
-  "Create a cache using cmr.core-cache of the given type."
-  (fn [type _value _opts]
-    type))
-
-(defmethod create-core-cache :default
-  [_type value _opts]
-  (cc/basic-cache-factory value))
-
-(defmethod create-core-cache :lru
-  [_type value opts]
-  (apply cc/lru-cache-factory value (flatten (seq opts))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Time To Live Cache
 ;;
@@ -196,9 +183,17 @@
 ;; End of copy
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(defmethod create-core-cache :ttl
-  [_type value opts]
-  (apply ttl-cache-factory value (flatten (seq opts))))
+(defn create-core-cache
+  "Create a cache using cmr.core-cache of the given type."
+  [cache-type value opts]
+  (case cache-type
+    :lru
+    (apply cc/lru-cache-factory value (flatten (seq opts)))
+
+    :ttl
+    (apply ttl-cache-factory value (flatten (seq opts)))
+
+    (cc/basic-cache-factory value)))
 
 (defn create-in-memory-cache
   "Create in memory cache with different cache types for the internal cache.

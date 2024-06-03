@@ -2,11 +2,11 @@
   "Functions for generating v2 granule facets. Similar structure as v2 collection facets, but
   granule fields. First major use case is supporting OPeNDAP virutal directories capability."
   (:require
+   [cmr.common.services.errors :as errors]
    [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
    [cmr.search.services.query-execution.facets.facets-v2-helper :as v2h]
    [cmr.search.services.query-execution.facets.facets-v2-results-feature :as v2-facets]
-   [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]
-   [cmr.umm-spec.validation.util :as v-util]))
+   [cmr.search.services.query-execution.facets.hierarchical-v2-facets :as hv2]))
 
 (def granule-facet-params->elastic-fields
   "Maps the parameter names for the concept-type to the fields in Elasticsearch."
@@ -65,13 +65,41 @@
       [(format "Granule V2 facets are limited to a single collection, but query matched %s collections."
                (if (zero? collection-count) "an undetermined number of" collection-count))])))
 
+(defn- build-validator
+  "Creates a function that will call f with it's arguments. If f returns any
+  errors then it will throw a service error of the type given."
+  [error-type f]
+  (fn [& args]
+    (when-let [errors (apply f args)]
+      (when (seq errors)
+        (errors/throw-service-errors error-type errors)))))
+
+(defn- apply-validations
+  "Given a list of validation functions, applies the arguments to each
+  validation, concatenating all errors and returning them. As such, validation
+  functions are expected to only return a list; if the list is empty, it is
+  understood that no errors occurred."
+  [validations & args]
+  (reduce (fn [errors validation]
+            (if-let [new-errors (apply validation args)]
+              (concat errors new-errors)
+              errors))
+          []
+          validations))
+
+(defn- compose-validations
+  "Creates a function that will compose together a list of validation functions
+  into a single function that will perform all validations together."
+  [validation-fns]
+  (partial apply-validations validation-fns))
+
 (def validations
   "Validation functions to run for v2 granule facets."
-  (v-util/compose-validations [single-collection-validation]))
+  (compose-validations [single-collection-validation]))
 
 (defmethod v2-facets/facets-validator :granule
   [_]
-  (v-util/build-validator :bad-request validations))
+  (build-validator :bad-request validations))
 
 (def group-nodes-in-order-temporal
   "The titles of temporal facet group nodes in order."
