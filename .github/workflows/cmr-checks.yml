@@ -28,7 +28,7 @@ jobs:
         run: |
           docker run \
             -v $PWD/src:/src \
-            --r cljkondo/clj-kondo \
+            --rm cljkondo/clj-kondo \
             clj-kondo --parallel --lint src > report.log
       - name: Report
         uses: actions/upload-artifact@v4
