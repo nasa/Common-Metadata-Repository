@@ -33,8 +33,8 @@ jobs:
             -v $PWD/src:/src \
             --rm cljkondo/clj-kondo \
             clj-kondo --parallel --lint \
-              access-control-app \
-              acl-lib \
+              /src/access-control-app \
+              /src/acl-lib \
               common-app-lib \
               common-lib \
               elastic-utils-lib \
