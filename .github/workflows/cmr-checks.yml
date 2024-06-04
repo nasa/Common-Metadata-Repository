@@ -1,5 +1,4 @@
 name: CMR Checks
-
 on:
   workflow_dispatch:
   push:
@@ -22,7 +21,7 @@ jobs:
       - name: Count Lines of Code (cloc)
         uses: djdefi/cloc-action@5
   kondo:
-    runs-on: checkout
+    runs-on: ubuntu-latest
     steps:
       - name: checkout
         uses: actions/checkout@v4
