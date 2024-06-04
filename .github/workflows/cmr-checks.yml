@@ -41,6 +41,8 @@ jobs:
               es-spatial-plugin \
               message-queue-lib \
             >> report.log
+          cat report.log
+        id: list-report
       - name: Report
         if: always()
         uses: actions/upload-artifact@v4
