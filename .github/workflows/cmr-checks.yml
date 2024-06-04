@@ -28,7 +28,6 @@ jobs:
       - name: Run Kondo Report
         id: gen-report
         run: ./dev-setup/support/run-kondo.sh
-        run: |
           :docker run \
             --volume $PWD:/src \
             --rm cljkondo/clj-kondo \
