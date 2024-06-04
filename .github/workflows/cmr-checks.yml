@@ -2,9 +2,9 @@ name: CMR Checks
 on:
   workflow_dispatch:
   push:
-    branches: [ master, main, feature/**, *CMR-**, *cmr-**]
+    branches: [ master, main, feature/**, CMR-**, cmr-**]
   pull_request:
-    branches: [ master, main , features/**, *CMR-**, *cmr-**]
+    branches: [ master, main , features/**, CMR-**, cmr-**]
 jobs:
   cloc:
     runs-on: ubuntu-latest
