@@ -27,29 +27,18 @@ jobs:
         uses: actions/checkout@v4
       - name: Run Kondo Report
         run: |
-          pwd > report.log
-          ls -l >> report.log
-          echo -done- >> report.log
-          
-          docker run \
-            --volume $PWD/src:/src \
-            --rm cljkondo/clj-kondo \
-            ls /src \
-            >> report.log
-          
-          echo -done- >> report.log
-          
           docker run \
             --volume $PWD:/src \
             --rm cljkondo/clj-kondo \
+            cd /src && ls && \
             clj-kondo --parallel --lint \
-              /src/access-control-app/src \
-              /src/acl-lib/src \
-              /src/common-app-lib/src \
-              /src/common-lib/src \
-              /src/elastic-utils-lib/src \
-              /src/es-spatial-plugin/src \
-              /src/message-queue-lib/src \
+              access-control-app/src \
+              acl-lib/src \
+              common-app-lib/src \
+              common-lib/src \
+              elastic-utils-lib/src \
+              es-spatial-plugin/src \
+              message-queue-lib/src \
             >> report.log
           cat report.log
         id: list-report
