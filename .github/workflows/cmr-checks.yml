@@ -37,6 +37,8 @@ jobs:
             ls /src \
             >> report.log
           
+          echo -done- >> report.log
+          
           docker run \
             --volume $PWD/src:/src \
             --rm cljkondo/clj-kondo \
