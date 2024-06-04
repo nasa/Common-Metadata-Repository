@@ -9,7 +9,7 @@ jobs:
   cloc:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Remove non-CMR directories
         run: |
           rm -rf browse-scaler
@@ -33,14 +33,16 @@ jobs:
             --rm cljkondo/clj-kondo \
             sh -c '\
               cd /src && \
-              clj-kondo --parallel --lint \
-                access-control-app/src \
-                acl-lib/src \
-                common-app-lib/src \
-                common-lib/src \
-                elastic-utils-lib/src \
-                es-spatial-plugin/src \
-                message-queue-lib/src \
+              clj-kondo --parallel \
+                --fail-level error \
+                --lint \
+                  access-control-app/src \
+                  acl-lib/src \
+                  common-app-lib/src \
+                  common-lib/src \
+                  elastic-utils-lib/src \
+                  es-spatial-plugin/src \
+                  message-queue-lib/src \
             ' >> report.log
       - name: Show Kondo Report
         id: show-report
