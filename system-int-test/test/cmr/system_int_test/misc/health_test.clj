@@ -3,8 +3,8 @@
   (:require
    [cheshire.core :as json]
    [clj-http.client :as client]
-   [clojure.test :refer :all]
-   [clojure.string :as str]
+   [clojure.test :refer [deftest is]]
+   [clojure.string :as string]
    [cmr.common-app.test.side-api :as side]
    [cmr.search.routes :as routes]
    [cmr.system-int-test.system :as s]
@@ -43,7 +43,7 @@
         robots (client/get "http://localhost:3003/robots.txt"
                            {:accept :text
                             :connection-manager (s/conn-mgr)})
-        body (str/split-lines (:body robots))]
+        body (string/split-lines (:body robots))]
    (is (= "User-agent: *" (first body)))
    (is (= "Disallow: /ingest/health" (second body)))))
 
@@ -52,7 +52,7 @@
         robots (client/get "http://localhost:3003/robots.txt"
                            {:accept :text
                             :connection-manager (s/conn-mgr)})
-        body (str/split-lines (:body robots))]
+        body (string/split-lines (:body robots))]
    (is (= "User-agent: *" (first body)))
    (is (= "Disallow: /" (second body)))))
 

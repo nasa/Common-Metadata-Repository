@@ -1,7 +1,7 @@
 (ns cmr.system-int-test.utils.tag-util
   "This contains utilities for testing tagging"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.test :refer [is]]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
@@ -32,7 +32,7 @@
 (defn string-of-length
   "Creates a string of the specified length"
   [n]
-  (str/join (repeat n "x")))
+  (string/join (repeat n "x")))
 
 (defn create-tag
   "Creates a tag."
@@ -120,7 +120,7 @@
                     (update-tag token (:tag-key tag) tag-to-save)
                     (create-tag token tag-to-save))
          tag (-> tag
-                 (update :tag-key str/lower-case)
+                 (update :tag-key string/lower-case)
                  (into (select-keys response [:status :errors :concept-id :revision-id])))]
 
      (if (= (:revision-id tag) 1)

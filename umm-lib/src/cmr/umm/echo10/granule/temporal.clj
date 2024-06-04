@@ -1,6 +1,6 @@
 (ns cmr.umm.echo10.granule.temporal
   "Contains functions for parsing and generating the ECHO10 granule temporal element."
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-collection :as c]
             [cmr.umm.umm-granule :as g]))
@@ -27,15 +27,15 @@
   [temporal]
   (when temporal
     (let [{:keys [range-date-time single-date-time]} temporal]
-      (x/element :Temporal {}
+      (xml/element :Temporal {}
                  (when range-date-time
                    (let [{:keys [beginning-date-time ending-date-time]} range-date-time]
-                     (x/element :RangeDateTime {}
+                     (xml/element :RangeDateTime {}
                                 (when beginning-date-time
-                                  (x/element :BeginningDateTime {} (str beginning-date-time)))
+                                  (xml/element :BeginningDateTime {} (str beginning-date-time)))
                                 (when ending-date-time
-                                  (x/element :EndingDateTime {} (str ending-date-time))))))
+                                  (xml/element :EndingDateTime {} (str ending-date-time))))))
 
                  (when single-date-time
-                   (x/element :SingleDateTime {} (str single-date-time)))))))
+                   (xml/element :SingleDateTime {} (str single-date-time)))))))
 

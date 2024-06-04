@@ -1,6 +1,6 @@
 (ns cmr.umm.iso-mends.collection.related-url
   "Contains functions for parsing and generating the ISO MENDS related urls"
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-collection :as c]
             [cmr.umm.iso-mends.collection.helper :as h]))
@@ -60,15 +60,15 @@
           code (if (= "GET DATA" type)
                  (if name "" "download")
                  "information")]
-      (x/element :gmd:onLine {}
-                 (x/element :gmd:CI_OnlineResource {}
-                            (x/element :gmd:linkage {}
-                                       (x/element :gmd:URL {} url))
+      (xml/element :gmd:onLine {}
+                 (xml/element :gmd:CI_OnlineResource {}
+                            (xml/element :gmd:linkage {}
+                                       (xml/element :gmd:URL {} url))
                             (when name (h/iso-string-element :gmd:name name))
                             (if description
                               (h/iso-string-element :gmd:description description)
-                              (x/element :gmd:description {:gco:nilReason "missing"}))
-                            (x/element :gmd:function {}
-                                       (x/element :gmd:CI_OnLineFunctionCode
+                              (xml/element :gmd:description {:gco:nilReason "missing"}))
+                            (xml/element :gmd:function {}
+                                       (xml/element :gmd:CI_OnLineFunctionCode
                                                   (function-code-attributes code) code)))))))
 

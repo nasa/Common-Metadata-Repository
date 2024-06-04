@@ -11,7 +11,7 @@
 	'instrument' --> {'INSTRUMENT' --> ['instr1', 'instr2']
 										'OTHERINSTRUMENTS' --> ['otheraliases']}"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.hash-cache :as hash-cache]
    [cmr.common.jobs :refer [defjob]]
@@ -55,7 +55,7 @@
     :replacement_value
     (->>  v1
           (map #(select-keys % [:replacement_value :source_value]))
-          (map #(update % :replacement_value str/upper-case)))))
+          (map #(update % :replacement_value string/upper-case)))))
 
 (defn- create-humanizer-alias-map
   "Creates a map of humanizer aliases by type from the humanizer map and returns in the format below.

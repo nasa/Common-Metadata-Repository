@@ -1,6 +1,6 @@
 (ns cmr.access-control.services.messages
   "Common error messages for access control services."
-  (:require [clojure.string :as str]
+  (:require [clojure.string :as string]
             [cmr.common.util :as util]))
 
 (defn provider-does-not-exist
@@ -12,7 +12,7 @@
 
 (defn users-do-not-exist
   [usernames]
-  (format "The following users do not exist [%s]" (util/html-escape (str/join ", " usernames))))
+  (format "The following users do not exist [%s]" (util/html-escape (string/join ", " usernames))))
 
 (defn managing-group-does-not-exist
   [managing-group-id]

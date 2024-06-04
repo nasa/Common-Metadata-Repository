@@ -4,7 +4,7 @@
             [cmr.common-app.services.kms-fetcher :as kms-fetcher]
             [cmr.common.services.search.results-model :as r]
             [camel-snake-kebab.core :as csk]
-            [clojure.data.xml :as x]))
+            [clojure.data.xml :as xml]))
 
 (def UNLIMITED_TERMS_SIZE
   "The maximum number of results to return from any terms query"
@@ -170,21 +170,21 @@
   "Converts a list of value-count-maps into an XML element."
   [ns-prefix value-count-maps]
   (let [with-prefix (partial key-with-prefix ns-prefix)]
-    (x/element (with-prefix :value-count-maps) {}
+    (xml/element (with-prefix :value-count-maps) {}
                (for [value-count-map value-count-maps]
                  (if-let [subfield-name (first (:subfields value-count-map))]
                    (when-let [subfield-facets (get value-count-map subfield-name)]
-                     (let [child-facets (x/element (with-prefix :facet)
+                     (let [child-facets (xml/element (with-prefix :facet)
                                                    {:field (name subfield-name)}
                                                    (value-count-maps->xml-element ns-prefix
                                                                                   subfield-facets))]
-                       (x/element (with-prefix :value-count-map) {}
-                                  [(x/element (with-prefix :value)
+                       (xml/element (with-prefix :value-count-map) {}
+                                  [(xml/element (with-prefix :value)
                                               {:count (:count value-count-map)}
                                               (:value value-count-map))
                                    child-facets])))
-                   (x/element (with-prefix :value-count-map) {}
-                              (x/element (with-prefix :value)
+                   (xml/element (with-prefix :value-count-map) {}
+                              (xml/element (with-prefix :value)
                                          {:count (:count value-count-map)}
                                          (:value value-count-map))))))))
 
@@ -194,12 +194,12 @@
   (let [with-prefix (partial key-with-prefix ns-prefix)
         xml-element-content
         (if-let [subfield (first subfields)]
-          (x/element (with-prefix :facet)
+          (xml/element (with-prefix :facet)
                      {:field (name subfield)}
                      (value-count-maps->xml-element ns-prefix (get facet subfield)))
           (for [[value value-count] value-counts]
-            (x/element (with-prefix :value) {:count value-count} value)))]
-    (x/element (with-prefix :facet) {:field (name field)} xml-element-content)))
+            (xml/element (with-prefix :value) {:count value-count} value)))]
+    (xml/element (with-prefix :facet) {:field (name field)} xml-element-content)))
 
 (defn facets->xml-element
   "Converts a facets result into an XML element"
@@ -207,7 +207,7 @@
    (facets->xml-element nil facets))
   ([ns-prefix facets]
    (when facets
-     (x/element (key-with-prefix ns-prefix :facets) {}
+     (xml/element (key-with-prefix ns-prefix :facets) {}
                 (map (partial facet->xml-element ns-prefix) facets)))))
 
 (def cmr-facet-name->echo-facet-keyword
@@ -231,17 +231,17 @@
   [facet]
   (let [{:keys [field value-counts]} facet
         field-key (cmr-facet-name->echo-facet-keyword field)]
-    (x/element field-key {:type "array"}
+    (xml/element field-key {:type "array"}
                (for [[value value-count] value-counts]
-                 (x/element field-key {}
-                            (x/element :term {} value)
-                            (x/element :count {:type "integer"} value-count))))))
+                 (xml/element field-key {}
+                            (xml/element :term {} value)
+                            (xml/element :count {:type "integer"} value-count))))))
 
 (defn facets->echo-xml-element
   "Helper function for converting facets into an XML element in echo format"
   [facets]
   (when facets
-    (x/element :hash {}
+    (xml/element :hash {}
                (map facet->echo-xml-element
                     ;; Only include facets which are present in ECHO
                     (filter #(cmr-facet-name->echo-facet-keyword (:field %))

@@ -4,7 +4,7 @@
   (:require [cmr.spatial.orbits.swath-geometry :as swath]
             [cmr.search.services.query-helper-service :as query-helper]
             [cheshire.core :as json]
-            [clojure.string :as str]))
+            [clojure.string :as string]))
 
 (def orbit-elastic-fields
   "This is a set of the elastic fields that need to be retrieved for adding orbit swaths"
@@ -66,8 +66,8 @@
          end-date :end-date
          orbit-calculated-spatial-domains-json :orbit-calculated-spatial-domains-json
          orbit-asc-crossing-lon :orbit-asc-crossing-lon} (:_source elastic-result)
-        start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
-        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
+        start-date (when start-date (string/replace (str start-date) #"\+0000" "Z"))
+        end-date (when end-date (string/replace (str end-date) #"\+0000" "Z"))
         orbit-calculated-spatial-domains (map ocsd-json->map orbit-calculated-spatial-domains-json)]
     (when (and orbit-asc-crossing-lon
                (not-empty orbit-calculated-spatial-domains))

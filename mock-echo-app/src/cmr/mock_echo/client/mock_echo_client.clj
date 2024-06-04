@@ -1,21 +1,7 @@
 (ns cmr.mock-echo.client.mock-echo-client
   "Contains functions for communicating with the mock echo api that aren't normal echo-rest
   operations"
-  (:require [camel-snake-kebab.core :as csk]
-            [cheshire.core :as json]
-            [clojure.string :as str]
-            [clojure.set :as set] 
-            [clj-http.client :as client]
-            [clj-time.format :as f]
-            [clj-time.core :as t]
-            [cmr.common.util :as util]
-            [cmr.common.log :as log :refer (debug info warn error)]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.services.health-helper :as hh]
-            [cmr.transmit.config :as config]
-            [cmr.transmit.connection :as conn]
-            [cmr.mock-echo.client.echo-functionality :as echo-func]
-            [schema.core :as s]))
+  (:require [cmr.mock-echo.client.echo-functionality :as echo-func]))
 
 (defn reset
   "Clears out all data in mock echo"

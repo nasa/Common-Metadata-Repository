@@ -1,6 +1,6 @@
 (ns cmr.umm.echo10.granule.two-d-coordinate-system
   "Contains functions for parsing and generating the ECHO10 granule two-d-coordinate-system element."
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-granule :as g]))
 
@@ -21,10 +21,10 @@
   (when two-d-coordinate-system
     (let [{:keys [name start-coordinate-1 end-coordinate-1
                   start-coordinate-2 end-coordinate-2]} two-d-coordinate-system]
-      (x/element :TwoDCoordinateSystem {}
-                 (x/element :StartCoordinate1 {} start-coordinate-1)
-                 (when end-coordinate-1 (x/element :EndCoordinate1 {} end-coordinate-1))
-                 (x/element :StartCoordinate2 {} start-coordinate-2)
-                 (when end-coordinate-2 (x/element :EndCoordinate2 {} end-coordinate-2))
-                 (x/element :TwoDCoordinateSystemName {} name)))))
+      (xml/element :TwoDCoordinateSystem {}
+                 (xml/element :StartCoordinate1 {} start-coordinate-1)
+                 (when end-coordinate-1 (xml/element :EndCoordinate1 {} end-coordinate-1))
+                 (xml/element :StartCoordinate2 {} start-coordinate-2)
+                 (when end-coordinate-2 (xml/element :EndCoordinate2 {} end-coordinate-2))
+                 (xml/element :TwoDCoordinateSystemName {} name)))))
 

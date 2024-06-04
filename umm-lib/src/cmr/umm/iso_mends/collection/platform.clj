@@ -1,6 +1,6 @@
 (ns cmr.umm.iso-mends.collection.platform
   "Contains functions for parsing and generating the ISO MENDS platform"
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-collection :as c]
             [cmr.umm.iso-mends.collection.instrument :as inst]
@@ -53,19 +53,19 @@
   [platforms]
   (for [platform platforms]
     (let [{:keys [short-name long-name type platform-id instruments]} platform]
-      (x/element
+      (xml/element
         :gmi:platform {}
-        (x/element
+        (xml/element
           :eos:EOS_Platform {:id platform-id}
-          (x/element :gmi:identifier {}
-                     (x/element :gmd:MD_Identifier {}
+          (xml/element :gmi:identifier {}
+                     (xml/element :gmd:MD_Identifier {}
                                 (h/iso-string-element :gmd:code short-name)
                                 (h/iso-string-element :gmd:description long-name)))
           (h/iso-string-element :gmi:description type)
           (if (empty? instruments)
-            (x/element :gmi:instrument {:gco:nilReason "inapplicable"})
+            (xml/element :gmi:instrument {:gco:nilReason "inapplicable"})
             (for [instrument instruments]
-              (x/element :gmi:instrument {:xlink:href (str "#" (:instrument-id instrument))}))))))))
+              (xml/element :gmi:instrument {:xlink:href (str "#" (:instrument-id instrument))}))))))))
 
 (defn- platform->keyword
   "Returns the ISO keyword for the given platform"

@@ -1,6 +1,6 @@
 (ns cmr.umm.iso-smap.collection.org
   "Contains functions for parsing and generating the ISO SMAP Archive and Processing Center"
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-collection :as c]
             [cmr.umm.iso-smap.helper :as h]))
@@ -49,28 +49,28 @@
   "Generate archive center element"
   [orgs]
   (when-let [archive-center (get-organization-name :archive-center orgs)]
-    (x/element
+    (xml/element
       :gmd:pointOfContact {}
-      (x/element
+      (xml/element
         :gmd:CI_ResponsibleParty {}
         (h/iso-string-element :gmd:organisationName archive-center)
-        (x/element
+        (xml/element
           :gmd:role {}
-          (x/element
+          (xml/element
             :gmd:CI_RoleCode (h/role-code-attributes "distributor") "distributor"))))))
 
 (defn generate-processing-center
   "Return processing center ignoring other type of organization like archive center"
   [orgs]
   (when-let [processing-center (get-organization-name :processing-center orgs)]
-    (x/element
+    (xml/element
       :gmd:citedResponsibleParty {}
-      (x/element
+      (xml/element
         :gmd:CI_ResponsibleParty {}
         (h/iso-string-element :gmd:organisationName processing-center)
-        (x/element
+        (xml/element
           :gmd:role {}
-          (x/element
+          (xml/element
             :gmd:CI_RoleCode (h/role-code-attributes "originator") "originator"))))))
 
 

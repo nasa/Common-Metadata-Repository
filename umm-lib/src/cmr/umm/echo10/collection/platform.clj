@@ -1,6 +1,6 @@
 (ns cmr.umm.echo10.collection.platform
   (:require
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common.xml :as cx]
    [cmr.umm.echo10.collection.characteristic :as char]
    [cmr.umm.echo10.collection.instrument :as inst]
@@ -30,13 +30,13 @@
 (defn generate-platforms
   [platforms]
   (when-not (empty? platforms)
-    (x/element
+    (xml/element
       :Platforms {}
       (for [platform platforms]
         (let [{:keys [short-name long-name type instruments characteristics]} platform]
-          (x/element :Platform {}
-                     (x/element :ShortName {} short-name)
-                     (x/element :LongName {} long-name)
-                     (x/element :Type {} type)
+          (xml/element :Platform {}
+                     (xml/element :ShortName {} short-name)
+                     (xml/element :LongName {} long-name)
+                     (xml/element :Type {} type)
                      (char/generate-characteristics characteristics)
                      (inst/generate-instruments instruments)))))))

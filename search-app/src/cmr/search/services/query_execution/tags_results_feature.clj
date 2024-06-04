@@ -1,7 +1,7 @@
 (ns cmr.search.services.query-execution.tags-results-feature
   "This enables the :include-tags feature for collection search results. When it is enabled
   collection search results will include the list of tags that are associated with the collection."
-  (:require [clojure.string :as str]
+  (:require [clojure.string :as string]
             [cmr.common.util :as util]
             [clojure.edn :as edn]
             [cmr.elastic-utils.search.es-query-to-elastic :as q2e]
@@ -15,8 +15,8 @@
   [value]
   (-> value
       ;; Escape * and ?
-      (str/replace "*" ".*")
-      (str/replace "?" ".?")))
+      (string/replace "*" ".*")
+      (string/replace "?" ".?")))
 
 (defn- match-patterns?
   "Returns true if the value matches one of the strings that can be parsed as regex."

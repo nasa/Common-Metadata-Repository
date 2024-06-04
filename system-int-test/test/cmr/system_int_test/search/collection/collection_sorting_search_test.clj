@@ -2,8 +2,8 @@
   "Tests searching for collections using basic collection identifiers"
   (:require
    [clj-time.core :as t]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.string :as string]
+   [clojure.test :refer [are deftest is join-fixtures testing use-fixtures]]
    [cmr.elastic-utils.search.es-messenger :as msg]
    [cmr.common.date-time-parser :as p]
    [cmr.indexer.config :as indexer-config]
@@ -109,18 +109,18 @@
   (let [value1 (get-field-value c1 field)
         value2 (get-field-value c2 field)
         [value1 value2] (if (= field :entry-title)
-                          [(str/trim value1) (str/trim value2)]
+                          [(string/trim value1) (string/trim value2)]
                           [value1 value2])
-        short-name #(str/lower-case (get-in % [:product :short-name]))
-        version #(str/lower-case (get-in % [:product :version-id]))
+        short-name #(string/lower-case (get-in % [:product :short-name]))
+        version #(string/lower-case (get-in % [:product :version-id]))
         s1 (short-name c1)
         s2 (short-name c2)
         v1 (version c1)
         v2 (version c2)]
 
     (if (not= value1 value2)
-      (let [processed-value1 (if (string? value1) (str/lower-case value1) value1)
-            processed-value2 (if (string? value2) (str/lower-case value2) value2)]
+      (let [processed-value1 (if (string? value1) (string/lower-case value1) value1)
+            processed-value2 (if (string? value2) (string/lower-case value2) value2)]
         (if descending?
           (compare processed-value2 processed-value1)
           (compare processed-value1 processed-value2)))
@@ -254,8 +254,8 @@
         c4 (make-coll "PROV1" "et80" 24 35)
         all-colls [c1 c2 c3 c4]]
     (index/wait-until-indexed)
-    (let [sorted-colls (sort-by (juxt (comp str/lower-case :entry-title)
-                                      (comp str/lower-case :provider-id)) all-colls)]
+    (let [sorted-colls (sort-by (juxt (comp string/lower-case :entry-title)
+                                      (comp string/lower-case :provider-id)) all-colls)]
       (is (d/refs-match-order?
             sorted-colls
             (search/find-refs :collection {:page-size 20})))

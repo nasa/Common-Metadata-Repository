@@ -1,6 +1,6 @@
 (ns cmr.umm.echo10.collection.temporal
   "Contains functions for parsing and generating the ECHO10 dialect."
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-collection :as c]
             [cmr.umm.generator-util :as gu]))
@@ -47,7 +47,7 @@
   (when temporal
     (let [{:keys [time-type date-type temporal-range-type precision-of-seconds
                   ends-at-present-flag range-date-times single-date-times periodic-date-times]} temporal]
-      (x/element :Temporal {}
+      (xml/element :Temporal {}
                  (gu/optional-elem :TimeType time-type)
                  (gu/optional-elem :DateType date-type)
                  (gu/optional-elem :TemporalRangeType temporal-range-type)
@@ -56,22 +56,22 @@
 
                  (for [range-date-time range-date-times]
                    (let [{:keys [beginning-date-time ending-date-time]} range-date-time]
-                     (x/element :RangeDateTime {}
+                     (xml/element :RangeDateTime {}
                                 (when beginning-date-time
-                                  (x/element :BeginningDateTime {} (str beginning-date-time)))
+                                  (xml/element :BeginningDateTime {} (str beginning-date-time)))
                                 (when ending-date-time
-                                  (x/element :EndingDateTime {} (str ending-date-time))))))
+                                  (xml/element :EndingDateTime {} (str ending-date-time))))))
 
                  (for [single-date-time single-date-times]
-                   (x/element :SingleDateTime {} (str single-date-time)))
+                   (xml/element :SingleDateTime {} (str single-date-time)))
 
                  (for [periodic-date-time periodic-date-times]
                    (let [{:keys [name start-date end-date duration-unit duration-value
                                  period-cycle-duration-unit period-cycle-duration-value]} periodic-date-time]
-                     (x/element :PeriodicDateTime {}
+                     (xml/element :PeriodicDateTime {}
                                 (gu/optional-elem :Name name)
-                                (when start-date (x/element :StartDate {} (str start-date)))
-                                (when end-date (x/element :EndDate {} (str end-date)))
+                                (when start-date (xml/element :StartDate {} (str start-date)))
+                                (when end-date (xml/element :EndDate {} (str end-date)))
                                 (gu/optional-elem :DurationUnit duration-unit)
                                 (gu/optional-elem :DurationValue duration-value)
                                 (gu/optional-elem :PeriodCycleDurationUnit period-cycle-duration-unit)

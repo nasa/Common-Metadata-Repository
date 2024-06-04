@@ -4,7 +4,7 @@
   (:require [cmr.umm.umm-collection :as c]
             [cmr.umm.dif.collection.extended-metadata :as em]
             [cmr.spatial.mbr :as m]
-            [clojure.data.xml :as x]
+            [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [camel-snake-kebab.core :as csk])
   (:import cmr.spatial.mbr.Mbr))
@@ -50,9 +50,9 @@
   [spatial-coverage]
   (let [brs (filter #(= Mbr (type %)) (:geometries spatial-coverage))]
     (map (fn [br]
-           (x/element :Spatial_Coverage {}
-                      (x/element :Southernmost_Latitude {} (:south br))
-                      (x/element :Northernmost_Latitude {} (:north br))
-                      (x/element :Westernmost_Longitude {} (:west br))
-                      (x/element :Easternmost_Longitude {} (:east br))))
+           (xml/element :Spatial_Coverage {}
+                      (xml/element :Southernmost_Latitude {} (:south br))
+                      (xml/element :Northernmost_Latitude {} (:north br))
+                      (xml/element :Westernmost_Longitude {} (:west br))
+                      (xml/element :Easternmost_Longitude {} (:east br))))
          brs)))

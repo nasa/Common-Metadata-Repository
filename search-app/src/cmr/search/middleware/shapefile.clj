@@ -1,20 +1,11 @@
 (ns cmr.search.middleware.shapefile
   "Contains parameter converters for shapefile parameter"
   (:require
-   [clojure.java.io :as io]
-   [clojure.string :as str]
    [ring.middleware.multipart-params :refer [wrap-multipart-params]]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.api.errors :as api-errors]
    [cmr.common.log :refer [debug error]]
-   [cmr.common.mime-types :as mt]
-   [cmr.elastic-utils.search.es-group-query-conditions :as gc]
-   [cmr.elastic-utils.search.es-params-converter :as p]
-   [cmr.common.services.errors :as errors]
-   [cmr.search.models.query :as qm]
-   [cmr.search.services.parameters.converters.geojson :as geojson]
-   [cmr.search.services.parameters.converters.geometry :as geo]
-   [cmr.common.util :as util])
+   [cmr.common.services.errors :as errors])
   (:import
    (java.io BufferedInputStream File FileReader FileOutputStream FileInputStream)
    (java.nio.file Files)

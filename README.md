@@ -113,9 +113,9 @@ after entering `uberjar` in each step above.
 Note: building uberjars will interfere with your repl. If you want to use your repl post-build you will need to,
 `rm -f ./dev-system/target/`
 
-## Using VS Code Clava extenstion
+## Using VS Code Calva extenstion
 VS Code has an extension that allows for easier develop of clojure applications.
-Developers can get setup via: [Getting Started with Clava](https://calva.io/getting-started/)
+Developers can get setup via: [Getting Started with Calva](https://calva.io/getting-started/)
 
 ## Testing CMR
 

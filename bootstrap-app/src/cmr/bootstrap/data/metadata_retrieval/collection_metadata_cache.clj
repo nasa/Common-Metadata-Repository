@@ -9,7 +9,7 @@
                  * various format keys each mapped to compressed metadata."
   (:require
    [clj-time.core :as t]
-   [clojure.set :as cset]
+   [clojure.set :as set]
    [cmr.common-app.data.metadata-retrieval.collection-metadata-cache :as cmn-coll-metadata-cache]
    [cmr.common-app.data.metadata-retrieval.revision-format-map :as crfm]
    [cmr.bootstrap.data.metadata-retrieval.metadata-transformer :as metadata-transformer]
@@ -40,7 +40,7 @@
 (defn cached-formats
   "This is a set of formats that are cached."
   []
-  (cset/difference all-formats (non-cached-collection-metadata-formats)))
+  (set/difference all-formats (non-cached-collection-metadata-formats)))
 
 (defn- concept-tuples->cache-map
   "Takes a set of concept tuples fetches the concepts from metadata db, converts them to revision

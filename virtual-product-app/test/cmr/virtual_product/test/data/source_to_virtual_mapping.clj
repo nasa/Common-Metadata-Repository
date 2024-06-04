@@ -1,9 +1,7 @@
 (ns cmr.virtual-product.test.data.source-to-virtual-mapping
-  (:require [clojure.test :refer :all]
-            [clojure.string :as str]
+  (:require [clojure.test :refer [are deftest is]]
             [clojure.java.io :as io]
             [cmr.common.util :as util]
-            [cmr.common.mime-types :as mt]
             [cmr.umm.umm-granule :as umm-g]
             [cmr.umm.echo10.granule :as g]
             [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))

@@ -2,7 +2,7 @@
   "Provide functions to parse and generate DIF Extended_Metadata elements."
   (:require
    [clj-time.format :as f]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]))
 
@@ -23,5 +23,5 @@
   [doc]
   (for [metadata (select doc "/DIF/Extended_Metadata/Metadata")
         :let [group (value-of metadata "Group")]
-        :when (and (some? group) (str/includes? (str/lower-case group) "additionalattribute"))]
+        :when (and (some? group) (string/includes? (string/lower-case group) "additionalattribute"))]
     (xml-elem->additional-attribute metadata)))

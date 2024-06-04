@@ -1,6 +1,6 @@
 (ns cmr.umm.iso-mends.collection.associated-difs
   "Contains functions for parsing and generating the ISO MENDS associated difs"
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [cmr.umm.iso-mends.collection.helper :as h]))
 
@@ -19,8 +19,8 @@
 (defn generate-associated-difs
   [difs]
   (for [dif difs]
-    (x/element :gmd:identifier {}
-               (x/element :gmd:MD_Identifier {}
+    (xml/element :gmd:identifier {}
+               (xml/element :gmd:MD_Identifier {}
                           (h/iso-string-element :gmd:code dif)
                           (h/iso-string-element :gmd:codeSpace "gov.nasa.gcmd")
                           (h/iso-string-element :gmd:description "DIFEntryId")))))

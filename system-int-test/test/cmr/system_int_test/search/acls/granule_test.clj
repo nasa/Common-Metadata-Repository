@@ -1,9 +1,8 @@
 (ns cmr.system-int-test.search.acls.granule-test
   "Tests searching for collections with ACLs in place."
   (:require
-   [clojure.test :refer :all]
-   [clojure.string :as str]
-   [cmr.common.services.messages :as msg]
+   [clojure.test :refer [are deftest is testing use-fixtures]]
+   [clojure.string :as string]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
    [cmr.system-int-test.utils.index-util :as index]
@@ -260,7 +259,7 @@
                           guest-permitted-granule-colls
                           (str "granules.atom?token=" guest-token
                                "&page_size=100&concept_id="
-                               (str/join "&concept_id=" concept-ids)))]
+                               (string/join "&concept_id=" concept-ids)))]
           (is (= gran-atom (:results (search/find-concepts-atom :granule {:token guest-token
                                                                           :page-size 100
                                                                           :concept-id concept-ids})))))))
@@ -280,7 +279,7 @@
                           guest-permitted-granule-colls
                           (str "granules.json?token=" guest-token
                                "&page_size=100&concept_id="
-                               (str/join "&concept_id=" concept-ids)))]
+                               (string/join "&concept_id=" concept-ids)))]
           (is (= gran-atom (:results (search/find-concepts-json :granule {:token guest-token
                                                                           :page-size 100
                                                                           :concept-id concept-ids})))))))

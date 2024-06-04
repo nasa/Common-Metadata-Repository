@@ -4,7 +4,7 @@
    a list of platform alias shortnames for that given platform shortname."
   (:require
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common-app.data.humanizer-alias-cache :as cmn-humanizer-alias-cache]))
 
@@ -17,7 +17,7 @@
         field-aliases
          (for [coll-field fields
                :let [coll-field-name (get coll-field field-name-key)
-                     aliases-set (set (get field-alias-map (str/upper-case coll-field-name)))]
+                     aliases-set (set (get field-alias-map (string/upper-case coll-field-name)))]
                 alias (set/difference aliases-set field-names-set)]
            (assoc coll-field field-name-key alias))]
     field-aliases))

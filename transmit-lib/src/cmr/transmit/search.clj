@@ -2,7 +2,7 @@
   "Provide functions to invoke search app"
   (:require
    [clj-http.client :as client]
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common.api.context :as ch]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -60,7 +60,7 @@
 (defn- parse-granule-response
   "Parse xml search response body and return the granule references"
   [xml]
-  (let [parsed (x/parse-str xml)
+  (let [parsed (xml/parse-str xml)
         ref-elems (cx/elements-at-path parsed [:references :reference])]
     (map #(util/remove-nil-keys
             {:concept-id (cx/string-at-path % [:id])
@@ -70,7 +70,7 @@
 (defn parse-collection-response
   "Parse xml search response body and return the collection references"
   [xml]
-  (let [parsed (x/parse-str xml)
+  (let [parsed (xml/parse-str xml)
         ref-elems (cx/elements-at-path parsed [:references :reference])]
     (map #(util/remove-nil-keys
             {:concept-id (cx/string-at-path % [:id])

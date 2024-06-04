@@ -1,6 +1,6 @@
 (ns cmr.umm.echo10.collection.personnel
   "Provides functions to parse and generate ECHO10 personnel related elements."
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [cmr.common.util :as util]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-collection :as c]))
@@ -40,29 +40,29 @@
   "Generates the XML entry for a ContactPerson."
   [first-name middle-name last-name]
   (let [first-name (or first-name DEFAULT_FIRST_NAME)]
-    (x/element :ContactPersons {}
-               (x/element :ContactPerson {}
-                          (x/element :FirstName {}
+    (xml/element :ContactPersons {}
+               (xml/element :ContactPerson {}
+                          (xml/element :FirstName {}
                                      (util/trunc first-name 255))
                           (when middle-name
-                            (x/element :MiddleName {}
+                            (xml/element :MiddleName {}
                                        (util/trunc middle-name 255)))
-                          (x/element :LastName {}
+                          (xml/element :LastName {}
                                      (util/trunc last-name 255))))))
 
 (defn generate-personnel
   "Generates the XML entries for a collection's personnel field."
   [personnel]
   (when (not-empty personnel)
-    (x/element :Contacts {}
+    (xml/element :Contacts {}
                (for [{:keys [first-name middle-name last-name contacts roles]} personnel
                      :let [emails (filter #(= :email (:type %)) contacts)]]
-                 (x/element :Contact {}
+                 (xml/element :Contact {}
                             (when-let [role (first roles)]
-                              (x/element :Role {} (util/trunc role 80)))
+                              (xml/element :Role {} (util/trunc role 80)))
                             (when (not-empty emails)
-                              (x/element :OrganizationEmails {}
+                              (xml/element :OrganizationEmails {}
                                          (for [email emails]
-                                           (x/element :Email {}
+                                           (xml/element :Email {}
                                                       (util/trunc (:value email) 1024)))))
                             (generate-contact-person first-name middle-name last-name))))))

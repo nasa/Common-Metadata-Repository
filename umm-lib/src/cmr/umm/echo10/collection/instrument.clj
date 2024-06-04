@@ -1,5 +1,5 @@
 (ns cmr.umm.echo10.collection.instrument
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-collection :as c]
             [cmr.umm.echo10.collection.sensor :as sensor]
@@ -30,21 +30,21 @@
 (defn generate-operation-modes
   [operation-modes]
   (when (seq operation-modes)
-    (x/element :OperationModes {}
+    (xml/element :OperationModes {}
                (for [operation-mode operation-modes]
-                 (x/element :OperationMode {} operation-mode)))))
+                 (xml/element :OperationMode {} operation-mode)))))
 
 (defn generate-instruments
   [instruments]
   (when (seq instruments)
-    (x/element
+    (xml/element
       :Instruments {}
       (for [instrument instruments]
         (let [{:keys [long-name short-name technique sensors characteristics operation-modes]} instrument]
-          (x/element :Instrument {}
-                     (x/element :ShortName {} short-name)
-                     (when long-name (x/element :LongName {} long-name))
-                     (when technique (x/element :Technique {} technique))
+          (xml/element :Instrument {}
+                     (xml/element :ShortName {} short-name)
+                     (when long-name (xml/element :LongName {} long-name))
+                     (when technique (xml/element :Technique {} technique))
                      (ch/generate-characteristics characteristics)
                      (sensor/generate-sensors sensors)
                      (generate-operation-modes operation-modes)))))))

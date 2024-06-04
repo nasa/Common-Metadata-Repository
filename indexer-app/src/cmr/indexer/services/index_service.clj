@@ -4,7 +4,7 @@
    [cheshire.core :as json]
    [clj-time.core :as t]
    [clj-time.format :as f]
-   [clojure.set :as cset]
+   [clojure.set :as set]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.cache :as cache]
    [cmr.common.concepts :as cs]
@@ -440,7 +440,7 @@
   (let [combined-assocs (meta-db/find-associations context concept)
         grouped-assocs (group-by :concept-type combined-assocs)
         new-key-map (into {} (map #(create-association-map-keys %) (keys grouped-assocs)))]
-    (cset/rename-keys grouped-assocs new-key-map)))
+    (set/rename-keys grouped-assocs new-key-map)))
 
 (defmulti index-concept
   "Index the given concept with the parsed umm record. Indexing tag association and variable

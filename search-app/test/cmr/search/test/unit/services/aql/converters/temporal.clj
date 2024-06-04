@@ -1,7 +1,6 @@
 (ns cmr.search.test.unit.services.aql.converters.temporal
-  (:require [clojure.test :refer :all]
-            [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
+  (:require [clojure.test :refer [are deftest testing]]
+            [clojure.data.xml :as xml]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.search.services.aql.conversion :as a]
             [cmr.search.services.aql.converters.temporal]
@@ -11,7 +10,7 @@
 (defn- aql-temporal-elem->condition
   [aql-snippet]
   (let [aql (format "<temporal>%s</temporal>" aql-snippet)
-        xml-struct (x/parse-str aql)]
+        xml-struct (xml/parse-str aql)]
     (a/element->condition :collection xml-struct)))
 
 (deftest aql-temporal-conversion-test

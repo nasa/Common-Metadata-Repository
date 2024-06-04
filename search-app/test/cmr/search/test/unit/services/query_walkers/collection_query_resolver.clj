@@ -1,9 +1,8 @@
 (ns cmr.search.test.unit.services.query-walkers.collection-query-resolver
-  (:require [clojure.test :refer :all]
+  (:require [clojure.test :refer [deftest is testing]]
             [cmr.search.services.query-walkers.collection-query-resolver :as c]
-            [cmr.search.test.unit.models.helpers :refer :all]
-            [clojure.string :as str]
-            [cmr.search.models.query :as q]
+            [cmr.search.test.unit.models.helpers :refer [and-conds coll-query-cond generic or-conds other]]
+            [clojure.string :as string]
             [cmr.common.services.search.query-model :as cqm]
             [clojure.set :as set]))
 (defn query
@@ -27,7 +26,7 @@
                            collection-ids-to-find)]
       (if (empty? collection-ids)
         [#{} cqm/match-none]
-        [collection-ids (generic (str/join "," collection-ids))])))
+        [collection-ids (generic (string/join "," collection-ids))])))
 
   (is-collection-query-cond? [_] true))
 

@@ -1,7 +1,6 @@
 (ns cmr.search.services.aql.converters.spatial
   "Handles converting AQL spatial conditions into spatial search conditions"
-  (:require [clojure.data.xml :as x]
-            [cmr.search.services.aql.conversion :as c]
+  (:require [cmr.search.services.aql.conversion :as c]
             [cmr.common.xml :as cx]
             [cmr.spatial.point :as p]
             [cmr.spatial.ring-relations :as rr]

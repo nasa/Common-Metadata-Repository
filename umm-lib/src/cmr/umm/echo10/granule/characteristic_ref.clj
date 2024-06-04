@@ -1,5 +1,5 @@
 (ns cmr.umm.echo10.granule.characteristic-ref
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-granule :as g]))
 
@@ -20,9 +20,9 @@
 (defn generate-characteristic-refs
   [characteristic-refs]
   (when (seq characteristic-refs)
-    (x/element
+    (xml/element
       :Characteristics {}
       (for [{:keys [name value]} characteristic-refs]
-        (x/element :Characteristic {}
-                   (x/element :Name {} name)
-                   (x/element :Value {} value))))))
+        (xml/element :Characteristic {}
+                   (xml/element :Name {} name)
+                   (xml/element :Value {} value))))))

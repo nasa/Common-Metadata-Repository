@@ -1,7 +1,7 @@
 (ns cmr.common.api.web-server
   "Defines a web server component."
   (:require
-   [clojure.core.reducers :as reducers]
+   [clojure.core.reducers :as r]
    [cmr.common.config :refer [defconfig]]
    [cmr.common.lifecycle :as lifecycle]
    [cmr.common.log :refer [info error]]
@@ -81,8 +81,8 @@
   [buffers total-bytes]
   (let [request-body-bytes (->> buffers
                                 persistent!
-                                (reducers/mapcat vec)
-                                reducers/foldcat
+                                (r/mapcat vec)
+                                r/foldcat
                                 (into [])
                                 byte-array)]
     (ByteArrayInputStream. request-body-bytes 0 total-bytes)))

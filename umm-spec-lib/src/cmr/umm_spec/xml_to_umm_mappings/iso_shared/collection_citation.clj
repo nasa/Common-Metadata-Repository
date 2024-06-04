@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.xml-to-umm-mappings.iso-shared.collection-citation
   "Functions for parsing UMM collection citation records out of ISO 19115-2 XML documents."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common.xml.parse :refer [value-of]]
    [cmr.common.xml.simple-xpath :refer [select]]
@@ -105,8 +105,8 @@
                 psname (value-of creator-editor-party position-name-xpath)
                 idosname (str idname osname)]]
       (if (= psname "editor")
-        {:editor (when idosname (str/trim idosname))}
-        {:creator (when idosname (str/trim idosname))}))))
+        {:editor (when idosname (string/trim idosname))}
+        {:creator (when idosname (string/trim idosname))}))))
 
 (defn- get-publisher-release-place
   "Get publisher, release place from the pub-rel-pl-parties.
@@ -138,8 +138,8 @@
                         (str " " email))
                 release-place (str del-pt city state zip country email)]]
       (if (= psname "release place")
-        {:release-place (when release-place (str/trim release-place))}
-        {:publisher (when idosname (str/trim idosname))}))))
+        {:release-place (when release-place (string/trim release-place))}
+        {:publisher (when idosname (string/trim idosname))}))))
 
 (defn- get-online-resources
   "Get the online resources."

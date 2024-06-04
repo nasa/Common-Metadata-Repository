@@ -1,23 +1,22 @@
 (ns cmr.search.test.unit.services.aql.conversion
-  (:require [clojure.test :refer :all]
-            [clojure.data.xml :as x]
+  (:require [clojure.test :refer [are deftest testing]]
+            [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [cmr.common.date-time-parser :as dt-parser]
             [cmr.search.services.aql.conversion :as a]
             [cmr.common.services.search.query-model :as q]
             [cmr.elastic-utils.search.es-group-query-conditions :as gc]
-            [cmr.search.services.aql.conversion :as c]
             [cmr.common.test.test-util :as tu]))
 
 (defn- aql-string-elem->condition
   [aql-snippet]
   (let [aql (format "<query><dataCenterId>%s</dataCenterId></query>" aql-snippet)
-        xml-struct (x/parse-str aql)]
+        xml-struct (xml/parse-str aql)]
     (a/element->condition :collection (cx/element-at-path xml-struct [:dataCenterId]))))
 
 (deftest remove-outer-single-quotes-test
   (are [value expected]
-       (= expected (c/remove-outer-single-quotes value))
+       (= expected (a/remove-outer-single-quotes value))
        nil nil
        "" ""
        "'" "'"
@@ -32,7 +31,7 @@
 
 (deftest aql-pattern-conversion
   (are [aql expected]
-       (= expected (c/aql-pattern->cmr-pattern aql))
+       (= expected (a/aql-pattern->cmr-pattern aql))
        "" ""
        "normal" "normal"
        "_b_c_" "?b?c?"
@@ -129,7 +128,7 @@
 (defn- aql-date-range-elem->condition
   [aql-snippet]
   (let [aql (format "<ECHOLastUpdate><dateRange>%s</dateRange></ECHOLastUpdate>" aql-snippet)
-        xml-struct (x/parse-str aql)]
+        xml-struct (xml/parse-str aql)]
     (a/element->condition :collection xml-struct)))
 
 (deftest aql-date-range-conversion-test
@@ -161,7 +160,7 @@
 
 (defn- aql-boolean-elem->condition
   [aql-snippet]
-  (let [xml-struct (x/parse-str aql-snippet)]
+  (let [xml-struct (xml/parse-str aql-snippet)]
     (a/element->condition :collection xml-struct)))
 
 (deftest aql-boolean-conversion-test

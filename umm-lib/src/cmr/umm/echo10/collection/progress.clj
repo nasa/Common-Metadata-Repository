@@ -1,7 +1,7 @@
 (ns cmr.umm.echo10.collection.progress
   "Functions for parsing/generating UMM collection progress from/to
   ECHO10 XML."
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [clojure.string :as string]
             [cmr.common.xml :as cx]))
 
@@ -23,4 +23,4 @@
 (defn generate
   [collection]
   (when-let [prog (:collection-progress collection)]
-    (x/element :CollectionState {} (umm->echo prog))))
+    (xml/element :CollectionState {} (umm->echo prog))))

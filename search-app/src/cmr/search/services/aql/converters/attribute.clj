@@ -1,6 +1,6 @@
 (ns cmr.search.services.aql.converters.attribute
   "Contains functions for parsing, validating and converting additionalAttributes aql element to query conditions"
-  (:require [clojure.string :as s]
+  (:require [clojure.string :as string]
             [cmr.common.xml :as cx]
             [cmr.search.services.aql.conversion :as a]
             [cmr.search.models.query :as qm]
@@ -25,8 +25,8 @@
         condition (qm/map->AttributeRangeCondition
                     {:type attrib-type
                      :name attrib-name
-                     :min-value (when-not (s/blank? minv) minv)
-                     :max-value (when-not (s/blank? maxv) maxv)})]
+                     :min-value (when-not (string/blank? minv) minv)
+                     :max-value (when-not (string/blank? maxv) maxv)})]
     (p/parse-component-type condition false)))
 
 (defn- time-from-strings

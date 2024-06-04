@@ -16,13 +16,11 @@
     [cheshire.core :as json]
     [clj-http.client :as client]
     [clojure.data.csv :as csv]
-    [clojure.data.xml :as xml]
-    [clojure.java.io :as jio]
+    [clojure.java.io :as io]
     [clojure.set :as set]
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.common.log :as log :refer (debug info warn error)]
     [cmr.common.util :as util]
-    [cmr.common.xml.simple-xpath :refer [select]]
     [cmr.transmit.config :as config]
     [cmr.transmit.connection :as conn]))
 
@@ -176,7 +174,7 @@
   "Remove any keys from a map which have nil or empty string values."
   [m]
   (util/remove-map-keys
-    (fn [v] (or (nil? v) (and (string? v) (str/blank? v))))
+    (fn [v] (or (nil? v) (and (string? v) (string/blank? v))))
     m))
 
 (def NUM_HEADER_LINES
@@ -261,13 +259,13 @@
   ;;     "{\"platforms\":\"static\"}"
   (let [gcmd-resource-name (keyword-scheme->kms-resource keyword-scheme)]
     (info (format "Loading KMS resource [%s] for [%s]..." gcmd-resource-name keyword-scheme))
-    (if (= "static" (str/lower-case gcmd-resource-name))
+    (if (= "static" (string/lower-case gcmd-resource-name))
       ;; load the static file from the resource directory under indexer
       (let [gcmd-resource-path (str (format "static_kms_keywords/%s.csv" (name keyword-scheme)))
-            data (slurp (jio/resource gcmd-resource-path))
-            data-as-rows (str/split-lines (or data ""))
-            version-info (first (str/split (first data-as-rows) #","))
-            header (str/split-lines (second data-as-rows))]
+            data (slurp (io/resource gcmd-resource-path))
+            data-as-rows (string/split-lines (or data ""))
+            version-info (first (string/split (first data-as-rows) #","))
+            header (string/split-lines (second data-as-rows))]
         (info (format "Loading static KMS resource from %s for %s. %s. Found keys [%s]."
                       gcmd-resource-path
                       gcmd-resource-name
@@ -317,5 +315,5 @@
   (get-keywords-from-system :measurement-name)
   (config/set-kms-scheme-override-json! "{\"platforms\": \"static\"}")
   (first (get-keywords-from-system :platforms))
-  (parse-entries-from-csv :platforms (slurp (jio/resource "static_kms_keywords/platforms.csv")))
+  (parse-entries-from-csv :platforms (slurp (io/resource "static_kms_keywords/platforms.csv")))
   )

@@ -1,9 +1,8 @@
 (ns cmr.metadata-db.services.provider-validation
   "Contains functions to validate provider."
   (:require [cmr.common.validations.core :as v]
-            [cmr.common.services.errors :as errors]
             [cmr.common.services.messages :as cmsg]
-            [clojure.string :as s]
+            [clojure.string :as string]
             [cmr.metadata-db.services.messages :as msg]))
 
 (def small-provider-id
@@ -36,7 +35,7 @@
 (defn- field-blank-validation
   "Validates the string value isn't blank."
   [field-path value]
-  (when (s/blank? value)
+  (when (string/blank? value)
     {field-path ["%s cannot be blank"]}))
 
 (defn- provider-id-format-validation

@@ -1,5 +1,5 @@
 (ns cmr.umm.echo10.collection.product-specific-attribute
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-collection :as c]
             [cmr.umm.generator-util :as gu]
@@ -36,14 +36,14 @@
 (defn generate-product-specific-attributes
   [psas]
   (when (seq psas)
-    (x/element
+    (xml/element
       :AdditionalAttributes {}
       (for [psa psas]
         (let [{:keys [data-type name description parameter-range-begin parameter-range-end value]} psa]
-          (x/element :AdditionalAttribute {}
-                     (x/element :Name {} name)
-                     (x/element :DataType {} (psa/gen-data-type data-type))
-                     (x/element :Description {} description)
+          (xml/element :AdditionalAttribute {}
+                     (xml/element :Name {} name)
+                     (xml/element :DataType {} (psa/gen-data-type data-type))
+                     (xml/element :Description {} description)
                      (gu/optional-elem :ParameterRangeBegin parameter-range-begin)
                      (gu/optional-elem :ParameterRangeEnd parameter-range-end)
                      (gu/optional-elem :Value value)))))))

@@ -2,8 +2,8 @@
   "Integration test for AQL specific search issues. General AQL search tests will be included
   in other files by condition."
   (:require
-    [clojure.string :as s]
-    [clojure.test :refer :all]
+    [clojure.string :as string]
+    [clojure.test :refer [are deftest is testing use-fixtures]]
     [cmr.search.services.messages.common-messages :as msg]
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
@@ -167,7 +167,7 @@
 
     (testing "multiple collection conditions with aql"
       (are [items aql-snippets]
-           (let [conditions (s/join (map #(format "<collectionCondition>%s</collectionCondition>" %)
+           (let [conditions (string/join (map #(format "<collectionCondition>%s</collectionCondition>" %)
                                          aql-snippets))
                  aql-string (str "<query><for value=\"collections\"/>"
                                  "<dataCenterId><all/></dataCenterId> <where>"

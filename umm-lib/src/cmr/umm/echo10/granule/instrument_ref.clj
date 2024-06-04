@@ -1,5 +1,5 @@
 (ns cmr.umm.echo10.granule.instrument-ref
-  (:require [clojure.data.xml :as x]
+  (:require [clojure.data.xml :as xml]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-granule :as g]
             [cmr.umm.echo10.granule.characteristic-ref :as cref]
@@ -27,11 +27,11 @@
 (defn generate-instrument-refs
   [instrument-refs]
   (when (seq instrument-refs)
-    (x/element
+    (xml/element
       :Instruments {}
       (for [{:keys [short-name characteristic-refs sensor-refs operation-modes]} instrument-refs]
-          (x/element :Instrument {}
-                     (x/element :ShortName {} short-name)
+          (xml/element :Instrument {}
+                     (xml/element :ShortName {} short-name)
                      (cref/generate-characteristic-refs characteristic-refs)
                      (sensor/generate-sensor-refs sensor-refs)
                      (ins/generate-operation-modes operation-modes))))))

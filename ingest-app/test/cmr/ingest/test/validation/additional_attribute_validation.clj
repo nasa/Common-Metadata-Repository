@@ -1,7 +1,7 @@
 (ns cmr.ingest.test.validation.additional-attribute-validation
   (:require
-    [clojure.string :as str]
-    [clojure.test :refer :all]
+    [clojure.string :as string]
+    [clojure.test :refer [are deftest is]]
     [cmr.common.util :as util]
     [cmr.ingest.validation.additional-attribute-validation :as v]
     [cmr.umm-spec.additional-attribute :as aa]))
@@ -50,8 +50,8 @@
 (deftest case-insensitivity-test
   (let [name "InT NaMe"
         type "iNt"
-        prev-aa {:Name (str/lower-case name)
-                 :DataType (str/lower-case type)}
+        prev-aa {:Name (string/lower-case name)
+                 :DataType (string/lower-case type)}
         aa {:Name name
             :DataType type}]
     (is (empty? (#'v/build-aa-deleted-searches [aa] [prev-aa])))

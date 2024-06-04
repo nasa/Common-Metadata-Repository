@@ -4,8 +4,8 @@
   It would be better if the type element within the descriptiveKeywords could identify the type of
   the keywords. But currently it is always set to 'theme'. We will propose to get this changed,
   but in the mean time, we will have to parse the keyword string to determine the type of the keyword."
-  (:require [clojure.data.xml :as x]
-            [clojure.string :as s]
+  (:require [clojure.data.xml :as xml]
+            [clojure.string :as string]
             [cmr.common.xml :as cx]
             [cmr.umm.umm-collection :as c]
             [cmr.umm.iso-smap.helper :as h])
@@ -40,8 +40,8 @@
 (defn- parse-keyword-str
   "Parse the keyword string into a vector of keyword fields"
   [keyword-str]
-  (map (comp #(if (empty? %) nil %) s/trim)
-       (s/split keyword-str KEYWORD_SEPARATOR)))
+  (map (comp #(if (empty? %) nil %) string/trim)
+       (string/split keyword-str KEYWORD_SEPARATOR)))
 
 (defn- keyword->keyword-type
   "Returns the keyword type for the given keyword string"
@@ -139,25 +139,25 @@
 
 (defn- generate-descriptive-keywords
   [keywords]
-  (x/element
+  (xml/element
     :gmd:descriptiveKeywords {}
-    (x/element
+    (xml/element
       :gmd:MD_Keywords {}
       (for [kw keywords]
         (generate-keyword kw))
-      (x/element
+      (xml/element
         :gmd:type {}
-        (x/element
+        (xml/element
           :gmd:MD_KeywordTypeCode
           {:codeList "http://www.isotc211.org/2005/resources/Codelist/gmxCodelists.xml#MD_KeywordTypeCode"
            :codeListValue "theme"}
           "theme"))
-      (x/element :gmd:thesaurusName {}
-                 (x/element :gmd:CI_Citation {}
-                            (x/element :gmd:title {}
-                                       (x/element :gco:CharacterString {}
+      (xml/element :gmd:thesaurusName {}
+                 (xml/element :gmd:CI_Citation {}
+                            (xml/element :gmd:title {}
+                                       (xml/element :gco:CharacterString {}
                                                   "NASA/GCMD Earth Science Keywords"))
-                            (x/element :gmd:date {:gco:nilReason c/not-provided}))))))
+                            (xml/element :gmd:date {:gco:nilReason c/not-provided}))))))
 
 (defn generate-keywords
   [keywords]

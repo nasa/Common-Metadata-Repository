@@ -3,13 +3,12 @@
   (:require
    [cheshire.core :as json]
    [clj-time.core :as t]
-   [clojure.spec.alpha :as spec]
+   [clojure.spec.alpha :as s]
    [clojure.string :as string]
    [cmr.common-app.config :as common-app-config]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.date-time-range-parser :as date-time-range-parser]
    [cmr.common.log :refer (debug info warn error)]
-   [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors] 
    [cmr.transmit.access-control :as access-control]
    [cmr.transmit.config :as config]
@@ -24,7 +23,7 @@
 
 (def time-constraint-pattern (re-pattern (str date-rx "," date-rx)))
 
-(spec/def ::time-constraint (spec/and
+(s/def ::time-constraint (s/and
                              string?
                              #(re-matches time-constraint-pattern %)))
 

@@ -3,18 +3,15 @@
   operations"
   (:require [camel-snake-kebab.core :as csk]
             [cheshire.core :as json]
-            [clojure.string :as str]
+            [clojure.string :as string]
             [clojure.set :as set]
             [clj-http.client :as client]
             [clj-time.format :as f]
-            [clj-time.core :as t]
             [cmr.common.util :as util]
             [cmr.common.log :as log :refer (debug info warn error)]
             [cmr.common.services.errors :as errors]
-            [cmr.common.services.health-helper :as hh]
             [cmr.transmit.config :as config]
-            [cmr.transmit.connection :as conn]
-            [schema.core :as s]))
+            [cmr.transmit.connection :as conn]))
             
 (defn request-options
   [conn]
@@ -80,13 +77,13 @@
   [sid]
   (if (keyword? sid)
     {:sid {:user_authorization_type_sid
-           {:user_authorization_type (-> sid name str/upper-case)}}}
+           {:user_authorization_type (-> sid name string/upper-case)}}}
     {:sid {:group_sid {:group_guid sid}}}))
 
 (defn cmr-ace->echo-ace
   [ace]
   (let [{:keys [permissions group-guid user-type]} ace]
-    (merge {:permissions (mapv (comp str/upper-case name) permissions)}
+    (merge {:permissions (mapv (comp string/upper-case name) permissions)}
            (cmr-sid->echo-sid (or group-guid user-type)))))
 
 

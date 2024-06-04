@@ -2,7 +2,7 @@
   "Functions to support concurrent bulk indexing."
   (:require
     [clj-time.coerce :as time-coerce]
-    [clojure.core.async :as ca :refer [<!!]]
+    [clojure.core.async :as async :refer [<!!]]
     [cmr.access-control.data.bulk-index :as ac-bulk-index]
     [cmr.bootstrap.embedded-system-helper :as helper]
     [cmr.common.concepts :as cc]
@@ -360,28 +360,28 @@
   (info "Starting background task for monitoring bulk provider indexing channels.")
   (let [core-async-dispatcher (:core-async-dispatcher system)]
     (let [channel (:provider-index-channel core-async-dispatcher)]
-      (ca/thread (while true
+      (async/thread (while true
                    (try ; catch any errors and log them, but don't let the thread die
                      (let [{:keys [provider-id start-index]} (<!! channel)]
                        (index-provider system provider-id start-index))
                      (catch Throwable e
                        (error e (.getMessage e)))))))
     (let [channel (:collection-index-channel core-async-dispatcher)]
-      (ca/thread (while true
+      (async/thread (while true
                    (try ; catch any errors and log them, but don't let the thread die
                      (let [{:keys [provider-id collection-id] :as options} (<!! channel)]
                        (index-granules-for-collection system provider-id collection-id options))
                      (catch Throwable e
                        (error e (.getMessage e)))))))
     (let [channel (:system-concept-channel core-async-dispatcher)]
-      (ca/thread (while true
+      (async/thread (while true
                    (try ; catch any errors and log them, but don't let the thread die
                      (let [{:keys [start-index]} (<!! channel)]
                        (index-system-concepts system start-index))
                      (catch Throwable e
                        (error e (.getMessage e)))))))
     (let [channel (:concept-id-channel core-async-dispatcher)]
-      (ca/thread (while true
+      (async/thread (while true
                   (try ; log errors but keep the thread alive)
                     (let [{:keys [provider-id concept-type concept-ids request]} (<!! channel)]
                       (if (= request :delete)
