@@ -32,7 +32,15 @@ jobs:
           docker run \
             -v $PWD/src:/src \
             --rm cljkondo/clj-kondo \
-            clj-kondo --parallel --lint src >> report.log
+            clj-kondo --parallel --lint \
+              access-control-app \
+              acl-lib \
+              common-app-lib \
+              common-lib \
+              elastic-utils-lib \
+              es-spatial-plugin \
+              message-queue-lib \
+            >> report.log
       - name: Report
         uses: actions/upload-artifact@v4
         with:
