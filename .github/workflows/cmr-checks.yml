@@ -29,17 +29,18 @@ jobs:
         run: |
           pwd > report.log
           ls -l >> report.log
+          echo -done- >> report.log
           docker run \
-            -v $PWD/src:/src \
+            --volume $PWD/src:/src \
             --rm cljkondo/clj-kondo \
-            pwd ; ls ; clj-kondo --parallel --lint \
+            clj-kondo --parallel --lint \
               /src/access-control-app \
               /src/acl-lib \
-              common-app-lib \
-              common-lib \
-              elastic-utils-lib \
-              es-spatial-plugin \
-              message-queue-lib \
+              /src/common-app-lib \
+              /src/common-lib \
+              /src/elastic-utils-lib \
+              /src/es-spatial-plugin \
+              /src/message-queue-lib \
             >> report.log
           cat report.log
         id: list-report
