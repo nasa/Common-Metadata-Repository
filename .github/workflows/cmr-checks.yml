@@ -30,10 +30,16 @@ jobs:
           pwd > report.log
           ls -l >> report.log
           echo -done- >> report.log
+          
           docker run \
             --volume $PWD/src:/src \
             --rm cljkondo/clj-kondo \
-            "ls ; pwd ; \
+            ls \
+            >> report.log
+          
+          docker run \
+            --volume $PWD/src:/src \
+            --rm cljkondo/clj-kondo \
             clj-kondo --parallel --lint \
               /src/access-control-app \
               /src/acl-lib \
@@ -42,7 +48,7 @@ jobs:
               /src/elastic-utils-lib \
               /src/es-spatial-plugin \
               /src/message-queue-lib \
-            >> report.log"
+            >> report.log
           cat report.log
         id: list-report
       - name: Report
