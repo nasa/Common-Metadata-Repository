@@ -34,7 +34,7 @@ jobs:
           docker run \
             --volume $PWD/src:/src \
             --rm cljkondo/clj-kondo \
-            ls \
+            tree -d -L 2 \
             >> report.log
           
           docker run \
