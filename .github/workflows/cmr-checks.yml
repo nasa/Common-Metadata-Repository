@@ -40,7 +40,7 @@ jobs:
           echo -done- >> report.log
           
           docker run \
-            --volume $PWD/src:/src \
+            --volume $PWD:/src \
             --rm cljkondo/clj-kondo \
             clj-kondo --parallel --lint \
               /src/access-control-app \
