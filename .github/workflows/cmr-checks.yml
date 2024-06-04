@@ -27,10 +27,12 @@ jobs:
         uses: actions/checkout@v4
       - name: Run Kondo Report
         run: |
+          pwd > report.log
+          ls -l >> report.log
           docker run \
             -v $PWD/src:/src \
             --rm cljkondo/clj-kondo \
-            clj-kondo --parallel --lint src > report.log
+            clj-kondo --parallel --lint src >> report.log
       - name: Report
         uses: actions/upload-artifact@v4
         with:
