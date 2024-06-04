@@ -45,7 +45,7 @@ jobs:
       - Name: Show
         id: show-report
         if: always()
-        -run: cat report.log
+        run: cat report.log
       - name: Report
         id: pub-report
         if: always()
