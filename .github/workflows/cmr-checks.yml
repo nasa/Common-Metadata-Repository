@@ -1,10 +1,9 @@
 name: CMR Checks
 
 on:
+  workflow_dispatch:
   pull_request:
     branches: [ master, main ]
-  workflow_dispatch:
-
 jobs:
   cloc:
     runs-on: ubuntu-latest
