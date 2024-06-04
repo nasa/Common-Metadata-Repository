@@ -7,7 +7,6 @@
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mt]
    [cmr.common.util :as util]
-   [cmr.common.log :refer [error warn info debug]]
    [cmr.elastic-utils.search.es-query-validation :as cqv]
    [cmr.system-int-test.data2.core :as d]
    [cmr.system-int-test.data2.granule :as dg]
@@ -84,8 +83,7 @@
     (util/are3
      [query-params]
      (let [response (search/find-concepts-json :granule (merge query-params
-                                                               {:include-facets "v2"}))
-           _ (error "Printing the response " response)]
+                                                               {:include-facets "v2"}))]
        (is (= 200 (:status response)))
        (is (= 0 (get-in response [:hits]))))
      
