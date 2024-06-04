@@ -33,8 +33,7 @@ jobs:
             sh -c '\
               cd /src && \
               clj-kondo --parallel --lint \
-                access-control-app/src \
-                acl-lib/src \
+                access-control-app/src acl-lib/src \
                 common-app-lib/src \
                 common-lib/src \
                 elastic-utils-lib/src \
