@@ -33,12 +33,7 @@ jobs:
             sh -c '\
               cd /src && \
               clj-kondo --parallel --lint \
-                access-control-app/src acl-lib/src \
-                common-app-lib/src \
-                common-lib/src \
-                elastic-utils-lib/src \
-                es-spatial-plugin/src \
-                message-queue-lib/src \
+                access-control-app/src acl-lib/src common-app-lib/src common-lib/src elastic-utils-lib/src es-spatial-plugin/src message-queue-lib/src \
             ' >> report.log
           cat report.log
         id: list-report
