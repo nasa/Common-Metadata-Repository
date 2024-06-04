@@ -2,6 +2,8 @@ name: CMR Checks
 
 on:
   workflow_dispatch:
+  push:
+    branches: [ master, main, feature/**]
   pull_request:
     branches: [ master, main , features/**]
 jobs:
