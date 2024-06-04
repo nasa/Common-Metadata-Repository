@@ -32,7 +32,7 @@ jobs:
           docker run \
             -v $PWD/src:/src \
             --rm cljkondo/clj-kondo \
-            clj-kondo --parallel --lint \
+            pwd ; ls ; clj-kondo --parallel --lint \
               /src/access-control-app \
               /src/acl-lib \
               common-app-lib \
