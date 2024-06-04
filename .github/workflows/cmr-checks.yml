@@ -42,7 +42,7 @@ jobs:
                 es-spatial-plugin/src \
                 message-queue-lib/src \
             ' >> report.log
-      - Name: Show
+      - name: Show
         id: show-report
         if: always()
         run: cat report.log
