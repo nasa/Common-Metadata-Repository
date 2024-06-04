@@ -30,15 +30,17 @@ jobs:
           docker run \
             --volume $PWD:/src \
             --rm cljkondo/clj-kondo \
-            cd /src && clj-kondo --parallel --lint \
-              access-control-app/src \
-              acl-lib/src \
-              common-app-lib/src \
-              common-lib/src \
-              elastic-utils-lib/src \
-              es-spatial-plugin/src \
-              message-queue-lib/src \
-            >> report.log
+            ssh -c '\
+              cd /src && \
+              clj-kondo --parallel --lint \
+                access-control-app/src \
+                acl-lib/src \
+                common-app-lib/src \
+                common-lib/src \
+                elastic-utils-lib/src \
+                es-spatial-plugin/src \
+                message-queue-lib/src \
+            ' >> report.log
           cat report.log
         id: list-report
       - name: Report
