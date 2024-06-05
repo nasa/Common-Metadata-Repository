@@ -157,6 +157,7 @@ The following fields are validated:
 * [Directory Names](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/idnnode?format=csv) - short name
 * [ISO Topic Categories](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/isotopiccategory?format=csv) - iso topic category
 * [Data Format](https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/dataformat?format=csv) - Archival and Distribution File Format, and GetData Format
+* [ProcessingLevel] (https://gcmd.earthdata.nasa.gov/kms/concepts/concept_scheme/productlevelid?format=csv) - productlevelid
 
 **Note**: that when multiple fields are present the combination of keywords are validated to match a known combination.
 **Note**: Among the validation fields above, [Platforms], [Instruments], [Projects], [Science Keywords], [Location Keywords] and [Data Centers] are also validated when the `Cmr-Validate-Keywords` header is not set to `true` except that  validation errors will be returned to users as warnings.
