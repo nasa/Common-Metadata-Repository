@@ -4,17 +4,27 @@
 # This script is meant to be run from the CMR project root by Github.com as a workflow action step.
 # The purpouse of this script is to run all the linter checks using clj-kondo in a docker image and
 # to return a failed error code if there are any errors.
+#
+# This script is designed to be called from inside a docker image by github action step like this:
+#     run: ./dev-system/support/run-kondo.sh >> report.log
 
+# error or warning
 fail_level=error
+
+# true or anything but true
 always_pass=false
+
+# A list of directories to run kondo on
 projects_to_check='access-control-app/src \
             acl-lib/src \
             common-app-lib/src \
             common-lib/src \
             elastic-utils-lib/src \
             es-spatial-plugin/src \
-            message-queue-lib/src'
+            message-queue-lib/src \
+            umm-lib/src'
 
+# Call kondo from inside a docker image and then check the exit code for success
 work() {
   docker run \
     --volume $PWD:/src \
@@ -28,6 +38,7 @@ work() {
     exit $result
 }
 
+# Explain all the flags the script uses
 usage() {
   printf "Run clj-kondo in a docker image\nUsage:\n\n"
   format="%4s %-4s : %s\n"
@@ -38,7 +49,7 @@ usage() {
   printf "$format" -a '' 'Always pass, just report'
 }
 
-# Process the command line arguments
+# Process the command line arguments then do the "work" of the script
 while getopts "p:wW" opt
 do
     case ${opt} in
