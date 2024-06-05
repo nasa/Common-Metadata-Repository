@@ -12,7 +12,7 @@
    [cmr.common.util :as u]
    [cmr.common.xml :as cx]
    [cmr.common.xml.xslt :as xslt]
-   [cmr.umm-spec.legacy :as legacy]
+   [cmr.umm-spec.compatibility :as compatibility]
    [cmr.umm-spec.migration.version.core :as vm]
    [cmr.umm-spec.umm-json :as umm-json]
    [cmr.umm-spec.umm-spec-core :as umm-spec]))
@@ -122,15 +122,15 @@
 (defmethod transform-with-strategy :umm-lib
   [context concept _ target-formats]
   (let [{concept-mime-type :format, metadata :metadata} concept
-        [t1 umm] (u/time-execution (legacy/parse-concept context concept))
+        [t1 umm] (u/time-execution (compatibility/parse-concept context concept))
         [t2 result] (u/time-execution (reduce (fn [translated-map target-format]
                                                 (assoc translated-map target-format
-                                                       (legacy/generate-metadata context umm target-format)))
+                                                       (compatibility/generate-metadata context umm target-format)))
                                               {}
                                               target-formats))]
     (debug "transform-with-strategy umm-lib: "
-          "legacy/parse-concept time: " t1
-          "reduce w/ legacy/generate-metadata time: " t2
+          "compatibility/parse-concept time: " t1
+          "reduce w/ compatibility/generate-metadata time: " t2
           "concept-mime-type: " concept-mime-type
           "parent request num-concepts: " (:num-concepts concept)
           "target-formats: " target-formats
@@ -140,8 +140,8 @@
 
 (defmethod transform-with-strategy :granule-umm-g-to-iso
   [context concept _ target-formats]
-  (let [umm (legacy/parse-concept context concept)
-        echo10-metadata (legacy/generate-metadata context umm :echo10)]
+  (let [umm (compatibility/parse-concept context concept)
+        echo10-metadata (compatibility/generate-metadata context umm :echo10)]
     (assert (= [:iso19115] target-formats))
     (reduce (fn [translated-map target-format]
               (let [xsl (types->xsl [:echo10 target-format])]

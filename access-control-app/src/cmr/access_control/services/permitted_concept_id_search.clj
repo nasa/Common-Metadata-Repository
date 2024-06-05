@@ -5,7 +5,7 @@
    [cmr.common.services.search.query-model :as common-qm]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.transmit.metadata-db2 :as mdb2]
-   [cmr.umm-spec.legacy :as legacy]
+   [cmr.umm-spec.compatibility :as compatibility]
    [cmr.umm-spec.time :as spec-time]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm.start-end-date :as umm-lib-time]))
@@ -148,7 +148,7 @@
 
 (defmethod get-permitted-concept-id-conditions :granule
   [context concept]
-  (let [parsed-metadata (legacy/parse-concept context concept)
+  (let [parsed-metadata (compatibility/parse-concept context concept)
         parent-collection (mdb2/get-latest-concept
                            context (get-in concept [:extra-fields :parent-collection-id]))
         parsed-collection-metadata (umm-spec/parse-metadata

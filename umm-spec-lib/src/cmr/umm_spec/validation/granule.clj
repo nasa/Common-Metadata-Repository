@@ -7,12 +7,12 @@
    [clojure.string :as string]
    [cmr.common.validations.core :as v]
    [cmr.spatial.validation :as sv]
-   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm-spec.util :as su]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm-spec.time :as umm-spec-time]
    [cmr.umm.umm-spatial :as umm-s]
-   [cmr.umm.validation.validation-utils :as vu]
-   [cmr.umm.validation.validation-helper :as h]
+   [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]
+   [cmr.umm-spec.related-url :as ru]
    [cmr.umm-spec.validation.additional-attribute :as aav]))
 
 (defn- spatial-extent->granule-spatial-representation
@@ -144,7 +144,7 @@
   (fn [_ collection-ref]
     (let [value (field collection-ref)
           parent-value (if (= :entry-id field)
-                         (eid/umm->entry-id (:parent collection-ref))
+                         (su/umm->entry-id (:parent collection-ref))
                          (get-in collection-ref (concat [:parent] parent-field-path)))
           field-name (v/humanize-field field)]
       (when (and value (not= value parent-value))
@@ -225,6 +225,12 @@
                   (v/every sensor-ref-validations)]}
    operation-modes-reference-collection])
 
+(def online-access-urls-validation
+  "Defines online access urls validation for collections."
+  (v/pre-validation
+   ru/downloadable-urls
+   (vu/unique-by-name-validator :url)))
+
 (def platform-ref-validations
   "Defines the platform validations for granules"
   {:instrument-refs [(vu/unique-by-name-validator :short-name)
@@ -249,6 +255,6 @@
     :product-specific-attributes [(vu/has-parent-validator :name "Additional Attribute")
                                   (v/every aav/aa-ref-validations)]
     :project-refs (vu/unique-by-name-validator identity)
-    :related-urls h/online-access-urls-validation}
+    :related-urls online-access-urls-validation}
    projects-reference-collection
    spatial-matches-granule-spatial-representation])

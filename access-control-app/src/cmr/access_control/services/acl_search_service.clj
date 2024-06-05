@@ -18,7 +18,7 @@
    [cmr.elastic-utils.search.es-params-converter :as cp]
    [cmr.elastic-utils.search.nested-field :as nf]
    [cmr.transmit.metadata-db2 :as mdb2]
-   [cmr.umm.collection.product-specific-attribute :as psa])
+   [cmr.umm-spec.additional-attribute :as psa])
   ;; Must be required to be available at runtime
   (:require
    cmr.access-control.data.acl-json-results-handler))

@@ -1,6 +1,5 @@
 (ns cmr.ingest.services.ingest-service.granule
   (:require
-   [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.services.messages :as cmsg]
    [cmr.common.util :as util :refer [defn-timed]]
@@ -9,7 +8,7 @@
    [cmr.ingest.services.messages :as msg]
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.metadata-db :as mdb]
-   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm-spec.compatibility :as umm-compatibility]
    [cmr.umm-spec.umm-spec-core :as spec]))
 
 (defn- validate-granule-collection-ref
@@ -65,7 +64,7 @@
    (v/validate-concept-request concept)
    (v/validate-concept-metadata concept)
 
-   (let [granule (umm-legacy/parse-concept context concept)
+   (let [granule (umm-compatibility/parse-concept context concept)
          [parent-collection-concept
           umm-spec-collection](fetch-parent-collection-concept-fn
                                context concept granule)]

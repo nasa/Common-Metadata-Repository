@@ -3,7 +3,7 @@
    [clojure.test :refer :all]
    [cmr.common.mime-types :as mime-types]
    [cmr.system-int-test.utils.ingest-util :as ingest]
-   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm-spec.compatibility :as umm-compatibility]
    [cmr.umm-spec.test.location-keywords-helper :as location-keywords-helper]
    [cmr.umm-spec.test.umm-g.expected-util :as expected-util]
    [cmr.umm-spec.util :as umm-spec-util]))
@@ -60,7 +60,7 @@
   "Returns the parsed granule metadata for comparison purpose."
   [context metadata output-format]
   (when (not= :iso19115 output-format)
-    (let [actual-parsed (umm-legacy/parse-concept
+    (let [actual-parsed (umm-compatibility/parse-concept
                          context {:concept-type :granule
                                   :format (mime-types/format->mime-type output-format)
                                   :metadata metadata})]
@@ -75,7 +75,7 @@
             ;; added together, while in other cases, there is a need. 
             sample-granule-with-consistent-sizes
             (assoc-in expected-util/expected-sample-granule [:data-granule :size] (double (/ 23552 (* 1024 1024))))
-            input-str (umm-legacy/generate-metadata
+            input-str (umm-compatibility/generate-metadata
                        test-context sample-granule-with-consistent-sizes input-format)
             expected (umm->umm-for-comparison sample-granule-with-consistent-sizes)
             {:keys [status headers body]} (ingest/translate-metadata
@@ -136,7 +136,7 @@
       (testing "wrong xml format"
         (assert-translate-failure
          #"Cannot find the declaration of element 'Granule'"
-         :granule :iso-smap (umm-legacy/generate-metadata
+         :granule :iso-smap (umm-compatibility/generate-metadata
                              test-context expected-util/expected-sample-granule :echo10) :umm-json))
 
       (testing "bad json"

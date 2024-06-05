@@ -5,14 +5,13 @@
             [cmr.system-int-test.data2.core :as d]
             [cmr.common.date-time-parser :as p]
             [cmr.umm.collection.temporal :as ct]
-            [cmr.umm.collection.product-specific-attribute :as psa]
+            [cmr.umm-spec.additional-attribute :as aa]
             [clj-time.format :as f]
-            [cmr.umm.collection.entry-id :as eid]
+            [cmr.umm-spec.util :as su]
             [cmr.umm.umm-spatial :as umm-s])
   (:import [cmr.umm.umm_collection
             Product
             DataProviderTimestamps
-            ScienceKeyword
             UmmCollection]))
 
 (defn psa
@@ -27,15 +26,15 @@
          :data-type data-type
          :parsed-parameter-range-begin min-value
          :parsed-parameter-range-end max-value
-         :parameter-range-begin (psa/gen-value data-type min-value)
-         :parameter-range-end (psa/gen-value data-type max-value)})
+         :parameter-range-begin (aa/gen-value data-type min-value)
+         :parameter-range-end (aa/gen-value data-type max-value)})
       (c/map->ProductSpecificAttribute
         {:name name
          :group group
          :description (or description "Generated")
          :data-type data-type
          :parsed-value value
-         :value (psa/gen-value data-type value)}))))
+         :value (aa/gen-value data-type value)}))))
 
 (defn two-d
   "Creates two-d-coordinate-system specific attribute"
@@ -247,7 +246,7 @@
                                                                          :topic "Cool"
                                                                          :term "Mild"})]
                                     :organizations [(org :distribution-center "Larc")]}
-         attribs (merge required-extra-dif-fields {:version-id eid/DEFAULT_VERSION} attribs)]
+         attribs (merge required-extra-dif-fields {:version-id su/not-provided} attribs)]
      (collection attribs))))
 
 (defn collection-dif10

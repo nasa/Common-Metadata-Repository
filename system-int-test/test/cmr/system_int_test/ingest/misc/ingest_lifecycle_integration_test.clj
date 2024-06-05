@@ -18,7 +18,7 @@
     [cmr.umm-spec.test.location-keywords-helper :as lkt]
     [cmr.umm-spec.umm-spec-core :as umm-spec]
     [cmr.umm-spec.versioning :as ver]
-    [cmr.umm.collection.entry-id :as eid]))
+    [cmr.umm-spec.util :as su]))
 
 (use-fixtures :each (ingest/reset-fixture {"provguid1" "PROV1"}))
 
@@ -146,7 +146,7 @@
               [] {:entry_title "foo"}
 
               "entry-id matches"
-              [result] {:entry_id (eid/entry-id (:ShortName result) (:Version result))}
+              [result] {:entry_id (su/entry-id (:ShortName result) (:Version result))}
               "entry-id not matches"
               [] {:entry_id "foo"}
 

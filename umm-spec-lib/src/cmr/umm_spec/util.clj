@@ -334,6 +334,15 @@
     short-name
     (str short-name "_" version-id)))
 
+(defn umm->entry-id
+  "Returns an entry-id for the given umm record."
+  [umm]
+  (if-let [{:keys [short-name version-id]} (:product umm)]
+    (entry-id short-name version-id)
+    ;; This is a UMM Spec collection record. This is here for legacy reasons to support granules
+    ;; ingesting in ECHO10 and referencing a collection through EntryId
+    (entry-id (:ShortName umm) (:Version umm))))
+
 (def ^:private data-size-re
   "Regular expression used to parse file sizes from a string. Supports extracting a single value
   with units as well as a range with units."

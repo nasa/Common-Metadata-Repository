@@ -17,7 +17,7 @@
    [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm-spec.compatibility :as umm-compatibility]
    [cmr.umm-spec.test.location-keywords-helper :as lkt]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.versioning :as versioning]))
@@ -48,13 +48,13 @@
   ([item]
    (item->concept item :echo10))
   ([item format-key]
-   (let [concept-type (umm-legacy/item->concept-type item)
+   (let [concept-type (umm-compatibility/item->concept-type item)
          format (format-key->concept-format concept-type format-key)]
      (merge {:concept-type concept-type
              :provider-id (or (:provider-id item) "PROV1")
              :native-id (or (:native-id item) (item->native-id item))
              :metadata (when-not (:deleted item)
-                         (umm-legacy/generate-metadata
+                         (umm-compatibility/generate-metadata
                           context
                           (dissoc item :provider-id) format-key))
              :format format}
@@ -227,7 +227,7 @@
                   :format       (or format (mime-types/format->mime-type format-key))}
         response (ingest/ingest-concept concept)]
     (if (= concept-type :granule)
-      (merge (umm-legacy/parse-concept context concept) response)
+      (merge (umm-compatibility/parse-concept context concept) response)
       (merge (umm-spec/parse-metadata context concept) response))))
 
 (defn ingest-concept-with-metadata-file
@@ -248,9 +248,9 @@
   ([collection format-key]
    (if (= format-key :umm-json)
      collection
-     (let [original-metadata (umm-legacy/generate-metadata context collection format-key)]
-       (umm-legacy/parse-concept context {:metadata original-metadata
-                                          :concept-type (umm-legacy/item->concept-type collection)
+     (let [original-metadata (umm-compatibility/generate-metadata context collection format-key)]
+       (umm-compatibility/parse-concept context {:metadata original-metadata
+                                          :concept-type (umm-compatibility/item->concept-type collection)
                                           :format (mime-types/format->mime-type format-key)})))))
 
 (defn- item->ref-name
@@ -284,8 +284,8 @@
   [context concept-type original-format format-key umm-record]
   (if (or (= original-format format-key)
           (= :granule concept-type))
-    (umm-legacy/generate-metadata context umm-record format-key)
-    (let [metadata (umm-legacy/generate-metadata context umm-record original-format)
+    (umm-compatibility/generate-metadata context umm-record format-key)
+    (let [metadata (umm-compatibility/generate-metadata context umm-record original-format)
           umm-spec-parsed (umm-spec/parse-metadata
                            context concept-type
                            original-format metadata)
@@ -331,7 +331,7 @@
        {:echo_granule_id concept-id
         :echo_dataset_id collection-concept-id
         :format format-key
-        :metadata (umm-legacy/generate-metadata context parsed-item format-key)})
+        :metadata (umm-compatibility/generate-metadata context parsed-item format-key)})
       (util/remove-nil-keys
        {:echo_dataset_id concept-id
         :format format-key

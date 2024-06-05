@@ -1,4 +1,4 @@
-(ns cmr.umm-spec.legacy
+(ns cmr.umm-spec.compatibility
   "Functions for parsing concepts where old-style UMM is expected but new umm-spec formats (like
   JSON) need to be supported."
   (:require

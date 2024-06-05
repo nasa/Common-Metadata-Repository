@@ -3,7 +3,6 @@
   (:require
    [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clj-time.format :as f]
    [clojure.data.xml :as x]
    [clojure.string :as str]
    [cmr.common.concepts :as cu]
@@ -12,16 +11,15 @@
    [cmr.search.results-handlers.atom-results-handler :as atom-results-handler]
    [cmr.spatial.line-string :as l]
    [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
    [cmr.spatial.polygon :as poly]
    [cmr.umm-spec.date-util :as date-util]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.system-int-test.data2.facets :as facets]
    [cmr.system-int-test.data2.granule :as dg]
    [cmr.system-int-test.utils.url-helper :as url]
-   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm-spec.util :as su]
    [cmr.umm.echo10.spatial :as echo-s]
-   [cmr.umm.related-url-helper :as ru]
+   [cmr.umm-spec.related-url :as ru]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm.umm-spatial :as umm-s]))
 
@@ -302,8 +300,8 @@
                                                                       [:temporal :range-date-times]))
         shapes (map (partial umm-s/set-coordinate-system spatial-representation)
                     (get-in collection [:spatial-coverage :geometries]))
-        version-id (or version-id eid/DEFAULT_VERSION)
-        entry-id (eid/entry-id short-name version-id)
+        version-id (or version-id su/not-provided)
+        entry-id (su/entry-id short-name version-id)
         associated-difs (if (#{:dif :dif10} format-key) [entry-id] associated-difs)
         ;; Remove duplicate archive/distribution center from an echo10 conversion - only need one
         organizations (remove #(and (= archive-center (:org-name %)) (= :distribution-center (:type %))) organizations)
@@ -337,8 +335,8 @@
       :orbit-parameters (when orbit-parameters (into {} orbit-parameters))
       :shapes (seq shapes)
       :associated-difs associated-difs
-      :online-access-flag (not (empty? (ru/downloadable-urls related-urls)))
-      :browse-flag (not (empty? (ru/browse-urls related-urls)))
+      :online-access-flag (seq (ru/downloadable-urls related-urls))
+      :browse-flag (seq (ru/browse-urls related-urls))
       :has-variables (boolean has-variables)
       :has-formats (boolean has-formats)
       :has-transforms (boolean has-transforms)

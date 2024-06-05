@@ -1,31 +1,17 @@
 (ns cmr.system-int-test.data2.opendata
   "Contains functions for parsing opendata results."
   (:require
-   [camel-snake-kebab.core :as csk]
    [cheshire.core :as json]
-   [clojure.data.xml :as x]
    [clojure.string :as str]
    [clojure.test :refer [is]]
-   [clojure.test]
    [cmr.common.util :as util]
    [cmr.search.validators.opendata :as opendata-json]
    [cmr.search.results-handlers.opendata-results-handler :as odrh]
-   [cmr.spatial.line-string :as l]
-   [cmr.spatial.mbr :as m]
-   [cmr.spatial.point :as p]
-   [cmr.spatial.polygon :as poly]
-   [cmr.spatial.relations :as r]
-   [cmr.spatial.ring-relations :as rr]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.umm-spec.date-util :as date-util]
-   [cmr.umm-spec.util :as umm-spec-util]
-   [cmr.umm.echo10.spatial :as echo-s]
-   [cmr.umm.related-url-helper :as ru]
+   [cmr.umm-spec.related-url :as ru]
    [cmr.umm.start-end-date :as sed]
-   [cmr.umm.umm-spatial :as umm-s])
-  (:import
-   (cmr.spatial.mbr Mbr)
-   (cmr.umm.umm_collection UmmCollection)))
+   [cmr.umm.umm-spatial :as umm-s]))
 
 (defn parse-opendata-result
   "Returns the opendata result from a json string"

@@ -14,7 +14,7 @@
    [cmr.transmit.config :as config]
    [cmr.transmit.metadata-db2 :as mdb]
    [cmr.umm.umm-granule :as umm-g]
-   [cmr.umm-spec.legacy :as legacy]
+   [cmr.umm-spec.compatibility :as compatibility]
    [cmr.umm-spec.test.expected-conversion :refer [example-collection-record]]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.versioning :as versioning]))
@@ -246,7 +246,7 @@
       (:concept-id
        (mdb/save-concept (conn-context)
                          {:format mime-type
-                          :metadata (legacy/generate-metadata (conn-context) granule-umm format-key)
+                          :metadata (compatibility/generate-metadata (conn-context) granule-umm format-key)
                           :concept-type :granule
                           :provider-id provider-id
                           :native-id native-id

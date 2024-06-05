@@ -17,7 +17,7 @@
    [cmr.system-int-test.utils.index-util :as index]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.umm.collection.entry-id :as eid]))
+   [cmr.umm-spec.util :as su]))
 
 (def usage-csv
   (str "Product,ProductVersion,Hosts\n"
@@ -96,7 +96,7 @@
   "Get the value for a given field in the umm-record"
   [coll field]
   (if (= :entry-id field)
-    (eid/umm->entry-id coll)
+    (su/umm->entry-id coll)
     (field coll)))
 
 (defn- compare-field

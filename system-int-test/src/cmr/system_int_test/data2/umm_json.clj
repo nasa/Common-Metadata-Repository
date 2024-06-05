@@ -10,9 +10,9 @@
    [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
    [cmr.umm-spec.json-schema :as umm-json-schema]
-   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm-spec.compatibility :as umm-compatibility]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
-   [cmr.umm.collection.entry-id :as eid]))
+   [cmr.umm-spec.util :as su]))
 
 (defn- collection->umm-json-meta
   "Returns the meta section of umm-json format."
@@ -51,7 +51,7 @@
   (let [{{:keys [short-name version-id]} :product
          :keys [entry-title]} collection]
     {:meta (collection->umm-json-meta collection)
-     :umm {:entry-id (eid/entry-id short-name version-id)
+     :umm {:entry-id (su/entry-id short-name version-id)
            :entry-title entry-title
            :short-name short-name
            :version-id version-id}}))
@@ -76,7 +76,7 @@
   [version collection]
   (if (:deleted collection)
     {:meta (collection->umm-json-meta collection)}
-    (let [ingested-metadata (umm-legacy/generate-metadata
+    (let [ingested-metadata (umm-compatibility/generate-metadata
                              {} (d/remove-ingest-associated-keys collection) (:format-key collection))
           umm-spec-record (umm-spec/parse-metadata
                            {} :collection (:format-key collection) ingested-metadata)

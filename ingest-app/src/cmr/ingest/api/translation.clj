@@ -7,7 +7,7 @@
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
    [cmr.common.xml.xslt :as xslt]
-   [cmr.umm-spec.legacy :as umm-legacy]
+   [cmr.umm-spec.compatibility :as umm-compatibility]
    [cmr.umm-spec.test.umm-generators :as umm-generators]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm-spec.util :as util]
@@ -43,7 +43,7 @@
   "Returns a seq of errors found by UMM validation."
   [context concept-type umm]
   (seq
-   (umm-legacy/validate-metadata concept-type
+   (umm-compatibility/validate-metadata concept-type
                                  :umm-json
                                  (umm-spec/generate-metadata context umm :umm-json))))
 
@@ -68,7 +68,7 @@
   CMR does this by generating granule metadata in ECHO10 format and then uses xslt to convert
   the ECHO10 metadata into ISO MENDS."
   [context umm]
-  (let [echo10-metadata (umm-legacy/generate-metadata context umm :echo10)]
+  (let [echo10-metadata (umm-compatibility/generate-metadata context umm :echo10)]
     (xslt/transform echo10-metadata (get-template context echo10-iso19115-xslt))))
 
 (defn- generate-metadata
@@ -77,7 +77,7 @@
   (if (and (= cmr.umm.umm_granule.UmmGranule (type umm))
            (= :iso19115 output-format))
     (generate-granule-iso-mends-metadata context umm)
-    (umm-legacy/generate-metadata context umm output-format)))
+    (umm-compatibility/generate-metadata context umm output-format)))
 
 (defn- translate-response
   "Returns a translate API response map for the given UMM record and the requested response media type."
@@ -108,7 +108,7 @@
 
 (defmethod perform-translation :granule
   [context concept-type content-type accept-header body skip-umm-validation options]
-  (let [umm (umm-legacy/parse-concept
+  (let [umm (umm-compatibility/parse-concept
              context {:concept-type concept-type
                       :format content-type
                       :metadata body})]
@@ -148,7 +148,7 @@
         (errors/throw-service-errors :bad-request errors)))
 
     ;; Validate the input data against its own native schema (ECHO, DIF, etc.)
-    (if-let [errors (seq (umm-legacy/validate-metadata concept-type content-type body))]
+    (if-let [errors (seq (umm-compatibility/validate-metadata concept-type content-type body))]
       (errors/throw-service-errors :bad-request errors)
 
       ;; If there were no errors, then proceed to convert it to UMM and check for UMM schema

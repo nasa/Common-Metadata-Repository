@@ -6,7 +6,7 @@
    [clojure.string :as string]
    [cmr.common.concepts :as concepts]
    [cmr.umm-spec.umm-spec-core :as umm]
-   [cmr.umm-spec.legacy :as umm-legacy]))
+   [cmr.umm-spec.compatibility :as umm-compatibility]))
 
 (defmulti parse-concept
   "Parse the metadata from a concept map into a UMM model or map containing data needed for
@@ -80,4 +80,4 @@
 
 (defmethod parse-concept :default
  [context concept]
- (umm-legacy/parse-concept context concept))
+ (umm-compatibility/parse-concept context concept))

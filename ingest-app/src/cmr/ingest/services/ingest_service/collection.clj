@@ -9,7 +9,7 @@
    [cmr.ingest.validation.validation :as v]
    [cmr.transmit.metadata-db :as mdb]
    [cmr.umm-spec.umm-spec-core :as spec]
-   [cmr.umm.collection.entry-id :as eid]))
+   [cmr.umm-spec.util :as su]))
 
 (defn add-extra-fields-for-collection
   "Returns collection concept with fields necessary for ingest into metadata db
@@ -18,7 +18,7 @@
   (let [{short-name :ShortName
          version-id :Version
          entry-title :EntryTitle} collection
-        entry-id (eid/entry-id short-name version-id)
+        entry-id (su/entry-id short-name version-id)
         delete-time (first (map :Date (filter #(= "DELETE" (:Type %)) (:DataDates collection))))]
     (assoc concept :extra-fields {:entry-title entry-title
                                   :entry-id entry-id

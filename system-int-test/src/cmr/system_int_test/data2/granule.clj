@@ -5,13 +5,11 @@
    [cmr.common.util :as util]
    [cmr.spatial.mbr :as m]
    [cmr.spatial.orbits.swath-geometry :as swath]
-   [cmr.system-int-test.data2.collection :as dc]
    [cmr.system-int-test.data2.core :as d]
-   [cmr.umm.collection.entry-id :as eid]
+   [cmr.umm-spec.util :as su]
    [cmr.umm.granule.temporal :as gt]
    [cmr.umm.umm-collection :as c]
-   [cmr.umm.umm-granule :as g]
-   [cmr.umm.umm-spatial :as umm-s])
+   [cmr.umm.umm-granule :as g])
   (:import
    [cmr.umm.umm_granule Orbit DataProviderTimestamps]))
 
@@ -214,7 +212,7 @@
    (let [timestamps {:data-provider-timestamps (data-provider-timestamps attribs)}
          {:keys [entry-title] {:keys [short-name version-id]} :product} collection
          coll-ref (g/map->CollectionRef {:entry-title entry-title
-                                         :entry-id (eid/entry-id short-name version-id)
+                                         :entry-id (su/entry-id short-name version-id)
                                          :short-name short-name
                                          :version-id version-id})
          minimal-gran {:granule-ur (d/unique-str "ur")
@@ -235,7 +233,7 @@
          short-name (:ShortName collection)
          version-id (:Version collection)
          coll-ref (g/map->CollectionRef {:entry-title entry-title
-                                         :entry-id (eid/entry-id short-name version-id)
+                                         :entry-id (su/entry-id short-name version-id)
                                          :short-name short-name
                                          :version-id version-id})
          minimal-gran {:granule-ur (d/unique-str "ur")

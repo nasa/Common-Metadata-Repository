@@ -9,7 +9,7 @@
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as tk]
    [cmr.common.util :as u]
-   [cmr.umm-spec.legacy :as legacy]
+   [cmr.umm-spec.compatibility :as compatibility]
    [cmr.umm-spec.time :as umm-time]
    [cmr.umm-spec.umm-spec-core :as umm-spec-core]))
 
@@ -180,10 +180,10 @@
   (let [deleted? (:deleted concept)]
     (as-> concept concept
           (if-not deleted?
-            (u/lazy-assoc concept :access-value (legacy/parse-concept-access-value concept))
+            (u/lazy-assoc concept :access-value (compatibility/parse-concept-access-value concept))
             concept)
           (if-not deleted?
-            (u/lazy-assoc concept :temporal (legacy/parse-concept-temporal concept))
+            (u/lazy-assoc concept :temporal (compatibility/parse-concept-temporal concept))
             concept)
           (assoc concept :collection-concept-id (get-in concept [:extra-fields :parent-collection-id])))))
 

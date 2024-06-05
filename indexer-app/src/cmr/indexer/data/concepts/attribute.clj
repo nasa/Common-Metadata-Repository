@@ -6,8 +6,7 @@
     [cmr.common.date-time-parser :as p]
     [cmr.common.services.errors :as errors]
     [cmr.common.util :as util]
-    [cmr.umm-spec.additional-attribute :as aa]
-    [cmr.umm.collection.product-specific-attribute :as coll-psa]))
+    [cmr.umm-spec.additional-attribute :as aa]))
 
 (defmulti value->elastic-value
   "Converts a attribute value into the elastic value that should be transmitted"
@@ -55,16 +54,16 @@
     (if (some #{type} [:string :boolean :time-string :date-string :datetime-string])
       [{:name (:name psa-ref)
         field-name (map (comp #(value->elastic-value type %)
-                              #(coll-psa/parse-value type %))
+                              #(aa/parse-value type %))
                         (:values psa-ref))}
        {:name (:name psa-ref)
         (str field-name "-lowercase") (map (comp string/lower-case
                                                  #(value->elastic-value type %)
-                                                 #(coll-psa/parse-value type %))
+                                                 #(aa/parse-value type %))
                                            (:values psa-ref))}]
       [{:name (:name psa-ref)
         field-name (map (comp #(value->elastic-value type %)
-                              #(coll-psa/parse-value type %))
+                              #(aa/parse-value type %))
                         (:values psa-ref))}])))
 
 (defn psa-refs->elastic-docs

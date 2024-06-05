@@ -11,7 +11,6 @@
     [cmr.system-int-test.utils.index-util :as index]
     [cmr.system-int-test.utils.ingest-util :as ingest]
     [cmr.system-int-test.utils.search-util :as search]
-    [cmr.umm-spec.legacy :as legacy]
     [cmr.umm-spec.versioning :as versioning]
     [cmr.umm.echo10.granule :as g]
     [cmr.umm.umm-granule :as umm-g]))
