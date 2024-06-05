@@ -182,10 +182,6 @@
                       context :spatial-keywords msg/location-keyword-not-matches-kms-keywords)
    :DataCenters (match-kms-keywords-validation
                  context :providers msg/data-center-not-matches-kms-keywords)
-   :ProcessingLevel {:Id (match-kms-keywords-validation-single
-                          context
-                          :processing-levels
-                          msg/processing-level-id-not-matches-kms-keywords)}
    :DirectoryNames (match-kms-keywords-validation
                     context :concepts msg/directory-name-not-matches-kms-keywords)
    :ISOTopicCategories (match-kms-keywords-validation

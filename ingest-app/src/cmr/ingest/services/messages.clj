@@ -33,11 +33,6 @@
   (str "The collection given for validating the granule was invalid: "
        (util/html-escape (pr-str collection-validation-error))))
 
-(defn processing-level-id-not-matches-kms-keywords
-  [id]
-  (format "ProcessingLevel Id [%s] was not a valid keyword."
-          (util/html-escape id)))
-
 (defn platform-not-matches-kms-keywords
   [platform]
   (format "Platform short name [%s], long name [%s], and type [%s] was not a valid keyword combination."
