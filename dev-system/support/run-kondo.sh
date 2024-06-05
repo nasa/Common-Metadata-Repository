@@ -11,7 +11,7 @@
 # error or warning
 fail_level=error
 
-# true or anything but true
+# set to the string true to always pass, anything else will be considered a false
 always_pass=false
 
 # A list of directories to run kondo on
