@@ -197,18 +197,6 @@
         (when MimeType
           [:MimeType MimeType])])]))
 
-(defn convert-to-bytes
-  [size unit]
-  (when (and size unit)
-    (case (str/upper-case unit)
-      ("BYTES" "B") size
-      ("KILOBYTES" "KB") (* size 1024)
-      ("MEGABYTES" "MB") (* size 1048576)
-      ("GIGABYTES" "GB") (* size 1073741824)
-      ("TERABYTES" "TB") (* size 1099511627776)
-      ("PETABYTES" "PB") (* size 1125899906842624)
-      nil)))
-
 (defn generate-browse-urls
   "Generates the AssociatedBrowseImageUrls element of an ECHO10 XML from a UMM related urls entry."
   [related-urls]
