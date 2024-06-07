@@ -14,7 +14,6 @@
    [cmr.system-int-test.utils.dev-system-util :as dev-sys-util]
    [cmr.system-int-test.utils.ingest-util :as ingest]
    [cmr.system-int-test.utils.search-util :as search]
-   [cmr.system-int-test.system :as s]
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.transmit.access-control :as ac]
    [cmr.transmit.config :as transmit-config]))
@@ -143,7 +142,7 @@
         response (client/request {:url cfc-url
                                   :method :get
                                   :query-params {:token "mock-echo-system-token"}
-                                  :connection-manager (s/conn-mgr)
+                                  :connection-manager (system/conn-mgr)
                                   :throw-exceptions false})
         cfc-cache (:body response)]
 
@@ -168,7 +167,7 @@
       (let  [response (client/request {:url cfc-url
                                        :method :get
                                        :query-params {:token "mock-echo-system-token"}
-                                       :connection-manager (s/conn-mgr)
+                                       :connection-manager (system/conn-mgr)
                                        :throw-exceptions false})
              cfc-cache (:body response)]
         (is (string/includes? cfc-cache coll1))))))

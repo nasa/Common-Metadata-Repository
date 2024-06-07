@@ -67,7 +67,7 @@
   [params]
   (keep (fn [index-key]
             (let [index-str (name index-key)
-                  index (psa/safe-parse-value :int index-str)]
+                  index (psa/safe-parse-value "INT" index-str)]
              (when (or (nil? index) (< index 0))
                (format (str "Parameter group_permission has invalid index value [%s]. "
                             "Only integers greater than or equal to zero may be specified.")
