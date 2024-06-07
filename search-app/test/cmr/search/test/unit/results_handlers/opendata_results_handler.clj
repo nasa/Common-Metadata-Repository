@@ -32,15 +32,15 @@
       {:accessURL "http://example.com/"
        :title "Download this dataset through APPEEARS"}
       {:url "http://example.com/"
-       :type "GET DATA"
-       :sub-type "APPEEARS"
-       :url-content-type "DistributionURL"}
+       :Type "GET DATA"
+       :Subtype "APPEEARS"
+       :URLContentType "DistributionURL"}
 
       "sub-type is not defined so value is defaulted"
       {:accessURL "http://example.com"
        :title "View information related to this dataset"}
-      {:url-content-type "PublicationURL"
-       :type "VIEW RELATED INFORMATION"
+      {:URLContentType "PublicationURL"
+       :Type "VIEW RELATED INFORMATION"
        :url "http://example.com"}
 
       "url is downloadable without guessing mime type"
@@ -53,7 +53,7 @@
       {:downloadURL "http://example.com/mime-type.jpeg"
        :mediaType "image/jpeg"}
       {:url "http://example.com/mime-type.jpeg"
-       :type "GET DATA"}
+       :Type "GET DATA"}
 
       "url is downloadable by guessing mime type due to Not provided mime-type"
       {:downloadURL "http://example.com/mime-type.jpeg"
@@ -67,7 +67,7 @@
       {:accessURL "http://example.com/un-guessable-mime-type"
        :description "test description."}
       {:url "http://example.com/un-guessable-mime-type"
-       :type "GET DATA"
+       :Type "GET DATA"
        :description "test description."
        :get-data-mime-type "Not provided"}
 
@@ -75,12 +75,12 @@
       {:accessURL "http://example.com/mime-type.html"}
       {:url "http://example.com/mime-type.html"
        :get-data-mime-type "text/html"
-       :URLContentType "VisualizationURL"}
+       :Type "GET RELATED VISUALIZATION"}
 
       "url is not downloadable from missing mime type and undeterminable mime type"
       {:accessURL "http://example.com/missing-mime-type"}
       {:url "http://example.com/missing-mime-type"
-       :type "GET DATA"}
+       :Type "GET DATA"}
 
       "url is not downloadable based on mimetype being guessed as text/html and text/* not downloadable"
       {:accessURL "http://example.com/not-downloadable-html.html"}
@@ -119,7 +119,8 @@
  (let [all-browse-fields {:url "http://example.com"
                           :get-data-mime-type "image/gif"
                           :description "a test description-0"
-                          :type "GET RELATED VISUALIZATION"
+                          :Type "GET RELATED VISUALIZATION"
+                          :URLContentType "VisualizationURL"
                           :size 0}
        only-description {:description "a test description-1"
                          :URLContentType "VisualizationURL"}

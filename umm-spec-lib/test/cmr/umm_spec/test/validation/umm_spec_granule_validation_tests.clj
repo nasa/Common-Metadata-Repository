@@ -628,9 +628,10 @@
 
 (deftest granule-online-access-urls-validation
   (let [url "http://example.com/url2"
-        r1 {:type "GET DATA"
+        r1 {:Type "GET DATA"
+            :URLContentType "DistributionURL"
             :url "http://example.com/url1"}
-        r2 {:type "GET DATA"
+        r2 {:Type "GET DATA"
             :URLContentType "DistributionURL"
             :url url}
         r3 {:type "GET RELATED VISUALIZATION"
