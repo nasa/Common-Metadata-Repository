@@ -238,9 +238,9 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
  * `page_num` - The page number to return
  * `offset` - As an alternative to page_num, a 0-based offset of individual results may be specified
  * `scroll` - A boolean flag (true/false) that allows all results to be retrieved efficiently. `page_size` is supported with `scroll` while `page_num` and `offset` are not. If `scroll` is `true` then the first call of a scroll session sets the page size; `page_size` is ignored on subsequent calls.
- * `sort_key` - Indicates one or more fields to sort on. Described below
- * `pretty` - return formatted results if set to true
- * `token` - specifies a user/guest token from [EDL](https://urs.earthdata.nasa.gov/) or [Launchpad](https://launchpad.nasa.gov) for use as authentication however this practice should be considered deprecated in favor of using the standard [Authorization header](#header).
+ * `sort_key` - Indicates one or more fields to sort on. Described below.
+ * `pretty` - Return formatted results if set to true.
+ * `token` - specifies a user/guest token from [EDL](https://urs.earthdata.nasa.gov/) or [Launchpad](https://launchpad.nasa.gov) for use as authentication. However this practice should be considered deprecated in favor of using the standard [Authorization header](#header).
  * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
 
 #### <a name="paging-details"></a> Paging Details
@@ -354,11 +354,11 @@ These are query parameters that control what extra data is included with collect
 
     `curl -H "Authorization: <launchpad_token>" -i "%CMR-ENDPOINT%/collections"`
 
-`Client-Id` - Indicates a name for the "client" using the CMR API. A client can be either a person's name, orginazation's name, or the name of the script/process making the request. Specifying this header helps Operations monitor query performance per client. This field can also make it easier for the Operations team to identify your requests if you contact them for assistance.
+`Client-Id` - Indicates a name for the "client" using the CMR API. A client can be either a person's name, organization's name, or the name of the script/process making the request. Specifying this header helps Operations monitor query performance per client. This field can also make it easier for the Operations team to identify your requests if you contact them for assistance.
 
-`CMR-Pretty` - return formatted results if set to true
+`CMR-Pretty` - Returns formatted results if set to true.
 
-`X-Request-Id` - This provides standard `X-Request-Id` support to allow user to pass in some random ID which will be logged on the server side for debugging purpose.
+`X-Request-Id` - This provides standard `X-Request-Id` support to allow user to pass in some random ID which will be logged on the server side for debugging purposes.
 
 `CMR-Request-Id` - This header serves the same purpose as `X-Request-Id` header. It is kept to support legacy systems.
 
