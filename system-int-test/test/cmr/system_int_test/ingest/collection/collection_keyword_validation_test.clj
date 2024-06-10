@@ -7,7 +7,8 @@
     [cmr.system-int-test.data2.core :as d]
     [cmr.system-int-test.data2.umm-spec-collection :as data-umm-c]
     [cmr.system-int-test.data2.umm-spec-common :as data-umm-cmn]
-    [cmr.system-int-test.utils.ingest-util :as ingest]))
+    [cmr.system-int-test.utils.ingest-util :as ingest]
+    [cmr.umm-spec.models.umm-collection-models :as umm-c]))
 
 (defn assert-invalid
   ([coll-attributes field-path errors]
@@ -54,17 +55,22 @@
                                                             :LongName "Airbus A340-600"
                                                             :Type "Jet"})]
                         :DataCenters [(data-umm-cmn/data-center {:Roles ["ARCHIVER"]
-                                                                 :ShortName "SomeCenter"})]})
+                                                                 :ShortName "SomeCenter"})]
+                        :ProcessingLevel (umm-c/map->ProcessingLevelType {:Id "wrong"})})
 
-          response (ingest/validate-concept concept {:validate-keywords true})]
-      (is (= {:status 422
-              :errors [{:path ["Platforms" 0]
-                        :errors [(str "Platform short name [foo], long name [Airbus A340-600], "
-                                      "and type [Jet] was not a valid keyword combination.")]}
-                       {:path ["DataCenters" 0]
-                        :errors [(str "Data center short name [SomeCenter] was not a valid "
-                                      "keyword.")]}]}
-             response))))
+          response (ingest/validate-concept concept {:validate-keywords true})
+          status (:status response)
+          errors (set (:errors response))]
+      (is (= status 422))
+      (is (= (set [{:path ["Platforms" 0]
+                    :errors [(str "Platform short name [foo], long name [Airbus A340-600], "
+                                  "and type [Jet] was not a valid keyword combination.")]}
+                   {:path ["ProcessingLevel" "Id"]
+                    :errors ["ProcessingLevel Id [wrong] was not a valid keyword."]}
+                   {:path ["DataCenters" 0]
+                    :errors [(str "Data center short name [SomeCenter] was not a valid "
+                                  "keyword.")]}])
+             errors))))
 
   (testing "Keyword validation warnings using validation endpoint"
     (let [concept (data-umm-c/collection-concept
