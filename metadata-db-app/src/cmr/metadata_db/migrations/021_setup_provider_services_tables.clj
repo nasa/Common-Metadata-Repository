@@ -1,8 +1,8 @@
 (ns cmr.metadata-db.migrations.021-setup-provider-services-tables
-  (:require [clojure.java.jdbc :as j]
-            [config.mdb-migrate-config :as config]
-            [config.mdb-migrate-helper :as h]
-            [cmr.metadata-db.data.oracle.concept-tables :as ct]))
+  (:require
+   [config.mdb-migrate-config :as config]
+   [config.mdb-migrate-helper :as h]
+   [cmr.metadata-db.data.oracle.concept-tables :as ct]))
 
 (defn up
   "Migrates the database up to version 21."

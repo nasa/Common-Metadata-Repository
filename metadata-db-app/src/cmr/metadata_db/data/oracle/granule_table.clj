@@ -4,13 +4,7 @@
    [clojure.java.jdbc :as jdbc]
    [cmr.metadata-db.data.util :as util]))
 
-(defmulti granule-column-sql
-  "Returns the sql to define provider granule columns"
-  (fn [provider]
-    (:small provider)))
-
-(defmethod granule-column-sql false
-  [provider]
+(def granule-column-sql-false
   (str "id NUMBER,
        concept_id VARCHAR(255) NOT NULL,
        native_id VARCHAR(250) NOT NULL,
@@ -30,20 +24,16 @@
         transaction_id INTEGER DEFAULT 0 NOT NULL,
         created_at TIMESTAMP WITH TIME ZONE DEFAULT SYSTIMESTAMP NOT NULL"))
 
-(defmethod granule-column-sql true
+(defn granule-column-sql
+  "Returns the sql to define provider granule columns"
   [provider]
-  ;; For small provider granule table, there is an extra provider_id column
-  (str (granule-column-sql {:small false})
-       ",provider_id VARCHAR(255) NOT NULL"))
+  (case (:small provider)
+    false granule-column-sql-false
+    true (str granule-column-sql-false ",provider_id VARCHAR(255) NOT NULL")))
 
-(defmulti granule-constraint-sql
-  "Returns the sql to define constraint on provider granule table"
-  (fn [provider table-name]
-    (:small provider)))
-
-(defmethod granule-constraint-sql false
-  [provider table-name]
-  (util/validate-table-name table-name)
+(defn- granule-constraint-sql-false
+  "Returns the sql to define constraint on provider granule table - not the small provider."
+  [table-name]
   (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
                ;; Unique constraint on native id and revision id
@@ -65,8 +55,9 @@
           table-name
           table-name))
 
-(defmethod granule-constraint-sql true
-  [provider table-name]
+(defn- granule-constraint-sql-true
+  "Returns the sql to define constraint on the small provider granule table"
+  [table-name]
   (util/validate-table-name table-name)
   (format (str "CONSTRAINT %s_pk PRIMARY KEY (id), "
 
@@ -89,6 +80,14 @@
           table-name
           table-name))
 
+(defn granule-constraint-sql
+  "Returns the sql to define constraint on provider granule table"
+  [provider table-name]
+  (util/validate-table-name table-name)
+  (case (:small provider)
+    false (granule-constraint-sql-false table-name)
+    true (granule-constraint-sql-true table-name)))
+
 (defn- create-common-gran-indexes
   [db table-name]
   ;; can't create constraint with column of datatype TIME/TIMESTAMP WITH TIME ZONE
@@ -107,32 +106,24 @@
   (jdbc/db-do-commands db (format "CREATE INDEX %s_crtid ON %s (concept_id, revision_id, transaction_id)"
                                   table-name
                                   table-name))
-
   ;; This index is needed when bulk indexing granules within a collection
   (jdbc/db-do-commands db (format "CREATE INDEX %s_cpk ON %s (parent_collection_id, id)"
                                   table-name
                                   table-name))
-
   ;; This index makes it faster to find counts by collection of undeleted granules for metadata db holdings
-  (jdbc/db-do-commands
-    db (format "create index %s_pdcr on %s (parent_collection_id, deleted, concept_id, revision_id)"
-               table-name
-               table-name)))
+  (jdbc/db-do-commands db (format "create index %s_pdcr on %s (parent_collection_id, deleted, concept_id, revision_id)"
+                                  table-name
+                                  table-name))
+  ;; This index makes it much faster to find granules that are not deleted that have a delete time.
+  (jdbc/db-do-commands db (format "create index %s_dd on %s (deleted, delete_time)"
+                                  table-name
+                                  table-name)))
 
-(defmulti create-granule-indexes
+(defn create-granule-indexes
   "Create indexes on provider granule table"
-  (fn [db provider table-name]
-    (:small provider)))
-
-(defmethod create-granule-indexes false
   [db provider table-name]
   (util/validate-table-name table-name)
   (create-common-gran-indexes db table-name)
-  (jdbc/db-do-commands db (format "CREATE INDEX idx_%s_ur ON %s(granule_ur)" table-name table-name)))
-
-(defmethod create-granule-indexes true
-  [db provider table-name]
-  (util/validate-table-name table-name)
-  (create-common-gran-indexes db table-name)
-  (jdbc/db-do-commands db (format "CREATE INDEX idx_%s_pur ON %s(provider_id, granule_ur)"
-                                  table-name table-name)))
+  (case (:small provider)
+    false (jdbc/db-do-commands db (format "CREATE INDEX idx_%s_ur ON %s(granule_ur)" table-name table-name))
+    true (jdbc/db-do-commands db (format "CREATE INDEX idx_%s_pur ON %s(provider_id, granule_ur)" table-name table-name))))
