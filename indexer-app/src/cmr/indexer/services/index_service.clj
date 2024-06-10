@@ -628,7 +628,7 @@
                  {:term {(query-field->elastic-field :collection-concept-id :granule)
                          concept-id}})]
       (if (not= (get resp :status) 200)
-        (info (format "cascade collection delete for concept id %s and revision id %s. Elastic delete by query resp = %s" concept-id revision-id resp)))))
+        (warn (format "cascade collection delete for concept id %s and revision id %s did not return 200 status response. Elastic delete by query resp = %s" concept-id revision-id resp)))))
   ;; reindex variables associated with the collection
   (reindex-associated-variables context concept-id revision-id))
 
