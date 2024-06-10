@@ -24,13 +24,13 @@
                       {:category "SPACE" :uuid "location5-uuid"}
                       {:category "CONTINENT" :type "UNITED STATES" :subregion-1 "GEORGIA"
                        :uuid "location6-uuid"}]
-   :related-urls [{:URLContentType "DistributionURL"
-                   :Type "GOTO WEB TOOL"
-                   :Subtype "HITIDE"
+   :related-urls [{:url-content-type "DistributionURL"
+                   :type "GOTO WEB TOOL"
+                   :subtype "HITIDE"
                    :uuid "related1-uuid-hitide"}
-                  {:URLContentType "VisualizationURL"
-                   :Type "GET RELATED VISUALIZATION"
-                   :Subtype "MAP"
+                  {:url-content-type "VisualizationURL"
+                   :type "GET RELATED VISUALIZATION"
+                   :subtype "MAP"
                    :uuid "related2-uuid-map"}]
    :iso-topic-categories [{:iso-topic-category "BIOTA" :uuid "itc1-uuid"} {:iso-topic-category "CLIMATOLOGY/METEOROLOGY/ATMOSPHERE" :uuid "itc2-uuid"}]
    :concepts [{:short-name "GOSIC/GTOS" :uuid "dn1-uuid"} {:short-name "GOMMP" :uuid "dn2-uuid"}]

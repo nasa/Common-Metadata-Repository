@@ -93,7 +93,7 @@
    :iso-topic-categories [:iso-topic-category]
    :granule-data-format [:short-name]
    :mime-type [:mime-type]
-   :related-urls [:URLContentType :Type :Subtype]
+   :related-urls [:url-content-type :type :subtype]
    :processing-levels [:processing-level]
    :temporal-keywords [:temporal-resolution-range]})
 
