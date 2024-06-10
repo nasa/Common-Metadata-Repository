@@ -240,7 +240,7 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
  * `scroll` - A boolean flag (true/false) that allows all results to be retrieved efficiently. `page_size` is supported with `scroll` while `page_num` and `offset` are not. If `scroll` is `true` then the first call of a scroll session sets the page size; `page_size` is ignored on subsequent calls.
  * `sort_key` - Indicates one or more fields to sort on. Described below.
  * `pretty` - Return formatted results if set to true.
- * `token` - specifies a user/guest token from EDL or Launchpad for use as authentication. However this practice should be considered deprecated in favor of using the standard [Authorization header](#header).
+ * `token` - specifies a user/guest token from EDL or Launchpad for use as authentication. Using the standard [Authorization header](#header) is the prefered way to supply a token. This parameter may be deprecated in the future.
  * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
 
 #### <a name="paging-details"></a> Paging Details
