@@ -621,12 +621,14 @@
   i.e. propagate collection deletion to granules and variables"
   [context concept-mapping-types concept-id revision-id]
   (doseq [index (idx-set/get-granule-index-names-for-collection context concept-id)]
-    (es/delete-by-query
-     context
-     index
-     (concept-mapping-types :granule)
-     {:term {(query-field->elastic-field :collection-concept-id :granule)
-             concept-id}}))
+    (let [resp (es/delete-by-query
+                 context
+                 index
+                 (concept-mapping-types :granule)
+                 {:term {(query-field->elastic-field :collection-concept-id :granule)
+                         concept-id}})]
+      (if (not= (get resp :status) 200)
+        (warn (format "cascade collection delete for concept id %s and revision id %s did not return 200 status response. Elastic delete by query resp = %s" concept-id revision-id resp)))))
   ;; reindex variables associated with the collection
   (reindex-associated-variables context concept-id revision-id))
 
