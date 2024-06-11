@@ -4,7 +4,6 @@
             [clojure.java.io :as io]
             [cmr.common.util :as util]
             [cmr.common.mime-types :as mt]
-            [cmr.common.log :refer [error]]
             [cmr.umm.umm-granule :as umm-g]
             [cmr.umm.echo10.granule :as g]
             [cmr.virtual-product.data.source-to-virtual-mapping :as svm]))
@@ -42,9 +41,9 @@
         gldas_noah10_m "GLDAS Noah Land Surface Model L4 Monthly 1.0 x 1.0 degree V2.0 (GLDAS_NOAH10_M) at GES DISC"
         ast-l1t "ASTER Level 1 precision terrain corrected registered at-sensor radiance V003"
         ;; Generate access url objects from string urls
-        gen-access-urls (fn [urls] (map #(hash-map :Type "GET DATA" :URLContentType "DistributionURL" :url %) urls))
-        gen-resource-urls (fn [urls] (map #(hash-map :Type "USE SERVICE API" :Subtype "OPENDAP DATA" :URLContentType "DistributionURL" :url %) urls))
-        gen-browse-urls (fn [urls] (map #(hash-map :Type "GET RELATED VISUALIZATION" :URLContentType "VisualizationURL" :url %) urls))
+        gen-access-urls (fn [urls] (map #(hash-map :type "GET DATA" :url %) urls))
+        gen-resource-urls (fn [urls] (map #(hash-map :type "USE SERVICE API" :sub-type "OPENDAP DATA" :url %) urls))
+        gen-browse-urls (fn [urls] (map #(hash-map :type "GET RELATED VISUALIZATION" :url %) urls))
         gen-qa-urls (fn [urls] (map #(hash-map :type "Quality Assurance"
                                                :mime-type "text/plain"
                                                :url %) urls))
@@ -75,7 +74,6 @@
                                :collection-ref {:entry-title src-entry-title})
                generated-virt-gran (svm/generate-virtual-granule-umm
                                      provider-id src-short-name src-gran virt-coll)]
-         ;_ (error "generated-virt-gran:\n" generated-virt-gran)]
 
            (is (= virt-short-name (get-in generated-virt-gran [:collection-ref :short-name])))
            (is (= virt-version-id (get-in generated-virt-gran [:collection-ref :version-id])))

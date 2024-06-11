@@ -19,7 +19,8 @@
    [cmr.transmit.config :as transmit-config]
    [cmr.umm-spec.date-util :as umm-spec-date-util]
    [cmr.umm-spec.related-url :as related-url]
-   [cmr.umm-spec.util :as umm-spec-util]))
+   [cmr.umm-spec.util :as umm-spec-util]
+   [cmr.umm.related-url-helper :as ru]))
 
 (def OPENDATA_SCHEMA
   "Location of the the opendata schema to which the results conform"
@@ -216,10 +217,10 @@
   [related-url]
   (let [{:keys [description url get-data-mime-type url-content-type type sub-type]} related-url
         get-data-mime-type (or (util/nil-if-value umm-spec-util/not-provided get-data-mime-type)
-                               (related-url/infer-url-mime-type url))
-        downloadable? (related-url/downloadable-mime-type? get-data-mime-type)
+                               (ru/infer-url-mime-type url))
+        downloadable? (ru/downloadable-mime-type? get-data-mime-type)
         url-type (if downloadable? :downloadURL :accessURL)]
-    (util/remove-nil-keys {url-type (related-url/related-url->encoded-url url)
+    (util/remove-nil-keys {url-type (ru/related-url->encoded-url url)
                            :mediaType (when downloadable? get-data-mime-type)
                            :title (related-url/related-url->title url-content-type type sub-type)
                            :description description})))
@@ -363,7 +364,7 @@
 (defn get-best-browse-image-related-url
   "Get the related-url that is a browse image with the most graphic-preview fields."
   [related-urls]
-  (->> (related-url/browse-urls related-urls)
+  (->> (ru/browse-urls related-urls)
        (sort-by score-browse-image-related-url)
        last))
 
@@ -377,7 +378,7 @@
   See https://project-open-data.cio.gov/v1.1/schema/#dataset-distribution-fields."
   [doi]
   (when doi
-    {:accessURL (related-url/related-url->encoded-url
+    {:accessURL (ru/related-url->encoded-url
                  (str "https://scholar.google.com/scholar?q=" (or (second
                                                                    (re-find #"^doi:(.*)$" doi))
                                                                   doi)))
@@ -435,7 +436,7 @@
                            :issue-identification (:issue-identification collection-citation)
                            :data-presentation-form (:data-presentation-form collection-citation)
                            :references (not-empty
-                                        (map related-url/related-url->encoded-url publication-references))
+                                        (map ru/related-url->encoded-url publication-references))
                            :issued (not-empty issued-time)})))
 
 (defn- results->opendata

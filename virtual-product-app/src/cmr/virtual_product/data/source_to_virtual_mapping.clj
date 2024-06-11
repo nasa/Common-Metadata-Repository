@@ -2,12 +2,14 @@
   "Defines source to vritual granule mapping rules."
   (:require
    [clojure.string :as str]
-   [cmr.common.log :refer [error]]
-   [cmr.umm-spec.related-url :as ru]
+   [cmr.common.mime-types :as mt]
+   [cmr.umm.related-url-helper :as ruh]
    [cmr.umm.umm-collection :as umm-c]
    [cmr.umm.umm-granule :as umm-g]
    [cmr.virtual-product.config :as vp-config]
-   [cmr.virtual-product.data.ast-l1a :as l1a]))
+   [cmr.virtual-product.data.ast-l1a :as l1a])
+  (:import
+   (java.util.regex Pattern)))
 
 (def source-granule-ur-additional-attr-name
   "The name of the additional attribute used to store the granule-ur of the source granule"
@@ -328,12 +330,11 @@
   [related-urls src-granule-ur opendap-subset]
   (seq (for [related-url related-urls
              ;; only opendap OnlineResourceUrls in source granule should be present in the virtual granules
-             :when (= (:Type related-url) "USE SERVICE API")]
+             :when (= (:type related-url) "USE SERVICE API")]
          ;; only URL is kept in virtual granule OnlineResourceURL
          (umm-c/map->RelatedURL
-           {:Type "USE SERVICE API"
-            :Subtype "OPENDAP DATA"
-            :URLContentType "DistributionURL"
+           {:type "USE SERVICE API"
+            :sub-type "OPENDAP DATA"
             :url (str (:url related-url) ".nc?" opendap-subset)}))))
 
 (defn- remove-granule-size
@@ -402,9 +403,7 @@
 (defn- ast-l1t-virtual-online-access-urls
   "Returns the online access urls for virtual granule of the given AST_L1T granule"
   [virtual-umm virtual-short-name]
-  (let [online-access-urls (filter ru/downloadable-url? (:related-urls virtual-umm))
-        ;_ (error virtual-umm)
-        ;_ (error "online access urls:\n" (pr-str online-access-urls))
+  (let [online-access-urls (filter ruh/downloadable-url? (:related-urls virtual-umm))
         frb-url-matches (fn [related-url suffix fmt]
                           (let [url (:url related-url)]
                             (or (.endsWith ^String url suffix)
@@ -421,9 +420,7 @@
 (defn- ast-l1t-virtual-browse-qa-urls
   "Returns the online resource urls for virtual granule of the given AST_L1T granule"
   [virtual-umm virtual-short-name]
-  (let [browse-qa-urls (remove ru/downloadable-url? (:related-urls virtual-umm))
-        ;_ (error virtual-umm)
-        ;_ (error "browse wa urls:\n" (pr-str browse-qa-urls))
+  (let [browse-qa-urls (remove ruh/downloadable-url? (:related-urls virtual-umm))
         [browse-psa browse-suffix] (if (= "AST_FRBT" virtual-short-name)
                                      ["FullResolutionThermalBrowseAvailable" ".TIR.jpg"]
                                      ["FullResolutionVisibleBrowseAvailable" ".VNIR.jpg"])
@@ -465,8 +462,7 @@
 (defn generate-virtual-granule-umm
   "Generate the virtual granule umm based on source granule umm"
   [provider-id source-short-name source-umm virtual-coll]
-  (let [;_ (error "source umm:\n" source-umm)
-        virtual-short-name (:short-name virtual-coll)
+  (let [virtual-short-name (:short-name virtual-coll)
         virtual-granule-ur (generate-granule-ur
                              provider-id
                              source-short-name

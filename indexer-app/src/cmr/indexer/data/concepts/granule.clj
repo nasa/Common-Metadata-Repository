@@ -18,7 +18,7 @@
    [cmr.transmit.metadata-db :as mdb]
    [cmr.umm-spec.umm-spec-core :as umm-spec]
    [cmr.umm.echo10.spatial :as umm-spatial]
-   [cmr.umm-spec.related-url :as ru]
+   [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed]))
 
 (def parent-collection-cache-key

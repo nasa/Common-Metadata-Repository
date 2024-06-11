@@ -19,7 +19,7 @@
    [cmr.system-int-test.utils.url-helper :as url]
    [cmr.umm-spec.util :as su]
    [cmr.umm.echo10.spatial :as echo-s]
-   [cmr.umm-spec.related-url :as ru]
+   [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm.umm-spatial :as umm-s]))
 

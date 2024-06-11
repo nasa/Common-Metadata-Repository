@@ -9,7 +9,7 @@
    [cmr.search.results-handlers.opendata-results-handler :as odrh]
    [cmr.system-int-test.data2.core :as data-core]
    [cmr.umm-spec.date-util :as date-util]
-   [cmr.umm-spec.related-url :as ru]
+   [cmr.umm.related-url-helper :as ru]
    [cmr.umm.start-end-date :as sed]
    [cmr.umm.umm-spatial :as umm-s]))
 

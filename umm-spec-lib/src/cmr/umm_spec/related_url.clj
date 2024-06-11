@@ -3,45 +3,13 @@
    [clojure.string :as str]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.opendap-util :as opendap-util]
-   [cmr.umm-spec.related-url-titles :as related-url-titles]
-   [ring.util.codec :as codec]
-   [ring.util.mime-type :as mime-type]))
+   [cmr.umm-spec.related-url-titles :as related-url-titles]))
 
 (def DOCUMENTATION_MIME_TYPES
   "Mime Types that indicate the RelatedURL is of documentation type"
   #{"Text/rtf" "Text/richtext" "Text/plain" "Text/html" "Text/example" "Text/enriched"
     "Text/directory" "Text/csv" "Text/css" "Text/calendar" "Application/http" "Application/msword"
     "Application/rtf" "Application/wordperfect5.1"})
-
-(def ^:private ADDITIONAL_MIME_TYPES
-  "Mime types outside the scope of ring/mime-types defaults."
-  {"nc" "application/x-netcdf"
-   "gml" "application/gml+xml"
-   "kml" "application/vnd.google-earth.kml+xml"
-   "hdf" "application/x-hdf"
-   "he5" "application/xhdf5"
-   "hdf5" "application/xhdf5"
-   "h5" "application/xhdf5"
-   "kmz" "application/vnd.google-earth.kmz"
-   "dae" "image/vnd.collada+xml"})
-
-(def ^:private DOWNLOADABLE_MIME_TYPES
-  "White list of downloadable mime types"
-  #{"text/csv"})
-
-(defn infer-url-mime-type
-  "Attempt to figure out mime type based off file extension."
-  [url]
-  (when url
-    (mime-type/ext-mime-type url ADDITIONAL_MIME_TYPES)))
-
-(defn downloadable-mime-type?
-  "Mime type is downloadable if it is either in the list of approved
-   mime types or if it does not match text/*"
-  [mime-type]
-  (when mime-type
-    (or (contains? DOWNLOADABLE_MIME_TYPES mime-type)
-        (not (re-matches #"^(text\/).*" mime-type)))))
 
 (defn related-url->title
   "Return the related url title. Title is mapped by URLContentType->Type->Subtype->Title.
@@ -108,26 +76,6 @@
  {"ALGORITHM THEORETICAL BASIS DOCUMENT" "ALGORITHM THEO BASIS"
   "CALIBRATION DATA DOCUMENTATION" "CALIBRATION DATA"
   "PRODUCT QUALITY ASSESSMENT" "PRODUCT QUALITY"})
-
-(defn- encode-url
-  "Encode the query portion of the url."
-  [url]
-  (let [split-url (str/split url #"\?" 2)
-        base-url (first split-url)
-        params (second split-url)]
-    (if params
-      (->> params
-           codec/form-decode
-           codec/form-encode
-           (str base-url "?"))
-      url)))
-
-(defn related-url->encoded-url
-  "Ensure URL is encoded."
-  [related-url]
-  (if related-url
-    (encode-url related-url)
-    related-url))
 
 (defn related-url->online-resource-type
  "Format the online resource type to be 'URLContentType : Type' if no subtype
@@ -196,6 +144,18 @@
         [:Type (related-url->online-resource-type related-url)]
         (when MimeType
           [:MimeType MimeType])])]))
+
+(defn convert-to-bytes
+  [size unit]
+  (when (and size unit)
+    (case (str/upper-case unit)
+      ("BYTES" "B") size
+      ("KILOBYTES" "KB") (* size 1024)
+      ("MEGABYTES" "MB") (* size 1048576)
+      ("GIGABYTES" "GB") (* size 1073741824)
+      ("TERABYTES" "TB") (* size 1099511627776)
+      ("PETABYTES" "PB") (* size 1125899906842624)
+      nil)))
 
 (defn generate-browse-urls
   "Generates the AssociatedBrowseImageUrls element of an ECHO10 XML from a UMM related urls entry."

@@ -631,10 +631,8 @@
         r1 {:type "GET DATA"
             :url "http://example.com/url1"}
         r2 {:type "GET DATA"
-            :URLContentType "DistributionURL"
             :url url}
         r3 {:type "GET RELATED VISUALIZATION"
-            :URLContentType "VisualizationURL"
             :url url}
         collection (make-collection {})]
     (testing "valid online access urls"

@@ -75,7 +75,7 @@
       {:accessURL "http://example.com/mime-type.html"}
       {:url "http://example.com/mime-type.html"
        :get-data-mime-type "text/html"
-       :URLContentType "VisualizationURL"}
+       :type "GET RELATED VISUALIZATION"}
 
       "url is not downloadable from missing mime type and undeterminable mime type"
       {:accessURL "http://example.com/missing-mime-type"}
@@ -122,13 +122,13 @@
                           :type "GET RELATED VISUALIZATION"
                           :size 0}
        only-description {:description "a test description-1"
-                         :URLContentType "VisualizationURL"}
+                         :type "GET RELATED VISUALIZATION"}
        only-not-provided-mime-type {:get-data-mime-type "Not provided"
-                                    :URLContentType "VisualizationURL"}
+                                    :type "GET RELATED VISUALIZATION"}
        only-mime-type {:get-data-mime-type "image/gif"
-                       :URLContentType "VisualizationURL"}
+                       :type "GET RELATED VISUALIZATION"}
        no-browse-fields {:size 0
-                         :URLContentType "VisualizationURL"
+                         :type "GET RELATED VISUALIZATION"
                          :get-service-mime-type "image/png"}
        not-a-browse-image {:type "GET DATA"
                            :size 0
@@ -149,7 +149,7 @@
        "Browse image with only one field chosen over a non-browse image with all the fields."
        only-mime-type [not-a-browse-image only-mime-type only-not-provided-mime-type]
 
-       "nil is returned for no browse images found"
+       "nil is returneded for no browse images found"
        nil [not-a-browse-image]
 
        "empty urls"
