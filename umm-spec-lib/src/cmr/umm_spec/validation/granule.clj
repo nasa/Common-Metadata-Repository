@@ -12,7 +12,7 @@
    [cmr.umm-spec.time :as umm-spec-time]
    [cmr.umm.umm-spatial :as umm-s]
    [cmr.umm-spec.validation.umm-spec-validation-utils :as vu]
-   [cmr.umm-spec.related-url :as ru]
+   [cmr.umm.related-url-helper :as ru]
    [cmr.umm-spec.validation.additional-attribute :as aav]))
 
 (defn- spatial-extent->granule-spatial-representation
