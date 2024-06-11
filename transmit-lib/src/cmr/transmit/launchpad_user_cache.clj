@@ -3,10 +3,9 @@
   launchpad tokens to avoid needing to call out to EDL for authentication every time.  Launchpad tokens have a lifetime currently of 60 minutes."
   (:require
    [clj-time.core :as t]
-   [clj-time.format :as t-format]
    [cmr.common.cache :as cache]
    [cmr.common.cache.in-memory-cache :as mem-cache]
-   [cmr.common.log :refer [debug info warn error]]
+   [cmr.common.log :refer [error]]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
    [cmr.common.util :as common-util]

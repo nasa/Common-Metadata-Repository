@@ -9,8 +9,10 @@
    [cmr.transmit.connection :as conn]))
 
 ;; Defines health check function
+(declare get-indexer-health)
 (h/defhealther get-indexer-health :indexer {:timeout-secs 2})
 
+(declare clear-cache)
 (h/defcacheclearer clear-cache :indexer)
 
 (defn- rebalance-collection-url

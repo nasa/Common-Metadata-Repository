@@ -77,7 +77,7 @@
 
   c/CmrCache
   (get-keys
-    [this]
+    [_this]
     ;; This is an expensive operation. Any keys that we return here must have a value in memory cache
     ;; and a value in the hash cache. The hash code of the value in the memory cache must match
     ;; the value in the hash cache.
@@ -87,12 +87,12 @@
       k))
 
   (key-exists
-    [this key]
+    [_this key]
     ;; key is the cache-key. Checks to see if the cache has been setup.
     (c/key-exists memory-cache key))
 
   (get-value
-    [this key]
+    [_this key]
     (let [mem-value (c/get-value memory-cache key)]
       (when (and (not (nil? mem-value))
                  (= (hash mem-value)
@@ -109,15 +109,15 @@
         c-value)))
 
   (reset
-    [this]
+    [_this]
     (c/reset memory-cache)
     (c/reset hash-cache))
 
   (set-value
-    [this key value]
+    [_this key value]
     (c/set-value memory-cache key value)
     (c/set-value hash-cache (key->hash-cache-key key) (hash value)))
-  
+
   (cache-size
    [_]
    (+ (c/cache-size memory-cache)
@@ -154,7 +154,7 @@
    (create-consistent-cache nil))
   ([options]
    (let [timeout (get options :hash-timeout-seconds (consistent-cache-default-hash-timeout-seconds))
-         hash-cache (redis-cache/create-redis-cache 
+         hash-cache (redis-cache/create-redis-cache
                      (merge options
                             {:read-connection (cmr.redis-utils.config/redis-read-conn-opts)
                              :primary-connection (cmr.redis-utils.config/redis-conn-opts)}))

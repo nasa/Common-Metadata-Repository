@@ -1,13 +1,14 @@
 (ns cmr.transmit.http-helper
   "Contains helpers for handling making http requests and processing responses."
-  (:require [clj-http.client :as client]
-            [cmr.common.api.context :as context]
-            [cmr.common.mime-types :as mt]
-            [cheshire.core :as json]
-            [cmr.transmit.config :as config]
-            [cmr.transmit.connection :as conn]
-            [cmr.common.services.errors :as errors]
-            [cmr.common.services.health-helper :as hh]))
+  (:require
+   [cheshire.core :as json]
+   [clj-http.client :as client]
+   [cmr.common.api.context :as context]
+   [cmr.common.mime-types :as mt]
+   [cmr.common.services.errors :as errors]
+   [cmr.common.services.health-helper :as hh]
+   [cmr.transmit.config :as config]
+   [cmr.transmit.connection :as conn]))
 
 (defn reset-url
   [conn]
@@ -127,18 +128,19 @@
 
   * :url-fn - A function taking a transmit connection and returning the URL to use.
   * :method - the HTTP method. :get, :post, etc.
-  * :raw? - indicates whether the raw HTTP response (as returned by http-response->raw-response ) is
+  * :raw? - indicates whether the raw HTTP response (as returned by http-response->raw-response) is
   desired. Defaults to false.
   * :use-system-token? - indicates if the ECHO system token should be put in the header
-  * :http-options - a map of additional HTTP options to send to the clj-http.client/request function.
+  * :http-options - map of additional HTTP options to send to the clj-http.client/request function.
   * :response-handler - a function to handle the response. Defaults to default-response-handler"
-  [context app-name {:keys [url-fn method http-options response-handler use-system-token?] :as request}]
+  [context app-name {:keys [url-fn method http-options response-handler use-system-token?] :as _request}]
   (let [conn (config/context->app-connection context app-name)
-        response-handler (or response-handler default-response-handler)
+        _response-handler (or response-handler default-response-handler)
         connection-params (config/conn-params conn)
         ;; Validate that a connection manager is always present. This can cause poor performance if not.
         _ (when-not (:connection-manager connection-params)
-            (errors/internal-error! (format "No connection manager created for [%s] in current application" app-name)))
+            (errors/internal-error!
+             (format "No connection manager created for [%s] in current application" app-name)))
         response (http-response->raw-response-with-headers
                    (client/request
                      (merge connection-params

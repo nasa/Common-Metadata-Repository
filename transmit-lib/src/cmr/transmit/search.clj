@@ -2,7 +2,7 @@
   "Provide functions to invoke search app"
   (:require
    [clj-http.client :as client]
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [cmr.common.api.context :as ch]
    [cmr.common.mime-types :as mt]
    [cmr.common.services.errors :as errors]
@@ -10,7 +10,7 @@
    [cmr.common.xml :as cx]
    [cmr.transmit.config :as config]
    [cmr.transmit.connection :as conn]
-   [cmr.transmit.http-helper :as h]
+   [cmr.transmit.http-helper :as hh]
    [ring.util.codec :as codec]))
 
 (defn token-header
@@ -18,6 +18,7 @@
  (assoc (ch/context->http-headers context)
    config/token-header (config/echo-system-token)))
 
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed save-subscription-notification-time
  "make an http call to the database application"
  [context sub-id]
@@ -29,12 +30,13 @@
                               {:accept :xml
                                :headers (token-header context)
                                :throw-exceptions false}))
-       {:keys [headers body]} response
+       {:keys [body]} response
        status (int (:status response))]
    (when-not (= status 204)
      (errors/internal-error!
        (format "Subscription update failed. status: %s body: %s" status body)))))
 
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed find-granule-hits
   "Returns granule hits that match the given search parameters."
   [context params]
@@ -60,7 +62,7 @@
 (defn- parse-granule-response
   "Parse xml search response body and return the granule references"
   [xml]
-  (let [parsed (x/parse-str xml)
+  (let [parsed (xml/parse-str xml)
         ref-elems (cx/elements-at-path parsed [:references :reference])]
     (map #(util/remove-nil-keys
             {:concept-id (cx/string-at-path % [:id])
@@ -70,13 +72,14 @@
 (defn parse-collection-response
   "Parse xml search response body and return the collection references"
   [xml]
-  (let [parsed (x/parse-str xml)
+  (let [parsed (xml/parse-str xml)
         ref-elems (cx/elements-at-path parsed [:references :reference])]
     (map #(util/remove-nil-keys
             {:concept-id (cx/string-at-path % [:id])
              :name (cx/string-at-path % [:name])
              :location (cx/string-at-path % [:location])}) ref-elems)))
 
+#_{:clj-kondo/ignore [:unresolved-symbol]}
 (defn-timed find-concept-references
   "Find granules by parameters in a post request. The function returns an array of granule
   references, each reference being a map having concept-id and granule-ur as the fields"
@@ -99,6 +102,7 @@
       (errors/internal-error!
         (format "Granule search failed. status: %s body: %s" status body)))))
 
+(declare validate-search-params)
 (defn-timed validate-search-params
   "Attempts to search granules using given params via a POST request. If the response contains a
   non-200 http code, returns the response body."
@@ -123,22 +127,27 @@
     (when-not (= status 200)
       body)))
 
-(h/defsearcher search-for-collections :search
+(declare search-for-collections)
+(hh/defsearcher search-for-collections :search
   (fn [conn]
     (format "%s/collections" (conn/root-url conn))))
 
-(h/defsearcher search-for-variables :search
+(declare search-for-variables)
+(hh/defsearcher search-for-variables :search
   (fn [conn]
     (format "%s/variables" (conn/root-url conn))))
 
-(h/defsearcher search-for-services :search
+(declare search-for-services)
+(hh/defsearcher search-for-services :search
   (fn [conn]
     (format "%s/services" (conn/root-url conn))))
 
-(h/defsearcher search-for-tools :search
+(declare search-for-tools)
+(hh/defsearcher search-for-tools :search
   (fn [conn]
     (format "%s/tools" (conn/root-url conn))))
 
-(h/defsearcher search-for-subscriptions :search
+(declare search-for-subscriptions)
+(hh/defsearcher search-for-subscriptions :search
   (fn [conn]
     (format "%s/subscriptions" (conn/root-url conn))))
