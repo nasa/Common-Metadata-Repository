@@ -221,7 +221,6 @@ See the [CMR Client Partner User Guide](https://wiki.earthdata.nasa.gov/display/
      * [Navigating Apollo Studio](#cmr-graphql-apollo-studio)
      * [Programmatic requests to CMR-Graphql](#cmr-graphql-programmatic-requests)
      * [Additional Information](#cmr-graphql-addtional-information)
-***
 
 ### <a name="general-request-details"></a> General Request Details
 
@@ -235,13 +234,13 @@ The CORS headers are supported on search endpoints. Check [CORS Documentation](h
 
 #### <a name="query-parameters"></a> Query Parameters
 
- * `page_size` - number of results per page - default is 10, max is 2000
- * `page_num` - The page number to return
- * `offset` - As an alternative to page_num, a 0-based offset of individual results may be specified
+ * `page_size` - Number of results per page - default is 10, max is 2000.
+ * `page_num` - The page number to return.
+ * `offset` - As an alternative to page_num, a 0-based offset of individual results may be specified.
  * `scroll` - A boolean flag (true/false) that allows all results to be retrieved efficiently. `page_size` is supported with `scroll` while `page_num` and `offset` are not. If `scroll` is `true` then the first call of a scroll session sets the page size; `page_size` is ignored on subsequent calls.
- * `sort_key` - Indicates one or more fields to sort on. Described below
- * `pretty` - return formatted results if set to true
- * `token` - specifies a user/guest token from EDL or Launchpad to use to authenticate yourself. EDL tokens can be specified as a header with the `Authorization: Bearer` prefix. Launchpad tokens can be specified as the header with `Authorization:`. 
+ * `sort_key` - Indicates one or more fields to sort on. Described below.
+ * `pretty` - Return formatted results if set to true.
+ * `token` - Specifies a user token from EDL or Launchpad for use as authentication. Using the standard [Authorization header](#header) is the prefered way to supply a token. This parameter may be deprecated in the future.
  * `echo_compatible` - When set to true results will be returned in an ECHO compatible format. This mostly removes fields and features specific to the CMR such as revision id, granule counts and facets in collection results. Metadata format style results will also use ECHO style names for concept ids such as `echo_granule_id` and `echo_dataset_id`.
 
 #### <a name="paging-details"></a> Paging Details
@@ -340,23 +339,37 @@ These are query parameters that control what extra data is included with collect
   _The `include_highlights` feature is only supported for the JSON response format and only applies to keyword searches._
 
 
-#### <a name="headers"></a> Headers
+#### <a name="headers"></a> HTTP Headers
 
-  * Accept - specifies the MimeType to return search results in. Default is "application/xml".
-    * `curl -H "Accept: application/xml" -i "%CMR-ENDPOINT%/collections"`
-  * `Authorization: Bearer` - specifies an EDL bearer token to use to authenticate yourself.
-    * `curl -H "Authorization: Bearer <access_token>" -i "%CMR-ENDPOINT%/collections"`
-  * `Authorization:` - specifies a Launchpad token to use to authenticate yourself.
-    * `curl -H "Authorization: <launchpad_token>" -i "%CMR-ENDPOINT%/collections"`
-  * `Client-Id` - Indicates a name for the client using the CMR API. Specifying this helps Operations monitor query performance per client. It can also make it easier for them to identify your requests if you contact them for assistance.
-  * `X-Request-Id` - This provides standard X-Request-Id support to allow user to pass in some random ID which will be logged on the server side for debugging purpose.
-  * `CMR-Request-Id` - This header serves the same purpose as X-Request-Id header. It's kept to support legacy systems.
+##### Request Headers
+`Accept` - specifies the MimeType to return search results in. Default is "application/xml".
 
-  * The response headers include the following:
-    CMR-Hits and CMR-Took indicate the number of result hits and the time to build and execute the query, respectively.
-    CMR-Request-Id and X-Request-Id return the same value - the value passed in through CMR-Request-Id request header or X-Request-Id request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors.
-    CMR-Shapefile-Original-Point-Count returns the original shapefile point count when shapefile simplification is requested
-    CMR-Shapefile-Simplified-Point-Count return the reduced point count when shapefile simplification is requested
+    `curl -H "Accept: application/xml" -i "%CMR-ENDPOINT%/collections"`
+
+`Authorization: Bearer` - specifies an EDL bearer token to use to authenticate yourself.
+
+    `curl -H "Authorization: Bearer <access_token>" -i "%CMR-ENDPOINT%/collections"`
+
+`Authorization:` - specifies a Launchpad token to use to authenticate yourself.
+
+    `curl -H "Authorization: <launchpad_token>" -i "%CMR-ENDPOINT%/collections"`
+
+`Client-Id` - Indicates a name for the "client" using the CMR API. A client can be either a person's name, organization's name, or the name of the script/process making the request. Specifying this header helps Operations monitor query performance per client. This field can also make it easier for the Operations team to identify your requests if you contact them for assistance.
+
+`CMR-Pretty` - Returns formatted results if set to true.
+
+`X-Request-Id` - This provides standard `X-Request-Id` support to allow user to pass in some random ID which will be logged on the server side for debugging purposes.
+
+`CMR-Request-Id` - This header serves the same purpose as `X-Request-Id` header. It is kept to support legacy systems.
+
+##### The response headers
+
+* `CMR-Hits` and `CMR-Took` indicate the number of result hits and the time to build and execute the query, respectively.
+* `CMR-Request-Id` and `X-Request-Id` return the same value - the value passed in through `CMR-Request-Id` request header or `X-Request-Id` request header or a unique id generated for the client request when no value is passed in, This can be used to help debug client errors.
+* `CMR-Shapefile-Original-Point-Count` returns the original shapefile point count when shapefile simplification is requested
+* `CMR-Shapefile-Simplified-Point-Count` return the reduced point count when shapefile simplification is requested
+* `content-md5` returns the MD5 hash of the content.
+* `content-sha1` returns the SHA1 hash value for the content.
 
 #### <a name="extensions"></a> Extensions
 
