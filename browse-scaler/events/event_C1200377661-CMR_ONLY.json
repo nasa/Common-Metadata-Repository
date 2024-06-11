@@ -1,8 +1,0 @@
-{
-    "path": "datasets/C1200377661-CMR_ONLY",
-    "queryStringParameters": {
-        "h ": 85,
-        "w": 85,
-        "browseLink":"SomeLink"
-    }
-}

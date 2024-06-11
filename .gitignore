@@ -7,7 +7,6 @@
 .lein-env
 */.lein-*
 profiles.clj
-browse-scaler/src/node_modules
 .classpath
 .project
 *.prefs
@@ -28,8 +27,6 @@ dev-system/local.edn
 ### Test Files
 ###############################
 */testreports.xml
-browse-scaler/src/__test__/junit.xml
-browse-scaler/src/coverage
 test2junit
 schema-validation-lib/build.xml
 
@@ -38,7 +35,6 @@ schema-validation-lib/build.xml
 ###############################
 /target
 pom.xml
-browse-scaler/src/*.zip
 cmr-exchange/*/target
 
 ###############################
