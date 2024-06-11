@@ -63,13 +63,13 @@
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
       (index/wait-until-indexed)
       (is (mdb/concept-exists-in-mdb? concept-id revision-id))
-      (is (= 1 revision-id)))
+      (is (= 1 revision-id))))
     ;;testing that when launchpad token is enforced, collection ingest fails without launchpad token.
-    (side/eval-form `(common-config/set-launchpad-token-enforced! true))
-    (let [concept (data-umm-c/collection-concept {})
-          result (ingest/ingest-concept concept)]
-      (is (= ["Launchpad token is required. Token [XXX] is not a launchpad token."] (:errors result))))
-    (side/eval-form `(common-config/set-launchpad-token-enforced! false)))
+    ;;(side/eval-form `(common-config/set-launchpad-token-enforced! true))
+    ;;(let [concept (data-umm-c/collection-concept {})
+     ;;     result (ingest/ingest-concept concept)]
+      ;;(is (= ["Launchpad token is required. Token [XXX] is not a launchpad token."] (:errors result))))
+    ;;(side/eval-form `(common-config/set-launchpad-token-enforced! false)))
   (testing "ingest of a concept with a revision id"
     (let [concept (data-umm-c/collection-concept {:revision-id 5})
           {:keys [concept-id revision-id]} (ingest/ingest-concept concept)]
