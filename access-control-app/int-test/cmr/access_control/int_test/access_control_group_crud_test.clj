@@ -1,6 +1,6 @@
 (ns cmr.access-control.int-test.access-control-group-crud-test
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [clojure.test :refer [are deftest is testing use-fixtures]]
    [cmr.access-control.int-test.fixtures :as fixtures]
    [cmr.access-control.test.util :as test-util]
@@ -25,7 +25,7 @@
 (defn string-of-length
   "Creates a string of the specified length"
   [n]
-  (str/join (repeat n "x")))
+  (string/join (repeat n "x")))
 
 (deftest create-group-validation-test
   (let [valid-user-token (echo-util/login (test-util/conn-context) "user1")
@@ -129,7 +129,7 @@
     (let [group (test-util/make-group {:name "TeSt GrOuP 1" :provider_id "PROV1"})
           token (echo-util/login (test-util/conn-context) "user1")
           {:keys [status concept_id revision_id]} (test-util/create-group token group)
-          lowercase-group (assoc group :name (str/lower-case (:name group)))]
+          lowercase-group (assoc group :name (string/lower-case (:name group)))]
       (is (= 200 status))
       (is (re-matches #"AG\d+-PROV1" concept_id) "Incorrect concept id for a provider group")
       (is (= 1 revision_id))

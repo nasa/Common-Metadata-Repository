@@ -1,11 +1,8 @@
 (ns cmr.virtual-product.config
   "Defines configuration for virtual product app."
   (:require
-   [clojure.string :as str]
-   [cmr.common.config :as cfg :refer [defconfig]]
-   [cmr.common.mime-types :as mt]
-   [cmr.message-queue.config :as mq-conf]
-   [cmr.umm.umm-granule :as umm-g])
+   [cmr.common.config :as cfg :refer [defconfig]] 
+   [cmr.message-queue.config :as mq-conf])
   (:import
    (java.util.regex Pattern)))
 

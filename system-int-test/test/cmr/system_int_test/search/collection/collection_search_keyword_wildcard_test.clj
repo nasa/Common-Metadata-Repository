@@ -3,8 +3,7 @@
   limits. "
   (:require
    [clojure.test :refer :all]
-   [clojure.string :as str]
-   [cmr.search.data.query-to-elastic :as query-to-elastic]
+   [clojure.string :as string]
    [cmr.system-int-test.utils.search-util :as search]))
 
 (defn- create-keyword-wildcard-string
@@ -25,7 +24,7 @@
  length combo"
  [num-keywords max-keyword-length]
  (let [keyword-strings (create-keyword-wildcard-string num-keywords max-keyword-length)
-       keyword-string (str/join " " keyword-strings)]
+       keyword-string (string/join " " keyword-strings)]
   (search/find-refs :collection {:keyword keyword-string})))
 
 #_(deftest search-keyword-wildcard-limits-test

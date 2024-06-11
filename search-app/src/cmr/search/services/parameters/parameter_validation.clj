@@ -4,7 +4,7 @@
    [camel-snake-kebab.core :as csk]
    [clj-time.core :as t]
    [clojure.set :as set]
-   [clojure.string :as s]
+   [clojure.string :as string]
    [cmr.elastic-utils.search.es-messenger :as d-msg]
    [cmr.common-app.services.search.parameter-validation :as cpv]
    [cmr.common.services.search.query-model :as cqm]
@@ -428,7 +428,7 @@
 (defn- day-valid?
   "Validates if the given day in temporal is an integer between 1 and 366 inclusive"
   [day tag]
-  (when-not (s/blank? day)
+  (when-not (string/blank? day)
     (try
       (let [num (Integer/parseInt day)]
         (when (or (< num 1) (> num 366))
@@ -453,12 +453,12 @@
         (mapcat
          (fn [value]
            (if (re-find #"/" value)
-             (let [[_iso-range start-day end-day] (map s/trim (s/split value #","))]
+             (let [[_iso-range start-day end-day] (map string/trim (string/split value #","))]
                (concat
                 (cpv/validate-date-time-range nil)
                 (day-valid? start-day "temporal_start_day")
                 (day-valid? end-day "temporal_end_day")))
-             (let [[start-date end-date start-day end-day] (map s/trim (s/split value #","))]
+             (let [[start-date end-date start-day end-day] (map string/trim (string/split value #","))]
                (concat
                 (cpv/validate-date-time "temporal start" start-date)
                 (cpv/validate-date-time "temporal end" end-date)
@@ -484,7 +484,7 @@
       ;; validate that tag-value cannot be empty
       (when-let [empty-value-keys (seq (map first (filter #(empty? (second %)) param-value)))]
         [(format "Tag value cannot be empty for tag data search, but were for tag keys [%s]."
-                 (s/join ", " (map name empty-value-keys)))])
+                 (string/join ", " (map name empty-value-keys)))])
       ["Tag data search must be in the form of tag-data[tag-key]=tag-value"])))
 
 (defn- validate-multi-date-range
@@ -492,7 +492,7 @@
   [date-range param-name]
   (mapcat
    (fn [value]
-     (let [parts (map s/trim (s/split value #"," -1))
+     (let [parts (map string/trim (string/split value #"," -1))
            [start-date end-date] parts]
        (if (> (count parts) 2)
          [(format "Too many commas in %s %s" param-name value)]
@@ -586,9 +586,9 @@
            (if-not (valid-value-for-date-field? value date-field)
              (conj errors (format (str "%s within [temporal_facet] is not a valid %s. "
                                        "%ss must be between 1 and %d.")
-                                  (s/capitalize (name date-field))
+                                  (string/capitalize (name date-field))
                                   (name date-field)
-                                  (s/capitalize (name date-field))
+                                  (string/capitalize (name date-field))
                                   (max-value-for-date-field date-field)))
              errors))
          []
@@ -689,7 +689,7 @@
                                          :simplify-shapefile :cloud-hosted :standard-product])]
     (mapcat
       (fn [[param value]]
-        (when-not (contains? #{"true" "false" "unset"} (when value (s/lower-case value)))
+        (when-not (contains? #{"true" "false" "unset"} (when value (string/lower-case value)))
           [(format "Parameter %s must take value of true, false, or unset, but was [%s]"
                    (csk/->snake_case_string param) value)]))
       bool-params)))
@@ -698,7 +698,7 @@
   "Validates that the include_facets parameter has a value of true, false or v2."
   [_concept-type params]
   (when-let [include-facets (:include-facets params)]
-    (when-not (contains? #{"true" "false" "v2"} (s/lower-case include-facets))
+    (when-not (contains? #{"true" "false" "v2"} (string/lower-case include-facets))
       [(format "Collection parameter include_facets must take value of true, false, or v2, but was [%s]"
                include-facets)])))
 
@@ -736,7 +736,7 @@
   "Validates that the include_facets parameter has a value of v2."
   [_concept-type params]
   (when-let [include-facets (:include-facets params)]
-    (when-not (= "v2" (s/lower-case include-facets))
+    (when-not (= "v2" (string/lower-case include-facets))
       [(format "Granule parameter include_facets only supports the value v2, but was [%s]"
                include-facets)])))
 
@@ -773,7 +773,7 @@
   "Validates the timeline start date parameter"
   [_concept-type params]
   (let [start-date (:start-date params)]
-    (if-not (s/blank? start-date)
+    (if-not (string/blank? start-date)
       (cpv/validate-date-time "Timeline parameter start_date" start-date)
       ["start_date is a required parameter for timeline searches"])))
 
@@ -781,7 +781,7 @@
   "Validates the timeline end date parameter"
   [_concept-type params]
   (let [end-date (:end-date params)]
-    (if-not (s/blank? end-date)
+    (if-not (string/blank? end-date)
       (cpv/validate-date-time "Timeline parameter end_date" end-date)
       ["end_date is a required parameter for timeline searches"])))
 
@@ -829,7 +829,7 @@
   [_concept-type params]
   (concat
    (when (and (not (#{:json :atom :echo10 :dif :dif10 :iso19115 :native} (:result-format params)))
-              (not (s/blank? (:include-tags params))))
+              (not (string/blank? (:include-tags params))))
      [(format "Parameter [include_tags] is not supported for %s format search."
               (name (cqm/base-result-format (:result-format params))))])))
 

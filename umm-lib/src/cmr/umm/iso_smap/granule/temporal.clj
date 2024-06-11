@@ -1,9 +1,10 @@
 (ns cmr.umm.iso-smap.granule.temporal
   "Contains functions for parsing and generating the ISO SMAP granule temporal"
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.umm-granule :as g]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.umm-granule :as g]))
 
 (defn- xml-elem->RangeDateTime
   "Returns a UMM RangeDateTime from a parsed XML structure"
@@ -40,23 +41,23 @@
   (let [{:keys [range-date-time single-date-time]} temporal]
     (if range-date-time
       (let [{:keys [beginning-date-time ending-date-time]} range-date-time]
-        (x/element
+        (xml/element
           :gmd:temporalElement {}
-          (x/element
+          (xml/element
             :gmd:EX_TemporalExtent {}
-            (x/element :gmd:extent {}
-                       (x/element :gml:TimePeriod {:gml:id "swathTemporalExtent"}
+            (xml/element :gmd:extent {}
+                       (xml/element :gml:TimePeriod {:gml:id "swathTemporalExtent"}
                                   (when beginning-date-time
-                                    (x/element :gml:beginPosition {} (str beginning-date-time)))
+                                    (xml/element :gml:beginPosition {} (str beginning-date-time)))
                                   (if ending-date-time
-                                    (x/element :gml:endPosition {} (str ending-date-time))
-                                    (x/element :gml:endPosition {})))))))
+                                    (xml/element :gml:endPosition {} (str ending-date-time))
+                                    (xml/element :gml:endPosition {})))))))
       ;; single date time
       (when single-date-time
-        (x/element
+        (xml/element
           :gmd:temporalElement {}
-          (x/element
+          (xml/element
             :gmd:EX_TemporalExtent {}
-            (x/element :gmd:extent {}
-                       (x/element :gml:TimeInstant {:gml:id "swathTemporalExtent"}
-                                  (x/element :gml:timePosition {} (str single-date-time))))))))))
+            (xml/element :gmd:extent {}
+                       (xml/element :gml:TimeInstant {:gml:id "swathTemporalExtent"}
+                                  (xml/element :gml:timePosition {} (str single-date-time))))))))))

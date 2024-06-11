@@ -1,9 +1,8 @@
 (ns cmr.metadata-db.data.oracle.sql-helper
   "Contains helper functions that are shared by providers and concepts."
   (:require
-   [clj-time.format :as time-format]
    [clojure.java.jdbc :as j]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.services.errors :as errors]
    [cmr.metadata-db.data.oracle.concept-tables :as ct]
    [cmr.oracle.sql-utils :as su :refer [insert values select from where with order-by desc delete as]])
@@ -30,7 +29,7 @@
    (let [valid-param-name #"^[a-zA-Z][a-zA-Z0-9_\-]*$"]
      (when-let [invalid-names (seq (filter #(not (re-matches valid-param-name (name %))) (keys params)))]
        (errors/internal-error! (format "Attempting to search with invalid parameter names [%s]"
-                                       (str/join ", " invalid-names)))))
+                                       (string/join ", " invalid-names)))))
    (let [comparisons (for [[k v] params]
                        (cond
                          (sequential? v) (let [val (seq v)]

@@ -1,12 +1,13 @@
 (ns cmr.umm.dif.collection.spatial-coverage
   "Provide functions to parse and generate DIF spatial-coverage info, it is mapped to an
   Extended_Metadata element."
-  (:require [cmr.umm.umm-collection :as c]
-            [cmr.umm.dif.collection.extended-metadata :as em]
-            [cmr.spatial.mbr :as m]
-            [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [camel-snake-kebab.core :as csk])
+  (:require
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.dif.collection.extended-metadata :as em]
+   [cmr.spatial.mbr :as m]
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [camel-snake-kebab.core :as csk])
   (:import cmr.spatial.mbr.Mbr))
 
 (defn- extract-granule-spatial-representation
@@ -50,9 +51,9 @@
   [spatial-coverage]
   (let [brs (filter #(= Mbr (type %)) (:geometries spatial-coverage))]
     (map (fn [br]
-           (x/element :Spatial_Coverage {}
-                      (x/element :Southernmost_Latitude {} (:south br))
-                      (x/element :Northernmost_Latitude {} (:north br))
-                      (x/element :Westernmost_Longitude {} (:west br))
-                      (x/element :Easternmost_Longitude {} (:east br))))
+           (xml/element :Spatial_Coverage {}
+                      (xml/element :Southernmost_Latitude {} (:south br))
+                      (xml/element :Northernmost_Latitude {} (:north br))
+                      (xml/element :Westernmost_Longitude {} (:west br))
+                      (xml/element :Easternmost_Longitude {} (:east br))))
          brs)))

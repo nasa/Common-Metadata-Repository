@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.url
   "URL utilities for UMM spec"
   (:require
-   [clojure.string :as str])
+   [clojure.string :as string])
   (:import
    (java.net URL MalformedURLException)))
 
@@ -27,5 +27,5 @@
   [url sanitize?]
   (if sanitize?
     (some-> url
-           (str/replace #"(?s)\s+" ""))
+           (string/replace #"(?s)\s+" ""))
     url))

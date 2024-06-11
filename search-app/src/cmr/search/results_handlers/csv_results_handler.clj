@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.data.csv :as csv]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common-app.services.search :as qs]
    [cmr.common.services.errors :as svc-errors]
    [cmr.elastic-utils.search.es-acl-parser :as acl-rhh]
@@ -45,11 +45,11 @@
          platforms :platforms
          version :version-id
          short-name :short-name} (:_source elastic-result)
-        start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
-        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
+        start-date (when start-date (string/replace (str start-date) #"\+0000" "Z"))
+        end-date (when end-date (string/replace (str end-date) #"\+0000" "Z"))
         platform-short-names (->> platforms
                                   (map :short-name)
-                                  (str/join ","))
+                                  (string/join ","))
         collection-id (:_id elastic-result)]
     (merge {:row [provider-id
                   short-name
@@ -103,15 +103,15 @@
          cloud-cover :cloud-cover
          day-night :day-night
          size :size} (:_source elastic-result)
-        start-date (when start-date (str/replace (str start-date) #"\+0000" "Z"))
-        end-date (when end-date (str/replace (str end-date) #"\+0000" "Z"))
+        start-date (when start-date (string/replace (str start-date) #"\+0000" "Z"))
+        end-date (when end-date (string/replace (str end-date) #"\+0000" "Z"))
         atom-links (map #(json/decode % true) atom-links)
         downloadable-urls (seq (map :href
                                     (filter #(= (:link-type %) "data") atom-links)))
         browse-urls (seq (map :href
                               (filter #(= (:link-type %) "browse") atom-links)))]
-    (merge {:row [granule-ur producer-gran-id start-date end-date (str/join "," downloadable-urls)
-                  (str/join "," browse-urls) (str cloud-cover) day-night (str size)]}
+    (merge {:row [granule-ur producer-gran-id start-date end-date (string/join "," downloadable-urls)
+                  (string/join "," browse-urls) (str cloud-cover) day-night (str size)]}
            (acl-rhh/parse-elastic-item :granule elastic-result))))
 
 (defmethod qs/search-results->response [:granule :csv]

@@ -2,7 +2,7 @@
   "Implements transforms to 'humanize' faceted fields on UMM collections.
   See https://wiki.earthdata.nasa.gov/display/CMR/Humanizing+Facets+Design"
   (:require
-    [clojure.string :as str]
+    [clojure.string :as string]
     [cmr.common.util :as util]))
 
 (def humanizer-field->umm-paths
@@ -30,12 +30,12 @@
   [humanizer value]
   (case (:type humanizer)
     "trim_whitespace" (assoc value
-                             :value (str/trim (str/replace (:value value)
+                             :value (string/trim (string/replace (:value value)
                                                            #"\s+" " ")))
     "capitalize" (assoc value
-                        :value (->> (str/split (:value value) #"\b")
-                                    (map str/capitalize)
-                                    str/join))
+                        :value (->> (string/split (:value value) #"\b")
+                                    (map string/capitalize)
+                                    string/join))
     "alias" (assoc value
                    :value (:replacement_value humanizer))
     "ignore" nil

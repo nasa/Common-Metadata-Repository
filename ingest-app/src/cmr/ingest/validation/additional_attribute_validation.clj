@@ -1,7 +1,7 @@
 (ns cmr.ingest.validation.additional-attribute-validation
   "Provides functions to validate the additional attributes during collection update"
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.umm-spec.additional-attribute :as aa]))
 
@@ -28,7 +28,7 @@
   [aa]
   (let [{aa-name :Name aa-type :DataType aa-begin :ParameterRangeBegin
          aa-end :ParameterRangeEnd} aa
-        type (str/lower-case aa-type)
+        type (string/lower-case aa-type)
         params (concat (when aa-begin
                          [(format "%s,%s,,%s" type aa-name aa-begin)])
                        (when aa-end

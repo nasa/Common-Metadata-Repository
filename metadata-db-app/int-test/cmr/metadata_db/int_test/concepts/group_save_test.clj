@@ -2,18 +2,10 @@
   "Contains integration tests for saving groups. Tests saves with various configurations including
   checking for proper error handling."
   (:require
-   [clj-http.client :as client]
-   [clj-time.core :as t]
-   [clj-time.format :as f]
-   [clj-time.local :as l]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
-   [cmr.common.util :refer (are2)]
+   [clojure.test :refer [deftest is testing use-fixtures]]
    [cmr.metadata-db.int-test.concepts.concept-save-spec :as c-spec]
    [cmr.metadata-db.int-test.concepts.utils.interface :as concepts]
-   [cmr.metadata-db.int-test.utility :as util]
-   [cmr.metadata-db.services.concept-constraints :as cc]
-   [cmr.metadata-db.services.messages :as msg]))
+   [cmr.metadata-db.int-test.utility :as util]))
 
 ;;; fixtures
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

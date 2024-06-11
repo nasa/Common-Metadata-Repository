@@ -4,7 +4,7 @@
   (:require
    [clojure.edn :as edn]
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.access-control.config :as config]
    [cmr.common.data.acls :as acls]
    [cmr.common.log :refer [info warn]]
@@ -27,7 +27,7 @@
 (defn- acl-identity
   "Returns a string value representing the ACL's identity field."
   [acl]
-  (str/lower-case
+  (string/lower-case
     (let [{:keys [system-identity provider-identity single-instance-identity catalog-item-identity]} acl]
       (cond
         system-identity          (str "system:" (:target system-identity))

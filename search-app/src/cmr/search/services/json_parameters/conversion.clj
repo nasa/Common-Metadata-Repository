@@ -3,7 +3,7 @@
   (:require
    [cheshire.core :as json]
    [clojure.set :as set]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.elastic-utils.search.es-group-query-conditions :as gc]
    [cmr.elastic-utils.search.nested-field :as nf]
    [cmr.elastic-utils.search.es-params-converter :as common-params]
@@ -191,7 +191,7 @@
 
 (defmethod parse-json-condition :keyword
   [concept-type _ value]
-  (cqm/text-condition :keyword (str/lower-case value)))
+  (cqm/text-condition :keyword (string/lower-case value)))
 
 (defn- parse-json-condition-map
   "Parse a JSON condition map into the appropriate query conditions. Conditions within a map are
@@ -245,9 +245,9 @@
   [concept-type _ value]
   (validate-temporal-condition value)
   (let [{:keys [start-date end-date recurring-start-day recurring-end-day exclude-boundary]} value]
-    (qm/map->TemporalCondition {:start-date (when-not (str/blank? start-date)
+    (qm/map->TemporalCondition {:start-date (when-not (string/blank? start-date)
                                               (parser/parse-datetime start-date))
-                                :end-date (when-not (str/blank? end-date)
+                                :end-date (when-not (string/blank? end-date)
                                             (parser/parse-datetime end-date))
                                 :start-day recurring-start-day
                                 :end-day recurring-end-day

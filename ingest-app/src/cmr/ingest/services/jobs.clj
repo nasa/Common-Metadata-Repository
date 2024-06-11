@@ -1,10 +1,7 @@
 (ns cmr.ingest.services.jobs
   "This contains the scheduled jobs for the ingest application."
   (:require
-   [cheshire.core :as json]
-   [clj-time.core :as t]
-   [clojure.spec.alpha :as spec]
-   [clojure.string :as string]
+   [clojure.spec.alpha :as s]
    [cmr.acl.acl-fetcher :as acl-fetcher]
    [cmr.common.config :as cfg :refer [defconfig]]
    [cmr.common.jobs :as jobs :refer [def-stateful-job]]
@@ -15,16 +12,14 @@
    [cmr.ingest.data.provider-acl-hash :as pah]
    [cmr.ingest.services.granule-bulk-update-service :as gran-bulk-update-svc]
    [cmr.ingest.services.subscriptions-helper :as subscription]
-   [cmr.transmit.config :as config]
-   [cmr.transmit.metadata-db :as mdb]
-   [postal.core :as postal-core]))
+   [cmr.transmit.metadata-db :as mdb]))
 
 ;; Specs =============================================================
 (def date-rx "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z")
 
 (def time-constraint-pattern (re-pattern (str date-rx "," date-rx)))
 
-(spec/def ::time-constraint (spec/and
+(s/def ::time-constraint (s/and
                               string?
                               #(re-matches time-constraint-pattern %)))
 

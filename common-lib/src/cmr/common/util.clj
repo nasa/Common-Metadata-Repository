@@ -12,7 +12,7 @@
    [clojure.string :as string]
    [clojure.template :as template]
    [clojure.test :as test]
-   [clojure.walk :as w]
+   [clojure.walk :as walk]
    [cmr.common.config :as cfg]
    [cmr.common.log :refer (info error)]
    [digest :as digest]
@@ -228,7 +228,7 @@
 (defn inflate-nil-keys
   "Occupy nil values with a given default value."
   [m filler]
-  (w/postwalk-replace {nil filler} m))
+  (walk/postwalk-replace {nil filler} m))
 
 (defn nil-if-value
   "Treat value (v) as nil if matches key (k)."
@@ -396,7 +396,7 @@
   things like maps which also contain lazy sequences they would not be
   realized. This function will force all of them to be realized."
   [v]
-  (w/postwalk identity v))
+  (walk/postwalk identity v))
 
 (defmacro while-let
   "A macro that's similar to when let. It will continually evaluate the
@@ -832,7 +832,7 @@
   "Dissociates a vector of keys from a nested associative structure returning a new
   nested structure. ks is a vector of keys."
   [m ks]
-  (w/postwalk #(if (map? %) (apply dissoc % ks) %) m))
+  (walk/postwalk #(if (map? %) (apply dissoc % ks) %) m))
 
 (defn seqv
   "Returns (vec coll) when (seq coll) is not nil."

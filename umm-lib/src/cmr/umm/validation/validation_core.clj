@@ -9,7 +9,7 @@
    [cmr.spatial.ring-validations]
    [cmr.common.services.errors :as e]
    [cmr.umm.iso-smap.granule.orbit]
-   [clojure.string :as str]))
+   [clojure.string :as string]))
 
 (defmulti humanize-field-for-error-msg
   "Converts a field name into an easier to read field name.  This should only be used when
@@ -24,8 +24,8 @@
   [field-path-item]
   (-> field-path-item
       name
-      (str/replace #"-refs$" "-references")
-      (str/replace #"-ref$" "-reference")
+      (string/replace #"-refs$" "-references")
+      (string/replace #"-ref$" "-reference")
       keyword))
 
 (defn- validation-errors->path-errors

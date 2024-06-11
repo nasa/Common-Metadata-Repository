@@ -3,7 +3,7 @@
    and OnlineAccessURL in bulk update."
   (:require
    [clojure.data.xml :as xml]
-   [clojure.set :as cset]
+   [clojure.set :as set]
    [clojure.string :as string]
    [cmr.common.services.errors :as errors]
    [cmr.common.time-keeper :as time-keeper]
@@ -21,12 +21,12 @@
                            (cx/elements-at-path parsed node-path-vector))
         node-name-key (first node-path-vector)
         node-name (name node-name-key)
-        _ (when-not (cset/superset? (set existing-urls) (set (keys url-map)))
+        _ (when-not (set/superset? (set existing-urls) (set (keys url-map)))
             (errors/throw-service-errors
              :invalid-data
              [(str "Update failed - please only specify URLs contained in the"
                    " existing granule " node-name " ["
-                   (string/join ", " (cset/difference (set (keys url-map)) (set existing-urls)))
+                   (string/join ", " (set/difference (set (keys url-map)) (set existing-urls)))
                    "] were not found")]))
 
         _ (when-not (= (count (set (keys url-map))) (count links))

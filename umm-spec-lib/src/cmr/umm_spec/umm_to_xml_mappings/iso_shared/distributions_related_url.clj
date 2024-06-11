@@ -1,7 +1,7 @@
 (ns cmr.umm-spec.umm-to-xml-mappings.iso-shared.distributions-related-url
   "Functions for generating ISO XML elements from UMM related-url records."
   (:require
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.xml.gen :refer :all]
    [cmr.umm-spec.iso19115-2-util :as iso]
    [cmr.umm-spec.url :as url]
@@ -50,7 +50,7 @@
         description (if (seq MimeType)
                       (str description (format "MimeType: %s " (su/with-default MimeType)))
                       description)]
-    (str/trim description)))
+    (string/trim description)))
 
 (defn generate-browse-urls
   "Returns content generator instructions for a browse url"
@@ -156,7 +156,7 @@
         operation-description (if (seq Format)
                                 (str operation-description (format "Format: %s " (su/with-default Format)))
                                 operation-description)]
-    (str/trim operation-description)))
+    (string/trim operation-description)))
 
 (defn generate-service-related-url
  "Write 'USE SERVICE API' related urls to an additional area of ISO"

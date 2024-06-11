@@ -2,7 +2,7 @@
   "Tests parsing and generating ISO Collection XML."
   (:require
    [clojure.java.io :as io]
-   [clojure.string :as s]
+   [clojure.string :as string]
    [clojure.test :refer [deftest is testing]]
    [clojure.test.check.properties :refer [for-all]]
    [cmr.common.date-time-parser :as p]
@@ -390,7 +390,7 @@
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevel, "
                  "\"http://www.isotc211.org/2005/gmd\":hierarchyLevelName, "
                  "\"http://www.isotc211.org/2005/gmd\":contact}' is expected.")]
-           (c/validate-xml (s/replace valid-collection-xml "fileIdentifier" "XXXX"))))))
+           (c/validate-xml (string/replace valid-collection-xml "fileIdentifier" "XXXX"))))))
 
 (deftest parse-collection-defaults-test
   ;; Check that defaults are being added correctly to create valid umm

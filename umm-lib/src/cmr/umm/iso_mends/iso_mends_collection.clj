@@ -3,7 +3,7 @@
   (:require
    [clojure.data.xml :as xml]
    [clojure.java.io :as io]
-   [clojure.string :as str]
+   [clojure.string :as string]
    [cmr.common.util :as util]
    [cmr.common.xml :as cx]
    [cmr.umm.iso-mends.iso-mends-core :as core]
@@ -66,7 +66,7 @@
   (let [constraints (cx/strings-at-path id-elem [:resourceConstraints :MD_LegalConstraints
                                                  :otherConstraints :CharacterString])
         restriction (first (filter (partial re-find #"Restriction Flag:") constraints))
-        restriction-flag (when restriction (str/replace restriction #"Restriction Flag:" ""))]
+        restriction-flag (when restriction (string/replace restriction #"Restriction Flag:" ""))]
     (when (seq restriction-flag) (Double. restriction-flag))))
 
 (defn- xml-elem->Collection

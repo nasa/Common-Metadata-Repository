@@ -1,10 +1,11 @@
 (ns cmr.umm.iso-mends.collection.org
   "Archive and Processing Center elements of ISO are mapped umm organization elements."
-  (:require [clojure.data.xml :as x]
-            [cmr.common.xml :as cx]
-            [cmr.umm.umm-collection :as c]
-            [cmr.umm.iso-mends.collection.keyword :as k]
-            [cmr.umm.iso-mends.collection.helper :as h]))
+  (:require
+   [clojure.data.xml :as xml]
+   [cmr.common.xml :as cx]
+   [cmr.umm.umm-collection :as c]
+   [cmr.umm.iso-mends.collection.keyword :as k]
+   [cmr.umm.iso-mends.collection.helper :as h]))
 
 (defn xml-elem->Organizations
   "Return organizations or []"
@@ -38,14 +39,14 @@
   "Return processing center ignoring other type of organization like archive center"
   [orgs]
   (let [processing-center (get-organization-name :processing-center orgs)]
-    (x/element
+    (xml/element
       :gmd:processor {}
-      (x/element
+      (xml/element
         :gmd:CI_ResponsibleParty {}
         (h/iso-string-element :gmd:organisationName processing-center)
-        (x/element
+        (xml/element
           :gmd:role {}
-          (x/element
+          (xml/element
             :gmd:CI_RoleCode (h/role-code-attributes "processor") "processor"))))))
 
 

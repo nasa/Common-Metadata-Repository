@@ -2,8 +2,8 @@
   "Executes the Orbits RSPec tests as Clojure tests"
   (:require
    [clojure.java.io :as io]
-   [clojure.string :as str]
-   [clojure.test :refer :all]
+   [clojure.string :as string]
+   [clojure.test :refer [deftest is testing]]
    [cmr.orbits.orbits-runtime :as orbits-runtime])
   (:import
    (javax.script ScriptEngineManager)
@@ -19,7 +19,7 @@
   ;; Find all the spec files in the test_resources/spec folder
   (let [specs (->> (io/file (io/resource "spec"))
                    (.list)
-                   (filter #(str/ends-with? %"_spec.rb")))]
+                   (filter #(string/ends-with? %"_spec.rb")))]
     (doseq [spec-name specs
             ;; Create a new instance of the JRuby runtime for each spec so that we can show separate
             ;; results for each spec.

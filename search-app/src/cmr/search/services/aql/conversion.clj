@@ -2,7 +2,7 @@
   "Contains functions for parsing and converting aql to query conditions"
   (:require
    [clj-time.core :as t]
-   [clojure.data.xml :as x]
+   [clojure.data.xml :as xml]
    [clojure.java.io :as io]
    [clojure.set :as set]
    [clojure.string :as string]
@@ -15,7 +15,6 @@
    [cmr.common.xml :as cx]
    [cmr.search.models.query :as qm]
    [cmr.search.services.messages.common-messages :as msg]
-   [cmr.search.services.parameters.conversion :as pc]
    [cmr.search.services.parameters.parameter-validation :as pv]))
 
 (def aql-elem->converter-attrs
@@ -365,7 +364,7 @@
   (validate-aql aql)
   (let [;; remove the DocType from the aql string as clojure.data.xml does not handle it correctly
         ;; by adding attributes to elements when it is present.
-        xml-struct (x/parse-str (cx/remove-xml-processing-instructions aql))
+        xml-struct (xml/parse-str (cx/remove-xml-processing-instructions aql))
         concept-type (get-concept-type xml-struct)
         params (pv/validate-standard-query-parameters concept-type params)]
     (cqm/query (assoc (second (common-params/parse-query-level-params concept-type params))
